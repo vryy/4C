@@ -79,7 +79,7 @@ namespace BEAMINTERACTION
     \brief things that need to be done in a separate loop before the actual evaluation loop
            over all contact pairs
     */
-    virtual void PreEvaluate() = 0;
+    virtual void pre_evaluate() = 0;
 
     //! @name Public evaluation methods
     /*!
@@ -189,7 +189,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Get energy of penalty contact.
     */
-    virtual double GetEnergy() const = 0;
+    virtual double get_energy() const = 0;
 
     //  /*!
     //    \Get energy of perp penalty contact without transition factor contribution.
@@ -356,7 +356,7 @@ namespace BEAMINTERACTION
     virtual void set_restart_displacement(
         const std::vector<std::vector<double>>& centerline_restart_vec_)
     {
-      CheckInitSetup();
+      check_init_setup();
     };
 
     /**
@@ -372,16 +372,16 @@ namespace BEAMINTERACTION
 
    protected:
     //! returns init state
-    inline const bool& IsInit() const { return isinit_; };
+    inline const bool& is_init() const { return isinit_; };
 
     //! returns setup state
-    inline const bool& IsSetup() const { return issetup_; };
+    inline const bool& is_setup() const { return issetup_; };
 
     //! Check the init state
-    void CheckInit() const;
+    void check_init() const;
 
     //! Check the init and setup state
-    void CheckInitSetup() const;
+    void check_init_setup() const;
 
    protected:
     //! @name member variables

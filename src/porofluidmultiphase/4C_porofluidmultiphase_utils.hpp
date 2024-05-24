@@ -131,7 +131,7 @@ namespace POROFLUIDMULTIPHASE
         Teuchos::RCP<DRT::Discretization> dis, const Epetra_Map* nodemap);
 
     //! Determine norm of vector
-    double CalculateVectorNorm(
+    double calculate_vector_norm(
         const enum INPAR::POROFLUIDMULTIPHASE::VectorNorm norm,  //!< norm to use
         const Teuchos::RCP<const Epetra_Vector> vect             //!< the vector of interest
     );

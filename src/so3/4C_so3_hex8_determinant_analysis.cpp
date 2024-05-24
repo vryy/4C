@@ -135,9 +135,9 @@ void DRT::ELEMENTS::SoHex8DeterminantAnalysis::build_map_bezier_to_lagrange(
     for (unsigned j = 0; j < 27; ++j)
     {
       map_b2l(i, j) =
-          bezierFunc2(shift[0] + scale[0] * bezier_points_[i][0], bezier_indices_[j][0]) *
-          bezierFunc2(shift[1] + scale[1] * bezier_points_[i][1], bezier_indices_[j][1]) *
-          bezierFunc2(shift[2] + scale[2] * bezier_points_[i][2], bezier_indices_[j][2]);
+          bezier_func2(shift[0] + scale[0] * bezier_points_[i][0], bezier_indices_[j][0]) *
+          bezier_func2(shift[1] + scale[1] * bezier_points_[i][1], bezier_indices_[j][1]) *
+          bezier_func2(shift[2] + scale[2] * bezier_points_[i][2], bezier_indices_[j][2]);
     }
 }
 
@@ -193,7 +193,7 @@ bool DRT::ELEMENTS::SoHex8DeterminantAnalysis::isValid(
 #endif
 
   // Check the TET4 volumes. If one is not positive, return FALSE
-  if (hasInvalidEntry(tet4_volumes.A(), 20)) return false;
+  if (has_invalid_entry(tet4_volumes.A(), 20)) return false;
 
   BezierCube bcube;
   bcube.init();
@@ -203,7 +203,7 @@ bool DRT::ELEMENTS::SoHex8DeterminantAnalysis::isValid(
   bcoeffs.Multiply(map_q_, tet4_volumes);
 
   // Check the remaining Bezier coefficients. If all are positive, return TRUE.
-  if (not hasInvalidEntry(bcoeffs.A() + 8, 19)) return true;
+  if (not has_invalid_entry(bcoeffs.A() + 8, 19)) return true;
 
   // init recursion counter
   unsigned rcount = 0;
@@ -224,7 +224,7 @@ bool DRT::ELEMENTS::SoHex8DeterminantAnalysis::isValid(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8DeterminantAnalysis::getSubCubeBorders(
+void DRT::ELEMENTS::SoHex8DeterminantAnalysis::get_sub_cube_borders(
     const double* l, const double* r, std::list<BezierCube>& subcubes) const
 {
   const std::array<double, 3> rl = {0.5 * (r[0] + l[0]), 0.5 * (r[1] + l[1]), 0.5 * (r[2] + l[2])};
@@ -324,7 +324,7 @@ bool DRT::ELEMENTS::SoHex8DeterminantAnalysis::recursive_subdivision(
 
   std::list<BezierCube> subcubes;
   subcubes.assign(8, BezierCube());
-  getSubCubeBorders(left, right, subcubes);
+  get_sub_cube_borders(left, right, subcubes);
 
   // don't allocate new storage in a recursive call
   static CORE::LINALG::Matrix<27, 1> sub_bcoeffs(false);
@@ -334,11 +334,11 @@ bool DRT::ELEMENTS::SoHex8DeterminantAnalysis::recursive_subdivision(
     get_bezier_coeffs_of_subdomain(bcoeffs, *it, sub_bcoeffs);
 
     // check first 8 entries of each column
-    if (hasInvalidEntry(sub_bcoeffs.A(), 8)) return false;
+    if (has_invalid_entry(sub_bcoeffs.A(), 8)) return false;
 
     /* If none of the remaining Bezier coefficients is invalid, erase the
      * corresponding sub-cube. */
-    if (not hasInvalidEntry(&sub_bcoeffs(8, 0), 19))
+    if (not has_invalid_entry(&sub_bcoeffs(8, 0), 19))
     {
       it = subcubes.erase(it);
     }
@@ -388,7 +388,7 @@ void DRT::ELEMENTS::SoHex8DeterminantAnalysis::get_bezier_coeffs_of_subdomain(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool DRT::ELEMENTS::SoHex8DeterminantAnalysis::hasInvalidEntry(
+bool DRT::ELEMENTS::SoHex8DeterminantAnalysis::has_invalid_entry(
     const double* entries, const unsigned length) const
 {
   for (unsigned i = 0; i < length; ++i)
@@ -429,7 +429,7 @@ unsigned DRT::ELEMENTS::SoHex8DeterminantAnalysis::compute_tet4_vol_at_corners(
     j = f_index3(i);  // 4, 5, 6, 7
     std::copy(&x_curr(0, j), &x_curr(0, j) + NUMDIM_SOH8, tet4_coords.A() + 3 * NUMDIM_SOH8);
 
-    tet4_volumes(i + offset) = computeTet4Volume(tet4_coords);
+    tet4_volumes(i + offset) = compute_tet4_volume(tet4_coords);
   }
 
   return offset + 4;
@@ -468,7 +468,7 @@ unsigned DRT::ELEMENTS::SoHex8DeterminantAnalysis::compute_tet4_vol_at_edges(
     for (unsigned k = 0; k < NUMDIM_SOH8; ++k) tmp(k, 0) = 0.5 * (x_curr(k, j) + x_curr(k, jj));
     std::copy(tmp.A(), tmp.A() + NUMDIM_SOH8, tet4_coords.A() + 3 * NUMDIM_SOH8);
 
-    tet4_volumes(i + offset) = computeTet4Volume(tet4_coords);
+    tet4_volumes(i + offset) = compute_tet4_volume(tet4_coords);
   }
 
   return offset + 4;
@@ -536,7 +536,7 @@ void DRT::ELEMENTS::SoHex8DeterminantAnalysis::compute20_tet4_volumes(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double DRT::ELEMENTS::SoHex8DeterminantAnalysis::computeTet4Volume(
+double DRT::ELEMENTS::SoHex8DeterminantAnalysis::compute_tet4_volume(
     const CORE::LINALG::Matrix<NUMDIM_SOH8, 4>& tet4_ncoords) const
 {
   const CORE::LINALG::Matrix<3, 1> xref(tet4_ncoords.A(), true);

@@ -59,7 +59,7 @@ void FLD::TimIntStationaryHDG::Init()
   Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux =
       Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(0, elementndof, 0, false));
   discret_->AddDofSet(dofsetaux);
-  discret_->FillComplete();
+  discret_->fill_complete();
 
   // build velocity/pressure splitting
   std::set<int> conddofset;
@@ -89,7 +89,7 @@ void FLD::TimIntStationaryHDG::Init()
   otherdofset.clear();
   Teuchos::RCP<Epetra_Map> otherdofmap = Teuchos::rcp(
       new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, hdgdis->Comm()));
-  velpressplitter_->Setup(*hdgdis->DofRowMap(), conddofmap, otherdofmap);
+  velpressplitter_->Setup(*hdgdis->dof_row_map(), conddofmap, otherdofmap);
 
   // call Init()-functions of base classes
   // note: this order is important
@@ -100,11 +100,11 @@ void FLD::TimIntStationaryHDG::Init()
 void FLD::TimIntStationaryHDG::Reset(bool completeReset, int numsteps, int iter)
 {
   FluidImplicitTimeInt::Reset(completeReset, numsteps, iter);
-  const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
+  const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
   intvelnp_ = CORE::LINALG::CreateVector(*intdofrowmap, true);
   if (discret_->Comm().MyPID() == 0)
     std::cout << "Number of degrees of freedom in HDG system: "
-              << discret_->DofRowMap(0)->NumGlobalElements() << std::endl;
+              << discret_->dof_row_map(0)->NumGlobalElements() << std::endl;
 }
 
 /*----------------------------------------------------------------------*
@@ -142,13 +142,13 @@ void FLD::TimIntStationaryHDG::set_old_part_of_righthandside()
 *-----------------------------------------------------------------------*/
 void FLD::TimIntStationaryHDG::SetStateTimInt()
 {
-  const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
+  const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
   Teuchos::RCP<Epetra_Vector> zerovec = CORE::LINALG::CreateVector(*intdofrowmap, true);
 
-  discret_->SetState(0, "velaf", velnp_);
-  discret_->SetState(1, "intvelaf", intvelnp_);  // TODO als fill in intvelnp_!
-  discret_->SetState(1, "intaccam", zerovec);
-  discret_->SetState(1, "intvelnp", intvelnp_);
+  discret_->set_state(0, "velaf", velnp_);
+  discret_->set_state(1, "intvelaf", intvelnp_);  // TODO als fill in intvelnp_!
+  discret_->set_state(1, "intaccam", zerovec);
+  discret_->set_state(1, "intvelnp", intvelnp_);
 }
 
 /*----------------------------------------------------------------------*
@@ -174,8 +174,8 @@ void FLD::TimIntStationaryHDG::clear_state_assemble_mat_and_rhs()
 void FLD::TimIntStationaryHDG::SetInitialFlowField(
     const INPAR::FLUID::InitialField initfield, const int startfuncno)
 {
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
+  const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
   CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
   CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
   Teuchos::ParameterList initParams;

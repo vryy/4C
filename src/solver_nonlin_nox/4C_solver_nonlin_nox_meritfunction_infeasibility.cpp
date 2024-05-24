@@ -29,7 +29,7 @@ NOX::NLN::MeritFunction::Infeasibility::Infeasibility(
       infeasibility_type_(mrtfct_vague)
 {
   const std::string& type_name = params.get<std::string>("Type");
-  SetType(type_name);
+  set_type(type_name);
 
   merit_function_name_ = MeritFuncName2String(Type());
 }
@@ -49,7 +49,7 @@ NOX::NLN::MeritFunction::Infeasibility::get_supported_type_list() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::MeritFunction::Infeasibility::SetType(const std::string& type_name)
+void NOX::NLN::MeritFunction::Infeasibility::set_type(const std::string& type_name)
 {
   static const std::map<std::string, MeritFctName> supported_type_names = get_supported_type_list();
 

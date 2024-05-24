@@ -43,16 +43,16 @@ SSI::MeshtyingStrategySparse::MeshtyingStrategySparse(const bool is_scatra_manif
     : MeshtyingStrategyBase(is_scatra_manifold, ssi_maps, ssi_structure_meshtying)
 {
   temp_scatra_struct_mat_ =
-      SSI::UTILS::SSIMatrices::SetupSparseMatrix(SSIMaps()->ScaTraDofRowMap());
+      SSI::UTILS::SSIMatrices::setup_sparse_matrix(SSIMaps()->ScaTraDofRowMap());
 
   if (IsScaTraManifold())
   {
     temp_scatramanifold_struct_mat_ =
-        SSI::UTILS::SSIMatrices::SetupSparseMatrix(SSIMaps()->sca_tra_manifold_dof_row_map());
+        SSI::UTILS::SSIMatrices::setup_sparse_matrix(SSIMaps()->sca_tra_manifold_dof_row_map());
   }
 
   temp_struct_scatra_mat_ =
-      SSI::UTILS::SSIMatrices::SetupSparseMatrix(SSIMaps()->StructureDofRowMap());
+      SSI::UTILS::SSIMatrices::setup_sparse_matrix(SSIMaps()->StructureDofRowMap());
 }
 
 /*-------------------------------------------------------------------------*
@@ -64,16 +64,16 @@ SSI::MeshtyingStrategyBlock::MeshtyingStrategyBlock(const bool is_scatra_manifol
       block_position_scatra_(SSIMaps()->GetBlockPositions(SSI::Subproblem::scalar_transport)),
       position_structure_(SSIMaps()->GetBlockPositions(SSI::Subproblem::structure).at(0))
 {
-  temp_scatra_struct_mat_ = SSI::UTILS::SSIMatrices::SetupBlockMatrix(
+  temp_scatra_struct_mat_ = SSI::UTILS::SSIMatrices::setup_block_matrix(
       SSIMaps()->BlockMapScaTra(), SSIMaps()->BlockMapStructure());
 
   if (IsScaTraManifold())
   {
-    temp_scatramanifold_struct_mat_ = SSI::UTILS::SSIMatrices::SetupBlockMatrix(
+    temp_scatramanifold_struct_mat_ = SSI::UTILS::SSIMatrices::setup_block_matrix(
         SSIMaps()->block_map_sca_tra_manifold(), SSIMaps()->BlockMapStructure());
   }
 
-  temp_struct_scatra_mat_ = SSI::UTILS::SSIMatrices::SetupBlockMatrix(
+  temp_struct_scatra_mat_ = SSI::UTILS::SSIMatrices::setup_block_matrix(
       SSIMaps()->BlockMapStructure(), SSIMaps()->BlockMapScaTra());
 
   if (IsScaTraManifold())

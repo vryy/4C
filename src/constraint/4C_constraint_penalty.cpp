@@ -95,7 +95,7 @@ void CONSTRAINTS::ConstraintPenalty::Initialize(Teuchos::ParameterList& params)
       FOUR_C_THROW("Unknown constraint/monitor type to be evaluated in Constraint class!");
   }
   // start computing
-  EvaluateError(params, initerror_);
+  evaluate_error(params, initerror_);
 }
 
 /*------------------------------------------------------------------------*
@@ -147,7 +147,7 @@ void CONSTRAINTS::ConstraintPenalty::Evaluate(Teuchos::ParameterList& params,
   }
   // start computing
   acterror_->PutScalar(0.0);
-  EvaluateError(params, acterror_);
+  evaluate_error(params, acterror_);
 
   switch (constrtype_)
   {
@@ -165,20 +165,20 @@ void CONSTRAINTS::ConstraintPenalty::Evaluate(Teuchos::ParameterList& params,
     default:
       FOUR_C_THROW("Wrong constraint type to evaluate systemvector!");
   }
-  EvaluateConstraint(
+  evaluate_constraint(
       params, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);
   return;
 }
 
 /*-----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::ConstraintPenalty::EvaluateConstraint(Teuchos::ParameterList& params,
+void CONSTRAINTS::ConstraintPenalty::evaluate_constraint(Teuchos::ParameterList& params,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  if (!(actdisc_->Filled())) FOUR_C_THROW("FillComplete() was not called");
+  if (!(actdisc_->Filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!actdisc_->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
   // get the current time
   const double time = params.get("total time", -1.0);
@@ -298,14 +298,14 @@ void CONSTRAINTS::ConstraintPenalty::EvaluateConstraint(Teuchos::ParameterList& 
       }
     }
   }
-}  // end of EvaluateCondition
+}  // end of evaluate_condition
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::ConstraintPenalty::EvaluateError(
+void CONSTRAINTS::ConstraintPenalty::evaluate_error(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector)
 {
-  if (!(actdisc_->Filled())) FOUR_C_THROW("FillComplete() was not called");
+  if (!(actdisc_->Filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!actdisc_->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
   // get the current time
   const double time = params.get("total time", -1.0);
@@ -376,6 +376,6 @@ void CONSTRAINTS::ConstraintPenalty::EvaluateError(
   Teuchos::RCP<Epetra_Vector> acterrdist = Teuchos::rcp(new Epetra_Vector(*errormap_));
   acterrdist->Export(*systemvector, *errorexport_, Add);
   systemvector->Import(*acterrdist, *errorimport_, Insert);
-}  // end of EvaluateError
+}  // end of evaluate_error
 
 FOUR_C_NAMESPACE_CLOSE

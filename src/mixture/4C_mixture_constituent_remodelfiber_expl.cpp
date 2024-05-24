@@ -116,7 +116,7 @@ void MIXTURE::MixtureConstituentRemodelFiberExpl::Initialize()
       params_->fiber_material_->create_remodel_fiber_material();
 
   remodel_fiber_.clear();
-  for (int gp = 0; gp < NumGP(); ++gp)
+  for (int gp = 0; gp < num_gp(); ++gp)
   {
     LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<double> growth_evolution(
         params_->growth_constant_, params_->poisson_decay_time_);
@@ -151,9 +151,9 @@ void MIXTURE::MixtureConstituentRemodelFiberExpl::UpdateElasticPart(
         "inelastic growth. You have to set INELASTIC_GROWTH to true or use a different growth "
         "rule.");
   }
-  const double lambda_f = EvaluateLambdaf(EvaluateC(F), gp, eleGID);
-  const double lambda_ext = EvaluateLambdaExt(iFext, gp, eleGID);
-  remodel_fiber_[gp].SetState(lambda_f, lambda_ext);
+  const double lambda_f = evaluate_lambdaf(EvaluateC(F), gp, eleGID);
+  const double lambda_ext = evaluate_lambda_ext(iFext, gp, eleGID);
+  remodel_fiber_[gp].set_state(lambda_f, lambda_ext);
   remodel_fiber_[gp].Update();
 
   if (params_->growth_enabled_)
@@ -174,8 +174,8 @@ void MIXTURE::MixtureConstituentRemodelFiberExpl::Update(const CORE::LINALG::Mat
   if (!params_->inelastic_external_deformation_)
   {
     // Update state
-    const double lambda_f = EvaluateLambdaf(EvaluateC(F), gp, eleGID);
-    remodel_fiber_[gp].SetState(lambda_f, 1.0);
+    const double lambda_f = evaluate_lambdaf(EvaluateC(F), gp, eleGID);
+    remodel_fiber_[gp].set_state(lambda_f, 1.0);
     remodel_fiber_[gp].Update();
 
     update_homeostatic_values(params, eleGID);
@@ -203,7 +203,7 @@ bool MIXTURE::MixtureConstituentRemodelFiberExpl::EvaluateOutputData(
 {
   if (name == "mixture_constituent_" + std::to_string(Id()) + "_sig_h")
   {
-    for (int gp = 0; gp < NumGP(); ++gp)
+    for (int gp = 0; gp < num_gp(); ++gp)
     {
       data(gp, 0) = remodel_fiber_[gp].evaluate_current_homeostatic_fiber_cauchy_stress();
     }
@@ -211,7 +211,7 @@ bool MIXTURE::MixtureConstituentRemodelFiberExpl::EvaluateOutputData(
   }
   else if (name == "mixture_constituent_" + std::to_string(Id()) + "_sig")
   {
-    for (int gp = 0; gp < NumGP(); ++gp)
+    for (int gp = 0; gp < num_gp(); ++gp)
     {
       data(gp, 0) = remodel_fiber_[gp].evaluate_current_fiber_cauchy_stress();
     }
@@ -219,7 +219,7 @@ bool MIXTURE::MixtureConstituentRemodelFiberExpl::EvaluateOutputData(
   }
   else if (name == "mixture_constituent_" + std::to_string(Id()) + "_growth_scalar")
   {
-    for (int gp = 0; gp < NumGP(); ++gp)
+    for (int gp = 0; gp < num_gp(); ++gp)
     {
       data(gp, 0) = remodel_fiber_[gp].evaluate_current_growth_scalar();
     }
@@ -227,7 +227,7 @@ bool MIXTURE::MixtureConstituentRemodelFiberExpl::EvaluateOutputData(
   }
   else if (name == "mixture_constituent_" + std::to_string(Id()) + "_lambda_r")
   {
-    for (int gp = 0; gp < NumGP(); ++gp)
+    for (int gp = 0; gp < num_gp(); ++gp)
     {
       data(gp, 0) = remodel_fiber_[gp].evaluate_current_lambdar();
     }
@@ -236,7 +236,7 @@ bool MIXTURE::MixtureConstituentRemodelFiberExpl::EvaluateOutputData(
   return MixtureConstituent::EvaluateOutputData(name, data);
 }
 
-CORE::LINALG::Matrix<6, 1> MIXTURE::MixtureConstituentRemodelFiberExpl::EvaluateCurrentPK2(
+CORE::LINALG::Matrix<6, 1> MIXTURE::MixtureConstituentRemodelFiberExpl::evaluate_current_p_k2(
     int gp, int eleGID) const
 {
   CORE::LINALG::Matrix<6, 1> S_stress(false);
@@ -247,7 +247,7 @@ CORE::LINALG::Matrix<6, 1> MIXTURE::MixtureConstituentRemodelFiberExpl::Evaluate
   return S_stress;
 }
 
-CORE::LINALG::Matrix<6, 6> MIXTURE::MixtureConstituentRemodelFiberExpl::EvaluateCurrentCmat(
+CORE::LINALG::Matrix<6, 6> MIXTURE::MixtureConstituentRemodelFiberExpl::evaluate_current_cmat(
     const int gp, const int eleGID) const
 {
   const double dPK2dlambdafsq =
@@ -274,11 +274,11 @@ void MIXTURE::MixtureConstituentRemodelFiberExpl::Evaluate(const CORE::LINALG::M
 
   CORE::LINALG::Matrix<3, 3> C = EvaluateC(F);
 
-  const double lambda_f = EvaluateLambdaf(C, gp, eleGID);
-  remodel_fiber_[gp].SetState(lambda_f, 1.0);
+  const double lambda_f = evaluate_lambdaf(C, gp, eleGID);
+  remodel_fiber_[gp].set_state(lambda_f, 1.0);
 
-  S_stress.Update(EvaluateCurrentPK2(gp, eleGID));
-  cmat.Update(EvaluateCurrentCmat(gp, eleGID));
+  S_stress.Update(evaluate_current_p_k2(gp, eleGID));
+  cmat.Update(evaluate_current_cmat(gp, eleGID));
 }
 
 void MIXTURE::MixtureConstituentRemodelFiberExpl::EvaluateElasticPart(
@@ -297,12 +297,12 @@ void MIXTURE::MixtureConstituentRemodelFiberExpl::EvaluateElasticPart(
 
   CORE::LINALG::Matrix<3, 3> C = EvaluateC(FM);
 
-  const double lambda_f = EvaluateLambdaf(C, gp, eleGID);
-  const double lambda_ext = EvaluateLambdaExt(iFextin, gp, eleGID);
-  remodel_fiber_[gp].SetState(lambda_f, lambda_ext);
+  const double lambda_f = evaluate_lambdaf(C, gp, eleGID);
+  const double lambda_ext = evaluate_lambda_ext(iFextin, gp, eleGID);
+  remodel_fiber_[gp].set_state(lambda_f, lambda_ext);
 
-  S_stress.Update(EvaluateCurrentPK2(gp, eleGID));
-  cmat.Update(EvaluateCurrentCmat(gp, eleGID));
+  S_stress.Update(evaluate_current_p_k2(gp, eleGID));
+  cmat.Update(evaluate_current_cmat(gp, eleGID));
 }
 
 double MIXTURE::MixtureConstituentRemodelFiberExpl::GetGrowthScalar(int gp) const
@@ -346,13 +346,13 @@ void MIXTURE::MixtureConstituentRemodelFiberExpl::update_homeostatic_values(
   }
 }
 
-double MIXTURE::MixtureConstituentRemodelFiberExpl::EvaluateLambdaf(
+double MIXTURE::MixtureConstituentRemodelFiberExpl::evaluate_lambdaf(
     const CORE::LINALG::Matrix<3, 3>& C, const int gp, const int eleGID) const
 {
   return std::sqrt(C.Dot(anisotropy_extension_.GetStructuralTensor(gp, 0)));
 }
 
-double MIXTURE::MixtureConstituentRemodelFiberExpl::EvaluateLambdaExt(
+double MIXTURE::MixtureConstituentRemodelFiberExpl::evaluate_lambda_ext(
     const CORE::LINALG::Matrix<3, 3>& iFext, const int gp, const int eleGID) const
 {
   return 1.0 /

@@ -188,7 +188,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3   //!< vector to be filled by element
           ) override;
 
-      virtual void PreEvaluate(
+      virtual void pre_evaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly

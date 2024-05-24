@@ -122,7 +122,7 @@ STR::ELEMENTS::ParamsInterface& DRT::ELEMENTS::SoBase::StrParamsInterface()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoBase::ErrorHandling(const double& det_curr, Teuchos::ParameterList& params,
+void DRT::ELEMENTS::SoBase::error_handling(const double& det_curr, Teuchos::ParameterList& params,
     const int line_id, const STR::ELEMENTS::EvalErrorFlag flag)
 {
   // check, if errors are tolerated or should throw a FOUR_C_THROW
@@ -164,7 +164,7 @@ void DRT::ELEMENTS::SoBase::ensure_material_post_setup(Teuchos::ParameterList& p
 void DRT::ELEMENTS::SoBase::MaterialPostSetup(Teuchos::ParameterList& params)
 {
   // This is the minimal implementation. Advanced materials may need extra implementation here.
-  SolidMaterial()->PostSetup(params, Id());
+  SolidMaterial()->post_setup(params, Id());
   material_post_setup_ = true;
 }
 

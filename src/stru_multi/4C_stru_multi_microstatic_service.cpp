@@ -70,7 +70,7 @@ void STRUMULTI::MicroStatic::SetUpHomogenization()
   int indp = 0;
   int indf = 0;
 
-  ndof_ = discret_->DofRowMap()->NumMyElements();
+  ndof_ = discret_->dof_row_map()->NumMyElements();
 
   std::vector<int> pdof(np_);
   std::vector<int> fdof(ndof_ - np_);  // changed this, previously this
@@ -82,12 +82,12 @@ void STRUMULTI::MicroStatic::SetUpHomogenization()
   {
     if ((*dirichtoggle_)[it] == 1.0)
     {
-      pdof[indp] = discret_->DofRowMap()->GID(it);
+      pdof[indp] = discret_->dof_row_map()->GID(it);
       ++indp;
     }
     else
     {
-      fdof[indf] = discret_->DofRowMap()->GID(it);
+      fdof[indf] = discret_->dof_row_map()->GID(it);
       ++indf;
     }
   }
@@ -97,8 +97,8 @@ void STRUMULTI::MicroStatic::SetUpHomogenization()
   fdof_ = Teuchos::rcp(new Epetra_Map(-1, ndof_ - np_, fdof.data(), 0, discret_->Comm()));
 
   // create importer
-  importp_ = Teuchos::rcp(new Epetra_Import(*pdof_, *(discret_->DofRowMap())));
-  importf_ = Teuchos::rcp(new Epetra_Import(*fdof_, *(discret_->DofRowMap())));
+  importp_ = Teuchos::rcp(new Epetra_Import(*pdof_, *(discret_->dof_row_map())));
+  importf_ = Teuchos::rcp(new Epetra_Import(*fdof_, *(discret_->dof_row_map())));
 
   // create vector containing material coordinates of prescribed nodes
   Epetra_Vector Xp_temp(*pdof_);
@@ -174,7 +174,7 @@ void STRUMULTI::MicroStatic::SetUpHomogenization()
     (*(DT(8)))[3 * n + 2] = (*Xp_)[3 * n + 1];
   }
 
-  rhs_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()), 9));
+  rhs_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->dof_row_map()), 9));
 
   for (int i = 0; i < 9; ++i)
   {
@@ -259,11 +259,11 @@ void STRUMULTI::MicroStatic::CalcRefNorms()
   // the chosen tolerances. Simply testing against 0 only works for
   // the displacements, but not for the residual!
 
-  normchardis_ = STR::CalculateVectorNorm(iternorm_, dis_);
+  normchardis_ = STR::calculate_vector_norm(iternorm_, dis_);
   if (normchardis_ < toldisi_) normchardis_ = 1.0;
 
-  double fintnorm = STR::CalculateVectorNorm(iternorm_, fintn_);
-  double freactnorm = STR::CalculateVectorNorm(iternorm_, freactn_);
+  double fintnorm = STR::calculate_vector_norm(iternorm_, fintn_);
+  double freactnorm = STR::calculate_vector_norm(iternorm_, freactn_);
   normcharforce_ = std::max(fintnorm, freactnorm);
   if (normcharforce_ < tolfres_) normcharforce_ = 1.0;
 }

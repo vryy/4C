@@ -74,7 +74,7 @@ void ART::ArtNetExplicitTimeInt::Init(const Teuchos::ParameterList& globaltimepa
   TimInt::Init(globaltimeparams, arteryparams, scatra_disname);
 
   // ensure that degrees of freedom in the discretization have been set
-  if (!discret_->Filled() || !discret_->HaveDofs()) discret_->FillComplete();
+  if (!discret_->Filled() || !discret_->HaveDofs()) discret_->fill_complete();
 
   // -------------------------------------------------------------------
   // Force the reducesd 1d arterial network discretization to run on
@@ -90,7 +90,7 @@ void ART::ArtNetExplicitTimeInt::Init(const Teuchos::ParameterList& globaltimepa
   // vectors and matrices
   //                 local <-> global dof numbering
   // -------------------------------------------------------------------
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   //  const Epetra_Map* dofcolmap  = discret_->DofColMap();
 
@@ -172,7 +172,7 @@ void ART::ArtNetExplicitTimeInt::Init(const Teuchos::ParameterList& globaltimepa
   // ---------------------------------------------------------------------------------------
   Teuchos::ParameterList eleparams;
   discret_->ClearState();
-  discret_->SetState("qanp", qanp_);
+  discret_->set_state("qanp", qanp_);
 
   // loop all elements on this proc (including ghosted ones)
 
@@ -306,7 +306,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
 
     // set vector values needed by elements
     discret_->ClearState();
-    discret_->SetState("qanp", qanp_);
+    discret_->set_state("qanp", qanp_);
 
 
     // call standard loop over all elements
@@ -330,7 +330,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
 
     // set vecotr values needed by elements
     discret_->ClearState();
-    discret_->SetState("qanp", qanp_);
+    discret_->set_state("qanp", qanp_);
 
     eleparams.set("time step size", dta_);
     eleparams.set("Wfnp", Wfnp_);
@@ -358,7 +358,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
 
     // set vecotr values needed by elements
     discret_->ClearState();
-    discret_->SetState("qanp", qanp_);
+    discret_->set_state("qanp", qanp_);
 
     eleparams.set("time step size", dta_);
     eleparams.set("total time", time_);
@@ -423,7 +423,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
 
     // set vecotr values needed by elements
     discret_->ClearState();
-    discret_->SetState("qanp", qanp_);
+    discret_->set_state("qanp", qanp_);
 
     eleparams.set("time step size", dta_);
     eleparams.set("total time", time_);
@@ -472,7 +472,7 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
 
     // set vecotr values needed by elements
     discret_->ClearState();
-    discret_->SetState("qanp", qanp_);
+    discret_->set_state("qanp", qanp_);
 
     eleparams.set("time step size", dta_);
     eleparams.set("time", time_);
@@ -523,7 +523,7 @@ void ART::ArtNetExplicitTimeInt::TimeUpdate()
 void ART::ArtNetExplicitTimeInt::InitSaveState()
 {
   // get the discretizations DOF row map
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // Volumetric Flow rate/Cross-sectional area of this step become most recent
   saved_qanp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
@@ -673,7 +673,7 @@ void ART::ArtNetExplicitTimeInt::Output(
 
     // set the dof vector values
     //    discret_->ClearState();
-    //    discret_->SetState("qanp",qanp_);
+    //    discret_->set_state("qanp",qanp_);
 
     // call the gnuplot writer
     //    artgnu_->Write(params);
@@ -738,7 +738,7 @@ void ART::ArtNetExplicitTimeInt::Output(
 
     // set the dof vector values
     //    discret_->ClearState();
-    //    discret_->SetState("qanp",qanp_);
+    //    discret_->set_state("qanp",qanp_);
 
     // call the gnuplot writer
     //    artgnu_->Write(params);
@@ -767,9 +767,9 @@ void ART::ArtNetExplicitTimeInt::Output(
 
 
 /*----------------------------------------------------------------------*
- | ReadRestart (public)                                     ismail 07/09|
+ | read_restart (public)                                     ismail 07/09|
  -----------------------------------------------------------------------*/
-void ART::ArtNetExplicitTimeInt::ReadRestart(int step, bool coupledTo3D)
+void ART::ArtNetExplicitTimeInt::read_restart(int step, bool coupledTo3D)
 {
   coupledTo3D_ = coupledTo3D;
   IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
@@ -806,11 +806,11 @@ void ART::ArtNetExplicitTimeInt::calc_postprocessing_values()
   // set vecotr values needed by elements
   discret_->ClearState();
   //  std::cout<<"On proc("<<myrank_<<"): "<<"postpro setting qanp"<<std::endl;
-  discret_->SetState("qanp", qanp_);
+  discret_->set_state("qanp", qanp_);
   //  std::cout<<"On proc("<<myrank_<<"): "<<"postpro setting wfnp"<<std::endl;
-  //  discret_->SetState("Wfnp",Wfnp_);
+  //  discret_->set_state("Wfnp",Wfnp_);
   //  std::cout<<"On proc("<<myrank_<<"): "<<"postpro setting wbnp"<<std::endl;
-  //  discret_->SetState("Wbnp",Wbnp_);
+  //  discret_->set_state("Wbnp",Wbnp_);
 
   eleparams.set("time step size", dta_);
   eleparams.set("total time", time_);

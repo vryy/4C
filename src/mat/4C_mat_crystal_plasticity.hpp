@@ -447,7 +447,7 @@ namespace MAT
     );
 
     //! Return whether or not the material requires the deformation gradient for its evaluation
-    bool NeedsDefgrd() override { return true; };
+    bool needs_defgrd() override { return true; };
 
 
     //-----------------------------------------------------------------------------

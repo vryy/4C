@@ -40,7 +40,7 @@ namespace SCATRA
     void Setup() override;
 
     /// read restart data
-    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override
+    void read_restart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override
     {
       FOUR_C_THROW("You should not need this function!");
       return;
@@ -71,7 +71,7 @@ namespace SCATRA
     };
 
     /// update phi within the reinitialization loop
-    void UpdateReinit() override
+    void update_reinit() override
     {
       FOUR_C_THROW("You should not need this function!");
       return;

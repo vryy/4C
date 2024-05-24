@@ -114,7 +114,7 @@ namespace DRT
           ) = 0;
 
       //! finite difference check for debugging purposes
-      void FDCheck(DRT::Element* ele,                 //!< the element we are dealing with
+      void fd_check(DRT::Element* ele,                //!< the element we are dealing with
           CORE::LINALG::SerialDenseMatrix& emat,      //!< element matrix to calculate
           CORE::LINALG::SerialDenseVector& erhs,      //!< element rhs to calculate
           CORE::LINALG::SerialDenseVector& subgrdiff  //!< subgrid-diff.-scaling vector
@@ -260,7 +260,7 @@ namespace DRT
       void set_internal_variables_for_mat_and_rhs() override = 0;
 
       //! get elch diffusion manager
-      Teuchos::RCP<ScaTraEleDiffManagerElch> DiffManager()
+      Teuchos::RCP<ScaTraEleDiffManagerElch> diff_manager()
       {
         return Teuchos::rcp_static_cast<ScaTraEleDiffManagerElch>(my::diffmanager_);
       };

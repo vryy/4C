@@ -122,7 +122,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_initial_ti
   // porosities, we do not fill the diffusion manager again at the element center The solution
   // variable is the initial time derivative. Therefore, we have to correct emat by the initial
   // porosity Attention: this procedure is only valid for a constant porosity in the beginning
-  emat.scale(DiffManager()->GetPhasePoro(0));
+  emat.scale(diff_manager()->GetPhasePoro(0));
 }
 
 /*----------------------------------------------------------------------*
@@ -134,7 +134,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::correct_rhs_fro
 {
   // fac->-fac to change sign of rhs
   if (my::scatraparatimint_->IsIncremental())
-    my::CalcRHSLinMass(erhs, k, 0.0, -fac, 0.0, DiffManager()->GetPhasePoro(0));
+    my::CalcRHSLinMass(erhs, k, 0.0, -fac, 0.0, diff_manager()->GetPhasePoro(0));
   else
     FOUR_C_THROW("Must be incremental!");
 }
@@ -171,7 +171,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateAction(D
 
           if (phase->MaterialType() == CORE::Materials::m_elchphase)
           {
-            DiffManager()->SetPhasePoro(
+            diff_manager()->SetPhasePoro(
                 (static_cast<const MAT::ElchPhase*>(phase.get()))->Epsilon(), iphase);
           }
           else
@@ -184,7 +184,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateAction(D
 
       // process electrode boundary kinetics point condition
       myelch::calc_elch_boundary_kinetics_point(ele, params, discretization, la[0].lm_,
-          elemat1_epetra, elevec1_epetra, DiffManager()->GetPhasePoro(0));
+          elemat1_epetra, elevec1_epetra, diff_manager()->GetPhasePoro(0));
 
       break;
     }
@@ -230,7 +230,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_domai
 
       if (phase->MaterialType() == CORE::Materials::m_elchphase)
       {
-        DiffManager()->SetPhasePoro(
+        diff_manager()->SetPhasePoro(
             (static_cast<const MAT::ElchPhase*>(phase.get()))->Epsilon(), iphase);
       }
       else
@@ -455,7 +455,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_elch_d
     fns *= stoich[k];
 
     // get valence of the single reactant
-    const double valence_k = myelch::DiffManager()->GetValence(k);
+    const double valence_k = myelch::diff_manager()->GetValence(k);
 
     /*----------------------------------------------------------------------*
      |               start loop over integration points                     |
@@ -465,7 +465,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_elch_d
       set_internal_variables_for_mat_and_rhs();
 
       // access input parameter
-      const double frt = VarManager()->FRT();
+      const double frt = var_manager()->FRT();
       if (frt <= 0.0) FOUR_C_THROW("A negative factor frt is not possible by definition");
 
       const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, gpid);
@@ -567,7 +567,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_electr
       set_internal_variables_for_mat_and_rhs();
 
       // access input parameter
-      const double frt = VarManager()->FRT();
+      const double frt = var_manager()->FRT();
       if (frt <= 0.0) FOUR_C_THROW("A negative factor frt is not possible by definition");
 
       // call utility class for element evaluation
@@ -611,25 +611,25 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalculateFlux(
   {
     case INPAR::SCATRA::flux_total:
       // convective flux contribution
-      q.Update(VarManager()->Phinp(k), VarManager()->ConVel(k));
+      q.Update(var_manager()->Phinp(k), var_manager()->ConVel(k));
 
       [[fallthrough]];
     case INPAR::SCATRA::flux_diffusive:
       // diffusive flux contribution
-      q.Update(-DiffManager()->GetIsotropicDiff(k) * DiffManager()->GetPhasePoroTort(0),
-          VarManager()->GradPhi(k), 1.0);
+      q.Update(-diff_manager()->GetIsotropicDiff(k) * diff_manager()->GetPhasePoroTort(0),
+          var_manager()->GradPhi(k), 1.0);
       // flux due to ohmic overpotential
-      q.Update(-DiffManager()->GetTransNum(k) * DiffManager()->InvFVal(k) *
-                   DiffManager()->GetCond() * DiffManager()->GetPhasePoroTort(0),
-          VarManager()->GradPot(), 1.0);
+      q.Update(-diff_manager()->GetTransNum(k) * diff_manager()->InvFVal(k) *
+                   diff_manager()->GetCond() * diff_manager()->GetPhasePoroTort(0),
+          var_manager()->GradPot(), 1.0);
       // flux due to concentration overpotential
-      q.Update(-DiffManager()->GetTransNum(k) * VarManager()->RTFFC() /
-                   DiffManager()->GetValence(k) * DiffManager()->GetCond() *
-                   DiffManager()->GetPhasePoroTort(0) * DiffManager()->GetThermFac() *
+      q.Update(-diff_manager()->GetTransNum(k) * var_manager()->RTFFC() /
+                   diff_manager()->GetValence(k) * diff_manager()->GetCond() *
+                   diff_manager()->GetPhasePoroTort(0) * diff_manager()->GetThermFac() *
                    (diffcondparams_->NewmanConstA() +
-                       (diffcondparams_->NewmanConstB() * DiffManager()->GetTransNum(k))) *
-                   VarManager()->ConIntInv(k),
-          VarManager()->GradPhi(k), 1.0);
+                       (diffcondparams_->NewmanConstB() * diff_manager()->GetTransNum(k))) *
+                   var_manager()->ConIntInv(k),
+          var_manager()->GradPhi(k), 1.0);
       break;
     default:
       FOUR_C_THROW("received illegal flag inside flux evaluation for whole domain");
@@ -661,16 +661,16 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalculateCurren
     case INPAR::SCATRA::flux_total:
     case INPAR::SCATRA::flux_diffusive:
       // ohmic flux contribution
-      q.Update(-DiffManager()->GetCond(), VarManager()->GradPot());
+      q.Update(-diff_manager()->GetCond(), var_manager()->GradPot());
       // diffusion overpotential flux contribution
       for (int k = 0; k < my::numscal_; ++k)
       {
-        q.Update(-VarManager()->RTF() / diffcondparams_->NewmanConstC() * DiffManager()->GetCond() *
-                     DiffManager()->GetThermFac() *
+        q.Update(-var_manager()->RTF() / diffcondparams_->NewmanConstC() *
+                     diff_manager()->GetCond() * diff_manager()->GetThermFac() *
                      (diffcondparams_->NewmanConstA() +
-                         (diffcondparams_->NewmanConstB() * DiffManager()->GetTransNum(k))) *
-                     VarManager()->ConIntInv(k),
-            VarManager()->GradPhi(k), 1.0);
+                         (diffcondparams_->NewmanConstB() * diff_manager()->GetTransNum(k))) *
+                     var_manager()->ConIntInv(k),
+            var_manager()->GradPhi(k), 1.0);
       }
 
       break;
@@ -711,7 +711,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
       const double t =
           my::scatraparatimint_->Time() +
           (1 - my::scatraparatimint_->AlphaF()) * my::scatraparatimint_->Dt();  //-(1-alphaF_)*dta_
-      const double frt = VarManager()->FRT();
+      const double frt = var_manager()->FRT();
 
       // integration points and weights
       // more GP than usual due to (possible) cos/exp fcts in analytical solutions
@@ -754,7 +754,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
         // get global coordinate of integration point
         xint.Multiply(my::xyze_, my::funct_);
 
-        const double D = DiffManager()->GetIsotropicDiff(0);
+        const double D = diff_manager()->GetIsotropicDiff(0);
 
         // compute analytical solution for cation and anion concentrations
         const double A0 = 2.0;
@@ -791,11 +791,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
 
         // compute analytical solution for el. potential
         // const double pot =
-        // ((DiffManager()->GetIsotropicDiff(1)-DiffManager()->GetIsotropicDiff(0))/d) *
+        // ((diff_manager()->GetIsotropicDiff(1)-diff_manager()->GetIsotropicDiff(0))/d) *
         // log(c(0)/c_0_0_0_t);
         const double pot = -1 / frt *
                            (diffcondparams_->NewmanConstA() +
-                               (diffcondparams_->NewmanConstB() * DiffManager()->GetTransNum(0))) /
+                               (diffcondparams_->NewmanConstB() * diff_manager()->GetTransNum(0))) /
                            diffcondparams_->NewmanConstC() * log(c(0) / c_0_0_0_t);
 
         // compute differences between analytical solution and numerical solution
@@ -825,7 +825,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
     probdim>::set_internal_variables_for_mat_and_rhs()
 {
   // set internal variables
-  VarManager()->set_internal_variables_elch_diff_cond(
+  var_manager()->set_internal_variables_elch_diff_cond(
       my::funct_, my::derxy_, my::ephinp_, my::ephin_, my::econvelnp_, my::ehist_);
 }
 

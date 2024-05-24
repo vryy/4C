@@ -63,12 +63,12 @@ namespace GEOMETRYPAIR
      * @param element_data_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
      */
-    void PreEvaluate(const ElementData<line, scalar_type>& element_data_line,
+    void pre_evaluate(const ElementData<line, scalar_type>& element_data_line,
         const ElementData<volume, scalar_type>& element_data_volume,
         std::vector<LineSegment<scalar_type>>& segments) const override;
 
     /**
-     * \brief Check if a Gauss point projected valid for this pair in PreEvaluate.
+     * \brief Check if a Gauss point projected valid for this pair in pre_evaluate.
      *
      * If so, all Gauss points have to project valid (in the tracker, since some can be valid on
      * other pairs). If not all project, the beam pokes out of the volumes and in this method

@@ -45,7 +45,7 @@ namespace AIRWAY
     RedAirwayResultTest(RedAirwayImplicitTimeInt& red_airways);
 
 
-    void TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_node(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
     /*!
       Element test routine, our version of element value tests

@@ -70,7 +70,7 @@ namespace SSI
     //!
     //! \param scatra    underlying scatra problem of the SSI problem
     //! \param disp      displacement field to set
-    virtual void SetMeshDisp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
+    virtual void set_mesh_disp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<const Epetra_Vector> disp) = 0;
 
     //! \brief set structure velocity fields on other field
@@ -78,7 +78,7 @@ namespace SSI
     //! \param scatra    underlying scatra problem of the SSI problem
     //! \param convvel   convective velocity field to set
     //! \param vel       velocity field to set
-    virtual void SetVelocityFields(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
+    virtual void set_velocity_fields(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<const Epetra_Vector> convvel, Teuchos::RCP<const Epetra_Vector> vel) = 0;
 
     //! \brief set scatra solution on other field
@@ -118,10 +118,10 @@ namespace SSI
     void set_mechanical_stress_state(DRT::Discretization& scatradis,
         Teuchos::RCP<const Epetra_Vector> stress_statetemp, unsigned nds) override;
 
-    void SetMeshDisp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
+    void set_mesh_disp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<const Epetra_Vector> disp) override;
 
-    void SetVelocityFields(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
+    void set_velocity_fields(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<const Epetra_Vector> convvel, Teuchos::RCP<const Epetra_Vector> vel) override;
 
     void SetScalarField(
@@ -142,29 +142,29 @@ namespace SSI
 
    protected:
     //! returns true if Setup() was called and is still valid
-    bool IsSetup() { return issetup_; };
+    bool is_setup() { return issetup_; };
 
     //! returns true if Init(..) was called and is still valid
-    bool IsInit() { return isinit_; };
+    bool is_init() { return isinit_; };
 
     //! returns true if class was setup and setup is still valid
     void CheckIsSetup()
     {
-      if (not IsSetup()) FOUR_C_THROW("Setup() was not called.");
+      if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
     };
 
     //! returns true if class was init and init is still valid
-    void CheckIsInit()
+    void check_is_init()
     {
-      if (not IsInit()) FOUR_C_THROW("Init(...) was not called.");
+      if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
     };
 
    public:
     //! set flag true after setup or false if setup became invalid
-    void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; };
+    void set_is_setup(bool trueorfalse) { issetup_ = trueorfalse; };
 
     //! set flag true after init or false if init became invalid
-    void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
+    void set_is_init(bool trueorfalse) { isinit_ = trueorfalse; };
   };
 
   //! solid-scatra coupling for matching boundary meshes
@@ -190,10 +190,10 @@ namespace SSI
       FOUR_C_THROW("only implemented for 'SSICouplingMatchingVolume'");
     }
 
-    void SetMeshDisp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
+    void set_mesh_disp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<const Epetra_Vector> disp) override;
 
-    void SetVelocityFields(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
+    void set_velocity_fields(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<const Epetra_Vector> convvel, Teuchos::RCP<const Epetra_Vector> vel) override;
 
     void SetScalarField(
@@ -233,29 +233,29 @@ namespace SSI
 
    protected:
     //! returns true if Setup() was called and is still valid
-    bool IsSetup() { return issetup_; };
+    bool is_setup() { return issetup_; };
 
     //! returns true if Init(..) was called and is still valid
-    bool IsInit() { return isinit_; };
+    bool is_init() { return isinit_; };
 
     //! returns true if class was setup and setup is still valid
     void CheckIsSetup()
     {
-      if (not IsSetup()) FOUR_C_THROW("Setup() was not called.");
+      if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
     };
 
     //! returns true if class was init and init is still valid
-    void CheckIsInit()
+    void check_is_init()
     {
-      if (not IsInit()) FOUR_C_THROW("Init(...) was not called.");
+      if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
     };
 
    public:
     //! set flag true after setup or false if setup became invalid
-    void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; };
+    void set_is_setup(bool trueorfalse) { issetup_ = trueorfalse; };
 
     //! set flag true after init or false if init became invalid
-    void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
+    void set_is_init(bool trueorfalse) { isinit_ = trueorfalse; };
   };
 
   //! solid-scatra coupling for non-matching boundary meshes
@@ -278,10 +278,10 @@ namespace SSI
       FOUR_C_THROW("only implemented for 'SSICouplingMatchingVolume'");
     }
 
-    void SetMeshDisp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
+    void set_mesh_disp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<const Epetra_Vector> disp) override;
 
-    void SetVelocityFields(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
+    void set_velocity_fields(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<const Epetra_Vector> convvel, Teuchos::RCP<const Epetra_Vector> vel) override;
 
     void SetScalarField(
@@ -309,29 +309,29 @@ namespace SSI
 
    protected:
     //! returns true if Setup() was called and is still valid
-    bool IsSetup() { return issetup_; };
+    bool is_setup() { return issetup_; };
 
     //! returns true if Init(..) was called and is still valid
-    bool IsInit() { return isinit_; };
+    bool is_init() { return isinit_; };
 
     //! returns true if class was setup and setup is still valid
     void CheckIsSetup()
     {
-      if (not IsSetup()) FOUR_C_THROW("Setup() was not called.");
+      if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
     };
 
     //! returns true if class was init and init is still valid
-    void CheckIsInit()
+    void check_is_init()
     {
-      if (not IsInit()) FOUR_C_THROW("Init(...) was not called.");
+      if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
     };
 
    public:
     //! set flag true after setup or false if setup became invalid
-    void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; };
+    void set_is_setup(bool trueorfalse) { issetup_ = trueorfalse; };
 
     //! set flag true after init or false if init became invalid
-    void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
+    void set_is_init(bool trueorfalse) { isinit_ = trueorfalse; };
   };
 
   //! solid-scatra coupling for matching volume and boundary meshes
@@ -354,10 +354,10 @@ namespace SSI
       FOUR_C_THROW("only implemented for 'SSICouplingMatchingVolume'");
     }
 
-    void SetMeshDisp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
+    void set_mesh_disp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<const Epetra_Vector> disp) override;
 
-    void SetVelocityFields(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
+    void set_velocity_fields(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<const Epetra_Vector> convvel, Teuchos::RCP<const Epetra_Vector> vel) override;
 
     void SetScalarField(
@@ -378,29 +378,29 @@ namespace SSI
 
    protected:
     //! returns true if Setup() was called and is still valid
-    bool IsSetup() { return issetup_; };
+    bool is_setup() { return issetup_; };
 
     //! returns true if Init(..) was called and is still valid
-    bool IsInit() { return isinit_; };
+    bool is_init() { return isinit_; };
 
     //! returns true if class was setup and setup is still valid
     void CheckIsSetup()
     {
-      if (not IsSetup()) FOUR_C_THROW("Setup() was not called.");
+      if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
     };
 
     //! returns true if class was init and init is still valid
-    void CheckIsInit()
+    void check_is_init()
     {
-      if (not IsInit()) FOUR_C_THROW("Init(...) was not called.");
+      if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
     };
 
    public:
     //! set flag true after setup or false if setup became invalid
-    void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; };
+    void set_is_setup(bool trueorfalse) { issetup_ = trueorfalse; };
 
     //! set flag true after init or false if init became invalid
-    void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
+    void set_is_init(bool trueorfalse) { isinit_ = trueorfalse; };
   };
 }  // namespace SSI
 

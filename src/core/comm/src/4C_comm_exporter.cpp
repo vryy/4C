@@ -36,10 +36,10 @@ CORE::COMM::Exporter::Exporter(
       myrank_(comm.MyPID()),
       numproc_(comm.NumProc())
 {
-  ConstructExporter();
+  construct_exporter();
 }
 
-void CORE::COMM::Exporter::ISend(const int frompid, const int topid, const char* data,
+void CORE::COMM::Exporter::i_send(const int frompid, const int topid, const char* data,
     const int dsize, const int tag, MPI_Request& request) const
 {
   if (MyPID() != frompid) return;
@@ -48,7 +48,7 @@ void CORE::COMM::Exporter::ISend(const int frompid, const int topid, const char*
   MPI_Isend((void*)data, dsize, MPI_CHAR, topid, tag, comm->Comm(), &request);
 }
 
-void CORE::COMM::Exporter::ISend(const int frompid, const int topid, const int* data,
+void CORE::COMM::Exporter::i_send(const int frompid, const int topid, const int* data,
     const int dsize, const int tag, MPI_Request& request) const
 {
   if (MyPID() != frompid) return;
@@ -57,7 +57,7 @@ void CORE::COMM::Exporter::ISend(const int frompid, const int topid, const int* 
   MPI_Isend((void*)data, dsize, MPI_INT, topid, tag, comm->Comm(), &request);
 }
 
-void CORE::COMM::Exporter::ISend(const int frompid, const int topid, const double* data,
+void CORE::COMM::Exporter::i_send(const int frompid, const int topid, const double* data,
     const int dsize, const int tag, MPI_Request& request) const
 {
   if (MyPID() != frompid) return;
@@ -186,16 +186,16 @@ void CORE::COMM::Exporter::Broadcast(
   MPI_Bcast((void*)data.data(), length, MPI_CHAR, frompid, comm->Comm());
 }
 
-void CORE::COMM::Exporter::ConstructExporter()
+void CORE::COMM::Exporter::construct_exporter()
 {
   if (SourceMap().SameAs(TargetMap())) return;
 
   // allocate a sendplan array and init to zero
-  // SendPlan():
-  // SendPlan()(lid,proc)    = 1 for data with local id lid needs sending to proc
-  // SendPlan()(lid,proc)    = 0 otherwise
-  // SendPlan()(lid,MyPID()) = 0 always! (I never send to myself)
-  SendPlan().resize(NumProc());
+  // send_plan():
+  // send_plan()(lid,proc)    = 1 for data with local id lid needs sending to proc
+  // send_plan()(lid,proc)    = 0 otherwise
+  // send_plan()(lid,MyPID()) = 0 always! (I never send to myself)
+  send_plan().resize(NumProc());
 
   // To build these plans, everybody has to communicate what he has and wants:
   // bundle this info to save on communication:
@@ -223,7 +223,7 @@ void CORE::COMM::Exporter::ConstructExporter()
     // const int* have = recvbuff.data();            // this is what proc has
     const int* want = &recvbuff[recvsizes[0]];  // this is what proc needs
 
-    // Loop what proc wants and what I have (SendPlan)
+    // Loop what proc wants and what I have (send_plan)
     if (proc != MyPID())
     {
       for (int i = 0; i < recvsizes[1]; ++i)
@@ -232,7 +232,7 @@ void CORE::COMM::Exporter::ConstructExporter()
         if (SourceMap().MyGID(gid))
         {
           const int lid = SourceMap().LID(gid);
-          SendPlan()[proc].insert(lid);
+          send_plan()[proc].insert(lid);
         }
       }
     }
@@ -240,9 +240,9 @@ void CORE::COMM::Exporter::ConstructExporter()
   }  // for (int proc=0; proc<NumProc(); ++proc)
 }
 
-void CORE::COMM::Exporter::GenericExport(ExporterHelper& helper)
+void CORE::COMM::Exporter::generic_export(ExporterHelper& helper)
 {
-  if (SendPlan().size() == 0) return;
+  if (send_plan().size() == 0) return;
   // if (SourceMap().SameAs(TargetMap())) return;
 
   helper.PreExportTest(this);
@@ -263,11 +263,11 @@ void CORE::COMM::Exporter::GenericExport(ExporterHelper& helper)
     // gather all objects to be send
     CORE::COMM::PackBuffer sendblock;
     std::vector<int> sendgid;
-    sendgid.reserve(SendPlan()[tproc].size());
+    sendgid.reserve(send_plan()[tproc].size());
 
     // count
 
-    for (int lid : SendPlan()[tproc])
+    for (int lid : send_plan()[tproc])
     {
       const int gid = SourceMap().GID(lid);
       helper.PackObject(gid, sendblock);
@@ -277,7 +277,7 @@ void CORE::COMM::Exporter::GenericExport(ExporterHelper& helper)
 
     sendblock.StartPacking();
 
-    for (int lid : SendPlan()[tproc])
+    for (int lid : send_plan()[tproc])
     {
       const int gid = SourceMap().GID(lid);
       if (helper.PackObject(gid, sendblock)) sendgid.push_back(gid);
@@ -289,14 +289,14 @@ void CORE::COMM::Exporter::GenericExport(ExporterHelper& helper)
     snmessages[1] = sendgid.size();
 
     MPI_Request sizerequest;
-    ISend(MyPID(), tproc, snmessages.data(), 2, 1, sizerequest);
+    i_send(MyPID(), tproc, snmessages.data(), 2, 1, sizerequest);
 
     // do the sending of the objects
     MPI_Request sendrequest;
-    ISend(MyPID(), tproc, sendblock().data(), sendblock().size(), 2, sendrequest);
+    i_send(MyPID(), tproc, sendblock().data(), sendblock().size(), 2, sendrequest);
 
     MPI_Request sendgidrequest;
-    ISend(MyPID(), tproc, sendgid.data(), sendgid.size(), 3, sendgidrequest);
+    i_send(MyPID(), tproc, sendgid.data(), sendgid.size(), 3, sendgidrequest);
 
     //---------------------------------------- do the receiving from sproc
     // receive how many messages I will receive from sproc
@@ -344,20 +344,20 @@ void CORE::COMM::Exporter::GenericExport(ExporterHelper& helper)
 void CORE::COMM::Exporter::Export(std::map<int, int>& data)
 {
   PODExporterHelper<int> helper(data);
-  GenericExport(helper);
+  generic_export(helper);
 }
 
 void CORE::COMM::Exporter::Export(std::map<int, double>& data)
 {
   PODExporterHelper<double> helper(data);
-  GenericExport(helper);
+  generic_export(helper);
 }
 
 void CORE::COMM::Exporter::Export(
     std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>& data)
 {
   AnyObjectExporterHelper<CORE::LINALG::SerialDenseMatrix> helper(data);
-  GenericExport(helper);
+  generic_export(helper);
 }
 
 FOUR_C_NAMESPACE_CLOSE

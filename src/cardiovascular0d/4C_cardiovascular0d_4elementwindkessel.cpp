@@ -51,7 +51,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Evaluate(Teuchos::ParameterList&
     Teuchos::RCP<Epetra_Vector> sysvec2, Teuchos::RCP<Epetra_Vector> sysvec3,
     const Teuchos::RCP<Epetra_Vector> sysvec4, Teuchos::RCP<Epetra_Vector> sysvec5)
 {
-  if (!actdisc_->Filled()) FOUR_C_THROW("FillComplete() was not called");
+  if (!actdisc_->Filled()) FOUR_C_THROW("fill_complete() was not called");
   if (!actdisc_->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   params.set("action", "calc_struct_volconstrstiff");
@@ -255,7 +255,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Evaluate(Teuchos::ParameterList&
     // offdiagonal stiffness block (0,1 block)
     EvaluateDStructDp(params, sysmat3);
   }
-}  // end of EvaluateCondition
+}  // end of evaluate_condition
 
 
 
@@ -264,7 +264,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Evaluate(Teuchos::ParameterList&
 void UTILS::Cardiovascular0D4ElementWindkessel::Initialize(Teuchos::ParameterList& params,
     Teuchos::RCP<Epetra_Vector> sysvec1, Teuchos::RCP<Epetra_Vector> sysvec2)
 {
-  if (!(actdisc_->Filled())) FOUR_C_THROW("FillComplete() was not called");
+  if (!(actdisc_->Filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!actdisc_->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
   // get the current time
   // const double time = params.get("total time",-1.0);

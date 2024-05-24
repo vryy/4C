@@ -186,9 +186,9 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3   //!< vector to be filled by element
           ) override;
 
-      // PreEvaluate undertakes the task to calculate coupling term of matrix
+      // pre_evaluate undertakes the task to calculate coupling term of matrix
       //! evaluation
-      void PreEvaluate(
+      void pre_evaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
@@ -332,7 +332,7 @@ namespace DRT
       //@}
 
       //! calculate nonlinear B-operator (6x24)
-      void CalculateBop(CORE::LINALG::Matrix<numstr_, numdofperelement_>* bop,
+      void calculate_bop(CORE::LINALG::Matrix<numstr_, numdofperelement_>* bop,
           CORE::LINALG::Matrix<nsd_, nsd_>* defgrd, CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ);
 
       //! calculates nonlinear B-operator in vector notation (1x24)
@@ -340,7 +340,7 @@ namespace DRT
           CORE::LINALG::Matrix<nsd_, nsd_>& defgrd, CORE::LINALG::Matrix<nsd_, nen_>& N_XYZ);
 
       //! calculate linear B-operator
-      void CalculateBoplin(CORE::LINALG::Matrix<numstr_, numdofperelement_>* boplin,
+      void calculate_boplin(CORE::LINALG::Matrix<numstr_, numdofperelement_>* boplin,
           CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ);
 
       //! push forward of material stresses to the current, spatial configuration

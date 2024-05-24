@@ -171,7 +171,7 @@ namespace DRT
           ) override;
 
       //! calculate nonlinear B-operator (potentially with ANS modification)
-      void CalculateBop(CORE::LINALG::Matrix<numstr_, numdofperelement_>* bop,
+      void calculate_bop(CORE::LINALG::Matrix<numstr_, numdofperelement_>* bop,
           const CORE::LINALG::Matrix<nsd_, nsd_>* defgrd,
           const CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ, const int gp) override;
 

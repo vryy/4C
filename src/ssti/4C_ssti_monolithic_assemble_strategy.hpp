@@ -214,7 +214,7 @@ namespace SSTI
     std::vector<int> BlockPositionThermo() const { return block_position_thermo_; };
 
     //! position of structure block in system matrix
-    int PositionStructure() const { return position_structure_; };
+    int position_structure() const { return position_structure_; };
 
    private:
     //! position of scatra blocks in system matrix

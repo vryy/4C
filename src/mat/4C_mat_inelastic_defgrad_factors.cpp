@@ -41,7 +41,7 @@ MAT::PAR::InelasticDefgradScalar::InelasticDefgradScalar(
   // safety checks
   // in case not all scatra dofs are transported scalars, the last scatra dof is a potential and can
   // not be treated as a concentration but it is treated like that in so3_scatra_evaluate.cpp in the
-  // PreEvaluate method!
+  // pre_evaluate method!
   if (scalar1_ != 1) FOUR_C_THROW("At the moment it is only possible that SCALAR1 induces growth");
   if (matdata->Get<double>("SCALAR1_RefConc") < 0.0)
     FOUR_C_THROW("The reference concentration of SCALAR1 can't be negative");
@@ -312,7 +312,7 @@ MAT::InelasticDefgradScalar::InelasticDefgradScalar(CORE::MAT::PAR::Parameter* p
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradScalar::PreEvaluate(Teuchos::ParameterList& params, const int gp)
+void MAT::InelasticDefgradScalar::pre_evaluate(Teuchos::ParameterList& params, const int gp)
 {
   SetGP(gp);
 
@@ -970,7 +970,7 @@ MAT::InelasticDefgradLinTempIso::InelasticDefgradLinTempIso(CORE::MAT::PAR::Para
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradLinTempIso::PreEvaluate(Teuchos::ParameterList& params, int gp)
+void MAT::InelasticDefgradLinTempIso::pre_evaluate(Teuchos::ParameterList& params, int gp)
 {
   // get Gauss point number
   SetGP(gp);
@@ -988,7 +988,7 @@ void MAT::InelasticDefgradLinTempIso::evaluate_inverse_inelastic_def_grad(
   const double tempgrowthfac = Parameter()->GetTempGrowthFac();
   const double reftemp = Parameter()->RefTemp();
 
-  const double growthfactor = 1.0 + tempgrowthfac * (GetTemperatureGP() - reftemp);
+  const double growthfactor = 1.0 + tempgrowthfac * (get_temperature_gp() - reftemp);
   if (growthfactor <= 0.0) FOUR_C_THROW("Determinante of growth must not become negative");
   const double isoinelasticdefo = std::pow(growthfactor, (1.0 / 3.0));
 
@@ -1005,7 +1005,7 @@ void MAT::InelasticDefgradLinTempIso::evaluate_inelastic_def_grad_derivative(
   const double tempgrowthfac = Parameter()->GetTempGrowthFac();
   const double reftemp = Parameter()->RefTemp();
 
-  const double growthfactor = 1.0 + tempgrowthfac * (GetTemperatureGP() - reftemp);
+  const double growthfactor = 1.0 + tempgrowthfac * (get_temperature_gp() - reftemp);
   const double scalefac = tempgrowthfac / 3.0 * std::pow(growthfactor, -2.0 / 3.0);
 
   // prepare identity tensor as 9x1 vector
@@ -1040,7 +1040,7 @@ void MAT::InelasticDefgradLinTempIso::EvaluateODStiffMat(
   const double tempgrowthfac = Parameter()->GetTempGrowthFac();
   const double reftemp = Parameter()->RefTemp();
 
-  const double growthfactor = 1.0 + tempgrowthfac * (GetTemperatureGP() - reftemp);
+  const double growthfactor = 1.0 + tempgrowthfac * (get_temperature_gp() - reftemp);
   if (growthfactor <= 0.0) FOUR_C_THROW("Determinante of growth must not become negative");
 
   const double scalefac = -tempgrowthfac / (3.0 * std::pow(growthfactor, 4.0 / 3.0));
@@ -1107,7 +1107,7 @@ MAT::InelasticDefgradNoGrowth::InelasticDefgradNoGrowth(CORE::MAT::PAR::Paramete
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradNoGrowth::PreEvaluate(Teuchos::ParameterList& params, int gp) {}
+void MAT::InelasticDefgradNoGrowth::pre_evaluate(Teuchos::ParameterList& params, int gp) {}
 
 
 /*--------------------------------------------------------------------*
@@ -1137,7 +1137,7 @@ MAT::InelasticDefgradTimeFunct::InelasticDefgradTimeFunct(CORE::MAT::PAR::Parame
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradTimeFunct::PreEvaluate(Teuchos::ParameterList& params, int gp)
+void MAT::InelasticDefgradTimeFunct::pre_evaluate(Teuchos::ParameterList& params, int gp)
 {
   // evaluate function value for current time step.
   auto& funct = GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(

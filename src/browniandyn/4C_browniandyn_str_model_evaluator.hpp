@@ -58,25 +58,25 @@ namespace STR
       INPAR::STR::ModelType Type() const override { return INPAR::STR::model_browniandyn; }
 
       //! derived
-      bool EvaluateForce() override;
+      bool evaluate_force() override;
 
       //! derived
-      bool EvaluateStiff() override;
+      bool evaluate_stiff() override;
 
       //! derived
-      bool EvaluateForceStiff() override;
+      bool evaluate_force_stiff() override;
 
       //! derived
-      void PreEvaluate() override { return; };
+      void pre_evaluate() override { return; };
 
       //! derived
-      void PostEvaluate() override{/* currently unused */};
+      void post_evaluate() override{/* currently unused */};
 
       //! derived
-      bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
+      bool assemble_force(Epetra_Vector& f, const double& timefac_np) const override;
 
       //! derived
-      bool AssembleJacobian(
+      bool assemble_jacobian(
           CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
 
       //! derived
@@ -84,7 +84,7 @@ namespace STR
           IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! derived
-      void ReadRestart(IO::DiscretizationReader& ioreader) override;
+      void read_restart(IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
       void Predict(const INPAR::STR::PredEnum& pred_type) override { return; };
@@ -143,10 +143,10 @@ namespace STR
 
      private:
       //! apply brownian (stochastic and damping forces)
-      bool ApplyForceBrownian();
+      bool apply_force_brownian();
 
       //! apply brownian specific neumann conditions
-      bool ApplyForceExternal();
+      bool apply_force_external();
 
       //! apply brownian (stochastic and damping forces)
       bool apply_force_stiff_brownian();
@@ -159,11 +159,11 @@ namespace STR
           Teuchos::RCP<CORE::LINALG::SparseOperator> eval_mat);
 
       //! evaluate brownian (stochastic and damping forces)
-      void EvaluateBrownian(Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
+      void evaluate_brownian(Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
           Teuchos::RCP<Epetra_Vector>* eval_vec);
 
       //! evaluate brownian (stochastic and damping forces)
-      void EvaluateBrownian(Teuchos::ParameterList& p,
+      void evaluate_brownian(Teuchos::ParameterList& p,
           Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
           Teuchos::RCP<Epetra_Vector>* eval_vec);
 

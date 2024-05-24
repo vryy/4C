@@ -90,7 +90,7 @@ namespace CORE::GEO
       /*!
       \brief Split a concave 4 noded facet into a 2 tri
       */
-      void Split4nodeFacet(std::vector<Point *> &poly, bool callFromSplitAnyFacet = false);
+      void split4node_facet(std::vector<Point *> &poly, bool callFromSplitAnyFacet = false);
 
       /*!
       \brief Split a convex facet or a facet with only one concave point into 1 Tri and few Quad
@@ -101,7 +101,7 @@ namespace CORE::GEO
       /*!
       \brief A concave facet which has more than 2 concavity points are split into appropriate cells
       */
-      void SplitGeneralFacet(std::vector<int> ptConcavity);
+      void split_general_facet(std::vector<int> ptConcavity);
 
       /*!
       \brief check whether any two adjacent polygonal points are concave
@@ -109,7 +109,7 @@ namespace CORE::GEO
       bool has_two_continuous_concave_pts(std::vector<int> ptConcavity);
 
       //! Restores last ear that was deleted during triangulation
-      void RestoreLastEar(int ear_head_index, std::vector<int> &ptConcavity);
+      void restore_last_ear(int ear_head_index, std::vector<int> &ptConcavity);
 
       //! Goes clockwise from the the only no on-line point on the triangle and generates thin
       //! triangles
@@ -117,7 +117,7 @@ namespace CORE::GEO
 
       //! Find second best ear, from the ones we discarded during the first check on the first round
       //! of earclipping
-      unsigned int FindSecondBestEar(
+      unsigned int find_second_best_ear(
           std::vector<std::pair<std::vector<Point *>, unsigned int>> &ears,
           const std::vector<int> &reflex);
 

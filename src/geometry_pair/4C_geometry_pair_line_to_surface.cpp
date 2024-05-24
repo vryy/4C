@@ -324,14 +324,14 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::get_fa
  *
  */
 template <typename scalar_type, typename line, typename surface>
-void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surface>::PreEvaluate(
+void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surface>::pre_evaluate(
     const ElementData<line, scalar_type>& element_data_line,
     const ElementData<surface, scalar_type>& element_data_surface,
     std::vector<LineSegment<scalar_type>>& segments) const
 {
-  // Call PreEvaluate on the double pair.
+  // Call pre_evaluate on the double pair.
   std::vector<LineSegment<double>> segments_double;
-  geometry_pair_double_->PreEvaluate(ElementDataToDouble<line>::ToDouble(element_data_line),
+  geometry_pair_double_->pre_evaluate(ElementDataToDouble<line>::ToDouble(element_data_line),
       ElementDataToDouble<surface>::ToDouble(element_data_surface), segments_double);
 
   // Convert the created double segments to a segment of scalar type.

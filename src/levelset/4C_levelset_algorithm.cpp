@@ -97,7 +97,7 @@ void SCATRA::LevelSetAlgorithm::Setup()
   // get a vector layout from the discretization to construct matching
   // vectors and matrices: local <-> global dof numbering
   // -------------------------------------------------------------------
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // -------------------------------------------------------------------
   //         initialize reinitialization
@@ -255,7 +255,7 @@ void SCATRA::LevelSetAlgorithm::get_initial_volume_of_minus_domain(
 void SCATRA::LevelSetAlgorithm::TimeLoop()
 {
   // safety check
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
   // provide information about initial field (do not do for restarts!)
@@ -273,7 +273,7 @@ void SCATRA::LevelSetAlgorithm::TimeLoop()
     // -------------------------------------------------------------------
     // prepare time step
     // -------------------------------------------------------------------
-    PrepareTimeStep();
+    prepare_time_step();
 
     // -------------------------------------------------------------------
     //                  solve level-set equation
@@ -311,10 +311,10 @@ void SCATRA::LevelSetAlgorithm::TimeLoop()
 /*----------------------------------------------------------------------*
  | setup the variables to do a new time step            rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::PrepareTimeStep()
+void SCATRA::LevelSetAlgorithm::prepare_time_step()
 {
   // prepare basic scalar transport solver
-  ScaTraTimIntImpl::PrepareTimeStep();
+  ScaTraTimIntImpl::prepare_time_step();
 
   return;
 }
@@ -331,7 +331,7 @@ void SCATRA::LevelSetAlgorithm::Solve()
   if (solvtype_ == INPAR::SCATRA::solvertype_nonlinear)
     NonlinearSolve();
   else
-    LinearSolve();
+    linear_solve();
 
   return;
 }
@@ -357,7 +357,7 @@ void SCATRA::LevelSetAlgorithm::Reinitialization()
       // potentially required for reinitialization via signed distance to interface
       std::map<int, CORE::GEO::BoundaryIntCells> zerolevelset;
       zerolevelset.clear();
-      CaptureInterface(zerolevelset);
+      capture_interface(zerolevelset);
 
       // -----------------------------------------------------------------
       //                    reinitialize level-set
@@ -368,19 +368,19 @@ void SCATRA::LevelSetAlgorithm::Reinitialization()
         case INPAR::SCATRA::reinitaction_signeddistancefunction:
         {
           // reinitialization via signed distance to interface
-          ReinitGeo(zerolevelset);
+          reinit_geo(zerolevelset);
           break;
         }
         case INPAR::SCATRA::reinitaction_sussman:
         {
           // reinitialization via solving equation to steady state
-          ReinitEq();
+          reinit_eq();
           break;
         }
         case INPAR::SCATRA::reinitaction_ellipticeq:
         {
           // reinitialization via elliptic equation
-          ReinitElliptic(zerolevelset);
+          reinit_elliptic(zerolevelset);
           break;
         }
         default:
@@ -395,7 +395,7 @@ void SCATRA::LevelSetAlgorithm::Reinitialization()
       // -----------------------------------------------------------------
       // since the reinitialization may shift the interface,
       // this method allows for correcting the volume
-      if (reinitvolcorrection_) CorrectVolume();
+      if (reinitvolcorrection_) correct_volume();
     }
   }
 
@@ -423,7 +423,7 @@ void SCATRA::LevelSetAlgorithm::check_and_write_output_and_restart()
     if (step_ == upres_) output_->WriteElementData(true);
 
     // write state vectors
-    OutputState();
+    output_state();
 
     // write output to Gmsh postprocessing files
     if (outputgmsh_) OutputToGmsh(step_, time_);
@@ -445,7 +445,7 @@ void SCATRA::LevelSetAlgorithm::output_of_level_set_specific_values()
   // capture interface, evalute mass conservation, write to file
   std::map<int, CORE::GEO::BoundaryIntCells> zerolevelset;
   zerolevelset.clear();
-  CaptureInterface(zerolevelset, true);
+  capture_interface(zerolevelset, true);
 }
 
 /*----------------------------------------------------------------------*

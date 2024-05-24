@@ -164,7 +164,7 @@ namespace MAT
 
     /*!
      * This method extracts the Gauss-point fibers written by the elements into the ParameterList
-     * and stores them internally. This method should be called during the PostSetup. This method
+     * and stores them internally. This method should be called during the post_setup. This method
      * will only check for Gauss-point fibers if the initialization mode is
      * #INIT_MODE_NODAL_FIBERS.
      *
@@ -229,7 +229,7 @@ namespace MAT
     void register_anisotropy_extension(BaseAnisotropyExtension& extension);
 
    private:
-    void InsertFibers(std::vector<CORE::LINALG::Matrix<3, 1>> fiber);
+    void insert_fibers(std::vector<CORE::LINALG::Matrix<3, 1>> fiber);
     /// Number of Gauss points
     unsigned numgp_ = 0;
 

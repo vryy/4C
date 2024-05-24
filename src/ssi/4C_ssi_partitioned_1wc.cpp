@@ -44,7 +44,7 @@ void SSI::SSIPart1WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIPart1WC::DoStructStep()
+void SSI::SSIPart1WC::do_struct_step()
 {
   if (Comm().MyPID() == 0)
   {
@@ -55,7 +55,7 @@ void SSI::SSIPart1WC::DoStructStep()
   StructureField()->Solve();
   // calculate stresses, strains, energies
   constexpr bool force_prepare = false;
-  StructureField()->PrepareOutput(force_prepare);
+  StructureField()->prepare_output(force_prepare);
   // update all single field solvers
   StructureField()->Update();
   // write output to files
@@ -97,7 +97,7 @@ void SSI::SSIPart1WC::DoScatraStep()
         Teuchos::RCP<Epetra_MultiVector> phinptemp = reader->ReadVector("phinp");
 
         // replace old scatra map with new map since ssi map has more dofs
-        int err = phinptemp->ReplaceMap(*ScaTraField()->DofRowMap());
+        int err = phinptemp->ReplaceMap(*ScaTraField()->dof_row_map());
         if (err) FOUR_C_THROW("Replacing old scatra map with new scatra map in ssi failed!");
 
         // update phinp
@@ -113,7 +113,7 @@ void SSI::SSIPart1WC::DoScatraStep()
         reader->ReadVector(phinptemp, "phinp");
 
         // replace old scatra map with new map since ssi map has more dofs
-        int err = phinptemp->ReplaceMap(*ScaTraField()->DofRowMap());
+        int err = phinptemp->ReplaceMap(*ScaTraField()->dof_row_map());
         if (err) FOUR_C_THROW("Replacing old scatra map with new scatra map in ssi failed!");
 
         // update phinp
@@ -151,17 +151,17 @@ void SSI::SSIPart1WC::DoScatraStep()
 /*----------------------------------------------------------------------*/
 // prepare time step
 /*----------------------------------------------------------------------*/
-void SSI::SSIPart1WCSolidToScatra::PrepareTimeStep(bool printheader)
+void SSI::SSIPart1WCSolidToScatra::prepare_time_step(bool printheader)
 {
   increment_time_and_step();
 
   if (printheader) PrintHeader();
 
-  // if adaptive time stepping: calculate time step in scatra (PrepareTimeStep() of Scatra) and pass
-  // to structure
+  // if adaptive time stepping: calculate time step in scatra (prepare_time_step() of Scatra) and
+  // pass to structure
   if (ScaTraField()->TimeStepAdapted()) set_dt_from_sca_tra_to_structure();
 
-  StructureField()->PrepareTimeStep();
+  StructureField()->prepare_time_step();
 
   const int diffsteps = ScaTraField()->Dt() / StructureField()->Dt();
 
@@ -170,7 +170,7 @@ void SSI::SSIPart1WCSolidToScatra::PrepareTimeStep(bool printheader)
     if (is_s2_i_kinetics_with_pseudo_contact()) StructureField()->determine_stress_strain();
     SetStructSolution(StructureField()->Dispn(), StructureField()->Veln(),
         is_s2_i_kinetics_with_pseudo_contact());
-    ScaTraField()->PrepareTimeStep();
+    ScaTraField()->prepare_time_step();
   }
 }
 
@@ -218,7 +218,7 @@ void SSI::SSIPart1WCSolidToScatra::Init(const Epetra_Comm& comm,
 void SSI::SSIPart1WCSolidToScatra::Timeloop()
 {
   // safety checks
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
   if (StructureField()->Dt() > ScaTraField()->Dt())
@@ -232,9 +232,9 @@ void SSI::SSIPart1WCSolidToScatra::Timeloop()
 
   while (NotFinished())
   {
-    PrepareTimeStep(false);
-    DoStructStep();  // It has its own time and timestep variables, and it increments them by
-                     // itself.
+    prepare_time_step(false);
+    do_struct_step();  // It has its own time and timestep variables, and it increments them by
+                       // itself.
     if (StructureField()->Step() % diffsteps == 0)
     {
       if (is_s2_i_kinetics_with_pseudo_contact()) StructureField()->determine_stress_strain();
@@ -288,15 +288,15 @@ void SSI::SSIPart1WCScatraToSolid::Timeloop()
   }
 
   // set zero velocity and displacement field for scatra
-  auto zeros_structure = CORE::LINALG::CreateVector(*StructureField()->DofRowMap(), true);
+  auto zeros_structure = CORE::LINALG::CreateVector(*StructureField()->dof_row_map(), true);
   SetStructSolution(zeros_structure, zeros_structure, false);
 
-  ScaTraField()->PrepareTimeLoop();
+  ScaTraField()->prepare_time_loop();
 
   const int diffsteps = StructureField()->Dt() / ScaTraField()->Dt();
   while (!Finished())
   {
-    PrepareTimeStep();
+    prepare_time_step();
     DoScatraStep();  // It has its own time and timestep variables, and it increments them by
                      // itself.
     if (ScaTraField()->Step() % diffsteps == 0)
@@ -309,11 +309,11 @@ void SSI::SSIPart1WCScatraToSolid::Timeloop()
       // evaluate temperature from function and set to structural discretization
       evaluate_and_set_temperature_field();
 
-      // PrepareTimeStep() is called after solving the scalar transport, because then the predictor
-      // will include the new scalar solution
-      StructureField()->PrepareTimeStep();
-      DoStructStep();  // It has its own time and timestep variables, and it increments them by
-                       // itself.
+      // prepare_time_step() is called after solving the scalar transport, because then the
+      // predictor will include the new scalar solution
+      StructureField()->prepare_time_step();
+      do_struct_step();  // It has its own time and timestep variables, and it increments them by
+                         // itself.
     }
   }
 }
@@ -321,13 +321,13 @@ void SSI::SSIPart1WCScatraToSolid::Timeloop()
 /*----------------------------------------------------------------------*/
 // prepare time step
 /*----------------------------------------------------------------------*/
-void SSI::SSIPart1WCScatraToSolid::PrepareTimeStep(bool printheader)
+void SSI::SSIPart1WCScatraToSolid::prepare_time_step(bool printheader)
 {
   increment_time_and_step();
   // PrintHeader();
 
-  ScaTraField()->PrepareTimeStep();
-  // PrepareTimeStep of structure field is called later
+  ScaTraField()->prepare_time_step();
+  // prepare_time_step of structure field is called later
 
   // copy time step to SSI problem, in case it was modified in ScaTra
   if (ScaTraField()->TimeStepAdapted()) set_dt_from_sca_tra_to_ssi();

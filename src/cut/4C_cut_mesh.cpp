@@ -60,7 +60,7 @@ CORE::GEO::CUT::Mesh::Mesh(
 /*-------------------------------------------------------------------------------------*
  * creates a new element, dependent on distype
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::CreateElement(
+CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::create_element(
     int eid, const std::vector<int>& nids, CORE::FE::CellType distype)
 {
   switch (distype)
@@ -91,7 +91,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::CreateElement(
 /*-------------------------------------------------------------------------------------*
  * creates a new side, dependent on distype
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::CreateSide(
+CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::create_side(
     int sid, const std::vector<int>& nids, CORE::FE::CellType distype)
 {
   switch (distype)
@@ -200,7 +200,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::CreateHex8(int eid, const std::ve
 CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::CreateTri3Side(int sid, const std::vector<int>& nids)
 {
   const CellTopologyData* top_data = shards::getCellTopologyData<shards::Triangle<3>>();
-  return GetSide(sid, nids, top_data);
+  return get_side(sid, nids, top_data);
 }
 
 
@@ -210,7 +210,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::CreateTri3Side(int sid, const std::v
 CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::CreateQuad4Side(int sid, const std::vector<int>& nids)
 {
   const CellTopologyData* top_data = shards::getCellTopologyData<shards::Quadrilateral<4>>();
-  return GetSide(sid, nids, top_data);
+  return get_side(sid, nids, top_data);
 }
 
 
@@ -328,7 +328,7 @@ void CORE::GEO::CUT::Mesh::NewLine(Point* p1, Point* p2, Side* cut_side1, Side* 
       NewLinesBetween(line_points, cut_side1, cut_side2, cut_element, newlines);
     }
 
-    if (edges.size() == 0) NewLineInternal(p1, p2, cut_side1, cut_side2, cut_element);
+    if (edges.size() == 0) new_line_internal(p1, p2, cut_side1, cut_side2, cut_element);
   }
 
   // return line;
@@ -338,7 +338,7 @@ void CORE::GEO::CUT::Mesh::NewLine(Point* p1, Point* p2, Side* cut_side1, Side* 
 /*-------------------------------------------------------------------------------------------------*
  * Create new line between the two given cut points that are in given two cut sides
  *-------------------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Line* CORE::GEO::CUT::Mesh::NewLineInternal(
+CORE::GEO::CUT::Line* CORE::GEO::CUT::Mesh::new_line_internal(
     Point* p1, Point* p2, Side* cut_side1, Side* cut_side2, Element* cut_element)
 {
   if (p1 == p2) FOUR_C_THROW("no line between same point");
@@ -353,9 +353,9 @@ CORE::GEO::CUT::Line* CORE::GEO::CUT::Mesh::NewLineInternal(
   }
   else  // line already exists. just add cut side details to the line
   {
-    if (cut_side1) line->AddSide(cut_side1);
-    if (cut_side2) line->AddSide(cut_side2);
-    if (cut_element) line->AddElement(cut_element);
+    if (cut_side1) line->add_side(cut_side1);
+    if (cut_side2) line->add_side(cut_side2);
+    if (cut_element) line->add_element(cut_element);
   }
   return line;
 }
@@ -374,7 +374,7 @@ bool CORE::GEO::CUT::Mesh::NewLinesBetween(const std::vector<Point*>& line, Side
     for (++i; i != line.end(); ++i)
     {
       Point* ep = *i;
-      Line* l = NewLineInternal(bp, ep, cut_side1, cut_side2, cut_element);
+      Line* l = new_line_internal(bp, ep, cut_side1, cut_side2, cut_element);
       if (newlines != nullptr) newlines->push_back(l);
       bp = ep;
     }
@@ -968,9 +968,9 @@ void CORE::GEO::CUT::Mesh::SearchCollisions(Mesh& cutmesh)
  * finds intersections between sides and edges                                         *
  *                                                                         wirtz 08/14 *
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::FindCutPoints()
+void CORE::GEO::CUT::Mesh::find_cut_points()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 4/6 --- cut_mesh_intersection --- FindCutPoints");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 4/6 --- cut_mesh_intersection --- find_cut_points");
 
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
        ++i)
@@ -978,7 +978,7 @@ void CORE::GEO::CUT::Mesh::FindCutPoints()
     Element& e = *i->second;
     try
     {
-      e.FindCutPoints(*this);
+      e.find_cut_points(*this);
     }
     catch (CORE::Exception& err)
     {
@@ -992,7 +992,7 @@ void CORE::GEO::CUT::Mesh::FindCutPoints()
     Element& e = *i->second;
     try
     {
-      e.FindCutPoints(*this);
+      e.find_cut_points(*this);
     }
     catch (CORE::Exception& err)
     {
@@ -1745,7 +1745,7 @@ void CORE::GEO::CUT::Mesh::TestElementVolume(
 /*-------------------------------------------------------------------------------------*
  * ?
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::PrintCellStats()
+void CORE::GEO::CUT::Mesh::print_cell_stats()
 {
   const int vectorlength = 21;
   unsigned cut = 0;
@@ -2058,7 +2058,7 @@ void CORE::GEO::CUT::Mesh::DumpGmsh(std::string name)
 /*-------------------------------------------------------------------------------------*
  * ?
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::DumpGmshVolumeCells(std::string name, bool include_inner)
+void CORE::GEO::CUT::Mesh::dump_gmsh_volume_cells(std::string name, bool include_inner)
 {
   std::ofstream file(name.c_str());
   int count = 0;
@@ -2258,7 +2258,7 @@ void CORE::GEO::CUT::Mesh::dump_gmsh_boundary_cells(std::ofstream& file, Point::
 /*-------------------------------------------------------------------------------------*
  * ?
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::DumpGmshVolumeCells(std::string name)
+void CORE::GEO::CUT::Mesh::dump_gmsh_volume_cells(std::string name)
 {
   std::ofstream file(name.c_str());
   file << "View \"VolumeCells\" {\n";
@@ -2502,7 +2502,7 @@ CORE::GEO::CUT::Node* CORE::GEO::CUT::Mesh::GetNode(
 /*-------------------------------------------------------------------------------------*
  * get the edge with begin node and end node
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Edge* CORE::GEO::CUT::Mesh::GetEdge(Node* begin, Node* end)
+CORE::GEO::CUT::Edge* CORE::GEO::CUT::Mesh::get_edge(Node* begin, Node* end)
 {
   if (begin->point() == end->point()) FOUR_C_THROW("edge between same point");
 
@@ -2514,14 +2514,14 @@ CORE::GEO::CUT::Edge* CORE::GEO::CUT::Mesh::GetEdge(Node* begin, Node* end)
   nodes[0] = begin;
   nodes[1] = end;
 
-  return GetEdge(nids, nodes, *shards::getCellTopologyData<shards::Line<2>>());
+  return get_edge(nids, nodes, *shards::getCellTopologyData<shards::Line<2>>());
 }
 
 
 /*-------------------------------------------------------------------------------------*
  * ?
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Edge* CORE::GEO::CUT::Mesh::GetEdge(const plain_int_set& nids,
+CORE::GEO::CUT::Edge* CORE::GEO::CUT::Mesh::get_edge(const plain_int_set& nids,
     const std::vector<Node*>& nodes, const CellTopologyData& edge_topology)
 {
   std::map<plain_int_set, Teuchos::RCP<Edge>>::iterator i = edges_.find(nids);
@@ -2567,7 +2567,7 @@ CORE::GEO::CUT::Edge* CORE::GEO::CUT::Mesh::GetEdge(const plain_int_set& nids,
 /*----------------------------------------------------------------------------*
  * get the side that contains the nodes with the following node ids
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::GetSide(std::vector<int>& nids) const
+CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::get_side(std::vector<int>& nids) const
 {
   // create a sorted vector
   plain_int_set node_ids;
@@ -2589,7 +2589,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::GetSide(std::vector<int>& nids) cons
 /*----------------------------------------------------------------------------*
  * ???
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::GetSide(
+CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::get_side(
     int sid, const std::vector<int>& nids, const CellTopologyData* top_data)
 {
   unsigned nc = top_data->node_count;
@@ -2601,14 +2601,14 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::GetSide(
     nodes.push_back(GetNode(nids[i], static_cast<double*>(nullptr)));
   }
 
-  return GetSide(sid, nodes, top_data);
+  return get_side(sid, nodes, top_data);
 }
 
 
 /*----------------------------------------------------------------------------*
  * ???
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::GetSide(
+CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::get_side(
     int sid, const std::vector<Node*>& nodes, const CellTopologyData* top_data)
 {
   unsigned ec = top_data->edge_count;
@@ -2630,12 +2630,12 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::GetSide(
       edge_nids.insert(nodes[edge.node[j]]->Id());
       edge_nodes.push_back(nodes[edge.node[j]]);
     }
-    edges.push_back(GetEdge(edge_nids, edge_nodes, edge_topology));
+    edges.push_back(get_edge(edge_nids, edge_nodes, edge_topology));
 
     std::copy(edge_nids.begin(), edge_nids.end(), std::inserter(nidset, nidset.begin()));
   }
 
-  Side* s = GetSide(sid, nidset, nodes, edges, *top_data);
+  Side* s = get_side(sid, nidset, nodes, edges, *top_data);
 
   return s;
 }
@@ -2644,7 +2644,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::GetSide(
 /*----------------------------------------------------------------------------*
  * ?
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::GetSide(int sid, const plain_int_set& nids,
+CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::get_side(int sid, const plain_int_set& nids,
     const std::vector<Node*>& nodes, const std::vector<Edge*>& edges,
     const CellTopologyData& side_topology)
 {
@@ -2778,7 +2778,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<1>(
     edge_nodes.push_back(side_nodes[j]);
   }
 
-  side_edges[0] = GetEdge(edge_nids, edge_nodes, edge_topology);
+  side_edges[0] = get_edge(edge_nids, edge_nodes, edge_topology);
 
   // --------------------------------------------------------------------------
   // create side
@@ -2786,7 +2786,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<1>(
   plain_int_set side_nidset;
   std::copy(side_nids.begin(), side_nids.end(), std::inserter(side_nidset, side_nidset.begin()));
 
-  sides[0] = GetSide(-1, side_nidset, side_nodes, side_edges, side_topology);
+  sides[0] = get_side(-1, side_nidset, side_nodes, side_edges, side_topology);
 
   Element* e = nullptr;
   if (eid > -1)
@@ -2848,7 +2848,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<2>(
       edge_nodes.push_back(side_nodes[edge.node[j]]);
     }
 
-    side_edges.push_back(GetEdge(edge_nids, edge_nodes, edge_topology));
+    side_edges.push_back(get_edge(edge_nids, edge_nodes, edge_topology));
   }
 
   // --------------------------------------------------------------------------
@@ -2857,7 +2857,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<2>(
   plain_int_set side_nidset;
   std::copy(side_nids.begin(), side_nids.end(), std::inserter(side_nidset, side_nidset.begin()));
 
-  side[0] = GetSide(-1, side_nidset, side_nodes, side_edges, side_topology);
+  side[0] = get_side(-1, side_nidset, side_nodes, side_edges, side_topology);
 
   Element* e = nullptr;
   if (eid > -1)
@@ -2925,12 +2925,12 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<3>(
         edge_nodes.push_back(side_nodes[edge.node[j]]);
       }
 
-      side_edges.push_back(GetEdge(edge_nids, edge_nodes, edge_topology));
+      side_edges.push_back(get_edge(edge_nids, edge_nodes, edge_topology));
     }
 
     plain_int_set side_nidset;
     std::copy(side_nids.begin(), side_nids.end(), std::inserter(side_nidset, side_nidset.begin()));
-    sides.push_back(GetSide(-1, side_nidset, side_nodes, side_edges, side_topology));
+    sides.push_back(get_side(-1, side_nidset, side_nodes, side_edges, side_topology));
   }
 
   Element* e = nullptr;

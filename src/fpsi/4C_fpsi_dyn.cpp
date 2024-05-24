@@ -89,7 +89,7 @@ void fpsi_drt()
   const int restartstep = problem->Restart();
   if (restartstep)
   {
-    fpsi->ReadRestart(restartstep);
+    fpsi->read_restart(restartstep);
   }
 
   // 3.2.- redistribute the FPSI interface

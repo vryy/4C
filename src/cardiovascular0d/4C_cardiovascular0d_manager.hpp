@@ -75,7 +75,7 @@ namespace UTILS
     /*!
       \brief Assemble cardiovascular0d stiffness and rhs contributions to full coupled problem
     */
-    void EvaluateForceStiff(const double time,             ///< time at end of time step
+    void evaluate_force_stiff(const double time,           ///< time at end of time step
         Teuchos::RCP<const Epetra_Vector> disp,            ///< displacement at end of time step
         Teuchos::RCP<Epetra_Vector> fint,                  ///< vector of internal structural forces
         Teuchos::RCP<CORE::LINALG::SparseOperator> stiff,  ///< structural stiffness matrix
@@ -134,7 +134,7 @@ namespace UTILS
     /*!
          \brief Update cardiovascular0d dofs
     */
-    void ResetStep();
+    void reset_step();
 
     /// Add a vector as residual increment to the cardiovascular0d dof vector
     void UpdateCv0DDof(Teuchos::RCP<Epetra_Vector> cv0ddofincrement  ///< vector to add
@@ -222,7 +222,7 @@ namespace UTILS
     /*!
      \brief Read restart information
     */
-    void ReadRestart(IO::DiscretizationReader& reader, const double& time);
+    void read_restart(IO::DiscretizationReader& reader, const double& time);
 
     /*!
      \brief Return structural input parameter list

@@ -209,7 +209,7 @@ namespace XFEM
 
     const CORE::LINALG::MultiMapExtractor& SlDofMapExtractor(enum FieldName field) const
     {
-      return SlMapExtractor(SlaveId(field), map_dofs);
+      return sl_map_extractor(slave_id(field), map_dofs);
     }
 
     Teuchos::RCP<const Epetra_Map> NodeRowMap(
@@ -242,7 +242,7 @@ namespace XFEM
     inline void ExtractVector(const Epetra_MultiVector& full, enum FieldName field,
         Epetra_MultiVector& partial, enum MapType map_type = map_dofs) const
     {
-      ExtractVector(full, SlaveId(field), partial, map_type);
+      ExtractVector(full, slave_id(field), partial, map_type);
     }
 
     void ExtractVector(const Epetra_MultiVector& full, int block, Epetra_MultiVector& partial,
@@ -251,7 +251,7 @@ namespace XFEM
     inline void extract_element_vector(
         const Epetra_MultiVector& full, enum FieldName field, Epetra_MultiVector& partial) const
     {
-      extract_element_vector(full, SlaveId(field), partial);
+      extract_element_vector(full, slave_id(field), partial);
     }
 
     void extract_element_vector(
@@ -302,7 +302,7 @@ namespace XFEM
     void InsertVector(const Epetra_MultiVector& partial, enum FieldName field,
         Epetra_MultiVector& full, enum MapType map_type = map_dofs) const
     {
-      return InsertVector(partial, SlaveId(field), full, map_type);
+      return InsertVector(partial, slave_id(field), full, map_type);
     }
 
     /** \brief Put a partial vector into a full vector (Epetra_MultiVector) [derived]
@@ -314,7 +314,7 @@ namespace XFEM
     inline void InsertElementVector(
         const Epetra_MultiVector& partial, enum FieldName field, Epetra_MultiVector& full) const
     {
-      InsertElementVector(partial, SlaveId(field), full);
+      InsertElementVector(partial, slave_id(field), full);
     }
 
     void InsertElementVector(
@@ -334,7 +334,7 @@ namespace XFEM
     inline void AddVector(Teuchos::RCP<const Epetra_Vector> partial, enum FieldName field,
         Teuchos::RCP<Epetra_Vector> full, double scale, enum MapType map_type = map_dofs) const
     {
-      AddVector(*partial, SlaveId(field), *full, scale, map_type);
+      AddVector(*partial, slave_id(field), *full, scale, map_type);
     }
 
     /** \brief Add a partial vector to a full vector (Epetra_MultiVector)
@@ -348,7 +348,7 @@ namespace XFEM
     inline void AddVector(const Epetra_MultiVector& partial, enum FieldName field,
         Epetra_MultiVector& full, double scale, enum MapType map_type = map_dofs) const
     {
-      return AddVector(partial, SlaveId(field), full, scale, map_type);
+      return AddVector(partial, slave_id(field), full, scale, map_type);
     }
 
     /** \brief Add a partial vector to a full vector (Epetra_MultiVector) [derived]
@@ -360,7 +360,7 @@ namespace XFEM
     inline void AddElementVector(const Epetra_MultiVector& partial, enum FieldName field,
         Epetra_MultiVector& full, double scale) const
     {
-      AddElementVector(partial, SlaveId(field), full, scale);
+      AddElementVector(partial, slave_id(field), full, scale);
     }
 
     void AddElementVector(
@@ -372,7 +372,7 @@ namespace XFEM
     inline void AddMatrix(const CORE::LINALG::SparseOperator& partial_mat, enum FieldName field,
         CORE::LINALG::SparseOperator& full_mat, double scale)
     {
-      AddMatrix(partial_mat, SlaveId(field), full_mat, scale);
+      AddMatrix(partial_mat, slave_id(field), full_mat, scale);
     }
 
     void AddMatrix(const CORE::LINALG::SparseOperator& partial_mat, int block,
@@ -389,17 +389,17 @@ namespace XFEM
      *
      *  \author hiermeier
      *  \date 09/16 */
-    bool IsXFemDis(enum FieldName field) const { return IsXFemDis(SlaveId(field)); }
+    bool is_x_fem_dis(enum FieldName field) const { return is_x_fem_dis(slave_id(field)); }
 
    protected:
     /// check if Init() has been called yet
-    inline void CheckInit() const
+    inline void check_init() const
     {
       if (not isinit_) FOUR_C_THROW("Call Init() first!");
     }
 
     /// check if Init() and Setup() have been called yet
-    inline void CheckInitSetup() const
+    inline void check_init_setup() const
     {
       if ((not isinit_) or (not issetup_)) FOUR_C_THROW("Call Init() and/or Setup() first!");
     }
@@ -411,7 +411,7 @@ namespace XFEM
      *
      *  \author hiermeier
      *  \date 09/16 */
-    bool IsXFemDis(int dis_id) const;
+    bool is_x_fem_dis(int dis_id) const;
 
     /** \brief  Access the master interface node row map of the interface
      *  between the master interface discretization and the slave discretization
@@ -423,11 +423,11 @@ namespace XFEM
      *  \date 09/16 */
     inline const Epetra_Map& master_interface_node_row_map(enum FieldName field) const
     {
-      return master_interface_node_row_map(SlaveId(field));
+      return master_interface_node_row_map(slave_id(field));
     }
     const Epetra_Map& master_interface_node_row_map(unsigned dis_id) const
     {
-      CheckInit();
+      check_init();
 
       if (dis_id >= master_interface_node_maps_.size())
         FOUR_C_THROW(
@@ -448,7 +448,7 @@ namespace XFEM
      *
      *  \author hiermeier
      *  \date 09/16 */
-    const CORE::LINALG::MultiMapExtractor& MaMapExtractor(enum MapType map_type) const
+    const CORE::LINALG::MultiMapExtractor& ma_map_extractor(enum MapType map_type) const
     {
       if (master_map_extractor_.at(map_type).is_null())
         FOUR_C_THROW("The master dof/node map extractor was not initialized!");
@@ -463,17 +463,17 @@ namespace XFEM
      *
      *  \author hiermeier
      *  \date 10/16 */
-    inline const Epetra_Map& SlaveNodeRowMap(
+    inline const Epetra_Map& slave_node_row_map(
         enum XFEM::FieldName field, enum MULTIFIELD::BlockType btype) const
     {
-      return SlaveNodeRowMap(SlaveId(field), btype);
+      return slave_node_row_map(slave_id(field), btype);
     }
-    const Epetra_Map& SlaveNodeRowMap(unsigned dis_id, enum MULTIFIELD::BlockType btype) const;
+    const Epetra_Map& slave_node_row_map(unsigned dis_id, enum MULTIFIELD::BlockType btype) const;
 
-    const CORE::LINALG::MultiMapExtractor& SlMapExtractor(
+    const CORE::LINALG::MultiMapExtractor& sl_map_extractor(
         unsigned dis_id, enum MapType map_type) const
     {
-      CheckInit();
+      check_init();
 
       if (dis_id >= slave_map_extractors_.size())
         FOUR_C_THROW(
@@ -493,13 +493,13 @@ namespace XFEM
     /** \brief Access the interface matrix row transformer for the given field
      *
      *  \author hiermeier \date 10/16 */
-    CORE::LINALG::MatrixRowTransform& IMatRowTransform(enum FieldName field)
+    CORE::LINALG::MatrixRowTransform& i_mat_row_transform(enum FieldName field)
     {
-      return IMatRowTransform(SlaveId(field));
+      return i_mat_row_transform(slave_id(field));
     }
-    CORE::LINALG::MatrixRowTransform& IMatRowTransform(unsigned dis_id)
+    CORE::LINALG::MatrixRowTransform& i_mat_row_transform(unsigned dis_id)
     {
-      CheckInit();
+      check_init();
 
       if (dis_id >= interface_matrix_row_transformers_.size())
         FOUR_C_THROW(
@@ -519,13 +519,13 @@ namespace XFEM
     /** \brief Access the interface matrix column transformer for the given field
      *
      *  \author hiermeier \date 10/16 */
-    CORE::LINALG::MatrixColTransform& IMatColTransform(enum FieldName field)
+    CORE::LINALG::MatrixColTransform& i_mat_col_transform(enum FieldName field)
     {
-      return IMatColTransform(SlaveId(field));
+      return i_mat_col_transform(slave_id(field));
     }
-    CORE::LINALG::MatrixColTransform& IMatColTransform(unsigned dis_id)
+    CORE::LINALG::MatrixColTransform& i_mat_col_transform(unsigned dis_id)
     {
-      CheckInit();
+      check_init();
 
       if (dis_id >= interface_matrix_col_transformers_.size())
         FOUR_C_THROW(
@@ -545,13 +545,13 @@ namespace XFEM
     /** \brief Access the interface matrix row and column transformer for the given field
      *
      *  \author hiermeier \date 10/16 */
-    CORE::LINALG::MatrixRowColTransform& IMatRowColTransform(enum FieldName field)
+    CORE::LINALG::MatrixRowColTransform& i_mat_row_col_transform(enum FieldName field)
     {
-      return IMatRowColTransform(SlaveId(field));
+      return i_mat_row_col_transform(slave_id(field));
     }
-    CORE::LINALG::MatrixRowColTransform& IMatRowColTransform(unsigned dis_id)
+    CORE::LINALG::MatrixRowColTransform& i_mat_row_col_transform(unsigned dis_id)
     {
-      CheckInit();
+      check_init();
 
       if (dis_id >= interface_matrix_row_col_transformers_.size())
         FOUR_C_THROW(
@@ -571,38 +571,38 @@ namespace XFEM
     /** \brief Access the interface discretization
      *
      *  \author hiermeier \date 10/16 */
-    inline const DRT::Discretization& IDiscret() const
+    inline const DRT::Discretization& i_discret() const
     {
-      CheckInit();
+      check_init();
       return *idiscret_;
     }
 
-    inline const DRT::Discretization& SlDiscret(enum FieldName field) const
+    inline const DRT::Discretization& sl_discret(enum FieldName field) const
     {
-      return SlDiscret(SlaveId(field));
+      return sl_discret(slave_id(field));
     }
-    const DRT::Discretization& SlDiscret(unsigned dis_id) const
+    const DRT::Discretization& sl_discret(unsigned dis_id) const
     {
-      CheckInit();
+      check_init();
 
-      if (dis_id >= NumSlDis())
+      if (dis_id >= num_sl_dis())
         FOUR_C_THROW(
             "The index %d exceeds the slave discretization vector size! "
             "(size = %d)",
-            dis_id, SlDisVec().size());
+            dis_id, sl_dis_vec().size());
 
-      if (SlDisVec()[dis_id].is_null())
+      if (sl_dis_vec()[dis_id].is_null())
         FOUR_C_THROW(
             "The slave discretization %d was not initialized "
             "correctly.",
             dis_id);
 
-      return *(SlDisVec()[dis_id]);
+      return *(sl_dis_vec()[dis_id]);
     }
 
-    const XFEM::XFieldField::Coupling& ICoupling(unsigned dis_id) const
+    const XFEM::XFieldField::Coupling& i_coupling(unsigned dis_id) const
     {
-      CheckInit();
+      check_init();
       if (dis_id >= interface_couplings_.size())
         FOUR_C_THROW(
             "The index %d exceeds the interface coupling size! "
@@ -624,7 +624,7 @@ namespace XFEM
       return *comm_;
     }
 
-    inline unsigned NumSlDis() const { return SlDisVec().size(); }
+    inline unsigned num_sl_dis() const { return sl_dis_vec().size(); }
 
     const std::set<int>& g_interface_node_gid_set() const { return g_interface_node_gid_set_; }
 
@@ -636,7 +636,7 @@ namespace XFEM
     void Reset(unsigned num_dis_vec, bool full);
 
     /// get the row node/DoF maps of the wrapped discretizations
-    void GetDofAndNodeMaps();
+    void get_dof_and_node_maps();
 
     void build_global_interface_node_gid_set();
 
@@ -645,9 +645,9 @@ namespace XFEM
 
     void build_slave_discret_id_map();
 
-    int SlaveId(enum FieldName field) const;
+    int slave_id(enum FieldName field) const;
 
-    const std::vector<Teuchos::RCP<const DRT::Discretization>>& SlDisVec() const
+    const std::vector<Teuchos::RCP<const DRT::Discretization>>& sl_dis_vec() const
     {
       return slave_discret_vec_;
     }

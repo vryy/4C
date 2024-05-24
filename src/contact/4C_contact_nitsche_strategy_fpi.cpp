@@ -17,10 +17,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void CONTACT::NitscheStrategyFpi::SetState(
+void CONTACT::NitscheStrategyFpi::set_state(
     const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
 {
-  CONTACT::NitscheStrategyPoro::SetState(statename, vec);
+  CONTACT::NitscheStrategyPoro::set_state(statename, vec);
   if (statename == MORTAR::state_new_displacement)
   {
     DoContactSearch();

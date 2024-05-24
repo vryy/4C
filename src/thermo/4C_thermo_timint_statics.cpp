@@ -39,22 +39,22 @@ THR::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& ioparams,
   //! create force vectors
 
   //! internal force vector F_{int;n} at last time
-  fint_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fint_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
   //! internal force vector F_{int;n+1} at new time
-  fintn_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fintn_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
   //! set initial internal force vector
   apply_force_tang_internal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_, fint_, tang_);
   //! external force vector F_ext at last times
-  fext_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fext_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
   //! external force vector F_{n+1} at new time
-  fextn_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fextn_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
 
   // set initial external force vector of convective heat transfer boundary
   // conditions
   apply_force_external_conv((*time_)[0], (*temp_)(0), (*temp_)(0), fext_, tang_);
 
   //! set initial external force vector
-  ApplyForceExternal((*time_)[0], (*temp_)(0), fext_);
+  apply_force_external((*time_)[0], (*temp_)(0), fext_);
 
   //! have a nice day
   return;
@@ -97,7 +97,7 @@ void THR::TimIntStatics::evaluate_rhs_tang_residual()
   // --> always use T_n+1 for statics!
   apply_force_external_conv(timen_, (*temp_)(0), tempn_, fextn_, tang_);
 
-  ApplyForceExternal(timen_, (*temp_)(0), fextn_);
+  apply_force_external(timen_, (*temp_)(0), fextn_);
 
   //! initialise internal forces
   fintn_->PutScalar(0.0);
@@ -133,7 +133,7 @@ double THR::TimIntStatics::calc_ref_norm_temperature()
   //! points within the timestep (end point, generalized midpoint).
 
   double charnormtemp = 0.0;
-  charnormtemp = THR::AUX::CalculateVectorNorm(iternorm_, (*temp_)(0));
+  charnormtemp = THR::AUX::calculate_vector_norm(iternorm_, (*temp_)(0));
 
   //! rise your hat
   return charnormtemp;
@@ -154,15 +154,15 @@ double THR::TimIntStatics::CalcRefNormForce()
 
   //! norm of the internal forces
   double fintnorm = 0.0;
-  fintnorm = THR::AUX::CalculateVectorNorm(iternorm_, fintn_);
+  fintnorm = THR::AUX::calculate_vector_norm(iternorm_, fintn_);
 
   //! norm of the external forces
   double fextnorm = 0.0;
-  fextnorm = THR::AUX::CalculateVectorNorm(iternorm_, fextn_);
+  fextnorm = THR::AUX::calculate_vector_norm(iternorm_, fextn_);
 
   //! norm of reaction forces
   double freactnorm = 0.0;
-  freactnorm = THR::AUX::CalculateVectorNorm(iternorm_, freact_);
+  freactnorm = THR::AUX::calculate_vector_norm(iternorm_, freact_);
 
   //! return char norm
   return std::max(fintnorm, std::max(fextnorm, freactnorm));
@@ -291,11 +291,11 @@ void THR::TimIntStatics::apply_force_tang_internal(const double time,  //!< eval
 /*----------------------------------------------------------------------*
  | evaluate the internal force                               dano 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntStatics::ApplyForceInternal(const double time,  //!< evaluation time
-    const double dt,                                            //!< step size
-    const Teuchos::RCP<Epetra_Vector> temp,                     //!< temperature state
-    const Teuchos::RCP<Epetra_Vector> tempi,                    //!< incremental temperatures
-    Teuchos::RCP<Epetra_Vector> fint                            //!< internal force
+void THR::TimIntStatics::apply_force_internal(const double time,  //!< evaluation time
+    const double dt,                                              //!< step size
+    const Teuchos::RCP<Epetra_Vector> temp,                       //!< temperature state
+    const Teuchos::RCP<Epetra_Vector> tempi,                      //!< incremental temperatures
+    Teuchos::RCP<Epetra_Vector> fint                              //!< internal force
 )
 {
   //! create the parameters for the discretization
@@ -303,7 +303,7 @@ void THR::TimIntStatics::ApplyForceInternal(const double time,  //!< evaluation 
   //! set parameters
   // ...
   //! call the base function
-  TimInt::ApplyForceInternal(p, time, dt, temp, tempi, fint);
+  TimInt::apply_force_internal(p, time, dt, temp, tempi, fint);
   //! finish
   return;
 

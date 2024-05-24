@@ -148,7 +148,7 @@ namespace CONTACT
     /*!
       \Get energy of penalty contact.
     */
-    virtual double GetEnergy() = 0;
+    virtual double get_energy() = 0;
 
     /*!
       \Get energy of perp penalty contact without transition factor contribution.

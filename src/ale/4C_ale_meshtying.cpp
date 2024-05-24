@@ -36,7 +36,7 @@ ALE::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization> dis, CORE::LINALG::S
     int msht, int nsd, const UTILS::MapExtractor* surfacesplitter)
     : discret_(dis),
       solver_(solver),
-      dofrowmap_(discret_->DofRowMap()),
+      dofrowmap_(discret_->dof_row_map()),
       gsdofrowmap_(Teuchos::null),
       gmdofrowmap_(Teuchos::null),
       mergedmap_(Teuchos::null),
@@ -183,7 +183,7 @@ void ALE::Meshtying::DirichletOnMaster(Teuchos::RCP<const Epetra_Map> bmaps)
   // strategies:
   // (a)  Apply DC on both master and slave side of the internal interface (->disabled)
   //      -> over-constraint system, but nevertheless, result is correct and no solver issues
-  // (b)  DC are projected from the master to the slave side during PrepareTimeStep
+  // (b)  DC are projected from the master to the slave side during prepare_time_step
   //      (in project_master_to_slave_for_overlapping_bc()) (-> disabled)
   //      -> DC also influence slave nodes which are not part of the inflow
   //
@@ -231,7 +231,7 @@ void ALE::Meshtying::prepare_meshtying_system(Teuchos::RCP<CORE::LINALG::SparseO
 /*-------------------------------------------------------*/
 /*  Split Vector                             wirtz 01/16 */
 /*-------------------------------------------------------*/
-void ALE::Meshtying::SplitVector(
+void ALE::Meshtying::split_vector(
     Teuchos::RCP<Epetra_Vector> vector, std::vector<Teuchos::RCP<Epetra_Vector>>& splitvector)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  2.2)   - Split Vector");
@@ -247,14 +247,14 @@ void ALE::Meshtying::SplitVector(
   /**********************************************************************/
 
   // do the vector splitting smn -> sm+n
-  CORE::LINALG::SplitVector(*dofrowmap_, *vector, gsmdofrowmap_, fsm, gndofrowmap_, fn);
+  CORE::LINALG::split_vector(*dofrowmap_, *vector, gsmdofrowmap_, fsm, gndofrowmap_, fn);
 
   // we want to split fsm into 2 groups s,m
   fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
 
   // do the vector splitting sm -> s+m
-  CORE::LINALG::SplitVector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
+  CORE::LINALG::split_vector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
 
   // splitvector[ii]
   // fn [0]
@@ -276,7 +276,7 @@ void ALE::Meshtying::split_vector_based_on3x3(
   // container for split residual vector
   std::vector<Teuchos::RCP<Epetra_Vector>> splitvector(3);
 
-  SplitVector(orgvector, splitvector);
+  split_vector(orgvector, splitvector);
   // build up the reduced residual
   CORE::LINALG::Export(*(splitvector[0]), *vectorbasedon2x2);
   CORE::LINALG::Export(*(splitvector[1]), *vectorbasedon2x2);
@@ -464,7 +464,7 @@ void ALE::Meshtying::condensation_operation_block_matrix(
 
   // container for split residual vector
   std::vector<Teuchos::RCP<Epetra_Vector>> splitres(3);
-  SplitVector(residual, splitres);
+  split_vector(residual, splitres);
 
   /**********************************************************************/
   /* Condensate blockmatrix                                             */
@@ -511,7 +511,7 @@ void ALE::Meshtying::condensation_operation_block_matrix(
     dcnm = Teuchos::rcp(new Epetra_Vector(*gndofrowmap_, true));
     dcmm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_, true));
 
-    SplitVector(valuesdc_, splitdcmaster);
+    split_vector(valuesdc_, splitdcmaster);
   }
 
   // get transformation matrix
@@ -601,13 +601,13 @@ void ALE::Meshtying::UpdateSlaveDOF(
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.4)   - Update slave DOF");
 
   // get dof row map
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // split incremental and displacement vector
   std::vector<Teuchos::RCP<Epetra_Vector>> splitinc(3);
   std::vector<Teuchos::RCP<Epetra_Vector>> splitdisp(3);
-  SplitVector(inc, splitinc);
-  SplitVector(dispnp, splitdisp);
+  split_vector(inc, splitinc);
+  split_vector(dispnp, splitdisp);
 
   // Dirichlet or Dirichlet-like condition on the master side of the internal interface:
   // First time step:
@@ -618,7 +618,7 @@ void ALE::Meshtying::UpdateSlaveDOF(
 
   // split vector containing Dirichlet boundary conditions, if any
   std::vector<Teuchos::RCP<Epetra_Vector>> splitdcmaster(3);
-  if (dconmaster_ == true and firstnonliniter_ == true) SplitVector(valuesdc_, splitdcmaster);
+  if (dconmaster_ == true and firstnonliniter_ == true) split_vector(valuesdc_, splitdcmaster);
 
   // get transformation matrix
   Teuchos::RCP<CORE::LINALG::SparseMatrix> P = GetMortarMatrixP();

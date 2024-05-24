@@ -55,7 +55,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Setup(
     Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
     Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr)
 {
-  CheckInit();
+  check_init();
 
   // Set beam to solid volume mesh tying output parameters.
   output_params_ptr_ = output_params_ptr;
@@ -106,11 +106,11 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Setup(
 /**
  *
  */
-void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::WriteOutputRuntime(
+void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_runtime(
     const Teuchos::RCP<ADAPTER::FBIConstraintenforcer>& couplingenforcer, int i_step,
     double time) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   auto [output_time, output_step] =
       IO::GetTimeAndTimeStepIndexForOutput(visualization_params_, time, i_step);
@@ -182,7 +182,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_beam_to_
 /**
  * \brief Checks the init and setup status.
  */
-void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::CheckInitSetup() const
+void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::check_init_setup() const
 {
   if (!isinit_ or !issetup_) FOUR_C_THROW("Call Init() and Setup() first!");
 }
@@ -190,7 +190,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::CheckInitSetup() cons
 /**
  * \brief Checks the init status.
  */
-void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::CheckInit() const
+void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::check_init() const
 {
   if (!isinit_) FOUR_C_THROW("Init() has not been called, yet!");
 }

@@ -139,7 +139,7 @@ namespace MAT
     void Update() override;
 
     /// Reset time step
-    void ResetStep() override;
+    void reset_step() override;
 
     /// Store history/internal variables
     void StoreHistory(int timestep) override;
@@ -258,7 +258,7 @@ namespace MAT
     double ThetaOldAtGp(int gp) const { return ThetaOld()->at(gp); }
 
     // read access to isinit_
-    bool IsInit() const { return isinit_; }
+    bool is_init() const { return isinit_; }
 
     //@}
 

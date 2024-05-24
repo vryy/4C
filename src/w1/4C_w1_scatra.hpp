@@ -114,7 +114,7 @@ namespace DRT
       /// @name Evaluation
       //@{
 
-      void PreEvaluate(
+      void pre_evaluate(
           Teuchos::ParameterList&
               params,  ///< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  ///< pointer to discretization for de-assembly

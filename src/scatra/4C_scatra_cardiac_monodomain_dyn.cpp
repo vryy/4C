@@ -71,8 +71,8 @@ void scatra_cardiac_monodomain_dyn(int restart)
 
   // ensure that all dofs are assigned in the right order; this creates dof numbers with
   //       fluid dof < scatra dof
-  fluiddis->FillComplete();
-  scatradis->FillComplete();
+  fluiddis->fill_complete();
+  scatradis->fill_complete();
 
   // set velocity field
   const INPAR::SCATRA::VelocityField veltype =
@@ -121,7 +121,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
       creator.CopyConditions(*scatradis, *scatradis, conditions_to_copy);
 
       // finalize discretization
-      scatradis->FillComplete();
+      scatradis->fill_complete();
 
 
 
@@ -165,12 +165,12 @@ void scatra_cardiac_monodomain_dyn(int restart)
       scatraonly->Setup();
 
       // read the restart information, set vectors and variables
-      if (restart) scatraonly->ScaTraField()->ReadRestart(restart);
+      if (restart) scatraonly->ScaTraField()->read_restart(restart);
 
       // set initial velocity field
-      // note: The order ReadRestart() before SetVelocityField() is important here!!
+      // note: The order read_restart() before SetVelocityField() is important here!!
       // for time-dependent velocity fields, SetVelocityField() is additionally called in each
-      // PrepareTimeStep()-call
+      // prepare_time_step()-call
       (scatraonly->ScaTraField())->SetVelocityField();
 
       // enter time loop to solve problem with given convective velocity
@@ -202,8 +202,8 @@ void scatra_cardiac_monodomain_dyn(int restart)
               "If you want matching fluid and scatra meshes, do clone you fluid mesh and use "
               "FIELDCOUPLING match!");
 
-        fluiddis->FillComplete();
-        scatradis->FillComplete();
+        fluiddis->fill_complete();
+        scatradis->fill_complete();
 
         // fill scatra discretization by cloning fluid discretization
         DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis, scatradis);
@@ -236,10 +236,10 @@ void scatra_cardiac_monodomain_dyn(int restart)
         DRT::UTILS::DiscretizationCreatorBase creator;
         creator.CopyConditions(*scatradis, *scatradis, conditions_to_copy);
 
-        // first call FillComplete for single discretizations.
+        // first call fill_complete for single discretizations.
         // This way the physical dofs are numbered successively
-        fluiddis->FillComplete();
-        scatradis->FillComplete();
+        fluiddis->fill_complete();
+        scatradis->fill_complete();
 
         // build auxiliary dofsets, i.e. pseudo dofs on each discretization
         const int ndofpernode_scatra = scatradis->NumDof(0, scatradis->lRowNode(0));
@@ -256,13 +256,13 @@ void scatra_cardiac_monodomain_dyn(int restart)
           FOUR_C_THROW("unexpected dof sets in scatra field");
 
         // call assign_degrees_of_freedom also for auxiliary dofsets
-        // note: the order of FillComplete() calls determines the gid numbering!
+        // note: the order of fill_complete() calls determines the gid numbering!
         // 1. fluid dofs
         // 2. scatra dofs
         // 3. fluid auxiliary dofs
         // 4. scatra auxiliary dofs
-        fluiddis->FillComplete(true, false, false);
-        scatradis->FillComplete(true, false, false);
+        fluiddis->fill_complete(true, false, false);
+        scatradis->fill_complete(true, false, false);
 
         // NOTE: we have do use the binningstrategy here since we build our fluid and scatra
         // problems by inheritance, i.e. by calling the constructor of the corresponding class. But
@@ -325,7 +325,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
             (restart == fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")))
           algo->ReadInflowRestart(restart);
         else
-          algo->ReadRestart(restart);
+          algo->read_restart(restart);
       }
       else if (CORE::UTILS::IntegralValue<int>(
                    fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") == true)
@@ -340,7 +340,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
       Teuchos::TimeMonitor::summarize();
 
       // perform the result test
-      GLOBAL::Problem::Instance()->AddFieldTest(algo->FluidField()->CreateFieldTest());
+      GLOBAL::Problem::Instance()->AddFieldTest(algo->fluid_field()->CreateFieldTest());
       GLOBAL::Problem::Instance()->AddFieldTest(algo->create_sca_tra_field_test());
       GLOBAL::Problem::Instance()->TestAll(comm);
 

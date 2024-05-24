@@ -51,7 +51,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams::Init(
  */
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams::Setup()
 {
-  CheckInit();
+  check_init();
 
   // Teuchos parameter lists from input file.
   const Teuchos::ParameterList& beam_to_solid_volume_meshtying_visualization_output_paramslist =

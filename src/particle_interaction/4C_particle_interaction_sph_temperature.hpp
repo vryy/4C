@@ -78,10 +78,10 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
     //! set current time
-    void SetCurrentTime(const double currenttime);
+    void set_current_time(const double currenttime);
 
     //! set current step size
-    void SetCurrentStepSize(const double currentstepsize);
+    void set_current_step_size(const double currentstepsize);
 
     //! insert temperature evaluation dependent states
     void insert_particle_states_of_particle_types(
@@ -99,10 +99,10 @@ namespace PARTICLEINTERACTION
     void init_heat_loss_evaporation_handler();
 
     //! evaluate energy equation
-    void EnergyEquation() const;
+    void energy_equation() const;
 
     //! evaluate temperature gradient
-    void TemperatureGradient() const;
+    void temperature_gradient() const;
 
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;

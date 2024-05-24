@@ -50,48 +50,48 @@ namespace STR
       /// output interval regarding steps: write output every INTERVAL_STEPS steps
       int output_interval_in_steps() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return output_interval_steps_;
       };
 
       /// precision for file output
       int FilePrecision() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return of_precision_;
       };
 
       /// precision for screen output
       int ScreenPrecision() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return os_precision_;
       };
 
       /// file tpye ending
       std::string const& FileType() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return file_type_;
       };
 
       /// whether to write header in csv files
-      bool WriteHeader() const
+      bool write_header() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return write_header_;
       }
 
 
      private:
       /// get the init indicator status
-      const bool& IsInit() const { return isinit_; };
+      const bool& is_init() const { return isinit_; };
 
       /// get the setup indicator status
-      const bool& IsSetup() const { return issetup_; };
+      const bool& is_setup() const { return issetup_; };
 
       /// Check if Init() and Setup() have been called, yet.
-      void CheckInitSetup() const;
+      void check_init_setup() const;
 
 
      private:

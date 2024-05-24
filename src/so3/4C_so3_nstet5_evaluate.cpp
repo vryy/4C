@@ -265,7 +265,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
       //--------------------------------- interpolate nodal stress from every node
       Teuchos::RCP<Epetra_MultiVector> nodestress = ElementType().nstress_;
       Teuchos::RCP<Epetra_MultiVector> nodestrain = ElementType().nstrain_;
-      const int numnode = NumNode();
+      const int numnode = num_node();
       for (int i = 0; i < numnode; ++i)
       {
         const int gid = Nodes()[i]->Id();
@@ -312,7 +312,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
 
     //==================================================================================
     case calc_struct_eleload:
-      FOUR_C_THROW("this class is not supposed to evaluate a load, use EvaluateNeumann(...)");
+      FOUR_C_THROW("this class is not supposed to evaluate a load, use evaluate_neumann(...)");
       break;
 
     //==================================================================================
@@ -392,7 +392,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
 
   for (int sub = 0; sub < 4; ++sub)  // loop subelements
   {
-    // subelement deformation gradient previously computed in PreEvaluate
+    // subelement deformation gradient previously computed in pre_evaluate
     CORE::LINALG::Matrix<3, 3>& F = SubF(sub);
 
     //--------------------------- Right Cauchy-Green tensor C = = F^T * F
@@ -462,14 +462,14 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
     double density = -999.99;
 #ifndef PUSO_NSTET5
     {
-      SelectMaterial(stress, cmat, density, glstrain, F, 0);
+      select_material(stress, cmat, density, glstrain, F, 0);
 
       // define stuff we need to do the split
       CORE::LINALG::Matrix<6, 6> cmatdev;
       CORE::LINALG::Matrix<6, 1> stressdev;
 
       // do just the deviatoric components
-      NStet5Type::DevStressTangent(stressdev, cmatdev, cmat, stress, cauchygreen);
+      NStet5Type::dev_stress_tangent(stressdev, cmatdev, cmat, stress, cauchygreen);
       stress = stressdev;
       cmat = cmatdev;
 
@@ -478,7 +478,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
     }
 #else
     {
-      SelectMaterial(stress, cmat, density, glstrain, F, 0);
+      select_material(stress, cmat, density, glstrain, F, 0);
       stress.Scale(ALPHA_NSTET5);
       cmat.Scale(ALPHA_NSTET5);
       glstrainbar = glstrain;
@@ -776,7 +776,7 @@ void DRT::ELEMENTS::NStet5::nstet5lumpmass(CORE::LINALG::Matrix<15, 15>* emass)
 /*----------------------------------------------------------------------*
  | material laws for NStet5 (protected)                        gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5::SelectMaterial(CORE::LINALG::Matrix<6, 1>& stress,
+void DRT::ELEMENTS::NStet5::select_material(CORE::LINALG::Matrix<6, 1>& stress,
     CORE::LINALG::Matrix<6, 6>& cmat, double& density, CORE::LINALG::Matrix<6, 1>& glstrain,
     CORE::LINALG::Matrix<3, 3>& defgrd, int gp)
 {
@@ -820,20 +820,20 @@ void DRT::ELEMENTS::NStet5::SelectMaterial(CORE::LINALG::Matrix<6, 1>& stress,
 
   /*--------------------------------------------------------------------*/
   return;
-}  // DRT::ELEMENTS::NStet5::SelectMaterial
+}  // DRT::ELEMENTS::NStet5::select_material
 
 
 
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)     gee 03/12|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::NStet5::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::NStet5::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
 {
-  FOUR_C_THROW("DRT::ELEMENTS::NStet5::EvaluateNeumann not implemented");
+  FOUR_C_THROW("DRT::ELEMENTS::NStet5::evaluate_neumann not implemented");
   return -1;
-}  // DRT::ELEMENTS::NStet5::EvaluateNeumann
+}  // DRT::ELEMENTS::NStet5::evaluate_neumann
 
 FOUR_C_NAMESPACE_CLOSE

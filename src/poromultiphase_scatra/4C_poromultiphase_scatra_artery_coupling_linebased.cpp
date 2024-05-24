@@ -76,7 +76,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::Setup()
   // print out summary of pairs
   if (contdis_->Name() == "porofluid" &&
       (CORE::UTILS::IntegralValue<int>(couplingparams_, "PRINT_OUT_SUMMARY_PAIRS")))
-    OutputSummary();
+    output_summary();
 
   issetup_ = true;
 }
@@ -119,7 +119,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::get_additional_dbc_
   std::vector<int> mydirichdofs(0);
 
   const int numrownodes = arterydis_->NumMyRowNodes();
-  const Epetra_Map* dofrowmap = arterydis_->DofRowMap();
+  const Epetra_Map* dofrowmap = arterydis_->dof_row_map();
 
   for (int inode = 0; inode < numrownodes; ++inode)
   {
@@ -173,7 +173,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::pre_evaluate_c
 {
   // pre-evaluate
   for (unsigned i = 0; i < coupl_elepairs_.size(); i++)
-    coupl_elepairs_[i]->PreEvaluate(Teuchos::null);
+    coupl_elepairs_[i]->pre_evaluate(Teuchos::null);
 
   // delete the inactive and duplicate pairs
   std::vector<Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>>
@@ -183,8 +183,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::pre_evaluate_c
     const int contelegid = coupl_elepairs_[i]->Ele2GID();
     DRT::Element* contele = contdis_->gElement(contelegid);
 
-    if (coupl_elepairs_[i]->IsActive() &&
-        !IsDuplicateSegment(active_coupl_elepairs, coupl_elepairs_[i]) &&
+    if (coupl_elepairs_[i]->is_active() &&
+        !is_duplicate_segment(active_coupl_elepairs, coupl_elepairs_[i]) &&
         contele->Owner() == myrank_)
       active_coupl_elepairs.push_back(coupl_elepairs_[i]);
   }
@@ -219,7 +219,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::pre_evaluate_c
           {
             // we need this to get the ele2gid
             int id = -1;
-            if (IsIdenticalSegment(active_coupl_elepairs, artelegid, eta_a, eta_b, id))
+            if (is_identical_segment(active_coupl_elepairs, artelegid, eta_a, eta_b, id))
             {
               const int ele2gid = active_coupl_elepairs[id]->Ele2GID();
               duplicates[artelegid].push_back((double)(ele2gid));
@@ -265,7 +265,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::pre_evaluate_c
           const int ele_to_be_erased = std::max(ele_i, ele_j);
           int id = -1;
           // delete the duplicate with the larger ele2gid
-          if (IsIdenticalSegment(active_coupl_elepairs, artelegid, eta_a, eta_b, id))
+          if (is_identical_segment(active_coupl_elepairs, artelegid, eta_a, eta_b, id))
           {
             if (active_coupl_elepairs[id]->Ele2GID() == ele_to_be_erased)
             {
@@ -317,7 +317,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::fill_unaffecte
         int id = -1;
         // return also id -> index in coupl_elepairs_ of this segment
         // and set iseg as segment id of the coupling pairs
-        if (IsIdenticalSegment(coupl_elepairs_, artelegid, etaA, etaB, id))
+        if (is_identical_segment(coupl_elepairs_, artelegid, etaA, etaB, id))
           coupl_elepairs_[id]->SetSegmentID(iseg);
       }
     }
@@ -332,8 +332,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::fill_unaffecte
 
   // initialize the unaffected and current lengths
   unaffected_seg_lengths_artery_ =
-      Teuchos::rcp(new Epetra_FEVector(*arterydis_->DofRowMap(1), true));
-  current_seg_lengths_artery_ = Teuchos::rcp(new Epetra_FEVector(*arterydis_->DofRowMap(1)));
+      Teuchos::rcp(new Epetra_FEVector(*arterydis_->dof_row_map(1), true));
+  current_seg_lengths_artery_ = Teuchos::rcp(new Epetra_FEVector(*arterydis_->dof_row_map(1)));
 
   // set segment ID on coupling pairs and fill the unaffected artery length
   for (int iele = 0; iele < arterydis_->ElementColMap()->NumMyElements(); ++iele)
@@ -363,7 +363,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::fill_unaffecte
 
       // return also id -> index in coupl_elepairs_ of this segment
       // and set iseg as segment id of the coupling pairs
-      if (IsIdenticalSegment(coupl_elepairs_, artelegid, etaA, etaB, id))
+      if (is_identical_segment(coupl_elepairs_, artelegid, etaA, etaB, id))
         coupl_elepairs_[id]->SetSegmentID(iseg);
     }
   }
@@ -885,7 +885,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::depth_first_se
     // depth-first search with all nodes of this element
     if (diam >= arterymat->CollapseThreshold())
     {
-      for (int i_node = 0; i_node < Elements[i_element]->NumNode(); i_node++)
+      for (int i_node = 0; i_node < Elements[i_element]->num_node(); i_node++)
       {
         if ((*visited)[Nodes[i_node]->LID()] == 0)
           depth_first_search_util(Nodes[i_node], visited, artconncompdis,
@@ -960,7 +960,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::get_ele_segment_len
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::IsDuplicateSegment(
+bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::is_duplicate_segment(
     const std::vector<Teuchos::RCP<
         POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>>& coupl_elepairs,
     const Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>
@@ -974,12 +974,12 @@ bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::IsDuplicateSeg
   const int ele1gid = possible_duplicate->Ele1GID();
   int elepairID = -1;
 
-  return IsIdenticalSegment(coupl_elepairs, ele1gid, eta_a, eta_b, elepairID);
+  return is_identical_segment(coupl_elepairs, ele1gid, eta_a, eta_b, elepairID);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::IsIdenticalSegment(
+bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::is_identical_segment(
     const std::vector<Teuchos::RCP<
         POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>>& coupl_elepairs,
     const int& ele1gid, const double& etaA, const double& etaB, int& elepairID)
@@ -1038,7 +1038,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::ApplyMeshMovem
   }
 
   // set state on artery dis
-  arterydis_->SetState(1, "curr_seg_lengths",
+  arterydis_->set_state(1, "curr_seg_lengths",
       Teuchos::rcp(new Epetra_Vector(Copy, *current_seg_lengths_artery_, 0)));
 }
 
@@ -1052,7 +1052,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::print_out_coup
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::OutputSummary() const
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::output_summary() const
 {
   if (myrank_ == 0)
   {

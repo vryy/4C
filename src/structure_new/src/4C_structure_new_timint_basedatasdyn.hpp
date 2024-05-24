@@ -86,18 +86,21 @@ namespace STR
 
      protected:
       /// get the indicator state
-      inline const bool& IsInit() const { return isinit_; };
+      inline const bool& is_init() const { return isinit_; };
 
       /// get the indicator state
-      inline const bool& IsSetup() const { return issetup_; };
+      inline const bool& is_setup() const { return issetup_; };
 
       /// Check if Init() has been called, yet.
-      inline void CheckInit() const { FOUR_C_ASSERT(IsInit(), "Init() has not been called, yet!"); }
+      inline void check_init() const
+      {
+        FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
+      }
 
       /// Check if Init() and Setup() have been called, yet.
-      inline void CheckInitSetup() const
+      inline void check_init_setup() const
       {
-        FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+        FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
       }
 
      public:
@@ -107,111 +110,111 @@ namespace STR
       /// Returns final time \f$t_\text{fin}\f$
       const double& GetTimeMax() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return timemax_;
       };
 
       /// Returns final time step \f$N\f$
       const int& GetStepMax() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return stepmax_;
       };
 
       bool is_restarting_initial_state() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return isrestarting_initial_state_;
       }
 
       /// Returns timer for solution technique
       Teuchos::RCP<const Teuchos::Time> GetTimer() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return timer_;
       };
 
       /// Returns dynamic type
       const enum INPAR::STR::DynamicType& GetDynamicType() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return dyntype_;
       };
 
       /// Get type of shell thickness scaling
       const enum INPAR::STR::StcScale& GetSTCAlgoType() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return stcscale_;
       };
 
       /// Get number of layers for multilayered shell thickness scaling case
       const int& GetSTCLayer() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return stclayer_;
       };
 
       /// Returns minimal non-linear iteration number
       const int& GetIterMin() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return itermin_;
       };
 
       /// Returns maximal non-linear iteration number
       const int& GetIterMax() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return itermax_;
       };
 
       /// Returns true if the external load should be linearized
       const bool& GetLoadLin() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return loadlin_;
       }
 
       // Return time until the prestressing algorthm should be applied
       double GetPreStressTime() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return prestresstime_;
       }
 
       /// Returns the tolerance for the displacements during prestressing
       double get_pre_stress_displacement_tolerance() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return prestress_displacement_tolerance_;
       }
 
       /// Returns the minimum number of load steps during prestressing
       [[nodiscard]] int get_pre_stress_minimum_number_of_load_steps() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return prestress_min_number_of_load_steps_;
       }
 
       /// Returns prestress type
       const enum INPAR::STR::PreStress& GetPreStressType() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return prestresstype_;
       };
 
       /// Returns predictor type
       const enum INPAR::STR::PredEnum& GetPredictorType() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return predtype_;
       };
 
       /// Returns nonlinear solver type
       const enum INPAR::STR::NonlinSolTech& GetNlnSolverType() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return nlnsolvertype_;
       };
 
@@ -219,35 +222,35 @@ namespace STR
       /// Short: What to do if the non-linear solver fails.
       const enum INPAR::STR::DivContAct& GetDivergenceAction() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return divergenceaction_;
       };
 
       /// Returns mid-time energy type
       enum INPAR::STR::MidAverageEnum get_mid_time_energy_type() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return mid_time_energy_type_;
       }
 
       /// Returns number of times you want to halve your timestep in case nonlinear solver diverges
       const int& get_max_div_con_refine_level() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return maxdivconrefinementlevel_;
       };
 
       /// Returns nox parameters
       const Teuchos::ParameterList& GetNoxParams() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return *noxparams_;
       }
 
       /// Returns loca parameters
       const Teuchos::ParameterList& GetLocaParams() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return *locaparams_;
       }
 
@@ -262,7 +265,7 @@ namespace STR
       const std::map<enum INPAR::STR::ModelType, Teuchos::RCP<CORE::LINALG::Solver>>&
       GetLinSolvers() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return *linsolvers_;
       }
       ///@}
@@ -273,21 +276,21 @@ namespace STR
       /// Returns damping type
       const enum INPAR::STR::DampKind& GetDampingType() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return damptype_;
       };
 
       /// Returns damping factor for stiffness \f$c_\text{K}\f$
       const double& get_damping_stiffness_factor() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return dampk_;
       };
 
       /// Returns damping factor for mass \f$c_\text{M}\f$
       const double& get_damping_mass_factor() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return dampm_;
       };
       ///@}
@@ -297,19 +300,19 @@ namespace STR
       /// Returns mass linearization type
       const enum INPAR::STR::MassLin& GetMassLinType() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return masslintype_;
       };
 
       const bool& IsMassLumping() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return lumpmass_;
       }
 
       const bool& NeglectInertia() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return neglectinertia_;
       }
       ///@}
@@ -319,14 +322,14 @@ namespace STR
       /// Returns types of the current models
       const std::set<enum INPAR::STR::ModelType>& GetModelTypes() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return *modeltypes_;
       };
 
       /// Returns current active element technologies
       const std::set<enum INPAR::STR::EleTech>& get_element_technologies() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return *eletechs_;
       };
 
@@ -342,7 +345,7 @@ namespace STR
       /// Returns periodic bounding box object (read access)
       Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& get_periodic_bounding_box() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return periodic_boundingbox_;
       }
       ///@}
@@ -352,21 +355,21 @@ namespace STR
       /// Returns the STR vector norm type
       const enum INPAR::STR::VectorNorm& GetNormType() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return normtype_;
       }
 
       /// Returns the NOX normtype
       const enum ::NOX::Abstract::Vector::NormType& GetNoxNormType() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return nox_normtype_;
       }
 
       /// Return random factor for timestep in case nonlinear solver diverges
       const double& get_random_time_step_factor() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return rand_tsfac_;
       }
 
@@ -374,7 +377,7 @@ namespace STR
       /// Return level of refinement in case of divercontype_ == adapt_step
       const int& get_div_con_refine_level() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return divconrefinementlevel_;
       }
 
@@ -382,7 +385,7 @@ namespace STR
       /// Return number of fine steps in case of in case of divercontype_ == adapt_step
       const int& get_div_con_num_fine_step() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return divconnumfinestep_;
       }
 
@@ -441,88 +444,88 @@ namespace STR
       /// Returns final time \f$t_\text{fin}\f$
       double& GetTimeMax()
       {
-        CheckInitSetup();
+        check_init_setup();
         return timemax_;
       };
 
       /// Returns final time step \f$N\f$
       int& GetStepMax()
       {
-        CheckInitSetup();
+        check_init_setup();
         return stepmax_;
       };
 
       /// Returns timer for solution technique
       Teuchos::RCP<Teuchos::Time>& GetTimer()
       {
-        CheckInitSetup();
+        check_init_setup();
         return timer_;
       };
 
       /// Returns minimal non-linear iteration number
       int& GetIterMin()
       {
-        CheckInitSetup();
+        check_init_setup();
         return itermin_;
       };
 
       /// Returns maximal non-linear iteration number
       int& GetIterMax()
       {
-        CheckInitSetup();
+        check_init_setup();
         return itermax_;
       };
 
       double& GetPreStressTime()
       {
-        CheckInitSetup();
+        check_init_setup();
         return prestresstime_;
       }
 
       double& get_pre_stress_displacement_tolerance()
       {
-        CheckInitSetup();
+        check_init_setup();
         return prestress_displacement_tolerance_;
       }
 
       [[nodiscard]] int& get_pre_stress_minimum_number_of_load_steps()
       {
-        CheckInitSetup();
+        check_init_setup();
         return prestress_min_number_of_load_steps_;
       }
 
       /// Returns prestress type
       enum INPAR::STR::PreStress& GetPreStressType()
       {
-        CheckInitSetup();
+        check_init_setup();
         return prestresstype_;
       };
 
       /// Returns predictor type
       enum INPAR::STR::PredEnum& GetPredictorType()
       {
-        CheckInitSetup();
+        check_init_setup();
         return predtype_;
       };
 
       /// Returns dynamic type
       enum INPAR::STR::DynamicType& GetDynamicType()
       {
-        CheckInitSetup();
+        check_init_setup();
         return dyntype_;
       };
 
       /// Returns nonlinear solver type
       enum INPAR::STR::NonlinSolTech& GetNlnSolverType()
       {
-        CheckInitSetup();
+        check_init_setup();
         return nlnsolvertype_;
       };
 
       /// Returns mid-time energy type
       enum INPAR::STR::MidAverageEnum& get_mid_time_energy_type()
       {
-        CheckInitSetup();
+        check_init_setup();
         return mid_time_energy_type_;
       }
 
@@ -530,49 +533,49 @@ namespace STR
       /// Short: What to do if the non-linear solver fails.
       enum INPAR::STR::DivContAct& GetDivergenceAction()
       {
-        CheckInitSetup();
+        check_init_setup();
         return divergenceaction_;
       };
 
       /// Returns nox parameters
       Teuchos::ParameterList& GetNoxParams()
       {
-        CheckInitSetup();
+        check_init_setup();
         return *noxparams_;
       }
 
       /// Returns nox parameters
       Teuchos::RCP<Teuchos::ParameterList> GetNoxParamsPtr()
       {
-        CheckInitSetup();
+        check_init_setup();
         return noxparams_;
       }
 
       /// Returns loca parameters
       Teuchos::ParameterList& GetLocaParams()
       {
-        CheckInitSetup();
+        check_init_setup();
         return *locaparams_;
       }
 
       /// Return random factor for time step in case nonlinear solver diverges
       double& get_random_time_step_factor()
       {
-        CheckInitSetup();
+        check_init_setup();
         return rand_tsfac_;
       }
 
       /// Return level of refinement in case of divercontype_ == adapt_step
       int& get_div_con_refine_level()
       {
-        CheckInitSetup();
+        check_init_setup();
         return divconrefinementlevel_;
       }
 
       /// Return number of fine steps in case of in case of divercontype_ == adapt_step
       int& get_div_con_num_fine_step()
       {
-        CheckInitSetup();
+        check_init_setup();
         return divconnumfinestep_;
       }
 
@@ -584,14 +587,14 @@ namespace STR
       Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<CORE::LINALG::Solver>>>
       GetLinSolversPtr()
       {
-        CheckInitSetup();
+        check_init_setup();
         return linsolvers_;
       }
 
       /// Returns linear solvers pointer
       std::map<enum INPAR::STR::ModelType, Teuchos::RCP<CORE::LINALG::Solver>>& GetLinSolvers()
       {
-        CheckInitSetup();
+        check_init_setup();
         return *linsolvers_;
       }
       ///@}
@@ -602,21 +605,21 @@ namespace STR
       /// Returns damping type
       enum INPAR::STR::DampKind& GetDampingType()
       {
-        CheckInitSetup();
+        check_init_setup();
         return damptype_;
       };
 
       /// Returns damping factor for stiffness \f$c_\text{K}\f$
       double& get_damping_stiffness_factor()
       {
-        CheckInitSetup();
+        check_init_setup();
         return dampk_;
       };
 
       /// Returns damping factor for mass \f$c_\text{M}\f$
       double& get_damping_mass_factor()
       {
-        CheckInitSetup();
+        check_init_setup();
         return dampm_;
       };
       ///@}
@@ -626,7 +629,7 @@ namespace STR
       /// Returns mass linearization type
       enum INPAR::STR::MassLin& GetMassLinType()
       {
-        CheckInitSetup();
+        check_init_setup();
         return masslintype_;
       };
       ///@}
@@ -636,14 +639,14 @@ namespace STR
       /// Returns types of the current active models
       std::set<enum INPAR::STR::ModelType>& GetModelTypes()
       {
-        CheckInitSetup();
+        check_init_setup();
         return *modeltypes_;
       };
 
       /// Returns the current active element technologies
       std::set<enum INPAR::STR::EleTech>& get_element_technologies()
       {
-        CheckInitSetup();
+        check_init_setup();
         return *eletechs_;
       };
 
@@ -659,14 +662,14 @@ namespace STR
       /// Returns type of initial displacement
       enum INPAR::STR::InitialDisp GetInitialDisp() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return initial_disp_;
       };
 
       /// Returns the function index to initialize the displacement
       int StartFuncNo() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return start_func_no_;
       }
       ///@}
@@ -678,7 +681,7 @@ namespace STR
        * Do not call it from outside! */
       const Teuchos::ParameterList& GetSDynParams() const
       {
-        CheckInit();
+        check_init();
         return *sdynparams_ptr_;
       }
 
@@ -1020,42 +1023,42 @@ namespace STR
       //! returns the mid-average type (for more information see MidAverageEnum)
       const enum INPAR::STR::MidAverageEnum& GetMidAverageType() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return midavg_;
       };
 
       //! Return time integration parameter \f$\beta\f$
       const double& GetBeta() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return beta_;
       };
 
       //! Return time integration parameter \f$\gamma\f$
       const double& GetGamma() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return gamma_;
       };
 
       //! Return time integration parameter \f$\alpha_f\f$
       const double& GetAlphaF() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return alphaf_;
       };
 
       //! Return time integration parameter \f$\alpha_m\f$
       const double& GetAlphaM() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return alpham_;
       };
 
       //! Return spectral radius \f$\rho_\infty\f$
       const double& GetRhoInf() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return rhoinf_;
       };
 
@@ -1101,9 +1104,9 @@ namespace STR
       //! @{
 
       //! Return time integration parameter \f$\theta\f$
-      const double& GetTheta() const
+      const double& get_theta() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return theta_;
       };
 
@@ -1136,7 +1139,7 @@ namespace STR
       //! Return time integration parameter \f$\theta\f$
       bool get_modified_forward_euler() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return modexpleuler_;
       };
 

@@ -142,7 +142,7 @@ void DRT::ELEMENTS::FluidPoro::Unpack(const std::vector<char>& data)
   // anisotropic_permeability_nodal_coeffs_
   size = 0;
   ExtractfromPack(position, data, size);
-  anisotropic_permeability_nodal_coeffs_.resize(size, std::vector<double>(this->NumNode(), 0.0));
+  anisotropic_permeability_nodal_coeffs_.resize(size, std::vector<double>(this->num_node(), 0.0));
   for (int i = 0; i < size; ++i)
     ExtractfromPack(position, data, anisotropic_permeability_nodal_coeffs_[i]);
 

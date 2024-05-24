@@ -53,9 +53,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Shell7pType::ComputeNullSpace(
   auto* shell = dynamic_cast<DRT::ELEMENTS::Shell7p*>(node.Elements()[0]);
   if (!shell) FOUR_C_THROW("Cannot cast to Shell7p");
   int j;
-  for (j = 0; j < shell->NumNode(); ++j)
+  for (j = 0; j < shell->num_node(); ++j)
     if (shell->Nodes()[j]->Id() == node.Id()) break;
-  if (j == shell->NumNode()) FOUR_C_THROW("Can't find matching node..!");
+  if (j == shell->num_node()) FOUR_C_THROW("Can't find matching node..!");
   double half_thickness = shell->GetThickness() / 2.0;
 
   // set director

@@ -178,7 +178,7 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -205,7 +205,7 @@ namespace DRT
       virtual double estimate_nitsche_trace_max_eigenvalue_tsi(std::vector<double>& parent_disp);
 
       //! Return a pointer to the parent element of this boundary element
-      virtual DRT::Element* ParentElement() const { return ParentMasterElement(); }
+      virtual DRT::Element* parent_element() const { return ParentMasterElement(); }
 
       //! Return local surface number
       int LSurfNumber() const { return FaceMasterNumber(); }
@@ -264,7 +264,7 @@ namespace DRT
       \param x      (in)  : nodal coords in either material or spatial frame
       \param deriv  (in)  : derivatives of shape functions
       */
-      void SurfaceIntegration(double& detA, std::vector<double>& normal,
+      void surface_integration(double& detA, std::vector<double>& normal,
           const CORE::LINALG::SerialDenseMatrix& x, const CORE::LINALG::SerialDenseMatrix& deriv);
 
       /*!
@@ -276,8 +276,8 @@ namespace DRT
       \param x      (in)  : nodal coords in either material or spatial frame
       \param deriv  (in)  : derivatives of shape functions
       */
-      void SurfaceIntegration(std::vector<double>& normal, const CORE::LINALG::SerialDenseMatrix& x,
-          const CORE::LINALG::SerialDenseMatrix& deriv);
+      void surface_integration(std::vector<double>& normal,
+          const CORE::LINALG::SerialDenseMatrix& x, const CORE::LINALG::SerialDenseMatrix& deriv);
 
       /*!
       \brief Linearize a Neumann boundary condition analytically
@@ -303,7 +303,7 @@ namespace DRT
       */
       inline void material_configuration(CORE::LINALG::SerialDenseMatrix& x) const
       {
-        const int numnode = NumNode();
+        const int numnode = num_node();
         for (int i = 0; i < numnode; ++i)
         {
           x(i, 0) = Nodes()[i]->X()[0];
@@ -322,7 +322,7 @@ namespace DRT
       inline void spatial_configuration(
           CORE::LINALG::SerialDenseMatrix& x, const std::vector<double>& disp) const
       {
-        const int numnode = NumNode();
+        const int numnode = num_node();
         for (int i = 0; i < numnode; ++i)
         {
           x(i, 0) = Nodes()[i]->X()[0] + disp[i * 3 + 0];
@@ -342,7 +342,7 @@ namespace DRT
       inline void spatial_configuration(CORE::LINALG::SerialDenseMatrix& x,
           CORE::LINALG::SerialDenseMatrix& xrefe, const std::vector<double>& disp) const
       {
-        const int numnode = NumNode();
+        const int numnode = num_node();
         for (int i = 0; i < numnode; ++i)
         {
           x(i, 0) = xrefe(i, 0) + disp[i * 3 + 0];
@@ -353,7 +353,7 @@ namespace DRT
       }
 
       //! Submethod to compute the enclosed volume for volume constraint boundary condition
-      double ComputeConstrVols(
+      double compute_constr_vols(
           const CORE::LINALG::SerialDenseMatrix& xc,  ///< current configuration
           const int numnode                           ///< num nodes
       );
@@ -373,8 +373,8 @@ namespace DRT
 
       //! Submethod to compute constraint volume and its first and second derivatives w.r.t. the
       //! displacements
-      void ComputeVolDeriv(const CORE::LINALG::SerialDenseMatrix& x,  ///< spatial configuration
-          const int numnode,                                          ///< number of nodes
+      void compute_vol_deriv(const CORE::LINALG::SerialDenseMatrix& x,  ///< spatial configuration
+          const int numnode,                                            ///< number of nodes
           const int ndof,  ///< number of degrees of freedom
           double& V,       ///< volume
           const Teuchos::RCP<CORE::LINALG::SerialDenseVector>& Vdiff,   ///< first derivative
@@ -397,10 +397,10 @@ namespace DRT
       explicit StructuralSurface(int id, int owner);
 
       //! Set Discretization Type of the Surface Element
-      void SetDistype();
+      void set_distype();
 
       //! Set Gaussrule dependent on shape of the structural surface
-      void SetGaussrule();
+      void set_gaussrule();
 
 
       /// @name private methods for calculation of trace inequality matrices
@@ -439,7 +439,7 @@ namespace DRT
 
       //! setup projector for removing the rigid body modes from the generalized eigenvalue problem
       template <CORE::FE::CellType dt_vol>
-      void SubspaceProjector(const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
+      void subspace_projector(const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
           CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol> * CORE::FE::dim<dt_vol>,
               CORE::FE::num_nodes<dt_vol> * CORE::FE::dim<dt_vol> -
                   CORE::FE::dim<dt_vol>*(CORE::FE::dim<dt_vol> + 1) / 2>& proj);

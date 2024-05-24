@@ -199,10 +199,10 @@ namespace SCATRA
     Teuchos::RCP<CORE::LINALG::SparseOperator> InitSystemMatrix() const;
 
     //! prepare time loop
-    virtual void PrepareTimeLoop();
+    virtual void prepare_time_loop();
 
     //! setup the variables to do a new time step
-    virtual void PrepareTimeStep();
+    virtual void prepare_time_step();
 
     //! initialization procedure prior to evaluation of first time step
     virtual void prepare_first_time_step();
@@ -223,7 +223,7 @@ namespace SCATRA
     void set_time_stepping_to_micro_scale();
 
     //! set timestep value
-    virtual void SetDt(const double newdt)
+    virtual void set_dt(const double newdt)
     {
       dta_ = newdt;
       // We have to set the newdt in the ele_calc's as well:
@@ -277,7 +277,7 @@ namespace SCATRA
     };
 
     //! read restart data
-    virtual void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null);
+    virtual void read_restart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
     //! setup natural convection
     virtual void SetupNatConv();
@@ -424,7 +424,7 @@ namespace SCATRA
     void ScaleGradientsToOne(Teuchos::RCP<Epetra_MultiVector> state);
 
     //! finite difference check for scalar transport system matrix
-    virtual void FDCheck();
+    virtual void fd_check();
 
     //! apply Neumann and Dirichlet BC to system
     void ApplyBCToSystem();
@@ -469,7 +469,7 @@ namespace SCATRA
     bool IsEMD() const { return isemd_; };
 
     //! print information about current time step to screen
-    virtual void PrintTimeStepInfo();
+    virtual void print_time_step_info();
 
     //! convert dof-based result vector into node-based multi-vector for postprocessing
     [[nodiscard]] Teuchos::RCP<Epetra_MultiVector> convert_dof_vector_to_componentwise_node_vector(
@@ -547,10 +547,10 @@ namespace SCATRA
     void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove);
 
     //! return pointer to const dofrowmap
-    Teuchos::RCP<const Epetra_Map> DofRowMap();
+    Teuchos::RCP<const Epetra_Map> dof_row_map();
 
     //! return pointer to const dofrowmap of specified dofset
-    Teuchos::RCP<const Epetra_Map> DofRowMap(int nds);
+    Teuchos::RCP<const Epetra_Map> dof_row_map(int nds);
 
     //! return discretization
     Teuchos::RCP<DRT::Discretization> Discretization() const override { return discret_; }
@@ -576,13 +576,13 @@ namespace SCATRA
     void WriteResult();
 
     //! Convergence check for two way coupled ScaTra problems.
-    bool ConvergenceCheck(int itnum, int itmax, const double ittol);
+    bool convergence_check(int itnum, int itmax, const double ittol);
 
     //! return solver
     const Teuchos::RCP<CORE::LINALG::Solver>& Solver() const { return solver_; }
 
     //! return parameters for finite difference check
-    INPAR::SCATRA::FDCheck FDCheckType() const { return fdcheck_; };
+    INPAR::SCATRA::FdCheck FDCheckType() const { return fdcheck_; };
     double FDCheckEps() const { return fdcheckeps_; };
     double FDCheckTol() const { return fdchecktol_; };
 
@@ -649,7 +649,7 @@ namespace SCATRA
     //! return time step size
     double Dt() const { return dta_; }
 
-    //! return if time step was changed during AdaptTimeStepSize()
+    //! return if time step was changed during adapt_time_step_size()
     bool TimeStepAdapted() const { return timestepadapted_; };
 
     /*========================================================================*/
@@ -697,7 +697,7 @@ namespace SCATRA
     /*--- calculate and update -----------------------------------------------*/
 
     //! call elements to calculate system matrix and rhs and assemble
-    virtual void AssembleMatAndRHS();
+    virtual void assemble_mat_and_rhs();
 
     //! compute time derivatives of discrete state variables
     virtual void compute_time_derivative();
@@ -997,7 +997,7 @@ namespace SCATRA
     virtual double ResidualScaling() const = 0;
 
     //! solve linear system
-    void LinearSolve();
+    void linear_solve();
 
     //! contains the nonlinear iteration loop
     virtual void NonlinearSolve();
@@ -1046,16 +1046,16 @@ namespace SCATRA
     /*--- query and output ---------------------------------------------------*/
 
     //! returns true if \ref Setup() was called and is still valid
-    bool IsSetup() const { return issetup_; };
+    bool is_setup() const { return issetup_; };
 
     //! returns true if \ ref Init() was called and is still valid
-    bool IsInit() const { return isinit_; };
+    bool is_init() const { return isinit_; };
 
     //! check if \ref Setup() was called
     void CheckIsSetup() const;
 
     //! check if \ref Init() was called
-    void CheckIsInit() const;
+    void check_is_init() const;
 
     //! helper function to get algorithm title
     std::string map_tim_int_enum_to_string(
@@ -1072,7 +1072,7 @@ namespace SCATRA
     };
 
     //! write state vectors (phinp and convective velocity) to BINIO
-    virtual void OutputState();
+    virtual void output_state();
 
     //! write state vectors (phinp and convective velocity) to Gmsh postprocessing files
     void OutputToGmsh(const int step, const double time) const;
@@ -1089,7 +1089,7 @@ namespace SCATRA
     /*--- set, prepare, and predict ------------------------------------------*/
 
     //! adapt time step size if desired
-    void AdaptTimeStepSize();
+    void adapt_time_step_size();
 
     //! compute time step size
     virtual void ComputeTimeStepSize(double& dt);
@@ -1148,7 +1148,7 @@ namespace SCATRA
     virtual void dynamic_computation_of_cv() = 0;
 
     //! calculate mean CsgsB to estimate CsgsD for multifractal subgrid-scale model
-    void RecomputeMeanCsgsB();
+    void recompute_mean_csgs_b();
 
     /*========================================================================*/
     //! @name  not classified method - to be kept clean!!!
@@ -1296,7 +1296,7 @@ namespace SCATRA
     const bool output_state_matlab_;
 
     //! flag for finite difference check
-    const INPAR::SCATRA::FDCheck fdcheck_;
+    const INPAR::SCATRA::FdCheck fdcheck_;
 
     //! perturbation magnitude for finite difference check
     const double fdcheckeps_;
@@ -1610,10 +1610,10 @@ namespace SCATRA
     /*========================================================================*/
 
     //! set flag true after setup or false if setup became invalid
-    void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; };
+    void set_is_setup(bool trueorfalse) { issetup_ = trueorfalse; };
 
     //! set flag true after init or false if init became invalid
-    void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
+    void set_is_init(bool trueorfalse) { isinit_ = trueorfalse; };
 
   };  // class ScaTraTimIntImpl
 

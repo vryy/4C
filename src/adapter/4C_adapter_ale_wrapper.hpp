@@ -39,7 +39,10 @@ namespace ADAPTER
     //@{
 
     //! initial guess of Newton's method
-    Teuchos::RCP<const Epetra_Vector> InitialGuess() const override { return ale_->InitialGuess(); }
+    Teuchos::RCP<const Epetra_Vector> initial_guess() const override
+    {
+      return ale_->initial_guess();
+    }
 
     //! right-hand-side of Newton's method
     Teuchos::RCP<const Epetra_Vector> RHS() const override { return ale_->RHS(); }
@@ -56,7 +59,7 @@ namespace ADAPTER
     //@{
 
     //! dof map of vector of unknowns
-    Teuchos::RCP<const Epetra_Map> DofRowMap() const override { return ale_->DofRowMap(); }
+    Teuchos::RCP<const Epetra_Map> dof_row_map() const override { return ale_->dof_row_map(); }
 
     //! direct access to system matrix
     Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override
@@ -106,14 +109,14 @@ namespace ADAPTER
     void Reset() override { ale_->Reset(); }
 
     //! reset last time step, needed for time step size adaptivity of FSI
-    void ResetStep() override { ale_->ResetStep(); }
+    void reset_step() override { ale_->reset_step(); }
 
     //@}
 
     //! @name Time step helpers
     //@{
 
-    void ResetTime(const double dtold) override { ale_->ResetTime(dtold); }
+    void reset_time(const double dtold) override { ale_->reset_time(dtold); }
     //! Return target time \f$t_{n+1}\f$
     double Time() const override { return ale_->Time(); }
 
@@ -134,10 +137,10 @@ namespace ADAPTER
     }
 
     //! set time step size
-    void SetDt(const double dtnew  ///< new time step size (to be set)
+    void set_dt(const double dtnew  ///< new time step size (to be set)
         ) override
     {
-      ale_->SetDt(dtnew);
+      ale_->set_dt(dtnew);
     }
 
     //! Set time and step
@@ -149,7 +152,7 @@ namespace ADAPTER
     }
 
     //! start new time step
-    void PrepareTimeStep() override { ale_->PrepareTimeStep(); }
+    void prepare_time_step() override { ale_->prepare_time_step(); }
 
     //! update displacement and evaluate elements
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc =
@@ -182,10 +185,10 @@ namespace ADAPTER
 
 
     //! read restart information for given time step \p step
-    void ReadRestart(const int step  ///< step number to read restart from
+    void read_restart(const int step  ///< step number to read restart from
         ) override
     {
-      return ale_->ReadRestart(step);
+      return ale_->read_restart(step);
     }
 
     //@}
@@ -261,7 +264,7 @@ namespace ADAPTER
     explicit AleNOXCorrectionWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(ale) {}
 
     //! Prepare time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     /*! \brief Evaluate() routine that can handle NOX step increments
      *

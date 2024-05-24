@@ -169,7 +169,7 @@ int NOX::FSI::LinearSystemGCR::SolveGCR(
   if (not zeroInitialGuess)
   {
     // calculate initial residual
-    if (not applyJacobian(x, r)) throwError("SolveGCR", "applyJacobian failed");
+    if (not applyJacobian(x, r)) throw_error("SolveGCR", "applyJacobian failed");
     r.update(1., b, -1.);
   }
   else
@@ -203,7 +203,7 @@ int NOX::FSI::LinearSystemGCR::SolveGCR(
   {
     // this is GCR, not GMRESR
     u.push_back(Teuchos::rcp(new ::NOX::Epetra::Vector(r)));
-    if (not applyJacobian(r, tmp)) throwError("SolveGCR", "applyJacobian failed");
+    if (not applyJacobian(r, tmp)) throw_error("SolveGCR", "applyJacobian failed");
     c.push_back(Teuchos::rcp(new ::NOX::Epetra::Vector(tmp)));
 
     for (int i = 0; i < k; ++i)
@@ -250,7 +250,7 @@ int NOX::FSI::LinearSystemGCR::SolveGMRES(
   if (not zeroInitialGuess)
   {
     // calculate initial residual
-    if (not applyJacobian(x, r)) throwError("SolveGMRES", "applyJacobian failed");
+    if (not applyJacobian(x, r)) throw_error("SolveGMRES", "applyJacobian failed");
     r.update(1., b, -1.);
   }
   else
@@ -286,7 +286,7 @@ int NOX::FSI::LinearSystemGCR::SolveGMRES(
     {
       Teuchos::Time t("GMRES", true);
       // w = M.solve(A * v[i]);
-      if (not applyJacobian(*v[i], w)) throwError("SolveGMRES", "applyJacobian failed");
+      if (not applyJacobian(*v[i], w)) throw_error("SolveGMRES", "applyJacobian failed");
       for (int k = 0; k <= i; k++)
       {
         H(k, i) = w.innerProduct(*v[k]);
@@ -339,7 +339,7 @@ int NOX::FSI::LinearSystemGCR::SolveGMRES(
     for (int k = 0; k <= m - 1; k++) x.update(y(k), *v[k], 1.);
 
     // Isn't there a cheaper way to calculate that?
-    if (not applyJacobian(x, r)) throwError("SolveGMRES", "applyJacobian failed");
+    if (not applyJacobian(x, r)) throw_error("SolveGMRES", "applyJacobian failed");
     r.update(1., b, -1.);
     beta = r.norm();
     if ((resid = beta / normb) < tol)
@@ -474,11 +474,11 @@ void NOX::FSI::LinearSystemGCR::setJacobianOperatorForSolve(
 void NOX::FSI::LinearSystemGCR::setPrecOperatorForSolve(
     const Teuchos::RCP<const Epetra_Operator>& solvePrecOp)
 {
-  throwError("setPrecOperatorForSolve", "no preconditioner supported");
+  throw_error("setPrecOperatorForSolve", "no preconditioner supported");
 }
 
 
-void NOX::FSI::LinearSystemGCR::throwError(
+void NOX::FSI::LinearSystemGCR::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   if (utils.isPrintType(::NOX::Utils::Error))

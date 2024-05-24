@@ -70,23 +70,23 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::CheckInitSetup() const
+void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::check_init_setup() const
 {
-  if (!IsInit() or !IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
+  if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::CheckInit() const
+void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::check_init() const
 {
-  if (not IsInit()) FOUR_C_THROW("Call Init() first!");
+  if (not is_init()) FOUR_C_THROW("Call Init() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 DRT::Discretization& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Discret()
 {
-  CheckInit();
+  check_init();
   return *discret_ptr_;
 }
 
@@ -94,7 +94,7 @@ DRT::Discretization& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Discret()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Discretization>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::DiscretPtr()
 {
-  CheckInit();
+  check_init();
   return discret_ptr_;
 }
 
@@ -103,7 +103,7 @@ Teuchos::RCP<DRT::Discretization>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::
 Teuchos::RCP<const DRT::Discretization> BEAMINTERACTION::SUBMODELEVALUATOR::Generic::DiscretPtr()
     const
 {
-  CheckInit();
+  check_init();
   return discret_ptr_;
 }
 
@@ -111,7 +111,7 @@ Teuchos::RCP<const DRT::Discretization> BEAMINTERACTION::SUBMODELEVALUATOR::Gene
  *----------------------------------------------------------------------------*/
 DRT::Discretization const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Discret() const
 {
-  CheckInit();
+  check_init();
   return *discret_ptr_;
 }
 
@@ -119,7 +119,7 @@ DRT::Discretization const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Discret(
  *----------------------------------------------------------------------------*/
 DRT::Discretization& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscret()
 {
-  CheckInit();
+  check_init();
   return *bindis_ptr_;
 }
 
@@ -127,7 +127,7 @@ DRT::Discretization& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscret()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Discretization>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscretPtr()
 {
-  CheckInit();
+  check_init();
   return bindis_ptr_;
 }
 
@@ -136,7 +136,7 @@ Teuchos::RCP<DRT::Discretization>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::
 Teuchos::RCP<const DRT::Discretization> BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscretPtr()
     const
 {
-  CheckInit();
+  check_init();
   return bindis_ptr_;
 }
 
@@ -144,7 +144,7 @@ Teuchos::RCP<const DRT::Discretization> BEAMINTERACTION::SUBMODELEVALUATOR::Gene
  *----------------------------------------------------------------------------*/
 DRT::Discretization const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscret() const
 {
-  CheckInit();
+  check_init();
   return *bindis_ptr_;
 }
 
@@ -152,7 +152,7 @@ DRT::Discretization const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscr
  *----------------------------------------------------------------------------*/
 STR::TIMINT::BaseDataGlobalState& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::GState()
 {
-  CheckInit();
+  check_init();
   return *gstate_ptr_;
 }
 
@@ -161,7 +161,7 @@ STR::TIMINT::BaseDataGlobalState& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::G
 Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::GStatePtr()
 {
-  CheckInit();
+  check_init();
   return gstate_ptr_;
 }
 
@@ -169,7 +169,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::GStatePtr()
  *----------------------------------------------------------------------------*/
 STR::TIMINT::BaseDataGlobalState const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::GState() const
 {
-  CheckInit();
+  check_init();
   return *gstate_ptr_;
 }
 
@@ -177,7 +177,7 @@ STR::TIMINT::BaseDataGlobalState const& BEAMINTERACTION::SUBMODELEVALUATOR::Gene
  *----------------------------------------------------------------------------*/
 STR::TIMINT::BaseDataIO& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::GInOutput()
 {
-  CheckInit();
+  check_init();
   return *gio_ptr_;
 }
 
@@ -185,7 +185,7 @@ STR::TIMINT::BaseDataIO& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::GInOutput(
  *----------------------------------------------------------------------------*/
 STR::TIMINT::BaseDataIO const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::GInOutput() const
 {
-  CheckInit();
+  check_init();
   return *gio_ptr_;
 }
 
@@ -194,7 +194,7 @@ STR::TIMINT::BaseDataIO const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::GInO
 STR::MODELEVALUATOR::BeamInteractionDataState&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_interaction_data_state()
 {
-  CheckInit();
+  check_init();
   return *beaminteractiondatastate_;
 }
 
@@ -203,7 +203,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_interaction_data_state()
 Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState>&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_interaction_data_state_ptr()
 {
-  CheckInit();
+  check_init();
   return beaminteractiondatastate_;
 }
 
@@ -212,7 +212,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_interaction_data_state_ptr()
 STR::MODELEVALUATOR::BeamInteractionDataState const&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_interaction_data_state() const
 {
-  CheckInit();
+  check_init();
   return *beaminteractiondatastate_;
 }
 
@@ -221,7 +221,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_interaction_data_state() const
 BEAMINTERACTION::BeamCrosslinkerHandler&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_crosslinker_handler()
 {
-  CheckInit();
+  check_init();
   return *beam_crosslinker_handler_;
 }
 
@@ -230,7 +230,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_crosslinker_handler()
 Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler>&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_crosslinker_handler_ptr()
 {
-  CheckInit();
+  check_init();
   return beam_crosslinker_handler_;
 }
 
@@ -238,7 +238,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_crosslinker_handler_ptr()
  *----------------------------------------------------------------------------*/
 BINSTRATEGY::BinningStrategy const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinStrategy() const
 {
-  CheckInit();
+  check_init();
   return *binstrategy_;
 }
 
@@ -246,7 +246,7 @@ BINSTRATEGY::BinningStrategy const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic:
  *----------------------------------------------------------------------------*/
 BINSTRATEGY::BinningStrategy& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinStrategy()
 {
-  CheckInit();
+  check_init();
   return *binstrategy_;
 }
 
@@ -255,7 +255,7 @@ BINSTRATEGY::BinningStrategy& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinSt
 Teuchos::RCP<BINSTRATEGY::BinningStrategy>&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinStrategyPtr()
 {
-  CheckInit();
+  check_init();
   return binstrategy_;
 }
 
@@ -264,7 +264,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinStrategyPtr()
 BEAMINTERACTION::BeamCrosslinkerHandler const&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_crosslinker_handler() const
 {
-  CheckInit();
+  check_init();
   return *beam_crosslinker_handler_;
 }
 
@@ -272,7 +272,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_crosslinker_handler() const
  *----------------------------------------------------------------------------*/
 CORE::GEO::MESHFREE::BoundingBox& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::PeriodicBoundingBox()
 {
-  CheckInit();
+  check_init();
   return *periodic_boundingbox_;
 }
 
@@ -281,7 +281,7 @@ CORE::GEO::MESHFREE::BoundingBox& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::P
 Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox>&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::periodic_bounding_box_ptr()
 {
-  CheckInit();
+  check_init();
   return periodic_boundingbox_;
 }
 
@@ -290,7 +290,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::periodic_bounding_box_ptr()
 CORE::GEO::MESHFREE::BoundingBox const&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::PeriodicBoundingBox() const
 {
-  CheckInit();
+  check_init();
   return *periodic_boundingbox_;
 }
 
@@ -299,7 +299,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::PeriodicBoundingBox() const
 BEAMINTERACTION::UTILS::MapExtractor&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::EleTypeMapExtractor()
 {
-  CheckInit();
+  check_init();
   eletypeextractor_->check_for_valid_map_extractor();
   return *eletypeextractor_;
 }
@@ -309,7 +309,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::EleTypeMapExtractor()
 Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor>&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::ele_type_map_extractor_ptr()
 {
-  CheckInit();
+  check_init();
   eletypeextractor_->check_for_valid_map_extractor();
   return eletypeextractor_;
 }
@@ -319,7 +319,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::ele_type_map_extractor_ptr()
 BEAMINTERACTION::UTILS::MapExtractor const&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::EleTypeMapExtractor() const
 {
-  CheckInit();
+  check_init();
   eletypeextractor_->check_for_valid_map_extractor();
   return *eletypeextractor_;
 }

@@ -465,7 +465,7 @@ void test_christoph_1()
     hex8_xyze(2, 7) = 0.84999999999999986677323704498122;
     nids.push_back(15339);
 
-    intersection.AddElement(1, nids, hex8_xyze, CORE::FE::CellType::hex8);
+    intersection.add_element(1, nids, hex8_xyze, CORE::FE::CellType::hex8);
 
     intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
   }

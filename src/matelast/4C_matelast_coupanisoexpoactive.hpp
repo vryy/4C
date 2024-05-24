@@ -246,7 +246,7 @@ namespace MAT
 
      private:
       /// Evaluate the first derivative of the active fiber potential w.r.t active fiber stretch
-      double EvaluatedPsiActive() const;
+      double evaluated_psi_active() const;
 
       /// my material parameters
       MAT::ELASTIC::PAR::CoupAnisoExpoActive* params_;

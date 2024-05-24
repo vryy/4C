@@ -73,7 +73,7 @@ void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(const DRT::Discretization
         {
           std::vector<int> predof = discret.Dof(0, discret.lRowElement(0));
           const int gid = predof[0];
-          const int lid = discret.DofRowMap(0)->LID(gid);
+          const int lid = discret.dof_row_map(0)->LID(gid);
 
           // set toggle vector
           info.toggle[lid] = 1;
@@ -85,7 +85,7 @@ void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(const DRT::Discretization
 
       // do only faces where all nodes are present in the node list
       bool faceRelevant = true;
-      int nummynodes = discret.lRowFace(i)->NumNode();
+      int nummynodes = discret.lRowFace(i)->num_node();
       const int* mynodes = discret.lRowFace(i)->NodeIds();
       for (int j = 0; j < nummynodes; ++j)
         if (!cond.ContainsNode(mynodes[j]))
@@ -236,7 +236,7 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const DRT::DiscretizationFa
         {
           std::vector<int> predof = discret.Dof(0, discret.lRowElement(0));
           const int gid = predof[0];
-          const int lid = discret.DofRowMap(0)->LID(gid);
+          const int lid = discret.dof_row_map(0)->LID(gid);
 
           // amend vector of DOF-IDs which are Dirichlet BCs
           if (systemvectors[0] != Teuchos::null) (*systemvectors[0])[lid] = 0.0;
@@ -302,7 +302,7 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const DRT::DiscretizationFa
           pressureDone = true;
         }
       }
-      int nummynodes = discret.lRowFace(i)->NumNode();
+      int nummynodes = discret.lRowFace(i)->num_node();
       const int* mynodes = discret.lRowFace(i)->NodeIds();
 
       // do only faces where all nodes are present in the node list

@@ -80,7 +80,7 @@ namespace PARTICLEINTERACTION
     virtual void WriteRestart() const;
 
     //! read restart of particle interaction handler
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
+    virtual void read_restart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
     //! insert interaction dependent states of all particle types
     virtual void insert_particle_states_of_particle_types(
@@ -113,10 +113,10 @@ namespace PARTICLEINTERACTION
     virtual void communicate_interaction_history() const = 0;
 
     //! set current time
-    virtual void SetCurrentTime(const double currenttime);
+    virtual void set_current_time(const double currenttime);
 
     //! set current step size
-    virtual void SetCurrentStepSize(const double currentstepsize);
+    virtual void set_current_step_size(const double currentstepsize);
 
     //! set current write result flag
     virtual void set_current_write_result_flag(bool writeresultsthisstep);

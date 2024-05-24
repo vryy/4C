@@ -105,7 +105,7 @@ namespace FSI
         Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag) override;
 
     /// Computes initial guess for the next iteration
-    Teuchos::RCP<Epetra_Vector> InitialGuess() override;
+    Teuchos::RCP<Epetra_Vector> initial_guess() override;
 
     /**
      * \brief In here all coupling related quantities are given to the fluid solver

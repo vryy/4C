@@ -326,7 +326,7 @@ void POROELAST::PrintLogo()
   std::cout << "             (_.--__) (_.--__) " << std::endl;
 }
 
-double POROELAST::UTILS::CalculateVectorNorm(
+double POROELAST::UTILS::calculate_vector_norm(
     const enum INPAR::POROELAST::VectorNorm norm, const Teuchos::RCP<const Epetra_Vector> vect)
 {
   // L1 norm

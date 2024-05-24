@@ -303,7 +303,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::evaluate_and_assemble_r
 template <typename beam>
 void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::Print(std::ostream& out) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // Print some general information: Element IDs and dofvecs.
   out << "\n------------------------------------------------------------------------";
@@ -319,7 +319,7 @@ template <typename beam>
 void BEAMINTERACTION::BeamToBeamPointCouplingPair<
     beam>::print_summary_one_line_per_active_segment_pair(std::ostream& out) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   out << "Beam-to-beam point coupling pair, beam1 gid: " << Element1()->Id()
       << " beam2 gid: " << Element2()->Id() << ", position in parameter space: ["

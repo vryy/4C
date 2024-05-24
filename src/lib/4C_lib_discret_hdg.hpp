@@ -59,7 +59,7 @@ namespace DRT
     or adding/deleting boundary conditions, this method has to be called to (re)construct
     pointer topologies.<br>
     It builds in this order:<br>
-    Standard FillComplete of base class
+    Standard fill_complete of base class
     - row map of nodes
     - column map of nodes
     - row map of elements
@@ -91,7 +91,7 @@ namespace DRT
 
     \note Sets Filled()=true
     */
-    int FillComplete(bool assigndegreesoffreedom = true, bool initelements = true,
+    int fill_complete(bool assigndegreesoffreedom = true, bool initelements = true,
         bool doboundaryconditions = true) override;
 
     /*!

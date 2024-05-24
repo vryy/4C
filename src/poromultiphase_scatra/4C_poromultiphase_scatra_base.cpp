@@ -141,7 +141,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
         scatra_->ScaTraField()->Strategy());
     if (scatramsht_ == Teuchos::null) FOUR_C_THROW("cast to Meshtying strategy failed!");
 
-    scatramsht_->set_artery_time_integrator(PoroField()->FluidField()->ArtNetTimInt());
+    scatramsht_->set_artery_time_integrator(poro_field()->fluid_field()->ArtNetTimInt());
     scatramsht_->SetNearbyElePairs(nearbyelepairs);
   }
 
@@ -167,16 +167,16 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ReadRestart(int restart)
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::read_restart(int restart)
 {
   if (restart)
   {
     // read restart data for structure field (will set time and step internally)
-    poromulti_->ReadRestart(restart);
+    poromulti_->read_restart(restart);
 
     // read restart data for scatra field (will set time and step internally)
-    scatra_->ScaTraField()->ReadRestart(restart);
-    if (artery_coupl_) scatramsht_->ArtScatraField()->ReadRestart(restart);
+    scatra_->ScaTraField()->read_restart(restart);
+    if (artery_coupl_) scatramsht_->ArtScatraField()->read_restart(restart);
 
     // reset time and step for the global algorithm
     SetTimeStep(scatra_->ScaTraField()->Time(), restart);
@@ -187,11 +187,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ReadRestart(int restart)
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Timeloop()
 {
-  PrepareTimeLoop();
+  prepare_time_loop();
 
   while (NotFinished())
   {
-    PrepareTimeStep();
+    prepare_time_step();
 
     // reset timer
     timertimestep_.reset();
@@ -210,7 +210,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Timeloop()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PrepareTimeStep(bool printheader)
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::prepare_time_step(bool printheader)
 {
   // the global control routine has its own time_ and step_ variables, as well as the single fields
   // keep them in sync!
@@ -219,23 +219,23 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PrepareTimeStep(bool printh
   if (printheader) PrintHeader();
 
   SetPoroSolution();
-  scatra_->ScaTraField()->PrepareTimeStep();
-  if (artery_coupl_) scatramsht_->ArtScatraField()->PrepareTimeStep();
+  scatra_->ScaTraField()->prepare_time_step();
+  if (artery_coupl_) scatramsht_->ArtScatraField()->prepare_time_step();
   // set structure-based scalar transport values
   SetScatraSolution();
 
-  poromulti_->PrepareTimeStep();
+  poromulti_->prepare_time_step();
   SetPoroSolution();
   apply_additional_dbc_for_vol_frac_species();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PrepareTimeLoop()
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::prepare_time_loop()
 {
   // set structure-based scalar transport values
   SetScatraSolution();
-  poromulti_->PrepareTimeLoop();
+  poromulti_->prepare_time_loop();
   // initial output for scatra field
   SetPoroSolution();
   if (scatra_->ScaTraField()->HasExternalForce()) scatra_->ScaTraField()->SetExternalForce();
@@ -294,7 +294,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetPoroSolution()
 
   // set the fluid solution
   poroscatra->set_solution_field_of_multi_fluid(
-      poromulti_->RelaxedFluidPhinp(), poromulti_->FluidField()->Phin());
+      poromulti_->RelaxedFluidPhinp(), poromulti_->fluid_field()->Phin());
 
   // additionally, set nodal flux if L2-projection is desired
   if (fluxreconmethod_ == INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod::gradreco_l2)
@@ -319,7 +319,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::apply_additional_dbc_for_vo
   // get map and validdof-vector
   const Epetra_Map* elecolmap = ScatraAlgo()->ScaTraField()->Discretization()->ElementColMap();
   Teuchos::RCP<const Epetra_Vector> valid_volfracspec_dofs =
-      PoroField()->FluidField()->valid_vol_frac_spec_dofs();
+      poro_field()->fluid_field()->valid_vol_frac_spec_dofs();
 
   // we identify the volume fraction species dofs which do not have a physical meaning and set a
   // DBC on them
@@ -361,14 +361,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::apply_additional_dbc_for_vo
 
     DRT::Node** nodes = myele->Nodes();
 
-    for (int inode = 0; inode < (myele->NumNode()); inode++)
+    for (int inode = 0; inode < (myele->num_node()); inode++)
     {
       if (nodes[inode]->Owner() == ScatraAlgo()->ScaTraField()->Discretization()->Comm().MyPID())
       {
         std::vector<int> scatradofs =
             ScatraAlgo()->ScaTraField()->Discretization()->Dof(0, nodes[inode]);
         std::vector<int> fluiddofs =
-            PoroField()->FluidField()->Discretization()->Dof(0, nodes[inode]);
+            poro_field()->fluid_field()->Discretization()->Dof(0, nodes[inode]);
 
         for (int idof = 0; idof < numscatramat; ++idof)
         {
@@ -390,7 +390,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::apply_additional_dbc_for_vo
             // species dof identified with < 1
             if (ScatraAlgo()->ScaTraField()->DirichMaps()->CondMap()->LID(scatradofs[idof]) == -1 &&
                 (int)(*valid_volfracspec_dofs)
-                        [PoroField()->FluidField()->Discretization()->DofRowMap()->LID(
+                        [poro_field()->fluid_field()->Discretization()->dof_row_map()->LID(
                             fluiddofs[scalartophaseid + numvolfrac])] < 1)
             {
               mydirichdofs.push_back(scatradofs[idof]);
@@ -421,7 +421,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetScatraSolution()
 {
   poromulti_->SetScatraSolution(ndsporofluid_scatra_, scatra_->ScaTraField()->Phinp());
   if (artery_coupl_)
-    poromulti_->FluidField()->ArtNetTimInt()->Discretization()->SetState(
+    poromulti_->fluid_field()->ArtNetTimInt()->Discretization()->set_state(
         2, "one_d_artery_phinp", scatramsht_->ArtScatraField()->Phinp());
 }
 
@@ -430,7 +430,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetScatraSolution()
 Teuchos::RCP<const Epetra_Map> POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ScatraDofRowMap()
     const
 {
-  return scatra_->ScaTraField()->DofRowMap();
+  return scatra_->ScaTraField()->dof_row_map();
 }
 
 /*------------------------------------------------------------------------*

@@ -169,7 +169,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::GetConductivity(
 )
 {
   // calculate conductivity of electrolyte solution
-  const double frt = VarManager()->FRT();
+  const double frt = var_manager()->FRT();
   const double factor = frt * myelch::elchparams_->Faraday();  // = F^2/RT
 
   // Dilute solution theory:
@@ -177,18 +177,18 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::GetConductivity(
   // sigma = F^2/RT*Sum(z_k^2 D_k c_k)
   for (int k = 0; k < my::numscal_; k++)
   {
-    double sigma_k = factor * myelch::DiffManager()->GetValence(k) *
-                     myelch::DiffManager()->GetIsotropicDiff(k) *
-                     myelch::DiffManager()->GetValence(k) * VarManager()->Phinp(k);
+    double sigma_k = factor * myelch::diff_manager()->GetValence(k) *
+                     myelch::diff_manager()->GetIsotropicDiff(k) *
+                     myelch::diff_manager()->GetValence(k) * var_manager()->Phinp(k);
     sigma[k] += sigma_k;  // insert value for this ionic species
     sigma_all += sigma_k;
 
     // effect of eliminated species c_m has to be added (c_m = - 1/z_m \sum_{k=1}^{m-1} z_k c_k)
     if (equpot == INPAR::ELCH::equpot_enc_pde_elim)
     {
-      sigma_all += factor * myelch::DiffManager()->GetIsotropicDiff(my::numscal_) *
-                   myelch::DiffManager()->GetValence(my::numscal_) *
-                   myelch::DiffManager()->GetValence(k) * (-VarManager()->Phinp(k));
+      sigma_all += factor * myelch::diff_manager()->GetIsotropicDiff(my::numscal_) *
+                   myelch::diff_manager()->GetValence(my::numscal_) *
+                   myelch::diff_manager()->GetValence(k) * (-var_manager()->Phinp(k));
     }
   }
 
@@ -223,16 +223,16 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalculateFlux(
   {
     case INPAR::SCATRA::flux_total:
       // convective flux contribution
-      q.Update(VarManager()->Phinp(k), VarManager()->ConVel(k));
+      q.Update(var_manager()->Phinp(k), var_manager()->ConVel(k));
 
       [[fallthrough]];
     case INPAR::SCATRA::flux_diffusive:
       // diffusive flux contribution
-      q.Update(-myelch::DiffManager()->GetIsotropicDiff(k), VarManager()->GradPhi(k), 1.0);
+      q.Update(-myelch::diff_manager()->GetIsotropicDiff(k), var_manager()->GradPhi(k), 1.0);
 
-      q.Update(-VarManager()->FRT() * myelch::DiffManager()->GetIsotropicDiff(k) *
-                   myelch::DiffManager()->GetValence(k) * VarManager()->Phinp(k),
-          VarManager()->GradPot(), 1.0);
+      q.Update(-var_manager()->FRT() * myelch::diff_manager()->GetIsotropicDiff(k) *
+                   myelch::diff_manager()->GetValence(k) * var_manager()->Phinp(k),
+          var_manager()->GradPot(), 1.0);
 
       break;
 
@@ -268,7 +268,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::cal_error_compared_to_analyt_s
   const double t =
       my::scatraparatimint_->Time() +
       (1 - my::scatraparatimint_->AlphaF()) * my::scatraparatimint_->Dt();  //-(1-alphaF_)*dta_
-  const double frt = VarManager()->FRT();
+  const double frt = var_manager()->FRT();
 
   // density at t_(n)
   std::vector<double> densn(my::numscal_, 1.0);
@@ -332,16 +332,17 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::cal_error_compared_to_analyt_s
         // compute various constants
         const double d =
             frt *
-            ((myelch::DiffManager()->GetIsotropicDiff(0) * myelch::DiffManager()->GetValence(0)) -
-                (myelch::DiffManager()->GetIsotropicDiff(1) *
-                    myelch::DiffManager()->GetValence(1)));
+            ((myelch::diff_manager()->GetIsotropicDiff(0) * myelch::diff_manager()->GetValence(0)) -
+                (myelch::diff_manager()->GetIsotropicDiff(1) *
+                    myelch::diff_manager()->GetValence(1)));
         if (abs(d) == 0.0) FOUR_C_THROW("division by zero");
         const double D =
             frt *
-            ((myelch::DiffManager()->GetValence(0) * myelch::DiffManager()->GetIsotropicDiff(0) *
-                 myelch::DiffManager()->GetIsotropicDiff(1)) -
-                (myelch::DiffManager()->GetValence(1) * myelch::DiffManager()->GetIsotropicDiff(1) *
-                    myelch::DiffManager()->GetIsotropicDiff(0))) /
+            ((myelch::diff_manager()->GetValence(0) * myelch::diff_manager()->GetIsotropicDiff(0) *
+                 myelch::diff_manager()->GetIsotropicDiff(1)) -
+                (myelch::diff_manager()->GetValence(1) *
+                    myelch::diff_manager()->GetIsotropicDiff(1) *
+                    myelch::diff_manager()->GetIsotropicDiff(0))) /
             d;
 
         // compute analytical solution for cation and anion concentrations
@@ -379,10 +380,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::cal_error_compared_to_analyt_s
 
         // compute analytical solution for anion concentration
         c(1) =
-            (-myelch::DiffManager()->GetValence(0) / myelch::DiffManager()->GetValence(1)) * c(0);
+            (-myelch::diff_manager()->GetValence(0) / myelch::diff_manager()->GetValence(1)) * c(0);
         // compute analytical solution for el. potential
-        const double pot = ((myelch::DiffManager()->GetIsotropicDiff(1) -
-                                myelch::DiffManager()->GetIsotropicDiff(0)) /
+        const double pot = ((myelch::diff_manager()->GetIsotropicDiff(1) -
+                                myelch::diff_manager()->GetIsotropicDiff(0)) /
                                d) *
                            log(c(0) / c_0_0_0_t);
 
@@ -446,13 +447,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::cal_error_compared_to_analyt_s
 
         // compute analytical solution for anion concentration
         c(1) =
-            (-myelch::DiffManager()->GetValence(0) / myelch::DiffManager()->GetValence(1)) * c(0);
+            (-myelch::diff_manager()->GetValence(0) / myelch::diff_manager()->GetValence(1)) * c(0);
         // compute analytical solution for el. potential
         const double d =
             frt *
-            ((myelch::DiffManager()->GetIsotropicDiff(0) * myelch::DiffManager()->GetValence(0)) -
-                (myelch::DiffManager()->GetIsotropicDiff(1) *
-                    myelch::DiffManager()->GetValence(1)));
+            ((myelch::diff_manager()->GetIsotropicDiff(0) * myelch::diff_manager()->GetValence(0)) -
+                (myelch::diff_manager()->GetIsotropicDiff(1) *
+                    myelch::diff_manager()->GetValence(1)));
         if (abs(d) == 0.0) FOUR_C_THROW("division by zero");
         // reference value + ohmic resistance + concentration potential
         const double pot =
@@ -484,7 +485,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::cal_error_compared_to_analyt_s
         for (int k = 0; k < my::numscal_; ++k)
         {
           const double conint_k = my::funct_.Dot(my::ephinp_[k]);
-          deviation += myelch::DiffManager()->GetValence(k) * conint_k;
+          deviation += myelch::diff_manager()->GetValence(k) * conint_k;
         }
 
         // add square to L2 error
@@ -508,7 +509,7 @@ template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::set_internal_variables_for_mat_and_rhs()
 {
   // set internal variables
-  VarManager()->set_internal_variables_elch_np(
+  var_manager()->set_internal_variables_elch_np(
       my::funct_, my::derxy_, my::ephinp_, my::ephin_, my::econvelnp_, my::ehist_);
 
   return;

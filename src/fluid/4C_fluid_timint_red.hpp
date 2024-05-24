@@ -68,7 +68,7 @@ namespace FLD
     void do_problem_specific_boundary_conditions() override;
 
     /*!
-    \brief update the 3D-to-reduced_D coupling data in AssembleMatAndRHS
+    \brief update the 3D-to-reduced_D coupling data in assemble_mat_and_rhs
 
     */
     virtual void update3_d_to_reduced_mat_and_rhs();
@@ -76,7 +76,7 @@ namespace FLD
     /*!
     \brief read restart data
     */
-    void ReadRestart(int step) override;
+    void read_restart(int step) override;
 
     /*!
     \brief read restart (some more RedModels-specific data)
@@ -113,7 +113,7 @@ namespace FLD
     void AVM3Preparation() override;
 
     /// prepare time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     /*!
     \brief Additional function for RedModels in linear_relaxation_solve
@@ -131,7 +131,7 @@ namespace FLD
     \brief call elements to calculate system matrix/rhs and assemble
 
     */
-    void AssembleMatAndRHS() override;
+    void assemble_mat_and_rhs() override;
 
     /*!
     \brief apply Dirichlet boundary conditions to system of equations

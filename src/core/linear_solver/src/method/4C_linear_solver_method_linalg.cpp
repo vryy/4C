@@ -55,7 +55,7 @@ int CORE::LINALG::Solver::getNumIters() const { return solver_->getNumIters(); }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::Solver::AdaptTolerance(
+void CORE::LINALG::Solver::adapt_tolerance(
     const double desirednlnres, const double currentnlnres, const double better)
 {
   if (!Params().isSublist("Belos Parameters")) FOUR_C_THROW("Adaptive tolerance only for Belos.");
@@ -116,7 +116,7 @@ void CORE::LINALG::Solver::AdaptTolerance(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::Solver::SetTolerance(const double tolerance)
+void CORE::LINALG::Solver::set_tolerance(const double tolerance)
 {
   if (!Params().isSublist("Belos Parameters"))
     FOUR_C_THROW("Set tolerance of linear solver only for Belos solver.");
@@ -161,12 +161,12 @@ void CORE::LINALG::Solver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
 
   if (params.lin_tol_better > -1.0)
   {
-    AdaptTolerance(params.nonlin_tolerance, params.nonlin_residual, params.lin_tol_better);
+    adapt_tolerance(params.nonlin_tolerance, params.nonlin_residual, params.lin_tol_better);
   }
 
   if (params.tolerance > 0.0)
   {
-    SetTolerance(params.tolerance);
+    set_tolerance(params.tolerance);
   }
 
   // reset data flags on demand

@@ -51,7 +51,8 @@ DRT::ELEMENTS::RedAcinusImplInterface* DRT::ELEMENTS::RedAcinusImplInterface::Im
       return acinus;
     }
     default:
-      FOUR_C_THROW("shape %d (%d nodes) not supported", red_acinus->Shape(), red_acinus->NumNode());
+      FOUR_C_THROW(
+          "shape %d (%d nodes) not supported", red_acinus->Shape(), red_acinus->num_node());
       break;
   }
   return nullptr;
@@ -372,7 +373,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
   /**
    * Resolve the BCs
    **/
-  for (int i = 0; i < ele->NumNode(); i++)
+  for (int i = 0; i < ele->num_node(); i++)
   {
     if (ele->Nodes()[i]->Owner() == myrank)
     {
@@ -906,7 +907,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(RedAcinus* ele,
   // ---------------------------------------------------------------------------------
   // Resolve the BCs
   // ---------------------------------------------------------------------------------
-  for (int i = 0; i < ele->NumNode(); i++)
+  for (int i = 0; i < ele->num_node(); i++)
   {
     if (ele->Nodes()[i]->Owner() == myrank)
     {

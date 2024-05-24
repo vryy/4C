@@ -93,7 +93,7 @@ void CORE::FE::ExtractMyValues(
 void CORE::FE::ExtractMyNodeBasedValues(
     const DRT::Element* ele, std::vector<double>& local, const Epetra_MultiVector& global)
 {
-  const int numnode = ele->NumNode();
+  const int numnode = ele->num_node();
   const int numcol = global.NumVectors();
   local.resize(numnode * numcol);
 
@@ -125,7 +125,7 @@ void CORE::FE::ExtractMyNodeBasedValues(const DRT::Element* ele,
   if (global == Teuchos::null) FOUR_C_THROW("received a TEUCHOS::null pointer");
   if (nsd > global->NumVectors())
     FOUR_C_THROW("Requested %d of %d available columns", nsd, global->NumVectors());
-  const int iel = ele->NumNode();  // number of nodes
+  const int iel = ele->num_node();  // number of nodes
   if (local.length() != (iel * nsd)) FOUR_C_THROW("vector size mismatch.");
 
   // TODO: might we do change the loops?

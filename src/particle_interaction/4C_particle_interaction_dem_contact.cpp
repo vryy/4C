@@ -118,15 +118,15 @@ void PARTICLEINTERACTION::DEMContact::Setup(
   }
 }
 
-void PARTICLEINTERACTION::DEMContact::SetCurrentStepSize(const double currentstepsize)
+void PARTICLEINTERACTION::DEMContact::set_current_step_size(const double currentstepsize)
 {
   dt_ = currentstepsize;
 
   // set current step size
-  if (contacttangential_) contacttangential_->SetCurrentStepSize(currentstepsize);
+  if (contacttangential_) contacttangential_->set_current_step_size(currentstepsize);
 
   // set current step size
-  if (contactrolling_) contactrolling_->SetCurrentStepSize(currentstepsize);
+  if (contactrolling_) contactrolling_->set_current_step_size(currentstepsize);
 }
 
 void PARTICLEINTERACTION::DEMContact::insert_particle_states_of_particle_types(
@@ -650,7 +650,7 @@ void PARTICLEINTERACTION::DEMContact::evaluate_particle_wall_contact()
     DRT::Element* ele = particlewallpair.ele_;
 
     // number of nodes of wall element
-    const int numnodes = ele->NumNode();
+    const int numnodes = ele->num_node();
 
     // shape functions and location vector of wall element
     CORE::LINALG::SerialDenseVector funct(numnodes);

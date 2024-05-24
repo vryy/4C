@@ -209,7 +209,7 @@ bool CORE::GEO::CUT::Element::Cut(Mesh& mesh, Side& cut_side)
     {
       if (PointInside(p))  // if point is inside the element
       {
-        p->AddElement(this);  // add element to cut_element_-list of this point
+        p->add_element(this);  // add element to cut_element_-list of this point
         cut = true;
       }
     }
@@ -226,7 +226,7 @@ bool CORE::GEO::CUT::Element::Cut(Mesh& mesh, Side& cut_side)
   for (std::vector<Side*>::const_iterator i = sides.begin(); i != sides.end(); ++i)
   {
     Side* s = *i;
-    if (FindCutPoints(mesh, *s, cut_side))
+    if (find_cut_points(mesh, *s, cut_side))
     {
       cut = true;
     }
@@ -247,13 +247,13 @@ bool CORE::GEO::CUT::Element::Cut(Mesh& mesh, Side& cut_side)
 /*--------------------------------------------------------------------*
  * cut this element with its cut faces                    wirtz 08/14 *
  *--------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::FindCutPoints(Mesh& mesh)
+void CORE::GEO::CUT::Element::find_cut_points(Mesh& mesh)
 {
   for (plain_side_set::iterator i = cut_faces_.begin(); i != cut_faces_.end();
       /* do not increment */)
   {
     Side& cut_side = **i;
-    bool cut = FindCutPoints(mesh, cut_side);
+    bool cut = find_cut_points(mesh, cut_side);
 
     /* insert this side into cut_faces_, also the case when a side just
      * touches the element at a single point, edge or the whole side */
@@ -271,7 +271,7 @@ void CORE::GEO::CUT::Element::FindCutPoints(Mesh& mesh)
 /*--------------------------------------------------------------------*
  * cut this element with given cut_side                   wirtz 08/14 *
  *--------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Element::FindCutPoints(Mesh& mesh, Side& cut_side)
+bool CORE::GEO::CUT::Element::find_cut_points(Mesh& mesh, Side& cut_side)
 {
   bool cut = false;
 
@@ -287,7 +287,7 @@ bool CORE::GEO::CUT::Element::FindCutPoints(Mesh& mesh, Side& cut_side)
     {
       if (PointInside(p))  // if point is inside the element
       {
-        p->AddElement(this);  // add element to cut_element_-list of this point
+        p->add_element(this);  // add element to cut_element_-list of this point
         cut = true;
       }
     }
@@ -302,7 +302,7 @@ bool CORE::GEO::CUT::Element::FindCutPoints(Mesh& mesh, Side& cut_side)
   for (std::vector<Side*>::const_iterator i = sides.begin(); i != sides.end(); ++i)
   {
     Side* s = *i;
-    if (FindCutPoints(mesh, *s, cut_side))
+    if (find_cut_points(mesh, *s, cut_side))
     {
       cut = true;
     }
@@ -327,7 +327,7 @@ void CORE::GEO::CUT::Element::MakeCutLines(Mesh& mesh)
     for (std::vector<Side*>::const_iterator i = sides.begin(); i != sides.end(); ++i)
     {
       Side* s = *i;
-      FindCutLines(mesh, *s, cut_side);
+      find_cut_lines(mesh, *s, cut_side);
     }
   }
 }
@@ -336,16 +336,16 @@ void CORE::GEO::CUT::Element::MakeCutLines(Mesh& mesh)
  * Find cut points between a background element side and a cut side
  * Cut points are stored correspondingly
  *-----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Element::FindCutPoints(Mesh& mesh, Side& ele_side, Side& cut_side)
+bool CORE::GEO::CUT::Element::find_cut_points(Mesh& mesh, Side& ele_side, Side& cut_side)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "CORE::GEO::CUT --- 4/6 --- cut_mesh_intersection --- FindCutPoints(ele)");
+      "CORE::GEO::CUT --- 4/6 --- cut_mesh_intersection --- find_cut_points(ele)");
 
   // edges of element side cuts through cut side
-  bool cut = ele_side.FindCutPoints(mesh, this, cut_side);
+  bool cut = ele_side.find_cut_points(mesh, this, cut_side);
   // edges of cut side cuts through element side
   // ( does nothing for the level-set case, since a level-set side has no edges! )
-  bool reverse_cut = cut_side.FindCutPoints(mesh, this, ele_side);
+  bool reverse_cut = cut_side.find_cut_points(mesh, this, ele_side);
   return cut or reverse_cut;
 }
 
@@ -353,11 +353,11 @@ bool CORE::GEO::CUT::Element::FindCutPoints(Mesh& mesh, Side& ele_side, Side& cu
  *  Returns true if cut lines exist between the cut points produced by the two
  *  sides
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Element::FindCutLines(Mesh& mesh, Side& ele_side, Side& cut_side)
+bool CORE::GEO::CUT::Element::find_cut_lines(Mesh& mesh, Side& ele_side, Side& cut_side)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 4/6 --- cut_mesh_intersection --- FindCutLines");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 4/6 --- cut_mesh_intersection --- find_cut_lines");
 
-  return ele_side.FindCutLines(mesh, this, cut_side);
+  return ele_side.find_cut_lines(mesh, this, cut_side);
 }
 
 /*----------------------------------------------------------------------------*
@@ -889,7 +889,7 @@ void CORE::GEO::CUT::Element::GetCutPoints(PointSet& cut_points)
 void CORE::GEO::CUT::Element::create_integration_cells(Mesh& mesh, int count, bool tetcellsonly)
 {
   /* Is volume cell active? ( i.e. in recursive call, has this vc already
-   * been removed in FixBrokenTets() ) */
+   * been removed in fix_broken_tets() ) */
   if (not active_) return;
 
   // check the options for 1-D
@@ -1044,7 +1044,7 @@ template <unsigned probdim, CORE::FE::CellType elementtype, unsigned numNodesEle
 bool CORE::GEO::CUT::ConcreteElement<probdim, elementtype, numNodesElement, dim>::LocalCoordinates(
     const CORE::LINALG::Matrix<probdim, 1>& xyz, CORE::LINALG::Matrix<dim, 1>& rst)
 {
-  Teuchos::RCP<Position> pos = PositionFactory::BuildPosition<probdim, elementtype>(*this, xyz);
+  Teuchos::RCP<Position> pos = PositionFactory::build_position<probdim, elementtype>(*this, xyz);
   bool success = pos->Compute();
   pos->LocalCoordinates(rst);
   return success;
@@ -1302,7 +1302,7 @@ bool CORE::GEO::CUT::Element::HasLevelSetSide()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::GEO::CUT::Element> CORE::GEO::CUT::ElementFactory::CreateElement(
+Teuchos::RCP<CORE::GEO::CUT::Element> CORE::GEO::CUT::ElementFactory::create_element(
     CORE::FE::CellType elementtype, int eid, const std::vector<Side*>& sides,
     const std::vector<Node*>& nodes, bool active) const
 {
@@ -1355,7 +1355,7 @@ Teuchos::RCP<CORE::GEO::CUT::Element> CORE::GEO::CUT::Element::Create(
     const std::vector<Node*>& nodes, const bool& active)
 {
   ElementFactory factory;
-  return factory.CreateElement(elementtype, eid, sides, nodes, active);
+  return factory.create_element(elementtype, eid, sides, nodes, active);
 }
 
 /*----------------------------------------------------------------------------*

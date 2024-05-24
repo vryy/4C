@@ -60,7 +60,7 @@ namespace ADAPTER
     void Init() override;
 
     /// read restart data (pure virtual)
-    void ReadRestart(int step  ///< step number where the calculation is continued
+    void read_restart(int step  ///< step number where the calculation is continued
         ) override = 0;
 
     /// solve fluid-ale
@@ -68,7 +68,7 @@ namespace ADAPTER
         Teuchos::RCP<Epetra_Vector> ivel, const bool pseudotransient);
 
     /// access to ale field
-    const Teuchos::RCP<ADAPTER::AleFluidWrapper>& AleField() { return ale_; }
+    const Teuchos::RCP<ADAPTER::AleFluidWrapper>& ale_field() { return ale_; }
 
    protected:
     //! @name Transfer helpers

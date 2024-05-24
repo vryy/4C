@@ -107,16 +107,16 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
 
       // for engineering strains instead of total lagrange use t3_nlnstiffmass2
       if (act == ELEMENTS::struct_calc_nlnstiffmass)
-        NlnStiffMass(ele_state, &elemat1, &elemat2, &elevec1);
+        nln_stiff_mass(ele_state, &elemat1, &elemat2, &elevec1);
       else if (act == ELEMENTS::struct_calc_nlnstifflmass)
       {
-        NlnStiffMass(ele_state, &elemat1, &elemat2, &elevec1);
-        LumpMass(&elemat2);
+        nln_stiff_mass(ele_state, &elemat1, &elemat2, &elevec1);
+        lump_mass(&elemat2);
       }
       else if (act == ELEMENTS::struct_calc_nlnstiff)
-        NlnStiffMass(ele_state, &elemat1, nullptr, &elevec1);
+        nln_stiff_mass(ele_state, &elemat1, nullptr, &elevec1);
       else if (act == ELEMENTS::struct_calc_internalforce)
-        NlnStiffMass(ele_state, nullptr, nullptr, &elevec1);
+        nln_stiff_mass(ele_state, nullptr, nullptr, &elevec1);
 
       break;
     }
@@ -150,7 +150,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a Surface Neumann boundary condition (public) cyron 03/08|
  *----------------------------------------------------------------------------------------------------------*/
 
-int DRT::ELEMENTS::Truss3::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Truss3::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -216,7 +216,7 @@ void DRT::ELEMENTS::Truss3::Energy(const std::map<std::string, std::vector<doubl
 /*--------------------------------------------------------------------------------------*
  | switch between kintypes                                                      tk 11/08|
  *--------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::NlnStiffMass(
+void DRT::ELEMENTS::Truss3::nln_stiff_mass(
     const std::map<std::string, std::vector<double>>& ele_state,
     CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
     CORE::LINALG::SerialDenseVector* force)
@@ -242,10 +242,10 @@ void DRT::ELEMENTS::Truss3::NlnStiffMass(
   switch (kintype_)
   {
     case KinematicType::tr3_totlag:
-      NlnStiffMassTotLag(ele_state, DummyStiffMatrix, massmatrix, DummyForce);
+      nln_stiff_mass_tot_lag(ele_state, DummyStiffMatrix, massmatrix, DummyForce);
       break;
     case KinematicType::tr3_engstrain:
-      NlnStiffMassEngStr(ele_state, DummyStiffMatrix, massmatrix, DummyForce);
+      nln_stiff_mass_eng_str(ele_state, DummyStiffMatrix, massmatrix, DummyForce);
       break;
     default:
       FOUR_C_THROW("Unknown type kintype_ for Truss3");
@@ -297,7 +297,7 @@ void DRT::ELEMENTS::Truss3::NlnStiffMass(
 /*------------------------------------------------------------------------------------------------------------*
  | nonlinear stiffness and mass matrix (private) cyron 08/08|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::NlnStiffMassTotLag(
+void DRT::ELEMENTS::Truss3::nln_stiff_mass_tot_lag(
     const std::map<std::string, std::vector<double>>& ele_state,
     CORE::LINALG::SerialDenseMatrix& DummyStiffMatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
     CORE::LINALG::SerialDenseVector& DummyForce)
@@ -327,7 +327,7 @@ void DRT::ELEMENTS::Truss3::NlnStiffMassTotLag(
  | linear stiffness and mass matrix (private) | engineering strain measure, small displacements and
  rotations |
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::NlnStiffMassEngStr(
+void DRT::ELEMENTS::Truss3::nln_stiff_mass_eng_str(
     const std::map<std::string, std::vector<double>>& ele_state,
     CORE::LINALG::SerialDenseMatrix& DummyStiffMatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
     CORE::LINALG::SerialDenseVector& DummyForce)
@@ -554,7 +554,7 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::LumpMass(CORE::LINALG::SerialDenseMatrix* emass)
+void DRT::ELEMENTS::Truss3::lump_mass(CORE::LINALG::SerialDenseMatrix* emass)
 {
   // lump mass matrix
   if (emass != nullptr)

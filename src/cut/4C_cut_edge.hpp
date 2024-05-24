@@ -112,7 +112,7 @@ namespace CORE::GEO
       virtual bool Cut(Mesh& mesh, Side& side, PointSet& cuts) = 0;
 
       /*! Tries to compute side x edge intersection, if edge was parallel to side (using only
-       * ComputeDistance and Edge-edge intersection), no real intersection */
+       * compute_distance and Edge-edge intersection), no real intersection */
       virtual bool JustParallelCut(Mesh& mesh, Side& side, PointSet& cuts, int skip_id = -1) = 0;
 
       /*! \brief Get the intersection points of this edge with the level-set side
@@ -187,7 +187,7 @@ namespace CORE::GEO
        *  point is within the edge limits.
        *
        *  \author hiermeier \date 12/16 */
-      virtual bool ComputeCut(
+      virtual bool compute_cut(
           Mesh* mesh, Edge* other, Side* side, PointSet* cut_points, double& tolerance) = 0;
 
       Node* BeginNode() { return nodes_.front(); }
@@ -207,7 +207,7 @@ namespace CORE::GEO
       /// Find common points (excluding cut_points points) between two edges
       void CommonNodalPoints(Edge* edge, std::vector<Point*>& common);
 
-      bool FindCutPoints(Mesh& mesh, Element* element, Side& side, Side& other);
+      bool find_cut_points(Mesh& mesh, Element* element, Side& side, Side& other);
 
       /*!
       \brief Computes the points at which both the sides intersect
@@ -216,7 +216,7 @@ namespace CORE::GEO
           Mesh& mesh, Element* element, Side& side, Side& other, PointSet* cutpoints = nullptr);
 
       /*!
-      \brief Simplified version of the FindCutPoints as used by the function LevelSetCut
+      \brief Simplified version of the find_cut_points as used by the function LevelSetCut
        */
       bool find_cut_points_level_set(Mesh& mesh, Element* element, Side& side, Side& other);
 
@@ -345,7 +345,7 @@ namespace CORE::GEO
        *  point is within the edge limits.
        *
        *  \author hiermeier \date 12/16 */
-      bool ComputeCut(
+      bool compute_cut(
           Mesh* mesh, Edge* other, Side* side, PointSet* cut_points, double& tolerance) override;
 
       /*! \brief Get the intersection points of this edge with the level-set side
@@ -360,12 +360,12 @@ namespace CORE::GEO
         // nodal cuts
         if (std::abs(blsv) <= REFERENCETOL)
         {
-          cuts.insert(Point::InsertCut(this, &side, BeginNode()));
+          cuts.insert(Point::insert_cut(this, &side, BeginNode()));
           cutfound = true;
         }
         if (std::abs(elsv) <= REFERENCETOL)
         {
-          cuts.insert(Point::InsertCut(this, &side, EndNode()));
+          cuts.insert(Point::insert_cut(this, &side, EndNode()));
           cutfound = true;
         }
 
@@ -396,7 +396,7 @@ namespace CORE::GEO
       }
 
      private:
-      Teuchos::RCP<CORE::GEO::CUT::IntersectionBase> IntersectionPtr(
+      Teuchos::RCP<CORE::GEO::CUT::IntersectionBase> intersection_ptr(
           const CORE::FE::CellType& sidetype) const;
 
     };  // class ConcreteEdge
@@ -417,7 +417,7 @@ namespace CORE::GEO
 
      private:
       template <CORE::FE::CellType edgetype>
-      Edge* CreateConcreteEdge(const std::vector<Node*>& nodes, int probdim) const
+      Edge* create_concrete_edge(const std::vector<Node*>& nodes, int probdim) const
       {
         Edge* e = nullptr;
         switch (probdim)

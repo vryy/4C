@@ -124,7 +124,7 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
       for (int i = 0; i < idiscret_->NumMyRowElements(); ++i)
       {
         MORTAR::Element* element = dynamic_cast<MORTAR::Element*>(idiscret_->lRowElement(i));
-        int nnodes = element->NumNode();
+        int nnodes = element->num_node();
         CORE::LINALG::SerialDenseMatrix coord(3, nnodes);
         element->GetNodalCoords(coord);
         double color = (double)element->Owner();
@@ -833,7 +833,7 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
     filenamectn << iter;
   }
 
-  int lcontactmapsize = (int)(binarytree_->CouplingMap()[0].size());
+  int lcontactmapsize = (int)(binarytree_->coupling_map()[0].size());
   int gcontactmapsize;
 
   Comm().MaxAll(&lcontactmapsize, &gcontactmapsize, 1);
@@ -858,11 +858,11 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
     {
       if (Comm().MyPID() == i)
       {
-        if ((int)(binarytree_->CouplingMap()[0]).size() !=
-            (int)(binarytree_->CouplingMap()[1]).size())
-          FOUR_C_THROW("Binarytree CouplingMap does not have right size!");
+        if ((int)(binarytree_->coupling_map()[0]).size() !=
+            (int)(binarytree_->coupling_map()[1]).size())
+          FOUR_C_THROW("Binarytree coupling_map does not have right size!");
 
-        for (int j = 0; j < (int)((binarytree_->CouplingMap()[0]).size()); j++)
+        for (int j = 0; j < (int)((binarytree_->coupling_map()[0]).size()); j++)
         {
           std::ostringstream currentfilename;
           std::stringstream gmshfile;
@@ -876,7 +876,7 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
             gmshfile << "View \" Step " << step << " Iter " << iter << " CS  \" {" << std::endl;
             fprintf(fp, gmshfile.str().c_str());
             fclose(fp);
-            (binarytree_->CouplingMap()[0][j])->PrintDopsForGmsh(currentfilename.str().c_str());
+            (binarytree_->coupling_map()[0][j])->PrintDopsForGmsh(currentfilename.str().c_str());
           }
           else
           {
@@ -886,7 +886,7 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
                      << "View \" Step " << step << " Iter " << iter << " CS  \" {" << std::endl;
             fprintf(fp, gmshfile.str().c_str());
             fclose(fp);
-            (binarytree_->CouplingMap()[0][j])->PrintDopsForGmsh(currentfilename.str().c_str());
+            (binarytree_->coupling_map()[0][j])->PrintDopsForGmsh(currentfilename.str().c_str());
           }
 
           // create new sheet for master
@@ -895,7 +895,7 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
                       << "View \" Step " << step << " Iter " << iter << " CM  \" {" << std::endl;
           fprintf(fp, newgmshfile.str().c_str());
           fclose(fp);
-          (binarytree_->CouplingMap()[1][j])->PrintDopsForGmsh(currentfilename.str().c_str());
+          (binarytree_->coupling_map()[1][j])->PrintDopsForGmsh(currentfilename.str().c_str());
         }
       }
       Comm().Barrier();

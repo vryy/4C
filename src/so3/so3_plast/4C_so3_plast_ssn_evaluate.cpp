@@ -43,7 +43,8 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
-  // Check whether the solid material PostSetup() routine has already been called and call it if not
+  // Check whether the solid material post_setup() routine has already been called and call it if
+  // not
   ensure_material_post_setup(params);
 
   set_params_interface_ptr(params);
@@ -612,7 +613,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
  | calculate the nonlinear B-operator                       seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::CalculateBop(
+void DRT::ELEMENTS::So3Plast<distype>::calculate_bop(
     CORE::LINALG::Matrix<numstr_, numdofperelement_>* bop,
     const CORE::LINALG::Matrix<nsd_, nsd_>* defgrd, const CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ,
     const int gp)
@@ -676,7 +677,7 @@ void DRT::ELEMENTS::So3Plast<distype>::CalculateBop(
           (*defgrd)(2, 2) * (*N_XYZ)(0, i) + (*defgrd)(2, 0) * (*N_XYZ)(2, i);
     }
   }
-}  // CalculateBop()
+}  // calculate_bop()
 
 
 
@@ -684,7 +685,7 @@ void DRT::ELEMENTS::So3Plast<distype>::CalculateBop(
  |  Integrate a Volume Neumann boundary condition (public)  seitz 04/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::So3Plast<distype>::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::So3Plast<distype>::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -2702,7 +2703,7 @@ void DRT::ELEMENTS::So3Plast<distype>::Kinematics(const int gp)
   SetRCGvec()(5) = RCG()(0, 2) * 2.;
 
   // calculate nonlinear B-operator
-  CalculateBop(&SetBop(), &Defgrd(), &deriv_shape_function_xyz(), gp);
+  calculate_bop(&SetBop(), &Defgrd(), &deriv_shape_function_xyz(), gp);
 
   // build plastic velocity gradient from condensed variables
   if (Material()->MaterialType() == CORE::Materials::m_plelasthyper && gp >= 0 && gp < numgpt_)
@@ -3093,7 +3094,7 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
     // derivative of elastic heating w.r.t. displacement ******************
     CORE::LINALG::Matrix<numdofperelement_, 1> dHedd(true);
     CORE::LINALG::Matrix<6, nen_ * nsd_> boprate(false);  // (6x24)
-    CalculateBop(&boprate, &defgrd_rate, &deriv_shape_function_xyz(), gp);
+    calculate_bop(&boprate, &defgrd_rate, &deriv_shape_function_xyz(), gp);
 
     CORE::LINALG::Matrix<6, 1> tmp61;
     tmp61.MultiplyTN(dcTvoldE, RCGrateVec);

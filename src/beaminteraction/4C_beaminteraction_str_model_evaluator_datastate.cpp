@@ -67,22 +67,22 @@ void STR::MODELEVALUATOR::BeamInteractionDataState::Setup(
     Teuchos::RCP<const DRT::Discretization> const& ia_discret)
 {
   // safety check
-  CheckInit();
+  check_init();
 
   myrank_ = ia_discret->Comm().MyPID();
 
   // displacements
   dis_ = Teuchos::rcp(
-      new TIMESTEPPING::TimIntMStep<Epetra_Vector>(0, 0, ia_discret->DofRowMap(), true));
+      new TIMESTEPPING::TimIntMStep<Epetra_Vector>(0, 0, ia_discret->dof_row_map(), true));
   disnp_ = Teuchos::rcp(new Epetra_Vector(*ia_discret->DofColMap()));
   discolnp_ = Teuchos::rcp(new Epetra_Vector(*ia_discret->DofColMap()));
 
   // force
-  forcen_ = Teuchos::rcp(new Epetra_FEVector(*ia_discret->DofRowMap()));
-  forcenp_ = Teuchos::rcp(new Epetra_FEVector(*ia_discret->DofRowMap()));
+  forcen_ = Teuchos::rcp(new Epetra_FEVector(*ia_discret->dof_row_map()));
+  forcenp_ = Teuchos::rcp(new Epetra_FEVector(*ia_discret->dof_row_map()));
 
   stiff_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *ia_discret->DofRowMap(), 81, true, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
+      *ia_discret->dof_row_map(), 81, true, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
 
   issetup_ = true;
 }

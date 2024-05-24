@@ -57,7 +57,7 @@ namespace BEAMINTERACTION
      */
     int output_interval_in_steps() const
     {
-      CheckInitSetup();
+      check_init_setup();
       return output_interval_steps_;
     };
 
@@ -108,7 +108,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Checks the init and setup status.
      */
-    inline void CheckInitSetup() const
+    inline void check_init_setup() const
     {
       if (!isinit_ or !issetup_) FOUR_C_THROW("Call Init() and Setup() first!");
     }
@@ -116,7 +116,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Checks the init status.
      */
-    inline void CheckInit() const
+    inline void check_init() const
     {
       if (!isinit_) FOUR_C_THROW("Init() has not been called, yet!");
     }

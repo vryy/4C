@@ -44,7 +44,7 @@ namespace SSTI
      * @param[in] quantity  name of quantity to be tested
      * @return special result
      */
-    double ResultSpecial(const std::string& quantity) const;
+    double result_special(const std::string& quantity) const;
 
     //! ssti algorithm
     const SSTI::SSTIAlgorithm& ssti_algorithm_;

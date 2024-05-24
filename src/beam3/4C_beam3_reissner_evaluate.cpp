@@ -93,7 +93,7 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
   }
 
   // nnodetriad: number of nodes used for interpolation of triad field
-  const int nnodetriad = NumNode();
+  const int nnodetriad = num_node();
 
   switch (act)
   {
@@ -551,7 +551,7 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
 /*-----------------------------------------------------------------------------------------------------------*
  |  Integrate a Surface Neumann boundary condition (public) cyron 03/08|
  *----------------------------------------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Beam3r::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -567,7 +567,7 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
     time = params.get<double>("total time", -1.0);
 
   // nnodetriad: number of nodes used for interpolation of triad field
-  const unsigned int nnodetriad = NumNode();
+  const unsigned int nnodetriad = num_node();
   // nnodecl: number of nodes used for interpolation of centerline
   // assumptions: nnodecl<=nnodetriad; centerline nodes have local ID 0...nnodecl-1
   unsigned int nnodecl = nnodetriad;
@@ -967,7 +967,7 @@ void DRT::ELEMENTS::Beam3r::calc_internal_force_and_stiff(
     CORE::LARGEROTATIONS::computespin<T>(r_s_hat, r_s);
 
     // compute material strains Gamma and Cur
-    computeGamma<T>(r_s, Lambda, gammaref_gp_[numgp], Gamma);
+    compute_gamma<T>(r_s, Lambda, gammaref_gp_[numgp], Gamma);
 
     get_templated_beam_material<T>().evaluate_force_contributions_to_stress(
         stressN, CN, Gamma, numgp);
@@ -1085,7 +1085,7 @@ void DRT::ELEMENTS::Beam3r::calc_internal_force_and_stiff(
     triad_interpolation_scheme_ptr->get_interpolated_triad(Lambda, Psi_l);
 
     // compute material curvature Cur
-    computeK<T>(Psi_l, Psi_l_s, kref_gp_[numgp], Cur);
+    compute_k<T>(Psi_l, Psi_l_s, kref_gp_[numgp], Cur);
 
     // determine norm of maximal bending curvature at this GP and store in class variable if needed
     double Kmax =

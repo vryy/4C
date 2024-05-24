@@ -35,7 +35,7 @@ STR::EXPLICIT::ForwardEuler::ForwardEuler()
  *----------------------------------------------------------------------------*/
 void STR::EXPLICIT::ForwardEuler::Setup()
 {
-  CheckInit();
+  check_init();
 
   // Call the Setup() of the abstract base class first.
   Generic::Setup();
@@ -59,23 +59,23 @@ void STR::EXPLICIT::ForwardEuler::Setup()
   modexpleuler_ = dynamic_cast<const STR::TIMINT::ExplEulerDataSDyn&>(TimInt().GetDataSDyn())
                       .get_modified_forward_euler();
 
-  // Has to be set before the PostSetup() routine is called!
+  // Has to be set before the post_setup() routine is called!
   issetup_ = true;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::ForwardEuler::PostSetup()
+void STR::EXPLICIT::ForwardEuler::post_setup()
 {
-  CheckInitSetup();
+  check_init_setup();
   equilibrate_initial_state();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::ForwardEuler::SetState(const Epetra_Vector& x)
+void STR::EXPLICIT::ForwardEuler::set_state(const Epetra_Vector& x)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   const double dt = (*GlobalState().GetDeltaTime())[0];
 
@@ -130,7 +130,7 @@ void STR::EXPLICIT::ForwardEuler::add_visco_mass_contributions(
 void STR::EXPLICIT::ForwardEuler::WriteRestart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
-  CheckInitSetup();
+  check_init_setup();
   // write dynamic forces
   iowriter.WriteVector("finert", finertian_ptr_);
   iowriter.WriteVector("fvisco", fviscon_ptr_);
@@ -140,13 +140,13 @@ void STR::EXPLICIT::ForwardEuler::WriteRestart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::ForwardEuler::ReadRestart(IO::DiscretizationReader& ioreader)
+void STR::EXPLICIT::ForwardEuler::read_restart(IO::DiscretizationReader& ioreader)
 {
-  CheckInitSetup();
+  check_init_setup();
   ioreader.ReadVector(finertian_ptr_, "finert");
   ioreader.ReadVector(fviscon_ptr_, "fvisco");
 
-  ModelEval().ReadRestart(ioreader);
+  ModelEval().read_restart(ioreader);
   update_constant_state_contributions();
 }
 
@@ -154,7 +154,7 @@ void STR::EXPLICIT::ForwardEuler::ReadRestart(IO::DiscretizationReader& ioreader
  *----------------------------------------------------------------------------*/
 void STR::EXPLICIT::ForwardEuler::UpdateStepState()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // ---------------------------------------------------------------------------
   // dynamic effects

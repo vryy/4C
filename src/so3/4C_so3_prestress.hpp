@@ -110,7 +110,7 @@ namespace DRT
       }
 
       /// get indication whether class is initialized (important for restarts)
-      bool& IsInit() { return isinit_; }
+      bool& is_init() { return isinit_; }
 
      private:
       /// flagindicating whether material configuration has been initialized
@@ -129,7 +129,7 @@ namespace DRT
       inline int NGP() const { return fhist_->numRows(); }
 
       /// get no. of nodal points
-      inline int NumNode() const { return numnode_; }
+      inline int num_node() const { return numnode_; }
 
     };  // class PreStress
   }     // namespace ELEMENTS

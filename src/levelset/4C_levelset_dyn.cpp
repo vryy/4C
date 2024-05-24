@@ -78,7 +78,7 @@ void levelset_dyn(int restart)
   scatrabase->ScaTraField()->set_number_of_dof_set_velocity(1);
 
   // finalize discretization
-  scatradis->FillComplete();
+  scatradis->fill_complete();
 
   // we directly use the elements from the scalar transport elements section
   if (scatradis->NumGlobalNodes() == 0)
@@ -98,13 +98,13 @@ void levelset_dyn(int restart)
   Teuchos::RCP<SCATRA::ScaTraTimIntImpl> levelsetalgo = scatrabase->ScaTraField();
 
   // read the restart information, set vectors and variables
-  if (restart) levelsetalgo->ReadRestart(restart);
+  if (restart) levelsetalgo->read_restart(restart);
 
   // set initial velocity field
-  // note: The order ReadRestart() before SetVelocityField() is important here!!
+  // note: The order read_restart() before SetVelocityField() is important here!!
   //       The velocity field is not initialized in the constructor of the basic scalar field.
   //       Moreover, it is not read from restart data. Therefore, we first have to set the restart
-  //       time in the function ReadRestart() and then in case of time-dependent velocity fields to
+  //       time in the function read_restart() and then in case of time-dependent velocity fields to
   //       evaluate the velocity function and curve.
   // bool true allows for setting old convective velocity required for particle coupling
   // old particle framework removed -> todo: requires clean up

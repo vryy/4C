@@ -84,7 +84,7 @@ void FBI::BeamToFluidMeshtyingParams::Init()
  */
 void FBI::BeamToFluidMeshtyingParams::Setup()
 {
-  CheckInit();
+  check_init();
 
   // Empty for now.
 

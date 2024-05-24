@@ -185,13 +185,14 @@ namespace CORE::LINALG
     /// If Complete() has been called, this query returns true, otherwise it returns false.
     virtual bool Filled() const = 0;
 
-    /// Call FillComplete on a matrix
+    /// Call fill_complete on a matrix
     /*!
-     * @param enforce_complete Enforce FillComplete() even though the matrix might already be filled
+     * @param enforce_complete Enforce fill_complete() even though the matrix might already be
+     * filled
      */
     virtual void Complete(bool enforce_complete = false) = 0;
 
-    /// Call FillComplete on a matrix (for rectangular and square matrices)
+    /// Call fill_complete on a matrix (for rectangular and square matrices)
     virtual void Complete(
         const Epetra_Map& domainmap, const Epetra_Map& rangemap, bool enforce_complete = false) = 0;
 

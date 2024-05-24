@@ -3,7 +3,7 @@
 \brief Evaluation routines for the solid-scatra element
 
 This file contains the element-specific evaluation routines such as
-Evaluate(...), EvaluateNeumann(...), etc.
+Evaluate(...), evaluate_neumann(...), etc.
 
 \level 1
 */
@@ -126,7 +126,7 @@ int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
   return 0;
 }
 
-int DRT::ELEMENTS::SolidScatra::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::SolidScatra::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)

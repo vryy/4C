@@ -34,12 +34,12 @@ FOUR_C_NAMESPACE_OPEN
  | ctor (public)                                              ager 08/14|
  *----------------------------------------------------------------------*/
 CONTACT::LagrangeStrategyPoro::LagrangeStrategyPoro(
-    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
-    const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
+    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
     Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof, bool poroslave, bool poromaster)
     : MonoCoupledLagrangeStrategy(
-          data_ptr, DofRowMap, NodeRowMap, params, interface, dim, comm, alphaf, maxdof),
+          data_ptr, dof_row_map, NodeRowMap, params, interface, dim, comm, alphaf, maxdof),
       no_penetration_(params.get<bool>("CONTACTNOPEN")),
       nopenalpha_(0.0),
       poroslave_(poroslave),
@@ -540,7 +540,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   {
     FOUR_C_THROW("CHECK ME!");
     // split and transform to redistributed maps
-    CORE::LINALG::SplitVector(*ProblemDofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
+    CORE::LINALG::split_vector(*ProblemDofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
     Teuchos::RCP<Epetra_Vector> fsmtemp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
     CORE::LINALG::Export(*fsm, *fsmtemp);
     fsm = fsmtemp;
@@ -548,7 +548,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   else
   {
     // only split, no need to transform
-    CORE::LINALG::SplitVector(*falldofrowmap_, *feff, fgsmdofrowmap_, fsm, fgndofrowmap_, fn);
+    CORE::LINALG::split_vector(*falldofrowmap_, *feff, fgsmdofrowmap_, fsm, fgndofrowmap_, fn);
   }
 
   // abbreviations for slave  and master set
@@ -560,7 +560,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   fm = Teuchos::rcp(new Epetra_Vector(*fgmdofrowmap_));
 
   // do the vector splitting sm -> s+m
-  CORE::LINALG::SplitVector(*fgsmdofrowmap_, *fsm, fgsdofrowmap_, fs, fgmdofrowmap_, fm);
+  CORE::LINALG::split_vector(*fgsmdofrowmap_, *fsm, fgsdofrowmap_, fs, fgmdofrowmap_, fm);
 
   // store some stuff for static condensation of poro no pen. LM
 
@@ -607,7 +607,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   Teuchos::RCP<Epetra_Vector> fi = Teuchos::rcp(new Epetra_Vector(*fgidofs));
 
   // do the vector splitting s -> a+i
-  CORE::LINALG::SplitVector(*fgsdofrowmap_, *fs, fgactivedofs_, fa, fgidofs, fi);
+  CORE::LINALG::split_vector(*fgsdofrowmap_, *fs, fgactivedofs_, fa, fgidofs, fi);
 
   /**********************************************************************/
   /* (7) Build the final K blocks                                       */
@@ -918,7 +918,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   if (aset) k_fs_effnew->Add(*k_fs_aamod, false, -1.0, 1.0);
   if (aset) k_fs_effnew->Add(*flinTangentiallambda_, false, 1.0, 1.0);
 
-  // FillComplete kteffnew (square)
+  // fill_complete kteffnew (square)
   k_fs_effnew->Complete(*ProblemDofs(), *falldofrowmap_);
   /**********************************************************************/
   /* (11) Global setup of feffnew (including contact)                   */
@@ -1197,7 +1197,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_other_mat_poro_no_pen(
   // add a submatrices to kteffnew
   if (aset) F_effnew->Add(*F_amod, false, -1.0, 1.0);
 
-  // FillComplete kteffnew (square)
+  // fill_complete kteffnew (square)
   F_effnew->Complete(*domainmap, *falldofrowmap_);
 
   // finally do the replacement
@@ -1317,7 +1317,7 @@ void CONTACT::LagrangeStrategyPoro::RecoverPoroNoPen(
     }
   }
   // store updated LM into nodes
-  SetState(MORTAR::state_lagrange_multiplier, *lambda_);
+  set_state(MORTAR::state_lagrange_multiplier, *lambda_);
 
   return;
 }
@@ -1338,7 +1338,7 @@ void CONTACT::LagrangeStrategyPoro::UpdatePoroContact()
 /*------------------------------------------------------------------------*
  | Assign generell poro contact state!                          ager 08/14|
  *------------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategyPoro::SetState(
+void CONTACT::LagrangeStrategyPoro::set_state(
     const enum MORTAR::StateType& statetype, const Epetra_Vector& vec)
 {
   switch (statetype)
@@ -1351,7 +1351,7 @@ void CONTACT::LagrangeStrategyPoro::SetState(
       // set state on interfaces
       for (int i = 0; i < (int)interface_.size(); ++i)
       {
-        // interface_[i]->SetState(statename, vec);
+        // interface_[i]->set_state(statename, vec);
         DRT::Discretization& idiscret_ = interface_[i]->Discret();
 
         switch (statetype)
@@ -1459,7 +1459,7 @@ void CONTACT::LagrangeStrategyPoro::SetState(
     }
     default:
     {
-      CONTACT::AbstractStrategy::SetState(statetype, vec);
+      CONTACT::AbstractStrategy::set_state(statetype, vec);
       break;
     }
   }  // end outer switch statement
@@ -1501,7 +1501,7 @@ void CONTACT::LagrangeStrategyPoro::SetParentState(const std::string& statename,
           std::vector<int> lmstride;
 
           // this gets values in local order
-          ele->ParentElement()->LocationVector(*dis, lm, lmowner, lmstride);
+          ele->parent_element()->LocationVector(*dis, lm, lmowner, lmstride);
 
           std::vector<double> myval;
           CORE::FE::ExtractMyValues(*global, myval, lm);
@@ -1523,7 +1523,7 @@ void CONTACT::LagrangeStrategyPoro::SetParentState(const std::string& statename,
           std::vector<int> lmstride;
 
           // this gets values in local order
-          mele->ParentElement()->LocationVector(*dis, lm, lmowner, lmstride);
+          mele->parent_element()->LocationVector(*dis, lm, lmowner, lmstride);
 
           std::vector<double> myval;
           CORE::FE::ExtractMyValues(*global, myval, lm);

@@ -76,7 +76,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3) override;
 
       //! evaluate action for off-diagonal system matrix block
-      int EvaluateOD(DRT::Element* ele, Teuchos::ParameterList& params,
+      int evaluate_od(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
           CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
@@ -339,7 +339,7 @@ namespace DRT
       };
 
       //! reads from global vectors
-      void ReadGlobalVectors(
+      void read_global_vectors(
           DRT::Element* ele, DRT::Discretization& discretization, DRT::Element::LocationArray& la);
 
       //! local solver object

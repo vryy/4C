@@ -53,7 +53,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Init()
   ParticleInteractionBase::Init();
 
   // init kernel handler
-  InitKernelHandler();
+  init_kernel_handler();
 
   // init equation of state bundle
   init_equation_of_state_bundle();
@@ -62,16 +62,16 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Init()
   init_neighbor_pair_handler();
 
   // init density handler
-  InitDensityHandler();
+  init_density_handler();
 
   // init pressure handler
-  InitPressureHandler();
+  init_pressure_handler();
 
   // init temperature handler
   init_temperature_handler();
 
   // init momentum handler
-  InitMomentumHandler();
+  init_momentum_handler();
 
   // init surface tension handler
   init_surface_tension_handler();
@@ -176,11 +176,11 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::WriteRestart() const
   ParticleInteractionBase::WriteRestart();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::ReadRestart(
+void PARTICLEINTERACTION::ParticleInteractionSPH::read_restart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // call base class function
-  ParticleInteractionBase::ReadRestart(reader);
+  ParticleInteractionBase::read_restart(reader);
 }
 
 void PARTICLEINTERACTION::ParticleInteractionSPH::insert_particle_states_of_particle_types(
@@ -275,11 +275,11 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
 
     // set initial density for respective particles of current type
     if (container->HaveStoredState(PARTICLEENGINE::Density))
-      container->SetState(initdensity, PARTICLEENGINE::Density);
+      container->set_state(initdensity, PARTICLEENGINE::Density);
 
     // set initial mass and radius for all particles of current type
-    container->SetState(initmass, PARTICLEENGINE::Mass);
-    container->SetState(initradius, PARTICLEENGINE::Radius);
+    container->set_state(initmass, PARTICLEENGINE::Mass);
+    container->set_state(initradius, PARTICLEENGINE::Radius);
 
     // evaluate initial inertia for respective particles of current type
     if (container->HaveStoredState(PARTICLEENGINE::Inertia))
@@ -309,7 +309,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
       }
 
       // set initial inertia for respective particles of current type
-      container->SetState(initinertia, PARTICLEENGINE::Inertia);
+      container->set_state(initinertia, PARTICLEENGINE::Inertia);
     }
 
     // initial states for temperature evaluation
@@ -325,7 +325,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
       inittemperature[0] = material->initTemperature_;
 
       // set initial temperature for all particles of current type
-      container->SetState(inittemperature, PARTICLEENGINE::Temperature);
+      container->set_state(inittemperature, PARTICLEENGINE::Temperature);
     }
   }
 }
@@ -418,31 +418,32 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::communicate_interaction_histor
   // nothing to do
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::SetCurrentTime(const double currenttime)
+void PARTICLEINTERACTION::ParticleInteractionSPH::set_current_time(const double currenttime)
 {
   // call base class method
-  ParticleInteractionBase::SetCurrentTime(currenttime);
+  ParticleInteractionBase::set_current_time(currenttime);
 
   // set current time
-  if (temperature_) temperature_->SetCurrentTime(currenttime);
+  if (temperature_) temperature_->set_current_time(currenttime);
 
   // set current time
-  if (surfacetension_) surfacetension_->SetCurrentTime(currenttime);
+  if (surfacetension_) surfacetension_->set_current_time(currenttime);
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::SetCurrentStepSize(const double currentstepsize)
+void PARTICLEINTERACTION::ParticleInteractionSPH::set_current_step_size(
+    const double currentstepsize)
 {
   // call base class method
-  ParticleInteractionBase::SetCurrentStepSize(currentstepsize);
+  ParticleInteractionBase::set_current_step_size(currentstepsize);
 
   // set current step size
-  density_->SetCurrentStepSize(currentstepsize);
+  density_->set_current_step_size(currentstepsize);
 
   // set current step size
-  if (temperature_) temperature_->SetCurrentStepSize(currentstepsize);
+  if (temperature_) temperature_->set_current_step_size(currentstepsize);
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::InitKernelHandler()
+void PARTICLEINTERACTION::ParticleInteractionSPH::init_kernel_handler()
 {
   // get type of smoothed particle hydrodynamics kernel
   INPAR::PARTICLE::KernelType kerneltype =
@@ -491,7 +492,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::init_neighbor_pair_handler()
   neighborpairs_->Init();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::InitDensityHandler()
+void PARTICLEINTERACTION::ParticleInteractionSPH::init_density_handler()
 {
   // get type of smoothed particle hydrodynamics density evaluation scheme
   INPAR::PARTICLE::DensityEvaluationScheme densityevaluationscheme =
@@ -538,7 +539,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitDensityHandler()
         "scheme!");
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::InitPressureHandler()
+void PARTICLEINTERACTION::ParticleInteractionSPH::init_pressure_handler()
 {
   // create pressure handler
   pressure_ =
@@ -580,7 +581,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::init_temperature_handler()
   if (temperature_) temperature_->Init();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::InitMomentumHandler()
+void PARTICLEINTERACTION::ParticleInteractionSPH::init_momentum_handler()
 {
   // create momentum handler
   momentum_ = std::unique_ptr<PARTICLEINTERACTION::SPHMomentum>(

@@ -58,7 +58,7 @@ namespace ALE
         Teuchos::RCP<Epetra_Vector>& dispnp) override;  ///> current displacement vector
 
     //! Get functions for the mortar matrices
-    void GetMortarMatrices(Teuchos::RCP<CORE::LINALG::SparseMatrix>& Aco_mm,
+    void get_mortar_matrices(Teuchos::RCP<CORE::LINALG::SparseMatrix>& Aco_mm,
         Teuchos::RCP<CORE::LINALG::SparseMatrix>& Aco_ms,
         Teuchos::RCP<CORE::LINALG::SparseMatrix>& Aco_sm,
         Teuchos::RCP<CORE::LINALG::SparseMatrix>& Aco_ss,
@@ -66,7 +66,7 @@ namespace ALE
         Teuchos::RCP<CORE::LINALG::SparseMatrix>& N_s);
 
     //! Split the mortar matrix into its slave and its master part
-    void SplitMortarMatrix(Teuchos::RCP<CORE::LINALG::SparseMatrix>& MortarMatrix,
+    void split_mortar_matrix(Teuchos::RCP<CORE::LINALG::SparseMatrix>& MortarMatrix,
         Teuchos::RCP<CORE::LINALG::SparseMatrix>& MasterMatrix,
         Teuchos::RCP<CORE::LINALG::SparseMatrix>& SlaveMatrix,
         Teuchos::RCP<const Epetra_Map>& dofrowmap);

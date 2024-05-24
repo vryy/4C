@@ -686,15 +686,15 @@ namespace INPUT
   {
   }
 
-  void BoolComponent::DefaultLine(std::ostream& stream) { PrintYesNo(stream, defaultvalue_); }
+  void BoolComponent::DefaultLine(std::ostream& stream) { print_yes_no(stream, defaultvalue_); }
 
   void BoolComponent::Print(std::ostream& stream, const IO::InputParameterContainer& container)
   {
     const bool value = (bool)container.Get<int>(Name());
-    PrintYesNo(stream, value);
+    print_yes_no(stream, value);
   }
 
-  void BoolComponent::PrintYesNo(std::ostream& stream, const bool value) const
+  void BoolComponent::print_yes_no(std::ostream& stream, const bool value) const
   {
     if (value)
       stream << lineTrue_;

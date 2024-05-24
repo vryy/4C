@@ -40,16 +40,16 @@ namespace BEAMINTERACTION
     void Setup();
 
     //! returns the isinit_ flag
-    inline bool IsInit() const { return isinit_; }
+    inline bool is_init() const { return isinit_; }
 
     //! returns the issetup_ flag
-    inline bool IsSetup() const { return issetup_; }
+    inline bool is_setup() const { return issetup_; }
 
     //! asserts the init and setup status
     void throw_error_if_not_init_and_setup() const;
 
     //! asserts the init status
-    void ThrowErrorIfNotInit() const;
+    void throw_error_if_not_init() const;
 
     inline std::vector<double> const& potential_law_exponents() const
     {

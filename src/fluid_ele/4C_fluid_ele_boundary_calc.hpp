@@ -97,7 +97,7 @@ namespace DRT
       static constexpr int numdofpernode_ = nsd_ + 1;
 
       //! Evaluate a Neumann boundary condition
-      int EvaluateNeumann(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      int evaluate_neumann(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
           std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseMatrix* elemat1) override;

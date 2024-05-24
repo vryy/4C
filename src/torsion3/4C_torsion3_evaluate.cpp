@@ -130,7 +130,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
        *boundary conditions; in case that no periodic boundary conditions are to be applied the
        *following code line may be ignored or deleted*/
       // Todo method is deprecated. overhaul it if needed
-      //      NodeShift<3,3>(params,mydisp);
+      //      node_shift<3,3>(params,mydisp);
 
 
       // for engineering strains instead of total lagrange use t3_nlnstiffmass2
@@ -153,7 +153,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
       {
         //assuming the same number of DOF for all nodes
         int numdof = NumDofPerNode(*(Nodes()[0]));
-        int nnode  = NumNode();
+        int nnode  = num_node();
 
         //variable to store numerically approximated stiffness matrix
         CORE::LINALG::SerialDenseMatrix stiff_approx;
@@ -256,7 +256,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a Surface Neumann boundary condition (public) cyron 03/08|
  *----------------------------------------------------------------------------------------------------------*/
 
-int DRT::ELEMENTS::Torsion3::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Torsion3::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -589,11 +589,11 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
  10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template <int nnode, int ndim>  // number of nodes, number of dimensions
-inline void DRT::ELEMENTS::Torsion3::NodeShift(Teuchos::ParameterList& params,  //!< parameter list
+inline void DRT::ELEMENTS::Torsion3::node_shift(Teuchos::ParameterList& params,  //!< parameter list
     std::vector<double>& disp)  //!< element disp vector
 {
   FOUR_C_THROW(
-      "Torsion3::NodeShift is deprecated; if needed adapt parameter handling according to "
+      "Torsion3::node_shift is deprecated; if needed adapt parameter handling according to "
       "parameter interface pointer first!");
 
   //  /*get number of degrees of freedom per node; note: the following function assumes the same
@@ -672,6 +672,6 @@ inline void DRT::ELEMENTS::Torsion3::NodeShift(Teuchos::ParameterList& params,  
 
   return;
 
-}  // DRT::ELEMENTS::Torsion3::NodeShift
+}  // DRT::ELEMENTS::Torsion3::node_shift
 
 FOUR_C_NAMESPACE_CLOSE

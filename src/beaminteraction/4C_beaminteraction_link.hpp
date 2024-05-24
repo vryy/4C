@@ -177,20 +177,20 @@ namespace BEAMINTERACTION
     /*!
     \brief Evaluate forces
     */
-    virtual bool EvaluateForce(
+    virtual bool evaluate_force(
         CORE::LINALG::SerialDenseVector& forcevec1, CORE::LINALG::SerialDenseVector& forcevec2) = 0;
 
     /*!
     \brief Evaluate stiffness contribution
     */
-    virtual bool EvaluateStiff(CORE::LINALG::SerialDenseMatrix& stiffmat11,
+    virtual bool evaluate_stiff(CORE::LINALG::SerialDenseMatrix& stiffmat11,
         CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
         CORE::LINALG::SerialDenseMatrix& stiffmat22) = 0;
 
     /*!
     \brief Evaluate forces and stiffness contribution
     */
-    virtual bool EvaluateForceStiff(CORE::LINALG::SerialDenseVector& forcevec1,
+    virtual bool evaluate_force_stiff(CORE::LINALG::SerialDenseVector& forcevec1,
         CORE::LINALG::SerialDenseVector& forcevec2, CORE::LINALG::SerialDenseMatrix& stiffmat11,
         CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
         CORE::LINALG::SerialDenseMatrix& stiffmat22) = 0;
@@ -202,21 +202,21 @@ namespace BEAMINTERACTION
 
    protected:
     //! returns init state
-    inline const bool& IsInit() const { return isinit_; };
+    inline const bool& is_init() const { return isinit_; };
 
     //! returns setup state
-    inline const bool& IsSetup() const { return issetup_; };
+    inline const bool& is_setup() const { return issetup_; };
 
     //! Check the init state
-    inline void CheckInit() const
+    inline void check_init() const
     {
-      if (not IsInit()) FOUR_C_THROW("Call Init() first!");
+      if (not is_init()) FOUR_C_THROW("Call Init() first!");
     }
 
     //! Check the init and setup state
-    inline void CheckInitSetup() const
+    inline void check_init_setup() const
     {
-      if (not IsInit() or not IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
+      if (not is_init() or not is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
     }
 
 

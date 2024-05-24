@@ -54,7 +54,7 @@ namespace ART
     void TimeUpdate() override;
 
     /// prepare time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     /// setup Dirichlet Boundary conditions
     void ApplyDirichletBC();
@@ -76,7 +76,7 @@ namespace ART
     }
 
     // restart
-    void ReadRestart(int step, bool CoupledTo3D = false) override;
+    void read_restart(int step, bool CoupledTo3D = false) override;
 
     /// save state
     void SaveState() override
@@ -104,7 +104,7 @@ namespace ART
         ) override;
 
     // prepare the loop
-    void PrepareTimeLoop() override;
+    void prepare_time_loop() override;
 
     // solve artery system of equation
     void Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams) override;
@@ -113,10 +113,10 @@ namespace ART
     void PrepareLinearSolve() override;
 
     // Assembling of the RHS Vector and the LHS Matrix
-    void AssembleMatAndRHS() override;
+    void assemble_mat_and_rhs() override;
 
     // Solve the Linear System of equations
-    void LinearSolve();
+    void linear_solve();
 
     // Solve Scatra equations
     void SolveScatra() override;

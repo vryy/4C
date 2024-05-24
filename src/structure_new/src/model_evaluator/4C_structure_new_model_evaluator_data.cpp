@@ -45,11 +45,11 @@ namespace
 
     // send size
     MPI_Request sizerequest;
-    exporter.ISend(frompid, topid, mysize.data(), mysize.size(), tag, sizerequest);
+    exporter.i_send(frompid, topid, mysize.data(), mysize.size(), tag, sizerequest);
 
     // send data
     MPI_Request datarequest;
-    exporter.ISend(frompid, topid, mydata.data(), mydata.size(), tag * 10, datarequest);
+    exporter.i_send(frompid, topid, mydata.data(), mydata.size(), tag * 10, datarequest);
 
     // make sure that you do not think you received something if
     // you didn't
@@ -223,7 +223,7 @@ void STR::MODELEVALUATOR::Data::Init(const Teuchos::RCP<const STR::TIMINT::Base>
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Data::Setup()
 {
-  CheckInit();
+  check_init();
 
   const std::set<enum INPAR::STR::ModelType>& mt = sdyn_ptr_->GetModelTypes();
   std::set<enum INPAR::STR::ModelType>::const_iterator it;
@@ -268,7 +268,7 @@ void STR::MODELEVALUATOR::Data::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::FillNormTypeMaps()
+void STR::MODELEVALUATOR::Data::fill_norm_type_maps()
 {
   // we have to do all this only once...
   if (isntmaps_filled_) return;
@@ -342,7 +342,7 @@ void STR::MODELEVALUATOR::Data::FillNormTypeMaps()
 void STR::MODELEVALUATOR::Data::collect_norm_types_over_all_procs(
     const quantity_norm_type_map& normtypes) const
 {
-  CheckInit();
+  check_init();
 
   const quantity_norm_type_map mynormtypes(normtypes);
   quantity_norm_type_map& gnormtypes = const_cast<quantity_norm_type_map&>(normtypes);
@@ -351,11 +351,11 @@ void STR::MODELEVALUATOR::Data::collect_norm_types_over_all_procs(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Data::GetUpdateNormType(
+bool STR::MODELEVALUATOR::Data::get_update_norm_type(
     const enum NOX::NLN::StatusTest::QuantityType& qtype,
     enum ::NOX::Abstract::Vector::NormType& normtype)
 {
-  FillNormTypeMaps();
+  fill_norm_type_maps();
 
   // check if there is a normtype for the corresponding quantity type
   std::map<enum NOX::NLN::StatusTest::QuantityType,
@@ -371,10 +371,10 @@ bool STR::MODELEVALUATOR::Data::GetUpdateNormType(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Data::GetWRMSTolerances(
+bool STR::MODELEVALUATOR::Data::get_wrms_tolerances(
     const enum NOX::NLN::StatusTest::QuantityType& qtype, double& atol, double& rtol)
 {
-  FillNormTypeMaps();
+  fill_norm_type_maps();
 
   // check if there is a wrms test for the corresponding quantity type
   std::map<enum NOX::NLN::StatusTest::QuantityType, double>::const_iterator iter;
@@ -398,13 +398,13 @@ void STR::MODELEVALUATOR::Data::SumIntoMyUpdateNorm(
   if (owner != comm_ptr_->MyPID()) return;
   // --- standard update norms
   enum ::NOX::Abstract::Vector::NormType normtype = ::NOX::Abstract::Vector::TwoNorm;
-  if (GetUpdateNormType(qtype, normtype))
-    SumIntoMyNorm(numentries, my_update_values, normtype, step_length, my_update_norm_[qtype]);
+  if (get_update_norm_type(qtype, normtype))
+    sum_into_my_norm(numentries, my_update_values, normtype, step_length, my_update_norm_[qtype]);
 
   // --- weighted root mean square norms
   double atol = 0.0;
   double rtol = 0.0;
-  if (GetWRMSTolerances(qtype, atol, rtol))
+  if (get_wrms_tolerances(qtype, atol, rtol))
   {
     sum_into_my_relative_mean_square(atol, rtol, step_length, numentries, my_update_values,
         my_new_sol_values, my_rms_norm_[qtype]);
@@ -420,9 +420,9 @@ void STR::MODELEVALUATOR::Data::sum_into_my_previous_sol_norm(
   if (owner != comm_ptr_->MyPID()) return;
 
   enum ::NOX::Abstract::Vector::NormType normtype = ::NOX::Abstract::Vector::TwoNorm;
-  if (not GetUpdateNormType(qtype, normtype)) return;
+  if (not get_update_norm_type(qtype, normtype)) return;
 
-  SumIntoMyNorm(numentries, my_old_sol_values, normtype, 1.0, my_prev_sol_norm_[qtype]);
+  sum_into_my_norm(numentries, my_old_sol_values, normtype, 1.0, my_prev_sol_norm_[qtype]);
   // update the dof counter
   my_dof_number_[qtype] += numentries;
 }
@@ -447,7 +447,7 @@ void STR::MODELEVALUATOR::Data::sum_into_my_relative_mean_square(const double& a
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::SumIntoMyNorm(const int& numentries, const double* my_values,
+void STR::MODELEVALUATOR::Data::sum_into_my_norm(const int& numentries, const double* my_values,
     const enum ::NOX::Abstract::Vector::NormType& normtype, const double& step_length,
     double& my_norm) const
 {
@@ -477,7 +477,7 @@ void STR::MODELEVALUATOR::Data::SumIntoMyNorm(const int& numentries, const doubl
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Data::ResetMyNorms(const bool& isdefaultstep)
 {
-  CheckInitSetup();
+  check_init_setup();
   std::map<enum NOX::NLN::StatusTest::QuantityType, double>::iterator it;
   for (it = my_update_norm_.begin(); it != my_update_norm_.end(); ++it) it->second = 0.0;
   for (it = my_rms_norm_.begin(); it != my_rms_norm_.end(); ++it) it->second = 0.0;
@@ -497,7 +497,7 @@ void STR::MODELEVALUATOR::Data::ResetMyNorms(const bool& isdefaultstep)
  *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Data::IsEleEvalError() const
 {
-  CheckInitSetup();
+  check_init_setup();
   return (ele_eval_error_flag_ != STR::ELEMENTS::ele_error_none);
 }
 
@@ -505,7 +505,7 @@ bool STR::MODELEVALUATOR::Data::IsEleEvalError() const
  *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Data::IsPredictorState() const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   const STR::IMPLICIT::Generic* impl_ptr =
       dynamic_cast<const STR::IMPLICIT::Generic*>(&TimInt().Integrator());
@@ -518,7 +518,7 @@ bool STR::MODELEVALUATOR::Data::IsPredictorState() const
  *----------------------------------------------------------------------------*/
 enum INPAR::STR::DampKind STR::MODELEVALUATOR::Data::GetDampingType() const
 {
-  CheckInitSetup();
+  check_init_setup();
   return sdyn_ptr_->GetDampingType();
 }
 
@@ -526,7 +526,7 @@ enum INPAR::STR::DampKind STR::MODELEVALUATOR::Data::GetDampingType() const
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::StressDataPtr()
 {
-  CheckInitSetup();
+  check_init_setup();
   return stressdata_ptr_;
 }
 
@@ -550,7 +550,7 @@ const std::vector<char>& STR::MODELEVALUATOR::Data::StressData() const
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::StrainDataPtr()
 {
-  CheckInitSetup();
+  check_init_setup();
   return straindata_ptr_;
 }
 
@@ -566,7 +566,7 @@ const std::vector<char>& STR::MODELEVALUATOR::Data::StrainData() const
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::plastic_strain_data_ptr()
 {
-  CheckInitSetup();
+  check_init_setup();
   return plastic_straindata_ptr_;
 }
 
@@ -583,7 +583,7 @@ const std::vector<char>& STR::MODELEVALUATOR::Data::PlasticStrainData() const
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::coupling_stress_data_ptr()
 {
-  CheckInitSetup();
+  check_init_setup();
   return couplstressdata_ptr_;
 }
 
@@ -599,7 +599,7 @@ const std::vector<char>& STR::MODELEVALUATOR::Data::CouplingStressData() const
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::OptQuantityDataPtr()
 {
-  CheckInitSetup();
+  check_init_setup();
   return optquantitydata_ptr_;
 }
 
@@ -616,7 +616,7 @@ const std::vector<char>& STR::MODELEVALUATOR::Data::OptQuantityData() const
  *----------------------------------------------------------------------------*/
 enum INPAR::STR::StressType STR::MODELEVALUATOR::Data::GetStressOutputType() const
 {
-  CheckInitSetup();
+  check_init_setup();
   return io_ptr_->GetStressOutputType();
 }
 
@@ -624,7 +624,7 @@ enum INPAR::STR::StressType STR::MODELEVALUATOR::Data::GetStressOutputType() con
  *----------------------------------------------------------------------------*/
 enum INPAR::STR::StrainType STR::MODELEVALUATOR::Data::GetStrainOutputType() const
 {
-  CheckInitSetup();
+  check_init_setup();
   return io_ptr_->GetStrainOutputType();
 }
 
@@ -632,7 +632,7 @@ enum INPAR::STR::StrainType STR::MODELEVALUATOR::Data::GetStrainOutputType() con
  *----------------------------------------------------------------------------*/
 enum INPAR::STR::StrainType STR::MODELEVALUATOR::Data::get_plastic_strain_output_type() const
 {
-  CheckInitSetup();
+  check_init_setup();
   return io_ptr_->get_plastic_strain_output_type();
 }
 
@@ -640,7 +640,7 @@ enum INPAR::STR::StrainType STR::MODELEVALUATOR::Data::get_plastic_strain_output
  *----------------------------------------------------------------------------*/
 enum INPAR::STR::StressType STR::MODELEVALUATOR::Data::get_coupling_stress_output_type() const
 {
-  CheckInitSetup();
+  check_init_setup();
   return io_ptr_->get_coupling_stress_output_type();
 }
 
@@ -648,14 +648,14 @@ enum INPAR::STR::StressType STR::MODELEVALUATOR::Data::get_coupling_stress_outpu
  *----------------------------------------------------------------------------*/
 enum INPAR::STR::OptQuantityType STR::MODELEVALUATOR::Data::get_opt_quantity_output_type() const
 {
-  CheckInitSetup();
+  check_init_setup();
   return io_ptr_->get_opt_quantity_output_type();
 }
 
 Teuchos::RCP<STR::MODELEVALUATOR::GaussPointDataOutputManager>&
 STR::MODELEVALUATOR::Data::gauss_point_data_output_manager_ptr()
 {
-  CheckInitSetup();
+  check_init_setup();
   return gauss_point_data_manager_ptr_;
 }
 
@@ -764,7 +764,7 @@ int STR::MODELEVALUATOR::Data::GetStepNp() const { return GState().GetStepNp(); 
  *----------------------------------------------------------------------*/
 std::string STR::MODELEVALUATOR::ContactData::GetOutputFilePath() const
 {
-  CheckInit();
+  check_init();
   return InOutput().GetOutputPtr()->Output()->FileName();
 }
 

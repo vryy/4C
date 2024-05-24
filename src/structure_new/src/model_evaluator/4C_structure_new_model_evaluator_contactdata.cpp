@@ -45,7 +45,7 @@ void STR::MODELEVALUATOR::ContactData::Init(
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::ContactData::Setup()
 {
-  CheckInit();
+  check_init();
 
   issetup_ = true;
 }

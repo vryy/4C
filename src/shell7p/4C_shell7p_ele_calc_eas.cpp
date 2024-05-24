@@ -180,8 +180,8 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::MaterialPostSetup(
 {
   // element/nodal wise defined data
   Teuchos::ParameterList params{};
-  // Call PostSetup of material
-  solid_material.PostSetup(params, ele.Id());
+  // Call post_setup of material
+  solid_material.post_setup(params, ele.Id());
 }
 
 
@@ -189,7 +189,7 @@ template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::reset_to_last_converged(
     DRT::Element& ele, MAT::So3Material& solid_material)
 {
-  solid_material.ResetStep();
+  solid_material.reset_step();
 }
 
 template <CORE::FE::CellType distype>
@@ -606,7 +606,7 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::evaluate_nonlinear_force_stiffne
           auto strains = SHELL::EvaluateStrains(g_reference, g_current);
 
           // update the deformation gradient (if needed?)
-          if (solid_material.NeedsDefgrd())
+          if (solid_material.needs_defgrd())
           {
             CORE::LINALG::Matrix<SHELL::DETAIL::num_dim, SHELL::DETAIL::num_dim> defgrd_enh(false);
             SHELL::calc_consistent_defgrd<SHELL::DETAIL::num_dim>(
@@ -855,7 +855,7 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::Update(DRT::Element& ele,
             auto strains = EvaluateStrains(g_reference, g_current);
 
             // calculate deformation gradient consistent with modified GL strain tensor
-            if (solid_material.NeedsDefgrd())
+            if (solid_material.needs_defgrd())
             {
               // update the deformation gradient (if needed)
               CORE::LINALG::Matrix<DRT::ELEMENTS::SHELL::DETAIL::num_dim,

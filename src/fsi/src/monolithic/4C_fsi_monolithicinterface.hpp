@@ -27,20 +27,20 @@ namespace FSI
     //! @name Apply current field state to system
 
     /// setup composed right hand side from field solvers
-    virtual void SetupRHS(Epetra_Vector& f, bool firstcall = false) = 0;
+    virtual void setup_rhs(Epetra_Vector& f, bool firstcall = false) = 0;
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix() = 0;
+    virtual void setup_system_matrix() = 0;
 
     //@}
 
     //! @name Methods for infnorm-scaling of the system
 
     /// apply infnorm scaling to linear block system
-    virtual void ScaleSystem(Epetra_Vector& b) = 0;
+    virtual void scale_system(Epetra_Vector& b) = 0;
 
     /// undo infnorm scaling from scaled solution
-    virtual void UnscaleSolution(Epetra_Vector& x, Epetra_Vector& b) = 0;
+    virtual void unscale_solution(Epetra_Vector& x, Epetra_Vector& b) = 0;
 
     //@}
   };

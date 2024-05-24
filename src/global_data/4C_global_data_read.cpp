@@ -1585,7 +1585,7 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& rea
 
         // At this point, everything for the microscale is read,
         // subsequent reading is only for macroscale
-        dis_micro->FillComplete();
+        dis_micro->fill_complete();
 
         // broadcast restart information
         int restart_step = problem.Restart();
@@ -1704,7 +1704,7 @@ void GLOBAL::ReadMicrofieldsNPsupport(GLOBAL::Problem& problem)
 
     // At this point, everything for the microscale is read,
     // subsequent reading is only for macroscale
-    structdis_micro->FillComplete();
+    structdis_micro->fill_complete();
 
     // broadcast restart information
     int restart_step = problem.Restart();
@@ -2186,7 +2186,7 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& read
   // - add the nodal clouds to the conditions
   // - add the conditions to the appropriate discretizations
   //
-  // Note that this will reset (un-FillComplete) the discretizations.
+  // Note that this will reset (un-fill_complete) the discretizations.
   for (auto& condition : condlist)
   {
     std::multimap<int, Teuchos::RCP<CORE::Conditions::Condition>> cond;
@@ -2318,7 +2318,7 @@ void GLOBAL::ReadKnots(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
       // vector values
       if (!dis->Filled())
       {
-        dis->FillComplete(false, false, false);
+        dis->fill_complete(false, false, false);
       }
 
       // the smallest gid in the discretisation determines the access

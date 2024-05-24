@@ -118,9 +118,9 @@ namespace CONTACT
       }
 
 
-      inline bool& IsSetup() { return issetup_; }
+      inline bool& is_setup() { return issetup_; }
 
-      inline bool IsSetup() const { return issetup_; }
+      inline bool is_setup() const { return issetup_; }
 
       inline Teuchos::RCP<Epetra_Map>& SNDofRowMap() { return sndofrowmap_; }
 
@@ -140,11 +140,11 @@ namespace CONTACT
 
       inline EleEvaluateTimes& ElementEvalTimes() { return eletimes_; }
 
-      Teuchos::RCP<const Epetra_Map> ElementRowMapPtr(const enum SideType stype) const;
+      Teuchos::RCP<const Epetra_Map> element_row_map_ptr(const enum SideType stype) const;
 
      private:
       template <enum SideType stype>
-      Teuchos::RCP<const Epetra_Map> ElementRowMapPtr() const;
+      Teuchos::RCP<const Epetra_Map> element_row_map_ptr() const;
 
       /// @}
 
@@ -227,7 +227,7 @@ namespace CONTACT
         if (Filled())
           return interface_data_.SNDofRowMap();
         else
-          FOUR_C_THROW("CONTACT::AugmentedInterface::FillComplete was not called");
+          FOUR_C_THROW("CONTACT::AugmentedInterface::fill_complete was not called");
         exit(EXIT_FAILURE);
       }
 
@@ -237,7 +237,7 @@ namespace CONTACT
         if (Filled())
           return interface_data_.STDofRowMap();
         else
-          FOUR_C_THROW("CONTACT::AugmentedInterface::FillComplete was not called");
+          FOUR_C_THROW("CONTACT::AugmentedInterface::fill_complete was not called");
         exit(EXIT_FAILURE);
       }
 
@@ -481,7 +481,7 @@ namespace CONTACT
      private:
       void set_node_initially_active_by_gap(Node& cnode) const;
 
-      void BuildActiveColMaps();
+      void build_active_col_maps();
 
       void build_active_slave_element_col_map(const Epetra_Map& sanode_col_map);
 
@@ -498,10 +498,10 @@ namespace CONTACT
           double* const lmincr_vals, double& lmincr_k) const;
 
       template <enum CONTACT::AUG::SideType side>
-      const Deriv1stMap& GetVarWGapOfSide(const Node& cnode) const;
+      const Deriv1stMap& get_var_w_gap_of_side(const Node& cnode) const;
 
       template <enum CONTACT::AUG::SideType side>
-      const Deriv2ndMap& GetVarWGapLinOfSide(const Node& cnode) const;
+      const Deriv2ndMap& get_var_w_gap_lin_of_side(const Node& cnode) const;
 
      protected:
       // don't want = operator and cctor
@@ -720,28 +720,28 @@ namespace CONTACT
 
     /// InterfaceDataContainer class member function specializations
     template <>
-    Teuchos::RCP<const Epetra_Map> InterfaceDataContainer::ElementRowMapPtr<SideType::master>()
+    Teuchos::RCP<const Epetra_Map> InterfaceDataContainer::element_row_map_ptr<SideType::master>()
         const;
     template <>
-    Teuchos::RCP<const Epetra_Map> InterfaceDataContainer::ElementRowMapPtr<SideType::slave>()
+    Teuchos::RCP<const Epetra_Map> InterfaceDataContainer::element_row_map_ptr<SideType::slave>()
         const;
     template <>
     Teuchos::RCP<const Epetra_Map>
-    InterfaceDataContainer::ElementRowMapPtr<SideType::slave_master>() const;
+    InterfaceDataContainer::element_row_map_ptr<SideType::slave_master>() const;
 
 
     /// Interface class member function specializations
     template <>
-    const CONTACT::AUG::Deriv1stMap& Interface::GetVarWGapOfSide<SideType::master>(
+    const CONTACT::AUG::Deriv1stMap& Interface::get_var_w_gap_of_side<SideType::master>(
         const Node& cnode) const;
     template <>
-    const CONTACT::AUG::Deriv1stMap& Interface::GetVarWGapOfSide<SideType::slave>(
+    const CONTACT::AUG::Deriv1stMap& Interface::get_var_w_gap_of_side<SideType::slave>(
         const Node& cnode) const;
     template <>
-    const CONTACT::AUG::Deriv2ndMap& Interface::GetVarWGapLinOfSide<SideType::master>(
+    const CONTACT::AUG::Deriv2ndMap& Interface::get_var_w_gap_lin_of_side<SideType::master>(
         const Node& cnode) const;
     template <>
-    const CONTACT::AUG::Deriv2ndMap& Interface::GetVarWGapLinOfSide<SideType::slave>(
+    const CONTACT::AUG::Deriv2ndMap& Interface::get_var_w_gap_lin_of_side<SideType::slave>(
         const Node& cnode) const;
 
   }  // namespace AUG

@@ -47,10 +47,10 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
   if (Comm().MyPID() == 0)
     std::cout << "Checking meshtying input parameters..........." << std::endl;
 
-  ReadAndCheckInput(mtparams, discret);
+  read_and_check_input(mtparams, discret);
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
 
-  // check for FillComplete of discretization
+  // check for fill_complete of discretization
   if (!discret.Filled()) FOUR_C_THROW("Discretization of underlying problem is not fillcomplete.");
 
   // let's check for meshtying boundary conditions in discret
@@ -76,7 +76,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
   // maximum dof number in discretization
   // later we want to create NEW Lagrange multiplier degrees of
   // freedom, which of course must not overlap with displacement dofs
-  const int maxdof = discret.DofRowMap()->MaxAllGID();
+  const int maxdof = discret.dof_row_map()->MaxAllGID();
 
   for (unsigned i = 0; i < contactconditions.size(); ++i)
   {
@@ -279,7 +279,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
       {
         Teuchos::RCP<DRT::Element> ele = element.second;
         Teuchos::RCP<MORTAR::Element> mtele = Teuchos::rcp(new MORTAR::Element(ele->Id() + ggsize,
-            ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), isslave[j], nurbs));
+            ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), isslave[j], nurbs));
         //------------------------------------------------------------------
         // get knotvector, normal factor and zero-size information for nurbs
         if (nurbs) MORTAR::UTILS::PrepareNURBSElement(discret, ele, mtele, spatialDim);
@@ -293,8 +293,8 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
     /* -------------------- finalize the meshtying interface construction
      *
      * If this is the final parallel distribution, we need to assign degrees of freedom during
-     * during FillComplete(). If parallel redistribution is enabled, there will be another call to
-     * FillComplete(), so we skip this expensive operation here and do it later. DOFs have to be
+     * during fill_complete(). If parallel redistribution is enabled, there will be another call to
+     * fill_complete(), so we skip this expensive operation here and do it later. DOFs have to be
      * assigned only once!
      */
     {
@@ -305,7 +305,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
       if (parallelRedist == INPAR::MORTAR::ParallelRedist::redist_none or comm_->NumProc() == 1)
         isFinalDistribution = true;
 
-      interface->FillComplete(isFinalDistribution, maxdof);
+      interface->fill_complete(isFinalDistribution, maxdof);
     }
   }
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
@@ -326,17 +326,17 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
     if (problemtype != GLOBAL::ProblemType::poroelast && problemtype != GLOBAL::ProblemType::fpsi &&
         problemtype != GLOBAL::ProblemType::fpsi_xfem && problemtype != GLOBAL::ProblemType::fps3i)
     {
-      strategy_ = Teuchos::rcp(new MtLagrangeStrategy(discret.DofRowMap(), discret.NodeRowMap(),
+      strategy_ = Teuchos::rcp(new MtLagrangeStrategy(discret.dof_row_map(), discret.NodeRowMap(),
           mtparams, interfaces, spatialDim, comm_, alphaf, maxdof));
     }
     else
     {
-      strategy_ = Teuchos::rcp(new PoroMtLagrangeStrategy(discret.DofRowMap(), discret.NodeRowMap(),
-          mtparams, interfaces, spatialDim, comm_, alphaf, maxdof));
+      strategy_ = Teuchos::rcp(new PoroMtLagrangeStrategy(discret.dof_row_map(),
+          discret.NodeRowMap(), mtparams, interfaces, spatialDim, comm_, alphaf, maxdof));
     }
   }
   else if (stype == INPAR::CONTACT::solution_penalty or stype == INPAR::CONTACT::solution_uzawa)
-    strategy_ = Teuchos::rcp(new MtPenaltyStrategy(discret.DofRowMap(), discret.NodeRowMap(),
+    strategy_ = Teuchos::rcp(new MtPenaltyStrategy(discret.dof_row_map(), discret.NodeRowMap(),
         mtparams, interfaces, spatialDim, comm_, alphaf, maxdof));
   else
     FOUR_C_THROW("Unrecognized strategy");
@@ -359,7 +359,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
 /*----------------------------------------------------------------------*
  |  read and check input parameters (public)                  popp 04/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::MtManager::ReadAndCheckInput(
+bool CONTACT::MtManager::read_and_check_input(
     Teuchos::ParameterList& mtparams, const DRT::Discretization& discret)
 {
   // read parameter lists from GLOBAL::Problem
@@ -631,7 +631,7 @@ void CONTACT::MtManager::WriteRestart(IO::DiscretizationWriter& output, bool for
 /*----------------------------------------------------------------------*
  |  read restart information for meshtying (public)           popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::MtManager::ReadRestart(IO::DiscretizationReader& reader,
+void CONTACT::MtManager::read_restart(IO::DiscretizationReader& reader,
     Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> zero)
 {
   // this is meshtying, thus we need zeros for restart

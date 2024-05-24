@@ -216,7 +216,7 @@ namespace MAT
     double Density() const override { return params_->density_; }
 
     /// a shear modulus equivalent
-    virtual double ShearMod() const;
+    virtual double shear_mod() const;
 
     /// a young's modulus equivalent
     virtual double GetYoung();
@@ -316,7 +316,7 @@ namespace MAT
      * @param params Container for additional information
      * @param eleGID Global element id
      */
-    void PostSetup(Teuchos::ParameterList& params, int eleGID) override;
+    void post_setup(Teuchos::ParameterList& params, int eleGID) override;
 
     /// update
     void Update() override;
@@ -353,7 +353,7 @@ namespace MAT
     bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
     /// Return whether the material requires the deformation gradient for its evaluation
-    bool NeedsDefgrd() override
+    bool needs_defgrd() override
     {
       // only the polyconvexity check needs the deformation gradient. Regular materials don't need
       // it

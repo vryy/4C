@@ -72,7 +72,7 @@ namespace XFEM
     virtual void Output(IO::DiscretizationWriter& writer) = 0;
 
     //! Read Restart (For quantities stored on the interface)
-    virtual void ReadRestart(IO::DiscretizationReader& reader) = 0;
+    virtual void read_restart(IO::DiscretizationReader& reader) = 0;
   };
 }  // namespace XFEM
 

@@ -86,7 +86,7 @@ void porofluidmultiphase_dyn(int restart)
       case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
       case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::ntp:
       {
-        actdis->FillComplete();
+        actdis->fill_complete();
         nearbyelepairs = POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryDiscretization(
             actdis, arterydis, evaluate_on_lateral_surface, arterycoupl);
         break;
@@ -108,7 +108,7 @@ void porofluidmultiphase_dyn(int restart)
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
   // -------------------------------------------------------------------
-  actdis->FillComplete();
+  actdis->fill_complete();
 
   // -------------------------------------------------------------------
   // context for output and restart
@@ -137,10 +137,10 @@ void porofluidmultiphase_dyn(int restart)
       &nearbyelepairs);   // possible interaction pairs
 
   // read the restart information, set vectors and variables
-  if (restart) algo->ReadRestart(restart);
+  if (restart) algo->read_restart(restart);
 
   // assign poro material for evaluation of porosity
-  // note: to be done after potential restart, as in ReadRestart()
+  // note: to be done after potential restart, as in read_restart()
   //       the secondary material is destroyed
   POROFLUIDMULTIPHASE::UTILS::SetupMaterial(comm, stuct_disname, fluid_disname);
 

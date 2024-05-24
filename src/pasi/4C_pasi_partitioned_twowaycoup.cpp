@@ -85,10 +85,10 @@ void PASI::PasiPartTwoWayCoup::Setup()
   }
 }
 
-void PASI::PasiPartTwoWayCoup::ReadRestart(int restartstep)
+void PASI::PasiPartTwoWayCoup::read_restart(int restartstep)
 {
   // call base class read restart
-  PASI::PartitionedAlgo::ReadRestart(restartstep);
+  PASI::PartitionedAlgo::read_restart(restartstep);
 
   IO::DiscretizationReader reader(structurefield_->Discretization(),
       GLOBAL::Problem::Instance()->InputControlFile(), restartstep);
@@ -102,13 +102,13 @@ void PASI::PasiPartTwoWayCoup::ReadRestart(int restartstep)
 void PASI::PasiPartTwoWayCoup::Timeloop()
 {
   // safety checks
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
   while (NotFinished())
   {
     // prepare time step
-    PrepareTimeStep();
+    prepare_time_step();
 
     // pre evaluate time step
     PreEvaluateTimeStep();
@@ -174,7 +174,7 @@ void PASI::PasiPartTwoWayCoup::Outerloop()
     build_increment_states();
 
     // convergence check for structure and particles fields
-    stopnonliniter = ConvergenceCheck(itnum);
+    stopnonliniter = convergence_check(itnum);
 
     // set interface states
     SetInterfaceStates(intfdispnp_, intfvelnp_, intfaccnp_);
@@ -320,7 +320,7 @@ void PASI::PasiPartTwoWayCoup::GetInterfaceForces()
   if (err) FOUR_C_THROW("export of interface forces failed with err=%d", err);
 }
 
-bool PASI::PasiPartTwoWayCoup::ConvergenceCheck(int itnum)
+bool PASI::PasiPartTwoWayCoup::convergence_check(int itnum)
 {
   bool stopnonliniter = false;
 
@@ -547,7 +547,7 @@ void PASI::PasiPartTwoWayCoupDispRelax::Outerloop()
     build_increment_states();
 
     // convergence check for structure and particles fields
-    stopnonliniter = ConvergenceCheck(itnum);
+    stopnonliniter = convergence_check(itnum);
 
     // calculate relaxation parameter
     CalcOmega(omega_, itnum);
@@ -603,10 +603,10 @@ void PASI::PasiPartTwoWayCoupDispRelaxAitken::Init()
   intfdispincnpold_ = CORE::LINALG::CreateVector(*interface_->PASICondMap(), true);
 }
 
-void PASI::PasiPartTwoWayCoupDispRelaxAitken::ReadRestart(int restartstep)
+void PASI::PasiPartTwoWayCoupDispRelaxAitken::read_restart(int restartstep)
 {
   // call base class read restart
-  PASI::PasiPartTwoWayCoupDispRelax::ReadRestart(restartstep);
+  PASI::PasiPartTwoWayCoupDispRelax::read_restart(restartstep);
 
   IO::DiscretizationReader reader(structurefield_->Discretization(),
       GLOBAL::Problem::Instance()->InputControlFile(), restartstep);

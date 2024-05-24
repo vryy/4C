@@ -80,7 +80,7 @@ CONTACT::AUG::Interface::Interface(
  *----------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::Setup()
 {
-  if (interface_data_.IsSetup()) return;
+  if (interface_data_.is_setup()) return;
 
   // find smallest interface element edge length
   double myMinEdgeLength = 1.0e12;
@@ -172,7 +172,7 @@ void CONTACT::AUG::Interface::Setup()
   interface_data_.set_sl_ma_element_area_ratio(slMaElementAreaRatio);
   interface_data_.set_is_triangle_on_master(isTriangleOnMaster);
 
-  interface_data_.IsSetup() = true;
+  interface_data_.is_setup() = true;
 
   // ------------------------------------------------------------------------
   // Setup assemble strategy
@@ -314,7 +314,7 @@ void CONTACT::AUG::Interface::RedEvaluate(const Teuchos::RCP<MORTAR::ParamsInter
 
   // interface needs to be complete
   if (!Filled() && Comm().MyPID() == 0)
-    FOUR_C_THROW("FillComplete() not called on interface %", id_);
+    FOUR_C_THROW("fill_complete() not called on interface %", id_);
 
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
@@ -334,9 +334,9 @@ void CONTACT::AUG::Interface::RedEvaluate(const Teuchos::RCP<MORTAR::ParamsInter
     /**************************************************************************
      *    Integrate all remaining quantities only over the slave interface    *
      **************************************************************************/
-    // create a Augmented Lagrangian integrator instance with correct NumGP and Dim
+    // create a Augmented Lagrangian integrator instance with correct num_gp and Dim
     CONTACT::AUG::IntegrationWrapper augIntegrationWrapper(
-        InterfaceParams(), selement->Shape(), Comm());
+        interface_params(), selement->Shape(), Comm());
     switch (Dim())
     {
       case 2:
@@ -740,7 +740,7 @@ void CONTACT::AUG::Interface::assemble_gap_vector_of_all_sl_nodes(
 void CONTACT::AUG::Interface::AssembleLmNVector(Epetra_Vector& lmNVec) const
 {
   // get cn
-  //  const double cn = InterfaceParams().get<double>("SEMI_SMOOTH_CN");
+  //  const double cn = interface_params().get<double>("SEMI_SMOOTH_CN");
 
   // loop over proc's active slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
@@ -848,7 +848,7 @@ void CONTACT::AUG::Interface::assemble_aug_inactive_rhs(
       CORE::LINALG::SplitMap(*snoderowmap_, *activenodes_);
 
   // get ct and invert it
-  double ct_inv = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
+  double ct_inv = interface_params().get<double>("SEMI_SMOOTH_CT");
   ct_inv = 1 / ct_inv;
 
   const int nummynodes = augInactiveSlaveNodes->NumMyElements();
@@ -895,7 +895,7 @@ void CONTACT::AUG::Interface::assemble_aug_inactive_rhs(
 void CONTACT::AUG::Interface::AssembleDLmTLmTRhs(Epetra_Vector& dLmTLmTRhs) const
 {
   // get ct and invert it
-  double ct_inv = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
+  double ct_inv = interface_params().get<double>("SEMI_SMOOTH_CT");
   ct_inv = 1 / ct_inv;
 
   // loop over proc's active slave nodes of the interface for assembly
@@ -966,7 +966,7 @@ void CONTACT::AUG::Interface::assemble_d_lm_t_lm_t_matrix(
     CORE::LINALG::SparseMatrix& dLmTLmTMatrix) const
 {
   // get ct and invert it
-  double ct_inv = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
+  double ct_inv = interface_params().get<double>("SEMI_SMOOTH_CT");
   ct_inv = 1 / ct_inv;
 
   // loop over proc's slave nodes of the interface for assembly
@@ -1015,7 +1015,7 @@ void CONTACT::AUG::Interface::assemble_d_lm_t_lm_t_lin_matrix(
     CORE::LINALG::SparseMatrix& dLmTLmTLinMatrix) const
 {
   // get ct and invert it
-  double ct_inv = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
+  double ct_inv = interface_params().get<double>("SEMI_SMOOTH_CT");
   ct_inv = 1 / ct_inv;
 
   // loop over proc's slave nodes of the interface for assembly
@@ -1064,7 +1064,7 @@ void CONTACT::AUG::Interface::assemble_aug_inactive_diag_matrix(
       CORE::LINALG::SplitMap(*snoderowmap_, *activenodes_);
 
   // get ct and invert it
-  double ct_inv = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
+  double ct_inv = interface_params().get<double>("SEMI_SMOOTH_CT");
   ct_inv = 1 / ct_inv;
 
   const int nummynodes = augInactiveSlaveNodes->NumMyElements();
@@ -1125,7 +1125,7 @@ void CONTACT::AUG::Interface::assemble_aug_inactive_lin_matrix(
     const double inactive_scale) const
 {
   // get ct and invert it
-  double ct_inv = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
+  double ct_inv = interface_params().get<double>("SEMI_SMOOTH_CT");
   ct_inv = 1 / ct_inv;
 
   const int nummynodes = inactivenodes_->NumMyElements();
@@ -1299,7 +1299,7 @@ bool CONTACT::AUG::Interface::BuildActiveSet(bool init)
 
   SplitAugActiveDofs();
 
-  BuildActiveColMaps();
+  build_active_col_maps();
 
   return true;
 }
@@ -1310,7 +1310,7 @@ bool CONTACT::AUG::Interface::set_node_initially_active(
     const CONTACT::ParamsInterface& cparams, CONTACT::Node& cnode) const
 {
   static const bool init_contact_by_gap =
-      CORE::UTILS::IntegralValue<int>(InterfaceParams(), "INITCONTACTBYGAP");
+      CORE::UTILS::IntegralValue<int>(interface_params(), "INITCONTACTBYGAP");
 
   const bool node_init_active = cnode.IsInitActive();
 
@@ -1341,7 +1341,7 @@ bool CONTACT::AUG::Interface::set_node_initially_active(
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::set_node_initially_active_by_gap(CONTACT::Node& cnode) const
 {
-  static const double initcontactval = InterfaceParams().get<double>("INITCONTACTGAPVALUE");
+  static const double initcontactval = interface_params().get<double>("INITCONTACTGAPVALUE");
 
   if (cnode.AugData().GetWGap() < initcontactval) cnode.Active() = true;
 }
@@ -1479,7 +1479,7 @@ void CONTACT::AUG::Interface::SplitSlaveDofs()
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::BuildActiveColMaps()
+void CONTACT::AUG::Interface::build_active_col_maps()
 {
   Epetra_IntVector active_row_nodes(*snoderowmap_, true);
   Epetra_IntVector active_col_nodes(*snodecolmap_, true);
@@ -1621,7 +1621,7 @@ void CONTACT::AUG::Interface::assemble_gradient_b_matrix_contribution(
 
     // --- SLAVE SIDE
     {
-      const Deriv2ndMap& varWGapLinSlMap = GetVarWGapLinOfSide<SideType::slave>(*cnode);
+      const Deriv2ndMap& varWGapLinSlMap = get_var_w_gap_lin_of_side<SideType::slave>(*cnode);
 
       assemble_gradient_b_matrix_contribution_of_side(
           dincr.Map(), varWGapLinSlMap, 1.0, str_grad_vals, dincr_vals, lmincr_j);
@@ -1629,7 +1629,7 @@ void CONTACT::AUG::Interface::assemble_gradient_b_matrix_contribution(
 
     // --- MASTER SIDE
     {
-      const Deriv2ndMap& varWGapLinMaMap = GetVarWGapLinOfSide<SideType::master>(*cnode);
+      const Deriv2ndMap& varWGapLinMaMap = get_var_w_gap_lin_of_side<SideType::master>(*cnode);
 
       assemble_gradient_b_matrix_contribution_of_side(
           dincr.Map(), varWGapLinMaMap, -1.0, str_grad_vals, dincr_vals, lmincr_j);
@@ -1754,7 +1754,7 @@ void CONTACT::AUG::Interface::assemble_gradient_bb_matrix_contribution_of_side(c
     const double* const dincr_vals, const double* const lm_vals, double* const lmincr_vals,
     double& lmincr_k) const
 {
-  const Deriv1stMap& varWGapSideMap = GetVarWGapOfSide<side>(cnode_k);
+  const Deriv1stMap& varWGapSideMap = get_var_w_gap_of_side<side>(cnode_k);
 
   for (Deriv1stMap::const_iterator ci = varWGapSideMap.begin(); ci != varWGapSideMap.end(); ++ci)
   {
@@ -1773,7 +1773,7 @@ void CONTACT::AUG::Interface::assemble_gradient_bb_matrix_contribution_of_side(c
       Node* cnode_j = static_cast<Node*>(idiscret_->gNode(jgid));
       FOUR_C_ASSERT(cnode_j, "ERROR: Cannot find slave node!");
 
-      const Deriv2ndMap& varWGapLinSideMap = GetVarWGapLinOfSide<side>(*cnode_j);
+      const Deriv2ndMap& varWGapLinSideMap = get_var_w_gap_lin_of_side<side>(*cnode_j);
 
       Deriv2ndMap::const_iterator cci = varWGapLinSideMap.find(var_kgid);
       if (varWGapLinSideMap.end() == cci) continue;
@@ -1814,7 +1814,8 @@ void CONTACT::AUG::Interface::assemble_gradient_bb_matrix_contribution_of_side(c
  *----------------------------------------------------------------------------*/
 template <>
 const CONTACT::AUG::Deriv1stMap&
-CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::master>(const Node& cnode) const
+CONTACT::AUG::Interface::get_var_w_gap_of_side<CONTACT::AUG::SideType::master>(
+    const Node& cnode) const
 {
   return cnode.AugData().GetDeriv1st_WGapMa();
 }
@@ -1823,7 +1824,8 @@ CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::master>(const 
  *----------------------------------------------------------------------------*/
 template <>
 const CONTACT::AUG::Deriv1stMap&
-CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::slave>(const Node& cnode) const
+CONTACT::AUG::Interface::get_var_w_gap_of_side<CONTACT::AUG::SideType::slave>(
+    const Node& cnode) const
 {
   return cnode.AugData().GetDeriv1st_WGapSl();
 }
@@ -1832,7 +1834,7 @@ CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::slave>(const N
  *----------------------------------------------------------------------------*/
 template <>
 const CONTACT::AUG::Deriv2ndMap&
-CONTACT::AUG::Interface::GetVarWGapLinOfSide<CONTACT::AUG::SideType::master>(
+CONTACT::AUG::Interface::get_var_w_gap_lin_of_side<CONTACT::AUG::SideType::master>(
     const Node& cnode) const
 {
   return cnode.AugData().GetDeriv2nd_WGapMa();
@@ -1842,7 +1844,8 @@ CONTACT::AUG::Interface::GetVarWGapLinOfSide<CONTACT::AUG::SideType::master>(
  *----------------------------------------------------------------------------*/
 template <>
 const CONTACT::AUG::Deriv2ndMap&
-CONTACT::AUG::Interface::GetVarWGapLinOfSide<CONTACT::AUG::SideType::slave>(const Node& cnode) const
+CONTACT::AUG::Interface::get_var_w_gap_lin_of_side<CONTACT::AUG::SideType::slave>(
+    const Node& cnode) const
 {
   return cnode.AugData().GetDeriv2nd_WGapSl();
 }
@@ -1953,7 +1956,7 @@ double CONTACT::AUG::Interface::get_my_square_of_weighted_gap_gradient_error() c
 double CONTACT::AUG::Interface::my_characteristic_element_length(
     const enum CONTACT::AUG::SideType stype) const
 {
-  Teuchos::RCP<const Epetra_Map> ele_map_ptr = interface_data_.ElementRowMapPtr(stype);
+  Teuchos::RCP<const Epetra_Map> ele_map_ptr = interface_data_.element_row_map_ptr(stype);
   const int num_my_entries = ele_map_ptr->NumMyElements();
   const int* my_gids = ele_map_ptr->MyGlobalElements();
 
@@ -2082,12 +2085,12 @@ void CONTACT::AUG::Interface::split_into_far_and_close_sets(std::vector<int>& cl
       if (close)
       {
         close_sele.push_back(gid);
-        for (int k = 0; k < ele->NumNode(); ++k) local_close_nodes.push_back(ele->NodeIds()[k]);
+        for (int k = 0; k < ele->num_node(); ++k) local_close_nodes.push_back(ele->NodeIds()[k]);
       }
       else
       {
         far_sele.push_back(gid);
-        for (int k = 0; k < ele->NumNode(); ++k) local_far_nodes.push_back(ele->NodeIds()[k]);
+        for (int k = 0; k < ele->num_node(); ++k) local_far_nodes.push_back(ele->NodeIds()[k]);
       }
     }
   }
@@ -2119,17 +2122,17 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::Interface::collect_row_node_owners(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> CONTACT::AUG::InterfaceDataContainer::ElementRowMapPtr(
+Teuchos::RCP<const Epetra_Map> CONTACT::AUG::InterfaceDataContainer::element_row_map_ptr(
     const enum SideType stype) const
 {
   switch (stype)
   {
     case SideType::slave:
-      return ElementRowMapPtr<SideType::slave>();
+      return element_row_map_ptr<SideType::slave>();
     case SideType::master:
-      return ElementRowMapPtr<SideType::master>();
+      return element_row_map_ptr<SideType::master>();
     case SideType::slave_master:
-      return ElementRowMapPtr<SideType::slave_master>();
+      return element_row_map_ptr<SideType::slave_master>();
     default:
       FOUR_C_THROW("Unknown sidetype. (enum=%d)", stype);
       exit(EXIT_FAILURE);
@@ -2140,7 +2143,7 @@ Teuchos::RCP<const Epetra_Map> CONTACT::AUG::InterfaceDataContainer::ElementRowM
  *----------------------------------------------------------------------------*/
 template <>
 Teuchos::RCP<const Epetra_Map>
-CONTACT::AUG::InterfaceDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::master>() const
+CONTACT::AUG::InterfaceDataContainer::element_row_map_ptr<CONTACT::AUG::SideType::master>() const
 {
   if (MEleRowMap().is_null()) FOUR_C_THROW("Master element row map ptr is nullptr.");
 
@@ -2151,7 +2154,7 @@ CONTACT::AUG::InterfaceDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::m
  *----------------------------------------------------------------------------*/
 template <>
 Teuchos::RCP<const Epetra_Map>
-CONTACT::AUG::InterfaceDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::slave>() const
+CONTACT::AUG::InterfaceDataContainer::element_row_map_ptr<CONTACT::AUG::SideType::slave>() const
 {
   if (SEleRowMap().is_null()) FOUR_C_THROW("Slave element row map ptr is nullptr.");
 
@@ -2161,11 +2164,11 @@ CONTACT::AUG::InterfaceDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::s
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <>
-Teuchos::RCP<const Epetra_Map>
-CONTACT::AUG::InterfaceDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::slave_master>() const
+Teuchos::RCP<const Epetra_Map> CONTACT::AUG::InterfaceDataContainer::element_row_map_ptr<
+    CONTACT::AUG::SideType::slave_master>() const
 {
-  Teuchos::RCP<const Epetra_Map> slelerowmap = ElementRowMapPtr<SideType::slave>();
-  Teuchos::RCP<const Epetra_Map> maelerowmap = ElementRowMapPtr<SideType::master>();
+  Teuchos::RCP<const Epetra_Map> slelerowmap = element_row_map_ptr<SideType::slave>();
+  Teuchos::RCP<const Epetra_Map> maelerowmap = element_row_map_ptr<SideType::master>();
 
   return CORE::LINALG::MergeMap(slelerowmap, maelerowmap);
 }

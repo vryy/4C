@@ -104,8 +104,8 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
   CORE::GEO::CUT::ElementHandle* p_master_handle = wizard->GetElement(p_master);
   CORE::GEO::CUT::ElementHandle* p_slave_handle = wizard->GetElement(p_slave);
 
-  size_t p_master_numnode = p_master->NumNode();
-  size_t p_slave_numnode = p_slave->NumNode();
+  size_t p_master_numnode = p_master->num_node();
+  size_t p_slave_numnode = p_slave->num_node();
 
   // get the parent element
   int p_master_id = p_master->Id();
@@ -170,7 +170,7 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
         p_master->Shape() == CORE::FE::CellType::wedge6 or
         p_master->Shape() == CORE::FE::CellType::pyramid5)
     {
-      CORE::GEO::CUT::SideHandle* side = GetFace(faceele, wizard);
+      CORE::GEO::CUT::SideHandle* side = get_face(faceele, wizard);
 
       //-------------------------------- loop facets of this side -----------------------------
       // facet of current side
@@ -202,8 +202,8 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
 
 
             // get the parent element
-            int vc_ele1_id = vc1->ParentElement()->Id();
-            int vc_ele2_id = vc2->ParentElement()->Id();
+            int vc_ele1_id = vc1->parent_element()->Id();
+            int vc_ele2_id = vc2->parent_element()->Id();
 
             bool all_dofs = (facets.size() == 1 && include_inner_faces);
             if ((*f)->Position() == CORE::GEO::CUT::Point::outside || include_inner)
@@ -226,18 +226,18 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
             }
             else if ((*f)->Position() == CORE::GEO::CUT::Point::inside && all_dofs)
             {
-              for (std::size_t n = 0; n < vc1->ParentElement()->Nodes().size(); ++n)
+              for (std::size_t n = 0; n < vc1->parent_element()->Nodes().size(); ++n)
               {
-                if (!vc1->ParentElement()->Nodes()[n]->NodalDofSets().size())
+                if (!vc1->parent_element()->Nodes()[n]->NodalDofSets().size())
                 {
                   all_dofs = false;
                   break;
                 }
               }
               if (all_dofs)
-                for (std::size_t n = 0; n < vc2->ParentElement()->Nodes().size(); ++n)
+                for (std::size_t n = 0; n < vc2->parent_element()->Nodes().size(); ++n)
                 {
-                  if (!vc2->ParentElement()->Nodes()[n]->NodalDofSets().size())
+                  if (!vc2->parent_element()->Nodes()[n]->NodalDofSets().size())
                   {
                     all_dofs = false;
                     break;
@@ -247,11 +247,11 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
               {
                 nds_master.clear();
                 nds_slave.clear();
-                if (vc1->ParentElement()->NumNodes() == vc2->ParentElement()->NumNodes())
+                if (vc1->parent_element()->NumNodes() == vc2->parent_element()->NumNodes())
                 {
                   //------------------------ create nodal dof sets
                   TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: create nds");
-                  for (std::size_t n = 0; n < vc2->ParentElement()->Nodes().size(); ++n)
+                  for (std::size_t n = 0; n < vc2->parent_element()->Nodes().size(); ++n)
                   {
                     nds_master.push_back(0);
                     nds_slave.push_back(0);
@@ -324,7 +324,7 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
              p_master->Shape() == CORE::FE::CellType::wedge15)
     {
       CORE::GEO::CUT::SideHandle* side =
-          GetFace(faceele, wizard);  // the side of the quadratic element
+          get_face(faceele, wizard);  // the side of the quadratic element
       //-------------------------------- loop facets of this side -----------------------------
       // facet of current side
       std::vector<CORE::GEO::CUT::Facet*> facets;
@@ -357,8 +357,8 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
               CORE::GEO::CUT::VolumeCell* vc2 = *(vc_it);
 
               // get the parent element
-              int vc_ele1_id = vc1->ParentElement()->GetParentId();
-              int vc_ele2_id = vc2->ParentElement()->GetParentId();
+              int vc_ele1_id = vc1->parent_element()->GetParentId();
+              int vc_ele2_id = vc2->parent_element()->GetParentId();
 
               // which element is the parent element
               if (vc_ele1_id == p_master_id)
@@ -477,7 +477,7 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
         p_master->Shape() == CORE::FE::CellType::tet10 or
         p_master->Shape() == CORE::FE::CellType::wedge15)
     {
-      CORE::GEO::CUT::SideHandle* side = GetFace(faceele, wizard);
+      CORE::GEO::CUT::SideHandle* side = get_face(faceele, wizard);
 
       // facet of current side
       std::vector<CORE::GEO::CUT::Facet*> facets;
@@ -509,10 +509,10 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
             CORE::GEO::CUT::VolumeCell* vc = *(vcs.begin());
 
             // get the parent element
-            int vc_ele_id = vc->ParentElement()->Id();
+            int vc_ele_id = vc->parent_element()->Id();
             if (vc_ele_id == -1)
             {
-              vc_ele_id = vc->ParentElement()->GetParentId();
+              vc_ele_id = vc->parent_element()->GetParentId();
             }
 
 
@@ -636,13 +636,13 @@ void XFEM::XfemEdgeStab::assemble_edge_stab_ghost_penalty(
  | get the cut side for face's element identified using the sorted      |
  | node ids                                                schott 04/12 |
  *----------------------------------------------------------------------*/
-CORE::GEO::CUT::SideHandle* XFEM::XfemEdgeStab::GetFace(
+CORE::GEO::CUT::SideHandle* XFEM::XfemEdgeStab::get_face(
     DRT::Element* faceele, Teuchos::RCP<CORE::GEO::CutWizard> wizard)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: GetFace");
+  TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: get_face");
 
   // get faceele's nodes
-  const int numnode = faceele->NumNode();
+  const int numnode = faceele->num_node();
   std::vector<int> nodeids(numnode);
 
   for (int inode = 0; inode < numnode; inode++)
@@ -652,7 +652,7 @@ CORE::GEO::CUT::SideHandle* XFEM::XfemEdgeStab::GetFace(
 
   std::sort(nodeids.begin(), nodeids.end());
 
-  return wizard->GetSide(nodeids);
+  return wizard->get_side(nodeids);
 }
 
 /*----------------------------------------------------------------------*
@@ -687,8 +687,8 @@ void XFEM::XfemEdgeStab::EvaluateEdgeStabStd(
   DRT::ELEMENTS::Fluid* p_master = faceele->ParentMasterElement();
   DRT::ELEMENTS::Fluid* p_slave = faceele->ParentSlaveElement();
 
-  size_t p_master_numnode = p_master->NumNode();
-  size_t p_slave_numnode = p_slave->NumNode();
+  size_t p_master_numnode = p_master->num_node();
+  size_t p_slave_numnode = p_slave->num_node();
 
   //------------------------------------------------------------------------------
   // simplest case: no element handles for both parent elements
@@ -740,8 +740,8 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_boundary_gp(
   DRT::ELEMENTS::Fluid* p_master = faceele->ParentMasterElement();
   DRT::ELEMENTS::Fluid* p_slave = faceele->ParentSlaveElement();
 
-  size_t p_master_numnode = p_master->NumNode();
-  size_t p_slave_numnode = p_slave->NumNode();
+  size_t p_master_numnode = p_master->num_node();
+  size_t p_slave_numnode = p_slave->num_node();
 
 
   std::vector<int> nds_master;

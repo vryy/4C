@@ -38,7 +38,7 @@ STR::IMPLICIT::GenAlphaLieGroup::GenAlphaLieGroup() : accn_mod_(Teuchos::null)
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::GenAlphaLieGroup::Setup()
 {
-  CheckInit();
+  check_init();
 
   // ---------------------------------------------------------------------------
   // setup additional state vectors of modified acceleration
@@ -51,9 +51,9 @@ void STR::IMPLICIT::GenAlphaLieGroup::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlphaLieGroup::PostSetup()
+void STR::IMPLICIT::GenAlphaLieGroup::post_setup()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (SDyn().GetMassLinType() != INPAR::STR::ml_rotations and !SDyn().NeglectInertia())
   {
@@ -87,15 +87,15 @@ void STR::IMPLICIT::GenAlphaLieGroup::PostSetup()
     PreUpdate();
     UpdateStepState();
     UpdateStepElement();
-    PostUpdate();
+    post_update();
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlphaLieGroup::SetState(const Epetra_Vector& x)
+void STR::IMPLICIT::GenAlphaLieGroup::set_state(const Epetra_Vector& x)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (IsPredictorState()) return;
 
@@ -131,7 +131,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::SetState(const Epetra_Vector& x)
 void STR::IMPLICIT::GenAlphaLieGroup::WriteRestart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
-  CheckInitSetup();
+  check_init_setup();
   // write modified acceleration vector
   iowriter.WriteVector("accn_mod", accn_mod_);
 
@@ -140,19 +140,19 @@ void STR::IMPLICIT::GenAlphaLieGroup::WriteRestart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlphaLieGroup::ReadRestart(IO::DiscretizationReader& ioreader)
+void STR::IMPLICIT::GenAlphaLieGroup::read_restart(IO::DiscretizationReader& ioreader)
 {
-  CheckInitSetup();
+  check_init_setup();
   ioreader.ReadVector(accn_mod_, "accn_mod");
 
-  GenAlpha::ReadRestart(ioreader);
+  GenAlpha::read_restart(ioreader);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::GenAlphaLieGroup::UpdateStepState()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // new at t_{n+1} -> t_n
   //    acc_mod_{n} := -alpha_m/(1-alpha_m) * acc_mod_{n}
@@ -201,7 +201,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::update_constant_state_contributions()
  *----------------------------------------------------------------------------*/
 double STR::IMPLICIT::GenAlphaLieGroup::GetIntParam() const
 {
-  CheckInitSetup();
+  check_init_setup();
   return 0.0;
 }
 
@@ -235,7 +235,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::add_visco_mass_contributions(
 void STR::IMPLICIT::GenAlphaLieGroup::predict_const_dis_consist_vel_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
-  CheckInitSetup();
+  check_init_setup();
   Teuchos::RCP<const Epetra_Vector> disn = GlobalState().GetDisN();
   Teuchos::RCP<const Epetra_Vector> veln = GlobalState().GetVelN();
   Teuchos::RCP<const Epetra_Vector> accn = GlobalState().GetAccN();
@@ -263,7 +263,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::predict_const_dis_consist_vel_acc(
 bool STR::IMPLICIT::GenAlphaLieGroup::predict_const_vel_consist_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   FOUR_C_THROW(
       "Predictor ConstVelConsistAcc is not supported in Lie group GenAlpha so"
@@ -277,7 +277,7 @@ bool STR::IMPLICIT::GenAlphaLieGroup::predict_const_vel_consist_acc(
 bool STR::IMPLICIT::GenAlphaLieGroup::PredictConstAcc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   FOUR_C_THROW(
       "Predictor ConstAcc is not supported in Lie group GenAlpha so far! Use "

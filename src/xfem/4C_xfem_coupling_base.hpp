@@ -93,21 +93,21 @@ namespace XFEM
     virtual void Setup();
 
     /// get the indicator state
-    inline const bool& IsInit() const { return isinit_; };
+    inline const bool& is_init() const { return isinit_; };
 
     /// get the indicator state
-    inline const bool& IsSetup() const { return issetup_; };
+    inline const bool& is_setup() const { return issetup_; };
 
     /// Check if Init() and Setup() have been called, yet.
-    inline void CheckInitSetup() const
+    inline void check_init_setup() const
     {
-      if (!IsInit() or !IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
+      if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
     }
 
     /// Check if Init() has been called
-    inline void CheckInit() const
+    inline void check_init() const
     {
-      if (not IsInit()) FOUR_C_THROW("Call Init() first!");
+      if (not is_init()) FOUR_C_THROW("Call Init() first!");
     }
 
     //! cutter dis should be loaded into the cut?

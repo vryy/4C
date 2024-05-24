@@ -170,7 +170,7 @@ namespace CONTACT
       void Insert(const int gp, const double uniqueProjAlpha, const double uniqueMxi[],
           const double scaling)
       {
-        ReserveSize();
+        reserve_size();
 
         gaussPoints_.push_back(gp);
         uniqueProjAlpha_.push_back(uniqueProjAlpha);
@@ -231,7 +231,7 @@ namespace CONTACT
 
      private:
       /// reserve capacity for the member variables
-      inline void ReserveSize()
+      inline void reserve_size()
       {
         if (gaussPoints_.capacity() > 0) return;
 

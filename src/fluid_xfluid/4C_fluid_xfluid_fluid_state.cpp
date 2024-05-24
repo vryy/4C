@@ -164,7 +164,7 @@ bool FLD::XFluidFluidState::Destroy()
 
   // TODO: actually it should be possible to delete the dofrowmap, however this causes problems in
   // xffsi applications! (CHECK THIS!!!)
-  // DofRowMap() in Xfluidfluid currently returns a strong RCP
+  // dof_row_map() in Xfluidfluid currently returns a strong RCP
   if (xffluiddofrowmap_.strong_count() == 1)
     xffluiddofrowmap_ = Teuchos::null;
   else  // FOUR_C_THROW("could not destroy object: %i!=1 pointers",

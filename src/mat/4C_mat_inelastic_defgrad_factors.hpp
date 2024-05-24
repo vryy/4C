@@ -456,7 +456,7 @@ namespace MAT
      * @param[in] params  parameter list as handed in from the element
      * @param[in] gp      Gauss point
      */
-    virtual void PreEvaluate(Teuchos::ParameterList& params, int gp) = 0;
+    virtual void pre_evaluate(Teuchos::ParameterList& params, int gp) = 0;
 
     /*!
      * @brief set gauss point concentration to parameter class
@@ -530,7 +530,7 @@ namespace MAT
       return CORE::Materials::mfi_no_growth;
     }
 
-    void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
+    void pre_evaluate(Teuchos::ParameterList& params, int gp) override;
 
    private:
     // identity tensor
@@ -576,10 +576,10 @@ namespace MAT
           MAT::InelasticDefgradFactors::Parameter());
     }
 
-    void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
+    void pre_evaluate(Teuchos::ParameterList& params, int gp) override;
 
    private:
-    //! evaluated function value. Gets filled in PreEvaluate()
+    //! evaluated function value. Gets filled in pre_evaluate()
     double funct_value_;
 
     //! identity tensor
@@ -612,7 +612,7 @@ namespace MAT
 
     CORE::Materials::MaterialType MaterialType() const override = 0;
 
-    void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
+    void pre_evaluate(Teuchos::ParameterList& params, int gp) override;
 
     void SetConcentrationGP(double concentration) override;
 
@@ -961,11 +961,11 @@ namespace MAT
           MAT::InelasticDefgradFactors::Parameter());
     }
 
-    void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
+    void pre_evaluate(Teuchos::ParameterList& params, int gp) override;
 
    private:
     //! Get temperature at current Gauss point
-    double GetTemperatureGP() const { return temperatures_->at(GetGP()); };
+    double get_temperature_gp() const { return temperatures_->at(GetGP()); };
 
     /// store vector of gauss point temperature calculated in the pre-evaluate of the so3_scatra
     /// element

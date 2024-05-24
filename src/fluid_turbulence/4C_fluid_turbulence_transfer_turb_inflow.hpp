@@ -72,14 +72,15 @@ namespace FLD
     };
 
     //! get all data from condtion
-    void GetData(int& id, int& direction, ToggleType& type, const CORE::Conditions::Condition*);
+    void get_data(int& id, int& direction, ToggleType& type, const CORE::Conditions::Condition*);
 
     //! receive a block in the round robin communication pattern
-    void ReceiveBlock(
+    void receive_block(
         std::vector<char>& rblock, CORE::COMM::Exporter& exporter, MPI_Request& request);
 
     //! send a block in the round robin communication pattern
-    void SendBlock(std::vector<char>& sblock, CORE::COMM::Exporter& exporter, MPI_Request& request);
+    void send_block(
+        std::vector<char>& sblock, CORE::COMM::Exporter& exporter, MPI_Request& request);
 
     //! unpack all master values contained in receive block
     void unpack_local_master_values(std::vector<int>& mymasters,
@@ -165,7 +166,7 @@ namespace FLD
     void Transfer(const Teuchos::RCP<Epetra_Vector> invec, Teuchos::RCP<Epetra_Vector> outvec,
         const double time) override;
 
-    bool IsActive() { return active_; }
+    bool is_active() { return active_; }
 
    private:
     //! for all values avaible on the processor, do the final setting of the value

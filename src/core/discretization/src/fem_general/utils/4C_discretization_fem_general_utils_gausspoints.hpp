@@ -281,7 +281,7 @@ namespace CORE::FE
 
     /// Create Gauss integration rule of given degree
     template <CORE::FE::CellType distype>
-    static Teuchos::RCP<GaussPoints> CreateProjected(
+    static Teuchos::RCP<GaussPoints> create_projected(
         const CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::num_nodes<distype>>& xie,
         int degree)
     {

@@ -69,10 +69,10 @@ namespace ADAPTER
     virtual Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() = 0;
 
     /// read restart
-    virtual void ReadRestart(int restart) = 0;
+    virtual void read_restart(int restart) = 0;
 
     /// access dof row map
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds = 0) const = 0;
+    virtual Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds = 0) const = 0;
 
     /// access dof row map of artery discretization
     virtual Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const = 0;
@@ -91,7 +91,7 @@ namespace ADAPTER
         ) = 0;
 
     //! set state on discretization
-    virtual void SetState(
+    virtual void set_state(
         unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state) = 0;
 
     //! return primary field at time n+1
@@ -119,7 +119,7 @@ namespace ADAPTER
     virtual void TimeLoop() = 0;
 
     //! initialization procedure prior to evaluation of a time step
-    virtual void PrepareTimeStep() = 0;
+    virtual void prepare_time_step() = 0;
 
     //! output solution and restart data to file
     virtual void Output() = 0;
@@ -134,7 +134,7 @@ namespace ADAPTER
     virtual void Solve() = 0;
 
     /// prepare timeloop of coupled problem
-    virtual void PrepareTimeLoop() = 0;
+    virtual void prepare_time_loop() = 0;
 
     //! return number of dof set associated with solid pressure
     virtual int get_dof_set_number_of_solid_pressure() const = 0;

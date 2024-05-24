@@ -40,7 +40,7 @@ void PARTICLEWALL::WallResultTest::Setup(
   walldiscretization_ = particlewallinterface_->get_wall_discretization();
 }
 
-void PARTICLEWALL::WallResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void PARTICLEWALL::WallResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // extract and check discretization name
   std::string dis;

@@ -48,11 +48,11 @@ void FLD::TimIntRedModelsOst::Init()
 /*----------------------------------------------------------------------*
  |  read restart data                                   rasthofer 12/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedModelsOst::ReadRestart(int step)
+void FLD::TimIntRedModelsOst::read_restart(int step)
 {
   // call of base classes
-  TimIntOneStepTheta::ReadRestart(step);
-  TimIntRedModels::ReadRestart(step);
+  TimIntOneStepTheta::read_restart(step);
+  TimIntRedModels::read_restart(step);
 
   return;
 }

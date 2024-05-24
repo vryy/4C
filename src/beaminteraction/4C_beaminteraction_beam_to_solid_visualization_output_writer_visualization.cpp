@@ -124,7 +124,7 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::Write(
   // Reset the data.
   discret_ = Teuchos::null;
   node_gid_map_ = Teuchos::null;
-  ClearData();
+  clear_data();
 }
 
 FOUR_C_NAMESPACE_CLOSE

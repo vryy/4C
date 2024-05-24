@@ -184,7 +184,7 @@ FLD::XWall::XWall(Teuchos::RCP<DRT::Discretization> dis, int nsd,
   turbulent_inflow_condition_ =
       Teuchos::rcp(new TransferTurbulentInflowConditionNodal(discret_, dbcmaps));
 
-  if (turbulent_inflow_condition_->IsActive())
+  if (turbulent_inflow_condition_->is_active())
   {
     oldtauw_ = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
     oldinctauw_ = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
@@ -391,7 +391,7 @@ void FLD::XWall::InitWallDist()
     DRT::Element* node = discret_->lColElement(i);
     if (!node) FOUR_C_THROW("Cannot find ele with lid %", i);
     Teuchos::RCP<DRT::Element> newnode = Teuchos::rcp(node->Clone());
-    commondis->AddElement(newnode);
+    commondis->add_element(newnode);
   }
 
   Teuchos::RCP<Epetra_Map> testrednodecolmap =
@@ -400,7 +400,7 @@ void FLD::XWall::InitWallDist()
 
   // do not assign any dofs to save memory
   // only the nodes are needed in this discretization
-  commondis->FillComplete(false, false, false);
+  commondis->fill_complete(false, false, false);
 
   // also build a fully overlapping map of enriched nodes here:
   std::vector<int> colvec;  // node col map
@@ -594,7 +594,7 @@ void FLD::XWall::SetupXWallDis()
     if (!xwallele) continue;
 
     Teuchos::RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
-    xwdiscret_->AddElement(newele);
+    xwdiscret_->add_element(newele);
   }
 
   // make all conditions known to the child discretization
@@ -627,7 +627,7 @@ void FLD::XWall::SetupXWallDis()
       Teuchos::rcp(new CORE::Dofsets::TransparentDofSet(discret_, parallel));
 
   xwdiscret_->ReplaceDofSet(newdofset);
-  xwdiscret_->FillComplete(true, true, true);
+  xwdiscret_->fill_complete(true, true, true);
 
   // redistribute and treat periodic bc if parallel
   if (parallel)
@@ -650,7 +650,7 @@ void FLD::XWall::SetupXWallDis()
     CORE::Conditions::PeriodicBoundaryConditions pbc(xwdiscret_, false);
     pbc.update_dofs_for_periodic_boundary_conditions();
     xwdiscret_->ReplaceDofSet(newdofset);
-    xwdiscret_->FillComplete(true, true, true);
+    xwdiscret_->fill_complete(true, true, true);
   }
 
   return;
@@ -709,13 +709,13 @@ void FLD::XWall::SetupL2Projection()
 
     massmatrix_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*enrdofrowmap_, 108, false, true));
 
-    incveln_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
-    incvelnp_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
-    incaccn_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
+    incveln_ = Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true));
+    incvelnp_ = Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true));
+    incaccn_ = Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true));
 
-    stateveln_ = Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->DofRowMap()), true));
-    statevelnp_ = Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->DofRowMap()), true));
-    stateaccn_ = Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->DofRowMap()), true));
+    stateveln_ = Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->dof_row_map()), true));
+    statevelnp_ = Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->dof_row_map()), true));
+    stateaccn_ = Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->dof_row_map()), true));
 
     mergedmap_ = Teuchos::null;
     lagrdofrowmap_ = Teuchos::null;
@@ -879,7 +879,7 @@ void FLD::XWall::UpdateTauW(int step, Teuchos::RCP<Epetra_Vector> trueresidual, 
   {
     case INPAR::FLUID::constant:  // works
     {
-      if (step == 1) CalcMK();
+      if (step == 1) calc_mk();
       // tauw_ is constant and inctauw_ is zero
       return;
     }
@@ -942,7 +942,7 @@ void FLD::XWall::UpdateTauW(int step, Teuchos::RCP<Epetra_Vector> trueresidual, 
   else
     std::cout << std::endl;
 
-  CalcMK();
+  calc_mk();
 
   // destruct vector so that we don't use it next time
   if (restart_wss_ != Teuchos::null) restart_wss_ = Teuchos::null;
@@ -1002,12 +1002,12 @@ void FLD::XWall::CalcTauW(
     // necessary to set right state (the maps of the state vector and discretization have to be
     // equal)
     Teuchos::RCP<Epetra_Vector> statevel =
-        Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->DofRowMap()), true));
+        Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->dof_row_map()), true));
     Teuchos::RCP<Epetra_Vector> newtauwxwdis =
         Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->NodeRowMap()), true));
     CORE::LINALG::Export(*velnp, *statevel);
 
-    xwdiscret_->SetState("vel", statevel);
+    xwdiscret_->set_state("vel", statevel);
 
     Teuchos::RCP<Epetra_Vector> timesvec =
         Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->NodeRowMap()), true));
@@ -1038,7 +1038,7 @@ void FLD::XWall::CalcTauW(
     {
       DRT::Element* actele = xwdiscret_->lColElement(i);
 
-      const int numnode = actele->NumNode();
+      const int numnode = actele->num_node();
 
       // get element location vector and ownerships
       actele->LocationVector(*xwdiscret_, lm, lmowner, lmstride);
@@ -1128,7 +1128,7 @@ void FLD::XWall::CalcTauW(
 void FLD::XWall::L2ProjectVector(Teuchos::RCP<Epetra_Vector> veln,
     Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> accn)
 {
-  if (not veln->Map().SameAs(*discret_->DofRowMap()))
+  if (not veln->Map().SameAs(*discret_->dof_row_map()))
     FOUR_C_THROW("input map is not the dof row map of the fluid discretization");
 
   massmatrix_->Zero();
@@ -1152,9 +1152,9 @@ void FLD::XWall::L2ProjectVector(Teuchos::RCP<Epetra_Vector> veln,
   else
     numberofrhs = 3;
 
-  xwdiscret_->SetState("veln", stateveln_);
-  if (accn != Teuchos::null) xwdiscret_->SetState("accn", stateaccn_);
-  if (velnp != Teuchos::null) xwdiscret_->SetState("velnp", statevelnp_);
+  xwdiscret_->set_state("veln", stateveln_);
+  if (accn != Teuchos::null) xwdiscret_->set_state("accn", stateaccn_);
+  if (velnp != Teuchos::null) xwdiscret_->set_state("velnp", statevelnp_);
 
   // set action in order to project nodal enriched values to new shape functions
   Teuchos::ParameterList params;
@@ -1185,7 +1185,7 @@ void FLD::XWall::L2ProjectVector(Teuchos::RCP<Epetra_Vector> veln,
   {
     DRT::Element* actele = xwdiscret_->lColElement(i);
 
-    const int numnode = actele->NumNode();
+    const int numnode = actele->num_node();
     const int numdf = 3;
 
     // get element location vector and ownerships
@@ -1271,7 +1271,7 @@ void FLD::XWall::AdaptMLNullspace(const Teuchos::RCP<CORE::LINALG::Solver>& solv
   if (!nullspace) FOUR_C_THROW("No nullspace supplied in parameter list");
   int nsdim = mlparams.get("null space: dimension", 1);
   if (nsdim != 4) FOUR_C_THROW("Wrong Nullspace dimension for XWall");
-  int lrowdofs = discret_->DofRowMap()->NumMyElements();
+  int lrowdofs = discret_->dof_row_map()->NumMyElements();
   //  std::cout << "lrowdofs  " << lrowdofs << std::endl;
   // std::cout << "check the nullspace for mfs" << std::endl;
   for (int j = 0; j < xwallrownodemap_->NumMyElements(); ++j)
@@ -1285,7 +1285,7 @@ void FLD::XWall::AdaptMLNullspace(const Teuchos::RCP<CORE::LINALG::Solver>& solv
       if (!xwallnode) FOUR_C_THROW("Cannot find node");
 
       int firstglobaldofid = discret_->Dof(xwallnode, 0);
-      int firstlocaldofid = discret_->DofRowMap()->LID(firstglobaldofid);
+      int firstlocaldofid = discret_->dof_row_map()->LID(firstglobaldofid);
 
       nullspace[firstlocaldofid + 4] = 0.0;
       nullspace[lrowdofs + firstlocaldofid + 5] = 0.0;
@@ -1300,7 +1300,7 @@ void FLD::XWall::AdaptMLNullspace(const Teuchos::RCP<CORE::LINALG::Solver>& solv
 /*----------------------------------------------------------------------*
  |  Calculate MK for residual-based stabilization parameter    bk 09/14 |
  *----------------------------------------------------------------------*/
-void FLD::XWall::CalcMK()
+void FLD::XWall::calc_mk()
 {
   Teuchos::RCP<Epetra_MultiVector> mkxw =
       Teuchos::rcp(new Epetra_MultiVector(*(xwdiscret_->ElementRowMap()), 1, true));
@@ -1329,7 +1329,7 @@ void FLD::XWall::CalcMK()
 
 
   return;
-}  // end CalcMK
+}  // end calc_mk
 
 /*----------------------------------------------------------------------*
  |  Write enriched dofs in standard dofs for output            bk 09/14 |
@@ -1337,7 +1337,7 @@ void FLD::XWall::CalcMK()
 Teuchos::RCP<Epetra_Vector> FLD::XWall::GetOutputVector(Teuchos::RCP<Epetra_Vector> vel)
 {
   Teuchos::RCP<Epetra_Vector> velenr =
-      Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
+      Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true));
   for (int i = 0; i < xwallrownodemap_->NumMyElements(); ++i)
   {
     int xwallgid = xwallrownodemap_->GID(i);
@@ -1345,7 +1345,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::GetOutputVector(Teuchos::RCP<Epetra_Vect
     if (!xwallnode) FOUR_C_THROW("Cannot find node");
 
     int firstglobaldofid = discret_->Dof(xwallnode, 0);
-    int firstlocaldofid = discret_->DofRowMap()->LID(firstglobaldofid);
+    int firstlocaldofid = discret_->dof_row_map()->LID(firstglobaldofid);
 
     int err = velenr->ReplaceMyValue(firstlocaldofid, 0, (*vel)[firstlocaldofid + 4]);
     err += velenr->ReplaceMyValue(firstlocaldofid + 1, 0, (*vel)[firstlocaldofid + 5]);
@@ -1366,7 +1366,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::GetTauw() { return tauw_; }
  *----------------------------------------------------------------------*/
 void FLD::XWall::TransferAndSaveTauw()
 {
-  if (turbulent_inflow_condition_->IsActive())
+  if (turbulent_inflow_condition_->is_active())
   {
     CORE::LINALG::Export(*tauw_, *oldtauw_);
     CORE::LINALG::Export(*inctauw_, *oldinctauw_);
@@ -1381,7 +1381,7 @@ void FLD::XWall::TransferAndSaveTauw()
  *----------------------------------------------------------------------*/
 void FLD::XWall::overwrite_transferred_values()
 {
-  if (turbulent_inflow_condition_->IsActive())
+  if (turbulent_inflow_condition_->is_active())
   {
     Teuchos::RCP<Epetra_Vector> inctauwtmp =
         Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
@@ -1423,7 +1423,7 @@ void FLD::XWall::overwrite_transferred_values()
 /*----------------------------------------------------------------------*
  |  Read Restart                                               bk 01/15 |
  *----------------------------------------------------------------------*/
-void FLD::XWall::ReadRestart(IO::DiscretizationReader& reader)
+void FLD::XWall::read_restart(IO::DiscretizationReader& reader)
 {
   Teuchos::RCP<Epetra_Vector> tauw =
       Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
@@ -1431,7 +1431,7 @@ void FLD::XWall::ReadRestart(IO::DiscretizationReader& reader)
   CORE::LINALG::Export(*tauw, *tauw_);
   CORE::LINALG::Export(*tauw, *tauwxwdis_);
 
-  restart_wss_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
+  restart_wss_ = Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true));
   reader.ReadVector(restart_wss_, "wss");
   return;
 }
@@ -1445,7 +1445,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
 {
   // copy for safety reasons
   Teuchos::RCP<Epetra_Vector> fixedtrueresidual =
-      Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
+      Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true));
   fixedtrueresidual->Update(1.0, *trueresidual, 0.0);
 
   // fix nodal forces on dirichlet inflow surfaces
@@ -1515,7 +1515,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
               for (int k = 0; k < (xwallnode->NumElement()); ++k)  // loop over elements
               {
                 DRT::Node** test = surrele[k]->Nodes();
-                for (int l = 0; l < surrele[k]->NumNode(); ++l)  // loop over nodes of element
+                for (int l = 0; l < surrele[k]->num_node(); ++l)  // loop over nodes of element
                 {
                   // it has to be on fluidstresscalc
                   // it may not be a dirichlet inflow node
@@ -1625,7 +1625,7 @@ void FLD::XWallAleFSI::UpdateWDistWALE()
     if (!xwallnode) FOUR_C_THROW("Cannot find node");
 
     int firstglobaldofid = discret_->Dof(xwallnode, 0);
-    int firstlocaldofid = discret_->DofRowMap()->LID(firstglobaldofid);
+    int firstlocaldofid = discret_->dof_row_map()->LID(firstglobaldofid);
 
     int err = x->ReplaceMyValue(j, 0, (xwallnode->X())[0] + (*mydispnp_)[firstlocaldofid]);
     err += y->ReplaceMyValue(j, 0, (xwallnode->X())[1] + (*mydispnp_)[firstlocaldofid + 1]);
@@ -1697,14 +1697,14 @@ void FLD::XWallAleFSI::SetXWallParamsXWDis(Teuchos::ParameterList& eleparams)
   // params required for the shape functions
   eleparams.set("incwalldist", incwdistxwdis_);
   Teuchos::RCP<Epetra_Vector> xwdisdispnp =
-      CORE::LINALG::CreateVector(*(xwdiscret_->DofRowMap()), true);
+      CORE::LINALG::CreateVector(*(xwdiscret_->dof_row_map()), true);
   CORE::LINALG::Export(*mydispnp_, *xwdisdispnp);
   Teuchos::RCP<Epetra_Vector> xwdisgridv =
-      CORE::LINALG::CreateVector(*(xwdiscret_->DofRowMap()), true);
+      CORE::LINALG::CreateVector(*(xwdiscret_->dof_row_map()), true);
   CORE::LINALG::Export(*mygridv_, *xwdisgridv);
 
-  xwdiscret_->SetState("dispnp", xwdisdispnp);
-  xwdiscret_->SetState("gridv", xwdisgridv);
+  xwdiscret_->set_state("dispnp", xwdisdispnp);
+  xwdiscret_->set_state("gridv", xwdisgridv);
 
   return;
 }

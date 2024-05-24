@@ -256,9 +256,10 @@ bool CORE::GEO::CUT::ComputeEmbeddedPosition<probdim, eletype, numNodesElement, 
       double res_nrm2 = cd.GetResidualL2Norm();
       if (res_nrm2 < 1.0)
       {
-        std::cout << "==| WARNING: ComputeDistance didn't converge, but residual is smaller than 1 "
-                     "(calculated distance is used) |=="
-                  << std::endl;
+        std::cout
+            << "==| WARNING: compute_distance didn't converge, but residual is smaller than 1 "
+               "(calculated distance is used) |=="
+            << std::endl;
         this->pos_status_ = Position::position_distance_valid;
       }
 
@@ -443,7 +444,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-INPAR::CUT::CutFloattype CORE::GEO::CUT::PositionFactory::UsePosFloattype(
+INPAR::CUT::CutFloattype CORE::GEO::CUT::PositionFactory::use_pos_floattype(
     INPAR::CUT::CutFloattype floattype)
 {
   if (general_pos_floattype_ != INPAR::CUT::floattype_none)
@@ -454,7 +455,7 @@ INPAR::CUT::CutFloattype CORE::GEO::CUT::PositionFactory::UsePosFloattype(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-INPAR::CUT::CutFloattype CORE::GEO::CUT::PositionFactory::UseDistFloattype(
+INPAR::CUT::CutFloattype CORE::GEO::CUT::PositionFactory::use_dist_floattype(
     INPAR::CUT::CutFloattype floattype)
 {
   if (general_dist_floattype_ != INPAR::CUT::floattype_none)

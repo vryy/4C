@@ -60,10 +60,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, solid
  *
  */
 template <typename scalar_type, typename beam, typename surface>
-void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surface>::PreEvaluate()
+void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surface>::pre_evaluate()
 {
-  // Call PreEvaluate on the geometry Pair.
-  CastGeometryPair()->PreEvaluate(
+  // Call pre_evaluate on the geometry Pair.
+  CastGeometryPair()->pre_evaluate(
       this->ele1pos_, this->face_element_->GetFaceElementData(), this->line_to_3D_segments_);
 }
 

@@ -183,7 +183,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcMatPotEquENC(
       //
       // electroneutrality condition (only derivative w.r.t. concentration c_k)
       emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + k) +=
-          alphaf * DiffManager()->GetValence(k) * fac * my::funct_(vi) * my::funct_(ui);
+          alphaf * diff_manager()->GetValence(k) * fac * my::funct_(vi) * my::funct_(ui);
     }
   }
 }
@@ -205,7 +205,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcRhsPotEquENC(
     // electroneutrality condition
     // for incremental formulation, there is the residuum on the rhs! : 0-sum(z_k c_k)
     erhs[vi * my::numdofpernode_ + my::numscal_] -=
-        DiffManager()->GetValence(k) * fac * my::funct_(vi) * conint;
+        diff_manager()->GetValence(k) * fac * my::funct_(vi) * conint;
   }
 }
 

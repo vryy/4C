@@ -62,7 +62,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 {
   // access material of parent element
   Teuchos::RCP<const MAT::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material());
+      Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->parent_element()->Material());
   if (matelectrode == Teuchos::null)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
@@ -165,7 +165,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::
 
   // access material of parent element
   Teuchos::RCP<const MAT::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material());
+      Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->parent_element()->Material());
   if (matelectrode == Teuchos::null)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
@@ -417,7 +417,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 {
   // access material of parent element
   Teuchos::RCP<const MAT::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material());
+      Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->parent_element()->Material());
   if (matelectrode == Teuchos::null)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
@@ -601,7 +601,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 {
   // access material of parent element
   Teuchos::RCP<const MAT::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material());
+      Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->parent_element()->Material());
   if (matelectrode == Teuchos::null)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
@@ -714,7 +714,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 {
   // access material of parent element
   Teuchos::RCP<const MAT::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material());
+      Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->parent_element()->Material());
   if (matelectrode == Teuchos::null)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 

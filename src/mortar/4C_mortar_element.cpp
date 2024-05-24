@@ -587,7 +587,7 @@ int MORTAR::Element::GetLocalNodeId(int nid) const
   int lid = -1;
 
   // look for global ID nid in element's nodes
-  for (int i = 0; i < NumNode(); ++i)
+  for (int i = 0; i < num_node(); ++i)
     if (NodeIds()[i] == nid)
     {
       lid = i;
@@ -697,7 +697,7 @@ double MORTAR::Element::compute_averaged_unit_normal_at_xi(const double* xi, dou
   n[2] = 0.0;
 
   // loop over all nodes of this element
-  for (int i = 0; i < NumNode(); ++i)
+  for (int i = 0; i < num_node(); ++i)
   {
     Node* mymrtrnode = dynamic_cast<Node*>(Nodes()[i]);
     n[0] = val[i] * mymrtrnode->MoData().n()[0];
@@ -719,7 +719,7 @@ void MORTAR::Element::DerivUnitNormalAtXi(
     const double* xi, std::vector<CORE::GEN::Pairedvector<int, double>>& derivn)
 {
   // initialize variables
-  const int nnodes = NumNode();
+  const int nnodes = num_node();
   DRT::Node** mynodes = Nodes();
   if (!mynodes) FOUR_C_THROW("DerivUnitNormalAtXi: Null pointer!");
 
@@ -877,7 +877,7 @@ void MORTAR::Element::GetNodalCoordsOld(CORE::LINALG::SerialDenseMatrix& coord, 
  *----------------------------------------------------------------------*/
 void MORTAR::Element::GetNodalLagMult(CORE::LINALG::SerialDenseMatrix& lagmult, bool isinit)
 {
-  int nnodes = NumNode();
+  int nnodes = num_node();
   DRT::Node** mynodes = Nodes();
   if (!mynodes) FOUR_C_THROW("GetNodalLagMult: Null pointer!");
   if (lagmult.numRows() != 3 || lagmult.numCols() != nnodes)
@@ -1023,7 +1023,7 @@ void MORTAR::Element::DerivJacobian(
     const double* xi, CORE::GEN::Pairedvector<int, double>& derivjac)
 {
   // get element nodes
-  int nnodes = NumNode();
+  int nnodes = num_node();
 
   DRT::Node** mynodes = nullptr;  // Nodes();
   mynodes = Nodes();
@@ -1185,7 +1185,7 @@ double MORTAR::Element::ComputeArea()
            dt == CORE::FE::CellType::nurbs3 || dt == CORE::FE::CellType::nurbs4 ||
            dt == CORE::FE::CellType::nurbs8 || dt == CORE::FE::CellType::nurbs9)
   {
-    // Gauss quadrature with correct NumGP and Dim
+    // Gauss quadrature with correct num_gp and Dim
     MORTAR::ElementIntegrator integrator(dt);
     double detg = 0.0;
 
@@ -1265,7 +1265,7 @@ double MORTAR::Element::ComputeAreaDeriv(CORE::GEN::Pairedvector<int, double>& a
            dt == CORE::FE::CellType::nurbs3 || dt == CORE::FE::CellType::nurbs4 ||
            dt == CORE::FE::CellType::nurbs8 || dt == CORE::FE::CellType::nurbs9)
   {
-    // Gauss quadrature with correct NumGP and Dim
+    // Gauss quadrature with correct num_gp and Dim
     MORTAR::ElementIntegrator integrator(dt);
     double detg = 0.0;
 
@@ -1276,7 +1276,7 @@ double MORTAR::Element::ComputeAreaDeriv(CORE::GEN::Pairedvector<int, double>& a
       detg = Jacobian(gpc);
       area += integrator.Weight(j) * detg;
 
-      CORE::GEN::Pairedvector<int, double> derivjac(NumNode() * Dim());
+      CORE::GEN::Pairedvector<int, double> derivjac(num_node() * Dim());
       DerivJacobian(gpc, derivjac);
       for (CORE::GEN::Pairedvector<int, double>::const_iterator p = derivjac.begin();
            p != derivjac.end(); ++p)
@@ -1302,7 +1302,7 @@ bool MORTAR::Element::LocalToGlobal(const double* xi, double* globcoord, int int
   if (!globcoord) FOUR_C_THROW("LocalToGlobal called with globcoord=nullptr");
 
   // collect fundamental data
-  const int nnodes = NumNode();
+  const int nnodes = num_node();
 
   DRT::Node** mynodes = Nodes();
   if (!mynodes) FOUR_C_THROW("LocalToGlobal: Null pointer!");
@@ -1419,7 +1419,7 @@ double MORTAR::Element::MinEdgeSize()
     {
       double sxi0[2] = {-1.0, 0.0};
       double sxi1[2] = {1.0, 0.0};
-      const int nrow = NumNode();
+      const int nrow = num_node();
       CORE::LINALG::SerialDenseVector sval0(nrow);
       CORE::LINALG::SerialDenseVector sval1(nrow);
       CORE::LINALG::SerialDenseMatrix sderiv(nrow, 1);
@@ -1446,7 +1446,7 @@ double MORTAR::Element::MinEdgeSize()
     }
     case CORE::FE::CellType::nurbs9:
     {
-      const int nrow = NumNode();
+      const int nrow = num_node();
 
       // get real point data
       CORE::LINALG::SerialDenseMatrix coordnurbs(3, nrow, true);
@@ -1601,10 +1601,10 @@ void MORTAR::Element::initialize_data_container()
   // only initialize if not yet done
   if (modata_ == Teuchos::null) modata_ = Teuchos::rcp(new MORTAR::MortarEleDataContainer());
 
-  if (ParentElement() != nullptr)
+  if (parent_element() != nullptr)
   {
-    int numdof =
-        ParentElement()->NumNode() * ParentElement()->NumDofPerNode(*ParentElement()->Nodes()[0]);
+    int numdof = parent_element()->num_node() *
+                 parent_element()->NumDofPerNode(*parent_element()->Nodes()[0]);
     MoData().ParentDisp() = std::vector<double>(numdof);
     for (int i = 0; i < numdof; ++i) MoData().ParentDisp()[i] = 0.0;
   }
@@ -1656,10 +1656,10 @@ void MORTAR::Element::NodeLinearization(
     std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& nodelin)
 {
   // resize the linearizations
-  nodelin.resize(NumNode(), std::vector<CORE::GEN::Pairedvector<int, double>>(3, 1));
+  nodelin.resize(num_node(), std::vector<CORE::GEN::Pairedvector<int, double>>(3, 1));
 
   // loop over all intEle nodes
-  for (int in = 0; in < NumNode(); ++in)
+  for (int in = 0; in < num_node(); ++in)
   {
     MORTAR::Node* mrtrnode = dynamic_cast<MORTAR::Node*>(Nodes()[in]);
     for (int dim = 0; dim < Dim(); ++dim) nodelin[in][dim][mrtrnode->Dofs()[dim]] += 1.;
@@ -1676,14 +1676,14 @@ void MORTAR::Element::estimate_nitsche_trace_max_eigenvalue_combined()
         "Contact using Nitsche's method is only supported for 3D problems."
         "We do not intend to support 2D problems.");
 
-  Teuchos::RCP<DRT::Element> surf_ele = ParentElement()->Surfaces()[FaceParentNumber()];
+  Teuchos::RCP<DRT::Element> surf_ele = parent_element()->Surfaces()[FaceParentNumber()];
   DRT::ELEMENTS::StructuralSurface* surf =
       dynamic_cast<DRT::ELEMENTS::StructuralSurface*>(surf_ele.get());
 
   traceHE_ = 1. / surf->estimate_nitsche_trace_max_eigenvalue_combined(MoData().ParentDisp());
 
-  if (ParentElement()->NumMaterial() > 1)
-    if (ParentElement()->Material(1)->MaterialType() == CORE::Materials::m_th_fourier_iso)
+  if (parent_element()->NumMaterial() > 1)
+    if (parent_element()->Material(1)->MaterialType() == CORE::Materials::m_th_fourier_iso)
       traceHCond_ = 1. / surf->estimate_nitsche_trace_max_eigenvalue_tsi(MoData().ParentDisp());
 }
 
@@ -1693,8 +1693,8 @@ void MORTAR::Element::estimate_nitsche_trace_max_eigenvalue_combined()
  *----------------------------------------------------------------------*/
 MORTAR::ElementNitscheContainer& MORTAR::Element::GetNitscheContainer()
 {
-  if (!ParentElement()) FOUR_C_THROW("parent element pointer not set");
-  if (nitsche_container_ == Teuchos::null) switch (ParentElement()->Shape())
+  if (!parent_element()) FOUR_C_THROW("parent element pointer not set");
+  if (nitsche_container_ == Teuchos::null) switch (parent_element()->Shape())
     {
       case CORE::FE::CellType::hex8:
         nitsche_container_ =

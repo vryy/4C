@@ -54,7 +54,7 @@ void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::WriteRestart() const
   binwriter->WriteCharVector("RigidBodyAffiliationData", buffer);
 }
 
-void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::ReadRestart(
+void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::read_restart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // prepare buffer

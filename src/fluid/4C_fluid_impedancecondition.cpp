@@ -149,12 +149,12 @@ void FLD::UTILS::FluidImpedanceWrapper::WriteRestart(IO::DiscretizationWriter& o
 /*----------------------------------------------------------------------*
  |  Wrap restart reading                                     Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceWrapper::ReadRestart(IO::DiscretizationReader& reader)
+void FLD::UTILS::FluidImpedanceWrapper::read_restart(IO::DiscretizationReader& reader)
 {
   std::map<const int, Teuchos::RCP<class FluidImpedanceBc>>::iterator mapiter;
 
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++)
-    mapiter->second->FluidImpedanceBc::ReadRestart(reader, mapiter->first);
+    mapiter->second->FluidImpedanceBc::read_restart(reader, mapiter->first);
 
   return;
 }
@@ -171,7 +171,7 @@ std::vector<double> FLD::UTILS::FluidImpedanceWrapper::getWKrelerrors()
 
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++)
   {
-    wk_rel_error.push_back(mapiter->second->FLD::UTILS::FluidImpedanceBc::getWKrelerror());
+    wk_rel_error.push_back(mapiter->second->FLD::UTILS::FluidImpedanceBc::get_w_krelerror());
   }
 
   return wk_rel_error;
@@ -227,7 +227,7 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<DRT::Discretiz
   // vectors and matrices
   //                 local <-> global dof numbering
   // ---------------------------------------------------------------------
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
   impedancetbc_ = CORE::LINALG::CreateVector(*dofrowmap, true);
   impedancetbcsysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap, 108, false, true));
   // NOTE: do not call impedancetbcsysmat_->Complete() before it is filled, since
@@ -295,12 +295,12 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(const int condid)
 
   // get a vector layout from the discretization to construct matching
   // vectors and matrices local <-> global dof numbering
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // create vector (+ initialization with zeros)
   Teuchos::RCP<Epetra_Vector> flowrates = CORE::LINALG::CreateVector(*dofrowmap, true);
 
-  discret_->EvaluateCondition(eleparams, flowrates, "ImpedanceCond", condid);
+  discret_->evaluate_condition(eleparams, flowrates, "ImpedanceCond", condid);
 
   double local_flowrate = 0.0;
   for (int i = 0; i < dofrowmap->NumMyElements(); i++)
@@ -383,7 +383,7 @@ void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
 
   impedancetbc_->PutScalar(0.0);
 
-  discret_->EvaluateCondition(eleparams, impedancetbc_, "ImpedanceCond", condid);
+  discret_->evaluate_condition(eleparams, impedancetbc_, "ImpedanceCond", condid);
 
 
   // ---------------------------------------------------------------------//
@@ -397,14 +397,14 @@ void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
   if (not impedancetbcsysmat_->Filled())
   {
     // calculate dQ/du = ( \phi o n )_Gamma
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    const Epetra_Map* dofrowmap = discret_->dof_row_map();
     Teuchos::RCP<Epetra_Vector> dQdu = CORE::LINALG::CreateVector(*dofrowmap, true);
 
     Teuchos::ParameterList eleparams2;
     // action for elements
     eleparams2.set<int>("action", FLD::dQdu);
 
-    discret_->EvaluateCondition(eleparams2, dQdu, "ImpedanceCond", condid);
+    discret_->evaluate_condition(eleparams2, dQdu, "ImpedanceCond", condid);
 
     // now move dQdu to one proc
     Teuchos::RCP<Epetra_Map> dofrowmapred = CORE::LINALG::AllreduceEMap(*dofrowmap);
@@ -531,7 +531,7 @@ void FLD::UTILS::FluidImpedanceBc::WriteRestart(IO::DiscretizationWriter& output
 /*----------------------------------------------------------------------*
  |  Restart reading                                          Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceBc::ReadRestart(IO::DiscretizationReader& reader, const int condnum)
+void FLD::UTILS::FluidImpedanceBc::read_restart(IO::DiscretizationReader& reader, const int condnum)
 {
   std::stringstream stream1, stream2, stream3, stream4, stream5, stream6;
 
@@ -585,7 +585,7 @@ double FLD::UTILS::FluidImpedanceBc::Area(const int condid)
   eleparams.set<double>("viscosity", 0.0);
   eleparams.set<double>("density", 0.0);
 
-  discret_->EvaluateCondition(eleparams, "ImpedanceCond", condid);
+  discret_->evaluate_condition(eleparams, "ImpedanceCond", condid);
 
   double actarea = eleparams.get<double>("area");
 

@@ -355,7 +355,7 @@ namespace DRT
 
         // find element local position of gauss point
         Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-            CORE::GEO::CUT::PositionFactory::BuildPosition<nsd_, slave_distype>(
+            CORE::GEO::CUT::PositionFactory::build_position<nsd_, slave_distype>(
                 slave_xyze_, xslave);
         pos->Compute();
 

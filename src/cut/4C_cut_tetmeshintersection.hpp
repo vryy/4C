@@ -88,10 +88,10 @@ namespace CORE::GEO
         std::map<std::pair<Point*, Point*>, std::vector<Facet*>> facet_mesh_;
       };
 
-      void FindEdgeCuts();
+      void find_edge_cuts();
 
       /// find the mapping between child VolumeCells and parent VolumeCells.
-      void MapVolumeCells(Mesh& parent_mesh, Element* element,
+      void map_volume_cells(Mesh& parent_mesh, Element* element,
           const plain_volumecell_set& parent_cells, std::map<VolumeCell*, ChildCell>& cellmap);
 
       /// Generate IntegrationCells and BoundaryCells within the parent VolumeCell
@@ -107,49 +107,49 @@ namespace CORE::GEO
       void Fill(VolumeCell* parent_cell, ChildCell& childcell);
 
       /// find some (most) of the child cells for each parent cell
-      void SeedCells(Mesh& parent_mesh, const plain_volumecell_set& parent_cells,
+      void seed_cells(Mesh& parent_mesh, const plain_volumecell_set& parent_cells,
           std::map<VolumeCell*, ChildCell>& cellmap, plain_volumecell_set& done_child_cells);
 
-      void BuildSurfaceCellMap(VolumeCell* vc, ChildCell& cc);
+      void build_surface_cell_map(VolumeCell* vc, ChildCell& cc);
 
-      void RegisterNewPoints(Mesh& parent_mesh, const plain_volumecell_set& childset);
+      void register_new_points(Mesh& parent_mesh, const plain_volumecell_set& childset);
 
       /// put all volume cells at point to cell set
-      void FindVolumeCell(Point* p, plain_volumecell_set& childset);
+      void find_volume_cell(Point* p, plain_volumecell_set& childset);
 
-      void ToParent(std::vector<Point*>& points) { SwapPoints(child_to_parent_, points); }
-      void ToChild(std::vector<Point*>& points) { SwapPoints(parent_to_child_, points); }
+      void to_parent(std::vector<Point*>& points) { swap_points(child_to_parent_, points); }
+      void to_child(std::vector<Point*>& points) { swap_points(parent_to_child_, points); }
 
-      void ToParent(Mesh& mesh, std::vector<Point*>& points)
+      void to_parent(Mesh& mesh, std::vector<Point*>& points)
       {
-        SwapPoints(mesh, child_to_parent_, points);
+        swap_points(mesh, child_to_parent_, points);
       }
-      void ToChild(Mesh& mesh, std::vector<Point*>& points)
+      void to_child(Mesh& mesh, std::vector<Point*>& points)
       {
-        SwapPoints(mesh, parent_to_child_, points);
+        swap_points(mesh, parent_to_child_, points);
       }
 
-      void ToParent(PointSet& points) { SwapPoints(child_to_parent_, points); }
-      void ToChild(PointSet& points) { SwapPoints(parent_to_child_, points); }
+      void to_parent(PointSet& points) { swap_points(child_to_parent_, points); }
+      void to_child(PointSet& points) { swap_points(parent_to_child_, points); }
 
-      Point* ToParent(Point* point) { return SwapPoint(child_to_parent_, point); }
-      Point* ToChild(Point* point) { return SwapPoint(parent_to_child_, point); }
+      Point* to_parent(Point* point) { return swap_point(child_to_parent_, point); }
+      Point* to_child(Point* point) { return swap_point(parent_to_child_, point); }
 
       /// convert points between meshes and create points if not found
-      void SwapPoints(
+      void swap_points(
           Mesh& mesh, const std::map<Point*, Point*>& pointmap, std::vector<Point*>& points);
 
       /// convert points between meshes and raise error if point not found
-      void SwapPoints(const std::map<Point*, Point*>& pointmap, std::vector<Point*>& points);
+      void swap_points(const std::map<Point*, Point*>& pointmap, std::vector<Point*>& points);
 
       /// convert points between meshes and raise error if point not found
-      void SwapPoints(const std::map<Point*, Point*>& pointmap, PointSet& points);
+      void swap_points(const std::map<Point*, Point*>& pointmap, PointSet& points);
 
-      Point* SwapPoint(const std::map<Point*, Point*>& pointmap, Point* point);
+      Point* swap_point(const std::map<Point*, Point*>& pointmap, Point* point);
 
       void Register(Point* parent_point, Point* child_point);
 
-      void CopyCutSide(Side* s, Facet* f);
+      void copy_cut_side(Side* s, Facet* f);
 
       Teuchos::RCP<PointPool> pp_;
 

@@ -126,7 +126,7 @@ namespace CORE::GEO
       void GetLines(const std::vector<Point*>& points,
           std::map<std::pair<Point*, Point*>, plain_facet_set>& lines);
 
-      bool IsLine(Point* p1, Point* p2);
+      bool is_line(Point* p1, Point* p2);
 
       bool Contains(Point* p) const;
 
@@ -260,7 +260,7 @@ namespace CORE::GEO
        */
       void DoTriangulation(Mesh& mesh, const std::vector<Point*>& points)
       {
-        CreateTriangulation(mesh, points);
+        create_triangulation(mesh, points);
       }
 
       /*!
@@ -279,7 +279,7 @@ namespace CORE::GEO
        */
       const std::vector<std::vector<Point*>>& GetSplitCells() const { return split_cells_; }
 
-      bool IsPlanar(Mesh& mesh, const std::vector<Point*>& points);
+      bool is_planar(Mesh& mesh, const std::vector<Point*>& points);
 
       /// Do the facets share the same CutSide?
       bool ShareSameCutSide(Facet* f);
@@ -294,20 +294,20 @@ namespace CORE::GEO
       Facet(const Facet&);
       Facet& operator=(const Facet&);
 
-      bool IsPlanar(Mesh& mesh, bool dotriangulate);
+      bool is_planar(Mesh& mesh, bool dotriangulate);
 
-      void CreateTriangulation(Mesh& mesh, const std::vector<Point*>& points);
+      void create_triangulation(Mesh& mesh, const std::vector<Point*>& points);
 
-      void GetNodalIds(Mesh& mesh, const std::vector<Point*>& points, std::vector<int>& nids);
+      void get_nodal_ids(Mesh& mesh, const std::vector<Point*>& points, std::vector<int>& nids);
 
       unsigned Normal(const std::vector<Point*>& points, CORE::LINALG::Matrix<3, 1>& x1,
           CORE::LINALG::Matrix<3, 1>& x2, CORE::LINALG::Matrix<3, 1>& x3,
           CORE::LINALG::Matrix<3, 1>& b1, CORE::LINALG::Matrix<3, 1>& b2,
           CORE::LINALG::Matrix<3, 1>& b3);
 
-      void FindCornerPoints();
+      void find_corner_points();
 
-      bool IsLine(const std::vector<Point*>& points, Point* p1, Point* p2);
+      bool is_line(const std::vector<Point*>& points, Point* p1, Point* p2);
 
       bool Equals(const std::vector<Point*>& my_points, const std::vector<Point*>& facet_points);
 

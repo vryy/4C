@@ -109,7 +109,7 @@ namespace DRT
       //@}
 
       /// get stress dof-index
-      unsigned stressIndex(unsigned xi, unsigned xj)
+      unsigned stress_index(unsigned xi, unsigned xj)
       {
         return (xi * xj > 0) ? xi + xj + 1 : xi + xj;
       }
@@ -138,11 +138,11 @@ namespace DRT
           const CORE::GEO::CUT::plain_volumecell_set& cells) override;
 
       /// error computation
-      int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int compute_error(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<CORE::MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseVector& ele_dom_norms) override;
 
-      int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int compute_error(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<CORE::MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseVector& ele_dom_norms,
           const CORE::FE::GaussIntegration& intpoints) override;
@@ -225,7 +225,7 @@ namespace DRT
 
      private:
       //! evaluate analytical reference solution
-      void AnalyticalReference(const int calcerr,    ///< which reference solution
+      void analytical_reference(const int calcerr,   ///< which reference solution
           const int calcerrfunctno,                  ///< error function number
           CORE::LINALG::Matrix<nsd_, 1>& u,          ///< exact jump vector (coupled)
           CORE::LINALG::Matrix<nsd_, nsd_>& grad_u,  ///< exact velocity gradient
@@ -276,7 +276,7 @@ namespace DRT
       );
 
       //! build the patch coupling matrix Cuiui containing Cuiui for all cutting sides
-      void NIT_BuildPatchCuiui(
+      void nit_build_patch_cuiui(
           CORE::LINALG::SerialDenseMatrix&
               Cuiui,  ///< ui-ui patch coupling matrix containing Cuiui for all cutting sides
           std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>&
@@ -306,7 +306,7 @@ namespace DRT
       );
 
       //! evaluate Neumann boundary condition
-      void EvaluateNeumann(const double& timefacfac,     ///< theta*dt
+      void evaluate_neumann(const double& timefacfac,    ///< theta*dt
           const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< coupling master shape functions
           const CORE::LINALG::Matrix<nsd_, 1>&
               itraction_jump,  ///< prescribed interface traction, jump height for coupled problems
@@ -314,7 +314,7 @@ namespace DRT
       );
 
       //! build traction vector w.r.t fluid domain
-      void BuildTractionVector(CORE::LINALG::Matrix<nsd_, 1>& traction,  ///< traction vector
+      void build_traction_vector(CORE::LINALG::Matrix<nsd_, 1>& traction,  ///< traction vector
           double& press,                         ///< pressure at gaussian point
           CORE::LINALG::Matrix<nsd_, 1>& normal  ///< normal vector
       );
@@ -328,7 +328,7 @@ namespace DRT
       );
 
       //! evaluate shape function and derivative at point with local coordinates rst
-      void EvalFuncAndDeriv(CORE::LINALG::Matrix<3, 1>& rst);
+      void eval_func_and_deriv(CORE::LINALG::Matrix<3, 1>& rst);
 
       //! build matrices from volume-based terms for Cauchy & viscous stress-based mixed/hybrid
       //! LM-coupling \author kruse \date 06/14

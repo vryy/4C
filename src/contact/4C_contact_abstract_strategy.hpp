@@ -725,7 +725,7 @@ namespace CONTACT
 
 
     \param[in] stratData Data container object
-    \param[in] DofRowMap Dof row map of underlying problem
+    \param[in] dof_row_map Dof row map of underlying problem
     \param[in] NodeRowMap Node row map of underlying problem
     \param[in] params List of contact/parameters
     \param[in] spatialDim Spatial dimension of the problem
@@ -734,7 +734,7 @@ namespace CONTACT
     \param[in] maxdof Highest DOF number in global problem
     */
     AbstractStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
-        const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
+        const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params, const int spatialDim,
         const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, int const maxdof);
 
@@ -1224,7 +1224,7 @@ namespace CONTACT
     - redistribute_contact_old() provides the legacy implementation to be used with all specialized
     contact features. However, master-sided interface ghosting might be insufficient.
 
-    \post Each contact interface is FillComplete().
+    \post Each contact interface is fill_complete().
 
     \param[in] dis Current displacement state
     \param[in] vel Current velocity state
@@ -1320,7 +1320,7 @@ namespace CONTACT
                            "olddisplacement")
     \param vec (in): current global state of the quantity defined by statename
     */
-    void SetState(const enum MORTAR::StateType& statetype, const Epetra_Vector& vec) override;
+    void set_state(const enum MORTAR::StateType& statetype, const Epetra_Vector& vec) override;
 
     /*! \brief Evaluate reference state
 
@@ -1328,7 +1328,7 @@ namespace CONTACT
      therefore we store the nodal entries of mortar matrices (reference
      configuration) before the first time step
 
-     \pre SetState() has been called.
+     \pre set_state() has been called.
      */
     void evaluate_reference_state() override;
 
@@ -1585,13 +1585,13 @@ namespace CONTACT
      *
      *  \date 03/2016
      *  \author hiermeier */
-    virtual void PreEvaluate(CONTACT::ParamsInterface& cparams){};
+    virtual void pre_evaluate(CONTACT::ParamsInterface& cparams){};
 
     /*! \brief Run in the end of the Evaluate() routine
      *
      *  \date 03/2016
      *  \author hiermeier */
-    virtual void PostEvaluate(CONTACT::ParamsInterface& cparams){};
+    virtual void post_evaluate(CONTACT::ParamsInterface& cparams){};
 
     /*! \brief Run in the end of the Setup() routine
      *
@@ -1599,7 +1599,7 @@ namespace CONTACT
      *
      *  \date 03/2016
      *  \author hiermeier */
-    virtual void PostSetup(bool redistributed, bool init){};
+    virtual void post_setup(bool redistributed, bool init){};
 
     //!@}
 
@@ -1863,7 +1863,7 @@ namespace CONTACT
 
     \return Boolean flag to indicate the first time step (true) or not (false)
     */
-    bool IsFirstTimeStep() const;
+    bool is_first_time_step() const;
 
     //! @name Parallel redistribution and ghosting
     //! @{
@@ -1955,12 +1955,12 @@ namespace CONTACT
     \brief Update parallel load balancing of each contact interface and guarantee correct ghosting
 
     We hand in the current global displacement state, so that a contact search can be performed and
-    we can SetState the displacement field.
+    we can set_state the displacement field.
 
     The current velocity state is required in case of extending the ghosting via binning to account
     for relative motion between interfaces.
 
-    \post Each contact interface is FillComplete().
+    \post Each contact interface is fill_complete().
 
     @param[in] displacement
     @param[in] velocity
@@ -1973,12 +1973,12 @@ namespace CONTACT
     \brief Redistribute all contact interfaces in parallel (legacy implementation)
 
     We hand in the current global displacement state, so that a contact search can be performed and
-    we can SetState the displacement field.
+    we can set_state the displacement field.
 
     The current velocity state is required in case of extending the ghosting via binning to account
     for relative motion between interfaces.
 
-    \post Each contact interface is FillComplete().
+    \post Each contact interface is fill_complete().
 
     \warning The interplay of parallel redistribution and extension of the interface ghosting is
     somehow fragile. The interface ghosting is only updated after an actual redistribution. However,

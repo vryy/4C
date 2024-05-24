@@ -65,7 +65,7 @@ void MORTAR::STRATEGY::Factory::Init(Teuchos::RCP<DRT::Discretization> dis)
  *----------------------------------------------------------------------*/
 void MORTAR::STRATEGY::Factory::Setup()
 {
-  CheckInit();
+  check_init();
 
   //  get the underlying discretization
   if (gstate_ptr_ != Teuchos::null) discret_ptr_ = gstate_ptr_->GetDiscret();
@@ -83,23 +83,23 @@ void MORTAR::STRATEGY::Factory::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void MORTAR::STRATEGY::Factory::CheckInitSetup() const
+void MORTAR::STRATEGY::Factory::check_init_setup() const
 {
-  if (!IsInit() or !IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
+  if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void MORTAR::STRATEGY::Factory::CheckInit() const
+void MORTAR::STRATEGY::Factory::check_init() const
 {
-  if (not IsInit()) FOUR_C_THROW("Call Init() first!");
+  if (not is_init()) FOUR_C_THROW("Call Init() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 const STR::TIMINT::BaseDataGlobalState& MORTAR::STRATEGY::Factory::GState() const
 {
-  CheckInit();
+  check_init();
   return *gstate_ptr_;
 }
 
@@ -107,7 +107,7 @@ const STR::TIMINT::BaseDataGlobalState& MORTAR::STRATEGY::Factory::GState() cons
  *----------------------------------------------------------------------------*/
 DRT::Discretization& MORTAR::STRATEGY::Factory::Discret()
 {
-  CheckInit();
+  check_init();
   return *discret_ptr_;
 }
 
@@ -115,7 +115,7 @@ DRT::Discretization& MORTAR::STRATEGY::Factory::Discret()
  *----------------------------------------------------------------------------*/
 const DRT::Discretization& MORTAR::STRATEGY::Factory::Discret() const
 {
-  CheckInit();
+  check_init();
   return *discret_ptr_;
 }
 
@@ -123,7 +123,7 @@ const DRT::Discretization& MORTAR::STRATEGY::Factory::Discret() const
  *----------------------------------------------------------------------*/
 Epetra_Comm& MORTAR::STRATEGY::Factory::Comm()
 {
-  CheckInitSetup();
+  check_init_setup();
   return *comm_ptr_;
 }
 
@@ -131,7 +131,7 @@ Epetra_Comm& MORTAR::STRATEGY::Factory::Comm()
  *----------------------------------------------------------------------*/
 const Epetra_Comm& MORTAR::STRATEGY::Factory::Comm() const
 {
-  CheckInitSetup();
+  check_init_setup();
   return *comm_ptr_;
 }
 
@@ -139,7 +139,7 @@ const Epetra_Comm& MORTAR::STRATEGY::Factory::Comm() const
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Comm> MORTAR::STRATEGY::Factory::CommPtr()
 {
-  CheckInitSetup();
+  check_init_setup();
   return comm_ptr_;
 }
 
@@ -147,7 +147,7 @@ Teuchos::RCP<Epetra_Comm> MORTAR::STRATEGY::Factory::CommPtr()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Comm> MORTAR::STRATEGY::Factory::CommPtr() const
 {
-  CheckInitSetup();
+  check_init_setup();
   return comm_ptr_;
 }
 

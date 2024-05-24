@@ -68,7 +68,7 @@ namespace POROMULTIPHASESCATRA
      * @param[in]   vec_cont vector containing quantities from continuous field
      * @param[in]   vec_art vector containing quantities from artery field
      */
-    void SetupVector(Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<const Epetra_Vector> vec_cont,
+    void setup_vector(Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<const Epetra_Vector> vec_cont,
         Teuchos::RCP<const Epetra_Vector> vec_art) override;
 
     /*!
@@ -90,7 +90,7 @@ namespace POROMULTIPHASESCATRA
     Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const override;
 
     //! access full dof row map
-    Teuchos::RCP<const Epetra_Map> DofRowMap() const override;
+    Teuchos::RCP<const Epetra_Map> dof_row_map() const override;
 
     //! init the strategy
     void Init() override;
@@ -109,11 +109,11 @@ namespace POROMULTIPHASESCATRA
 
    private:
     //! set-up of global rhs vector of coupled problem
-    void SetupRHS(Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<const Epetra_Vector> rhs_cont,
+    void setup_rhs(Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<const Epetra_Vector> rhs_cont,
         Teuchos::RCP<const Epetra_Vector> rhs_art);
 
     //! set-up of global matrix of coupled problem
-    void SetupMatrix(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
+    void setup_matrix(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_cont,
         Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_art);
 
@@ -128,7 +128,7 @@ namespace POROMULTIPHASESCATRA
      * @param[in]   dis discretization
      * @param[in]   coupleddofs vector with DOFs to couple
      */
-    void SetupMapExtractor(Teuchos::RCP<CORE::LINALG::MultiMapExtractor> mapextractor,
+    void setup_map_extractor(Teuchos::RCP<CORE::LINALG::MultiMapExtractor> mapextractor,
         Teuchos::RCP<DRT::Discretization> dis, const std::vector<int>& coupleddofs);
 
     /*!

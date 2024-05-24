@@ -32,7 +32,8 @@ int DRT::ELEMENTS::SoHex8P1J1::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
-  // Check whether the solid material PostSetup() routine has already been called and call it if not
+  // Check whether the solid material post_setup() routine has already been called and call it if
+  // not
   ensure_material_post_setup(params);
 
   // get parameter interface
@@ -110,7 +111,7 @@ int DRT::ELEMENTS::SoHex8P1J1::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       CORE::FE::ExtractMyValues(*res, myres, lm);
 
-      ForceStiffMass(lm, mydisp, myres, &elemat1, nullptr, &elevec1, &elevec3, nullptr, nullptr,
+      force_stiff_mass(lm, mydisp, myres, &elemat1, nullptr, &elevec1, &elevec3, nullptr, nullptr,
           params, INPAR::STR::stress_none, INPAR::STR::strain_none);
     }
     break;
@@ -130,7 +131,7 @@ int DRT::ELEMENTS::SoHex8P1J1::Evaluate(Teuchos::ParameterList& params,
       // create a dummy element matrix to apply linearised EAS-stuff onto
       CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> myemat(true);
 
-      ForceStiffMass(lm, mydisp, myres, &myemat, nullptr, &elevec1, nullptr, nullptr, nullptr,
+      force_stiff_mass(lm, mydisp, myres, &myemat, nullptr, &elevec1, nullptr, nullptr, nullptr,
           params, INPAR::STR::stress_none, INPAR::STR::strain_none);
     }
     break;
@@ -149,7 +150,7 @@ int DRT::ELEMENTS::SoHex8P1J1::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       CORE::FE::ExtractMyValues(*res, myres, lm);
 
-      ForceStiffMass(lm, mydisp, myres, &elemat1, &elemat2, &elevec1, &elevec3, nullptr, nullptr,
+      force_stiff_mass(lm, mydisp, myres, &elemat1, &elemat2, &elevec1, &elevec3, nullptr, nullptr,
           params, INPAR::STR::stress_none, INPAR::STR::strain_none);
 
       // lump mass
@@ -183,7 +184,7 @@ int DRT::ELEMENTS::SoHex8P1J1::Evaluate(Teuchos::ParameterList& params,
           params, "iostress", INPAR::STR::stress_none);
       auto iostrain = CORE::UTILS::GetAsEnum<INPAR::STR::StrainType>(
           params, "iostrain", INPAR::STR::strain_none);
-      ForceStiffMass(lm, mydisp, myres, nullptr, nullptr, nullptr, nullptr, &stress, &strain,
+      force_stiff_mass(lm, mydisp, myres, nullptr, nullptr, nullptr, nullptr, &stress, &strain,
           params, iostress, iostrain);
       {
         CORE::COMM::PackBuffer data;
@@ -203,7 +204,7 @@ int DRT::ELEMENTS::SoHex8P1J1::Evaluate(Teuchos::ParameterList& params,
     break;
 
     case calc_struct_eleload:
-      FOUR_C_THROW("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
+      FOUR_C_THROW("this method is not supposed to evaluate a load, use evaluate_neumann(...)");
       break;
 
     case calc_struct_fsiload:
@@ -223,7 +224,7 @@ int DRT::ELEMENTS::SoHex8P1J1::Evaluate(Teuchos::ParameterList& params,
     case calc_struct_reset_istep:
     {
       // Reset of history (if needed)
-      SolidMaterial()->ResetStep();
+      SolidMaterial()->reset_step();
     }
     break;
 
@@ -239,7 +240,7 @@ int DRT::ELEMENTS::SoHex8P1J1::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       std::vector<double> myres(lm.size());
       CORE::FE::ExtractMyValues(*res, myres, lm);
-      soh8P1J1_recover(myres);
+      soh8_p1_j1_recover(myres);
       break;
     }
 
@@ -253,8 +254,8 @@ int DRT::ELEMENTS::SoHex8P1J1::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                             maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // location matrix
-    const std::vector<double>& disp,                                        // current displacements
+void DRT::ELEMENTS::SoHex8P1J1::force_stiff_mass(const std::vector<int>& lm,  // location matrix
+    const std::vector<double>& disp,                              // current displacements
     const std::vector<double>& residual,                          // current residual displ
     CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* stiffmatrix,  // element stiffness matrix
     CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* massmatrix,   // element mass matrix
@@ -679,7 +680,7 @@ void DRT::ELEMENTS::SoHex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // l
   force->MultiplyTN(-1.0 / k_pt_, k_tu_, r_p_, 1.0);
 
   return;
-}  // DRT::ELEMENTS::So_sh8::ForceStiffMass
+}  // DRT::ELEMENTS::So_sh8::force_stiff_mass
 
 
 
@@ -960,7 +961,7 @@ int DRT::ELEMENTS::SoHex8P1J1Type::Initialize(DRT::Discretization& dis)
 }
 
 
-void DRT::ELEMENTS::SoHex8P1J1::soh8P1J1_recover(const std::vector<double>& residual)
+void DRT::ELEMENTS::SoHex8P1J1::soh8_p1_j1_recover(const std::vector<double>& residual)
 {
   CORE::LINALG::Matrix<24, 1> disi(false);
   for (int i = 0; i < NUMDOF_SOH8; ++i) disi(i) = residual[i];

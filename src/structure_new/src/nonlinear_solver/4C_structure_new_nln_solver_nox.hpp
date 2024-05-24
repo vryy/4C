@@ -81,7 +81,7 @@ namespace STR
         //! returns the outer status test object pointer
         const ::NOX::StatusTest::Generic& GetOStatusTest() const
         {
-          CheckInitSetup();
+          check_init_setup();
           FOUR_C_ASSERT(!ostatus_.is_null(), "The outer status test object is not defined!");
           return *ostatus_;
         }
@@ -89,7 +89,7 @@ namespace STR
         //! returns the outer status test object pointer
         Teuchos::RCP<const NOX::NLN::INNER::StatusTest::Generic> GetIStatusPtr() const
         {
-          CheckInitSetup();
+          check_init_setup();
           return istatus_;
         }
 

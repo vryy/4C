@@ -29,7 +29,7 @@ namespace IO
     virtual ~RuntimeCsvWriterImpl() = default;
 
     //! register data vector
-    virtual void RegisterDataVector(
+    virtual void register_data_vector(
         const std::string& dataname, unsigned int numcomponents, int precision) = 0;
 
     //! reset current time and time step number
@@ -53,7 +53,7 @@ namespace IO
    public:
     explicit RuntimeCsvWriterProc0(const IO::OutputControl& output_control, std::string outputname);
 
-    void RegisterDataVector(
+    void register_data_vector(
         const std::string& dataname, unsigned int numcomponents, int precision) override;
 
     void reset_time_and_time_step(const double time, const unsigned int timestep) override
@@ -71,7 +71,7 @@ namespace IO
         const std::map<std::string, std::vector<double>>& data) const override;
 
    private:
-    void WriteFileHeader() const;
+    void write_file_header() const;
 
     //! key: result name, entry: (data vector, precision)
     std::map<std::string, std::pair<std::vector<double>, int>> data_vectors_;
@@ -96,7 +96,7 @@ namespace IO
   class RuntimeCsvWriterOtherProcs : public RuntimeCsvWriterImpl
   {
    public:
-    void RegisterDataVector(
+    void register_data_vector(
         const std::string& dataname, unsigned int numcomponents, int precision) override
     {
     }
@@ -116,10 +116,10 @@ namespace IO
     }
   };
 
-  void RuntimeCsvWriter::RegisterDataVector(
+  void RuntimeCsvWriter::register_data_vector(
       const std::string& dataname, unsigned int numcomponents, int precision)
   {
-    implementation_->RegisterDataVector(dataname, numcomponents, precision);
+    implementation_->register_data_vector(dataname, numcomponents, precision);
   }
 
   void RuntimeCsvWriter::reset_time_and_time_step(double time, unsigned int timestep)
@@ -226,11 +226,11 @@ namespace IO
     }
   }
 
-  void RuntimeCsvWriterProc0::RegisterDataVector(
+  void RuntimeCsvWriterProc0::register_data_vector(
       const std::string& dataname, const unsigned int numcomponents, const int precision)
   {
     data_vectors_[dataname] = {std::vector<double>(numcomponents, 0.0), precision};
-    if (!restart_step_) WriteFileHeader();
+    if (!restart_step_) write_file_header();
   }
 
   void RuntimeCsvWriterProc0::AppendDataVector(
@@ -295,7 +295,7 @@ namespace IO
     outputfile.close();
   }
 
-  void RuntimeCsvWriterProc0::WriteFileHeader() const
+  void RuntimeCsvWriterProc0::write_file_header() const
   {
     std::ofstream outputfile(fullpathoutputfile_, std::ios_base::trunc);
     outputfile << "step,time";

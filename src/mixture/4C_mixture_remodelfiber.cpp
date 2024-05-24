@@ -184,7 +184,7 @@ void MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates, T>::update_d
 }
 
 template <int numstates, typename T>
-void MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates, T>::SetState(
+void MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates, T>::set_state(
     const T lambda_f, const T lambda_ext)
 {
   states_.back().lambda_f = lambda_f;
@@ -198,7 +198,7 @@ template <int numstates, typename T>
 CORE::LINALG::Matrix<2, 2, T> MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates,
     T>::integrate_local_evolution_equations_implicit(const T dt)
 {
-  FOUR_C_ASSERT(state_is_set_, "You have to call SetState() before!");
+  FOUR_C_ASSERT(state_is_set_, "You have to call set_state() before!");
   const T lambda_f = states_.back().lambda_f;
   const T lambda_ext = states_.back().lambda_ext;
   const auto EvaluateLocalNewtonLinearSystem = [&]()
@@ -511,7 +511,7 @@ template <int numstates, typename T>
 T MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates,
     T>::evaluate_current_fiber_cauchy_stress() const
 {
-  FOUR_C_ASSERT(state_is_set_, "You have to call SetState() before!");
+  FOUR_C_ASSERT(state_is_set_, "You have to call set_state() before!");
   const T lambda_f = states_.back().lambda_f;
   const T lambda_r = states_.back().lambda_r;
   const T lambda_ext = states_.back().lambda_ext;
@@ -523,7 +523,7 @@ template <int numstates, typename T>
 T MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates,
     T>::evaluate_current_fiber_p_k2_stress() const
 {
-  FOUR_C_ASSERT(state_is_set_, "You have to call SetState() before!");
+  FOUR_C_ASSERT(state_is_set_, "You have to call set_state() before!");
   const T lambda_f = states_.back().lambda_f;
   const T lambda_r = states_.back().lambda_r;
   const T lambda_ext = states_.back().lambda_ext;
@@ -536,7 +536,7 @@ template <int numstates, typename T>
 T MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates,
     T>::evaluate_d_current_fiber_p_k2_stress_d_lambdafsq() const
 {
-  FOUR_C_ASSERT(state_is_set_, "You have to call SetState() before!");
+  FOUR_C_ASSERT(state_is_set_, "You have to call set_state() before!");
   const T lambda_f = states_.back().lambda_f;
   const T lambda_r = states_.back().lambda_r;
   const T lambda_ext = states_.back().lambda_ext;
@@ -550,7 +550,7 @@ template <int numstates, typename T>
 T MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates,
     T>::evaluate_d_current_fiber_p_k2_stress_d_lambdar() const
 {
-  FOUR_C_ASSERT(state_is_set_, "You have to call SetState() before!");
+  FOUR_C_ASSERT(state_is_set_, "You have to call set_state() before!");
   const T lambda_f = states_.back().lambda_f;
   const T lambda_r = states_.back().lambda_r;
   const T lambda_ext = states_.back().lambda_ext;
@@ -566,7 +566,7 @@ T MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates,
     T>::evaluate_d_current_growth_evolution_implicit_time_integration_residuum_d_lambdafsq(T dt)
     const
 {
-  FOUR_C_ASSERT(state_is_set_, "You have to call SetState() before!");
+  FOUR_C_ASSERT(state_is_set_, "You have to call set_state() before!");
   const IntegrationState<numstates, T> growth_state = std::invoke(
       [&]
       {
@@ -600,7 +600,7 @@ T MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates,
     T>::evaluate_d_current_remodel_evolution_implicit_time_integration_residuum_d_lambdafsq(T dt)
     const
 {
-  FOUR_C_ASSERT(state_is_set_, "You have to call SetState() before!");
+  FOUR_C_ASSERT(state_is_set_, "You have to call set_state() before!");
   const IntegrationState<numstates, T> remodel_state = std::invoke(
       [&]
       {
@@ -706,9 +706,9 @@ void MIXTURE::RemodelFiber<numstates>::update_deposition_stretch(const double la
 }
 
 template <int numstates>
-void MIXTURE::RemodelFiber<numstates>::SetState(const double lambda_f, const double lambda_ext)
+void MIXTURE::RemodelFiber<numstates>::set_state(const double lambda_f, const double lambda_ext)
 {
-  impl_->SetState(lambda_f, lambda_ext);
+  impl_->set_state(lambda_f, lambda_ext);
 }
 
 template <int numstates>

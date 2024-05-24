@@ -732,7 +732,7 @@ void MAT::PlasticLinElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatFD(true);
 
   // build a finite difference check
-  FDCheck(*stress,    // updated stress sigma_n+1
+  fd_check(*stress,   // updated stress sigma_n+1
       cmatFD,         // material tangent calculated with FD of stresses
       beta,           // updated back stresses
       p,              // volumetric stress
@@ -807,7 +807,7 @@ void MAT::PlasticLinElast::RelStress(
  | computes isotropic elasticity tensor in matrix notion     dano 04/11 |
  | for 3d                                                               |
  *----------------------------------------------------------------------*/
-void MAT::PlasticLinElast::SetupCmat(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat)
+void MAT::PlasticLinElast::setup_cmat(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat)
 {
   // get material parameters
   // Young's modulus (modulus of elasticity)
@@ -843,7 +843,7 @@ void MAT::PlasticLinElast::SetupCmat(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STR
   cmat(4, 4) = mfac * 0.5 * (1.0 - 2.0 * nu);
   cmat(5, 5) = mfac * 0.5 * (1.0 - 2.0 * nu);
 
-}  // SetupCmat()
+}  // setup_cmat()
 
 
 /*----------------------------------------------------------------------*
@@ -902,7 +902,7 @@ void MAT::PlasticLinElast::setup_cmat_elasto_plastic(
   // ------------------------------------------------------- elastic term
   // C_ep = C_e
   // add standard isotropic elasticity tensor C_e first
-  SetupCmat(cmat);
+  setup_cmat(cmat);
 
   // ------------------------------------------------------ plastic terms
 
@@ -971,7 +971,7 @@ void MAT::PlasticLinElast::setup_cmat_elasto_plastic(
  | finite difference check for the material tangent.        dano 05/11 |
  | Meant for debugging only! (public)                                  |
  *---------------------------------------------------------------------*/
-void MAT::PlasticLinElast::FDCheck(
+void MAT::PlasticLinElast::fd_check(
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& stress,  // updated stress sigma_n+1
     CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
         cmatFD,  // material tangent calculated with FD of stresses
@@ -1105,12 +1105,12 @@ void MAT::PlasticLinElast::FDCheck(
     std::cout << "  Difference between stresses at position " << i << " "
               << stress(i) - disturbstress(i) << std::endl;
   }
-  std::cout << "end of FDCheck!!\n\n\n" << std::endl;
+  std::cout << "end of fd_check!!\n\n\n" << std::endl;
 #endif
 
   return;
 
-}  // FDCheck()
+}  // fd_check()
 
 
 /*---------------------------------------------------------------------*

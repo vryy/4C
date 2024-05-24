@@ -68,7 +68,7 @@ namespace FS3I
     void Setup() override;
 
     /// Read restart
-    void ReadRestart() override;
+    void read_restart() override;
 
     /// timeloop
     void Timeloop() override;
@@ -83,20 +83,20 @@ namespace FS3I
     void small_time_scale_prepare_time_step();
 
     /// Prepare time step
-    void PrepareTimeStep() override
+    void prepare_time_step() override
     {
       FOUR_C_THROW(
           "This function is not implemented! Use small_time_scale_prepare_time_step() or "
           "large_time_scale_prepare_time_step() instead!");
     };
 
-    /// OuterLoop
+    /// outer_loop
     void small_time_scale_outer_loop();
 
-    /// OuterLoop for sequentially staggered FS3I scheme
+    /// outer_loop for sequentially staggered FS3I scheme
     void small_time_scale_outer_loop_sequ_stagg();
 
-    /// OuterLoop for iterative staggered FS3I scheme
+    /// outer_loop for iterative staggered FS3I scheme
     void small_time_scale_outer_loop_iter_stagg();
 
     /// Do a single fsi step (including all subcycles)
@@ -182,7 +182,7 @@ namespace FS3I
     /// Prepare large time scale time step
     void large_time_scale_prepare_time_step();
 
-    /// OuterLoop for sequentially staggered FS3I scheme
+    /// outer_loop for sequentially staggered FS3I scheme
     void large_time_scale_outer_loop();
 
     /// Do a large time scale structe scatra step
@@ -201,7 +201,7 @@ namespace FS3I
     /// update the structure scatra displacments due to growth
     void large_time_scale_do_growth_update();
 
-    /// OuterLoop for large time scale iterative staggered FS3I scheme
+    /// outer_loop for large time scale iterative staggered FS3I scheme
     void large_time_scale_outer_loop_iter_stagg();
 
     /// set mean FSI values in scatra fields (only to be used in large time scale!!)
@@ -291,7 +291,7 @@ namespace FS3I
     void WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> fluidwriter) const;
 
     /// Read restart of mean manager
-    void ReadRestart(IO::DiscretizationReader& fluidreader);
+    void read_restart(IO::DiscretizationReader& fluidreader);
 
    private:
     /// weighted sum of all prior wall shear stresses

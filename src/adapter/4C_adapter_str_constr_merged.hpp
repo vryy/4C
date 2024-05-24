@@ -65,7 +65,7 @@ namespace ADAPTER
     void Setup() override;
 
     /// initial guess of Newton's method
-    Teuchos::RCP<const Epetra_Vector> InitialGuess() override;
+    Teuchos::RCP<const Epetra_Vector> initial_guess() override;
 
     /// right-hand-side of Newton's method
     Teuchos::RCP<const Epetra_Vector> RHS() override;
@@ -91,7 +91,7 @@ namespace ADAPTER
     Teuchos::RCP<const Epetra_Vector> Accn() const override;
 
     /// dof map of vector of unknowns
-    Teuchos::RCP<const Epetra_Map> DofRowMap() override;
+    Teuchos::RCP<const Epetra_Map> dof_row_map() override;
 
     /// apply interface forces to structural solver
     ///

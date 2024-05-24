@@ -204,7 +204,7 @@ void MAT::ViscoPlasticNoYieldSurface::Evaluate(const CORE::LINALG::Matrix<3, 3>*
       EigenvectorsFe_trial, EigenvaluesFe_trial);
 
   // setup elasticity tensor (stress-stress-like)
-  SetupCmat(*cmat);
+  setup_cmat(*cmat);
 
   // stress-like Voigt notation of stresses conjugated to logarithmic strains
   static CORE::LINALG::Matrix<6, 1> Me_trial_Vstress;
@@ -230,7 +230,7 @@ void MAT::ViscoPlasticNoYieldSurface::Evaluate(const CORE::LINALG::Matrix<3, 3>*
   // do mapping if trial equivalent stress is not zero
   if (Me_trial_eqv != 0.0)
   {
-    LocalNewtonLoop(x, dt);
+    local_newton_loop(x, dt);
     // calculate ratio of actual elastic stress (first component of solution vector) to trial stress
     eta = x(0) / Me_trial_eqv;
   }
@@ -527,7 +527,7 @@ MAT::ViscoPlasticNoYieldSurface::calculate_second_piola_kirchhoff_stresses(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::ViscoPlasticNoYieldSurface::LocalNewtonLoop(
+void MAT::ViscoPlasticNoYieldSurface::local_newton_loop(
     CORE::LINALG::Matrix<2, 1>& x, const double dt)
 {
   // predictor values
@@ -553,10 +553,10 @@ void MAT::ViscoPlasticNoYieldSurface::LocalNewtonLoop(
     ++iter;
 
     // execute pre calculations
-    const MAT::PreCalculatedTerms terms = PreCalculateTerms(x(0), x(1), dt);
+    const MAT::PreCalculatedTerms terms = pre_calculate_terms(x(0), x(1), dt);
 
     // Calculate residual and L2 Norm
-    residual = CalculateResidual(x(0), equ_tens_trial_stress, x(1), flow_resistance_n, terms);
+    residual = calculate_residual(x(0), equ_tens_trial_stress, x(1), flow_resistance_n, terms);
     double residual_norm2 = residual.Norm2();
 
     // skip if residual has converged
@@ -580,7 +580,7 @@ void MAT::ViscoPlasticNoYieldSurface::LocalNewtonLoop(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::LINALG::Matrix<2, 1>& MAT::ViscoPlasticNoYieldSurface::CalculateResidual(
+CORE::LINALG::Matrix<2, 1>& MAT::ViscoPlasticNoYieldSurface::calculate_residual(
     const double equ_tens_stress_np, const double equ_tens_trial_stress,
     const double flow_resistance_np, const double flow_resistance_n,
     const PreCalculatedTerms& terms)
@@ -648,7 +648,7 @@ CORE::LINALG::Matrix<2, 2>& MAT::ViscoPlasticNoYieldSurface::calculate_lineariza
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::PreCalculatedTerms MAT::ViscoPlasticNoYieldSurface::PreCalculateTerms(
+MAT::PreCalculatedTerms MAT::ViscoPlasticNoYieldSurface::pre_calculate_terms(
     const double equ_tens_stress_np, const double flow_resistance_np, const double dt)
 {
   MAT::PreCalculatedTerms terms;
@@ -681,7 +681,7 @@ MAT::PreCalculatedTerms MAT::ViscoPlasticNoYieldSurface::PreCalculateTerms(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::ViscoPlasticNoYieldSurface::SetupCmat(
+void MAT::ViscoPlasticNoYieldSurface::setup_cmat(
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& cmat)
 {
   // get material parameters

@@ -39,15 +39,15 @@ int DRT::DiscretizationXFEM::InitialFillComplete(const std::vector<int>& nds,
     bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
 {
   // Call from BaseClass
-  int val =
-      DRT::Discretization::FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
+  int val = DRT::Discretization::fill_complete(
+      assigndegreesoffreedom, initelements, doboundaryconditions);
 
   if (!assigndegreesoffreedom)
     FOUR_C_THROW(
         "DiscretizationXFEM: Call InitialFillComplete() with assigndegreesoffreedom = true!");
 
   // Store initial dofs of the discretisation
-  StoreInitialDofs(nds);
+  store_initial_dofs(nds);
   return val;
 }
 
@@ -64,7 +64,7 @@ bool DRT::DiscretizationXFEM::Initialized() const
 /*----------------------------------------------------------------------*
  |  Store Initial Dofs (private)                               ager 11/14|
  *----------------------------------------------------------------------*/
-void DRT::DiscretizationXFEM::StoreInitialDofs(const std::vector<int>& nds)
+void DRT::DiscretizationXFEM::store_initial_dofs(const std::vector<int>& nds)
 {
   if (nds.size() != 1)
     FOUR_C_THROW(
@@ -106,9 +106,9 @@ void DRT::DiscretizationXFEM::StoreInitialDofs(const std::vector<int>& nds)
     numdofsetspernode = numdofspernode / numdofspernodedofset;
 
   initialfulldofrowmap_ =
-      ExtendMap(fsds->DofRowMap(), numdofspernodedofset, numdofsetspernode, true);
+      extend_map(fsds->dof_row_map(), numdofspernodedofset, numdofsetspernode, true);
   initialpermdofrowmap_ =
-      ExtendMap(fsds->DofRowMap(), numdofspernodedofset, numdofsetspernode, false);
+      extend_map(fsds->dof_row_map(), numdofspernodedofset, numdofsetspernode, false);
 
   initialized_ = true;
 
@@ -168,7 +168,7 @@ const Epetra_Map* DRT::DiscretizationXFEM::InitialDofRowMap(unsigned nds) const
   Initialized();
   FOUR_C_ASSERT(nds < initialdofsets_.size(), "undefined initial dof set");
 
-  return initialdofsets_[nds]->DofRowMap();
+  return initialdofsets_[nds]->dof_row_map();
 }
 
 
@@ -184,10 +184,10 @@ const Epetra_Map* DRT::DiscretizationXFEM::InitialDofColMap(unsigned nds) const
 }
 
 /*---------------------------------------------------------------------------*
- * Takes DofRowMap with just one xfem-Dofset and duplicates                  |
+ * Takes dof_row_map with just one xfem-Dofset and duplicates                  |
  * the dof gids for export to active dofs                          ager 11/14|
  *---------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> DRT::DiscretizationXFEM::ExtendMap(
+Teuchos::RCP<Epetra_Map> DRT::DiscretizationXFEM::extend_map(
     const Epetra_Map* srcmap, int numdofspernodedofset, int numdofsets, bool uniquenumbering)
 {
   int numsrcelements = srcmap->NumMyElements();
@@ -195,7 +195,7 @@ Teuchos::RCP<Epetra_Map> DRT::DiscretizationXFEM::ExtendMap(
   std::vector<int> dstgids;
   for (int i = 0; i < numsrcelements; i += numdofspernodedofset)
   {
-    if (numsrcelements < i + numdofspernodedofset) FOUR_C_THROW("ExtendMap(): Check your srcmap!");
+    if (numsrcelements < i + numdofspernodedofset) FOUR_C_THROW("extend_map(): Check your srcmap!");
     for (int dofset = 0; dofset < numdofsets; ++dofset)
     {
       for (int dof = 0; dof < numdofspernodedofset; ++dof)
@@ -216,7 +216,7 @@ void DRT::DiscretizationXFEM::SetInitialState(
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::DiscretizationXFEM::SetInitialState");
 
-  if (!HaveDofs()) FOUR_C_THROW("FillComplete() was not called");
+  if (!HaveDofs()) FOUR_C_THROW("fill_complete() was not called");
   const Epetra_Map* colmap = InitialDofColMap(nds);
   const Epetra_BlockMap& vecmap = state->Map();
 

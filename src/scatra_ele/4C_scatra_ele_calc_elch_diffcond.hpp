@@ -396,13 +396,13 @@ namespace DRT
       void set_internal_variables_for_mat_and_rhs() override;
 
       //! get diffusion manager for diffusion-conduction formulation
-      Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> DiffManager()
+      Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diff_manager()
       {
         return Teuchos::rcp_static_cast<ScaTraEleDiffManagerElchDiffCond>(my::diffmanager_);
       }
 
       //! get internal variable manager for diffusion-conduction formulation
-      Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCond<nsd_, nen_>> VarManager()
+      Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCond<nsd_, nen_>> var_manager()
       {
         return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerElchDiffCond<nsd_, nen_>>(
             my::scatravarmanager_);

@@ -92,7 +92,7 @@ namespace FSI
     //! @name Safety routines
 
     //! validate the input parameter combinations
-    void ValidateParameters();
+    void validate_parameters();
 
     //@}
 
@@ -102,7 +102,7 @@ namespace FSI
     //! @name Restart routine
 
     /// read restart data for monolithic XFSI system
-    void ReadRestart(int step) override;
+    void read_restart(int step) override;
 
     //@}
 
@@ -114,7 +114,7 @@ namespace FSI
     void Timeloop() override;
 
     //! prepare the time step for fluid and structure
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     //! recover Lagrange multiplier (structural forces) needed for rhs in next time step and update
     //! single fields
@@ -134,10 +134,10 @@ namespace FSI
     //@}
 
     //--------------------------------------------------------------------------//
-    //! @name DofRowMap access methods
+    //! @name dof_row_map access methods
 
     //! full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> DofRowMap() const { return Extractor().FullMap(); }
+    Teuchos::RCP<const Epetra_Map> dof_row_map() const { return Extractor().FullMap(); }
 
     //! extractor to communicate between full monolithic map and block maps of single fields
     const CORE::LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
@@ -156,20 +156,20 @@ namespace FSI
     //! @name Setup of SYSMAT and RHS vector
 
     //! setup composed system matrix from field solvers, complete the global system matrix
-    void SetupSystemMatrix();
+    void setup_system_matrix();
 
     //! setup composed right hand side from field solvers
-    void SetupRHS();
+    void setup_rhs();
 
     //! setup RHS contributions based on single field residuals
-    //! \sa SetupRHS()
-    void SetupRHSResidual(Epetra_Vector& f);
+    //! \sa setup_rhs()
+    void setup_rhs_residual(Epetra_Vector& f);
 
     //! Apply Dirichlet BCs to the whole system
-    void ApplyDBC();
+    void apply_dbc();
 
     //! Extract initial guess from fields
-    void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
+    void initial_guess(Teuchos::RCP<Epetra_Vector> ig);
 
     //! Create the combined DOF row map for the FSI problem; row maps of structure and xfluid to an
     //! global FSI DOF row map
@@ -177,15 +177,15 @@ namespace FSI
 
     //! set full monolithic dof row map
     //! The block maps must be row maps by themselves and must not contain identical GIDs.
-    void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps,
+    void set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps,
         const std::vector<Teuchos::RCP<const Epetra_Map>>& maps_mergedporo);
 
     //! Put two field vectors together to a monolithic vector
     //!
     //! As usual, the ordering is: structure -- fluid
-    void CombineFieldVectors(Epetra_Vector& v,  ///< composed vector containing all field vectors
-        Teuchos::RCP<const Epetra_Vector> sv,   ///< structural DOFs
-        Teuchos::RCP<const Epetra_Vector> fv    ///< fluid DOFs
+    void combine_field_vectors(Epetra_Vector& v,  ///< composed vector containing all field vectors
+        Teuchos::RCP<const Epetra_Vector> sv,     ///< structural DOFs
+        Teuchos::RCP<const Epetra_Vector> fv      ///< fluid DOFs
     );
 
 
@@ -196,7 +196,7 @@ namespace FSI
       \param fx (o) fluid velocities and pressure
       \param ax (o) ale displacements
      */
-    virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+    virtual void extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx,
         Teuchos::RCP<const Epetra_Vector>& ax);
 
@@ -225,7 +225,7 @@ namespace FSI
     bool Converged();
 
     //! apply damping on newton scheme
-    void ApplyNewtonDamping();
+    void apply_newton_damping();
 
     //@}
 
@@ -257,20 +257,20 @@ namespace FSI
     //! @name Linear Solve routines
 
     //! create linear solver (setup of parameter lists, etc...)
-    void CreateLinearSolver();
+    void create_linear_solver();
 
     //! solve the linear FSI system
-    void LinearSolve();
+    void linear_solve();
 
     //! apply infnorm scaling to linear block system
-    void ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
+    void scale_system(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
 
     //! undo infnorm scaling from scaled solution
-    void UnscaleSolution(
+    void unscale_solution(
         CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
 
     //! create combined Dirichlet boundary condition map, map containing the dofs with Dirichlet BC
-    Teuchos::RCP<Epetra_Map> CombinedDBCMap();
+    Teuchos::RCP<Epetra_Map> combined_dbc_map();
 
     //@}
 
@@ -279,13 +279,13 @@ namespace FSI
     //! @name Print Newton Iteration info
 
     //! print to screen information about residual forces and displacements
-    void PrintNewtonIter();
+    void print_newton_iter();
 
-    //! contains header to PrintNewtonIter
+    //! contains header to print_newton_iter
     void print_newton_iter_header();
 
-    //! contains text to PrintNewtonIter
-    void PrintNewtonIterText();
+    //! contains text to print_newton_iter
+    void print_newton_iter_text();
 
     //@}
 

@@ -114,23 +114,23 @@ namespace CORE::LINALG
     void Setup(const Epetra_CrsMatrix& A);
 
     /// sets an index in the Bey&Wittum method
-    void SetF(
+    void set_f(
         const int i, int& nf, Epetra_IntVector& index, const Epetra_CrsMatrix& graph, int rec);
 
     /// sets an index in the Hackbusch method
-    void SetL(
+    void set_l(
         const int i, int& nl, Epetra_IntVector& index, const Epetra_CrsMatrix& graph, int rec);
 
     /// Do downwinding according to Bey & Wittum
-    void DownwindBeyWittum(const Epetra_CrsMatrix& nnodegraph, Epetra_IntVector& index,
+    void downwind_bey_wittum(const Epetra_CrsMatrix& nnodegraph, Epetra_IntVector& index,
         const Epetra_IntVector& oninflow);
 
     /// Do downwinding according to Hackbusch
-    void DownwindHackbusch(const Epetra_CrsMatrix& nnodegraph, Epetra_IntVector& index,
+    void downwind_hackbusch(const Epetra_CrsMatrix& nnodegraph, Epetra_IntVector& index,
         const Epetra_IntVector& oninflow);
 
     /// test whether k is successor of i
-    inline bool IsSuccessor(const int k, const int gi, const Epetra_CrsMatrix& graph)
+    inline bool is_successor(const int k, const int gi, const Epetra_CrsMatrix& graph)
     {
       int numentries;
       int* indices;

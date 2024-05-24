@@ -90,7 +90,7 @@ namespace CORE::GEO
       \brief Check whether the generated ray intersect the facets of the volumecell, if so
       distribute Gauss points along this ray
       */
-      bool IsIntersect(double* pt, double* mini, double* maxi,
+      bool is_intersect(double* pt, double* mini, double* maxi,
           std::vector<std::vector<double>>& linePts, std::vector<std::vector<double>> zcoord,
           std::vector<std::vector<double>> ycoord, double toler, int numeach);
 
@@ -98,7 +98,7 @@ namespace CORE::GEO
       \brief Check whether the particular z-plane of the volumecell contains significant area so as
       to distribute the Gauss points in that plane
       */
-      bool IsContainArea(double minn[3], double maxx[3], double& zmin,
+      bool is_contain_area(double minn[3], double maxx[3], double& zmin,
           std::vector<std::vector<double>>& pts, std::vector<std::vector<double>> zcoord,
           std::vector<std::vector<double>> ycoord, double toler, int numeach);
 
@@ -106,13 +106,13 @@ namespace CORE::GEO
       \brief Writes the Geometry of volumecell and location of Gauss points in GMSH format output
       file
       */
-      void GaussPointGmsh();
+      void gauss_point_gmsh();
 
       /*!
       \brief Generates equally spaced "num" number of points on the line whose end points are
       specified by inter1 and inter2
       */
-      void OnLine(std::vector<double> inter1, std::vector<double> inter2,
+      void on_line(std::vector<double> inter1, std::vector<double> inter2,
           std::vector<std::vector<double>>& linePts, int num);
 
       /*!

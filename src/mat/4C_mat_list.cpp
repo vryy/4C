@@ -93,14 +93,14 @@ MAT::MatList::MatList(MAT::PAR::MatList* params) : params_(params)
   // setup of material map
   if (params_->local_)
   {
-    SetupMatMap();
+    setup_mat_map();
   }
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::MatList::SetupMatMap()
+void MAT::MatList::setup_mat_map()
 {
   // safety first
   mat_.clear();

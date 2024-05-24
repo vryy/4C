@@ -27,7 +27,7 @@ NOX::NLN::MeritFunction::Lagrangian::Lagrangian(
     const std::string& identifier, const Teuchos::RCP<::NOX::Utils>& u)
     : lagrangian_type_(mrtfct_vague), merit_function_name_()
 {
-  SetType(identifier);
+  set_type(identifier);
   merit_function_name_ = MeritFuncName2String(Type());
 
   utils_ = u;
@@ -39,7 +39,7 @@ double NOX::NLN::MeritFunction::Lagrangian::computef(const ::NOX::Abstract::Grou
 {
   if (!grp.isF())
   {
-    throwError("computef()",
+    throw_error("computef()",
         "The current function value was not computed yet. "
         "Please call computeF() on the group passed into this function.");
   }
@@ -49,7 +49,7 @@ double NOX::NLN::MeritFunction::Lagrangian::computef(const ::NOX::Abstract::Grou
       dynamic_cast<const NOX::NLN::CONSTRAINT::Group*>(&grp);
   if (not constr_grp_ptr)
   {
-    throwError("computef()", "Dynamic cast to NOX::NLN::Constraint::Group failed!");
+    throw_error("computef()", "Dynamic cast to NOX::NLN::Constraint::Group failed!");
   }
 
   // Get the primary contribution and constraint contributions
@@ -63,7 +63,7 @@ double NOX::NLN::MeritFunction::Lagrangian::computeSlope(
 {
   if (!grp.isF())
   {
-    throwError("computeSlope()",
+    throw_error("computeSlope()",
         "The current function value was not computed yet. "
         "Please call computeF() on the group passed into this function.");
   }
@@ -72,7 +72,7 @@ double NOX::NLN::MeritFunction::Lagrangian::computeSlope(
   const NOX::NLN::CONSTRAINT::Group* constr_grp_ptr =
       dynamic_cast<const NOX::NLN::CONSTRAINT::Group*>(&grp);
   if (not constr_grp_ptr)
-    throwError("computeSlope()", "Dynamic cast to NOX::NLN::Constraint::Group failed!");
+    throw_error("computeSlope()", "Dynamic cast to NOX::NLN::Constraint::Group failed!");
 
   // compute the slope
   return constr_grp_ptr->get_linearized_model_terms(dir, Type(), linorder_first, lin_wrt_all_dofs);
@@ -85,7 +85,7 @@ double NOX::NLN::MeritFunction::Lagrangian::compute_mixed2nd_order_terms(
 {
   if (!grp.isF())
   {
-    throwError("computeSlope()",
+    throw_error("computeSlope()",
         "The current function value was not computed yet. "
         "Please call computeF() on the group passed into this function.");
   }
@@ -94,7 +94,7 @@ double NOX::NLN::MeritFunction::Lagrangian::compute_mixed2nd_order_terms(
   const NOX::NLN::CONSTRAINT::Group* constr_grp_ptr =
       dynamic_cast<const NOX::NLN::CONSTRAINT::Group*>(&grp);
   if (not constr_grp_ptr)
-    throwError("computeSlope()", "Dynamic cast to NOX::NLN::Constraint::Group failed!");
+    throw_error("computeSlope()", "Dynamic cast to NOX::NLN::Constraint::Group failed!");
 
   // compute the slope
   return constr_grp_ptr->get_linearized_model_terms(
@@ -109,7 +109,7 @@ double NOX::NLN::MeritFunction::Lagrangian::compute_saddle_point_model(const dou
 {
   if (!grp.isF())
   {
-    throwError("compute_saddle_point_model()",
+    throw_error("compute_saddle_point_model()",
         "The current function value was not "
         "computed yet. Please call computeF() on the group passed into this function.");
   }
@@ -119,7 +119,7 @@ double NOX::NLN::MeritFunction::Lagrangian::compute_saddle_point_model(const dou
       dynamic_cast<const NOX::NLN::CONSTRAINT::Group*>(&grp);
   if (not constr_grp_ptr)
   {
-    throwError("computeModel()", "Dynamic cast to NOX::NLN::Constraint::Group failed!");
+    throw_error("computeModel()", "Dynamic cast to NOX::NLN::Constraint::Group failed!");
   }
 
   const NOX::NLN::CONSTRAINT::Group& constr_grp = *constr_grp_ptr;
@@ -181,7 +181,7 @@ NOX::NLN::MeritFunction::Lagrangian::get_supported_type_list() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::MeritFunction::Lagrangian::SetType(const std::string& identifier)
+void NOX::NLN::MeritFunction::Lagrangian::set_type(const std::string& identifier)
 {
   static const std::map<std::string, MeritFctName> supported_type_names = get_supported_type_list();
 
@@ -211,7 +211,7 @@ void NOX::NLN::MeritFunction::Lagrangian::SetType(const std::string& identifier)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::MeritFunction::Lagrangian::throwError(
+void NOX::NLN::MeritFunction::Lagrangian::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   if (utils_->isPrintType(::NOX::Utils::Error))

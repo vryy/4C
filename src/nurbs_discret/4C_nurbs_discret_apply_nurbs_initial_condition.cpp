@@ -104,7 +104,7 @@ namespace
     // vectors and matrices
     //                 local <-> global dof numbering
     // -------------------------------------------------------------------
-    const Epetra_Map* dofrowmap = dis.DofRowMap();
+    const Epetra_Map* dofrowmap = dis.dof_row_map();
 
     // -------------------------------------------------------------------
     // create empty mass matrix
@@ -122,7 +122,7 @@ namespace
     // -------------------------------------------------------------------
     {
       // call elements and assemble
-      if (!nurbsdis->Filled()) FOUR_C_THROW("FillComplete() was not called");
+      if (!nurbsdis->Filled()) FOUR_C_THROW("fill_complete() was not called");
       if (!nurbsdis->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
       // see what we have for input
@@ -203,7 +203,7 @@ namespace
           }
 
           // set element data
-          const int iel = actele->NumNode();
+          const int iel = actele->num_node();
 
           // dofblocks (spacedim or spacedim+1 for fluid problems)
           const int dofblock = eledim / iel;

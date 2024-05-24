@@ -346,7 +346,7 @@ void CORE::GEO::CUT::Node::FindDOFSets(bool include_inner)
 
   plain_volumecell_set done;
 
-  BuildDOFCellSets(point(), cells, nodal_cells[this], done);
+  build_dof_cell_sets(point(), cells, nodal_cells[this], done);
 
   nodal_cells.erase(this);
 
@@ -355,11 +355,11 @@ void CORE::GEO::CUT::Node::FindDOFSets(bool include_inner)
   {
     Node* n = i->first;
     plain_volumecell_set& cellset = i->second;
-    BuildDOFCellSets(n->point(), cells, cellset, done);
+    build_dof_cell_sets(n->point(), cells, cellset, done);
   }
 
   // do any remaining internal volumes that are not connected to any node
-  BuildDOFCellSets(nullptr, cells, cells, done);
+  build_dof_cell_sets(nullptr, cells, cells, done);
 
   //   std::cout << " #dofsets: " << dofsets_.size() << " [";
   //   for ( unsigned i=0; i<dofsets_.size(); ++i )
@@ -399,7 +399,7 @@ void CORE::GEO::CUT::Node::FindDOFSetsNEW(
   // than one set of cells that are attached to this node.
 
   // call this function with isnodalcellset=true flag to identify the first std set
-  BuildDOFCellSets(point(), cell_sets, cells, nodal_cell_sets[this], done, true);
+  build_dof_cell_sets(point(), cell_sets, cells, nodal_cell_sets[this], done, true);
 
   nodal_cell_sets.erase(this);
 
@@ -410,11 +410,11 @@ void CORE::GEO::CUT::Node::FindDOFSetsNEW(
     Node* n = i->first;
 
     std::vector<plain_volumecell_set>& cellset = i->second;
-    BuildDOFCellSets(n->point(), cell_sets, cells, cellset, done);
+    build_dof_cell_sets(n->point(), cell_sets, cells, cellset, done);
   }
 
   // do any remaining internal volumes that are not connected to any node
-  BuildDOFCellSets(nullptr, cell_sets, cells, cell_sets, done);
+  build_dof_cell_sets(nullptr, cell_sets, cells, cell_sets, done);
 }
 
 
@@ -630,13 +630,13 @@ void CORE::GEO::CUT::Node::CollectNodalDofSets(bool connect_ghost_with_standard_
 /*-----------------------------------------------------------------------------------------*
  * build sets of connected volumecells in a 1-ring around the node
  *-----------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Node::BuildDOFCellSets(Point* p,
+void CORE::GEO::CUT::Node::build_dof_cell_sets(Point* p,
     const std::vector<plain_volumecell_set>& cell_sets, const plain_volumecell_set& cells,
     const std::vector<plain_volumecell_set>& nodal_cell_sets, plain_volumecell_set& done,
     bool isnodalcellset)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "CORE::GEO::CUT --- 5/6 --- cut_positions_dofsets --- BuildDOFCellSets");
+      "CORE::GEO::CUT --- 5/6 --- cut_positions_dofsets --- build_dof_cell_sets");
 
 
   for (std::vector<plain_volumecell_set>::const_iterator s = nodal_cell_sets.begin();
@@ -691,7 +691,7 @@ void CORE::GEO::CUT::Node::BuildDOFCellSets(Point* p,
 /*-----------------------------------------------------------------------------------------*
  * build sets of connected volumecells in a 1-ring around the node (old unused version)
  *-----------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Node::BuildDOFCellSets(Point* p, const plain_volumecell_set& cells,
+void CORE::GEO::CUT::Node::build_dof_cell_sets(Point* p, const plain_volumecell_set& cells,
     const plain_volumecell_set& nodal_cells, plain_volumecell_set& done)
 {
   for (plain_volumecell_set::const_iterator i = nodal_cells.begin(); i != nodal_cells.end(); ++i)

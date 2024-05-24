@@ -51,7 +51,7 @@ namespace MAT
     void Init();
 
     //! prepare time step
-    void PrepareTimeStep(const std::vector<double>& phinp_macro  //!< macro-scale state variables
+    void prepare_time_step(const std::vector<double>& phinp_macro  //!< macro-scale state variables
     );
 
     //! evaluate micro scale
@@ -79,7 +79,7 @@ namespace MAT
     void Output();
 
     //! read restart on micro scale
-    void ReadRestart();
+    void read_restart();
 
     //! calculate derivative of determinate w.r.t. time according to macro time int scheme
     void CalculateDdetFDt(Teuchos::RCP<SCATRA::TimIntOneStepTheta> microtimint);
@@ -97,10 +97,10 @@ namespace MAT
     static std::map<int, int> microdisnum_nummacrogp_map_;
 
     //! create new result file
-    void NewResultFile();
+    void new_result_file();
 
     //! create path of new result file
-    std::string NewResultFilePath(const std::string& newprefix);
+    std::string new_result_file_path(const std::string& newprefix);
 
     //! macro-scale Gauss point ID
     const int gp_id_;

@@ -80,7 +80,7 @@ namespace
       polynomial_shape_ =
           Teuchos::rcp(new MAT::InelasticDefgradPolynomialShape(poly_coeffs, x_min, x_max));
 
-      // parameter list to be passed to PreEvaluate
+      // parameter list to be passed to pre_evaluate
       Teuchos::ParameterList params_lin;
       // set up a dummy concentration vector and store it to the parameter list
       auto gpconc_lin =
@@ -106,8 +106,8 @@ namespace
       lin_scalar_iso_ = Teuchos::rcp(
           new MAT::InelasticDefgradLinScalarIso(params_inelastic_defgrad_scalar_.get()));
 
-      // call PreEvaluate to set the concentration value
-      lin_scalar_iso_->PreEvaluate(params_lin, 0);
+      // call pre_evaluate to set the concentration value
+      lin_scalar_iso_->pre_evaluate(params_lin, 0);
 
       // create InelasticDefgradLinScalarAniso object initialize container for material parameters
       const Teuchos::RCP<CORE::MAT::PAR::Material> inelastic_defgrad_lin_scalar_aniso_data =
@@ -132,8 +132,8 @@ namespace
       lin_scalar_aniso_ = Teuchos::rcp(new MAT::InelasticDefgradLinScalarAniso(
           params_inelastic_defgrad_lin_scalar_aniso_.get()));
 
-      // call PreEvaluate to set the concentration value
-      lin_scalar_aniso_->PreEvaluate(params_lin, 0);
+      // call pre_evaluate to set the concentration value
+      lin_scalar_aniso_->pre_evaluate(params_lin, 0);
 
       // InelasticDefgradPolyIntercalFracIso object initialize container for required electrode
       // material parameters
@@ -168,7 +168,7 @@ namespace
       // add material to problem instance
       problem.Materials()->Insert(matid, electrode_mat);
 
-      // parameter list to be passed to PreEvaluate
+      // parameter list to be passed to pre_evaluate
       Teuchos::ParameterList params_poly;
       // set up a dummy concentration vector and store it to the parameter list
       auto gpconc_poly =
@@ -209,8 +209,8 @@ namespace
       poly_intercal_frac_iso_ = Teuchos::rcp(new MAT::InelasticDefgradPolyIntercalFracIso(
           params_inelastic_defgrad_poly_intercal_frac_.get()));
 
-      // call PreEvaluate to set the concentration value
-      poly_intercal_frac_iso_->PreEvaluate(params_poly, 0);
+      // call pre_evaluate to set the concentration value
+      poly_intercal_frac_iso_->pre_evaluate(params_poly, 0);
 
       // create InelasticDefgradPolyIntercalFracAniso object initialize container for material
       // parameters
@@ -244,8 +244,8 @@ namespace
       poly_intercal_frac_aniso_ = Teuchos::rcp(new MAT::InelasticDefgradPolyIntercalFracAniso(
           params_inelastic_defgrad_poly_intercal_frac_aniso_.get()));
 
-      // call PreEvaluate to set the concentration value
-      poly_intercal_frac_aniso_->PreEvaluate(params_poly, 0);
+      // call pre_evaluate to set the concentration value
+      poly_intercal_frac_aniso_->pre_evaluate(params_poly, 0);
 
       // create InelasticDefgradLinTempIso object initialize container for material parameters
       const Teuchos::RCP<CORE::MAT::PAR::Material> inelastic_defgrad_temp_iso_data =
@@ -264,12 +264,12 @@ namespace
       // setup pointer to InelasticDefgradLinScalarIso object
       lin_temp_iso_ = Teuchos::rcp(new MAT::InelasticDefgradLinTempIso(params_lin_temp_iso_.get()));
 
-      // parameter list for PreEvaluate call with gp temerature
+      // parameter list for pre_evaluate call with gp temerature
       Teuchos::ParameterList params_temp;
       auto gptemp = Teuchos::rcp(new std::vector<double>(1, 280.0));
       params_temp.set<Teuchos::RCP<std::vector<double>>>("gp_temp", gptemp);
-      // call PreEvaluate to set the temperature
-      lin_temp_iso_->PreEvaluate(params_temp, 0);
+      // call pre_evaluate to set the temperature
+      lin_temp_iso_->pre_evaluate(params_temp, 0);
     }
 
     void TearDown() override

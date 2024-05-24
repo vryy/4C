@@ -35,7 +35,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Contact::Setup()
 {
-  CheckInit();
+  check_init();
   eval_contact_ptr_ = EvalData().ContactPtr();
 
   // ---------------------------------------------------------------------
@@ -53,9 +53,9 @@ void STR::MODELEVALUATOR::Contact::Setup()
   Teuchos::ParameterList cparams;
 
   // read and check contact input parameters
-  factory.ReadAndCheckInput(cparams);
+  factory.read_and_check_input(cparams);
 
-  // check for FillComplete of discretization
+  // check for fill_complete of discretization
   if (not Discret().Filled()) FOUR_C_THROW("Discretization is not fillcomplete");
 
   // ---------------------------------------------------------------------
@@ -84,7 +84,7 @@ void STR::MODELEVALUATOR::Contact::Setup()
   // final touches to the contact strategy
   // ---------------------------------------------------------------------
   strategy_ptr_->store_dirichlet_status(Int().GetDbc().GetDBCMapExtractor());
-  strategy_ptr_->SetState(MORTAR::state_new_displacement, Int().GetDbc().GetZeros());
+  strategy_ptr_->set_state(MORTAR::state_new_displacement, Int().GetDbc().GetZeros());
   strategy_ptr_->SaveReferenceState(Int().GetDbc().GetZerosPtr());
   strategy_ptr_->evaluate_reference_state();
   strategy_ptr_->Inttime_init();
@@ -93,14 +93,14 @@ void STR::MODELEVALUATOR::Contact::Setup()
 
   CheckPseudo2D();
 
-  PostSetup(cparams);
+  post_setup(cparams);
 
   issetup_ = true;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Contact::PostSetup(Teuchos::ParameterList& cparams)
+void STR::MODELEVALUATOR::Contact::post_setup(Teuchos::ParameterList& cparams)
 {
   if (dynamic_cast<CONTACT::AUG::Strategy*>(strategy_ptr_.get()))
   {
@@ -154,7 +154,7 @@ void STR::MODELEVALUATOR::Contact::set_time_integration_info(
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Contact::Reset(const Epetra_Vector& x)
 {
-  CheckInitSetup();
+  check_init_setup();
   std::vector<Teuchos::RCP<const Epetra_Vector>> eval_vec(2, Teuchos::null);
   eval_vec[0] = GState().GetDisNp();
   eval_vec[1] = Teuchos::rcpFromRef(x);
@@ -166,9 +166,9 @@ void STR::MODELEVALUATOR::Contact::Reset(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Contact::EvaluateForce()
+bool STR::MODELEVALUATOR::Contact::evaluate_force()
 {
-  CheckInitSetup();
+  check_init_setup();
   bool ok = true;
   // --- evaluate contact contributions ---------------------------------
   EvalContact().SetActionType(MORTAR::eval_force);
@@ -180,9 +180,9 @@ bool STR::MODELEVALUATOR::Contact::EvaluateForce()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Contact::EvaluateStiff()
+bool STR::MODELEVALUATOR::Contact::evaluate_stiff()
 {
-  CheckInitSetup();
+  check_init_setup();
   bool ok = true;
   // --- evaluate contact contributions ---------------------------------
   EvalContact().SetActionType(MORTAR::eval_force_stiff);
@@ -194,9 +194,9 @@ bool STR::MODELEVALUATOR::Contact::EvaluateStiff()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Contact::EvaluateForceStiff()
+bool STR::MODELEVALUATOR::Contact::evaluate_force_stiff()
 {
-  CheckInitSetup();
+  check_init_setup();
   bool ok = true;
   // --- evaluate contact contributions ---------------------------------
   EvalContact().SetActionType(MORTAR::eval_force_stiff);
@@ -207,7 +207,7 @@ bool STR::MODELEVALUATOR::Contact::EvaluateForceStiff()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Contact::PreEvaluate()
+void STR::MODELEVALUATOR::Contact::pre_evaluate()
 {
   EvalContact().SetActionType(MORTAR::eval_run_pre_evaluate);
   EvalData().SetModelEvaluator(this);
@@ -216,7 +216,7 @@ void STR::MODELEVALUATOR::Contact::PreEvaluate()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Contact::PostEvaluate()
+void STR::MODELEVALUATOR::Contact::post_evaluate()
 {
   EvalContact().SetActionType(MORTAR::eval_run_post_evaluate);
   EvalData().SetModelEvaluator(this);
@@ -225,7 +225,7 @@ void STR::MODELEVALUATOR::Contact::PostEvaluate()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Contact::AssembleForce(Epetra_Vector& f, const double& timefac_np) const
+bool STR::MODELEVALUATOR::Contact::assemble_force(Epetra_Vector& f, const double& timefac_np) const
 {
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
 
@@ -261,7 +261,7 @@ bool STR::MODELEVALUATOR::Contact::AssembleForce(Epetra_Vector& f, const double&
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Contact::AssembleJacobian(
+bool STR::MODELEVALUATOR::Contact::assemble_jacobian(
     CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> block_ptr = Teuchos::null;
@@ -381,7 +381,7 @@ void STR::MODELEVALUATOR::Contact::WriteRestart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Contact::ReadRestart(IO::DiscretizationReader& ioreader)
+void STR::MODELEVALUATOR::Contact::read_restart(IO::DiscretizationReader& ioreader)
 {
   EvalContact().SetActionType(MORTAR::eval_force_stiff);
   // reader strategy specific stuff
@@ -401,16 +401,16 @@ void STR::MODELEVALUATOR::Contact::UpdateStepState(const double& timefac_n)
     fstructold_ptr->Update(timefac_n, *strcontactrhs_ptr, 1.0);
   }
 
-  /* Note: DisN() and DisNp() have the same value at this stage, since
+  /* Note: DisN() and dis_np() have the same value at this stage, since
    * we call the structural model evaluator always in first place! */
   strategy_ptr_->Update(GState().GetDisN());
 
-  PostUpdateStepState();
+  post_update_step_state();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Contact::PostUpdateStepState()
+void STR::MODELEVALUATOR::Contact::post_update_step_state()
 {
   // initialize integration time for time measurement
   strategy_ptr_->Inttime_init();
@@ -418,7 +418,7 @@ void STR::MODELEVALUATOR::Contact::PostUpdateStepState()
   // redistribute contact
   strategy_ptr_->RedistributeContact(GState().GetDisN(), GState().GetVelN());
 
-  // setup the map extractor, since redistribute calls FillComplete
+  // setup the map extractor, since redistribute calls fill_complete
   // on the structural discretization. Though this only changes the
   // ghosted dofs while keeping row distribution fixed, the map pointers
   // in the global state are no longer valid. So we reset them.
@@ -436,7 +436,7 @@ void STR::MODELEVALUATOR::Contact::UpdateStepElement()
 void STR::MODELEVALUATOR::Contact::RunPostComputeX(
     const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   std::vector<Teuchos::RCP<const Epetra_Vector>> eval_vec(3, Teuchos::null);
   eval_vec[0] = Teuchos::rcpFromRef(xold);
@@ -714,7 +714,7 @@ void STR::MODELEVALUATOR::Contact::OutputStepState(IO::DiscretizationWriter& iow
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Contact::ResetStepState()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   FOUR_C_THROW("Not yet implemented");
 }
@@ -723,7 +723,7 @@ void STR::MODELEVALUATOR::Contact::ResetStepState()
  *----------------------------------------------------------------------*/
 STR::MODELEVALUATOR::ContactData& STR::MODELEVALUATOR::Contact::EvalContact()
 {
-  CheckInitSetup();
+  check_init_setup();
   return *eval_contact_ptr_;
 }
 
@@ -731,7 +731,7 @@ STR::MODELEVALUATOR::ContactData& STR::MODELEVALUATOR::Contact::EvalContact()
  *----------------------------------------------------------------------*/
 const STR::MODELEVALUATOR::ContactData& STR::MODELEVALUATOR::Contact::EvalContact() const
 {
-  CheckInitSetup();
+  check_init_setup();
   return *eval_contact_ptr_;
 }
 
@@ -739,7 +739,7 @@ const STR::MODELEVALUATOR::ContactData& STR::MODELEVALUATOR::Contact::EvalContac
  *----------------------------------------------------------------------*/
 const Teuchos::RCP<CONTACT::AbstractStrategy>& STR::MODELEVALUATOR::Contact::StrategyPtr()
 {
-  CheckInitSetup();
+  check_init_setup();
   return strategy_ptr_;
 }
 
@@ -747,7 +747,7 @@ const Teuchos::RCP<CONTACT::AbstractStrategy>& STR::MODELEVALUATOR::Contact::Str
  *----------------------------------------------------------------------*/
 CONTACT::AbstractStrategy& STR::MODELEVALUATOR::Contact::Strategy()
 {
-  CheckInitSetup();
+  check_init_setup();
   return *strategy_ptr_;
 }
 
@@ -755,7 +755,7 @@ CONTACT::AbstractStrategy& STR::MODELEVALUATOR::Contact::Strategy()
  *----------------------------------------------------------------------*/
 const CONTACT::AbstractStrategy& STR::MODELEVALUATOR::Contact::Strategy() const
 {
-  CheckInitSetup();
+  check_init_setup();
   return *strategy_ptr_;
 }
 
@@ -766,9 +766,9 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Contact::get_block_dof_row_m
 {
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
-  CheckInitSetup();
+  check_init_setup();
   if (Strategy().LMDoFRowMapPtr(false) == Teuchos::null)
-    return GState().DofRowMap();
+    return GState().dof_row_map();
   else
   {
     enum INPAR::CONTACT::SystemType systype =
@@ -778,7 +778,7 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Contact::get_block_dof_row_m
     if (systype == INPAR::CONTACT::system_saddlepoint)
       return Strategy().lin_system_lm_do_f_row_map_ptr();
     else
-      return GState().DofRowMap();
+      return GState().dof_row_map();
   }
 }
 
@@ -853,7 +853,7 @@ void STR::MODELEVALUATOR::Contact::extend_lagrange_multiplier_domain(
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Contact::PostOutput()
 {
-  CheckInitSetup();
+  check_init_setup();
   // empty
 }  // PostOutput()
 
@@ -862,7 +862,7 @@ void STR::MODELEVALUATOR::Contact::PostOutput()
 void STR::MODELEVALUATOR::Contact::RunPreComputeX(
     const Epetra_Vector& xold, Epetra_Vector& dir_mutable, const NOX::NLN::Group& curr_grp)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   std::vector<Teuchos::RCP<const Epetra_Vector>> eval_vec(1, Teuchos::null);
   eval_vec[0] = Teuchos::rcpFromRef(xold);
@@ -881,7 +881,7 @@ void STR::MODELEVALUATOR::Contact::RunPreComputeX(
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Contact::RunPostIterate(const ::NOX::Solver::Generic& solver)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   const ::NOX::Epetra::Vector& nox_x =
       dynamic_cast<const ::NOX::Epetra::Vector&>(solver.getSolutionGroup().getX());
@@ -891,7 +891,7 @@ void STR::MODELEVALUATOR::Contact::RunPostIterate(const ::NOX::Solver::Generic& 
   Teuchos::RCP<const Epetra_Vector> curr_vel = GState().GetVelNp();
 
   if (Strategy().dyn_redistribute_contact(curr_disp, curr_vel, solver.getNumIterations()))
-    EvaluateForce();
+    evaluate_force();
 
   EvalContact().SetActionType(MORTAR::eval_run_post_iterate);
   Strategy().Evaluate(EvalData().Contact());
@@ -911,7 +911,7 @@ void STR::MODELEVALUATOR::Contact::run_pre_apply_jacobian_inverse(const Epetra_V
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Contact::RunPreSolve(const ::NOX::Solver::Generic& solver)
 {
-  CheckInitSetup();
+  check_init_setup();
   const ::NOX::Epetra::Vector& nox_x =
       dynamic_cast<const ::NOX::Epetra::Vector&>(solver.getSolutionGroup().getX());
 
@@ -930,7 +930,7 @@ void STR::MODELEVALUATOR::Contact::RunPreSolve(const ::NOX::Solver::Generic& sol
 void STR::MODELEVALUATOR::Contact::run_post_apply_jacobian_inverse(const Epetra_Vector& rhs,
     Epetra_Vector& result, const Epetra_Vector& xold, const NOX::NLN::Group& grp)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   EvalContact().Set(&rhs, 0);
   EvalContact().Set(&result, 1);
@@ -961,7 +961,7 @@ Teuchos::RCP<Epetra_Vector> STR::MODELEVALUATOR::Contact::assemble_force_of_mode
     const std::vector<INPAR::STR::ModelType>* without_these_models, const bool apply_dbc) const
 {
   Teuchos::RCP<::NOX::Epetra::Vector> force_nox = GState().CreateGlobalVector();
-  Int().AssembleForce(force_nox->getEpetraVector(), without_these_models);
+  Int().assemble_force(force_nox->getEpetraVector(), without_these_models);
 
   // copy the vector, otherwise the storage will be freed at the end of this
   // function, resulting in a segmentation fault
@@ -1000,9 +1000,9 @@ void STR::MODELEVALUATOR::Contact::evaluate_weighted_gap_gradient_error()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Contact::EvaluateCheapSOCRhs()
+bool STR::MODELEVALUATOR::Contact::evaluate_cheap_soc_rhs()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   EvalContact().SetActionType(MORTAR::eval_static_constraint_rhs);
   EvalData().SetModelEvaluator(this);
@@ -1014,17 +1014,17 @@ bool STR::MODELEVALUATOR::Contact::EvaluateCheapSOCRhs()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Contact::AssembleCheapSOCRhs(
+bool STR::MODELEVALUATOR::Contact::assemble_cheap_soc_rhs(
     Epetra_Vector& f, const double& timefac_np) const
 {
-  return AssembleForce(f, timefac_np);
+  return assemble_force(f, timefac_np);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Contact::CorrectParameters(NOX::NLN::CorrectionType type)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   EvalContact().SetActionType(MORTAR::eval_correct_parameters);
   EvalContact().Set(&type, 0);
@@ -1040,7 +1040,7 @@ bool STR::MODELEVALUATOR::Contact::CorrectParameters(NOX::NLN::CorrectionType ty
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Contact::remove_condensed_contributions_from_rhs(Epetra_Vector& rhs)
 {
-  CheckInitSetup();
+  check_init_setup();
   EvalContact().SetActionType(MORTAR::remove_condensed_contributions_from_str_rhs);
 
   std::vector<Teuchos::RCP<Epetra_Vector>> mutable_vec(1, Teuchos::rcpFromRef(rhs));

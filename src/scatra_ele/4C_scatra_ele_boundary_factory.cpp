@@ -43,7 +43,7 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::Pr
     case CORE::FE::CellType::quad4:
     {
       if (ndim == 3)
-        return DefineProblemType<CORE::FE::CellType::quad4, 3>(
+        return define_problem_type<CORE::FE::CellType::quad4, 3>(
             impltype, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension!");
@@ -51,7 +51,7 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::Pr
     case CORE::FE::CellType::quad8:
     {
       if (ndim == 3)
-        return DefineProblemType<CORE::FE::CellType::quad8, 3>(
+        return define_problem_type<CORE::FE::CellType::quad8, 3>(
             impltype, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension!");
@@ -59,7 +59,7 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::Pr
     case CORE::FE::CellType::quad9:
     {
       if (ndim == 3)
-        return DefineProblemType<CORE::FE::CellType::quad9, 3>(
+        return define_problem_type<CORE::FE::CellType::quad9, 3>(
             impltype, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension!");
@@ -67,7 +67,7 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::Pr
     case CORE::FE::CellType::tri3:
     {
       if (ndim == 3)
-        return DefineProblemType<CORE::FE::CellType::tri3, 3>(
+        return define_problem_type<CORE::FE::CellType::tri3, 3>(
             impltype, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension!");
@@ -75,7 +75,7 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::Pr
     case CORE::FE::CellType::tri6:
     {
       if (ndim == 3)
-        return DefineProblemType<CORE::FE::CellType::tri6, 3>(
+        return define_problem_type<CORE::FE::CellType::tri6, 3>(
             impltype, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension!");
@@ -83,10 +83,10 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::Pr
     case CORE::FE::CellType::line2:
     {
       if (ndim == 2)
-        return DefineProblemType<CORE::FE::CellType::line2, 2>(
+        return define_problem_type<CORE::FE::CellType::line2, 2>(
             impltype, numdofpernode, numscal, disname);
       else if (ndim == 3)
-        return DefineProblemType<CORE::FE::CellType::line2, 3>(
+        return define_problem_type<CORE::FE::CellType::line2, 3>(
             impltype, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension!");
@@ -94,25 +94,25 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::Pr
     case CORE::FE::CellType::line3:
     {
       if (ndim == 2)
-        return DefineProblemType<CORE::FE::CellType::line3, 2>(
+        return define_problem_type<CORE::FE::CellType::line3, 2>(
             impltype, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension!");
     }
     case CORE::FE::CellType::nurbs3:  // 1D nurbs boundary element
     {
-      return DefineProblemType<CORE::FE::CellType::nurbs3, 2>(
+      return define_problem_type<CORE::FE::CellType::nurbs3, 2>(
           impltype, numdofpernode, numscal, disname);
     }
     case CORE::FE::CellType::nurbs9:  // 2D nurbs boundary element
     {
-      return DefineProblemType<CORE::FE::CellType::nurbs9, 3>(
+      return define_problem_type<CORE::FE::CellType::nurbs9, 3>(
           impltype, numdofpernode, numscal, disname);
     }
     default:
     {
       FOUR_C_THROW(
-          "Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
+          "Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->num_node());
       break;
     }
   }
@@ -125,7 +125,7 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::Pr
  | return instance of element evaluation class depending on implementation type   fang 02/15 |
  *-------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::DefineProblemType(
+DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::define_problem_type(
     const enum INPAR::SCATRA::ImplType impltype, const int numdofpernode, const int numscal,
     const std::string& disname)
 {

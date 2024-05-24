@@ -81,7 +81,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
   if (calcV0PreStress_) transpulmpress_ = params_.get<double>("transpulmpress");
 
   // ensure that degrees of freedom in the discretization have been set
-  if (!discret_->Filled() || !actdis->HaveDofs()) discret_->FillComplete();
+  if (!discret_->Filled() || !actdis->HaveDofs()) discret_->fill_complete();
 
   airway_acinus_dep_ = CORE::LINALG::CreateVector(*discret_->ElementColMap(), true);
 
@@ -109,7 +109,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
 
     // make search discret fully overlapping on all procs
     CORE::REBALANCE::GhostDiscretizationOnAllProcs(discret_);
-    discret_->FillComplete(false, false, false);
+    discret_->fill_complete(false, false, false);
 
     // Get elements and nodes that need to be ghosted to have correct neighbor search
     // independent of number of procs
@@ -130,7 +130,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
     discret_->ExportColumnNodes(*extendednodecolmap);
 
     // fill and inform user (not fully overlapping anymore at this point
-    discret_->FillComplete();
+    discret_->fill_complete();
     CORE::REBALANCE::UTILS::print_parallel_distribution(*discret_);
 
     // Neighbouring acinus
@@ -143,7 +143,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
   // vectors and matrices
   //                 local <-> global dof numbering
   // -------------------------------------------------------------------
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
   const Epetra_Map* dofcolmap = discret_->DofColMap();
   const Epetra_Map* elementcolmap = discret_->ElementColMap();
   const Epetra_Map* elementrowmap = discret_->ElementRowMap();
@@ -619,7 +619,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::compute_nearest_acinus(
       {
         elecolset->insert(GID3);
         const int* nodeids = ele_acinus->NodeIds();
-        for (int inode = 0; inode < ele_acinus->NumNode(); ++inode)
+        for (int inode = 0; inode < ele_acinus->num_node(); ++inode)
           nodecolset->insert(nodeids[inode]);
       }
 
@@ -678,7 +678,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeStep(
   }
 
   // Prepare current timestep
-  PrepareTimeStep();
+  prepare_time_step();
 
   // Output to screen
   if (myrank_ == 0)
@@ -780,13 +780,13 @@ void AIRWAY::RedAirwayImplicitTimeInt::IntegrateStep(
 /*----------------------------------------------------------------------*
  | Setup the variables to do a new time step                ismail 01/10|
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::PrepareTimeStep()
+void AIRWAY::RedAirwayImplicitTimeInt::prepare_time_step()
 {
   rhs_->PutScalar(0.0);
   // Set time dependent parameters
   step_ += 1;
   time_ += dta_;
-}  // RedAirwayImplicitTimeInt::PrepareTimeStep
+}  // RedAirwayImplicitTimeInt::prepare_time_step
 
 
 /*----------------------------------------------------------------------*
@@ -918,10 +918,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
 
     // Set vector values needed by elements
     discret_->ClearState();
-    discret_->SetState("pnp", pnp_);
-    discret_->SetState("pn", pn_);
-    discret_->SetState("pnm", pnm_);
-    discret_->SetState("intr_ac_link", n_intr_ac_ln_);
+    discret_->set_state("pnp", pnp_);
+    discret_->set_state("pn", pn_);
+    discret_->set_state("pnm", pnm_);
+    discret_->set_state("intr_ac_link", n_intr_ac_ln_);
 
     // note: We use an RCP because ParameterList wants something printable and comparable
     DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
@@ -1003,9 +1003,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
 
     // Set vector values needed by elements
     discret_->ClearState();
-    discret_->SetState("pnp", pnp_);
-    discret_->SetState("pn", pn_);
-    discret_->SetState("pnm", pnm_);
+    discret_->set_state("pnp", pnp_);
+    discret_->set_state("pn", pn_);
+    discret_->set_state("pnm", pnm_);
 
     // note: We use an RCP because ParameterList wants something printable and comparable
     DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
@@ -1061,7 +1061,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
      (A_debug->EpetraMatrix())->Print(std::cout);
   }
    //               std::cout<<"Map is:
-  ("<<myrank_<<")"<<std::endl<<*(discret_->DofRowMap())<<std::endl;
+  ("<<myrank_<<")"<<std::endl<<*(discret_->dof_row_map())<<std::endl;
   std::cout<<"---------------------------------------("<<myrank_<<"------------------------"<<std::endl;
 
   std::cout << "rhs_ = " << std::endl;
@@ -1121,10 +1121,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
 
     // Set vector values needed by elements
     discret_->ClearState();
-    discret_->SetState("pnp", pnp_);
-    discret_->SetState("pn", pn_);
-    discret_->SetState("pnm", pnm_);
-    discret_->SetState("intr_ac_link", n_intr_ac_ln_);
+    discret_->set_state("pnp", pnp_);
+    discret_->set_state("pn", pn_);
+    discret_->set_state("pnm", pnm_);
+    discret_->set_state("intr_ac_link", n_intr_ac_ln_);
 
     // note: We use an RCP because ParameterList wants something printable and comparable
     DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
@@ -1205,7 +1205,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
 
     // set vector values needed by elements
     discret_->ClearState();
-    discret_->SetState("pnp", pnp_);
+    discret_->set_state("pnp", pnp_);
 
     // note: We use an RCP because ParameterList wants something printable and comparable
     DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
@@ -1329,7 +1329,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
 
     // set vector values needed to evaluate O2 transport elements
     discret_->ClearState();
-    discret_->SetState("scatran", scatraO2n_);
+    discret_->set_state("scatran", scatraO2n_);
 
     // note: We use an RCP because ParameterList wants something printable and comparable
     DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
@@ -1340,7 +1340,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     evaluation_data.e2scatran = e2scatraO2n_;
     evaluation_data.e2scatranp = e2scatraO2np_;
 
-    discret_->SetState("junctionVolumeInMix", junctionVolumeInMix_);
+    discret_->set_state("junctionVolumeInMix", junctionVolumeInMix_);
 
     evaluation_data.qin_n = qin_n_;
     evaluation_data.qout_n = qout_n_;
@@ -1356,7 +1356,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     evaluation_data.dt = dta_;
     evaluation_data.time = time_;
 
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    const Epetra_Map* dofrowmap = discret_->dof_row_map();
     Teuchos::RCP<Epetra_Vector> dummy = CORE::LINALG::CreateVector(*dofrowmap, true);
     discret_->Evaluate(eleparams, sysmat_, Teuchos::null, scatraO2np_, dummy, Teuchos::null);
     discret_->ClearState();
@@ -1396,7 +1396,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     evaluation_data.e1scatranp = e1scatraO2np_;
     evaluation_data.e2scatranp = e2scatraO2np_;
 
-    discret_->SetState("scatranp", scatraO2np_);
+    discret_->set_state("scatranp", scatraO2np_);
 
     evaluation_data.qin_np = qin_np_;
     evaluation_data.qout_np = qout_np_;
@@ -1407,7 +1407,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     evaluation_data.time = time_;
 
     evaluation_data.elemVolumenp = elemVolumenp_;
-    discret_->SetState("junctionVolumeInMix", junctionVolumeInMix_);
+    discret_->set_state("junctionVolumeInMix", junctionVolumeInMix_);
 
     discret_->Evaluate(
         eleparams, sysmat_, Teuchos::null, scatraO2np_, junctionVolumeInMix_, Teuchos::null);
@@ -1418,7 +1418,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
   // Solve the scatra between air and blood region
   //---------------------------------------------------------------------
   // define an empty capillary flowrate vector
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
   // Diffusion surface (from the acinar side)
   Teuchos::RCP<Epetra_Vector> nodal_surfaces = CORE::LINALG::CreateVector(*dofrowmap, true);
   // Fluid volume
@@ -1432,7 +1432,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     eleparams.set("action", "eval_nodal_essential_values");
 
     // set vector values of flow rates
-    discret_->SetState("scatranp", scatraO2np_);
+    discret_->set_state("scatranp", scatraO2np_);
     // note: We use an RCP because ParameterList wants something printable and comparable
     DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
     evaluation_data.acinar_v = acini_e_volumenp_;
@@ -1459,9 +1459,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     // action for elements
     eleparams.set("action", "solve_blood_air_transport");
 
-    discret_->SetState("areanp", nodal_surfaces);
-    discret_->SetState("volumenp", nodal_volumes);
-    discret_->SetState("scatranp", nodal_avg_conc);
+    discret_->set_state("areanp", nodal_surfaces);
+    discret_->set_state("volumenp", nodal_volumes);
+    discret_->set_state("scatranp", nodal_avg_conc);
 
     // note: We use an RCP because ParameterList wants something printable and comparable
     DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
@@ -1496,9 +1496,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     evaluation_data.e1scatranp = e1scatraO2np_;
     evaluation_data.e2scatranp = e2scatraO2np_;
     evaluation_data.dscatranp = dscatraO2_;
-    discret_->SetState("dscatranp", dscatraO2_);
-    discret_->SetState("avg_scatranp", nodal_avg_conc);
-    discret_->SetState("scatranp", scatraO2np_);
+    discret_->set_state("dscatranp", dscatraO2_);
+    discret_->set_state("avg_scatranp", nodal_avg_conc);
+    discret_->set_state("scatranp", scatraO2np_);
     evaluation_data.elemVolumenp = elemVolumenp_;
 
     discret_->Evaluate(
@@ -1526,9 +1526,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     evaluation_data.qout_n = qout_n_;
     evaluation_data.e1scatranp = e1scatraO2np_;
     evaluation_data.e2scatranp = e2scatraO2np_;
-    discret_->SetState("dscatranp", dscatraO2_);
-    discret_->SetState("scatranp", scatraO2np_);
-    discret_->SetState("junctionVolumeInMix", junctionVolumeInMix_);
+    discret_->set_state("dscatranp", dscatraO2_);
+    discret_->set_state("scatranp", scatraO2np_);
+    discret_->set_state("junctionVolumeInMix", junctionVolumeInMix_);
     evaluation_data.elemVolumenp = elemVolumenp_;
     discret_->Evaluate(
         eleparams, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -1542,7 +1542,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
  | This function is currently not used but will be kept empty until     |
  | further use.                                            ismail 01/10 |
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::AssembleMatAndRHS()
+void AIRWAY::RedAirwayImplicitTimeInt::assemble_mat_and_rhs()
 {
   dtele_ = 0.0;
   dtfilter_ = 0.0;
@@ -1552,7 +1552,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::AssembleMatAndRHS()
     TEUCHOS_FUNC_TIME_MONITOR("      + element calls");
   }
 
-}  // RedAirwayImplicitTimeInt::AssembleMatAndRHS
+}  // RedAirwayImplicitTimeInt::assemble_mat_and_rhs
 
 
 /*----------------------------------------------------------------------*
@@ -1609,7 +1609,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeUpdate()
 void AIRWAY::RedAirwayImplicitTimeInt::InitSaveState()
 {
   // Get discretizations DOF row map
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // Get discretizations element row map
   const Epetra_Map* elementcolmap = discret_->ElementColMap();
@@ -1835,12 +1835,12 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
         evaluation_data.elemVolumenp = elemVolumenp_;
         eleparams.set("action", "eval_PO2_from_concentration");
 
-        const Epetra_Map* dofrowmap = discret_->DofRowMap();
+        const Epetra_Map* dofrowmap = discret_->dof_row_map();
         Teuchos::RCP<Epetra_Vector> po2 = CORE::LINALG::CreateVector(*dofrowmap, true);
         discret_->ClearState();
 
         evaluation_data.po2 = po2;
-        discret_->SetState("scatranp", scatraO2np_);
+        discret_->set_state("scatranp", scatraO2np_);
         evaluation_data.acinar_vnp = acini_e_volumenp_;
 
         discret_->Evaluate(
@@ -1858,12 +1858,12 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
         evaluation_data.elemVolumenp = elemVolumenp_;
         eleparams.set("action", "eval_PO2_from_concentration");
 
-        const Epetra_Map* dofrowmap = discret_->DofRowMap();
+        const Epetra_Map* dofrowmap = discret_->dof_row_map();
         Teuchos::RCP<Epetra_Vector> po2 = CORE::LINALG::CreateVector(*dofrowmap, true);
         discret_->ClearState();
 
         evaluation_data.po2 = po2;
-        discret_->SetState("scatranp", acinarDO2_);
+        discret_->set_state("scatranp", acinarDO2_);
         evaluation_data.acinar_vnp = acini_e_volumenp_;
 
         discret_->Evaluate(
@@ -2141,9 +2141,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
 }  // RedAirwayImplicitTimeInt::Output
 
 /*----------------------------------------------------------------------*
- | ReadRestart (public)                                     ismail 01/10|
+ | read_restart (public)                                     ismail 01/10|
  -----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::ReadRestart(int step, bool coupledTo3D)
+void AIRWAY::RedAirwayImplicitTimeInt::read_restart(int step, bool coupledTo3D)
 {
   coupledTo3D_ = coupledTo3D;
   IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
@@ -2235,7 +2235,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::ReadRestart(int step, bool coupledTo3D)
     CORE::LINALG::Export(*jVDofRowMix_, *junctionVolumeInMix_);
   }
 
-}  // RedAirwayImplicitTimeInt::ReadRestart
+}  // RedAirwayImplicitTimeInt::read_restart
 
 
 /*----------------------------------------------------------------------*
@@ -2269,10 +2269,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual(
 
     // set vector values needed by elements
     discret_->ClearState();
-    discret_->SetState("pnp", pnp_);
-    discret_->SetState("pn", pn_);
-    discret_->SetState("pnm", pnm_);
-    discret_->SetState("intr_ac_link", n_intr_ac_ln_);
+    discret_->set_state("pnp", pnp_);
+    discret_->set_state("pn", pn_);
+    discret_->set_state("pnm", pnm_);
+    discret_->set_state("intr_ac_link", n_intr_ac_ln_);
 
     // note: We use an RCP because ParameterList wants something printable and comparable
     DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
@@ -2350,12 +2350,12 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual(
 
     // set vector values needed by elements
     discret_->ClearState();
-    discret_->SetState("pnp", pnp_);
-    discret_->SetState("pn", pn_);
-    discret_->SetState("pnm", pnm_);
-    //    discret_->SetState("qcnp",qcnp_);
-    //    discret_->SetState("qcn" ,qcn_ );
-    //    discret_->SetState("qcnm",qcnm_);
+    discret_->set_state("pnp", pnp_);
+    discret_->set_state("pn", pn_);
+    discret_->set_state("pnm", pnm_);
+    //    discret_->set_state("qcnp",qcnp_);
+    //    discret_->set_state("qcn" ,qcn_ );
+    //    discret_->set_state("qcnm",qcnm_);
     // note: We use an RCP because ParameterList wants something printable and comparable
     DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 

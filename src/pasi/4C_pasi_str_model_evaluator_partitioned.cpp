@@ -33,7 +33,7 @@ STR::MODELEVALUATOR::PartitionedPASI::PartitionedPASI()
 void STR::MODELEVALUATOR::PartitionedPASI::Setup()
 {
   // pasi interface force at t_{n+1}
-  interface_force_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMap(), true));
+  interface_force_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*GState().dof_row_map(), true));
 
   // set flag
   issetup_ = true;
@@ -42,25 +42,25 @@ void STR::MODELEVALUATOR::PartitionedPASI::Setup()
 Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::PartitionedPASI::get_block_dof_row_map_ptr()
     const
 {
-  CheckInitSetup();
-  return GState().DofRowMap();
+  check_init_setup();
+  return GState().dof_row_map();
 }
 
 Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedPASI::get_current_solution_ptr()
     const
 {
-  CheckInit();
+  check_init();
   return GState().GetDisNp();
 }
 
 Teuchos::RCP<const Epetra_Vector>
 STR::MODELEVALUATOR::PartitionedPASI::get_last_time_step_solution_ptr() const
 {
-  CheckInit();
+  check_init();
   return GState().GetDisN();
 }
 
-bool STR::MODELEVALUATOR::PartitionedPASI::AssembleForce(
+bool STR::MODELEVALUATOR::PartitionedPASI::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
   CORE::LINALG::AssembleMyVector(1.0, f, -timefac_np, *interface_force_np_ptr_);

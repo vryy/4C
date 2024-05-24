@@ -38,7 +38,7 @@ void DRT::Discretization::ExportRowNodes(const Epetra_Map& newmap, bool killdofs
   }
 
   // build rowmap of nodes noderowmap_ if it does not exist
-  if (noderowmap_ == Teuchos::null) BuildNodeRowMap();
+  if (noderowmap_ == Teuchos::null) build_node_row_map();
   const Epetra_Map& oldmap = *noderowmap_;
 
   // create an exporter object that will figure out the communication pattern
@@ -70,7 +70,7 @@ void DRT::Discretization::ExportColumnNodes(const Epetra_Map& newmap, bool killd
   }
 
   // build rowmap of nodes noderowmap_ if it does not exist
-  if (noderowmap_ == Teuchos::null) BuildNodeRowMap();
+  if (noderowmap_ == Teuchos::null) build_node_row_map();
   const Epetra_Map& oldmap = *noderowmap_;
 
   // test whether all nodes in oldmap are also in newmap, otherwise
@@ -158,7 +158,7 @@ void DRT::Discretization::proc_zero_distribute_elements_to_all(
     for (std::map<int, std::vector<char>>::iterator fool = sendmap.begin(); fool != sendmap.end();
          ++fool)
     {
-      exporter.ISend(
+      exporter.i_send(
           0, fool->first, fool->second.data(), (int)fool->second.size(), tag, request[tag]);
       tag++;
     }
@@ -186,7 +186,7 @@ void DRT::Discretization::proc_zero_distribute_elements_to_all(
       if (!ele) FOUR_C_THROW("Received object is not an element");
       ele->SetOwner(myrank);
       Teuchos::RCP<DRT::Element> rcpele = Teuchos::rcp(ele);
-      AddElement(rcpele);
+      add_element(rcpele);
       // printf("proc %d index %d\n",myrank,index); fflush(stdout);
     }
   }
@@ -207,7 +207,7 @@ void DRT::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& target)
 
   // proc 0 looks for nodes that are to be distributed
   Reset();
-  BuildNodeRowMap();
+  build_node_row_map();
   const Epetra_Map& oldmap = *noderowmap_;
   int size = oldmap.NumMyElements();
   if (myrank) size = 0;
@@ -272,7 +272,7 @@ void DRT::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& target)
     for (std::map<int, std::vector<char>>::iterator fool = sendmap.begin(); fool != sendmap.end();
          ++fool)
     {
-      exporter.ISend(
+      exporter.i_send(
           0, fool->first, fool->second.data(), (int)fool->second.size(), tag, request[tag]);
       tag++;
     }
@@ -333,7 +333,7 @@ void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap, bool killd
   }
 
   // build map of elements elerowmap_ if it does not exist
-  if (elerowmap_ == Teuchos::null) BuildElementRowMap();
+  if (elerowmap_ == Teuchos::null) build_element_row_map();
   const Epetra_Map& oldmap = *elerowmap_;
 
   // create an exporter object that will figure out the communication pattern
@@ -365,7 +365,7 @@ void DRT::Discretization::export_column_elements(
   }
 
   // build map of elements elerowmap_ if it does not exist
-  if (elerowmap_ == Teuchos::null) BuildElementRowMap();
+  if (elerowmap_ == Teuchos::null) build_element_row_map();
   const Epetra_Map& oldmap = *elerowmap_;
 
   // test whether all elements in oldmap are also in newmap
@@ -389,7 +389,7 @@ void DRT::Discretization::export_column_elements(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_CrsGraph> DRT::Discretization::BuildNodeGraph() const
 {
-  if (!Filled()) FOUR_C_THROW("FillComplete() was not called on this discretization");
+  if (!Filled()) FOUR_C_THROW("fill_complete() was not called on this discretization");
 
   // get nodal row map
   const Epetra_Map* noderowmap = NodeRowMap();
@@ -406,7 +406,7 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::Discretization::BuildNodeGraph() const
   std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator curr;
   for (curr = element_.begin(); curr != element_.end(); ++curr)
   {
-    const int nnode = curr->second->NumNode();
+    const int nnode = curr->second->num_node();
     const int* nodeids = curr->second->NodeIds();
     for (int row = 0; row < nnode; ++row)
     {
@@ -484,7 +484,7 @@ DRT::Discretization::build_element_row_column(
   {
     const DRT::Element& actele = *(ecurr->second);
     int gid = actele.Id();
-    int nnode = actele.NumNode();
+    int nnode = actele.num_node();
     const int* nodeids = actele.NodeIds();
     if (count + nnode + 2 >= stoposize)
     {
@@ -637,9 +637,9 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap, const Epetr
   export_column_elements(*elecolmap, killdofs, killcond);
 
   // these exports have set Filled()=false as all maps are invalid now
-  int err = FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
+  int err = fill_complete(assigndegreesoffreedom, initelements, doboundaryconditions);
 
-  if (err) FOUR_C_THROW("FillComplete() returned err=%d", err);
+  if (err) FOUR_C_THROW("fill_complete() returned err=%d", err);
 }
 
 /*----------------------------------------------------------------------*
@@ -655,9 +655,9 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap, const Epetr
   export_column_elements(elecolmap, killdofs, killcond);
 
   // these exports have set Filled()=false as all maps are invalid now
-  int err = FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
+  int err = fill_complete(assigndegreesoffreedom, initelements, doboundaryconditions);
 
-  if (err) FOUR_C_THROW("FillComplete() returned err=%d", err);
+  if (err) FOUR_C_THROW("fill_complete() returned err=%d", err);
 }
 
 /*----------------------------------------------------------------------*
@@ -742,7 +742,7 @@ void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap, bool ass
   {
     DRT::Element* ele = this->gElement(elecolmap.GID(lid));
     const int* nodeids = ele->NodeIds();
-    for (int inode = 0; inode < ele->NumNode(); ++inode)
+    for (int inode = 0; inode < ele->num_node(); ++inode)
     {
       nodes.insert(nodeids[inode]);
 
@@ -799,8 +799,8 @@ void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap, bool ass
   ExportColumnNodes(*nodecolmap);
 
   // these exports have set Filled()=false as all maps are invalid now
-  int err = FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
-  if (err) FOUR_C_THROW("FillComplete() threw error code %d", err);
+  int err = fill_complete(assigndegreesoffreedom, initelements, doboundaryconditions);
+  if (err) FOUR_C_THROW("fill_complete() threw error code %d", err);
 }
 
 /*----------------------------------------------------------------------*
@@ -817,7 +817,7 @@ void DRT::Discretization::SetupGhosting(
   for (std::map<int, Teuchos::RCP<DRT::Element>>::iterator i = element_.begin();
        i != element_.end(); ++i)
   {
-    int numnodes = i->second->NumNode();
+    int numnodes = i->second->num_node();
     const int* nodes = i->second->NodeIds();
 
     // loop nodes and add this topology to the row in the graph of every node

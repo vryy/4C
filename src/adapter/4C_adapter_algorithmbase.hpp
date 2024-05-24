@@ -37,7 +37,7 @@ namespace ADAPTER
     /// virtual destruction
     virtual ~AlgorithmBase() = default;
     /// read restart data
-    virtual void ReadRestart(int step) = 0;
+    virtual void read_restart(int step) = 0;
 
     /// communicator
     const Epetra_Comm& Comm() const { return comm_; }
@@ -49,7 +49,7 @@ namespace ADAPTER
     double Dt() const { return dt_; }
 
     /// set time step size
-    void SetDt(const double stepsize) { dt_ = stepsize; }
+    void set_dt(const double stepsize) { dt_ = stepsize; }
 
     /// current time
     double Time() const { return time_; }
@@ -57,7 +57,7 @@ namespace ADAPTER
     /// current time step number
     int Step() const { return step_; }
 
-    /// set new time step in ReadRestart() or in a potential outer control
+    /// set new time step in read_restart() or in a potential outer control
     void SetTimeStep(const double time,  ///< physical time to set
         const int step                   ///< time step number to set
     );
@@ -79,7 +79,7 @@ namespace ADAPTER
     }
 
     /// start a new time step
-    virtual void PrepareTimeStep() {}
+    virtual void prepare_time_step() {}
 
     /// take current results for converged and save for next time step
     virtual void Update() {}

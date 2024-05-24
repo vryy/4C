@@ -151,7 +151,7 @@ namespace CORE::GEO
       /** \brief Float_type for geometric distance computation */
       INPAR::CUT::CutFloattype geomdistance_floattype_;
 
-      /** \brief Float_type used in CORE::GEO::CUT::POSITION for ComputeDistance*/
+      /** \brief Float_type used in CORE::GEO::CUT::POSITION for compute_distance*/
       INPAR::CUT::CutFloattype general_position_dist_floattype_;
 
       /** \brief Float_type used in CORE::GEO::CUT::POSITION for ComputePosition*/

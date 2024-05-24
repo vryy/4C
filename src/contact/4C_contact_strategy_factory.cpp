@@ -55,17 +55,17 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------------*/
 void CONTACT::STRATEGY::Factory::Setup()
 {
-  CheckInit();
+  check_init();
   MORTAR::STRATEGY::Factory::Setup();
 
-  SetIsSetup();
+  set_is_setup();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& params) const
+void CONTACT::STRATEGY::Factory::read_and_check_input(Teuchos::ParameterList& params) const
 {
-  CheckInit();
+  check_init();
   // console output at the beginning
   if (Comm().MyPID() == 0)
   {
@@ -578,11 +578,11 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
       // rauch 01/16
       if (Comm().MyPID() == 0)
       {
-        std::cout
-            << "\n \n  Warning: CONTACT::STRATEGY::Factory::ReadAndCheckInput() reads TIMESTEP = "
-            << timestep << " from GLOBAL::Problem::Instance()->TSIDynamicParams().  \n"
-            << "Anyway, you should not use the \"TIMESTEP\" variable inside of "
-            << "the new structural/contact framework!" << std::endl;
+        std::cout << "\n \n  Warning: CONTACT::STRATEGY::Factory::read_and_check_input() reads "
+                     "TIMESTEP = "
+                  << timestep << " from GLOBAL::Problem::Instance()->TSIDynamicParams().  \n"
+                  << "Anyway, you should not use the \"TIMESTEP\" variable inside of "
+                  << "the new structural/contact framework!" << std::endl;
       }
       params.set<double>("TIMESTEP", timestep);
       break;
@@ -714,7 +714,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
   // maximum dof number in discretization
   // later we want to create NEW Lagrange multiplier degrees of
   // freedom, which of course must not overlap with displacement dofs
-  int maxdof = Discret().DofRowMap()->MaxAllGID();
+  int maxdof = Discret().dof_row_map()->MaxAllGID();
 
   // get input par.
   auto stype = CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY");
@@ -1142,7 +1142,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
         if (dbc_slave_eles.find(ele.get()) != dbc_slave_eles.end()) continue;
 
         Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(ele->Id() + ggsize,
-            ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), isslave[j], nurbs));
+            ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), isslave[j], nurbs));
 
         if (isporo) set_poro_parent_element(slavetype, mastertype, cele, ele, Discret());
 
@@ -1153,10 +1153,10 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
           Teuchos::RCP<DRT::FaceElement> faceele =
               Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
           if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
-          if (faceele->ParentElement() == nullptr) FOUR_C_THROW("face parent does not exist");
-          if (discret->ElementColMap()->LID(faceele->ParentElement()->Id()) == -1)
+          if (faceele->parent_element() == nullptr) FOUR_C_THROW("face parent does not exist");
+          if (discret->ElementColMap()->LID(faceele->parent_element()->Id()) == -1)
             FOUR_C_THROW("vol dis does not have parent ele");
-          cele->set_parent_master_element(faceele->ParentElement(), faceele->FaceParentNumber());
+          cele->set_parent_master_element(faceele->parent_element(), faceele->FaceParentNumber());
         }
 
         //------------------------------------------------------------------
@@ -1166,14 +1166,14 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
           PrepareNURBSElement(Discret(), ele, cele);
         }
 
-        interface->AddElement(cele);
+        interface->add_element(cele);
       }  // for (fool=ele1.start(); fool != ele1.end(); ++fool)
 
       ggsize += gsize;  // update global element counter
     }
 
     //-------------------- finalize the contact interface construction
-    interface->FillComplete(true, maxdof);
+    interface->fill_complete(true, maxdof);
 
     if (isporo)
       find_poro_interface_types(
@@ -1207,11 +1207,11 @@ void CONTACT::STRATEGY::Factory::fully_overlapping_interfaces(
       const Epetra_Map& srownodes_ii = *iinterface.SlaveRowNodes();
       const Epetra_Map& mrownodes_ii = *iinterface.MasterRowNodes();
 
-      const int sl_fullsubset_id = IdentifyFullSubset(srownodes_i, srownodes_ii);
+      const int sl_fullsubset_id = identify_full_subset(srownodes_i, srownodes_ii);
       if (sl_fullsubset_id != -1)
         FOUR_C_THROW("Currently the slave element maps are not allowed to overlap!");
 
-      const int ma_fullsubset_id = IdentifyFullSubset(mrownodes_i, mrownodes_ii);
+      const int ma_fullsubset_id = identify_full_subset(mrownodes_i, mrownodes_ii);
 
       // handle fully overlapping master interfaces
       if (ma_fullsubset_id == 0)
@@ -1261,7 +1261,7 @@ void CONTACT::STRATEGY::Factory::fully_overlapping_interfaces(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CONTACT::STRATEGY::Factory::IdentifyFullSubset(
+int CONTACT::STRATEGY::Factory::identify_full_subset(
     const Epetra_Map& map_0, const Epetra_Map& map_1, bool throw_if_partial_subset_on_proc) const
 {
   const Epetra_Map* ref_map = nullptr;
@@ -1483,7 +1483,7 @@ void CONTACT::STRATEGY::Factory::set_poro_parent_element(
       for (eleitergeometry = poroCond->Geometry().begin();
            eleitergeometry != poroCond->Geometry().end(); ++eleitergeometry)
       {
-        if (faceele->ParentElement()->Id() == eleitergeometry->second->Id())
+        if (faceele->parent_element()->Id() == eleitergeometry->second->Id())
         {
           if (mastertype == MORTAR::Element::poro)
           {
@@ -1514,7 +1514,7 @@ void CONTACT::STRATEGY::Factory::set_poro_parent_element(
       for (eleitergeometry = poroCond->Geometry().begin();
            eleitergeometry != poroCond->Geometry().end(); ++eleitergeometry)
       {
-        if (faceele->ParentElement()->Id() == eleitergeometry->second->Id())
+        if (faceele->parent_element()->Id() == eleitergeometry->second->Id())
         {
           if (slavetype == MORTAR::Element::structure)
           {
@@ -1539,7 +1539,7 @@ void CONTACT::STRATEGY::Factory::set_poro_parent_element(
   }
   // store information about parent for porous contact (required for calculation of deformation
   // gradient!) in every contact element although only really needed for phystype poro
-  cele->set_parent_master_element(faceele->ParentElement(), faceele->FaceParentNumber());
+  cele->set_parent_master_element(faceele->parent_element(), faceele->FaceParentNumber());
 }
 
 /*----------------------------------------------------------------------------*
@@ -1659,7 +1659,8 @@ Teuchos::RCP<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrateg
   Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr = Teuchos::null;
 
   return BuildStrategy(stype, params, poroslave, poromaster, dof_offset, interfaces,
-      Discret().DofRowMap(), Discret().NodeRowMap(), Dim(), CommPtr(), data_ptr, cparams_interface);
+      Discret().dof_row_map(), Discret().NodeRowMap(), Dim(), CommPtr(), data_ptr,
+      cparams_interface);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1851,13 +1852,13 @@ void CONTACT::STRATEGY::Factory::Print(
       double checkfrcoeff = 0.0;
       if (ftype == INPAR::CONTACT::friction_tresca)
       {
-        checkfrcoeff = interfaces[i]->InterfaceParams().get<double>("FRBOUND");
+        checkfrcoeff = interfaces[i]->interface_params().get<double>("FRBOUND");
         std::cout << std::endl << "Interface         " << i + 1 << std::endl;
         std::cout << "FrBound (Tresca)  " << checkfrcoeff << std::endl;
       }
       else if (ftype == INPAR::CONTACT::friction_coulomb)
       {
-        checkfrcoeff = interfaces[i]->InterfaceParams().get<double>("FRCOEFF");
+        checkfrcoeff = interfaces[i]->interface_params().get<double>("FRCOEFF");
         std::cout << std::endl << "Interface         " << i + 1 << std::endl;
         std::cout << "FrCoeff (Coulomb) " << checkfrcoeff << std::endl;
       }

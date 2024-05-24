@@ -79,7 +79,7 @@ namespace CORE::GEN
     Pairedmatrix(const inner_pairedvector_type& source, enum GEN::CopyType type = DeepCopy)
         : base_type(), max_row_capacity_(0)
     {
-      const size_t src_max_row_capacity = maxRowCapacity(source);
+      const size_t src_max_row_capacity = max_row_capacity(source);
       clear(default_pair(src_max_row_capacity));
       resize(source.capacity(), src_max_row_capacity);
 
@@ -137,7 +137,7 @@ namespace CORE::GEN
 
     void clone(const base_type& source, const enum CopyType type)
     {
-      const size_t src_row_capacity = maxRowCapacity(source);
+      const size_t src_row_capacity = max_row_capacity(source);
       clear(src_row_capacity);
       resize(source.capacity(), src_row_capacity);
 
@@ -179,7 +179,7 @@ namespace CORE::GEN
 
       os << "CORE::GEN::pairedmatrix [size= " << base_type::size()
          << ", capacity=" << base_type::capacity()
-         << ", max. capacity per row=" << maxRowCapacity(*this) << "]\n";
+         << ", max. capacity per row=" << max_row_capacity(*this) << "]\n";
       if (sort) os << "sorted ";
       os << "entries {KEY, T}:\n";
       for (auto& p : sorted_m) os << "{" << p.first << ", " << p.second << "}\n";
@@ -224,7 +224,7 @@ namespace CORE::GEN
      *  @param mat %pairedmatrix object we want to investigate.
      *
      *  @author hiermeier @date 05/17 */
-    inline size_t maxRowCapacity(const base_type& mat) const
+    inline size_t max_row_capacity(const base_type& mat) const
     {
       size_t max_row_capacity = 0;
       for (const pair_type& row : mat.data())
@@ -381,7 +381,7 @@ namespace CORE::GEN
    *
    *  @author hiermeier @date 03/17 */
   template <typename paired_type>
-  inline size_t increaseCapacity(paired_type& paired_obj)
+  inline size_t increase_capacity(paired_type& paired_obj)
   {
     size_t new_capacity = paired_obj.capacity();
 

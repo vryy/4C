@@ -166,7 +166,7 @@ namespace DRT
 
 
       //! get poro diffusion manager
-      Teuchos::RCP<ScaTraEleDiffManagerPoro> DiffManager()
+      Teuchos::RCP<ScaTraEleDiffManagerPoro> diff_manager()
       {
         return Teuchos::rcp_static_cast<ScaTraEleDiffManagerPoro>(my::diffmanager_);
       };

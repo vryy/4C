@@ -64,11 +64,11 @@ void PARTICLEINTERACTION::ParticleInteractionBase::WriteRestart() const
   // nothing to do
 }
 
-void PARTICLEINTERACTION::ParticleInteractionBase::ReadRestart(
+void PARTICLEINTERACTION::ParticleInteractionBase::read_restart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // read restart of particle interaction writer
-  particleinteractionwriter_->ReadRestart(reader);
+  particleinteractionwriter_->read_restart(reader);
 }
 
 void PARTICLEINTERACTION::ParticleInteractionBase::
@@ -103,12 +103,13 @@ void PARTICLEINTERACTION::ParticleInteractionBase::
   }
 }
 
-void PARTICLEINTERACTION::ParticleInteractionBase::SetCurrentTime(const double currenttime)
+void PARTICLEINTERACTION::ParticleInteractionBase::set_current_time(const double currenttime)
 {
   time_ = currenttime;
 }
 
-void PARTICLEINTERACTION::ParticleInteractionBase::SetCurrentStepSize(const double currentstepsize)
+void PARTICLEINTERACTION::ParticleInteractionBase::set_current_step_size(
+    const double currentstepsize)
 {
   dt_ = currentstepsize;
 }

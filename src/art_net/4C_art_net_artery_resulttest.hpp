@@ -56,7 +56,7 @@ namespace ART
     /*!
       Possible position flags is only "phi"
      */
-    void TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_node(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
     /// our version of element value tests
     void TestElement(INPUT::LineDefinition& res, int& nerr, int& test_count) override;

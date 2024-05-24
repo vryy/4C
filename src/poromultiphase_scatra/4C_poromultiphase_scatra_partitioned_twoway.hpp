@@ -48,7 +48,7 @@ namespace POROMULTIPHASESCATRA
     void print_header_partitioned();
 
     /// print header
-    void IterUpdateStates();
+    void iter_update_states();
 
     //! perform iteration loop between fields
     virtual void Solve() = 0;
@@ -62,7 +62,7 @@ namespace POROMULTIPHASESCATRA
     void DoScatraStep();
 
     //! convergence check of outer loop
-    bool ConvergenceCheck(int itnum);
+    bool convergence_check(int itnum);
 
     //! scalar increment of the outer loop
     Teuchos::RCP<Epetra_Vector> scaincnp_;

@@ -152,8 +152,8 @@ namespace DRT
 
           // get global node ids
           std::vector<int> nids;
-          nids.reserve(sourceele->NumNode());
-          transform(sourceele->Nodes(), sourceele->Nodes() + sourceele->NumNode(),
+          nids.reserve(sourceele->num_node());
+          transform(sourceele->Nodes(), sourceele->Nodes() + sourceele->num_node(),
               back_inserter(nids), std::mem_fn(&DRT::Node::Id));
 
           // check if element has nodes which are not in col map on this proc.
@@ -191,7 +191,7 @@ namespace DRT
               condele->SetNodeIds(nids.size(), nids.data());
             }
             // add element
-            targetdis->AddElement(condele);
+            targetdis->add_element(condele);
             roweleset_.insert(sourceele->Id());
           }
           coleleset_.insert(sourceele->Id());
@@ -232,7 +232,7 @@ namespace DRT
         // conditioned subset of the source discretiztation.
         numeleskips_++;
 
-        // call Redistribute, FillComplete etc.
+        // call Redistribute, fill_complete etc.
         Finalize(sourcedis, *targetdis);
 
         return targetdis;
@@ -372,7 +372,7 @@ namespace DRT
 
         // check and analyze source discretization
         InitialChecks(*sourcedis, *targetdis);
-        AnalyzeSourceDis(sourcedis, eletype_, rownodeset_, colnodeset_, roweleset_, coleleset_);
+        analyze_source_dis(sourcedis, eletype_, rownodeset_, colnodeset_, roweleset_, coleleset_);
 
         // do the node business
         CreateNodes(
@@ -381,7 +381,7 @@ namespace DRT
         targetnodecolmap_ = CreateMap(colnodeset_, *targetdis);
 
         // create elements
-        CreateElements(sourcedis, targetdis, matmap, isnurbsdis);
+        create_elements(sourcedis, targetdis, matmap, isnurbsdis);
         targetelerowmap_ = CreateMap(roweleset_, *targetdis);
         targetelecolmap_ = CreateMap(coleleset_, *targetdis);
 
@@ -389,7 +389,7 @@ namespace DRT
         const auto conditions_to_copy = CloneStrategy::ConditionsToCopy();
         CopyConditions(*sourcedis, *targetdis, conditions_to_copy);
 
-        // call Redistribute, FillComplete etc.
+        // call Redistribute, fill_complete etc.
         Finalize(*sourcedis, *targetdis);
       };  // create_matching_discretization
 
@@ -480,12 +480,12 @@ namespace DRT
         const auto conditions_to_copy = CloneStrategy::ConditionsToCopy();
         CopyConditions(sourcedis, targetdis, conditions_to_copy);
 
-        // call Redistribute, FillComplete etc.
+        // call Redistribute, fill_complete etc.
         Finalize(sourcedis, targetdis);
       };  // create_matching_discretization_from_condition with material
 
       /// get element type std::strings and global id's and nodes from source discretization
-      void AnalyzeSourceDis(Teuchos::RCP<DRT::Discretization> sourcedis,
+      void analyze_source_dis(Teuchos::RCP<DRT::Discretization> sourcedis,
           std::vector<std::string>& eletype, std::set<int>& rownodeset, std::set<int>& colnodeset,
           std::set<int>& roweleset, std::set<int>& coleleset)
       {
@@ -514,18 +514,18 @@ namespace DRT
 
             // copy node ids of actele to rownodeset but leave those that do
             // not belong to this processor
-            remove_copy_if(actele->NodeIds(), actele->NodeIds() + actele->NumNode(),
+            remove_copy_if(actele->NodeIds(), actele->NodeIds() + actele->num_node(),
                 inserter(rownodeset, rownodeset.begin()),
                 std::not_fn(CORE::Conditions::MyGID(noderowmap)));
 
-            copy(actele->NodeIds(), actele->NodeIds() + actele->NumNode(),
+            copy(actele->NodeIds(), actele->NodeIds() + actele->num_node(),
                 inserter(colnodeset, colnodeset.begin()));
           }
           else
             numeleskips_++;
         }  // loop over my elements
         return;
-      };  // AnalyzeSourceDis
+      };  // analyze_source_dis
 
       /// get element type std::strings and global id's and nodes from conditioned source
       /// discretization
@@ -564,8 +564,8 @@ namespace DRT
 
             // get global node ids
             std::vector<int> nids;
-            nids.reserve(actele->NumNode());
-            transform(actele->Nodes(), actele->Nodes() + actele->NumNode(), back_inserter(nids),
+            nids.reserve(actele->num_node());
+            transform(actele->Nodes(), actele->Nodes() + actele->num_node(), back_inserter(nids),
                 std::mem_fn(&DRT::Node::Id));
 
             // check if element has nodes, which are not in col map on this proc.
@@ -596,7 +596,7 @@ namespace DRT
       };  // analyze_conditioned_source_dis
 
       /// create new elements and add them to the target discretization
-      void CreateElements(Teuchos::RCP<DRT::Discretization> sourcedis,
+      void create_elements(Teuchos::RCP<DRT::Discretization> sourcedis,
           Teuchos::RCP<DRT::Discretization> targetdis, std::map<int, int> matmap,
           const bool isnurbsdis)
       {
@@ -621,27 +621,27 @@ namespace DRT
           std::string approxtype = "Polynomial";
           if (isnurbsdis)
           {
-            if (sourceele->NumNode() == 8)
+            if (sourceele->num_node() == 8)
             {
               approxtype = "NURBS8";
             }
-            else if (sourceele->NumNode() == 9)
+            else if (sourceele->num_node() == 9)
             {
               approxtype = "NURBS9";
             }
-            else if (sourceele->NumNode() == 4)
+            else if (sourceele->num_node() == 4)
             {
               approxtype = "NURBS4";
             }
-            else if (sourceele->NumNode() == 27)
+            else if (sourceele->num_node() == 27)
             {
               approxtype = "NURBS27";
             }
-            else if (sourceele->NumNode() == 2)
+            else if (sourceele->num_node() == 2)
             {
               approxtype = "NURBS2";
             }
-            else if (sourceele->NumNode() == 3)
+            else if (sourceele->num_node() == 3)
             {
               approxtype = "NURBS3";
             }
@@ -657,8 +657,8 @@ namespace DRT
 
           // get global node ids of source element
           std::vector<int> nids;
-          nids.reserve(sourceele->NumNode());
-          transform(sourceele->Nodes(), sourceele->Nodes() + sourceele->NumNode(),
+          nids.reserve(sourceele->num_node());
+          transform(sourceele->Nodes(), sourceele->Nodes() + sourceele->num_node(),
               back_inserter(nids), std::mem_fn(&DRT::Node::Id));
 
           // set the same global node ids to the new element
@@ -677,7 +677,7 @@ namespace DRT
             CloneStrategy::SetElementData(newele, sourceele, tar_matid, isnurbsdis);
 
             // add new element to discretization
-            targetdis->AddElement(newele);
+            targetdis->add_element(newele);
           }
           else
           {
@@ -691,7 +691,7 @@ namespace DRT
           it++;
         }
         return;
-      };  // CreateElements
+      };  // create_elements
 
       /// create new elements from the condition and add them to the target discretization
       void create_elements_from_condition(
@@ -729,27 +729,27 @@ namespace DRT
           std::string approxtype = "Polynomial";
           if (isnurbsdis)
           {
-            if (sourceele->NumNode() == 8)
+            if (sourceele->num_node() == 8)
             {
               approxtype = "NURBS8";
             }
-            else if (sourceele->NumNode() == 9)
+            else if (sourceele->num_node() == 9)
             {
               approxtype = "NURBS9";
             }
-            else if (sourceele->NumNode() == 4)
+            else if (sourceele->num_node() == 4)
             {
               approxtype = "NURBS4";
             }
-            else if (sourceele->NumNode() == 27)
+            else if (sourceele->num_node() == 27)
             {
               approxtype = "NURBS27";
             }
-            else if (sourceele->NumNode() == 2)
+            else if (sourceele->num_node() == 2)
             {
               approxtype = "NURBS2";
             }
-            else if (sourceele->NumNode() == 3)
+            else if (sourceele->num_node() == 3)
             {
               approxtype = "NURBS3";
             }
@@ -771,8 +771,8 @@ namespace DRT
 
           // get global node ids of fluid element
           std::vector<int> nids;
-          nids.reserve(sourceele->NumNode());
-          transform(sourceele->Nodes(), sourceele->Nodes() + sourceele->NumNode(),
+          nids.reserve(sourceele->num_node());
+          transform(sourceele->Nodes(), sourceele->Nodes() + sourceele->num_node(),
               back_inserter(nids), std::mem_fn(&DRT::Node::Id));
 
           // set the same global node ids to the new element
@@ -790,7 +790,7 @@ namespace DRT
           {
             DRT::FaceElement* src_face_element = dynamic_cast<DRT::FaceElement*>(sourceele);
             if (src_face_element != nullptr)
-              mat_ptr = src_face_element->ParentElement()->Material();
+              mat_ptr = src_face_element->parent_element()->Material();
           }
           // It is no FaceElement or the material pointer of the parent element is nullptr.
           if (mat_ptr.is_null()) FOUR_C_THROW("The condition element has no material!");
@@ -803,7 +803,7 @@ namespace DRT
             CloneStrategy::SetElementData(newele, sourceele, tar_matid, isnurbsdis);
 
             // add new element to discretization
-            targetdis.AddElement(newele);
+            targetdis.add_element(newele);
           }
           else
           {

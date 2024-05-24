@@ -70,7 +70,7 @@ void LAGPENCONSTRAINT::NoxInterfacePrec::Init(
  *----------------------------------------------------------------------------*/
 void LAGPENCONSTRAINT::NoxInterface::Setup()
 {
-  CheckInit();
+  check_init();
 
   // set flag at the end
   issetup_ = true;
@@ -79,7 +79,7 @@ void LAGPENCONSTRAINT::NoxInterface::Setup()
  *----------------------------------------------------------------------------*/
 void LAGPENCONSTRAINT::NoxInterfacePrec::Setup()
 {
-  CheckInit();
+  check_init();
 
   // set flag at the end
   issetup_ = true;
@@ -241,7 +241,7 @@ bool LAGPENCONSTRAINT::NoxInterfacePrec::computePreconditioner(
     const Epetra_Vector& x, Epetra_Operator& M, Teuchos::ParameterList* precParams)
 {
   //  std::cout << "computePreconditioner" << std::endl;
-  CheckInitSetup();
+  check_init_setup();
   // currently not supported
   // ToDo add the scaled thickness conditioning (STC) approach here
   return false;

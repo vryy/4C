@@ -62,7 +62,7 @@ namespace ADAPTER
     virtual void TimeLoop() = 0;
 
     /// read restart data
-    void ReadRestart(int step  ///< step number where the calculation is continued
+    void read_restart(int step  ///< step number where the calculation is continued
         ) override;
 
    protected:
@@ -82,7 +82,7 @@ namespace ADAPTER
 
    private:
     /// setup adapters for transport on boundary if necessary
-    void SetupFieldCoupling(const std::string fluid_disname, const std::string scatra_disname);
+    void setup_field_coupling(const std::string fluid_disname, const std::string scatra_disname);
 
     /// flag for type of field coupling (i.e. matching or volmortar)
     INPAR::SCATRA::FieldCoupling fieldcoupling_;
@@ -105,29 +105,29 @@ namespace ADAPTER
 
    protected:
     //! returns true if Setup() was called and is still valid
-    bool IsSetup() { return issetup_; };
+    bool is_setup() { return issetup_; };
 
     //! returns true if Init(..) was called and is still valid
-    bool IsInit() { return isinit_; };
+    bool is_init() { return isinit_; };
 
     //! check if \ref Setup() was called
     void CheckIsSetup()
     {
-      if (not IsSetup()) FOUR_C_THROW("Setup() was not called.");
+      if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
     };
 
     //! check if \ref Init() was called
-    void CheckIsInit()
+    void check_is_init()
     {
-      if (not IsInit()) FOUR_C_THROW("Init(...) was not called.");
+      if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
     };
 
    public:
     //! set flag true after setup or false if setup became invalid
-    void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; };
+    void set_is_setup(bool trueorfalse) { issetup_ = trueorfalse; };
 
     //! set flag true after init or false if init became invalid
-    void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
+    void set_is_init(bool trueorfalse) { isinit_ = trueorfalse; };
   };
 
 }  // namespace ADAPTER

@@ -241,9 +241,9 @@ void MAT::Mixture::Setup(const int numgp, INPUT::LineDefinition* linedef)
 }
 
 // Post setup routine -> Call Setup of constituents and mixture rule
-void MAT::Mixture::PostSetup(Teuchos::ParameterList& params, const int eleGID)
+void MAT::Mixture::post_setup(Teuchos::ParameterList& params, const int eleGID)
 {
-  So3Material::PostSetup(params, eleGID);
+  So3Material::post_setup(params, eleGID);
   anisotropy_.read_anisotropy_from_parameter_list(params);
   if (constituents_ != nullptr)
   {
@@ -280,18 +280,18 @@ void MAT::Mixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
 {
-  // check, whether the PostSetup method was already called
-  if (!setup_) FOUR_C_THROW("The material's PostSetup() method has not been called yet.");
+  // check, whether the post_setup method was already called
+  if (!setup_) FOUR_C_THROW("The material's post_setup() method has not been called yet.");
 
   if (!is_pre_evaluated_[gp])
   {
     for (const auto& constituent : *constituents_)
     {
       is_pre_evaluated_[gp] = true;
-      constituent->PreEvaluate(*mixture_rule_, params, gp, eleGID);
+      constituent->pre_evaluate(*mixture_rule_, params, gp, eleGID);
     }
 
-    mixture_rule_->PreEvaluate(params, gp, eleGID);
+    mixture_rule_->pre_evaluate(params, gp, eleGID);
   }
 
   // Evaluate mixturerule

@@ -83,7 +83,7 @@ CORE::LINALG::SolverParams NOX::NLN::MESHTYING::LinearSystem::SetSolverOptions(
     // dynamic cast of the required/rhs interface
     Teuchos::RCP<NOX::NLN::Interface::Required> iNlnReq =
         Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Required>(reqInterfacePtr_);
-    if (iNlnReq.is_null()) throwError("setSolverOptions", "required interface cast failed");
+    if (iNlnReq.is_null()) throw_error("setSolverOptions", "required interface cast failed");
 
     double worst = iNlnReq->CalcRefNormForce();
     // This value has to be specified in the PrePostOperator object of
@@ -155,7 +155,7 @@ NOX::NLN::SolutionType NOX::NLN::MESHTYING::LinearSystem::GetActiveLinSolver(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::MESHTYING::LinearSystem::throwError(
+void NOX::NLN::MESHTYING::LinearSystem::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   if (utils_.isPrintType(::NOX::Utils::Error))

@@ -47,7 +47,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
 
   //----------------------------------------------------------------------
   // allocate some vectors
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   meanvelnp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
@@ -156,7 +156,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
 
       // want to loop all control points of the element,
       // so get the number of points
-      const int numnp = actele->NumNode();
+      const int numnp = actele->num_node();
 
       // get the elements control points/nodes
       DRT::Node** nodes = actele->Nodes();
@@ -575,12 +575,12 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
 
   if (nurbsdis == nullptr) FOUR_C_THROW("Oops. Your discretization is not a NurbsDiscretization.");
 
-  nurbsdis->SetState("velnp", meanvelnp_);
+  nurbsdis->set_state("velnp", meanvelnp_);
 
   DRT::NURBS::NurbsDiscretization* scatranurbsdis(nullptr);
   if (withscatra_)
   {
-    nurbsdis->SetState("scanp", meanscanp_);
+    nurbsdis->set_state("scanp", meanscanp_);
 
     scatranurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*scatradis_));
     if (scatranurbsdis == nullptr)
@@ -589,11 +589,11 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     if (meanfullphinp_ == Teuchos::null)
       FOUR_C_THROW("Teuchos::RCP is Teuchos::null");
     else
-      scatranurbsdis->SetState("phinp_for_statistics", meanfullphinp_);
+      scatranurbsdis->set_state("phinp_for_statistics", meanfullphinp_);
 
-    if (not(scatranurbsdis->DofRowMap())->SameAs(meanfullphinp_->Map()))
+    if (not(scatranurbsdis->dof_row_map())->SameAs(meanfullphinp_->Map()))
     {
-      scatranurbsdis->DofRowMap()->Print(std::cout);
+      scatranurbsdis->dof_row_map()->Print(std::cout);
       meanfullphinp_->Map().Print(std::cout);
       FOUR_C_THROW("Global dof numbering in maps does not match");
     }
@@ -619,7 +619,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
 
     // want to loop all control points of the element,
     // so get the number of points
-    const int numnp = actele->NumNode();
+    const int numnp = actele->num_node();
 
     // get the elements control points/nodes
     DRT::Node** nodes = actele->Nodes();
@@ -1500,7 +1500,7 @@ void FLD::TurbulenceStatisticsCcy::AddScaTraResults(
       scatradis_ = scatradis;  // now we have access
 
     // we do not have to cast to a NURBSDiscretization here!
-    meanfullphinp_ = CORE::LINALG::CreateVector(*(scatradis_->DofRowMap()), true);
+    meanfullphinp_ = CORE::LINALG::CreateVector(*(scatradis_->dof_row_map()), true);
     numscatradofpernode_ = scatradis_->NumDof(scatradis_->lRowNode(0));
 
     // now we know about the number of scatra dofs and can allocate:

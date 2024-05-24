@@ -53,7 +53,7 @@ void CORE::GEO::CUT::CombIntersection::Cut(bool screenoutput)
   if (myrank_ == 0 and screenoutput) IO::cout << "\t\t...Finding cut points";
   double t_start = Teuchos::Time::wallTime();
 #endif
-  m.FindCutPoints();
+  m.find_cut_points();
 #if EXTENDED_CUT_DEBUG_OUTPUT
   double t_diff = Teuchos::Time::wallTime() - t_start;
   if (myrank_ == 0 and screenoutput)
@@ -103,7 +103,7 @@ void CORE::GEO::CUT::CombIntersection::FindNodePositions()
 }
 
 
-void CORE::GEO::CUT::CombIntersection::AddElement(int eid, const std::vector<int>& nids,
+void CORE::GEO::CUT::CombIntersection::add_element(int eid, const std::vector<int>& nids,
     const CORE::LINALG::SerialDenseMatrix& xyz, CORE::FE::CellType distype, const double* lsv,
     const bool lsv_only_plus_domain)
 {
@@ -119,13 +119,13 @@ void CORE::GEO::CUT::CombIntersection::AddElement(int eid, const std::vector<int
     // with pure negative level-set values (nodes in the ghost-domain) such that the
     // Dofset-Management does not produce degrees of freedom for such nodes
 
-    e = LevelSetIntersection::AddElement(eid, nids, xyz, distype, lsv, lsv_only_plus_domain);
+    e = LevelSetIntersection::add_element(eid, nids, xyz, distype, lsv, lsv_only_plus_domain);
   }
 
   // no check necessary if element lies within bounding box of cut surface
   if (e != nullptr) return;
 
-  MeshIntersection::AddElement(eid, nids, xyz, distype, lsv);
+  MeshIntersection::add_element(eid, nids, xyz, distype, lsv);
 }
 
 void CORE::GEO::CUT::CombIntersection::AddLevelSetSide(int levelset_side)
@@ -133,7 +133,7 @@ void CORE::GEO::CUT::CombIntersection::AddLevelSetSide(int levelset_side)
   LevelSetIntersection::AddCutSide(levelset_side);
 }
 
-void CORE::GEO::CUT::CombIntersection::AddMeshCuttingSide(int sid, const std::vector<int>& nids,
+void CORE::GEO::CUT::CombIntersection::add_mesh_cutting_side(int sid, const std::vector<int>& nids,
     const CORE::LINALG::SerialDenseMatrix& xyz, CORE::FE::CellType distype, int mi)
 {
   MeshIntersection::AddCutSide(sid, nids, xyz, distype, mi);

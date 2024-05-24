@@ -70,7 +70,7 @@ namespace ADAPTER
 
    private:
     /// fluid field
-    const Teuchos::RCP<ADAPTER::Fluid>& FluidField() { return fluid_; }
+    const Teuchos::RCP<ADAPTER::Fluid>& fluid_field() { return fluid_; }
 
     std::vector<CORE::Conditions::Condition*>
         nopencond_;  ///< vector containing no penetration conditions

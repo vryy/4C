@@ -128,10 +128,10 @@ namespace POROMULTIPHASESCATRA
     Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const override;
 
     //! access full dof row map
-    Teuchos::RCP<const Epetra_Map> DofRowMap() const override;
+    Teuchos::RCP<const Epetra_Map> dof_row_map() const override;
 
     //! Setup global vector
-    void SetupVector(Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<const Epetra_Vector> vec_cont,
+    void setup_vector(Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<const Epetra_Vector> vec_cont,
         Teuchos::RCP<const Epetra_Vector> vec_art) override;
 
     void extract_single_field_vectors(Teuchos::RCP<const Epetra_Vector> globalvec,
@@ -169,7 +169,7 @@ namespace POROMULTIPHASESCATRA
         Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
 
     //! FE-assemble into global D, M and kappa (MP case)
-    void FEAssembleDMKappa(const int& ele1gid, const int& ele2gid,
+    void fe_assemble_dm_kappa(const int& ele1gid, const int& ele2gid,
         const CORE::LINALG::SerialDenseMatrix& D_ele, const CORE::LINALG::SerialDenseMatrix& M_ele,
         const CORE::LINALG::SerialDenseVector& Kappa_ele);
 
@@ -178,7 +178,7 @@ namespace POROMULTIPHASESCATRA
         Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
 
     //! invert kappa vector
-    void InvertKappa();
+    void invert_kappa();
 
     //! return appropriate internal implementation class (acts as a simple factory to create single
     //! pairs)
@@ -198,7 +198,7 @@ namespace POROMULTIPHASESCATRA
     void fill_function_and_scale_vectors();
 
     //! set the right-hand side factor for time integration
-    void SetTimeFacRhs();
+    void set_time_fac_rhs();
 
     //! right hand side factor for artery time integration
     double timefacrhs_art_;

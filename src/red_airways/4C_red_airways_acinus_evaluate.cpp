@@ -192,7 +192,7 @@ int DRT::ELEMENTS::RedAcinus::Evaluate(Teuchos::ParameterList& params,
  |                                                                      |
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::RedAcinus::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::RedAcinus::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -218,7 +218,7 @@ int DRT::ELEMENTS::RedAcinus::EvaluateDirichlet(Teuchos::ParameterList& params,
  | get optimal gaussrule for discretisation type                        |
  |                                                                      |
  *----------------------------------------------------------------------*/
-CORE::FE::GaussRule1D DRT::ELEMENTS::RedAcinus::getOptimalGaussrule(
+CORE::FE::GaussRule1D DRT::ELEMENTS::RedAcinus::get_optimal_gaussrule(
     const CORE::FE::CellType& distype)
 {
   CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::undefined;

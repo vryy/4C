@@ -109,25 +109,25 @@ namespace STR
       void Reset(const Epetra_Vector& x) override;
 
       //! [derived]
-      bool EvaluateForce() override;
+      bool evaluate_force() override;
 
       //! [derived]
-      bool EvaluateStiff() override;
+      bool evaluate_stiff() override;
 
       //! [derived] not needed in partitioned scheme
-      bool EvaluateForceStiff() override;
+      bool evaluate_force_stiff() override;
 
       //! derived
-      void PreEvaluate() override{};
+      void pre_evaluate() override{};
 
       //! derived
-      void PostEvaluate() override{};
+      void post_evaluate() override{};
 
       //! derived
-      bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
+      bool assemble_force(Epetra_Vector& f, const double& timefac_np) const override;
 
       //! Assemble the jacobian at \f$t_{n+1}\f$ not needed in partitioned scheme
-      bool AssembleJacobian(
+      bool assemble_jacobian(
           CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
 
       //! [derived]
@@ -135,7 +135,7 @@ namespace STR
           IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override{};
 
       //! [derived]
-      void ReadRestart(IO::DiscretizationReader& ioreader) override{};
+      void read_restart(IO::DiscretizationReader& ioreader) override{};
 
       //! [derived]
       void Predict(const INPAR::STR::PredEnum& pred_type) override{};

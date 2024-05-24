@@ -79,7 +79,7 @@ int DRT::ELEMENTS::Bele3Line::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a Line Neumann boundary condition (public)     gammi 04/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Bele3Line::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -99,12 +99,12 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(Teuchos::ParameterList& params,
   const auto& functions = condition.parameters().Get<std::vector<int>>("funct");
 
   // set number of nodes
-  const size_t iel = this->NumNode();
+  const size_t iel = this->num_node();
 
   const CORE::FE::CellType distype = this->Shape();
 
   // gaussian points
-  const CORE::FE::GaussRule1D gaussrule = getOptimalGaussrule(distype);
+  const CORE::FE::GaussRule1D gaussrule = get_optimal_gaussrule(distype);
   const CORE::FE::IntegrationPoints1D intpoints(gaussrule);
 
 
@@ -183,7 +183,7 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(Teuchos::ParameterList& params,
   return 0;
 }
 
-CORE::FE::GaussRule1D DRT::ELEMENTS::Bele3Line::getOptimalGaussrule(
+CORE::FE::GaussRule1D DRT::ELEMENTS::Bele3Line::get_optimal_gaussrule(
     const CORE::FE::CellType& distype)
 {
   CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::undefined;
@@ -234,11 +234,11 @@ void DRT::ELEMENTS::Bele3Line::integrate_shape_function(Teuchos::ParameterList& 
   */
 
   // set number of nodes
-  const size_t iel = this->NumNode();
+  const size_t iel = this->num_node();
 
   // gaussian points
   const CORE::FE::CellType distype = this->Shape();
-  const CORE::FE::GaussRule1D gaussrule = getOptimalGaussrule(distype);
+  const CORE::FE::GaussRule1D gaussrule = get_optimal_gaussrule(distype);
   const CORE::FE::IntegrationPoints1D intpoints(gaussrule);
 
   // allocate vector for shape functions and for derivatives

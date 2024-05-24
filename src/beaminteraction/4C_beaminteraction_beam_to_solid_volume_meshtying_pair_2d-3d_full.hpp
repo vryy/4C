@@ -63,7 +63,7 @@ namespace BEAMINTERACTION
      *\brief things that need to be done in a separate loop before the actual evaluation loop
      *      over all contact pairs
      */
-    void PreEvaluate() override;
+    void pre_evaluate() override;
 
     /**
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness

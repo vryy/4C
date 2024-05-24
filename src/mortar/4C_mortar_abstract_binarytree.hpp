@@ -83,7 +83,7 @@ namespace MORTAR
     \brief Evaluate search tree to get corresponding master elements for the slave elements
 
     */
-    virtual void EvaluateSearch() = 0;
+    virtual void evaluate_search() = 0;
 
     /*!
     \brief initialize the binary tree

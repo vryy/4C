@@ -83,7 +83,7 @@ bool DRT::ELEMENTS::SoSh8p8::ReadElement(
 
   if (eastype_ != soh8_easnone)
   {
-    EasInit();
+    eas_init();
   }
 
   linedef->ExtractString("THICKDIR", buffer);

@@ -82,7 +82,7 @@ void FLD::TimIntHDGWeakComp::Init()
       Teuchos::rcp(new Epetra_Map(-1, dofmapvec_w.size(), dofmapvec_w.data(), 0, hdgdis->Comm()));
 
   // build density/momentum (actually velocity/pressure) splitter
-  velpressplitter_->Setup(*hdgdis->DofRowMap(), dofmap_r, dofmap_w);
+  velpressplitter_->Setup(*hdgdis->dof_row_map(), dofmap_r, dofmap_w);
 
   // implement ost and bdf2 through gen-alpha facilities
   if (timealgo_ == INPAR::FLUID::timeint_bdf2)
@@ -275,10 +275,10 @@ void FLD::TimIntHDGWeakComp::gen_alpha_intermediate_values()
 *-----------------------------------------------------------------------*/
 void FLD::TimIntHDGWeakComp::SetStateTimInt()
 {
-  discret_->SetState(0, "velaf", velaf_);
-  discret_->SetState(1, "intvelaf", intvelaf_);
-  discret_->SetState(1, "intaccam", intaccam_);
-  discret_->SetState(1, "intvelnp", intvelnp_);
+  discret_->set_state(0, "velaf", velaf_);
+  discret_->set_state(1, "intvelaf", intvelaf_);
+  discret_->set_state(1, "intaccam", intaccam_);
+  discret_->set_state(1, "intvelnp", intvelnp_);
 }
 
 /*----------------------------------------------------------------------*
@@ -321,7 +321,7 @@ void FLD::TimIntHDGWeakComp::IterUpdate(const Teuchos::RCP<const Epetra_Vector> 
   DRT::Element::LocationArray la(2);
 
   // interior dofs map
-  const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
+  const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
 
   // dummy variables
   CORE::LINALG::SerialDenseMatrix dummyMat;
@@ -335,7 +335,7 @@ void FLD::TimIntHDGWeakComp::IterUpdate(const Teuchos::RCP<const Epetra_Vector> 
 
   // set state
   SetStateTimInt();
-  discret_->SetState(0, "globaltraceinc", increment);
+  discret_->set_state(0, "globaltraceinc", increment);
 
   for (int el = 0; el < discret_->NumMyColElements(); ++el)
   {
@@ -424,8 +424,8 @@ void FLD::TimIntHDGWeakComp::UpdateGridv()
 void FLD::TimIntHDGWeakComp::SetInitialFlowField(
     const INPAR::FLUID::InitialField initfield, const int startfuncno)
 {
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
+  const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
   CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
   CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
   Teuchos::ParameterList initParams;
@@ -500,7 +500,7 @@ FLD::TimIntHDGWeakComp::evaluate_error_compared_to_analytical_sol()
     }
     case INPAR::FLUID::byfunct:
     {
-      discret_->SetState(1, "intvelnp", intvelnp_);
+      discret_->set_state(1, "intvelnp", intvelnp_);
 
       // std::vector containing
       // [0]: absolute L2 mixed variable error
@@ -523,7 +523,7 @@ FLD::TimIntHDGWeakComp::evaluate_error_compared_to_analytical_sol()
       // set scheme-specific element parameters and vector values
       SetStateTimInt();
 
-      if (alefluid_) discret_->SetState(2, "dispnp", dispnp_);
+      if (alefluid_) discret_->set_state(2, "dispnp", dispnp_);
 
       // get (squared) error values
       // 0: delta mixed variable for L2-error norm
@@ -629,7 +629,7 @@ FLD::TimIntHDGWeakComp::evaluate_error_compared_to_analytical_sol()
 void FLD::TimIntHDGWeakComp::Reset(bool completeReset, int numsteps, int iter)
 {
   FluidImplicitTimeInt::Reset(completeReset, numsteps, iter);
-  const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
+  const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
   intvelnp_ = CORE::LINALG::CreateVector(*intdofrowmap, true);
   intvelaf_ = CORE::LINALG::CreateVector(*intdofrowmap, true);
   intvelnm_ = CORE::LINALG::CreateVector(*intdofrowmap, true);
@@ -640,7 +640,7 @@ void FLD::TimIntHDGWeakComp::Reset(bool completeReset, int numsteps, int iter)
   intaccn_ = CORE::LINALG::CreateVector(*intdofrowmap, true);
   if (discret_->Comm().MyPID() == 0)
     std::cout << "Number of degrees of freedom in HDG system: "
-              << discret_->DofRowMap(0)->NumGlobalElements() << std::endl;
+              << discret_->dof_row_map(0)->NumGlobalElements() << std::endl;
 }
 
 
@@ -667,8 +667,8 @@ namespace
     // call element routine for interpolate HDG to elements
     Teuchos::ParameterList params;
     params.set<int>("action", FLD::interpolate_hdg_to_node);
-    dis.SetState(1, "intvelnp", interiorValues);
-    dis.SetState(0, "velnp", traceValues);
+    dis.set_state(1, "intvelnp", interiorValues);
+    dis.set_state(0, "velnp", traceValues);
     std::vector<int> dummy;
     CORE::LINALG::SerialDenseMatrix dummyMat;
     CORE::LINALG::SerialDenseVector dummyVec;
@@ -681,21 +681,21 @@ namespace
     {
       DRT::Element* ele = dis.lColElement(el);
       if (interpolVec.numRows() == 0)
-        interpolVec.resize(ele->NumNode() * (msd + 1 + ndim + 1 + ndim));
+        interpolVec.resize(ele->num_node() * (msd + 1 + ndim + 1 + ndim));
 
       ele->Evaluate(params, dis, dummy, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
 
       // sum values on nodes into vectors and record the touch count (build average of values)
-      for (int i = 0; i < ele->NumNode(); ++i)
+      for (int i = 0; i < ele->num_node(); ++i)
       {
         DRT::Node* node = ele->Nodes()[i];
         const int localIndex = dis.NodeRowMap()->LID(node->Id());
         if (localIndex < 0) continue;
         touchCount[localIndex]++;
         for (int m = 0; m < msd; ++m)
-          (*mixedvar)[m][localIndex] += interpolVec(i + m * ele->NumNode());
-        (*density)[localIndex] += interpolVec(i + msd * ele->NumNode());
-        (*traceden)[localIndex] += interpolVec(i + (msd + 1 + ndim) * ele->NumNode());
+          (*mixedvar)[m][localIndex] += interpolVec(i + m * ele->num_node());
+        (*density)[localIndex] += interpolVec(i + msd * ele->num_node());
+        (*traceden)[localIndex] += interpolVec(i + (msd + 1 + ndim) * ele->num_node());
       }
     }
 

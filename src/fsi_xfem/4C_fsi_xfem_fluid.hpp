@@ -31,7 +31,7 @@ namespace FSI
     const Epetra_Comm& Comm() const { return comm_; }
 
     /// read restart data
-    virtual void ReadRestart(int step);
+    virtual void read_restart(int step);
 
    protected:
     /// time step size
@@ -46,7 +46,7 @@ namespace FSI
     bool NotFinished() { return step_ < nstep_ and time_ <= maxtime_; }
 
     /// start a new time step
-    void PrepareTimeStep();
+    void prepare_time_step();
 
     /// solve ale and fluid fields
     void Solve();

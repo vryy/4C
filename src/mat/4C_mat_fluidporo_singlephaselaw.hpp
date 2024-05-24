@@ -267,7 +267,7 @@ namespace MAT
      private:
       //! templated internal Initialize implementation
       template <int dim>
-      void InitializeInternal();
+      void initialize_internal();
 
       //! templated internal EvaluateSaturation implementation
       template <int dim>

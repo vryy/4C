@@ -26,7 +26,7 @@ ALE::AleResultTest::AleResultTest(ALE::Ale& ale)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::AleResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void ALE::AleResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;

@@ -70,16 +70,16 @@ namespace SSI
     manifold
   };
 
-  class SSIMono : public SSIBase
+  class SsiMono : public SSIBase
   {
    public:
     //! constructor
-    explicit SSIMono(const Epetra_Comm& comm,           //!< communicator
+    explicit SsiMono(const Epetra_Comm& comm,           //!< communicator
         const Teuchos::ParameterList& globaltimeparams  //!< parameter list for time integration
     );
 
     //! return global map of degrees of freedom
-    const Teuchos::RCP<const Epetra_Map>& DofRowMap() const;
+    const Teuchos::RCP<const Epetra_Map>& dof_row_map() const;
 
     void Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
@@ -109,7 +109,7 @@ namespace SSI
     //! Return matrix type of global system matrix
     CORE::LINALG::MatrixType MatrixType() const { return matrixtype_; };
 
-    void ReadRestart(int restart) override;
+    void read_restart(int restart) override;
 
     void Setup() override;
 
@@ -121,7 +121,7 @@ namespace SSI
      * @note in case an equilibration method (scaling of rows and columns) is defined this is also
      * performed within this call
      */
-    void SolveLinearSystem();
+    void solve_linear_system();
 
     //! this object holds all maps relevant to monolithic scalar transport - structure interaction
     Teuchos::RCP<SSI::UTILS::SSIMaps> SSIMaps() const { return ssi_maps_; }
@@ -142,7 +142,7 @@ namespace SSI
     void apply_contact_to_sub_problems();
 
     //! apply the Dirichlet boundary conditions to the ssi system, i.e. matrices and residuals
-    void ApplyDBCToSystem();
+    void apply_dbc_to_system();
 
     //! apply mesh tying between manifold domains on matrices and residuals
     void apply_manifold_meshtying();
@@ -151,10 +151,10 @@ namespace SSI
     void apply_meshtying_to_sub_problems();
 
     //! assemble global system of equations
-    void AssembleMatAndRHS();
+    void assemble_mat_and_rhs();
 
     //! assemble linearization of scatra residuals to system matrix
-    void AssembleMatScaTra();
+    void assemble_mat_sca_tra();
 
     //! assemble linearization of scatra on manifold residuals to system matrix
     void assemble_mat_sca_tra_manifold();
@@ -163,7 +163,7 @@ namespace SSI
     void assemble_mat_structure();
 
     //! build null spaces associated with blocks of global system matrix
-    void BuildNullSpaces() const;
+    void build_null_spaces() const;
 
     //! calc initial potential field for monolithic SSI problem including scatra and scatra manifold
     //! fields
@@ -177,20 +177,20 @@ namespace SSI
     void complete_subproblem_matrices();
 
     //! distribute solution to all other fields
-    //! \param restore_velocity   restore velocity when StructureField()->SetState() is called
+    //! \param restore_velocity   restore velocity when StructureField()->set_state() is called
     void distribute_solution_all_fields(bool restore_velocity = false);
 
     //! evaluate all off-diagonal matrix contributions
     void evaluate_off_diag_contributions();
 
     //! Evaluate ScaTra including copy to corresponding ssi matrix
-    void EvaluateScaTra();
+    void evaluate_sca_tra();
 
     //! Evaluate ScaTra on manifold incl. coupling with scatra
     void evaluate_sca_tra_manifold();
 
     //! get matrix and right-hand-side for all subproblems incl. coupling
-    void EvaluateSubproblems();
+    void evaluate_subproblems();
 
     //! build and return vector of equilibration methods for each block of system matrix
     std::vector<CORE::LINALG::EquilibrationMethod> get_block_equilibration();
@@ -207,18 +207,18 @@ namespace SSI
     void Output() override;
 
     //! do everything, that has to be done once before first time step
-    void PrepareTimeLoop();
+    void prepare_time_loop();
 
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     //! prepare output for subproblems if needed
-    void PrepareOutput();
+    void prepare_output();
 
     //! print system matrix, rhs, and map of system matrix to file
     void print_system_matrix_rhs_to_mat_lab_format();
 
     //! print time step size, time, and number of time step
-    void PrintTimeStepInfo();
+    void print_time_step_info();
 
     //! set up a pointer to the contact strategy of the structural field and store it
     void setup_contact_strategy();
@@ -233,18 +233,18 @@ namespace SSI
      *
      * @param[in] phi  scatra state to be set to contact nitsche strategy
      */
-    void SetSSIContactStates(Teuchos::RCP<const Epetra_Vector> phi) const;
+    void set_ssi_contact_states(Teuchos::RCP<const Epetra_Vector> phi) const;
 
     //! evaluate time step using Newton-Raphson iteration
-    void NewtonLoop();
+    void newton_loop();
 
     void Update() override;
 
     //! update ScaTra state within Newton iteration
-    void UpdateIterScaTra();
+    void update_iter_sca_tra();
 
     //! update structure state within Newton iteration
-    void UpdateIterStructure();
+    void update_iter_structure();
 
     //! store contact nitsche strategy for ssi problems
     Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_strategy_nitsche_;
@@ -299,7 +299,7 @@ namespace SSI
     Teuchos::RCP<SSI::ContactStrategyBase> strategy_contact_;
 
     //! strategy for Newton-Raphson convergence check
-    Teuchos::RCP<SSI::SSIMono::ConvCheckStrategyBase> strategy_convcheck_;
+    Teuchos::RCP<SSI::SsiMono::ConvCheckStrategyBase> strategy_convcheck_;
 
     //! all equilibration of global system matrix and RHS is done in here
     Teuchos::RCP<CORE::LINALG::Equilibration> strategy_equilibration_;

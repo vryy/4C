@@ -36,7 +36,7 @@ STR::MODELEVALUATOR::PartitionedSSI::PartitionedSSI(const Teuchos::RCP<const SSI
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::PartitionedSSI::AssembleJacobian(
+bool STR::MODELEVALUATOR::PartitionedSSI::assemble_jacobian(
     CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
   // perform structural meshtying
@@ -49,7 +49,7 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleJacobian(
     auto cond_master_dof_map = ssi_part_->ssi_structure_mesh_tying()->FullMasterSideMap();
 
     // initialize new Jacobian
-    CORE::LINALG::SparseMatrix jac_new(*GState().DofRowMap(), 81, true, true);
+    CORE::LINALG::SparseMatrix jac_new(*GState().dof_row_map(), 81, true, true);
 
     // assemble interior rows and columns of original Jacobian into new Jacobian
     CORE::LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *map_structure_interior,
@@ -142,7 +142,7 @@ void STR::MODELEVALUATOR::PartitionedSSI::RunPreComputeX(
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::PartitionedSSI::Setup()
 {
-  CheckInit();
+  check_init();
 
   STR::MODELEVALUATOR::BaseSSI::Setup();
 
@@ -152,11 +152,11 @@ void STR::MODELEVALUATOR::PartitionedSSI::Setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::PartitionedSSI::AssembleForce(
+bool STR::MODELEVALUATOR::PartitionedSSI::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
   // perform structural meshtying
-  if (ssi_part_->ssi_interface_meshtying() and ssi_part_->IsSetup())
+  if (ssi_part_->ssi_interface_meshtying() and ssi_part_->is_setup())
   {
     for (const auto& meshtying : ssi_part_->ssi_structure_mesh_tying()->MeshTyingHandlers())
     {

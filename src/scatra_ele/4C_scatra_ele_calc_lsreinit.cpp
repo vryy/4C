@@ -328,7 +328,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::elliptic_newton_sys
       // set gradphi for rhs term
       my::scatravarmanager_->SetGradPhi(0, gradphinp);
 
-      my::CalcRHSDiff(*erhs, 0, -fac);
+      my::calc_rhs_diff(*erhs, 0, -fac);
     }
   }  // end: loop all Gauss points
 
@@ -483,7 +483,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
         // current phi at element center
         double phinp = 0.0;
         phinp = my::funct_.Dot(my::ephinp_[0]);
-        SignFunction(signphi, charelelength, phizero, gradphizero, phinp, gradphinp);
+        sign_function(signphi, charelelength, phizero, gradphizero, phinp, gradphinp);
 
         if (gradphinp_norm > 1e-8) convelint.Update(signphi / gradphinp_norm, gradphinp);
           // otherwise gradphi is almost zero and we keep a zero velocity
@@ -501,7 +501,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
         // phi at element center
         double phin = 0.0;
         phin = my::funct_.Dot(my::ephin_[0]);
-        SignFunction(signphi, charelelength, phizero, gradphizero, phin, gradphin);
+        sign_function(signphi, charelelength, phizero, gradphizero, phin, gradphin);
 
         if (gradphin_norm > 1e-8) convelint.Update(signphi / gradphin_norm, gradphin);
           // otherwise gradphi is almost zero and we keep a zero velocity
@@ -556,9 +556,9 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     const double phin = my::funct_.Dot(my::ephin_[0]);
 
     // also store values in variable manager
-    VarManager()->SetPhinp(0, phinp);
-    VarManager()->SetPhin(0, phin);
-    VarManager()->SetGradPhi(0, gradphinp);
+    var_manager()->SetPhinp(0, phinp);
+    var_manager()->SetPhin(0, phin);
+    var_manager()->SetGradPhi(0, gradphinp);
 
     // get velocity at element center
     CORE::LINALG::Matrix<nsd_, 1> convelint(true);
@@ -566,13 +566,13 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     // get sign function
     double signphi = 0.0;
 #ifndef USE_PHIN_FOR_VEL
-    SignFunction(signphi, charelelength, phizero, gradphizero, phinp, gradphinp);
+    sign_function(signphi, charelelength, phizero, gradphizero, phinp, gradphinp);
 #else
     // gradient of scalar value at t_n at integration point
     CORE::LINALG::Matrix<nsd_, 1> gradphin(true);
     gradphin.Multiply(my::derxy_, my::ephin_[0]);
 
-    SignFunction(signphi, charelelength, phizero, gradphizero, phin, gradphin);
+    sign_function(signphi, charelelength, phizero, gradphizero, phin, gradphin);
 #endif
 
     // switch type for velocity field
@@ -606,9 +606,9 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     conv_phi = convelint.Dot(gradphinp);
 
     // set changed values in variable manager
-    VarManager()->SetConv(0, conv);
-    VarManager()->SetConVel(0, convelint);
-    VarManager()->SetConvPhi(0, conv_phi);
+    var_manager()->SetConv(0, conv);
+    var_manager()->SetConVel(0, convelint);
+    var_manager()->SetConvPhi(0, conv_phi);
 
     CORE::LINALG::Matrix<nen_, 1> diff(true);
     // diffusive term using current scalar value for higher-order elements
@@ -624,7 +624,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     // use history vector of global level
     hist = my::funct_.Dot(my::ehist_[0]);
     // set changed values in variable manager
-    VarManager()->SetHist(0, hist);
+    var_manager()->SetHist(0, hist);
 
     //--------------------------------------------------------------------
     // calculation of stabilization parameter at integration point
@@ -658,7 +658,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
       my::CalcArtificialDiff(vol, 0, 1.0, convelint, gradphinp, conv_phi, scatrares, tau);
 
       if (lsreinitparams_->ArtDiff() == INPAR::SCATRA::artdiff_crosswind)
-        DiffManager()->set_velocity_for_cross_wind_diff(convelint);
+        diff_manager()->set_velocity_for_cross_wind_diff(convelint);
 
 #ifdef MODIFIED_EQ
       // recompute tau to get adaption to artificial diffusion
@@ -763,9 +763,9 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     // linearization of diffusive term
     if (lsreinitparams_->ArtDiff() != INPAR::SCATRA::artdiff_none)
 #ifndef MODIFIED_EQ
-      CalcRHSDiff(erhs, 0, dtfac, gradphinp);  // implicit treatment
+      calc_rhs_diff(erhs, 0, dtfac, gradphinp);  // implicit treatment
 #else
-      CalcRHSDiff(erhs, 0, rhsfac, gradphinp);
+      calc_rhs_diff(erhs, 0, rhsfac, gradphinp);
 #endif
 
     // linearization of stabilization terms
@@ -895,7 +895,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatElliptic(
     // set gradphi for rhs term
     my::scatravarmanager_->SetGradPhi(0, gradphinp);
 
-    my::CalcRHSDiff(erhs, 0, -fac);
+    my::calc_rhs_diff(erhs, 0, -fac);
 
   }  // end: loop all Gauss points
 
@@ -913,7 +913,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatElliptic(
  |  sign function                                       rasthofer 12/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, unsigned probDim>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SignFunction(double& sign_phi,
+void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sign_function(double& sign_phi,
     const double charelelength, const double phizero,
     const CORE::LINALG::Matrix<nsd_, 1>& gradphizero, const double phi,
     const CORE::LINALG::Matrix<nsd_, 1>& gradphi)
@@ -961,7 +961,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SignFunction(double
  | derivative of sign function                          rasthofer 12/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, unsigned probDim>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::DerivSignFunction(
+void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::deriv_sign_function(
     double& deriv_sign, const double charelelength, const double phizero)
 {
   // compute interface thickness
@@ -1057,11 +1057,11 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcMatDiff(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac)
 {
   // flag for anisotropic diffusion
-  const bool crosswind = DiffManager()->HaveCrossWindDiff();
+  const bool crosswind = diff_manager()->HaveCrossWindDiff();
 
   // set scalar diffusion: isotropic or factor for anisotropic tensor in case of
   // crosswind diffusion
-  double diffus = DiffManager()->GetIsotropicDiff(k);
+  double diffus = diff_manager()->GetIsotropicDiff(k);
 
   // diffusive factor
   const double fac_diffus = timefacfac * diffus;
@@ -1078,7 +1078,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcMatDiff(
       // in case of anisotropic or crosswind diffusion, multiply 'derxy_' with diffusion tensor
       // inside 'get_laplacian_weak_form'
       if (crosswind)
-        my::get_laplacian_weak_form(laplawf, DiffManager()->GetCrosswindTensor(), ui, vi);
+        my::get_laplacian_weak_form(laplawf, diff_manager()->GetCrosswindTensor(), ui, vi);
       else
         my::get_laplacian_weak_form(laplawf, ui, vi);
 
@@ -1093,22 +1093,22 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcMatDiff(
  |  standard Galerkin diffusive term on right hand side rasthofer 12/13 |
  *---------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, unsigned probDim>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcRHSDiff(
+void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_rhs_diff(
     CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac,
     const CORE::LINALG::Matrix<nsd_, 1>& gradphi)
 {
   // flag for anisotropic diffusion
-  const bool crosswind = DiffManager()->HaveCrossWindDiff();
+  const bool crosswind = diff_manager()->HaveCrossWindDiff();
 
   // set scalar diffusion: isotropic or factor for anisotropic tensor in case of
   // crosswind diffusion
-  double vrhs = rhsfac * DiffManager()->GetIsotropicDiff(k);
+  double vrhs = rhsfac * diff_manager()->GetIsotropicDiff(k);
 
   CORE::LINALG::Matrix<nsd_, 1> gradphirhs(true);
   if (crosswind)
   {
     // in case of anisotropic or crosswind diffusion, multiply 'gradphi' with diffusion tensor
-    gradphirhs.Multiply(DiffManager()->GetCrosswindTensor(), gradphi);
+    gradphirhs.Multiply(diff_manager()->GetCrosswindTensor(), gradphi);
   }
   else
   {
@@ -1156,17 +1156,17 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::evaluate_interface_
     {
       case CORE::FE::CellType::point1:
       {
-        CalcPenaltyTerm_0D(emat, erhs, actcell);
+        calc_penalty_term_0_d(emat, erhs, actcell);
         break;
       }
       case CORE::FE::CellType::tri3:
       {
-        CalcPenaltyTerm<CORE::FE::CellType::tri3>(*emat, *erhs, actcell);
+        calc_penalty_term<CORE::FE::CellType::tri3>(*emat, *erhs, actcell);
         break;
       }
       case CORE::FE::CellType::quad4:
       {
-        CalcPenaltyTerm<CORE::FE::CellType::quad4>(*emat, *erhs, actcell);
+        calc_penalty_term<CORE::FE::CellType::quad4>(*emat, *erhs, actcell);
         break;
       }
       default:
@@ -1182,7 +1182,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::evaluate_interface_
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, unsigned probDim>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm_0D(
+void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_penalty_term_0_d(
     CORE::LINALG::SerialDenseMatrix* emat, CORE::LINALG::SerialDenseVector* erhs,
     const CORE::GEO::BoundaryIntCell& cell)
 {
@@ -1221,7 +1221,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm_0D(
  *---------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, unsigned probDim>
 template <CORE::FE::CellType celldistype>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm(
+void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_penalty_term(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
     CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to calculate
     const CORE::GEO::BoundaryIntCell& cell  //!< interface cell

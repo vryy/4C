@@ -43,7 +43,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
 
     /*! Evaluate the current right-hand-side vector and tangential stiffness matrix at \f$t_{n+1}\f$
      */
-    bool EvaluateForceStiff(Teuchos::RCP<CORE::LINALG::SparseMatrix> me_stiff_ptr,
+    bool evaluate_force_stiff(Teuchos::RCP<CORE::LINALG::SparseMatrix> me_stiff_ptr,
         Teuchos::RCP<Epetra_Vector> me_force_ptr);
 
     //! Evaluate the matrices of the saddle-point system

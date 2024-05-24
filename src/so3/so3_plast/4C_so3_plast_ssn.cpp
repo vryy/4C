@@ -650,7 +650,7 @@ bool DRT::ELEMENTS::So3Plast<distype>::ReadElement(
     eastype_ = soh8p_easnone;
 
   // initialize EAS data
-  EasInit();
+  eas_init();
 
   // plasticity related stuff
   KbbInv_.resize(numgpt_, CORE::LINALG::SerialDenseMatrix(plspintype_, plspintype_, true));

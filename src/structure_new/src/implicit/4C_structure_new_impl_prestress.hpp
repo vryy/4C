@@ -42,7 +42,7 @@ namespace STR
        * \brief During MULF and material iterative prestressing, the displacements resetted after
        * each timestep, which is done here.
        */
-      void PostUpdate() override;
+      void post_update() override;
 
       /*!
        * \brief Stop the simulation in case of a converged prestress with the material iterative

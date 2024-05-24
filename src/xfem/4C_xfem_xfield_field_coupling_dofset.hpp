@@ -83,7 +83,7 @@ namespace XFEM
        *
        *  \author hiermeier
        *  \date 09/16 */
-      int MyNumDofPerNode(const int& node_gid) const;
+      int my_num_dof_per_node(const int& node_gid) const;
 
      private:
       /// map containing the number of DoF's per node

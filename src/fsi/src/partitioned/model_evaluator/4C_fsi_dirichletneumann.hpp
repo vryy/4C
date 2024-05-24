@@ -105,7 +105,7 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> StructOp(
         Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag) override = 0;
 
-    Teuchos::RCP<Epetra_Vector> InitialGuess() override = 0;
+    Teuchos::RCP<Epetra_Vector> initial_guess() override = 0;
 
    private:
     /**

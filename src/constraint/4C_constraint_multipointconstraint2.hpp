@@ -49,7 +49,7 @@ namespace CONSTRAINTS
         ) override;
 
     //! Evaluate routine to call from outside. In here the right action is determined and the
-    //! #EvaluateConstraint routine is called
+    //! #evaluate_constraint routine is called
     void Evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
@@ -75,10 +75,11 @@ namespace CONSTRAINTS
     //! Private Member Functions
 
     //! Return the ConstrType based on the condition name
-    ConstrType GetConstrType(const std::string& Name);  ///< condition name
+    ConstrType get_constr_type(const std::string& Name);  ///< condition name
 
     //! Evaluate constraint discretization and assemble the results
-    void EvaluateConstraint(Teuchos::RCP<DRT::Discretization> disc,  ///< discretization to evaluate
+    void evaluate_constraint(
+        Teuchos::RCP<DRT::Discretization> disc,  ///< discretization to evaluate
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
         Teuchos::RCP<CORE::LINALG::SparseOperator>

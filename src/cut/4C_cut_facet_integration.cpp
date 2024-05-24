@@ -53,7 +53,7 @@ to have correct normal
 the facet. This vector must be in the correct normal direction. Take the dot product of reference
 vector and the normal vector of facet. If the dot product < 0, then the facet is clockwise ordered
 *----------------------------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::FacetIntegration::IsClockwise(
+void CORE::GEO::CUT::FacetIntegration::is_clockwise(
     const std::vector<double> &eqn_plane, const std::vector<std::vector<double>> &cornersLocal)
 {
   ordering_computed_ = true;
@@ -244,7 +244,7 @@ bool CORE::GEO::CUT::FacetIntegration::IsClockwiseOrdering()
     eqn_plane_ = equation_plane(cornersLocal);
   }
 
-  this->IsClockwise(eqn_plane_, cornersLocal);
+  this->is_clockwise(eqn_plane_, cornersLocal);
   return clockwise_;
 }
 
@@ -291,7 +291,7 @@ std::vector<double> CORE::GEO::CUT::FacetIntegration::compute_alpha(
 /*---------------------------------------------------------------------------------*
       return the absolute normal of the facet in a particular direction
 *----------------------------------------------------------------------------------*/
-double CORE::GEO::CUT::FacetIntegration::getNormal(CORE::GEO::CUT::ProjectionDirection intType)
+double CORE::GEO::CUT::FacetIntegration::get_normal(CORE::GEO::CUT::ProjectionDirection intType)
 {
   double normalScale = 0.0;
   for (unsigned i = 0; i < 3; i++) normalScale += eqn_plane_[i] * eqn_plane_[i];
@@ -343,7 +343,7 @@ double CORE::GEO::CUT::FacetIntegration::integrate_facet()
       true)  // the integral value of boundarycell will not change w.r.t the ordering of vertices
     clockwise_ = false;
   else
-    IsClockwise(eqn_plane_, cornersLocal);
+    is_clockwise(eqn_plane_, cornersLocal);
 
   // integrating over each line of the facet
   double facet_integ = 0.0;
@@ -476,7 +476,7 @@ void CORE::GEO::CUT::FacetIntegration::boundary_facet_integration(
       if (k == cornersLocal.begin())
       {
         alpha = compute_alpha(eqn_plane_, CORE::GEO::CUT::proj_x);
-        abs_normal = getNormal(intType);
+        abs_normal = get_normal(intType);
       }
       // The facet is projected over y-z plane and then the integration is performed
       // so only y- and z-coordinates are passed to make the lines
@@ -495,7 +495,7 @@ void CORE::GEO::CUT::FacetIntegration::boundary_facet_integration(
       if (k == cornersLocal.begin())
       {
         alpha = compute_alpha(eqn_plane_, CORE::GEO::CUT::proj_y);
-        abs_normal = getNormal(intType);
+        abs_normal = get_normal(intType);
       }
       // The facet is projected over y-z plane and then the integration is performed
       // so only y- and z-coordinates are passed to make the lines
@@ -514,7 +514,7 @@ void CORE::GEO::CUT::FacetIntegration::boundary_facet_integration(
       if (k == cornersLocal.begin())
       {
         alpha = compute_alpha(eqn_plane_, CORE::GEO::CUT::proj_z);
-        abs_normal = getNormal(intType);
+        abs_normal = get_normal(intType);
       }
       // The facet is projected over y-z plane and then the integration is performed
       // so only y- and z-coordinates are passed to make the lines
@@ -551,8 +551,8 @@ void CORE::GEO::CUT::FacetIntegration::divergence_integration_rule(
   // the last two parameters has no influence when called from the first parameter is set to true
   generate_divergence_cells(true, mesh, divCells);
 
-  double normalX =
-      getNormal(CORE::GEO::CUT::proj_x);  // make sure eqn of plane is available before calling this
+  double normalX = get_normal(
+      CORE::GEO::CUT::proj_x);  // make sure eqn of plane is available before calling this
 
   if (clockwise_)  // because if ordering is clockwise the contribution of this facet must be
                    // subtracted
@@ -669,7 +669,7 @@ void CORE::GEO::CUT::FacetIntegration::generate_divergence_cells(
 
   if (!divergenceRule && !face1_->OnCutSide()) return;
 
-  IsClockwise(eqn_plane_, cornersLocal);
+  is_clockwise(eqn_plane_, cornersLocal);
 
   std::vector<Point *> corners = face1_->CornerPoints();
 
@@ -682,7 +682,7 @@ void CORE::GEO::CUT::FacetIntegration::generate_divergence_cells(
     //-----------------------------------------------------------------
     if (corners.size() == 3)
     {
-      TemporaryTri3(corners, divCells);
+      temporary_tri3(corners, divCells);
     }
     else  // split the aribtrary noded facet into cells
     {
@@ -691,7 +691,7 @@ void CORE::GEO::CUT::FacetIntegration::generate_divergence_cells(
       std::vector<std::vector<Point *>> split;
 
       // if the facet is warped, do centre point triangulation --> reduced error (??)
-      if (not face1_->IsPlanar(mesh, face1_->CornerPoints()))
+      if (not face1_->is_planar(mesh, face1_->CornerPoints()))
       {
         if (!face1_->IsTriangulated()) face1_->DoTriangulation(mesh, corners);
         split = face1_->Triangulation();
@@ -710,9 +710,9 @@ void CORE::GEO::CUT::FacetIntegration::generate_divergence_cells(
       {
         const std::vector<Point *> &tri = *j;
         if (tri.size() == 3)
-          TemporaryTri3(tri, divCells);
+          temporary_tri3(tri, divCells);
         else if (tri.size() == 4)  // split algorithm always gives convex quad
-          TemporaryQuad4(tri, divCells);
+          temporary_quad4(tri, divCells);
         else
         {
           std::cout << "number of sides = " << tri.size();
@@ -727,7 +727,7 @@ void CORE::GEO::CUT::FacetIntegration::generate_divergence_cells(
                             temporarily create a tri3 cell
                     this is temporary because this is not stored for the volumecell
 *--------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::FacetIntegration::TemporaryTri3(
+void CORE::GEO::CUT::FacetIntegration::temporary_tri3(
     const std::vector<Point *> &corners, std::list<Teuchos::RCP<BoundaryCell>> &divCells)
 {
   CORE::LINALG::SerialDenseMatrix xyz(3, 3);
@@ -740,7 +740,7 @@ void CORE::GEO::CUT::FacetIntegration::TemporaryTri3(
                             temporarily create a quad4 cell
                     this is temporary because this is not stored for the volumecell
 *--------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::FacetIntegration::TemporaryQuad4(
+void CORE::GEO::CUT::FacetIntegration::temporary_quad4(
     const std::vector<Point *> &corners, std::list<Teuchos::RCP<BoundaryCell>> &divCells)
 {
   CORE::LINALG::SerialDenseMatrix xyz(3, 4);
@@ -763,7 +763,7 @@ void CORE::GEO::CUT::FacetIntegration::divergence_integration_rule_new(
   // the last two parameters has no influence when called from the first parameter is set to true
   std::vector<std::vector<double>> eqn_plane_divCell;
 
-  // If the facet is not planar it will be triangulated in DirectDivergence::ListFacets().
+  // If the facet is not planar it will be triangulated in DirectDivergence::list_facets().
   // Might want to split the facet for the case it is a planar quad -> less divCells.
 
 #ifndef TRIANGULATE_ALL_FACETS_FOR_DIVERGENCECELLS
@@ -1006,7 +1006,7 @@ void CORE::GEO::CUT::FacetIntegration::generate_divergence_cells_new(bool diverg
 
   if (!divergenceRule && !face1_->OnCutSide()) return;
 
-  IsClockwise(eqn_plane_, cornersLocal);
+  is_clockwise(eqn_plane_, cornersLocal);
 
   std::vector<Point *> corners = cornersGlobal;
 
@@ -1028,7 +1028,7 @@ void CORE::GEO::CUT::FacetIntegration::generate_divergence_cells_new(bool diverg
     //-----------------------------------------------------------------
     if (corners.size() == 3)
     {
-      TemporaryTri3(corners, divCells);
+      temporary_tri3(corners, divCells);
     }
     else  // split the aribtrary noded facet into cells
     {
@@ -1037,7 +1037,7 @@ void CORE::GEO::CUT::FacetIntegration::generate_divergence_cells_new(bool diverg
       std::vector<std::vector<Point *>> split;
 
       // if the facet is warped, do centre point triangulation --> reduced error (??)
-      if (not face1_->IsPlanar(mesh, face1_->CornerPoints()))
+      if (not face1_->is_planar(mesh, face1_->CornerPoints()))
       {
         if (!face1_->IsTriangulated()) face1_->DoTriangulation(mesh, corners);
         split = face1_->Triangulation();
@@ -1056,9 +1056,9 @@ void CORE::GEO::CUT::FacetIntegration::generate_divergence_cells_new(bool diverg
       {
         const std::vector<Point *> &tri = *j;
         if (tri.size() == 3)
-          TemporaryTri3(tri, divCells);
+          temporary_tri3(tri, divCells);
         else if (tri.size() == 4)  // split algorithm always gives convex quad
-          TemporaryQuad4(tri, divCells);
+          temporary_quad4(tri, divCells);
         else
         {
           std::cout << "number of sides = " << tri.size();

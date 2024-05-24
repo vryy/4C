@@ -47,7 +47,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
         const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero = false) const override;
 
    private:
-    void DoVcycle(
+    void do_vcycle(
         const BlockedVector& X, BlockedVector& Y, int level, bool InitialGuessIsZero) const;
 
     int num_levels_;
@@ -83,7 +83,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
         const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const override;
 
    private:
-    void DoVcycle(const Epetra_MultiVector& X, Epetra_MultiVector& Y, int level,
+    void do_vcycle(const Epetra_MultiVector& X, Epetra_MultiVector& Y, int level,
         bool InitialGuessIsZero) const;
 
     int num_levels_;

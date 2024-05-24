@@ -97,7 +97,7 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
   for (auto const& face_element_iterator : face_elements)
   {
     // Only write the output for the faces that are part of a pair, since otherwise there are faces
-    // which have empty position arrays since SetState was never called on them.
+    // which have empty position arrays since set_state was never called on them.
     if (face_element_iterator.second->IsPartOfPair())
     {
       // Setup variables.
@@ -110,7 +110,7 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
               face_element_iterator.second->GetDrtFaceElement()->Shape());
 
       // Loop over element nodes.
-      for (int i_node = 0; i_node < face_element_iterator.second->GetDrtFaceElement()->NumNode();
+      for (int i_node = 0; i_node < face_element_iterator.second->GetDrtFaceElement()->num_node();
            i_node++)
       {
         for (unsigned int i_dim = 0; i_dim < 2; i_dim++)

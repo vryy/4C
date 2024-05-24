@@ -49,7 +49,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
           CORE::LINALG::SerialDenseVector& elevec3) = 0;
 
-      virtual int EvaluateNeumann(DRT::FaceElement* ele, Teuchos::ParameterList& params,
+      virtual int evaluate_neumann(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1,
           const double scalar) = 0;

@@ -44,13 +44,13 @@ namespace
       Teuchos::RCP<DRT::ELEMENTS::SoHex8> testhex8ele =
           Teuchos::rcp(new DRT::ELEMENTS::SoHex8(0, 0));
       testhex8ele->SetNodeIds(8, nodeidshex8.data());
-      testdis_->AddElement(testhex8ele);
+      testdis_->add_element(testhex8ele);
 
       // create corresponding quad4 surface contact element and store it
       Teuchos::RCP<CONTACT::Element> testcontactquad4ele =
           Teuchos::rcp(new CONTACT::Element(testhex8ele->Id() + 1, testhex8ele->Owner(),
-              testhex8ele->Shape(), testhex8ele->NumNode(), testhex8ele->NodeIds(), false, false));
-      testdis_->AddElement(testcontactquad4ele);
+              testhex8ele->Shape(), testhex8ele->num_node(), testhex8ele->NodeIds(), false, false));
+      testdis_->add_element(testcontactquad4ele);
 
       // create tet4 element and store it in the test discretization
       const std::array<int, 4> nodeidstet4 = {8, 9, 10, 11};
@@ -63,14 +63,14 @@ namespace
       Teuchos::RCP<DRT::ELEMENTS::SoTet4> testtet4ele =
           Teuchos::rcp(new DRT::ELEMENTS::SoTet4(2, 0));
       testtet4ele->SetNodeIds(4, nodeidstet4.data());
-      testdis_->AddElement(testtet4ele);
+      testdis_->add_element(testtet4ele);
 
       // create corresponding tri3 surface contact element and store it
       Teuchos::RCP<CONTACT::Element> testcontacttri3ele =
           Teuchos::rcp(new CONTACT::Element(testtet4ele->Id() + 1, testtet4ele->Owner(),
-              testtet4ele->Shape(), testtet4ele->NumNode(), testtet4ele->NodeIds(), false, false));
-      testdis_->AddElement(testcontacttri3ele);
-      testdis_->FillComplete(false, false, false);
+              testtet4ele->Shape(), testtet4ele->num_node(), testtet4ele->NodeIds(), false, false));
+      testdis_->add_element(testcontacttri3ele);
+      testdis_->fill_complete(false, false, false);
     }
   };
 

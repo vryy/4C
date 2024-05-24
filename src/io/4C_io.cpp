@@ -163,7 +163,7 @@ void IO::DiscretizationReader::ReadMesh(int step)
   dis_->DeleteNodes();
   dis_->DeleteElements();
 
-  FindMeshGroup(step, input_->ControlFile());
+  find_mesh_group(step, input_->ControlFile());
 
   Teuchos::RCP<std::vector<char>> nodedata =
       meshreader_->ReadNodeData(step, Comm().NumProc(), Comm().MyPID());
@@ -183,7 +183,7 @@ void IO::DiscretizationReader::ReadMesh(int step)
 
   dis_->SetupGhosting(true, false, false);
 
-  dis_->FillComplete();
+  dis_->fill_complete();
 
   return;
 }
@@ -193,12 +193,12 @@ void IO::DiscretizationReader::ReadMesh(int step)
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationReader::ReadNodesOnly(int step)
 {
-  FindMeshGroup(step, input_->ControlFile());
+  find_mesh_group(step, input_->ControlFile());
 
   Teuchos::RCP<std::vector<char>> nodedata =
       meshreader_->ReadNodeData(step, Comm().NumProc(), Comm().MyPID());
 
-  // unpack nodes; FillComplete() has to be called manually
+  // unpack nodes; fill_complete() has to be called manually
   dis_->UnPackMyNodes(nodedata);
   return;
 }
@@ -209,7 +209,7 @@ void IO::DiscretizationReader::ReadNodesOnly(int step)
  *----------------------------------------------------------------------*/
 void IO::DiscretizationReader::ReadHistoryData(int step)
 {
-  FindMeshGroup(step, input_->ControlFile());
+  find_mesh_group(step, input_->ControlFile());
 
   Teuchos::RCP<std::vector<char>> nodedata =
       meshreader_->ReadNodeData(step, Comm().NumProc(), Comm().MyPID());
@@ -330,7 +330,7 @@ double IO::DiscretizationReader::ReadDouble(std::string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::FindGroup(int step, MAP* file, const char* caption,
+void IO::DiscretizationReader::find_group(int step, MAP* file, const char* caption,
     const char* filestring, MAP*& result_info, MAP*& file_info)
 {
   SYMBOL* symbol;
@@ -407,8 +407,8 @@ void IO::DiscretizationReader::FindResultGroup(int step, MAP* file)
   MAP* result_info = nullptr;
   MAP* file_info = nullptr;
 
-  FindGroup(step, file, "result", "result_file", result_info, file_info);
-  reader_ = OpenFiles("result_file", file_info);
+  find_group(step, file, "result", "result_file", result_info, file_info);
+  reader_ = open_files("result_file", file_info);
 
   restart_step_ = result_info;
 }
@@ -419,13 +419,13 @@ const Epetra_Comm& IO::DiscretizationReader::Comm() const { return dis_->Comm();
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::FindMeshGroup(int step, MAP* file)
+void IO::DiscretizationReader::find_mesh_group(int step, MAP* file)
 {
   MAP* result_info = nullptr;
   MAP* file_info = nullptr;
 
-  FindGroup(step, file, "field", "mesh_file", result_info, file_info);
-  meshreader_ = OpenFiles("mesh_file", file_info);
+  find_group(step, file, "field", "mesh_file", result_info, file_info);
+  meshreader_ = open_files("mesh_file", file_info);
 
   // We do not need result_info as we are interested in the mesh files only.
 }
@@ -434,7 +434,7 @@ void IO::DiscretizationReader::FindMeshGroup(int step, MAP* file)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<IO::HDFReader> IO::DiscretizationReader::OpenFiles(
+Teuchos::RCP<IO::HDFReader> IO::DiscretizationReader::open_files(
     const char* filestring, MAP* result_step)
 {
   int numoutputproc;
@@ -471,7 +471,7 @@ int IO::DiscretizationReader::GetNumOutputProc(int step)
   MAP* result_info = nullptr;
   MAP* file_info = nullptr;
 
-  FindGroup(step, input_->ControlFile(), "result", "result_file", result_info, file_info);
+  find_group(step, input_->ControlFile(), "result", "result_file", result_info, file_info);
 
   int numoutputproc;
   if (!map_find_int(result_info, "num_output_proc", &numoutputproc))
@@ -677,35 +677,35 @@ void IO::DiscretizationWriter::CreateResultFile(const int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::NewResultFile(int numb_run)
+void IO::DiscretizationWriter::new_result_file(int numb_run)
 {
   if (binio_)
   {
     create_new_result_and_mesh_file();
-    output_->NewResultFile(numb_run, spatial_approx_);
+    output_->new_result_file(numb_run, spatial_approx_);
   }
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::NewResultFile(std::string name_appendix, int numb_run)
+void IO::DiscretizationWriter::new_result_file(std::string name_appendix, int numb_run)
 {
   if (binio_)
   {
     create_new_result_and_mesh_file();
-    output_->NewResultFile(name_appendix, numb_run, spatial_approx_);
+    output_->new_result_file(name_appendix, numb_run, spatial_approx_);
   }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::NewResultFile(std::string name)
+void IO::DiscretizationWriter::new_result_file(std::string name)
 {
   if (binio_)
   {
     create_new_result_and_mesh_file();
-    output_->NewResultFile(name, spatial_approx_);
+    output_->new_result_file(name, spatial_approx_);
   }
 }
 
@@ -898,7 +898,7 @@ void IO::DiscretizationWriter::WriteVector(
        * just make sure here the map stays alive as long as we keep our cache.
        * Otherwise subtle errors could occur. */
       mapstack_.push_back(vec->Map());
-      /* BUT: If a problem relies on FillComplete()-calls in every time step,
+      /* BUT: If a problem relies on fill_complete()-calls in every time step,
        * new maps are created in every time step. Storing all old maps in
        * mapstack_ leads to an unbounded increase in memory consumption which
        * has to be strictly avoided.
@@ -909,7 +909,7 @@ void IO::DiscretizationWriter::WriteVector(
        * is not cleared after each time step */
       if (mapstack_.size() > 20)
         FOUR_C_THROW(
-            "Careful! Due to repeated FillComplete()-calls many maps are stored in the output "
+            "Careful! Due to repeated fill_complete()-calls many maps are stored in the output "
             "process.");
     }
 
@@ -1012,7 +1012,7 @@ void IO::DiscretizationWriter::WriteVector(const std::string name, const std::ve
        * just make sure here the map stays alive as long as we keep our cache.
        * Otherwise subtle errors could occur. */
       mapstack_.push_back(elemap);
-      /* BUT: If a problem relies on FillComplete()-calls in every time step,
+      /* BUT: If a problem relies on fill_complete()-calls in every time step,
        * new maps are created in every time step. Storing all old maps in
        * mapstack_ leads to an unbounded increase in memory consumption which
        * has to be strictly avoided.
@@ -1023,7 +1023,7 @@ void IO::DiscretizationWriter::WriteVector(const std::string name, const std::ve
        * is not cleared after each time step */
       if (mapstack_.size() > 20)
         FOUR_C_THROW(
-            "Careful! Due to repeated FillComplete()-calls many maps are "
+            "Careful! Due to repeated fill_complete()-calls many maps are "
             "stored in the output process.");
     }
 
@@ -1128,7 +1128,7 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
                              << "    num_nd = " << dis_->NumGlobalNodes() << "\n"
                              << "    max_nodeid = " << max_nodeid << "\n"
                              << "    num_ele = " << dis_->NumGlobalElements() << "\n"
-                             << "    num_dof = " << dis_->DofRowMap(0)->NumGlobalElements()
+                             << "    num_dof = " << dis_->dof_row_map(0)->NumGlobalElements()
                              << "\n\n";
 
       // knotvectors for nurbs-discretisation
@@ -1176,7 +1176,7 @@ void IO::DiscretizationWriter::WriteMesh(
                              << "    step = " << step << "\n\n"
                              << "    num_nd = " << dis_->NumGlobalNodes() << "\n"
                              << "    num_ele = " << dis_->NumGlobalElements() << "\n"
-                             << "    num_dof = " << dis_->DofRowMap(0)->NumGlobalElements()
+                             << "    num_dof = " << dis_->dof_row_map(0)->NumGlobalElements()
                              << "\n\n";
 
       // knotvectors for nurbs-discretisation
@@ -1262,7 +1262,7 @@ void IO::DiscretizationWriter::write_only_nodes_in_new_field_group_to_control_fi
                              << "    num_nd = " << 0 << "\n"
                              << "    max_nodeid = " << max_nodeid << "\n"
                              << "    num_ele = " << 0 << "\n"
-                             << "    num_dof = " << dis_->DofRowMap(0)->NumGlobalElements()
+                             << "    num_dof = " << dis_->dof_row_map(0)->NumGlobalElements()
                              << "\n\n";
 
       /* name of the output file must be specified for changing geometries in

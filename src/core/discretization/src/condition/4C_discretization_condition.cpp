@@ -67,7 +67,7 @@ void CORE::Conditions::Condition::AdjustId(const int shift)
 Teuchos::RCP<CORE::Conditions::Condition> CORE::Conditions::Condition::copy_without_geometry() const
 {
   Teuchos::RCP<CORE::Conditions::Condition> copy(new Condition(*this));
-  copy->ClearGeometry();
+  copy->clear_geometry();
   return copy;
 }
 

@@ -55,18 +55,19 @@ namespace CORE::FE
   |           \dr/     |   dx dr^2   dr^2 |    \dr/
   |                    +-                -+
   *----------------------------------------------------------------------*/
-  // for enriched elements (e.g. xwall), NumNode may be larger than the number of element nodes
-  // for all other elements, NumNode==numnode
-  template <CORE::FE::CellType DISTYPE, int NumNode, int ProbDim>
+  // for enriched elements (e.g. xwall), num_node may be larger than the number of element nodes
+  // for all other elements, num_node==numnode
+  template <CORE::FE::CellType DISTYPE, int num_node, int ProbDim>
   void gder2(const CORE::LINALG::Matrix<ProbDim, ProbDim>& xjm,
-      const CORE::LINALG::Matrix<ProbDim, NumNode>& derxy,
-      const CORE::LINALG::Matrix<CORE::FE::DisTypeToNumDeriv2<DISTYPE>::numderiv2, NumNode>& deriv2,
-      const CORE::LINALG::Matrix<ProbDim, NumNode>& xyze,
-      CORE::LINALG::Matrix<CORE::FE::DisTypeToNumDeriv2<DISTYPE>::numderiv2, NumNode>& derxy2)
+      const CORE::LINALG::Matrix<ProbDim, num_node>& derxy,
+      const CORE::LINALG::Matrix<CORE::FE::DisTypeToNumDeriv2<DISTYPE>::numderiv2, num_node>&
+          deriv2,
+      const CORE::LINALG::Matrix<ProbDim, num_node>& xyze,
+      CORE::LINALG::Matrix<CORE::FE::DisTypeToNumDeriv2<DISTYPE>::numderiv2, num_node>& derxy2)
   {
     // some numbers already known during compilation
     const int numnode = CORE::FE::num_nodes<DISTYPE>;
-    FOUR_C_ASSERT(numnode <= NumNode, "Expect at least numNodePerElement matrix columns");
+    FOUR_C_ASSERT(numnode <= num_node, "Expect at least numNodePerElement matrix columns");
     const int nsd = ProbDim;
     const int numderiv2 = CORE::FE::DisTypeToNumDeriv2<DISTYPE>::numderiv2;
 
@@ -134,14 +135,15 @@ namespace CORE::FE
 
   }  // CORE::FE::gder2
 
-  template <CORE::FE::CellType DISTYPE, int NumNode>
+  template <CORE::FE::CellType DISTYPE, int num_node>
   void gder2(const CORE::LINALG::Matrix<CORE::FE::dim<DISTYPE>, CORE::FE::dim<DISTYPE>>& xjm,
-      const CORE::LINALG::Matrix<CORE::FE::dim<DISTYPE>, NumNode>& derxy,
-      const CORE::LINALG::Matrix<CORE::FE::DisTypeToNumDeriv2<DISTYPE>::numderiv2, NumNode>& deriv2,
-      const CORE::LINALG::Matrix<CORE::FE::dim<DISTYPE>, NumNode>& xyze,
-      CORE::LINALG::Matrix<CORE::FE::DisTypeToNumDeriv2<DISTYPE>::numderiv2, NumNode>& derxy2)
+      const CORE::LINALG::Matrix<CORE::FE::dim<DISTYPE>, num_node>& derxy,
+      const CORE::LINALG::Matrix<CORE::FE::DisTypeToNumDeriv2<DISTYPE>::numderiv2, num_node>&
+          deriv2,
+      const CORE::LINALG::Matrix<CORE::FE::dim<DISTYPE>, num_node>& xyze,
+      CORE::LINALG::Matrix<CORE::FE::DisTypeToNumDeriv2<DISTYPE>::numderiv2, num_node>& derxy2)
   {
-    gder2<DISTYPE, NumNode, CORE::FE::dim<DISTYPE>>(xjm, derxy, deriv2, xyze, derxy2);
+    gder2<DISTYPE, num_node, CORE::FE::dim<DISTYPE>>(xjm, derxy, deriv2, xyze, derxy2);
   }
 
 

@@ -105,12 +105,12 @@ namespace MAT
 
      private:
       /// returns the enum of the current coupling type
-      MAT::PAR::FluidPoroSingleReaction::PorofluidReactionCoupling SetCouplingType(
+      MAT::PAR::FluidPoroSingleReaction::PorofluidReactionCoupling set_coupling_type(
           Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       //! templated internal Initialize implementation
       template <int dim>
-      void InitializeInternal();
+      void initialize_internal();
 
       //! templated internal EvaluateFunction implementation
       template <int dim>

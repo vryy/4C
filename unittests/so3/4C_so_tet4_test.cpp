@@ -37,8 +37,8 @@ namespace
       // create 1 element
       testele_ = Teuchos::rcp(new DRT::ELEMENTS::SoTet4(0, 0));
       testele_->SetNodeIds(4, nodeids.data());
-      testdis_->AddElement(testele_);
-      testdis_->FillComplete(false, false, false);
+      testdis_->add_element(testele_);
+      testdis_->fill_complete(false, false, false);
 
       copytestele_ = Teuchos::rcp(new DRT::ELEMENTS::SoTet4(*testele_));
     }

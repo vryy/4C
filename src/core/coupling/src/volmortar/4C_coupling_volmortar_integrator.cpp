@@ -1786,13 +1786,13 @@ bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping3D(
       //      std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << " " << sxi[2] <<
       //      std::endl;
       //
-      //      for(int i=0;i<sele.NumNode();++i)
+      //      for(int i=0;i<sele.num_node();++i)
       //      {
       //        std::cout << "create vertex " << sele.Nodes()[i]->X()[0] <<"  "<<
       //        sele.Nodes()[i]->X()[1] <<"  "<< sele.Nodes()[i]->X()[2] <<std::endl;
       //      }
       //      std::cout << "------------" << std::endl;
-      //      for(int i=0;i<mele.NumNode();++i)
+      //      for(int i=0;i<mele.num_node();++i)
       //      {
       //        std::cout << "create vertex " << mele.Nodes()[i]->X()[0] <<"  "<<
       //        mele.Nodes()[i]->X()[1] <<"  "<< mele.Nodes()[i]->X()[2] <<std::endl;
@@ -1809,13 +1809,13 @@ bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping3D(
       //      std::cout << "\n***Warning: Gauss point projection outside!";
       //      std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
       //      std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << " " << sxi[2] <<
-      //      std::endl; for(int i=0;i<sele.NumNode();++i)
+      //      std::endl; for(int i=0;i<sele.num_node();++i)
       //      {
       //        std::cout << "create vertex " << sele.Nodes()[i]->X()[0] <<"  "<<
       //        sele.Nodes()[i]->X()[1] <<"  "<< sele.Nodes()[i]->X()[2] <<std::endl;
       //      }
       //      std::cout << "------------" << std::endl;
-      //      for(int i=0;i<mele.NumNode();++i)
+      //      for(int i=0;i<mele.num_node();++i)
       //      {
       //        std::cout << "create vertex " << mele.Nodes()[i]->X()[0] <<"  "<<
       //        mele.Nodes()[i]->X()[1] <<"  "<< mele.Nodes()[i]->X()[2] <<std::endl;
@@ -1831,13 +1831,13 @@ bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping3D(
       //      std::cout << "\n***Warning: Gauss point projection outside!";
       //      std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
       //      std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << " " << sxi[2] <<
-      //      std::endl; for(int i=0;i<sele.NumNode();++i)
+      //      std::endl; for(int i=0;i<sele.num_node();++i)
       //      {
       //        std::cout << "create vertex " << sele.Nodes()[i]->X()[0] <<"  "<<
       //        sele.Nodes()[i]->X()[1] <<"  "<< sele.Nodes()[i]->X()[2] <<std::endl;
       //      }
       //      std::cout << "------------" << std::endl;
-      //      for(int i=0;i<mele.NumNode();++i)
+      //      for(int i=0;i<mele.num_node();++i)
       //      {
       //        std::cout << "create vertex " << mele.Nodes()[i]->X()[0] <<"  "<<
       //        mele.Nodes()[i]->X()[1] <<"  "<< mele.Nodes()[i]->X()[2] <<std::endl;
@@ -1858,13 +1858,13 @@ bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping3D(
       //      std::cout << "\n***Warning: Gauss point projection outside!";
       //      std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
       //      std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << " " << mxi[2] <<
-      //      std::endl; for(int i=0;i<sele.NumNode();++i)
+      //      std::endl; for(int i=0;i<sele.num_node();++i)
       //      {
       //        std::cout << "create vertex " << sele.Nodes()[i]->X()[0] <<"  "<<
       //        sele.Nodes()[i]->X()[1] <<"  "<< sele.Nodes()[i]->X()[2] <<std::endl;
       //      }
       //      std::cout << "------------" << std::endl;
-      //      for(int i=0;i<mele.NumNode();++i)
+      //      for(int i=0;i<mele.num_node();++i)
       //      {
       //        std::cout << "create vertex " << mele.Nodes()[i]->X()[0] <<"  "<<
       //        mele.Nodes()[i]->X()[1] <<"  "<< mele.Nodes()[i]->X()[2] <<std::endl;
@@ -1880,13 +1880,13 @@ bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping3D(
       //      std::cout << "\n***Warning: Gauss point projection outside!";
       //      std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
       //      std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << " " << mxi[2] <<
-      //      std::endl; for(int i=0;i<sele.NumNode();++i)
+      //      std::endl; for(int i=0;i<sele.num_node();++i)
       //      {
       //        std::cout << "create vertex " << sele.Nodes()[i]->X()[0] <<"  "<<
       //        sele.Nodes()[i]->X()[1] <<"  "<< sele.Nodes()[i]->X()[2] <<std::endl;
       //      }
       //      std::cout << "------------" << std::endl;
-      //      for(int i=0;i<mele.NumNode();++i)
+      //      for(int i=0;i<mele.num_node();++i)
       //      {
       //        std::cout << "create vertex " << mele.Nodes()[i]->X()[0] <<"  "<<
       //        mele.Nodes()[i]->X()[1] <<"  "<< mele.Nodes()[i]->X()[2] <<std::endl;
@@ -1902,13 +1902,13 @@ bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping3D(
       //      std::cout << "\n***Warning: Gauss point projection outside!";
       //      std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
       //      std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << " " << mxi[2] <<
-      //      std::endl; for(int i=0;i<sele.NumNode();++i)
+      //      std::endl; for(int i=0;i<sele.num_node();++i)
       //      {
       //        std::cout << "create vertex " << sele.Nodes()[i]->X()[0] <<"  "<<
       //        sele.Nodes()[i]->X()[1] <<"  "<< sele.Nodes()[i]->X()[2] <<std::endl;
       //      }
       //      std::cout << "------------" << std::endl;
-      //      for(int i=0;i<mele.NumNode();++i)
+      //      for(int i=0;i<mele.num_node();++i)
       //      {
       //        std::cout << "create vertex " << mele.Nodes()[i]->X()[0] <<"  "<<
       //        mele.Nodes()[i]->X()[1] <<"  "<< mele.Nodes()[i]->X()[2] <<std::endl;
@@ -2220,7 +2220,7 @@ bool CORE::VOLMORTAR::ConsInterpolatorEval(DRT::Node* node, DRT::Element* ele,
 
     if (not P_dofrowmap->MyGID(row)) continue;
 
-    for (int k = 0; k < ele->NumNode(); ++k)
+    for (int k = 0; k < ele->num_node(); ++k)
     {
       DRT::Node* bnode = ele->Nodes()[k];
       const int col = elediscret->Dof(dofset.second, bnode, jdof);

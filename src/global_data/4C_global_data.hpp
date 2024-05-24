@@ -437,11 +437,11 @@ namespace GLOBAL
     {
       return parameters_->sublist("TSI CONTACT");
     }
-    const Teuchos::ParameterList& BeamContactParams() const
+    const Teuchos::ParameterList& beam_contact_params() const
     {
       return parameters_->sublist("BEAM CONTACT");
     }
-    const Teuchos::ParameterList& BeamPotentialParams() const
+    const Teuchos::ParameterList& beam_potential_params() const
     {
       return parameters_->sublist("BEAM POTENTIAL");
     }

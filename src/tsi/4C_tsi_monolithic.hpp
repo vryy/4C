@@ -113,25 +113,25 @@ namespace TSI
     void TimeLoop() override;
 
     //! read restart data
-    void ReadRestart(int step  //!< step number where the calculation is continued
+    void read_restart(int step  //!< step number where the calculation is continued
         ) override;
 
     //! @name Apply current field state to system
 
     //! setup composed right hand side from field solvers
-    void SetupRHS();
+    void setup_rhs();
 
     //! setup composed system matrix from field solvers
-    void SetupSystemMatrix();
+    void setup_system_matrix();
 
     //! composed system matrix
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
 
     //! solve linear TSI system
-    void LinearSolve();
+    void linear_solve();
 
     //! create linear solver (setup of parameter lists, etc...)
-    void CreateLinearSolver();
+    void create_linear_solver();
 
     //! Evaluate mechanical-thermal system matrix
     void ApplyStrCouplMatrix(
@@ -157,7 +157,7 @@ namespace TSI
 
     //! extract initial guess from fields
     //! returns \f$\Delta x_{n+1}^{<k>}\f$
-    virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
+    virtual void initial_guess(Teuchos::RCP<Epetra_Vector> ig);
 
     //! is convergence reached of iterative solution technique?
     //! keep your fingers crossed...
@@ -168,7 +168,7 @@ namespace TSI
     void NewtonFull();
 
     //! apply DBC to all blocks
-    void ApplyDBC();
+    void apply_dbc();
 
     //! do pseudo-transient continuation nonlinear iteration
     //!
@@ -183,49 +183,49 @@ namespace TSI
 
     //! print to screen information about residual forces and displacements
     //! \author lw (originally in STR) \date 12/07
-    void PrintNewtonIter();
+    void print_newton_iter();
 
-    //! contains text to PrintNewtonIter
+    //! contains text to print_newton_iter
     //! \author lw (originally in STR) \date 12/07
-    void PrintNewtonIterText(FILE* ofile  //!< output file handle
+    void print_newton_iter_text(FILE* ofile  //!< output file handle
     );
 
-    //! contains header to PrintNewtonIter
+    //! contains header to print_newton_iter
     //! \author lw (originally) \date 12/07
     void print_newton_iter_header(FILE* ofile  //!< output file handle
     );
 
     //! print statistics of converged Newton-Raphson iteration
-    void PrintNewtonConv();
+    void print_newton_conv();
 
     //! Determine norm of force residual
-    double CalculateVectorNorm(const enum INPAR::TSI::VectorNorm norm,  //!< norm to use
-        const Teuchos::RCP<const Epetra_Vector> vect                    //!< the vector of interest
+    double calculate_vector_norm(const enum INPAR::TSI::VectorNorm norm,  //!< norm to use
+        const Teuchos::RCP<const Epetra_Vector> vect  //!< the vector of interest
     );
 
     //@}
 
     //! apply infnorm scaling to linear block system
-    virtual void ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
+    virtual void scale_system(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
 
     //! undo infnorm scaling from scaled solution
-    virtual void UnscaleSolution(
+    virtual void unscale_solution(
         CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
 
    protected:
     //! @name Time loop building blocks
 
     //! start a new time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     //! calculate stresses, strains, energies
-    void PrepareOutput() override;
+    void prepare_output() override;
     //@}
 
     void prepare_contact_strategy() override;
 
     //! convergence check for Newton solver
-    bool ConvergenceCheck(int itnum, int itmax, double ittol);
+    bool convergence_check(int itnum, int itmax, double ittol);
 
     //! extract the three field vectors from a given composed vector
     /*!
@@ -234,13 +234,13 @@ namespace TSI
       \param sx (o) structural vector (e.g. displacements)
       \param tx (o) thermal vector (e.g. temperatures)
       */
-    virtual void ExtractFieldVectors(Teuchos::RCP<Epetra_Vector> x, Teuchos::RCP<Epetra_Vector>& sx,
-        Teuchos::RCP<Epetra_Vector>& tx);
+    virtual void extract_field_vectors(Teuchos::RCP<Epetra_Vector> x,
+        Teuchos::RCP<Epetra_Vector>& sx, Teuchos::RCP<Epetra_Vector>& tx);
 
     //! @name Access methods for subclasses
 
     //! full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> DofRowMap() const;
+    Teuchos::RCP<const Epetra_Map> dof_row_map() const;
 
     //! set full monolithic dof row map
     /*!
@@ -248,11 +248,11 @@ namespace TSI
      defines the number of blocks, their maps and the block order. The block
      maps must be row maps by themselves and must not contain identical GIDs.
     */
-    void SetDofRowMaps();
+    void set_dof_row_maps();
 
     //! combined DBC map
     //! unique map of all dofs that should be constrained with DBC
-    Teuchos::RCP<Epetra_Map> CombinedDBCMap();
+    Teuchos::RCP<Epetra_Map> combined_dbc_map();
 
     //! extractor to communicate between full monolithic map and block maps
     Teuchos::RCP<CORE::LINALG::MultiMapExtractor> Extractor() const { return blockrowdofmap_; }
@@ -310,13 +310,13 @@ namespace TSI
     Teuchos::RCP<CORE::LINALG::MultiMapExtractor> blockrowdofmap_;
 
     //! build block vector from field vectors, e.g. rhs, increment vector
-    void SetupVector(Epetra_Vector& f,         //!< vector of length of all dofs
+    void setup_vector(Epetra_Vector& f,        //!< vector of length of all dofs
         Teuchos::RCP<const Epetra_Vector> sv,  //!< vector containing only structural dofs
         Teuchos::RCP<const Epetra_Vector> tv   //!< vector containing only thermal dofs
     );
 
     //! check if step is admissible for line search
-    bool LSadmissible();
+    bool l_sadmissible();
 
     //! block systemmatrix
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> systemmatrix_;

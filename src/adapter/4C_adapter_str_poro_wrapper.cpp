@@ -57,7 +57,7 @@ void ADAPTER::StructurePoroWrapper::Setup()
 }
 
 //! unique map of all dofs that should be constrained with DBC
-Teuchos::RCP<const Epetra_Map> ADAPTER::StructurePoroWrapper::CombinedDBCMap()
+Teuchos::RCP<const Epetra_Map> ADAPTER::StructurePoroWrapper::combined_dbc_map()
 {
   switch (type_)
   {
@@ -65,7 +65,7 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::StructurePoroWrapper::CombinedDBCMap()
       return structure_->GetDBCMapExtractor()->CondMap();
       break;
     case FieldWrapper::type_PoroField:
-      return poro_->CombinedDBCMap();
+      return poro_->combined_dbc_map();
       break;
     default:
       FOUR_C_THROW("StructurePoroWrapper: type for this wrapper not considered!");
@@ -80,15 +80,15 @@ void ADAPTER::StructurePoroWrapper::TestResults(GLOBAL::Problem* problem)
   problem->AddFieldTest(structure_->CreateFieldTest());
 
   if (type_ == FieldWrapper::type_PoroField)
-    problem->AddFieldTest(poro_->FluidField()->CreateFieldTest());
+    problem->AddFieldTest(poro_->fluid_field()->CreateFieldTest());
 }
 
-const Teuchos::RCP<POROELAST::Monolithic>& ADAPTER::StructurePoroWrapper::PoroField()
+const Teuchos::RCP<POROELAST::Monolithic>& ADAPTER::StructurePoroWrapper::poro_field()
 {
   if (type_ == ADAPTER::FieldWrapper::type_PoroField)
     return poro_;
   else
-    FOUR_C_THROW("StructurePoroWrapper - Field not a PoroField!");
+    FOUR_C_THROW("StructurePoroWrapper - Field not a poro_field!");
   return poro_;  // do not remove FOUR_C_THROW!!! - return just to make complier happy :-)
 }
 
@@ -101,15 +101,15 @@ const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& ADAPTER::StructurePoroWrapper:
   return structure_;  // do not remove FOUR_C_THROW!!! - return just to make complier happy :-)
 }
 
-//! return poro FluidField
-const Teuchos::RCP<ADAPTER::FluidPoro>& ADAPTER::StructurePoroWrapper::FluidField()
+//! return poro fluid_field
+const Teuchos::RCP<ADAPTER::FluidPoro>& ADAPTER::StructurePoroWrapper::fluid_field()
 {
   if (type_ == FieldWrapper::type_PoroField)
-    return poro_->FluidField();
+    return poro_->fluid_field();
   else
-    FOUR_C_THROW("StructurePoroWrapper - Field not PoroField (no poro fluid field!");
+    FOUR_C_THROW("StructurePoroWrapper - Field not poro_field (no poro fluid field!");
   return poro_
-      ->FluidField();  // do not remove FOUR_C_THROW!!! - return just to make complier happy :-)
+      ->fluid_field();  // do not remove FOUR_C_THROW!!! - return just to make complier happy :-)
 }
 
 //! Insert FSI Condition Vector

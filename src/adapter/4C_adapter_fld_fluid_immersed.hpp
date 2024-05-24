@@ -36,7 +36,7 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// fluid field
-    const Teuchos::RCP<ADAPTER::Fluid>& FluidField() override { return fluid_->FluidField(); }
+    const Teuchos::RCP<ADAPTER::Fluid>& fluid_field() override { return fluid_->fluid_field(); }
 
     /// return the boundary discretization that matches the structure discretization
     Teuchos::RCP<DRT::Discretization> Discretization() override;
@@ -51,7 +51,7 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// start new time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     /// update at time step end
     void Update() override;
@@ -60,7 +60,7 @@ namespace ADAPTER
     void Output() override;
 
     /// read restart information for given time step
-    double ReadRestart(int step) override;
+    double read_restart(int step) override;
 
     /*========================================================================*/
     //! @name Solver calls
@@ -106,7 +106,7 @@ namespace ADAPTER
     int Itemax() const override { return fluidadapter_->Itemax(); }
 
     /// set the maximum number of iterations for the fluid field
-    void SetItemax(int itemax) override { FluidField()->SetItemax(itemax); }
+    void SetItemax(int itemax) override { fluid_field()->SetItemax(itemax); }
 
     /// add dirichlet conditions to dirichlet condmap before next fluid solve
     virtual void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);

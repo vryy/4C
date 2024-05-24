@@ -30,7 +30,7 @@ namespace SCATRA
 
     void Setup() override;
 
-    void PrintTimeStepInfo() override
+    void print_time_step_info() override
     {
       if (myrank_ == 0)
       {
@@ -52,7 +52,8 @@ namespace SCATRA
 
     void Update() override;
 
-    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
+    void read_restart(
+        const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
     Teuchos::RCP<Epetra_Vector> Phiaf() override { return phiaf_; }
 

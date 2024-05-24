@@ -99,12 +99,12 @@ DRT::Element* DRT::ELEMENTS::Artery::Clone() const
  *----------------------------------------------------------------------*/
 CORE::FE::CellType DRT::ELEMENTS::Artery::Shape() const
 {
-  switch (NumNode())
+  switch (num_node())
   {
     case 2:
       return CORE::FE::CellType::line2;
     default:
-      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", num_node());
   }
 }
 

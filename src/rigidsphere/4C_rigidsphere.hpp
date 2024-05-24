@@ -249,7 +249,7 @@ namespace DRT
       /*!
       \brief Evaluate a Neumann boundary condition
 
-      An element derived from this class uses the EvaluateNeumann method to receive commands
+      An element derived from this class uses the evaluate_neumann method to receive commands
       and parameters from some control routine in params and evaluates a Neumann boundary condition
       given in condition
 
@@ -265,7 +265,7 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override
@@ -394,7 +394,7 @@ namespace DRT
        *
        *  \author eichinger
        *  \date 06/17 */
-      void DissolveBond(int id)
+      void dissolve_bond(int id)
       {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
         if (mybondstobeams_.find(id) == mybondstobeams_.end())
@@ -460,12 +460,12 @@ namespace DRT
           CORE::LINALG::SerialDenseVector* force);
 
       //! calculation of drag force and corresponding stiffness contribution
-      void CalcDragForce(Teuchos::ParameterList& params, const std::vector<double>& vel,
+      void calc_drag_force(Teuchos::ParameterList& params, const std::vector<double>& vel,
           const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix* stiffmatrix,
           CORE::LINALG::SerialDenseVector* force);
 
       //! calculation of stochastic force and corresponding stiffness contribution
-      void CalcStochasticForce(Teuchos::ParameterList& params, const std::vector<double>& vel,
+      void calc_stochastic_force(Teuchos::ParameterList& params, const std::vector<double>& vel,
           const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix* stiffmatrix,
           CORE::LINALG::SerialDenseVector* force);
 
@@ -481,7 +481,7 @@ namespace DRT
           CORE::LINALG::Matrix<3, 1>& velbackground, CORE::LINALG::Matrix<3, 3>& velbackgroundgrad);
 
       //! computes damping coefficient
-      double MyDampingConstant();
+      double my_damping_constant();
 
       // don't want = operator
       Rigidsphere& operator=(const Rigidsphere& old);

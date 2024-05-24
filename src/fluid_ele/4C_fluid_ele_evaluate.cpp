@@ -37,7 +37,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
 |  Call the element to set all basic parameter                         |
 *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidType::PreEvaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
+void DRT::ELEMENTS::FluidType::pre_evaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -747,7 +747,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
  |  integration of volume Neumann conditions (body forces) takes place  |
  |  in the element. We need it there for the stabilisation terms!       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Fluid::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Fluid::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -759,7 +759,7 @@ int DRT::ELEMENTS::Fluid::EvaluateNeumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  | pre-evaluation of FluidIntFaceType class (public)        schott Jun14|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidIntFaceType::PreEvaluate(DRT::Discretization& dis,
+void DRT::ELEMENTS::FluidIntFaceType::pre_evaluate(DRT::Discretization& dis,
     Teuchos::ParameterList& p, Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -780,7 +780,7 @@ void DRT::ELEMENTS::FluidIntFaceType::PreEvaluate(DRT::Discretization& dis,
     fldintfacepara->set_face_general_xfem_parameter(p, dis.Comm().MyPID());
   }
   else
-    FOUR_C_THROW("unknown action type for FluidIntFaceType::PreEvaluate");
+    FOUR_C_THROW("unknown action type for FluidIntFaceType::pre_evaluate");
 
   return;
 }

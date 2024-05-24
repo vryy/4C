@@ -119,7 +119,7 @@ namespace MORTAR
         Teuchos::RCP<Teuchos::ParameterList> outputParams) = 0;
 
     //! Read restart data from disk
-    virtual void ReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
+    virtual void read_restart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<Epetra_Vector> zero) = 0;
 
     //! Write restart data to disk

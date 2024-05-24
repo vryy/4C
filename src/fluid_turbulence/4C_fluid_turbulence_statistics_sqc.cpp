@@ -65,7 +65,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<DRT::Discreti
 
   //----------------------------------------------------------------------
   // allocate some (toggle) vectors
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   squaredvelnp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
@@ -199,7 +199,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<DRT::Discreti
 
       int length = sblock.size();
 
-      exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
+      exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
       rblock.clear();
 
@@ -263,7 +263,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<DRT::Discreti
 
       int length = sblock.size();
 
-      exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
+      exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
       rblock.clear();
 
@@ -327,7 +327,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<DRT::Discreti
 
       int length = sblock.size();
 
-      exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
+      exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
       rblock.clear();
 
@@ -391,7 +391,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<DRT::Discreti
 
       int length = sblock.size();
 
-      exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
+      exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
       rblock.clear();
 
@@ -455,7 +455,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<DRT::Discreti
 
       int length = sblock.size();
 
-      exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
+      exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
       rblock.clear();
 
@@ -525,7 +525,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<DRT::Discreti
 
           int length = sblock.size();
 
-          exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
+          exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
           rblock.clear();
 
@@ -589,7 +589,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<DRT::Discreti
 
           int length = sblock.size();
 
-          exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
+          exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
           rblock.clear();
 

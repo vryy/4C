@@ -76,13 +76,13 @@ namespace GEOMETRYPAIR
 
 
     /**
-     * \brief Do stuff that can not be done in the Evaluate call. All pairs call PreEvaluate before
+     * \brief Do stuff that can not be done in the Evaluate call. All pairs call pre_evaluate before
      * Evaluate is called on one of them.
      * @param element_data_line (in) Degrees of freedom for the line.
      * @param element_data_surface (in) Degrees of freedom for the surface.
      * @param segments (out) Vector with the segments of this line to surface pair.
      */
-    virtual void PreEvaluate(const ElementData<line, scalar_type>& element_data_line,
+    virtual void pre_evaluate(const ElementData<line, scalar_type>& element_data_line,
         const ElementData<surface, scalar_type>& element_data_surface,
         std::vector<LineSegment<scalar_type>>& segments) const {};
 
@@ -240,7 +240,7 @@ namespace GEOMETRYPAIR
     };
 
     /**
-     * \brief Wrap the PreEvaluate call.
+     * \brief Wrap the pre_evaluate call.
      *
      * The returned segment will be directly converted from double to the FAD type, i.e., the
      * derivatives will be WRONG. The correct derivatives are set in the Evaluate wrapper.
@@ -249,12 +249,12 @@ namespace GEOMETRYPAIR
      * @param element_data_surface (in) Degrees of freedom for the surface.
      * @param segments (out) Vector with the segments of this line to surface pair.
      */
-    void PreEvaluate(const ElementData<line, scalar_type>& element_data_line,
+    void pre_evaluate(const ElementData<line, scalar_type>& element_data_line,
         const ElementData<surface, scalar_type>& element_data_surface,
         std::vector<LineSegment<scalar_type>>& segments) const override;
 
     /**
-     * \brief Wrap the PreEvaluate call.
+     * \brief Wrap the pre_evaluate call.
      *
      * The segments will be evaluated as double segments and only the converged projections /
      * intersections will be revaluated to contain the correct FAD derivatives. This process

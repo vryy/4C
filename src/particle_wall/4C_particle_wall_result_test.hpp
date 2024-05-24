@@ -75,7 +75,7 @@ namespace PARTICLEWALL
      * \param[out] nerr       number of tests with errors
      * \param[out] test_count number of tests performed
      */
-    void TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_node(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
     /*!
      * \brief test special quantity

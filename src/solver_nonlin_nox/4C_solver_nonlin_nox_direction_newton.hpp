@@ -37,7 +37,7 @@ namespace NOX
 
        private:
         // throw NOX error
-        void throwError(const std::string& functionName, const std::string& errorMsg);
+        void throw_error(const std::string& functionName, const std::string& errorMsg);
 
        private:
         //! NOX_Utils pointer

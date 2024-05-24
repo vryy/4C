@@ -68,13 +68,13 @@ namespace CONSTRAINTS
         Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp);
 
     //! output of prestressing offset for restart
-    void OutputRestart(Teuchos::RCP<IO::DiscretizationWriter> output,
+    void output_restart(Teuchos::RCP<IO::DiscretizationWriter> output,
         Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp);
 
     /*!
      \brief Read restart information
     */
-    void ReadRestart(IO::DiscretizationReader& reader, const double& time);
+    void read_restart(IO::DiscretizationReader& reader, const double& time);
 
     //! reset spring after having done a MULF prestressing update (mhv 12/2015)
     void ResetPrestress(Teuchos::RCP<Epetra_Vector> disold);

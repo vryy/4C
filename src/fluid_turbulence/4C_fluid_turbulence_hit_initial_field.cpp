@@ -140,7 +140,7 @@ namespace FLD
 
         int length = sblock.size();
 
-        exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
+        exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
         rblock.clear();
 
@@ -534,13 +534,13 @@ namespace FLD
       const int pos = loc[2] + nummodes_ * (loc[1] + nummodes_ * loc[0]);
 
       // get local dof id corresponding to the global id
-      int lid = discret_->DofRowMap()->LID(dofs[0]);
+      int lid = discret_->dof_row_map()->LID(dofs[0]);
       // set value
       int err = velnp_->ReplaceMyValues(1, &((*u1)[pos]), &lid);
       // analogous for remaining directions
-      lid = discret_->DofRowMap()->LID(dofs[1]);
+      lid = discret_->dof_row_map()->LID(dofs[1]);
       err = velnp_->ReplaceMyValues(1, &((*u2)[pos]), &lid);
-      lid = discret_->DofRowMap()->LID(dofs[2]);
+      lid = discret_->dof_row_map()->LID(dofs[2]);
       err = velnp_->ReplaceMyValues(1, &((*u3)[pos]), &lid);
       if (err > 0) FOUR_C_THROW("Could not set initial field!");
     }
@@ -1191,10 +1191,10 @@ namespace FLD
     // this is a dummy, should be zero is written in the first components of interpolVec
     intvelnp_->PutScalar(0.0);
     // set dummy
-    discret_->SetState(1, "intvelnp", intvelnp_);
+    discret_->set_state(1, "intvelnp", intvelnp_);
 
     // for 2nd evaluate
-    const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
+    const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
     CORE::LINALG::SerialDenseVector elevec1, elevec3;
     CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
     Teuchos::ParameterList initParams;
@@ -1273,7 +1273,7 @@ namespace FLD
       // now fill the ele vector into the discretization
       for (unsigned int i = 0; i < la[0].lm_.size(); ++i)
       {
-        const int lid = discret_->DofRowMap()->LID(la[0].lm_[i]);
+        const int lid = discret_->dof_row_map()->LID(la[0].lm_[i]);
         if (lid >= 0)
         {
           // Here we are facing a difficulty:

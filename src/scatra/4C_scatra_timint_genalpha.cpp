@@ -56,7 +56,7 @@ void SCATRA::TimIntGenAlpha::Setup()
   // vectors and matrices
   //                 local <-> global dof numbering
   // -------------------------------------------------------------------
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // Vectors passed to the element
   // -----------------------------
@@ -253,7 +253,7 @@ void SCATRA::TimIntGenAlpha::AVM3Separation()
     fsphiaf_->PutScalar(0.01);
 
   // set fine-scale vector
-  discret_->SetState("fsphinp", fsphiaf_);
+  discret_->set_state("fsphinp", fsphiaf_);
 }
 
 
@@ -301,14 +301,14 @@ void SCATRA::TimIntGenAlpha::add_time_integration_specific_vectors(bool forcedin
   // call base class routine
   ScaTraTimIntImpl::add_time_integration_specific_vectors(forcedincrementalsolver);
 
-  discret_->SetState("phinp", phiaf_);
+  discret_->set_state("phinp", phiaf_);
 
   if (incremental_ or forcedincrementalsolver)
-    discret_->SetState("hist", phidtam_);
+    discret_->set_state("hist", phidtam_);
   else
   {
-    discret_->SetState("hist", hist_);
-    discret_->SetState("phin", phin_);
+    discret_->set_state("hist", hist_);
+    discret_->set_state("phin", phin_);
   }
 }
 
@@ -393,10 +393,10 @@ void SCATRA::TimIntGenAlpha::WriteRestart() const
 /*----------------------------------------------------------------------*
  |                                                             vg 11/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input)
+void SCATRA::TimIntGenAlpha::read_restart(const int step, Teuchos::RCP<IO::InputControl> input)
 {
   // call base class routine
-  ScaTraTimIntImpl::ReadRestart(step, input);
+  ScaTraTimIntImpl::read_restart(step, input);
 
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)

@@ -43,7 +43,7 @@ void CONTACT::MtNoxInterface::Init(const Teuchos::RCP<STR::TIMINT::BaseDataGloba
  *----------------------------------------------------------------------------*/
 void CONTACT::MtNoxInterface::Setup()
 {
-  CheckInit();
+  check_init();
 
   // set flag at the end
   issetup_ = true;

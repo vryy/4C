@@ -58,7 +58,7 @@ namespace EHL
     void TestResults(const Epetra_Comm& comm);
 
     /// read restart
-    void ReadRestart(int restart) override;
+    void read_restart(int restart) override;
 
     //! access to structural field
     const Teuchos::RCP<ADAPTER::Structure>& StructureField() { return structure_; }
@@ -122,7 +122,7 @@ namespace EHL
     bool dry_contact_;
 
     /// setup adapters for EHL on boundary
-    virtual void SetupFieldCoupling(
+    virtual void setup_field_coupling(
         const std::string struct_disname, const std::string lubrication_disname);
 
     //! take current results for converged and save for next time step
@@ -141,7 +141,7 @@ namespace EHL
         const std::string lubrication_disname);
 
     /// set structure mesh displacement on lubrication field
-    void SetMeshDisp(Teuchos::RCP<const Epetra_Vector> disp);
+    void set_mesh_disp(Teuchos::RCP<const Epetra_Vector> disp);
 
     /// set average tangential interface velocity (ie structural velocities
     /// this is invariant w.r.t. rigid body rotations
@@ -152,10 +152,10 @@ namespace EHL
     void set_relative_velocity_field();
 
     /// set film height of the lubrication field
-    void SetHeightField();
+    void set_height_field();
 
     /// set Time derivative of height (squeeze term)
-    void SetHeightDot();
+    void set_height_dot();
 
     /// Create DBC map for unprojectable nodes
     void setup_unprojectable_dbc();

@@ -114,11 +114,12 @@ CONTACT::AbstractStratDataContainer::AbstractStratDataContainer()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONTACT::AbstractStrategy::AbstractStrategy(
-    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
-    const Epetra_Map* NodeRowMap, const Teuchos::ParameterList& params, const int spatialDim,
+    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
+    const Teuchos::ParameterList& params, const int spatialDim,
     const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
     : MORTAR::StrategyBase(
-          data_ptr, DofRowMap, NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
+          data_ptr, dof_row_map, NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
       glmdofrowmap_(data_ptr->GLmDofRowMapPtr()),
       gsnoderowmap_(data_ptr->GSlNodeRowMapPtr()),
       gmnoderowmap_(data_ptr->GMaNodeRowMapPtr()),
@@ -414,7 +415,7 @@ bool CONTACT::AbstractStrategy::redistribute_with_safe_ghosting(
       Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
           Params().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
 
-  bool first_time_step = IsFirstTimeStep();
+  bool first_time_step = is_first_time_step();
   const bool perform_rebalancing = is_rebalancing_necessary(first_time_step);
   const bool enforce_ghosting_update =
       is_update_of_ghosting_necessary(ghosting_strategy, first_time_step);
@@ -427,8 +428,8 @@ bool CONTACT::AbstractStrategy::redistribute_with_safe_ghosting(
   // Set old and current displacement state (needed for search within redistribution)
   if (perform_rebalancing)
   {
-    SetState(MORTAR::state_new_displacement, displacement);
-    SetState(MORTAR::state_old_displacement, displacement);
+    set_state(MORTAR::state_new_displacement, displacement);
+    set_state(MORTAR::state_old_displacement, displacement);
   }
 
   // Update parallel distribution and ghosting of all interfaces
@@ -457,7 +458,7 @@ bool CONTACT::AbstractStrategy::redistribute_contact_old(
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel)
 {
   // decide whether redistribution should be applied or not
-  bool first_time_step = IsFirstTimeStep();
+  bool first_time_step = is_first_time_step();
   const bool doredist = is_rebalancing_necessary(first_time_step);
 
   // get out of here if simulation is still in balance
@@ -476,8 +477,8 @@ bool CONTACT::AbstractStrategy::redistribute_contact_old(
 
   /* set old and current displacement state
    * (needed for search within redistribution) */
-  SetState(MORTAR::state_new_displacement, *dis);
-  SetState(MORTAR::state_old_displacement, *dis);
+  set_state(MORTAR::state_new_displacement, *dis);
+  set_state(MORTAR::state_old_displacement, *dis);
 
   // parallel redistribution of all interfaces
   for (int i = 0; i < (int)Interfaces().size(); ++i)
@@ -486,7 +487,7 @@ bool CONTACT::AbstractStrategy::redistribute_contact_old(
     Interfaces()[i]->Redistribute();
 
     // call fill complete again
-    Interfaces()[i]->FillComplete(true, maxdof_, ivel_[i]);
+    Interfaces()[i]->fill_complete(true, maxdof_, ivel_[i]);
 
     // print new parallel distribution
     if (Comm().MyPID() == 0)
@@ -816,7 +817,7 @@ void CONTACT::AbstractStrategy::Setup(bool redistributed, bool init)
     for (int i = 0; i < (int)Interfaces().size(); ++i)
       Interfaces()[i]->AssembleTrafo(*trafo_, *invtrafo_, donebefore);
 
-    // FillComplete() transformation matrices
+    // fill_complete() transformation matrices
     trafo_->Complete();
     invtrafo_->Complete();
   }
@@ -853,7 +854,7 @@ void CONTACT::AbstractStrategy::Setup(bool redistributed, bool init)
     }
   }
 
-  PostSetup(redistributed, init);
+  post_setup(redistributed, init);
 
   return;
 }
@@ -925,7 +926,7 @@ void CONTACT::AbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> d
     // mortar initialization and evaluation
     Comm().Barrier();
     const double t_start1 = Teuchos::Time::wallTime();
-    SetState(MORTAR::state_new_displacement, *dis);
+    set_state(MORTAR::state_new_displacement, *dis);
     Comm().Barrier();
     const double t_end1 = Teuchos::Time::wallTime() - t_start1;
 
@@ -991,7 +992,7 @@ void CONTACT::AbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> d
   else
   {
     // mortar initialization and evaluation
-    SetState(MORTAR::state_new_displacement, *dis);
+    set_state(MORTAR::state_new_displacement, *dis);
 
     //---------------------------------------------------------------
     // For selfcontact the master/slave sets are updated within the -
@@ -1036,7 +1037,7 @@ void CONTACT::AbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> d
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::SetState(
+void CONTACT::AbstractStrategy::set_state(
     const enum MORTAR::StateType& statetype, const Epetra_Vector& vec)
 {
   switch (statetype)
@@ -1045,7 +1046,7 @@ void CONTACT::AbstractStrategy::SetState(
     case MORTAR::state_old_displacement:
     {
       // set state on interfaces
-      for (int i = 0; i < (int)Interfaces().size(); ++i) Interfaces()[i]->SetState(statetype, vec);
+      for (int i = 0; i < (int)Interfaces().size(); ++i) Interfaces()[i]->set_state(statetype, vec);
       break;
     }
     default:
@@ -1146,7 +1147,7 @@ void CONTACT::AbstractStrategy::calc_mean_velocity_for_binning(const Epetra_Vect
   for (const auto& interface : Interfaces())
   {
     Teuchos::RCP<Epetra_Vector> interfaceVelocity =
-        Teuchos::rcp(new Epetra_Vector(*interface->Discret().DofRowMap()));
+        Teuchos::rcp(new Epetra_Vector(*interface->Discret().dof_row_map()));
     CORE::LINALG::Export(velocity, *interfaceVelocity);
 
     double meanVelocity = 0.0;
@@ -1468,7 +1469,7 @@ void CONTACT::AbstractStrategy::AssembleMortar()
 #endif  // #ifdef CONTACTFDMORTARM
   }
 
-  // FillComplete() global Mortar matrices
+  // fill_complete() global Mortar matrices
   dmatrix_->Complete();
   mmatrix_->Complete(*gmdofrowmap_, SlDoFRowMap(true));
 
@@ -1632,7 +1633,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AbstractStrategy::EvaluateNorm
   // set displacement state and evaluate nodal normals
   for (int i = 0; i < (int)Interfaces().size(); ++i)
   {
-    Interfaces()[i]->SetState(MORTAR::state_new_displacement, *dis);
+    Interfaces()[i]->set_state(MORTAR::state_new_displacement, *dis);
     Interfaces()[i]->evaluate_nodal_normals();
   }
 
@@ -1963,7 +1964,7 @@ void CONTACT::AbstractStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
   // old displacements in nodes
   // (this is NOT only needed for friction but also for calculating
   // the auxiliary positions in binarytree contact search)
-  SetState(MORTAR::state_old_displacement, *dis);
+  set_state(MORTAR::state_old_displacement, *dis);
 
   // reset active set status for next time step
   ResetActiveSet();
@@ -2074,8 +2075,8 @@ void CONTACT::AbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader,
   bool restartwithcontact = CORE::UTILS::IntegralValue<int>(Params(), "RESTART_WITH_CONTACT");
 
   // set restart displacement state
-  SetState(MORTAR::state_new_displacement, *dis);
-  SetState(MORTAR::state_old_displacement, *dis);
+  set_state(MORTAR::state_new_displacement, *dis);
+  set_state(MORTAR::state_old_displacement, *dis);
 
   // evaluate interface and restart mortar quantities
   // in the case of SELF CONTACT, also re-setup master/slave maps
@@ -2950,7 +2951,7 @@ void CONTACT::AbstractStrategy::collect_maps_for_preconditioner(
 void CONTACT::AbstractStrategy::Reset(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp, const Epetra_Vector& xnew)
 {
-  SetState(MORTAR::state_new_displacement, dispnp);
+  set_state(MORTAR::state_new_displacement, dispnp);
   reset_lagrange_multipliers(cparams, xnew);
 
   return;
@@ -2962,7 +2963,7 @@ void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
     const std::vector<Teuchos::RCP<const Epetra_Vector>>* eval_vec,
     const std::vector<Teuchos::RCP<Epetra_Vector>>* eval_vec_mutable)
 {
-  PreEvaluate(cparams);
+  pre_evaluate(cparams);
 
   const enum MORTAR::ActionType& act = cparams.GetActionType();
   switch (act)
@@ -3147,7 +3148,7 @@ void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
     }
   }
 
-  PostEvaluate(cparams);
+  post_evaluate(cparams);
 
   return;
 }
@@ -3424,7 +3425,7 @@ void CONTACT::AbstractStrategy::postprocess_quantities_per_interface(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool CONTACT::AbstractStrategy::IsFirstTimeStep() const
+bool CONTACT::AbstractStrategy::is_first_time_step() const
 {
   bool first_time_step = false;
   if (unbalanceEvaluationTime_.size() == 0 && unbalanceNumSlaveElements_.size() == 0)

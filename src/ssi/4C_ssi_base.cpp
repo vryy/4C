@@ -81,25 +81,25 @@ void SSI::SSIBase::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
     const std::string& struct_disname, const std::string& scatra_disname, bool isAle)
 {
   // reset the setup flag
-  SetIsSetup(false);
+  set_is_setup(false);
 
   // do discretization specific setup (e.g. clone discr. scatra from structure)
   InitDiscretizations(comm, struct_disname, scatra_disname,
       CORE::UTILS::IntegralValue<bool>(globaltimeparams, "REDISTRIBUTE_SOLID"));
 
-  InitTimeIntegrators(
+  init_time_integrators(
       globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   const RedistributionType redistribution_type = InitFieldCoupling(struct_disname);
 
   if (redistribution_type != SSI::RedistributionType::none) Redistribute(redistribution_type);
 
-  CheckSSIFlags();
+  check_ssi_flags();
 
   check_ssi_interface_conditions(struct_disname);
 
   // set isinit_ flag true
-  SetIsInit(true);
+  set_is_init(true);
 }
 
 /*----------------------------------------------------------------------*
@@ -108,15 +108,15 @@ void SSI::SSIBase::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
 void SSI::SSIBase::Setup()
 {
   // check initialization
-  CheckIsInit();
+  check_is_init();
 
   // set up helper class for field coupling
   ssicoupling_->Setup();
 
   // in case of an ssi  multi scale formulation we need to set the displacement here
   auto dummy_vec = Teuchos::rcp(
-      new Epetra_Vector(*GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap(), true));
-  ssicoupling_->SetMeshDisp(ScaTraBaseAlgorithm(), dummy_vec);
+      new Epetra_Vector(*GLOBAL::Problem::Instance()->GetDis("structure")->dof_row_map(), true));
+  ssicoupling_->set_mesh_disp(ScaTraBaseAlgorithm(), dummy_vec);
 
   // set up scalar transport field
   ScaTraField()->Setup();
@@ -124,10 +124,10 @@ void SSI::SSIBase::Setup()
 
   // only relevant for new structural time integration
   // only if adapter base has not already been set up outside
-  if (not use_old_structure_ and not struct_adapterbase_ptr_->IsSetup())
+  if (not use_old_structure_ and not struct_adapterbase_ptr_->is_setup())
   {
     // set up structural model evaluator
-    SetupModelEvaluator();
+    setup_model_evaluator();
 
     // pass initial scalar field to structural discretization to correctly compute initial
     // accelerations
@@ -147,8 +147,8 @@ void SSI::SSIBase::Setup()
     //   temperature is non primary variable. Only set, if function for temperature is given
     if (temperature_funct_num_ != -1)
     {
-      temperature_vector_ = Teuchos::rcp(
-          new Epetra_Vector(*GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap(2), true));
+      temperature_vector_ = Teuchos::rcp(new Epetra_Vector(
+          *GLOBAL::Problem::Instance()->GetDis("structure")->dof_row_map(2), true));
 
       temperature_vector_->PutScalar(
           GLOBAL::Problem::Instance()
@@ -183,15 +183,15 @@ void SSI::SSIBase::Setup()
   if (is_s2_i_kinetics_with_pseudo_contact())
   {
     auto dummy_stress_state =
-        Teuchos::rcp(new Epetra_Vector(*StructureField()->Discretization()->DofRowMap(2), true));
+        Teuchos::rcp(new Epetra_Vector(*StructureField()->Discretization()->dof_row_map(2), true));
     ssicoupling_->set_mechanical_stress_state(*ScaTraField()->Discretization(), dummy_stress_state,
         ScaTraField()->nds_two_tensor_quantity());
   }
 
   // check maps from scalar transport and structure discretizations
-  if (ScaTraField()->DofRowMap()->NumGlobalElements() == 0)
+  if (ScaTraField()->dof_row_map()->NumGlobalElements() == 0)
     FOUR_C_THROW("Scalar transport discretization does not have any degrees of freedom!");
-  if (structure_->DofRowMap()->NumGlobalElements() == 0)
+  if (structure_->dof_row_map()->NumGlobalElements() == 0)
     FOUR_C_THROW("Structure discretization does not have any degrees of freedom!");
 
   // set up materials
@@ -214,10 +214,10 @@ void SSI::SSIBase::Setup()
   }
 
   // construct vector of zeroes
-  zeros_structure_ = CORE::LINALG::CreateVector(*structure_->DofRowMap());
+  zeros_structure_ = CORE::LINALG::CreateVector(*structure_->dof_row_map());
 
   // set flag
-  SetIsSetup(true);
+  set_is_setup(true);
 }
 
 /*----------------------------------------------------------------------*
@@ -247,7 +247,7 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
 
     // fill scatra discretization by cloning structure discretization
     DRT::UTILS::CloneDiscretization<SSI::ScatraStructureCloneStrategy>(structdis, scatradis);
-    scatradis->FillComplete();
+    scatradis->fill_complete();
 
     // create discretization for scatra manifold based on SSISurfaceManifold condition
     if (IsScaTraManifold())
@@ -285,7 +285,7 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
       for (const auto& condition_to_copy : conditions_to_copy)
         creator.CopyConditions(*structdis, *scatra_manifold_dis, condition_to_copy);
 
-      scatra_manifold_dis->FillComplete();
+      scatra_manifold_dis->fill_complete();
 
       //! in case of mesh tying between manifolds: unite manifold domains -> create new
       //! ScatraPartitioning condition
@@ -320,7 +320,7 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
 
         scatra_manifold_dis->SetCondition("ScatraPartitioning", cond);
 
-        scatra_manifold_dis->FillComplete();
+        scatra_manifold_dis->fill_complete();
       }
     }
   }
@@ -443,11 +443,11 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struc
 /*----------------------------------------------------------------------*
  | read restart information for given time step (public)   vuong 01/12  |
  *----------------------------------------------------------------------*/
-void SSI::SSIBase::ReadRestart(int restart)
+void SSI::SSIBase::read_restart(int restart)
 {
   if (restart)
   {
-    structure_->ReadRestart(restart);
+    structure_->read_restart(restart);
 
     const Teuchos::ParameterList& ssidyn = GLOBAL::Problem::Instance()->SSIControlParams();
     const bool restartfromstructure =
@@ -455,8 +455,8 @@ void SSI::SSIBase::ReadRestart(int restart)
 
     if (not restartfromstructure)  // standard restart
     {
-      ScaTraField()->ReadRestart(restart);
-      if (IsScaTraManifold()) ScaTraManifold()->ReadRestart(restart);
+      ScaTraField()->read_restart(restart);
+      if (IsScaTraManifold()) ScaTraManifold()->read_restart(restart);
     }
     else  // restart from structure simulation
     {
@@ -469,7 +469,7 @@ void SSI::SSIBase::ReadRestart(int restart)
     SetTimeStep(structure_->TimeOld(), restart);
   }
 
-  // Material pointers to other field were deleted during ReadRestart().
+  // Material pointers to other field were deleted during read_restart().
   // They need to be reset.
   ssicoupling_->assign_material_pointers(
       structure_->Discretization(), ScaTraField()->Discretization());
@@ -495,11 +495,11 @@ void SSI::SSIBase::SetStructSolution(Teuchos::RCP<const Epetra_Vector> disp,
     Teuchos::RCP<const Epetra_Vector> vel, const bool set_mechanical_stress)
 {
   // safety checks
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
-  SetMeshDisp(disp);
-  SetVelocityFields(vel);
+  set_mesh_disp(disp);
+  set_velocity_fields(vel);
 
   if (set_mechanical_stress)
     set_mechanical_stress_state(modelevaluator_ssi_base_->get_mechanical_stress_state());
@@ -510,7 +510,7 @@ void SSI::SSIBase::SetStructSolution(Teuchos::RCP<const Epetra_Vector> disp,
 void SSI::SSIBase::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) const
 {
   // safety checks
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
   ssicoupling_->SetScalarField(*StructureField()->Discretization(), phi, 1);
@@ -521,7 +521,7 @@ void SSI::SSIBase::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) cons
 void SSI::SSIBase::set_micro_scatra_solution(Teuchos::RCP<const Epetra_Vector> phi) const
 {
   // safety checks
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
   ssicoupling_->SetScalarFieldMicro(*StructureField()->Discretization(), phi, 2);
@@ -548,15 +548,15 @@ void SSI::SSIBase::evaluate_and_set_temperature_field()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::SetVelocityFields(Teuchos::RCP<const Epetra_Vector> vel)
+void SSI::SSIBase::set_velocity_fields(Teuchos::RCP<const Epetra_Vector> vel)
 {
   // safety checks
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
-  ssicoupling_->SetVelocityFields(ScaTraBaseAlgorithm(), zeros_structure_, vel);
+  ssicoupling_->set_velocity_fields(ScaTraBaseAlgorithm(), zeros_structure_, vel);
   if (IsScaTraManifold())
-    ssicoupling_->SetVelocityFields(sca_tra_manifold_base_algorithm(), zeros_structure_, vel);
+    ssicoupling_->set_velocity_fields(sca_tra_manifold_base_algorithm(), zeros_structure_, vel);
 }
 
 /*----------------------------------------------------------------------*/
@@ -564,7 +564,7 @@ void SSI::SSIBase::SetVelocityFields(Teuchos::RCP<const Epetra_Vector> vel)
 void SSI::SSIBase::set_mechanical_stress_state(
     Teuchos::RCP<const Epetra_Vector> mechanical_stress_state) const
 {
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
   ssicoupling_->set_mechanical_stress_state(*ScaTraField()->Discretization(),
@@ -573,19 +573,19 @@ void SSI::SSIBase::set_mechanical_stress_state(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::SetMeshDisp(Teuchos::RCP<const Epetra_Vector> disp)
+void SSI::SSIBase::set_mesh_disp(Teuchos::RCP<const Epetra_Vector> disp)
 {
   // safety checks
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
-  ssicoupling_->SetMeshDisp(ScaTraBaseAlgorithm(), disp);
-  if (IsScaTraManifold()) ssicoupling_->SetMeshDisp(sca_tra_manifold_base_algorithm(), disp);
+  ssicoupling_->set_mesh_disp(ScaTraBaseAlgorithm(), disp);
+  if (IsScaTraManifold()) ssicoupling_->set_mesh_disp(sca_tra_manifold_base_algorithm(), disp);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::CheckSSIFlags() const
+void SSI::SSIBase::check_ssi_flags() const
 {
   if (ScaTraField()->S2IKinetics())
   {
@@ -610,16 +610,16 @@ void SSI::SSIBase::CheckSSIFlags() const
 /*----------------------------------------------------------------------*/
 void SSI::SSIBase::set_dt_from_sca_tra_to_structure()
 {
-  StructureField()->SetDt(ScaTraField()->Dt());
+  StructureField()->set_dt(ScaTraField()->Dt());
   StructureField()->SetTimen(ScaTraField()->Time());
-  StructureField()->PostUpdate();
+  StructureField()->post_update();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSIBase::set_dt_from_sca_tra_to_manifold()
 {
-  ScaTraManifold()->SetDt(ScaTraField()->Dt());
+  ScaTraManifold()->set_dt(ScaTraField()->Dt());
   ScaTraManifold()->SetTimeStep(ScaTraField()->Time(), ScaTraField()->Step());
 }
 
@@ -629,7 +629,7 @@ void SSI::SSIBase::set_dt_from_sca_tra_to_ssi()
 {
   // set values for this SSI algorithm
   SetTimeStep(ScaTraField()->Time(), Step());
-  SetDt(ScaTraField()->Dt());
+  set_dt(ScaTraField()->Dt());
 
   // set values for other fields
   set_dt_from_sca_tra_to_structure();
@@ -684,7 +684,7 @@ Teuchos::RCP<SCATRA::ScaTraTimIntImpl> SSI::SSIBase::ScaTraManifold() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::InitTimeIntegrators(const Teuchos::ParameterList& globaltimeparams,
+void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
     const std::string& struct_disname, const std::string& scatra_disname, const bool isAle)
 {
@@ -900,7 +900,7 @@ void SSI::SSIBase::SetupSystem()
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::SSIBase::SetupModelEvaluator()
+void SSI::SSIBase::setup_model_evaluator()
 {
   // register the model evaluator if s2i condition with pseudo contact is available
   if (is_s2_i_kinetics_with_pseudo_contact())

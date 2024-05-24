@@ -540,7 +540,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
           {
             // prepare time step on micro scale
             Teuchos::rcp_static_cast<MAT::ScatraMultiScale>(ele->Material())
-                ->PrepareTimeStep(iquad, std::vector<double>(1, scatravarmanager_->Phinp(0)));
+                ->prepare_time_step(iquad, std::vector<double>(1, scatravarmanager_->Phinp(0)));
           }
           else
           {
@@ -603,7 +603,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
         // loop over all Gauss points
         for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
           // read restart on micro scale
-          Teuchos::rcp_dynamic_cast<MAT::ScatraMultiScale>(ele->Material())->ReadRestart(iquad);
+          Teuchos::rcp_dynamic_cast<MAT::ScatraMultiScale>(ele->Material())->read_restart(iquad);
       }
 
       break;
@@ -1013,7 +1013,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_initial_time_derivativ
   }    // integration loop
 
   // scale element matrix appropriately to be consistent with scaling of global residual vector
-  // computed by AssembleMatAndRHS() routine (see calc_initial_time_derivative() routine on time
+  // computed by assemble_mat_and_rhs() routine (see calc_initial_time_derivative() routine on time
   // integrator level)
   emat.scale(scatraparatimint_->TimeFacRhs());
 }  // ScaTraEleCalc::calc_initial_time_derivative()
@@ -1406,7 +1406,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrDiffMatrix(
  | finite difference check on element level (for debugging only) (protected)   fang 10/14 |
  *----------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::FDCheck(DRT::Element* ele,
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::fd_check(DRT::Element* ele,
     CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
     CORE::LINALG::SerialDenseVector& subgrdiff)
 {

@@ -58,7 +58,7 @@ void NOX::NLN::SINGLESTEP::Group::computeX(
   // Cast to appropriate type, then call the "native" computeX
   const NOX::NLN::SINGLESTEP::Group* nlngrp =
       dynamic_cast<const NOX::NLN::SINGLESTEP::Group*>(&grp);
-  if (nlngrp == nullptr) throwError("computeX", "dyn_cast to nox_nln_group failed!");
+  if (nlngrp == nullptr) throw_error("computeX", "dyn_cast to nox_nln_group failed!");
   const ::NOX::Epetra::Vector& epetrad = dynamic_cast<const ::NOX::Epetra::Vector&>(d);
 
   computeX(*nlngrp, epetrad, step);
@@ -84,7 +84,7 @@ void NOX::NLN::SINGLESTEP::Group::computeX(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::SINGLESTEP::Group::throwError(
+void NOX::NLN::SINGLESTEP::Group::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   std::ostringstream msg;

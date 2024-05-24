@@ -63,7 +63,7 @@ bool CONTACT::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInte
   // set segmentation status of all slave nodes
   // (hassegment_ of a slave node is true if ANY segment/cell
   // is integrated that contributes to this slave node)
-  int nnodes = SlaveElement().NumNode();
+  int nnodes = SlaveElement().num_node();
   DRT::Node** mynodes = SlaveElement().Nodes();
   if (!mynodes) FOUR_C_THROW("Null pointer!");
   for (int k = 0; k < nnodes; ++k)
@@ -79,7 +79,7 @@ bool CONTACT::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInte
   double mxia = xiproj_[2];
   double mxib = xiproj_[3];
 
-  // create a CONTACT integrator instance with correct NumGP and Dim
+  // create a CONTACT integrator instance with correct num_gp and Dim
   Teuchos::RCP<CONTACT::Integrator> integrator =
       CONTACT::INTEGRATOR::BuildIntegrator(stype_, imortar_, SlaveElement().Shape(), Comm());
   // *******************************************************************
@@ -212,7 +212,7 @@ void CONTACT::Coupling2dManager::IntegrateCoupling(
     }
 
     // calculate consistent dual shape functions for this element
-    ConsistDualShape();
+    consist_dual_shape();
 
     // do mortar integration
     for (int m = 0; m < (int)MasterElements().size(); ++m)
@@ -230,7 +230,7 @@ void CONTACT::Coupling2dManager::IntegrateCoupling(
   {
     if ((int)MasterElements().size() == 0) return;
 
-    // create an integrator instance with correct NumGP and Dim
+    // create an integrator instance with correct num_gp and Dim
     Teuchos::RCP<CONTACT::Integrator> integrator =
         CONTACT::INTEGRATOR::BuildIntegrator(stype_, imortar_, SlaveElement().Shape(), Comm());
 
@@ -296,7 +296,7 @@ void CONTACT::Coupling2dManager::IntegrateCoupling(
           }
 
           // calculate consistent dual shape functions for this element
-          ConsistDualShape();
+          consist_dual_shape();
 
           // do mortar integration
           for (int m = 0; m < (int)MasterElements().size(); ++m)
@@ -373,7 +373,7 @@ void CONTACT::Coupling2dManager::IntegrateCoupling(
 /*----------------------------------------------------------------------*
  |  Calculate dual shape functions                           seitz 07/13|
  *----------------------------------------------------------------------*/
-void CONTACT::Coupling2dManager::ConsistDualShape()
+void CONTACT::Coupling2dManager::consist_dual_shape()
 {
   // For standard shape functions no modification is necessary
   // A switch erlier in the process improves computational efficiency
@@ -390,7 +390,7 @@ void CONTACT::Coupling2dManager::ConsistDualShape()
   // do nothing if there are no coupling pairs
   if (Coupling().size() == 0) return;
 
-  const int nnodes = SlaveElement().NumNode();
+  const int nnodes = SlaveElement().num_node();
   const int ndof = 2;
 
   int linsize = 0;
@@ -401,7 +401,7 @@ void CONTACT::Coupling2dManager::ConsistDualShape()
   }
 
   int mnodes = 0;
-  for (int m = 0; m < (int)Coupling().size(); ++m) mnodes += MasterElements()[m]->NumNode();
+  for (int m = 0; m < (int)Coupling().size(); ++m) mnodes += MasterElements()[m]->num_node();
 
   // detect entire overlap
   double ximin = 1.0;
@@ -530,7 +530,7 @@ void CONTACT::Coupling2dManager::ConsistDualShape()
       dsxigp[p->first] += 0.5 * (1 + eta[0]) * (p->second);
 
     // evaluate the Jacobian derivative
-    CORE::GEN::Pairedvector<int, double> derivjac(SlaveElement().NumNode() * Dim());
+    CORE::GEN::Pairedvector<int, double> derivjac(SlaveElement().num_node() * Dim());
     SlaveElement().DerivJacobian(sxi, derivjac);
 
     // integrate dual shape matrices de, me and their linearizations

@@ -44,68 +44,68 @@ namespace DRT
       /// whether to write velocity
       bool OutputVelocityState() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return output_velocity_state_;
       };
 
       /// whether to write pressure
       bool OutputPressureState() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return output_pressure_state_;
       };
 
       /// whether to write velocity
       bool output_acceleration_state() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return output_acceleration_state_;
       };
 
       /// whether to write displacements
       bool output_displacement_state() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return output_displacement_state_;
       };
 
       /// whether to write velocity
       bool output_grid_velocity_state() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return output_gridvelocity_state_;
       };
 
       /// whether to write the owner of elements
       bool OutputElementOwner() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return output_element_owner_;
       };
 
       /// whether to write the GIDs of elements
       bool OutputElementGID() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return output_element_gid_;
       };
 
       /// whether to write the GIDs of the nodes
       bool OutputNodeGID() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return output_node_gid_;
       };
 
      private:
       /// get the init indicator status
-      const bool& IsInit() const { return isinit_; };
+      const bool& is_init() const { return isinit_; };
 
       /// get the setup indicator status
-      const bool& IsSetup() const { return issetup_; };
+      const bool& is_setup() const { return issetup_; };
 
       /// Check if Init() and Setup() have been called, yet.
-      void CheckInitSetup() const;
+      void check_init_setup() const;
 
 
      private:

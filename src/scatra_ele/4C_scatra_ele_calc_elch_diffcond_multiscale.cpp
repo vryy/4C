@@ -139,8 +139,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
       my::get_laplacian_weak_form(laplawf, ui, vi);
       emat(fvi + 2, fui) += -vi_dq_dc_el_ui;
       emat(fvi + 2, fui + 1) += -vi_dq_dpot_el_ui;
-      emat(fvi + 2, fui + 2) += timefacfac * mydiffcond::VarManager()->InvF() *
-                                    DiffManager()->GetPhasePoroTort(0) *
+      emat(fvi + 2, fui + 2) += timefacfac * mydiffcond::var_manager()->InvF() *
+                                    diff_manager()->GetPhasePoroTort(0) *
                                     newmanmultiscale->electronic_cond(iquad) * laplawf -
                                 vi_dq_dpot_ed_ui;
     }
@@ -154,8 +154,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
 
     double laplawfrhs_gradpot(0.0);
     my::get_laplacian_weak_form_rhs(laplawfrhs_gradpot, gradpot_ed, vi);
-    erhs[fvi + 2] -= rhsfac * mydiffcond::VarManager()->InvF() *
-                         DiffManager()->GetPhasePoroTort(0) *
+    erhs[fvi + 2] -= rhsfac * mydiffcond::var_manager()->InvF() *
+                         diff_manager()->GetPhasePoroTort(0) *
                          newmanmultiscale->electronic_cond(iquad) * laplawfrhs_gradpot -
                      vi_rhsterm;
   }

@@ -112,7 +112,7 @@ void STRUMULTI::np_support_drt()
       case 1:
       {
         // dummy material is used to prepare the output of the micro material
-        dummymaterials[eleID]->PrepareOutput();
+        dummymaterials[eleID]->prepare_output();
         break;
       }
       case 2:
@@ -158,7 +158,7 @@ void STRUMULTI::np_support_drt()
           dummymaterials[eleID] = Teuchos::rcp_static_cast<MAT::MicroMaterial>(MAT::Factory(1));
 
         // dummy material is used to restart the micro material
-        dummymaterials[eleID]->ReadRestart(gp, eleID, eleowner, microdisnum, V0);
+        dummymaterials[eleID]->read_restart(gp, eleID, eleowner, microdisnum, V0);
         break;
       }
       case 9:

@@ -29,11 +29,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | ctor (public)                                              popp 05/09|
  *----------------------------------------------------------------------*/
-CONTACT::MtPenaltyStrategy::MtPenaltyStrategy(const Epetra_Map* DofRowMap,
+CONTACT::MtPenaltyStrategy::MtPenaltyStrategy(const Epetra_Map* dof_row_map,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<Teuchos::RCP<MORTAR::Interface>> interface, const int spatialDim,
     const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
-    : MtAbstractStrategy(DofRowMap, NodeRowMap, params, interface, spatialDim, comm, alphaf, maxdof)
+    : MtAbstractStrategy(
+          dof_row_map, NodeRowMap, params, interface, spatialDim, comm, alphaf, maxdof)
 {
   // initialize constraint norm and initial penalty
   constrnorm_ = 0.0;
@@ -325,7 +326,7 @@ void CONTACT::MtPenaltyStrategy::ResetPenalty()
   // reset penalty parameter in all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    interface_[i]->InterfaceParams().set<double>("PENALTYPARAM", InitialPenalty());
+    interface_[i]->interface_params().set<double>("PENALTYPARAM", InitialPenalty());
   }
 
   return;
@@ -346,7 +347,7 @@ void CONTACT::MtPenaltyStrategy::ModifyPenalty()
   // modify penalty parameter in all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    interface_[i]->InterfaceParams().set<double>("PENALTYPARAM", pennew);
+    interface_[i]->interface_params().set<double>("PENALTYPARAM", pennew);
   }
 
   return;
@@ -387,9 +388,9 @@ void CONTACT::MtPenaltyStrategy::update_constraint_norm(int uzawaiter)
       // update penalty parameter in all interfaces
       for (int i = 0; i < (int)interface_.size(); ++i)
       {
-        double ippcurr = interface_[i]->InterfaceParams().get<double>("PENALTYPARAM");
+        double ippcurr = interface_[i]->interface_params().get<double>("PENALTYPARAM");
         if (ippcurr != ppcurr) FOUR_C_THROW("Something wrong with penalty parameter");
-        interface_[i]->InterfaceParams().set<double>("PENALTYPARAM", 10 * ippcurr);
+        interface_[i]->interface_params().set<double>("PENALTYPARAM", 10 * ippcurr);
       }
     }
   }
@@ -428,7 +429,7 @@ void CONTACT::MtPenaltyStrategy::update_uzawa_augmented_lagrange()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::MtPenaltyStrategy::EvaluateForce(const Teuchos::RCP<const Epetra_Vector> dis)
+bool CONTACT::MtPenaltyStrategy::evaluate_force(const Teuchos::RCP<const Epetra_Vector> dis)
 {
   if (force_.is_null()) force_ = Teuchos::rcp(new Epetra_Vector(*gdisprowmap_));
   if (stiff_->Multiply(false, *dis, *force_)) FOUR_C_THROW("multiply failed");
@@ -438,17 +439,17 @@ bool CONTACT::MtPenaltyStrategy::EvaluateForce(const Teuchos::RCP<const Epetra_V
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::MtPenaltyStrategy::EvaluateStiff(const Teuchos::RCP<const Epetra_Vector> dis)
+bool CONTACT::MtPenaltyStrategy::evaluate_stiff(const Teuchos::RCP<const Epetra_Vector> dis)
 {
   return true;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::MtPenaltyStrategy::EvaluateForceStiff(const Teuchos::RCP<const Epetra_Vector> dis)
+bool CONTACT::MtPenaltyStrategy::evaluate_force_stiff(const Teuchos::RCP<const Epetra_Vector> dis)
 {
-  bool successForce = EvaluateForce(dis);
-  bool successStiff = EvaluateStiff(dis);
+  bool successForce = evaluate_force(dis);
+  bool successStiff = evaluate_stiff(dis);
 
   return (successForce && successStiff);
 }

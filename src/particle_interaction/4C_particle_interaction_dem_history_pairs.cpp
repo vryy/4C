@@ -53,7 +53,7 @@ void PARTICLEINTERACTION::DEMHistoryPairs::WriteRestart() const
     buffer = Teuchos::rcp(new std::vector<char>);
 
     if (not particletangentialhistorydata_.empty())
-      PackAllHistoryPairs(*buffer, particletangentialhistorydata_);
+      pack_all_history_pairs(*buffer, particletangentialhistorydata_);
 
     binwriter->WriteCharVector("ParticleTangentialHistoryData", buffer);
   }
@@ -63,7 +63,7 @@ void PARTICLEINTERACTION::DEMHistoryPairs::WriteRestart() const
     buffer = Teuchos::rcp(new std::vector<char>);
 
     if (not particlewalltangentialhistorydata_.empty())
-      PackAllHistoryPairs(*buffer, particlewalltangentialhistorydata_);
+      pack_all_history_pairs(*buffer, particlewalltangentialhistorydata_);
 
     binwriter->WriteCharVector("ParticleWallTangentialHistoryData", buffer);
   }
@@ -73,7 +73,7 @@ void PARTICLEINTERACTION::DEMHistoryPairs::WriteRestart() const
     buffer = Teuchos::rcp(new std::vector<char>);
 
     if (not particlerollinghistorydata_.empty())
-      PackAllHistoryPairs(*buffer, particlerollinghistorydata_);
+      pack_all_history_pairs(*buffer, particlerollinghistorydata_);
 
     binwriter->WriteCharVector("ParticleRollingHistoryData", buffer);
   }
@@ -83,7 +83,7 @@ void PARTICLEINTERACTION::DEMHistoryPairs::WriteRestart() const
     buffer = Teuchos::rcp(new std::vector<char>);
 
     if (not particlewallrollinghistorydata_.empty())
-      PackAllHistoryPairs(*buffer, particlewallrollinghistorydata_);
+      pack_all_history_pairs(*buffer, particlewallrollinghistorydata_);
 
     binwriter->WriteCharVector("ParticleWallRollingHistoryData", buffer);
   }
@@ -93,7 +93,7 @@ void PARTICLEINTERACTION::DEMHistoryPairs::WriteRestart() const
     buffer = Teuchos::rcp(new std::vector<char>);
 
     if (not particleadhesionhistorydata_.empty())
-      PackAllHistoryPairs(*buffer, particleadhesionhistorydata_);
+      pack_all_history_pairs(*buffer, particleadhesionhistorydata_);
 
     binwriter->WriteCharVector("ParticleAdhesionHistoryData", buffer);
   }
@@ -103,13 +103,13 @@ void PARTICLEINTERACTION::DEMHistoryPairs::WriteRestart() const
     buffer = Teuchos::rcp(new std::vector<char>);
 
     if (not particlewalladhesionhistorydata_.empty())
-      PackAllHistoryPairs(*buffer, particlewalladhesionhistorydata_);
+      pack_all_history_pairs(*buffer, particlewalladhesionhistorydata_);
 
     binwriter->WriteCharVector("ParticleWallAdhesionHistoryData", buffer);
   }
 }
 
-void PARTICLEINTERACTION::DEMHistoryPairs::ReadRestart(
+void PARTICLEINTERACTION::DEMHistoryPairs::read_restart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // prepare buffer
@@ -121,7 +121,7 @@ void PARTICLEINTERACTION::DEMHistoryPairs::ReadRestart(
 
     reader->ReadCharVector(buffer, "ParticleTangentialHistoryData");
 
-    if (buffer->size() > 0) UnpackHistoryPairs(*buffer, particletangentialhistorydata_);
+    if (buffer->size() > 0) unpack_history_pairs(*buffer, particletangentialhistorydata_);
   }
 
   // particle-wall tangential history pair data
@@ -130,7 +130,7 @@ void PARTICLEINTERACTION::DEMHistoryPairs::ReadRestart(
 
     reader->ReadCharVector(buffer, "ParticleWallTangentialHistoryData");
 
-    if (buffer->size() > 0) UnpackHistoryPairs(*buffer, particlewalltangentialhistorydata_);
+    if (buffer->size() > 0) unpack_history_pairs(*buffer, particlewalltangentialhistorydata_);
   }
 
   // particle rolling history data
@@ -139,7 +139,7 @@ void PARTICLEINTERACTION::DEMHistoryPairs::ReadRestart(
 
     reader->ReadCharVector(buffer, "ParticleRollingHistoryData");
 
-    if (buffer->size() > 0) UnpackHistoryPairs(*buffer, particlerollinghistorydata_);
+    if (buffer->size() > 0) unpack_history_pairs(*buffer, particlerollinghistorydata_);
   }
 
   // particle-wall rolling history pair data
@@ -148,7 +148,7 @@ void PARTICLEINTERACTION::DEMHistoryPairs::ReadRestart(
 
     reader->ReadCharVector(buffer, "ParticleWallRollingHistoryData");
 
-    if (buffer->size() > 0) UnpackHistoryPairs(*buffer, particlewallrollinghistorydata_);
+    if (buffer->size() > 0) unpack_history_pairs(*buffer, particlewallrollinghistorydata_);
   }
 
   // particle adhesion history data
@@ -157,7 +157,7 @@ void PARTICLEINTERACTION::DEMHistoryPairs::ReadRestart(
 
     reader->ReadCharVector(buffer, "ParticleAdhesionHistoryData");
 
-    if (buffer->size() > 0) UnpackHistoryPairs(*buffer, particleadhesionhistorydata_);
+    if (buffer->size() > 0) unpack_history_pairs(*buffer, particleadhesionhistorydata_);
   }
 
   // particle-wall adhesion history pair data
@@ -166,7 +166,7 @@ void PARTICLEINTERACTION::DEMHistoryPairs::ReadRestart(
 
     reader->ReadCharVector(buffer, "ParticleWallAdhesionHistoryData");
 
-    if (buffer->size() > 0) UnpackHistoryPairs(*buffer, particlewalladhesionhistorydata_);
+    if (buffer->size() > 0) unpack_history_pairs(*buffer, particlewalladhesionhistorydata_);
   }
 }
 
@@ -283,7 +283,7 @@ void PARTICLEINTERACTION::DEMHistoryPairs::communicate_specific_history_pairs(
   PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
 
   // unpack history pairs
-  for (auto& p : rdata) UnpackHistoryPairs(p.second, historydata);
+  for (auto& p : rdata) unpack_history_pairs(p.second, historydata);
 }
 
 template <typename historypairtype>
@@ -311,7 +311,7 @@ void PARTICLEINTERACTION::DEMHistoryPairs::erase_untouched_history_pairs(
 }
 
 template <typename historypairtype>
-void PARTICLEINTERACTION::DEMHistoryPairs::PackAllHistoryPairs(std::vector<char>& buffer,
+void PARTICLEINTERACTION::DEMHistoryPairs::pack_all_history_pairs(std::vector<char>& buffer,
     const std::unordered_map<int, std::unordered_map<int, std::pair<bool, historypairtype>>>&
         historydata) const
 {
@@ -330,7 +330,7 @@ void PARTICLEINTERACTION::DEMHistoryPairs::PackAllHistoryPairs(std::vector<char>
 }
 
 template <typename historypairtype>
-void PARTICLEINTERACTION::DEMHistoryPairs::UnpackHistoryPairs(const std::vector<char>& buffer,
+void PARTICLEINTERACTION::DEMHistoryPairs::unpack_history_pairs(const std::vector<char>& buffer,
     std::unordered_map<int, std::unordered_map<int, std::pair<bool, historypairtype>>>& historydata)
 {
   std::vector<char>::size_type position = 0;
@@ -393,27 +393,27 @@ template void PARTICLEINTERACTION::DEMHistoryPairs::erase_untouched_history_pair
 template void PARTICLEINTERACTION::DEMHistoryPairs::erase_untouched_history_pairs<
     PARTICLEINTERACTION::DEMHistoryPairAdhesion>(DEMHistoryPairAdhesionData&);
 
-template void PARTICLEINTERACTION::DEMHistoryPairs::PackAllHistoryPairs<
+template void PARTICLEINTERACTION::DEMHistoryPairs::pack_all_history_pairs<
     PARTICLEINTERACTION::DEMHistoryPairTangential>(
     std::vector<char>&, const DEMHistoryPairTangentialData&) const;
 
-template void PARTICLEINTERACTION::DEMHistoryPairs::PackAllHistoryPairs<
+template void PARTICLEINTERACTION::DEMHistoryPairs::pack_all_history_pairs<
     PARTICLEINTERACTION::DEMHistoryPairRolling>(
     std::vector<char>&, const DEMHistoryPairRollingData&) const;
 
-template void PARTICLEINTERACTION::DEMHistoryPairs::PackAllHistoryPairs<
+template void PARTICLEINTERACTION::DEMHistoryPairs::pack_all_history_pairs<
     PARTICLEINTERACTION::DEMHistoryPairAdhesion>(
     std::vector<char>&, const DEMHistoryPairAdhesionData&) const;
 
-template void PARTICLEINTERACTION::DEMHistoryPairs::UnpackHistoryPairs<
+template void PARTICLEINTERACTION::DEMHistoryPairs::unpack_history_pairs<
     PARTICLEINTERACTION::DEMHistoryPairTangential>(
     const std::vector<char>&, DEMHistoryPairTangentialData&);
 
-template void PARTICLEINTERACTION::DEMHistoryPairs::UnpackHistoryPairs<
+template void PARTICLEINTERACTION::DEMHistoryPairs::unpack_history_pairs<
     PARTICLEINTERACTION::DEMHistoryPairRolling>(
     const std::vector<char>&, DEMHistoryPairRollingData&);
 
-template void PARTICLEINTERACTION::DEMHistoryPairs::UnpackHistoryPairs<
+template void PARTICLEINTERACTION::DEMHistoryPairs::unpack_history_pairs<
     PARTICLEINTERACTION::DEMHistoryPairAdhesion>(
     const std::vector<char>&, DEMHistoryPairAdhesionData&);
 

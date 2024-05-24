@@ -71,15 +71,15 @@ void FSI::Partitioned::Setup()
 
   const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   set_default_parameters(fsidyn, noxparameterlist_);
-  SetupCoupling(fsidyn, Comm());
+  setup_coupling(fsidyn, Comm());
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm)
+void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm)
 {
-  if (Comm().MyPID() == 0) std::cout << "\n SetupCoupling in FSI::Partitioned ..." << std::endl;
+  if (Comm().MyPID() == 0) std::cout << "\n setup_coupling in FSI::Partitioned ..." << std::endl;
 
   CORE::ADAPTER::Coupling& coupsf = structure_fluid_coupling();
   coupsfm_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(GLOBAL::Problem::Instance()->NDim(),
@@ -136,7 +136,7 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn, const
     matchingnodes_ = false;
     coupsfm_->Setup(StructureField()->Discretization(), MBFluidField()->Discretization(),
         (Teuchos::rcp_dynamic_cast<ADAPTER::FluidAle>(MBFluidField()))
-            ->AleField()
+            ->ale_field()
             ->write_access_discretization(),
         coupleddof, "FSICoupling", comm, true);
   }
@@ -434,7 +434,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
   {
     // Increment all field counters and predict field values whenever
     // appropriate.
-    PrepareTimeStep();
+    prepare_time_step();
 
     if (debugwriter_ != Teuchos::null) debugwriter_->NewTimeStep(Step());
 
@@ -452,20 +452,20 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
     // Begin Nonlinear Solver ************************************
 
     // Get initial guess
-    Teuchos::RCP<Epetra_Vector> soln = InitialGuess();
+    Teuchos::RCP<Epetra_Vector> soln = initial_guess();
 
     ::NOX::Epetra::Vector noxSoln(soln, ::NOX::Epetra::Vector::CreateView);
 
     // Create the linear system
     Teuchos::RCP<::NOX::Epetra::LinearSystem> linSys =
-        CreateLinearSystem(nlParams, interface, noxSoln, utils_);
+        create_linear_system(nlParams, interface, noxSoln, utils_);
 
     // Create the Group
     Teuchos::RCP<::NOX::Epetra::Group> grp =
         Teuchos::rcp(new ::NOX::Epetra::Group(printParams, interface, noxSoln, linSys));
 
     // Convergence Tests
-    Teuchos::RCP<::NOX::StatusTest::Combo> combo = CreateStatusTest(nlParams, grp);
+    Teuchos::RCP<::NOX::StatusTest::Combo> combo = create_status_test(nlParams, grp);
 
     // Create the solver
     Teuchos::RCP<::NOX::Solver::Generic> solver = ::NOX::Solver::buildSolver(
@@ -523,7 +523,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
 
     // calculate stresses, strains, energies
     constexpr bool force_prepare = false;
-    PrepareOutput(force_prepare);
+    prepare_output(force_prepare);
 
     // prepare field variables for new time step
     Update();
@@ -539,7 +539,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::CreateLinearSystem(
+Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::create_linear_system(
     Teuchos::ParameterList& nlParams,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface,
     ::NOX::Epetra::Vector& noxSoln, Teuchos::RCP<::NOX::Utils> utils)
@@ -706,7 +706,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::CreateLinearSystem(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::StatusTest::Combo> FSI::Partitioned::CreateStatusTest(
+Teuchos::RCP<::NOX::StatusTest::Combo> FSI::Partitioned::create_status_test(
     Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp)
 {
   // Create the convergence tests
@@ -725,7 +725,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::Partitioned::CreateStatusTest(
   combo->addStatusTest(maxiters);
 
   // setup the real tests
-  CreateStatusTest(nlParams, grp, converged);
+  create_status_test(nlParams, grp, converged);
 
   return combo;
 }
@@ -733,7 +733,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::Partitioned::CreateStatusTest(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Partitioned::CreateStatusTest(Teuchos::ParameterList& nlParams,
+void FSI::Partitioned::create_status_test(Teuchos::ParameterList& nlParams,
     Teuchos::RCP<::NOX::Epetra::Group> grp, Teuchos::RCP<::NOX::StatusTest::Combo> converged)
 {
   Teuchos::RCP<::NOX::StatusTest::NormF> absresid =
@@ -761,7 +761,7 @@ void FSI::Partitioned::CreateStatusTest(Teuchos::ParameterList& nlParams,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InitialGuess()
+Teuchos::RCP<Epetra_Vector> FSI::Partitioned::initial_guess()
 {
   return StructureField()->predict_interface_dispnp();
 }
@@ -769,7 +769,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InitialGuess()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InterfaceDisp()
+Teuchos::RCP<Epetra_Vector> FSI::Partitioned::interface_disp()
 {
   // extract displacements
   return StructureField()->extract_interface_dispnp();
@@ -958,7 +958,7 @@ void FSI::Partitioned::Output()
           Teuchos::rcp_dynamic_cast<NOX::FSI::AitkenFactory>(linesearchfactory, true);
 
       // write aitken relaxation parameter
-      MBFluidField()->FluidField()->DiscWriter()->WriteDouble(
+      MBFluidField()->fluid_field()->DiscWriter()->WriteDouble(
           "omega", aitkenfactory->GetAitken()->GetOmega());
 
       break;
@@ -969,10 +969,10 @@ void FSI::Partitioned::Output()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Partitioned::ReadRestart(int step)
+void FSI::Partitioned::read_restart(int step)
 {
   // call base class version
-  FSI::Algorithm::ReadRestart(step);
+  FSI::Algorithm::read_restart(step);
 
   switch (
       CORE::UTILS::IntegralValue<int>(GLOBAL::Problem::Instance()->FSIDynamicParams(), "COUPALGO"))
@@ -986,7 +986,7 @@ void FSI::Partitioned::ReadRestart(int step)
           Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(MBFluidField()) != Teuchos::null)
       {
         IO::DiscretizationReader reader(
-            MBFluidField()->FluidField()->Discretization(), input_control_file, step);
+            MBFluidField()->fluid_field()->Discretization(), input_control_file, step);
         omega = reader.ReadDouble("omega");
       }
       else if (Teuchos::rcp_dynamic_cast<ADAPTER::FluidAle>(MBFluidField()) != Teuchos::null)
@@ -994,7 +994,7 @@ void FSI::Partitioned::ReadRestart(int step)
         Teuchos::RCP<ADAPTER::FluidAle> fluidale =
             Teuchos::rcp_dynamic_cast<ADAPTER::FluidAle>(MBFluidField());
         IO::DiscretizationReader reader(
-            Teuchos::rcp_const_cast<DRT::Discretization>(fluidale->AleField()->Discretization()),
+            Teuchos::rcp_const_cast<DRT::Discretization>(fluidale->ale_field()->Discretization()),
             input_control_file, step);
         omega = reader.ReadDouble("omega");
       }
@@ -1002,7 +1002,7 @@ void FSI::Partitioned::ReadRestart(int step)
         FOUR_C_THROW(
             "You want to restart a partitioned FSI scheme with AITKEN relaxation.\n"
             "This is only tested for standard ALE FSI and Immersed FSI.\n"
-            "Check the implementation of FSI::Partitioned::ReadRestart.");
+            "Check the implementation of FSI::Partitioned::read_restart.");
 
       noxparameterlist_.sublist("Line Search").sublist("Aitken").set<int>("restart", step);
       noxparameterlist_.sublist("Line Search")

@@ -155,7 +155,7 @@ void ADAPTER::StructureLung::ListLungVolCons(std::set<int>& LungVolConIDs, int& 
 void ADAPTER::StructureLung::InitializeVolCon(
     Teuchos::RCP<Epetra_Vector> initvol, Teuchos::RCP<Epetra_Vector> signvol, const int offsetID)
 {
-  if (!(Discretization()->Filled())) FOUR_C_THROW("FillComplete() was not called");
+  if (!(Discretization()->Filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!Discretization()->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   if (initvol == Teuchos::null or signvol == Teuchos::null)
@@ -169,7 +169,7 @@ void ADAPTER::StructureLung::InitializeVolCon(
 
   // set displacements
   Discretization()->ClearState();
-  Discretization()->SetState("displacement", Dispnp());
+  Discretization()->set_state("displacement", Dispnp());
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
@@ -265,7 +265,7 @@ void ADAPTER::StructureLung::EvaluateVolCon(
     Teuchos::RCP<Epetra_Vector> SignVols, Teuchos::RCP<Epetra_Vector> lagrMultVecRed,
     const int offsetID)
 {
-  if (!(Discretization()->Filled())) FOUR_C_THROW("FillComplete() was not called");
+  if (!(Discretization()->Filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!Discretization()->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // parameter list
@@ -274,7 +274,7 @@ void ADAPTER::StructureLung::EvaluateVolCon(
 
   // set displacements
   Discretization()->ClearState();
-  Discretization()->SetState("displacement", Dispnp());
+  Discretization()->set_state("displacement", Dispnp());
 
   //---------------------------------------------------------------------
   // loop through conditions and evaluate them

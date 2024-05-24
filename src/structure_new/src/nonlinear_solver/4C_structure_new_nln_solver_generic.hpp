@@ -91,99 +91,99 @@ namespace STR
 
        protected:
         //! Returns true if Init() has been called
-        inline const bool& IsInit() const { return isinit_; };
+        inline const bool& is_init() const { return isinit_; };
 
         //! Returns true if Setup() has been called
-        inline const bool& IsSetup() const { return issetup_; };
+        inline const bool& is_setup() const { return issetup_; };
 
         //! Check if Init() and Setup() have been called
-        void CheckInitSetup() const
+        void check_init_setup() const
         {
-          FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+          FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
         }
 
         //! Check if Init() has been called
-        void CheckInit() const { FOUR_C_ASSERT(IsInit(), "You have to call Init() first!"); }
+        void check_init() const { FOUR_C_ASSERT(is_init(), "You have to call Init() first!"); }
 
         //! Returns the global state data container pointer
         Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> DataGlobalStatePtr()
         {
-          CheckInit();
+          check_init();
           return gstate_ptr_;
         }
 
         //! Returns the global state data container (read-only)
         const STR::TIMINT::BaseDataGlobalState& DataGlobalState() const
         {
-          CheckInit();
+          check_init();
           return *gstate_ptr_;
         }
 
         //! Returns the global state data container (read and write)
         STR::TIMINT::BaseDataGlobalState& DataGlobalState()
         {
-          CheckInit();
+          check_init();
           return *gstate_ptr_;
         }
 
         //! Returns the structural dynamics data container pointer
         Teuchos::RCP<STR::TIMINT::BaseDataSDyn> DataSDynPtr()
         {
-          CheckInit();
+          check_init();
           return sdyn_ptr_;
         }
 
         //! Returns the structural dynamics data container (read-only)
         const STR::TIMINT::BaseDataSDyn& DataSDyn() const
         {
-          CheckInit();
+          check_init();
           return *sdyn_ptr_;
         }
 
         //! Returns the structural dynamics data container (read and write)
         STR::TIMINT::BaseDataSDyn& DataSDyn()
         {
-          CheckInit();
+          check_init();
           return *sdyn_ptr_;
         }
 
         //! Returns the non-linear solver implicit time integration interface pointer
         Teuchos::RCP<STR::TIMINT::NoxInterface> NoxInterfacePtr()
         {
-          CheckInit();
+          check_init();
           return noxinterface_ptr_;
         }
 
         //! Returns the non-linear solver implicit time integration interface (read-only)
         const STR::TIMINT::NoxInterface& NoxInterface() const
         {
-          CheckInit();
+          check_init();
           return *noxinterface_ptr_;
         }
 
         //! Returns the non-linear solver implicit time integration interface (read and write)
         STR::TIMINT::NoxInterface& NoxInterface()
         {
-          CheckInit();
+          check_init();
           return *noxinterface_ptr_;
         }
 
         STR::Integrator& Integrator()
         {
-          CheckInit();
+          check_init();
           return *int_ptr_;
         }
 
         const STR::Integrator& Integrator() const
         {
-          CheckInit();
+          check_init();
           return *int_ptr_;
         }
 
         //! Returns the underlying time integration strategy
         const STR::TIMINT::Base& TimInt() const
         {
-          CheckInit();
+          check_init();
           return *timint_ptr_;
         }
 

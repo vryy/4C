@@ -51,12 +51,13 @@ namespace SCATRA
     //  void prepare_first_time_step ();
 
     //! update configuration and output to file/screen
-    void OutputState() override;
+    void output_state() override;
 
     void WriteRestart() const override;
 
     //! read restart
-    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
+    void read_restart(
+        const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
     //! set the initial scalar field phi
     void SetInitialField(const INPAR::SCATRA::InitialField init,  //!< type of initial field
@@ -71,12 +72,12 @@ namespace SCATRA
     virtual Teuchos::RCP<Epetra_Vector> InterpolatedPhinp() const { return interpolatedPhinp_; }
 
     //! prepare time loop
-    void PrepareTimeLoop() override;
+    void prepare_time_loop() override;
 
     /*!
     \brief Compare the numerical solution to the analytical one.
     */
-    virtual Teuchos::RCP<CORE::LINALG::SerialDenseVector> ComputeError() const;
+    virtual Teuchos::RCP<CORE::LINALG::SerialDenseVector> compute_error() const;
 
     Teuchos::RCP<CORE::UTILS::ResultTest> create_sca_tra_field_test() override;
 
@@ -137,7 +138,7 @@ namespace SCATRA
     void calc_initial_time_derivative() override { return; };
 
     //! fd check
-    void FDCheck() override;
+    void fd_check() override;
 
     //! calculation of error with reference to analytical solution during the simulation
     void evaluate_error_compared_to_analytical_sol() override;
@@ -155,7 +156,7 @@ namespace SCATRA
     virtual void CalcMatInitial();
 
     //! chooses the assemble process (assemble matrix and rhs or only rhs)
-    void AssembleMatAndRHS() override;
+    void assemble_mat_and_rhs() override;
 
     //! contains the assembly process only for rhs
     void AssembleRHS();

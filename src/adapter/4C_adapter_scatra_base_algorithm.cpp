@@ -60,7 +60,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
   // -------------------------------------------------------------------
-  if (!discret->Filled() or !discret->HaveDofs()) discret->FillComplete();
+  if (!discret->Filled() or !discret->HaveDofs()) discret->fill_complete();
 
   // -------------------------------------------------------------------
   // context for output and restart
@@ -510,19 +510,19 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
 /*----------------------------------------------------------------------*/
 void ADAPTER::ScaTraBaseAlgorithm::Init()
 {
-  SetIsSetup(false);
+  set_is_setup(false);
 
   // initialize scatra time integrator
   scatra_->Init();
 
-  SetIsInit(true);
+  set_is_init(true);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::ScaTraBaseAlgorithm::Setup()
 {
-  CheckIsInit();
+  check_is_init();
 
   // setup the time integrator
   scatra_->Setup();
@@ -581,7 +581,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Setup()
     }
   }
 
-  SetIsSetup(true);
+  set_is_setup(true);
 }
 
 /*----------------------------------------------------------------------*/
@@ -595,14 +595,14 @@ Teuchos::RCP<CORE::UTILS::ResultTest> ADAPTER::ScaTraBaseAlgorithm::create_sca_t
 /*----------------------------------------------------------------------*/
 void ADAPTER::ScaTraBaseAlgorithm::CheckIsSetup() const
 {
-  if (not IsSetup()) FOUR_C_THROW("Setup() was not called.");
+  if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::ScaTraBaseAlgorithm::CheckIsInit() const
+void ADAPTER::ScaTraBaseAlgorithm::check_is_init() const
 {
-  if (not IsInit()) FOUR_C_THROW("Init(...) was not called.");
+  if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
 }
 
 FOUR_C_NAMESPACE_CLOSE

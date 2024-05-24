@@ -72,7 +72,7 @@ void FS3I::BiofilmFSI::Init()
   // this algorithm needs an ale discretization also for the structure in order to be able to handle
   // the growth
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
-  problem->GetDis("structale")->FillComplete();
+  problem->GetDis("structale")->fill_complete();
 
   // create struct ale elements if not yet existing
   Teuchos::RCP<DRT::Discretization> structaledis = problem->GetDis("structale");
@@ -86,7 +86,7 @@ void FS3I::BiofilmFSI::Init()
     Teuchos::RCP<DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleCloneStrategy>> alecreator =
         Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleCloneStrategy>());
     alecreator->create_matching_discretization(structdis, structaledis, 11);
-    structaledis->FillComplete();
+    structaledis->fill_complete();
   }
   if (comm_.MyPID() == 0)
   {
@@ -99,7 +99,7 @@ void FS3I::BiofilmFSI::Init()
   const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
   Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale =
       Teuchos::rcp(new ADAPTER::AleBaseAlgorithm(fsidyn, structaledis));
-  ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleFsiWrapper>(ale->AleField());
+  ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleFsiWrapper>(ale->ale_field());
   if (ale_ == Teuchos::null)
     FOUR_C_THROW("cast from ADAPTER::Ale to ADAPTER::AleFsiWrapper failed");
 
@@ -171,11 +171,11 @@ void FS3I::BiofilmFSI::Setup()
   ale_->SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_biofilm, ale_->Interface());
 
   // create fluid-ALE Dirichlet Map Extractor for growth step
-  fsi_->AleField()->SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_std, Teuchos::null);
+  fsi_->ale_field()->SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_std, Teuchos::null);
 
   // create fluid-ALE Dirichlet Map Extractor for FSI step
-  fsi_->AleField()->SetupDBCMapEx(
-      ALE::UTILS::MapExtractor::dbc_set_biofilm, fsi_->AleField()->Interface());
+  fsi_->ale_field()->SetupDBCMapEx(
+      ALE::UTILS::MapExtractor::dbc_set_biofilm, fsi_->ale_field()->Interface());
 
   //---------------------------------------------------------------------
   // set up couplings
@@ -186,15 +186,15 @@ void FS3I::BiofilmFSI::Setup()
 
   // set up ale-fluid couplings
   icoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  icoupfa_->setup_condition_coupling(*(fsi_->FluidField()->Discretization()),
-      (fsi_->FluidField()->Interface()->FSICondMap()), *(fsi_->AleField()->Discretization()),
-      (fsi_->AleField()->Interface()->FSICondMap()), condname, ndim);
+  icoupfa_->setup_condition_coupling(*(fsi_->fluid_field()->Discretization()),
+      (fsi_->fluid_field()->Interface()->FSICondMap()), *(fsi_->ale_field()->Discretization()),
+      (fsi_->ale_field()->Interface()->FSICondMap()), condname, ndim);
   // the fluid-ale coupling always matches
-  const Epetra_Map* fluidnodemap = fsi_->FluidField()->Discretization()->NodeRowMap();
-  const Epetra_Map* fluidalenodemap = fsi_->AleField()->Discretization()->NodeRowMap();
+  const Epetra_Map* fluidnodemap = fsi_->fluid_field()->Discretization()->NodeRowMap();
+  const Epetra_Map* fluidalenodemap = fsi_->ale_field()->Discretization()->NodeRowMap();
   coupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  coupfa_->SetupCoupling(*(fsi_->FluidField()->Discretization()),
-      *(fsi_->AleField()->Discretization()), *fluidnodemap, *fluidalenodemap, ndim);
+  coupfa_->setup_coupling(*(fsi_->fluid_field()->Discretization()),
+      *(fsi_->ale_field()->Discretization()), *fluidnodemap, *fluidalenodemap, ndim);
 
   // set up structale-structure couplings
   icoupsa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
@@ -205,22 +205,22 @@ void FS3I::BiofilmFSI::Setup()
   const Epetra_Map* structurenodemap = fsi_->StructureField()->Discretization()->NodeRowMap();
   const Epetra_Map* structalenodemap = structaledis->NodeRowMap();
   coupsa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  coupsa_->SetupCoupling(*(fsi_->StructureField()->Discretization()), *structaledis,
+  coupsa_->setup_coupling(*(fsi_->StructureField()->Discretization()), *structaledis,
       *structurenodemap, *structalenodemap, ndim);
 
   /// do we need this? What's for???
-  fsi_->FluidField()->SetMeshMap(coupfa_->MasterDofMap());
+  fsi_->fluid_field()->SetMeshMap(coupfa_->MasterDofMap());
 
-  idispn_ = fsi_->FluidField()->extract_interface_veln();
-  idispnp_ = fsi_->FluidField()->extract_interface_veln();
-  iveln_ = fsi_->FluidField()->extract_interface_veln();
+  idispn_ = fsi_->fluid_field()->extract_interface_veln();
+  idispnp_ = fsi_->fluid_field()->extract_interface_veln();
+  iveln_ = fsi_->fluid_field()->extract_interface_veln();
 
   struidispn_ = fsi_->StructureField()->extract_interface_dispn();
   struidispnp_ = fsi_->StructureField()->extract_interface_dispn();
   struiveln_ = fsi_->StructureField()->extract_interface_dispn();
 
   struct_growth_disp_ = AleToStructField(ale_->WriteAccessDispnp());
-  fluid_growth_disp_ = AleToFluidField(fsi_->AleField()->WriteAccessDispnp());
+  fluid_growth_disp_ = AleToFluidField(fsi_->ale_field()->WriteAccessDispnp());
   scatra_struct_growth_disp_ = Teuchos::rcp(new Epetra_MultiVector(
       *(scatravec_[1]->ScaTraField()->Discretization())->NodeRowMap(), 3, true));
   scatra_fluid_growth_disp_ = Teuchos::rcp(new Epetra_MultiVector(
@@ -256,7 +256,7 @@ void FS3I::BiofilmFSI::Setup()
 /*----------------------------------------------------------------------*/
 void FS3I::BiofilmFSI::Timeloop()
 {
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
 
@@ -323,10 +323,10 @@ void FS3I::BiofilmFSI::Timeloop()
       // reset step and state vectors
       fsi_->StructureField()->Reset();
       // fluid reset can be bypassed, in this way the next step starts from a solution closer to the
-      // final one fsi_->FluidField()->Reset(false, false, step_bio);
-      fsi_->AleField()->Reset();
+      // final one fsi_->fluid_field()->Reset(false, false, step_bio);
+      fsi_->ale_field()->Reset();
 
-      fsi_->AleField()->CreateSystemMatrix(fsi_->AleField()->Interface());
+      fsi_->ale_field()->CreateSystemMatrix(fsi_->ale_field()->Interface());
     }
   }
 
@@ -387,11 +387,11 @@ void FS3I::BiofilmFSI::InnerTimeloop()
     step_fsi_++;
     t += dt_fsi_;
 
-    fsi_->PrepareTimeStep();
+    fsi_->prepare_time_step();
     fsi_->TimeStep(fsi_);
 
     constexpr bool force_prepare = false;
-    fsi_->PrepareOutput(force_prepare);
+    fsi_->prepare_output(force_prepare);
     fsi_->Update();
 
     SetFSISolution();
@@ -407,7 +407,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
     bool stopnonliniter = false;
     int itnum = 0;
 
-    PrepareTimeStep();
+    prepare_time_step();
 
     while (stopnonliniter == false)
     {
@@ -460,17 +460,17 @@ void FS3I::BiofilmFSI::InnerTimeloop()
 
     // calculate interface normals in deformed configuration
     Teuchos::RCP<Epetra_Vector> nodalnormals =
-        Teuchos::rcp(new Epetra_Vector(*(strudis->DofRowMap())));
+        Teuchos::rcp(new Epetra_Vector(*(strudis->dof_row_map())));
 
     Teuchos::ParameterList eleparams;
     eleparams.set("action", "calc_cur_nodal_normals");
     strudis->ClearState();
-    strudis->SetState("displacement", fsi_->StructureField()->Dispnp());
-    strudis->EvaluateCondition(eleparams, Teuchos::null, Teuchos::null, nodalnormals, Teuchos::null,
-        Teuchos::null, "FSICoupling");
+    strudis->set_state("displacement", fsi_->StructureField()->Dispnp());
+    strudis->evaluate_condition(eleparams, Teuchos::null, Teuchos::null, nodalnormals,
+        Teuchos::null, Teuchos::null, "FSICoupling");
     strudis->ClearState();
 
-    const Epetra_Map* dofrowmap = strudis->DofRowMap();
+    const Epetra_Map* dofrowmap = strudis->dof_row_map();
     const Epetra_Map* noderowmap = strudis->NodeRowMap();
     Teuchos::RCP<Epetra_MultiVector> lambdanode =
         Teuchos::rcp(new Epetra_MultiVector(*noderowmap, 3, true));
@@ -520,7 +520,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
       std::vector<double> unitnormal(3);
       for (int i = 0; i < numdim; ++i)
       {
-        doflids[i] = strudis->DofRowMap()->LID(strunodedofs[i]);
+        doflids[i] = strudis->dof_row_map()->LID(strunodedofs[i]);
         unitnormal[i] = (*nodalnormals)[doflids[i]];
         temp += unitnormal[i] * unitnormal[i];
       }
@@ -648,8 +648,8 @@ void FS3I::BiofilmFSI::InnerTimeloop()
  *----------------------------------------------------------------------*/
 void FS3I::BiofilmFSI::SetFSISolution()
 {
-  SetMeshDisp();
-  SetVelocityFields();
+  set_mesh_disp();
+  set_velocity_fields();
 }
 
 /*----------------------------------------------------------------------*/
@@ -668,10 +668,10 @@ void FS3I::BiofilmFSI::compute_interface_vectors(Teuchos::RCP<Epetra_Vector> idi
   // set action for elements: compute normal vectors at nodes (for reference configuration)
   Teuchos::RCP<DRT::Discretization> strudis = fsi_->StructureField()->Discretization();
   Teuchos::RCP<Epetra_Vector> nodalnormals =
-      Teuchos::rcp(new Epetra_Vector(*(strudis->DofRowMap())));
+      Teuchos::rcp(new Epetra_Vector(*(strudis->dof_row_map())));
   Teuchos::ParameterList eleparams;
   eleparams.set("action", "calc_ref_nodal_normals");
-  strudis->EvaluateCondition(eleparams, Teuchos::null, Teuchos::null, nodalnormals, Teuchos::null,
+  strudis->evaluate_condition(eleparams, Teuchos::null, Teuchos::null, nodalnormals, Teuchos::null,
       Teuchos::null, biogrcondname);
 
   // select row map with nodes from condition
@@ -692,7 +692,7 @@ void FS3I::BiofilmFSI::compute_interface_vectors(Teuchos::RCP<Epetra_Vector> idi
     double temp = 0.;
     for (int j = 0; j < numdim; ++j)
     {
-      unitnormal[j] = (*nodalnormals)[strudis->DofRowMap()->LID(globaldofs[j])];
+      unitnormal[j] = (*nodalnormals)[strudis->dof_row_map()->LID(globaldofs[j])];
       temp += unitnormal[j] * unitnormal[j];
     }
     double unitnormalabsval = sqrt(temp);
@@ -745,29 +745,29 @@ void FS3I::BiofilmFSI::compute_interface_vectors(Teuchos::RCP<Epetra_Vector> idi
 /*----------------------------------------------------------------------*/
 void FS3I::BiofilmFSI::FluidAleSolve()
 {
-  Teuchos::RCP<DRT::Discretization> fluidaledis = fsi_->AleField()->write_access_discretization();
+  Teuchos::RCP<DRT::Discretization> fluidaledis = fsi_->ale_field()->write_access_discretization();
 
   // if we have values at the fluid interface we need to apply them
   if (idispnp_ != Teuchos::null)
   {
-    fsi_->AleField()->apply_interface_displacements(FluidToAle(idispnp_));
+    fsi_->ale_field()->apply_interface_displacements(FluidToAle(idispnp_));
   }
 
-  fsi_->AleField()->CreateSystemMatrix(Teuchos::null);
-  fsi_->AleField()->Evaluate(Teuchos::null, ALE::UTILS::MapExtractor::dbc_set_biofilm);
-  int error = fsi_->AleField()->Solve();
+  fsi_->ale_field()->CreateSystemMatrix(Teuchos::null);
+  fsi_->ale_field()->Evaluate(Teuchos::null, ALE::UTILS::MapExtractor::dbc_set_biofilm);
+  int error = fsi_->ale_field()->Solve();
   if (error == 1) FOUR_C_THROW("Could not solve fluid ALE in biofilm FS3I!");
-  fsi_->AleField()->UpdateIter();
+  fsi_->ale_field()->UpdateIter();
 
   // change nodes reference position of the fluid field
-  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(fsi_->AleField()->WriteAccessDispnp());
-  Teuchos::RCP<DRT::Discretization> fluiddis = fsi_->FluidField()->Discretization();
+  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(fsi_->ale_field()->WriteAccessDispnp());
+  Teuchos::RCP<DRT::Discretization> fluiddis = fsi_->fluid_field()->Discretization();
   CORE::GEO::UpdateMaterialConfigWithDispVector(fluiddis, fluiddisp);
 
 
 
   // change nodes reference position also for the fluid ale field
-  Teuchos::RCP<Epetra_Vector> fluidaledisp = fsi_->AleField()->WriteAccessDispnp();
+  Teuchos::RCP<Epetra_Vector> fluidaledisp = fsi_->ale_field()->WriteAccessDispnp();
   CORE::GEO::UpdateMaterialConfigWithDispVector(fluidaledis, fluidaledisp);
 
   // change nodes reference position also for scatra fluid field
@@ -778,7 +778,7 @@ void FS3I::BiofilmFSI::FluidAleSolve()
   // set the total displacement due to growth for output reasons
   // fluid
   fluid_growth_disp_->Update(1.0, *fluiddisp, 1.0);
-  fsi_->FluidField()->SetFldGrDisp(fluid_growth_disp_);
+  fsi_->fluid_field()->SetFldGrDisp(fluid_growth_disp_);
   // fluid scatra
   VecToScatravec(scatradis, fluid_growth_disp_, scatra_fluid_growth_disp_);
   scatra->ScaTraField()->SetScFldGrDisp(scatra_fluid_growth_disp_);
@@ -811,7 +811,7 @@ void FS3I::BiofilmFSI::StructAleSolve()
   Teuchos::RCP<Epetra_Vector> structdisp = AleToStructField(ale_->WriteAccessDispnp());
   Teuchos::RCP<DRT::Discretization> structdis = fsi_->StructureField()->Discretization();
   CORE::GEO::UpdateMaterialConfigWithDispVector(structdis, structdisp);
-  structdis->FillComplete(false, true, true);
+  structdis->fill_complete(false, true, true);
 
   // change nodes reference position also for the struct ale field
   CORE::GEO::UpdateMaterialConfigWithDispVector(structaledis, ale_->WriteAccessDispnp());
@@ -967,16 +967,16 @@ void FS3I::BiofilmFSI::StructGmshOutput()
 /*----------------------------------------------------------------------*/
 void FS3I::BiofilmFSI::FluidGmshOutput()
 {
-  const Teuchos::RCP<DRT::Discretization> fluiddis = fsi_->FluidField()->Discretization();
+  const Teuchos::RCP<DRT::Discretization> fluiddis = fsi_->fluid_field()->Discretization();
   const Teuchos::RCP<DRT::Discretization> fluidaledis =
-      fsi_->AleField()->write_access_discretization();
+      fsi_->ale_field()->write_access_discretization();
   Teuchos::RCP<DRT::Discretization> fluidscatradis = scatravec_[0]->ScaTraField()->Discretization();
 
   const std::string filenamefluid = IO::GMSH::GetNewFileNameAndDeleteOldFiles("fluid",
       fluiddis->Writer()->Output()->FileName(), step_bio_, 701, false, fluiddis->Comm().MyPID());
   std::ofstream gmshfilecontent(filenamefluid.c_str());
 
-  Teuchos::RCP<const Epetra_Vector> fluidvel = fsi_->FluidField()->Velnp();
+  Teuchos::RCP<const Epetra_Vector> fluidvel = fsi_->fluid_field()->Velnp();
   {
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" "
@@ -986,7 +986,7 @@ void FS3I::BiofilmFSI::FluidGmshOutput()
     gmshfilecontent << "};" << std::endl;
   }
 
-  Teuchos::RCP<Epetra_Vector> fluidaledisp = fsi_->AleField()->WriteAccessDispnp();
+  Teuchos::RCP<Epetra_Vector> fluidaledisp = fsi_->ale_field()->WriteAccessDispnp();
   {
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" "

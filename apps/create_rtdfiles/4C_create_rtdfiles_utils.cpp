@@ -140,7 +140,7 @@ namespace RTD
   }
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void WriteHeader(std::ostream &stream, unsigned level, const std::string &line)
+  void write_header(std::ostream &stream, unsigned level, const std::string &line)
   {
     const std::vector<char> headerchar{'=', '-', '~', '^'};
     unsigned headerlength = line.length();
@@ -206,13 +206,13 @@ namespace RTD
   void WriteCelltypeReference(std::ostream &stream)
   {
     WriteLinktarget(stream, "celltypes");
-    WriteHeader(stream, 1, "Cell types");
+    write_header(stream, 1, "Cell types");
 
     // We run the loop over the cell types four times to sort the cell types after their dimension
     for (unsigned outputdim = 0; outputdim < 4; ++outputdim)
     {
       WriteLinktarget(stream, boost::str(boost::format("%1dD_cell_types") % outputdim));
-      WriteHeader(stream, 2, boost::str(boost::format("%1dD cell types") % outputdim));
+      write_header(stream, 2, boost::str(boost::format("%1dD cell types") % outputdim));
 
       for (auto celltype : CORE::FE::celltype_array<CORE::FE::all_physical_celltypes>)
       {
@@ -223,7 +223,7 @@ namespace RTD
 
         std::string celltypelinkname = boost::algorithm::to_lower_copy(celltypename);
         WriteLinktarget(stream, celltypelinkname);
-        WriteHeader(stream, 3, celltypename);
+        write_header(stream, 3, celltypename);
 
         std::stringstream celltypeinfostream;
         celltypeinfostream << "- Nodes: " << CORE::FE::getNumberOfElementNodes(celltype)
@@ -265,7 +265,7 @@ namespace RTD
       std::ostream &stream, const std::vector<Teuchos::RCP<INPUT::MaterialDefinition>> &matlist)
   {
     WriteLinktarget(stream, "materialsreference");
-    WriteHeader(stream, 0, "Material reference");
+    write_header(stream, 0, "Material reference");
 
     std::vector<std::string> materialsectionstring{std::string(58, '-') + "MATERIALS"};
     WriteCode(stream, materialsectionstring);
@@ -277,7 +277,7 @@ namespace RTD
     //
     // adding the section for the CLONING MATERIAL MAP
     WriteLinktarget(stream, "cloningmaterialsreference");
-    WriteHeader(stream, 0, "Cloning material reference");
+    write_header(stream, 0, "Cloning material reference");
     const INPUT::Lines lines = DRT::UTILS::ValidCloningMaterialMapLines();
     std::stringstream cloningMatStream;
     lines.Print(cloningMatStream);
@@ -298,7 +298,7 @@ namespace RTD
 
     // the Material title
     WriteLinktarget(stream, material->Name());
-    WriteHeader(stream, 1, material->Name());
+    write_header(stream, 1, material->Name());
 
     // the description of the material
     std::string materialDescription = material->Description();
@@ -389,7 +389,7 @@ namespace RTD
           WriteLinktarget(stream, "SEC" + linktarget);
           // write section header
           unsigned level = (issubsection) ? 2 : 1;
-          WriteHeader(stream, level, fullname);
+          write_header(stream, level, fullname);
 
           WriteParagraph(stream, doc);
 
@@ -436,7 +436,7 @@ namespace RTD
       std::ostream &stream, const std::vector<Teuchos::RCP<INPUT::ConditionDefinition>> &condlist)
   {
     WriteLinktarget(stream, "prescribedconditionreference");
-    WriteHeader(stream, 0, "Prescribed Condition Reference");
+    write_header(stream, 0, "Prescribed Condition Reference");
 
     for (auto &condition : condlist)
     {
@@ -470,7 +470,7 @@ namespace RTD
     // link target line
     WriteLinktarget(stream, sectionlinktarget);
     // condition name as section header
-    WriteHeader(stream, 1, sectionname);
+    write_header(stream, 1, sectionname);
 
     /*------ PART 2 -------------------------
      * boundary condition description string
@@ -602,7 +602,7 @@ namespace RTD
       const std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>> &coconstlawlist)
   {
     WriteLinktarget(stream, "contactconstitutivelawreference");
-    WriteHeader(stream, 0, "Contact Constitutive Law Reference");
+    write_header(stream, 0, "Contact Constitutive Law Reference");
 
 
     std::vector<std::string> contactlawsectionstring{
@@ -629,7 +629,7 @@ namespace RTD
 
     // the Law title
     WriteLinktarget(stream, contactlaw->Name());
-    WriteHeader(stream, 1, contactlaw->Name());
+    write_header(stream, 1, contactlaw->Name());
 
     // the description of the contact law
     std::string contactDescription = contactlaw->Description();
@@ -689,7 +689,7 @@ namespace RTD
     // adding the sections for the RESULT DESCRIPTION
     {
       WriteLinktarget(stream, "restultdescriptionreference");
-      WriteHeader(stream, 0, "Result description reference");
+      write_header(stream, 0, "Result description reference");
       CORE::UTILS::ResultTestManager resulttestmanager;
       INPUT::Lines lines("RESULT DESCRIPTION",
           "The result of the simulation with respect to specific quantities at concrete points "
@@ -707,7 +707,7 @@ namespace RTD
     // adding the sections for the FUNCTION
     {
       WriteLinktarget(stream, "functionreference");
-      WriteHeader(stream, 0, "Functions reference");
+      write_header(stream, 0, "Functions reference");
       const auto lines = CORE::UTILS::FunctionManager().ValidFunctionLines();
       std::string sectionDescription = lines.Description();
       WriteParagraph(stream, sectionDescription);

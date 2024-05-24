@@ -150,7 +150,7 @@ DRT::UTILS::DiscretizationCreatorBase::create_matching_discretization(
     DRT::Element* ele = sourcedis->lColElement(i);
     if (!ele) FOUR_C_THROW("Cannot find element with lid %", i);
     Teuchos::RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
-    targetdis->AddElement(newele);
+    targetdis->add_element(newele);
   }
 
   // clone conditions (prescribed in input file)
@@ -171,7 +171,7 @@ DRT::UTILS::DiscretizationCreatorBase::create_matching_discretization(
   // make auxiliary discretization have the same dofs as the coupling discretization
   if (clonedofs)
     targetdis->ReplaceDofSet(Teuchos::rcp(new CORE::Dofsets::IndependentDofSet()), false);
-  targetdis->FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
+  targetdis->fill_complete(assigndegreesoffreedom, initelements, doboundaryconditions);
 
   // at the end, we do several checks to ensure that we really have generated
   // an identical discretization
@@ -185,7 +185,7 @@ DRT::UTILS::DiscretizationCreatorBase::create_matching_discretization(
     FOUR_C_THROW("ElementColMaps of source and target discretization are different!");
   if (clonedofs)
   {
-    if (not sourcedis->DofRowMap()->SameAs(*(targetdis->DofRowMap())))
+    if (not sourcedis->dof_row_map()->SameAs(*(targetdis->dof_row_map())))
       FOUR_C_THROW("DofRowMaps of source and target discretization are different!");
     if (not sourcedis->DofColMap()->SameAs(*(targetdis->DofColMap())))
       FOUR_C_THROW("DofColMaps of source and target discretization are different!");
@@ -206,7 +206,7 @@ void DRT::UTILS::DiscretizationCreatorBase::Finalize(
   targetdis.ExportColumnNodes(*targetnodecolmap_);
   targetdis.ExportRowElements(*targetelerowmap_);
   targetdis.export_column_elements(*targetelecolmap_);
-  targetdis.FillComplete(false, false, false);
+  targetdis.fill_complete(false, false, false);
 
   // extra work for NURBS discretizations
 
@@ -232,7 +232,7 @@ void DRT::UTILS::DiscretizationCreatorBase::Finalize(
     knots->FinishKnots(smallest_gid_in_dis);
 
     targetnurbsdis_ptr->SetKnotVector(knots);
-    targetnurbsdis_ptr->FillComplete();
+    targetnurbsdis_ptr->fill_complete();
   }
 
   // at the end, we do several checks to ensure that we really have identical

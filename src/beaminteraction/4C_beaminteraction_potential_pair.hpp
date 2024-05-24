@@ -141,7 +141,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Get interaction free energy / potential
     */
-    virtual double GetEnergy() const = 0;
+    virtual double get_energy() const = 0;
 
     /** \brief print this beam potential-based element pair to screen
      *
@@ -155,16 +155,16 @@ namespace BEAMINTERACTION
 
    protected:
     //! returns init state
-    inline bool const& IsInit() const { return isinit_; };
+    inline bool const& is_init() const { return isinit_; };
 
     //! returns setup state
-    inline bool const& IsSetup() const { return issetup_; };
+    inline bool const& is_setup() const { return issetup_; };
 
     //! Check the init state
-    void CheckInit() const;
+    void check_init() const;
 
     //! Check the init and setup state
-    void CheckInitSetup() const;
+    void check_init_setup() const;
 
     //! get Gauss rule to be used
     CORE::FE::GaussRule1D GetGaussRule() const;

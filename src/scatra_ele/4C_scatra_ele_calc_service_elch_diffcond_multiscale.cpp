@@ -233,7 +233,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Evalua
         if (action == SCATRA::Action::micro_scale_prepare_time_step)
         {
           // prepare time step on micro scale
-          newmanmultiscale->PrepareTimeStep(iquad, phinp);
+          newmanmultiscale->prepare_time_step(iquad, phinp);
         }
         else
         {
@@ -281,7 +281,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Evalua
       // loop over all Gauss points
       for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
         // read restart on micro scale
-        newmanmultiscale->ReadRestart(iquad);
+        newmanmultiscale->read_restart(iquad);
 
       break;
     }

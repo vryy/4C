@@ -148,7 +148,7 @@ namespace DRT
       double ComputePorePressure() override;
 
       //! get internal variable manager for multiporo formulation
-      Teuchos::RCP<ScaTraEleInternalVariableManagerMultiPoro<nsd_, nen_>> VarManager()
+      Teuchos::RCP<ScaTraEleInternalVariableManagerMultiPoro<nsd_, nen_>> var_manager()
       {
         return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerMultiPoro<nsd_, nen_>>(
             my::scatravarmanager_);
@@ -177,7 +177,7 @@ namespace DRT
       //! calculation of convective element matrix: add conservative contributions
       //! the only difference to the base class version is, that there is no scaling with the
       //! density
-      void CalcMatConvAddCons(
+      void calc_mat_conv_add_cons(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor

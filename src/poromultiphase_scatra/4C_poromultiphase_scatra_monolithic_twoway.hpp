@@ -71,7 +71,7 @@ namespace POROMULTIPHASESCATRA
     }
 
     //! unique map of all dofs that should be constrained with DBC
-    Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const { return combinedDBCMap_; };
+    Teuchos::RCP<const Epetra_Map> combined_dbc_map() const { return combinedDBCMap_; };
 
 
    protected:
@@ -82,7 +82,7 @@ namespace POROMULTIPHASESCATRA
     virtual void SetupMaps();
 
     //! Setup monolithic rhs-vector
-    virtual void SetupRHS();
+    virtual void setup_rhs();
 
     //! build the combined dirichletbcmap
     virtual void BuildCombinedDBCMap();
@@ -91,11 +91,11 @@ namespace POROMULTIPHASESCATRA
     virtual void build_block_null_spaces();
 
     //! create the linear solver
-    void CreateLinearSolver(const Teuchos::ParameterList& solverparams,
+    void create_linear_solver(const Teuchos::ParameterList& solverparams,
         const CORE::LINEAR_SOLVER::SolverType solvertype);
 
     //! full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> DofRowMap();
+    Teuchos::RCP<const Epetra_Map> dof_row_map();
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> iterinc);
@@ -109,7 +109,7 @@ namespace POROMULTIPHASESCATRA
      \param scx (o) scatra vector (primary variables of scatra field, i.e. mass fraction)
       and mass fractions in 1D artery network
      */
-    virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+    virtual void extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& stx, Teuchos::RCP<const Epetra_Vector>& flx,
         Teuchos::RCP<const Epetra_Vector>& scx);
 
@@ -127,20 +127,20 @@ namespace POROMULTIPHASESCATRA
         Teuchos::RCP<const Epetra_Vector>& scx);
 
     //! build block vector from field vectors, e.g. rhs, increment vector
-    void SetupVector(Epetra_Vector& f,  //!< vector of length of all dofs
+    void setup_vector(Epetra_Vector& f,  //!< vector of length of all dofs
         Teuchos::RCP<const Epetra_Vector>
             pv,  //!< vector containing structural + fluid dofs, i.e. poro dofs
         Teuchos::RCP<const Epetra_Vector> sv  //!< vector containing only scatra dofs
     );
 
     //! setup monolithic system matrix
-    virtual void SetupSystemMatrix();
+    virtual void setup_system_matrix();
 
     //! print header
     void PrintHeader();
 
     //! solve linear system of equations
-    void LinearSolve();
+    void linear_solve();
 
     //! convergence check
     bool Converged();
@@ -287,7 +287,7 @@ namespace POROMULTIPHASESCATRA
     double dtele_;               //!< time for element evaluation + build-up of system matrix
 
     //! flag for finite difference check
-    INPAR::POROMULTIPHASESCATRA::FDCheck fdcheck_;
+    INPAR::POROMULTIPHASESCATRA::FdCheck fdcheck_;
 
 
   };  // PoroMultiPhaseScatraMonolithic
@@ -317,15 +317,15 @@ namespace POROMULTIPHASESCATRA
      \param scx (o) scatra vector (primary variables of scatra field, i.e. mass fraction)
       and mass fractions in 1D artery network
      */
-    void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+    void extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& stx, Teuchos::RCP<const Epetra_Vector>& flx,
         Teuchos::RCP<const Epetra_Vector>& scx) override;
 
     //! setup monolithic system matrix
-    void SetupSystemMatrix() override;
+    void setup_system_matrix() override;
 
     // Setup monolithic rhs-vector
-    void SetupRHS() override;
+    void setup_rhs() override;
 
     //! evaluate scatra field
     void EvaluateScatra() override;

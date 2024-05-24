@@ -176,7 +176,7 @@ bool CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
   // Calculate contact stiffness with finite difference
   if (doAssemble)
   {
-    FDCheckStiffness(pp, fc1, fc2, stiffc1, stiffc2);
+    fd_check_stiffness(pp, fc1, fc2, stiffc1, stiffc2);
   }
 #endif
 
@@ -184,7 +184,7 @@ bool CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
   // Compare calculated contact stiffness with FAD
   if (doAssemble)
   {
-    FADCheckStiffness(stiffc1, stiffc2, stiffc1_FAD, stiffc2_FAD);
+    fad_check_stiffness(stiffc1, stiffc2, stiffc1_FAD, stiffc2_FAD);
   }
 #endif
 
@@ -388,7 +388,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::evalua
 
       // Compute directional derivatives of not fixed parameters at contact interval border,
       // only the directional derivative eta_d is needed
-      ComputeLinParameter(fixed_par, xi1_d, xi2_d, eta_d, rD, r1_eta, x2_xi1, x2_xi2, x2_xi1xi1,
+      compute_lin_parameter(fixed_par, xi1_d, xi2_d, eta_d, rD, r1_eta, x2_xi1, x2_xi2, x2_xi1xi1,
           x2_xi2xi2, x2_xi1xi2, x2_xi2xi1, N1, N2, N2_xi1, N2_xi2);
 
 #ifdef FADCHECKLINCONTACTINTERVALBORDER
@@ -535,7 +535,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::evalua
     // this Gauss point.
     if (proj_allowed)
     {
-      CheckContactStatus(pp, gap, contactflag);
+      check_contact_status(pp, gap, contactflag);
     }
 
 #if defined(GMSHDEBUG) || defined(GMSHFORCE) || defined(SAVEFORCE)
@@ -576,7 +576,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::evalua
       evaluate_penalty_force_law(pp, gap, fp, dfp);
 
       // Evaluate contact forces at current Gauss point
-      EvaluateFcContact(fp, fc1, fc2, eta_a, eta_b, w_gp, sgn, nD, n2, N1, N2, jacobi);
+      evaluate_fc_contact(fp, fc1, fc2, eta_a, eta_b, w_gp, sgn, nD, n2, N1, N2, jacobi);
 
       // Evaluate contact stiffness at current Gauss point
       evaluate_stiffc_contact(fp, dfp, gap, stiffc1, stiffc2, sgn, eta_a, eta_b, eta_d, eta_a_d,
@@ -749,7 +749,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
  | Compute contact forces                                               |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::EvaluateFcContact(
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::evaluate_fc_contact(
     const TYPEBTS& fp, CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPEBTS>& fc1,
     CORE::LINALG::Matrix<3 * numnodessol, 1, TYPEBTS>& fc2, const TYPEBTS& eta_a,
     const TYPEBTS& eta_b, const double& w_gp, const double& sgn,
@@ -840,15 +840,15 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::evalua
   CORE::LINALG::Matrix<3, dim1 + dim2, TYPEBTS> n2_d(true);
 
   // Compute directional derivative of parameters xi1 and xi2 with given eta_d (par_fixed = 2)
-  ComputeLinParameter(2, xi1_d, xi2_d, eta_d, rD, r1_eta, x2_xi1, x2_xi2, x2_xi1xi1, x2_xi2xi2,
+  compute_lin_parameter(2, xi1_d, xi2_d, eta_d, rD, r1_eta, x2_xi1, x2_xi2, x2_xi1xi1, x2_xi2xi2,
       x2_xi1xi2, x2_xi2xi1, N1, N2, N2_xi1, N2_xi2);
 
   // Compute directional derivatives of gap and distance vector rD
-  ComputeLinGap(
+  compute_lin_gap(
       gap_d, xi1_d, xi2_d, eta_d, sgn, rD, nD, n2, norm_rD, r1_eta, x2_xi1, x2_xi2, N1, N2, rD_d);
 
   // Compute directional derivative of normal vector n2
-  ComputeLinNormal(nD_d, nD, norm_rD, n2_d, n2, norm_a2, rD_d, xi1_d, xi2_d, x2_xi1, x2_xi2,
+  compute_lin_normal(nD_d, nD, norm_rD, n2_d, n2, norm_a2, rD_d, xi1_d, xi2_d, x2_xi1, x2_xi2,
       x2_xi1xi1, x2_xi2xi2, x2_xi1xi2, x2_xi2xi1, N2_xi1, N2_xi2);
 
 
@@ -889,7 +889,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::evalua
   CORE::LINALG::Matrix<3, dim1 + dim2, TYPEBTS> n2_d_FAD(true);
 
   // Compute directional derivatives of unit distance vector and normal vector n2 with FAD
-  FADCheckLinNormal(nD, n2, xi1_d, xi2_d, eta_d, nD_d_FAD, n2_d_FAD, nD_d, n2_d);
+  fad_check_lin_normal(nD, n2, xi1_d, xi2_d, eta_d, nD_d_FAD, n2_d_FAD, nD_d, n2_d);
 #endif
 
 
@@ -1002,7 +1002,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::evalua
   CORE::LINALG::Matrix<dim2, 1, TYPEBTS> fc2_FAD(true);
 
   // Evaluate contact forces at current Gauss point (fc1_FAD, fc2_FAD)
-  EvaluateFcContact(fp, fc1_FAD, fc2_FAD, eta_a, eta_b, w_gp, sgn, nD, n2, N1, N2, jacobi);
+  evaluate_fc_contact(fp, fc1_FAD, fc2_FAD, eta_a, eta_b, w_gp, sgn, nD, n2, N1, N2, jacobi);
 
   // Calculate contact stiffness (stiffc1_FAD, stiffc2_FAD) with FAD
   for (int j = 0; j < dim1 + dim2; j++)
@@ -1037,7 +1037,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::evalua
  | Compute directional derivatives of element parameters                |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::ComputeLinParameter(
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::compute_lin_parameter(
     const int& fixed_par,
     CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& xi1_d,
     CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& xi2_d,
@@ -1204,7 +1204,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Comput
  | Compute directional derivative of gap                                |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::ComputeLinGap(
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::compute_lin_gap(
     CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& gap_d,
     const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& xi1_d,
     const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& xi2_d,
@@ -1271,7 +1271,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Comput
  | Compute directional derivative of surface unit normal vector         |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::ComputeLinNormal(
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::compute_lin_normal(
     CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& nD_d,
     const CORE::LINALG::Matrix<3, 1, TYPEBTS>& nD, const TYPEBTS& norm_rD,
     CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& n2_d,
@@ -1427,7 +1427,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
   {
     // Get node pointer and dof ids
     DRT::Node* node = ContactDiscret().gNode(node_ids1[i]);
-    std::vector<int> NodeDofGIDs = GetGlobalDofs(node);
+    std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
     for (int j = 0; j < 3 * numnodalvalues; ++j)
     {
@@ -1441,7 +1441,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
   {
     // Get node pointer and dof ids
     DRT::Node* node = ContactDiscret().gNode(node_ids2[i]);
-    std::vector<int> NodeDofGIDs = GetGlobalDofs(node);
+    std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
     for (int j = 0; j < 3; ++j)
     {
@@ -1479,7 +1479,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
   {
     // Get pointer and node ids
     DRT::Node* node = ContactDiscret().gNode(node_ids1[i]);
-    std::vector<int> NodeDofGIDs = GetGlobalDofs(node);
+    std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
     for (int j = 0; j < 3 * numnodalvalues; ++j)
     {
@@ -1491,7 +1491,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
   {
     // Get pointer and node ids
     DRT::Node* node = ContactDiscret().gNode(node_ids2[i]);
-    std::vector<int> NodeDofGIDs = GetGlobalDofs(node);
+    std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
     for (int j = 0; j < 3; ++j)
     {
@@ -1660,7 +1660,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
   }
 
   // Sort vector with parameter sets from smallest to biggest eta
-  std::sort(parsetstmp.begin(), parsetstmp.end(), CompareParsets);
+  std::sort(parsetstmp.begin(), parsetstmp.end(), compare_parsets);
 
   // -----------------------------------------------------------------
   // End: Find projection of surface edges xi1 = +-1 and xi2 = +-1
@@ -2125,7 +2125,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Projec
         if (normalsets_old_.size() > 1)
         {
           int lower_index = std::lower_bound(normalsets_old_.begin(), normalsets_old_.end(), eta,
-                                CompareNormalsets) -
+                                compare_normalsets) -
                             normalsets_old_.begin();
           lower_index = std::max(1, std::min(lower_index, (int)normalsets_old_.size() - 1));
           if (fabs(normalsets_old_[lower_index].first - eta) <
@@ -2555,7 +2555,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::comput
  | Check if contact is active or inactive                                |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::CheckContactStatus(
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::check_contact_status(
     const double& pp, const TYPEBTS& gap, bool& contactflag)
 {
 #ifdef LINPENALTY
@@ -2605,7 +2605,8 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::CheckC
  | Get global dofs of a node                                meier 02/14 |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-std::vector<int> CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetGlobalDofs(
+std::vector<int>
+CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::get_global_dofs(
     const DRT::Node* node)
 {
   // Get dofs in beam contact discretization
@@ -2758,7 +2759,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
  | Shift Nodal positions (public)                           meier 02/14 |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::ShiftNodalPositions()
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::shift_nodal_positions()
 {
   //  //Reissner beams
   //  if (numnodalvalues == 1)
@@ -3078,7 +3079,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::fad_ch
     f(1) += rD(i) * x2_xi2(i) / norm_rD_scale;
   }
 
-  // Initialize matrices of system of equations showed in method ComputeLinParameter
+  // Initialize matrices of system of equations showed in method compute_lin_parameter
   CORE::LINALG::Matrix<2, 2, TYPEBTS> L(true);
   CORE::LINALG::Matrix<2, 2, TYPEBTS> L_inv(true);
   CORE::LINALG::Matrix<2, dim1 + dim2, TYPEBTS> B(true);
@@ -3284,7 +3285,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
  | FAD-Check for linearization of normal vector                         |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::FADCheckLinNormal(
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::fad_check_lin_normal(
     const CORE::LINALG::Matrix<3, 1, TYPEBTS>& nD, const CORE::LINALG::Matrix<3, 1, TYPEBTS>& n2,
     const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& xi1_d,
     const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& xi2_d,
@@ -3450,7 +3451,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
  | Differentation with finite difference for contact stiffness          |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::FDCheckStiffness(
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::fd_check_stiffness(
     const double& pp, const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPEBTS>& fc1,
     const CORE::LINALG::Matrix<3 * numnodessol, 1, TYPEBTS>& fc2,
     CORE::LINALG::Matrix<3 * numnodes * numnodalvalues,
@@ -3633,7 +3634,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::FDChec
  | Check difference between stiffness and FAD stiffness                 |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::FADCheckStiffness(
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::fad_check_stiffness(
     const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues,
         3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& stiffc1,
     const CORE::LINALG::Matrix<3 * numnodessol, 3 * numnodes * numnodalvalues + 3 * numnodessol,

@@ -54,9 +54,9 @@ namespace BINSTRATEGY
      *
      * @param[in] discret discretization
      * @param[in] extendedelecolmap extended element column map
-     * @param[in] assigndegreesoffreedom assign degrees of freedom, enters FillComplete call
-     * @param[in] initelements init elements, enters FillComplete call
-     * @param[in] doboundaryconditions do boundary conditions, enters FillComplete call
+     * @param[in] assigndegreesoffreedom assign degrees of freedom, enters fill_complete call
+     * @param[in] initelements init elements, enters fill_complete call
+     * @param[in] doboundaryconditions do boundary conditions, enters fill_complete call
      */
     void ExtendDiscretizationGhosting(Teuchos::RCP<DRT::Discretization> discret,
         Teuchos::RCP<Epetra_Map> const& extendedelecolmap, bool assigndegreesoffreedom,

@@ -62,7 +62,7 @@ void CORE::GEO::CUT::TriangulateFacet::SplitFacet()
     // facet with more than 1 concave point
     else
     {
-      SplitGeneralFacet(ptConcavity);
+      split_general_facet(ptConcavity);
     }
   }
 }
@@ -79,7 +79,7 @@ void CORE::GEO::CUT::TriangulateFacet::SplitFacet()
                                / +    + \
                                +        +
 *--------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::TriangulateFacet::Split4nodeFacet(
+void CORE::GEO::CUT::TriangulateFacet::split4node_facet(
     std::vector<Point*>& poly, bool callFromSplitAnyFacet)
 {
   if (poly.size() != 4) FOUR_C_THROW("This is not a 4 noded facet");
@@ -167,7 +167,7 @@ void CORE::GEO::CUT::TriangulateFacet::split_convex_1pt_concave_facet(std::vecto
   }
   else if (ptlist_.size() == 4)
   {
-    Split4nodeFacet(ptlist_, false);
+    split4node_facet(ptlist_, false);
     return;
   }
 
@@ -207,7 +207,7 @@ void CORE::GEO::CUT::TriangulateFacet::split_convex_1pt_concave_facet(std::vecto
     if (newCell.size() == 3 || convex)
       split_.push_back(newCell);
     else if (newCell.size() == 4)  // check the resulting quad is convex, else split into 2 tri
-      Split4nodeFacet(newCell, true);
+      split4node_facet(newCell, true);
     else
       FOUR_C_THROW("should have either 2 or 3 points");
 
@@ -219,7 +219,7 @@ void CORE::GEO::CUT::TriangulateFacet::split_convex_1pt_concave_facet(std::vecto
  * Generalized facet splitting procedure which works for simple facets with any number  sudhakar
  *08/12 of concave points. Involves checking whether a reflex point is inside formed cell
  *---------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::TriangulateFacet::SplitGeneralFacet(std::vector<int> ptConcavity)
+void CORE::GEO::CUT::TriangulateFacet::split_general_facet(std::vector<int> ptConcavity)
 {
   if (ptConcavity.size() < 2)
     FOUR_C_THROW("Call TriangulateFacet::split_convex_1pt_concave_facet in such cases");
@@ -231,7 +231,7 @@ void CORE::GEO::CUT::TriangulateFacet::SplitGeneralFacet(std::vector<int> ptConc
   }
   else if (ptlist_.size() == 4)  // can be a convex or concave quad
   {
-    Split4nodeFacet(ptlist_, false);
+    split4node_facet(ptlist_, false);
     return;
   }
 
@@ -329,7 +329,7 @@ void CORE::GEO::CUT::TriangulateFacet::SplitGeneralFacet(std::vector<int> ptConc
 
         if (isEar)
         {
-          Split4nodeFacet(newCell, true);
+          split4node_facet(newCell, true);
 
           // erase internal points of cell to form new polygon
           // when a point is deleted, all other points are renumbered
@@ -365,7 +365,7 @@ void CORE::GEO::CUT::TriangulateFacet::SplitGeneralFacet(std::vector<int> ptConc
     }
     else if (num == 4)
     {
-      Split4nodeFacet(ptlist_, false);
+      split4node_facet(ptlist_, false);
       return;
     }
     else
@@ -419,7 +419,7 @@ bool CORE::GEO::CUT::TriangulateFacet::has_two_continuous_concave_pts(std::vecto
 }
 
 
-void CORE::GEO::CUT::TriangulateFacet::RestoreLastEar(
+void CORE::GEO::CUT::TriangulateFacet::restore_last_ear(
     int ear_head_index, std::vector<int>& ptConcavity)
 {
   std::vector<Point*> last_added_ear = split_.back();
@@ -453,7 +453,7 @@ void CORE::GEO::CUT::TriangulateFacet::split_triangle_with_points_on_line(unsign
 }
 
 
-unsigned int CORE::GEO::CUT::TriangulateFacet::FindSecondBestEar(
+unsigned int CORE::GEO::CUT::TriangulateFacet::find_second_best_ear(
     std::vector<std::pair<std::vector<Point*>, unsigned int>>& ears, const std::vector<int>& reflex)
 {
   unsigned int polPts = ptlist_.size();
@@ -551,7 +551,7 @@ void CORE::GEO::CUT::TriangulateFacet::EarClipping(
     return;
   }
 
-  // creates only triangles --> do not call SplitGeneralFacet() even if possible
+  // creates only triangles --> do not call split_general_facet() even if possible
   // when ear clipping is called directly from other functions
   if (triOnly)
   {
@@ -693,7 +693,7 @@ void CORE::GEO::CUT::TriangulateFacet::EarClipping(
 
     else if (ptlist_.size() == 4 && !triOnly)
     {
-      Split4nodeFacet(ptlist_, false);
+      split4node_facet(ptlist_, false);
       break;
     }
 
@@ -712,7 +712,7 @@ void CORE::GEO::CUT::TriangulateFacet::EarClipping(
       }
       else if ((ptlist_.size() - ptConcavity.size()) > 3)
       {
-        SplitGeneralFacet(ptConcavity);
+        split_general_facet(ptConcavity);
         return;
       }
     }
@@ -724,7 +724,7 @@ void CORE::GEO::CUT::TriangulateFacet::EarClipping(
       if (discarded_ears.size() > 1)
       {
         unsigned int best_ear_index =
-            (discarded_ears.size() == 1) ? 0 : FindSecondBestEar(discarded_ears, reflex);
+            (discarded_ears.size() == 1) ? 0 : find_second_best_ear(discarded_ears, reflex);
 
         std::vector<Point*> tri = discarded_ears[best_ear_index].first;
         unsigned int i = discarded_ears[best_ear_index].second;
@@ -753,7 +753,7 @@ void CORE::GEO::CUT::TriangulateFacet::EarClipping(
         if (last_added_ear.size() != 0 or discarded_ears.size() != 0)
         {
           // recover last added ear
-          if (discarded_ears.size() == 0) RestoreLastEar(last_added_ear_head, ptConcavity);
+          if (discarded_ears.size() == 0) restore_last_ear(last_added_ear_head, ptConcavity);
           // use discareded one
           else
             last_added_ear_head = discarded_ears[0].second;

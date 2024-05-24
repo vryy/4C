@@ -73,12 +73,12 @@ namespace ADAPTER
     void Setup() override;
 
     /// read restart information for given time step
-    void ReadRestart(int step) override;
+    void read_restart(int step) override;
 
     /// actual time loop
     int Integrate() override;
 
-    /// wrapper for things that should be done before PrepareTimeStep is called
+    /// wrapper for things that should be done before prepare_time_step is called
     void PrePredict() override{};
 
     /// wrapper for things that should be done before solving the nonlinear iterations
@@ -88,7 +88,7 @@ namespace ADAPTER
     void PreUpdate() override{};
 
     /// wrapper for things that should be done after solving the update
-    void PostUpdate() override{};
+    void post_update() override{};
 
     /// output results
     void Output(bool forced_writerestart = false) override;
@@ -196,14 +196,14 @@ namespace ADAPTER
      *
      *  \author mayr.mt \date 12/2013
      */
-    void ResetStep() override;
+    void reset_step() override;
 
     /// setup of the auxiliary time integrator
     virtual void SetupAuxiliar() = 0;
 
    private:
     //! Setup necessities for time adaptivity
-    void SetupTimeAda();
+    void setup_time_ada();
 
     /*! \brief Make one step with auxiliary scheme
      *
@@ -216,13 +216,13 @@ namespace ADAPTER
 
     /*! \brief Update the auxiliar integrator
      */
-    virtual void UpdateAuxiliar() = 0;
+    virtual void update_auxiliar() = 0;
 
     //! Modify step size to hit precisely output period
-    void SizeForOutput();
+    void size_for_output();
 
     //!  Update output periods
-    void UpdatePeriod();
+    void update_period();
 
     //! Indicate error and determine new step size
     void Indicate(bool& accepted,  //!< true=accepted, false=not accepted
@@ -268,12 +268,12 @@ namespace ADAPTER
      *
      *  \author mayr.mt \date 12/2013
      */
-    virtual double CalculateDt(const double norm  ///< current norm of local discretization error
+    virtual double calculate_dt(const double norm  ///< current norm of local discretization error
     );
 
     /// Determine norm of force residual
-    double CalculateVectorNorm(const enum INPAR::STR::VectorNorm norm,  ///< type of norm to use
-        const Teuchos::RCP<Epetra_Vector> vect,                         ///< the vector of interest
+    double calculate_vector_norm(const enum INPAR::STR::VectorNorm norm,  ///< type of norm to use
+        const Teuchos::RCP<Epetra_Vector> vect,  ///< the vector of interest
         const int numneglect =
             0  ///< number of DOFs that have to be neglected for possible length scaling
     );

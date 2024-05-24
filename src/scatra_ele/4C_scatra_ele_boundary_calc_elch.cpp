@@ -181,7 +181,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_elch_bound
     if (zerocur == 0)
     {
       evaluate_elch_boundary_kinetics(ele, elemat1_epetra, elevec1_epetra, my::ephinp_, ehist,
-          timefac, ele->ParentElement()->Material(), cond, nume, *stoich, kinetics, pot0, frt,
+          timefac, ele->parent_element()->Material(), cond, nume, *stoich, kinetics, pot0, frt,
           scalar);
     }
 

@@ -41,12 +41,12 @@ int DRT::ELEMENTS::Thermo::Evaluate(Teuchos::ParameterList& params,
  | integration of the volume neumann (body forces) loads takes place    |
  | in the element. We need it there for the stabilisation terms!        |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Thermo::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Thermo::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
 {
-  return DRT::ELEMENTS::TemperImplInterface::Impl(this)->EvaluateNeumann(
+  return DRT::ELEMENTS::TemperImplInterface::Impl(this)->evaluate_neumann(
       this, params, discretization, lm, elevec1, elemat1);
 }
 

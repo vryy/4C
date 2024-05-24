@@ -41,11 +41,11 @@ DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner, int nnode, const 
   set_parent_master_element(parent, lsurface);
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  distype_ = CORE::FE::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
+  distype_ = CORE::FE::getShapeOfBoundaryElement(num_node(), ParentMasterElement()->Shape());
 
   numdofpernode_ = ParentMasterElement()->NumDofPerNode(*Nodes()[0]);
   // Safety check if all nodes have the same number of dofs!
-  for (int nlid = 1; nlid < NumNode(); ++nlid)
+  for (int nlid = 1; nlid < num_node(); ++nlid)
   {
     if (numdofpernode_ != ParentMasterElement()->NumDofPerNode(*Nodes()[nlid]))
       FOUR_C_THROW(

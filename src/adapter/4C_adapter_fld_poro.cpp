@@ -47,11 +47,11 @@ void ADAPTER::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector
     Teuchos::RCP<Epetra_Vector> condVector, Teuchos::RCP<std::set<int>> condIDs,
     POROELAST::Coupltype coupltype)
 {
-  if (!(Discretization()->Filled())) FOUR_C_THROW("FillComplete() was not called");
+  if (!(Discretization()->Filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!Discretization()->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
-  Discretization()->SetState(0, "dispnp", Dispnp());
-  Discretization()->SetState(0, "scaaf", Scaaf());
+  Discretization()->set_state(0, "dispnp", Dispnp());
+  Discretization()->set_state(0, "scaaf", Scaaf());
 
   Teuchos::ParameterList params;
 
@@ -62,7 +62,7 @@ void ADAPTER::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector
     // first, find out which dofs will be constraint
     params.set<int>("action", FLD::no_penetrationIDs);
     params.set<int>("Physical Type", INPAR::FLUID::poro);
-    Discretization()->EvaluateCondition(params, condVector, "NoPenetration");
+    Discretization()->evaluate_condition(params, condVector, "NoPenetration");
 
     // write global IDs of dofs on which the no penetration condition is applied (can vary in time
     // and iteration)
@@ -101,16 +101,16 @@ void ADAPTER::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector
         ConstraintMatrix,                        // fluid matrix
         Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
-    Discretization()->SetState(0, "condVector", condVector);
+    Discretization()->set_state(0, "condVector", condVector);
 
-    Discretization()->EvaluateCondition(params, fluidstrategy, "NoPenetration");
+    Discretization()->evaluate_condition(params, fluidstrategy, "NoPenetration");
   }
   else if (coupltype == POROELAST::fluidstructure)
   {
-    Discretization()->SetState(0, "velnp", Velnp());
-    Discretization()->SetState(0, "gridv", GridVel());
+    Discretization()->set_state(0, "velnp", Velnp());
+    Discretization()->set_state(0, "gridv", GridVel());
 
-    Discretization()->SetState(0, "condVector", condVector);
+    Discretization()->set_state(0, "condVector", condVector);
 
     // set action for elements
     params.set<int>("action", FLD::no_penetration);
@@ -118,7 +118,7 @@ void ADAPTER::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector
     params.set<int>("Physical Type", INPAR::FLUID::poro);
 
     // build specific assemble strategy for the fluid-mechanical system matrix
-    // from the point of view of FluidField:
+    // from the point of view of fluid_field:
     // fluiddofset = 0, structdofset = 1
     CORE::FE::AssembleStrategy couplstrategy(0,  // fluiddofset for row
         1,                                       // structdofset for column
@@ -127,7 +127,7 @@ void ADAPTER::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector
         Cond_RHS, Teuchos::null, Teuchos::null);
 
     // evaluate the fluid-mechanical system matrix on the fluid element
-    Discretization()->EvaluateCondition(params, couplstrategy, "NoPenetration");
+    Discretization()->evaluate_condition(params, couplstrategy, "NoPenetration");
   }
   else
     FOUR_C_THROW("unknown coupling type for no penetration BC");
@@ -159,36 +159,36 @@ void ADAPTER::FluidPoro::Output(const int step, const double time)
   bool write_eledata_every_step_ = true;
 
   // write standard output if no arguments are provided (default -1)
-  if (step == -1 and time == -1.0) FluidField()->Output();
+  if (step == -1 and time == -1.0) fluid_field()->Output();
   // write extra output for specified step and time
   else
   {
     // print info to screen
-    if (FluidField()->Discretization()->Comm().MyPID() == 0)
+    if (fluid_field()->Discretization()->Comm().MyPID() == 0)
       std::cout << "\n   Write EXTRA FLUID Output Step=" << step << " Time=" << time << " ...   \n"
                 << std::endl;
 
     // step number and time
-    FluidField()->DiscWriter()->NewStep(step, time);
+    fluid_field()->DiscWriter()->NewStep(step, time);
 
     // time step, especially necessary for adaptive dt
-    FluidField()->DiscWriter()->WriteDouble("timestep", FluidField()->Dt());
+    fluid_field()->DiscWriter()->WriteDouble("timestep", fluid_field()->Dt());
 
     // velocity/pressure vector
-    FluidField()->DiscWriter()->WriteVector("velnp", FluidField()->Velnp());
+    fluid_field()->DiscWriter()->WriteVector("velnp", fluid_field()->Velnp());
     // (hydrodynamic) pressure
     Teuchos::RCP<Epetra_Vector> pressure =
-        FluidField()->GetVelPressSplitter()->ExtractCondVector(FluidField()->Velnp());
-    FluidField()->DiscWriter()->WriteVector("pressure", pressure);
+        fluid_field()->GetVelPressSplitter()->ExtractCondVector(fluid_field()->Velnp());
+    fluid_field()->DiscWriter()->WriteVector("pressure", pressure);
 
-    if (alefluid_) FluidField()->DiscWriter()->WriteVector("dispnp", FluidField()->Dispnp());
+    if (alefluid_) fluid_field()->DiscWriter()->WriteVector("dispnp", fluid_field()->Dispnp());
 
     // write domain decomposition for visualization (only once!)
-    if ((FluidField()->Step() == upres_ or FluidField()->Step() == 0) and
+    if ((fluid_field()->Step() == upres_ or fluid_field()->Step() == 0) and
         !write_eledata_every_step_)
-      FluidField()->DiscWriter()->WriteElementData(true);
+      fluid_field()->DiscWriter()->WriteElementData(true);
     else
-      FluidField()->DiscWriter()->WriteElementData(true);
+      fluid_field()->DiscWriter()->WriteElementData(true);
 
     return;
 

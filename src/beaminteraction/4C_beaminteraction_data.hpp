@@ -58,33 +58,33 @@ namespace BEAMINTERACTION
     void Setup();
 
     //! returns the isinit_ flag
-    inline const bool& IsInit() const { return isinit_; };
+    inline const bool& is_init() const { return isinit_; };
 
     //! returns the issetup_ flag
-    inline const bool& IsSetup() const { return issetup_; };
+    inline const bool& is_setup() const { return issetup_; };
 
     //! Checks the init and setup status
-    inline void CheckInitSetup() const
+    inline void check_init_setup() const
     {
-      if (!IsInit() or !IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
+      if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
     }
 
     //! Checks the init status
-    inline void CheckInit() const
+    inline void check_init() const
     {
-      if (!IsInit()) FOUR_C_THROW("Init() has not been called, yet!");
+      if (!is_init()) FOUR_C_THROW("Init() has not been called, yet!");
     }
 
     /// number of crosslinkers per type
     INPAR::BEAMINTERACTION::RepartitionStrategy get_repartition_strategy() const
     {
-      CheckInitSetup();
+      check_init_setup();
       return rep_strategy_;
     };
 
     INPAR::BEAMINTERACTION::SearchStrategy GetSearchStrategy() const
     {
-      CheckInitSetup();
+      check_init_setup();
       return search_strategy_;
     }
 
@@ -119,7 +119,7 @@ namespace BEAMINTERACTION
       //!@name data access functions
       //! @{
 
-      int GetId() const { return id_; };
+      int get_id() const { return id_; };
 
       CORE::LINALG::Matrix<3, 1> const& GetPosition() const { return pos_; };
 
@@ -187,7 +187,7 @@ namespace BEAMINTERACTION
       //!@name data access functions
       //! @{
 
-      int GetId() const { return id_; };
+      int get_id() const { return id_; };
 
       std::map<INPAR::BEAMINTERACTION::CrosslinkerType,
           std::map<int, CORE::LINALG::Matrix<3, 1>>> const&
@@ -487,7 +487,7 @@ namespace BEAMINTERACTION
       void SetLocBspotId1(int locbspot) { locbspot_1_ = locbspot; };
       void SetLocBspotId2(int locbspot) { locbspot_2_ = locbspot; };
 
-      void SetType(int type) { type_ = type; };
+      void set_type(int type) { type_ = type; };
 
       void SetMatId(int mat_id) { mat_id_ = mat_id; };
 

@@ -1021,7 +1021,7 @@ bool DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
   bool BCnodes = false;
 
   // get the number of nodes per element
-  const int numnds = ele->NumNode();
+  const int numnds = ele->num_node();
 
   if (numnds != 2) FOUR_C_THROW("An element with %d nodes is not supported", numnds);
 
@@ -1821,7 +1821,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateWfAndWb(Artery* ele,
   //  bool BCnodes= false;
 
   // get the number of nodes per element
-  const int numnds = ele->NumNode();
+  const int numnds = ele->num_node();
 
   if (numnds != 2) FOUR_C_THROW("An element with %d nodes is not supported", numnds);
 

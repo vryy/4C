@@ -58,22 +58,22 @@ namespace FSI
     //! 1) the single fields residuals
     //! 2) the Lagrange multiplier field lambda_
     //! 3) terms in the first nonlinear iteration
-    void SetupRHS(Epetra_Vector& f,  ///< empty rhs vector (to be filled)
+    void setup_rhs(Epetra_Vector& f,  ///< empty rhs vector (to be filled)
         bool firstcall = false  ///< indicates whether this is the first nonlinear iteration or not
         ) override;
 
     /// setup composed system matrix from field solvers
-    void SetupSystemMatrix() override;
+    void setup_system_matrix() override;
     //@}
 
     /// create merged map of DOF in the final system from all fields
     void create_combined_dof_row_map() override;
 
     /// initial guess for subsequent fields
-    void InitialGuess(Teuchos::RCP<Epetra_Vector> ig) override;
+    void initial_guess(Teuchos::RCP<Epetra_Vector> ig) override;
 
     /// create merged Dirichlet map from single field maps
-    Teuchos::RCP<Epetra_Map> CombinedDBCMap() override;
+    Teuchos::RCP<Epetra_Map> combined_dbc_map() override;
 
     /// Newton loop
     void Newton() override;
@@ -91,7 +91,7 @@ namespace FSI
     //! \param sx (o) structural displacements
     //! \param fx (o) fluid velocities and pressure
     //! \param ax (o) ale displacements
-    void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+    void extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx,
         Teuchos::RCP<const Epetra_Vector>& ax) override;
 
@@ -102,7 +102,7 @@ namespace FSI
     void build_convergence_norms() override;
 
     /// read restart data
-    void ReadRestart(int step) override;
+    void read_restart(int step) override;
 
     /// output of fluid, structure & ALE-quantities and Lagrange multiplier
     void Output() override;
@@ -127,12 +127,12 @@ namespace FSI
 
    private:
     /// build block vector from field vectors
-    void SetupVector(Epetra_Vector& f, Teuchos::RCP<const Epetra_Vector> sv,
+    void setup_vector(Epetra_Vector& f, Teuchos::RCP<const Epetra_Vector> sv,
         Teuchos::RCP<const Epetra_Vector> fv, Teuchos::RCP<const Epetra_Vector> av,
         double fluidscale);
 
     /// access type-cast pointer to problem-specific fluid-wrapper
-    const Teuchos::RCP<ADAPTER::FluidFluidFSI>& FluidField() { return MonolithicNoNOX::fluid_; }
+    const Teuchos::RCP<ADAPTER::FluidFluidFSI>& fluid_field() { return MonolithicNoNOX::fluid_; }
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks

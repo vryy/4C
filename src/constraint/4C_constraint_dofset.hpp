@@ -34,7 +34,7 @@ namespace CONSTRAINTS
 
   This class represents one set of degrees of freedom for the
   constraints in the usual parallel fashion. That is there is a
-  DofRowMap() and a DofColMap() that return the maps of the global FE
+  dof_row_map() and a DofColMap() that return the maps of the global FE
   system of equation in row and column setting respectively. These maps
   are used by the algorithm's Epetra_Vector classes amoung others.
 

@@ -38,7 +38,7 @@ bool NOX::FSI::FixPoint::compute(::NOX::Abstract::Vector& dir, ::NOX::Abstract::
 
   // Compute F at current solution
   status = group.computeF();
-  if (status != ::NOX::Abstract::Group::Ok) throwError("compute", "Unable to compute F");
+  if (status != ::NOX::Abstract::Group::Ok) throw_error("compute", "Unable to compute F");
 
   // The residual is the direction.
   dir.update(1.0, group.getF());
@@ -54,7 +54,7 @@ bool NOX::FSI::FixPoint::compute(::NOX::Abstract::Vector& dir, ::NOX::Abstract::
 }
 
 
-void NOX::FSI::FixPoint::throwError(const std::string& functionName, const std::string& errorMsg)
+void NOX::FSI::FixPoint::throw_error(const std::string& functionName, const std::string& errorMsg)
 {
   if (utils_->isPrintType(::NOX::Utils::Error))
     utils_->err() << "FixPoint::" << functionName << " - " << errorMsg << std::endl;

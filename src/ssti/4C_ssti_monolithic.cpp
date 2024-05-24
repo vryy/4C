@@ -66,7 +66,7 @@ SSTI::SSTIMono::SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& 
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSTI::SSTIMono::AssembleMatAndRHS()
+void SSTI::SSTIMono::assemble_mat_and_rhs()
 {
   double starttime = timer_->wallTime();
 
@@ -122,7 +122,7 @@ void SSTI::SSTIMono::AssembleMatAndRHS()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void SSTI::SSTIMono::BuildNullSpaces()
+void SSTI::SSTIMono::build_null_spaces()
 {
   // build null spaces for scatra and thermo
   switch (ScaTraField()->MatrixType())
@@ -186,7 +186,7 @@ void SSTI::SSTIMono::BuildNullSpaces()
     // freedom on structural discretization
     StructureField()->Discretization()->compute_null_space_if_necessary(blocksmootherparams);
   }
-}  // SSTI::SSTI_Mono::BuildNullSpaces
+}  // SSTI::SSTI_Mono::build_null_spaces
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
@@ -232,7 +232,7 @@ void SSTI::SSTIMono::Output()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSTI::SSTIMono::PrepareTimeStep()
+void SSTI::SSTIMono::prepare_time_step()
 {
   // update time and time step
   increment_time_and_step();
@@ -240,21 +240,21 @@ void SSTI::SSTIMono::PrepareTimeStep()
   distribute_solution_all_fields();
 
   // in first time step: solve to get initital derivatives
-  ScaTraField()->PrepareTimeStep();
+  ScaTraField()->prepare_time_step();
 
   // if adaptive time stepping and different time step size: calculate time step in scatra
-  // (PrepareTimeStep() of Scatra) and pass to structure and thermo
+  // (prepare_time_step() of Scatra) and pass to structure and thermo
   if (ScaTraField()->TimeStepAdapted()) distribute_dt_from_sca_tra();
 
   // in first time step: solve to get initital derivatives
-  ThermoField()->PrepareTimeStep();
+  ThermoField()->prepare_time_step();
 
   // pass scalar transport degrees of freedom to structural discretization
-  // has to be called AFTER ScaTraField()->PrepareTimeStep() to ensure
+  // has to be called AFTER ScaTraField()->prepare_time_step() to ensure
   // consistent scalar transport state vector with valid Dirichlet conditions
-  StructureField()->PrepareTimeStep();
+  StructureField()->prepare_time_step();
 
-  ScaTraField()->PrintTimeStepInfo();
+  ScaTraField()->print_time_step_info();
 }
 
 /*--------------------------------------------------------------------------*
@@ -343,7 +343,7 @@ void SSTI::SSTIMono::SetupSystem()
 
     // feed AMGnxn block preconditioner with null space information for each block of global
     // block system matrix
-    BuildNullSpaces();
+    build_null_spaces();
   }
 
   // initialize submatrices and system matrix
@@ -386,7 +386,7 @@ void SSTI::SSTIMono::SetupSystem()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSTI::SSTIMono::NewtonLoop()
+void SSTI::SSTIMono::newton_loop()
 {
   double starttime = timer_->wallTime();
 
@@ -396,21 +396,21 @@ void SSTI::SSTIMono::NewtonLoop()
   // start Newton-Raphson iteration
   while (true)
   {
-    PrepareNewtonStep();
+    prepare_newton_step();
 
     ssti_matrices_->un_complete_coupling_matrices();
 
-    EvaluateSubproblems();
+    evaluate_subproblems();
 
     ssti_matrices_->complete_coupling_matrices();
 
-    AssembleMatAndRHS();
+    assemble_mat_and_rhs();
 
     if (convcheck_->Converged(*this)) break;
 
-    LinearSolve();
+    linear_solve();
 
-    UpdateIterStates();
+    update_iter_states();
   }
 
   double mydt = timer_->wallTime() - starttime;
@@ -426,18 +426,18 @@ void SSTI::SSTIMono::Timeloop()
   {
     distribute_solution_all_fields();
 
-    ScaTraField()->PrepareTimeLoop();
-    ThermoField()->PrepareTimeLoop();
+    ScaTraField()->prepare_time_loop();
+    ThermoField()->prepare_time_loop();
   }
   // time loop
   while (NotFinished() and ScaTraField()->NotFinished())
   {
-    PrepareTimeStep();
+    prepare_time_step();
 
-    NewtonLoop();
+    newton_loop();
 
     constexpr bool force_prepare = false;
-    StructureField()->PrepareOutput(force_prepare);
+    StructureField()->prepare_output(force_prepare);
 
     Update();
 
@@ -456,7 +456,7 @@ void SSTI::SSTIMono::Update()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> SSTI::SSTIMono::ExtractSubIncrement(Subproblem sub)
+Teuchos::RCP<Epetra_Vector> SSTI::SSTIMono::extract_sub_increment(Subproblem sub)
 {
   Teuchos::RCP<Epetra_Vector> subincrement(Teuchos::null);
   switch (sub)
@@ -480,7 +480,7 @@ Teuchos::RCP<Epetra_Vector> SSTI::SSTIMono::ExtractSubIncrement(Subproblem sub)
               coupling_adapter->MasterToSlave(
                   coupling_map_extractor->ExtractVector(StructureField()->Dispnp(), 2)),
               1, StructureField()->WriteAccessDispnp());
-          StructureField()->SetState(StructureField()->WriteAccessDispnp());
+          StructureField()->set_state(StructureField()->WriteAccessDispnp());
           // increments
           coupling_map_extractor->InsertVector(
               coupling_adapter->MasterToSlave(
@@ -512,7 +512,7 @@ Teuchos::RCP<Epetra_Vector> SSTI::SSTIMono::ExtractSubIncrement(Subproblem sub)
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SSTI::SSTIMono::EvaluateSubproblems()
+void SSTI::SSTIMono::evaluate_subproblems()
 {
   double starttime = timer_->wallTime();
 
@@ -520,7 +520,7 @@ void SSTI::SSTIMono::EvaluateSubproblems()
   ssti_matrices_->ClearMatrices();
 
   // needed to communicate to NOX state
-  StructureField()->SetState(StructureField()->WriteAccessDispnp());
+  StructureField()->set_state(StructureField()->WriteAccessDispnp());
 
   // distribute solution from all fields to each other
   distribute_solution_all_fields();
@@ -563,7 +563,7 @@ void SSTI::SSTIMono::EvaluateSubproblems()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SSTI::SSTIMono::LinearSolve()
+void SSTI::SSTIMono::linear_solve()
 {
   double starttime = timer_->wallTime();
 
@@ -590,20 +590,20 @@ void SSTI::SSTIMono::LinearSolve()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SSTI::SSTIMono::UpdateIterStates()
+void SSTI::SSTIMono::update_iter_states()
 {
-  ScaTraField()->UpdateIter(ExtractSubIncrement(Subproblem::scalar_transport));
+  ScaTraField()->UpdateIter(extract_sub_increment(Subproblem::scalar_transport));
   ScaTraField()->compute_intermediate_values();
 
-  ThermoField()->UpdateIter(ExtractSubIncrement(Subproblem::thermo));
+  ThermoField()->UpdateIter(extract_sub_increment(Subproblem::thermo));
   ThermoField()->compute_intermediate_values();
 
-  StructureField()->update_state_incrementally(ExtractSubIncrement(Subproblem::structure));
+  StructureField()->update_state_incrementally(extract_sub_increment(Subproblem::structure));
 }
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SSTI::SSTIMono::PrepareNewtonStep()
+void SSTI::SSTIMono::prepare_newton_step()
 {
   // update iteration counter
   IncrementIter();

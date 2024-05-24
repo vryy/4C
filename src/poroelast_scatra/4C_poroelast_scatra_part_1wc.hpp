@@ -31,7 +31,7 @@ namespace POROELASTSCATRA
     void DoScatraStep() override;
 
     //! prepare output
-    void PrepareOutput() override;
+    void prepare_output() override;
 
     //! update time step
     void Update() override;
@@ -51,13 +51,13 @@ namespace POROELASTSCATRA
     void Timeloop() override;
 
     //! increment time and step and print header
-    void PrepareTimeStep(bool printheader = true) override;
+    void prepare_time_step(bool printheader = true) override;
 
     //! perform iteration loop between fields
     void Solve() override;
 
     //! read and set fields needed for restart
-    void ReadRestart(int restart) override;
+    void read_restart(int restart) override;
   };
 
   class PoroScatraPart1WCScatraToPoro : public PoroScatraPart1WC
@@ -71,13 +71,13 @@ namespace POROELASTSCATRA
     void Timeloop() override;
 
     //! increment time and step and print header
-    void PrepareTimeStep(bool printheader = true) override;
+    void prepare_time_step(bool printheader = true) override;
 
     //! perform iteration loop between fields
     void Solve() override;
 
     //! read and set fields needed for restart
-    void ReadRestart(int restart) override;
+    void read_restart(int restart) override;
   };
 }  // namespace POROELASTSCATRA
 

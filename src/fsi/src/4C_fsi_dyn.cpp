@@ -100,17 +100,17 @@ void fluid_ale_drt()
   }
   else
   {
-    fluiddis->FillComplete();
+    fluiddis->fill_complete();
   }
 
   Teuchos::RCP<DRT::Discretization> aledis = problem->GetDis("ale");
-  aledis->FillComplete();
+  aledis->fill_complete();
 
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes() == 0)
   {
     DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis, aledis);
-    aledis->FillComplete();
+    aledis->fill_complete();
     // setup material in every ALE element
     Teuchos::ParameterList params;
     params.set<std::string>("action", "setup_material");
@@ -130,7 +130,7 @@ void fluid_ale_drt()
   if (restart)
   {
     // read the restart information, set vectors and variables
-    fluid->ReadRestart(restart);
+    fluid->read_restart(restart);
   }
   fluid->Timeloop();
 
@@ -148,7 +148,7 @@ void fluid_xfem_drt()
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   Teuchos::RCP<DRT::Discretization> soliddis = problem->GetDis("structure");
-  soliddis->FillComplete();
+  soliddis->fill_complete();
 
   FLD::XFluid::setup_fluid_discretization();
 
@@ -158,14 +158,14 @@ void fluid_xfem_drt()
   if (alefluid)  // in ale case
   {
     Teuchos::RCP<DRT::Discretization> aledis = problem->GetDis("ale");
-    aledis->FillComplete();
+    aledis->fill_complete();
 
     // create ale elements if the ale discretization is empty
     if (aledis->NumGlobalNodes() == 0)
     {
       DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
           problem->GetDis("fluid"), aledis);
-      aledis->FillComplete();
+      aledis->fill_complete();
       // setup material in every ALE element
       Teuchos::ParameterList params;
       params.set<std::string>("action", "setup_material");
@@ -191,7 +191,7 @@ void fluid_xfem_drt()
     if (restart)
     {
       // read the restart information, set vectors and variables
-      fluidalgo->ReadRestart(restart);
+      fluidalgo->read_restart(restart);
     }
 
     // run the simulation
@@ -216,16 +216,16 @@ void fluid_xfem_drt()
     if (restart)
     {
       // read the restart information, set vectors and variables
-      fluidalgo->FluidField()->ReadRestart(restart);
+      fluidalgo->fluid_field()->read_restart(restart);
     }
 
     //--------------------------------------------------------------
     // run the simulation
-    fluidalgo->FluidField()->Integrate();
+    fluidalgo->fluid_field()->Integrate();
 
     //--------------------------------------------------------------
     // perform result tests if required
-    problem->AddFieldTest(fluidalgo->FluidField()->CreateFieldTest());
+    problem->AddFieldTest(fluidalgo->fluid_field()->CreateFieldTest());
     problem->TestAll(comm);
   }
 }
@@ -246,8 +246,8 @@ void fluid_freesurf_drt()
   //
   // We rely on this ordering in certain non-intuitive places!
 
-  problem->GetDis("fluid")->FillComplete();
-  problem->GetDis("ale")->FillComplete();
+  problem->GetDis("fluid")->fill_complete();
+  problem->GetDis("ale")->fill_complete();
 
   // get discretizations
   Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
@@ -257,7 +257,7 @@ void fluid_freesurf_drt()
   if (aledis->NumGlobalNodes() == 0)
   {
     DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis, aledis);
-    aledis->FillComplete();
+    aledis->fill_complete();
     // setup material in every ALE element
     Teuchos::ParameterList params;
     params.set<std::string>("action", "setup_material");
@@ -290,12 +290,12 @@ void fluid_freesurf_drt()
       if (restart)
       {
         // read the restart information, set vectors and variables
-        fsi->ReadRestart(restart);
+        fsi->read_restart(restart);
       }
 
       fsi->Timeloop(fsi);
 
-      GLOBAL::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
+      GLOBAL::Problem::Instance()->AddFieldTest(fsi->fluid_field()->CreateFieldTest());
       GLOBAL::Problem::Instance()->TestAll(comm);
       break;
     }
@@ -328,15 +328,15 @@ void fsi_immersed_drt()
 
   if (structdis->GetCondition("PointCoupling") != nullptr)
   {
-    structdis->FillComplete(false, false, false);
+    structdis->fill_complete(false, false, false);
     CORE::REBALANCE::RebalanceDiscretizationsByBinning({structdis}, true);
   }
   else if (not structdis->Filled() || not structdis->HaveDofs())
   {
-    structdis->FillComplete();
+    structdis->fill_complete();
   }
 
-  problem->GetDis("fluid")->FillComplete();
+  problem->GetDis("fluid")->fill_complete();
 
   // get discretizations
   Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
@@ -394,7 +394,7 @@ void fsi_immersed_drt()
   if (restart)
   {
     // read the restart information, set vectors and variables
-    fsi->ReadRestart(restart);
+    fsi->read_restart(restart);
   }
 
   fsi->Timeloop(fsi);
@@ -426,12 +426,12 @@ void fsi_ale_drt()
 
   if (structdis->GetCondition("PointCoupling") != nullptr)
   {
-    structdis->FillComplete(false, false, false);
+    structdis->fill_complete(false, false, false);
     CORE::REBALANCE::RebalanceDiscretizationsByBinning({structdis}, true);
   }
   else if (not structdis->Filled() || not structdis->HaveDofs())
   {
-    structdis->FillComplete();
+    structdis->fill_complete();
   }
 
   if (CORE::UTILS::IntegralValue<bool>(
@@ -440,9 +440,9 @@ void fsi_ale_drt()
     FLD::XFluid::setup_fluid_discretization();
   }
   else
-    problem->GetDis("fluid")->FillComplete();
+    problem->GetDis("fluid")->fill_complete();
 
-  problem->GetDis("ale")->FillComplete();
+  problem->GetDis("ale")->fill_complete();
 
   // get discretizations
   Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
@@ -452,7 +452,7 @@ void fsi_ale_drt()
   if (aledis->NumGlobalNodes() == 0)  // empty ale discretization
   {
     DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis, aledis);
-    aledis->FillComplete();
+    aledis->fill_complete();
     // setup material in every ALE element
     Teuchos::ParameterList params;
     params.set<std::string>("action", "setup_material");
@@ -584,7 +584,7 @@ void fsi_ale_drt()
       const int restart = GLOBAL::Problem::Instance()->Restart();
       if (restart)
       {
-        fsi->ReadRestart(restart);
+        fsi->read_restart(restart);
       }
 
       // now do the coupling setup and create the combined dofmap
@@ -650,11 +650,11 @@ void fsi_ale_drt()
       fsi->Timeloop(fsi);
 
       // calculate errors in comparison to analytical solution
-      fsi->FluidField()->CalculateError();
+      fsi->fluid_field()->CalculateError();
 
       // create result tests for single fields
-      GLOBAL::Problem::Instance()->AddFieldTest(fsi->AleField()->CreateFieldTest());
-      GLOBAL::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
+      GLOBAL::Problem::Instance()->AddFieldTest(fsi->ale_field()->CreateFieldTest());
+      GLOBAL::Problem::Instance()->AddFieldTest(fsi->fluid_field()->CreateFieldTest());
       GLOBAL::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
 
       // create fsi specific result test
@@ -686,7 +686,7 @@ void fsi_ale_drt()
       const int restart = GLOBAL::Problem::Instance()->Restart();
       if (restart)
       {
-        fsi->ReadRestart(restart);
+        fsi->read_restart(restart);
       }
 
       // now do the coupling setup and create the combined dofmap
@@ -696,10 +696,10 @@ void fsi_ale_drt()
       fsi->Timeloop();
 
       // calculate errors in comparison to analytical solution
-      fsi->FluidField()->CalculateError();
+      fsi->fluid_field()->CalculateError();
 
       // create result tests for single fields
-      GLOBAL::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
+      GLOBAL::Problem::Instance()->AddFieldTest(fsi->fluid_field()->CreateFieldTest());
       GLOBAL::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
 
       // create fsi specific result test
@@ -737,7 +737,7 @@ void fsi_ale_drt()
       if (restart)
       {
         // read the restart information, set vectors and variables
-        fsi->ReadRestart(restart);
+        fsi->read_restart(restart);
       }
 
       fsi->Timeloop(fsi);
@@ -780,7 +780,7 @@ void xfsi_drt()
   const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
 
   Teuchos::RCP<DRT::Discretization> soliddis = problem->GetDis("structure");
-  soliddis->FillComplete();
+  soliddis->fill_complete();
 
   FLD::XFluid::setup_fluid_discretization();
 
@@ -796,13 +796,13 @@ void xfsi_drt()
     aledis = problem->GetDis("ale");
     if (aledis == Teuchos::null) FOUR_C_THROW("XFSI DYNAMIC: ALE Discretization empty!!!");
 
-    aledis->FillComplete(true, true, true);
+    aledis->fill_complete(true, true, true);
 
     // Create ALE elements if the ale discretization is empty
     if (aledis->NumGlobalNodes() == 0)  // ALE discretization still empty
     {
       DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis, aledis);
-      aledis->FillComplete();
+      aledis->fill_complete();
       // setup material in every ALE element
       Teuchos::ParameterList params;
       params.set<std::string>("action", "setup_material");
@@ -840,7 +840,7 @@ void xfsi_drt()
       const int restart = GLOBAL::Problem::Instance()->Restart();
       if (restart)
       {
-        fsi->ReadRestart(restart);
+        fsi->read_restart(restart);
       }
 
       // setup the system (block-DOF-row maps, systemmatrix etc.) for the monolithic XFEM system
@@ -849,7 +849,7 @@ void xfsi_drt()
       // here we go...
       fsi->Timeloop();
 
-      GLOBAL::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
+      GLOBAL::Problem::Instance()->AddFieldTest(fsi->fluid_field()->CreateFieldTest());
       fsi->StructurePoro()->TestResults(GLOBAL::Problem::Instance());
 
       //    // create FSI specific result test
@@ -890,7 +890,7 @@ void xfsi_drt()
       if (restart)
       {
         // read the restart information, set vectors and variables
-        fsi->ReadRestart(restart);
+        fsi->read_restart(restart);
       }
 
       fsi->Timeloop(fsi);
@@ -944,13 +944,13 @@ void xfpsi_drt()
     aledis = problem->GetDis("ale");
     if (aledis == Teuchos::null) FOUR_C_THROW("Ale Discretization empty!");
 
-    aledis->FillComplete(true, true, true);
+    aledis->fill_complete(true, true, true);
 
     // 3.- Create ALE elements if the ale discretization is empty
     if (aledis->NumGlobalNodes() == 0)  // ALE discretization still empty
     {
       DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis, aledis);
-      aledis->FillComplete();
+      aledis->fill_complete();
       // setup material in every ALE element
       Teuchos::ParameterList params;
       params.set<std::string>("action", "setup_material");
@@ -996,7 +996,7 @@ void xfpsi_drt()
               ->Restart();  // not adapated at the moment .... Todo check it .. ChrAg
       if (restart)
       {
-        fsi->ReadRestart(restart);
+        fsi->read_restart(restart);
       }
 
       fsi->SetupSystem();
@@ -1009,7 +1009,7 @@ void xfpsi_drt()
       // here we go...
       fsi->Timeloop();
 
-      GLOBAL::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
+      GLOBAL::Problem::Instance()->AddFieldTest(fsi->fluid_field()->CreateFieldTest());
       fsi->StructurePoro()->TestResults(GLOBAL::Problem::Instance());
 
       // do the actual testing

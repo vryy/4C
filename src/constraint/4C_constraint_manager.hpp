@@ -93,7 +93,7 @@ namespace CONSTRAINTS
       Values of lagrange multiplier are taken from intern variable.
       Difference between current and prescribed values is calculated and stored as well.
     */
-    void EvaluateForceStiff(const double time,       ///< time at end of time step
+    void evaluate_force_stiff(const double time,     ///< time at end of time step
         Teuchos::RCP<const Epetra_Vector> displast,  ///< displacement at beginning of time step
         Teuchos::RCP<const Epetra_Vector> disp,      ///< displacement at end of time step
         Teuchos::RCP<Epetra_Vector> fint,            ///< vector of internal forces
@@ -147,7 +147,7 @@ namespace CONSTRAINTS
          \brief Compute difference between current and prescribed values at a given time and a given
        displacement
     */
-    void ComputeError(double time,        ///< time, at which the error is to compute at
+    void compute_error(double time,       ///< time, at which the error is to compute at
         Teuchos::RCP<Epetra_Vector> disp  ///< displacement vector at the given time
     );
 
@@ -217,7 +217,7 @@ namespace CONSTRAINTS
     /*!
      \brief Read restart information
     */
-    void ReadRestart(IO::DiscretizationReader& reader, const double& time);
+    void read_restart(IO::DiscretizationReader& reader, const double& time);
 
     /*!
      \brief Return current value
@@ -273,7 +273,7 @@ namespace CONSTRAINTS
     ConstrManager(const ConstrManager& old);
 
     /// Build Monitor type Vector
-    void BuildMoniType();
+    void build_moni_type();
 
     Teuchos::RCP<DRT::Discretization> actdisc_;  ///< discretization, elements to constraint live in
     Teuchos::RCP<ConstraintDofSet> constrdofset_;  ///< degrees of freedom of lagrange multipliers
@@ -339,29 +339,29 @@ namespace CONSTRAINTS
 
    protected:
     //! returns true if Setup() was called and is still valid
-    bool IsSetup() { return issetup_; };
+    bool is_setup() { return issetup_; };
 
     //! returns true if Init(..) was called and is still valid
-    bool IsInit() { return isinit_; };
+    bool is_init() { return isinit_; };
 
     //! check if \ref Setup() was called
     void CheckIsSetup()
     {
-      if (not IsSetup()) FOUR_C_THROW("Setup() was not called.");
+      if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
     };
 
     //! check if \ref Init() was called
-    void CheckIsInit()
+    void check_is_init()
     {
-      if (not IsInit()) FOUR_C_THROW("Init(...) was not called.");
+      if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
     };
 
    public:
     //! set flag true after setup or false if setup became invalid
-    void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; };
+    void set_is_setup(bool trueorfalse) { issetup_ = trueorfalse; };
 
     //! set flag true after init or false if init became invalid
-    void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
+    void set_is_init(bool trueorfalse) { isinit_ = trueorfalse; };
 
   };  // class
 }  // namespace CONSTRAINTS

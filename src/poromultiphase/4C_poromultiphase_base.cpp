@@ -59,7 +59,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& glob
   structure_ = adapterbase->StructureField();
 
   // initialize zero vector for convenience
-  struct_zeros_ = CORE::LINALG::CreateVector(*structure_->DofRowMap(), true);
+  struct_zeros_ = CORE::LINALG::CreateVector(*structure_->dof_row_map(), true);
   // do we also solve the structure, this is helpful in case of fluid-scatra coupling without mesh
   // deformation
   solve_structure_ = CORE::UTILS::IntegralValue<int>(algoparams, "SOLVE_STRUCTURE");
@@ -76,7 +76,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& glob
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
   // -------------------------------------------------------------------
-  if (!fluiddis->Filled()) fluiddis->FillComplete();
+  if (!fluiddis->Filled()) fluiddis->fill_complete();
 
   // -------------------------------------------------------------------
   // context for output and restart
@@ -109,15 +109,15 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& glob
 /*----------------------------------------------------------------------*
  | read restart information for given time step (public)   vuong 08/16  |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhaseBase::ReadRestart(int restart)
+void POROMULTIPHASE::PoroMultiPhaseBase::read_restart(int restart)
 {
   if (restart)
   {
     // read restart data for structure field (will set time and step internally)
-    structure_->ReadRestart(restart);
+    structure_->read_restart(restart);
 
     // read restart data for fluid field (will set time and step internally)
-    fluid_->ReadRestart(restart);
+    fluid_->read_restart(restart);
 
     // reset time and step for the global algorithm
     SetTimeStep(structure_->TimeOld(), restart);
@@ -133,12 +133,12 @@ void POROMULTIPHASE::PoroMultiPhaseBase::ReadRestart(int restart)
 void POROMULTIPHASE::PoroMultiPhaseBase::Timeloop()
 {
   // prepare the loop
-  PrepareTimeLoop();
+  prepare_time_loop();
 
   // time loop
   while (NotFinished())
   {
-    PrepareTimeStep();
+    prepare_time_step();
 
     TimeStep();
 
@@ -151,13 +151,13 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Timeloop()
 /*----------------------------------------------------------------------*
  | prepare the time loop                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhaseBase::PrepareTimeLoop()
+void POROMULTIPHASE::PoroMultiPhaseBase::prepare_time_loop()
 {
   // initial output
   if (solve_structure_)
   {
     constexpr bool force_prepare = true;
-    StructureField()->PrepareOutput(force_prepare);
+    StructureField()->prepare_output(force_prepare);
     StructureField()->Output();
     SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
   }
@@ -168,7 +168,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::PrepareTimeLoop()
     // just set displacements and velocities to zero
     SetStructSolution(struct_zeros_, struct_zeros_);
   }
-  FluidField()->PrepareTimeLoop();
+  fluid_field()->prepare_time_loop();
 
   return;
 }
@@ -176,22 +176,22 @@ void POROMULTIPHASE::PoroMultiPhaseBase::PrepareTimeLoop()
 /*----------------------------------------------------------------------*
  | prepare one time step                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhaseBase::PrepareTimeStep()
+void POROMULTIPHASE::PoroMultiPhaseBase::prepare_time_step()
 {
   increment_time_and_step();
 
-  StructureField()->Discretization()->SetState(1, "porofluid", FluidField()->Phinp());
+  StructureField()->Discretization()->set_state(1, "porofluid", fluid_field()->Phinp());
 
   if (solve_structure_)
   {
     // NOTE: the predictor of the structure is called in here
-    StructureField()->PrepareTimeStep();
+    StructureField()->prepare_time_step();
     SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
   }
   else
     SetStructSolution(struct_zeros_, struct_zeros_);
 
-  FluidField()->PrepareTimeStep();
+  fluid_field()->prepare_time_step();
 }
 
 /*----------------------------------------------------------------------*
@@ -211,14 +211,14 @@ void POROMULTIPHASE::PoroMultiPhaseBase::CreateFieldTest()
 void POROMULTIPHASE::PoroMultiPhaseBase::SetStructSolution(
     Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<const Epetra_Vector> vel)
 {
-  SetMeshDisp(disp);
-  SetVelocityFields(vel);
+  set_mesh_disp(disp);
+  set_velocity_fields(vel);
 }
 
 /*------------------------------------------------------------------------*
  | communicate the structure velocity  to the fluid           vuong 08/16  |
  *------------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhaseBase::SetVelocityFields(Teuchos::RCP<const Epetra_Vector> vel)
+void POROMULTIPHASE::PoroMultiPhaseBase::set_velocity_fields(Teuchos::RCP<const Epetra_Vector> vel)
 {
   fluid_->SetVelocityField(vel);
 }
@@ -236,7 +236,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::SetScatraSolution(
 /*------------------------------------------------------------------------*
  | communicate the structure displacement to the fluid        vuong 08/16  |
  *------------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhaseBase::SetMeshDisp(Teuchos::RCP<const Epetra_Vector> disp)
+void POROMULTIPHASE::PoroMultiPhaseBase::set_mesh_disp(Teuchos::RCP<const Epetra_Vector> disp)
 {
   fluid_->ApplyMeshMovement(disp);
 }
@@ -248,21 +248,21 @@ void POROMULTIPHASE::PoroMultiPhaseBase::UpdateAndOutput()
 {
   // prepare the output
   constexpr bool force_prepare = false;
-  StructureField()->PrepareOutput(force_prepare);
+  StructureField()->prepare_output(force_prepare);
 
   // update single fields
   StructureField()->Update();
-  FluidField()->Update();
+  fluid_field()->Update();
 
   // evaluate error if desired
-  FluidField()->evaluate_error_compared_to_analytical_sol();
+  fluid_field()->evaluate_error_compared_to_analytical_sol();
 
   // set structure on fluid (necessary for possible domain integrals)
   SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
 
   // output single fields
   StructureField()->Output();
-  FluidField()->Output();
+  fluid_field()->Output();
 }
 
 /*------------------------------------------------------------------------*
@@ -270,7 +270,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::UpdateAndOutput()
  *------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> POROMULTIPHASE::PoroMultiPhaseBase::StructDofRowMap() const
 {
-  return structure_->DofRowMap();
+  return structure_->dof_row_map();
 }
 
 /*------------------------------------------------------------------------*
@@ -278,7 +278,7 @@ Teuchos::RCP<const Epetra_Map> POROMULTIPHASE::PoroMultiPhaseBase::StructDofRowM
  *------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> POROMULTIPHASE::PoroMultiPhaseBase::FluidDofRowMap() const
 {
-  return fluid_->DofRowMap();
+  return fluid_->dof_row_map();
 }
 
 /*------------------------------------------------------------------------*

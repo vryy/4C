@@ -76,7 +76,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
   Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
 
   // set the fluid material in the element
-  VarManager()->set_fluid_poromultiphase_material(ele);
+  var_manager()->set_fluid_poromultiphase_material(ele);
 
   if (material->MaterialType() == CORE::Materials::m_matlist or
       material->MaterialType() == CORE::Materials::m_matlist_reactions)
@@ -99,30 +99,31 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
 
           // smaller zero or greater equal numfluidphases
           if (poromat->PhaseID() < 0 or
-              poromat->PhaseID() >= VarManager()->MultiphaseMat()->NumFluidPhases())
+              poromat->PhaseID() >= var_manager()->MultiphaseMat()->NumFluidPhases())
             FOUR_C_THROW(
                 "Invalid phase ID %i for scalar %i (species in fluid = MAT_scatra_multiporo_fluid)",
                 poromat->PhaseID(), k);
 
-          const int singlephasematid = VarManager()->MultiphaseMat()->MatID(poromat->PhaseID());
+          const int singlephasematid = var_manager()->MultiphaseMat()->MatID(poromat->PhaseID());
           Teuchos::RCP<CORE::MAT::Material> singlemat =
-              VarManager()->MultiphaseMat()->MaterialById(singlephasematid);
+              var_manager()->MultiphaseMat()->MaterialById(singlephasematid);
 
           if (singlemat->MaterialType() != CORE::Materials::m_fluidporo_singlephase)
             FOUR_C_THROW(
                 "Invalid phase ID for scalar %i (species in fluid = MAT_scatra_multiporo_fluid)",
                 k);
 
-          VarManager()->set_phase_id_and_species_type(
+          var_manager()->set_phase_id_and_species_type(
               k, poromat->PhaseID(), MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid);
           // set delta in the variablemanager
-          VarManager()->SetDelta(poromat->Delta(), k);
+          var_manager()->SetDelta(poromat->Delta(), k);
           // set minimum saturation in the variablemanager
-          VarManager()->SetMinValOfPhase(poromat->MinSat(), k);
+          var_manager()->SetMinValOfPhase(poromat->MinSat(), k);
           // set reacts to external force
-          VarManager()->SetReactsToForce(poromat->reacts_to_external_force(), k);
+          var_manager()->SetReactsToForce(poromat->reacts_to_external_force(), k);
           // set relative mobility function ID
-          VarManager()->set_relative_mobility_function_id(poromat->relative_mobility_funct_id(), k);
+          var_manager()->set_relative_mobility_function_id(
+              poromat->relative_mobility_funct_id(), k);
           break;
         }
         case CORE::Materials::m_scatra_multiporo_volfrac:
@@ -131,17 +132,17 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
               Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroVolFrac>(singlemat);
 
           // smaller zero or greater equal numfluidphases
-          if (poromat->PhaseID() < VarManager()->MultiphaseMat()->NumFluidPhases() or
-              poromat->PhaseID() >= VarManager()->MultiphaseMat()->NumFluidPhases() +
-                                        VarManager()->MultiphaseMat()->NumVolFrac())
+          if (poromat->PhaseID() < var_manager()->MultiphaseMat()->NumFluidPhases() or
+              poromat->PhaseID() >= var_manager()->MultiphaseMat()->NumFluidPhases() +
+                                        var_manager()->MultiphaseMat()->NumVolFrac())
             FOUR_C_THROW(
                 "Invalid phase ID %i for scalar %i (species in volume fraction = "
                 "MAT_scatra_multiporo_volfrac)",
                 poromat->PhaseID(), k);
 
-          const int singlephasematid = VarManager()->MultiphaseMat()->MatID(poromat->PhaseID());
+          const int singlephasematid = var_manager()->MultiphaseMat()->MatID(poromat->PhaseID());
           Teuchos::RCP<CORE::MAT::Material> singlemat =
-              VarManager()->MultiphaseMat()->MaterialById(singlephasematid);
+              var_manager()->MultiphaseMat()->MaterialById(singlephasematid);
 
           if (singlemat->MaterialType() != CORE::Materials::m_fluidporo_singlevolfrac)
             FOUR_C_THROW(
@@ -149,14 +150,15 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
                 "MAT_scatra_multiporo_volfrac)",
                 k);
 
-          VarManager()->set_phase_id_and_species_type(
+          var_manager()->set_phase_id_and_species_type(
               k, poromat->PhaseID(), MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac);
           // set delta in the variablemanager
-          VarManager()->SetDelta(poromat->Delta(), k);
+          var_manager()->SetDelta(poromat->Delta(), k);
           // set reacts to external force
-          VarManager()->SetReactsToForce(poromat->reacts_to_external_force(), k);
+          var_manager()->SetReactsToForce(poromat->reacts_to_external_force(), k);
           // set relative mobility function ID
-          VarManager()->set_relative_mobility_function_id(poromat->relative_mobility_funct_id(), k);
+          var_manager()->set_relative_mobility_function_id(
+              poromat->relative_mobility_funct_id(), k);
 
           break;
         }
@@ -166,10 +168,10 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
               Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroSolid>(singlemat);
 
           // set delta in the variablemanager
-          VarManager()->SetDelta(poromat->Delta(), k);
+          var_manager()->SetDelta(poromat->Delta(), k);
 
           // dummy value -1000 for phaseID because species in solid do not have a phaseID
-          VarManager()->set_phase_id_and_species_type(
+          var_manager()->set_phase_id_and_species_type(
               k, -1000, MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid);
 
           break;
@@ -189,7 +191,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
           cp.insert(cp.end(), cp_volfrac.begin(), cp_volfrac.end());
           cp.insert(cp.end(), poromat->CP_Solid());
 
-          VarManager()->SetHeatCapacity(cp);
+          var_manager()->SetHeatCapacity(cp);
 
           // assemble thermal diffusivities of fluid phases, volfracs and solid phase
           // kappa order [ <fluid>  <volfrac>  <solid> ]
@@ -201,10 +203,10 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
           kappa.insert(kappa.end(), kappa_volfrac.begin(), kappa_volfrac.end());
           kappa.insert(kappa.end(), poromat->KAPPA_Solid());
 
-          VarManager()->set_thermal_diffusivity(kappa);
+          var_manager()->set_thermal_diffusivity(kappa);
 
           // dummy value -1000 for phaseID because temperature does not have a phaseID
-          VarManager()->set_phase_id_and_species_type(
+          var_manager()->set_phase_id_and_species_type(
               k, -1000, MAT::ScatraMatMultiPoro::SpeciesType::species_temperature);
 
           break;
@@ -231,29 +233,29 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
 
         // smaller zero or greater equal numfluidphases
         if (poromat->PhaseID() < 0 or
-            poromat->PhaseID() >= VarManager()->MultiphaseMat()->NumFluidPhases())
+            poromat->PhaseID() >= var_manager()->MultiphaseMat()->NumFluidPhases())
           FOUR_C_THROW(
               "Invalid phase ID %i for scalar %i (species in fluid = MAT_scatra_multiporo_fluid)",
               poromat->PhaseID(), 0);
 
-        const int singlephasematid = VarManager()->MultiphaseMat()->MatID(poromat->PhaseID());
+        const int singlephasematid = var_manager()->MultiphaseMat()->MatID(poromat->PhaseID());
         Teuchos::RCP<CORE::MAT::Material> singlemat =
-            VarManager()->MultiphaseMat()->MaterialById(singlephasematid);
+            var_manager()->MultiphaseMat()->MaterialById(singlephasematid);
 
         if (singlemat->MaterialType() != CORE::Materials::m_fluidporo_singlephase)
           FOUR_C_THROW(
               "Invalid phase ID for scalar %i (species in fluid = MAT_scatra_multiporo_fluid)", 0);
 
-        VarManager()->set_phase_id_and_species_type(
+        var_manager()->set_phase_id_and_species_type(
             0, poromat->PhaseID(), MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid);
         // set delta in the variablemanager
-        VarManager()->SetDelta(poromat->Delta(), 0);
+        var_manager()->SetDelta(poromat->Delta(), 0);
         // set minimum saturation in the variablemanager
-        VarManager()->SetMinValOfPhase(poromat->MinSat(), 0);
+        var_manager()->SetMinValOfPhase(poromat->MinSat(), 0);
         // set reacts to external force
-        VarManager()->SetReactsToForce(poromat->reacts_to_external_force(), 0);
+        var_manager()->SetReactsToForce(poromat->reacts_to_external_force(), 0);
         // set relative mobility function ID
-        VarManager()->set_relative_mobility_function_id(poromat->relative_mobility_funct_id(), 0);
+        var_manager()->set_relative_mobility_function_id(poromat->relative_mobility_funct_id(), 0);
         break;
       }
       case CORE::Materials::m_scatra_multiporo_volfrac:
@@ -263,16 +265,16 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
 
         // smaller zero or greater equal numfluidphases
         if (poromat->PhaseID() < 0 or
-            poromat->PhaseID() >= VarManager()->MultiphaseMat()->NumFluidPhases() +
-                                      VarManager()->MultiphaseMat()->NumVolFrac())
+            poromat->PhaseID() >= var_manager()->MultiphaseMat()->NumFluidPhases() +
+                                      var_manager()->MultiphaseMat()->NumVolFrac())
           FOUR_C_THROW(
               "Invalid phase ID %i for scalar %i (species in volume fraction = "
               "MAT_scatra_multiporo_volfrac)",
               poromat->PhaseID(), 0);
 
-        const int singlephasematid = VarManager()->MultiphaseMat()->MatID(poromat->PhaseID());
+        const int singlephasematid = var_manager()->MultiphaseMat()->MatID(poromat->PhaseID());
         Teuchos::RCP<CORE::MAT::Material> singlemat =
-            VarManager()->MultiphaseMat()->MaterialById(singlephasematid);
+            var_manager()->MultiphaseMat()->MaterialById(singlephasematid);
 
         if (singlemat->MaterialType() != CORE::Materials::m_fluidporo_singlevolfrac)
           FOUR_C_THROW(
@@ -280,14 +282,14 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
               "MAT_scatra_multiporo_volfrac)",
               0);
 
-        VarManager()->set_phase_id_and_species_type(
+        var_manager()->set_phase_id_and_species_type(
             0, poromat->PhaseID(), MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac);
         // set delta in the variablemanager
-        VarManager()->SetDelta(poromat->Delta(), 0);
+        var_manager()->SetDelta(poromat->Delta(), 0);
         // set reacts to external force
-        VarManager()->SetReactsToForce(poromat->reacts_to_external_force(), 0);
+        var_manager()->SetReactsToForce(poromat->reacts_to_external_force(), 0);
         // set relative mobility function ID
-        VarManager()->set_relative_mobility_function_id(poromat->relative_mobility_funct_id(), 0);
+        var_manager()->set_relative_mobility_function_id(poromat->relative_mobility_funct_id(), 0);
 
         break;
       }
@@ -297,10 +299,10 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
             Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroSolid>(material);
 
         // set delta in the variablemanager
-        VarManager()->SetDelta(poromat->Delta(), 0);
+        var_manager()->SetDelta(poromat->Delta(), 0);
 
         // dummy value -1000 for phaseID because species in solid do not have a phaseID
-        VarManager()->set_phase_id_and_species_type(
+        var_manager()->set_phase_id_and_species_type(
             0, -1000, MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid);
 
         break;
@@ -319,7 +321,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
         cp.insert(cp.end(), cp_volfrac.begin(), cp_volfrac.end());
         cp.insert(cp.end(), poromat->CP_Solid());
 
-        VarManager()->SetHeatCapacity(cp);
+        var_manager()->SetHeatCapacity(cp);
 
         // assemble thermal diffusivities of fluid phases, volfracs and solid phase
         std::vector<double> kappa;
@@ -330,10 +332,10 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
         kappa.insert(kappa.end(), kappa_volfrac.begin(), kappa_volfrac.end());
         kappa.insert(kappa.end(), poromat->KAPPA_Solid());
 
-        VarManager()->set_thermal_diffusivity(kappa);
+        var_manager()->set_thermal_diffusivity(kappa);
 
         // dummy value -1000 for phaseID because temperature does not have a phaseID
-        VarManager()->set_phase_id_and_species_type(
+        var_manager()->set_phase_id_and_species_type(
             0, -1000, MAT::ScatraMatMultiPoro::SpeciesType::species_temperature);
 
         break;
@@ -361,7 +363,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::extract_element_and_nod
 {
   // extract action parameter
   const auto action = Teuchos::getIntegralValue<SCATRA::Action>(params, "action");
-  VarManager()->SetAction(action);
+  var_manager()->SetAction(action);
 
   //---------------------------------------------------------------------------------------------
   //                                 STRUCTURE
@@ -446,15 +448,16 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::extract_element_and_nod
   const int ndspres = my::scatrapara_->NdsPres();
 
   // determine number of velocity related dofs per node (= number of phases)
-  const int numfluidphases = VarManager()->MultiphaseMat()->NumFluidPhases();
-  const int totalnummultiphasedofpernode = VarManager()->MultiphaseMat()->NumMat();
+  const int numfluidphases = var_manager()->MultiphaseMat()->NumFluidPhases();
+  const int totalnummultiphasedofpernode = var_manager()->MultiphaseMat()->NumMat();
 
   // extract element and node values of the porofluid
   if (discretization.HasState(ndspres, "phinp_fluid"))
   {
-    VarManager()->setup_poro_fluid_managers(
+    var_manager()->setup_poro_fluid_managers(
         ele, params, discretization, la, numfluidphases, totalnummultiphasedofpernode);
-    VarManager()->extract_element_and_node_values_of_poro_fluid(ele, discretization, la, my::xyze_);
+    var_manager()->extract_element_and_node_values_of_poro_fluid(
+        ele, discretization, la, my::xyze_);
     L2_projection_ = params.get<bool>("L2-projection");
     // extract the nodal flux
     if (L2_projection_)
@@ -518,7 +521,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractNodalFlux(DRT::E
 template <CORE::FE::CellType distype>
 double DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ComputePorePressure()
 {
-  return VarManager()->SolidPressure();
+  return var_manager()->SolidPressure();
 }
 
 /*----------------------------------------------------------------------*
@@ -598,10 +601,10 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoroFluid(
   // d_eff = d_0 * (porosity * saturation(k))^delta
   double d_eff = 0.0;
 
-  if (VarManager()->EvaluateScalar(k))
+  if (var_manager()->EvaluateScalar(k))
   {
-    volfrac_fluid = VarManager()->FluidPhaseManager()->Porosity() * VarManager()->Saturation(k);
-    d_eff = std::pow(VarManager()->FluidPhaseManager()->Porosity() * VarManager()->Saturation(k),
+    volfrac_fluid = var_manager()->FluidPhaseManager()->Porosity() * var_manager()->Saturation(k);
+    d_eff = std::pow(var_manager()->FluidPhaseManager()->Porosity() * var_manager()->Saturation(k),
         actmat->Delta());
   }
 
@@ -643,10 +646,10 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoroVolFrac(
   // d_eff = d_0 * (porosity * saturation(k))^delta
   double d_eff = 0.0;
 
-  if (VarManager()->EvaluateScalar(k))
+  if (var_manager()->EvaluateScalar(k))
   {
-    volfrac = VarManager()->VolFrac(k);
-    d_eff = std::pow(VarManager()->VolFrac(k), actmat->Delta());
+    volfrac = var_manager()->VolFrac(k);
+    d_eff = std::pow(var_manager()->VolFrac(k), actmat->Delta());
   }
 
   {
@@ -687,12 +690,12 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoroSolid(
   // d_eff = d_0 * (porosity * saturation(k))^delta
   double d_eff = 0.0;
 
-  if (VarManager()->EvaluateScalar(k))
+  if (var_manager()->EvaluateScalar(k))
   {
-    volfrac_solid_phase = (1 - VarManager()->FluidPhaseManager()->Porosity() -
-                           VarManager()->FluidPhaseManager()->SumAddVolFrac());
-    d_eff = std::pow((1 - VarManager()->FluidPhaseManager()->Porosity() -
-                         VarManager()->FluidPhaseManager()->SumAddVolFrac()),
+    volfrac_solid_phase = (1 - var_manager()->FluidPhaseManager()->Porosity() -
+                           var_manager()->FluidPhaseManager()->SumAddVolFrac());
+    d_eff = std::pow((1 - var_manager()->FluidPhaseManager()->Porosity() -
+                         var_manager()->FluidPhaseManager()->SumAddVolFrac()),
         actmat->Delta());
   }
 
@@ -734,40 +737,41 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::mat_multi_poro_temperat
   // kappa_eff = kappa_s*poro_s + kappa_fluids*poro*saturation_fluids + kappa_volfrac*poro_volfrac
   double kappa_eff = 0.0;
 
-  if (VarManager()->EvaluateScalar(k))
+  if (var_manager()->EvaluateScalar(k))
   {
-    const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
-    const int numvolfracs = VarManager()->FluidPhaseManager()->NumVolFrac();
+    const int numfluidphases = var_manager()->FluidPhaseManager()->NumFluidPhases();
+    const int numvolfracs = var_manager()->FluidPhaseManager()->NumVolFrac();
 
-    cp_eff = (1 - VarManager()->FluidPhaseManager()->Porosity() -
-                 VarManager()->FluidPhaseManager()->SumAddVolFrac()) *
-             VarManager()->FluidPhaseManager()->SolidDensity() * actmat->CP_Solid();
+    cp_eff = (1 - var_manager()->FluidPhaseManager()->Porosity() -
+                 var_manager()->FluidPhaseManager()->SumAddVolFrac()) *
+             var_manager()->FluidPhaseManager()->SolidDensity() * actmat->CP_Solid();
 
-    kappa_eff = (1 - VarManager()->FluidPhaseManager()->Porosity() -
-                    VarManager()->FluidPhaseManager()->SumAddVolFrac()) *
+    kappa_eff = (1 - var_manager()->FluidPhaseManager()->Porosity() -
+                    var_manager()->FluidPhaseManager()->SumAddVolFrac()) *
                 actmat->KAPPA_Solid();
 
     for (int phase = 0; phase < numfluidphases; ++phase)
     {
-      cp_eff += actmat->CP_Fluid(phase) * VarManager()->FluidPhaseManager()->Porosity() *
-                VarManager()->FluidPhaseManager()->Saturation(phase) *
-                VarManager()->FluidPhaseManager()->Density(phase);
+      cp_eff += actmat->CP_Fluid(phase) * var_manager()->FluidPhaseManager()->Porosity() *
+                var_manager()->FluidPhaseManager()->Saturation(phase) *
+                var_manager()->FluidPhaseManager()->Density(phase);
 
-      kappa_eff += actmat->KAPPA_Fluid(phase) * VarManager()->FluidPhaseManager()->Porosity() *
-                   VarManager()->FluidPhaseManager()->Saturation(phase);
+      kappa_eff += actmat->KAPPA_Fluid(phase) * var_manager()->FluidPhaseManager()->Porosity() *
+                   var_manager()->FluidPhaseManager()->Saturation(phase);
     }
 
     for (int phase = 0; phase < numvolfracs; ++phase)
     {
-      cp_eff += actmat->CP_Volfrac(phase) * VarManager()->FluidPhaseManager()->VolFrac(phase) *
-                VarManager()->FluidPhaseManager()->VolFracDensity(phase);
+      cp_eff += actmat->CP_Volfrac(phase) * var_manager()->FluidPhaseManager()->VolFrac(phase) *
+                var_manager()->FluidPhaseManager()->VolFracDensity(phase);
 
-      kappa_eff += actmat->KAPPA_Volfrac(phase) * VarManager()->FluidPhaseManager()->VolFrac(phase);
+      kappa_eff +=
+          actmat->KAPPA_Volfrac(phase) * var_manager()->FluidPhaseManager()->VolFrac(phase);
     }
   }
 
   {
-    VarManager()->set_effective_heat_capacity(cp_eff);
+    var_manager()->set_effective_heat_capacity(cp_eff);
 
     // set diffusivity
     poro::SetDiffusivity(actmat, k, kappa_eff);
@@ -785,12 +789,12 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::mat_multi_poro_temperat
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::set_internal_variables_for_mat_and_rhs()
 {
-  VarManager()->set_internal_variables_multi_poro(my::funct_, my::derxy_, my::deriv_, my::xjm_,
+  var_manager()->set_internal_variables_multi_poro(my::funct_, my::derxy_, my::deriv_, my::xjm_,
       pororeac::xyze0_, my::ephinp_, my::ephin_, my::ehist_, my::eforcevelocity_);
 
   if (L2_projection_)
   {
-    VarManager()->adapt_convective_term_for_l2(my::funct_, my::derxy_, efluxnp_);
+    var_manager()->adapt_convective_term_for_l2(my::funct_, my::derxy_, efluxnp_);
   }
 
   return;
@@ -810,7 +814,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::set_advanced_reaction_t
 
   fill_coupling_vector_and_add_variables(k, matreaclist, remanager);
 
-  const SCATRA::Action act = VarManager()->GetAction();
+  const SCATRA::Action act = var_manager()->GetAction();
 
   // note: we always need the reaction term to calculate rhsint, which is needed also for OD-terms
   remanager->AddToReaBodyForce(matreaclist->calc_rea_body_force_term(
@@ -840,7 +844,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::set_advanced_reaction_t
     }
     case SCATRA::Action::calc_scatra_mono_odblock_mesh:
     {
-      if (VarManager()->FluidPhaseManager()->porosity_depends_on_struct())
+      if (var_manager()->FluidPhaseManager()->porosity_depends_on_struct())
       {
         matreaclist->calc_rea_body_force_deriv_matrix_add_variables(k,
             remanager->get_rea_body_force_deriv_vector_add_variables(k),
@@ -850,7 +854,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::set_advanced_reaction_t
     }
     default:
     {
-      FOUR_C_THROW("Wrong action type in VarManager(), action type is %d", act);
+      FOUR_C_THROW("Wrong action type in var_manager(), action type is %d", act);
       break;
     }
   }  // switch(act)
@@ -867,7 +871,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::GetRhsInt(
 )
 {
   // only difference is the inverse scaling with density
-  advreac::GetRhsInt(rhsint, 1.0 / VarManager()->Density(k), k);
+  advreac::GetRhsInt(rhsint, 1.0 / var_manager()->Density(k), k);
 }
 
 /*------------------------------------------------------------------------------ *
@@ -881,7 +885,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatReact(
 {
   // only difference is the inverse scaling with density
   advreac::CalcMatReact(
-      emat, k, timefacfac, timetaufac, taufac, 1.0 / VarManager()->Density(k), sgconv, diff);
+      emat, k, timefacfac, timetaufac, taufac, 1.0 / var_manager()->Density(k), sgconv, diff);
 }
 
 /*-------------------------------------------------------------------------------*
@@ -896,8 +900,8 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::fill_coupling_vector_an
   if (couplingvalues_.empty())
   {
     // pressures
-    const std::vector<double>& pressures = VarManager()->Pressure();
-    const int numfluidphases = VarManager()->MultiphaseMat()->NumFluidPhases();
+    const std::vector<double>& pressures = var_manager()->Pressure();
+    const int numfluidphases = var_manager()->MultiphaseMat()->NumFluidPhases();
     for (int i = 0; i < numfluidphases; i++)
     {
       std::ostringstream temp;
@@ -905,7 +909,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::fill_coupling_vector_an
       couplingvalues_.push_back(std::pair<std::string, double>("p" + temp.str(), pressures[i]));
     }
     // saturation
-    const std::vector<double>& saturations = VarManager()->Saturation();
+    const std::vector<double>& saturations = var_manager()->Saturation();
     for (int i = 0; i < numfluidphases; i++)
     {
       std::ostringstream temp;
@@ -915,10 +919,10 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::fill_coupling_vector_an
     }
     // porosity
     couplingvalues_.push_back(
-        std::pair<std::string, double>("porosity", VarManager()->FluidPhaseManager()->Porosity()));
+        std::pair<std::string, double>("porosity", var_manager()->FluidPhaseManager()->Porosity()));
     // additional volume fractions
-    const std::vector<double>& volfracs = VarManager()->VolFrac();
-    const int numvolfrac = VarManager()->FluidPhaseManager()->NumVolFrac();
+    const std::vector<double>& volfracs = var_manager()->VolFrac();
+    const int numvolfrac = var_manager()->FluidPhaseManager()->NumVolFrac();
     for (int i = 0; i < numvolfrac; i++)
     {
       std::ostringstream temp;
@@ -927,7 +931,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::fill_coupling_vector_an
       couplingvalues_.push_back(std::pair<std::string, double>("VF" + temp.str(), volfracs[i]));
     }
     // additional volume fraction pressures
-    const std::vector<double>& volfracpressures = VarManager()->VolFracPressure();
+    const std::vector<double>& volfracpressures = var_manager()->VolFracPressure();
     for (int i = 0; i < numvolfrac; i++)
     {
       std::ostringstream temp;
@@ -948,26 +952,26 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::fill_coupling_vector_an
   else
   {
     // pressures
-    const std::vector<double>& pressures = VarManager()->Pressure();
-    const int numfluidphases = VarManager()->MultiphaseMat()->NumFluidPhases();
+    const std::vector<double>& pressures = var_manager()->Pressure();
+    const int numfluidphases = var_manager()->MultiphaseMat()->NumFluidPhases();
     for (int i = 0; i < numfluidphases; i++)
     {
       // std::cout<<"pressure "<<i<<": "<<pressures[i]<<std::endl;
       couplingvalues_[i].second = pressures[i];
     }
     // saturation
-    const std::vector<double>& saturations = VarManager()->Saturation();
+    const std::vector<double>& saturations = var_manager()->Saturation();
     for (int i = 0; i < numfluidphases; i++)
     {
       //   std::cout<<"saturation "<<i<<": "<<saturations[i]<<std::endl;
       couplingvalues_[numfluidphases + i].second = saturations[i];
     }
     // porosity
-    couplingvalues_[2 * numfluidphases].second = VarManager()->FluidPhaseManager()->Porosity();
+    couplingvalues_[2 * numfluidphases].second = var_manager()->FluidPhaseManager()->Porosity();
     // additional volume fractions
-    const std::vector<double>& volfracs = VarManager()->VolFrac();
-    const std::vector<double>& volfracpressures = VarManager()->VolFracPressure();
-    const int numvolfrac = VarManager()->FluidPhaseManager()->NumVolFrac();
+    const std::vector<double>& volfracs = var_manager()->VolFrac();
+    const std::vector<double>& volfracpressures = var_manager()->VolFracPressure();
+    const int numvolfrac = var_manager()->FluidPhaseManager()->NumVolFrac();
     for (int i = 0; i < numvolfrac; i++)
     {
       couplingvalues_[2 * numfluidphases + 1 + i].second = volfracs[i];
@@ -986,8 +990,8 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConv(
 {
   // case of zero saturation/volfrac
   // no convective term for species in solid
-  if (VarManager()->EvaluateScalar(k) &&
-      VarManager()->GetSpeciesType(k) != MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid)
+  if (var_manager()->EvaluateScalar(k) &&
+      var_manager()->GetSpeciesType(k) != MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid)
   {
     // the only difference to the base class version is, that there is no scaling with the density
     pororeac::CalcMatConv(emat, k, timefacfac, 1.0, sgconv);
@@ -1003,14 +1007,14 @@ template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatMass(
     CORE::LINALG::SerialDenseMatrix& emat, const int& k, const double& fac, const double& densam)
 {
-  if (VarManager()->EvaluateScalar(k))
+  if (var_manager()->EvaluateScalar(k))
   {
     // the only difference to the base class version is, that there is no scaling with the density
     pororeac::CalcMatMass(emat, k, fac, densam);
   }
   else
   {
-    if (VarManager()->GetSpeciesType(k) == MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid)
+    if (var_manager()->GetSpeciesType(k) == MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid)
     {
       // If we have zero "densities" (porosity*saturation(k)), which mostly happens for tumor
       // cells, the whole equation will be equal to zero since it is scaled with the density
@@ -1031,12 +1035,12 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatMass(
  |  calculation of convective element matrix: add conservative contributions   vuong 08/16 |
  *------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvAddCons(
+void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_mat_conv_add_cons(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac, const double vdiv,
     const double densnp)
 {
   // the only difference to the base class version is, that there is no scaling with the density
-  pororeac::CalcMatConvAddCons(emat, k, timefacfac, vdiv, 1.0);
+  pororeac::calc_mat_conv_add_cons(emat, k, timefacfac, vdiv, 1.0);
 
   return;
 }
@@ -1065,8 +1069,8 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcConvODMesh(
 {
   // case of zero saturation/volfrac
   // no convective term for species in solid
-  if (VarManager()->EvaluateScalar(k) &&
-      VarManager()->GetSpeciesType(k) != MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid)
+  if (var_manager()->EvaluateScalar(k) &&
+      var_manager()->GetSpeciesType(k) != MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid)
   {
     static CORE::LINALG::Matrix<nsd_, nsd_> difftensor(true);
     static CORE::LINALG::Matrix<nsd_, 1> refgradpres(true);
@@ -1078,7 +1082,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcConvODMesh(
     for (unsigned vi = 0; vi < nen_; ++vi)
     {
       const int fvi = vi * my::numdofpernode_ + k;
-      const double v = rhsfac * my::funct_(vi) * (-1.0) * VarManager()->ConvPhi(k);
+      const double v = rhsfac * my::funct_(vi) * (-1.0) * var_manager()->ConvPhi(k);
 
       for (unsigned ui = 0; ui < nen_; ++ui)
       {
@@ -1090,11 +1094,13 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcConvODMesh(
       }
     }
 
-    if (VarManager()->GetSpeciesType(k) == MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid ||
-        VarManager()->GetSpeciesType(k) == MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac)
+    if (var_manager()->GetSpeciesType(k) ==
+            MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid ||
+        var_manager()->GetSpeciesType(k) ==
+            MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac)
     {
-      VarManager()->GetDiffTensorFluid(k, difftensor, VarManager()->GetPhaseID(k));
-      VarManager()->GetRefGradPres(k, my::xjm_, refgradpres, VarManager()->GetPhaseID(k));
+      var_manager()->GetDiffTensorFluid(k, difftensor, var_manager()->GetPhaseID(k));
+      var_manager()->GetRefGradPres(k, my::xjm_, refgradpres, var_manager()->GetPhaseID(k));
       const double vrhs = rhsfac * 1.0 / J * difftensor(0, 0) * (-1.0);
 
       // linearization of prassure gradient
@@ -1106,20 +1112,20 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcConvODMesh(
       pororeac::apply_shape_derivs_conv(emat, k, rhsfac, 1.0, J, gradphi, convelint);
     }
 
-    else if (VarManager()->GetSpeciesType(k) ==
+    else if (var_manager()->GetSpeciesType(k) ==
              MAT::ScatraMatMultiPoro::SpeciesType::species_temperature)
     {
-      const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
-      const int numvolfracs = VarManager()->FluidPhaseManager()->NumVolFrac();
+      const int numfluidphases = var_manager()->FluidPhaseManager()->NumFluidPhases();
+      const int numvolfracs = var_manager()->FluidPhaseManager()->NumVolFrac();
 
       for (int phase = 0; phase < numfluidphases; ++phase)
       {
-        VarManager()->GetDiffTensorFluid(k, difftensor, phase);
-        VarManager()->GetRefGradPres(k, my::xjm_, refgradpres, phase);
+        var_manager()->GetDiffTensorFluid(k, difftensor, phase);
+        var_manager()->GetRefGradPres(k, my::xjm_, refgradpres, phase);
 
         const double vrhs = rhsfac * 1.0 / J * difftensor(0, 0) * (-1.0) *
-                            VarManager()->FluidPhaseManager()->Density(phase) *
-                            VarManager()->GetHeatCapacity(phase);
+                            var_manager()->FluidPhaseManager()->Density(phase) *
+                            var_manager()->GetHeatCapacity(phase);
 
         // linearization of prassure gradient
         // standard Galerkin terms  -- "shapederivatives" pressure gradient
@@ -1128,13 +1134,13 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcConvODMesh(
 
       for (int phase = numfluidphases; phase < numfluidphases + numvolfracs; ++phase)
       {
-        VarManager()->GetDiffTensorFluid(k, difftensor, phase);
-        VarManager()->GetRefGradPres(k, my::xjm_, refgradpres, phase);
+        var_manager()->GetDiffTensorFluid(k, difftensor, phase);
+        var_manager()->GetRefGradPres(k, my::xjm_, refgradpres, phase);
 
         const double vrhs =
             rhsfac * 1.0 / J * difftensor(0, 0) * (-1.0) *
-            VarManager()->FluidPhaseManager()->VolFracDensity(phase - numfluidphases) *
-            VarManager()->GetHeatCapacity(phase);
+            var_manager()->FluidPhaseManager()->VolFracDensity(phase - numfluidphases) *
+            var_manager()->GetHeatCapacity(phase);
 
         // linearization of prassure gradient
         // standard Galerkin terms  -- "shapederivatives" pressure gradient
@@ -1162,10 +1168,10 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcLinMassODMesh(
     const CORE::LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh)
 {
   // case of zero saturation/volfrac
-  if (VarManager()->EvaluateScalar(k))
+  if (var_manager()->EvaluateScalar(k))
   {
     // get pre-factor for this scalar
-    const double myfac = VarManager()->get_pre_factor_for_mass_matrix_od_mesh(k, fac);
+    const double myfac = var_manager()->get_pre_factor_for_mass_matrix_od_mesh(k, fac);
 
     // call base class
     my::CalcLinMassODMesh(
@@ -1185,13 +1191,13 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_hist_and_source_od
     const double densnp)
 {
   // case of zero saturation/volfrac
-  if (VarManager()->EvaluateScalar(k))
+  if (var_manager()->EvaluateScalar(k))
   {
-    // const int curphase = VarManager()->GetPhaseID(k);
-    const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
+    // const int curphase = var_manager()->GetPhaseID(k);
+    const int numfluidphases = var_manager()->FluidPhaseManager()->NumFluidPhases();
 
     // get pre-factor for this scalar
-    const double myfac = VarManager()->get_pre_factor_for_hist_and_source_od_mesh(
+    const double myfac = var_manager()->get_pre_factor_for_hist_and_source_od_mesh(
         k, fac, densnp, my::scatravarmanager_->Hist(k), rhsint);
 
     // 1) linearization of mesh motion:
@@ -1200,7 +1206,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_hist_and_source_od
 
     // 2) linearization of advanced reaction terms
     const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = advreac::ReaManager();
-    if (remanager->Active() && VarManager()->FluidPhaseManager()->porosity_depends_on_struct())
+    if (remanager->Active() && var_manager()->FluidPhaseManager()->porosity_depends_on_struct())
     {
       const std::vector<double> myderivs =
           remanager->get_rea_body_force_deriv_vector_add_variables(k);
@@ -1212,15 +1218,15 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_hist_and_source_od
       // (dx/ds) * ( det(dX/ds) )^-1
 
       const double poroderiv =
-          myderivs[2 * numfluidphases] * VarManager()->FluidPhaseManager()->JacobianDefGrad() *
-          VarManager()->FluidPhaseManager()->porosity_deriv_wrt_jacobian_def_grad();
+          myderivs[2 * numfluidphases] * var_manager()->FluidPhaseManager()->JacobianDefGrad() *
+          var_manager()->FluidPhaseManager()->porosity_deriv_wrt_jacobian_def_grad();
 
       for (unsigned vi = 0; vi < nen_; ++vi)
       {
         const int fvi = vi * my::numdofpernode_ + k;
         // TODO: gen-alpha
         const double v = my::funct_(vi) * poroderiv * my::scatraparatimint_->TimeFac() * fac *
-                         (-1.0) / VarManager()->Density(k);
+                         (-1.0) / var_manager()->Density(k);
 
         for (unsigned ui = 0; ui < nen_; ++ui)
         {
@@ -1249,14 +1255,15 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcDiffODMesh(
     const CORE::LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh)
 {
   // case of zero saturation/volfrac
-  if (VarManager()->EvaluateScalar(k))
+  if (var_manager()->EvaluateScalar(k))
   {
     // call base class
     my::CalcDiffODMesh(
         emat, k, ndofpernodemesh, diffcoeff, fac, rhsfac, J, gradphi, convelint, dJ_dmesh);
 
     // get pre-factor for this scalar
-    const double myfac = VarManager()->get_pre_factor_for_diff_matrix_od_mesh(k, rhsfac, diffcoeff);
+    const double myfac =
+        var_manager()->get_pre_factor_for_diff_matrix_od_mesh(k, rhsfac, diffcoeff);
 
     if (fabs(myfac) > 1.0e-12)
     {
@@ -1292,10 +1299,10 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcReactODMesh(
     const CORE::LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh)
 {
   // case of zero saturation/volfrac
-  if (VarManager()->EvaluateScalar(k))
+  if (var_manager()->EvaluateScalar(k))
   {
     // get pre-factor for this scalar
-    const double myfac = VarManager()->get_pre_factor_for_mass_matrix_od_mesh(k, rhsfac);
+    const double myfac = var_manager()->get_pre_factor_for_mass_matrix_od_mesh(k, rhsfac);
     // call base class
     my::CalcReactODMesh(emat, k, ndofpernodemesh, myfac, rea_phi, J, dJ_dmesh);
   }
@@ -1317,15 +1324,17 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvODFluid(
 )
 {
   // case of zero saturation/volfrac
-  if (VarManager()->EvaluateScalar(k))
+  if (var_manager()->EvaluateScalar(k))
   {
-    if (VarManager()->GetSpeciesType(k) == MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid ||
-        VarManager()->GetSpeciesType(k) == MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac)
+    if (var_manager()->GetSpeciesType(k) ==
+            MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid ||
+        var_manager()->GetSpeciesType(k) ==
+            MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac)
     {
-      const int totalnummultiphasedofpernode = VarManager()->MultiphaseMat()->NumMat();
+      const int totalnummultiphasedofpernode = var_manager()->MultiphaseMat()->NumMat();
 
       static CORE::LINALG::Matrix<nsd_, nsd_> difftensor(true);
-      VarManager()->GetDiffTensorFluid(k, difftensor, VarManager()->GetPhaseID(k));
+      var_manager()->GetDiffTensorFluid(k, difftensor, var_manager()->GetPhaseID(k));
 
       // gradphi^T * difftensor
       // TODO: not sure if this works for anisotropic fluid difftensor
@@ -1341,8 +1350,8 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvODFluid(
         {
           // get pre-fac vector for this scalar
           static std::vector<double> prefaclinconvodfluid(totalnummultiphasedofpernode, 0.0);
-          VarManager()->get_pre_fac_lin_conv_od_fluid(k, ui, &prefaclinconvodfluid, gradphi,
-              gradphiTdifftensor, my::funct_, my::derxy_, VarManager()->GetPhaseID(k));
+          var_manager()->get_pre_fac_lin_conv_od_fluid(k, ui, &prefaclinconvodfluid, gradphi,
+              gradphiTdifftensor, my::funct_, my::derxy_, var_manager()->GetPhaseID(k));
 
           for (int idof = 0; idof < totalnummultiphasedofpernode; ++idof)
           {
@@ -1358,18 +1367,18 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvODFluid(
       //----------------------------------------------------------------
     }
 
-    else if (VarManager()->GetSpeciesType(k) ==
+    else if (var_manager()->GetSpeciesType(k) ==
              MAT::ScatraMatMultiPoro::SpeciesType::species_temperature)
     {
-      const int numfluid = VarManager()->FluidPhaseManager()->NumFluidPhases();
-      const int numvolfracs = VarManager()->FluidPhaseManager()->NumVolFrac();
+      const int numfluid = var_manager()->FluidPhaseManager()->NumFluidPhases();
+      const int numvolfracs = var_manager()->FluidPhaseManager()->NumVolFrac();
 
       for (int phase = 0; phase < numfluid + numvolfracs; ++phase)
       {
-        const int totalnummultiphasedofpernode = VarManager()->MultiphaseMat()->NumMat();
+        const int totalnummultiphasedofpernode = var_manager()->MultiphaseMat()->NumMat();
 
         static CORE::LINALG::Matrix<nsd_, nsd_> difftensor(true);
-        VarManager()->GetDiffTensorFluid(k, difftensor, phase);
+        var_manager()->GetDiffTensorFluid(k, difftensor, phase);
 
         // gradphi^T * difftensor
         static CORE::LINALG::Matrix<1, nsd_> gradphiTdifftensor(true);
@@ -1377,7 +1386,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvODFluid(
 
         // calculate density*heatcapacity
         double densheatcapacity =
-            VarManager()->GetHeatCapacity(phase) * VarManager()->Density()[phase];
+            var_manager()->GetHeatCapacity(phase) * var_manager()->Density()[phase];
 
         for (unsigned vi = 0; vi < nen_; ++vi)
         {
@@ -1389,7 +1398,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvODFluid(
             // get pre-fac vector for this scalar
             static std::vector<double> prefaclinconvodfluid(totalnummultiphasedofpernode, 0.0);
 
-            VarManager()->get_pre_fac_lin_conv_od_fluid(k, ui, &prefaclinconvodfluid, gradphi,
+            var_manager()->get_pre_fac_lin_conv_od_fluid(k, ui, &prefaclinconvodfluid, gradphi,
                 gradphiTdifftensor, my::funct_, my::derxy_, phase);
 
             for (int idof = 0; idof < totalnummultiphasedofpernode; ++idof)
@@ -1439,9 +1448,9 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcLinMassODFluid(
 )
 {
   // case of zero saturation/volfrac
-  if (VarManager()->EvaluateScalar(k))
+  if (var_manager()->EvaluateScalar(k))
   {
-    const int totalnummultiphasedofpernode = VarManager()->MultiphaseMat()->NumMat();
+    const int totalnummultiphasedofpernode = var_manager()->MultiphaseMat()->NumMat();
 
     double vtrans = 0.0;
 
@@ -1455,7 +1464,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcLinMassODFluid(
 
     // get pre-fac vector for this scalar
     static std::vector<double> prefaclinmassodfluid(totalnummultiphasedofpernode, 0.0);
-    VarManager()->get_pre_fac_lin_mass_od_fluid(k, &prefaclinmassodfluid);
+    var_manager()->get_pre_fac_lin_mass_od_fluid(k, &prefaclinmassodfluid);
 
     calc_lin_mass_matrix_type_od_fluid(
         emat, k, &prefaclinmassodfluid, totalnummultiphasedofpernode, vtrans);
@@ -1504,11 +1513,11 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_hist_and_source_od
     const double rhsint, const double densnp)
 {
   // case of zero saturation/volfrac
-  if (VarManager()->EvaluateScalar(k))
+  if (var_manager()->EvaluateScalar(k))
   {
-    const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
-    const int totalnummultiphasedofpernode = VarManager()->MultiphaseMat()->NumMat();
-    const int numvolfrac = VarManager()->FluidPhaseManager()->NumVolFrac();
+    const int numfluidphases = var_manager()->FluidPhaseManager()->NumFluidPhases();
+    const int totalnummultiphasedofpernode = var_manager()->MultiphaseMat()->NumMat();
+    const int numvolfrac = var_manager()->FluidPhaseManager()->NumVolFrac();
 
     // 1) linearization of history:
     //    prefactor is densnp = porosity * rho * S
@@ -1517,7 +1526,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_hist_and_source_od
 
     // get pre-fac vector for this scalar
     static std::vector<double> prefaclinmassodfluid(totalnummultiphasedofpernode, 0.0);
-    VarManager()->get_pre_fac_lin_mass_od_fluid(k, &prefaclinmassodfluid);
+    var_manager()->get_pre_fac_lin_mass_od_fluid(k, &prefaclinmassodfluid);
 
     calc_lin_mass_matrix_type_od_fluid(
         emat, k, &prefaclinmassodfluid, totalnummultiphasedofpernode, vrhs);
@@ -1536,15 +1545,15 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_hist_and_source_od
       {
         // porosity deriv at 2*numfluidphases: d reac / d phi_i = d reac / d poro * d poro / d phi_i
         phiderivs[i] +=
-            myderivs[2 * numfluidphases] * VarManager()->FluidPhaseManager()->PorosityDeriv(i);
+            myderivs[2 * numfluidphases] * var_manager()->FluidPhaseManager()->PorosityDeriv(i);
         for (int j = 0; j < numfluidphases; j++)
         {
           // pressure derivs at       [0..numfluidphases]: d reac / d phi_i = d reac / d pres_j * d
           // pres_j / d phi_i saturation derivs at  [numflph..2*numflph-1]: d reac / d phi_i = d
           // reac /  d sat_j *  d sat_j / d phi_i
           phiderivs[i] += myderivs[j + numfluidphases] *
-                              VarManager()->FluidPhaseManager()->SaturationDeriv(j, i) +
-                          myderivs[j] * VarManager()->FluidPhaseManager()->PressureDeriv(j, i);
+                              var_manager()->FluidPhaseManager()->SaturationDeriv(j, i) +
+                          myderivs[j] * var_manager()->FluidPhaseManager()->PressureDeriv(j, i);
         }
       }
 
@@ -1554,7 +1563,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_hist_and_source_od
         phiderivs[ivolfrac + numfluidphases] +=
             myderivs[2 * numfluidphases + 1 + ivolfrac] +
             myderivs[2 * numfluidphases] *
-                VarManager()->FluidPhaseManager()->PorosityDeriv(ivolfrac + numfluidphases);
+                var_manager()->FluidPhaseManager()->PorosityDeriv(ivolfrac + numfluidphases);
         // derivatives after volume fraction pressures at [2*numfluidphases+numvolfrac+1+ivolfrac]
         phiderivs[ivolfrac + numfluidphases + numvolfrac] +=
             myderivs[2 * numfluidphases + numvolfrac + 1 + ivolfrac];
@@ -1566,7 +1575,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_hist_and_source_od
         const int fvi = vi * my::numdofpernode_ + k;
         // TODO: gen-alpha?
         const double v = my::funct_(vi) * my::scatraparatimint_->TimeFac() * fac * (-1.0) /
-                         VarManager()->Density(k);
+                         var_manager()->Density(k);
 
         for (unsigned ui = 0; ui < nen_; ++ui)
         {
@@ -1594,15 +1603,15 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcReactODFluid(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
     const double rhsfac, const double rea_phi)
 {
-  if (my::reamanager_->Active() && VarManager()->EvaluateScalar(k))
+  if (my::reamanager_->Active() && var_manager()->EvaluateScalar(k))
   {
-    const int totalnummultiphasedofpernode = VarManager()->MultiphaseMat()->NumMat();
+    const int totalnummultiphasedofpernode = var_manager()->MultiphaseMat()->NumMat();
 
     double vrhs = rhsfac * rea_phi;
 
     // get pre-fac vector for this scalar
     static std::vector<double> prefaclinmassodfluid(totalnummultiphasedofpernode, 0.0);
-    VarManager()->get_pre_fac_lin_mass_od_fluid(k, &prefaclinmassodfluid);
+    var_manager()->get_pre_fac_lin_mass_od_fluid(k, &prefaclinmassodfluid);
 
     calc_lin_mass_matrix_type_od_fluid(
         emat, k, &prefaclinmassodfluid, totalnummultiphasedofpernode, vrhs);
@@ -1624,13 +1633,13 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcDiffODFluid(
 )
 {
   // case of zero saturation/volfrac
-  if (VarManager()->EvaluateScalar(k))
+  if (var_manager()->EvaluateScalar(k))
   {
-    const int totalnummultiphasedofpernode = VarManager()->MultiphaseMat()->NumMat();
+    const int totalnummultiphasedofpernode = var_manager()->MultiphaseMat()->NumMat();
 
     // get pre-fac vector for this scalar
     static std::vector<double> prefacdiffodfluid(totalnummultiphasedofpernode, 0.0);
-    VarManager()->get_pre_fac_diff_od_fluid(
+    var_manager()->get_pre_fac_diff_od_fluid(
         k, rhsfac, my::diffmanager_->GetIsotropicDiff(k), &prefacdiffodfluid);
 
 

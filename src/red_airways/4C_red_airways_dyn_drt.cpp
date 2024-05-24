@@ -54,7 +54,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   // Set degrees of freedom in the discretization
   if (!actdis->Filled())
   {
-    actdis->FillComplete();
+    actdis->fill_complete();
   }
 
   // If discretization is empty, then return empty time integration
@@ -155,7 +155,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   if (restart && !CoupledTo3D)
   {
     // Read the restart information, set vectors and variables
-    airwayimplicit->ReadRestart(restart);
+    airwayimplicit->read_restart(restart);
   }
 
   if (!CoupledTo3D)
@@ -197,7 +197,7 @@ void redairway_tissue_dyn()
   const int restart = GLOBAL::Problem::Instance()->Restart();
   if (restart)
   {
-    redairway_tissue->ReadRestart(restart);
+    redairway_tissue->read_restart(restart);
   }
 
   // Time integration loop for red_airway-tissue coupling

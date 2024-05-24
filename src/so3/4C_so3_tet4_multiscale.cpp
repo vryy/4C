@@ -56,7 +56,7 @@ void DRT::ELEMENTS::SoTet4::sotet4_read_restart_multi()
     if (GLOBAL::Problem::Instance()->GetDis("structure")->Comm().MyPID() == Owner())
       eleowner = true;
 
-    for (int gp = 0; gp < NUMGPT_SOTET4; ++gp) micro->ReadRestart(gp, eleID, eleowner);
+    for (int gp = 0; gp < NUMGPT_SOTET4; ++gp) micro->read_restart(gp, eleID, eleowner);
   }
 
   return;

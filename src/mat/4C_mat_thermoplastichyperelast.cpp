@@ -1104,7 +1104,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(const CORE::LINALG::Matrix<1, 1>& Nt
   deltaT.Update(1.0, Ntemp, (-1.0), init);
 
   // get the temperature-dependent material tangent
-  SetupCthermo(ctemp, params);
+  setup_cthermo(ctemp, params);
 
   // get the temperature-dependent mechanical material tangent
   SetupCmatThermo(Ntemp, cmat_T, params);
@@ -1124,7 +1124,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(const CORE::LINALG::Matrix<1, 1>& Nt
 
   // build the elasto-plastic tangent modulus
   CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmat_TFD(true);
-  FDCheck(stresstemp, cmat_T, cmat_TFD, Ntemp, params);
+  fd_check(stresstemp, cmat_T, cmat_TFD, Ntemp, params);
   std::cout << "cmat_T " << cmat_T << std::endl;
   std::cout << "cmat_TFD " << cmat_TFD << std::endl;
 
@@ -1157,7 +1157,7 @@ void MAT::ThermoPlasticHyperElast::SetupCmatThermo(const CORE::LINALG::Matrix<1,
   CORE::LINALG::Matrix<3, 3> defgrd = params.get<CORE::LINALG::Matrix<3, 3>>("defgrd");
 
   // get stress-temperature modulus
-  double m_0 = STModulus();
+  double m_0 = st_modulus();
   // get Jacobi
   double J = defgrd.Determinant();
   // calculate the right Cauchy Green (RCG) deformation tensor and its inverse
@@ -1191,7 +1191,7 @@ void MAT::ThermoPlasticHyperElast::SetupCmatThermo(const CORE::LINALG::Matrix<1,
  | computes temperature-dependent isotropic                  dano 09/13 |
  | elasticity tensor in matrix notion for 3d, second(!) order tensor    |
  *----------------------------------------------------------------------*/
-void MAT::ThermoPlasticHyperElast::SetupCthermo(
+void MAT::ThermoPlasticHyperElast::setup_cthermo(
     CORE::LINALG::Matrix<6, 1>& ctemp, Teuchos::ParameterList& params)
 {
   // temperature-dependent material tangent
@@ -1203,7 +1203,7 @@ void MAT::ThermoPlasticHyperElast::SetupCthermo(
 
   // temperature-dependent stress temperature modulus
   // m = m(J) = m_0 .(J+1)/J = m_0 . (J + 1/J)
-  const double m_0 = STModulus();
+  const double m_0 = st_modulus();
   const double J = defgrd.Determinant();
   const double m = m_0 * (J + 1.0 / J);
 
@@ -1213,13 +1213,13 @@ void MAT::ThermoPlasticHyperElast::SetupCthermo(
   // C_T = m_0/2.0 . (J + 1/J) . Cinv
   ctemp.Update((m / 2.0), Cinv);
 
-}  // SetupCthermo()
+}  // setup_cthermo()
 
 
 /*----------------------------------------------------------------------*
  | calculates stress-temperature modulus m_0                 dano 09/13 |
  *----------------------------------------------------------------------*/
-double MAT::ThermoPlasticHyperElast::STModulus()
+double MAT::ThermoPlasticHyperElast::st_modulus()
 {
   // m_0 := -(2 . mu + 3 . lambda) . alpha_T = - 3 . bulk . alpha_T
 
@@ -1234,7 +1234,7 @@ double MAT::ThermoPlasticHyperElast::STModulus()
 
   return stmodulus;
 
-}  // STModulus()
+}  // st_modulus()
 
 
 /*---------------------------------------------------------------------*
@@ -1294,7 +1294,7 @@ bool MAT::ThermoPlasticHyperElast::VisData(
  | finite difference check for the material tangent.        dano 12/13 |
  | Meant for debugging only! (public)                                  |
  *---------------------------------------------------------------------*/
-void MAT::ThermoPlasticHyperElast::FDCheck(
+void MAT::ThermoPlasticHyperElast::fd_check(
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& stress,  // updated stress sigma_n+1
     CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
         cmat,  // material tangent calculated with FD of stresses
@@ -1348,7 +1348,7 @@ void MAT::ThermoPlasticHyperElast::FDCheck(
 
       // temperature-dependent stress temperature modulus
       // m = m(J) = m_0 .(J+1)/J = m_0 . (J + 1/J)
-      double m_0 = STModulus();
+      double m_0 = st_modulus();
       double m = m_0 * (J_disturb + 1.0 / J_disturb);
       // in case of testing only the dJ/dd, use undisturbed m, but disturb_Cinv_vct
       // double J = defgrd.Determinant();
@@ -1413,7 +1413,7 @@ void MAT::ThermoPlasticHyperElast::FDCheck(
 
   }  // loop strains
 
-}  // FDCheck()
+}  // fd_check()
 
 
 /*----------------------------------------------------------------------*/

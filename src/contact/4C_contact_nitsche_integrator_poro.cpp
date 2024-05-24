@@ -59,10 +59,10 @@ void CONTACT::IntegratorNitschePoro::IntegrateGP_3D(MORTAR::Element& sele, MORTA
   {
     double n[3];
     sele.compute_unit_normal_at_xi(sxi, n);
-    std::vector<CORE::GEN::Pairedvector<int, double>> dn(3, sele.NumNode() * 3);
+    std::vector<CORE::GEN::Pairedvector<int, double>> dn(3, sele.num_node() * 3);
     dynamic_cast<CONTACT::Element&>(sele).DerivUnitNormalAtXi(sxi, dn);
 
-    GPTSForces<3>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt,
+    gpts_forces<3>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt,
         gap, deriv_gap, n, dn, sxi, mxi);
   }
   //  else if (nit_normal_==INPAR::CONTACT::NitNor_sm)
@@ -91,7 +91,7 @@ void CONTACT::IntegratorNitschePoro::IntegrateGP_2D(MORTAR::Element& sele, MORTA
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::IntegratorNitschePoro::GPTSForces(MORTAR::Element& sele, MORTAR::Element& mele,
+void CONTACT::IntegratorNitschePoro::gpts_forces(MORTAR::Element& sele, MORTAR::Element& mele,
     const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseMatrix& sderiv,
     const std::vector<CORE::GEN::Pairedvector<int, double>>& dsxi,
     const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& mderiv,
@@ -128,7 +128,7 @@ void CONTACT::IntegratorNitschePoro::GPTSForces(MORTAR::Element& sele, MORTAR::E
 
   double cauchy_nn_weighted_average = 0.;
   CORE::GEN::Pairedvector<int, double> cauchy_nn_weighted_average_deriv_d(
-      sele.NumNode() * 3 * 12 + sele.MoData().ParentDisp().size() +
+      sele.num_node() * 3 * 12 + sele.MoData().ParentDisp().size() +
       mele.MoData().ParentDisp().size());
   CORE::GEN::Pairedvector<int, double> cauchy_nn_weighted_average_deriv_p(
       sele.MoData().ParentPFPres().size() + mele.MoData().ParentPFPres().size());
@@ -183,14 +183,14 @@ void CONTACT::IntegratorNitschePoro::SoEleCauchy(MORTAR::Element& moEle, double*
   if (!moEle.MoData().ParentPFPres().size())
   {
     // The element can be either an old so3 element or a new solid element
-    if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::SoBase*>(moEle.ParentElement());
+    if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::SoBase*>(moEle.parent_element());
         solid_ele != nullptr)
     {
       solid_ele->get_cauchy_n_dir_and_derivatives_at_xi(pxsi, moEle.MoData().ParentDisp(), normal,
           direction, sigma_nt, &dsntdd, nullptr, nullptr, nullptr, nullptr, &dsntdn, &dsntdt,
           &dsntdpxi, nullptr, nullptr, nullptr, nullptr, nullptr);
     }
-    else if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::Solid*>(moEle.ParentElement());
+    else if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::Solid*>(moEle.parent_element());
              solid_ele != nullptr)
     {
       DRT::ELEMENTS::CauchyNDirLinearizations<3> cauchy_linearizations{};
@@ -210,7 +210,7 @@ void CONTACT::IntegratorNitschePoro::SoEleCauchy(MORTAR::Element& moEle, double*
   else
   {
     dynamic_cast<DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>*>(
-        moEle.ParentElement())
+        moEle.parent_element())
         ->get_cauchy_n_dir_and_derivatives_at_xi(pxsi, moEle.MoData().ParentDisp(),
             moEle.MoData().ParentPFPres(), normal, direction, sigma_nt, &dsntdd, &dsntdp, &dsntdn,
             &dsntdt, &dsntdpxi);
@@ -218,7 +218,7 @@ void CONTACT::IntegratorNitschePoro::SoEleCauchy(MORTAR::Element& moEle, double*
 
   cauchy_nt += w * sigma_nt;
 
-  for (int i = 0; i < moEle.ParentElement()->NumNode() * dim; ++i)
+  for (int i = 0; i < moEle.parent_element()->num_node() * dim; ++i)
     deriv_sigma_nt_d[moEle.MoData().ParentDof().at(i)] += w * dsntdd(i, 0);
 
   for (int d = 0; d < dim; ++d)
@@ -237,7 +237,7 @@ void CONTACT::IntegratorNitschePoro::SoEleCauchy(MORTAR::Element& moEle, double*
 
   if (moEle.MoData().ParentPFPres().size())
   {
-    for (int i = 0; i < moEle.ParentElement()->NumNode(); ++i)
+    for (int i = 0; i < moEle.parent_element()->num_node(); ++i)
       deriv_sigma_nt_p[moEle.MoData().ParentPFDof()[i * (dim + 1) + 3]] += dsntdp(i, 0) * w;
   }
 }
@@ -260,12 +260,12 @@ void CONTACT::IntegratorNitschePoro::IntegrateTest(const double fac, MORTAR::Ele
   for (const auto& p : test_deriv_p)
   {
     double* row = ele.GetNitscheContainer().Kdp(p.first);
-    for (int s = 0; s < ele.NumNode(); ++s)
+    for (int s = 0; s < ele.num_node(); ++s)
     {
       for (int d = 0; d < Dim(); ++d)
       {
         row[CORE::FE::getParentNodeNumberFromFaceNodeNumber(
-                ele.ParentElement()->Shape(), ele.FaceParentNumber(), s) *
+                ele.parent_element()->Shape(), ele.FaceParentNumber(), s) *
                 dim +
             d] -= fac * jac * wgt * test_dir(d) * p.second * shape(s);
       }
@@ -293,10 +293,10 @@ void CONTACT::IntegratorNitschePoro::integrate_poro_no_out_flow(const double fac
 
   double spresgp = 0;
   double srelveln = 0;
-  for (int j = 0; j < ele.NumNode(); ++j)
+  for (int j = 0; j < ele.num_node(); ++j)
   {
     int pj = CORE::FE::getParentNodeNumberFromFaceNodeNumber(
-        ele.ParentElement()->Shape(), ele.FaceParentNumber(), j);
+        ele.parent_element()->Shape(), ele.FaceParentNumber(), j);
     spresgp += ele.MoData().ParentPFPres()[pj] * shape(j);
     for (int d = 0; d < dim; ++d)
     {
@@ -320,14 +320,14 @@ void CONTACT::IntegratorNitschePoro::integrate_poro_no_out_flow(const double fac
   }
 
   double val = fac * jac * wgt / dv_dd_;  //*1./dv_dd_;
-  for (int i = 0; i < ele.NumNode(); ++i)
+  for (int i = 0; i < ele.num_node(); ++i)
   {
     int pi = CORE::FE::getParentNodeNumberFromFaceNodeNumber(
-        ele.ParentElement()->Shape(), ele.FaceParentNumber(), i);
-    for (int j = 0; j < ele.NumNode(); ++j)
+        ele.parent_element()->Shape(), ele.FaceParentNumber(), i);
+    for (int j = 0; j < ele.num_node(); ++j)
     {
       int pj = CORE::FE::getParentNodeNumberFromFaceNodeNumber(
-          ele.ParentElement()->Shape(), ele.FaceParentNumber(), j);
+          ele.parent_element()->Shape(), ele.FaceParentNumber(), j);
       for (int d = 0; d < dim; ++d)
       {
         (*ele.GetNitscheContainer().RhsP(pi * (dim + 1) + d)) +=
@@ -375,14 +375,14 @@ void CONTACT::IntegratorNitschePoro::integrate_poro_no_out_flow(const double fac
 
   if (oweight > 1e-16)
   {
-    for (int i = 0; i < ele.NumNode(); ++i)
+    for (int i = 0; i < ele.num_node(); ++i)
     {
       int pi = CORE::FE::getParentNodeNumberFromFaceNodeNumber(
-          ele.ParentElement()->Shape(), ele.FaceParentNumber(), i);
-      for (int j = 0; j < otherele.NumNode(); ++j)
+          ele.parent_element()->Shape(), ele.FaceParentNumber(), i);
+      for (int j = 0; j < otherele.num_node(); ++j)
       {
         int pj = CORE::FE::getParentNodeNumberFromFaceNodeNumber(
-            otherele.ParentElement()->Shape(), otherele.FaceParentNumber(), j);
+            otherele.parent_element()->Shape(), otherele.FaceParentNumber(), j);
         for (int d = 0; d < dim; ++d)
         {
           (*ele.GetNitscheContainer().RhsP(pi * (dim + 1) + d)) +=
@@ -423,10 +423,10 @@ void CONTACT::IntegratorNitschePoro::integrate_poro_no_out_flow(const double fac
             oweight;  // (k2 q2, phi/dp (vF-vS) n)
       }
     }
-    for (int j = 0; j < otherele.NumNode(); ++j)
+    for (int j = 0; j < otherele.num_node(); ++j)
     {
       int pj = CORE::FE::getParentNodeNumberFromFaceNodeNumber(
-          otherele.ParentElement()->Shape(), otherele.FaceParentNumber(), j);
+          otherele.parent_element()->Shape(), otherele.FaceParentNumber(), j);
       for (auto& dJit : sJLin)
       {
         otherele.GetNitscheContainer().Kpd(dJit.first)[(pj * (dim + 1) + dim)] +=
@@ -457,20 +457,20 @@ bool CONTACT::IntegratorNitschePoro::GetPoroPressure(MORTAR::Element& ele,
   poropressure = 0.0;
   if (ele.MoData().ParentPFDof().size())
   {
-    for (int j = 0; j < ele.NumNode(); ++j)
+    for (int j = 0; j < ele.num_node(); ++j)
     {
       int pj = CORE::FE::getParentNodeNumberFromFaceNodeNumber(
-          ele.ParentElement()->Shape(), ele.FaceParentNumber(), j);
+          ele.parent_element()->Shape(), ele.FaceParentNumber(), j);
       poropressure += w1 * ele.MoData().ParentPFPres()[pj] * shape(j);
     }
   }
 
   if (otherele.MoData().ParentPFDof().size())
   {
-    for (int j = 0; j < otherele.NumNode(); ++j)
+    for (int j = 0; j < otherele.num_node(); ++j)
     {
       int pj = CORE::FE::getParentNodeNumberFromFaceNodeNumber(
-          otherele.ParentElement()->Shape(), otherele.FaceParentNumber(), j);
+          otherele.parent_element()->Shape(), otherele.FaceParentNumber(), j);
       poropressure += w2 * otherele.MoData().ParentPFPres()[pj] * othershape(j);
     }
   }
@@ -488,9 +488,9 @@ void CONTACT::IntegratorNitschePoro::get_poro_quantitiesat_gp(MORTAR::Element& e
   Teuchos::ParameterList sparams;  // empty parameter list;
 
   Teuchos::RCP<MAT::StructPoro> sstructmat =
-      Teuchos::rcp_dynamic_cast<MAT::StructPoro>(ele.ParentElement()->Material(0));
+      Teuchos::rcp_dynamic_cast<MAT::StructPoro>(ele.parent_element()->Material(0));
   if (sstructmat == Teuchos::null)
-    sstructmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(ele.ParentElement()->Material(1));
+    sstructmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(ele.parent_element()->Material(1));
   if (sstructmat == Teuchos::null) FOUR_C_THROW("Cast to StructPoro failed!");
   sstructmat->ComputeSurfPorosity(sparams, spresgp, sJ, ele.FaceParentNumber(), 1, sporosity,
       &sdphi_dp, &sdphi_dJ, nullptr, nullptr, nullptr, false);

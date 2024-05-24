@@ -94,7 +94,7 @@ EHL::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
   // --------------------------------- EHL solver: create a linear solver
 
   // get iterative solver
-  if (merge_ehl_blockmatrix_ == false) CreateLinearSolver();
+  if (merge_ehl_blockmatrix_ == false) create_linear_solver();
   // get direct solver, e.g. UMFPACK
   else  // (merge_ehl_blockmatrix_ == true)
   {
@@ -115,7 +115,7 @@ EHL::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
 /*----------------------------------------------------------------------*
  | prepare time step (public)                               wirtz 01/16 |
  *----------------------------------------------------------------------*/
-void EHL::Monolithic::PrepareTimeStep()
+void EHL::Monolithic::prepare_time_step()
 {
   // counter and print header
   // increment time and step counter
@@ -127,16 +127,16 @@ void EHL::Monolithic::PrepareTimeStep()
   set_lubrication_solution(lubrication_->LubricationField()->Prenp());
 
   // call the predictor
-  StructureField()->PrepareTimeStep();
-  lubrication_->LubricationField()->PrepareTimeStep();
+  StructureField()->prepare_time_step();
+  lubrication_->LubricationField()->prepare_time_step();
 
-}  // PrepareTimeStep()
+}  // prepare_time_step()
 
 
 /*----------------------------------------------------------------------*
  | create linear solver                                     wirtz 01/16 |
  *----------------------------------------------------------------------*/
-void EHL::Monolithic::CreateLinearSolver()
+void EHL::Monolithic::create_linear_solver()
 {
   // get the solver number used for linear EHL solver
   const int linsolvernumber = ehldynmono_.get<int>("LINEAR_SOLVER");
@@ -304,7 +304,7 @@ void EHL::Monolithic::CreateLinearSolver()
       break;
   }
 
-}  // CreateLinearSolver()
+}  // create_linear_solver()
 
 
 /*----------------------------------------------------------------------*
@@ -340,14 +340,14 @@ void EHL::Monolithic::Timeloop()
   {
     // counter and print header
     // predict solution of both field (call the adapter)
-    PrepareTimeStep();
+    prepare_time_step();
 
     // integrate time step
     Solve();
 
     // calculate stresses, strains, energies
     constexpr bool force_prepare = false;
-    PrepareOutput(force_prepare);
+    prepare_output(force_prepare);
 
     // update all single field solvers
     Update();
@@ -374,11 +374,11 @@ void EHL::Monolithic::NewtonFull()
   iter_ = 1;
 
   // incremental solution vector with length of all EHL dofs
-  iterinc_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
+  iterinc_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
   iterinc_->PutScalar(0.0);
 
   // a zero vector of full length
-  zeros_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
+  zeros_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
   zeros_->PutScalar(0.0);
 
   //------------------------------------------------------ iteration loop
@@ -400,7 +400,7 @@ void EHL::Monolithic::NewtonFull()
     // create the linear system
     // \f$J(x_i) \Delta x_i = - R(x_i)\f$
     // create the systemmatrix
-    SetupSystemMatrix();
+    setup_system_matrix();
 
     // check whether we have a sanely filled tangent matrix
     if (not systemmatrix_->Filled()) FOUR_C_THROW("Effective tangent matrix must be filled here");
@@ -408,19 +408,19 @@ void EHL::Monolithic::NewtonFull()
     // create full monolithic rhs vector
     // make negative residual not necessary: rhs_ is already negative
     // (STR/LUBRICATION)-RHS is put negative in prepare_system_for_newton_solve()
-    SetupRHS();
+    setup_rhs();
 
     if (dry_contact_)
     {
       mortaradapter_->CondenseContact(systemmatrix_, rhs_, StructureField()->Dispnp(), Dt());
-      ApplyDBC();
+      apply_dbc();
     }
     // *********** time measurement ***********
     double dtcpu = timernewton_.wallTime();
     // *********** time measurement ***********
     // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
     // is done in prepare_system_for_newton_solve() within Evaluate(iterinc_)
-    LinearSolve();
+    linear_solve();
     // *********** time measurement ***********
     dtsolve_ = timernewton_.wallTime() - dtcpu;
     // *********** time measurement ***********
@@ -429,7 +429,7 @@ void EHL::Monolithic::NewtonFull()
     Teuchos::RCP<Epetra_Vector> sx;
     Teuchos::RCP<Epetra_Vector> lx;
     // extract field vectors
-    ExtractFieldVectors(iterinc_, sx, lx);
+    extract_field_vectors(iterinc_, sx, lx);
 
     if (dry_contact_) mortaradapter_->RecoverCoupled(sx, lx);
 
@@ -438,19 +438,19 @@ void EHL::Monolithic::NewtonFull()
 
     // --------------------------------------------- build residual norms
     // include all stuff here related with convergence test
-    normrhs_ = CalculateVectorNorm(iternorm_, rhs_);
+    normrhs_ = calculate_vector_norm(iternorm_, rhs_);
     // vector of displacement and pressure residual
     Teuchos::RCP<Epetra_Vector> strrhs;
     Teuchos::RCP<Epetra_Vector> lubricationrhs;
     // extract field vectors
-    ExtractFieldVectors(rhs_, strrhs, lubricationrhs);
-    normstrrhs_ = CalculateVectorNorm(iternormstr_, strrhs);
-    normlubricationrhs_ = CalculateVectorNorm(iternormlubrication_, lubricationrhs);
+    extract_field_vectors(rhs_, strrhs, lubricationrhs);
+    normstrrhs_ = calculate_vector_norm(iternormstr_, strrhs);
+    normlubricationrhs_ = calculate_vector_norm(iternormlubrication_, lubricationrhs);
 
     // --------------------------------- build residual incremental norms
-    norminc_ = CalculateVectorNorm(iternorm_, iterinc_);
-    normdisi_ = CalculateVectorNorm(iternormstr_, sx);
-    normprei_ = CalculateVectorNorm(iternormlubrication_, lx);
+    norminc_ = calculate_vector_norm(iternorm_, iterinc_);
+    normdisi_ = calculate_vector_norm(iternormstr_, sx);
+    normprei_ = calculate_vector_norm(iternormlubrication_, lx);
 
     // in case of 'Mix'-convergence criterion: save the norm of the 1st
     // iteration in (norm . iter0_)
@@ -476,7 +476,7 @@ void EHL::Monolithic::NewtonFull()
     }
 
     // print stuff
-    PrintNewtonIter();
+    print_newton_iter();
 
     // increment equilibrium loop index
     iter_ += 1;
@@ -491,7 +491,7 @@ void EHL::Monolithic::NewtonFull()
   // test whether max iterations was hit
   if ((Converged()) and (Comm().MyPID() == 0))
   {
-    PrintNewtonConv();
+    print_newton_conv();
   }
   else if (CORE::UTILS::IntegralValue<INPAR::STR::DivContAct>(sdyn_, "DIVERCONT") ==
            INPAR::STR::divcont_continue)
@@ -517,7 +517,7 @@ void EHL::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> stepinc)
   {
     // extract displacement sx and pressure lx incremental vector of global
     // unknown incremental vector x
-    ExtractFieldVectors(stepinc, sx, lx);
+    extract_field_vectors(stepinc, sx, lx);
   }
 
   // Newton update of the lubrication field
@@ -557,26 +557,26 @@ void EHL::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> stepinc)
  | extract field vectors for calling Evaluate() of the      wirtz 01/16 |
  | single fields                                                        |
  *----------------------------------------------------------------------*/
-void EHL::Monolithic::ExtractFieldVectors(
+void EHL::Monolithic::extract_field_vectors(
     Teuchos::RCP<Epetra_Vector> x, Teuchos::RCP<Epetra_Vector>& sx, Teuchos::RCP<Epetra_Vector>& lx)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("EHL::Monolithic::ExtractFieldVectors");
+  TEUCHOS_FUNC_TIME_MONITOR("EHL::Monolithic::extract_field_vectors");
 
   // process structure unknowns of the first field
   sx = Extractor()->ExtractVector(x, 0);
 
   // process lubrication unknowns of the second field
   lx = Extractor()->ExtractVector(x, 1);
-}  // ExtractFieldVectors()
+}  // extract_field_vectors()
 
 
 /*----------------------------------------------------------------------*
  | full monolithic dof row map                              wirtz 01/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> EHL::Monolithic::DofRowMap() const
+Teuchos::RCP<const Epetra_Map> EHL::Monolithic::dof_row_map() const
 {
   return Extractor()->FullMap();
-}  // DofRowMap()
+}  // dof_row_map()
 
 
 /*----------------------------------------------------------------------*
@@ -590,14 +590,14 @@ void EHL::Monolithic::SetupSystem()
   // create combined map
   std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
 
-  // use its own DofRowMap, that is the 0th map of the discretization
-  vecSpaces.push_back(StructureField()->DofRowMap(0));
-  vecSpaces.push_back(lubrication_->LubricationField()->DofRowMap(0));
+  // use its own dof_row_map, that is the 0th map of the discretization
+  vecSpaces.push_back(StructureField()->dof_row_map(0));
+  vecSpaces.push_back(lubrication_->LubricationField()->dof_row_map(0));
 
   if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No structure equation. Panic.");
   if (vecSpaces[1]->NumGlobalElements() == 0) FOUR_C_THROW("No pressure equation. Panic.");
 
-  SetDofRowMaps(vecSpaces);
+  set_dof_row_maps(vecSpaces);
 
   /*----------------------------------------------------------------------*/
   // initialise EHL-systemmatrix_
@@ -607,11 +607,11 @@ void EHL::Monolithic::SetupSystem()
 
   // create empty matrix
   k_sl_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *(StructureField()->Discretization()->DofRowMap(0)), 81, true, true));
+      *(StructureField()->Discretization()->dof_row_map(0)), 81, true, true));
 
   // create empty matrix
   k_ls_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *(lubrication_->LubricationField()->Discretization()->DofRowMap(0)), 81, true, true));
+      *(lubrication_->LubricationField()->Discretization()->dof_row_map(0)), 81, true, true));
 
 }  // SetupSystem()
 
@@ -619,21 +619,21 @@ void EHL::Monolithic::SetupSystem()
 /*----------------------------------------------------------------------*
  | put the single maps to one full EHL map together         wirtz 01/16 |
  *----------------------------------------------------------------------*/
-void EHL::Monolithic::SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
+void EHL::Monolithic::set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
   Teuchos::RCP<Epetra_Map> fullmap = CORE::LINALG::MultiMapExtractor::MergeMaps(maps);
 
   // full EHL-blockmap
   Extractor()->Setup(*fullmap, maps);
-}  // SetDofRowMaps()
+}  // set_dof_row_maps()
 
 
 /*----------------------------------------------------------------------*
  | setup system matrix of EHL                               wirtz 01/16 |
  *----------------------------------------------------------------------*/
-void EHL::Monolithic::SetupSystemMatrix()
+void EHL::Monolithic::setup_system_matrix()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("EHL::Monolithic::SetupSystemMatrix");
+  TEUCHOS_FUNC_TIME_MONITOR("EHL::Monolithic::setup_system_matrix");
 
 
 
@@ -755,9 +755,9 @@ void EHL::Monolithic::SetupSystemMatrix()
   LinCouetteForcePres(slaveiforce_derivp, masteriforce_derivp);
 
   slaveiforce_derivp->Complete(
-      *lubrication_->LubricationField()->DofRowMap(), *mortaradapter_->SlaveDofMap());
+      *lubrication_->LubricationField()->dof_row_map(), *mortaradapter_->SlaveDofMap());
   masteriforce_derivp->Complete(
-      *lubrication_->LubricationField()->DofRowMap(), *mortaradapter_->MasterDofMap());
+      *lubrication_->LubricationField()->dof_row_map(), *mortaradapter_->MasterDofMap());
 
   // Add the negative midpoint values (remember, we are linearizing an extforce-like term)
   k_sl_->Add(*slaveiforce_derivp, false, -(1.0 - alphaf), 1.0);
@@ -791,7 +791,7 @@ void EHL::Monolithic::SetupSystemMatrix()
 
   k_ls_->Reset();
   k_ls_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *(lubrication_->LubricationField()->Discretization()->DofRowMap(0)), 81, false, true));
+      *(lubrication_->LubricationField()->Discretization()->dof_row_map(0)), 81, false, true));
 
   /*
    * Three distinct types of derivatives of the lubrication residual wrt to interface displacement
@@ -847,11 +847,11 @@ void EHL::Monolithic::SetupSystemMatrix()
   //-----------------------------------------
   Teuchos::RCP<CORE::LINALG::SparseMatrix> avTangVelDeriv = mortaradapter_->AvTangVelDeriv();
   Teuchos::RCP<CORE::LINALG::SparseMatrix> dst = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *lubrication_->LubricationField()->Discretization()->DofRowMap(1), 81, true, false));
+      *lubrication_->LubricationField()->Discretization()->dof_row_map(1), 81, true, false));
   CORE::LINALG::MatrixRowTransform().operator()(*avTangVelDeriv, 1.,
       CORE::ADAPTER::CouplingMasterConverter(*ada_strDisp_to_lubDisp_), *dst, false);
-  dst->Complete(*StructureField()->DofRowMap(),
-      *lubrication_->LubricationField()->Discretization()->DofRowMap(1));
+  dst->Complete(*StructureField()->dof_row_map(),
+      *lubrication_->LubricationField()->Discretization()->dof_row_map(1));
   Teuchos::RCP<CORE::LINALG::SparseMatrix> tmp = CORE::LINALG::MLMultiply(*k_ls_linV, *dst, true);
   k_ls_->Add(*tmp, false, -1.0, 1.0);
 
@@ -870,28 +870,28 @@ void EHL::Monolithic::SetupSystemMatrix()
   // Finished...
   systemmatrix_->Complete();
 
-}  // SetupSystemMatrix()
+}  // setup_system_matrix()
 
 
 /*----------------------------------------------------------------------*
  | setup RHS (like fsimon)                                  wirtz 01/16 |
  *----------------------------------------------------------------------*/
-void EHL::Monolithic::SetupRHS()
+void EHL::Monolithic::setup_rhs()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("EHL::Monolithic::SetupRHS");
+  TEUCHOS_FUNC_TIME_MONITOR("EHL::Monolithic::setup_rhs");
 
   // create full monolithic rhs vector
-  rhs_ = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
+  rhs_ = Teuchos::rcp(new Epetra_Vector(*dof_row_map(), true));
 
   // fill the EHL rhs vector rhs_ with the single field rhs
-  SetupVector(*rhs_, StructureField()->RHS(), lubrication_->LubricationField()->RHS());
-}  // SetupRHS()
+  setup_vector(*rhs_, StructureField()->RHS(), lubrication_->LubricationField()->RHS());
+}  // setup_rhs()
 
 
 /*----------------------------------------------------------------------*
  | solve linear EHL system                                  wirtz 01/16 |
  *----------------------------------------------------------------------*/
-void EHL::Monolithic::LinearSolve()
+void EHL::Monolithic::linear_solve()
 {
   // Solve for inc_ = [disi_,prei_]
   // Solve K_Teffdyn . IncX = -R  ===>  IncX_{n+1} with X=[d,T]
@@ -907,7 +907,7 @@ void EHL::Monolithic::LinearSolve()
   // Dirichlet boundary conditions are already applied to EHL system, i.e. EHL
   // system is prepared for solve, i.e. EHL systemmatrix, EHL rhs, EHL inc
   // --> in prepare_system_for_newton_solve(): done for rhs and diagonal blocks
-  // --> in SetupSystemMatrix() done for off-diagonal blocks k_sl, k_ls
+  // --> in setup_system_matrix() done for off-diagonal blocks k_sl, k_ls
 
   // apply Dirichlet BCs to system of equations
   iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
@@ -916,7 +916,7 @@ void EHL::Monolithic::LinearSolve()
   if (merge_ehl_blockmatrix_ == false)
   {
     // Infnormscaling: scale system before solving
-    ScaleSystem(*systemmatrix_, *rhs_);
+    scale_system(*systemmatrix_, *rhs_);
 
     // solve the problem, work is done here!
     solver_params.refactor = true;
@@ -924,14 +924,14 @@ void EHL::Monolithic::LinearSolve()
     solver_->Solve(systemmatrix_->EpetraOperator(), iterinc_, rhs_, solver_params);
 
     // Infnormscaling: unscale system after solving
-    UnscaleSolution(*systemmatrix_, *iterinc_, *rhs_);
+    unscale_solution(*systemmatrix_, *iterinc_, *rhs_);
 
   }  // use block matrix
 
   else  // (merge_ehl_blockmatrix_ == true)
   {
     // Infnormscaling: scale system before solving
-    ScaleSystem(*systemmatrix_, *rhs_);
+    scale_system(*systemmatrix_, *rhs_);
 
     // merge blockmatrix to SparseMatrix and solve
     Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
@@ -942,16 +942,16 @@ void EHL::Monolithic::LinearSolve()
     solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, solver_params);
 
     // Infnormscaling: unscale system after solving
-    UnscaleSolution(*systemmatrix_, *iterinc_, *rhs_);
+    unscale_solution(*systemmatrix_, *iterinc_, *rhs_);
   }  // MergeBlockMatrix
 
-}  // LinearSolve()
+}  // linear_solve()
 
 
 /*----------------------------------------------------------------------*
  | setup vector of the structure and lubrication field      wirtz 01/16 |
  *----------------------------------------------------------------------*/
-void EHL::Monolithic::SetupVector(
+void EHL::Monolithic::setup_vector(
     Epetra_Vector& f, Teuchos::RCP<const Epetra_Vector> sv, Teuchos::RCP<const Epetra_Vector> lv)
 {
   // extract dofs of the two fields
@@ -960,7 +960,7 @@ void EHL::Monolithic::SetupVector(
   Extractor()->InsertVector(*sv, 0, f);
   Extractor()->InsertVector(*lv, 1, f);
 
-}  // SetupVector()
+}  // setup_vector()
 
 
 /*----------------------------------------------------------------------*
@@ -1114,7 +1114,7 @@ bool EHL::Monolithic::Converged()
  | print Newton-Raphson iteration to screen and error file  wirtz 01/16 |
  | originally by lw 12/07, tk 01/08                                     |
  *----------------------------------------------------------------------*/
-void EHL::Monolithic::PrintNewtonIter()
+void EHL::Monolithic::print_newton_iter()
 {
   // print to standard out
   // replace myrank_ here general by Comm().MyPID()
@@ -1122,10 +1122,10 @@ void EHL::Monolithic::PrintNewtonIter()
       printiter_)
   {
     if (iter_ == 1) print_newton_iter_header(stdout);
-    PrintNewtonIterText(stdout);
+    print_newton_iter_text(stdout);
   }
 
-}  // PrintNewtonIter()
+}  // print_newton_iter()
 
 
 /*----------------------------------------------------------------------*
@@ -1271,7 +1271,7 @@ void EHL::Monolithic::print_newton_iter_header(FILE* ofile)
  | print Newton-Raphson iteration to screen                 wirtz 01/16 |
  | originally by lw 12/07, tk 01/08                                     |
  *----------------------------------------------------------------------*/
-void EHL::Monolithic::PrintNewtonIterText(FILE* ofile)
+void EHL::Monolithic::print_newton_iter_text(FILE* ofile)
 {
   // open outstringstream
   std::ostringstream oss;
@@ -1419,18 +1419,18 @@ void EHL::Monolithic::PrintNewtonIterText(FILE* ofile)
   // nice to have met you
   return;
 
-}  // PrintNewtonIterText
+}  // print_newton_iter_text
 
 
 /*----------------------------------------------------------------------*
  | print statistics of converged NRI                        wirtz 01/16 |
  | orignially by bborn 08/09                                            |
  *----------------------------------------------------------------------*/
-void EHL::Monolithic::PrintNewtonConv()
+void EHL::Monolithic::print_newton_conv()
 {
   // somebody did the door
   return;
-}  // PrintNewtonConv()
+}  // print_newton_conv()
 
 
 
@@ -1454,7 +1454,7 @@ void EHL::Monolithic::apply_lubrication_coupl_matrix(
 
   lubrication_->LubricationField()->Discretization()->ClearState(true);
   // set the variables that are needed by the elements
-  lubrication_->LubricationField()->Discretization()->SetState(
+  lubrication_->LubricationField()->Discretization()->set_state(
       0, "prenp", lubrication_->LubricationField()->Prenp());
 
   SetStructSolution(structure_->Dispnp());
@@ -1471,11 +1471,11 @@ void EHL::Monolithic::apply_lubrication_coupl_matrix(
   // evaluate the lubrication-mechanical system matrix on the lubrication element
   lubrication_->LubricationField()->Discretization()->Evaluate(lparams, lubricationstrategy);
 
-  matheight->Complete(*(lubrication_->LubricationField()->Discretization()->DofRowMap(1)),
-      *(lubrication_->LubricationField()->Discretization()->DofRowMap(0)));
+  matheight->Complete(*(lubrication_->LubricationField()->Discretization()->dof_row_map(1)),
+      *(lubrication_->LubricationField()->Discretization()->dof_row_map(0)));
 
-  matvel->Complete(*(lubrication_->LubricationField()->Discretization()->DofRowMap(1)),
-      *(lubrication_->LubricationField()->Discretization()->DofRowMap(0)));
+  matvel->Complete(*(lubrication_->LubricationField()->Discretization()->dof_row_map(1)),
+      *(lubrication_->LubricationField()->Discretization()->dof_row_map(0)));
 
   lubrication_->LubricationField()->Discretization()->ClearState(true);
 
@@ -1485,7 +1485,7 @@ void EHL::Monolithic::apply_lubrication_coupl_matrix(
 /*----------------------------------------------------------------------*
  | map containing the dofs with Dirichlet BC                wirtz 01/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> EHL::Monolithic::CombinedDBCMap()
+Teuchos::RCP<Epetra_Map> EHL::Monolithic::combined_dbc_map()
 {
   const Teuchos::RCP<const Epetra_Map> scondmap = StructureField()->GetDBCMapExtractor()->CondMap();
   const Teuchos::RCP<const Epetra_Map> lcondmap =
@@ -1493,13 +1493,13 @@ Teuchos::RCP<Epetra_Map> EHL::Monolithic::CombinedDBCMap()
   Teuchos::RCP<Epetra_Map> condmap = CORE::LINALG::MergeMap(scondmap, lcondmap, false);
   return condmap;
 
-}  // CombinedDBCMap()
+}  // combined_dbc_map()
 
 /*----------------------------------------------------------------------*
  | scale system, i.e. apply infnorm scaling to linear       wirtz 01/16 |
  | block system before solving system                                   |
  *----------------------------------------------------------------------*/
-void EHL::Monolithic::ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
+void EHL::Monolithic::scale_system(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
   // should we scale the system?
   const bool scaling_infnorm = (bool)CORE::UTILS::IntegralValue<int>(ehldynmono_, "INFNORMSCALING");
@@ -1537,13 +1537,13 @@ void EHL::Monolithic::ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epet
     Extractor()->InsertVector(*sx, 0, b);
     Extractor()->InsertVector(*lx, 1, b);
   }
-}  // ScaleSystem
+}  // scale_system
 
 
 /*----------------------------------------------------------------------*
  | unscale solution after solving the linear system         wirtz 01/16 |
  *----------------------------------------------------------------------*/
-void EHL::Monolithic::UnscaleSolution(
+void EHL::Monolithic::unscale_solution(
     CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
   const bool scaling_infnorm = (bool)CORE::UTILS::IntegralValue<int>(ehldynmono_, "INFNORMSCALING");
@@ -1587,13 +1587,13 @@ void EHL::Monolithic::UnscaleSolution(
 
   }  // if (scaling_infnorm)
 
-}  // UnscaleSolution()
+}  // unscale_solution()
 
 
 /*----------------------------------------------------------------------*
  | calculate vector norm                                    wirtz 01/16 |
  *----------------------------------------------------------------------*/
-double EHL::Monolithic::CalculateVectorNorm(
+double EHL::Monolithic::calculate_vector_norm(
     const enum INPAR::EHL::VectorNorm norm, const Teuchos::RCP<Epetra_Vector> vect)
 {
   // L1 norm
@@ -1640,7 +1640,7 @@ double EHL::Monolithic::CalculateVectorNorm(
     FOUR_C_THROW("Cannot handle vector norm");
     return 0;
   }
-}  // CalculateVectorNorm()
+}  // calculate_vector_norm()
 
 
 /*----------------------------------------------------------------------*
@@ -1807,10 +1807,10 @@ void EHL::Monolithic::set_default_parameters()
 /*----------------------------------------------------------------------*
  | calculate stresses, strains, energies                    wirtz 01/16 |
  *----------------------------------------------------------------------*/
-void EHL::Monolithic::PrepareOutput(bool force_prepare)
+void EHL::Monolithic::prepare_output(bool force_prepare)
 {
   // prepare output (i.e. calculate stresses, strains, energies)
-  StructureField()->PrepareOutput(force_prepare);
+  StructureField()->prepare_output(force_prepare);
 
   // reset states
   StructureField()->Discretization()->ClearState(true);
@@ -1824,7 +1824,7 @@ void EHL::Monolithic::lin_pressure_force_disp(Teuchos::RCP<CORE::LINALG::SparseM
   Teuchos::RCP<CORE::LINALG::SparseMatrix> p_deriv_normal =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(*mortaradapter_->NderivMatrix()));
   Teuchos::RCP<Epetra_Vector> p_full =
-      Teuchos::rcp(new Epetra_Vector(*lubrication_->LubricationField()->DofRowMap(1)));
+      Teuchos::rcp(new Epetra_Vector(*lubrication_->LubricationField()->dof_row_map(1)));
   if (lubrimaptransform_->Apply(*lubrication_->LubricationField()->Prenp(), *p_full))
     FOUR_C_THROW("apply failed");
   Teuchos::RCP<Epetra_Vector> p_exp =
@@ -1901,7 +1901,7 @@ void EHL::Monolithic::LinCouetteForceDisp(Teuchos::RCP<CORE::LINALG::SparseMatri
   const int ndim = GLOBAL::Problem::Instance()->NDim();
   DRT::Discretization& lub_dis = *lubrication_->LubricationField()->Discretization();
   Teuchos::RCP<Epetra_Vector> visc_vec =
-      Teuchos::rcp(new Epetra_Vector(*lubrication_->LubricationField()->DofRowMap(1)));
+      Teuchos::rcp(new Epetra_Vector(*lubrication_->LubricationField()->dof_row_map(1)));
   for (int i = 0; i < lub_dis.NodeRowMap()->NumMyElements(); ++i)
   {
     DRT::Node* lnode = lub_dis.lRowNode(i);
@@ -1976,7 +1976,7 @@ void EHL::Monolithic::lin_pressure_force_pres(Teuchos::RCP<CORE::LINALG::SparseM
   CORE::LINALG::MatrixRowTransform().operator()(*lubrimaptransform_, 1.,
       CORE::ADAPTER::CouplingSlaveConverter(*ada_strDisp_to_lubDisp_), *tmp, false);
 
-  tmp->Complete(*lubrication_->LubricationField()->DofRowMap(0), *mortaradapter_->SlaveDofMap());
+  tmp->Complete(*lubrication_->LubricationField()->dof_row_map(0), *mortaradapter_->SlaveDofMap());
 
   if (tmp->LeftScale(*mortaradapter_->Normals())) FOUR_C_THROW("leftscale failed");
   if (tmp->Scale(-1.)) FOUR_C_THROW("scale failed");
@@ -2007,7 +2007,7 @@ void EHL::Monolithic::lin_poiseuille_force_pres(Teuchos::RCP<CORE::LINALG::Spars
 
   {
     Teuchos::RCP<const Epetra_Map> r = mortaradapter_->SlaveDofMap();
-    Teuchos::RCP<const Epetra_Map> d = lubrication_->LubricationField()->DofRowMap(0);
+    Teuchos::RCP<const Epetra_Map> d = lubrication_->LubricationField()->dof_row_map(0);
     Teuchos::RCP<CORE::LINALG::SparseMatrix> a = CORE::LINALG::MLMultiply(
         *mortaradapter_->GetMortarMatrixD(), true, m, false, true, false, true);
 
@@ -2025,7 +2025,7 @@ void EHL::Monolithic::lin_poiseuille_force_pres(Teuchos::RCP<CORE::LINALG::Spars
 
   {
     Teuchos::RCP<const Epetra_Map> r = mortaradapter_->MasterDofMap();
-    Teuchos::RCP<const Epetra_Map> d = lubrication_->LubricationField()->DofRowMap(0);
+    Teuchos::RCP<const Epetra_Map> d = lubrication_->LubricationField()->dof_row_map(0);
     Teuchos::RCP<CORE::LINALG::SparseMatrix> a = CORE::LINALG::MLMultiply(
         *mortaradapter_->GetMortarMatrixM(), true, m, false, true, false, true);
 
@@ -2061,7 +2061,7 @@ void EHL::Monolithic::LinCouetteForcePres(Teuchos::RCP<CORE::LINALG::SparseMatri
 
   DRT::Discretization& lub_dis = *lubrication_->LubricationField()->Discretization();
   Teuchos::RCP<CORE::LINALG::SparseMatrix> dVisc_dp =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(lub_dis.DofRowMap(1)), 81));
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(lub_dis.dof_row_map(1)), 81));
 
   for (int i = 0; i < lub_dis.NodeRowMap()->NumMyElements(); ++i)
   {
@@ -2080,7 +2080,7 @@ void EHL::Monolithic::LinCouetteForcePres(Teuchos::RCP<CORE::LINALG::SparseMatri
     for (int d = 0; d < ndim; ++d)
       dVisc_dp->Assemble(dvisc_dp, lub_dis.Dof(1, lnode, d), lub_dis.Dof(0, lnode, 0));
   }
-  dVisc_dp->Complete(*lub_dis.DofRowMap(0), *lub_dis.DofRowMap(1));
+  dVisc_dp->Complete(*lub_dis.dof_row_map(0), *lub_dis.dof_row_map(1));
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> dVisc_str_dp =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(*mortaradapter_->SlaveDofMap(), 81));
@@ -2088,13 +2088,13 @@ void EHL::Monolithic::LinCouetteForcePres(Teuchos::RCP<CORE::LINALG::SparseMatri
   CORE::LINALG::MatrixRowTransform().operator()(*dVisc_dp, 1.,
       CORE::ADAPTER::CouplingSlaveConverter(*ada_strDisp_to_lubDisp_), *dVisc_str_dp, false);
 
-  dVisc_str_dp->Complete(*lub_dis.DofRowMap(0), *mortaradapter_->SlaveDofMap());
+  dVisc_str_dp->Complete(*lub_dis.dof_row_map(0), *mortaradapter_->SlaveDofMap());
 
   dVisc_str_dp->LeftScale(*hinv_relV);
 
   {
     Teuchos::RCP<const Epetra_Map> r = mortaradapter_->SlaveDofMap();
-    Teuchos::RCP<const Epetra_Map> d = lubrication_->LubricationField()->DofRowMap(0);
+    Teuchos::RCP<const Epetra_Map> d = lubrication_->LubricationField()->dof_row_map(0);
 
     ds_dp->UnComplete();
     ds_dp->Add(*CORE::LINALG::MLMultiply(*mortaradapter_->GetMortarMatrixD(), true, *dVisc_str_dp,
@@ -2105,7 +2105,7 @@ void EHL::Monolithic::LinCouetteForcePres(Teuchos::RCP<CORE::LINALG::SparseMatri
 
   {
     Teuchos::RCP<const Epetra_Map> r = mortaradapter_->MasterDofMap();
-    Teuchos::RCP<const Epetra_Map> d = lubrication_->LubricationField()->DofRowMap(0);
+    Teuchos::RCP<const Epetra_Map> d = lubrication_->LubricationField()->dof_row_map(0);
 
     dm_dp->UnComplete();
     dm_dp->Add(*CORE::LINALG::MLMultiply(*mortaradapter_->GetMortarMatrixM(), true, *dVisc_str_dp,
@@ -2119,7 +2119,7 @@ void EHL::Monolithic::LinCouetteForcePres(Teuchos::RCP<CORE::LINALG::SparseMatri
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void EHL::Monolithic::ApplyDBC()
+void EHL::Monolithic::apply_dbc()
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ss =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(systemmatrix_->Matrix(0, 0).EpetraMatrix(),

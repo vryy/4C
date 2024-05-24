@@ -170,7 +170,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Ale2::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Ale2::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -385,7 +385,7 @@ void DRT::ELEMENTS::Ale2::static_ke_spring(CORE::LINALG::SerialDenseMatrix* sys_
     CORE::LINALG::SerialDenseVector& residual, std::vector<double>& displacements,
     const bool spatialconfiguration)
 {
-  const int iel = NumNode();  // numnode of this element
+  const int iel = num_node();  // numnode of this element
   const CORE::FE::CellType distype = this->Shape();
   int numcnd;          // number of corner nodes
   int node_i, node_j;  // end nodes of actual spring
@@ -573,7 +573,7 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector* force, Teuchos::ParameterList& params,
     const bool spatialconfiguration, const bool pseudolinear)
 {
-  const int numnode = NumNode();
+  const int numnode = num_node();
   const int numdf = 2;
   const int nd = numnode * numdf;
 
@@ -605,7 +605,7 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
   const CORE::FE::CellType distype = Shape();
 
   // gaussian points
-  const CORE::FE::GaussRule2D gaussrule = getOptimalGaussrule(distype);
+  const CORE::FE::GaussRule2D gaussrule = get_optimal_gaussrule(distype);
   const CORE::FE::IntegrationPoints2D intpoints(gaussrule);
 
   /*----------------------------------------------------- geometry update */
@@ -659,22 +659,22 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
     }
 
     /*--------------------------------------- compute jacobian Matrix */
-    JacobianMatrix(xrefe, deriv, xjm, &det, numnode);
+    jacobian_matrix(xrefe, deriv, xjm, &det, numnode);
 
     /*------------------------------------ integration factor  -------*/
     const double fac = wgt * det;
     /*----------------------------------- calculate operator Blin  ---*/
-    CalcBOpLin(boplin, deriv, xjm, det, numnode);
+    calc_b_op_lin(boplin, deriv, xjm, det, numnode);
     // cout.precision(16);
     /*------------ calculate defgrad F^u, Green-Lagrange-strain E^u --*/
-    DefGrad(F, strain, xrefe, xcure, boplin, numnode);
+    def_grad(F, strain, xrefe, xcure, boplin, numnode);
 
 
     /*-calculate defgrad F in matrix notation and Blin in current conf.*/
-    BOpLinCure(b_cure, boplin, F, numeps, nd);
+    b_op_lin_cure(b_cure, boplin, F, numeps, nd);
 
 
-    CallMatGeoNonl(strain, stress, C, numeps, Material(), params, ip);
+    call_mat_geo_nonl(strain, stress, C, numeps, Material(), params, ip);
 
 
 
@@ -762,7 +762,7 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis, std::vecto
   //      "of the Laplace smoothing strategy. Check this CAREFULLY before"
   //      "using it.");
 
-  const int iel = NumNode();
+  const int iel = num_node();
   const CORE::FE::CellType distype = this->Shape();
 
   CORE::LINALG::SerialDenseMatrix xyze(2, iel);
@@ -812,7 +812,7 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis, std::vecto
   CORE::LINALG::SerialDenseMatrix xji(2, 2);
 
   // Gauss quadrature points
-  const CORE::FE::GaussRule2D gaussrule = getOptimalGaussrule(distype);
+  const CORE::FE::GaussRule2D gaussrule = get_optimal_gaussrule(distype);
   const CORE::FE::IntegrationPoints2D intpoints(gaussrule);
   //  double min_detF = 0.0;         /* minimal Jacobian determinant   */
   //  ale2_min_jaco(Shape(),xyze,&min_detF);
@@ -898,7 +898,7 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis, std::vecto
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::CalcBOpLin(CORE::LINALG::SerialDenseMatrix& boplin,
+void DRT::ELEMENTS::Ale2::calc_b_op_lin(CORE::LINALG::SerialDenseMatrix& boplin,
     CORE::LINALG::SerialDenseMatrix& deriv, CORE::LINALG::SerialDenseMatrix& xjm, double& det,
     const int iel)
 {
@@ -934,7 +934,7 @@ void DRT::ELEMENTS::Ale2::CalcBOpLin(CORE::LINALG::SerialDenseMatrix& boplin,
 
 /*-----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::JacobianMatrix(const CORE::LINALG::SerialDenseMatrix& xrefe,
+void DRT::ELEMENTS::Ale2::jacobian_matrix(const CORE::LINALG::SerialDenseMatrix& xrefe,
     const CORE::LINALG::SerialDenseMatrix& deriv, CORE::LINALG::SerialDenseMatrix& xjm, double* det,
     const int iel)
 {
@@ -960,7 +960,7 @@ void DRT::ELEMENTS::Ale2::JacobianMatrix(const CORE::LINALG::SerialDenseMatrix& 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::DefGrad(CORE::LINALG::SerialDenseVector& F,
+void DRT::ELEMENTS::Ale2::def_grad(CORE::LINALG::SerialDenseVector& F,
     CORE::LINALG::SerialDenseVector& strain, const CORE::LINALG::SerialDenseMatrix& xrefe,
     const CORE::LINALG::SerialDenseMatrix& xcure, CORE::LINALG::SerialDenseMatrix& boplin,
     const int iel)
@@ -1049,7 +1049,7 @@ void DRT::ELEMENTS::Ale2::Fint(const CORE::LINALG::SerialDenseMatrix& stress,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::CallMatGeoNonl(
+void DRT::ELEMENTS::Ale2::call_mat_geo_nonl(
     const CORE::LINALG::SerialDenseVector& strain,     ///< Green-Lagrange strain vector
     CORE::LINALG::SerialDenseMatrix& stress,           ///< stress vector
     CORE::LINALG::SerialDenseMatrix& C,                ///< elasticity matrix
@@ -1149,7 +1149,7 @@ void DRT::ELEMENTS::Ale2::material_response3d_plane(CORE::LINALG::SerialDenseMat
   // call 3d stress response
   CORE::LINALG::Matrix<6, 1> pk2(true);   // must be zerofied!!!
   CORE::LINALG::Matrix<6, 6> cmat(true);  // must be zerofied!!!
-  MaterialResponse3d(&pk2, &cmat, &gl, params, gp);
+  material_response3d(&pk2, &cmat, &gl, params, gp);
 
   // we have plain strain
 
@@ -1186,7 +1186,7 @@ void DRT::ELEMENTS::Ale2::material_response3d_plane(CORE::LINALG::SerialDenseMat
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::MaterialResponse3d(CORE::LINALG::Matrix<6, 1>* stress,
+void DRT::ELEMENTS::Ale2::material_response3d(CORE::LINALG::Matrix<6, 1>* stress,
     CORE::LINALG::Matrix<6, 6>* cmat, const CORE::LINALG::Matrix<6, 1>* glstrain,
     Teuchos::ParameterList& params, const int gp)
 {
@@ -1215,7 +1215,7 @@ void DRT::ELEMENTS::Ale2::green_lagrange_plane3d(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::BOpLinCure(CORE::LINALG::SerialDenseMatrix& b_cure,
+void DRT::ELEMENTS::Ale2::b_op_lin_cure(CORE::LINALG::SerialDenseMatrix& b_cure,
     const CORE::LINALG::SerialDenseMatrix& boplin, const CORE::LINALG::SerialDenseVector& F,
     const int numeps, const int nd)
 {
@@ -1253,7 +1253,7 @@ void DRT::ELEMENTS::Ale2::BOpLinCure(CORE::LINALG::SerialDenseMatrix& b_cure,
 void DRT::ELEMENTS::Ale2::compute_det_jac(CORE::LINALG::SerialDenseVector& elevec1,
     const std::vector<int>& lm, const std::vector<double>& disp)
 {
-  const int numnode = NumNode();
+  const int numnode = num_node();
   const int numdf = 2;
 
   // general arrays
@@ -1310,10 +1310,10 @@ void DRT::ELEMENTS::Ale2::compute_det_jac(CORE::LINALG::SerialDenseVector& eleve
     CORE::FE::shape_function_2D_deriv1(deriv, e1, e2, distype);
 
     /*--------------------------------------- compute jacobian Matrix */
-    JacobianMatrix(xrefe, deriv, xjm, &det, numnode);
+    jacobian_matrix(xrefe, deriv, xjm, &det, numnode);
 
     /*---------------------------- Evaluate quality measure */
-    EvaluateOddy(xjm, det, qm);
+    evaluate_oddy(xjm, det, qm);
 
 
     detjac[node] = det;
@@ -1337,7 +1337,7 @@ void DRT::ELEMENTS::Ale2::compute_det_jac(CORE::LINALG::SerialDenseVector& eleve
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::EvaluateOddy(
+void DRT::ELEMENTS::Ale2::evaluate_oddy(
     const CORE::LINALG::SerialDenseMatrix& xjm, double det, double& qm)
 {
   // compute C

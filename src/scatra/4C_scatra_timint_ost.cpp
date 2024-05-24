@@ -55,7 +55,7 @@ void SCATRA::TimIntOneStepTheta::Setup()
   // vectors and matrices
   //                 local <-> global dof numbering
   // -------------------------------------------------------------------
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // fine-scale vector at time n+1
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
@@ -145,7 +145,7 @@ void SCATRA::TimIntOneStepTheta::set_time_for_neumann_evaluation(Teuchos::Parame
 
 /*----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::PrintTimeStepInfo()
+void SCATRA::TimIntOneStepTheta::print_time_step_info()
 {
   if (myrank_ == 0 and not micro_scale_)
   {
@@ -199,7 +199,7 @@ void SCATRA::TimIntOneStepTheta::AVM3Separation()
   Sep_->Multiply(false, *phinp_, *fsphinp_);
 
   // set fine-scale vector
-  discret_->SetState("fsphinp", fsphinp_);
+  discret_->set_state("fsphinp", fsphinp_);
 }
 
 /*----------------------------------------------------------------------*
@@ -235,8 +235,8 @@ void SCATRA::TimIntOneStepTheta::add_time_integration_specific_vectors(bool forc
   // call base class routine
   ScaTraTimIntImpl::add_time_integration_specific_vectors(forcedincrementalsolver);
 
-  discret_->SetState("hist", hist_);
-  discret_->SetState("phinp", phinp_);
+  discret_->set_state("hist", hist_);
+  discret_->set_state("phinp", phinp_);
 }
 
 /*----------------------------------------------------------------------*
@@ -323,10 +323,10 @@ void SCATRA::TimIntOneStepTheta::WriteRestart() const
 
 /*----------------------------------------------------------------------*
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input)
+void SCATRA::TimIntOneStepTheta::read_restart(const int step, Teuchos::RCP<IO::InputControl> input)
 {
   // call base class routine
-  ScaTraTimIntImpl::ReadRestart(step, input);
+  ScaTraTimIntImpl::read_restart(step, input);
 
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
@@ -412,7 +412,7 @@ void SCATRA::TimIntOneStepTheta::post_calc_initial_time_derivative()
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::SetState(Teuchos::RCP<Epetra_Vector> phin,
+void SCATRA::TimIntOneStepTheta::set_state(Teuchos::RCP<Epetra_Vector> phin,
     Teuchos::RCP<Epetra_Vector> phinp, Teuchos::RCP<Epetra_Vector> phidtn,
     Teuchos::RCP<Epetra_Vector> phidtnp, Teuchos::RCP<Epetra_Vector> hist,
     Teuchos::RCP<IO::DiscretizationWriter> output, const std::vector<double>& phinp_macro,

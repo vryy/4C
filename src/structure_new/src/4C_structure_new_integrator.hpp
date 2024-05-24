@@ -97,10 +97,10 @@ namespace STR
 
     //! Post setup operation (compute initial equilibrium state), should be run directly after the
     //! setup routine has been finished
-    virtual void PostSetup() = 0;
+    virtual void post_setup() = 0;
 
     //! Set state variables
-    virtual void SetState(const Epetra_Vector& x) = 0;
+    virtual void set_state(const Epetra_Vector& x) = 0;
 
     //! Set initial displacement field
     virtual void set_initial_displacement(
@@ -173,7 +173,7 @@ namespace STR
         Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr) = 0;
 
     //! Assemble the right hand side
-    virtual bool AssembleForce(Epetra_Vector& f,
+    virtual bool assemble_force(Epetra_Vector& f,
         const std::vector<INPAR::STR::ModelType>* without_these_models = nullptr) const = 0;
 
     //! Assemble Jacobian
@@ -212,7 +212,7 @@ namespace STR
 
     /*! read restart information of the different time integration schemes
      *  and model evaluators */
-    virtual void ReadRestart(IO::DiscretizationReader& ioreader) = 0;
+    virtual void read_restart(IO::DiscretizationReader& ioreader) = 0;
 
     //!@}
 
@@ -289,7 +289,7 @@ namespace STR
     virtual void ResetStepState();
 
     /// things that should be done after updating
-    virtual void PostUpdate() = 0;
+    virtual void post_update() = 0;
 
     /// things that should be done after the timeloop
     virtual void PostTimeLoop(){};
@@ -342,16 +342,16 @@ namespace STR
 
    protected:
     //! returns init state
-    inline const bool& IsInit() const { return isinit_; };
+    inline const bool& is_init() const { return isinit_; };
 
     //! returns setup state
-    inline const bool& IsSetup() const { return issetup_; };
+    inline const bool& is_setup() const { return issetup_; };
 
     //! Check the init state
-    void CheckInit() const;
+    void check_init() const;
 
     //! Check the setup state
-    void CheckInitSetup() const;
+    void check_init_setup() const;
 
     /*! \brief Equilibriate system at initial state and identify consistent accelerations
      */

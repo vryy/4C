@@ -172,7 +172,7 @@ namespace MAT
     double Density() const override { return params_->density_; };
 
     /// Return shear modulus
-    double ShearMod() const { return params_->mue_; };
+    double shear_mod() const { return params_->mue_; };
 
 
     /// Check if history variables are already initialized

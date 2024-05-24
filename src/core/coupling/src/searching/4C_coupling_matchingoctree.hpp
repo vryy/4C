@@ -243,29 +243,29 @@ namespace CORE::COUPLING
 
    protected:
     //! returns true if Setup() was called and is still valid
-    bool IsSetup() { return issetup_; };
+    bool is_setup() { return issetup_; };
 
     //! returns true if Init(..) was called and is still valid
-    bool IsInit() { return isinit_; };
+    bool is_init() { return isinit_; };
 
     //! check if \ref Setup() was called
     void CheckIsSetup()
     {
-      if (not IsSetup()) FOUR_C_THROW("Setup() was not called.");
+      if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
     };
 
     //! check if \ref Init() was called
-    void CheckIsInit()
+    void check_is_init()
     {
-      if (not IsInit()) FOUR_C_THROW("Init(...) was not called.");
+      if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
     };
 
    private:
     //! set flag true after setup or false if setup became invalid
-    void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; };
+    void set_is_setup(bool trueorfalse) { issetup_ = trueorfalse; };
 
     //! set flag true after init or false if init became invalid
-    void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
+    void set_is_init(bool trueorfalse) { isinit_ = trueorfalse; };
 
   };  // MatchingOctree
 
@@ -509,29 +509,29 @@ namespace CORE::COUPLING
 
    protected:
     //! returns true if Setup() was called and is still valid
-    bool IsSetup() { return issetup_; };
+    bool is_setup() { return issetup_; };
 
     //! returns true if Init(..) was called and is still valid
-    bool IsInit() { return isinit_; };
+    bool is_init() { return isinit_; };
 
     //! check if \ref Setup() was called
     void CheckIsSetup()
     {
-      if (not IsSetup()) FOUR_C_THROW("Setup() was not called.");
+      if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
     };
 
     //! check if \ref Init() was called
-    void CheckIsInit()
+    void check_is_init()
     {
-      if (not IsInit()) FOUR_C_THROW("Init(...) was not called.");
+      if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
     };
 
    private:
     //! set flag true after setup or false if setup became invalid
-    void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; };
+    void set_is_setup(bool trueorfalse) { issetup_ = trueorfalse; };
 
     //! set flag true after init or false if init became invalid
-    void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
+    void set_is_init(bool trueorfalse) { isinit_ = trueorfalse; };
 
   };  // class OctreeElement
 

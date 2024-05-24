@@ -39,7 +39,7 @@ namespace DRT
      private:
       //! define PoroFluidMultiPhaseEle instances dependent on problem
       template <CORE::FE::CellType distype>
-      static PoroFluidMultiPhaseEleInterface* DefineProblemType(
+      static PoroFluidMultiPhaseEleInterface* define_problem_type(
           const int numdofpernode, const std::string& disname);
 
 

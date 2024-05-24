@@ -53,18 +53,18 @@ MOR::ProperOrthogonalDecomposition::ProperOrthogonalDecomposition(
 
   // build an importer
   Teuchos::RCP<Epetra_Import> dofrowimporter =
-      Teuchos::rcp(new Epetra_Import(*(actdisc_->DofRowMap()), (tmpmat->Map())));
+      Teuchos::rcp(new Epetra_Import(*(actdisc_->dof_row_map()), (tmpmat->Map())));
   projmatrix_ =
-      Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->DofRowMap()), tmpmat->NumVectors(), true));
+      Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->dof_row_map()), tmpmat->NumVectors(), true));
   int err = projmatrix_->Import(*tmpmat, *dofrowimporter, Insert, nullptr);
   if (err != 0) FOUR_C_THROW("POD projection matrix could not be mapped onto the dof map");
 
   // check row dimension
-  if (projmatrix_->GlobalLength() != actdisc_->DofRowMap()->NumGlobalElements())
+  if (projmatrix_->GlobalLength() != actdisc_->dof_row_map()->NumGlobalElements())
     if (myrank_ == 0) FOUR_C_THROW("Projection matrix does not match discretization.");
 
   // check orthogonality
-  if (not IsOrthogonal(projmatrix_)) FOUR_C_THROW("Projection matrix is not orthogonal.");
+  if (not is_orthogonal(projmatrix_)) FOUR_C_THROW("Projection matrix is not orthogonal.");
 
   // maps for reduced system
   structmapr_ = Teuchos::rcp(new Epetra_Map(projmatrix_->NumVectors(), 0, actdisc_->Comm()));
@@ -163,7 +163,7 @@ Teuchos::RCP<Epetra_Vector> MOR::ProperOrthogonalDecomposition::ExtendSolution(
 {
   Teuchos::RCP<Epetra_Vector> v_tmp = Teuchos::rcp(new Epetra_Vector(*redstructmapr_, true));
   v_tmp->Import(*v_red, *structrinvimpo_, Insert, nullptr);
-  Teuchos::RCP<Epetra_Vector> v = Teuchos::rcp(new Epetra_Vector(*actdisc_->DofRowMap()));
+  Teuchos::RCP<Epetra_Vector> v = Teuchos::rcp(new Epetra_Vector(*actdisc_->dof_row_map()));
   int err = v->Multiply('N', 'N', 1.0, *projmatrix_, *v_tmp, 0.0);
   if (err) FOUR_C_THROW("Multiplication V * v_red failed.");
 
@@ -378,7 +378,7 @@ void MOR::ProperOrthogonalDecomposition::ReadMatrix(
 /*----------------------------------------------------------------------*
  | check orthogonality with M^T * M - I == 0              pfaller Oct17 |
  *----------------------------------------------------------------------*/
-bool MOR::ProperOrthogonalDecomposition::IsOrthogonal(Teuchos::RCP<Epetra_MultiVector> M)
+bool MOR::ProperOrthogonalDecomposition::is_orthogonal(Teuchos::RCP<Epetra_MultiVector> M)
 {
   const int n = M->NumVectors();
 

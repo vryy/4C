@@ -162,7 +162,7 @@ namespace FLD
 
         int length = sblock.size();
 
-        exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
+        exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
         rblock.clear();
 
@@ -490,25 +490,25 @@ namespace FLD
         const int pos = loc[2] + nummodes_ * (loc[1] + nummodes_ * loc[0]);
 
         // get local dof id corresponding to the global id
-        int lid = discret_->DofRowMap()->LID(dofs[0]);
+        int lid = discret_->dof_row_map()->LID(dofs[0]);
         // set value
         if (forcing_type_ == INPAR::FLUID::linear_compensation_from_intermediate_spectrum or
             (forcing_type_ == INPAR::FLUID::fixed_power_input and (not is_genalpha_)))
         {
           (*local_u1)[pos] = (*velnp_)[lid];
           // analogously for remaining directions
-          lid = discret_->DofRowMap()->LID(dofs[1]);
+          lid = discret_->dof_row_map()->LID(dofs[1]);
           (*local_u2)[pos] = (*velnp_)[lid];
-          lid = discret_->DofRowMap()->LID(dofs[2]);
+          lid = discret_->dof_row_map()->LID(dofs[2]);
           (*local_u3)[pos] = (*velnp_)[lid];
         }
         else
         {
           (*local_u1)[pos] = (*velaf_)[lid];
           // analogously for remaining directions
-          lid = discret_->DofRowMap()->LID(dofs[1]);
+          lid = discret_->dof_row_map()->LID(dofs[1]);
           (*local_u2)[pos] = (*velaf_)[lid];
-          lid = discret_->DofRowMap()->LID(dofs[2]);
+          lid = discret_->dof_row_map()->LID(dofs[2]);
           (*local_u3)[pos] = (*velaf_)[lid];
         }
       }
@@ -925,24 +925,24 @@ namespace FLD
         const int pos = loc[2] + nummodes_ * (loc[1] + nummodes_ * loc[0]);
 
         // get local dof id corresponding to the global id
-        int lid = discret_->DofRowMap()->LID(dofs[0]);
+        int lid = discret_->dof_row_map()->LID(dofs[0]);
         // set value
         if (not is_genalpha_)
         {
           (*local_u1)[pos] = (*velnp_)[lid];
           // analogously for remaining directions
-          lid = discret_->DofRowMap()->LID(dofs[1]);
+          lid = discret_->dof_row_map()->LID(dofs[1]);
           (*local_u2)[pos] = (*velnp_)[lid];
-          lid = discret_->DofRowMap()->LID(dofs[2]);
+          lid = discret_->dof_row_map()->LID(dofs[2]);
           (*local_u3)[pos] = (*velnp_)[lid];
         }
         else
         {
           (*local_u1)[pos] = (*velaf_)[lid];
           // analogously for remaining directions
-          lid = discret_->DofRowMap()->LID(dofs[1]);
+          lid = discret_->dof_row_map()->LID(dofs[1]);
           (*local_u2)[pos] = (*velaf_)[lid];
-          lid = discret_->DofRowMap()->LID(dofs[2]);
+          lid = discret_->dof_row_map()->LID(dofs[2]);
           (*local_u3)[pos] = (*velaf_)[lid];
         }
       }
@@ -1096,13 +1096,13 @@ namespace FLD
         const int pos = loc[2] + nummodes_ * (loc[1] + nummodes_ * loc[0]);
 
         // get local dof id corresponding to the global id
-        int lid = discret_->DofRowMap()->LID(dofs[0]);
+        int lid = discret_->dof_row_map()->LID(dofs[0]);
         // set value
         int err = forcing_->ReplaceMyValues(1, &((*f1)[pos]), &lid);
         // analogous for remaining directions
-        lid = discret_->DofRowMap()->LID(dofs[1]);
+        lid = discret_->dof_row_map()->LID(dofs[1]);
         err = forcing_->ReplaceMyValues(1, &((*f2)[pos]), &lid);
-        lid = discret_->DofRowMap()->LID(dofs[2]);
+        lid = discret_->dof_row_map()->LID(dofs[2]);
         err = forcing_->ReplaceMyValues(1, &((*f3)[pos]), &lid);
         if (err > 0) FOUR_C_THROW("Could not set forcing!");
       }
@@ -1296,7 +1296,7 @@ namespace FLD
       if (forcing_type_ == INPAR::FLUID::linear_compensation_from_intermediate_spectrum or
           (forcing_type_ == INPAR::FLUID::fixed_power_input and (not is_genalpha_)))
       {
-        discret_->SetState(1, "intvelnp", velnp_);
+        discret_->set_state(1, "intvelnp", velnp_);
       }
       else
         FOUR_C_THROW(
@@ -1742,7 +1742,7 @@ namespace FLD
       Teuchos::ParameterList params;
       params.set<int>("action", FLD::interpolate_hdg_for_hit);
 
-      discret_->SetState(1, "intvelnp", velnp_);
+      discret_->set_state(1, "intvelnp", velnp_);
 
       std::vector<int> dummy;
       CORE::LINALG::SerialDenseMatrix dummyMat;
@@ -1915,13 +1915,13 @@ namespace FLD
       // this is a dummy, forcing_ should be zero is written in the first components of interpolVec
       discret_->ClearState(true);
 
-      discret_->SetState(1, "intvelnp", velnp_);
+      discret_->set_state(1, "intvelnp", velnp_);
 
       // this is the real value
-      discret_->SetState(1, "forcing", forcing_);
+      discret_->set_state(1, "forcing", forcing_);
 
       // for 2nd evaluate
-      const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
+      const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
       CORE::LINALG::SerialDenseVector elevec1, elevec3;
       CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
       Teuchos::ParameterList initParams;
@@ -2062,7 +2062,7 @@ namespace FLD
 
     eleparams.set<double>("length", length_);
 
-    discret_->SetState("velnp", velnp_);
+    discret_->set_state("velnp", velnp_);
 
     const Epetra_Map* elementrowmap = discret_->ElementRowMap();
     Teuchos::RCP<Epetra_MultiVector> massflvec =

@@ -73,7 +73,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::GetMaterialPara
   // get parameters of secondary, thermodynamic electrolyte material
   Teuchos::RCP<const CORE::MAT::Material> material = ele->Material(1);
   materialtype_ = material->MaterialType();
-  if (materialtype_ == CORE::Materials::m_soret) mythermo::MatSoret(material);
+  if (materialtype_ == CORE::Materials::m_soret) mythermo::mat_soret(material);
 }  // DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::GetMaterialParams
 
 
@@ -106,16 +106,16 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
   if (materialtype_ == CORE::Materials::m_soret)
   {
     // extract variables and parameters
-    const double& concentration = VarManager()->Phinp(0);
-    const CORE::LINALG::Matrix<nsd_, 1>& gradtemp = VarManager()->GradTemp();
-    const double& kappa = mydiffcond::DiffManager()->GetCond();
-    const double& kappaderiv = mydiffcond::DiffManager()->GetConcDerivCond(0);
+    const double& concentration = var_manager()->Phinp(0);
+    const CORE::LINALG::Matrix<nsd_, 1>& gradtemp = var_manager()->GradTemp();
+    const double& kappa = mydiffcond::diff_manager()->GetCond();
+    const double& kappaderiv = mydiffcond::diff_manager()->GetConcDerivCond(0);
     const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
-    const double invffval = mydiffcond::DiffManager()->InvFVal(0) / faraday;
-    const double& invfval = mydiffcond::DiffManager()->InvFVal(0);
+    const double invffval = mydiffcond::diff_manager()->InvFVal(0) / faraday;
+    const double& invfval = mydiffcond::diff_manager()->InvFVal(0);
     const double& R = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
-    const double& t = mydiffcond::DiffManager()->GetTransNum(0);
-    const double& tderiv = mydiffcond::DiffManager()->GetDerivTransNum(0, 0);
+    const double& t = mydiffcond::diff_manager()->GetTransNum(0);
+    const double& tderiv = mydiffcond::diff_manager()->GetDerivTransNum(0, 0);
 
     // matrix and vector contributions arising from additional, thermodynamic term in expression for
     // current density
@@ -156,13 +156,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
     }
 
     // matrix and vector contributions arising from additional, thermodynamic term for Soret effect
-    mythermo::CalcMatSoret(emat, timefacfac, VarManager()->Phinp(0),
-        mydiffcond::DiffManager()->GetIsotropicDiff(0),
-        mydiffcond::DiffManager()->get_conc_deriv_iso_diff_coef(0, 0), VarManager()->Temp(),
-        VarManager()->GradTemp(), my::funct_, my::derxy_);
-    mythermo::CalcRHSSoret(erhs, VarManager()->Phinp(0),
-        mydiffcond::DiffManager()->GetIsotropicDiff(0), rhsfac, VarManager()->Temp(),
-        VarManager()->GradTemp(), my::derxy_);
+    mythermo::CalcMatSoret(emat, timefacfac, var_manager()->Phinp(0),
+        mydiffcond::diff_manager()->GetIsotropicDiff(0),
+        mydiffcond::diff_manager()->get_conc_deriv_iso_diff_coef(0, 0), var_manager()->Temp(),
+        var_manager()->GradTemp(), my::funct_, my::derxy_);
+    mythermo::CalcRHSSoret(erhs, var_manager()->Phinp(0),
+        mydiffcond::diff_manager()->GetIsotropicDiff(0), rhsfac, var_manager()->Temp(),
+        var_manager()->GradTemp(), my::derxy_);
   }
 }
 
@@ -242,14 +242,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::sysmat_od_scatr
     if (materialtype_ == CORE::Materials::m_soret)
     {
       // extract variables and parameters
-      const double& concentration = VarManager()->Phinp(0);
-      const CORE::LINALG::Matrix<nsd_, 1>& gradconc = VarManager()->GradPhi(0);
+      const double& concentration = var_manager()->Phinp(0);
+      const CORE::LINALG::Matrix<nsd_, 1>& gradconc = var_manager()->GradPhi(0);
       const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
-      const double& invffval = mydiffcond::DiffManager()->InvFVal(0) / faraday;
-      const double& invfval = mydiffcond::DiffManager()->InvFVal(0);
-      const double& kappa = mydiffcond::DiffManager()->GetCond();
+      const double& invffval = mydiffcond::diff_manager()->InvFVal(0) / faraday;
+      const double& invfval = mydiffcond::diff_manager()->InvFVal(0);
+      const double& kappa = mydiffcond::diff_manager()->GetCond();
       const double& R = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
-      const double& t = mydiffcond::DiffManager()->GetTransNum(0);
+      const double& t = mydiffcond::diff_manager()->GetTransNum(0);
 
       // matrix contributions arising from additional, thermodynamic term in expression for current
       // density
@@ -289,17 +289,17 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::sysmat_od_scatr
 
       // provide element matrix with linearizations of Soret term in discrete scatra residuals
       // w.r.t. thermo dofs
-      mythermo::CalcMatSoretOD(emat, timefacfac, VarManager()->Phinp(0),
-          mydiffcond::DiffManager()->GetIsotropicDiff(0), VarManager()->Temp(),
-          VarManager()->GradTemp(), my::funct_, my::derxy_);
+      mythermo::CalcMatSoretOD(emat, timefacfac, var_manager()->Phinp(0),
+          mydiffcond::diff_manager()->GetIsotropicDiff(0), var_manager()->Temp(),
+          var_manager()->GradTemp(), my::funct_, my::derxy_);
     }
 
     // calculating the off diagonal for the temperature derivative of concentration and electric
     // potential
-    mythermo::CalcMatDiffThermoOD(emat, my::numdofpernode_, timefacfac, VarManager()->InvF(),
-        VarManager()->GradPhi(0), VarManager()->GradPot(),
-        myelectrode::DiffManager()->get_temp_deriv_iso_diff_coef(0, 0),
-        myelectrode::DiffManager()->GetTempDerivCond(0), my::funct_, my::derxy_, 1.0);
+    mythermo::CalcMatDiffThermoOD(emat, my::numdofpernode_, timefacfac, var_manager()->InvF(),
+        var_manager()->GradPhi(0), var_manager()->GradPot(),
+        myelectrode::diff_manager()->get_temp_deriv_iso_diff_coef(0, 0),
+        myelectrode::diff_manager()->GetTempDerivCond(0), my::funct_, my::derxy_, 1.0);
   }
 }
 
@@ -312,7 +312,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<
     distype>::set_internal_variables_for_mat_and_rhs()
 {
   // set internal variables for element evaluation
-  VarManager()->set_internal_variables(my::funct_, my::derxy_, mythermo::etempnp_, my::ephinp_,
+  var_manager()->set_internal_variables(my::funct_, my::derxy_, mythermo::etempnp_, my::ephinp_,
       my::ephin_, my::econvelnp_, my::ehist_);
 }
 

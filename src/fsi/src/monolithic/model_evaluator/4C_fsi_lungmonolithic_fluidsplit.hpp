@@ -45,10 +45,10 @@ namespace FSI
     void SetupSystem() override;
 
     /// setup composed system matrix from field solvers
-    void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
+    void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
 
     /// Extract initial guess from fields
-    void InitialGuess(Teuchos::RCP<Epetra_Vector> ig) override;
+    void initial_guess(Teuchos::RCP<Epetra_Vector> ig) override;
 
    protected:
     /// extract the three field vectors from a given composed vector
@@ -61,12 +61,12 @@ namespace FSI
       \param fx (o) fluid velocities and pressure
       \param ax (o) ale displacements
     */
-    void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+    void extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx,
         Teuchos::RCP<const Epetra_Vector>& ax) override;
 
     /// build block vector from field vectors
-    void SetupVector(Epetra_Vector& f,
+    void setup_vector(Epetra_Vector& f,
         Teuchos::RCP<const Epetra_Vector> sv,  ///< structure vector
         Teuchos::RCP<const Epetra_Vector> fv,  ///< fluid vector
         Teuchos::RCP<const Epetra_Vector> av,  ///< ale vector
@@ -91,13 +91,13 @@ namespace FSI
     void setup_dbc_map_extractor() override { FOUR_C_THROW("Not implemented, yet."); }
 
     /// setup RHS contributions based on single field residuals
-    void SetupRHSResidual(Epetra_Vector& f) override;
+    void setup_rhs_residual(Epetra_Vector& f) override;
 
     /// setup RHS contributions based on the Lagrange multiplier field
-    void SetupRHSLambda(Epetra_Vector& f) override;
+    void setup_rhs_lambda(Epetra_Vector& f) override;
 
     /// setup RHS contributions based on terms for first nonlinear iteration
-    void SetupRHSFirstiter(Epetra_Vector& f) override;
+    void setup_rhs_firstiter(Epetra_Vector& f) override;
 
     /// transformation of fluid matrix
     Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> fggtransform_;

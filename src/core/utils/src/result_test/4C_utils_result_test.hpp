@@ -65,7 +65,7 @@ namespace CORE::UTILS
      * @param[in] nerr        number of failed result tests
      * @param[in] test_count  number of result tests
      */
-    virtual void TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count);
+    virtual void test_node(INPUT::LineDefinition& res, int& nerr, int& test_count);
 
     /// perform special case test
     virtual void TestSpecial(

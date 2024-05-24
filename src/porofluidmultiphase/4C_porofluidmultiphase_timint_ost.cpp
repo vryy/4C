@@ -65,7 +65,7 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::set_time_for_neumann_evaluation(
 /*----------------------------------------------------------------------*
 | Print information about current time step to screen      vuong 08/16  |
 *-----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntOneStepTheta::PrintTimeStepInfo()
+void POROFLUIDMULTIPHASE::TimIntOneStepTheta::print_time_step_info()
 {
   if (myrank_ == 0)
   {
@@ -115,10 +115,10 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::add_neumann_to_residual()
  *---------------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::TimIntOneStepTheta::add_time_integration_specific_vectors()
 {
-  discret_->SetState("hist", hist_);
-  discret_->SetState("phinp_fluid", phinp_);
-  discret_->SetState("phin_fluid", phin_);
-  discret_->SetState("phidtnp", phidtnp_);
+  discret_->set_state("hist", hist_);
+  discret_->set_state("phinp_fluid", phinp_);
+  discret_->set_state("phin_fluid", phin_);
+  discret_->set_state("phidtnp", phidtnp_);
 }
 
 
@@ -160,7 +160,7 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::Update()
 /*----------------------------------------------------------------------*
  | write additional data required for restart               vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntOneStepTheta::OutputRestart()
+void POROFLUIDMULTIPHASE::TimIntOneStepTheta::output_restart()
 {
   // additional state vectors that are needed for One-Step-Theta restart
   output_->WriteVector("phidtn_fluid", phidtn_);
@@ -171,10 +171,10 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::OutputRestart()
 /*----------------------------------------------------------------------*
  |  read restart data                                       vuong 08/16 |
  -----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntOneStepTheta::ReadRestart(const int step)
+void POROFLUIDMULTIPHASE::TimIntOneStepTheta::read_restart(const int step)
 {
   // call base class
-  POROFLUIDMULTIPHASE::TimIntImpl::ReadRestart(step);
+  POROFLUIDMULTIPHASE::TimIntImpl::read_restart(step);
 
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
   reader = Teuchos::rcp(new IO::DiscretizationReader(

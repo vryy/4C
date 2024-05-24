@@ -34,7 +34,7 @@ STR::EXPLICIT::AdamsBashforth2::AdamsBashforth2()
  *----------------------------------------------------------------------------*/
 void STR::EXPLICIT::AdamsBashforth2::Setup()
 {
-  CheckInit();
+  check_init();
 
   // Call the Setup() of the abstract base class first.
   Generic::Setup();
@@ -67,23 +67,23 @@ void STR::EXPLICIT::AdamsBashforth2::Setup()
   set_initial_displacement(
       TimInt().GetDataSDyn().GetInitialDisp(), TimInt().GetDataSDyn().StartFuncNo());
 
-  // Has to be set before the PostSetup() routine is called!
+  // Has to be set before the post_setup() routine is called!
   issetup_ = true;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::AdamsBashforth2::PostSetup()
+void STR::EXPLICIT::AdamsBashforth2::post_setup()
 {
-  CheckInitSetup();
+  check_init_setup();
   equilibrate_initial_state();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::AdamsBashforth2::SetState(const Epetra_Vector& x)
+void STR::EXPLICIT::AdamsBashforth2::set_state(const Epetra_Vector& x)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   const double dt = (*GlobalState().GetDeltaTime())[0];
   const double dto = (*GlobalState().GetDeltaTime())[-1];
@@ -140,7 +140,7 @@ void STR::EXPLICIT::AdamsBashforth2::add_visco_mass_contributions(
 void STR::EXPLICIT::AdamsBashforth2::WriteRestart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
-  CheckInitSetup();
+  check_init_setup();
   // write dynamic forces
   iowriter.WriteVector("finert", finertian_ptr_);
   iowriter.WriteVector("fvisco", fviscon_ptr_);
@@ -150,13 +150,13 @@ void STR::EXPLICIT::AdamsBashforth2::WriteRestart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::AdamsBashforth2::ReadRestart(IO::DiscretizationReader& ioreader)
+void STR::EXPLICIT::AdamsBashforth2::read_restart(IO::DiscretizationReader& ioreader)
 {
-  CheckInitSetup();
+  check_init_setup();
   ioreader.ReadVector(finertian_ptr_, "finert");
   ioreader.ReadVector(fviscon_ptr_, "fvisco");
 
-  ModelEval().ReadRestart(ioreader);
+  ModelEval().read_restart(ioreader);
   update_constant_state_contributions();
 }
 
@@ -164,7 +164,7 @@ void STR::EXPLICIT::AdamsBashforth2::ReadRestart(IO::DiscretizationReader& iorea
  *----------------------------------------------------------------------------*/
 void STR::EXPLICIT::AdamsBashforth2::UpdateStepState()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // ---------------------------------------------------------------------------
   // dynamic effects

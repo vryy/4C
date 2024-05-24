@@ -33,14 +33,14 @@ FOUR_C_NAMESPACE_OPEN
 
 void STR::MODELEVALUATOR::Constraints::Setup()
 {
-  CheckInit();
+  check_init();
 
   constraint_stiff_ptr_ =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
 
   constraint_force_ptr_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMapView(), true));
 
-  SetSubModelTypes();
+  set_sub_model_types();
   create_sub_model_evaluators();
 
 
@@ -49,9 +49,9 @@ void STR::MODELEVALUATOR::Constraints::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::SetSubModelTypes()
+void STR::MODELEVALUATOR::Constraints::set_sub_model_types()
 {
-  CheckInit();
+  check_init();
 
   submodeltypes_ = std::set<enum INPAR::CONSTRAINTS::SubModelType>();
 
@@ -118,12 +118,12 @@ void STR::MODELEVALUATOR::Constraints::Reset(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Constraints::EvaluateForce()
+bool STR::MODELEVALUATOR::Constraints::evaluate_force()
 {
-  PreEvaluate();
+  pre_evaluate();
   for (auto& sme_iter : sub_model_vec_ptr_)
   {
-    sme_iter->EvaluateForceStiff(Teuchos::null, constraint_force_ptr_);
+    sme_iter->evaluate_force_stiff(Teuchos::null, constraint_force_ptr_);
   }
 
   return true;
@@ -131,14 +131,14 @@ bool STR::MODELEVALUATOR::Constraints::EvaluateForce()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Constraints::EvaluateStiff()
+bool STR::MODELEVALUATOR::Constraints::evaluate_stiff()
 {
-  PreEvaluate();
+  pre_evaluate();
 
   constraint_stiff_ptr_->UnComplete();
   for (auto& sme_iter : sub_model_vec_ptr_)
   {
-    sme_iter->EvaluateForceStiff(constraint_stiff_ptr_, Teuchos::null);
+    sme_iter->evaluate_force_stiff(constraint_stiff_ptr_, Teuchos::null);
   }
   if (not constraint_stiff_ptr_->Filled()) constraint_stiff_ptr_->Complete();
   return true;
@@ -146,14 +146,14 @@ bool STR::MODELEVALUATOR::Constraints::EvaluateStiff()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Constraints::EvaluateForceStiff()
+bool STR::MODELEVALUATOR::Constraints::evaluate_force_stiff()
 {
-  PreEvaluate();
+  pre_evaluate();
 
   constraint_stiff_ptr_->UnComplete();
   for (auto& sme_iter : sub_model_vec_ptr_)
   {
-    sme_iter->EvaluateForceStiff(constraint_stiff_ptr_, constraint_force_ptr_);
+    sme_iter->evaluate_force_stiff(constraint_stiff_ptr_, constraint_force_ptr_);
   }
   if (not constraint_stiff_ptr_->Filled()) constraint_stiff_ptr_->Complete();
 
@@ -161,7 +161,7 @@ bool STR::MODELEVALUATOR::Constraints::EvaluateForceStiff()
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::PreEvaluate()
+void STR::MODELEVALUATOR::Constraints::pre_evaluate()
 {
   for (auto& sme : sub_model_vec_ptr_)
   {
@@ -170,7 +170,7 @@ void STR::MODELEVALUATOR::Constraints::PreEvaluate()
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Constraints::AssembleForce(
+bool STR::MODELEVALUATOR::Constraints::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
   CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *constraint_force_ptr_);
@@ -180,7 +180,7 @@ bool STR::MODELEVALUATOR::Constraints::AssembleForce(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Constraints::AssembleJacobian(
+bool STR::MODELEVALUATOR::Constraints::assemble_jacobian(
     CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
@@ -200,7 +200,7 @@ void STR::MODELEVALUATOR::Constraints::WriteRestart(
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::ReadRestart(IO::DiscretizationReader& ioreader)
+void STR::MODELEVALUATOR::Constraints::read_restart(IO::DiscretizationReader& ioreader)
 {
   // There is nothing to read for now
 }
@@ -261,7 +261,7 @@ void STR::MODELEVALUATOR::Constraints::runtime_output_step_state() const {}
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Constraints::get_block_dof_row_map_ptr() const
 {
-  return GState().DofRowMap();
+  return GState().dof_row_map();
 }
 
 /*----------------------------------------------------------------------------*

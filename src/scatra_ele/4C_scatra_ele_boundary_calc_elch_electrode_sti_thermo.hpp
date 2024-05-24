@@ -127,7 +127,7 @@ namespace DRT
           ) override;
 
       //! evaluate factor F/RT
-      [[nodiscard]] double GetFRT() const override;
+      [[nodiscard]] double get_frt() const override;
 
       //! nodal temperature variables associated with time t_{n+1} or t_{n+alpha_f}
       CORE::LINALG::Matrix<nen_, 1> etempnp_;

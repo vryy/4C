@@ -143,7 +143,7 @@ void CORE::GEO::MESHFREE::BoundingBox::Init(
  *----------------------------------------------------------------------------*/
 void CORE::GEO::MESHFREE::BoundingBox::Setup()
 {
-  ThrowIfNotInit();
+  throw_if_not_init();
 
   // initialize bounding box discretization
   setup_bounding_box_discretization();
@@ -151,7 +151,7 @@ void CORE::GEO::MESHFREE::BoundingBox::Setup()
   if (boxdiscret_->GetCondition("Dirichlet") != nullptr) havedirichletbc_ = true;
 
   // displacement vector in row and col format
-  disn_row_ = CORE::LINALG::CreateVector(*boxdiscret_->DofRowMap(), true);
+  disn_row_ = CORE::LINALG::CreateVector(*boxdiscret_->dof_row_map(), true);
   disn_col_ = CORE::LINALG::CreateVector(*boxdiscret_->DofColMap(), true);
 
   // initialize bounding box runtime output
@@ -173,7 +173,7 @@ void CORE::GEO::MESHFREE::BoundingBox::setup_bounding_box_discretization()
   {
     boxdiscret_ = GLOBAL::Problem::Instance()->GetDis("boundingbox");
 
-    if (boxdiscret_->Filled() == false) boxdiscret_->FillComplete(true, false, false);
+    if (boxdiscret_->Filled() == false) boxdiscret_->fill_complete(true, false, false);
 
     // create fully overlapping boundingbox discret
     Teuchos::RCP<Epetra_Map> rednodecolmap =
@@ -185,7 +185,7 @@ void CORE::GEO::MESHFREE::BoundingBox::setup_bounding_box_discretization()
     boxdiscret_->ExportColumnNodes(*rednodecolmap);
     boxdiscret_->export_column_elements(*redelecolmap);
 
-    boxdiscret_->FillComplete(true, false, false);
+    boxdiscret_->fill_complete(true, false, false);
   }
 
   if (not GLOBAL::Problem::Instance()->DoesExistDis("boundingbox") or
@@ -217,14 +217,14 @@ void CORE::GEO::MESHFREE::BoundingBox::setup_bounding_box_discretization()
     // assign nodes to element
     Teuchos::RCP<DRT::Element> newele = CORE::COMM::Factory("VELE3", "Polynomial", 0, 0);
     newele->SetNodeIds(8, node_ids);
-    boxdiscret_->AddElement(newele);
+    boxdiscret_->add_element(newele);
   }
 
   // build independent dof set
   Teuchos::RCP<CORE::Dofsets::IndependentDofSet> independentdofset =
       Teuchos::rcp(new CORE::Dofsets::IndependentDofSet(true));
   boxdiscret_->ReplaceDofSet(independentdofset);
-  boxdiscret_->FillComplete();
+  boxdiscret_->fill_complete();
 }
 
 /*----------------------------------------------------------------------------*
@@ -233,7 +233,7 @@ void CORE::GEO::MESHFREE::BoundingBox::setup_bounding_box_discretization()
 bool CORE::GEO::MESHFREE::BoundingBox::Shift3D(
     CORE::LINALG::Matrix<3, 1>& d, CORE::LINALG::Matrix<3, 1> const X) const
 {
-  ThrowIfNotInit();
+  throw_if_not_init();
 
   bool shifted = false;
 
@@ -248,7 +248,7 @@ bool CORE::GEO::MESHFREE::BoundingBox::Shift3D(
 
   // shift
   for (int dim = 0; dim < 3; ++dim)
-    if (Shift1D(dim, x_ud(dim))) shifted = true;
+    if (shift1_d(dim, x_ud(dim))) shifted = true;
 
   x.Clear();
   d.Clear();
@@ -267,7 +267,7 @@ void CORE::GEO::MESHFREE::BoundingBox::get_xi_of_intersection3_d(
     CORE::LINALG::Matrix<3, 1> const& x1, CORE::LINALG::Matrix<3, 1> const& x2,
     CORE::LINALG::Matrix<3, 1>& xi) const
 {
-  ThrowIfNotInit();
+  throw_if_not_init();
   get_xi_of_intersection3_d(x1, x2, xi, box_);
 }
 /*----------------------------------------------------------------------------*
@@ -277,7 +277,7 @@ void CORE::GEO::MESHFREE::BoundingBox::get_xi_of_intersection3_d(
     CORE::LINALG::Matrix<3, 1> const& x1, CORE::LINALG::Matrix<3, 1> const& x2,
     CORE::LINALG::Matrix<3, 1>& xi, CORE::LINALG::Matrix<3, 2> const& box) const
 {
-  ThrowIfNotInit();
+  throw_if_not_init();
 
   // set default values
   for (unsigned int dim = 0; dim < 3; ++dim) xi(dim) = 2.0;
@@ -343,7 +343,7 @@ void CORE::GEO::MESHFREE::BoundingBox::get_xi_of_intersection3_d(
 void CORE::GEO::MESHFREE::BoundingBox::UnShift3D(CORE::LINALG::Matrix<3, 1>& d,
     CORE::LINALG::Matrix<3, 1> const& ref, CORE::LINALG::Matrix<3, 1> const X) const
 {
-  ThrowIfNotInit();
+  throw_if_not_init();
 
   if (not haveperiodicbc_) return;
 
@@ -355,7 +355,7 @@ void CORE::GEO::MESHFREE::BoundingBox::UnShift3D(CORE::LINALG::Matrix<3, 1>& d,
   transform_from_global_to_undeformed_bounding_box_system(x, x_ud);
   transform_from_global_to_undeformed_bounding_box_system(ref, ref_ud);
 
-  for (int dim = 0; dim < 3; ++dim) UnShift1D(dim, x_ud(dim), ref_ud(dim));
+  for (int dim = 0; dim < 3; ++dim) un_shift1_d(dim, x_ud(dim), ref_ud(dim));
 
   x.Clear();
   d.Clear();
@@ -372,7 +372,7 @@ bool CORE::GEO::MESHFREE::BoundingBox::check_if_shift_between_points(CORE::LINAL
     CORE::LINALG::Matrix<3, 1> const& ref, std::vector<bool>& shift_in_dim,
     CORE::LINALG::Matrix<3, 1> const X) const
 {
-  ThrowIfNotInit();
+  throw_if_not_init();
 
   shift_in_dim.clear();
   shift_in_dim.resize(3);
@@ -391,7 +391,7 @@ bool CORE::GEO::MESHFREE::BoundingBox::check_if_shift_between_points(CORE::LINAL
   transform_from_global_to_undeformed_bounding_box_system(x, x_ud);
   transform_from_global_to_undeformed_bounding_box_system(ref, ref_ud);
 
-  for (int dim = 0; dim < 3; ++dim) shift_in_dim[dim] = UnShift1D(dim, x_ud(dim), ref_ud(dim));
+  for (int dim = 0; dim < 3; ++dim) shift_in_dim[dim] = un_shift1_d(dim, x_ud(dim), ref_ud(dim));
 
   x.Clear();
   d.Clear();
@@ -406,9 +406,9 @@ bool CORE::GEO::MESHFREE::BoundingBox::check_if_shift_between_points(CORE::LINAL
 /*----------------------------------------------------------------------------*
  * (private)                                                                   |
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::MESHFREE::BoundingBox::Shift1D(int dim, double& d, double const& X) const
+bool CORE::GEO::MESHFREE::BoundingBox::shift1_d(int dim, double& d, double const& X) const
 {
-  ThrowIfNotInit();
+  throw_if_not_init();
 
   bool shifted = false;
 
@@ -433,10 +433,10 @@ bool CORE::GEO::MESHFREE::BoundingBox::Shift1D(int dim, double& d, double const&
 /*----------------------------------------------------------------------------*
  * (private)                                                                   |
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::MESHFREE::BoundingBox::UnShift1D(
+bool CORE::GEO::MESHFREE::BoundingBox::un_shift1_d(
     int dim, double& d, double const& ref, double const& X) const
 {
-  ThrowIfNotInit();
+  throw_if_not_init();
 
   bool unshifted = false;
 
@@ -460,7 +460,7 @@ bool CORE::GEO::MESHFREE::BoundingBox::UnShift1D(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::MESHFREE::BoundingBox::InBetween(
+bool CORE::GEO::MESHFREE::BoundingBox::in_between(
     double smin, double smax, double omin, double omax) const
 {
   double tol = CORE::GEO::TOL7;
@@ -471,7 +471,7 @@ bool CORE::GEO::MESHFREE::BoundingBox::InBetween(
  *----------------------------------------------------------------------------*/
 void CORE::GEO::MESHFREE::BoundingBox::RandomPosWithin(CORE::LINALG::Matrix<3, 1>& randpos) const
 {
-  ThrowIfNotInit();
+  throw_if_not_init();
 
   GLOBAL::Problem::Instance()->Random()->SetRandRange(0.0, 1.0);
   std::vector<double> randuni;
@@ -513,9 +513,9 @@ bool CORE::GEO::MESHFREE::BoundingBox::Within(BoundingBox const& b) const
 {
   FOUR_C_THROW("Check before use.");
   if (empty_) return true;
-  return (InBetween(box_min(0), box_max(0), b.box_min(0), b.box_max(0)) and
-          InBetween(box_min(1), box_max(1), b.box_min(1), b.box_max(1)) and
-          InBetween(box_min(2), box_max(2), b.box_min(2), b.box_max(2)));
+  return (in_between(box_min(0), box_max(0), b.box_min(0), b.box_max(0)) and
+          in_between(box_min(1), box_max(1), b.box_min(1), b.box_max(1)) and
+          in_between(box_min(2), box_max(2), b.box_min(2), b.box_max(2)));
 }
 
 /*----------------------------------------------------------------------------*
@@ -523,12 +523,12 @@ bool CORE::GEO::MESHFREE::BoundingBox::Within(BoundingBox const& b) const
 bool CORE::GEO::MESHFREE::BoundingBox::Within(
     const double* x, std::vector<bool>& within_in_dir) const
 {
-  ThrowIfNotInit();
+  throw_if_not_init();
 
   within_in_dir.resize(3);
-  within_in_dir[0] = InBetween(box_min(0), box_max(0), x[0], x[0]);
-  within_in_dir[1] = InBetween(box_min(1), box_max(1), x[1], x[1]);
-  within_in_dir[2] = InBetween(box_min(2), box_max(2), x[2], x[2]);
+  within_in_dir[0] = in_between(box_min(0), box_max(0), x[0], x[0]);
+  within_in_dir[1] = in_between(box_min(1), box_max(1), x[1], x[1]);
+  within_in_dir[2] = in_between(box_min(2), box_max(2), x[2], x[2]);
 
   return (within_in_dir[0] and within_in_dir[1] and within_in_dir[2]);
 }
@@ -538,12 +538,12 @@ bool CORE::GEO::MESHFREE::BoundingBox::Within(
 bool CORE::GEO::MESHFREE::BoundingBox::Within(
     CORE::LINALG::Matrix<3, 1> const& x, std::vector<bool>& within_in_dir) const
 {
-  ThrowIfNotInit();
+  throw_if_not_init();
 
   within_in_dir.resize(3);
-  within_in_dir[0] = InBetween(box_min(0), box_max(0), x(0), x(0));
-  within_in_dir[1] = InBetween(box_min(1), box_max(1), x(1), x(1));
-  within_in_dir[2] = InBetween(box_min(2), box_max(2), x(2), x(2));
+  within_in_dir[0] = in_between(box_min(0), box_max(0), x(0), x(0));
+  within_in_dir[1] = in_between(box_min(1), box_max(1), x(1), x(1));
+  within_in_dir[2] = in_between(box_min(2), box_max(2), x(2), x(2));
 
   return (within_in_dir[0] and within_in_dir[1] and within_in_dir[2]);
 }
@@ -553,12 +553,12 @@ bool CORE::GEO::MESHFREE::BoundingBox::Within(
 bool CORE::GEO::MESHFREE::BoundingBox::Within(CORE::LINALG::Matrix<3, 2> const& box,
     CORE::LINALG::Matrix<3, 1> const& x, std::vector<bool>& within_in_dir) const
 {
-  ThrowIfNotInit();
+  throw_if_not_init();
 
   within_in_dir.resize(3);
-  within_in_dir[0] = InBetween(box_min(box, 0), box_max(box, 0), x(0), x(0));
-  within_in_dir[1] = InBetween(box_min(box, 1), box_max(box, 1), x(1), x(1));
-  within_in_dir[2] = InBetween(box_min(box, 2), box_max(box, 2), x(2), x(2));
+  within_in_dir[0] = in_between(box_min(box, 0), box_max(box, 0), x(0), x(0));
+  within_in_dir[1] = in_between(box_min(box, 1), box_max(box, 1), x(1), x(1));
+  within_in_dir[2] = in_between(box_min(box, 2), box_max(box, 2), x(2), x(2));
 
   return (within_in_dir[0] and within_in_dir[1] and within_in_dir[2]);
 }
@@ -723,7 +723,7 @@ CORE::LINALG::Matrix<3, 1> CORE::GEO::MESHFREE::BoundingBox::undeformed_box_corn
 void CORE::GEO::MESHFREE::BoundingBox::transform_from_undeformed_bounding_box_system_to_global(
     CORE::LINALG::Matrix<3, 1> const& xi, CORE::LINALG::Matrix<3, 1>& x) const
 {
-  ThrowIfNotInit();
+  throw_if_not_init();
 
   // nothing to do in case periodic bounding is not deforming
   if (not havedirichletbc_)
@@ -787,7 +787,7 @@ void CORE::GEO::MESHFREE::BoundingBox::transform_from_undeformed_bounding_box_sy
 bool CORE::GEO::MESHFREE::BoundingBox::transform_from_global_to_undeformed_bounding_box_system(
     CORE::LINALG::Matrix<3, 1> const& x, CORE::LINALG::Matrix<3, 1>& xi) const
 {
-  ThrowIfNotInit();
+  throw_if_not_init();
 
   // nothing to do in case periodic bounding is not deforming
   if (not havedirichletbc_)
@@ -887,7 +887,7 @@ bool CORE::GEO::MESHFREE::BoundingBox::transform_from_global_to_undeformed_bound
 bool CORE::GEO::MESHFREE::BoundingBox::transform_from_global_to_undeformed_bounding_box_system(
     double const* x, double* xi) const
 {
-  ThrowIfNotInit();
+  throw_if_not_init();
   static CORE::LINALG::Matrix<3, 1> x_m(true), xi_m(true);
   for (int dim = 0; dim < 3; ++dim) x_m(dim) = x[dim];
 
@@ -907,7 +907,7 @@ void CORE::GEO::MESHFREE::BoundingBox::
         CORE::LINALG::Matrix<8, 1>& funct,  ///< to be filled with shape function values
         double r, double s, double t) const
 {
-  ThrowIfNotInit();
+  throw_if_not_init();
   // safety check
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   for (int dim = 0; dim < 3; ++dim)
@@ -942,7 +942,7 @@ void CORE::GEO::MESHFREE::BoundingBox::
         CORE::LINALG::Matrix<3, 8>& deriv1,  ///< to be filled with shape function derivative values
         double r, double s, double t) const
 {
-  ThrowIfNotInit();
+  throw_if_not_init();
   // safety check
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   for (int dim = 0; dim < 3; ++dim)

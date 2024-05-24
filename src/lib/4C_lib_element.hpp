@@ -254,7 +254,7 @@ namespace DRT
     /*!
     \brief Return number of nodes to this element
     */
-    virtual int NumNode() const { return nodeid_.size(); }
+    virtual int num_node() const { return nodeid_.size(); }
 
     /*!
      * \brief Return number of points forming the geometry of this element
@@ -303,9 +303,9 @@ namespace DRT
     \brief Get vector of ptrs to nodes
 
     \warning The pointers to the nodes are build in
-             DRT::Discretization::FillComplete. A standalone
+             DRT::Discretization::fill_complete. A standalone
              element that has not been added to a discretization
-             (or the discretization has not been called FillComplete)
+             (or the discretization has not been called fill_complete)
              does not have pointers to nodes. In this case, the method returns
              nullptr.
     \return Ptr to pointers to nodes of the element in local nodal ordering.
@@ -327,9 +327,9 @@ namespace DRT
     \brief Get const vector of ptrs to nodes
 
     \warning The pointers to the nodes are build in
-             DRT::Discretization::FillComplete. A standalone
+             DRT::Discretization::fill_complete. A standalone
              element that has not been added to a discretization
-             (or the discretization has not been called FillComplete)
+             (or the discretization has not been called fill_complete)
              does not have pointers to nodes. In this case, the method returns
              nullptr.
     \return Ptr to pointers to nodes of the element in local nodal ordering.
@@ -553,7 +553,7 @@ might become invalid after a redistribution of the discretization.
     components. HDG face elements overwrite this function and return the number of scalar
     dofs.
     */
-    virtual int NumDofPerComponent(const unsigned /* face */) const { return NumNode(); }
+    virtual int NumDofPerComponent(const unsigned /* face */) const { return num_node(); }
 
     /*!
     \brief Get the degree of an element
@@ -1089,7 +1089,7 @@ might become invalid after a redistribution of the discretization.
     /*!
     \brief Evaluate a Neumann boundary condition
 
-    An element derived from this class uses the EvaluateNeumann method to receive commands
+    An element derived from this class uses the evaluate_neumann method to receive commands
     and parameters from some control routine in params and evaluates a Neumann boundary condition
     given in condition
 
@@ -1105,9 +1105,9 @@ might become invalid after a redistribution of the discretization.
 
     \return 0 if successful, negative otherwise
     */
-    virtual int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        CORE::Conditions::Condition& condition, std::vector<int>& lm,
-        CORE::LINALG::SerialDenseVector& elevec1,
+    virtual int evaluate_neumann(Teuchos::ParameterList& params,
+        DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+        std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
         CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) = 0;
 
 
@@ -1122,7 +1122,7 @@ might become invalid after a redistribution of the discretization.
     \warning (public, but to be used by DRT::Discretization ONLY!)
 
     The method is used to build the variable node_ in this element. It is called from
-    DRT::Discretization in DRT::Discretization::FillComplete() to create the
+    DRT::Discretization in DRT::Discretization::fill_complete() to create the
     pointers from elements to nodes (and nodes to elements)
 
     \param nodes (in): A map of all nodes of a discretization
@@ -1138,7 +1138,7 @@ might become invalid after a redistribution of the discretization.
     to explicitly pass the nodal pointers to the element.
 
     \param nodes (in): Pointer to array of pointers to nodes. The array of pointers
-                       is implicitly expected to be of length NumNode() and contain pointers
+                       is implicitly expected to be of length num_node() and contain pointers
                        to nodes in the correct element local ordering scheme.
     */
     virtual bool BuildNodalPointers(DRT::Node** nodes);
@@ -1151,7 +1151,7 @@ might become invalid after a redistribution of the discretization.
     The method is used to build the element connectivity in this element. For standard elements this
     procedure returns true and does nothing. For interface-elements a connection is made between the
     interface and it's left and right element. It is called from DRT::Discretization in
-    DRT::Discretization::FillComplete() to create the pointers from elements to elements
+    DRT::Discretization::fill_complete() to create the pointers from elements to elements
     (next to the node-element and nodes-elements connectivity).
 
     \param elements (in): A map of all elements of a discretization
@@ -1259,7 +1259,7 @@ might become invalid after a redistribution of the discretization.
     //! \brief owner processor of this element
     int owner_;
 
-    //! \brief List of my nodal ids, length NumNode()
+    //! \brief List of my nodal ids, length num_node()
     std::vector<int> nodeid_;
 
     //! \brief Pointers to adjacent nodes in element local ordering
@@ -1291,7 +1291,7 @@ might become invalid after a redistribution of the discretization.
   elements (for interior faces). In the latter case, we distinguish between the so-called
   parent master element and the parent slave element. The parent master element is
   the element that shares the node numbering with the face element. Boundary elements
-  have only one parent and the methods ParentElement() and ParentMasterElement()
+  have only one parent and the methods parent_element() and ParentMasterElement()
   return the same element. The parent slave element is the element on the other
   side that usually has a different orientation of nodes.
 
@@ -1341,7 +1341,7 @@ might become invalid after a redistribution of the discretization.
 
     If no parent master has been assigned, -1 is returned (e.g. on non-face discretizations)
 
-    This Id is also available, if the calling processor is not owner of the ParentElement()!
+    This Id is also available, if the calling processor is not owner of the parent_element()!
     */
     int ParentElementId() const { return parent_id_; }
 
@@ -1351,7 +1351,7 @@ might become invalid after a redistribution of the discretization.
 
     If no parent master has been assigned, nullptr is returned (e.g. on non-face discretizations)
     */
-    DRT::Element* ParentElement() const { return parent_master_; }
+    DRT::Element* parent_element() const { return parent_master_; }
 
     /*!
     \brief Return the master element the face element is connected to

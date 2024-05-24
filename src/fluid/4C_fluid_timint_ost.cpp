@@ -62,7 +62,7 @@ void FLD::TimIntOneStepTheta::Init()
 /*----------------------------------------------------------------------*
 | Print information about current time step to screen          bk 11/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntOneStepTheta::PrintTimeStepInfo()
+void FLD::TimIntOneStepTheta::print_time_step_info()
 {
   if (myrank_ == 0)
   {
@@ -94,10 +94,10 @@ void FLD::TimIntOneStepTheta::set_old_part_of_righthandside()
 *-----------------------------------------------------------------------*/
 void FLD::TimIntOneStepTheta::SetStateTimInt()
 {
-  discret_->SetState("velaf", velnp_);
+  discret_->set_state("velaf", velnp_);
   if (params_->get<bool>("ost new"))
   {
-    if (alefluid_) discret_->SetState("gridvn", gridvn_);
+    if (alefluid_) discret_->set_state("gridvn", gridvn_);
   }
 }
 
@@ -146,7 +146,7 @@ void FLD::TimIntOneStepTheta::Sep_Multiply() { Sep_->Multiply(false, *velnp_, *f
 void FLD::TimIntOneStepTheta::OutputofFilteredVel(
     Teuchos::RCP<Epetra_Vector> outvec, Teuchos::RCP<Epetra_Vector> fsoutvec)
 {
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
   Teuchos::RCP<Epetra_Vector> row_finescaleveltmp;
   row_finescaleveltmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap, true));
 
@@ -227,8 +227,8 @@ void FLD::TimIntOneStepTheta::ApplyExternalForces(Teuchos::RCP<Epetra_MultiVecto
   if (step_ <= numstasteps_)
   {
     external_loadsn_ = Teuchos::rcp(new Epetra_Vector(*(*fext)(0)));
-    external_loadsnp_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
-    external_loads_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+    external_loadsnp_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
+    external_loads_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
   }
 
   if (external_loadsn_ == Teuchos::null)
@@ -264,18 +264,18 @@ void FLD::TimIntOneStepTheta::output_external_forces()
 /*----------------------------------------------------------------------*
  | read restart of external forces                           ghamm 12/14|
  *----------------------------------------------------------------------*/
-void FLD::TimIntOneStepTheta::ReadRestart(int step)
+void FLD::TimIntOneStepTheta::read_restart(int step)
 {
   // call base class
-  FLD::FluidImplicitTimeInt::ReadRestart(step);
+  FLD::FluidImplicitTimeInt::read_restart(step);
 
   IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
   // check whether external forces were written
   const int have_fexternal = reader.ReadInt("have_fexternal");
   if (have_fexternal != -1)
   {
-    external_loadsn_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
-    external_loadsnp_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+    external_loadsn_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
+    external_loadsnp_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
     if (step_ > numstasteps_ && params_->get<double>("theta") != 1.0)
     {
       reader.ReadVector(external_loadsn_, "fexternal_n");

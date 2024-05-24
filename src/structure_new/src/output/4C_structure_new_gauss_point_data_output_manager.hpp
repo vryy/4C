@@ -47,7 +47,7 @@ namespace STR
 
       void PrepareData(const Epetra_Map& node_col_map, const Epetra_Map& element_row_map);
 
-      void PostEvaluate();
+      void post_evaluate();
 
       /*!
        * \brief Distribute and collect all quantities to and from all other procs to ensure that all
@@ -119,9 +119,9 @@ namespace STR
 
       void broadcast_my_quantitites(const CORE::COMM::Exporter& exporter);
 
-      void PackMyQuantities(std::vector<char>& data) const;
+      void pack_my_quantities(std::vector<char>& data) const;
 
-      void UnpackQuantities(std::size_t pos, const std::vector<char>& data,
+      void unpack_quantities(std::size_t pos, const std::vector<char>& data,
           std::unordered_map<std::string, int>& quantities) const;
 
       void prepare_nodal_data_vectors(const Epetra_Map& node_col_map);

@@ -36,7 +36,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
 
   // decide whether a dof or an element based map is given
   bool dofmaptoreconstruct = false;
-  if (state.Map().PointSameAs(*dis.DofRowMap()))
+  if (state.Map().PointSameAs(*dis.dof_row_map()))
     dofmaptoreconstruct = true;
   else if (state.Map().PointSameAs(*dis.ElementRowMap()))
   {
@@ -102,7 +102,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
   // Set ALE displacements here
   if (dofmaptoreconstruct)
   {
-    dis.SetState(statename, Teuchos::rcpFromRef(state));
+    dis.set_state(statename, Teuchos::rcpFromRef(state));
   }
 
   const Epetra_Map* elementrowmap = dis.ElementRowMap();
@@ -336,7 +336,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
         for (int k = 0; k < numadjacentele; ++k)
         {
           const DRT::Node* const* adjacentnodes = adjacentele[k]->Nodes();
-          const int numnode = adjacentele[k]->NumNode();
+          const int numnode = adjacentele[k]->num_node();
           for (int n = 0; n < numnode; ++n)
           {
             // continue with next node in case the neighbor is also on the boundary
@@ -431,7 +431,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
         for (int k = 0; k < numadjacentele; ++k)
         {
           const DRT::Node* const* adjacentnodes = adjacentele[k]->Nodes();
-          for (int n = 0; n < adjacentele[k]->NumNode(); ++n)
+          for (int n = 0; n < adjacentele[k]->num_node(); ++n)
           {
             // continue with next node in case the neighbor is also on the boundary
             if (conds[0]->ContainsNode(adjacentnodes[n]->Id())) continue;

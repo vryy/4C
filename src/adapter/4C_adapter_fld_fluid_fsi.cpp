@@ -134,14 +134,14 @@ void ADAPTER::FluidFSI::Init()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> ADAPTER::FluidFSI::DofRowMap() { return DofRowMap(0); }
+Teuchos::RCP<const Epetra_Map> ADAPTER::FluidFSI::dof_row_map() { return dof_row_map(0); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> ADAPTER::FluidFSI::DofRowMap(unsigned nds)
+Teuchos::RCP<const Epetra_Map> ADAPTER::FluidFSI::dof_row_map(unsigned nds)
 {
-  const Epetra_Map* dofrowmap = dis_->DofRowMap(nds);
+  const Epetra_Map* dofrowmap = dis_->dof_row_map(nds);
   return Teuchos::rcp(dofrowmap, false);
 }
 
@@ -177,7 +177,7 @@ void ADAPTER::FluidFSI::Update()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel)
 {
-  const Epetra_Map* dofrowmap = Discretization()->DofRowMap();
+  const Epetra_Map* dofrowmap = Discretization()->dof_row_map();
   Teuchos::RCP<Epetra_Vector> relax = CORE::LINALG::CreateVector(*dofrowmap, true);
   Interface()->InsertFSICondVector(ivel, relax);
   fluidimpl_->linear_relaxation_solve(relax);
@@ -285,8 +285,8 @@ void ADAPTER::FluidFSI::ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> grid
  *----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int nds_master)
 {
-  meshmap_->Setup(
-      *dis_->DofRowMap(nds_master), mm, CORE::LINALG::SplitMap(*dis_->DofRowMap(nds_master), *mm));
+  meshmap_->Setup(*dis_->dof_row_map(nds_master), mm,
+      CORE::LINALG::SplitMap(*dis_->dof_row_map(nds_master), *mm));
 }
 
 /*----------------------------------------------------------------------*/
@@ -429,7 +429,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
 
   const int numofrowentries = 82;
   Teuchos::RCP<CORE::LINALG::SparseMatrix> B =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*DofRowMap(), numofrowentries, false));
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dof_row_map(), numofrowentries, false));
 
   // define element matrices and vectors
   CORE::LINALG::SerialDenseMatrix elematrix1;
@@ -439,7 +439,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
   CORE::LINALG::SerialDenseVector elevector3;
 
   Discretization()->ClearState();
-  Discretization()->SetState("dispnp", Dispnp());
+  Discretization()->set_state("dispnp", Dispnp());
 
   // loop over all fluid elements
   for (int lid = 0; lid < Discretization()->NumMyColElements(); lid++)
@@ -483,7 +483,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
     B->Assemble(1.0, rowid, colid);
   }
 
-  B->Complete(*domainmap, *DofRowMap());
+  B->Complete(*domainmap, *dof_row_map());
 
   // Compute the projection operator
   Teuchos::RCP<CORE::LINALG::SparseMatrix> BTB = CORE::LINALG::Multiply(*B, true, *B, false, true);
@@ -509,7 +509,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
   if (solver->Params().isSublist("ML Parameters"))
   {
     Teuchos::RCP<Epetra_MultiVector> pressure_nullspace =
-        Teuchos::rcp(new Epetra_MultiVector(*(dis_->DofRowMap()), 1));
+        Teuchos::rcp(new Epetra_MultiVector(*(dis_->dof_row_map()), 1));
     pressure_nullspace->PutScalar(1.0);
 
     solver->Params().sublist("ML Parameters").set("PDE equations", 1);
@@ -553,14 +553,14 @@ void ADAPTER::FluidFSI::CalculateError()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFSI::TimeStepAuxiliar()
+void ADAPTER::FluidFSI::time_step_auxiliar()
 {
   // current state
   Teuchos::RCP<const Epetra_Vector> veln = Teuchos::rcp(new Epetra_Vector(*Veln()));
   Teuchos::RCP<const Epetra_Vector> accn = Teuchos::rcp(new Epetra_Vector(*Accn()));
 
   // prepare vector for solution of auxiliary time step
-  locerrvelnp_ = Teuchos::rcp(new Epetra_Vector(*fluid_->DofRowMap(), true));
+  locerrvelnp_ = Teuchos::rcp(new Epetra_Vector(*fluid_->dof_row_map(), true));
 
   // ---------------------------------------------------------------------------
 
@@ -573,23 +573,23 @@ void ADAPTER::FluidFSI::TimeStepAuxiliar()
     }
     case INPAR::FSI::timada_fld_expleuler:
     {
-      ExplicitEuler(*veln, *accn, *locerrvelnp_);
+      explicit_euler(*veln, *accn, *locerrvelnp_);
 
       break;
     }
     case INPAR::FSI::timada_fld_adamsbashforth2:
     {
-      if (Step() >= 1)  // AdamsBashforth2 only if at least second time step
+      if (Step() >= 1)  // adams_bashforth2 only if at least second time step
       {
         // Acceleration from previous time step
         Teuchos::RCP<Epetra_Vector> accnm =
             Teuchos::rcp(new Epetra_Vector(*ExtractVelocityPart(Accnm())));
 
-        AdamsBashforth2(*veln, *accn, *accnm, *locerrvelnp_);
+        adams_bashforth2(*veln, *accn, *accnm, *locerrvelnp_);
       }
-      else  // ExplicitEuler as starting algorithm
+      else  // explicit_euler as starting algorithm
       {
-        ExplicitEuler(*veln, *accn, *locerrvelnp_);
+        explicit_euler(*veln, *accn, *locerrvelnp_);
       }
 
       break;
@@ -606,7 +606,7 @@ void ADAPTER::FluidFSI::TimeStepAuxiliar()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFSI::ExplicitEuler(
+void ADAPTER::FluidFSI::explicit_euler(
     const Epetra_Vector& veln, const Epetra_Vector& accn, Epetra_Vector& velnp) const
 {
   // Do a single explicit Euler step
@@ -617,7 +617,7 @@ void ADAPTER::FluidFSI::ExplicitEuler(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFSI::AdamsBashforth2(const Epetra_Vector& veln, const Epetra_Vector& accn,
+void ADAPTER::FluidFSI::adams_bashforth2(const Epetra_Vector& veln, const Epetra_Vector& accn,
     const Epetra_Vector& accnm, Epetra_Vector& velnp) const
 {
   // time step sizes of current and previous time step
@@ -672,10 +672,10 @@ void ADAPTER::FluidFSI::IndicateErrorNorms(double& err, double& errcond, double&
 
   // calculate L2-norms of different subsets of temporal discretization error vector
   // (neglect Dirichlet and pressure DOFs for length scaling)
-  err = CalculateErrorNorm(*locerrvelnp_,
+  err = calculate_error_norm(*locerrvelnp_,
       GetDBCMapExtractor()->CondMap()->NumGlobalElements() + PressureRowMap()->NumGlobalElements());
-  errcond = CalculateErrorNorm(*errorcond, numfsidbcdofs_);
-  errother = CalculateErrorNorm(
+  errcond = calculate_error_norm(*errorcond, numfsidbcdofs_);
+  errother = calculate_error_norm(
       *errorother, PressureRowMap()->NumGlobalElements() +
                        (GetDBCMapExtractor()->CondMap()->NumGlobalElements() - numfsidbcdofs_));
 
@@ -701,7 +701,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::calculate_wall_shear_stresses()
   // Since the WSS Manager cannot be initialized in the FluidImplicitTimeInt::Init()
   // it is not so sure if the WSSManager is jet initialized. So let's be safe here..
   if (stressmanager == Teuchos::null) FOUR_C_THROW("Call of StressManager failed!");
-  if (not stressmanager->IsInit()) FOUR_C_THROW("StressManager has not been initialized jet!");
+  if (not stressmanager->is_init()) FOUR_C_THROW("StressManager has not been initialized jet!");
 
   // Call StressManager to calculate WSS from residual
   Teuchos::RCP<Epetra_Vector> wss = stressmanager->get_wall_shear_stresses(trueresidual, dt);
@@ -711,7 +711,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::calculate_wall_shear_stresses()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double ADAPTER::FluidFSI::CalculateErrorNorm(const Epetra_Vector& vec, const int numneglect) const
+double ADAPTER::FluidFSI::calculate_error_norm(const Epetra_Vector& vec, const int numneglect) const
 {
   double norm = 1.0e+12;
 
@@ -804,7 +804,7 @@ std::string ADAPTER::FluidFSI::GetTimAdaMethodName() const
     }
     case INPAR::FSI::timada_fld_adamsbashforth2:
     {
-      return "AdamsBashfort2";
+      return "AdamsBashforth2";
       break;
     }
     default:

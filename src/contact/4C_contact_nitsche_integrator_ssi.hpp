@@ -145,7 +145,7 @@ namespace CONTACT
      * @param[in] master_xi       master side Gauss point coordinates
      */
     template <int dim>
-    void GPTSForces(MORTAR::Element& slave_ele, MORTAR::Element& master_ele,
+    void gpts_forces(MORTAR::Element& slave_ele, MORTAR::Element& master_ele,
         const CORE::LINALG::SerialDenseVector& slave_shape,
         const CORE::LINALG::SerialDenseMatrix& slave_shape_deriv,
         const std::vector<CORE::GEN::Pairedvector<int, double>>& d_slave_xi_dd,
@@ -238,7 +238,7 @@ namespace CONTACT
      * @param[in] d_test_val_ds  derivative of test_val w.r.t. scalar
      */
     template <int dim>
-    void IntegrateScaTraTest(double fac, MORTAR::Element& ele,
+    void integrate_sca_tra_test(double fac, MORTAR::Element& ele,
         const CORE::LINALG::SerialDenseVector& shape_func,
         const CORE::LINALG::SerialDenseMatrix& shape_deriv,
         const std::vector<CORE::GEN::Pairedvector<int, double>>& d_xi_dd, double jac,

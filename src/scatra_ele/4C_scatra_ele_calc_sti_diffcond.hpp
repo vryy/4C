@@ -121,7 +121,7 @@ namespace DRT
 
       //! provide element matrix with linearizations of Joule's heat term in discrete thermo
       //! residuals w.r.t. scatra dofs
-      void CalcMatJouleSolidOD(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+      void calc_mat_joule_solid_od(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
           const double& timefacfac  //!< domain integration factor times time integration factor
       );
 
@@ -154,14 +154,15 @@ namespace DRT
           ) override;
 
       //! evaluate Soret material
-      void MatSoret(const Teuchos::RCP<const CORE::MAT::Material> material,  //!< Soret material
+      void mat_soret(const Teuchos::RCP<const CORE::MAT::Material> material,  //!< Soret material
           double& densn,   //!< density at time t_(n)
           double& densnp,  //!< density at time t_(n+1) or t_(n+alpha_F)
           double& densam   //!< density at time t_(n+alpha_M)
       );
 
-      void MatFourier(const Teuchos::RCP<const CORE::MAT::Material> material,  //!< Fourier material
-          double& densn,   //!< density at time t_(n)
+      void mat_fourier(
+          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< Fourier material
+          double& densn,                                           //!< density at time t_(n)
           double& densnp,  //!< density at time t_(n+1) or t_(n+alpha_F)
           double& densam   //!< density at time t_(n+alpha_M)
       );
@@ -170,13 +171,13 @@ namespace DRT
       void set_internal_variables_for_mat_and_rhs() override;
 
       //! get thermo diffusion manager
-      Teuchos::RCP<ScaTraEleDiffManagerSTIThermo> DiffManager()
+      Teuchos::RCP<ScaTraEleDiffManagerSTIThermo> diff_manager()
       {
         return Teuchos::rcp_static_cast<ScaTraEleDiffManagerSTIThermo>(my::diffmanager_);
       };
 
       //! get internal variable manager for heat transfer within electrochemical substances
-      Teuchos::RCP<ScaTraEleInternalVariableManagerSTIElch<nsd_, nen_>> VarManager()
+      Teuchos::RCP<ScaTraEleInternalVariableManagerSTIElch<nsd_, nen_>> var_manager()
       {
         return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerSTIElch<nsd_, nen_>>(
             my::scatravarmanager_);

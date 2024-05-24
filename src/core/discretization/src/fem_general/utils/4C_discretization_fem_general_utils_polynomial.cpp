@@ -588,7 +588,7 @@ namespace CORE::FE
 
 
   template <>
-  void LagrangeBasisTet<2>::FillFeketePoints(const unsigned int degree)
+  void LagrangeBasisTet<2>::fill_fekete_points(const unsigned int degree)
   {
     fekete_points_.shape(2, Size(degree));
 
@@ -620,7 +620,7 @@ namespace CORE::FE
 
 
   template <>
-  void LagrangeBasisTet<3>::FillFeketePoints(const unsigned int degree)
+  void LagrangeBasisTet<3>::fill_fekete_points(const unsigned int degree)
   {
     fekete_points_.shape(3, Size(degree));
     unsigned int c = 0;
@@ -658,7 +658,7 @@ namespace CORE::FE
 
 
   template <int nsd_>
-  void CORE::FE::LagrangeBasisTet<nsd_>::FillFeketePoints(const unsigned int)
+  void CORE::FE::LagrangeBasisTet<nsd_>::fill_fekete_points(const unsigned int)
   {
     FOUR_C_THROW("Not implemented for dim = %d", nsd_);
   }

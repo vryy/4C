@@ -52,7 +52,7 @@ void SCATRA::TimIntCardiacMonodomain::Setup()
   // get a vector layout from the discretization to construct matching
   // vectors and matrices: local <-> global dof numbering
   // -------------------------------------------------------------------
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // Activation time at time n+1
   activation_time_np_ = CORE::LINALG::CreateVector(*dofrowmap, true);
@@ -81,10 +81,10 @@ void SCATRA::TimIntCardiacMonodomain::Setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomain::OutputState()
+void SCATRA::TimIntCardiacMonodomain::output_state()
 {
   // Call function from base class
-  SCATRA::ScaTraTimIntImpl::OutputState();
+  SCATRA::ScaTraTimIntImpl::output_state();
 
   // electrophysiology
 
@@ -144,7 +144,7 @@ void SCATRA::TimIntCardiacMonodomain::OutputState()
           material_ionic_currents_np_component_, IO::elementvector);
     }
   }
-}  // TimIntCardiacMonodomain::OutputState
+}  // TimIntCardiacMonodomain::output_state
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -160,7 +160,7 @@ void SCATRA::TimIntCardiacMonodomain::element_material_time_update()
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("phinp", phinp_);
+  discret_->set_state("phinp", phinp_);
 
   // go to elements
   discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);

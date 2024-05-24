@@ -62,14 +62,14 @@ void ADAPTER::StructureFSITimIntAda::IndicateErrorNorms(double& err, double& err
   StrAda()->evaluate_local_error_dis();
 
   // Indicate has to be done by the FSI algorithm since it depends on the interface
-  IndicateErrors(err, errcond, errother, errinf, errinfcond, errinfother);
+  indicate_errors(err, errcond, errother, errinf, errinfcond, errinfother);
 
   return;
 }
 
 /*----------------------------------------------------------------------------*/
 /* Indicate local discretization error */
-void ADAPTER::StructureFSITimIntAda::IndicateErrors(double& err, double& errcond, double& errother,
+void ADAPTER::StructureFSITimIntAda::indicate_errors(double& err, double& errcond, double& errother,
     double& errinf, double& errinfcond, double& errinfother)
 {
   // vector with local discretization error for each DOF
@@ -86,27 +86,27 @@ void ADAPTER::StructureFSITimIntAda::IndicateErrors(double& err, double& errcond
       Teuchos::rcp(new Epetra_Vector(*interface_->ExtractFSICondVector(error)));
 
   // calculate L2-norms of different subsets of local discretization error vector
-  err = STR::CalculateVectorNorm(errnorm_, error, numdbcdofs_);
-  errcond = STR::CalculateVectorNorm(errnorm_, errorcond, numdbcfsidofs_);
-  errother = STR::CalculateVectorNorm(errnorm_, errorother, numdbcinnerdofs_);
+  err = STR::calculate_vector_norm(errnorm_, error, numdbcdofs_);
+  errcond = STR::calculate_vector_norm(errnorm_, errorcond, numdbcfsidofs_);
+  errother = STR::calculate_vector_norm(errnorm_, errorother, numdbcinnerdofs_);
 
   // calculate L-inf-norms of different subsets of local discretization error vector
-  errinf = STR::CalculateVectorNorm(INPAR::STR::norm_inf, error);
-  errinfcond = STR::CalculateVectorNorm(INPAR::STR::norm_inf, errorcond);
-  errinfother = STR::CalculateVectorNorm(INPAR::STR::norm_inf, errorother);
+  errinf = STR::calculate_vector_norm(INPAR::STR::norm_inf, error);
+  errinfcond = STR::calculate_vector_norm(INPAR::STR::norm_inf, errorcond);
+  errinfother = STR::calculate_vector_norm(INPAR::STR::norm_inf, errorother);
 
   return;
 }
 
 /*----------------------------------------------------------------------------*/
 /* Do a single step with auxiliary time integration scheme */
-void ADAPTER::StructureFSITimIntAda::TimeStepAuxiliar() { StrAda()->integrate_step_auxiliar(); }
+void ADAPTER::StructureFSITimIntAda::time_step_auxiliar() { StrAda()->integrate_step_auxiliar(); }
 
 /*----------------------------------------------------------------------------*/
 /* Calculate time step size suggestion */
-double ADAPTER::StructureFSITimIntAda::CalculateDt(const double norm)
+double ADAPTER::StructureFSITimIntAda::calculate_dt(const double norm)
 {
-  return StrAda()->CalculateDt(norm);
+  return StrAda()->calculate_dt(norm);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -119,7 +119,7 @@ double ADAPTER::StructureFSITimIntAda::Time() const { return StrAda()->Time(); }
 
 /*----------------------------------------------------------------------------*/
 /* Set new time step size */
-void ADAPTER::StructureFSITimIntAda::SetDt(const double dtnew) { StrAda()->SetDt(dtnew); }
+void ADAPTER::StructureFSITimIntAda::set_dt(const double dtnew) { StrAda()->set_dt(dtnew); }
 
 /*----------------------------------------------------------------------------*/
 /* Update step size */
@@ -130,6 +130,6 @@ void ADAPTER::StructureFSITimIntAda::UpdateStepSize(const double dtnew)
 
 /*----------------------------------------------------------------------------*/
 /*  Reset certain quantities to prepare repetition of current time step */
-void ADAPTER::StructureFSITimIntAda::ResetStep() { StrAda()->ResetStep(); }
+void ADAPTER::StructureFSITimIntAda::reset_step() { StrAda()->reset_step(); }
 
 FOUR_C_NAMESPACE_CLOSE

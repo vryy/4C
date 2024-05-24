@@ -97,7 +97,7 @@ void DRT::Discretization::compute_null_space_if_necessary(
   // or want to recompute it anyway
   // -> compute nullspace
   // do the usual tests
-  if (!Filled()) FOUR_C_THROW("FillComplete was not called on discretization");
+  if (!Filled()) FOUR_C_THROW("fill_complete was not called on discretization");
   if (!HaveDofs()) FOUR_C_THROW("Discretization has no dofs assigned");
 
   // compute solver parameters and set them into list
@@ -105,7 +105,7 @@ void DRT::Discretization::compute_null_space_if_necessary(
 }
 
 /*----------------------------------------------------------------------*
- |  SetState surrogate for node based vectors                  (public) |
+ |  set_state surrogate for node based vectors                  (public) |
  |                                                            gjb 06/09 |
  *----------------------------------------------------------------------*/
 void DRT::Discretization::add_multi_vector_to_parameter_list(
@@ -113,7 +113,7 @@ void DRT::Discretization::add_multi_vector_to_parameter_list(
 {
   // provide data in node-based multi-vector for usage on element level
   // -> export to column map is necessary for parallel evaluation
-  // SetState cannot be used since this multi-vector is nodebased and not dofbased!
+  // set_state cannot be used since this multi-vector is nodebased and not dofbased!
   if (vec != Teuchos::null)
   {
     const Epetra_Map* nodecolmap = NodeColMap();

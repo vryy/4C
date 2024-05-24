@@ -77,7 +77,7 @@ POROELASTSCATRA::PoroScatraBase::PoroScatraBase(
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
   Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("porofluid");
   Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
-  SetupCoupling(structdis, fluiddis, scatradis);
+  setup_coupling(structdis, fluiddis, scatradis);
   // Create the two uncoupled subproblems.
   // 1. poro problem
   poro_ = POROELAST::UTILS::CreatePoroAlgorithm(
@@ -115,7 +115,7 @@ void POROELASTSCATRA::PoroScatraBase::TestResults(const Epetra_Comm& comm)
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   problem->AddFieldTest(poro_->StructureField()->CreateFieldTest());
-  problem->AddFieldTest(poro_->FluidField()->CreateFieldTest());
+  problem->AddFieldTest(poro_->fluid_field()->CreateFieldTest());
   problem->AddFieldTest(scatra_->create_sca_tra_field_test());
   problem->TestAll(comm);
 }
@@ -125,8 +125,8 @@ void POROELASTSCATRA::PoroScatraBase::TestResults(const Epetra_Comm& comm)
  *----------------------------------------------------------------------*/
 void POROELASTSCATRA::PoroScatraBase::SetPoroSolution()
 {
-  SetMeshDisp();
-  SetVelocityFields();
+  set_mesh_disp();
+  set_velocity_fields();
 }
 
 /*----------------------------------------------------------------------*
@@ -158,32 +158,32 @@ void POROELASTSCATRA::PoroScatraBase::SetScatraSolution()
   }
 
   // porous structure
-  poro_->StructureField()->Discretization()->SetState(2, "scalar", phinp_s);
-  poro_->StructureField()->Discretization()->SetState(2, "scalarn", phin_s);
+  poro_->StructureField()->Discretization()->set_state(2, "scalar", phinp_s);
+  poro_->StructureField()->Discretization()->set_state(2, "scalarn", phin_s);
 
   // porous fluid
-  poro_->FluidField()->SetIterScalarFields(phinp_f, phin_f, phidtnp,
+  poro_->fluid_field()->SetIterScalarFields(phinp_f, phin_f, phidtnp,
       // scatra_->ScaTraField()->Discretization()
-      poro_->FluidField()->Discretization(), 2);
+      poro_->fluid_field()->Discretization(), 2);
 }
 
 /*----------------------------------------------------------------------*
  |                                                         vuong 05/13  |
  *----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraBase::SetVelocityFields()
+void POROELASTSCATRA::PoroScatraBase::set_velocity_fields()
 {
   Teuchos::RCP<const Epetra_Vector> convel = Teuchos::null;
   Teuchos::RCP<const Epetra_Vector> velnp = Teuchos::null;
 
   if (matchinggrid_)
   {
-    convel = poro_->FluidField()->ConvectiveVel();
-    velnp = poro_->FluidField()->Velnp();
+    convel = poro_->fluid_field()->ConvectiveVel();
+    velnp = poro_->fluid_field()->Velnp();
   }
   else
   {
-    convel = volcoupl_fluidscatra_->apply_vector_mapping21(poro_->FluidField()->ConvectiveVel());
-    velnp = volcoupl_fluidscatra_->apply_vector_mapping21(poro_->FluidField()->Velnp());
+    convel = volcoupl_fluidscatra_->apply_vector_mapping21(poro_->fluid_field()->ConvectiveVel());
+    velnp = volcoupl_fluidscatra_->apply_vector_mapping21(poro_->fluid_field()->Velnp());
   }
 
   scatra_->ScaTraField()->SetVelocityField(convel,  // convective vel.
@@ -197,17 +197,17 @@ void POROELASTSCATRA::PoroScatraBase::SetVelocityFields()
 /*----------------------------------------------------------------------*
  |                                                         vuong 05/13  |
  *----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraBase::SetMeshDisp()
+void POROELASTSCATRA::PoroScatraBase::set_mesh_disp()
 {
   Teuchos::RCP<const Epetra_Vector> dispnp = Teuchos::null;
 
   if (matchinggrid_)
   {
-    dispnp = poro_->FluidField()->Dispnp();
+    dispnp = poro_->fluid_field()->Dispnp();
   }
   else
   {
-    dispnp = volcoupl_fluidscatra_->apply_vector_mapping21(FluidField()->Dispnp());
+    dispnp = volcoupl_fluidscatra_->apply_vector_mapping21(fluid_field()->Dispnp());
   }
 
   scatra_->ScaTraField()->ApplyMeshMovement(dispnp);
@@ -223,20 +223,20 @@ void POROELASTSCATRA::PoroScatraBase::SetMeshDisp()
     sdispnp = volcoupl_structurescatra_->apply_vector_mapping21(StructureField()->Dispnp());
   }
 
-  scatra_->ScaTraField()->Discretization()->SetState(1, "displacement", sdispnp);
+  scatra_->ScaTraField()->Discretization()->set_state(1, "displacement", sdispnp);
 }
 
 /*----------------------------------------------------------------------*
  |                                                         vuong 05/13  |
  *----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraBase::ReplaceDofSets(Teuchos::RCP<DRT::Discretization> structdis,
+void POROELASTSCATRA::PoroScatraBase::replace_dof_sets(Teuchos::RCP<DRT::Discretization> structdis,
     Teuchos::RCP<DRT::Discretization> fluiddis, Teuchos::RCP<DRT::Discretization> scatradis)
 {
   if (matchinggrid_)
   {
     // the problem is two way coupled, thus each discretization must know the other discretization
 
-    if (PoroField()->HasSubmeshes())
+    if (poro_field()->HasSubmeshes())
     {
       Teuchos::RCP<CORE::Dofsets::DofSetGIDBasedWrapper> structsubdofset = Teuchos::rcp(
           new CORE::Dofsets::DofSetGIDBasedWrapper(structdis, structdis->GetDofSetProxy()));
@@ -265,9 +265,9 @@ void POROELASTSCATRA::PoroScatraBase::ReplaceDofSets(Teuchos::RCP<DRT::Discretiz
       fluiddis->ReplaceDofSet(2, scatradofset);
     }
 
-    fluiddis->FillComplete();
-    scatradis->FillComplete();
-    structdis->FillComplete();
+    fluiddis->fill_complete();
+    scatradis->fill_complete();
+    structdis->fill_complete();
   }
   else
   {
@@ -278,7 +278,7 @@ void POROELASTSCATRA::PoroScatraBase::ReplaceDofSets(Teuchos::RCP<DRT::Discretiz
 /*----------------------------------------------------------------------*
  |                                                         vuong 05/13  |
  *----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraBase::SetupCoupling(Teuchos::RCP<DRT::Discretization> structdis,
+void POROELASTSCATRA::PoroScatraBase::setup_coupling(Teuchos::RCP<DRT::Discretization> structdis,
     Teuchos::RCP<DRT::Discretization> fluiddis, Teuchos::RCP<DRT::Discretization> scatradis)
 {
   if (not matchinggrid_)

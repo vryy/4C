@@ -27,8 +27,8 @@ namespace DRT
 namespace STR
 {
   /// Determine norm of force residual
-  double CalculateVectorNorm(const enum INPAR::STR::VectorNorm norm,  ///< type of norm to use
-      const Teuchos::RCP<Epetra_Vector> vect,                         ///< the vector of interest
+  double calculate_vector_norm(const enum INPAR::STR::VectorNorm norm,  ///< type of norm to use
+      const Teuchos::RCP<Epetra_Vector> vect,                           ///< the vector of interest
       const int numneglect =
           0  ///< number of DOFs that have to be neglected for possible length scaling
   );

@@ -62,7 +62,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Setup
     Teuchos::RCP<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
         output_params_ptr)
 {
-  CheckInit();
+  check_init();
 
   // Set beam to solid volume mesh tying output parameters.
   output_params_ptr_ = output_params_ptr;
@@ -156,10 +156,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Setup
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::WriteOutputRuntime(
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::write_output_runtime(
     const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // Get the time step and time for the output file. If output is desired at every iteration, the
   // values are padded. The runtime output is written when the time step is already set to the
@@ -176,7 +176,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
     write_output_runtime_iteration(
         const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_iteration) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (output_params_ptr_->get_output_every_iteration())
   {
@@ -265,7 +265,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
 /**
  * \brief Checks the init and setup status.
  */
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::CheckInitSetup() const
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::check_init_setup() const
 {
   if (!isinit_ or !issetup_) FOUR_C_THROW("Call Init() and Setup() first!");
 }
@@ -273,7 +273,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Check
 /**
  * \brief Checks the init status.
  */
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::CheckInit() const
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::check_init() const
 {
   if (!isinit_) FOUR_C_THROW("Init() has not been called, yet!");
 }

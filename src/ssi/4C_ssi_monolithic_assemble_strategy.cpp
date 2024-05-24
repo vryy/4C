@@ -126,7 +126,7 @@ void SSI::AssembleStrategyBlockBlock::assemble_structure_structure(
 {
   auto systemmatrix_block = CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
   auto& systemmatrix_block_struct_struct =
-      systemmatrix_block->Matrix(PositionStructure(), PositionStructure());
+      systemmatrix_block->Matrix(position_structure(), position_structure());
 
   systemmatrix_block_struct_struct.Add(*structure_structure_matrix, false, 1.0, 1.0);
 }
@@ -139,7 +139,7 @@ void SSI::AssembleStrategyBlockSparse::assemble_structure_structure(
 {
   auto systemmatrix_block = CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
   auto& systemmatrix_block_struct_struct =
-      systemmatrix_block->Matrix(PositionStructure(), PositionStructure());
+      systemmatrix_block->Matrix(position_structure(), position_structure());
 
   systemmatrix_block_struct_struct.Add(*structure_structure_matrix, false, 1.0, 1.0);
 }
@@ -168,7 +168,7 @@ void SSI::AssembleStrategyBlockBlock::assemble_scatra_structure(
   for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra().size()); ++iblock)
   {
     auto& systemmatrix_block_iscatra_struct =
-        systemmatrix_block->Matrix(BlockPositionScaTra().at(iblock), PositionStructure());
+        systemmatrix_block->Matrix(BlockPositionScaTra().at(iblock), position_structure());
 
     systemmatrix_block_iscatra_struct.Add(
         scatra_structure_matrix_block->Matrix(iblock, 0), false, 1.0, 1.0);
@@ -186,7 +186,7 @@ void SSI::AssembleStrategyBlockSparse::assemble_scatra_structure(
       CORE::LINALG::CastToConstSparseMatrixAndCheckSuccess(scatra_structure_matrix);
 
   auto& systemmatrix_block_scatra_struct =
-      systemmatrix_block->Matrix(BlockPositionScaTra().at(0), PositionStructure());
+      systemmatrix_block->Matrix(BlockPositionScaTra().at(0), position_structure());
   systemmatrix_block_scatra_struct.UnComplete();
 
   systemmatrix_block_scatra_struct.Add(*scatra_structure_matrix_sparse, false, 1.0, 1.0);
@@ -268,7 +268,7 @@ void SSI::AssembleStrategyBlockBlock::assemble_structure_scatra(
   for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra().size()); ++iblock)
   {
     auto& systemmatrix_block_struct_iscatra =
-        systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra().at(iblock));
+        systemmatrix_block->Matrix(position_structure(), BlockPositionScaTra().at(iblock));
     systemmatrix_block_struct_iscatra.Add(
         structure_scatra_matrix_block->Matrix(0, iblock), false, 1.0, 1.0);
   }
@@ -285,7 +285,7 @@ void SSI::AssembleStrategyBlockSparse::assemble_structure_scatra(
       CORE::LINALG::CastToConstSparseMatrixAndCheckSuccess(structure_scatra_matrix);
 
   auto& systemmatrix_block_struct_scatra =
-      systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra().at(0));
+      systemmatrix_block->Matrix(position_structure(), BlockPositionScaTra().at(0));
   systemmatrix_block_struct_scatra.UnComplete();
   systemmatrix_block_struct_scatra.Add(*structure_scatra_matrix_sparse, false, 1.0, 1.0);
 }
@@ -425,7 +425,7 @@ void SSI::AssembleStrategyBlockBlock::assemble_scatramanifold_structure(
        ++iblock)
   {
     auto& systemmatrix_block_iscatramanifold_struct = systemmatrix_block->Matrix(
-        block_position_sca_tra_manifold().at(iblock), PositionStructure());
+        block_position_sca_tra_manifold().at(iblock), position_structure());
     systemmatrix_block_iscatramanifold_struct.Add(
         scatramanifold_structure_matrix_block->Matrix(iblock, 0), false, 1.0, 1.0);
   }
@@ -442,7 +442,7 @@ void SSI::AssembleStrategyBlockSparse::assemble_scatramanifold_structure(
       CORE::LINALG::CastToConstSparseMatrixAndCheckSuccess(scatramanifold_structure_matrix);
 
   auto& systemmatrix_block_scatramanifold_struct =
-      systemmatrix_block->Matrix(block_position_sca_tra_manifold().at(0), PositionStructure());
+      systemmatrix_block->Matrix(block_position_sca_tra_manifold().at(0), position_structure());
   systemmatrix_block_scatramanifold_struct.Add(
       *scatramanifold_structure_matrix_sparse, false, 1.0, 1.0);
 }

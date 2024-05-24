@@ -93,17 +93,17 @@ MAT::FluidPoroMultiPhaseReactions::FluidPoroMultiPhaseReactions(
   // setup of material map
   if (paramsreac_->local_)
   {
-    SetupMatMap();
+    setup_mat_map();
   }
 }
 
 /*----------------------------------------------------------------------*
  | setup of material map                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
-void MAT::FluidPoroMultiPhaseReactions::SetupMatMap()
+void MAT::FluidPoroMultiPhaseReactions::setup_mat_map()
 {
   // We just have to add the reaction materials, since the rest is already done in
-  // MAT::MatList::SetupMatMap() called from the MatList constructor
+  // MAT::MatList::setup_mat_map() called from the MatList constructor
 
   // here's the recursive creation of materials
   std::vector<int>::const_iterator m;

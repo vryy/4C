@@ -161,7 +161,7 @@ namespace GEOMETRYPAIR
       if (shape_function_data.myknots_.size() == 0)
         FOUR_C_THROW(
             "Got shape function data with knot size 0 - did you forget to initialize the element "
-            "data with GetElementData::Get?");
+            "data with get_element_data::Get?");
 
       if constexpr (element_type::element_dim_ == 2)
       {
@@ -194,7 +194,7 @@ namespace GEOMETRYPAIR
       if (shape_function_data.myknots_.size() == 0)
         FOUR_C_THROW(
             "Got shape function data with knot size 0 - did you forget to initialize the element "
-            "data with GetElementData::Get?");
+            "data with get_element_data::Get?");
 
       using type_dummy = CORE::LINALG::Matrix<element_type::n_nodes_, 1, typename V::scalar_type>;
       type_dummy N_dummy;

@@ -75,7 +75,7 @@ void SCATRA::MeshtyingStrategyS2IElch::ComputeTimeStepSize(double& dt)
     set_condition_specific_sca_tra_parameters(*conditions[0]);
     // evaluate minimum and maximum interfacial overpotential associated with scatra-scatra
     // interface layer growth
-    scatratimint_->Discretization()->EvaluateCondition(condparams, Teuchos::null, Teuchos::null,
+    scatratimint_->Discretization()->evaluate_condition(condparams, Teuchos::null, Teuchos::null,
         Teuchos::null, Teuchos::null, Teuchos::null, "S2IKineticsGrowth");
     scatratimint_->Discretization()->ClearState();
 
@@ -146,7 +146,7 @@ void SCATRA::MeshtyingStrategyS2IElch::ComputeTimeStepSize(double& dt)
 void SCATRA::MeshtyingStrategyS2IElch::EvaluateMeshtying()
 {
   // safety check
-  if (CORE::UTILS::IntegralValue<int>(*(ElchTimInt()->ElchParameterList()), "BLOCKPRECOND"))
+  if (CORE::UTILS::IntegralValue<int>(*(elch_tim_int()->ElchParameterList()), "BLOCKPRECOND"))
     FOUR_C_THROW("Block preconditioning doesn't work for scatra-scatra interface coupling yet!");
 
   // call base class routine
@@ -192,7 +192,7 @@ void SCATRA::MeshtyingStrategyS2IElch::evaluate_point_coupling()
     const int el_conc_gid = master_dofs[0];
     const int el_pot_gid = master_dofs[1];
 
-    auto dof_row_map = scatratimint_->DofRowMap();
+    auto dof_row_map = scatratimint_->dof_row_map();
     const int ed_conc_lid = dof_row_map->LID(ed_conc_gid);
     const int ed_pot_lid = dof_row_map->LID(ed_pot_gid);
     const int el_conc_lid = dof_row_map->LID(el_conc_gid);
@@ -362,7 +362,7 @@ void SCATRA::MeshtyingStrategyS2IElch::init_conv_check_strategy()
     convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyS2ILMElch(
         scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
   }
-  else if (ElchTimInt()->MacroScale())
+  else if (elch_tim_int()->MacroScale())
   {
     convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdMacroScaleElch(
         scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
@@ -398,7 +398,7 @@ void SCATRA::MeshtyingStrategyS2IElch::Update() const
           const auto kr = condition->parameters().Get<double>("k_r");
           const auto alphaa = condition->parameters().Get<double>("alpha_a");
           const auto alphac = condition->parameters().Get<double>("alpha_c");
-          const double frt = ElchTimInt()->FRT();
+          const double frt = elch_tim_int()->FRT();
           const double conductivity_inverse =
               1. / condition->parameters().Get<double>("conductivity");
           const double faraday =
@@ -427,7 +427,7 @@ void SCATRA::MeshtyingStrategyS2IElch::Update() const
               {
                 // extract local ID of first scalar transport degree of freedom associated with
                 // current node
-                const int doflid_scatra = scatratimint_->Discretization()->DofRowMap()->LID(
+                const int doflid_scatra = scatratimint_->Discretization()->dof_row_map()->LID(
                     scatratimint_->Discretization()->Dof(
                         0, node, 0));  // Do not remove the first zero, i.e., the first function
                                        // argument, otherwise an error is thrown in debug mode!
@@ -436,7 +436,7 @@ void SCATRA::MeshtyingStrategyS2IElch::Update() const
 
                 // extract local ID of scatra-scatra interface layer thickness variable associated
                 // with current node
-                const int doflid_growth = scatratimint_->Discretization()->DofRowMap(2)->LID(
+                const int doflid_growth = scatratimint_->Discretization()->dof_row_map(2)->LID(
                     scatratimint_->Discretization()->Dof(2, node, 0));
                 if (doflid_growth < 0)
                   FOUR_C_THROW(
@@ -577,7 +577,7 @@ SCATRA::MortarCellCalcElch<distypeS, distypeM>::MortarCellCalcElch(
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
+void SCATRA::MortarCellCalcElch<distypeS, distypeM>::evaluate_condition(
     const DRT::Discretization& idiscret, MORTAR::IntCell& cell, MORTAR::Element& slaveelement,
     MORTAR::Element& masterelement, DRT::Element::LocationArray& la_slave,
     DRT::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
@@ -636,7 +636,7 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
         my::ephinp_slave_, my::ephinp_master_, dummy_slave_temp, dummy_master_temp,
         pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::test_lm_slave_,
         my::test_lm_master_, my::scatraparamsboundary_, timefacfac, timefacrhsfac, dummy_detF,
-        GetFRT(), my::numdofpernode_slave_, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
+        get_frt(), my::numdofpernode_slave_, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
   }
 }
 
@@ -662,7 +662,7 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::evaluate_condition_nts(
   // access material of slave element
   Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const MAT::Electrode>(
       Teuchos::rcp_dynamic_cast<DRT::FaceElement>(condition.Geometry()[slaveelement.Id()])
-          ->ParentElement()
+          ->parent_element()
           ->Material());
   if (matelectrode == Teuchos::null)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
@@ -700,7 +700,7 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::evaluate_condition_nts(
  | evaluate factor F/RT                                      fang 01/17 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-double SCATRA::MortarCellCalcElch<distypeS, distypeM>::GetFRT() const
+double SCATRA::MortarCellCalcElch<distypeS, distypeM>::get_frt() const
 {
   // fetch factor F/RT from electrochemistry parameter list
   return DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT();
@@ -782,8 +782,8 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Evaluate(
     // evaluate and assemble off-diagonal interface linearizations
     case INPAR::S2I::evaluate_condition_od:
     {
-      EvaluateConditionOD(idiscret, cell, slaveelement, masterelement, la_slave, la_master, params,
-          cellmatrix1, cellmatrix3);
+      evaluate_condition_od(idiscret, cell, slaveelement, masterelement, la_slave, la_master,
+          params, cellmatrix1, cellmatrix3);
 
       break;
     }
@@ -804,7 +804,7 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Evaluate(
  | evaluate and assemble off-diagonal interface linearizations    fang 01/17 |
  *---------------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionOD(
+void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::evaluate_condition_od(
     const DRT::Discretization& idiscret,     //!< interface discretization
     MORTAR::IntCell& cell,                   //!< mortar integration cell
     MORTAR::Element& slaveelement,           //!< slave-side mortar element
@@ -833,7 +833,7 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
   // access material of slave element
   Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const MAT::Electrode>(
       Teuchos::rcp_dynamic_cast<DRT::FaceElement>(s2icondition->Geometry()[slaveelement.Id()])
-          ->ParentElement()
+          ->parent_element()
           ->Material());
   if (matelectrode == Teuchos::null)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
@@ -900,7 +900,7 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::ExtractNodeValues(
  | evaluate factor F/RT                                      fang 01/17 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-double SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::GetFRT() const
+double SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::get_frt() const
 {
   // evaluate local temperature value
   const double temperature = my::funct_slave_.Dot(etempnp_slave_);
@@ -993,7 +993,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Evaluate(
     // evaluate and assemble interface linearizations and residuals
     case INPAR::S2I::evaluate_condition:
     {
-      EvaluateCondition(idiscret, cell, slaveelement, masterelement, la_slave, la_master, params,
+      evaluate_condition(idiscret, cell, slaveelement, masterelement, la_slave, la_master, params,
           cellmatrix1, cellvector1);
 
       break;
@@ -1002,8 +1002,8 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Evaluate(
     // evaluate and assemble off-diagonal interface linearizations
     case INPAR::S2I::evaluate_condition_od:
     {
-      EvaluateConditionOD(idiscret, cell, slaveelement, masterelement, la_slave, la_master, params,
-          cellmatrix1, cellmatrix2);
+      evaluate_condition_od(idiscret, cell, slaveelement, masterelement, la_slave, la_master,
+          params, cellmatrix1, cellmatrix2);
 
       break;
     }
@@ -1024,7 +1024,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Evaluate(
  | evaluate and assemble interface linearizations and residuals   fang 01/17 |
  *---------------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
+void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition(
     const DRT::Discretization& idiscret,     //!< interface discretization
     MORTAR::IntCell& cell,                   //!< mortar integration cell
     MORTAR::Element& slaveelement,           //!< slave-side mortar element
@@ -1049,12 +1049,12 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
   // access primary and secondary materials of slave element
   const Teuchos::RCP<const MAT::Soret> matsoret = Teuchos::rcp_dynamic_cast<const MAT::Soret>(
       Teuchos::rcp_dynamic_cast<DRT::FaceElement>(s2icondition->Geometry()[slaveelement.Id()])
-          ->ParentElement()
+          ->parent_element()
           ->Material());
   const Teuchos::RCP<const MAT::Electrode> matelectrode =
       Teuchos::rcp_dynamic_cast<const MAT::Electrode>(
           Teuchos::rcp_dynamic_cast<DRT::FaceElement>(s2icondition->Geometry()[slaveelement.Id()])
-              ->ParentElement()
+              ->parent_element()
               ->Material(1));
   if (matsoret == Teuchos::null or matelectrode == Teuchos::null)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
@@ -1100,7 +1100,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
  | evaluate and assemble off-diagonal interface linearizations    fang 01/17 |
  *---------------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
+void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition_od(
     const DRT::Discretization& idiscret,     //!< interface discretization
     MORTAR::IntCell& cell,                   //!< mortar integration cell
     MORTAR::Element& slaveelement,           //!< slave-side mortar element
@@ -1126,11 +1126,11 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
   // access primary and secondary materials of parent element
   Teuchos::RCP<const MAT::Soret> matsoret = Teuchos::rcp_dynamic_cast<const MAT::Soret>(
       Teuchos::rcp_dynamic_cast<DRT::FaceElement>(s2icondition->Geometry()[slaveelement.Id()])
-          ->ParentElement()
+          ->parent_element()
           ->Material());
   Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const MAT::Electrode>(
       Teuchos::rcp_dynamic_cast<DRT::FaceElement>(s2icondition->Geometry()[slaveelement.Id()])
-          ->ParentElement()
+          ->parent_element()
           ->Material(1));
   if (matsoret == Teuchos::null or matelectrode == Teuchos::null)
     FOUR_C_THROW("Invalid electrode or soret material for scatra-scatra interface coupling!");
@@ -1240,7 +1240,7 @@ void SCATRA::MeshtyingStrategyS2IElchSCL::SetupMeshtying()
   std::vector<int> imasternodegidvec(imasternodegidset.begin(), imasternodegidset.end());
 
   icoup_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  icoup_->SetupCoupling(*(scatratimint_->Discretization()), *(scatratimint_->Discretization()),
+  icoup_->setup_coupling(*(scatratimint_->Discretization()), *(scatratimint_->Discretization()),
       imasternodegidvec, islavenodegidvec, 2, true, 1.0e-8);
 }
 

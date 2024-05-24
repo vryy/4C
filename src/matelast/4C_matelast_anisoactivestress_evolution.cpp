@@ -85,9 +85,9 @@ void MAT::ELASTIC::AnisoActiveStressEvolution::Setup(int numgp, INPUT::LineDefin
   }
 }
 
-void MAT::ELASTIC::AnisoActiveStressEvolution::PostSetup(Teuchos::ParameterList& params)
+void MAT::ELASTIC::AnisoActiveStressEvolution::post_setup(Teuchos::ParameterList& params)
 {
-  Summand::PostSetup(params);
+  Summand::post_setup(params);
 }
 
 void MAT::ELASTIC::AnisoActiveStressEvolution::add_stress_aniso_principal(

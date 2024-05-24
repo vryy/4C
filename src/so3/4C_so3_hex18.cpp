@@ -301,7 +301,8 @@ int DRT::ELEMENTS::SoHex18::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
-  // Check whether the solid material PostSetup() routine has already been called and call it if not
+  // Check whether the solid material post_setup() routine has already been called and call it if
+  // not
   ensure_material_post_setup(params);
 
   CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18> elemat1(elemat1_epetra.values(), true);
@@ -471,7 +472,7 @@ int DRT::ELEMENTS::SoHex18::Evaluate(Teuchos::ParameterList& params,
 
     //==================================================================================
     case calc_struct_eleload:
-      FOUR_C_THROW("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
+      FOUR_C_THROW("this method is not supposed to evaluate a load, use evaluate_neumann(...)");
       break;
 
     //==================================================================================
@@ -486,7 +487,7 @@ int DRT::ELEMENTS::SoHex18::Evaluate(Teuchos::ParameterList& params,
     case calc_struct_reset_istep:
     {
       // Reset of history (if needed)
-      SolidMaterial()->ResetStep();
+      SolidMaterial()->reset_step();
     }
     break;
 
@@ -511,7 +512,7 @@ int DRT::ELEMENTS::SoHex18::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)  seitz 11/14 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::SoHex18::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::SoHex18::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -621,7 +622,7 @@ int DRT::ELEMENTS::SoHex18::EvaluateNeumann(Teuchos::ParameterList& params,
   } /* ==================================================== end of Loop over GP */
 
   return 0;
-}  // DRT::ELEMENTS::So_hex18::EvaluateNeumann
+}  // DRT::ELEMENTS::So_hex18::evaluate_neumann
 
 int DRT::ELEMENTS::SoHex18::InitJacobianMapping()
 {
@@ -852,7 +853,7 @@ int DRT::ELEMENTS::SoHex18Type::Initialize(DRT::Discretization& dis)
     if (!actele) FOUR_C_THROW("cast to So_hex18* failed");
     if (actele->InitJacobianMapping() == 1) actele->FlipT();
   }
-  dis.FillComplete(false, false, false);
+  dis.fill_complete(false, false, false);
 
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

@@ -162,8 +162,9 @@ void FLD::TurbulenceStatisticsGeneralMean::add_to_current_time_average(const dou
     else
     {
       // any XFEM problem with scatra will crash here, it could probably be removed     henke 12/11
-      const Epetra_Comm& comm =
-          (discret_ != Teuchos::null) ? (discret_->Comm()) : (standarddofset_->DofRowMap()->Comm());
+      const Epetra_Comm& comm = (discret_ != Teuchos::null)
+                                    ? (discret_->Comm())
+                                    : (standarddofset_->dof_row_map()->Comm());
       if (comm.MyPID() == 0) std::cout << "curr_avg_sca_ or scavec is Teuchos::null" << std::endl;
     }
 
@@ -190,7 +191,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
   const Epetra_Comm& avgcomm = discret_->Comm();
 
   // get rowmap for dofs
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // get a tolerance
   const double eps = 1e-7;
@@ -703,7 +704,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
       frompid = myrank;
       topid = (myrank + 1) % numprocs;
 
-      exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
+      exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
     }
   }
 
@@ -999,7 +1000,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
       frompid = myrank;
       topid = (myrank + 1) % numprocs;
 
-      exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
+      exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
     }
   }
 }  // FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction
@@ -1125,12 +1126,12 @@ void FLD::TurbulenceStatisticsGeneralMean::TimeReset()
 {
   if (standarddofset_ != Teuchos::null)  // XFEM case
   {
-    const Epetra_Map* dofrowmap = standarddofset_->DofRowMap();
+    const Epetra_Map* dofrowmap = standarddofset_->dof_row_map();
     time_reset_fluid_avg_vectors(*dofrowmap);
   }
   else  // standard fluid case
   {
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    const Epetra_Map* dofrowmap = discret_->dof_row_map();
     time_reset_fluid_avg_vectors(*dofrowmap);
   }
 
@@ -1138,7 +1139,7 @@ void FLD::TurbulenceStatisticsGeneralMean::TimeReset()
   {
     if (scatradis_ != Teuchos::null)
     {
-      const Epetra_Map* scatradofrowmap = scatradis_->DofRowMap();
+      const Epetra_Map* scatradofrowmap = scatradis_->dof_row_map();
       curr_avg_scatra_ = Teuchos::null;
       curr_avg_scatra_ = CORE::LINALG::CreateVector(*scatradofrowmap, true);
     }
@@ -1173,12 +1174,12 @@ void FLD::TurbulenceStatisticsGeneralMean::ResetComplete()
 {
   if (standarddofset_ != Teuchos::null)  // XFEM case
   {
-    const Epetra_Map* dofrowmap = standarddofset_->DofRowMap();
+    const Epetra_Map* dofrowmap = standarddofset_->dof_row_map();
     reset_fluid_avg_vectors(*dofrowmap);
   }
   else  // standard fluid case
   {
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    const Epetra_Map* dofrowmap = discret_->dof_row_map();
     reset_fluid_avg_vectors(*dofrowmap);
   }
 
@@ -1186,7 +1187,7 @@ void FLD::TurbulenceStatisticsGeneralMean::ResetComplete()
   {
     if (scatradis_ != Teuchos::null)
     {
-      const Epetra_Map* scatradofrowmap = scatradis_->DofRowMap();
+      const Epetra_Map* scatradofrowmap = scatradis_->dof_row_map();
       curr_avg_scatra_ = Teuchos::null;
       curr_avg_scatra_ = CORE::LINALG::CreateVector(*scatradofrowmap, true);
       prev_avg_scatra_ = Teuchos::null;
@@ -1235,7 +1236,7 @@ void FLD::TurbulenceStatisticsGeneralMean::Redistribute(
 {
   standarddofset_ = Teuchos::null;
   standarddofset_ = standarddofset;
-  const Epetra_Map* dofrowmap = standarddofset_->DofRowMap();
+  const Epetra_Map* dofrowmap = standarddofset_->dof_row_map();
 
   // split based on complete fluid field
   CORE::LINALG::CreateMapExtractorFromDiscretization(
@@ -1275,7 +1276,7 @@ void FLD::TurbulenceStatisticsGeneralMean::Redistribute(
 
     if (scatradis_ != Teuchos::null)
     {
-      const Epetra_Map* scatradofrowmap = scatradis_->DofRowMap();
+      const Epetra_Map* scatradofrowmap = scatradis_->dof_row_map();
 
       if (curr_avg_scatra_ != Teuchos::null)
       {

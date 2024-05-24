@@ -22,7 +22,7 @@ SCATRA::HDGResultTest::HDGResultTest(const Teuchos::RCP<ScaTraTimIntImpl> timint
       scatratiminthdg_(Teuchos::rcp_dynamic_cast<const TimIntHDG>(timint))
 
 {
-  errors_ = scatratiminthdg_->ComputeError();
+  errors_ = scatratiminthdg_->compute_error();
   return;
 }
 

@@ -60,7 +60,7 @@ namespace POROMULTIPHASESCATRA
         const std::map<int, std::set<int>>* nearbyelepairs) = 0;
 
     //! read restart
-    void ReadRestart(int restart) override;
+    void read_restart(int restart) override;
 
     //! create result test for subproblems
     void CreateFieldTest();
@@ -72,7 +72,7 @@ namespace POROMULTIPHASESCATRA
     virtual void SetupSolver() = 0;
 
     //! prepare timeloop of coupled problem
-    void PrepareTimeLoop();
+    void prepare_time_loop();
 
     //! timeloop of coupled problem
     void Timeloop();
@@ -81,10 +81,10 @@ namespace POROMULTIPHASESCATRA
     virtual void TimeStep() = 0;
 
     //! time step of coupled problem
-    void PrepareTimeStep() override { PrepareTimeStep(false); };
+    void prepare_time_step() override { prepare_time_step(false); };
 
     //! time step of coupled problem
-    void PrepareTimeStep(bool printheader);
+    void prepare_time_step(bool printheader);
 
     //! update time step and print to screen
     void UpdateAndOutput();
@@ -99,7 +99,7 @@ namespace POROMULTIPHASESCATRA
     void apply_additional_dbc_for_vol_frac_species();
 
     //! access to poro field
-    const Teuchos::RCP<ADAPTER::PoroMultiPhase>& PoroField() { return poromulti_; }
+    const Teuchos::RCP<ADAPTER::PoroMultiPhase>& poro_field() { return poromulti_; }
 
     //! access to fluid field
     const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>& ScatraAlgo() { return scatra_; }

@@ -28,7 +28,7 @@ namespace FSI
     void Setup() override;
 
     //! overrides method of base class.
-    void SetupCoupling(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm) override;
+    void setup_coupling(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm) override;
 
     //! call the time loop of the base class
     void Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface) override
@@ -61,7 +61,7 @@ namespace FSI
     };
 
     //! empty; overridden in sub class
-    Teuchos::RCP<Epetra_Vector> InitialGuess() override { return Teuchos::null; };
+    Teuchos::RCP<Epetra_Vector> initial_guess() override { return Teuchos::null; };
 
 
   };  // class PartitionedImmersed

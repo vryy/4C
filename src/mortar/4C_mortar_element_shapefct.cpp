@@ -238,8 +238,8 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       const double t2 = r;
       const double t3 = s;
 
-      CORE::LINALG::SerialDenseVector valtmp(NumNode(), 1);
-      CORE::LINALG::SerialDenseMatrix derivtmp(NumNode(), 2);
+      CORE::LINALG::SerialDenseVector valtmp(num_node(), 1);
+      CORE::LINALG::SerialDenseMatrix derivtmp(num_node(), 2);
 
       valtmp[0] = t1 * (2.0 * t1 - 1.0);
       valtmp[1] = t2 * (2.0 * t2 - 1.0);
@@ -430,8 +430,8 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       //
       //  0.25*(1-xi)*(1-eta)-0.5*funct[neighbor1]-0.5*funct[neighbor2]
 
-      CORE::LINALG::SerialDenseVector valtmp(NumNode(), 1);
-      CORE::LINALG::SerialDenseMatrix derivtmp(NumNode(), 2);
+      CORE::LINALG::SerialDenseVector valtmp(num_node(), 1);
+      CORE::LINALG::SerialDenseMatrix derivtmp(num_node(), 2);
 
       valtmp[0] = 0.25 * (rm * sm - (r2 * sm + s2 * rm));
       valtmp[1] = 0.25 * (rp * sm - (r2 * sm + s2 * rp));
@@ -832,18 +832,18 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
         if (MoData().DualShape()->numCols() != 2 && MoData().DualShape()->numRows() != 2)
           FOUR_C_THROW("Dual shape functions coefficient matrix calculated in the wrong size");
 #endif
-        const int nnodes = NumNode();
+        const int nnodes = num_node();
         CORE::LINALG::SerialDenseVector stdval(nnodes, true);
         CORE::LINALG::SerialDenseMatrix stdderiv(nnodes, dim, true);
         CORE::LINALG::SerialDenseVector checkval(nnodes, true);
         EvaluateShape(xi, stdval, stdderiv, nnodes);
         CORE::LINALG::SerialDenseMatrix& ae = *(MoData().DualShape());
 
-        for (int i = 0; i < NumNode(); ++i)
+        for (int i = 0; i < num_node(); ++i)
         {
           val[i] = 0.0;
           deriv(i, 0) = 0.0;
-          for (int j = 0; j < NumNode(); ++j)
+          for (int j = 0; j < num_node(); ++j)
           {
             val[i] += stdval[j] * ae(i, j);
             deriv(i, 0) += ae(i, j) * stdderiv(j, 0);
@@ -902,7 +902,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       }
       else
       {
-        const int nnodes = NumNode();
+        const int nnodes = num_node();
         // get solution matrix with dual parameters
         CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
         // get dual shape functions coefficient matrix from data container
@@ -941,7 +941,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       const int nnodes = 4;
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (nnodes != NumNode())
+      if (nnodes != num_node())
         FOUR_C_THROW(
             "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
@@ -1026,7 +1026,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       const int nnodes = 3;
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (nnodes != NumNode())
+      if (nnodes != num_node())
         FOUR_C_THROW(
             "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
@@ -1103,7 +1103,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       const int nnodes = 3;
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (nnodes != NumNode())
+      if (nnodes != num_node())
         FOUR_C_THROW(
             "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
@@ -1198,7 +1198,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       const int nnodes = 6;
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (nnodes != NumNode())
+      if (nnodes != num_node())
         FOUR_C_THROW(
             "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
@@ -1274,7 +1274,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       const int nnodes = 8;
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (nnodes != NumNode())
+      if (nnodes != num_node())
         FOUR_C_THROW(
             "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
@@ -1349,7 +1349,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       const int nnodes = 9;
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (nnodes != NumNode())
+      if (nnodes != num_node())
         FOUR_C_THROW(
             "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
@@ -1424,7 +1424,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       const int nnodes = 6;
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (nnodes != NumNode())
+      if (nnodes != num_node())
         FOUR_C_THROW(
             "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
@@ -1515,7 +1515,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       const int nnodes = 8;
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (nnodes != NumNode())
+      if (nnodes != num_node())
         FOUR_C_THROW(
             "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
@@ -1607,7 +1607,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       const int nnodes = 9;
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (nnodes != NumNode())
+      if (nnodes != num_node())
         FOUR_C_THROW(
             "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
@@ -1720,7 +1720,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
     {
       // establish fundamental data
       double detg = 0.0;
-      const int nnodes = NumNode();
+      const int nnodes = num_node();
 
       // empty shape function vals + derivs
       CORE::LINALG::SerialDenseVector valquad(nnodes);
@@ -1792,7 +1792,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
     {
       // establish fundamental data
       double detg = 0.0;
-      const int nnodes = NumNode();
+      const int nnodes = num_node();
 
       // empty shape function vals + derivs
       CORE::LINALG::SerialDenseVector valquad(nnodes);
@@ -1882,7 +1882,7 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
 
   // check for boundary nodes
   bool bound = false;
-  for (int i = 0; i < NumNode(); ++i)
+  for (int i = 0; i < num_node(); ++i)
   {
     Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
     if (!mymrtrnode) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
@@ -1973,16 +1973,16 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
     {
       if (valdim != 2) FOUR_C_THROW("Inconsistency in EvaluateShape");
 
-      CORE::LINALG::SerialDenseVector weights(NumNode());
-      for (int inode = 0; inode < NumNode(); ++inode)
+      CORE::LINALG::SerialDenseVector weights(num_node());
+      for (int inode = 0; inode < num_node(); ++inode)
         weights(inode) = dynamic_cast<MORTAR::Node*>(Nodes()[inode])->NurbsW();
 
-      CORE::LINALG::SerialDenseMatrix auxderiv(1, NumNode());
+      CORE::LINALG::SerialDenseMatrix auxderiv(1, num_node());
       CORE::FE::NURBS::nurbs_get_1D_funct_deriv(
           val, auxderiv, xi[0], Knots()[0], weights, CORE::FE::CellType::nurbs2);
 
       // copy entries for to be conform with the mortar code!
-      for (int i = 0; i < NumNode(); ++i) deriv(i, 0) = auxderiv(0, i);
+      for (int i = 0; i < num_node(); ++i) deriv(i, 0) = auxderiv(0, i);
 
       break;
     }
@@ -1992,16 +1992,16 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
     {
       if (valdim != 3) FOUR_C_THROW("Inconsistency in EvaluateShape");
 
-      CORE::LINALG::SerialDenseVector weights(NumNode());
-      for (int inode = 0; inode < NumNode(); ++inode)
+      CORE::LINALG::SerialDenseVector weights(num_node());
+      for (int inode = 0; inode < num_node(); ++inode)
         weights(inode) = dynamic_cast<MORTAR::Node*>(Nodes()[inode])->NurbsW();
 
-      CORE::LINALG::SerialDenseMatrix auxderiv(1, NumNode());
+      CORE::LINALG::SerialDenseMatrix auxderiv(1, num_node());
       CORE::FE::NURBS::nurbs_get_1D_funct_deriv(
           val, auxderiv, xi[0], Knots()[0], weights, CORE::FE::CellType::nurbs3);
 
       // copy entries for to be conform with the mortar code!
-      for (int i = 0; i < NumNode(); ++i) deriv(i, 0) = auxderiv(0, i);
+      for (int i = 0; i < num_node(); ++i) deriv(i, 0) = auxderiv(0, i);
 
       break;
     }
@@ -2012,21 +2012,21 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
     {
       if (valdim != 4) FOUR_C_THROW("Inconsistency in EvaluateShape");
 
-      CORE::LINALG::SerialDenseVector weights(NumNode());
-      for (int inode = 0; inode < NumNode(); ++inode)
+      CORE::LINALG::SerialDenseVector weights(num_node());
+      for (int inode = 0; inode < num_node(); ++inode)
         weights(inode) = dynamic_cast<MORTAR::Node*>(Nodes()[inode])->NurbsW();
 
       CORE::LINALG::SerialDenseVector uv(2);
       uv(0) = xi[0];
       uv(1) = xi[1];
 
-      CORE::LINALG::SerialDenseMatrix auxderiv(2, NumNode());
+      CORE::LINALG::SerialDenseMatrix auxderiv(2, num_node());
       CORE::FE::NURBS::nurbs_get_2D_funct_deriv(
           val, auxderiv, uv, Knots(), weights, CORE::FE::CellType::nurbs4);
 
       // copy entries for to be conform with the mortar code!
       for (int d = 0; d < 2; ++d)
-        for (int i = 0; i < NumNode(); ++i) deriv(i, d) = auxderiv(d, i);
+        for (int i = 0; i < num_node(); ++i) deriv(i, d) = auxderiv(d, i);
 
       break;
     }
@@ -2036,8 +2036,8 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
     {
       if (valdim != 9) FOUR_C_THROW("Inconsistency in EvaluateShape");
 
-      CORE::LINALG::SerialDenseVector weights(NumNode());
-      for (int inode = 0; inode < NumNode(); ++inode)
+      CORE::LINALG::SerialDenseVector weights(num_node());
+      for (int inode = 0; inode < num_node(); ++inode)
         weights(inode) = dynamic_cast<MORTAR::Node*>(Nodes()[inode])->NurbsW();
 
       CORE::LINALG::SerialDenseVector uv(2);
@@ -2045,18 +2045,18 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
       uv(1) = xi[1];
 
 
-      CORE::LINALG::SerialDenseMatrix auxderiv(2, NumNode());
+      CORE::LINALG::SerialDenseMatrix auxderiv(2, num_node());
       CORE::FE::NURBS::nurbs_get_2D_funct_deriv(
           val, auxderiv, uv, Knots(), weights, CORE::FE::CellType::nurbs9);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (deriv.numCols() != 2 || deriv.numRows() != NumNode())
+      if (deriv.numCols() != 2 || deriv.numRows() != num_node())
         FOUR_C_THROW("Inconsistency in EvaluateShape");
 #endif
 
       // copy entries for to be conform with the mortar code!
       for (int d = 0; d < 2; ++d)
-        for (int i = 0; i < NumNode(); ++i) deriv(i, d) = auxderiv(d, i);
+        for (int i = 0; i < num_node(); ++i) deriv(i, d) = auxderiv(d, i);
 
 
       break;
@@ -2349,7 +2349,7 @@ bool MORTAR::Element::evaluate_shape_lag_mult(const INPAR::MORTAR::ShapeFcn& lmt
   if (!boundtrafo) return true;
 
   // check if we need trafo
-  const int nnodes = NumNode();
+  const int nnodes = num_node();
   bool bound = false;
   for (int i = 0; i < nnodes; ++i)
   {
@@ -2547,7 +2547,7 @@ bool MORTAR::Element::evaluate_shape_lag_mult_lin(const INPAR::MORTAR::ShapeFcn&
 
   // check for boundary nodes
   bool bound = false;
-  for (int i = 0; i < NumNode(); ++i)
+  for (int i = 0; i < num_node(); ++i)
   {
     Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
     if (!mymrtrnode) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
@@ -2649,7 +2649,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
         double detg = 0.0;
         static const int nnodes = 4;
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-        if (nnodes != NumNode())
+        if (nnodes != num_node())
           FOUR_C_THROW(
               "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
@@ -2764,7 +2764,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
         double detg = 0.0;
         const int nnodes = 3;
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-        if (nnodes != NumNode())
+        if (nnodes != num_node())
           FOUR_C_THROW(
               "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
@@ -2959,7 +2959,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
         const int nnodes = 3;
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-        if (nnodes != NumNode())
+        if (nnodes != num_node())
           FOUR_C_THROW(
               "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
@@ -3100,7 +3100,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
         double detg = 0.0;
         const int nnodes = 9;
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-        if (nnodes != NumNode())
+        if (nnodes != num_node())
           FOUR_C_THROW(
               "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
@@ -3300,7 +3300,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
         double detg = 0.0;
         const int nnodes = 6;
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-        if (nnodes != NumNode())
+        if (nnodes != num_node())
           FOUR_C_THROW(
               "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
@@ -3497,7 +3497,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
         double detg = 0.0;
         const int nnodes = 8;
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-        if (nnodes != NumNode())
+        if (nnodes != num_node())
           FOUR_C_THROW(
               "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
@@ -3680,7 +3680,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
     {
       // establish fundamental data
       double detg = 0.0;
-      const int nnodes = NumNode();
+      const int nnodes = num_node();
       typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
 
       // empty shape function vals + derivs
@@ -3869,7 +3869,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
     {
       // establish fundamental data
       double detg = 0.0;
-      const int nnodes = NumNode();
+      const int nnodes = num_node();
       typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
 
       // empty shape function vals + derivs
@@ -4066,7 +4066,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
         const int nnodes = 6;
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-        if (nnodes != NumNode())
+        if (nnodes != num_node())
           FOUR_C_THROW(
               "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
@@ -4208,7 +4208,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
         const int nnodes = 8;
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-        if (nnodes != NumNode())
+        if (nnodes != num_node())
           FOUR_C_THROW(
               "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
@@ -4533,19 +4533,19 @@ bool MORTAR::Element::evaluate2nd_deriv_shape(
     {
       if (valdim != 2) FOUR_C_THROW("Inconsistency in EvaluateShape");
 
-      CORE::LINALG::SerialDenseVector weights(NumNode());
-      for (int inode = 0; inode < NumNode(); ++inode)
+      CORE::LINALG::SerialDenseVector weights(num_node());
+      for (int inode = 0; inode < num_node(); ++inode)
         weights(inode) = dynamic_cast<MORTAR::Node*>(Nodes()[inode])->NurbsW();
 
-      CORE::LINALG::SerialDenseVector auxval(NumNode());
-      CORE::LINALG::SerialDenseMatrix auxderiv(1, NumNode());
-      CORE::LINALG::SerialDenseMatrix auxderiv2(1, NumNode());
+      CORE::LINALG::SerialDenseVector auxval(num_node());
+      CORE::LINALG::SerialDenseMatrix auxderiv(1, num_node());
+      CORE::LINALG::SerialDenseMatrix auxderiv2(1, num_node());
 
       CORE::FE::NURBS::nurbs_get_1D_funct_deriv_deriv2(
           auxval, auxderiv, auxderiv2, xi[0], Knots()[0], weights, CORE::FE::CellType::nurbs2);
 
       // copy entries for to be conform with the mortar code!
-      for (int i = 0; i < NumNode(); ++i) secderiv(i, 0) = auxderiv2(0, i);
+      for (int i = 0; i < num_node(); ++i) secderiv(i, 0) = auxderiv2(0, i);
 
       break;
     }
@@ -4567,7 +4567,7 @@ bool MORTAR::Element::evaluate2nd_deriv_shape(
           auxval, auxderiv, auxderiv2, xi[0], Knots()[0], weights, CORE::FE::CellType::nurbs3);
 
       // copy entries for to be conform with the mortar code!
-      for (int i = 0; i < NumNode(); ++i) secderiv(i, 0) = auxderiv2(0, i);
+      for (int i = 0; i < num_node(); ++i) secderiv(i, 0) = auxderiv2(0, i);
 
       break;
     }
@@ -4578,24 +4578,24 @@ bool MORTAR::Element::evaluate2nd_deriv_shape(
     {
       if (valdim != 4) FOUR_C_THROW("Inconsistency in EvaluateShape");
 
-      CORE::LINALG::SerialDenseVector weights(NumNode());
-      for (int inode = 0; inode < NumNode(); ++inode)
+      CORE::LINALG::SerialDenseVector weights(num_node());
+      for (int inode = 0; inode < num_node(); ++inode)
         weights(inode) = dynamic_cast<MORTAR::Node*>(Nodes()[inode])->NurbsW();
 
       CORE::LINALG::SerialDenseVector uv(2);
       uv(0) = xi[0];
       uv(1) = xi[1];
 
-      CORE::LINALG::SerialDenseVector auxval(NumNode());
-      CORE::LINALG::SerialDenseMatrix auxderiv(2, NumNode());
-      CORE::LINALG::SerialDenseMatrix auxderiv2(3, NumNode());
+      CORE::LINALG::SerialDenseVector auxval(num_node());
+      CORE::LINALG::SerialDenseMatrix auxderiv(2, num_node());
+      CORE::LINALG::SerialDenseMatrix auxderiv2(3, num_node());
 
       CORE::FE::NURBS::nurbs_get_2D_funct_deriv_deriv2(
           auxval, auxderiv, auxderiv2, uv, Knots(), weights, CORE::FE::CellType::nurbs4);
 
       // copy entries for to be conform with the mortar code!
       for (int d = 0; d < 3; ++d)
-        for (int i = 0; i < NumNode(); ++i) secderiv(i, d) = auxderiv2(d, i);
+        for (int i = 0; i < num_node(); ++i) secderiv(i, d) = auxderiv2(d, i);
 
       break;
     }
@@ -4605,24 +4605,24 @@ bool MORTAR::Element::evaluate2nd_deriv_shape(
     {
       if (valdim != 8) FOUR_C_THROW("Inconsistency in EvaluateShape");
 
-      CORE::LINALG::SerialDenseVector weights(NumNode());
-      for (int inode = 0; inode < NumNode(); ++inode)
+      CORE::LINALG::SerialDenseVector weights(num_node());
+      for (int inode = 0; inode < num_node(); ++inode)
         weights(inode) = dynamic_cast<MORTAR::Node*>(Nodes()[inode])->NurbsW();
 
       CORE::LINALG::SerialDenseVector uv(2);
       uv(0) = xi[0];
       uv(1) = xi[1];
 
-      CORE::LINALG::SerialDenseVector auxval(NumNode());
-      CORE::LINALG::SerialDenseMatrix auxderiv(2, NumNode());
-      CORE::LINALG::SerialDenseMatrix auxderiv2(3, NumNode());
+      CORE::LINALG::SerialDenseVector auxval(num_node());
+      CORE::LINALG::SerialDenseMatrix auxderiv(2, num_node());
+      CORE::LINALG::SerialDenseMatrix auxderiv2(3, num_node());
 
       CORE::FE::NURBS::nurbs_get_2D_funct_deriv_deriv2(
           auxval, auxderiv, auxderiv2, uv, Knots(), weights, CORE::FE::CellType::nurbs8);
 
       // copy entries for to be conform with the mortar code!
       for (int d = 0; d < 3; ++d)
-        for (int i = 0; i < NumNode(); ++i) secderiv(i, d) = auxderiv2(d, i);
+        for (int i = 0; i < num_node(); ++i) secderiv(i, d) = auxderiv2(d, i);
 
       break;
     }
@@ -4632,24 +4632,24 @@ bool MORTAR::Element::evaluate2nd_deriv_shape(
     {
       if (valdim != 9) FOUR_C_THROW("Inconsistency in EvaluateShape");
 
-      CORE::LINALG::SerialDenseVector weights(NumNode());
-      for (int inode = 0; inode < NumNode(); ++inode)
+      CORE::LINALG::SerialDenseVector weights(num_node());
+      for (int inode = 0; inode < num_node(); ++inode)
         weights(inode) = dynamic_cast<MORTAR::Node*>(Nodes()[inode])->NurbsW();
 
       CORE::LINALG::SerialDenseVector uv(2);
       uv(0) = xi[0];
       uv(1) = xi[1];
 
-      CORE::LINALG::SerialDenseVector auxval(NumNode());
-      CORE::LINALG::SerialDenseMatrix auxderiv(2, NumNode());
-      CORE::LINALG::SerialDenseMatrix auxderiv2(3, NumNode());
+      CORE::LINALG::SerialDenseVector auxval(num_node());
+      CORE::LINALG::SerialDenseMatrix auxderiv(2, num_node());
+      CORE::LINALG::SerialDenseMatrix auxderiv2(3, num_node());
 
       CORE::FE::NURBS::nurbs_get_2D_funct_deriv_deriv2(
           auxval, auxderiv, auxderiv2, uv, Knots(), weights, CORE::FE::CellType::nurbs9);
 
       // copy entries for to be conform with the mortar code!
       for (int d = 0; d < 3; ++d)
-        for (int i = 0; i < NumNode(); ++i) secderiv(i, d) = auxderiv2(d, i);
+        for (int i = 0; i < num_node(); ++i) secderiv(i, d) = auxderiv2(d, i);
 
       break;
     }
@@ -4752,7 +4752,7 @@ bool MORTAR::Element::DerivShapeDual(
   }
 
   // check if we need trafo
-  const int nnodes = NumNode();
+  const int nnodes = num_node();
   bool bound = false;
   for (int i = 0; i < nnodes; ++i)
   {

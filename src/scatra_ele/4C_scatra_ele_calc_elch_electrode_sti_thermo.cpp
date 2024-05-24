@@ -61,12 +61,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::GetMaterialPar
 {
   // Set GP values to MatElectrode
   myelectrode::Utils()->MatElectrode(
-      ele->Material(), VarManager()->Phinp(0), VarManager()->Temp(), myelectrode::DiffManager());
+      ele->Material(), var_manager()->Phinp(0), var_manager()->Temp(), myelectrode::diff_manager());
 
   // get parameters of secondary, thermodynamic electrolyte material
   Teuchos::RCP<const CORE::MAT::Material> material = ele->Material(1);
   materialtype_ = material->MaterialType();
-  if (materialtype_ == CORE::Materials::m_soret) mythermo::MatSoret(material);
+  if (materialtype_ == CORE::Materials::m_soret) mythermo::mat_soret(material);
 }  // DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::GetMaterialParams
 
 
@@ -88,13 +88,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::CalcMatAndRhs(
   if (materialtype_ == CORE::Materials::m_soret)
   {
     // matrix and vector contributions arising from additional, thermodynamic term for Soret effect
-    mythermo::CalcMatSoret(emat, timefacfac, VarManager()->Phinp(0),
-        myelectrode::DiffManager()->GetIsotropicDiff(0),
-        myelectrode::DiffManager()->get_conc_deriv_iso_diff_coef(0, 0), VarManager()->Temp(),
-        VarManager()->GradTemp(), my::funct_, my::derxy_);
-    mythermo::CalcRHSSoret(erhs, VarManager()->Phinp(0),
-        myelectrode::DiffManager()->GetIsotropicDiff(0), rhsfac, VarManager()->Temp(),
-        VarManager()->GradTemp(), my::derxy_);
+    mythermo::CalcMatSoret(emat, timefacfac, var_manager()->Phinp(0),
+        myelectrode::diff_manager()->GetIsotropicDiff(0),
+        myelectrode::diff_manager()->get_conc_deriv_iso_diff_coef(0, 0), var_manager()->Temp(),
+        var_manager()->GradTemp(), my::funct_, my::derxy_);
+    mythermo::CalcRHSSoret(erhs, var_manager()->Phinp(0),
+        myelectrode::diff_manager()->GetIsotropicDiff(0), rhsfac, var_manager()->Temp(),
+        var_manager()->GradTemp(), my::derxy_);
   }
 }
 
@@ -167,18 +167,18 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::sysmat_od_scat
 
     // calculating the off diagonal for the temperature derivative of concentration and electric
     // potential
-    mythermo::CalcMatDiffThermoOD(emat, my::numdofpernode_, timefacfac, VarManager()->InvF(),
-        VarManager()->GradPhi(0), VarManager()->GradPot(),
-        myelectrode::DiffManager()->get_temp_deriv_iso_diff_coef(0, 0),
-        myelectrode::DiffManager()->GetTempDerivCond(0), my::funct_, my::derxy_, 1.);
+    mythermo::CalcMatDiffThermoOD(emat, my::numdofpernode_, timefacfac, var_manager()->InvF(),
+        var_manager()->GradPhi(0), var_manager()->GradPot(),
+        myelectrode::diff_manager()->get_temp_deriv_iso_diff_coef(0, 0),
+        myelectrode::diff_manager()->GetTempDerivCond(0), my::funct_, my::derxy_, 1.);
 
     if (materialtype_ == CORE::Materials::m_soret)
     {
       // provide element matrix with linearizations of Soret term in discrete scatra residuals
       // w.r.t. thermo dofs
-      mythermo::CalcMatSoretOD(emat, timefacfac, VarManager()->Phinp(0),
-          myelectrode::DiffManager()->GetIsotropicDiff(0), VarManager()->Temp(),
-          VarManager()->GradTemp(), my::funct_, my::derxy_);
+      mythermo::CalcMatSoretOD(emat, timefacfac, var_manager()->Phinp(0),
+          myelectrode::diff_manager()->GetIsotropicDiff(0), var_manager()->Temp(),
+          var_manager()->GradTemp(), my::funct_, my::derxy_);
     }
   }
 }
@@ -192,7 +192,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<
     distype>::set_internal_variables_for_mat_and_rhs()
 {
   // set internal variables for element evaluation
-  VarManager()->set_internal_variables(my::funct_, my::derxy_, my::ephinp_, my::ephin_,
+  var_manager()->set_internal_variables(my::funct_, my::derxy_, my::ephinp_, my::ephin_,
       mythermo::etempnp_, my::econvelnp_, my::ehist_);
 }
 

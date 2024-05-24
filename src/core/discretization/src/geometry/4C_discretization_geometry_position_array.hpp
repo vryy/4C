@@ -34,7 +34,7 @@ namespace CORE::GEO
   template <class M>
   void fillInitialPositionArray(const DRT::Element* const ele, M& xyze)
   {
-    const int numnode = ele->NumNode();
+    const int numnode = ele->num_node();
 
     const DRT::Node* const* nodes = ele->Nodes();
     FOUR_C_ASSERT(nodes != nullptr,

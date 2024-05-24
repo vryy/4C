@@ -365,7 +365,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     void SetBlock(int in);
     void SetBlocks(std::vector<int> in);
     void SetSmootherName(std::string in);
-    void SetType(std::string in);
+    void set_type(std::string in);
     void SetVerbosity(std::string in);
     void SetNullSpace(const NullSpaceInfo& in);
     void set_null_space_all_blocks(const std::vector<NullSpaceInfo>& in);
@@ -430,7 +430,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     Teuchos::RCP<GenericSmoother> Create() override;
 
    private:
-    void SetTypeAndParams();
+    void set_type_and_params();
   };
 
   class BgsSmootherFactory : public SmootherFactoryBase
@@ -439,7 +439,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     Teuchos::RCP<GenericSmoother> Create() override;
 
    private:
-    void ParseSmootherNames(const std::string& smoothers_string,
+    void parse_smoother_names(const std::string& smoothers_string,
         std::vector<std::string>& smoothers_vector, std::vector<std::vector<int>> superblocks);
   };
 
@@ -455,7 +455,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     Teuchos::RCP<GenericSmoother> Create() override;
 
    private:
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> ApproximateInverse(
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> approximate_inverse(
         const CORE::LINALG::SparseMatrixBase& A, const std::string& method);
     Teuchos::RCP<BlockedMatrix> compute_schur_complement(const BlockedMatrix& invApp,
         const BlockedMatrix& Aps, const BlockedMatrix& Asp, const BlockedMatrix& Ass);

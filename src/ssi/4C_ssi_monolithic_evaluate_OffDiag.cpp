@@ -204,7 +204,7 @@ void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_structure_scat
   structure_->Discretization()->ClearState();
 
   // set the current displacement state vector
-  structure_->Discretization()->SetState("displacement", structure_->Dispnp());
+  structure_->Discretization()->set_state("displacement", structure_->Dispnp());
 
   // create strategy for assembly of structure-scatra matrix block
   CORE::FE::AssembleStrategy strategystructurescatra(
@@ -272,7 +272,7 @@ void SSI::ScatraStructureOffDiagCoupling::
       }
 
       // finalize auxiliary system matrix
-      mastermatrixsparse->Complete(*FullMapStructure(), *ScaTraField()->DofRowMap());
+      mastermatrixsparse->Complete(*FullMapStructure(), *ScaTraField()->dof_row_map());
 
       // split auxiliary system matrix and assemble into scatra-structure matrix block
       auto mastermatrix_split = mastermatrixsparse->Split<CORE::LINALG::DefaultBlockMatrixStrategy>(
@@ -395,7 +395,7 @@ void SSI::ScatraStructureOffDiagCoupling::
       meshtying_strategy_s2i_->set_condition_specific_sca_tra_parameters(
           *kinetics_slave_cond.second);
       // evaluate the condition
-      ScaTraField()->Discretization()->EvaluateCondition(
+      ScaTraField()->Discretization()->evaluate_condition(
           condparams, strategyscatras2istructure, "S2IKinetics", kinetics_slave_cond.first);
     }
   }
@@ -553,7 +553,7 @@ void SSI::ScatraStructureOffDiagCoupling::
       }
 
       // finalize auxiliary system matrix
-      mastermatrixsparse->Complete(*FullMapStructure(), *ScaTraField()->DofRowMap());
+      mastermatrixsparse->Complete(*FullMapStructure(), *ScaTraField()->dof_row_map());
 
       // split auxiliary system matrix and assemble into scatra-structure matrix block
       auto mastermatrix_split = mastermatrixsparse->Split<CORE::LINALG::DefaultBlockMatrixStrategy>(
@@ -628,7 +628,7 @@ void SSI::ScatraStructureOffDiagCoupling::
       meshtying_strategy_s2i_->set_condition_specific_sca_tra_parameters(
           *kinetics_slave_cond.second);
       // evaluate the condition
-      ScaTraField()->Discretization()->EvaluateCondition(
+      ScaTraField()->Discretization()->evaluate_condition(
           condparams, strategyscatrastructures2i, "S2IKinetics", kinetics_slave_cond.first);
     }
   }

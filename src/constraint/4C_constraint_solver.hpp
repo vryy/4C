@@ -101,7 +101,7 @@ namespace CONSTRAINTS
     /*!
       \brief Solve linear system using uzawa algorithm to deal with zero entries on the diagonal;
     */
-    void SolveUzawa(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,  ///< stiffness matrix
+    void solve_uzawa(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,  ///< stiffness matrix
         Teuchos::RCP<CORE::LINALG::SparseMatrix>
             constr,  ///< constraint matrix with Dirichlet zeros
         Teuchos::RCP<CORE::LINALG::SparseMatrix>
@@ -115,7 +115,7 @@ namespace CONSTRAINTS
     /*!
       \brief Solve linear system using uzawa algorithm to deal with zero entries on the diagonal;
     */
-    void SolveSimple(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,  ///< stiffness matrix
+    void solve_simple(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,  ///< stiffness matrix
         Teuchos::RCP<CORE::LINALG::SparseMatrix>
             constr,  ///< constraint matrix with Dirichlet zeros
         Teuchos::RCP<CORE::LINALG::SparseMatrix>
@@ -129,7 +129,7 @@ namespace CONSTRAINTS
     /*!
       \brief Solve linear system directly by assembling everything into one big matrix
     */
-    void SolveDirect(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,  ///< stiffness matrix
+    void solve_direct(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,  ///< stiffness matrix
         Teuchos::RCP<CORE::LINALG::SparseMatrix>
             constr,  ///< constraint matrix with Dirichlet zeros
         Teuchos::RCP<CORE::LINALG::SparseMatrix>

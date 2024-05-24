@@ -297,7 +297,7 @@ namespace DRT
       /** \brief error handling for structural elements
        *
        *  \author hiermeier \date 09/18 */
-      void ErrorHandling(const double& det_curr, Teuchos::ParameterList& params, int line_id,
+      void error_handling(const double& det_curr, Teuchos::ParameterList& params, int line_id,
           STR::ELEMENTS::EvalErrorFlag flag);
 
      protected:
@@ -305,14 +305,14 @@ namespace DRT
        * \brief This method executes the MaterialPostSetup if not already executed.
        *
        * This method should be placed in the Evaluate call. It will internally check, whether the
-       * material PostSetup() routine was already called in if not, it invokes this call directly.
+       * material post_setup() routine was already called in if not, it invokes this call directly.
        *
        * @param params Container for additional information
        */
       void ensure_material_post_setup(Teuchos::ParameterList& params);
 
       /*!
-       * \brief This method calls the PostSetup routine of all materials.
+       * \brief This method calls the post_setup routine of all materials.
        *
        * It can be used to pass information from the element to the materials after everything
        * is set up. For a simple element, the ParameterList is passed unchanged to the materials.

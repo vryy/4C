@@ -115,13 +115,13 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a surface/line Neumann boundary condition       gjb 01/09 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::FluidBoundary::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::FluidBoundary::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   return DRT::ELEMENTS::FluidBoundaryFactory::ProvideImpl(Shape(), "std")
-      ->EvaluateNeumann(this, params, discretization, condition, lm, elevec1, elemat1);
+      ->evaluate_neumann(this, params, discretization, condition, lm, elevec1, elemat1);
 }
 
 /*----------------------------------------------------------------------*
@@ -145,7 +145,7 @@ void DRT::ELEMENTS::FluidBoundary::LocationVector(const Discretization& dis, Loc
       // the inner dofs of its parent element
       // note: using these actions, the element will get the parent location vector
       //       as input in the respective evaluate routines
-      ParentElement()->LocationVector(dis, la, doDirichlet);
+      parent_element()->LocationVector(dis, la, doDirichlet);
       break;
     case FLD::ba_none:
       FOUR_C_THROW("No action supplied");

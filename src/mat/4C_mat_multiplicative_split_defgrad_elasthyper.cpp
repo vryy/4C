@@ -180,7 +180,7 @@ void MAT::MultiplicativeSplitDefgradElastHyper::Evaluate(
     CORE::LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
 {
   // do all stuff that only has to be done once per Evaluate() call
-  PreEvaluate(params, gp);
+  pre_evaluate(params, gp);
 
   // static variables
   static CORE::LINALG::Matrix<6, 6> cmatiso(true);
@@ -821,12 +821,12 @@ void MAT::MultiplicativeSplitDefgradElastHyper::EvaluateODStiffMat(PAR::Inelasti
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgradElastHyper::PreEvaluate(
+void MAT::MultiplicativeSplitDefgradElastHyper::pre_evaluate(
     Teuchos::ParameterList& params, const int gp) const
 {
   // loop over all inelastic contributions
   for (int p = 0; p < inelastic_->NumInelasticDefGrad(); ++p)
-    inelastic_->FacDefGradIn()[p].second->PreEvaluate(params, gp);
+    inelastic_->FacDefGradIn()[p].second->pre_evaluate(params, gp);
 }
 
 /*--------------------------------------------------------------------*

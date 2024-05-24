@@ -40,7 +40,7 @@ namespace FS3I
 
     void DoScatraStep();
 
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     bool scatra_convergence_check(int itnum) override;
   };

@@ -54,7 +54,7 @@ EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltim
   // 2.- Setup discretizations and coupling.
   setup_discretizations(comm, struct_disname, lubrication_disname);
 
-  SetupFieldCoupling(struct_disname, lubrication_disname);
+  setup_field_coupling(struct_disname, lubrication_disname);
 
   // 3.- Create the two uncoupled subproblems.
   // access the structural discretization
@@ -87,7 +87,7 @@ EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltim
   mortaradapter_->store_dirichlet_status(StructureField()->GetDBCMapExtractor());
 
   // Structure displacement at the lubricated interface
-  Teuchos::RCP<Epetra_Vector> disp = CORE::LINALG::CreateVector(*(structdis->DofRowMap()), true);
+  Teuchos::RCP<Epetra_Vector> disp = CORE::LINALG::CreateVector(*(structdis->dof_row_map()), true);
 
   mortaradapter_->Integrate(disp, Dt());
   // the film thickness initialization for very first time step
@@ -97,16 +97,16 @@ EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltim
 /*----------------------------------------------------------------------*
  | read restart information for given time step   (public) wirtz 12/15  |
  *----------------------------------------------------------------------*/
-void EHL::Base::ReadRestart(int restart)
+void EHL::Base::read_restart(int restart)
 {
   if (restart)
   {
-    lubrication_->LubricationField()->ReadRestart(restart);
-    structure_->ReadRestart(restart);
+    lubrication_->LubricationField()->read_restart(restart);
+    structure_->read_restart(restart);
     SetTimeStep(structure_->TimeOld(), restart);
 
-    mortaradapter_->Interface()->SetState(MORTAR::state_old_displacement, *structure_->Dispn());
-    mortaradapter_->Interface()->SetState(MORTAR::state_new_displacement, *structure_->Dispn());
+    mortaradapter_->Interface()->set_state(MORTAR::state_old_displacement, *structure_->Dispn());
+    mortaradapter_->Interface()->set_state(MORTAR::state_new_displacement, *structure_->Dispn());
     mortaradapter_->Interface()->evaluate_nodal_normals();
     mortaradapter_->Interface()->ExportNodalNormals();
     mortaradapter_->Interface()->StoreToOld(MORTAR::StrategyBase::n_old);
@@ -116,7 +116,7 @@ void EHL::Base::ReadRestart(int restart)
 
     IO::DiscretizationReader reader(lubrication_->LubricationField()->Discretization(),
         GLOBAL::Problem::Instance()->InputControlFile(), restart);
-    mortaradapter_->ReadRestart(reader);
+    mortaradapter_->read_restart(reader);
   }
 }
 
@@ -161,13 +161,13 @@ void EHL::Base::setup_discretizations(const Epetra_Comm& comm, const std::string
   // 1.-Initialization.
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
   Teuchos::RCP<DRT::Discretization> lubricationdis = problem->GetDis(lubrication_disname);
-  if (!structdis->Filled()) structdis->FillComplete();
-  if (!lubricationdis->Filled()) lubricationdis->FillComplete();
+  if (!structdis->Filled()) structdis->fill_complete();
+  if (!lubricationdis->Filled()) lubricationdis->fill_complete();
 
-  // first call FillComplete for single discretizations.
+  // first call fill_complete for single discretizations.
   // This way the physical dofs are numbered successively
-  structdis->FillComplete();
-  lubricationdis->FillComplete();
+  structdis->fill_complete();
+  lubricationdis->fill_complete();
 
   // build auxiliary dofsets, i.e. pseudo dofs on each discretization
   const int ndofpernode_lubrication = lubricationdis->NumDof(0, lubricationdis->lRowNode(0));
@@ -188,13 +188,13 @@ void EHL::Base::setup_discretizations(const Epetra_Comm& comm, const std::string
     FOUR_C_THROW("unexpected dof sets in lubrication field");
 
   // call assign_degrees_of_freedom also for auxiliary dofsets
-  // note: the order of FillComplete() calls determines the gid numbering!
+  // note: the order of fill_complete() calls determines the gid numbering!
   // 1. structure dofs
   // 2. lubrication dofs
   // 3. structure auxiliary dofs
   // 4. lubrication auxiliary dofs
-  structdis->FillComplete(true, false, false);
-  lubricationdis->FillComplete(true, false, false);
+  structdis->fill_complete(true, false, false);
+  lubricationdis->fill_complete(true, false, false);
 }
 
 /*----------------------------------------------------------------------*
@@ -214,7 +214,7 @@ void EHL::Base::SetStructSolution(Teuchos::RCP<const Epetra_Vector> disp)
   mortaradapter_->Integrate(disp, Dt());
 
   // Displace the mesh of the lubrication field in accordance with the slave-side interface
-  SetMeshDisp(disp);
+  set_mesh_disp(disp);
 
   // Calculate the average tangential fractions of the structure velocities at the interface and
   // provide them to the lubrication field
@@ -225,10 +225,10 @@ void EHL::Base::SetStructSolution(Teuchos::RCP<const Epetra_Vector> disp)
   set_relative_velocity_field();
 
   // Provide the gap at the interface
-  SetHeightField();
+  set_height_field();
 
   // provide the heightdot (time derivative of the gap)
-  SetHeightDot();
+  set_height_dot();
 
   // Create DBC map for unprojectable nodes
   setup_unprojectable_dbc();
@@ -270,7 +270,7 @@ Teuchos::RCP<Epetra_Vector> EHL::Base::EvaluateFluidForce(
 
   // External force vector (global)
   Teuchos::RCP<Epetra_Vector> strforce =
-      Teuchos::rcp(new Epetra_Vector(*(structure_->DofRowMap())));
+      Teuchos::rcp(new Epetra_Vector(*(structure_->dof_row_map())));
 
   // Insert both interface forces into the global force vector
   slaverowmapextr_->InsertVector(slaveiforce, 0, strforce);
@@ -296,7 +296,7 @@ void EHL::Base::AddPressureForce(
   Teuchos::RCP<Epetra_Vector> stritraction;
 
   Teuchos::RCP<Epetra_Vector> p_full =
-      Teuchos::rcp(new Epetra_Vector(*lubrication_->LubricationField()->DofRowMap(1)));
+      Teuchos::rcp(new Epetra_Vector(*lubrication_->LubricationField()->dof_row_map(1)));
   if (lubrimaptransform_->Apply(*lubrication_->LubricationField()->Prenp(), *p_full))
     FOUR_C_THROW("apply failed");
   Teuchos::RCP<Epetra_Vector> p_exp =
@@ -385,7 +385,7 @@ void EHL::Base::AddCouetteForce(
 
   DRT::Discretization& lub_dis = *lubrication_->LubricationField()->Discretization();
   Teuchos::RCP<Epetra_Vector> visc_vec =
-      Teuchos::rcp(new Epetra_Vector(*lubrication_->LubricationField()->DofRowMap(1)));
+      Teuchos::rcp(new Epetra_Vector(*lubrication_->LubricationField()->dof_row_map(1)));
   for (int i = 0; i < lub_dis.NodeRowMap()->NumMyElements(); ++i)
   {
     DRT::Node* lnode = lub_dis.lRowNode(i);
@@ -448,7 +448,7 @@ void EHL::Base::set_relative_velocity_field()
 /*----------------------------------------------------------------------*
  | set film height on lubrication field                      wirtz 01/15 |
  *----------------------------------------------------------------------*/
-void EHL::Base::SetHeightField()
+void EHL::Base::set_height_field()
 {
   //  const Teuchos::RCP<CORE::LINALG::SparseMatrix> mortardinv = mortaradapter_->GetDinvMatrix();
   Teuchos::RCP<Epetra_Vector> discretegap =
@@ -463,13 +463,13 @@ void EHL::Base::SetHeightField()
   Teuchos::RCP<Epetra_Vector> height = ada_strDisp_to_lubDisp_->MasterToSlave(discretegap);
 
   // provide film height to lubrication discretization
-  lubrication_->LubricationField()->SetHeightField(1, height);
+  lubrication_->LubricationField()->set_height_field(1, height);
 }
 
 /*----------------------------------------------------------------------*
  | set time derivative of film height on lubrication field   Faraji 03/18|
  *----------------------------------------------------------------------*/
-void EHL::Base::SetHeightDot()
+void EHL::Base::set_height_dot()
 {
   Teuchos::RCP<Epetra_Vector> heightdot =
       Teuchos::rcp(new Epetra_Vector(*(mortaradapter_->Nodal_Gap())));
@@ -493,7 +493,7 @@ void EHL::Base::SetHeightDot()
 /*----------------------------------------------------------------------*
  | set structure mesh displacement on lubrication field     wirtz 03/15 |
  *----------------------------------------------------------------------*/
-void EHL::Base::SetMeshDisp(Teuchos::RCP<const Epetra_Vector> disp)
+void EHL::Base::set_mesh_disp(Teuchos::RCP<const Epetra_Vector> disp)
 {
   // Extract the structure displacement at the slave-side interface
   Teuchos::RCP<Epetra_Vector> slaveidisp = CORE::LINALG::CreateVector(
@@ -531,7 +531,7 @@ void EHL::Base::setup_unprojectable_dbc()
       for (int e = 0; e < cnode->NumElement(); ++e)
       {
         DRT::Element* ele = cnode->Elements()[e];
-        for (int nn = 0; nn < ele->NumNode(); ++nn)
+        for (int nn = 0; nn < ele->num_node(); ++nn)
         {
           CONTACT::Node* cnn = dynamic_cast<CONTACT::Node*>(ele->Nodes()[nn]);
           if (!cnn) FOUR_C_THROW("cast failed");
@@ -584,7 +584,7 @@ void EHL::Base::setup_unprojectable_dbc()
 /*----------------------------------------------------------------------*
  | setup adapters for EHL on boundary                       wirtz 01/15 |
  *----------------------------------------------------------------------*/
-void EHL::Base::SetupFieldCoupling(
+void EHL::Base::setup_field_coupling(
     const std::string struct_disname, const std::string lubrication_disname)
 {
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
@@ -614,15 +614,15 @@ void EHL::Base::SetupFieldCoupling(
   mortaradapter_->Setup(structdis, structdis, coupleddof, "EHLCoupling");
 
   if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-          mortaradapter_->Interface()->InterfaceParams(), "STRATEGY") !=
+          mortaradapter_->Interface()->interface_params(), "STRATEGY") !=
       INPAR::CONTACT::solution_ehl)
     FOUR_C_THROW("you need to set ---CONTACT DYNAMIC: STRATEGY   Ehl");
 
   Teuchos::RCP<Epetra_Vector> idisp = CORE::LINALG::CreateVector(
-      *(structdis->DofRowMap()), true);  // Structure displacement at the lubricated interface
+      *(structdis->dof_row_map()), true);  // Structure displacement at the lubricated interface
   mortaradapter_->Interface()->Initialize();
-  mortaradapter_->Interface()->SetState(MORTAR::state_old_displacement, *idisp);
-  mortaradapter_->Interface()->SetState(MORTAR::state_new_displacement, *idisp);
+  mortaradapter_->Interface()->set_state(MORTAR::state_old_displacement, *idisp);
+  mortaradapter_->Interface()->set_state(MORTAR::state_new_displacement, *idisp);
   mortaradapter_->Interface()->evaluate_nodal_normals();
   mortaradapter_->Interface()->ExportNodalNormals();
   mortaradapter_->Interface()->StoreToOld(MORTAR::StrategyBase::n_old);
@@ -638,11 +638,11 @@ void EHL::Base::SetupFieldCoupling(
 
   // Map extractors with the structure dofs as full maps and local interface maps
   slaverowmapextr_ = Teuchos::rcp(
-      new CORE::LINALG::MapExtractor(*(structdis->DofRowMap()), slavedofrowmap, false));
+      new CORE::LINALG::MapExtractor(*(structdis->dof_row_map()), slavedofrowmap, false));
   masterrowmapextr_ = Teuchos::rcp(
-      new CORE::LINALG::MapExtractor(*(structdis->DofRowMap()), masterdofrowmap, false));
+      new CORE::LINALG::MapExtractor(*(structdis->dof_row_map()), masterdofrowmap, false));
   mergedrowmapextr_ = Teuchos::rcp(
-      new CORE::LINALG::MapExtractor(*(structdis->DofRowMap()), mergeddofrowmap, false));
+      new CORE::LINALG::MapExtractor(*(structdis->dof_row_map()), mergeddofrowmap, false));
 
 
   //----------------------------------------------------------
@@ -651,15 +651,15 @@ void EHL::Base::SetupFieldCoupling(
   Teuchos::RCP<Epetra_Map> strucnodes = mortaradapter_->Interface()->SlaveRowNodes();
   const Epetra_Map* lubrinodes = lubricationdis->NodeRowMap();
   ada_strDisp_to_lubDisp_ = Teuchos::rcp(new CORE::ADAPTER::Coupling);
-  ada_strDisp_to_lubDisp_->SetupCoupling(
+  ada_strDisp_to_lubDisp_->setup_coupling(
       *structdis, *lubricationdis, *strucnodes, *lubrinodes, ndim, true, 1.e-8, 0, 1);
 
   ada_lubPres_to_lubDisp_ = Teuchos::rcp(new CORE::ADAPTER::Coupling);
-  ada_lubPres_to_lubDisp_->SetupCoupling(*lubricationdis, *lubricationdis,
+  ada_lubPres_to_lubDisp_->setup_coupling(*lubricationdis, *lubricationdis,
       *lubricationdis->NodeRowMap(), *lubricationdis->NodeRowMap(), 1, true, 1.e-8, 0, 1);
 
   ada_strDisp_to_lubPres_ = Teuchos::rcp(new CORE::ADAPTER::Coupling);
-  ada_strDisp_to_lubPres_->SetupCoupling(mortaradapter_->Interface()->Discret(), *lubricationdis,
+  ada_strDisp_to_lubPres_->setup_coupling(mortaradapter_->Interface()->Discret(), *lubricationdis,
       *mortaradapter_->Interface()->SlaveRowNodes(), *lubricationdis->NodeRowMap(), 1, true, 1.e-3);
 
   // Setup of transformation matrix: slave node map <-> slave disp dof map
@@ -681,7 +681,7 @@ void EHL::Base::SetupFieldCoupling(
 
   // Setup of transformation matrix: lubrication pre dof map <-> lubrication disp dof map
   lubrimaptransform_ = Teuchos::rcp(
-      new CORE::LINALG::SparseMatrix(*(lubricationdis->DofRowMap(1)), 81, false, false));
+      new CORE::LINALG::SparseMatrix(*(lubricationdis->dof_row_map(1)), 81, false, false));
   for (int inode = 0; inode < lubricationdis->NumMyRowNodes(); ++inode)
   {
     DRT::Node* node = lubricationdis->lRowNode(inode);
@@ -690,7 +690,8 @@ void EHL::Base::SetupFieldCoupling(
     for (unsigned int idim = 0; idim < nodedispdofs.size(); idim++)
       lubrimaptransform_->Assemble(1.0, nodedispdofs[idim], nodepredof[0]);
   }
-  lubrimaptransform_->Complete(*(lubricationdis->DofRowMap(0)), *(lubricationdis->DofRowMap(1)));
+  lubrimaptransform_->Complete(
+      *(lubricationdis->dof_row_map(0)), *(lubricationdis->dof_row_map(1)));
 }
 
 
@@ -700,7 +701,7 @@ void EHL::Base::SetupFieldCoupling(
 void EHL::Base::Update()
 {
   heightold_ = mortaradapter_->Nodal_Gap();
-  mortaradapter_->Interface()->SetState(
+  mortaradapter_->Interface()->set_state(
       MORTAR::state_old_displacement, *StructureField()->Dispnp());
   mortaradapter_->Interface()->StoreToOld(MORTAR::StrategyBase::n_old);
   mortaradapter_->Interface()->StoreToOld(MORTAR::StrategyBase::dm);
@@ -752,9 +753,9 @@ void EHL::Base::Output(bool forced_writerestart)
     Teuchos::RCP<Epetra_Vector> n, t;
     mortaradapter_->CreateForceVec(n, t);
     Teuchos::RCP<Epetra_Vector> ne =
-        Teuchos::rcp(new Epetra_Vector(*StructureField()->Discretization()->DofRowMap()));
+        Teuchos::rcp(new Epetra_Vector(*StructureField()->Discretization()->dof_row_map()));
     Teuchos::RCP<Epetra_Vector> te =
-        Teuchos::rcp(new Epetra_Vector(*StructureField()->Discretization()->DofRowMap()));
+        Teuchos::rcp(new Epetra_Vector(*StructureField()->Discretization()->dof_row_map()));
     CORE::LINALG::Export(*n, *ne);
     CORE::LINALG::Export(*t, *te);
     StructureField()->DiscWriter()->WriteVector("normal_contact", ne, IO::dofvector);
@@ -764,7 +765,7 @@ void EHL::Base::Output(bool forced_writerestart)
   //=============================
   // output for lubricationfield:
   //=============================
-  SetMeshDisp(StructureField()->Dispnp());
+  set_mesh_disp(StructureField()->Dispnp());
   lubrication_->LubricationField()->Output(forced_writerestart);
 
   // ============================
@@ -799,7 +800,7 @@ void EHL::Base::Output(bool forced_writerestart)
 
     const int ndim = GLOBAL::Problem::Instance()->NDim();
     Teuchos::RCP<Epetra_Vector> visc_vec =
-        Teuchos::rcp(new Epetra_Vector(*lubrication_->LubricationField()->DofRowMap(1)));
+        Teuchos::rcp(new Epetra_Vector(*lubrication_->LubricationField()->dof_row_map(1)));
     for (int i = 0;
          i < lubrication_->LubricationField()->Discretization()->NodeRowMap()->NumMyElements(); ++i)
     {

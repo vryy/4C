@@ -71,7 +71,7 @@ FLD::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization> dis, CORE::LINALG::S
 void FLD::Meshtying::SetupMeshtying(const std::vector<int>& coupleddof, const bool pcoupled)
 {
   // get pointer to dof row map
-  dofrowmap_ = discret_->DofRowMap();
+  dofrowmap_ = discret_->dof_row_map();
 
   // set whether pressure dof is coupled
   pcoupled_ = pcoupled;
@@ -408,7 +408,7 @@ void FLD::Meshtying::DirichletOnMaster(Teuchos::RCP<const Epetra_Map> bmaps)
   // strategies:
   // (a)  Apply DC on both master and slave side of the internal interface (->disabled)
   //      -> over-constraint system, but nevertheless, result is correct and no solver issues
-  // (b)  DC are projected from the master to the slave side during PrepareTimeStep
+  // (b)  DC are projected from the master to the slave side during prepare_time_step
   //      (in project_master_to_slave_for_overlapping_bc()) (-> disabled)
   //      -> DC also influence slave nodes which are not part of the inflow
   //
@@ -703,9 +703,9 @@ void FLD::Meshtying::condensation_sparse_matrix(
   std::vector<Teuchos::RCP<Epetra_Vector>> splitres(3);
   std::vector<Teuchos::RCP<Epetra_Vector>> splitvel(3);
 
-  SplitMatrix(sysmat, splitmatrix);
-  SplitVector(residual, splitres);
-  SplitVector(velnp, splitvel);
+  split_matrix(sysmat, splitmatrix);
+  split_vector(residual, splitres);
+  split_vector(velnp, splitvel);
 
   /**********************************************************************/
   /* Condensate sparse matrix                                           */
@@ -732,8 +732,8 @@ void FLD::Meshtying::condensation_block_matrix(
   // container for split residual vector
   std::vector<Teuchos::RCP<Epetra_Vector>> splitres(3);
   std::vector<Teuchos::RCP<Epetra_Vector>> splitvel(3);
-  SplitVector(residual, splitres);
-  SplitVector(velnp, splitvel);
+  split_vector(residual, splitres);
+  split_vector(velnp, splitvel);
 
   /**********************************************************************/
   /* Condensate blockmatrix                                             */
@@ -747,8 +747,9 @@ void FLD::Meshtying::condensation_block_matrix(
  | split sparse global system matrix into 3x3 block sparse matrix associated with interior, master,
  and slave dofs   fang 08/15 |
  *------------------------------------------------------------------------------------------------------------------------------*/
-void FLD::Meshtying::SplitMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator>
-                                     matrix,  //!< original sparse global system matrix before split
+void FLD::Meshtying::split_matrix(
+    Teuchos::RCP<CORE::LINALG::SparseOperator>
+        matrix,  //!< original sparse global system matrix before split
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>&
         splitmatrix  //!< resulting block sparse matrix after split
 )
@@ -779,7 +780,7 @@ void FLD::Meshtying::SplitMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator>
 /*-------------------------------------------------------*/
 /*  Split Vector                           ehrl (04/11)  */
 /*-------------------------------------------------------*/
-void FLD::Meshtying::SplitVector(
+void FLD::Meshtying::split_vector(
     Teuchos::RCP<Epetra_Vector> vector, std::vector<Teuchos::RCP<Epetra_Vector>>& splitvector)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  2.2)   - Split Vector");
@@ -795,14 +796,14 @@ void FLD::Meshtying::SplitVector(
   /**********************************************************************/
 
   // do the vector splitting smn -> sm+n
-  CORE::LINALG::SplitVector(*dofrowmap_, *vector, gsmdofrowmap_, fsm, gndofrowmap_, fn);
+  CORE::LINALG::split_vector(*dofrowmap_, *vector, gsmdofrowmap_, fsm, gndofrowmap_, fn);
 
   // we want to split fsm into 2 groups s,m
   fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
 
   // do the vector splitting sm -> s+m
-  CORE::LINALG::SplitVector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
+  CORE::LINALG::split_vector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
 
   // splitvector[ii]
   // fn [0]
@@ -823,7 +824,7 @@ void FLD::Meshtying::split_vector_based_on3x3(
   // container for split residual vector
   std::vector<Teuchos::RCP<Epetra_Vector>> splitvector(3);
 
-  SplitVector(orgvector, splitvector);
+  split_vector(orgvector, splitvector);
   // build up the reduced residual
   CORE::LINALG::Export(*(splitvector[0]), *vectorbasedon2x2);
   CORE::LINALG::Export(*(splitvector[1]), *vectorbasedon2x2);
@@ -901,7 +902,7 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
     dcnm = Teuchos::rcp(new Epetra_Vector(*gndofrowmap_, true));
     dcmm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_, true));
 
-    SplitVector(valuesdc_, splitdcmaster);
+    split_vector(valuesdc_, splitdcmaster);
   }
 
   // get transformation matrix
@@ -1240,7 +1241,7 @@ void FLD::Meshtying::condensation_operation_block_matrix(
     dcnm = Teuchos::rcp(new Epetra_Vector(*gndofrowmap_, true));
     dcmm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_, true));
 
-    SplitVector(valuesdc_, splitdcmaster);
+    split_vector(valuesdc_, splitdcmaster);
   }
 
   // get transformation matrix
@@ -1353,13 +1354,13 @@ void FLD::Meshtying::UpdateSlaveDOF(
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.4)   - Update slave DOF");
 
   // get dof row map
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // split incremental and velocity-pressure vector
   std::vector<Teuchos::RCP<Epetra_Vector>> splitinc(3);
   std::vector<Teuchos::RCP<Epetra_Vector>> splitvel(3);
-  SplitVector(inc, splitinc);
-  SplitVector(velnp, splitvel);
+  split_vector(inc, splitinc);
+  split_vector(velnp, splitvel);
 
   // Dirichlet or Dirichlet-like condition on the master side of the internal interface:
   // First time step:
@@ -1370,7 +1371,7 @@ void FLD::Meshtying::UpdateSlaveDOF(
 
   // split vector containing Dirichlet boundary conditions, if any
   std::vector<Teuchos::RCP<Epetra_Vector>> splitdcmaster(3);
-  if (dconmaster_ and firstnonliniter_) SplitVector(valuesdc_, splitdcmaster);
+  if (dconmaster_ and firstnonliniter_) split_vector(valuesdc_, splitdcmaster);
 
   // get transformation matrix
   Teuchos::RCP<CORE::LINALG::SparseMatrix> P = adaptermeshtying_->GetMortarMatrixP();
@@ -1430,8 +1431,8 @@ void FLD::Meshtying::OutputSetUp()
   {
     // Output:
 
-    /*std::cout << std::endl << "DofRowMap:" << std::endl;
-    std::cout << *(discret_->DofRowMap())<< std::endl << std::endl;
+    /*std::cout << std::endl << "dof_row_map:" << std::endl;
+    std::cout << *(discret_->dof_row_map())<< std::endl << std::endl;
     std::cout << std::endl << "masterDofRowMap:" << std::endl;
     std::cout << *(adaptermeshtying_->MasterDofRowMap())<< std::endl << std::endl;
     std::cout << "slaveDofRowMap:" << std::endl;
@@ -1460,7 +1461,7 @@ void FLD::Meshtying::output_sparse_matrix_split(Teuchos::RCP<CORE::LINALG::Spars
 {
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> splitmatrix;
 
-  SplitMatrix(conmat, splitmatrix);
+  split_matrix(conmat, splitmatrix);
 
   std::cout << "Teil nn " << std::endl << splitmatrix->Matrix(0, 0) << std::endl;
   std::cout << "Teil nm: " << std::endl << splitmatrix->Matrix(0, 1) << std::endl;
@@ -1512,7 +1513,7 @@ void FLD::Meshtying::OutputBlockMatrix(
 void FLD::Meshtying::OutputVectorSplit(Teuchos::RCP<Epetra_Vector> vector)
 {
   std::vector<Teuchos::RCP<Epetra_Vector>> splitvector(3);
-  SplitVector(vector, splitvector);
+  split_vector(vector, splitvector);
 
   // std::cout << "vector " << std::endl << *vector << std::endl << std::endl;
 
@@ -1860,7 +1861,7 @@ void FLD::Meshtying::condensation_operation_block_matrix_shape(
     dcnm = Teuchos::rcp(new Epetra_Vector(*gndofrowmap_, true));
     dcmm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_, true));
 
-    SplitVector(valuesdc_, splitdcmaster);
+    split_vector(valuesdc_, splitdcmaster);
   }
 
   // get transformation matrix

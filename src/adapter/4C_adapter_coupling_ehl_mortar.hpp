@@ -106,7 +106,7 @@ namespace ADAPTER
         const Teuchos::RCP<const Epetra_Vector> x);
 
     virtual void WriteRestart(IO::DiscretizationWriter& output);
-    virtual void ReadRestart(IO::DiscretizationReader& reader);
+    virtual void read_restart(IO::DiscretizationReader& reader);
     void create_active_slip_toggle(Teuchos::RCP<Epetra_Vector>* active,
         Teuchos::RCP<Epetra_Vector>* slip, Teuchos::RCP<Epetra_Vector>* active_old = nullptr);
     void CreateForceVec(Teuchos::RCP<Epetra_Vector>& n, Teuchos::RCP<Epetra_Vector>& t);

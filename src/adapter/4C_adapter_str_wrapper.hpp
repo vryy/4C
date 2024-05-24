@@ -61,7 +61,10 @@ namespace ADAPTER
     //@{
 
     /// initial guess of Newton's method
-    Teuchos::RCP<const Epetra_Vector> InitialGuess() override { return structure_->InitialGuess(); }
+    Teuchos::RCP<const Epetra_Vector> initial_guess() override
+    {
+      return structure_->initial_guess();
+    }
 
     /// right-hand-side of Newton's method
     Teuchos::RCP<const Epetra_Vector> RHS() override { return structure_->RHS(); }
@@ -115,12 +118,12 @@ namespace ADAPTER
     //@{
 
     /// dof map of vector of unknowns
-    Teuchos::RCP<const Epetra_Map> DofRowMap() override { return structure_->DofRowMap(); }
+    Teuchos::RCP<const Epetra_Map> dof_row_map() override { return structure_->dof_row_map(); }
 
     /// dof map of vector of unknowns for multiple dof sets
-    Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) override
+    Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) override
     {
-      return structure_->DofRowMap(nds);
+      return structure_->dof_row_map(nds);
     }
 
     /// view of dof map of vector of vector of unknowns
@@ -221,7 +224,7 @@ namespace ADAPTER
     void Reset() override { structure_->Reset(); }
 
     /// reset last time step, needed for time step size adaptivity in FSI
-    void ResetStep() override { structure_->ResetStep(); }
+    void reset_step() override { structure_->reset_step(); }
 
     //@}
 
@@ -233,7 +236,7 @@ namespace ADAPTER
     [[nodiscard]] double TimIntParam() const override { return structure_->TimIntParam(); }
 
     //! Sets the current time \f$t_{n}\f$
-    void SetTime(const double time) override { structure_->SetTime(time); }
+    void set_time(const double time) override { structure_->set_time(time); }
 
     //! Sets the target time \f$t_{n+1}\f$ of this time step
     void SetTimen(const double time) override { structure_->SetTimen(time); }
@@ -282,10 +285,10 @@ namespace ADAPTER
     [[nodiscard]] bool NotFinished() const override { return structure_->NotFinished(); }
 
     /// set time step size
-    void SetDt(const double dtnew) override { structure_->SetDt(dtnew); }
+    void set_dt(const double dtnew) override { structure_->set_dt(dtnew); }
 
     /// start new time step
-    void PrepareTimeStep() override { structure_->PrepareTimeStep(); }
+    void prepare_time_step() override { structure_->prepare_time_step(); }
 
     /// update displacment
     void update_state_incrementally(
@@ -335,7 +338,7 @@ namespace ADAPTER
     }
 
     /// prepare output (i.e. calculate stresses, strains, energies)
-    void PrepareOutput(bool force_prepare) override { structure_->PrepareOutput(force_prepare); }
+    void prepare_output(bool force_prepare) override { structure_->prepare_output(force_prepare); }
 
     /// Get restart data
     void GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
@@ -359,7 +362,7 @@ namespace ADAPTER
     void PrintStep() override { structure_->PrintStep(); }
 
     /// read restart information for given time step
-    void ReadRestart(const int step) override { structure_->ReadRestart(step); }
+    void read_restart(const int step) override { structure_->read_restart(step); }
 
     /// set restart information for parameter continuation
     void SetRestart(int step, double time, Teuchos::RCP<Epetra_Vector> disn,
@@ -371,7 +374,7 @@ namespace ADAPTER
     }
 
     /// set the state of the nox group and the global state data container (implicit only)
-    void SetState(const Teuchos::RCP<Epetra_Vector>& x) override { structure_->SetState(x); }
+    void set_state(const Teuchos::RCP<Epetra_Vector>& x) override { structure_->set_state(x); }
 
     /// set evaluation action
     void SetActionType(const DRT::ELEMENTS::ActionType& action) override
@@ -379,7 +382,7 @@ namespace ADAPTER
       structure_->SetActionType(action);
     }
 
-    /// wrapper for things that should be done before PrepareTimeStep is called
+    /// wrapper for things that should be done before prepare_time_step is called
     void PrePredict() override { structure_->PrePredict(); }
 
     /// wrapper for things that should be done before solving the nonlinear iterations
@@ -389,7 +392,7 @@ namespace ADAPTER
     void PreUpdate() override { structure_->PreUpdate(); }
 
     /// wrapper for things that should be done after solving the update
-    void PostUpdate() override { structure_->PostUpdate(); }
+    void post_update() override { structure_->post_update(); }
 
     /// wrapper for things that should be done after the output
     void PostOutput() override { structure_->PostOutput(); }
@@ -531,7 +534,7 @@ namespace ADAPTER
     {
     }
 
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     //! Evaluate() routine that can handle NOX step increments by computing the
     //! last iteration increment needed for structural Evaluate() call

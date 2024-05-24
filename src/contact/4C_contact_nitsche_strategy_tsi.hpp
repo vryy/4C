@@ -36,24 +36,24 @@ namespace CONTACT
   {
    public:
     //! Standard constructor
-    NitscheStrategyTsi(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
+    NitscheStrategyTsi(const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params,
         std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
         Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof)
         : NitscheStrategy(
-              DofRowMap, NodeRowMap, params, std::move(interface), dim, comm, alphaf, maxdof),
+              dof_row_map, NodeRowMap, params, std::move(interface), dim, comm, alphaf, maxdof),
           fix_redistribution_(true)
     {
     }
 
     //! Shared data constructor
     NitscheStrategyTsi(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
-        const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
+        const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params,
         std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
         Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof)
-        : NitscheStrategy(data_ptr, DofRowMap, NodeRowMap, params, std::move(interface), dim, comm,
-              alphaf, maxdof),
+        : NitscheStrategy(data_ptr, dof_row_map, NodeRowMap, params, std::move(interface), dim,
+              comm, alphaf, maxdof),
           fix_redistribution_(true)
     {
     }
@@ -75,7 +75,7 @@ namespace CONTACT
     void Setup(bool redistributed, bool init) override;
 
     void update_trace_ineq_etimates() override;
-    void SetState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
+    void set_state(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
 
     void SetParentState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
 

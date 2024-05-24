@@ -105,7 +105,7 @@ namespace LUBRICATION
     //! set the nodal film height
     void set_height_field_pure_lub(const int nds);
     //! set the nodal film height
-    void SetHeightField(const int nds, Teuchos::RCP<const Epetra_Vector> gap);
+    void set_height_field(const int nds, Teuchos::RCP<const Epetra_Vector> gap);
 
     //! set the time derivative of the height (film thickness) by OST
     void SetHeightDotField(const int nds, Teuchos::RCP<const Epetra_Vector> heightdot);
@@ -121,16 +121,16 @@ namespace LUBRICATION
     virtual void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) = 0;
 
     //! prepare time loop
-    virtual void PrepareTimeLoop();
+    virtual void prepare_time_loop();
 
     //! setup the variables to do a new time step
-    virtual void PrepareTimeStep();
+    virtual void prepare_time_step();
 
     //! initialization procedure prior to evaluation of first time step
     virtual void prepare_first_time_step();
 
     //! read restart data
-    virtual void ReadRestart(int step) = 0;
+    virtual void read_restart(int step) = 0;
 
     /*--- calculate and update -----------------------------------------------*/
 
@@ -155,7 +155,7 @@ namespace LUBRICATION
     /*--- query and output ---------------------------------------------------*/
 
     //! print information about current time step to screen
-    virtual void PrintTimeStepInfo();
+    virtual void print_time_step_info();
 
     //! return system matrix downcasted as sparse matrix
     Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix();
@@ -183,9 +183,9 @@ namespace LUBRICATION
     void Evaluate();
 
     //! non-overlapping DOF map for multiple dofsets
-    Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds = 0)
+    Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds = 0)
     {
-      const Epetra_Map* dofrowmap = discret_->DofRowMap(nds);
+      const Epetra_Map* dofrowmap = discret_->dof_row_map(nds);
       return Teuchos::rcp(new Epetra_Map(*dofrowmap));
     }
 
@@ -286,7 +286,7 @@ namespace LUBRICATION
     );
 
     //! call elements to calculate system matrix and rhs and assemble
-    virtual void AssembleMatAndRHS();
+    virtual void assemble_mat_and_rhs();
 
     //! return the right time-scaling-factor for the true residual
     virtual double ResidualScaling() const = 0;
@@ -315,7 +315,7 @@ namespace LUBRICATION
     bool DoOutput() { return ((step_ % upres_ == 0) or (step_ % uprestart_ == 0)); };
 
     //! write state vectors prenp to BINIO
-    virtual void OutputState();
+    virtual void output_state();
 
     //! write state vectors prenp to Gmsh postprocessing files
     void OutputToGmsh(const int step, const double time) const;

@@ -85,7 +85,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatAndRhs(
 
   // 2b) element matrix: additional term arising from concentration dependency of diffusion
   // coefficient
-  CalcMatDiffCoeffLin(emat, k, timefacfac, VarManager()->GradPhi(k), 1.);
+  CalcMatDiffCoeffLin(emat, k, timefacfac, var_manager()->GradPhi(k), 1.);
 
   // 2c) element matrix: conservative part of convective term, needed for deforming electrodes,
   //                     i.e., for scalar-structure interaction
@@ -93,7 +93,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatAndRhs(
   if (my::scatrapara_->IsConservative())
   {
     my::GetDivergence(vdiv, my::evelnp_);
-    my::CalcMatConvAddCons(emat, k, timefacfac, vdiv, 1.);
+    my::calc_mat_conv_add_cons(emat, k, timefacfac, vdiv, 1.);
   }
 
   //----------------------------------------------------------------------------
@@ -107,11 +107,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatAndRhs(
 
   // 3b) element rhs: standard Galerkin contributions from rhsint vector (contains body force vector
   // and history vector) need to adapt rhsint vector to time integration scheme first
-  my::ComputeRhsInt(rhsint, 1., 1., VarManager()->Hist(k));
+  my::ComputeRhsInt(rhsint, 1., 1., var_manager()->Hist(k));
   my::calc_rhs_hist_and_source(erhs, k, fac, rhsint);
 
   // 3c) element rhs: standard Galerkin diffusion term
-  my::CalcRHSDiff(erhs, k, rhsfac);
+  my::calc_rhs_diff(erhs, k, rhsfac);
 
   // 3d) element rhs: conservative part of convective term, needed for deforming electrodes,
   //                  i.e., for scalar-structure interaction
@@ -139,7 +139,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
   //--------------------------------------------------------------------
 
   // element matrix: standard Galerkin terms from potential equation
-  calc_mat_pot_equ_divi_ohm(emat, timefacfac, VarManager()->InvF(), VarManager()->GradPot(), 1.);
+  calc_mat_pot_equ_divi_ohm(emat, timefacfac, var_manager()->InvF(), var_manager()->GradPot(), 1.);
 
   //----------------------------------------------------------------------------
   // 5) element right hand side vector (negative residual of nonlinear problem):
@@ -147,7 +147,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
   //----------------------------------------------------------------------------
 
   // element rhs: standard Galerkin terms from potential equation
-  calc_rhs_pot_equ_divi_ohm(erhs, rhsfac, VarManager()->InvF(), VarManager()->GradPot(), 1.);
+  calc_rhs_pot_equ_divi_ohm(erhs, rhsfac, var_manager()->InvF(), var_manager()->GradPot(), 1.);
 
   // safety check
   if (my::bodyforce_[my::numscal_].Dot(my::funct_) != 0.0)
@@ -173,8 +173,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcDiffODMesh
 
   // call base class routine again to compute linearizations of Ohmic overpotential w.r.t.
   // structural displacements
-  my::CalcDiffODMesh(emat, 1, ndofpernodemesh, VarManager()->InvF() * DiffManager()->GetCond(), fac,
-      rhsfac, J, VarManager()->GradPot(), convelint, dJ_dmesh);
+  my::CalcDiffODMesh(emat, 1, ndofpernodemesh, var_manager()->InvF() * diff_manager()->GetCond(),
+      fac, rhsfac, J, var_manager()->GradPot(), convelint, dJ_dmesh);
 }
 
 /*----------------------------------------------------------------------*
@@ -196,7 +196,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatDiffCoe
       my::get_laplacian_weak_form_rhs(laplawfrhs_gradphi, gradphi, vi);
 
       emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + k) +=
-          scalar * timefacfac * DiffManager()->get_conc_deriv_iso_diff_coef(k, k) *
+          scalar * timefacfac * diff_manager()->get_conc_deriv_iso_diff_coef(k, k) *
           laplawfrhs_gradphi * my::funct_(ui);
     }
   }
@@ -221,7 +221,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calc_mat_pot_e
       // (grad w, 1/F kappa D(grad pot))
       //
       emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + my::numscal_) +=
-          scalar * timefacfac * invf * DiffManager()->GetCond() * laplawf;
+          scalar * timefacfac * invf * diff_manager()->GetCond() * laplawf;
 
       for (int iscal = 0; iscal < my::numscal_; ++iscal)
       {
@@ -233,7 +233,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calc_mat_pot_e
         // (grad w, 1/F kappa D(grad pot))
         //
         emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + iscal) +=
-            scalar * timefacfac * invf * DiffManager()->GetConcDerivCond(iscal) * my::funct_(ui) *
+            scalar * timefacfac * invf * diff_manager()->GetConcDerivCond(iscal) * my::funct_(ui) *
             laplawfrhs_gradpot;
       }
     }
@@ -264,7 +264,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calc_rhs_pot_e
     my::get_laplacian_weak_form_rhs(laplawfrhs_gradpot, gradpot, vi);
 
     erhs[vi * my::numdofpernode_ + my::numscal_] -=
-        scalar * rhsfac * invf * DiffManager()->GetCond() * laplawfrhs_gradpot;
+        scalar * rhsfac * invf * diff_manager()->GetCond() * laplawfrhs_gradpot;
   }
 }
 
@@ -282,7 +282,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::GetMaterialPar
   if (material->MaterialType() == CORE::Materials::m_electrode)
   {
     Utils()->MatElectrode(
-        material, VarManager()->Phinp(0), VarManager()->Temperature(), DiffManager());
+        material, var_manager()->Phinp(0), var_manager()->Temperature(), diff_manager());
   }
   else
     FOUR_C_THROW("Material type not supported!");

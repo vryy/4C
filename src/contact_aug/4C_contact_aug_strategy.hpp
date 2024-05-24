@@ -598,7 +598,7 @@ namespace CONTACT
       enum INPAR::CONTACT::VariationalApproach var_type_;
 
       /// global or gp/nodal finite difference check?
-      enum INPAR::CONTACT::FDCheck fd_check_type_;
+      enum INPAR::CONTACT::FdCheck fd_check_type_;
 
       /// pointer to the potential object
       Teuchos::RCP<CONTACT::AUG::Potential> potentialPtr_;
@@ -738,7 +738,7 @@ namespace CONTACT
      public:
       //! Standard constructor
       Strategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
-          const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
+          const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
           const Teuchos::ParameterList& params, const plain_interface_set& interfaces, int dim,
           const Teuchos::RCP<const Epetra_Comm>& comm, int maxdof);
 
@@ -1131,12 +1131,12 @@ namespace CONTACT
         void Init(Strategy* strat, const double delta = 1.0e-8);
 
         /// apply the perturbation
-        void DoPerturbation(const int gid, const int dof);
+        void do_perturbation(const int gid, const int dof);
 
         /// undo the perturbation
-        void UndoPerturbation(const int gid, const int dof) const;
+        void undo_perturbation(const int gid, const int dof) const;
 
-        DRT::Node* FindINode(const int gid) const;
+        DRT::Node* find_i_node(const int gid) const;
 
         /// call back to the wrapping strategy
         Strategy* strat_;
@@ -1160,7 +1160,7 @@ namespace CONTACT
        *  \param init          (in) : initialization is running
        *
        *  \author hiermeier \date 03/2016 */
-      void PostSetup(bool redistributed, bool init) override;
+      void post_setup(bool redistributed, bool init) override;
 
       /*! \brief Run at the beginning of a call to EvalForce
        *

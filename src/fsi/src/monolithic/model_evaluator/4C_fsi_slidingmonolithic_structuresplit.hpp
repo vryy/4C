@@ -97,7 +97,7 @@ namespace FSI
     //! @name Apply current field state to system
 
     /// setup composed system matrix from field solvers
-    void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
+    void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
 
     //@}
 
@@ -107,20 +107,20 @@ namespace FSI
     //! @name Methods for infnorm-scaling of the system
 
     /// apply infnorm scaling to linear block system
-    void ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat,  ///< Jacobian matrix
-        Epetra_Vector& b                                        ///< right hand side
+    void scale_system(CORE::LINALG::BlockSparseMatrixBase& mat,  ///< Jacobian matrix
+        Epetra_Vector& b                                         ///< right hand side
         ) override;
 
     /// undo infnorm scaling from scaled solution
-    void UnscaleSolution(CORE::LINALG::BlockSparseMatrixBase& mat,  ///< Jacobian matrix
-        Epetra_Vector& x,                                           ///< solution vector
-        Epetra_Vector& b                                            ///< right hand side
+    void unscale_solution(CORE::LINALG::BlockSparseMatrixBase& mat,  ///< Jacobian matrix
+        Epetra_Vector& x,                                            ///< solution vector
+        Epetra_Vector& b                                             ///< right hand side
         ) override;
 
     //@}
 
     /// read restart
-    void ReadRestart(int step  ///< step where we resatart from
+    void read_restart(int step  ///< step where we resatart from
         ) override;
 
     /*! \brief Recover Lagrange multiplier \f$\lambda_\Gamma\f$
@@ -219,12 +219,12 @@ namespace FSI
 
     Teuchos::RCP<ADAPTER::FluidFSIMsht> FsiFluidField()
     {
-      return Teuchos::rcp_static_cast<ADAPTER::FluidFSIMsht>(FluidField());
+      return Teuchos::rcp_static_cast<ADAPTER::FluidFSIMsht>(fluid_field());
     }
 
     Teuchos::RCP<ADAPTER::AleFsiMshtWrapper> FsiAleField()
     {
-      return Teuchos::rcp_static_cast<ADAPTER::AleFsiMshtWrapper>(AleField());
+      return Teuchos::rcp_static_cast<ADAPTER::AleFsiMshtWrapper>(ale_field());
     }
 
    protected:
@@ -239,14 +239,14 @@ namespace FSI
     void OutputLambda() override;
 
     /// setup solver for global block system
-    Teuchos::RCP<::NOX::Epetra::LinearSystem> CreateLinearSystem(
+    Teuchos::RCP<::NOX::Epetra::LinearSystem> create_linear_system(
         Teuchos::ParameterList& nlParams,  ///< parameter list
         ::NOX::Epetra::Vector& noxSoln,    ///< solution vector
         Teuchos::RCP<::NOX::Utils> utils   ///< printing utilities
         ) override;
 
     /// setup of NOX convergence tests
-    Teuchos::RCP<::NOX::StatusTest::Combo> CreateStatusTest(
+    Teuchos::RCP<::NOX::StatusTest::Combo> create_status_test(
         Teuchos::ParameterList& nlParams,       ///< parameter list
         Teuchos::RCP<::NOX::Epetra::Group> grp  ///< the NOX group
         ) override;
@@ -264,7 +264,7 @@ namespace FSI
      *
      *  \sa  ADAPTER::FluidFSI::velocity_to_displacement()
      */
-    void ExtractFieldVectors(
+    void extract_field_vectors(
         Teuchos::RCP<const Epetra_Vector> x,    ///< composed vector that contains all field vectors
         Teuchos::RCP<const Epetra_Vector>& sx,  ///< structural displacements
         Teuchos::RCP<const Epetra_Vector>& fx,  ///< fluid velocities and pressure
@@ -293,15 +293,15 @@ namespace FSI
     void setup_dbc_map_extractor() override;
 
     /// setup RHS contributions based on single field residuals
-    void SetupRHSResidual(Epetra_Vector& f) override;
+    void setup_rhs_residual(Epetra_Vector& f) override;
 
     /// setup RHS contributions based on the Lagrange multiplier field
-    void SetupRHSLambda(Epetra_Vector& f) override;
+    void setup_rhs_lambda(Epetra_Vector& f) override;
 
     /// setup RHS contributions based on terms for first nonlinear iteration
-    void SetupRHSFirstiter(Epetra_Vector& f) override;
+    void setup_rhs_firstiter(Epetra_Vector& f) override;
 
-    void CombineFieldVectors(Epetra_Vector& v, Teuchos::RCP<const Epetra_Vector> sv,
+    void combine_field_vectors(Epetra_Vector& v, Teuchos::RCP<const Epetra_Vector> sv,
         Teuchos::RCP<const Epetra_Vector> fv, Teuchos::RCP<const Epetra_Vector> av,
         const bool slave_vectors_contain_interface_dofs) final;
 

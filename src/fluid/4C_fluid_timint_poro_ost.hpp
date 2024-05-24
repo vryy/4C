@@ -43,7 +43,7 @@ namespace FLD
     \brief read restart data
 
     */
-    void ReadRestart(int step) override;
+    void read_restart(int step) override;
 
    protected:
    private:

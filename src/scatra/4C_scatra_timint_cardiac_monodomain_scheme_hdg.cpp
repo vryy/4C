@@ -67,9 +67,9 @@ void SCATRA::TimIntCardiacMonodomainHDG::element_material_time_update()
   CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::time_update_material, eleparams);
 
-  discret_->SetState("phiaf", phinp_);
-  discret_->SetState(nds_intvar_, "intphin", intphin_);
-  discret_->SetState(0, "phin", phin_);
+  discret_->set_state("phiaf", phinp_);
+  discret_->set_state(nds_intvar_, "intphin", intphin_);
+  discret_->set_state(0, "phin", phin_);
 
 
   CORE::LINALG::SerialDenseMatrix dummyMat;
@@ -90,10 +90,10 @@ void SCATRA::TimIntCardiacMonodomainHDG::element_material_time_update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainHDG::OutputState()
+void SCATRA::TimIntCardiacMonodomainHDG::output_state()
 {
   // Call function from base class
-  SCATRA::TimIntHDG::OutputState();
+  SCATRA::TimIntHDG::output_state();
 
   if (nb_max_mat_int_state_vars_)
   {
@@ -220,11 +220,11 @@ void SCATRA::TimIntCardiacMonodomainHDG::ProjectMaterial()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainHDG::ReadRestart(
+void SCATRA::TimIntCardiacMonodomainHDG::read_restart(
     const int step, Teuchos::RCP<IO::InputControl> input)
 {
   // Call function from base class
-  SCATRA::TimIntHDG::ReadRestart(step, input);
+  SCATRA::TimIntHDG::read_restart(step, input);
 
   activation_time_interpol_.reset(new Epetra_Vector(*discret_->NodeRowMap()));
 }

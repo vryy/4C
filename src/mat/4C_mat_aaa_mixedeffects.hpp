@@ -131,7 +131,7 @@ namespace MAT
     double Density() const override { return params_->density_; }
 
     /// shear modulus
-    double ShearMod(double elelocalrad) const
+    double shear_mod(double elelocalrad) const
     {
       return  // => 0.5*6*alpha/(1.0+nue)
           3E6 * (0.09631 + 0.03329 * (elelocalrad * 2 / params_->refdia_ - 2.55)) /

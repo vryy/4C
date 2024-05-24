@@ -169,7 +169,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3_epetra);
 
       //! evaluate Neumann boundary condition
-      int EvaluateNeumann(DRT::FaceElement* ele, Teuchos::ParameterList& params,
+      int evaluate_neumann(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1,
           const double scalar) override;
@@ -461,13 +461,13 @@ namespace DRT
       //!
       //! \param xyze   position of boundary nodes
       //! \return       normal vector of boundary element
-      CORE::LINALG::Matrix<3, 1> GetConstNormal(const CORE::LINALG::Matrix<3, nen_>& xyze);
+      CORE::LINALG::Matrix<3, 1> get_const_normal(const CORE::LINALG::Matrix<3, nen_>& xyze);
 
       //! Compute the normal vector for a 1D boundary element in a 2D space
       //!
       //! \param xyze   position of boundary nodes
       //! \return       normal vector of boundary element
-      CORE::LINALG::Matrix<2, 1> GetConstNormal(const CORE::LINALG::Matrix<2, nen_>& xyze);
+      CORE::LINALG::Matrix<2, 1> get_const_normal(const CORE::LINALG::Matrix<2, nen_>& xyze);
 
       //! Compute the normal vector for a 1D boundary element in a 3D space
       //!
@@ -475,7 +475,7 @@ namespace DRT
       //! \param nodes_parent_ele position of 3 nodes in parent element to compute normal vector of
       //! parent element
       //! \return       normal vector of boundary element
-      CORE::LINALG::Matrix<3, 1> GetConstNormal(const CORE::LINALG::Matrix<3, nen_>& xyze,
+      CORE::LINALG::Matrix<3, 1> get_const_normal(const CORE::LINALG::Matrix<3, nen_>& xyze,
           const CORE::LINALG::Matrix<3, 3>& nodes_parent_ele);
 
       //! calculate potential Neumann inflow terms

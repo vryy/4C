@@ -107,37 +107,37 @@ namespace CONTACT
 
       void Execute(const ::NOX::Solver::Generic& solver);
 
-      void LinSpace(
+      void lin_space(
           const double a, const double b, const unsigned n, std::vector<double>& res) const;
 
       const CONTACT::AUG::Strategy& Strategy() const;
 
-      void GetSupportPoints(enum INPAR::CONTACT::PlotSupportType stype,
+      void get_support_points(enum INPAR::CONTACT::PlotSupportType stype,
           CORE::LINALG::SerialDenseMatrix& support_mat_x);
 
       void compute_angle_position();
 
       void compute_distance_position();
 
-      void PlotScalar(const NOX::NLN::CONSTRAINT::Group& ref_grp, const Epetra_Vector& dir,
+      void plot_scalar(const NOX::NLN::CONSTRAINT::Group& ref_grp, const Epetra_Vector& dir,
           NOX::NLN::CONSTRAINT::Group& plot_grp);
 
-      void PlotLine(const NOX::NLN::CONSTRAINT::Group& ref_grp, const Epetra_Vector& dir,
+      void plot_line(const NOX::NLN::CONSTRAINT::Group& ref_grp, const Epetra_Vector& dir,
           NOX::NLN::CONSTRAINT::Group& plot_grp);
 
-      void PlotSurface(const NOX::NLN::CONSTRAINT::Group& ref_grp, const Epetra_Vector& dir,
+      void plot_surface(const NOX::NLN::CONSTRAINT::Group& ref_grp, const Epetra_Vector& dir,
           NOX::NLN::CONSTRAINT::Group& plot_grp);
 
-      void PlotVectorField2D(const NOX::NLN::CONSTRAINT::Group& ref_grp, const Epetra_Vector& dir,
-          NOX::NLN::CONSTRAINT::Group& plot_grp);
+      void plot_vector_field2_d(const NOX::NLN::CONSTRAINT::Group& ref_grp,
+          const Epetra_Vector& dir, NOX::NLN::CONSTRAINT::Group& plot_grp);
 
       void write_surface_data_to_file() const;
 
-      void WriteLineDataToFile() const;
+      void write_line_data_to_file() const;
 
       void write_vector_field_to_file() const;
 
-      void AddFileNameToPath();
+      void add_file_name_to_path();
 
       enum NOX::NLN::MeritFunction::MeritFctName convert_plot_func_name2_merit_func_name(
           const enum INPAR::CONTACT::PlotFuncName pfunc_name) const;
@@ -145,17 +145,17 @@ namespace CONTACT
       enum CONTACT::AUG::WGapGradientType convert_plot_func_name2_w_gap_gradient_type(
           const enum INPAR::CONTACT::PlotFuncName pfunc_name) const;
 
-      const NOX::NLN::CONSTRAINT::Group* GetReferenceGroup(
+      const NOX::NLN::CONSTRAINT::Group* get_reference_group(
           const ::NOX::Solver::Generic& solver) const;
 
-      double GetValue(const enum INPAR::CONTACT::PlotFuncName functype,
+      double get_value(const enum INPAR::CONTACT::PlotFuncName functype,
           NOX::NLN::CONSTRAINT::Group& plot_grp, const double* curr_xy = nullptr,
           const Epetra_Vector* curr_dir = nullptr) const;
 
       double get_nodal_error_at_position(
           const double* pos, const std::vector<std::pair<int, double>>& nodal_error) const;
 
-      void GetVectorValues(const enum INPAR::CONTACT::PlotFuncName functype,
+      void get_vector_values(const enum INPAR::CONTACT::PlotFuncName functype,
           NOX::NLN::CONSTRAINT::Group& plot_grp, const std::vector<const Epetra_Vector*>& dirs,
           std::vector<double>& vec_vals) const;
 
@@ -169,12 +169,12 @@ namespace CONTACT
 
       double characteristic_interface_element_length(const enum CONTACT::AUG::SideType stype) const;
 
-      void ModifyStepLength(const INPAR::CONTACT::PlotSupportType stype, const double alpha,
+      void modify_step_length(const INPAR::CONTACT::PlotSupportType stype, const double alpha,
           const Epetra_Vector& full_x_dir, Epetra_Vector& mod_step) const;
 
-      void ReadRefPoints(const Teuchos::ParameterList& plot_params);
+      void read_ref_points(const Teuchos::ParameterList& plot_params);
 
-      void ReadRefPoint(const Teuchos::ParameterList& plot_params, const std::string& param_name,
+      void read_ref_point(const Teuchos::ParameterList& plot_params, const std::string& param_name,
           double* coords) const;
 
      private:
@@ -206,7 +206,7 @@ namespace CONTACT
         /// call-back
         const Plot& plot_;
 
-        std::string GetFullFilePath(
+        std::string get_full_file_path(
             const std::string& input_file, const std::string& dir_file) const;
 
         void split_into_slave_master_body(const Epetra_Vector& dir,
@@ -215,9 +215,9 @@ namespace CONTACT
         Teuchos::RCP<Epetra_Vector> read_sparse_vector_from_matlab(
             const std::string& dir_file) const;
 
-        bool ExtendFileName(std::string& file_name, const std::string& file_path) const;
+        bool extend_file_name(std::string& file_name, const std::string& file_path) const;
 
-        Teuchos::RCP<Epetra_Map> FindConnectedDofs(
+        Teuchos::RCP<Epetra_Map> find_connected_dofs(
             const DRT::Node* node, const DRT::Discretization& discret) const;
       };
 

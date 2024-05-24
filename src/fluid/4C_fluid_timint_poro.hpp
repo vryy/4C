@@ -40,12 +40,12 @@ namespace FLD
     \brief call elements to calculate system matrix/rhs and assemble
 
     */
-    void AssembleMatAndRHS() override;
+    void assemble_mat_and_rhs() override;
 
     /*!
     \brief read restart data
     */
-    void ReadRestart(int step) override;
+    void read_restart(int step) override;
 
     //! @name Set general parameter in class f3Parameter
     /*!
@@ -76,7 +76,7 @@ namespace FLD
     void Output() override;
 
     /*!
-    \brief Do some poro-specific stuff in AssembleMatAndRHS
+    \brief Do some poro-specific stuff in assemble_mat_and_rhs
 
     */
     virtual void PoroIntUpdate();

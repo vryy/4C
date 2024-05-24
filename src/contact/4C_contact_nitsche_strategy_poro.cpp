@@ -50,7 +50,7 @@ void CONTACT::NitscheStrategyPoro::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector
   //    }
 }
 
-void CONTACT::NitscheStrategyPoro::SetState(
+void CONTACT::NitscheStrategyPoro::set_state(
     const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
 {
   if (statename == MORTAR::state_svelocity)
@@ -58,7 +58,7 @@ void CONTACT::NitscheStrategyPoro::SetState(
     SetParentState(statename, vec);
   }
   else
-    CONTACT::NitscheStrategy::SetState(statename, vec);
+    CONTACT::NitscheStrategy::set_state(statename, vec);
 }
 
 void CONTACT::NitscheStrategyPoro::SetParentState(
@@ -100,7 +100,7 @@ void CONTACT::NitscheStrategyPoro::SetParentState(
           std::vector<double> vel;
           std::vector<double> pres;
 
-          for (int n = 0; n < ele->ParentSlaveElement()->NumNode(); ++n)
+          for (int n = 0; n < ele->ParentSlaveElement()->num_node(); ++n)
           {
             for (unsigned dim = 0; dim < 3; ++dim)
             {
@@ -127,7 +127,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategyPoro::SetupRhsBlockVec(
   {
     case CONTACT::VecBlockType::porofluid:
       return Teuchos::rcp(
-          new Epetra_FEVector(*GLOBAL::Problem::Instance()->GetDis("porofluid")->DofRowMap()));
+          new Epetra_FEVector(*GLOBAL::Problem::Instance()->GetDis("porofluid")->dof_row_map()));
     default:
       return CONTACT::NitscheStrategy::SetupRhsBlockVec(bt);
   }
@@ -155,13 +155,13 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategyPoro::SetupMatr
     case CONTACT::MatBlockType::displ_porofluid:
       return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
-              *GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap()),
+              *GLOBAL::Problem::Instance()->GetDis("structure")->dof_row_map()),
           100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
     case CONTACT::MatBlockType::porofluid_displ:
     case CONTACT::MatBlockType::porofluid_porofluid:
       return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
-              *GLOBAL::Problem::Instance()->GetDis("porofluid")->DofRowMap()),
+              *GLOBAL::Problem::Instance()->GetDis("porofluid")->dof_row_map()),
           100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
     default:
       return CONTACT::NitscheStrategy::SetupMatrixBlockPtr(bt);
@@ -176,16 +176,16 @@ void CONTACT::NitscheStrategyPoro::complete_matrix_block_ptr(
     case CONTACT::MatBlockType::displ_porofluid:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix())
               .GlobalAssemble(
-                  *GLOBAL::Problem::Instance()->GetDis("porofluid")->DofRowMap(),  // col map
-                  *GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap(),  // row map
+                  *GLOBAL::Problem::Instance()->GetDis("porofluid")->dof_row_map(),  // col map
+                  *GLOBAL::Problem::Instance()->GetDis("structure")->dof_row_map(),  // row map
                   true, Add))
         FOUR_C_THROW("GlobalAssemble(...) failed");
       break;
     case CONTACT::MatBlockType::porofluid_displ:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix())
               .GlobalAssemble(
-                  *GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap(),  // col map
-                  *GLOBAL::Problem::Instance()->GetDis("porofluid")->DofRowMap(),  // row map
+                  *GLOBAL::Problem::Instance()->GetDis("structure")->dof_row_map(),  // col map
+                  *GLOBAL::Problem::Instance()->GetDis("porofluid")->dof_row_map(),  // row map
                   true, Add))
         FOUR_C_THROW("GlobalAssemble(...) failed");
       break;

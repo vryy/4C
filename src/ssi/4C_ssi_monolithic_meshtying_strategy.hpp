@@ -39,7 +39,7 @@ namespace SSI
     class SSIMeshTying;
   }  // namespace UTILS
 
-  class SSIMono;
+  class SsiMono;
 
   //! base functionality for scatra structure interaction mesh tying
   class MeshtyingStrategyBase
@@ -220,7 +220,7 @@ namespace SSI
     }
 
     //! position of structure block in system matrix
-    int PositionStructure() const { return position_structure_; };
+    int position_structure() const { return position_structure_; };
 
    private:
     //! position of scatra blocks in system matrix

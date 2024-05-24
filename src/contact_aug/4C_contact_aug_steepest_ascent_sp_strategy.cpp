@@ -30,11 +30,12 @@ CONTACT::AUG::STEEPESTASCENT::DataContainer::DataContainer()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::STEEPESTASCENT_SP::Strategy::Strategy(
-    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
-    const Epetra_Map* NodeRowMap, const Teuchos::ParameterList& params,
-    const plain_interface_set& interfaces, int dim, const Teuchos::RCP<const Epetra_Comm>& comm,
-    int maxdof)
-    : CONTACT::AUG::Strategy(data_ptr, DofRowMap, NodeRowMap, params, interfaces, dim, comm, maxdof)
+    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
+    const Teuchos::ParameterList& params, const plain_interface_set& interfaces, int dim,
+    const Teuchos::RCP<const Epetra_Comm>& comm, int maxdof)
+    : CONTACT::AUG::Strategy(
+          data_ptr, dof_row_map, NodeRowMap, params, interfaces, dim, comm, maxdof)
 {
   Data().init_sub_data_container(INPAR::CONTACT::solution_steepest_ascent_sp);
   const Teuchos::ParameterList& sa_params =
@@ -84,9 +85,9 @@ void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::EvalStrContactRHS()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::PostSetup(bool redistributed, bool init)
+void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::post_setup(bool redistributed, bool init)
 {
-  AUG::Strategy::PostSetup(redistributed, init);
+  AUG::Strategy::post_setup(redistributed, init);
 
   if (init)
   {
@@ -145,7 +146,7 @@ void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::set_penalty_update_state(
       corrtype != NOX::NLN::CorrectionType::vague)
     return;
 
-  Data().SaData().PenaltyUpdate().SetState(cparams, xold, dir);
+  Data().SaData().PenaltyUpdate().set_state(cparams, xold, dir);
 }
 
 /*----------------------------------------------------------------------------*

@@ -630,7 +630,7 @@ double MAT::PlasticElastHyper::StrainEnergyTSI(
   CORE::LINALG::Matrix<3, 1> prinv;
   CORE::LINALG::VOIGT::Strains::InvariantsPrincipal(prinv, elRCGv);
   CORE::LINALG::Matrix<3, 1> modinv;
-  InvariantsModified(modinv, prinv);
+  invariants_modified(modinv, prinv);
 
   // loop map of associated potential summands
   CORE::LINALG::Matrix<6, 1> glstrain(true);

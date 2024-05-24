@@ -33,7 +33,7 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::OctTreeNode::NewPoint(const double* x, Ed
 
   if (p == nullptr)
   {
-    p = &*CreatePoint(points_.size(), x, cut_edge, cut_side, tolerance);  // create the point
+    p = &*create_point(points_.size(), x, cut_edge, cut_side, tolerance);  // create the point
 #if CUT_CREATION_INFO
     new_point = true;
 #endif
@@ -274,7 +274,7 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::OctTreeNode::GetPoint(const double* x, Ed
           }
           if (cut_side != nullptr)
           {
-            mymerge->AddSide(cut_side);
+            mymerge->add_side(cut_side);
           }
           if ((cut_side != nullptr) && (cut_edge != nullptr))
           {
@@ -302,13 +302,13 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::OctTreeNode::GetPoint(const double* x, Ed
 /*-----------------------------------------------------------------------------------------*
  * Get the point with the specified coordinates "x" from the pointpool
  *-----------------------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::GEO::CUT::Point> CORE::GEO::CUT::OctTreeNode::CreatePoint(
+Teuchos::RCP<CORE::GEO::CUT::Point> CORE::GEO::CUT::OctTreeNode::create_point(
     unsigned newid, const double* x, Edge* cut_edge, Side* cut_side, double tolerance)
 {
   if (not IsLeaf())
   {
-    // call recursively CreatePoint for the child where the Point shall lie in
-    Teuchos::RCP<Point> p = Leaf(x)->CreatePoint(newid, x, cut_edge, cut_side, tolerance);
+    // call recursively create_point for the child where the Point shall lie in
+    Teuchos::RCP<Point> p = Leaf(x)->create_point(newid, x, cut_edge, cut_side, tolerance);
     // add the pointer not only in the leaf but also on the current level
     AddPoint(x, p);
     return p;
@@ -316,7 +316,7 @@ Teuchos::RCP<CORE::GEO::CUT::Point> CORE::GEO::CUT::OctTreeNode::CreatePoint(
   else
   {
     // create a new point and add the point at the lowest level
-    Teuchos::RCP<Point> p = CORE::GEO::CUT::CreatePoint(newid, x, cut_edge, cut_side, tolerance);
+    Teuchos::RCP<Point> p = CORE::GEO::CUT::create_point(newid, x, cut_edge, cut_side, tolerance);
     AddPoint(x, p);
     return p;
   }

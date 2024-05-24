@@ -54,7 +54,7 @@ namespace DRT
       }
       // you are still here? So get the node weights for the nurbs element as well
       const DRT::Node* const* nodes = ele->Nodes();
-      const int nen = ele->NumNode();
+      const int nen = ele->num_node();
       for (int inode = 0; inode < nen; inode++)
       {
         const DRT::NURBS::ControlPoint* cp =
@@ -127,7 +127,7 @@ namespace DRT
       }
       // you are still here? So get the node weights as well
       const DRT::Node* const* nodes = boundaryele->Nodes();
-      const int boundarynen = boundaryele->NumNode();
+      const int boundarynen = boundaryele->num_node();
       for (int inode = 0; inode < boundarynen; inode++)
       {
         const DRT::NURBS::ControlPoint* cp =
@@ -181,7 +181,7 @@ namespace DRT
       }
       // you are still here? So get the node weights as well
       DRT::Node** nodes = boundaryele->Nodes();
-      const int boundarynen = boundaryele->NumNode();
+      const int boundarynen = boundaryele->num_node();
       for (int inode = 0; inode < boundarynen; inode++)
       {
         DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode]);
@@ -189,7 +189,7 @@ namespace DRT
       }
 
       DRT::Node** pnodes = parentele->Nodes();
-      const int pnen = parentele->NumNode();
+      const int pnen = parentele->num_node();
       for (int inode = 0; inode < pnen; inode++)
       {
         DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(pnodes[inode]);

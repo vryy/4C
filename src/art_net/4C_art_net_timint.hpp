@@ -81,7 +81,7 @@ namespace ART
     \brief prepare the loop
 
     */
-    void PrepareTimeLoop() override;
+    void prepare_time_loop() override;
 
     /*!
     \brief Do time integration (time loop)
@@ -100,7 +100,7 @@ namespace ART
 
 
     /// setup the variables to do a new time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     /// setup the variables to do a new time step
     void PrepareLinearSolve() override
@@ -110,7 +110,7 @@ namespace ART
     }
 
     /// setup the variables to do a new time step
-    void AssembleMatAndRHS() override
+    void assemble_mat_and_rhs() override
     {
       // each artery integration should overwrite this if used
       FOUR_C_THROW("not implemented");

@@ -41,8 +41,8 @@ THR::TimIntExplEuler::TimIntExplEuler(const Teuchos::ParameterList& ioparams,
   determine_capa_consist_temp_rate();
 
   // allocate force vectors
-  fextn_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
-  fintn_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fextn_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
+  fintn_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
 
   // let it rain
   return;
@@ -67,7 +67,7 @@ void THR::TimIntExplEuler::IntegrateStep()
 
   // build new external forces
   fextn_->PutScalar(0.0);
-  ApplyForceExternal(timen_, tempn_, fextn_);
+  apply_force_external(timen_, tempn_, fextn_);
 
   // interface forces to external forces
   fextn_->Update(1.0, *fifc_, 1.0);
@@ -86,11 +86,11 @@ void THR::TimIntExplEuler::IntegrateStep()
     // create an empty parameter list for the discretisation
     Teuchos::ParameterList p;
     // internal force
-    ApplyForceInternal(p, timen_, dt, tempn_, tempinc, fintn_);
+    apply_force_internal(p, timen_, dt, tempn_, tempinc, fintn_);
   }
 
   // determine time derivative of capacity vector, ie \f$\dot{P} = C . \dot{T}_{n=1}\f$
-  Teuchos::RCP<Epetra_Vector> frimpn = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+  Teuchos::RCP<Epetra_Vector> frimpn = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
   frimpn->Update(1.0, *fextn_, -1.0, *fintn_, 0.0);
 
   // obtain new temperature rates \f$R_{n+1}\f$

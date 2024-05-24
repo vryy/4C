@@ -110,19 +110,19 @@ namespace ADAPTER
     }
 
     //! unique map of all dofs that should be constrained with DBC
-    virtual Teuchos::RCP<const Epetra_Map> CombinedDBCMap();
+    virtual Teuchos::RCP<const Epetra_Map> combined_dbc_map();
 
     //! perform result test
     void TestResults(GLOBAL::Problem* problem);
 
-    //! return poro PoroField
-    const Teuchos::RCP<POROELAST::Monolithic>& PoroField();
+    //! return poro poro_field
+    const Teuchos::RCP<POROELAST::Monolithic>& poro_field();
 
     //! return poro StructureField
     const Teuchos::RCP<FSIStructureWrapper>& StructureField();
 
-    //! return poro FluidField
-    const Teuchos::RCP<ADAPTER::FluidPoro>& FluidField();
+    //! return poro fluid_field
+    const Teuchos::RCP<ADAPTER::FluidPoro>& fluid_field();
 
     //! Insert FSI Condition Vector
     Teuchos::RCP<Epetra_Vector> InsertFSICondVector(Teuchos::RCP<const Epetra_Vector> cond);

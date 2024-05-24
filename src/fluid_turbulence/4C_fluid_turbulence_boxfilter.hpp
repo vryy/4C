@@ -627,7 +627,7 @@ namespace FLD
 
 
 
-    void ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velocity,
+    void apply_box_filter(const Teuchos::RCP<const Epetra_Vector> velocity,
         const Teuchos::RCP<const Epetra_Vector> scalar, const double thermpress,
         const Teuchos::RCP<const Epetra_Vector> dirichtoggle);
 

@@ -65,7 +65,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Evaluate(Teuchos::ParameterList&
 /*----------------------------------------------------------------------*
  | evaluate Neumann boundary condition on boundary element   vuong 08/16 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)

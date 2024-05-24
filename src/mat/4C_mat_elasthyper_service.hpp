@@ -100,7 +100,7 @@ namespace MAT
    * @param ddPII (out) : Second derivatives of the Free-energy function with respect to the
    * principal invariants
    */
-  void ConvertModToPrinc(const CORE::LINALG::Matrix<3, 1>& prinv,
+  void convert_mod_to_princ(const CORE::LINALG::Matrix<3, 1>& prinv,
       const CORE::LINALG::Matrix<3, 1>& dPmodI, const CORE::LINALG::Matrix<6, 1>& ddPmodII,
       CORE::LINALG::Matrix<3, 1>& dPI, CORE::LINALG::Matrix<6, 1>& ddPII);
 

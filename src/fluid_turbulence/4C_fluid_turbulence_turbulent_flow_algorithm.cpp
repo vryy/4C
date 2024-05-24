@@ -39,7 +39,7 @@ FLD::TurbulentFlowAlgorithm::TurbulentFlowAlgorithm(
   fluidalgo_ = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn, fdyn, "fluid", false));
 
   // get the compete fluid discretization
-  fluiddis_ = fluidalgo_->FluidField()->Discretization();
+  fluiddis_ = fluidalgo_->fluid_field()->Discretization();
   if (comm.MyPID() == 0)
   {
     std::cout << "#-----------------------------------------------#" << std::endl;
@@ -87,30 +87,30 @@ void FLD::TurbulentFlowAlgorithm::TimeLoop()
     step_++;
 
     // prepare time integration
-    inflowfluidalgo_->FluidField()->PrepareTimeStep();
+    inflowfluidalgo_->fluid_field()->prepare_time_step();
     if (fluiddis_->Comm().MyPID() == 0)
       printf("#   STEP = %4d/%4d     TIME: %11.4E  DT = %11.4E \n", step_, numtimesteps_,
-          inflowfluidalgo_->FluidField()->Time(), inflowfluidalgo_->FluidField()->Dt());
+          inflowfluidalgo_->fluid_field()->Time(), inflowfluidalgo_->fluid_field()->Dt());
     // slove nonlinear problem
-    inflowfluidalgo_->FluidField()->Solve();
+    inflowfluidalgo_->fluid_field()->Solve();
     // update time integration
-    inflowfluidalgo_->FluidField()->Update();
+    inflowfluidalgo_->fluid_field()->Update();
     // write output of statistics only
     // remark: does also gmsh-output if required
-    inflowfluidalgo_->FluidField()->StatisticsOutput();
+    inflowfluidalgo_->fluid_field()->StatisticsOutput();
 
     // transfer solution of inflow section to fluid discretization
     transfer_inflow_velocity();
 
     // increase time and step only
-    fluidalgo_->FluidField()->increment_time_and_step();
+    fluidalgo_->fluid_field()->increment_time_and_step();
     // velnp is set manually instead of being computed in Solve()
     // replaces Solve
-    fluidalgo_->FluidField()->SetVelocityField(velnp_);
+    fluidalgo_->fluid_field()->SetVelocityField(velnp_);
     // update time integration with given velocity field
-    fluidalgo_->FluidField()->Update();
+    fluidalgo_->fluid_field()->Update();
     // write output
-    fluidalgo_->FluidField()->Output();
+    fluidalgo_->fluid_field()->Output();
   }
 
   if (fluiddis_->Comm().MyPID() == 0)
@@ -137,11 +137,11 @@ void FLD::TurbulentFlowAlgorithm::transfer_inflow_velocity()
     std::cout << "#   transfer solution of inflow section ..." << std::flush;
 
   // velocity/pressure at time n+1 of inflow section
-  Teuchos::RCP<const Epetra_Vector> inflowvelnp = inflowfluidalgo_->FluidField()->Velnp();
+  Teuchos::RCP<const Epetra_Vector> inflowvelnp = inflowfluidalgo_->fluid_field()->Velnp();
 
   // velocity/pressure at time n+1 to be transferred to the complete fluid field
   // get a vector layout from the complete discretization
-  velnp_ = CORE::LINALG::CreateVector(*fluiddis_->DofRowMap(), true);
+  velnp_ = CORE::LINALG::CreateVector(*fluiddis_->dof_row_map(), true);
 
   // get exporter for transfer of dofs from inflow discretization to complete fluid discretization
   Epetra_Export exporter(inflowvelnp->Map(), velnp_->Map());
@@ -158,7 +158,7 @@ void FLD::TurbulentFlowAlgorithm::transfer_inflow_velocity()
 /*---------------------------------------------------------------------------*
  | read restart                                               rasthofer 06/11|
  *---------------------------------------------------------------------------*/
-void FLD::TurbulentFlowAlgorithm::ReadRestart(const int restart)
+void FLD::TurbulentFlowAlgorithm::read_restart(const int restart)
 {
   if (fluiddis_->Comm().MyPID() == 0)
   {
@@ -175,27 +175,27 @@ void FLD::TurbulentFlowAlgorithm::ReadRestart(const int restart)
   step_ = restart;
 
   // read restart for complete discretization
-  fluidalgo_->FluidField()->ReadRestart(restart);
+  fluidalgo_->fluid_field()->read_restart(restart);
 
   // vectors to be transferred to the inflow field
   // get a vector layout from the inflow discretization
   Teuchos::RCP<Epetra_Vector> velnp;
-  velnp = CORE::LINALG::CreateVector(*inflowdis_->DofRowMap(), true);
+  velnp = CORE::LINALG::CreateVector(*inflowdis_->dof_row_map(), true);
   Teuchos::RCP<Epetra_Vector> veln;
-  veln = CORE::LINALG::CreateVector(*inflowdis_->DofRowMap(), true);
+  veln = CORE::LINALG::CreateVector(*inflowdis_->dof_row_map(), true);
   Teuchos::RCP<Epetra_Vector> velnm;
-  velnm = CORE::LINALG::CreateVector(*inflowdis_->DofRowMap(), true);
+  velnm = CORE::LINALG::CreateVector(*inflowdis_->dof_row_map(), true);
   Teuchos::RCP<Epetra_Vector> accnp;
-  accnp = CORE::LINALG::CreateVector(*inflowdis_->DofRowMap(), true);
+  accnp = CORE::LINALG::CreateVector(*inflowdis_->dof_row_map(), true);
   Teuchos::RCP<Epetra_Vector> accn;
-  accn = CORE::LINALG::CreateVector(*inflowdis_->DofRowMap(), true);
+  accn = CORE::LINALG::CreateVector(*inflowdis_->dof_row_map(), true);
 
   // get all vectors of restart
-  Teuchos::RCP<const Epetra_Vector> fluidvelnp = fluidalgo_->FluidField()->Velnp();
-  Teuchos::RCP<const Epetra_Vector> fluidveln = fluidalgo_->FluidField()->Veln();
-  Teuchos::RCP<const Epetra_Vector> fluidvelnm = fluidalgo_->FluidField()->Velnm();
-  Teuchos::RCP<const Epetra_Vector> fluidaccnp = fluidalgo_->FluidField()->Accnp();
-  Teuchos::RCP<const Epetra_Vector> fluidaccn = fluidalgo_->FluidField()->Accn();
+  Teuchos::RCP<const Epetra_Vector> fluidvelnp = fluidalgo_->fluid_field()->Velnp();
+  Teuchos::RCP<const Epetra_Vector> fluidveln = fluidalgo_->fluid_field()->Veln();
+  Teuchos::RCP<const Epetra_Vector> fluidvelnm = fluidalgo_->fluid_field()->Velnm();
+  Teuchos::RCP<const Epetra_Vector> fluidaccnp = fluidalgo_->fluid_field()->Accnp();
+  Teuchos::RCP<const Epetra_Vector> fluidaccn = fluidalgo_->fluid_field()->Accn();
 
   // export vectors to inflow discretization
   int err = 0;
@@ -216,8 +216,8 @@ void FLD::TurbulentFlowAlgorithm::ReadRestart(const int restart)
   if (err != 0) FOUR_C_THROW("Export using exporter returned err=%d", err);
 
   // set values in the inflow field
-  inflowfluidalgo_->FluidField()->SetRestart(
-      restart, fluidalgo_->FluidField()->Time(), velnp, veln, velnm, accnp, accn);
+  inflowfluidalgo_->fluid_field()->SetRestart(
+      restart, fluidalgo_->fluid_field()->Time(), velnp, veln, velnm, accnp, accn);
 
   if (fluiddis_->Comm().MyPID() == 0) std::cout << "#   ... done \n" << std::endl;
 

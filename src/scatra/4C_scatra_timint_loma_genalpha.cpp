@@ -135,7 +135,7 @@ void SCATRA::TimIntLomaGenAlpha::compute_therm_pressure()
 
   // set scalar values needed by elements
   discret_->ClearState();
-  discret_->SetState("phinp", phiaf_);
+  discret_->set_state("phinp", phiaf_);
 
   // set action for elements
   CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
@@ -170,7 +170,7 @@ void SCATRA::TimIntLomaGenAlpha::compute_therm_pressure()
   condnames.push_back("ScaTraFluxCalc");
   for (unsigned int i = 0; i < condnames.size(); i++)
   {
-    discret_->EvaluateCondition(eleparams, Teuchos::null, Teuchos::null, Teuchos::null,
+    discret_->evaluate_condition(eleparams, Teuchos::null, Teuchos::null, Teuchos::null,
         Teuchos::null, Teuchos::null, condnames[i]);
   }
 
@@ -286,10 +286,10 @@ void SCATRA::TimIntLomaGenAlpha::WriteRestart() const
 /*----------------------------------------------------------------------*
  |                                                             vg 11/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input)
+void SCATRA::TimIntLomaGenAlpha::read_restart(const int step, Teuchos::RCP<IO::InputControl> input)
 {
   // do standard output
-  TimIntGenAlpha::ReadRestart(step, input);
+  TimIntGenAlpha::read_restart(step, input);
 
   // restart data of loma problems
   // required for restart of closed systems
@@ -368,7 +368,7 @@ void SCATRA::TimIntLomaGenAlpha::add_therm_press_to_parameter_list(
   params.set("thermodynamic pressure", thermpressaf_);
   params.set("thermodynamic pressure at n+alpha_M", thermpressam_);
   params.set("time derivative of thermodynamic pressure", thermpressdtaf_);
-  discret_->SetState("phiam", phiam_);
+  discret_->set_state("phiam", phiam_);
   return;
 }
 

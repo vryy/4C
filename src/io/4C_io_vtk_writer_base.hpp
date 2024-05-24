@@ -191,7 +191,7 @@ class VtkWriterBase
 
   //! write field data array to the VTK file on this processor
   template <typename T>
-  void WriteFieldDataArray(const std::string& name, const std::vector<T>& field_data);
+  void write_field_data_array(const std::string& name, const std::vector<T>& field_data);
 
   //! write the required information about the DataArray to master file
   // Todo template <typename T>
@@ -265,7 +265,7 @@ class VtkWriterBase
       double time) const;
 
 
-  std::string GetXmlOptionValue(const std::string& line, const std::string& name)
+  std::string get_xml_option_value(const std::string& line, const std::string& name)
   {
     std::size_t start = line.find(name + "=\"");
     if (start == std::string::npos)

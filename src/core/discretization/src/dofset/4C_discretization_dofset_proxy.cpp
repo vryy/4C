@@ -49,7 +49,7 @@ int CORE::Dofsets::DofSetProxy::assign_degrees_of_freedom(
     const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
   // This method does nothing, because the DofSetProxy is not supposed to assign dofs itself.
-  // Instead, the original dofset assigns dofs when FillComplete() is called on its discretization.
+  // Instead, the original dofset assigns dofs when fill_complete() is called on its discretization.
   // This invokes the call to assign_degrees_of_freedom on the original dofset. In
   // assign_degrees_of_freedom NotifyAssigned() is called. This calls NotifyAssigned() on all
   // registered proxies.
@@ -105,7 +105,7 @@ bool CORE::Dofsets::DofSetProxy::Filled() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::Dofsets::DofSetProxy::CheckIsAssigned() const
+void CORE::Dofsets::DofSetProxy::check_is_assigned() const
 {
   // checks in debug mode only
   FOUR_C_ASSERT(isassigned_,

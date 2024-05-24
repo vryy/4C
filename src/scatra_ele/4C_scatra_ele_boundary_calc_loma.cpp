@@ -81,7 +81,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::EvaluateAction(
   {
     case SCATRA::BoundaryAction::calc_loma_therm_press:
     {
-      CalcLomaThermPress(ele, params, discretization, la);
+      calc_loma_therm_press(ele, params, discretization, la);
 
       break;
     }
@@ -103,16 +103,16 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::EvaluateAction(
  | calculate loma therm pressure                              vg 03/09  |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::CalcLomaThermPress(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::calc_loma_therm_press(
     DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
 {
   // get location vector associated with primary dofset
   std::vector<int>& lm = la[0].lm_;
 
-  DRT::Element* parentele = ele->ParentElement();
+  DRT::Element* parentele = ele->parent_element();
   // we dont know the parent element's lm vector; so we have to build it here
-  const int nenparent = parentele->NumNode();
+  const int nenparent = parentele->num_node();
   std::vector<int> lmparent(nenparent);
   std::vector<int> lmparentowner;
   std::vector<int> lmparentstride;
@@ -143,7 +143,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::CalcLomaThermPr
   std::vector<double> mynormvel(lm.size());
 
   // determine constant outer normal to this element
-  my::normal_ = my::GetConstNormal(my::xyze_);
+  my::normal_ = my::get_const_normal(my::xyze_);
 
   // extract temperature flux vector for each node of the parent element
   CORE::LINALG::SerialDenseMatrix eflux(3, nenparent);

@@ -125,14 +125,14 @@ void MAT::Scl::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*/
 double MAT::Scl::compute_transference_number(const double cint) const
 {
-  if (TransNrCurve() < 0)
-    return EvalPreDefinedFunct(TransNrCurve(), cint, TransNrParams());
-  else if (TransNrCurve() == 0)
-    return EvalPreDefinedFunct(-1, cint, TransNrParams());
+  if (trans_nr_curve() < 0)
+    return EvalPreDefinedFunct(trans_nr_curve(), cint, trans_nr_params());
+  else if (trans_nr_curve() == 0)
+    return EvalPreDefinedFunct(-1, cint, trans_nr_params());
   else
   {
     return GLOBAL::Problem::Instance()
-        ->FunctionById<CORE::UTILS::FunctionOfScalar>(TransNrCurve() - 1)
+        ->FunctionById<CORE::UTILS::FunctionOfScalar>(trans_nr_curve() - 1)
         .Evaluate(cint);
   }
 }
@@ -141,14 +141,14 @@ double MAT::Scl::compute_transference_number(const double cint) const
 /*----------------------------------------------------------------------*/
 double MAT::Scl::compute_first_deriv_trans(const double cint) const
 {
-  if (TransNrCurve() < 0)
-    return eval_first_deriv_pre_defined_funct(TransNrCurve(), cint, TransNrParams());
-  else if (TransNrCurve() == 0)
-    return eval_first_deriv_pre_defined_funct(-1, cint, TransNrParams());
+  if (trans_nr_curve() < 0)
+    return eval_first_deriv_pre_defined_funct(trans_nr_curve(), cint, trans_nr_params());
+  else if (trans_nr_curve() == 0)
+    return eval_first_deriv_pre_defined_funct(-1, cint, trans_nr_params());
   else
   {
     return GLOBAL::Problem::Instance()
-        ->FunctionById<CORE::UTILS::FunctionOfScalar>(TransNrCurve() - 1)
+        ->FunctionById<CORE::UTILS::FunctionOfScalar>(trans_nr_curve() - 1)
         .EvaluateDerivative(cint, 1);
   }
 }

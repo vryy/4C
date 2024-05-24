@@ -26,7 +26,7 @@ ELCH::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ELCH::Algorithm::PrepareTimeLoop()
+void ELCH::Algorithm::prepare_time_loop()
 {
   // provide information about initial field (do not do for restarts!)
   if (Step() == 0)
@@ -52,7 +52,7 @@ void ELCH::Algorithm::PrintScaTraSolver()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool ELCH::Algorithm::ConvergenceCheck(
+bool ELCH::Algorithm::convergence_check(
     int natconvitnum, const int natconvitmax, const double natconvittol)
 {
   // convergence check based on the concentration, potential and
@@ -76,10 +76,10 @@ bool ELCH::Algorithm::ConvergenceCheck(
   // Calculate velocity increment and velocity L2 - Norm
   // velincnp_ = 1.0 * convelnp_ - 1.0 * conveln_
 
-  velincnp_->Update(1.0, *FluidField()->ExtractVelocityPart(FluidField()->Velnp()), -1.0);
+  velincnp_->Update(1.0, *fluid_field()->ExtractVelocityPart(fluid_field()->Velnp()), -1.0);
   velincnp_->Norm2(&velincnorm_L2);  // Estimation of the L2 - norm save values to both variables
                                      // (velincnorm_L2 and velnorm_L2)
-  FluidField()->ExtractVelocityPart(FluidField()->Velnp())->Norm2(&velnorm_L2);
+  fluid_field()->ExtractVelocityPart(fluid_field()->Velnp())->Norm2(&velnorm_L2);
 
   // Calculate concentration increment and concentration L2 - Norm
   phiincnp_->Update(1.0, *ScaTraField()->Phinp(), -1.0);

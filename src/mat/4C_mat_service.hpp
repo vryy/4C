@@ -379,7 +379,7 @@ namespace MAT
    * @param[out] modinv Modified principal invariants of the Right Cauchy-Green strain tensor
    * @param[in] prinv   Principal invariants of the Right Cauchy-Green strain tensor
    */
-  void InvariantsModified(
+  void invariants_modified(
       CORE::LINALG::Matrix<3, 1>& modinv, const CORE::LINALG::Matrix<3, 1>& prinv);
 
   /*!

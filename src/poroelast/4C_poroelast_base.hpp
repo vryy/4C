@@ -58,7 +58,7 @@ namespace POROELAST
         Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter);
 
     //! read restart data
-    void ReadRestart(const int step) override;
+    void read_restart(const int step) override;
 
     //! outer level time loop
     virtual void TimeLoop();
@@ -83,7 +83,7 @@ namespace POROELAST
     const Teuchos::RCP<ADAPTER::FPSIStructureWrapper>& StructureField() { return structure_; }
 
     //! access to fluid field
-    const Teuchos::RCP<ADAPTER::FluidPoro>& FluidField() { return fluid_; }
+    const Teuchos::RCP<ADAPTER::FluidPoro>& fluid_field() { return fluid_; }
 
     //! composed system matrix
     Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override
@@ -100,9 +100,9 @@ namespace POROELAST
     }
 
     //! full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> DofRowMap() override
+    Teuchos::RCP<const Epetra_Map> dof_row_map() override
     {
-      FOUR_C_THROW("DofRowMap() only available for monolithic schemes!");
+      FOUR_C_THROW("dof_row_map() only available for monolithic schemes!");
       return Teuchos::null;
     }
 
@@ -120,9 +120,9 @@ namespace POROELAST
     }
 
     //! unique map of all dofs that should be constrained with DBC
-    virtual Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const
+    virtual Teuchos::RCP<const Epetra_Map> combined_dbc_map() const
     {
-      FOUR_C_THROW("CombinedDBCMap() only available for monolithic schemes!");
+      FOUR_C_THROW("combined_dbc_map() only available for monolithic schemes!");
       return Teuchos::null;
     }
 
@@ -177,26 +177,26 @@ namespace POROELAST
     virtual void Solve() = 0;
 
     //! perform one time step (setup + solve + output)
-    virtual void DoTimeStep() = 0;
+    virtual void do_time_step() = 0;
 
     //! setup solver (for monolithic only)
     virtual bool SetupSolver() { return false; }
 
-    virtual void SetupRHS(bool firstcall = false)
+    virtual void setup_rhs(bool firstcall = false)
     {
-      FOUR_C_THROW("SetupRHS() only available for monolithic schemes!");
+      FOUR_C_THROW("setup_rhs() only available for monolithic schemes!");
     }
 
     //! @name Time loop building blocks
 
     //! start a new time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     //! take current results for converged and save for next time step
     void Update() override;
 
     //! calculate stresses, strains, energies
-    void PrepareOutput(bool force_prepare_timestep) override;
+    void prepare_output(bool force_prepare_timestep) override;
 
     //! output
     void Output(bool forced_writerestart = false) override;
@@ -270,10 +270,10 @@ namespace POROELAST
 
    private:
     //! setup of everything, that is needed for the volumetric coupling
-    void SetupCoupling();
+    void setup_coupling();
 
     //! add dof set of structure/fluid discretization to fluid/structure discretization
-    void ReplaceDofSets();
+    void replace_dof_sets();
 
     //! check for special poro conditions and set bools
     void check_for_poro_conditions();

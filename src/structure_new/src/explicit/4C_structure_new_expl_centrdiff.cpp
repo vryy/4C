@@ -35,7 +35,7 @@ STR::EXPLICIT::CentrDiff::CentrDiff()
  *----------------------------------------------------------------------------*/
 void STR::EXPLICIT::CentrDiff::Setup()
 {
-  CheckInit();
+  check_init();
 
   // Call the Setup() of the abstract base class first.
   Generic::Setup();
@@ -55,23 +55,23 @@ void STR::EXPLICIT::CentrDiff::Setup()
   set_initial_displacement(
       TimInt().GetDataSDyn().GetInitialDisp(), TimInt().GetDataSDyn().StartFuncNo());
 
-  // Has to be set before the PostSetup() routine is called!
+  // Has to be set before the post_setup() routine is called!
   issetup_ = true;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::CentrDiff::PostSetup()
+void STR::EXPLICIT::CentrDiff::post_setup()
 {
-  CheckInitSetup();
+  check_init_setup();
   equilibrate_initial_state();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::CentrDiff::SetState(const Epetra_Vector& x)
+void STR::EXPLICIT::CentrDiff::set_state(const Epetra_Vector& x)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   const double dt = (*GlobalState().GetDeltaTime())[0];
   const double dthalf = dt / 2.0;
@@ -125,7 +125,7 @@ void STR::EXPLICIT::CentrDiff::add_visco_mass_contributions(CORE::LINALG::Sparse
 void STR::EXPLICIT::CentrDiff::WriteRestart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
-  CheckInitSetup();
+  check_init_setup();
   // write dynamic forces
   iowriter.WriteVector("finert", finertian_ptr_);
   iowriter.WriteVector("fvisco", fviscon_ptr_);
@@ -135,13 +135,13 @@ void STR::EXPLICIT::CentrDiff::WriteRestart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::CentrDiff::ReadRestart(IO::DiscretizationReader& ioreader)
+void STR::EXPLICIT::CentrDiff::read_restart(IO::DiscretizationReader& ioreader)
 {
-  CheckInitSetup();
+  check_init_setup();
   ioreader.ReadVector(finertian_ptr_, "finert");
   ioreader.ReadVector(fviscon_ptr_, "fvisco");
 
-  ModelEval().ReadRestart(ioreader);
+  ModelEval().read_restart(ioreader);
   update_constant_state_contributions();
 }
 
@@ -149,7 +149,7 @@ void STR::EXPLICIT::CentrDiff::ReadRestart(IO::DiscretizationReader& ioreader)
  *----------------------------------------------------------------------------*/
 void STR::EXPLICIT::CentrDiff::UpdateStepState()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   const double dt = (*GlobalState().GetDeltaTime())[0];
   const double dthalf = dt / 2.0;

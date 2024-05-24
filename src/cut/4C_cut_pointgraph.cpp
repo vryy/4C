@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  * Constructor for the selfcut                                     wirtz 05/13
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::IMPL::PointGraph::PointGraph(Side *side) : graph_(CreateGraph(side->Dim()))
+CORE::GEO::CUT::IMPL::PointGraph::PointGraph(Side *side) : graph_(create_graph(side->Dim()))
 {
   Cycle cycle;
   FillGraph(side, cycle);
@@ -42,14 +42,14 @@ CORE::GEO::CUT::IMPL::PointGraph::PointGraph(Side *side) : graph_(CreateGraph(si
   {
     GetGraph().FixSinglePoints(cycle);  // delete single point edges
   }
-  GetGraph().FindCycles(side, cycle);
+  GetGraph().find_cycles(side, cycle);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::IMPL::PointGraph::PointGraph(
     Mesh &mesh, Element *element, Side *side, Location location, Strategy strategy)
-    : graph_(CreateGraph(element->Dim()))
+    : graph_(create_graph(element->Dim()))
 {
   // here we create the facets...
   Cycle cycle;
@@ -80,7 +80,7 @@ CORE::GEO::CUT::IMPL::PointGraph::PointGraph(
 
   try
   {
-    GetGraph().FindCycles(element, side, cycle, location, strategy);
+    GetGraph().find_cycles(element, side, cycle, location, strategy);
   }
   catch (CORE::Exception &err)
   {
@@ -312,7 +312,7 @@ void CORE::GEO::CUT::IMPL::PointGraph::Graph::PlotPoints(Element *element)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::IMPL::FindCycles(graph_t &g, CORE::GEO::CUT::Cycle &cycle,
+bool CORE::GEO::CUT::IMPL::find_cycles(graph_t &g, CORE::GEO::CUT::Cycle &cycle,
     std::map<vertex_t, CORE::LINALG::Matrix<3, 1>> &local,
     std::vector<CORE::GEO::CUT::Cycle> &cycles) /* non-member function */
 {
@@ -519,7 +519,7 @@ bool CORE::GEO::CUT::IMPL::FindCycles(graph_t &g, CORE::GEO::CUT::Cycle &cycle,
  * Creates maincycles (outer polygons) and holecycles (inner polygons = holes)
  * of the selfcut graph                                                     wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IMPL::PointGraph::Graph::FindCycles(Side *side, Cycle &cycle)
+void CORE::GEO::CUT::IMPL::PointGraph::Graph::find_cycles(Side *side, Cycle &cycle)
 {
   graph_t g;
 
@@ -608,7 +608,7 @@ void CORE::GEO::CUT::IMPL::PointGraph::Graph::FindCycles(Side *side, Cycle &cycl
 
   if (num_comp == 1)
   {
-    CORE::GEO::CUT::IMPL::FindCycles(g, cycle, local, main_cycles_);
+    CORE::GEO::CUT::IMPL::find_cycles(g, cycle, local, main_cycles_);
   }
   else if (num_comp > 1)
   {
@@ -623,7 +623,7 @@ void CORE::GEO::CUT::IMPL::PointGraph::Graph::FindCycles(Side *side, Cycle &cycl
       graph_t cg;
       boost::copy_graph(fg, cg);
 
-      bool main_cycle = CORE::GEO::CUT::IMPL::FindCycles(cg, cycle, local, filtered_cycles);
+      bool main_cycle = CORE::GEO::CUT::IMPL::find_cycles(cg, cycle, local, filtered_cycles);
 
       if (main_cycle)
       {
@@ -644,7 +644,7 @@ void CORE::GEO::CUT::IMPL::PointGraph::Graph::FindCycles(Side *side, Cycle &cycl
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IMPL::PointGraph::Graph::FindCycles(
+void CORE::GEO::CUT::IMPL::PointGraph::Graph::find_cycles(
     Element *element, Side *side, Cycle &cycle, Location location, Strategy strategy)
 {
   graph_t g;
@@ -726,7 +726,7 @@ void CORE::GEO::CUT::IMPL::PointGraph::Graph::FindCycles(
     // levelset cut sides than do not posses geometrical information.
 
     plain_cycle_set base_cycles;
-    find_cycles(g, base_cycles);
+    CUT::IMPL::find_cycles(g, base_cycles);
 
     main_cycles_.reserve(base_cycles.size());
 
@@ -785,7 +785,7 @@ void CORE::GEO::CUT::IMPL::PointGraph::Graph::FindCycles(
 
     if (num_comp == 1)
     {
-      bool main_cycle = CORE::GEO::CUT::IMPL::FindCycles(g, cycle, local, main_cycles_);
+      bool main_cycle = CORE::GEO::CUT::IMPL::find_cycles(g, cycle, local, main_cycles_);
       if (location == element_side and not main_cycle)
       {
         GnuplotDumpCycles("cycles", main_cycles_);
@@ -806,7 +806,7 @@ void CORE::GEO::CUT::IMPL::PointGraph::Graph::FindCycles(
 
         graph_t cg;
         boost::copy_graph(fg, cg);
-        bool main_cycle = CORE::GEO::CUT::IMPL::FindCycles(cg, cycle, local, filtered_cycles);
+        bool main_cycle = CORE::GEO::CUT::IMPL::find_cycles(cg, cycle, local, filtered_cycles);
 
         if (main_cycle)
         {
@@ -1147,8 +1147,8 @@ CORE::GEO::CUT::IMPL::PointGraph *CORE::GEO::CUT::IMPL::PointGraph::Create(Mesh 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::GEO::CUT::IMPL::PointGraph::Graph> CORE::GEO::CUT::IMPL::PointGraph::CreateGraph(
-    unsigned dim)
+Teuchos::RCP<CORE::GEO::CUT::IMPL::PointGraph::Graph>
+CORE::GEO::CUT::IMPL::PointGraph::create_graph(unsigned dim)
 {
   switch (dim)
   {

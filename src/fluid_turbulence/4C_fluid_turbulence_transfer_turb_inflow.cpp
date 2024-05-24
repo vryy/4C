@@ -69,7 +69,7 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
       int direction = -1;
       ToggleType toggle = none;
 
-      GetData(id, direction, toggle, *cond);
+      get_data(id, direction, toggle, *cond);
 
       if (dir == -1)
       {
@@ -199,7 +199,7 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
 void FLD::TransferTurbulentInflowCondition::Transfer(
     const Teuchos::RCP<Epetra_Vector> veln, Teuchos::RCP<Epetra_Vector> velnp, const double time)
 {
-  const Epetra_Map* dofrowmap = dis_->DofRowMap();
+  const Epetra_Map* dofrowmap = dis_->dof_row_map();
 
   std::vector<int> mymasters;
   std::vector<std::vector<double>> mymasters_vel(numveldof_);
@@ -277,7 +277,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
       // in the first step, we cannot receive anything
       if (np > 0)
       {
-        ReceiveBlock(rblock, exporter, request);
+        receive_block(rblock, exporter, request);
 
         // Unpack info from the receive block from the last proc
         unpack_local_master_values(mymasters, mymasters_vel, rblock);
@@ -297,7 +297,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
         pack_local_master_values(mymasters, mymasters_vel, data);
         swap(sblock, data());
 
-        SendBlock(sblock, exporter, request);
+        send_block(sblock, exporter, request);
       }
     }
   }
@@ -314,7 +314,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::TransferTurbulentInflowCondition::GetData(
+void FLD::TransferTurbulentInflowCondition::get_data(
     int& id, int& direction, ToggleType& type, const CORE::Conditions::Condition* cond)
 {
   id = cond->parameters().Get<int>("id");
@@ -372,7 +372,7 @@ void FLD::TransferTurbulentInflowCondition::GetData(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::TransferTurbulentInflowCondition::ReceiveBlock(
+void FLD::TransferTurbulentInflowCondition::receive_block(
     std::vector<char>& rblock, CORE::COMM::Exporter& exporter, MPI_Request& request)
 {
   // get number of processors and the current processors id
@@ -406,7 +406,7 @@ void FLD::TransferTurbulentInflowCondition::ReceiveBlock(
   exporter.Comm().Barrier();
 
   return;
-}  // TransferTurbulentInflowCondition::ReceiveBlock
+}  // TransferTurbulentInflowCondition::receive_block
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -419,7 +419,7 @@ void FLD::TransferTurbulentInflowCondition::ReceiveBlock(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::TransferTurbulentInflowCondition::SendBlock(
+void FLD::TransferTurbulentInflowCondition::send_block(
     std::vector<char>& sblock, CORE::COMM::Exporter& exporter, MPI_Request& request)
 {
   // get number of processors and the current processors id
@@ -431,14 +431,14 @@ void FLD::TransferTurbulentInflowCondition::SendBlock(
   int frompid = myrank;
   int topid = (myrank + 1) % numproc;
 
-  exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
+  exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
 
   // for safety
   exporter.Comm().Barrier();
 
   return;
-}  // TransferTurbulentInflowCondition::SendBlock
+}  // TransferTurbulentInflowCondition::send_block
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -714,7 +714,7 @@ FLD::TransferTurbulentInflowConditionXW::TransferTurbulentInflowConditionXW(
 void FLD::TransferTurbulentInflowConditionXW::Transfer(
     const Teuchos::RCP<Epetra_Vector> veln, Teuchos::RCP<Epetra_Vector> velnp, const double time)
 {
-  const Epetra_Map* dofrowmap = dis_->DofRowMap();
+  const Epetra_Map* dofrowmap = dis_->dof_row_map();
 
   std::vector<int> mymasters;
   // there can be up to 6 velocity dofs per node (3 +3 virtual dofs)
@@ -809,7 +809,7 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
       // in the first step, we cannot receive anything
       if (np > 0)
       {
-        ReceiveBlock(rblock, exporter, request);
+        receive_block(rblock, exporter, request);
 
         // Unpack info from the receive block from the last proc
         unpack_local_master_values(mymasters, mymasters_vel, rblock);
@@ -829,7 +829,7 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
         pack_local_master_values(mymasters, mymasters_vel, data);
         swap(sblock, data());
 
-        SendBlock(sblock, exporter, request);
+        send_block(sblock, exporter, request);
       }
     }
   }
@@ -999,7 +999,7 @@ void FLD::TransferTurbulentInflowConditionNodal::Transfer(
       // in the first step, we cannot receive anything
       if (np > 0)
       {
-        ReceiveBlock(rblock, exporter, request);
+        receive_block(rblock, exporter, request);
 
         // Unpack info from the receive block from the last proc
         unpack_local_master_values(mymasters, mymasters_vec, rblock);
@@ -1019,7 +1019,7 @@ void FLD::TransferTurbulentInflowConditionNodal::Transfer(
         pack_local_master_values(mymasters, mymasters_vec, data);
         swap(sblock, data());
 
-        SendBlock(sblock, exporter, request);
+        send_block(sblock, exporter, request);
       }
     }
   }

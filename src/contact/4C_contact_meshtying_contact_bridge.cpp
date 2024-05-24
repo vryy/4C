@@ -84,11 +84,11 @@ void CONTACT::MeshtyingContactBridge::store_dirichlet_status(
 /*----------------------------------------------------------------------*
  |  Set displacement state                                   farah 06/14|
  *----------------------------------------------------------------------*/
-void CONTACT::MeshtyingContactBridge::SetState(Teuchos::RCP<Epetra_Vector> zeros)
+void CONTACT::MeshtyingContactBridge::set_state(Teuchos::RCP<Epetra_Vector> zeros)
 {
-  if (HaveMeshtying()) MtManager()->GetStrategy().SetState(MORTAR::state_new_displacement, *zeros);
+  if (HaveMeshtying()) MtManager()->GetStrategy().set_state(MORTAR::state_new_displacement, *zeros);
   if (HaveContact())
-    ContactManager()->GetStrategy().SetState(MORTAR::state_new_displacement, *zeros);
+    ContactManager()->GetStrategy().set_state(MORTAR::state_new_displacement, *zeros);
 
   return;
 }
@@ -158,14 +158,14 @@ void CONTACT::MeshtyingContactBridge::Recover(Teuchos::RCP<Epetra_Vector> disi)
 /*----------------------------------------------------------------------*
  |  Recover lagr. mult and slave displ                       farah 06/14|
  *----------------------------------------------------------------------*/
-void CONTACT::MeshtyingContactBridge::ReadRestart(IO::DiscretizationReader& reader,
+void CONTACT::MeshtyingContactBridge::read_restart(IO::DiscretizationReader& reader,
     Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> zero)
 {
   // contact
-  if (HaveContact()) ContactManager()->ReadRestart(reader, dis, zero);
+  if (HaveContact()) ContactManager()->read_restart(reader, dis, zero);
 
   // meshtying
-  if (HaveMeshtying()) MtManager()->ReadRestart(reader, dis, zero);
+  if (HaveMeshtying()) MtManager()->read_restart(reader, dis, zero);
 
   return;
 }

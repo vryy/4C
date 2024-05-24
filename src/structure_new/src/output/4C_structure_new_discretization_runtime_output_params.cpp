@@ -83,7 +83,7 @@ void DRT::ELEMENTS::StructureRuntimeOutputParams::Init(
  *-----------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::StructureRuntimeOutputParams::Setup()
 {
-  FOUR_C_ASSERT(IsInit(), "Init() has not been called, yet!");
+  FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
 
   // Nothing to do here at the moment
 
@@ -92,9 +92,9 @@ void DRT::ELEMENTS::StructureRuntimeOutputParams::Setup()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructureRuntimeOutputParams::CheckInitSetup() const
+void DRT::ELEMENTS::StructureRuntimeOutputParams::check_init_setup() const
 {
-  FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

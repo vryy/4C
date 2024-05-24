@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  * Action type: Evaluate
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateOD(DRT::Element* ele,
+int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_od(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,

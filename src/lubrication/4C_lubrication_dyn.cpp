@@ -43,7 +43,7 @@ void lubrication_dyn(int restart)
   Teuchos::RCP<DRT::Discretization> lubricationdis =
       GLOBAL::Problem::Instance()->GetDis("lubrication");
 
-  lubricationdis->FillComplete();
+  lubricationdis->fill_complete();
 
   // we directly use the elements from the Lubrication elements section
   if (lubricationdis->NumGlobalNodes() == 0)
@@ -57,7 +57,7 @@ void lubrication_dyn(int restart)
     FOUR_C_THROW("lub discretization has illegal number of dofsets!");
 
   // finalize discretization
-  lubricationdis->FillComplete(true, false, false);
+  lubricationdis->fill_complete(true, false, false);
 
   // get linear solver id from LUBRICATION DYNAMIC
   const int linsolvernumber = lubricationdyn.get<int>("LINEAR_SOLVER");
@@ -75,7 +75,7 @@ void lubrication_dyn(int restart)
       lubricationdyn, lubricationdyn, GLOBAL::Problem::Instance()->SolverParams(linsolvernumber));
 
   // read the restart information, set vectors and variables
-  if (restart) lubricationonly->LubricationField()->ReadRestart(restart);
+  if (restart) lubricationonly->LubricationField()->read_restart(restart);
 
   // enter time loop to solve problem
   (lubricationonly->LubricationField())->TimeLoop();

@@ -37,7 +37,7 @@ namespace DRT
      private:
       //! define ElemagEle instances dependent on problem
       template <CORE::FE::CellType distype>
-      static ElemagEleInterface* DefineProblemType(std::string problem);
+      static ElemagEleInterface* define_problem_type(std::string problem);
     };
 
   }  // namespace ELEMENTS

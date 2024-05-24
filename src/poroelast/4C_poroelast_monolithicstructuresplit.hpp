@@ -53,14 +53,14 @@ namespace POROELAST
     void SetupSystem() override;
 
     //! setup composed right hand side from field solvers
-    void SetupRHS(bool firstcall = false) override;
+    void setup_rhs(bool firstcall = false) override;
 
     //! setup composed system matrix from field solvers
-    void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
+    void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
 
    private:
     //! build block vector from field vectors
-    void SetupVector(Epetra_Vector& f, Teuchos::RCP<const Epetra_Vector> sv,
+    void setup_vector(Epetra_Vector& f, Teuchos::RCP<const Epetra_Vector> sv,
         Teuchos::RCP<const Epetra_Vector> fv, double fluidscale);
 
     //! extract the field vectors from a given composed vector
@@ -69,7 +69,7 @@ namespace POROELAST
      \param sx (o) structural vector (e.g. displacements)
      \param fx (o) fluid vector (e.g. velocities and pressure)
      */
-    void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+    void extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx,
         bool firstcall = false) override;
 

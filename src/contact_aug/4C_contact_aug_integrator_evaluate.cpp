@@ -193,7 +193,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_kappa(
+void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_kappa(
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt,
     double jac) const
 {
@@ -202,7 +202,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_kap
   FOUR_C_ASSERT(snodes, "ERROR: AugmentedIntegrator::GP_2D_kappa: Null pointer!");
 
   //  // number of nodes (slave)
-  //  int nrow = sele.NumNode();
+  //  int nrow = sele.num_node();
 
   // add to node
   double val = 0.0;
@@ -223,7 +223,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_kap
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Get_Deriv1st_Kappa(
+void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::get_deriv1st_kappa(
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt,
     const Deriv1stMap& d_jac)
 {
@@ -248,7 +248,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Get_De
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_Normal(
+void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_normal(
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, double* gpn) const
 {
   const DRT::Node* const* snodes = sele.Nodes();
@@ -342,7 +342,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_nor
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_AugA(
+void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_aug_a(
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt,
     double jac) const
 {
@@ -364,7 +364,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_Aug
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Get_Deriv1st_AugA(
+void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::get_deriv1st_aug_a(
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt,
     double jac, const Deriv1stMap& derivjac) const
 {
@@ -393,7 +393,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Get_De
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Get_Deriv2nd_Kappa(
+void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::get_deriv2nd_kappa(
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
     const Deriv2ndMap& dd_jac) const
 {
@@ -422,7 +422,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Get_De
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GapN(
+void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::gap_n(
     MORTAR::Element& sele, MORTAR::Element& mele,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
     const CORE::LINALG::Matrix<my::MASTERNUMNODE, 1>& mval, const double* gpn, double& gapn_sl,
@@ -455,7 +455,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GapN(
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_WGap(
+void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_w_gap(
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const double gapn_sl, const double gapn_ma, const double wg, const double jac) const
 {

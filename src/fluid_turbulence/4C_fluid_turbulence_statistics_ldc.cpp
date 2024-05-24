@@ -42,7 +42,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<DRT::Discreti
 
   //----------------------------------------------------------------------
   // allocate some (toggle) vectors
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   toggleu_ = CORE::LINALG::CreateVector(*dofrowmap, true);
   togglev_ = CORE::LINALG::CreateVector(*dofrowmap, true);
@@ -172,7 +172,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<DRT::Discreti
 
       int length = sblock.size();
 
-      exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
+      exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
       rblock.clear();
 
@@ -235,7 +235,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<DRT::Discreti
 
       int length = sblock.size();
 
-      exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
+      exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
       rblock.clear();
 
@@ -298,7 +298,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<DRT::Discreti
 
       int length = sblock.size();
 
-      exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
+      exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
       rblock.clear();
 
@@ -1604,7 +1604,7 @@ void FLD::TurbulenceStatisticsLdc::ClearStatistics()
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsLdc::ReadRestart(IO::DiscretizationReader& reader)
+void FLD::TurbulenceStatisticsLdc::read_restart(IO::DiscretizationReader& reader)
 {
   numsamp_ = reader.ReadDouble("numsamp");
 

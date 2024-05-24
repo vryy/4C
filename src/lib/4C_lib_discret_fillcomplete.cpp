@@ -47,7 +47,7 @@ void DRT::Discretization::Reset(bool killdofs, bool killcond)
     std::multimap<std::string, Teuchos::RCP<CORE::Conditions::Condition>>::iterator fool;
     for (fool = condition_.begin(); fool != condition_.end(); ++fool)
     {
-      fool->second->ClearGeometry();
+      fool->second->clear_geometry();
     }
   }
 
@@ -58,7 +58,7 @@ void DRT::Discretization::Reset(bool killdofs, bool killcond)
 /*----------------------------------------------------------------------*
  |  Finalize construction (public)                           mwgee 11/06|
  *----------------------------------------------------------------------*/
-int DRT::Discretization::FillComplete(
+int DRT::Discretization::fill_complete(
     bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
 {
   // my processor id
@@ -69,7 +69,7 @@ int DRT::Discretization::FillComplete(
   {
     IO::cout(IO::verbose)
         << "\n+--------------------------------------------------------------------+" << IO::endl;
-    IO::cout(IO::verbose) << "| FillComplete() on discretization " << std::setw(34) << std::left
+    IO::cout(IO::verbose) << "| fill_complete() on discretization " << std::setw(34) << std::left
                           << Name() << std::setw(1) << std::right << "|" << IO::endl;
   }
 
@@ -77,12 +77,12 @@ int DRT::Discretization::FillComplete(
   Reset(assigndegreesoffreedom, doboundaryconditions);
 
   // (re)build map of nodes noderowmap_, nodecolmap_, noderowptr and nodecolptr
-  BuildNodeRowMap();
-  BuildNodeColMap();
+  build_node_row_map();
+  build_node_col_map();
 
   // (re)build map of elements elemap_
-  BuildElementRowMap();
-  BuildElementColMap();
+  build_element_row_map();
+  build_element_col_map();
 
   // (re)construct element -> node pointers
   build_element_to_node_pointers();
@@ -148,7 +148,7 @@ int DRT::Discretization::FillComplete(
  *----------------------------------------------------------------------*/
 void DRT::Discretization::InitializeElements()
 {
-  if (!Filled()) FOUR_C_THROW("FillComplete was not called");
+  if (!Filled()) FOUR_C_THROW("fill_complete was not called");
 
   CORE::COMM::ParObjectFactory::Instance().InitializeElements(*this);
 
@@ -159,7 +159,7 @@ void DRT::Discretization::InitializeElements()
 /*----------------------------------------------------------------------*
  |  Build noderowmap_ (private)                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::BuildNodeRowMap()
+void DRT::Discretization::build_node_row_map()
 {
   const int myrank = Comm().MyPID();
   int nummynodes = 0;
@@ -185,7 +185,7 @@ void DRT::Discretization::BuildNodeRowMap()
 /*----------------------------------------------------------------------*
  |  Build nodecolmap_ (private)                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::BuildNodeColMap()
+void DRT::Discretization::build_node_col_map()
 {
   int nummynodes = (int)node_.size();
   std::vector<int> nodeids(nummynodes);
@@ -209,7 +209,7 @@ void DRT::Discretization::BuildNodeColMap()
 /*----------------------------------------------------------------------*
  |  Build elerowmap_ (private)                                mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::BuildElementRowMap()
+void DRT::Discretization::build_element_row_map()
 {
   const int myrank = Comm().MyPID();
   int nummyeles = 0;
@@ -234,7 +234,7 @@ void DRT::Discretization::BuildElementRowMap()
 /*----------------------------------------------------------------------*
  |  Build elecolmap_ (private)                                mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::BuildElementColMap()
+void DRT::Discretization::build_element_col_map()
 {
   int nummyeles = (int)element_.size();
   std::vector<int> eleids(nummyeles);
@@ -293,7 +293,7 @@ void DRT::Discretization::build_node_to_element_pointers()
   std::map<int, Teuchos::RCP<DRT::Element>>::iterator elecurr;
   for (elecurr = element_.begin(); elecurr != element_.end(); ++elecurr)
   {
-    const int nnode = elecurr->second->NumNode();
+    const int nnode = elecurr->second->num_node();
     const int* nodes = elecurr->second->NodeIds();
     for (int j = 0; j < nnode; ++j)
     {

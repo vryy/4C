@@ -59,7 +59,7 @@ namespace CORE::LINALG
     Nonlocal matrix values can be assembled by invoking FEAssemble()-methods
     instead of Assemble()-methods. Internally this will cause
     the GlobalAssemble()-method to distribute the nonlocal values to the owning
-    procs before FillComplete is called on the matrix.
+    procs before fill_complete is called on the matrix.
     Since Epetra_FECrsMatrix is a sub-class of Epetra_CrsMatrix,
     all other functionality can be used as described above.
     All SparseMatrix constructors create Epetra_CrsMatrices by default.
@@ -223,7 +223,7 @@ namespace CORE::LINALG
       This method is also able to handle the assembly of nonlocal values.
       It sets the doGlobalAssemble-flag to true and causes the
       GlobalAssemble() method to redistribute the non-local
-      values to their owning procs, such that FillComplete can be safely
+      values to their owning procs, such that fill_complete can be safely
       called on this matrix.
 
       NOTE: This methods checks if rowowner == myrank. Only in this case
@@ -238,7 +238,7 @@ namespace CORE::LINALG
       This method is also able to handle the assembly of nonlocal values.
       It sets the doGlobalAssemble-flag to true and causes the
       GlobalAssemble() method to redistribute the non-local
-      values to their owning procs, such that FillComplete can be safely
+      values to their owning procs, such that fill_complete can be safely
       called on this matrix.
      */
     void FEAssemble(const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
@@ -250,7 +250,7 @@ namespace CORE::LINALG
       to handle the assembly of nonlocal values.
       It sets the doGlobalAssemble-flag to true and causes the
       GlobalAssemble -method() to redistribute the non-local
-      values to their owning procs, such that FillComplete can be savely
+      values to their owning procs, such that fill_complete can be savely
       called on this matrix.
      */
     void FEAssemble(double val, int rgid, int cgid);
@@ -261,7 +261,7 @@ namespace CORE::LINALG
       for Epetra_FECrsMatrices.
       Afterwards Fillcomplete is called such as for Epetra_CrsMatrices.
 
-      @param enforce_complete Enforce FillComplete() even though the matrix might already be filled
+      @param enforce_complete Enforce fill_complete() even though the matrix might already be filled
      */
     void Complete(bool enforce_complete = false) override;
 
@@ -270,7 +270,7 @@ namespace CORE::LINALG
       for Epetra_FECrsMatrices.
       Afterwards Fillcomplete is called such as for Epetra_CrsMatrices.
 
-      @param enforce_complete Enforce FillComplete() even though the matrix might already be filled
+      @param enforce_complete Enforce fill_complete() even though the matrix might already be filled
      */
     void Complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap,
         bool enforce_complete = false) override;
@@ -520,7 +520,7 @@ namespace CORE::LINALG
     /*!
        Used by public Split, does not call Complete() on output matrix.
      */
-    void SplitMxN(BlockSparseMatrixBase& ABlock) const;
+    void split_mx_n(BlockSparseMatrixBase& ABlock) const;
 
     /// saved graph (if any)
     Teuchos::RCP<Epetra_CrsGraph> graph_;
@@ -599,7 +599,7 @@ Teuchos::RCP<CORE::LINALG::BlockSparseMatrix<Strategy>> CORE::LINALG::SparseMatr
   if (domainmaps.NumMaps() == 2 && rangemaps.NumMaps() == 2)
     this->Split2x2(*blockA);
   else if (domainmaps.NumMaps() > 0 && rangemaps.NumMaps() > 0)
-    this->SplitMxN(*blockA);
+    this->split_mx_n(*blockA);
   else
     FOUR_C_THROW("Invalid number %d of row blocks or %d of column blocks for splitting operation!",
         rangemaps.NumMaps(), domainmaps.NumMaps());

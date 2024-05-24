@@ -96,7 +96,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::StructOp(
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::InitialGuess()
+Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::initial_guess()
 {
   if (get_kinematic_coupling())
   {

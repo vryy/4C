@@ -44,7 +44,7 @@ namespace STI
     const unsigned& Iter() const { return iter_; };
 
     //! read restart data
-    void ReadRestart(int step  //! time step for restart
+    void read_restart(int step  //! time step for restart
         ) override;
 
     //! access scatra time integrator
@@ -69,7 +69,7 @@ namespace STI
     );
 
     //! prepare time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     //! pass scatra degrees of freedom to thermo discretization
     void transfer_scatra_to_thermo(

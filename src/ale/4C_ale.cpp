@@ -70,7 +70,7 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINAL
       initialdisp_(CORE::UTILS::IntegralValue<INPAR::ALE::InitialDisp>(*params, "INITIALDISP")),
       startfuncno_(params->get<int>("STARTFUNCNO"))
 {
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   dispn_ = CORE::LINALG::CreateVector(*dofrowmap, true);
   dispnp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
@@ -137,7 +137,7 @@ void ALE::Ale::set_initial_displacement(const INPAR::ALE::InitialDisp init, cons
     }
     case INPAR::ALE::initdisp_disp_by_function:
     {
-      const Epetra_Map* dofrowmap = discret_->DofRowMap();
+      const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
       // loop all nodes on the processor
       for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
@@ -193,7 +193,7 @@ void ALE::Ale::CreateSystemMatrix(Teuchos::RCP<const ALE::UTILS::MapExtractor> i
   }
   else if (interface == Teuchos::null)
   {
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    const Epetra_Map* dofrowmap = discret_->dof_row_map();
     sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap, 81, false, true));
   }
   else
@@ -228,7 +228,7 @@ void ALE::Ale::Evaluate(
     meshtying_->MshtSplit(sysmat_);
   }
 
-  EvaluateElements();
+  evaluate_elements();
   evaluate_element_quality();
 
   // prepare meshtying system
@@ -333,7 +333,7 @@ bool ALE::Ale::Converged(const int iter)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::Ale::EvaluateElements()
+void ALE::Ale::evaluate_elements()
 {
   sysmat_->Zero();
 
@@ -350,7 +350,7 @@ void ALE::Ale::EvaluateElements()
   eleparams.set<std::string>("action", ElementActionString(aletype_));
   eleparams.set<bool>("use spatial configuration", update_sys_mat_every_step());
 
-  discret_->SetState("dispnp", dispnp_);
+  discret_->set_state("dispnp", dispnp_);
 
   discret_->Evaluate(eleparams, sysmat_, residual_);
   discret_->ClearState();
@@ -390,9 +390,9 @@ std::string ALE::Ale::ElementActionString(const enum INPAR::ALE::AleDynamic name
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> ALE::Ale::DofRowMap() const
+Teuchos::RCP<const Epetra_Map> ALE::Ale::dof_row_map() const
 {
-  return Teuchos::rcp(discret_->DofRowMap(), false);
+  return Teuchos::rcp(discret_->dof_row_map(), false);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -417,7 +417,7 @@ int ALE::Ale::Integrate()
   const double eps = 1.0e-12;
   while (step_ < numstep_ and time_ <= maxtime_ + eps)
   {
-    PrepareTimeStep();
+    prepare_time_step();
     TimeStep();
     Update();
     Output();
@@ -442,13 +442,13 @@ void ALE::Ale::Output()
   // write restart data if necessary
   if (writerestartevery_ != 0 and step_ % writerestartevery_ == 0)
   {
-    OutputRestart(datawritten);
+    output_restart(datawritten);
   }
 
   // write output data if necessary
   if (not datawritten and writeresultsevery_ != 0 and step_ % writeresultsevery_ == 0)
   {
-    OutputState(datawritten);
+    output_state(datawritten);
   }
 
   // write domain decomposition for visualization
@@ -459,7 +459,7 @@ void ALE::Ale::Output()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::Ale::OutputState(bool& datawritten)
+void ALE::Ale::output_state(bool& datawritten)
 {
   // write output data
   output_->NewStep(step_, time_);
@@ -476,7 +476,7 @@ void ALE::Ale::OutputState(bool& datawritten)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::Ale::OutputRestart(bool& datawritten)
+void ALE::Ale::output_restart(bool& datawritten)
 {
   // write restart data
   output_->NewStep(step_, time_);
@@ -500,7 +500,7 @@ void ALE::Ale::OutputRestart(bool& datawritten)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::Ale::ReadRestart(const int step)
+void ALE::Ale::read_restart(const int step)
 {
   IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
   time_ = reader.ReadDouble("time");
@@ -512,7 +512,7 @@ void ALE::Ale::ReadRestart(const int step)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::Ale::PrepareTimeStep()
+void ALE::Ale::prepare_time_step()
 {
   step_ += 1;
   time_ += dt_;
@@ -520,13 +520,13 @@ void ALE::Ale::PrepareTimeStep()
   // Print time step header only in case of pure ALE problem. Coupled problems
   // print their own time step header.
   if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::ale)
-    PrintTimeStepHeader();
+    print_time_step_header();
 
   // Update local coordinate systems (which may be time dependent)
   if (locsysman_ != Teuchos::null)
   {
     discret_->ClearState();
-    discret_->SetState("dispnp", dispnp_);
+    discret_->set_state("dispnp", dispnp_);
     locsysman_->Update(time_, {});
     discret_->ClearState();
   }
@@ -586,7 +586,7 @@ void ALE::Ale::TimeStep(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::Ale::PrintTimeStepHeader() const
+void ALE::Ale::print_time_step_header() const
 {
   IO::cout << "TIME: " << time_ << "/" << maxtime_ << "  DT = " << dt_ << "  STEP = " << step_
            << "/" << numstep_ << IO::endl;
@@ -631,7 +631,7 @@ void ALE::Ale::SetupDBCMapEx(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type,
       Teuchos::RCP<Epetra_Map> condmerged = CORE::LINALG::MultiMapExtractor::MergeMaps(condmaps);
 
       dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_x_ff] =
-          Teuchos::rcp(new CORE::LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged));
+          Teuchos::rcp(new CORE::LINALG::MapExtractor(*(discret_->dof_row_map()), condmerged));
       break;
     }
     case ALE::UTILS::MapExtractor::dbc_set_x_fsi:
@@ -644,7 +644,7 @@ void ALE::Ale::SetupDBCMapEx(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type,
       Teuchos::RCP<Epetra_Map> condmerged = CORE::LINALG::MultiMapExtractor::MergeMaps(condmaps);
 
       dbcmaps_[dbc_type] =
-          Teuchos::rcp(new CORE::LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged));
+          Teuchos::rcp(new CORE::LINALG::MapExtractor(*(discret_->dof_row_map()), condmerged));
       break;
     }
     case ALE::UTILS::MapExtractor::dbc_set_wear:
@@ -655,7 +655,7 @@ void ALE::Ale::SetupDBCMapEx(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type,
 
       Teuchos::RCP<Epetra_Map> condmerged = CORE::LINALG::MultiMapExtractor::MergeMaps(condmaps);
       dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_wear] =
-          Teuchos::rcp(new CORE::LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged));
+          Teuchos::rcp(new CORE::LINALG::MapExtractor(*(discret_->dof_row_map()), condmerged));
       break;
     }
     default:
@@ -719,7 +719,7 @@ void ALE::Ale::ApplyDirichletBC(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------------*/
 void ALE::Ale::Reset()
 {
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   dispnp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
   dispn_ = CORE::LINALG::CreateVector(*dofrowmap, true);
@@ -729,7 +729,7 @@ void ALE::Ale::Reset()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::Ale::ResetStep()
+void ALE::Ale::reset_step()
 {
   dispnp_->Update(1.0, *dispn_, 0.0);
 
@@ -738,7 +738,7 @@ void ALE::Ale::ResetStep()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::Ale::ResetTime(const double dtold)
+void ALE::Ale::reset_time(const double dtold)
 {
   time_ = time_ - dtold;
   step_ = step_ - 1;
@@ -748,7 +748,7 @@ void ALE::Ale::ResetTime(const double dtold)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::Ale::SetDt(const double dtnew)
+void ALE::Ale::set_dt(const double dtnew)
 {
   dt_ = dtnew;
 
@@ -785,7 +785,7 @@ bool ALE::Ale::evaluate_element_quality()
     Teuchos::ParameterList eleparams;
 
     discret_->ClearState();
-    discret_->SetState("dispnp", dispnp_);
+    discret_->set_state("dispnp", dispnp_);
 
     for (int i = 0; i < Discretization()->NumMyRowElements(); ++i)
     {
@@ -854,9 +854,9 @@ ALE::AleLinear::AleLinear(Teuchos::RCP<DRT::Discretization> actdis,
 }
 
 /*----------------------------------------------------------------------------*/
-void ALE::AleLinear::PrepareTimeStep()
+void ALE::AleLinear::prepare_time_step()
 {
-  Ale::PrepareTimeStep();
+  Ale::prepare_time_step();
 
   if (updateeverystep_) validsysmat_ = false;
 
@@ -874,11 +874,11 @@ void ALE::AleLinear::TimeStep(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type)
 }
 
 /*----------------------------------------------------------------------------*/
-void ALE::AleLinear::EvaluateElements()
+void ALE::AleLinear::evaluate_elements()
 {
   if (not validsysmat_)
   {
-    Ale::EvaluateElements();
+    Ale::evaluate_elements();
 
     validsysmat_ = true;
   }

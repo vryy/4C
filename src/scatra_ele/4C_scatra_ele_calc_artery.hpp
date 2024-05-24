@@ -65,7 +65,7 @@ namespace DRT
         const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
         // scale fac with the area of the artery pi*D^2/4
-        return fac * M_PI * VarManager()->Diam() * VarManager()->Diam() / 4.0;
+        return fac * M_PI * var_manager()->Diam() * var_manager()->Diam() / 4.0;
       }
 
       //! evaluate shape functions and their derivatives at element center
@@ -120,7 +120,7 @@ namespace DRT
       }
 
       //! get internal variable manager for multiporo formulation
-      Teuchos::RCP<ScaTraEleInternalVariableManagerArtery<nsd_, nen_>> VarManager()
+      Teuchos::RCP<ScaTraEleInternalVariableManagerArtery<nsd_, nen_>> var_manager()
       {
         return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerArtery<nsd_, nen_>>(
             my::scatravarmanager_);

@@ -92,9 +92,9 @@ bool IO::VisualizationManager::visualization_data_exists(
 /**
  *
  */
-void IO::VisualizationManager::ClearData()
+void IO::VisualizationManager::clear_data()
 {
-  for (auto& [key, visualization_pair] : visualization_map_) visualization_pair.first.ClearData();
+  for (auto& [key, visualization_pair] : visualization_map_) visualization_pair.first.clear_data();
 }
 
 /**

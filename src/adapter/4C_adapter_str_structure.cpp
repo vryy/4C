@@ -52,13 +52,13 @@ FOUR_C_NAMESPACE_OPEN
 ADAPTER::StructureBaseAlgorithm::StructureBaseAlgorithm(const Teuchos::ParameterList& prbdyn,
     const Teuchos::ParameterList& sdyn, Teuchos::RCP<DRT::Discretization> actdis)
 {
-  CreateStructure(prbdyn, sdyn, actdis);
+  create_structure(prbdyn, sdyn, actdis);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithm::CreateStructure(const Teuchos::ParameterList& prbdyn,
+void ADAPTER::StructureBaseAlgorithm::create_structure(const Teuchos::ParameterList& prbdyn,
     const Teuchos::ParameterList& sdyn, Teuchos::RCP<DRT::Discretization> actdis)
 {
   // major switch to different time integrators
@@ -72,7 +72,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateStructure(const Teuchos::ParameterLi
     case INPAR::STR::dyna_ab2:
     case INPAR::STR::dyna_euma:
     case INPAR::STR::dyna_euimsto:
-      CreateTimInt(prbdyn, sdyn, actdis);  // <-- here is the show
+      create_tim_int(prbdyn, sdyn, actdis);  // <-- here is the show
       break;
     default:
       FOUR_C_THROW(
@@ -84,7 +84,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateStructure(const Teuchos::ParameterLi
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList& prbdyn,
+void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterList& prbdyn,
     const Teuchos::ParameterList& sdyn, Teuchos::RCP<DRT::Discretization> actdis)
 {
   // this is not exactly a one hundred meter race, but we need timing
@@ -114,7 +114,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
   // This is because the discretization read from the input file
   // do not match with the discr. at the current time step.
   // Here we read the discretization at the current time step from restart files
-  if (not actdis->Filled() || not actdis->HaveDofs()) actdis->FillComplete();
+  if (not actdis->Filled() || not actdis->HaveDofs()) actdis->fill_complete();
 
   // get input parameter lists and copy them, because a few parameters are overwritten
   // const Teuchos::ParameterList& probtype
@@ -150,7 +150,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
   }
 
   // create a solver
-  Teuchos::RCP<CORE::LINALG::Solver> solver = CreateLinearSolver(actdis, sdyn);
+  Teuchos::RCP<CORE::LINALG::Solver> solver = create_linear_solver(actdis, sdyn);
 
   // create contact/meshtying solver only if contact/meshtying problem.
   Teuchos::RCP<CORE::LINALG::Solver> contactsolver = Teuchos::null;
@@ -167,29 +167,29 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
     Teuchos::RCP<std::vector<double>> ns =
         mllist.get<Teuchos::RCP<std::vector<double>>>("nullspace");
 
-    const int size = actdis->DofRowMap()->NumMyElements();
+    const int size = actdis->dof_row_map()->NumMyElements();
 
     // extract the six nullspace vectors corresponding to the modes
     // trans x, trans y, trans z, rot x, rot y, rot z
     // Note: We assume 3d here!
 
     Teuchos::RCP<Epetra_Vector> nsv1 =
-        Teuchos::rcp(new Epetra_Vector(View, *(actdis->DofRowMap()), ns->data()));
+        Teuchos::rcp(new Epetra_Vector(View, *(actdis->dof_row_map()), ns->data()));
     Teuchos::RCP<Epetra_Vector> nsv2 =
-        Teuchos::rcp(new Epetra_Vector(View, *(actdis->DofRowMap()), &ns->at(size)));
+        Teuchos::rcp(new Epetra_Vector(View, *(actdis->dof_row_map()), &ns->at(size)));
     Teuchos::RCP<Epetra_Vector> nsv3 =
-        Teuchos::rcp(new Epetra_Vector(View, *(actdis->DofRowMap()), &ns->at(2 * size)));
+        Teuchos::rcp(new Epetra_Vector(View, *(actdis->dof_row_map()), &ns->at(2 * size)));
     Teuchos::RCP<Epetra_Vector> nsv4 =
-        Teuchos::rcp(new Epetra_Vector(View, *(actdis->DofRowMap()), &ns->at(3 * size)));
+        Teuchos::rcp(new Epetra_Vector(View, *(actdis->dof_row_map()), &ns->at(3 * size)));
     Teuchos::RCP<Epetra_Vector> nsv5 =
-        Teuchos::rcp(new Epetra_Vector(View, *(actdis->DofRowMap()), &ns->at(4 * size)));
+        Teuchos::rcp(new Epetra_Vector(View, *(actdis->dof_row_map()), &ns->at(4 * size)));
     Teuchos::RCP<Epetra_Vector> nsv6 =
-        Teuchos::rcp(new Epetra_Vector(View, *(actdis->DofRowMap()), &ns->at(5 * size)));
+        Teuchos::rcp(new Epetra_Vector(View, *(actdis->dof_row_map()), &ns->at(5 * size)));
 
 
     // prepare matrix for scaled thickness business of thin shell structures
     Teuchos::RCP<CORE::LINALG::SparseMatrix> stcinv =
-        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*actdis->DofRowMap(), 81, true, true));
+        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*actdis->dof_row_map(), 81, true, true));
 
     stcinv->Zero();
     // create the parameters for the discretization
@@ -212,7 +212,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
       p.set("stc_layer", lay);
 
       Teuchos::RCP<CORE::LINALG::SparseMatrix> tmpstcmat =
-          Teuchos::rcp(new CORE::LINALG::SparseMatrix(*actdis->DofRowMap(), 81, true, true));
+          Teuchos::rcp(new CORE::LINALG::SparseMatrix(*actdis->dof_row_map(), 81, true, true));
       tmpstcmat->Zero();
 
       actdis->Evaluate(p, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -221,7 +221,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
       stcinv = MLMultiply(*stcinv, *tmpstcmat, false, false, true);
     }
 
-    Teuchos::RCP<Epetra_Vector> temp = CORE::LINALG::CreateVector(*(actdis->DofRowMap()), false);
+    Teuchos::RCP<Epetra_Vector> temp = CORE::LINALG::CreateVector(*(actdis->dof_row_map()), false);
 
     stcinv->Multiply(false, *nsv1, *temp);
     nsv1->Update(1.0, *temp, 0.0);
@@ -475,7 +475,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateLinearSolver(
+Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::create_linear_solver(
     Teuchos::RCP<DRT::Discretization>& actdis, const Teuchos::ParameterList& sdyn)
 {
   Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::null;

@@ -35,7 +35,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<scalar_type, beam
  */
 template <typename scalar_type, typename beam, typename surface>
 double BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<scalar_type, beam,
-    surface>::GetEnergy() const
+    surface>::get_energy() const
 {
   return CORE::FADUTILS::CastToDouble(GetPenaltyPotential());
 }

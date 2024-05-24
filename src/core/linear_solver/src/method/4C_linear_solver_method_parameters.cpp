@@ -92,7 +92,7 @@ void CORE::LINEAR_SOLVER::Parameters::compute_solver_parameters(
     {
       // if no map is given, we calculate the nullspace on the map describing the
       // whole discretization
-      nullspaceMap = Teuchos::rcp(new Epetra_Map(*dis.DofRowMap()));
+      nullspaceMap = Teuchos::rcp(new Epetra_Map(*dis.dof_row_map()));
     }
 
     auto nullspace = DRT::ComputeNullSpace(dis, numdf, dimns, nullspaceMap);

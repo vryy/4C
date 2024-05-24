@@ -53,7 +53,7 @@ namespace CORE::Dofsets
   <h3>Usage</h3>
 
   After construction the newly created dofset has to be added to the target discretization.
-  The target discretization then has to be filled. During \ref FillComplete() the method
+  The target discretization then has to be filled. During \ref fill_complete() the method
   \ref assign_degrees_of_freedom is called.
 
   One example for the proper use of this class:
@@ -66,7 +66,7 @@ namespace CORE::Dofsets
 
     target_dis->AddDofSet(newsourcedofset_for_target_dis);
 
-    target_dis->FillComplete();
+    target_dis->fill_complete();
 
   \endcode
 
@@ -97,7 +97,7 @@ namespace CORE::Dofsets
 
     /*! \brief Assign dof numbers using all elements and nodes of the discretization.
 
-           This method is called during \ref FillComplete() on the target
+           This method is called during \ref fill_complete() on the target
            discretization.
 
 
@@ -167,7 +167,7 @@ namespace CORE::Dofsets
     //! @name Access methods
 
     /// Get degree of freedom row map
-    const Epetra_Map* DofRowMap() const override { return sourcedofset_->DofRowMap(); };
+    const Epetra_Map* dof_row_map() const override { return sourcedofset_->dof_row_map(); };
 
     /// Get degree of freedom column map
     const Epetra_Map* DofColMap() const override { return sourcedofset_->DofColMap(); };
@@ -176,7 +176,7 @@ namespace CORE::Dofsets
     int NumDof(const DRT::Node* node  ///< node, for which you want to know the number of dofs
     ) const override
     {
-      const DRT::Node* sourcenode = GetSourceNode(node->LID());
+      const DRT::Node* sourcenode = get_source_node(node->LID());
       if (sourcenode == nullptr)
         return sourcedofset_->NumDof(node);
       else
@@ -197,7 +197,7 @@ namespace CORE::Dofsets
         const DRT::Node& node  ///< node, for which you want to know the number of dofs
     ) const override
     {
-      const DRT::Node* sourcenode = GetSourceNode(node.LID());
+      const DRT::Node* sourcenode = get_source_node(node.LID());
       if (sourcenode == nullptr)
         return sourcedofset_->NumDofPerNode(node);
       else
@@ -209,7 +209,7 @@ namespace CORE::Dofsets
         const DRT::Node* node  ///< node, for which you want to know the number of dofs
     ) const override
     {
-      const DRT::Node* sourcenode = GetSourceNode(node->LID());
+      const DRT::Node* sourcenode = get_source_node(node->LID());
       if (sourcenode == nullptr)
         return sourcedofset_->Dof(node);
       else
@@ -222,7 +222,7 @@ namespace CORE::Dofsets
         unsigned nodaldofset  ///< number of nodal dof set of the node (currently !=0 only for XFEM)
     ) const override
     {
-      const DRT::Node* sourcenode = GetSourceNode(node->LID());
+      const DRT::Node* sourcenode = get_source_node(node->LID());
       if (sourcenode == nullptr)
         sourcedofset_->Dof(dof, node, nodaldofset);
       else
@@ -235,7 +235,7 @@ namespace CORE::Dofsets
     /// Get the gid of a dof for given node
     int Dof(const DRT::Node* node, int dof) const override
     {
-      const DRT::Node* sourcenode = GetSourceNode(node->LID());
+      const DRT::Node* sourcenode = get_source_node(node->LID());
       if (sourcenode == nullptr)
         return sourcedofset_->Dof(node, dof);
       else
@@ -252,7 +252,7 @@ namespace CORE::Dofsets
     /// Get the gid of all dofs of a node
     void Dof(const DRT::Node* node, std::vector<int>& lm) const override
     {
-      const DRT::Node* sourcenode = GetSourceNode(node->LID());
+      const DRT::Node* sourcenode = get_source_node(node->LID());
       if (sourcenode == nullptr)
         return sourcedofset_->Dof(node, lm);
       else
@@ -265,7 +265,7 @@ namespace CORE::Dofsets
         std::vector<int>& lm         ///< already allocated vector to be filled with dof positions
     ) const override
     {
-      const DRT::Node* sourcenode = GetSourceNode(node->LID());
+      const DRT::Node* sourcenode = get_source_node(node->LID());
       if (sourcenode == nullptr)
         sourcedofset_->Dof(node, startindex, lm);
       else
@@ -286,7 +286,7 @@ namespace CORE::Dofsets
         std::vector<int>& lm    ///< already allocated vector to be filled with DOF positions
     ) const override
     {
-      const DRT::Node* sourcenode = GetSourceNode(node->LID());
+      const DRT::Node* sourcenode = get_source_node(node->LID());
       if (sourcenode == nullptr)
         sourcedofset_->Dof(element, node, lm);
       else
@@ -314,7 +314,7 @@ namespace CORE::Dofsets
 
    private:
     //! get corresponding source node from source discretization
-    const DRT::Node* GetSourceNode(int targetLid) const;
+    const DRT::Node* get_source_node(int targetLid) const;
 
     // dofset
     Teuchos::RCP<DofSetInterface> sourcedofset_;

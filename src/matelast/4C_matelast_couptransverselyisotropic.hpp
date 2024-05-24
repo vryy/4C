@@ -221,7 +221,7 @@ namespace MAT
        * \param[in] rcg   right cauchy green tensor in perturbed Voigt strain notation
        * \param[in] param parameter list pointer (optional)
        */
-      int ResetInvariants(
+      int reset_invariants(
           const CORE::LINALG::Matrix<6, 1>& rcg, const Teuchos::ParameterList* params = nullptr);
 
       /*!
@@ -292,7 +292,7 @@ namespace MAT
           CORE::LINALG::Matrix<6, 6>& cmat, const CORE::LINALG::Matrix<6, 1>& rcg_inv_s) const;
 
       /// error handling in case of a negative deformation gradient determinant
-      void ErrorHandling(const Teuchos::ParameterList* params, std::stringstream& msg) const;
+      void error_handling(const Teuchos::ParameterList* params, std::stringstream& msg) const;
 
      private:
       /// pointer to the fiber parameters

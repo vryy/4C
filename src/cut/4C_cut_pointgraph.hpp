@@ -84,9 +84,9 @@ namespace CORE::GEO
 
           /** Creates maincycles (outer polygons) and holecycles (inner polygons = holes)
            *  of the selfcut graph */
-          void FindCycles(Side *side, Cycle &cycle);
+          void find_cycles(Side *side, Cycle &cycle);
 
-          virtual void FindCycles(
+          virtual void find_cycles(
               Element *element, Side *side, Cycle &cycle, Location location, Strategy strategy);
 
           /*!
@@ -118,7 +118,7 @@ namespace CORE::GEO
         /** empty constructor (for derived classes only)
          *
          *  \author hiermeier \date 11/16 */
-        PointGraph(unsigned dim) : graph_(CreateGraph(dim)){/* intentionally left blank */};
+        PointGraph(unsigned dim) : graph_(create_graph(dim)){/* intentionally left blank */};
 
        public:
         typedef std::vector<Cycle>::iterator facet_iterator;
@@ -166,13 +166,13 @@ namespace CORE::GEO
         virtual inline const Teuchos::RCP<PointGraph::Graph> &GraphPtr() { return graph_; }
 
        private:
-        Teuchos::RCP<CORE::GEO::CUT::IMPL::PointGraph::Graph> CreateGraph(unsigned dim);
+        Teuchos::RCP<CORE::GEO::CUT::IMPL::PointGraph::Graph> create_graph(unsigned dim);
 
         Teuchos::RCP<Graph> graph_;
       };  // class PointGraph
 
       // non-member function
-      bool FindCycles(graph_t &g, Cycle &cycle,
+      bool find_cycles(graph_t &g, Cycle &cycle,
           std::map<vertex_t, CORE::LINALG::Matrix<3, 1>> &local, std::vector<Cycle> &cycles);
 
       Teuchos::RCP<PointGraph> CreatePointGraph(Mesh &mesh, Element *element, Side *side,

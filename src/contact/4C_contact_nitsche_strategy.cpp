@@ -33,7 +33,7 @@ void CONTACT::NitscheStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> di
     const int iter, bool predictor)
 {
   // mortar initialization and evaluation
-  SetState(MORTAR::state_new_displacement, *dis);
+  set_state(MORTAR::state_new_displacement, *dis);
 
   // just a Nitsche-version
   Teuchos::RCP<Epetra_FEVector> fc = Teuchos::rcp(new Epetra_FEVector(f->Map()));
@@ -83,8 +83,8 @@ void CONTACT::NitscheStrategy::DoReadRestart(IO::DiscretizationReader& reader,
   if (restartwithcontact) FOUR_C_THROW("not supported for nitsche contact");
 
   // set restart displacement state
-  SetState(MORTAR::state_new_displacement, *dis);
-  SetState(MORTAR::state_old_displacement, *dis);
+  set_state(MORTAR::state_new_displacement, *dis);
+  set_state(MORTAR::state_old_displacement, *dis);
 
   // Evaluation for all interfaces
   for (const auto& interface : interface_) interface->Initialize();
@@ -103,7 +103,7 @@ void CONTACT::NitscheStrategy::DoReadRestart(IO::DiscretizationReader& reader,
     update_trace_ineq_etimates();
 }
 
-void CONTACT::NitscheStrategy::SetState(
+void CONTACT::NitscheStrategy::set_state(
     const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
 {
   if (statename == MORTAR::state_new_displacement)
@@ -126,14 +126,14 @@ void CONTACT::NitscheStrategy::SetState(
     {
       curr_state_eval_ = false;
       (*curr_state_) = vec;
-      AbstractStrategy::SetState(statename, vec);
+      AbstractStrategy::set_state(statename, vec);
       SetParentState(statename, vec);
     }
   }
   else
   {
     curr_state_eval_ = false;
-    AbstractStrategy::SetState(statename, vec);
+    AbstractStrategy::set_state(statename, vec);
   }
 }
 
@@ -166,7 +166,7 @@ void CONTACT::NitscheStrategy::SetParentState(
         std::vector<int> lmstride;
 
         // this gets values in local order
-        ele->ParentElement()->LocationVector(*dis, lm, lmowner, lmstride);
+        ele->parent_element()->LocationVector(*dis, lm, lmowner, lmstride);
 
         std::vector<double> myval;
         CORE::FE::ExtractMyValues(*global, myval, lm);
@@ -202,7 +202,7 @@ void CONTACT::NitscheStrategy::EvalForceStiff(CONTACT::ParamsInterface& cparams)
 void CONTACT::NitscheStrategy::Reset(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp, const Epetra_Vector& xnew)
 {
-  SetState(MORTAR::state_new_displacement, dispnp);
+  set_state(MORTAR::state_new_displacement, dispnp);
 }
 
 void CONTACT::NitscheStrategy::RunPostComputeX(const CONTACT::ParamsInterface& cparams,
@@ -222,7 +222,7 @@ void CONTACT::NitscheStrategy::Integrate(const CONTACT::ParamsInterface& cparams
   // Evaluation for all interfaces
   for (const auto& interface : interface_)
   {
-    interface->InterfaceParams().set<double>("TIMESTEP", cparams.GetDeltaTime());
+    interface->interface_params().set<double>("TIMESTEP", cparams.GetDeltaTime());
     interface->Initialize();
     interface->Evaluate(0, step_, iter_);
 
@@ -248,7 +248,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::SetupRhsBlockVec(
   {
     case CONTACT::VecBlockType::displ:
       return Teuchos::rcp(
-          new Epetra_FEVector(*GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap()));
+          new Epetra_FEVector(*GLOBAL::Problem::Instance()->GetDis("structure")->dof_row_map()));
     default:
       FOUR_C_THROW("you should not be here");
       break;
@@ -304,7 +304,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategy::SetupMatrixBl
     case CONTACT::MatBlockType::displ_displ:
       return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
-              *GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap()),
+              *GLOBAL::Problem::Instance()->GetDis("structure")->dof_row_map()),
           100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
     default:
       FOUR_C_THROW("you should not be here");
@@ -404,7 +404,7 @@ void CONTACT::NitscheStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
   if (friction_)
   {
     StoreToOld(MORTAR::StrategyBase::n_old);
-    SetState(MORTAR::state_old_displacement, *dis);
+    set_state(MORTAR::state_old_displacement, *dis);
   }
 }
 

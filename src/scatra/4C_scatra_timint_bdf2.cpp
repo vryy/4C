@@ -50,7 +50,7 @@ void SCATRA::TimIntBDF2::Setup()
   // vectors and matrices
   //                 local <-> global dof numbering
   // -------------------------------------------------------------------
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // state vector for solution at time t_{n-1}
   phinm_ = CORE::LINALG::CreateVector(*dofrowmap, true);
@@ -194,7 +194,7 @@ void SCATRA::TimIntBDF2::AVM3Separation()
   Sep_->Multiply(false, *phinp_, *fsphinp_);
 
   // set fine-scale vector
-  discret_->SetState("fsphinp", fsphinp_);
+  discret_->set_state("fsphinp", fsphinp_);
 }
 
 /*----------------------------------------------------------------------*
@@ -230,8 +230,8 @@ void SCATRA::TimIntBDF2::add_time_integration_specific_vectors(bool forcedincrem
   // call base class routine
   ScaTraTimIntImpl::add_time_integration_specific_vectors(forcedincrementalsolver);
 
-  discret_->SetState("hist", hist_);
-  discret_->SetState("phinp", phinp_);
+  discret_->set_state("hist", hist_);
+  discret_->set_state("phinp", phinp_);
 }
 
 /*----------------------------------------------------------------------*
@@ -301,10 +301,10 @@ void SCATRA::TimIntBDF2::WriteRestart() const
 
 /*----------------------------------------------------------------------*
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntBDF2::ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input)
+void SCATRA::TimIntBDF2::read_restart(const int step, Teuchos::RCP<IO::InputControl> input)
 {
   // call base class routine
-  ScaTraTimIntImpl::ReadRestart(step, input);
+  ScaTraTimIntImpl::read_restart(step, input);
 
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)

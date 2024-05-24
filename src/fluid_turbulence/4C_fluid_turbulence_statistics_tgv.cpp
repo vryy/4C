@@ -309,7 +309,7 @@ void FLD::TurbulenceStatisticsTgv::EvaluateResiduals(
   for (std::map<std::string, Teuchos::RCP<Epetra_Vector>>::iterator state = statevecs.begin();
        state != statevecs.end(); ++state)
   {
-    discret_->SetState(state->first, state->second);
+    discret_->set_state(state->first, state->second);
   }
 
   // call loop over elements to compute means

@@ -60,7 +60,7 @@ namespace CONSTRAINTS
     );
 
     //! Evaluate routine to call from outside. In here the right action is determined and the
-    //! #EvaluateConstraint routine is called
+    //! #evaluate_constraint routine is called
     void Evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
@@ -101,7 +101,7 @@ namespace CONSTRAINTS
 
 
     //! Evaluate constraint conditions and assemble the results
-    void EvaluateConstraint(
+    void evaluate_constraint(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
         Teuchos::RCP<CORE::LINALG::SparseOperator>
@@ -119,7 +119,7 @@ namespace CONSTRAINTS
     );
 
     //! Compute and assemble initial constraint values (depending on user specific activation times)
-    void EvaluateError(
+    void evaluate_error(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
         Teuchos::RCP<Epetra_Vector> systemvector  ///< distributed vector that may be filled by

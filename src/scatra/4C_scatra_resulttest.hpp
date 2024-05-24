@@ -51,7 +51,7 @@ namespace SCATRA
     /*!
       Possible position flags is only "phi"
      */
-    void TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_node(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
     //! test special quantity not associated with a particular element or node
     void TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
@@ -63,7 +63,7 @@ namespace SCATRA
     ) const;
 
     //! get special result to be tested
-    virtual double ResultSpecial(const std::string quantity  //! name of quantity to be tested
+    virtual double result_special(const std::string quantity  //! name of quantity to be tested
     ) const;
 
     //! time integrator

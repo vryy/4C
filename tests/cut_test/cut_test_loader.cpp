@@ -36,7 +36,7 @@ void MeshLoader::GetNode(int nid, double x, double y, double z, double lsv)
   }
 }
 
-void MeshLoader::CreateSide(
+void MeshLoader::create_side(
     int sid, int nid1, int nid2, int nid3, int nid4, CORE::FE::CellType shape)
 {
   switch (shape)
@@ -64,7 +64,7 @@ void MeshLoader::CreateSide(
   }
 }
 
-void MeshLoader::CreateElement(int eid, int nid1, int nid2, int nid3, int nid4, int nid5, int nid6,
+void MeshLoader::create_element(int eid, int nid1, int nid2, int nid3, int nid4, int nid5, int nid6,
     int nid7, int nid8, CORE::FE::CellType shape)
 {
   switch (shape)
@@ -91,7 +91,7 @@ void MeshLoader::CreateElement(int eid, int nid1, int nid2, int nid3, int nid4, 
       nids.push_back(nid6);
       nids.push_back(nid7);
       nids.push_back(nid8);
-      mesh_.AddElement(eid, nids, xyz, CORE::FE::CellType::hex8);
+      mesh_.add_element(eid, nids, xyz, CORE::FE::CellType::hex8);
 
       break;
     }

@@ -67,7 +67,7 @@ namespace CONTACT
     Creates the strategy object and initializes all global variables, including
     all necessary Epetra_Maps and global vector and matrix quantities.
 
-    \param[in] DofRowMap Dof row map of underlying problem
+    \param[in] dof_row_map Dof row map of underlying problem
     \param[in] NodeRowMap Node row map of underlying problem
     \param[in] params List of contact/parameters
     \param[in] interface All contact interface objects
@@ -76,7 +76,7 @@ namespace CONTACT
     \param[in] alphaf Mid-point for Generalized-alpha time integration
     \param[in] maxdof Highest DOF number in global problem
     */
-    MtAbstractStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
+    MtAbstractStrategy(const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
         Teuchos::ParameterList params, std::vector<Teuchos::RCP<MORTAR::Interface>> interface,
         const int spatialDim, const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
         const int maxdof);
@@ -171,7 +171,7 @@ namespace CONTACT
     \brief Redistribute all meshtying interfaces in parallel
 
     Here, we call each interface to perform redistribution for each interface individually. Since
-    this changes maps and interface discretizations, we have to FillComplete() all interface
+    this changes maps and interface discretizations, we have to fill_complete() all interface
     discretizations and re-setup the strategy object afterwards by calling Setup(bool).
 
     If parallel redistribution is disabled in the input file or if this is a serial computation,
@@ -240,7 +240,7 @@ namespace CONTACT
     applicable) \param vec (in): current global state of the quantity defined by statename
 
     */
-    void SetState(const enum MORTAR::StateType& statetype, const Epetra_Vector& vec) override;
+    void set_state(const enum MORTAR::StateType& statetype, const Epetra_Vector& vec) override;
 
     /*!
     \brief Do mortar coupling in reference configuration
@@ -548,13 +548,13 @@ namespace CONTACT
     }
 
     //! evaluate force terms
-    virtual bool EvaluateForce(const Teuchos::RCP<const Epetra_Vector> dis) = 0;
+    virtual bool evaluate_force(const Teuchos::RCP<const Epetra_Vector> dis) = 0;
 
     //! evaluate stiffness terms
-    virtual bool EvaluateStiff(const Teuchos::RCP<const Epetra_Vector> dis) = 0;
+    virtual bool evaluate_stiff(const Teuchos::RCP<const Epetra_Vector> dis) = 0;
 
     //! evaluate force and stiffness terms
-    virtual bool EvaluateForceStiff(const Teuchos::RCP<const Epetra_Vector> dis) = 0;
+    virtual bool evaluate_force_stiff(const Teuchos::RCP<const Epetra_Vector> dis) = 0;
 
     //! after applying Newton increment
     virtual void RunPostComputeX(

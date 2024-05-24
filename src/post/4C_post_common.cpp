@@ -423,7 +423,7 @@ void PostProblem::read_meshes()
   // in order to get the same dof numbers in all discretizations as we had
   // during our calculation.
   // The order inside the control file is important!
-  // Discretizations have to be FillComplete()ed in the same order as during
+  // Discretizations have to be fill_complete()ed in the same order as during
   // the calculation!
   std::stack<MAP*> meshstack;
 
@@ -534,7 +534,7 @@ void PostProblem::read_meshes()
                 tag = np;
                 topid = np;
 
-                exporter.ISend(
+                exporter.i_send(
                     frompid, topid, packed_knots->data(), packed_knots->size(), tag, request);
               }
             }
@@ -564,7 +564,7 @@ void PostProblem::read_meshes()
           if (nurbsdis->Comm().NumProc() != 1)
             nurbsdis->SetupGhosting(false, false, false);
           else
-            nurbsdis->FillComplete(false, false, false);
+            nurbsdis->fill_complete(false, false, false);
 
 
           if (!(nurbsdis->Filled()))
@@ -579,7 +579,7 @@ void PostProblem::read_meshes()
           nurbsdis->SetKnotVector(knots);
 
           // do initialisation
-          currfield.discretization()->FillComplete();
+          currfield.discretization()->fill_complete();
 
           break;
         }
@@ -589,7 +589,7 @@ void PostProblem::read_meshes()
           if (currfield.discretization()->Comm().NumProc() != 1)
             currfield.discretization()->SetupGhosting(true, true, true);
           else
-            currfield.discretization()->FillComplete();
+            currfield.discretization()->fill_complete();
 
           break;
         }
@@ -959,6 +959,6 @@ int PostResult::step() const { return map_read_int(group_, "step"); }
 
 
 //! returns the number of global Dof-Ids
-int PostField::global_id_num() const { return dis_->DofRowMap()->NumGlobalElements(); }
+int PostField::global_id_num() const { return dis_->dof_row_map()->NumGlobalElements(); }
 
 FOUR_C_NAMESPACE_CLOSE

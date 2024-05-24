@@ -68,9 +68,9 @@ namespace DRT
       //!
       //!  This class does not provide a definition for this function, it
       //!  must be defined in TemperImpl.
-      virtual int EvaluateNeumann(const DRT::Element* ele,  //!< current element
-          const Teuchos::ParameterList& params,             //!< parameter list
-          const DRT::Discretization& discretization,        //!< current discretisation
+      virtual int evaluate_neumann(const DRT::Element* ele,  //!< current element
+          const Teuchos::ParameterList& params,              //!< parameter list
+          const DRT::Discretization& discretization,         //!< current discretisation
           const std::vector<int>&
               lm,  //!< location vector, EvalNeumann is called only on own discretisation
           CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< view on external force vector
@@ -149,7 +149,7 @@ namespace DRT
           ) override;
 
       //! Evaluate the element
-      int EvaluateNeumann(const DRT::Element* ele,    //!< current element
+      int evaluate_neumann(const DRT::Element* ele,   //!< current element
           const Teuchos::ParameterList& params,       //!< parameter list
           const DRT::Discretization& discretization,  //!< current discretisation
           const std::vector<int>&
@@ -180,7 +180,7 @@ namespace DRT
        * @param etangcoupl matrix k_Td to be filled
        * @param params ParameterList of options
        */
-      void EvaluateCoupledTang(const Element* ele, const Discretization& discretization,
+      void evaluate_coupled_tang(const Element* ele, const Discretization& discretization,
           const Element::LocationArray& la,
           CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * nsd_ * numdofpernode_>* etangcoupl,
           Teuchos::ParameterList& params);
@@ -191,7 +191,7 @@ namespace DRT
        * @param time time for function evaluation
        * @param efext external force vector
        */
-      void EvaluateFext(const Element* ele, const double time,
+      void evaluate_fext(const Element* ele, const double time,
           CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>& efext);
 
       //! Calculate element force vectors and a few matrices
@@ -222,9 +222,9 @@ namespace DRT
           const Teuchos::ParameterList& params);
 
       //! calculate thermal-mechanical system matrix term needed in monolithic TSI
-      void LinearCoupledTang(const DRT::Element* ele,  //!< the element whose matrix is calculated
-          const std::vector<double>& disp,             //!< current displacements
-          const std::vector<double>& vel,              //!< current velocities
+      void linear_coupled_tang(const DRT::Element* ele,  //!< the element whose matrix is calculated
+          const std::vector<double>& disp,               //!< current displacements
+          const std::vector<double>& vel,                //!< current velocities
           CORE::LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>*
               etangcoupl,  //!< k_Tu matrix
           const Teuchos::ParameterList& params);
@@ -284,7 +284,7 @@ namespace DRT
       );
 
       //! build nonlinear B-operator
-      void CalculateBop(
+      void calculate_bop(
           CORE::LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_>* bop,  //!< nonlinear B-operator
           const CORE::LINALG::Matrix<nsd_, nsd_>* defgrd,              //!< deformation gradient
           const CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ                //!< gradient-operator
@@ -345,13 +345,13 @@ namespace DRT
       );
 
       //! build linear B-operator
-      void CalculateBoplin(
+      void calculate_boplin(
           CORE::LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_>* boplin,  //!< linear B-operator
           const CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ                   //!< gradient-operator
       ) const;
 
       //! get corresponding structural material
-      Teuchos::RCP<CORE::MAT::Material> GetSTRMaterial(
+      Teuchos::RCP<CORE::MAT::Material> get_str_material(
           const DRT::Element* ele  //!< the element whose matrix is calculated
       ) const;
 
@@ -392,14 +392,14 @@ namespace DRT
       );
 
       //! calculate lumped capacity matrix in case of explicit time integration
-      void CalculateLumpMatrix(
+      void calculate_lump_matrix(
           CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa) const;
 
       //! calculate characteristic element length
       double calculate_char_ele_length() const;
 
       //! Compute the error compared to an analytical solution from input file
-      virtual void ComputeError(
+      virtual void compute_error(
           const DRT::Element* ele,  //!< current element whose terms are calculated
           CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>& elevec1,  //!< element vectorr
           Teuchos::ParameterList& params  //!< parameter list, containing analytical solution
@@ -411,7 +411,7 @@ namespace DRT
           CORE::LINALG::Matrix<nen_, nsd_>& xcurr, CORE::LINALG::Matrix<nen_, nsd_>& xcurrrate);
 
       //! prepare the evaluation of NURBS shape functions
-      virtual void PrepareNurbsEval(
+      virtual void prepare_nurbs_eval(
           const DRT::Element* ele,                   //!< the element whose matrix is calculated
           const DRT::Discretization& discretization  //!< current discretisation
       );
@@ -434,7 +434,7 @@ namespace DRT
       );
 
       //! extract displacement and velocity vector from discretization
-      void ExtractDispVel(const Discretization& discretization, const Element::LocationArray& la,
+      void extract_disp_vel(const Discretization& discretization, const Element::LocationArray& la,
           std::vector<double>& mydisp, std::vector<double>& myvel) const;
 
       //! copy matrix contents into character vector
@@ -453,10 +453,10 @@ namespace DRT
           Teuchos::ParameterList& params) const;
 
       //! FDcheck of linearized capacity matrix on element level
-      void FDCheckCapalin(const DRT::Element* ele,  //!< the element whose matrix is calculated
-          const double time,                        //!< current time
-          const std::vector<double>& disp,          //!< current displacements
-          const std::vector<double>& vel,           //!< current velocities
+      void fd_check_capalin(const DRT::Element* ele,  //!< the element whose matrix is calculated
+          const double time,                          //!< current time
+          const std::vector<double>& disp,            //!< current displacements
+          const std::vector<double>& vel,             //!< current velocities
           CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
               ecapa,  //!< capacity matrix
           CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*

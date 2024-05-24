@@ -232,7 +232,7 @@ namespace CONTACT
     /*!
       \Get energy of penalty contact.
     */
-    double GetEnergy() override
+    double get_energy() override
     {
       TYPE energy = 0.5 * pp_ * gap_ * gap_;
       return CORE::FADUTILS::CastToDouble(energy);
@@ -490,7 +490,7 @@ namespace CONTACT
     /*!
     \brief Evaluate contact forces
     */
-    void EvaluateFcContact(const double& pp, Epetra_Vector* fint,
+    void evaluate_fc_contact(const double& pp, Epetra_Vector* fint,
         const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
         const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc1_FAD = nullptr,
@@ -558,7 +558,8 @@ namespace CONTACT
     /*!
     \brief Compute linearization of gap g
     */
-    void ComputeLinGap(CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_gap,
+    void compute_lin_gap(
+        CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_gap,
         const CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_xi,
         const CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_eta,
         const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r, const TYPE& norm_delta_r,
@@ -570,7 +571,7 @@ namespace CONTACT
     /*!
     \brief Compute linearization of time derivative g_t of gap g
     */
-    void ComputeLinGapt(
+    void compute_lin_gapt(
         CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_gap_t,
         const CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_xi,
         const CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_eta,
@@ -587,7 +588,7 @@ namespace CONTACT
     /*!
     \brief Compute linearization of normal vector n
     */
-    void ComputeLinNormal(
+    void compute_lin_normal(
         CORE::LINALG::Matrix<3, 2 * 3 * numnodes * numnodalvalues, TYPE>& delta_normal,
         const CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_xi,
         const CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_eta,
@@ -604,17 +605,17 @@ namespace CONTACT
     /*!
     \brief Calculate scalar contact force and linearization according to chosen penalty law
     */
-    void CalcPenaltyLaw();
+    void calc_penalty_law();
 
     /*!
     \brief Calculate scalar damping contribution to contact force and linearization
     */
-    void CalcDampingLaw();
+    void calc_damping_law();
 
     /*!
     \brief Calculate shape function values for given parameter values
     */
-    void GetShapeFunctions(CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+    void get_shape_functions(CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
         CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
         CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
         CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi,
@@ -682,13 +683,13 @@ namespace CONTACT
     /*!
     \brief Compute normal vector and gap function at contact point
     */
-    void ComputeNormal(CORE::LINALG::Matrix<3, 1, TYPE>& delta_r, TYPE& norm_delta_r,
+    void compute_normal(CORE::LINALG::Matrix<3, 1, TYPE>& delta_r, TYPE& norm_delta_r,
         std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap);
 
     /*!
     \brief Check, if we have contact or not (gap < 0 ???)
     */
-    void CheckContactStatus(const double& pp);
+    void check_contact_status(const double& pp);
 
     /*!
       \brief Get global dofs of a node
@@ -698,14 +699,14 @@ namespace CONTACT
       then transfers these dofs to their actual GIDs in the underlying
       problem discretization by applying the pre-computed dofoffset_.
       */
-    std::vector<int> GetGlobalDofs(const DRT::Node* node);
+    std::vector<int> get_global_dofs(const DRT::Node* node);
 
     /*!
       \brief These method shifts the nodal positions applied within the beam contact framework by a
       small pre-defined amount in order to enable contact evaluation in the case of two identical
       contact points, i.e r1=r2
     */
-    void ShiftNodalPositions();
+    void shift_nodal_positions();
 
     /*!
       \brief Get the vector normal_old_ from the neighbor element
@@ -735,7 +736,7 @@ namespace CONTACT
     /*!
       \brief Get jacobi factor of beam element
     */
-    double GetJacobi(DRT::Element* element1);
+    double get_jacobi(DRT::Element* element1);
 
 
     /*!
@@ -746,7 +747,7 @@ namespace CONTACT
     /*!
       \brief Set class variables at the beginning of a Newton step
     */
-    void SetClassVariables(const double& pp, Teuchos::ParameterList timeintparams);
+    void set_class_variables(const double& pp, Teuchos::ParameterList timeintparams);
 
     //@}
 

@@ -94,7 +94,7 @@ namespace MAT
 
         void SetInitToTrue() { isinit_ = true; };
 
-        bool IsInit() { return isinit_; };
+        bool is_init() { return isinit_; };
 
        private:
         // has this material been properly initialized?

@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  |  initialize EAS data (private)                           seitz 04/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::EasInit()
+void DRT::ELEMENTS::So3Plast<distype>::eas_init()
 {
   switch (eastype_)
   {

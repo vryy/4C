@@ -71,14 +71,14 @@ bool CORE::GEO::CUT::Side::find_cut_points_dispatch(
  * Calculate the points at which the other side intersects with this considered
  * side
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Side::FindCutPoints(Mesh& mesh, Element* element, Side& other)
+bool CORE::GEO::CUT::Side::find_cut_points(Mesh& mesh, Element* element, Side& other)
 {
   bool cut = false;
   const std::vector<Edge*>& edges = Edges();
   for (std::vector<Edge*>::const_iterator i = edges.begin(); i != edges.end(); ++i)
   {
     Edge* e = *i;
-    if (e->FindCutPoints(mesh, element, *this, other))
+    if (e->find_cut_points(mesh, element, *this, other))
     {
       cut = true;
     }
@@ -88,7 +88,7 @@ bool CORE::GEO::CUT::Side::FindCutPoints(Mesh& mesh, Element* element, Side& oth
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Side::FindCutLines(Mesh& mesh, Element* element, Side& other)
+bool CORE::GEO::CUT::Side::find_cut_lines(Mesh& mesh, Element* element, Side& other)
 {
   /* check whether cut lines are already created (still need to create lines new
    * in case we create AmbiguousCutLines!) */
@@ -103,7 +103,7 @@ bool CORE::GEO::CUT::Side::FindCutLines(Mesh& mesh, Element* element, Side& othe
             "Line (%d, %d) is cut by both sides but not by the element, check this "
             "situation as it is not expected!",
             l->BeginPoint()->Id(), l->EndPoint()->Id());
-        // l->AddElement( element );
+        // l->add_element( element );
       }
       other.AddLine(l);
     }
@@ -1757,11 +1757,11 @@ bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::WithinS
     const CORE::LINALG::Matrix<probdim, 1>& xyz, CORE::LINALG::Matrix<dim, 1>& rs, double& dist)
 {
   FOUR_C_THROW("Do we use this function?");
-  Teuchos::RCP<Position> pos = PositionFactory::BuildPosition<probdim, sidetype>(*this, xyz);
+  Teuchos::RCP<Position> pos = PositionFactory::build_position<probdim, sidetype>(*this, xyz);
   bool success = pos->is_given_point_within_element();
   if (not success)
   {
-    FOUR_C_THROW("ComputeDistance w.r.t side not successful");
+    FOUR_C_THROW("compute_distance w.r.t side not successful");
     rs = 0;
     dist = 9999;  // set large value
     return false;
@@ -1781,7 +1781,7 @@ bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::LocalCo
     const CORE::LINALG::Matrix<probdim, 1>& xyz, CORE::LINALG::Matrix<probdim, 1>& rsd,
     bool allow_dist, double tol)
 {
-  Teuchos::RCP<Position> pos = PositionFactory::BuildPosition<probdim, sidetype>(*this, xyz);
+  Teuchos::RCP<Position> pos = PositionFactory::build_position<probdim, sidetype>(*this, xyz);
   bool success = pos->Compute(tol, allow_dist);
   CORE::LINALG::Matrix<dim, 1> rs(true);
   if (pos->Status() == Position::position_valid) pos->LocalCoordinates(rs);
@@ -1863,7 +1863,7 @@ bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::RayCut(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Side* CORE::GEO::CUT::SideFactory::CreateSide(CORE::FE::CellType sidetype, int sid,
+CORE::GEO::CUT::Side* CORE::GEO::CUT::SideFactory::create_side(CORE::FE::CellType sidetype, int sid,
     const std::vector<Node*>& nodes, const std::vector<Edge*>& edges) const
 {
   Side* s = nullptr;
@@ -1872,14 +1872,14 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::SideFactory::CreateSide(CORE::FE::CellType
   {
     case CORE::FE::CellType::line2:
     {
-      s = CreateConcreteSide<CORE::FE::CellType::line2>(sid, nodes, edges, probdim);
+      s = create_concrete_side<CORE::FE::CellType::line2>(sid, nodes, edges, probdim);
       break;
     }
     case CORE::FE::CellType::tri3:
-      s = CreateConcreteSide<CORE::FE::CellType::tri3>(sid, nodes, edges, probdim);
+      s = create_concrete_side<CORE::FE::CellType::tri3>(sid, nodes, edges, probdim);
       break;
     case CORE::FE::CellType::quad4:
-      s = CreateConcreteSide<CORE::FE::CellType::quad4>(sid, nodes, edges, probdim);
+      s = create_concrete_side<CORE::FE::CellType::quad4>(sid, nodes, edges, probdim);
       break;
     default:
     {
@@ -1919,7 +1919,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Side::Create(const CORE::FE::CellType& sid
     const int& sid, const std::vector<Node*>& nodes, const std::vector<Edge*>& edges)
 {
   SideFactory factory;
-  return factory.CreateSide(sidetype, sid, nodes, edges);
+  return factory.create_side(sidetype, sid, nodes, edges);
 }
 
 /*----------------------------------------------------------------------------*

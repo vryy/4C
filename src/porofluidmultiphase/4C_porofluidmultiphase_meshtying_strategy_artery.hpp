@@ -32,10 +32,10 @@ namespace POROFLUIDMULTIPHASE
 
 
     //! prepare time loop
-    void PrepareTimeLoop() override;
+    void prepare_time_loop() override;
 
     //! prepare time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     //! update
     void Update() override;
@@ -47,7 +47,7 @@ namespace POROFLUIDMULTIPHASE
     void initialize_linear_solver(Teuchos::RCP<CORE::LINALG::Solver> solver) override;
 
     //! solve linear system of equations
-    void LinearSolve(Teuchos::RCP<CORE::LINALG::Solver> solver,
+    void linear_solve(Teuchos::RCP<CORE::LINALG::Solver> solver,
         Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector> increment,
         Teuchos::RCP<Epetra_Vector> residual, CORE::LINALG::SolverParams& solver_params) override;
 
@@ -59,7 +59,7 @@ namespace POROFLUIDMULTIPHASE
     void CreateFieldTest() override;
 
     //! restart
-    void ReadRestart(const int step) override;
+    void read_restart(const int step) override;
 
     //! evaluate mesh tying
     void Evaluate() override;

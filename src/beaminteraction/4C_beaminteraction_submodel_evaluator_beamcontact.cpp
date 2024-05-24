@@ -77,7 +77,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::BeamContact()
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
 {
-  CheckInit();
+  check_init();
 
   // build a new data container to manage beam interaction parameters
   beam_interaction_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamInteractionParams());
@@ -105,7 +105,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
 
   // build runtime visualization writer if desired
   if ((bool)CORE::UTILS::IntegralValue<int>(
-          GLOBAL::Problem::Instance()->BeamContactParams().sublist("RUNTIME VTK OUTPUT"),
+          GLOBAL::Problem::Instance()->beam_contact_params().sublist("RUNTIME VTK OUTPUT"),
           "VTK_OUTPUT_BEAM_CONTACT"))
   {
     beam_contact_params_ptr_->build_beam_contact_runtime_output_params(GState().GetTimeN());
@@ -228,9 +228,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::PostSetup()
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::post_setup()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // Todo really needed here? maybe find better place
   // ensure that contact is evaluated correctly at beginning of first time step (initial overlap)
@@ -244,7 +244,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::PostSetup()
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::init_submodel_dependencies(
     Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> const submodelmap)
 {
-  CheckInitSetup();
+  check_init_setup();
   // no active influence on other submodels
 }
 
@@ -253,7 +253,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::init_submodel_dependencies
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Reset()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>::const_iterator iter;
   for (iter = contact_elepairs_.begin(); iter != contact_elepairs_.end(); ++iter)
@@ -288,21 +288,21 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Reset()
   set_restart_displacement_in_pairs();
 
   // Update the geometry pair evaluation data.
-  beam_interaction_conditions_ptr_->SetState(DiscretPtr(), beam_interaction_data_state_ptr());
+  beam_interaction_conditions_ptr_->set_state(DiscretPtr(), beam_interaction_data_state_ptr());
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForce()
+bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::evaluate_force()
 {
-  CheckInitSetup();
+  check_init_setup();
 
-  PreEvaluate();
+  pre_evaluate();
 
   // Loop over the assembly manager and assemble contributions into the global force vector.
   for (auto& assembly_manager : assembly_managers_)
   {
-    assembly_manager->EvaluateForceStiff(DiscretPtr(), beam_interaction_data_state_ptr(),
+    assembly_manager->evaluate_force_stiff(DiscretPtr(), beam_interaction_data_state_ptr(),
         beam_interaction_data_state_ptr()->GetForceNp(), Teuchos::null);
   }
 
@@ -311,16 +311,16 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForce()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateStiff()
+bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::evaluate_stiff()
 {
-  CheckInitSetup();
+  check_init_setup();
 
-  PreEvaluate();
+  pre_evaluate();
 
   // Loop over the assembly manager and assemble contributions into the global stiffness matrix.
   for (auto& assembly_manager : assembly_managers_)
   {
-    assembly_manager->EvaluateForceStiff(DiscretPtr(), beam_interaction_data_state_ptr(),
+    assembly_manager->evaluate_force_stiff(DiscretPtr(), beam_interaction_data_state_ptr(),
         Teuchos::null, beam_interaction_data_state_ptr()->GetStiff());
   }
 
@@ -329,16 +329,16 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateStiff()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForceStiff()
+bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::evaluate_force_stiff()
 {
-  CheckInitSetup();
+  check_init_setup();
 
-  PreEvaluate();
+  pre_evaluate();
 
   // Loop over the assembly manager and assemble contributions into the global force vector and
   // stiffness matrix.
   for (auto& assembly_manager : assembly_managers_)
-    assembly_manager->EvaluateForceStiff(DiscretPtr(), beam_interaction_data_state_ptr(),
+    assembly_manager->evaluate_force_stiff(DiscretPtr(), beam_interaction_data_state_ptr(),
         beam_interaction_data_state_ptr()->GetForceNp(),
         beam_interaction_data_state_ptr()->GetStiff());
 
@@ -349,16 +349,16 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForceStiff()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::PreEvaluate()
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::pre_evaluate()
 {
-  for (auto& elepairptr : contact_elepairs_) elepairptr->PreEvaluate();
+  for (auto& elepairptr : contact_elepairs_) elepairptr->pre_evaluate();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::UpdateStepState(const double& timefac_n)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   return;
 }
@@ -367,7 +367,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::UpdateStepState(const doub
  *----------------------------------------------------------------------*/
 bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::pre_update_step_element(bool beam_redist)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   /* Fixme
    * writing vtk output needs to be done BEFORE updating (and thus clearing
@@ -383,7 +383,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::pre_update_step_element(bo
    * write previously computed and (locally) stored data at this point. Like
    * this, it works in SUBMODELEVALUATOR::BeamPotential */
   if (visualization_manager_ptr_ != Teuchos::null and
-      GState().GetStepNp() % BeamContactParams()
+      GState().GetStepNp() % beam_contact_params()
                                  .beam_contact_runtime_visualization_output_params()
                                  ->output_interval_in_steps() ==
           0)
@@ -391,9 +391,9 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::pre_update_step_element(bo
     write_time_step_output_runtime_beam_contact();
   }
   if (beam_to_solid_volume_meshtying_visualization_output_writer_ptr_ != Teuchos::null)
-    beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->WriteOutputRuntime(this);
+    beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->write_output_runtime(this);
   if (beam_to_solid_surface_visualization_output_writer_ptr_ != Teuchos::null)
-    beam_to_solid_surface_visualization_output_writer_ptr_->WriteOutputRuntime(this);
+    beam_to_solid_surface_visualization_output_writer_ptr_->write_output_runtime(this);
 
   // not repartition of binning discretization necessary
   return false;
@@ -403,7 +403,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::pre_update_step_element(bo
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::UpdateStepElement(bool repartition_was_done)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   nearby_elements_map_.clear();
   find_and_store_neighboring_elements();
@@ -414,28 +414,29 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::UpdateStepElement(bool rep
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::post_update_step_element()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::map<STR::EnergyType, double> BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::GetEnergy() const
+std::map<STR::EnergyType, double> BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_energy()
+    const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   std::map<STR::EnergyType, double> contact_penalty_potential;
 
   for (auto& elepairptr : contact_elepairs_)
   {
-    contact_penalty_potential[STR::beam_contact_penalty_potential] += elepairptr->GetEnergy();
+    contact_penalty_potential[STR::beam_contact_penalty_potential] += elepairptr->get_energy();
   }
 
   for (const auto& assembly_manager : assembly_managers_)
   {
     contact_penalty_potential[STR::beam_contact_penalty_potential] +=
-        assembly_manager->GetEnergy(GState().GetDisNp());
+        assembly_manager->get_energy(GState().GetDisNp());
   }
 
   return contact_penalty_potential;
@@ -456,10 +457,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::runtime_output_step_state(
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::init_output_runtime_beam_contact()
 {
-  CheckInit();
+  check_init();
 
   visualization_manager_ptr_ = Teuchos::rcp(
-      new IO::VisualizationManager(BeamContactParams()
+      new IO::VisualizationManager(beam_contact_params()
                                        .beam_contact_runtime_visualization_output_params()
                                        ->get_visualization_parameters(),
           Discret().Comm(), "beam-contact"));
@@ -470,10 +471,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::init_output_runtime_beam_c
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_time_step_output_runtime_beam_contact()
     const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   auto [output_time, output_step] =
-      IO::GetTimeAndTimeStepIndexForOutput(BeamContactParams()
+      IO::GetTimeAndTimeStepIndexForOutput(beam_contact_params()
                                                .beam_contact_runtime_visualization_output_params()
                                                ->get_visualization_parameters(),
           GState().GetTimeN(), GState().GetStepN());
@@ -485,10 +486,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_time_step_output_run
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_iteration_output_runtime_beam_contact(
     int iteration_number) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   auto [output_time, output_step] =
-      IO::GetTimeAndTimeStepIndexForOutput(BeamContactParams()
+      IO::GetTimeAndTimeStepIndexForOutput(beam_contact_params()
                                                .beam_contact_runtime_visualization_output_params()
                                                ->get_visualization_parameters(),
           GState().GetTimeN(), GState().GetStepN(), iteration_number);
@@ -500,7 +501,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_iteration_output_run
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_output_runtime_beam_contact(
     int timestep_number, double time) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   const unsigned int num_spatial_dimensions = 3;
 
@@ -590,14 +591,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_output_runtime_beam_
 
 
   // append all desired output data to the writer object's storage
-  if (BeamContactParams()
+  if (beam_contact_params()
           .beam_contact_runtime_visualization_output_params()
           ->is_write_contact_forces())
   {
     visualization_manager_ptr_->get_visualization_data().SetPointDataVector(
         "force", contact_force_vector, num_spatial_dimensions);
   }
-  if (BeamContactParams().beam_contact_runtime_visualization_output_params()->IsWriteGaps())
+  if (beam_contact_params().beam_contact_runtime_visualization_output_params()->IsWriteGaps())
   {
     visualization_manager_ptr_->get_visualization_data().SetPointDataVector("gap", gaps, 1);
   }
@@ -608,7 +609,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_output_runtime_beam_
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::ResetStepState() { CheckInitSetup(); }
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::ResetStepState() { check_init_setup(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -627,7 +628,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::PreReadRestart()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::ReadRestart(
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::read_restart(
     IO::DiscretizationReader& ia_reader, IO::DiscretizationReader& bin_reader)
 {
   // empty
@@ -637,7 +638,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::ReadRestart(
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::PostReadRestart()
 {
-  CheckInitSetup();
+  check_init_setup();
   nearby_elements_map_.clear();
   find_and_store_neighboring_elements();
   create_beam_contact_element_pairs();
@@ -648,10 +649,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::PostReadRestart()
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::RunPostIterate(
     const ::NOX::Solver::Generic& solver)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (visualization_manager_ptr_ != Teuchos::null and
-      BeamContactParams()
+      beam_contact_params()
           .beam_contact_runtime_visualization_output_params()
           ->output_every_iteration())
   {
@@ -673,7 +674,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::RunPostIterate(
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::AddBinsToBinColMap(std::set<int>& colbins)
 {
-  CheckInitSetup();
+  check_init_setup();
   // nothing to do
 }
 
@@ -682,7 +683,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::AddBinsToBinColMap(std::se
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
     add_bins_with_relevant_content_for_ia_discret_col_map(std::set<int>& colbins) const
 {
-  CheckInitSetup();
+  check_init_setup();
   // nothing to do
 }
 
@@ -691,7 +692,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_half_interaction_distance(
     double& half_interaction_distance)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // todo: choose meaningful safety factor
   double safe_fac = 1.5;
@@ -781,7 +782,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_half_interaction_dista
 bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::HaveContactType(
     BINSTRATEGY::UTILS::BinContentType const& contacttype) const
 {
-  CheckInit();
+  check_init();
   return (std::find(contactelementtypes_.begin(), contactelementtypes_.end(), contacttype) !=
           contactelementtypes_.end());
 }
@@ -794,7 +795,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
   TEUCHOS_FUNC_TIME_MONITOR(
       "BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring_elements");
 
-  CheckInit();
+  check_init();
 
   // Build the ids of the elements for the beam-to-solid conditions.
   beam_interaction_conditions_ptr_->BuildIdSets(DiscretPtr());
@@ -917,7 +918,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
     select_eles_to_be_considered_for_contact_evaluation(
         DRT::Element* currele, std::set<DRT::Element*>& neighbors) const
 {
-  CheckInit();
+  check_init();
 
   // sort out elements that should not be considered in contact evaluation
   std::set<DRT::Element*>::iterator eiter;
@@ -941,8 +942,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
     // 3) ensure that two elements sharing the same node do not get into contact
     else
     {
-      for (int i = 0; i < (*eiter)->NumNode(); ++i)
-        for (int j = 0; j < currele->NumNode(); ++j)
+      for (int i = 0; i < (*eiter)->num_node(); ++i)
+        for (int j = 0; j < currele->num_node(); ++j)
           if ((*eiter)->NodeIds()[i] == currele->NodeIds()[j]) toerase = true;
     }
 
@@ -1034,7 +1035,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::create_beam_contact_elemen
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::set_restart_displacement_in_pairs()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (beam_interaction_data_state_ptr()->get_restart_coupling_flag())
   {

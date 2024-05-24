@@ -71,7 +71,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvaluateAction(DRT::
       // Step 2: calculate matrix and rhs
       //------------------------------------------------------
 
-      SysmatCorrection(penalty, elemat1_epetra, elevec1_epetra);
+      sysmat_correction(penalty, elemat1_epetra, elevec1_epetra);
 
       break;
     }
@@ -88,7 +88,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvaluateAction(DRT::
       // get current direction
       const int dir = params.get<int>("direction");
 
-      SysmatNodalVel(dir, elemat1_epetra, elevec1_epetra);
+      sysmat_nodal_vel(dir, elemat1_epetra, elevec1_epetra);
 
       break;
     }
@@ -112,8 +112,8 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SetupCalc(
     DRT::Element* ele, DRT::Discretization& discretization)
 {
   // reset all managers to their default values (I feel better this way)
-  DiffManager()->Reset();
-  VarManager()->Reset();
+  diff_manager()->Reset();
+  var_manager()->Reset();
 
   // clear all unused variables
   my::edispnp_.Clear();
@@ -131,7 +131,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SetupCalc(
  | calculate system matrix and rhs for correction step  rasthofer 12/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, unsigned probDim>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatCorrection(
+void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_correction(
     const double penalty,                   ///< element penalty parameter
     CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix to calculate
     CORE::LINALG::SerialDenseVector& erhs   ///< element rhs to calculate
@@ -179,7 +179,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatCorrection(
 
     // derivative of sign function at Gauss point
     double deriv_sign = 0.0;
-    DerivSignFunction(deriv_sign, charelelength, phizero);
+    deriv_sign_function(deriv_sign, charelelength, phizero);
 
     // scalar at integration point at time step n+1
     const double phinp = my::funct_.Dot(my::ephinp_[0]);
@@ -207,7 +207,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatCorrection(
     my::CalcRHSLinMass(erhs, 0, 0.0, -fac, 1.0, 1.0);  // sign has to be changed!!!!
 
     // penalty term
-    CalcRHSPenalty(erhs, fac, penalty, deriv_sign, norm_gradphizero);
+    calc_rhs_penalty(erhs, fac, penalty, deriv_sign, norm_gradphizero);
 
   }  // end: loop all Gauss points
 
@@ -273,7 +273,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_ele_penalty_pa
 
     // derivative of sign function at Gauss point
     double deriv_sign = 0.0;
-    DerivSignFunction(deriv_sign, charelelength, phizero);
+    deriv_sign_function(deriv_sign, charelelength, phizero);
 
     // current phi at Gauss point
     double phinp = 0.0;
@@ -286,7 +286,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_ele_penalty_pa
     gradphi.Multiply(my::derxy_, my::ephinp_[0]);
     // get norm
     const double gradphi_norm = gradphi.Norm2();
-    SignFunction(signphi, charelelength, phizero, gradphizero, phinp, gradphi);
+    sign_function(signphi, charelelength, phizero, gradphizero, phinp, gradphi);
 
     // get velocity at element center
     CORE::LINALG::Matrix<nsd_, 1> convelint(true);
@@ -312,7 +312,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_ele_penalty_pa
  |  calculation of penalty term on rhs                rasthofer 12/13 |
  *--------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, unsigned probDim>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcRHSPenalty(
+void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_rhs_penalty(
     CORE::LINALG::SerialDenseVector& erhs, const double fac, const double penalty,
     const double deriv_sign, const double norm_gradphizero)
 {
@@ -333,7 +333,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcRHSPenalty(
  | calculate system matrix and rhs for velocity projection rasthofer 12/13 |
  *-------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, unsigned probDim>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatNodalVel(
+void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_nodal_vel(
     const int dir,                          ///< current spatial direction
     CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix to calculate
     CORE::LINALG::SerialDenseVector& erhs   ///< element rhs to calculate
@@ -403,7 +403,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatNodalVel(
     {
       // get sign function
       double signphi = 0.0;
-      SignFunction(signphi, charelelength, phizero, gradphizero, phinp, gradphi);
+      sign_function(signphi, charelelength, phizero, gradphizero, phinp, gradphi);
 
       if (gradphi_norm > 1e-8) convelint.Update(signphi / gradphi_norm, gradphi);
     }

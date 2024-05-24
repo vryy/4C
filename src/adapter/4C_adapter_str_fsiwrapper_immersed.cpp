@@ -287,9 +287,9 @@ void ADAPTER::FSIStructureWrapperImmersed::RemoveDirichDofs(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FSIStructureWrapperImmersed::SetState(const Teuchos::RCP<Epetra_Vector>& x)
+void ADAPTER::FSIStructureWrapperImmersed::set_state(const Teuchos::RCP<Epetra_Vector>& x)
 {
-  return Teuchos::rcp_dynamic_cast<STR::TIMINT::Implicit>(structure_, true)->SetState(x);
+  return Teuchos::rcp_dynamic_cast<STR::TIMINT::Implicit>(structure_, true)->set_state(x);
 }
 
 FOUR_C_NAMESPACE_CLOSE

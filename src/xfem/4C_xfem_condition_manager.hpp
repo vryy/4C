@@ -458,7 +458,7 @@ namespace XFEM
 
 
     /// get the side element of the respective boundary discretization
-    DRT::Element* GetSide(const int coup_sid  ///< the overall global coupling side id
+    DRT::Element* get_side(const int coup_sid  ///< the overall global coupling side id
     )
     {
       // get the mesh coupling object index
@@ -468,7 +468,7 @@ namespace XFEM
       const int cutterdis_sid = GetCutterDisEleId(coup_sid, mc_idx);
 
       // get the boundary discretization, the side belongs to
-      return mesh_coupl_[mc_idx]->GetSide(cutterdis_sid);
+      return mesh_coupl_[mc_idx]->get_side(cutterdis_sid);
     }
 
     /// get the coupling element (the side for xfluid-sided averaging) for a given global coupl.
@@ -608,8 +608,8 @@ namespace XFEM
     Teuchos::RCP<Epetra_Vector>& GetLevelSetField()
     {
       if (!is_levelset_uptodate_)
-        UpdateLevelSetField();  // update the unique level-set field based on the background
-                                // discretization
+        update_level_set_field();  // update the unique level-set field based on the background
+                                   // discretization
 
       return bg_phinp_;
     }
@@ -618,7 +618,7 @@ namespace XFEM
 
     void ClearState();
 
-    void SetState();
+    void set_state();
 
     void set_state_displacement();
 
@@ -639,7 +639,7 @@ namespace XFEM
     /// compute lift and drag values by integrating the true residuals
     void LiftDrag(const int step, const double time);
 
-    void ReadRestart(const int step);
+    void read_restart(const int step);
 
     void PrepareSolve();
 
@@ -701,21 +701,21 @@ namespace XFEM
     void Setup();
 
     /// get the indicator state
-    inline const bool& IsInit() const { return isinit_; };
+    inline const bool& is_init() const { return isinit_; };
 
     /// get the indicator state
-    inline const bool& IsSetup() const { return issetup_; };
+    inline const bool& is_setup() const { return issetup_; };
 
     /// Check if Init() and Setup() have been called, yet.
-    inline void CheckInitSetup() const
+    inline void check_init_setup() const
     {
-      if (!IsInit() or !IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
+      if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
     }
 
     /// Check if Init() has been called
-    inline void CheckInit() const
+    inline void check_init() const
     {
-      if (not IsInit()) FOUR_C_THROW("Call Init() first!");
+      if (not is_init()) FOUR_C_THROW("Call Init() first!");
     }
 
    private:
@@ -723,7 +723,7 @@ namespace XFEM
     void Create();
 
     ///
-    void UpdateLevelSetField();
+    void update_level_set_field();
 
     /// combine two levelset fields via boolean type set operations and set result into vec1
     void combine_level_set_field(Teuchos::RCP<Epetra_Vector>& vec1,
@@ -732,20 +732,20 @@ namespace XFEM
         XFEM::CouplingBase::LevelSetBooleanType ls_boolean_type);
 
     /// check if the vector maps are equal
-    void CheckForEqualMaps(
+    void check_for_equal_maps(
         const Teuchos::RCP<Epetra_Vector>& vec1, const Teuchos::RCP<Epetra_Vector>& vec2);
 
     /// combine two levelset fields via boolean type "union" set operation and put result into vec1
-    void SetMinimum(Teuchos::RCP<Epetra_Vector>& vec1, Teuchos::RCP<Epetra_Vector>& vec2,
+    void set_minimum(Teuchos::RCP<Epetra_Vector>& vec1, Teuchos::RCP<Epetra_Vector>& vec2,
         const int lsc_index_2, Teuchos::RCP<Epetra_IntVector>& node_lsc_coup_idx);
 
     /// combine two levelset fields via boolean type "cut" set operation and put result into vec1
-    void SetMaximum(Teuchos::RCP<Epetra_Vector>& vec1, Teuchos::RCP<Epetra_Vector>& vec2,
+    void set_maximum(Teuchos::RCP<Epetra_Vector>& vec1, Teuchos::RCP<Epetra_Vector>& vec2,
         const int lsc_index_2, Teuchos::RCP<Epetra_IntVector>& node_lsc_coup_idx);
 
     /// combine two levelset fields via boolean type "difference" set operation and put result into
     /// vec1
-    void SetDifference(Teuchos::RCP<Epetra_Vector>& vec1, Teuchos::RCP<Epetra_Vector>& vec2,
+    void set_difference(Teuchos::RCP<Epetra_Vector>& vec1, Teuchos::RCP<Epetra_Vector>& vec2,
         const int lsc_index_2, Teuchos::RCP<Epetra_IntVector>& node_lsc_coup_idx);
 
     /// combine two levelset fields via boolean type "sym_difference" set operation and put result

@@ -43,7 +43,7 @@ void CONTACT::UnbiasedSelfBinaryTree::add_tree_nodes_to_contact_pairs(
 
   // check reference configuration for non smooth self contact
   if (two_half_pass_ and check_nonsmooth_selfcontactsurface_)
-    addcontactpair = RoughCheckRefConfig(treenode1->Elelist()[0], treenode2->Elelist()[0]);
+    addcontactpair = rough_check_ref_config(treenode1->Elelist()[0], treenode2->Elelist()[0]);
 
   if (addcontactpair)
   {
@@ -156,7 +156,7 @@ void CONTACT::UnbiasedSelfBinaryTree::define_search_elements()
     if (celement->IsSlave() != true)
       FOUR_C_THROW("Element: this should not happen!");
     else
-      for (int i = 0; i < element->NumNode(); ++i)
+      for (int i = 0; i < element->num_node(); ++i)
       {
         DRT::Node* node = element->Nodes()[i];
         CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
@@ -209,7 +209,7 @@ void CONTACT::UnbiasedSelfBinaryTree::Init()
   init_internal_variables();
 
   // calculate min. element length and set enlargement accordingly
-  SetEnlarge();
+  set_enlarge();
 
   // initialize binary tree leaf nodes and create element list
   std::vector<int> elelist;
@@ -336,7 +336,7 @@ void CONTACT::UnbiasedSelfBinaryTree::initialize_tree_bottom_up(
  | Checks roughly whether self contact of two elements                  |
  | shall be evaluated  (private)                           schmidt 10/18|
  *----------------------------------------------------------------------*/
-bool CONTACT::UnbiasedSelfBinaryTree::RoughCheckRefConfig(int ele1gid, int ele2gid)
+bool CONTACT::UnbiasedSelfBinaryTree::rough_check_ref_config(int ele1gid, int ele2gid)
 {
   // variables
   bool refconfig(false);
@@ -381,7 +381,7 @@ bool CONTACT::UnbiasedSelfBinaryTree::RoughCheckRefConfig(int ele1gid, int ele2g
     }
     break;
     default:
-      FOUR_C_THROW("RoughCheckRefConfig called for unknown element type");
+      FOUR_C_THROW("rough_check_ref_config called for unknown element type");
       break;
   }
   // get center of master element
@@ -411,7 +411,7 @@ bool CONTACT::UnbiasedSelfBinaryTree::RoughCheckRefConfig(int ele1gid, int ele2g
     }
     break;
     default:
-      FOUR_C_THROW("RoughCheckRefConfig called for unknown element type");
+      FOUR_C_THROW("rough_check_ref_config called for unknown element type");
       break;
   }
 
@@ -436,7 +436,7 @@ bool CONTACT::UnbiasedSelfBinaryTree::RoughCheckRefConfig(int ele1gid, int ele2g
 /*----------------------------------------------------------------------*
  | Update and contact search (private)                     schmidt 01/19|
  *----------------------------------------------------------------------*/
-void CONTACT::UnbiasedSelfBinaryTree::SearchContact()
+void CONTACT::UnbiasedSelfBinaryTree::search_contact()
 {
   // check is root node available
   if (Roots().size() == 0) FOUR_C_THROW("No root node for search!");
@@ -502,7 +502,7 @@ void CONTACT::UnbiasedSelfBinaryTree::SearchContact()
     celement->SetSlave() = true;
 
     // set nodes to slave
-    for (int i = 0; i < element->NumNode(); ++i)
+    for (int i = 0; i < element->num_node(); ++i)
     {
       DRT::Node* node = element->Nodes()[i];
       CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);

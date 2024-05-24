@@ -65,7 +65,7 @@ NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::UpperBound:
     std::ostringstream msg;
     msg << "Dynamic cast to NOX::NLN::LineSearch::Generic failed!\n\n"
         << "The UpperBound rule status test supports only Line Search problems!";
-    throwError("CheckStatus", msg.str());
+    throw_error("CheckStatus", msg.str());
   }
 
   /* we reduce the step length according to the upper bound criterion in the first
@@ -149,7 +149,7 @@ std::ostream& NOX::NLN::INNER::StatusTest::UpperBound::Print(std::ostream& strea
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::UpperBound::throwError(
+void NOX::NLN::INNER::StatusTest::UpperBound::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   std::ostringstream msg;

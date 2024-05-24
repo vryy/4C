@@ -71,7 +71,7 @@ namespace CORE::GEO
       /*!
       \brief Return the parent element from which this volumecell is generated
        */
-      Element* ParentElement() { return element_; }
+      Element* parent_element() { return element_; }
 
       /*!
       \brief Return the ID of the parent element, from which this volumecell is generated
@@ -323,7 +323,7 @@ namespace CORE::GEO
       void integrate_specific_functions_tessellation();
 
       template <CORE::FE::CellType distype>
-      Teuchos::RCP<CORE::FE::GaussPoints> CreateProjected(CORE::GEO::CUT::IntegrationCell* ic);
+      Teuchos::RCP<CORE::FE::GaussPoints> create_projected(CORE::GEO::CUT::IntegrationCell* ic);
 
       /*!
       \brief Returns whether this volumecell is negligibly small (used only in DirectDIvergence
@@ -332,7 +332,7 @@ namespace CORE::GEO
       bool IsNegligiblySmall() { return this->is_negligible_small_; }
 
      private:
-      void SetTetPoints(const int* totet4, const std::vector<Point*>& points,
+      void set_tet_points(const int* totet4, const std::vector<Point*>& points,
           std::vector<Point*>& tet4_points) const
       {
         for (int i = 0; i < 4; ++i)
@@ -345,13 +345,13 @@ namespace CORE::GEO
       \brief Check whether the numbering of points need to be reversed. This is to ensure outward
       pointing normal for the boundarycells when triangulation is performed
        */
-      bool ToReverse(const CORE::GEO::CUT::Point::PointPosition posi,
+      bool to_reverse(const CORE::GEO::CUT::Point::PointPosition posi,
           const std::vector<double>& parEqn, const std::vector<double>& facetEqn);
 
       /*!
       \brief return the Gauss points computed using moment fitting equations
       */
-      Teuchos::RCP<CORE::FE::GaussPoints> GaussPointsFitting();
+      Teuchos::RCP<CORE::FE::GaussPoints> gauss_points_fitting();
 
       /*!
       \brief Generate internal gauss rule for every integration point on the facet when

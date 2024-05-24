@@ -51,7 +51,7 @@ namespace ADAPTER
         const std::map<int, std::set<int>>* nearbyelepairs) = 0;
 
     /// read restart
-    virtual void ReadRestart(int restart) = 0;
+    virtual void read_restart(int restart) = 0;
 
     /// test results (if necessary)
     virtual void CreateFieldTest() = 0;
@@ -72,7 +72,7 @@ namespace ADAPTER
     virtual void set_relaxed_fluid_solution() = 0;
 
     /// prepare timeloop of coupled problem
-    virtual void PrepareTimeLoop() = 0;
+    virtual void prepare_time_loop() = 0;
 
     /// timeloop of coupled problem
     virtual void Timeloop() = 0;
@@ -81,7 +81,7 @@ namespace ADAPTER
     virtual void TimeStep() = 0;
 
     /// time step of coupled problem
-    virtual void PrepareTimeStep() = 0;
+    virtual void prepare_time_step() = 0;
 
     //! update time step and print to screen
     virtual void UpdateAndOutput() = 0;
@@ -124,7 +124,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Vector> SolidPressure() const = 0;
 
     //! unique map of all dofs that should be constrained with DBC
-    virtual Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const = 0;
+    virtual Teuchos::RCP<const Epetra_Map> combined_dbc_map() const = 0;
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> sx,
@@ -148,7 +148,7 @@ namespace ADAPTER
     virtual const Teuchos::RCP<ADAPTER::Structure>& StructureField() = 0;
 
     //! get fluid field
-    virtual const Teuchos::RCP<ADAPTER::PoroFluidMultiphaseWrapper>& FluidField() = 0;
+    virtual const Teuchos::RCP<ADAPTER::PoroFluidMultiphaseWrapper>& fluid_field() = 0;
 
     //! build the block null spaces
     virtual void build_block_null_spaces(Teuchos::RCP<CORE::LINALG::Solver>& solver) = 0;

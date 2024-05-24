@@ -185,13 +185,13 @@ namespace GEOMETRYPAIR
      * @param element_data_other (in) Degrees of freedom for the geometry.
      * @param segments (out) Vector with the segments of this line to xxx pair.
      */
-    static void PreEvaluate(const pair_type* pair,
+    static void pre_evaluate(const pair_type* pair,
         const ElementData<line, scalar_type>& element_data_line,
         const ElementData<other, scalar_type>& element_data_other,
         std::vector<LineSegment<scalar_type>>& segments);
 
     /**
-     * \brief Check if a Gauss point projected valid for this pair in PreEvaluate.
+     * \brief Check if a Gauss point projected valid for this pair in pre_evaluate.
      *
      * If so, all Gauss points have to project valid (in the tracker, since some can be valid on
      * other pairs). If not all project, the beam pokes out of the other geometry and in this method

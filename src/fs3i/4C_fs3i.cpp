@@ -61,7 +61,7 @@ FS3I::FS3IBase::FS3IBase()
 /*----------------------------------------------------------------------*/
 void FS3I::FS3IBase::Init()
 {
-  SetIsSetup(false);
+  set_is_setup(false);
 
   scatracoup_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
   scatraglobalex_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor());
@@ -70,7 +70,7 @@ void FS3I::FS3IBase::Init()
   sibtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform());
   fbitransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform());
 
-  SetIsInit(true);
+  set_is_init(true);
   return;
 }
 
@@ -78,9 +78,9 @@ void FS3I::FS3IBase::Init()
 /*----------------------------------------------------------------------*/
 void FS3I::FS3IBase::Setup()
 {
-  CheckIsInit();
+  check_is_init();
 
-  SetIsSetup(true);
+  set_is_setup(true);
   return;
 }
 
@@ -130,9 +130,9 @@ void FS3I::FS3IBase::check_interface_dirichlet_bc()
   Teuchos::RCP<Epetra_Vector> test_masterifdirich = scatracoup_->SlaveToMaster(slaveifdirich);
 
   // check if the locations of non-zero entries do not match
-  for (int i = 0; i < slavedis->DofRowMap()->NumMyElements(); ++i)
+  for (int i = 0; i < slavedis->dof_row_map()->NumMyElements(); ++i)
   {
-    int gid = slavedis->DofRowMap()->GID(i);
+    int gid = slavedis->dof_row_map()->GID(i);
     if (slavemap->MyGID(gid))  // in this case, the current dof is part of the interface
     {
       if ((*test_slaveifdirich)[slavemap->LID(gid)] == 1.0 and
@@ -143,9 +143,9 @@ void FS3I::FS3IBase::check_interface_dirichlet_bc()
     }
   }
 
-  for (int i = 0; i < masterdis->DofRowMap()->NumMyElements(); ++i)
+  for (int i = 0; i < masterdis->dof_row_map()->NumMyElements(); ++i)
   {
-    int gid = masterdis->DofRowMap()->GID(i);
+    int gid = masterdis->dof_row_map()->GID(i);
     if (mastermap->MyGID(gid))  // in this case, the current dof is part of the interface
     {
       if ((*test_masterifdirich)[mastermap->LID(gid)] == 1.0 and
@@ -805,14 +805,14 @@ void FS3I::FS3IBase::extract_scatra_field_vectors(Teuchos::RCP<const Epetra_Vect
 /*----------------------------------------------------------------------*/
 void FS3I::FS3IBase::CheckIsSetup()
 {
-  if (not IsSetup()) FOUR_C_THROW("Setup() was not called.");
+  if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
 };
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3IBase::CheckIsInit()
+void FS3I::FS3IBase::check_is_init()
 {
-  if (not IsInit()) FOUR_C_THROW("Init(...) was not called.");
+  if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
 };
 
 FOUR_C_NAMESPACE_CLOSE

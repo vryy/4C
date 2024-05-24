@@ -25,7 +25,7 @@ DRT::ELEMENTS::ArteryEleInterface* DRT::ELEMENTS::ArtNetFactory::ProvideImpl(
   {
     case CORE::FE::CellType::line2:
     {
-      return DefineProblemType<CORE::FE::CellType::line2>(problem, disname);
+      return define_problem_type<CORE::FE::CellType::line2>(problem, disname);
 
       break;
     }
@@ -48,7 +48,7 @@ DRT::ELEMENTS::ArteryEleInterface* DRT::ELEMENTS::ArtNetFactory::ProvideImpl(
  | (public) kremheller                                                03/18 |
  *--------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-DRT::ELEMENTS::ArteryEleInterface* DRT::ELEMENTS::ArtNetFactory::DefineProblemType(
+DRT::ELEMENTS::ArteryEleInterface* DRT::ELEMENTS::ArtNetFactory::define_problem_type(
     INPAR::ARTDYN::ImplType problem, const std::string& disname)
 {
   switch (problem)

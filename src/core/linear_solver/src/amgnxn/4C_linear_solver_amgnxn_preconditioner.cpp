@@ -237,9 +237,9 @@ CORE::LINEAR_SOLVER::AmGnxnInterface::AmGnxnInterface(Teuchos::ParameterList& pa
   null_spaces_data_.resize(NumBlocks);
   for (int block = 0; block < NumBlocks; block++)
   {
-    if (!params.isSublist(Inverse_str + ConvertInt(block + 1)))
+    if (!params.isSublist(Inverse_str + convert_int(block + 1)))
       FOUR_C_THROW("Not found inverse list for block %d", block + 1);
-    Teuchos::ParameterList& inverse_list = params.sublist(Inverse_str + ConvertInt(block + 1));
+    Teuchos::ParameterList& inverse_list = params.sublist(Inverse_str + convert_int(block + 1));
 
     if (!inverse_list.isSublist("MueLu Parameters")) FOUR_C_THROW("MueLu Parameters not found");
     Teuchos::ParameterList& mllist = inverse_list.sublist("MueLu Parameters");

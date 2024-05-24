@@ -111,8 +111,8 @@ void INPAR::FPSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   CORE::UTILS::IntParameter("RESULTSEVRY", 1, "Increment for writing solution", &fpsidyn);
   CORE::UTILS::IntParameter("RESTARTEVRY", 1, "Increment for writing restart", &fpsidyn);
 
-  CORE::UTILS::IntParameter("FDCheck_row", 0, "print row value during FDCheck", &fpsidyn);
-  CORE::UTILS::IntParameter("FDCheck_column", 0, "print column value during FDCheck", &fpsidyn);
+  CORE::UTILS::IntParameter("FDCheck_row", 0, "print row value during fd_check", &fpsidyn);
+  CORE::UTILS::IntParameter("FDCheck_column", 0, "print column value during fd_check", &fpsidyn);
 
   CORE::UTILS::DoubleParameter("TIMESTEP", 0.1, "Time increment dt", &fpsidyn);
   CORE::UTILS::DoubleParameter("MAXTIME", 1000.0, "Total simulation time", &fpsidyn);

@@ -79,7 +79,7 @@ namespace PARTICLEINTERACTION
     void WriteRestart() const override;
 
     //! read restart of particle interaction handler
-    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader) override;
+    void read_restart(const std::shared_ptr<IO::DiscretizationReader> reader) override;
 
     //! insert interaction dependent states of all particle types
     void insert_particle_states_of_particle_types(
@@ -109,14 +109,14 @@ namespace PARTICLEINTERACTION
     void communicate_interaction_history() const override;
 
     //! set current time
-    void SetCurrentTime(const double currenttime) override;
+    void set_current_time(const double currenttime) override;
 
     //! set current step size
-    void SetCurrentStepSize(const double currentstepsize) override;
+    void set_current_step_size(const double currentstepsize) override;
 
    private:
     //! init kernel handler
-    void InitKernelHandler();
+    void init_kernel_handler();
 
     //! init equation of state bundle
     void init_equation_of_state_bundle();
@@ -125,16 +125,16 @@ namespace PARTICLEINTERACTION
     void init_neighbor_pair_handler();
 
     //! init density handler
-    void InitDensityHandler();
+    void init_density_handler();
 
     //! init pressure handler
-    void InitPressureHandler();
+    void init_pressure_handler();
 
     //! init temperature handler
     void init_temperature_handler();
 
     //! init momentum handler
-    void InitMomentumHandler();
+    void init_momentum_handler();
 
     //! init surface tension handler
     void init_surface_tension_handler();

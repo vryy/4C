@@ -99,12 +99,12 @@ namespace MIXTURE
 
    private:
     void integrate_local_evolution_equations(double dt, int gp, int eleGID);
-    [[nodiscard]] double EvaluateLambdaf(
+    [[nodiscard]] double evaluate_lambdaf(
         const CORE::LINALG::Matrix<3, 3>& C, int gp, int eleGID) const;
     [[nodiscard]] CORE::LINALG::Matrix<1, 6> evaluate_d_lambdafsq_dc(int gp, int eleGID) const;
 
-    [[nodiscard]] CORE::LINALG::Matrix<6, 1> EvaluateCurrentPK2(int gp, int eleGID) const;
-    [[nodiscard]] CORE::LINALG::Matrix<6, 6> EvaluateCurrentCmat(int gp, int eleGID) const;
+    [[nodiscard]] CORE::LINALG::Matrix<6, 1> evaluate_current_p_k2(int gp, int eleGID) const;
+    [[nodiscard]] CORE::LINALG::Matrix<6, 6> evaluate_current_cmat(int gp, int eleGID) const;
 
     [[nodiscard]] double evaluate_deposition_stretch(double time) const;
     void update_homeostatic_values(const Teuchos::ParameterList& params, int eleGID);

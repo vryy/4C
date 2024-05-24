@@ -61,7 +61,7 @@ namespace
       IO::GRIDGENERATOR::CreateRectangularCuboidDiscretization(
           *test_discretization_, inputData_, true);
 
-      test_discretization_->FillComplete(false, false, false);
+      test_discretization_->fill_complete(false, false, false);
     }
 
     void TearDown() override { IO::cout.close(); }

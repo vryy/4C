@@ -50,7 +50,7 @@ namespace BINSTRATEGY
       {
         DRT::Element* ele = discret->gElement(extendedelecolmap->GID(lid));
         const int* nodeids = ele->NodeIds();
-        for (int inode = 0; inode < ele->NumNode(); ++inode) nodes.insert(nodeids[inode]);
+        for (int inode = 0; inode < ele->num_node(); ++inode) nodes.insert(nodeids[inode]);
       }
 
       std::vector<int> colnodes(nodes.begin(), nodes.end());
@@ -61,7 +61,7 @@ namespace BINSTRATEGY
       discret->ExportColumnNodes(*nodecolmap);
 
       // fillcomplete discret with extended ghosting
-      discret->FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
+      discret->fill_complete(assigndegreesoffreedom, initelements, doboundaryconditions);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       // print distribution after standard ghosting
@@ -151,7 +151,7 @@ namespace BINSTRATEGY
       for (std::map<int, std::vector<char>>::const_iterator p = sdata.begin(); p != sdata.end();
            ++p)
       {
-        exporter.ISend(discret->Comm().MyPID(), p->first, (p->second).data(),
+        exporter.i_send(discret->Comm().MyPID(), p->first, (p->second).data(),
             (int)(p->second).size(), 1234, request[tag]);
         ++tag;
       }
@@ -200,7 +200,7 @@ namespace BINSTRATEGY
             // delete already existing element (as it has wrong internal variables)
             discret->DeleteElement(element->Id());
             // add node (ownership already adapted on sending proc)
-            discret->AddElement(element);
+            discret->add_element(element);
           }
           if (index != rdata.size())
             FOUR_C_THROW(
@@ -253,7 +253,7 @@ namespace BINSTRATEGY
       for (std::map<int, std::vector<char>>::const_iterator p = sdata.begin(); p != sdata.end();
            ++p)
       {
-        exporter.ISend(discret->Comm().MyPID(), p->first, (p->second).data(),
+        exporter.i_send(discret->Comm().MyPID(), p->first, (p->second).data(),
             (int)(p->second).size(), 1234, request[tag]);
         ++tag;
       }

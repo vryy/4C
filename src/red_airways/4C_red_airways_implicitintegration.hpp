@@ -106,7 +106,7 @@ namespace AIRWAY
 
 
     /// setup the variables to do a new time step
-    void PrepareTimeStep();
+    void prepare_time_step();
 
 
     /*!
@@ -190,7 +190,7 @@ namespace AIRWAY
     \brief Assembling of the RHS Vector and the LHS Matrix
 
     */
-    void AssembleMatAndRHS();
+    void assemble_mat_and_rhs();
 
     /*!
     \brief Evaluate the error residual
@@ -212,7 +212,7 @@ namespace AIRWAY
     \brief read restart data
 
     */
-    void ReadRestart(int step, bool coupledTo3D = false);
+    void read_restart(int step, bool coupledTo3D = false);
 
     Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest();
 

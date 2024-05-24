@@ -243,7 +243,7 @@ namespace MAT
       Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       /// returns the enum of the current coupling type
-      MAT::PAR::ReactionCoupling SetCouplingType(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      MAT::PAR::ReactionCoupling set_coupling_type(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// Initialize
       void Initialize();

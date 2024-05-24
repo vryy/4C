@@ -55,7 +55,7 @@ namespace CORE::LINALG
 namespace SSI
 {
 
-  class SSIMono;
+  class SsiMono;
 
   //! type of coupling/system matrix block
   enum class BlockMatrixType
@@ -158,7 +158,7 @@ namespace SSI
   class ScaTraManifoldScaTraFluxEvaluator
   {
    public:
-    explicit ScaTraManifoldScaTraFluxEvaluator(const SSI::SSIMono& ssi_mono);
+    explicit ScaTraManifoldScaTraFluxEvaluator(const SSI::SsiMono& ssi_mono);
 
     //! call complete on system matrices and coupling matrices
     //@{
@@ -229,7 +229,7 @@ namespace SSI
         Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
     //! Evaluate flux and linearizations on bulk side
-    void EvaluateBulkSide(Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
+    void evaluate_bulk_side(Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
     //! Evaluate integral on scatra manifold over 1.0
     void evaluate_sca_tra_manifold_domain_integral(
@@ -240,7 +240,7 @@ namespace SSI
         Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
     //! prepare evaluation of coupling condition: set elemental data
-    void PreEvaluate(Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
+    void pre_evaluate(Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
     //! uncomplete all global matrices if any matrices holding the condition contributions have
     //! updated graphs (i.e. zeros become non-zeros or vice versa). In this case the graph of the

@@ -58,7 +58,7 @@ namespace ADAPTER
     /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
 
-    virtual const Teuchos::RCP<ADAPTER::Fluid>& FluidField() = 0;
+    virtual const Teuchos::RCP<ADAPTER::Fluid>& fluid_field() = 0;
 
     /// communication object at the interface
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const = 0;
@@ -68,7 +68,7 @@ namespace ADAPTER
     //! @name Time step helpers
 
     /// start new time step
-    virtual void PrepareTimeStep() = 0;
+    virtual void prepare_time_step() = 0;
 
     /// evaluate elements with given displacement
     // virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel) = 0;
@@ -80,7 +80,7 @@ namespace ADAPTER
     virtual void Output() = 0;
 
     /// read restart information for given time step
-    virtual double ReadRestart(int step) = 0;
+    virtual double read_restart(int step) = 0;
 
     /// calculation (and output) of lift&drag
     // virtual void LiftDrag() = 0;

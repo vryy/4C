@@ -135,7 +135,7 @@ namespace MAT
     double Density() const override { return params_->density_; }
 
     /// shear modulus
-    double ShearMod() const
+    double shear_mod() const
     {
       FOUR_C_THROW("");
       return (6.0 * params_->bulk_ * params_->alpha_) /

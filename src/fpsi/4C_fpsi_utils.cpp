@@ -90,10 +90,10 @@ Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::setup_discretizations(const Epetra_Com
 
    This would be corrupted however if we were doing the following:
 
-   structdis    -> FillComplete()
-   porofluiddis -> FillComplete()
-   fluiddis     -> FillComplete()
-   aledis       -> FillComplete()
+   structdis    -> fill_complete()
+   porofluiddis -> fill_complete()
+   fluiddis     -> fill_complete()
+   aledis       -> fill_complete()
 
    Clone(structdis,porofluiddis)
    Clone(fluiddis,aledis)
@@ -125,14 +125,14 @@ Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::setup_discretizations(const Epetra_Com
   }
 
 
-  fluiddis->FillComplete(true, true, true);
-  aledis->FillComplete(true, true, true);
+  fluiddis->fill_complete(true, true, true);
+  aledis->fill_complete(true, true, true);
 
   // 3.- Create ALE elements if the ale discretization is empty
   if (aledis->NumGlobalNodes() == 0)  // ALE discretization still empty
   {
     DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis, aledis);
-    aledis->FillComplete();
+    aledis->fill_complete();
     // setup material in every ALE element
     Teuchos::ParameterList params;
     params.set<std::string>("action", "setup_material");
@@ -249,7 +249,7 @@ void FPSI::Utils::setup_local_interface_facing_element_map(DRT::Discretization& 
     }
 
     // do for every interface slave node
-    for (int nodenum = 0; nodenum < curr->second->NumNode(); nodenum++)
+    for (int nodenum = 0; nodenum < curr->second->num_node(); nodenum++)
     {
       const DRT::Node* const* currslavenode = curr->second->Nodes();
 
@@ -344,7 +344,7 @@ void FPSI::Utils::setup_local_interface_facing_element_map(DRT::Discretization& 
       // do for every master node
       if (proc == mastercomm.MyPID())
       {
-        const int numnode = curr->second->NumNode();
+        const int numnode = curr->second->num_node();
 
         for (int nodenum = 0; nodenum < numnode; nodenum++)
         {
@@ -364,9 +364,9 @@ void FPSI::Utils::setup_local_interface_facing_element_map(DRT::Discretization& 
 
         Teuchos::RCP<DRT::FaceElement> bele =
             Teuchos::rcp_dynamic_cast<DRT::FaceElement>(curr->second);
-        parenteleid = bele->ParentElement()->Id();
+        parenteleid = bele->parent_element()->Id();
         if (parenteleid == -1) FOUR_C_THROW("Couldn't get master parent element Id() ...");
-        parenteleowner = bele->ParentElement()->Owner();
+        parenteleowner = bele->parent_element()->Owner();
         if (parenteleowner == -1) FOUR_C_THROW("Couldn't get master parent element Owner() ...");
       }
 
@@ -645,7 +645,7 @@ void FPSI::UTILS::MapExtractor::Setup(
       new CORE::Conditions::NDimConditionSelector(dis, "FSICoupling", 0, ndim + withpressure)));
   mcs.AddSelector(Teuchos::rcp(
       new CORE::Conditions::NDimConditionSelector(dis, "FPSICoupling", 0, ndim + withpressure)));
-  mcs.SetupExtractor(dis, *dis.DofRowMap(), *this);
+  mcs.SetupExtractor(dis, *dis.dof_row_map(), *this);
 }
 
 /*----------------------------------------------------------------------*/

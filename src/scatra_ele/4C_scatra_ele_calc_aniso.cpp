@@ -106,7 +106,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::MatScaTraAniso(
 
   for (unsigned i = 0; i < nsd_; i++) difftensor(i, i) = diff(i);
 
-  DiffManager()->SetAnisotropicDiff(difftensor, k);
+  diff_manager()->SetAnisotropicDiff(difftensor, k);
 
   return;
 }  // ScaTraEleCalcAniso<distype>::MatScaTra
@@ -116,7 +116,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::MatScaTraAniso(
  |  standard Galerkin diffusive term on right hand side     ehrl 11/13 |
  *---------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::CalcRHSDiff(
+void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::calc_rhs_diff(
     CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac)
 {
   const CORE::LINALG::Matrix<nsd_, 1>& gradphi = my::scatravarmanager_->GradPhi(k);
@@ -126,7 +126,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::CalcRHSDiff(
     const int fvi = vi * my::numdofpernode_ + k;
 
     double laplawf(0.0);
-    get_laplacian_weak_form_rhs(laplawf, DiffManager()->GetAnisotropicDiff(k), gradphi, vi);
+    get_laplacian_weak_form_rhs(laplawf, diff_manager()->GetAnisotropicDiff(k), gradphi, vi);
     erhs[fvi] -= rhsfac * laplawf;
   }
 
@@ -148,7 +148,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::CalcMatDiff(
     {
       const int fui = ui * my::numdofpernode_ + k;
       double laplawf(0.0);
-      get_laplacian_weak_form(laplawf, DiffManager()->GetAnisotropicDiff(k), ui, vi);
+      get_laplacian_weak_form(laplawf, diff_manager()->GetAnisotropicDiff(k), ui, vi);
       emat(fvi, fui) += timefacfac * laplawf;
     }
   }

@@ -79,7 +79,7 @@ namespace FS3I
     bool NotFinished() { return step_ < numstep_ and time_ <= timemax_; };
 
     //! read and set fields needed for restart
-    void ReadRestart() override;
+    void read_restart() override;
 
     /// redistribute FPS3I interface, if running on parallel
     void redistribute_interface() override;
@@ -114,7 +114,7 @@ namespace FS3I
     void ExtractPressure(std::vector<Teuchos::RCP<const Epetra_Vector>>& pressure);
 
     /// provide velocities from FPSI subproblem for scatra subproblem
-    void SetVelocityFields();
+    void set_velocity_fields();
 
     /// provide wall shear stresses from FPSI subproblem for scatra subproblem
     void set_wall_shear_stresses();
@@ -123,7 +123,7 @@ namespace FS3I
     void SetPressureFields();
 
     /// provide displacements from FPSI subproblem for scatra subproblem
-    void SetMeshDisp();
+    void set_mesh_disp();
 
    protected:
     /// fpsi algorithm

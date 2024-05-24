@@ -594,7 +594,8 @@ namespace CONTACT
       inline void SetNumMEntries(int mentries) { mentries_ = mentries; }
 
      private:
-      int ApproximateMEntries(const int slMaElementAreaRatio, const bool isTriangleOnMaster) const;
+      int approximate_m_entries(
+          const int slMaElementAreaRatio, const bool isTriangleOnMaster) const;
 
      private:
       // *** Augmented Lagrangian formulation ********************
@@ -1298,7 +1299,7 @@ namespace CONTACT
      \param ltxi (in):   Length of the nodal tangent txi
 
      */
-    void DerivAveragedNormal(CORE::LINALG::SerialDenseMatrix& elens, double length, double ltxi);
+    void deriv_averaged_normal(CORE::LINALG::SerialDenseMatrix& elens, double length, double ltxi);
 
    protected:
     //! true if contact node is in contact (active set strategy)

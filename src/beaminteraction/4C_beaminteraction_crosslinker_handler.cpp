@@ -116,7 +116,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_round_robin(
 
     // ---- send ----
     MPI_Request request;
-    exporter.ISend(myrank, torank, sdata.data(), (int)sdata.size(), 1234, request);
+    exporter.i_send(myrank, torank, sdata.data(), (int)sdata.size(), 1234, request);
 
 
     // ---- receive ----
@@ -259,7 +259,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_remote_id_list(
   int tag = 0;
   for (std::map<int, std::vector<char>>::const_iterator p = sdata.begin(); p != sdata.end(); ++p)
   {
-    exporter.ISend(
+    exporter.i_send(
         myrank_, p->first, (p->second).data(), (int)(p->second).size(), 1234, request[tag]);
     ++tag;
   }
@@ -359,7 +359,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_using_ghosting(
   int tag = 0;
   for (std::map<int, std::vector<char>>::const_iterator p = sdata.begin(); p != sdata.end(); ++p)
   {
-    exporter.ISend(
+    exporter.i_send(
         myrank_, p->first, (p->second).data(), (int)(p->second).size(), 1234, request[tag]);
     ++tag;
   }
@@ -557,7 +557,7 @@ Teuchos::RCP<std::list<int>> BEAMINTERACTION::BeamCrosslinkerHandler::TransferLi
 
     DRT::Node** linker = currbin->Nodes();
     std::vector<int> tobemoved(0);
-    for (int ilinker = 0; ilinker < currbin->NumNode(); ++ilinker)
+    for (int ilinker = 0; ilinker < currbin->num_node(); ++ilinker)
     {
       // get current node
       DRT::Node* currnode = linker[ilinker];
@@ -647,7 +647,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::
   std::list<DRT::Element*>::const_iterator it;
   for (it = boundaryrowbins.begin(); it != boundaryrowbins.end(); ++it)
   {
-    if ((*it)->NumNode() != 0)
+    if ((*it)->num_node() != 0)
     {
       std::vector<int> binvec;
       binvec.reserve(26);

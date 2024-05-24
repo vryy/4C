@@ -66,7 +66,7 @@ namespace CORE::GEO
       \brief Identify the list of facets which need to be triangulated, and also get the reference
       facet that will be used in xfluid part
        */
-      void ListFacets(std::vector<plain_facet_set::const_iterator>& facetIterator,
+      void list_facets(std::vector<plain_facet_set::const_iterator>& facetIterator,
           std::vector<double>& RefPlaneEqn, plain_facet_set::const_iterator& IteratorRefFacet,
           bool& IsRefFacet);
 

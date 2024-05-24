@@ -60,7 +60,7 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList
       pre_post_op_ptr_(Teuchos::null),
       is_constrained_(type != opt_unconstrained)
 {
-  CheckInput();
+  check_input();
   // do some setup things
   Setup();
 }
@@ -84,7 +84,7 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList
       pre_post_op_ptr_(Teuchos::null),
       is_constrained_(type != opt_unconstrained)
 {
-  CheckInput();
+  check_input();
   // do some setup things
   Setup();
 }
@@ -107,7 +107,7 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList
       pre_post_op_ptr_(Teuchos::null),
       is_constrained_(false)
 {
-  CheckInput();
+  check_input();
   // do some setup things
   Setup();
 }
@@ -129,14 +129,14 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList
       pre_post_op_ptr_(Teuchos::null),
       is_constrained_(false)
 {
-  CheckInput();
+  check_input();
   // do some setup things
   Setup();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::GlobalData::CheckInput() const
+void NOX::NLN::GlobalData::check_input() const
 {
   // short input check
   if (lin_solvers_.size() == 0)

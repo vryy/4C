@@ -31,7 +31,7 @@ namespace POROFLUIDMULTIPHASE
 
 
     /// Print information about current time step to screen (reimplementation for OST)
-    void PrintTimeStepInfo() override;
+    void print_time_step_info() override;
 
     /// compute values at intermediate time steps (required for generalized-alpha)
     void compute_intermediate_values() override { return; };
@@ -44,7 +44,7 @@ namespace POROFLUIDMULTIPHASE
     void Update() override;
 
     /// read restart data
-    void ReadRestart(const int step) override;
+    void read_restart(const int step) override;
 
    protected:
     /// don't want = operator and cctor
@@ -75,7 +75,7 @@ namespace POROFLUIDMULTIPHASE
     void add_time_integration_specific_vectors() override;
 
     /// write additional data required for restart
-    void OutputRestart() override;
+    void output_restart() override;
 
     /// return the right time-scaling-factor for the true residual
     double ResidualScaling() const override { return 1.0 / (dt_ * theta_); }

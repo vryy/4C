@@ -172,7 +172,7 @@ void CONTACT::Element::DerivNormalAtNode(int nid, int& i, CORE::LINALG::SerialDe
   local_coordinates_of_node(lid, xi);
 
   // build normal derivative at xi and return it
-  DerivNormalAtXi(xi, i, elens, derivn);
+  deriv_normal_at_xi(xi, i, elens, derivn);
 
   return;
 }
@@ -180,13 +180,14 @@ void CONTACT::Element::DerivNormalAtNode(int nid, int& i, CORE::LINALG::SerialDe
 /*----------------------------------------------------------------------*
  |  Compute element normal derivative at loc. coord. xi       popp 09/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Element::DerivNormalAtXi(double* xi, int& i, CORE::LINALG::SerialDenseMatrix& elens,
+void CONTACT::Element::deriv_normal_at_xi(double* xi, int& i,
+    CORE::LINALG::SerialDenseMatrix& elens,
     std::vector<CORE::GEN::Pairedvector<int, double>>& derivn)
 {
   // initialize variables
-  const int nnodes = NumNode();
+  const int nnodes = num_node();
   DRT::Node** mynodes = Nodes();
-  if (!mynodes) FOUR_C_THROW("DerivNormalAtXi: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("deriv_normal_at_xi: Null pointer!");
   CORE::LINALG::SerialDenseVector val(nnodes);
   CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
 
@@ -216,7 +217,7 @@ void CONTACT::Element::DerivNormalAtXi(double* xi, int& i, CORE::LINALG::SerialD
   for (int n = 0; n < nnodes; ++n)
   {
     Node* mycnode = dynamic_cast<Node*>(mynodes[n]);
-    if (!mycnode) FOUR_C_THROW("DerivNormalAtXi: Null pointer!");
+    if (!mycnode) FOUR_C_THROW("deriv_normal_at_xi: Null pointer!");
     int ndof = mycnode->NumDof();
 
     // derivative weighting matrix for current node
@@ -249,7 +250,7 @@ void CONTACT::Element::DerivNormalAtXi(double* xi, int& i, CORE::LINALG::SerialD
 void CONTACT::Element::OldUnitNormalAtXi(
     const double* xi, CORE::LINALG::Matrix<3, 1>& n_old, CORE::LINALG::Matrix<3, 2>& d_n_old_dxi)
 {
-  const int nnodes = NumNode();
+  const int nnodes = num_node();
   CORE::LINALG::SerialDenseVector val(nnodes);
   CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
 
@@ -307,7 +308,7 @@ void CONTACT::Element::DJacDXi(
            dt == CORE::FE::CellType::nurbs3)
   {
     // get nodal coords for 2nd deriv. evaluation
-    CORE::LINALG::SerialDenseMatrix coord(3, NumNode());
+    CORE::LINALG::SerialDenseMatrix coord(3, num_node());
     GetNodalCoords(coord);
 
     // metrics routine gives local basis vectors
@@ -316,7 +317,7 @@ void CONTACT::Element::DJacDXi(
     Metrics(xi, gxi, geta);
 
     std::array<double, 3> gsec = {0.0, 0.0, 0.0};
-    for (int i = 0; i < NumNode(); ++i)
+    for (int i = 0; i < num_node(); ++i)
       for (int k = 0; k < 3; ++k) gsec[k] += secderiv(i, 0) * coord(k, i);
 
     // the Jacobian itself
@@ -336,7 +337,7 @@ void CONTACT::Element::DJacDXi(
            dt == CORE::FE::CellType::nurbs9)
   {
     // get nodal coords for 2nd deriv. evaluation
-    CORE::LINALG::SerialDenseMatrix coord(3, NumNode());
+    CORE::LINALG::SerialDenseMatrix coord(3, num_node());
     GetNodalCoords(coord);
 
     // metrics routine gives local basis vectors
@@ -356,7 +357,7 @@ void CONTACT::Element::DJacDXi(
 
     // 2nd deriv. evaluation
     CORE::LINALG::Matrix<3, 3> gsec(true);
-    for (int i = 0; i < NumNode(); ++i)
+    for (int i = 0; i < num_node(); ++i)
       for (int k = 0; k < 3; ++k)
         for (int d = 0; d < 3; ++d) gsec(k, d) += secderiv(i, d) * coord(k, i);
 
@@ -387,20 +388,20 @@ void CONTACT::Element::PrepareDderiv(const std::vector<MORTAR::Element*>& meles)
 {
   // number of dofs that may appear in the linearization
   int numderiv = 0;
-  numderiv += NumNode() * 3 * 12;
-  for (unsigned m = 0; m < meles.size(); ++m) numderiv += (meles.at(m))->NumNode() * 3;
+  numderiv += num_node() * 3 * 12;
+  for (unsigned m = 0; m < meles.size(); ++m) numderiv += (meles.at(m))->num_node() * 3;
   d_matrix_deriv_ = Teuchos::rcp(new CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>(
-      numderiv, 0, CORE::LINALG::SerialDenseMatrix(NumNode(), NumNode())));
+      numderiv, 0, CORE::LINALG::SerialDenseMatrix(num_node(), num_node())));
 }
 
 void CONTACT::Element::PrepareMderiv(const std::vector<MORTAR::Element*>& meles, const int m)
 {
   // number of dofs that may appear in the linearization
   int numderiv = 0;
-  numderiv += NumNode() * 3 * 12;
-  for (unsigned i = 0; i < meles.size(); ++i) numderiv += meles[i]->NumNode() * 3;
+  numderiv += num_node() * 3 * 12;
+  for (unsigned i = 0; i < meles.size(); ++i) numderiv += meles[i]->num_node() * 3;
   m_matrix_deriv_ = Teuchos::rcp(new CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>(
-      numderiv, 0, CORE::LINALG::SerialDenseMatrix(NumNode(), meles.at(m)->NumNode())));
+      numderiv, 0, CORE::LINALG::SerialDenseMatrix(num_node(), meles.at(m)->num_node())));
 }
 
 
@@ -411,13 +412,13 @@ void CONTACT::Element::assemble_dderiv_to_nodes(bool dual)
 
   if (d_matrix_deriv_->size() == 0) return;
 
-  for (int j = 0; j < NumNode(); ++j)
+  for (int j = 0; j < num_node(); ++j)
   {
     CONTACT::Node* cnode_j = dynamic_cast<CONTACT::Node*>(Nodes()[j]);
 
     if (!dual)
     {
-      for (int k = 0; k < NumNode(); ++k)
+      for (int k = 0; k < num_node(); ++k)
       {
         CONTACT::Node* cnode_k = dynamic_cast<CONTACT::Node*>(Nodes()[k]);
         std::map<int, double>& ddmap_jk = cnode_j->Data().GetDerivD()[cnode_k->Id()];
@@ -447,11 +448,11 @@ void CONTACT::Element::assemble_mderiv_to_nodes(MORTAR::Element& mele)
     FOUR_C_THROW("assemble_mderiv_to_nodes called w/o PrepareMderiv first");
   if (m_matrix_deriv_->size() == 0) return;
 
-  for (int j = 0; j < NumNode(); ++j)
+  for (int j = 0; j < num_node(); ++j)
   {
     CONTACT::Node* cnode_j = dynamic_cast<CONTACT::Node*>(Nodes()[j]);
 
-    for (int k = 0; k < mele.NumNode(); ++k)
+    for (int k = 0; k < mele.num_node(); ++k)
     {
       CONTACT::Node* cnode_k = dynamic_cast<CONTACT::Node*>(mele.Nodes()[k]);
       std::map<int, double>& dmmap_jk = cnode_j->Data().GetDerivM()[cnode_k->Id()];

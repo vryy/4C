@@ -89,7 +89,7 @@ namespace THR
     }
 
     //! prepare time step
-    void PrepareTimeStep() override
+    void prepare_time_step() override
     {
       // do nothing
       return;
@@ -185,7 +185,7 @@ namespace THR
     };
 
     //! initial guess of Newton's method
-    Teuchos::RCP<const Epetra_Vector> InitialGuess() override
+    Teuchos::RCP<const Epetra_Vector> initial_guess() override
     {
       FOUR_C_THROW("not needed for explicit time integration");
       return Teuchos::null;

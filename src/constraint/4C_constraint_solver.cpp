@@ -77,13 +77,13 @@ void CONSTRAINTS::ConstraintSolver::Solve(Teuchos::RCP<CORE::LINALG::SparseMatri
   switch (algochoice_)
   {
     case INPAR::STR::consolve_uzawa:
-      SolveUzawa(stiff, constr, constrT, dispinc, lagrinc, rhsstand, rhsconstr);
+      solve_uzawa(stiff, constr, constrT, dispinc, lagrinc, rhsstand, rhsconstr);
       break;
     case INPAR::STR::consolve_direct:
-      SolveDirect(stiff, constr, constrT, dispinc, lagrinc, rhsstand, rhsconstr);
+      solve_direct(stiff, constr, constrT, dispinc, lagrinc, rhsstand, rhsconstr);
       break;
     case INPAR::STR::consolve_simple:
-      SolveSimple(stiff, constr, constrT, dispinc, lagrinc, rhsstand, rhsconstr);
+      solve_simple(stiff, constr, constrT, dispinc, lagrinc, rhsstand, rhsconstr);
       break;
     default:
       FOUR_C_THROW("Unknown constraint solution technique!");
@@ -95,7 +95,7 @@ void CONSTRAINTS::ConstraintSolver::Solve(Teuchos::RCP<CORE::LINALG::SparseMatri
 |(public)                                                               |
 |Solve linear constrained system by iterative Uzawa algorithm           |
 *-----------------------------------------------------------------------*/
-void CONSTRAINTS::ConstraintSolver::SolveUzawa(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,
+void CONSTRAINTS::ConstraintSolver::solve_uzawa(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,
     Teuchos::RCP<CORE::LINALG::SparseMatrix> constr,
     Teuchos::RCP<CORE::LINALG::SparseMatrix> constrT, Teuchos::RCP<Epetra_Vector> dispinc,
     Teuchos::RCP<Epetra_Vector> lagrinc, const Teuchos::RCP<Epetra_Vector> rhsstand,
@@ -246,7 +246,7 @@ void CONSTRAINTS::ConstraintSolver::SolveUzawa(Teuchos::RCP<CORE::LINALG::Sparse
 |(public)                                                               |
 |Solve linear constrained system by iterative Uzawa algorithm           |
 *-----------------------------------------------------------------------*/
-void CONSTRAINTS::ConstraintSolver::SolveDirect(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,
+void CONSTRAINTS::ConstraintSolver::solve_direct(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,
     Teuchos::RCP<CORE::LINALG::SparseMatrix> constr,
     Teuchos::RCP<CORE::LINALG::SparseMatrix> constrT, Teuchos::RCP<Epetra_Vector> dispinc,
     Teuchos::RCP<Epetra_Vector> lagrinc, const Teuchos::RCP<Epetra_Vector> rhsstand,
@@ -293,7 +293,7 @@ void CONSTRAINTS::ConstraintSolver::SolveDirect(Teuchos::RCP<CORE::LINALG::Spars
   return;
 }
 
-void CONSTRAINTS::ConstraintSolver::SolveSimple(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,
+void CONSTRAINTS::ConstraintSolver::solve_simple(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,
     Teuchos::RCP<CORE::LINALG::SparseMatrix> constr,
     Teuchos::RCP<CORE::LINALG::SparseMatrix> constrT, Teuchos::RCP<Epetra_Vector> dispinc,
     Teuchos::RCP<Epetra_Vector> lagrinc, const Teuchos::RCP<Epetra_Vector> rhsstand,

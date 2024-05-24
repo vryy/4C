@@ -175,9 +175,9 @@ namespace FPSI
 
    private:
     // access to the fields
-    const Teuchos::RCP<POROELAST::Monolithic>& PoroField() { return poro_; }
-    const Teuchos::RCP<ADAPTER::Fluid>& FluidField() { return fluid_; }
-    const Teuchos::RCP<ADAPTER::AleFpsiWrapper>& AleField() { return ale_; }
+    const Teuchos::RCP<POROELAST::Monolithic>& poro_field() { return poro_; }
+    const Teuchos::RCP<ADAPTER::Fluid>& fluid_field() { return fluid_; }
+    const Teuchos::RCP<ADAPTER::AleFpsiWrapper>& ale_field() { return ale_; }
 
     // Initialize Coupling Matrixes and Coupling RHS
     void init_coupling_matrixes_rhs();
@@ -246,9 +246,9 @@ namespace FPSI
     Teuchos::RCP<CORE::LINALG::MatrixRowTransform> couplingrowtransform5_;
     ;  /// g_fpsi || F->PS transform (FPSI)
     Teuchos::RCP<CORE::LINALG::MatrixColTransform>
-        couplingcoltransform_;  /// for Row/Col-Map for Full - FluidField & F->PS transform (FPSI)
+        couplingcoltransform_;  /// for Row/Col-Map for Full - fluid_field & F->PS transform (FPSI)
     Teuchos::RCP<CORE::LINALG::MatrixColTransform>
-        couplingcoltransform2_;  /// for Row/Col-Map for Full - AleField & A->PS transform (FPSI)
+        couplingcoltransform2_;  /// for Row/Col-Map for Full - ale_field & A->PS transform (FPSI)
     Teuchos::RCP<CORE::LINALG::MatrixRowColTransform>
         couplingrowcoltransform_;  /// g_fpsi/g_fpsi || F->PS/F->PS transform (FPSI/FPSI)
     Teuchos::RCP<CORE::LINALG::MatrixRowColTransform>

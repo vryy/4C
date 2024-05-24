@@ -76,7 +76,7 @@ namespace FS3I
     virtual void TestResults(const Epetra_Comm& comm) = 0;
 
     /// read restart
-    virtual void ReadRestart() = 0;
+    virtual void read_restart() = 0;
 
     /// needed for redistribution of FPS3I interface, if running on parallel
     virtual void redistribute_interface() = 0;
@@ -224,23 +224,23 @@ namespace FS3I
 
    protected:
     //! returns true if Setup() was called and is still valid
-    bool IsSetup() { return issetup_; };
+    bool is_setup() { return issetup_; };
 
     //! returns true if Init(..) was called and is still valid
-    bool IsInit() { return isinit_; };
+    bool is_init() { return isinit_; };
 
     //! check if \ref Setup() was called
     void CheckIsSetup();
 
     //! check if \ref Init() was called
-    void CheckIsInit();
+    void check_is_init();
 
    public:
     //! set flag true after setup or false if setup became invalid
-    void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; };
+    void set_is_setup(bool trueorfalse) { issetup_ = trueorfalse; };
 
     //! set flag true after init or false if init became invalid
-    void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
+    void set_is_init(bool trueorfalse) { isinit_ = trueorfalse; };
   };
 }  // namespace FS3I
 

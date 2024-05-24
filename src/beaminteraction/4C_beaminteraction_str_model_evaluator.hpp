@@ -76,7 +76,7 @@ namespace STR
 
       void Setup() override;
 
-      virtual void PostSetup();
+      virtual void post_setup();
 
       /// print welcome to biopolymer network simulation
       virtual void Logo() const;
@@ -89,25 +89,25 @@ namespace STR
       INPAR::STR::ModelType Type() const override { return INPAR::STR::model_beaminteraction; }
 
       //! derived
-      bool EvaluateForce() override;
+      bool evaluate_force() override;
 
       //! derived
-      bool EvaluateStiff() override;
+      bool evaluate_stiff() override;
 
       //! derived
-      bool EvaluateForceStiff() override;
+      bool evaluate_force_stiff() override;
 
       //! derived
-      void PreEvaluate() override { return; };
+      void pre_evaluate() override { return; };
 
       //! derived
-      void PostEvaluate() override{/* currently unused */};
+      void post_evaluate() override{/* currently unused */};
 
       //! derived
-      bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
+      bool assemble_force(Epetra_Vector& f, const double& timefac_np) const override;
 
       //! derived
-      bool AssembleJacobian(
+      bool assemble_jacobian(
           CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
 
       //! derived
@@ -115,7 +115,7 @@ namespace STR
           IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! derived
-      void ReadRestart(IO::DiscretizationReader& ioreader) override;
+      void read_restart(IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
       void Predict(const INPAR::STR::PredEnum& pred_type) override { return; };
@@ -183,19 +183,19 @@ namespace STR
       bool HaveSubModelType(INPAR::BEAMINTERACTION::SubModelType const& submodeltype) const;
 
      private:
-      void PartitionProblem();
+      void partition_problem();
 
       bool post_partition_problem();
 
       //! set beaminteraction sub models
-      void SetSubModelTypes();
+      void set_sub_model_types();
 
 
       //! build, init and setup submodel evaluator
       void init_and_setup_sub_model_evaluators();
 
       //! give submodels a certain order in which they are evaluated
-      virtual Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Vector> TransformToVector(
+      virtual Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Vector> transform_to_vector(
           STR::MODELEVALUATOR::BeamInteraction::Map submodel_map,
           std::vector<INPAR::BEAMINTERACTION::SubModelType>& sorted_submodel_types) const;
 
@@ -211,16 +211,16 @@ namespace STR
       void update_coupling_adapter_and_matrix_transformation();
 
       /// transform force vector from ia_discret_ to Discret()
-      virtual void TransformForce();
+      virtual void transform_force();
 
       /// transform stiffness matrix from ia_discret_ to Discret()
-      virtual void TransformStiff();
+      virtual void transform_stiff();
 
       /// transform force vector and stiffness matrix from ia_discret_ to Discret()
-      virtual void TransformForceStiff();
+      virtual void transform_force_stiff();
 
       /// update states based on bindis after its redistribution
-      virtual void UpdateMaps();
+      virtual void update_maps();
 
       //! @}
 
@@ -228,10 +228,10 @@ namespace STR
       //! @{
 
       /// change parallel distribution of bindis and ia_discret and assign (beam) eles to bins
-      virtual void ExtendGhosting();
+      virtual void extend_ghosting();
 
       /// build ele to bin map
-      virtual void BuildRowEleToBinMap();
+      virtual void build_row_ele_to_bin_map();
 
       /// print some information about binning
       virtual void print_binning_info_to_screen() const;

@@ -91,8 +91,8 @@ void STR::MODELEVALUATOR::BaseSSI::determine_stress_strain()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::BaseSSI::get_block_dof_row_map_ptr() const
 {
-  CheckInitSetup();
-  return GState().DofRowMap();
+  check_init_setup();
+  return GState().dof_row_map();
 }
 
 /*----------------------------------------------------------------------*
@@ -100,10 +100,10 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::BaseSSI::get_block_dof_row_m
 void STR::MODELEVALUATOR::BaseSSI::Setup()
 {
   // check initialization
-  CheckInit();
+  check_init();
 
   if (Discret().NumDofSets() - 1 == 2)
-    mechanical_stress_state_ = Teuchos::rcp(new Epetra_Vector(*Discret().DofRowMap(2), true));
+    mechanical_stress_state_ = Teuchos::rcp(new Epetra_Vector(*Discret().dof_row_map(2), true));
 
   // set flag
   issetup_ = true;

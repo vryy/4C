@@ -85,12 +85,12 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
         break;
       }
     }
-    if (!arterydis->Filled()) arterydis->FillComplete();
+    if (!arterydis->Filled()) arterydis->fill_complete();
   }
 
   Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis(fluid_disname);
-  if (!structdis->Filled()) structdis->FillComplete();
-  if (!fluiddis->Filled()) fluiddis->FillComplete();
+  if (!structdis->Filled()) structdis->fill_complete();
+  if (!fluiddis->Filled()) fluiddis->fill_complete();
 
   if (fluiddis->NumGlobalNodes() == 0)
   {
@@ -103,8 +103,8 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
     FOUR_C_THROW("Fluid discretization given in input file. This is not supported!");
   }
 
-  structdis->FillComplete();
-  fluiddis->FillComplete();
+  structdis->fill_complete();
+  fluiddis->fill_complete();
 
   // build a proxy of the structure discretization for the scatra field
   Teuchos::RCP<CORE::Dofsets::DofSetInterface> structdofset = structdis->GetDofSetProxy();
@@ -127,8 +127,8 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
   // add it also to the solid field
   structdis->AddDofSet(fluiddis->GetDofSetProxy(nds_solidpressure));
 
-  structdis->FillComplete();
-  fluiddis->FillComplete();
+  structdis->fill_complete();
+  fluiddis->fill_complete();
 
   return nearbyelepairs;
 }
@@ -192,7 +192,7 @@ Teuchos::RCP<ADAPTER::PoroMultiPhase> POROMULTIPHASE::UTILS::CreatePoroMultiPhas
 /*----------------------------------------------------------------------*
  | calculate vector norm                             kremheller 07/17   |
  *----------------------------------------------------------------------*/
-double POROMULTIPHASE::UTILS::CalculateVectorNorm(
+double POROMULTIPHASE::UTILS::calculate_vector_norm(
     const enum INPAR::POROMULTIPHASE::VectorNorm norm, const Teuchos::RCP<const Epetra_Vector> vect)
 {
   // L1 norm
@@ -239,7 +239,7 @@ double POROMULTIPHASE::UTILS::CalculateVectorNorm(
     FOUR_C_THROW("Cannot handle vector norm");
     return 0;
   }
-}  // CalculateVectorNorm()
+}  // calculate_vector_norm()
 
 /*----------------------------------------------------------------------*
  |                                                    kremheller 03/17  |

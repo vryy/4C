@@ -136,7 +136,7 @@ namespace THR
     }
 
     //! prepare time step
-    void PrepareTimeStep() override = 0;
+    void prepare_time_step() override = 0;
 
     //! Do time integration of single step
     virtual void IntegrateStep() = 0;
@@ -189,7 +189,7 @@ namespace THR
     //! Thus the last converged state is copied back on the predictor
     //! for current time step. This applies only to elemet-wise
     //! quantities
-    void ResetStep() override;
+    void reset_step() override;
 
     //! set the initial thermal field
     void SetInitialField(const INPAR::THR::InitialField,  //!< type of initial field
@@ -216,18 +216,18 @@ namespace THR
 
     //! Write restart
     //! \author mwgee (originally) \date 03/07
-    void OutputRestart(bool& datawritten  //!< (in/out) read and append if
-                                          //!< it was written at this time step
+    void output_restart(bool& datawritten  //!< (in/out) read and append if
+                                           //!< it was written at this time step
     );
 
     //! Output temperatures, temperature rates
     //! and more system vectors
     //! \author mwgee (originally) \date 03/07
-    void OutputState(bool& datawritten  //!< (in/out) read and append if
-                                        //!< it was written at this time step
+    void output_state(bool& datawritten  //!< (in/out) read and append if
+                                         //!< it was written at this time step
     );
 
-    //! Add restart information to OutputState
+    //! Add restart information to output_state
     void add_restart_to_output_state();
 
     //! Heatflux & temperature gradient output
@@ -237,7 +237,7 @@ namespace THR
     );
 
     //! Energy output
-    void OutputEnergy();
+    void output_energy();
 
     //! Write internal and external forces (if necessary for restart)
     virtual void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) = 0;
@@ -286,9 +286,9 @@ namespace THR
     //@{
 
     //! Apply external force
-    void ApplyForceExternal(const double time,   //!< evaluation time
-        const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
-        Teuchos::RCP<Epetra_Vector>& fext        //!< external force
+    void apply_force_external(const double time,  //!< evaluation time
+        const Teuchos::RCP<Epetra_Vector> temp,   //!< temperature state
+        Teuchos::RCP<Epetra_Vector>& fext         //!< external force
     );
 
     //! Apply convective boundary conditions force
@@ -334,12 +334,13 @@ namespace THR
     //! manner means the static condensation is applied once with
     //! residual temperatures replaced by the full-step temperature
     //! increment \f$T_{n+1}-T_{n}\f$.
-    void ApplyForceInternal(Teuchos::ParameterList& p,  //!< parameter list handed down to elements
-        const double time,                              //!< evaluation time
-        const double dt,                                //!< step size
-        const Teuchos::RCP<Epetra_Vector> temp,         //!< temperature state
-        const Teuchos::RCP<Epetra_Vector> tempi,        //!< incremental temperatures
-        Teuchos::RCP<Epetra_Vector> fint                //!< internal force
+    void apply_force_internal(
+        Teuchos::ParameterList& p,                //!< parameter list handed down to elements
+        const double time,                        //!< evaluation time
+        const double dt,                          //!< step size
+        const Teuchos::RCP<Epetra_Vector> temp,   //!< temperature state
+        const Teuchos::RCP<Epetra_Vector> tempi,  //!< incremental temperatures
+        Teuchos::RCP<Epetra_Vector> fint          //!< internal force
     );
 
     //@}
@@ -387,16 +388,16 @@ namespace THR
     Teuchos::RCP<DRT::Discretization> Discretization() override { return discret_; }
 
     //! non-overlapping DOF map for multiple dofsets
-    Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) override
+    Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) override
     {
-      const Epetra_Map* dofrowmap = discret_->DofRowMap(nds);
+      const Epetra_Map* dofrowmap = discret_->dof_row_map(nds);
       return Teuchos::rcp(new Epetra_Map(*dofrowmap));
     }
 
     //! non-overlapping DOF map
-    Teuchos::RCP<const Epetra_Map> DofRowMap() override
+    Teuchos::RCP<const Epetra_Map> dof_row_map() override
     {
-      const Epetra_Map* dofrowmap = discret_->DofRowMap();
+      const Epetra_Map* dofrowmap = discret_->dof_row_map();
       return Teuchos::rcp(new Epetra_Map(*dofrowmap));
     }
 
@@ -410,10 +411,10 @@ namespace THR
     Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() override { return output_; }
 
     //! prepare output (do nothing)
-    void PrepareOutput() override { ; }
+    void prepare_output() override { ; }
 
     //! Read restart values
-    void ReadRestart(const int step  //!< restart step
+    void read_restart(const int step  //!< restart step
         ) override;
 
     //! Read and set restart state
@@ -432,7 +433,7 @@ namespace THR
     Teuchos::RCP<const Epetra_Vector> Tempn() override { return (*temp_)(0); }
 
     //! initial guess of Newton's method
-    Teuchos::RCP<const Epetra_Vector> InitialGuess() override = 0;
+    Teuchos::RCP<const Epetra_Vector> initial_guess() override = 0;
 
     //! Return temperatures \f$T_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> WriteAccessTempnp() override { return tempn_; }
@@ -478,7 +479,7 @@ namespace THR
     double Dt() const override { return (*dt_)[0]; }
 
     //! Set time step size \f$\Delta t_n\f$
-    void SetDt(double timestepsize) override { (*dt_)[0] = timestepsize; }
+    void set_dt(double timestepsize) override { (*dt_)[0] = timestepsize; }
 
     //! Sets the target time \f$t_{n+1}\f$ of this time step
     void SetTimen(const double time) override { timen_ = time; }

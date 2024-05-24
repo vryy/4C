@@ -40,7 +40,7 @@ void poro_scatra_drt()
 
   // 3.1- Read restart if needed. (Discretization called inside)
   const int restart = problem->Restart();
-  poro_scatra->ReadRestart(restart);
+  poro_scatra->read_restart(restart);
 
   // 4.- Run of the actual problem.
 

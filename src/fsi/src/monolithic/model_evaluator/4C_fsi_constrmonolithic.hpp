@@ -53,7 +53,7 @@ namespace FSI
     void GeneralSetup();
 
     /// setup composed system matrix from field solvers
-    void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) override = 0;
+    void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) override = 0;
 
     /// Evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
     void Evaluate(
@@ -61,7 +61,7 @@ namespace FSI
         ) override;
 
     /// Extract initial guess from fields
-    void InitialGuess(Teuchos::RCP<Epetra_Vector> ig) override = 0;
+    void initial_guess(Teuchos::RCP<Epetra_Vector> ig) override = 0;
 
     /// the composed system matrix
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const override
@@ -73,10 +73,10 @@ namespace FSI
     //!@{
 
     /// apply infnorm scaling to linear block system
-    void ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) override;
+    void scale_system(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) override;
 
     /// undo infnorm scaling from scaled solution
-    void UnscaleSolution(
+    void unscale_solution(
         CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b) override;
 
     //!@}
@@ -133,11 +133,11 @@ namespace FSI
     void CreateSystemMatrix(bool structuresplit);
 
     /// setup solver for global block system
-    Teuchos::RCP<::NOX::Epetra::LinearSystem> CreateLinearSystem(Teuchos::ParameterList& nlParams,
+    Teuchos::RCP<::NOX::Epetra::LinearSystem> create_linear_system(Teuchos::ParameterList& nlParams,
         ::NOX::Epetra::Vector& noxSoln, Teuchos::RCP<::NOX::Utils> utils) override;
 
     /// setup of NOX convergence tests
-    Teuchos::RCP<::NOX::StatusTest::Combo> CreateStatusTest(
+    Teuchos::RCP<::NOX::StatusTest::Combo> create_status_test(
         Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp) override;
 
     /// extract the three field vectors from a given composed vector
@@ -150,12 +150,12 @@ namespace FSI
       \param fx (o) fluid velocities and pressure
       \param ax (o) ale displacements
     */
-    void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+    void extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx,
         Teuchos::RCP<const Epetra_Vector>& ax) override = 0;
 
     /// build block vector from field vectors
-    virtual void SetupVector(Epetra_Vector& f,
+    virtual void setup_vector(Epetra_Vector& f,
         Teuchos::RCP<const Epetra_Vector> sv,  ///< structure vector
         Teuchos::RCP<const Epetra_Vector> fv,  ///< fluid vector
         Teuchos::RCP<const Epetra_Vector> av,  ///< ale vector
@@ -222,13 +222,13 @@ namespace FSI
     void setup_dbc_map_extractor() override = 0;
 
     /// setup RHS contributions based on single field residuals
-    void SetupRHSResidual(Epetra_Vector& f) override = 0;
+    void setup_rhs_residual(Epetra_Vector& f) override = 0;
 
     /// setup RHS contributions based on the Lagrange multiplier field
-    void SetupRHSLambda(Epetra_Vector& f) override = 0;
+    void setup_rhs_lambda(Epetra_Vector& f) override = 0;
 
     /// setup RHS contributions based on terms for first nonlinear iteration
-    void SetupRHSFirstiter(Epetra_Vector& f) override = 0;
+    void setup_rhs_firstiter(Epetra_Vector& f) override = 0;
   };
 }  // namespace FSI
 

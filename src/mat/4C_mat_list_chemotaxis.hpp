@@ -145,7 +145,7 @@ namespace MAT
 
    protected:
     /// setup of material map
-    virtual void SetupMatMap();
+    virtual void setup_mat_map();
 
    private:
     /// clear everything

@@ -233,7 +233,7 @@ void CORE::Conditions::FindConditionObjects(const DRT::Discretization& dis,
       // get all elements locally known, including ghost elements
       pos = elements.insert(pos, *iter);
       const int* n = iter->second->NodeIds();
-      for (int j = 0; j < iter->second->NumNode(); ++j)
+      for (int j = 0; j < iter->second->num_node(); ++j)
       {
         const int gid = n[j];
         if (dis.HaveGlobalNode(gid))
@@ -289,7 +289,7 @@ void CORE::Conditions::FindConditionObjects(const DRT::Discretization& dis,
       // get all elements locally known, including ghost elements
       pos = elements.insert(pos, *iter);
       const int* n = iter->second->NodeIds();
-      for (int j = 0; j < iter->second->NumNode(); ++j)
+      for (int j = 0; j < iter->second->num_node(); ++j)
       {
         const int gid = n[j];
         if (dis.HaveGlobalNode(gid))
@@ -327,7 +327,7 @@ void CORE::Conditions::FindConditionObjects(const DRT::Discretization& dis,
       // get all elements locally known, including ghost elements
       pos = elements[id].insert(pos, *iter);
       const int* n = iter->second->NodeIds();
-      for (int j = 0; j < iter->second->NumNode(); ++j)
+      for (int j = 0; j < iter->second->num_node(); ++j)
       {
         const int gid = n[j];
         if (dis.HaveGlobalNode(gid))
@@ -397,7 +397,7 @@ void CORE::Conditions::FindElementConditions(
 
 
   // loop all remaining nodes
-  int iel = ele->NumNode();
+  int iel = ele->num_node();
   for (int inode = 1; inode < iel; ++inode)
   {
     std::vector<Condition*> neumcondn;
@@ -458,7 +458,7 @@ Teuchos::RCP<std::set<int>> CORE::Conditions::conditioned_element_map(
   {
     const DRT::Element* actele = dis.lColElement(i);
 
-    const size_t numnodes = actele->NumNode();
+    const size_t numnodes = actele->num_node();
     const DRT::Node* const* nodes = actele->Nodes();
     for (size_t n = 0; n < numnodes; ++n)
     {

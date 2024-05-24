@@ -25,7 +25,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void CONTACT::NitscheStrategyTsi::SetState(
+void CONTACT::NitscheStrategyTsi::set_state(
     const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
 {
   if (statename == MORTAR::state_temperature)
@@ -52,7 +52,7 @@ void CONTACT::NitscheStrategyTsi::SetState(
     }
   }
   else
-    CONTACT::NitscheStrategy::SetState(statename, vec);
+    CONTACT::NitscheStrategy::set_state(statename, vec);
 }
 
 /*------------------------------------------------------------------------*
@@ -130,7 +130,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategyTsi::SetupRhsBlockVec(
   {
     case CONTACT::VecBlockType::temp:
       return Teuchos::rcp(
-          new Epetra_FEVector(*GLOBAL::Problem::Instance()->GetDis("thermo")->DofRowMap()));
+          new Epetra_FEVector(*GLOBAL::Problem::Instance()->GetDis("thermo")->dof_row_map()));
     default:
       return CONTACT::NitscheStrategy::SetupRhsBlockVec(bt);
   }
@@ -162,13 +162,13 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategyTsi::SetupMatri
     case CONTACT::MatBlockType::displ_temp:
       return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
-              *GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap()),
+              *GLOBAL::Problem::Instance()->GetDis("structure")->dof_row_map()),
           100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
     case CONTACT::MatBlockType::temp_displ:
     case CONTACT::MatBlockType::temp_temp:
       return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
-              *GLOBAL::Problem::Instance()->GetDis("thermo")->DofRowMap()),
+              *GLOBAL::Problem::Instance()->GetDis("thermo")->dof_row_map()),
           100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
     default:
       return CONTACT::NitscheStrategy::SetupMatrixBlockPtr(bt);
@@ -183,16 +183,16 @@ void CONTACT::NitscheStrategyTsi::complete_matrix_block_ptr(
     case CONTACT::MatBlockType::displ_temp:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix())
               .GlobalAssemble(
-                  *GLOBAL::Problem::Instance()->GetDis("thermo")->DofRowMap(),     // col map
-                  *GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap(),  // row map
+                  *GLOBAL::Problem::Instance()->GetDis("thermo")->dof_row_map(),     // col map
+                  *GLOBAL::Problem::Instance()->GetDis("structure")->dof_row_map(),  // row map
                   true, Add))
         FOUR_C_THROW("GlobalAssemble(...) failed");
       break;
     case CONTACT::MatBlockType::temp_displ:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix())
               .GlobalAssemble(
-                  *GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap(),  // col map
-                  *GLOBAL::Problem::Instance()->GetDis("thermo")->DofRowMap(),     // row map
+                  *GLOBAL::Problem::Instance()->GetDis("structure")->dof_row_map(),  // col map
+                  *GLOBAL::Problem::Instance()->GetDis("thermo")->dof_row_map(),     // row map
                   true, Add))
         FOUR_C_THROW("GlobalAssemble(...) failed");
       break;

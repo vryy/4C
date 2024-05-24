@@ -148,13 +148,13 @@ namespace MORTAR
      \brief Return vector of (projected) slave node vertex objects
 
      */
-    virtual std::vector<Vertex>& SlaveVertices() { return svertices_; }
+    virtual std::vector<Vertex>& slave_vertices() { return svertices_; }
 
     /*!
      \brief Return vector of projected master node vertex objects
 
      */
-    virtual std::vector<Vertex>& MasterVertices() { return mvertices_; }
+    virtual std::vector<Vertex>& master_vertices() { return mvertices_; }
 
     /*!
      \brief Return vector of clip polygon vertex objects
@@ -172,7 +172,10 @@ namespace MORTAR
      \brief Return the 'DerivAuxn' map (vector) of this coupling pair
 
      */
-    virtual std::vector<CORE::GEN::Pairedvector<int, double>>& GetDerivAuxn() { return derivauxn_; }
+    virtual std::vector<CORE::GEN::Pairedvector<int, double>>& get_deriv_auxn()
+    {
+      return derivauxn_;
+    }
 
     /*!
      \brief Return the LM interpolation / testing type for quadratic FE
@@ -184,7 +187,7 @@ namespace MORTAR
      \brief Get interface contact parameter list
 
      */
-    virtual Teuchos::ParameterList& InterfaceParams() { return imortar_; };
+    virtual Teuchos::ParameterList& interface_params() { return imortar_; };
 
     /*!
      \brief Return the LM shape fcn type
@@ -220,7 +223,7 @@ namespace MORTAR
      elements form an angle smaller than 90 degrees).
 
      */
-    virtual bool RoughCheckOrient();
+    virtual bool rough_check_orient();
 
     /*!
      \brief Integrate the integration cells (3D)
@@ -281,7 +284,7 @@ namespace MORTAR
      defined by the slave normal at the slave element center.
 
      */
-    virtual bool AuxiliaryPlane();
+    virtual bool auxiliary_plane();
 
     /*!
      \brief Triangulation of clip polygon (3D)
@@ -296,19 +299,19 @@ namespace MORTAR
      according to the Delaunay criterion, which maximizes the smallest internal
      angle. Thus, delaunay_triangulation() is used BY DEFAULT here.
 
-     CenterTriangulation() is an old version that was based on first finding the
+     center_triangulation() is an old version that was based on first finding the
      center of the clip polygon by computing the centroid / geometric center
      (see M. Puso, A 3D mortar method for solid mechanics, IJNME, 2004).
      The clip polygon is triangulated into integration cells all containing two
      vertices and the center point. Thus, we always generate N triangles here
      for a clip polygon with N vertices (except for the special case N=3).
-     Thus, CenterTriangulation() is NOT used anymore.
+     Thus, center_triangulation() is NOT used anymore.
 
      */
     virtual bool Triangulation(std::map<int, double>& projpar, double tol);
     virtual bool delaunay_triangulation(
         std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linvertex, double tol);
-    virtual bool CenterTriangulation(
+    virtual bool center_triangulation(
         std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linvertex, double tol);
 
     /*!
@@ -318,7 +321,7 @@ namespace MORTAR
      polygon (equal to any vertex). If so the HasProj status is set true!
 
      */
-    virtual bool HasProjStatus();
+    virtual bool has_proj_status();
 
     /*!
      \brief Compute and return area of clipping polygon (3D)
@@ -328,7 +331,7 @@ namespace MORTAR
      in the auxiliary plane or in the slave parameter space.
 
      */
-    virtual double PolygonArea();
+    virtual double polygon_area();
 
     /*!
      \brief Clipping of slave and master element (3D)
@@ -356,7 +359,7 @@ namespace MORTAR
      \param tol (in): clipping tolerance for close vertices detection
 
      */
-    virtual void PolygonClipping(std::vector<Vertex>& poly1list, std::vector<Vertex>& poly2list,
+    virtual void polygon_clipping(std::vector<Vertex>& poly1list, std::vector<Vertex>& poly2list,
         std::vector<Vertex>& respoly, double& tol);
 
     /*!
@@ -402,7 +405,7 @@ namespace MORTAR
      onto the auxiliary plane derived before.
 
      */
-    virtual bool ProjectSlave();
+    virtual bool project_slave();
 
     /*!
      \brief Projection of master element onto aux. plane (3D)
@@ -411,7 +414,7 @@ namespace MORTAR
      onto the auxiliary plane derived from the slave CElement before.
 
      */
-    virtual bool ProjectMaster();
+    virtual bool project_master();
 
     /*!
      \brief Checks roughly whether the two elements are near (3D)
@@ -421,7 +424,7 @@ namespace MORTAR
      coupling is stopped for the pair.
 
      */
-    virtual bool RoughCheckNodes();
+    virtual bool rough_check_nodes();
 
    protected:
     /*!
@@ -622,7 +625,7 @@ namespace MORTAR
      \brief Calculate consistent dual shape functions in boundary elements
 
      */
-    virtual void ConsistDualShape();
+    virtual void consist_dual_shape();
 
     // don't want = operator and cctor
     Coupling3dManager operator=(const Coupling3dManager& old);

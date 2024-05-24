@@ -60,7 +60,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::WriteRestart(
   }
 }
 
-void PARTICLEENGINE::UniqueGlobalIdHandler::ReadRestart(
+void PARTICLEENGINE::UniqueGlobalIdHandler::read_restart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // get maximum global id from restart

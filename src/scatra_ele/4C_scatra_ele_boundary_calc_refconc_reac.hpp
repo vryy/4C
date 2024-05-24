@@ -48,11 +48,11 @@ namespace DRT
 
       template <CORE::FE::CellType bdistype,
           CORE::FE::CellType pdistype>
-      double CalcJatIntPoint(const int iquad,  ///< current boundary integration point
-          const DRT::FaceElement* bele,        ///< current boundary element
-          const DRT::Element* pele,            ///< current parent element
-          Teuchos::ParameterList& params,      ///< parameter list
-          DRT::Discretization& discretization  ///< discretization
+      double calc_jat_int_point(const int iquad,  ///< current boundary integration point
+          const DRT::FaceElement* bele,           ///< current boundary element
+          const DRT::Element* pele,               ///< current parent element
+          Teuchos::ParameterList& params,         ///< parameter list
+          DRT::Discretization& discretization     ///< discretization
       );
 
     };  // class ScaTraEleBoundaryCalcRefConcReac

@@ -403,7 +403,7 @@ namespace MAT
      * \param params Container for additional information
      * \param eleGID Global element id
      */
-    void PostSetup(const Teuchos::ParameterList params, int eleGID);
+    void post_setup(const Teuchos::ParameterList params, int eleGID);
 
     /// setup material TSI data
     virtual void SetupTSI(const int numgp, const int numdofperelement, const bool eas,
@@ -430,7 +430,7 @@ namespace MAT
     virtual MAT::PAR::PlasticElastHyper* MatParams() const { return params_; }
 
     /// Return whether the material requires the deformation gradient for its evaluation
-    bool NeedsDefgrd() override { return true; };
+    bool needs_defgrd() override { return true; };
 
     /// get plastic algorithm parameters
     virtual void GetParams(double s, double cpl)

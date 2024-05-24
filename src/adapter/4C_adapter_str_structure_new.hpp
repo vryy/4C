@@ -67,7 +67,7 @@ namespace ADAPTER
     /// @name Vector access
     ///@{
     /// initial guess of Newton's method
-    Teuchos::RCP<const Epetra_Vector> InitialGuess() override = 0;
+    Teuchos::RCP<const Epetra_Vector> initial_guess() override = 0;
 
     /// rhs of Newton's method
     Teuchos::RCP<const Epetra_Vector> RHS() override = 0;
@@ -133,7 +133,7 @@ namespace ADAPTER
     /// Sets the current time \f$t_{n}\f$
     /// ToDo Replace the deprecated version with the new version
     virtual void SetTimeN(const double time_n) = 0;
-    void SetTime(const double time_n) override { SetTimeN(time_n); }
+    void set_time(const double time_n) override { SetTimeN(time_n); }
 
     /// Return target time \f$t_{n+1}\f$
     /// ToDo Replace the deprecated version with the new version
@@ -159,7 +159,7 @@ namespace ADAPTER
     /// set time step size
     /// ToDo Replace the deprecated version with the new version
     virtual void SetDeltaTime(const double dt) = 0;
-    void SetDt(const double dt) override { SetDeltaTime(dt); }
+    void set_dt(const double dt) override { SetDeltaTime(dt); }
 
     /// Return current step number $n$
     /// ToDo Replace the deprecated version with the new version
@@ -207,7 +207,7 @@ namespace ADAPTER
     [[nodiscard]] bool NotFinished() const override = 0;
 
     /// start new time step
-    void PrepareTimeStep() override = 0;
+    void prepare_time_step() override = 0;
 
     /*!
      \brief update displacement
@@ -267,7 +267,7 @@ namespace ADAPTER
     Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() override = 0;
 
     /// prepare output (i.e. calculate stresses, strains, energies)
-    void PrepareOutput(bool force_prepare_timestep) override = 0;
+    void prepare_output(bool force_prepare_timestep) override = 0;
 
     // Get restart data
     void GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
@@ -282,7 +282,7 @@ namespace ADAPTER
     void PrintStep() override = 0;
 
     /// read restart information for given time step
-    void ReadRestart(const int step) override = 0;
+    void read_restart(const int step) override = 0;
 
     /*!
     \brief Reset time step
@@ -294,7 +294,7 @@ namespace ADAPTER
     \author mayr.mt
     \date 08/2013
     */
-    void ResetStep() override = 0;
+    void reset_step() override = 0;
 
     /// set restart information for parameter continuation
     void SetRestart(int step, double time, Teuchos::RCP<Epetra_Vector> disn,
@@ -302,7 +302,7 @@ namespace ADAPTER
         Teuchos::RCP<std::vector<char>> elementdata,
         Teuchos::RCP<std::vector<char>> nodedata) override = 0;
 
-    /// wrapper for things that should be done before PrepareTimeStep is called
+    /// wrapper for things that should be done before prepare_time_step is called
     void PrePredict() override = 0;
 
     /// wrapper for things that should be done before solving the nonlinear iterations
@@ -312,7 +312,7 @@ namespace ADAPTER
     void PreUpdate() override = 0;
 
     /// wrapper for things that should be done after solving the update
-    void PostUpdate() override = 0;
+    void post_update() override = 0;
 
     /// wrapper for things that should be done after the output
     void PostOutput() override = 0;
@@ -399,10 +399,10 @@ namespace ADAPTER
     /// @name Misc
     ///@{
     /// dof map of vector of unknowns
-    Teuchos::RCP<const Epetra_Map> DofRowMap() override = 0;
+    Teuchos::RCP<const Epetra_Map> dof_row_map() override = 0;
 
     /// DOF map of vector of unknowns for multiple dofsets
-    Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) override = 0;
+    Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) override = 0;
 
     /// DOF map view of vector of unknowns
     const Epetra_Map* DofRowMapView() override = 0;
@@ -521,7 +521,7 @@ namespace ADAPTER
      *   and (ii) the NOX group.
      *
      *   \note velocities and accelerations are recalculated inside by invoking
-     *   SetState(x) on the concrete time integrator (e.g. OST, GenAlpha, etc.)
+     *   set_state(x) on the concrete time integrator (e.g. OST, GenAlpha, etc.)
      *   It never makes any sense to call velocities or displacements as WriteAccess
      *   variant from outside, because these vectors should always be consistent with
      *   our primary variable (i.e. the displacements).
@@ -529,7 +529,7 @@ namespace ADAPTER
      *  \author rauch
      *  \date 10/17
      */
-    void SetState(const Teuchos::RCP<Epetra_Vector>& x) override = 0;
+    void set_state(const Teuchos::RCP<Epetra_Vector>& x) override = 0;
 
     ///@}
 
@@ -564,13 +564,13 @@ namespace ADAPTER
     Teuchos::RCP<Structure> StructureField() { return str_wrapper_; }
 
    public:
-    [[nodiscard]] inline const bool& IsInit() const { return isinit_; };
+    [[nodiscard]] inline const bool& is_init() const { return isinit_; };
 
-    [[nodiscard]] inline const bool& IsSetup() const { return issetup_; };
+    [[nodiscard]] inline const bool& is_setup() const { return issetup_; };
 
    protected:
     /// setup structure algorithm of STR::TimInt::Implicit or STR::TimInt::Explicit type
-    void SetupTimInt();
+    void setup_tim_int();
 
     /** \brief Set all model types. This is necessary for the model evaluation.
      *
@@ -617,7 +617,7 @@ namespace ADAPTER
      *  input variables in your concrete class implementation and call it somewhere in your code
      *  (see upper example code).
      *  The constructor is supposed to stay empty. If you need a safety check, you can overload
-     *  the Generic::CheckInit() and Generic::CheckInitSetup() routines, instead.
+     *  the Generic::check_init() and Generic::check_init_setup() routines, instead.
      *
      *  \author hiermeier
      *  \date 09/16 */

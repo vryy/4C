@@ -406,7 +406,7 @@ void MORTAR::Node::initialize_data_container()
   for (int i = 0; i < NumElement(); ++i)
   {
     const int* snodeIds = Elements()[i]->NodeIds();
-    for (int j = 0; j < Elements()[i]->NumNode(); ++j)
+    for (int j = 0; j < Elements()[i]->num_node(); ++j)
     {
       check = sIdCheck.insert(snodeIds[j]);
       if (check.second) dentries_ += Elements()[i]->NumDofPerNode(*(Elements()[i]->Nodes()[j]));

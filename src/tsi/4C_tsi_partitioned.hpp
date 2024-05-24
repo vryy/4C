@@ -74,7 +74,7 @@ namespace TSI
     void TimeLoopFull();
 
     //! read restart data
-    void ReadRestart(int step  //!< step number where the calculation is continued
+    void read_restart(int step  //!< step number where the calculation is continued
         ) override;
 
 
@@ -82,10 +82,10 @@ namespace TSI
     //! @name Time loop building blocks
 
     //! start a new time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     //! calculate stresses, strains, energies
-    void PrepareOutput() override;
+    void prepare_output() override;
 
     //! take current results for converged and save for next time step
     void Update() override;
@@ -109,9 +109,9 @@ namespace TSI
     //@}
 
     //! convergence check for iterative staggered TSI solver
-    bool ConvergenceCheck(int itnum,  //!< index of current iteration
-        int itmax,                    //!< maximal number of iterations
-        double ittol                  //!< iteration tolerance
+    bool convergence_check(int itnum,  //!< index of current iteration
+        int itmax,                     //!< maximal number of iterations
+        double ittol                   //!< iteration tolerance
     );
 
     enum INPAR::TSI::ConvNorm normtypeinc_;  //!< convergence check for residual temperatures

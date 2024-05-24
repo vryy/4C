@@ -62,7 +62,7 @@ namespace CONTACT
 
      */
     LagrangeStrategyTsi(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
-        const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
+        const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
         std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
         Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof);
 
@@ -86,7 +86,7 @@ namespace CONTACT
       \param statetype (in): enumerator defining which quantity to set (see mortar_interface.H for
       an overview) \param vec (in): current global state of the quantity defined by statetype
      */
-    void SetState(const enum MORTAR::StateType& statetype, const Epetra_Vector& vec) override;
+    void set_state(const enum MORTAR::StateType& statetype, const Epetra_Vector& vec) override;
 
     // Overload CONTACT::AbstractStrategy::ApplyForceStiffCmt as this is called in the structure
     // --> to early for monolithically coupled algorithms!

@@ -9429,7 +9429,7 @@ void test_generated_6923()
     hex8_xyze(2, 7) = 0.8;
     nids.push_back(1987);
 
-    intersection.AddElement(6913, nids, hex8_xyze, CORE::FE::CellType::hex8);
+    intersection.add_element(6913, nids, hex8_xyze, CORE::FE::CellType::hex8);
   }
 
   {
@@ -9469,7 +9469,7 @@ void test_generated_6923()
     hex8_xyze(2, 7) = 0.8;
     nids.push_back(1997);
 
-    intersection.AddElement(6922, nids, hex8_xyze, CORE::FE::CellType::hex8);
+    intersection.add_element(6922, nids, hex8_xyze, CORE::FE::CellType::hex8);
   }
 
   {
@@ -9509,7 +9509,7 @@ void test_generated_6923()
     hex8_xyze(2, 7) = 0.8;
     nids.push_back(1998);
 
-    intersection.AddElement(6923, nids, hex8_xyze, CORE::FE::CellType::hex8);
+    intersection.add_element(6923, nids, hex8_xyze, CORE::FE::CellType::hex8);
   }
 
   {
@@ -9549,7 +9549,7 @@ void test_generated_6923()
     hex8_xyze(2, 7) = 0.8;
     nids.push_back(1999);
 
-    intersection.AddElement(6924, nids, hex8_xyze, CORE::FE::CellType::hex8);
+    intersection.add_element(6924, nids, hex8_xyze, CORE::FE::CellType::hex8);
   }
 
   {
@@ -9589,7 +9589,7 @@ void test_generated_6923()
     hex8_xyze(2, 7) = 0.8;
     nids.push_back(2009);
 
-    intersection.AddElement(6933, nids, hex8_xyze, CORE::FE::CellType::hex8);
+    intersection.add_element(6933, nids, hex8_xyze, CORE::FE::CellType::hex8);
   }
 
   {
@@ -9629,7 +9629,7 @@ void test_generated_6923()
     hex8_xyze(2, 7) = 0.85;
     nids.push_back(2119);
 
-    intersection.AddElement(7023, nids, hex8_xyze, CORE::FE::CellType::hex8);
+    intersection.add_element(7023, nids, hex8_xyze, CORE::FE::CellType::hex8);
   }
 
   intersection.CutTest_Cut(

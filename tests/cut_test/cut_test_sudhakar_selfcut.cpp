@@ -203,7 +203,7 @@ void test_sud_sc1()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, CORE::FE::CellType::hex8);
+  intersection.add_element(1, nids, hex8_xyze, CORE::FE::CellType::hex8);
   intersection.CutTest_Cut(true, "Tessellation");
 
   std::vector<double> tessVol, momFitVol, dirDivVol;
@@ -221,7 +221,7 @@ void test_sud_sc1()
        i != other_cells.end(); ++i)
   {
     GEO::CUT::VolumeCell* vc = &**i;
-    vc->moment_fit_gauss_weights(vc->ParentElement(), mesh, true, "Tessellation");
+    vc->moment_fit_gauss_weights(vc->parent_element(), mesh, true, "Tessellation");
     momFitVol.push_back(vc->Volume());
   }
 
@@ -229,7 +229,7 @@ void test_sud_sc1()
        i != other_cells.end(); ++i)
   {
     GEO::CUT::VolumeCell* vc = &**i;
-    vc->direct_divergence_gauss_rule(vc->ParentElement(), mesh, true, "DirectDivergence");
+    vc->direct_divergence_gauss_rule(vc->parent_element(), mesh, true, "DirectDivergence");
     dirDivVol.push_back(vc->Volume());
   }
 

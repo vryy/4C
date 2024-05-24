@@ -34,7 +34,7 @@ namespace CORE::COMM
       ~SizeMarker()
       {
         // set actual object size
-        data_.SetObjectSize(oldsize_);
+        data_.set_object_size(oldsize_);
       }
 
       void Insert()
@@ -99,7 +99,7 @@ namespace CORE::COMM
 
    private:
     /// set size of a ParObject after it has been inserted
-    void SetObjectSize(std::size_t oldsize)
+    void set_object_size(std::size_t oldsize)
     {
       if (not grow_)
       {

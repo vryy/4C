@@ -39,7 +39,8 @@ namespace SCATRA
     void Setup() override;
 
     /// read restart data
-    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
+    void read_restart(
+        const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
     /// redistribute the scatra discretization and vectors according to nodegraph
     void Redistribute(const Teuchos::RCP<Epetra_CrsGraph>& nodegraph);
@@ -52,7 +53,7 @@ namespace SCATRA
 
    protected:
     /// Print information about current time step to screen (reimplementation for OST)
-    void PrintTimeStepInfo() override;
+    void print_time_step_info() override;
 
     /// calculate consistent initial scalar time derivatives in compliance with initial scalar field
     void calc_initial_time_derivative() override;
@@ -72,7 +73,7 @@ namespace SCATRA
     void Update() override;
 
     /// update phi within the reinitialization loop
-    void UpdateReinit() override;
+    void update_reinit() override;
 
    private:
   };  // class LevelSetTimIntOneStepTheta

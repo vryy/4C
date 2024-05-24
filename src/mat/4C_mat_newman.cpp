@@ -131,13 +131,13 @@ double MAT::Newman::compute_transference_number(const double cint) const
 {
   double trans = 0.0;
 
-  if (TransNrCurve() < 0)
-    trans = EvalPreDefinedFunct(TransNrCurve(), cint, TransNrParams());
-  else if (TransNrCurve() == 0)
-    trans = EvalPreDefinedFunct(-1, cint, TransNrParams());
+  if (trans_nr_curve() < 0)
+    trans = EvalPreDefinedFunct(trans_nr_curve(), cint, trans_nr_params());
+  else if (trans_nr_curve() == 0)
+    trans = EvalPreDefinedFunct(-1, cint, trans_nr_params());
   else
     trans = GLOBAL::Problem::Instance()
-                ->FunctionById<CORE::UTILS::FunctionOfTime>(TransNrCurve() - 1)
+                ->FunctionById<CORE::UTILS::FunctionOfTime>(trans_nr_curve() - 1)
                 .Evaluate(cint);
 
   return trans;
@@ -149,13 +149,13 @@ double MAT::Newman::compute_first_deriv_trans(const double cint) const
 {
   double firstderiv = 0.0;
 
-  if (TransNrCurve() < 0)
-    firstderiv = eval_first_deriv_pre_defined_funct(TransNrCurve(), cint, TransNrParams());
-  else if (TransNrCurve() == 0)
-    firstderiv = eval_first_deriv_pre_defined_funct(-1, cint, TransNrParams());
+  if (trans_nr_curve() < 0)
+    firstderiv = eval_first_deriv_pre_defined_funct(trans_nr_curve(), cint, trans_nr_params());
+  else if (trans_nr_curve() == 0)
+    firstderiv = eval_first_deriv_pre_defined_funct(-1, cint, trans_nr_params());
   else
     firstderiv = GLOBAL::Problem::Instance()
-                     ->FunctionById<CORE::UTILS::FunctionOfTime>(TransNrCurve() - 1)
+                     ->FunctionById<CORE::UTILS::FunctionOfTime>(trans_nr_curve() - 1)
                      .EvaluateDerivative(cint);
 
   return firstderiv;
@@ -167,14 +167,14 @@ double MAT::Newman::ComputeThermFac(const double cint) const
 {
   double therm = 0.0;
 
-  if (ThermFacCurve() < 0)
-    therm = EvalPreDefinedFunct(ThermFacCurve(), cint, ThermFacParams());
-  else if (ThermFacCurve() == 0)
+  if (therm_fac_curve() < 0)
+    therm = EvalPreDefinedFunct(therm_fac_curve(), cint, therm_fac_params());
+  else if (therm_fac_curve() == 0)
     // thermodynamic factor has to be one if not defined
     therm = 1.0;
   else
     therm = GLOBAL::Problem::Instance()
-                ->FunctionById<CORE::UTILS::FunctionOfTime>(ThermFacCurve() - 1)
+                ->FunctionById<CORE::UTILS::FunctionOfTime>(therm_fac_curve() - 1)
                 .Evaluate(cint);
 
   return therm;
@@ -186,15 +186,15 @@ double MAT::Newman::compute_first_deriv_therm_fac(const double cint) const
 {
   double firstderiv = 0.0;
 
-  if (ThermFacCurve() < 0)
-    firstderiv = eval_first_deriv_pre_defined_funct(ThermFacCurve(), cint, ThermFacParams());
-  else if (ThermFacCurve() == 0)
+  if (therm_fac_curve() < 0)
+    firstderiv = eval_first_deriv_pre_defined_funct(therm_fac_curve(), cint, therm_fac_params());
+  else if (therm_fac_curve() == 0)
     // thermodynamic factor has to be one if not defined
     // -> first derivative = 0.0
     firstderiv = 0.0;
   else
     firstderiv = GLOBAL::Problem::Instance()
-                     ->FunctionById<CORE::UTILS::FunctionOfTime>(ThermFacCurve() - 1)
+                     ->FunctionById<CORE::UTILS::FunctionOfTime>(therm_fac_curve() - 1)
                      .EvaluateDerivative(cint);
 
   return firstderiv;

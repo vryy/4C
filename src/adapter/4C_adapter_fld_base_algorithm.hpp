@@ -50,7 +50,7 @@ namespace ADAPTER
     virtual ~FluidBaseAlgorithm() = default;
 
     /// access to fluid field solver
-    const Teuchos::RCP<Fluid>& FluidField() { return fluid_; }
+    const Teuchos::RCP<Fluid>& fluid_field() { return fluid_; }
 
     /// set the initial flow field in the fluid
     void SetInitialFlowField(const Teuchos::ParameterList& fdyn);
@@ -66,7 +66,7 @@ namespace ADAPTER
      * information form the FLUID SOLVER and the FLUID PRESSURE SOLVER block for the velocity and
      * pressure dofs.
      */
-    void SetupFluid(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& fdyn,
+    void setup_fluid(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& fdyn,
         const std::string& disname, bool isale, bool init);
 
     /// set the initial turbulent inflow field in the fluid
@@ -75,7 +75,7 @@ namespace ADAPTER
     /// setup second fluid algorithm (overriding some fluid parameters with
     /// values specified in given problem-dependent Turbulent Inflow ParameterList)
     /// separate discretization for inflow generation
-    void SetupInflowFluid(
+    void setup_inflow_fluid(
         const Teuchos::ParameterList& prbdyn, const Teuchos::RCP<DRT::Discretization> discret);
 
     //! set parameters in list required for all schemes
@@ -83,7 +83,7 @@ namespace ADAPTER
         const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& fdyn);
 
     //! create a second solver
-    void CreateSecondSolver(
+    void create_second_solver(
         const Teuchos::RCP<CORE::LINALG::Solver> solver, const Teuchos::ParameterList& fdyn);
 
     /// fluid field solver

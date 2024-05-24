@@ -45,7 +45,7 @@ namespace CORE::LINALG
     \brief Standard Constructor, sets mode-ids and weighttype. kernel and weight
            vector as well as their inner product matrix are allocated, but still
            have to be set. Use GetNonConstKernel() and GetNonConstWeights() to
-           get pointer and set the vectors and call FillComplete() tobe able to
+           get pointer and set the vectors and call fill_complete() tobe able to
            use projector.
     */
     KrylovProjector(const std::vector<int>
@@ -64,7 +64,7 @@ namespace CORE::LINALG
         const Epetra_BlockMap* newmap);
     void SetCW(Teuchos::RCP<Epetra_MultiVector> c0, Teuchos::RCP<Epetra_MultiVector> w0);
     //! compute (w^T c)^(-1) and completes projector for use
-    void FillComplete();
+    void fill_complete();
 
     //! give out projector matrix - build it if not yet built (thus not const)
     CORE::LINALG::SparseMatrix GetP();
@@ -92,12 +92,12 @@ namespace CORE::LINALG
 
    private:
     //! creates actual projector matrix P (or its transpose) for use in direct solver
-    void CreateProjector(Teuchos::RCP<CORE::LINALG::SparseMatrix>& P,
+    void create_projector(Teuchos::RCP<CORE::LINALG::SparseMatrix>& P,
         const Teuchos::RCP<Epetra_MultiVector>& v1, const Teuchos::RCP<Epetra_MultiVector>& v2,
         const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& inv_v1Tv2);
 
     //! applies projector (or its transpose) to vector for iterative solver
-    int ApplyProjector(Epetra_MultiVector& Y, const Teuchos::RCP<Epetra_MultiVector>& v1,
+    int apply_projector(Epetra_MultiVector& Y, const Teuchos::RCP<Epetra_MultiVector>& v1,
         const Teuchos::RCP<Epetra_MultiVector>& v2,
         const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& inv_v1Tv2) const;
 
@@ -206,7 +206,7 @@ namespace CORE::LINALG
     //! flag whether inverse of (w_^T c_) was computed after w_ or c_ have been
     // given out for change with GetNonConstW() or GetNonConstC(). This is not
     // fool proof since w and c can also be changed after having called
-    // FillComplete().
+    // fill_complete().
     bool complete_;
 
     //! dimension of nullspace

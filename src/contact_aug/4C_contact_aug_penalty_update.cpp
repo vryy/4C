@@ -99,7 +99,7 @@ void CONTACT::AUG::PenaltyUpdate::throw_if_not_initialized() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::PenaltyUpdate::SetState(
+void CONTACT::AUG::PenaltyUpdate::set_state(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold, const Epetra_Vector& dir)
 {
   throw_if_not_initialized();
@@ -117,7 +117,7 @@ void CONTACT::AUG::PenaltyUpdate::SetState(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::PenaltyUpdate::PostUpdate()
+void CONTACT::AUG::PenaltyUpdate::post_update()
 {
   PrintUpdate(IO::cout.os(IO::standard));
   Reset();
@@ -245,7 +245,7 @@ void CONTACT::AUG::PenaltyUpdate::Update(const CONTACT::ParamsInterface& cparams
 
   status_ = Execute(cparams);
 
-  PostUpdate();
+  post_update();
 }
 
 /*----------------------------------------------------------------------------*
@@ -348,7 +348,7 @@ void CONTACT::AUG::PenaltyUpdate::PrintUpdate(std::ostream& os) const
      << "Increase Parameter = " << Data().SaData().get_penalty_correction_parameter() << "\n"
      << "Decrease Parameter = " << Data().SaData().get_penalty_decrease_correction_parameter()
      << "\n"
-     << "Status = " << Status2String(status_) << "\n"
+     << "Status = " << status2_string(status_) << "\n"
      << "Ratio (cN_new / cn_old) = " << std::setw(10) << std::setprecision(4) << std::scientific
      << Ratio() << "\n"
      << "New cN = " << std::setw(10) << std::setprecision(4) << std::scientific << cnmax << "\n"
@@ -372,10 +372,10 @@ INPAR::CONTACT::PenaltyUpdate CONTACT::AUG::PenaltyUpdateSufficientLinReduction:
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::PenaltyUpdateSufficientLinReduction::SetState(
+void CONTACT::AUG::PenaltyUpdateSufficientLinReduction::set_state(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold, const Epetra_Vector& dir)
 {
-  PenaltyUpdate::SetState(cparams, xold, dir);
+  PenaltyUpdate::set_state(cparams, xold, dir);
 }
 
 
@@ -392,8 +392,8 @@ enum CONTACT::AUG::PenaltyUpdate::Status CONTACT::AUG::PenaltyUpdateSufficientLi
     return Status::unchanged;
   }
 
-  const double beta_theta = BetaTheta();
-  Ratio() = 1.0 / (1.0 - beta_theta) * (1.0 + state.gn_dgn_ / state.gn_gn_);
+  const double beta_theta_v = beta_theta();
+  Ratio() = 1.0 / (1.0 - beta_theta_v) * (1.0 + state.gn_dgn_ / state.gn_gn_);
 
   if (Ratio() > 1.0) Data().Cn().Scale(Ratio());
 
@@ -407,15 +407,15 @@ CONTACT::AUG::PenaltyUpdateSufficientLinReduction::ExecuteDecrease(
     const CONTACT::ParamsInterface& cparams)
 {
   const State& state = GetState();
-  const double beta_theta_decrease = BetaThetaDecrease();
+  const double beta_theta_decrease_v = beta_theta_decrease();
 
-  if (std::abs(state.gn_gn_) < 1.0e-30 or beta_theta_decrease >= 1.0)
+  if (std::abs(state.gn_gn_) < 1.0e-30 or beta_theta_decrease_v >= 1.0)
   {
     Ratio() = 1.0;
     return Status::unchanged;
   }
 
-  Ratio() = 1.0 / (1.0 - beta_theta_decrease) * (1.0 + state.gn_dgn_ / state.gn_gn_);
+  Ratio() = 1.0 / (1.0 - beta_theta_decrease_v) * (1.0 + state.gn_dgn_ / state.gn_gn_);
 
   if (Ratio() > 0.0 and Ratio() < 1.0)
   {
@@ -428,14 +428,14 @@ CONTACT::AUG::PenaltyUpdateSufficientLinReduction::ExecuteDecrease(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::PenaltyUpdateSufficientLinReduction::BetaTheta() const
+double CONTACT::AUG::PenaltyUpdateSufficientLinReduction::beta_theta() const
 {
   return Data().SaData().get_penalty_correction_parameter();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::PenaltyUpdateSufficientLinReduction::BetaThetaDecrease() const
+double CONTACT::AUG::PenaltyUpdateSufficientLinReduction::beta_theta_decrease() const
 {
   return Data().SaData().get_penalty_decrease_correction_parameter();
 }
@@ -449,10 +449,10 @@ INPAR::CONTACT::PenaltyUpdate CONTACT::AUG::PenaltyUpdateSufficientAngle::Type()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::PenaltyUpdateSufficientAngle::SetState(
+void CONTACT::AUG::PenaltyUpdateSufficientAngle::set_state(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold, const Epetra_Vector& dir)
 {
-  PenaltyUpdate::SetState(cparams, xold, dir);
+  PenaltyUpdate::set_state(cparams, xold, dir);
 
   if (std::abs(GetState().gn_gn_) < 1.0e-30)
   {
@@ -517,7 +517,7 @@ void CONTACT::AUG::PenaltyUpdateSufficientAngle::SetState(
   double cn_old = 0.0;
   Data().CnPtr()->MaxValue(&cn_old);
 
-  const double gamma_phi = BetaAngle();
+  const double gamma_phi = beta_angle();
 
   const double cn_new =
       (cn_old * gamma_phi * dgapn_nrm2 * awgapn_nrm2 + d_ddglm_d - dstr_grad + dgapn_zn) /
@@ -541,7 +541,7 @@ enum CONTACT::AUG::PenaltyUpdate::Status CONTACT::AUG::PenaltyUpdateSufficientAn
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::PenaltyUpdateSufficientAngle::BetaAngle() const
+double CONTACT::AUG::PenaltyUpdateSufficientAngle::beta_angle() const
 {
   return Data().SaData().get_penalty_correction_parameter();
 }

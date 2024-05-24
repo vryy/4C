@@ -202,7 +202,7 @@ namespace MORTAR
     \brief Evaluate search tree to get corresponding master elements for the slave elements
 
     */
-    void EvaluateSearch() final;
+    void evaluate_search() final;
 
     /*!
     \brief Initialize the binary tree
@@ -215,19 +215,19 @@ namespace MORTAR
     \brief clear found search elements
 
     */
-    void InitSearchElements();
+    void init_search_elements();
 
     /*!
     \brief Print full tree
 
     */
-    void PrintTree(Teuchos::RCP<BinaryTreeNode> treenode);
+    void print_tree(Teuchos::RCP<BinaryTreeNode> treenode);
 
     /*!
     \brief Print full tree out of map of treenodes
 
     */
-    void PrintTreeOfMap(std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& treenodesmap);
+    void print_tree_of_map(std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& treenodesmap);
 
     //@}
 
@@ -261,7 +261,7 @@ namespace MORTAR
     \brief Return reference to coupling treenodesmap
 
     */
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& CouplingMap() { return couplingmap_; }
+    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& coupling_map() { return couplingmap_; }
 
     /*!
     \brief Return pointer to sroot-treenode
@@ -282,13 +282,13 @@ namespace MORTAR
     \brief Calculate minimal element length / inflation factor "enlarge"
 
     */
-    void SetEnlarge() final;
+    void set_enlarge() final;
 
     /*!
     \brief Update master and slave tree in a top down way
 
     */
-    void UpdateTreeTopDown()
+    void update_tree_top_down()
     {
       evaluate_update_tree_top_down(sroot_);
       evaluate_update_tree_top_down(mroot_);
@@ -305,7 +305,7 @@ namespace MORTAR
     \brief Updates master and slave tree in a bottom up way
 
     */
-    void UpdateTreeBottomUp()
+    void update_tree_bottom_up()
     {
       evaluate_update_tree_bottom_up(streenodesmap_);
       evaluate_update_tree_bottom_up(mtreenodesmap_);
@@ -327,7 +327,7 @@ namespace MORTAR
     separate approach for large problems!
 
     */
-    void EvaluateSearch(
+    void evaluate_search(
         Teuchos::RCP<BinaryTreeNode> streenode, Teuchos::RCP<BinaryTreeNode> mtreenode);
 
     // don't want = operator and cctor

@@ -93,7 +93,7 @@ namespace STI
         Teuchos::RCP<CORE::LINALG::SparseOperator>& thermoscatra_domain_interface);
 
     //! assemble global system of equations
-    void AssembleMatAndRHS();
+    void assemble_mat_and_rhs();
 
     //! assemble off-diagonal scatra-thermo block of global system matrix
     void assemble_od_block_scatra_thermo();
@@ -102,7 +102,7 @@ namespace STI
     void assemble_od_block_thermo_scatra();
 
     //! build null spaces associated with blocks of global system matrix
-    void BuildNullSpaces() const;
+    void build_null_spaces() const;
 
     //! compute null space information associated with global system matrix if applicable
     void compute_null_space_if_necessary(Teuchos::ParameterList&
@@ -110,16 +110,16 @@ namespace STI
     ) const;
 
     //! global map of degrees of freedom
-    const Teuchos::RCP<const Epetra_Map>& DofRowMap() const;
+    const Teuchos::RCP<const Epetra_Map>& dof_row_map() const;
 
     //! check termination criterion for Newton-Raphson iteration
-    bool ExitNewtonRaphson();
+    bool exit_newton_raphson();
 
     //! finite difference check for global system matrix
-    void FDCheck();
+    void fd_check();
 
     //! prepare time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     //! evaluate time step using Newton-Raphson iteration
     void Solve() override;

@@ -32,7 +32,7 @@ namespace FLD
 
 
     /// read restart from step
-    void ReadRestart(int step) override;
+    void read_restart(int step) override;
 
     /// write output
     void Output() override;

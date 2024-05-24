@@ -83,7 +83,7 @@ void XFEM::XfluidSemiLagrange::compute(
     {
       if (myrank_ == 0)
         IO::cout << "\nXFLUID_SemiLagrange::compute: case FRS1FGINot1_ ..." << IO::flush;
-      reinitializeData();
+      reinitialize_data();
       resetState(TimeIntData::basicStd_, TimeIntData::currSL_);
       resetState(TimeIntData::doneStd_, TimeIntData::currSL_);
       break;
@@ -174,7 +174,7 @@ void XFEM::XfluidSemiLagrange::compute(
             // get dofset w.r.t to old interface position
             bool step_np = false;
             std::vector<int> nds_curr;
-            getNodalDofSet(
+            get_nodal_dof_set(
                 initial_ele, data->initialpoint_, nds_curr, data->last_valid_vc_, step_np);
 
             if (nds_curr.size() == 0) FOUR_C_THROW("no valid nds-vector for initial point found");
@@ -247,7 +247,7 @@ void XFEM::XfluidSemiLagrange::compute(
             // get dofset w.r.t to old interface position
             bool step_np = false;
             std::vector<int> nds_curr;
-            getNodalDofSet(ele, data->startpoint_, nds_curr, data->last_valid_vc_, step_np);
+            get_nodal_dof_set(ele, data->startpoint_, nds_curr, data->last_valid_vc_, step_np);
 
 
             //=========================================================
@@ -300,7 +300,7 @@ void XFEM::XfluidSemiLagrange::compute(
             // call the Newton loop to get the right Lagrangean origin
             // REMARK: if newton loop is converged then return the element,
             //         local coordinates and velocity at lagrangean origin
-            NewtonLoop(ele, &*data, xi, vel, elefound);
+            newton_loop(ele, &*data, xi, vel, elefound);
             //----------------------------------------------------------------------------------------
 
 
@@ -323,7 +323,7 @@ void XFEM::XfluidSemiLagrange::compute(
                 // on
                 if (data->accepted_)
                 {
-                  callBackTracking(ele, &*data, xi, "standard");
+                  call_back_tracking(ele, &*data, xi, "standard");
                 }
                 else  // converged Lagrangean origin, however not accepted
                 {
@@ -350,7 +350,7 @@ void XFEM::XfluidSemiLagrange::compute(
                       // set the new startpoint
                       data->startpoint_ = proj_x;
 
-                      callBackTracking(ele, &*data, xi, "standard");
+                      call_back_tracking(ele, &*data, xi, "standard");
                     }
                     else
                     {
@@ -419,7 +419,7 @@ void XFEM::XfluidSemiLagrange::compute(
     }
 #endif
 
-    exportIterData(procDone);
+    export_iter_data(procDone);
 
     // convergencecheck: procfinished == 1 just if all procs have finished
     if (procDone)
@@ -477,15 +477,15 @@ void XFEM::XfluidSemiLagrange::compute(
 /*------------------------------------------------------------------------------------------------*
  * Main Newton loop of the Semi-Lagrangian Back-Tracking algorithm                   schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XfluidSemiLagrange::NewtonLoop(DRT::Element*& ele,  /// pointer to element
-    TimeIntData* data,                                         /// current data
-    CORE::LINALG::Matrix<3, 1>& xi,                            /// local coordinates of point
-    CORE::LINALG::Matrix<3, 1>& vel,                           /// velocity at current point
-    bool& elefound                                             /// is element found ?
+void XFEM::XfluidSemiLagrange::newton_loop(DRT::Element*& ele,  /// pointer to element
+    TimeIntData* data,                                          /// current data
+    CORE::LINALG::Matrix<3, 1>& xi,                             /// local coordinates of point
+    CORE::LINALG::Matrix<3, 1>& vel,                            /// velocity at current point
+    bool& elefound                                              /// is element found ?
 )
 {
 #ifdef DEBUG_SEMILAGRANGE
-  IO::cout << "\n\t\t -> XFLUID_SemiLagrange::NewtonLoop" << IO::endl;
+  IO::cout << "\n\t\t -> XFLUID_SemiLagrange::newton_loop" << IO::endl;
 #endif
 
   const int nsd = 3;  // 3 dimensions for a 3d fluid element
@@ -513,7 +513,7 @@ void XFEM::XfluidSemiLagrange::NewtonLoop(DRT::Element*& ele,  /// pointer to el
   while (data->counter_ < newton_max_iter_)  // newton loop
   {
 #ifdef DEBUG_SEMILAGRANGE
-    IO::cout << "\n\t\t\t NewtonLoop(" << data->counter_ << "): residuum " << residuum << IO::endl;
+    IO::cout << "\n\t\t\t newton_loop(" << data->counter_ << "): residuum " << residuum << IO::endl;
 #endif
 
     data->counter_ += 1;
@@ -521,7 +521,7 @@ void XFEM::XfluidSemiLagrange::NewtonLoop(DRT::Element*& ele,  /// pointer to el
     //-------------------------------------
     // compute a new Newton iteration
     //-------------------------------------
-    NewtonIter(ele, data, xi, residuum, incr, elefound);
+    newton_iter(ele, data, xi, residuum, incr, elefound);
 
 
     //=========================================================
@@ -553,7 +553,7 @@ void XFEM::XfluidSemiLagrange::NewtonLoop(DRT::Element*& ele,  /// pointer to el
 
       bool step_np = false;  // new timestep or old timestep
       std::vector<int> nds_curr;
-      getNodalDofSet(ele, data->startpoint_, nds_curr, data->last_valid_vc_, step_np);
+      get_nodal_dof_set(ele, data->startpoint_, nds_curr, data->last_valid_vc_, step_np);
 
       //=========================================================
       // how to continue if no side changing comparison possible...
@@ -609,7 +609,7 @@ void XFEM::XfluidSemiLagrange::NewtonLoop(DRT::Element*& ele,  /// pointer to el
 
 #ifdef DEBUG_SEMILAGRANGE
             IO::cout << "\n\t*******************************";
-            IO::cout << "\n\t    NewtonLoop: converged!";
+            IO::cout << "\n\t    newton_loop: converged!";
             IO::cout << "\n\t  LAGRANGEAN ORIGIN ACCEPTED";
             IO::cout << "\n\t*******************************" << IO::endl;
 #endif
@@ -620,7 +620,7 @@ void XFEM::XfluidSemiLagrange::NewtonLoop(DRT::Element*& ele,  /// pointer to el
 
 #ifdef DEBUG_SEMILAGRANGE
             IO::cout << "\n\t*******************************";
-            IO::cout << "\n\t    NewtonLoop: converged!";
+            IO::cout << "\n\t    newton_loop: converged!";
             IO::cout << "\n\t  LAGRANGEAN ORIGIN NOT (!!!) ACCEPTED";
             IO::cout << "\n\t*******************************" << IO::endl;
 #endif
@@ -639,7 +639,7 @@ void XFEM::XfluidSemiLagrange::NewtonLoop(DRT::Element*& ele,  /// pointer to el
 
 #ifdef DEBUG_SEMILAGRANGE
             IO::cout << "\n\t*******************************";
-            IO::cout << "\n\t    NewtonLoop: converged!";
+            IO::cout << "\n\t    newton_loop: converged!";
             IO::cout << "\n\t  LAGRANGEAN ORIGIN ACCEPTED";
             IO::cout << "\n\t*******************************" << IO::endl;
 #endif
@@ -650,7 +650,7 @@ void XFEM::XfluidSemiLagrange::NewtonLoop(DRT::Element*& ele,  /// pointer to el
 
 #ifdef DEBUG_SEMILAGRANGE
             IO::cout << "\n\t*******************************";
-            IO::cout << "\n\t    NewtonLoop: converged!";
+            IO::cout << "\n\t    newton_loop: converged!";
             IO::cout << "\n\t  LAGRANGEAN ORIGIN NOT (!!!) ACCEPTED";
             IO::cout << "\n\t*******************************" << IO::endl;
 #endif
@@ -688,15 +688,15 @@ void XFEM::XfluidSemiLagrange::NewtonLoop(DRT::Element*& ele,  /// pointer to el
 #endif
 
 
-}  // end function NewtonLoop
+}  // end function newton_loop
 
 
 
 /*------------------------------------------------------------------------------------------------*
  * One Newton iteration of the Semi-Lagrangian Back-Tracking algorithm               schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XfluidSemiLagrange::NewtonIter(DRT::Element*& ele,  /// pointer to element to be updated
-    TimeIntData* data,                                         /// current data to be updated
+void XFEM::XfluidSemiLagrange::newton_iter(DRT::Element*& ele,  /// pointer to element to be updated
+    TimeIntData* data,                                          /// current data to be updated
     CORE::LINALG::Matrix<3, 1>& xi,        /// local coordinates w.r.t ele to be updated
     CORE::LINALG::Matrix<3, 1>& residuum,  /// residual for semilagrangean backtracking
     CORE::LINALG::Matrix<3, 1>& incr,  /// computed increment for lagrangean origin to be updated
@@ -748,7 +748,7 @@ void XFEM::XfluidSemiLagrange::NewtonIter(DRT::Element*& ele,  /// pointer to el
 
 
   return;
-}  // end function NewtonIter
+}  // end function newton_iter
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -869,7 +869,7 @@ void XFEM::XfluidSemiLagrange::get_data_for_not_converged_nodes()
       if (elefound)
       {
         bool step_np = false;  // data w.r.t old interface position
-        getNodalDofSet(ele, data->initialpoint_, data->nds_, data->last_valid_vc_, step_np);
+        get_nodal_dof_set(ele, data->initialpoint_, data->nds_, data->last_valid_vc_, step_np);
       }
       else  // possibly slave node looked for element of master node or vice versa
       {
@@ -879,7 +879,7 @@ void XFEM::XfluidSemiLagrange::get_data_for_not_converged_nodes()
       //-------------------------------------------------------------------
       // call the back Tracking computation based on the initial point
       // which is a rough approximation of the lagrangian origin
-      callBackTracking(ele, &*data, xi, static_cast<const char*>("failing"));
+      call_back_tracking(ele, &*data, xi, static_cast<const char*>("failing"));
       //-------------------------------------------------------------------
 
     }  // if(failedSL_)
@@ -978,7 +978,7 @@ void XFEM::XfluidSemiLagrange::new_iteration_nodal_data(
       {
         // the first vc representing the set
         CORE::GEO::CUT::VolumeCell* vc = *((*cellset_it).begin());
-        int peid = vc->ParentElement()->GetParentId();
+        int peid = vc->parent_element()->GetParentId();
 
         if (!discret_->HaveGlobalElement(peid))
           FOUR_C_THROW("element %d for averaging not on proc %d", peid, myrank_);
@@ -1008,7 +1008,7 @@ void XFEM::XfluidSemiLagrange::new_iteration_nodal_data(
 
       // if we are here, then the element is a standard uncut element
       // and it is ensured that it has not been added to eles_avg yet
-      std::vector<int> std_nds(eles[i]->NumNode(), 0);
+      std::vector<int> std_nds(eles[i]->num_node(), 0);
 
       eles_avg.push_back(eles[i]);
       eles_avg_nds.push_back(std_nds);
@@ -1068,14 +1068,14 @@ void XFEM::XfluidSemiLagrange::new_iteration_nodal_data(
 /*------------------------------------------------------------------------------------------------*
  * reinitialize data for new computation                                         winklmaier 11/11 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XfluidSemiLagrange::reinitializeData()
+void XFEM::XfluidSemiLagrange::reinitialize_data()
 {
   FOUR_C_THROW("adapt implementation of this function");
   FOUR_C_THROW("adapt, how to get nds_np?");
 
   //  int nds_np = -1;
   //
-  //  std::cout << "in SemiLagrange::reinitializeData" << std::endl;
+  //  std::cout << "in SemiLagrange::reinitialize_data" << std::endl;
   //  const int nsd = 3; // dimension
   //  CORE::LINALG::Matrix<nsd,1> dummyStartpoint; // dummy startpoint for comparison
   //  for (int i=0;i<nsd;i++) dummyStartpoint(i) = 777.777;
@@ -1162,16 +1162,16 @@ void XFEM::XfluidSemiLagrange::reinitializeData()
   //      FOUR_C_THROW("WARNING! No enriched node on one interface side found!\nThis "
   //          "indicates that the whole area is at one side of the interface!");
   //  } // end loop over nodes
-}  // end function reinitializeData
+}  // end function reinitialize_data
 
 
 /*------------------------------------------------------------------------------------------------*
  * call back-tracking of data at final Lagrangian origin of a point                  schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XfluidSemiLagrange::callBackTracking(DRT::Element*& ele,  /// pointer to element
-    TimeIntData* data,                                               /// data
-    CORE::LINALG::Matrix<3, 1>& xi,                                  /// local coordinates
-    const char* backTrackingType                                     /// type of backTracking
+void XFEM::XfluidSemiLagrange::call_back_tracking(DRT::Element*& ele,  /// pointer to element
+    TimeIntData* data,                                                 /// data
+    CORE::LINALG::Matrix<3, 1>& xi,                                    /// local coordinates
+    const char* backTrackingType                                       /// type of back_tracking
 )
 {
   switch (ele->Shape())
@@ -1179,30 +1179,30 @@ void XFEM::XfluidSemiLagrange::callBackTracking(DRT::Element*& ele,  /// pointer
     case CORE::FE::CellType::hex8:
     {
       const int numnode = CORE::FE::num_nodes<CORE::FE::CellType::hex8>;
-      backTracking<numnode, CORE::FE::CellType::hex8>(ele, data, xi, backTrackingType);
+      back_tracking<numnode, CORE::FE::CellType::hex8>(ele, data, xi, backTrackingType);
     }
     break;
     case CORE::FE::CellType::hex20:
     {
       const int numnode = CORE::FE::num_nodes<CORE::FE::CellType::hex20>;
-      backTracking<numnode, CORE::FE::CellType::hex20>(ele, data, xi, backTrackingType);
+      back_tracking<numnode, CORE::FE::CellType::hex20>(ele, data, xi, backTrackingType);
     }
     break;
     default:
       FOUR_C_THROW("xfem assembly type not yet implemented in time integration");
       break;
   };
-}  // end backTracking
+}  // end back_tracking
 
 
 /*------------------------------------------------------------------------------------------------*
  * back-tracking of data at final Lagrangian origin of a point                       schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 template <const int numnode, CORE::FE::CellType DISTYPE>
-void XFEM::XfluidSemiLagrange::backTracking(DRT::Element*& fittingele,  /// pointer to element
-    TimeIntData* data,                                                  /// data
-    CORE::LINALG::Matrix<3, 1>& xi,                                     /// local coordinates
-    const char* backTrackingType                                        /// type of backTracking
+void XFEM::XfluidSemiLagrange::back_tracking(DRT::Element*& fittingele,  /// pointer to element
+    TimeIntData* data,                                                   /// data
+    CORE::LINALG::Matrix<3, 1>& xi,                                      /// local coordinates
+    const char* backTrackingType                                         /// type of back_tracking
 )
 {
 #ifdef DEBUG_SEMILAGRANGE
@@ -1396,7 +1396,7 @@ void XFEM::XfluidSemiLagrange::backTracking(DRT::Element*& fittingele,  /// poin
       {
         // the first vc representing the set
         CORE::GEO::CUT::VolumeCell* vc = *((*cellset_it).begin());
-        int peid = vc->ParentElement()->GetParentId();
+        int peid = vc->parent_element()->GetParentId();
 
         if (!discret_->HaveGlobalElement(peid))
           FOUR_C_THROW("element %d for averaging not on proc %d", peid, myrank_);
@@ -1426,7 +1426,7 @@ void XFEM::XfluidSemiLagrange::backTracking(DRT::Element*& fittingele,  /// poin
 
       // if we are here, then the element is a standard uncut element
       // and it is ensured that it has not been added to eles_avg yet
-      std::vector<int> std_nds(eles[i]->NumNode(), 0);
+      std::vector<int> std_nds(eles[i]->num_node(), 0);
 
       eles_avg.push_back(eles[i]);
       eles_avg_nds.push_back(std_nds);
@@ -1520,14 +1520,14 @@ void XFEM::XfluidSemiLagrange::backTracking(DRT::Element*& fittingele,  /// poin
 
 
   return;
-}  // end backTracking
+}  // end back_tracking
 
 
 /*------------------------------------------------------------------------------------------------*
  * determine point's dofset in element ele w.r.t old or new interface position       schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XfluidSemiLagrange::getNodalDofSet(DRT::Element* ele,  /// pointer to element
-    CORE::LINALG::Matrix<3, 1>& x,                                /// global coordinates of point
+void XFEM::XfluidSemiLagrange::get_nodal_dof_set(DRT::Element* ele,  /// pointer to element
+    CORE::LINALG::Matrix<3, 1>& x,                                   /// global coordinates of point
     std::vector<int>& nds,  /// determine the points dofset w.r.t old/new interface position
     CORE::GEO::CUT::VolumeCell*& vc,  /// valid fluid volumecell the point x lies in
     bool step_np                      /// computation w.r.t old or new interface position?
@@ -1537,7 +1537,7 @@ void XFEM::XfluidSemiLagrange::getNodalDofSet(DRT::Element* ele,  /// pointer to
 
 
 #ifdef DEBUG_SEMILAGRANGE
-  IO::cout << "\n\t\t\t ... getNodalDofSet";
+  IO::cout << "\n\t\t\t ... get_nodal_dof_set";
 #endif
 
 
@@ -1572,7 +1572,7 @@ void XFEM::XfluidSemiLagrange::getNodalDofSet(DRT::Element* ele,  /// pointer to
 #endif
         nds = cell->NodalDofSet();
 
-        if ((int)nds.size() != ele->NumNode())
+        if ((int)nds.size() != ele->num_node())
           FOUR_C_THROW(
               " size of nds-vector != number of element nodes, why does the vc does not have nodal "
               "dofsets?!");
@@ -1613,7 +1613,7 @@ void XFEM::XfluidSemiLagrange::getNodalDofSet(DRT::Element* ele,  /// pointer to
       }
     }
 
-    if (!inside_structure and (int)(nds.size()) != ele->NumNode())
+    if (!inside_structure and (int)(nds.size()) != ele->num_node())
     {
       CORE::GEO::CUT::plain_volumecell_set cells;
       e->GetVolumeCells(cells);
@@ -1652,7 +1652,7 @@ void XFEM::XfluidSemiLagrange::getNodalDofSet(DRT::Element* ele,  /// pointer to
   }
   else  // standard element, all its nodes have dofset 0
   {
-    int numnode = ele->NumNode();
+    int numnode = ele->num_node();
 
     for (int inode = 0; inode < numnode; inode++)
     {
@@ -1849,7 +1849,7 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
     dataVec[dest].clear();
 
     std::vector<char> dataRecv;
-    sendData(dataSend, dest, source, dataRecv);
+    send_data(dataSend, dest, source, dataRecv);
 
     // pointer to current position of group of cells in global std::string (counts bytes)
     std::vector<char>::size_type posinData = 0;
@@ -1895,7 +1895,7 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
 /*------------------------------------------------------------------------------------------------*
  * export data while Newton loop to neighbour proc                                   schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XfluidSemiLagrange::exportIterData(bool& procDone)
+void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
 {
 #ifdef DEBUG_SEMILAGRANGE
   IO::cout << "\n\t=============================";
@@ -1926,7 +1926,7 @@ void XFEM::XfluidSemiLagrange::exportIterData(bool& procDone)
     CORE::COMM::ParObject::AddtoPack(dataSend, static_cast<int>(procDone));
 
     std::vector<char> dataRecv;
-    sendData(dataSend, dest, source, dataRecv);
+    send_data(dataSend, dest, source, dataRecv);
 
     // pointer to current position of group of cells in global std::string (counts bytes)
     size_t posinData = 0;
@@ -1997,7 +1997,7 @@ void XFEM::XfluidSemiLagrange::exportIterData(bool& procDone)
     clearState(TimeIntData::nextSL_);
 
     std::vector<char> dataRecv;
-    sendData(dataSend, dest, source, dataRecv);
+    send_data(dataSend, dest, source, dataRecv);
 
     // pointer to current position of group of cells in global std::string (counts bytes)
     std::vector<char>::size_type posinData = 0;
@@ -2042,6 +2042,6 @@ void XFEM::XfluidSemiLagrange::exportIterData(bool& procDone)
     // processors wait for each other
     discret_->Comm().Barrier();
   }  // end if procfinished == false
-}  // end exportIterData
+}  // end export_iter_data
 
 FOUR_C_NAMESPACE_CLOSE

@@ -28,47 +28,47 @@ DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::Prov
   {
     case CORE::FE::CellType::quad4:
     {
-      return DefineProblemType<CORE::FE::CellType::quad4>(problem);
+      return define_problem_type<CORE::FE::CellType::quad4>(problem);
     }
     case CORE::FE::CellType::quad8:
     {
-      return DefineProblemType<CORE::FE::CellType::quad8>(problem);
+      return define_problem_type<CORE::FE::CellType::quad8>(problem);
     }
     case CORE::FE::CellType::quad9:
     {
-      return DefineProblemType<CORE::FE::CellType::quad9>(problem);
+      return define_problem_type<CORE::FE::CellType::quad9>(problem);
     }
     case CORE::FE::CellType::tri3:
     {
-      return DefineProblemType<CORE::FE::CellType::tri3>(problem);
+      return define_problem_type<CORE::FE::CellType::tri3>(problem);
     }
     case CORE::FE::CellType::tri6:
     {
-      return DefineProblemType<CORE::FE::CellType::tri6>(problem);
+      return define_problem_type<CORE::FE::CellType::tri6>(problem);
     }
     case CORE::FE::CellType::line2:
     {
-      return DefineProblemType<CORE::FE::CellType::line2>(problem);
+      return define_problem_type<CORE::FE::CellType::line2>(problem);
     }
     case CORE::FE::CellType::line3:
     {
-      return DefineProblemType<CORE::FE::CellType::line3>(problem);
+      return define_problem_type<CORE::FE::CellType::line3>(problem);
     }
     case CORE::FE::CellType::nurbs2:
     {
-      return DefineProblemType<CORE::FE::CellType::nurbs2>(problem);
+      return define_problem_type<CORE::FE::CellType::nurbs2>(problem);
     }
     case CORE::FE::CellType::nurbs3:
     {
-      return DefineProblemType<CORE::FE::CellType::nurbs3>(problem);
+      return define_problem_type<CORE::FE::CellType::nurbs3>(problem);
     }
     case CORE::FE::CellType::nurbs4:
     {
-      return DefineProblemType<CORE::FE::CellType::nurbs4>(problem);
+      return define_problem_type<CORE::FE::CellType::nurbs4>(problem);
     }
     case CORE::FE::CellType::nurbs9:
     {
-      return DefineProblemType<CORE::FE::CellType::nurbs9>(problem);
+      return define_problem_type<CORE::FE::CellType::nurbs9>(problem);
     }
     default:
       FOUR_C_THROW("Element shape %s not activated. Just do it.",
@@ -82,7 +82,7 @@ DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::Prov
  |                                                 (public) rasthofer 11/13 |
  *--------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::DefineProblemType(
+DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::define_problem_type(
     std::string problem)
 {
   if (problem == "std")

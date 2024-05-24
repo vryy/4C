@@ -52,7 +52,7 @@ CONTACT::AUG::DataContainer::DataContainer()
       eval_state_(MORTAR::eval_none),
       ghosting_strategy_(INPAR::MORTAR::ExtendGhosting::redundant_master),
       var_type_(INPAR::CONTACT::var_unknown),
-      fd_check_type_(INPAR::CONTACT::FDCheck::off),
+      fd_check_type_(INPAR::CONTACT::FdCheck::off),
       potentialPtr_(Teuchos::null),
       mat_row_col_transformer_(Teuchos::null),
       BMatrixPtr_(Teuchos::null),
@@ -142,10 +142,10 @@ void CONTACT::AUG::DataContainer::init_sub_data_container(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::Strategy::Strategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
-    const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, const Teuchos::ParameterList& params,
-    const plain_interface_set& interfaces, int dim, const Teuchos::RCP<const Epetra_Comm>& comm,
-    int maxdof)
-    : CONTACT::AbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params, dim, comm, 0.0, maxdof),
+    const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
+    const Teuchos::ParameterList& params, const plain_interface_set& interfaces, int dim,
+    const Teuchos::RCP<const Epetra_Comm>& comm, int maxdof)
+    : CONTACT::AbstractStrategy(data_ptr, dof_row_map, NodeRowMap, params, dim, comm, 0.0, maxdof),
       aug_data_ptr_(Teuchos::rcp_dynamic_cast<CONTACT::AUG::DataContainer>(data_ptr, true)),
       aug_data_(*aug_data_ptr_)
 {
@@ -217,7 +217,7 @@ const CONTACT::AUG::plain_interface_set& CONTACT::AUG::Strategy::Interfaces() co
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Strategy::PostSetup(bool redistributed, bool init)
+void CONTACT::AUG::Strategy::post_setup(bool redistributed, bool init)
 {
   if (init or redistributed)
   {
@@ -348,7 +348,7 @@ void CONTACT::AUG::Strategy::DoReadRestart(IO::DiscretizationReader& reader,
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
 {
   CONTACT::AbstractStrategy::DoReadRestart(reader, dis, cparams_ptr);
-  PostSetup(false, false);
+  post_setup(false, false);
 }
 
 /*----------------------------------------------------------------------------*
@@ -943,7 +943,7 @@ void CONTACT::AUG::Strategy::assemble_contact_stiff()
         Data().InactiveDDMatrix(), Data().Cn(), InactiveScaleFactor());
   }
 
-  // --- START - FillComplete matrices ----------------------------------
+  // --- START - fill_complete matrices ----------------------------------
   // domainmap: columnmap | rangemap: rowmap
   // get inactive slave dofs
   Teuchos::RCP<Epetra_Map> gAugInactiveSlaveDofs =
@@ -964,7 +964,7 @@ void CONTACT::AUG::Strategy::assemble_contact_stiff()
   Data().InactiveLinMatrix().Complete(SlDoFRowMap(true), *gAugInactiveSlaveDofs);
   Data().InactiveDDMatrix().Complete(SlDoFRowMap(true), SlDoFRowMap(true));
 
-  // --- END - FillComplete matrices ------------------------------------
+  // --- END - fill_complete matrices ------------------------------------
 
   return;
 }

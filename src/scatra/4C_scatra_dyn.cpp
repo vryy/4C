@@ -64,8 +64,8 @@ void scatra_dyn(int restart)
 
   // ensure that all dofs are assigned in the right order;
   // this creates dof numbers with fluid dof < scatra dof
-  fluiddis->FillComplete(true, true, true);
-  scatradis->FillComplete(true, true, true);
+  fluiddis->fill_complete(true, true, true);
+  scatradis->fill_complete(true, true, true);
 
   // determine coupling type
   const auto fieldcoupling = CORE::UTILS::IntegralValue<INPAR::SCATRA::FieldCoupling>(
@@ -138,7 +138,7 @@ void scatra_dyn(int restart)
       creator.CopyConditions(*scatradis, *scatradis, conditions_to_copy);
 
       // finalize discretization
-      scatradis->FillComplete(true, false, true);
+      scatradis->fill_complete(true, false, true);
 
       // now we can call Init() on the base algo.
       // time integrator is initialized inside
@@ -156,18 +156,18 @@ void scatra_dyn(int restart)
       }
 
       // assign degrees of freedom and rebuild geometries
-      scatradis->FillComplete(true, false, true);
+      scatradis->fill_complete(true, false, true);
 
       // now we must call Setup()
       scatraonly->Setup();
 
       // read the restart information, set vectors and variables
-      if (restart) scatraonly->ScaTraField()->ReadRestart(restart);
+      if (restart) scatraonly->ScaTraField()->read_restart(restart);
 
       // set initial velocity field
-      // note: The order ReadRestart() before SetVelocityField() is important here!!
+      // note: The order read_restart() before SetVelocityField() is important here!!
       // for time-dependent velocity fields, SetVelocityField() is additionally called in each
-      // PrepareTimeStep()-call
+      // prepare_time_step()-call
       scatraonly->ScaTraField()->SetVelocityField();
 
       // set external force
@@ -239,8 +239,8 @@ void scatra_dyn(int restart)
         creator.CopyConditions(*scatradis, *scatradis, conditions_to_copy);
 
         // build the element and node maps
-        scatradis->FillComplete(false, false, false);
-        fluiddis->FillComplete(false, false, false);
+        scatradis->fill_complete(false, false, false);
+        fluiddis->fill_complete(false, false, false);
 
         // build auxiliary dofsets, i.e. pseudo dofs on each discretization
         const int ndofpernode_scatra = scatradis->NumDof(0, scatradis->lRowNode(0));
@@ -260,13 +260,13 @@ void scatra_dyn(int restart)
         algo->ScaTraField()->set_number_of_dof_set_velocity(1);
 
         // call assign_degrees_of_freedom also for auxiliary dofsets
-        // note: the order of FillComplete() calls determines the gid numbering!
+        // note: the order of fill_complete() calls determines the gid numbering!
         // 1. fluid dofs
         // 2. scatra dofs
         // 3. fluid auxiliary dofs
         // 4. scatra auxiliary dofs
-        fluiddis->FillComplete(true, false, false);
-        scatradis->FillComplete(true, false, false);
+        fluiddis->fill_complete(true, false, false);
+        scatradis->fill_complete(true, false, false);
       }
 
       // init algo (init fluid time integrator and scatra time integrator inside)
@@ -286,8 +286,8 @@ void scatra_dyn(int restart)
 
       // ensure that all dofs are assigned in the right order;
       // this creates dof numbers with fluid dof < scatra dof
-      fluiddis->FillComplete(true, false, true);
-      scatradis->FillComplete(true, false, true);
+      fluiddis->fill_complete(true, false, true);
+      scatradis->fill_complete(true, false, true);
 
       // setup algo
       //(setup fluid time integrator and scatra time integrator inside)
@@ -302,7 +302,7 @@ void scatra_dyn(int restart)
             restart == fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP"))
           algo->ReadInflowRestart(restart);
         else
-          algo->ReadRestart(restart);
+          algo->read_restart(restart);
       }
       else if (CORE::UTILS::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW"))
       {

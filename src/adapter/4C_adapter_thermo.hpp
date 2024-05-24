@@ -80,7 +80,7 @@ namespace ADAPTER
   field. There are different ways to use this adapter.
 
   In all cases you need to tell the thermal algorithm about your time
-  step. Therefore PrepareTimeStep(), Update() and Output() must be called at
+  step. Therefore prepare_time_step(), Update() and Output() must be called at
   the appropriate position in the TSI algorithm.
 
   <h3>Dirichlet-Neumann coupled TSI</h3>
@@ -96,7 +96,7 @@ namespace ADAPTER
   <h3>Monolithic TSI</h3>
 
   Monolithic TSI is based on Evaluate() of elements. This results in a new
-  RHS() and a new SysMat(). Together with the InitialGuess() these form the
+  RHS() and a new SysMat(). Together with the initial_guess() these form the
   building blocks for a block based Newton's method.
 
   \warning Further cleanup is still needed.
@@ -115,7 +115,7 @@ namespace ADAPTER
     //@{
 
     /// initial guess of Newton's method
-    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> initial_guess() = 0;
 
     /// RHS of Newton's method
     virtual Teuchos::RCP<const Epetra_Vector> RHS() = 0;
@@ -132,10 +132,10 @@ namespace ADAPTER
     //@{
 
     /// DOF map of vector of unknowns
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap() = 0;
+    virtual Teuchos::RCP<const Epetra_Map> dof_row_map() = 0;
 
     /// DOF map of vector of unknowns for multiple dofsets
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) = 0;
+    virtual Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) = 0;
 
     /// domain map of system matrix (do we really need this?)
     virtual const Epetra_Map& DomainMap() = 0;
@@ -175,7 +175,7 @@ namespace ADAPTER
     virtual int NumStep() const = 0;
 
     /// Set time step size for the current step
-    virtual void SetDt(double timestepsize) = 0;
+    virtual void set_dt(double timestepsize) = 0;
 
     //! Sets the target time \f$t_{n+1}\f$ of this time step
     virtual void SetTimen(const double time) = 0;
@@ -187,7 +187,7 @@ namespace ADAPTER
     virtual bool NotFinished() const = 0;
 
     /// start new time step
-    virtual void PrepareTimeStep() = 0;
+    virtual void prepare_time_step() = 0;
 
     /// evaluate residual at given temperature increment
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> tempi) = 0;
@@ -208,16 +208,16 @@ namespace ADAPTER
     virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() = 0;
 
     /// prepare output
-    virtual void PrepareOutput() = 0;
+    virtual void prepare_output() = 0;
 
     /// output results
     virtual void Output(bool forced_writerestart = false) = 0;
 
     /// read restart information for given time step
-    virtual void ReadRestart(const int step) = 0;
+    virtual void read_restart(const int step) = 0;
 
     /// reset everything to beginning of time step, for adaptivity
-    virtual void ResetStep() = 0;
+    virtual void reset_step() = 0;
 
     //! store an RCP to the contact strategy constructed in the structural time integration
     virtual void set_nitsche_contact_strategy(
@@ -292,11 +292,11 @@ namespace ADAPTER
 
    private:
     /// setup thermo algorithm
-    void SetupThermo(
+    void setup_thermo(
         const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis);
 
     /// setup thermo algorithm of THR::TimIntImpl type
-    void SetupTimInt(const Teuchos::ParameterList& prbdyn, INPAR::THR::DynamicType timinttype,
+    void setup_tim_int(const Teuchos::ParameterList& prbdyn, INPAR::THR::DynamicType timinttype,
         Teuchos::RCP<DRT::Discretization> actdis);
 
     /// thermal field solver

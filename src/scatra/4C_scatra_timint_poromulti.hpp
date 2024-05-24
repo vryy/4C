@@ -79,7 +79,7 @@ namespace SCATRA
     };
 
     //! write state vectors (phinp and convective velocity) to BINIO
-    void OutputState() override;
+    void output_state() override;
 
     //! problem specific output
     void output_problem_specific() override;

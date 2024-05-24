@@ -153,7 +153,7 @@ namespace PRESTRESS
    * \return true Any prestressing method is active
    * \return false No prestressing method is active
    */
-  static inline bool IsActive(const double currentTime)
+  static inline bool is_active(const double currentTime)
   {
     INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
         GLOBAL::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
@@ -171,7 +171,7 @@ namespace PRESTRESS
    * \return true Any prestressing method is active
    * \return false No prestressing method is active
    */
-  static inline bool IsActive(
+  static inline bool is_active(
       const double currentTime, INPAR::STR::PreStress pstype, const double pstime)
   {
     return pstype != INPAR::STR::PreStress::none && currentTime <= pstime + 1.0e-15;

@@ -122,7 +122,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
   {
     Teuchos::RCP<DRT::Element> ele = elemiter->second;
     Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(
-        ele->Id(), ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), false, isnurbs));
+        ele->Id(), ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), false, isnurbs));
 
     Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
     if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
@@ -136,7 +136,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
       for (eleitergeometry = porocondvec[i]->Geometry().begin();
            eleitergeometry != porocondvec[i]->Geometry().end(); ++eleitergeometry)
       {
-        if (faceele->ParentElement()->Id() == eleitergeometry->second->Id())
+        if (faceele->parent_element()->Id() == eleitergeometry->second->Id())
         {
           if (mastertype_ == 0)
             FOUR_C_THROW(
@@ -157,7 +157,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
       mastertype_ = 0;
     }
 
-    cele->set_parent_master_element(faceele->ParentElement(), faceele->FaceParentNumber());
+    cele->set_parent_master_element(faceele->parent_element(), faceele->FaceParentNumber());
 
     if (isnurbs)
     {
@@ -180,7 +180,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
       cele->NormalFac() = normalfac;
     }
 
-    interface->AddElement(cele);
+    interface->add_element(cele);
   }
 
   // feeding slave elements to the interface
@@ -189,7 +189,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
     Teuchos::RCP<DRT::Element> ele = elemiter->second;
 
     Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(
-        ele->Id(), ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), true, isnurbs));
+        ele->Id(), ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), true, isnurbs));
 
     Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
     if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
@@ -204,7 +204,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
       for (eleitergeometry = porocondvec[i]->Geometry().begin();
            eleitergeometry != porocondvec[i]->Geometry().end(); ++eleitergeometry)
       {
-        if (faceele->ParentElement()->Id() == eleitergeometry->second->Id())
+        if (faceele->parent_element()->Id() == eleitergeometry->second->Id())
         {
           if (slavetype_ == 0)
             FOUR_C_THROW(
@@ -224,7 +224,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
       cele->PhysType() = MORTAR::Element::structure;
       slavetype_ = 0;
     }
-    cele->set_parent_master_element(faceele->ParentElement(), faceele->FaceParentNumber());
+    cele->set_parent_master_element(faceele->parent_element(), faceele->FaceParentNumber());
 
     if (isnurbs)
     {
@@ -247,7 +247,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
       cele->NormalFac() = normalfac;
     }
 
-    interface->AddElement(cele);
+    interface->add_element(cele);
   }
 
   return;
@@ -351,7 +351,7 @@ void ADAPTER::CouplingPoroMortar::CreateStrategy(Teuchos::RCP<DRT::Discretizatio
       Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
   // create contact poro lagrange strategy for mesh tying
   porolagstrategy_ = Teuchos::rcp(
-      new CONTACT::LagrangeStrategyPoro(data_ptr, masterdis->DofRowMap(), masterdis->NodeRowMap(),
+      new CONTACT::LagrangeStrategyPoro(data_ptr, masterdis->dof_row_map(), masterdis->NodeRowMap(),
           input, interfaces, dim, comm_, alphaf, numcoupleddof, poroslave, poromaster));
 
   porolagstrategy_->Setup(false, true);
@@ -370,8 +370,8 @@ void ADAPTER::CouplingPoroMortar::CompleteInterface(
     Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<CONTACT::Interface>& interface)
 {
   // finalize the contact interface construction
-  int maxdof = masterdis->DofRowMap()->MaxAllGID();
-  interface->FillComplete(true, maxdof);
+  int maxdof = masterdis->dof_row_map()->MaxAllGID();
+  interface->fill_complete(true, maxdof);
 
   // interface->create_volume_ghosting(*masterdis);
 
@@ -393,7 +393,7 @@ void ADAPTER::CouplingPoroMortar::CompleteInterface(
   //    interface->Redistribute(1);
   //
   //    // call fill complete again
-  //    interface->FillComplete();
+  //    interface->fill_complete();
   //
   //    // print parallel distribution again
   //    interface->print_parallel_distribution();
@@ -420,14 +420,14 @@ void ADAPTER::CouplingPoroMortar::EvaluatePoroMt(Teuchos::RCP<Epetra_Vector> fve
     Teuchos::RCP<const Epetra_Map> fdofrowmap)
 {
   // safety check
-  CheckSetup();
+  check_setup();
 
   // write interface values into poro contact interface data containers for integration in contact
   // integrator
-  porolagstrategy_->SetState(MORTAR::state_fvelocity, *fvel);
-  porolagstrategy_->SetState(MORTAR::state_svelocity, *svel);
-  porolagstrategy_->SetState(MORTAR::state_fpressure, *fpres);
-  porolagstrategy_->SetState(MORTAR::state_new_displacement, *sdisp);
+  porolagstrategy_->set_state(MORTAR::state_fvelocity, *fvel);
+  porolagstrategy_->set_state(MORTAR::state_svelocity, *svel);
+  porolagstrategy_->set_state(MORTAR::state_fpressure, *fpres);
+  porolagstrategy_->set_state(MORTAR::state_new_displacement, *sdisp);
 
   // store displacements of parent elements for deformation gradient determinant and its
   // linearization
@@ -454,7 +454,7 @@ void ADAPTER::CouplingPoroMortar::EvaluatePoroMt(Teuchos::RCP<Epetra_Vector> fve
 void ADAPTER::CouplingPoroMortar::UpdatePoroMt()
 {
   // safety check
-  CheckSetup();
+  check_setup();
 
   porolagstrategy_->PoroMtUpdate();
   return;
@@ -467,7 +467,7 @@ void ADAPTER::CouplingPoroMortar::recover_fluid_lm_poro_mt(
     Teuchos::RCP<Epetra_Vector> disi, Teuchos::RCP<Epetra_Vector> veli)
 {
   // safety check
-  CheckSetup();
+  check_setup();
 
   porolagstrategy_->RecoverPoroNoPen(disi, veli);
   return;

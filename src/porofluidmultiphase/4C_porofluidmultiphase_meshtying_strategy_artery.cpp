@@ -39,7 +39,7 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
 
   arterydis_ = GLOBAL::Problem::Instance()->GetDis("artery");
 
-  if (!arterydis_->Filled()) arterydis_->FillComplete();
+  if (!arterydis_->Filled()) arterydis_->fill_complete();
 
   INPAR::ARTDYN::TimeIntegrationScheme timintscheme =
       CORE::UTILS::IntegralValue<INPAR::ARTDYN::TimeIntegrationScheme>(artdyn, "DYNAMICTYP");
@@ -113,18 +113,18 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
 /*----------------------------------------------------------------------*
  | prepare time loop                                   kremheller 04/18 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::PrepareTimeLoop()
+void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::prepare_time_loop()
 {
-  artnettimint_->PrepareTimeLoop();
+  artnettimint_->prepare_time_loop();
   return;
 }
 
 /*----------------------------------------------------------------------*
  | setup the variables to do a new time step  (public) kremheller 04/18 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::PrepareTimeStep()
+void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::prepare_time_step()
 {
-  artnettimint_->PrepareTimeStep();
+  artnettimint_->prepare_time_step();
   return;
 }
 
@@ -194,7 +194,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::initialize_linear_solver(
 /*--------------------------------------------------------------------------*
  | solve linear system of equations                        kremheller 04/18 |
  *--------------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::LinearSolve(
+void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::linear_solve(
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat,
     Teuchos::RCP<Epetra_Vector> increment, Teuchos::RCP<Epetra_Vector> residual,
     CORE::LINALG::SolverParams& solver_params)
@@ -205,7 +205,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::LinearSolve(
 
   // standard solver call
   // system is ready to solve since Dirichlet Boundary conditions have been applied in
-  // SetupSystemMatrix or Evaluate
+  // setup_system_matrix or Evaluate
   solver_params.refactor = true;
   solver->Solve(comb_systemmatrix_->EpetraOperator(), comb_increment_, rhs_, solver_params);
 
@@ -223,8 +223,8 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::CalculateNorms(std::vector<do
   incprenorm.resize(2);
   prenorm.resize(2);
 
-  prenorm[0] = UTILS::CalculateVectorNorm(vectornorminc_, porofluidmultitimint_->Phinp());
-  prenorm[1] = UTILS::CalculateVectorNorm(vectornorminc_, artnettimint_->Pressurenp());
+  prenorm[0] = UTILS::calculate_vector_norm(vectornorminc_, porofluidmultitimint_->Phinp());
+  prenorm[1] = UTILS::calculate_vector_norm(vectornorminc_, artnettimint_->Pressurenp());
 
   Teuchos::RCP<const Epetra_Vector> arterypressinc;
   Teuchos::RCP<const Epetra_Vector> porofluidinc;
@@ -232,16 +232,16 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::CalculateNorms(std::vector<do
   arttoporofluidcoupling_->extract_single_field_vectors(
       comb_increment_, porofluidinc, arterypressinc);
 
-  incprenorm[0] = UTILS::CalculateVectorNorm(vectornorminc_, porofluidinc);
-  incprenorm[1] = UTILS::CalculateVectorNorm(vectornorminc_, arterypressinc);
+  incprenorm[0] = UTILS::calculate_vector_norm(vectornorminc_, porofluidinc);
+  incprenorm[1] = UTILS::calculate_vector_norm(vectornorminc_, arterypressinc);
 
   Teuchos::RCP<const Epetra_Vector> arterypressrhs;
   Teuchos::RCP<const Epetra_Vector> porofluidrhs;
 
   arttoporofluidcoupling_->extract_single_field_vectors(rhs_, porofluidrhs, arterypressrhs);
 
-  preresnorm[0] = UTILS::CalculateVectorNorm(vectornormfres_, porofluidrhs);
-  preresnorm[1] = UTILS::CalculateVectorNorm(vectornormfres_, arterypressrhs);
+  preresnorm[0] = UTILS::calculate_vector_norm(vectornormfres_, porofluidrhs);
+  preresnorm[1] = UTILS::calculate_vector_norm(vectornormfres_, arterypressrhs);
 
   return;
 }
@@ -259,9 +259,9 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::CreateFieldTest()
 /*----------------------------------------------------------------------*
  |  read restart data                                  kremheller 04/18 |
  -----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::ReadRestart(const int step)
+void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::read_restart(const int step)
 {
-  artnettimint_->ReadRestart(step);
+  artnettimint_->read_restart(step);
 
   return;
 }
@@ -288,7 +288,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::Evaluate()
   arttoporofluidcoupling_->Evaluate(comb_systemmatrix_, rhs_);
 
   // evaluate artery
-  artnettimint_->AssembleMatAndRHS();
+  artnettimint_->assemble_mat_and_rhs();
   // apply DBC
   artnettimint_->PrepareLinearSolve();
 

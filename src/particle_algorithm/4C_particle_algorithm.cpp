@@ -63,10 +63,10 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Init(
     std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& initialparticles)
 {
   // init particle engine
-  InitParticleEngine();
+  init_particle_engine();
 
   // init particle wall handler
-  InitParticleWall();
+  init_particle_wall();
 
   // init rigid body handler
   init_particle_rigid_body();
@@ -78,10 +78,10 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Init(
   init_particle_interaction();
 
   // init particle gravity handler
-  InitParticleGravity();
+  init_particle_gravity();
 
   // init viscous damping handler
-  InitViscousDamping();
+  init_viscous_damping();
 
   // set initial particles to vector of particles to be distributed
   particlestodistribute_ = initialparticles;
@@ -141,13 +141,13 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Setup()
   if (particleinteraction_) build_potential_neighbor_relation();
 
   // setup initial states
-  if (not isrestarted_) SetupInitialStates();
+  if (not isrestarted_) setup_initial_states();
 
   // write initial output
   if (not isrestarted_) WriteOutput();
 }
 
-void PARTICLEALGORITHM::ParticleAlgorithm::ReadRestart(const int restartstep)
+void PARTICLEALGORITHM::ParticleAlgorithm::read_restart(const int restartstep)
 {
   // clear vector of particles to be distributed
   particlestodistribute_.clear();
@@ -164,16 +164,16 @@ void PARTICLEALGORITHM::ParticleAlgorithm::ReadRestart(const int restartstep)
   double restarttime = reader->ReadDouble("time");
 
   // read restart of particle engine
-  particleengine_->ReadRestart(reader, particlestodistribute_);
+  particleengine_->read_restart(reader, particlestodistribute_);
 
   // read restart of rigid body handler
-  if (particlerigidbody_) particlerigidbody_->ReadRestart(reader);
+  if (particlerigidbody_) particlerigidbody_->read_restart(reader);
 
   // read restart of particle interaction handler
-  if (particleinteraction_) particleinteraction_->ReadRestart(reader);
+  if (particleinteraction_) particleinteraction_->read_restart(reader);
 
   // read restart of wall handler
-  if (particlewall_) particlewall_->ReadRestart(restartstep);
+  if (particlewall_) particlewall_->read_restart(restartstep);
 
   // set time and step after restart
   SetTimeStep(restarttime, restartstep);
@@ -192,7 +192,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Timeloop()
   while (NotFinished())
   {
     // counter and print header
-    PrepareTimeStep();
+    prepare_time_step();
 
     // pre evaluate time step
     PreEvaluateTimeStep();
@@ -211,16 +211,16 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Timeloop()
   }
 }
 
-void PARTICLEALGORITHM::ParticleAlgorithm::PrepareTimeStep(bool print_header)
+void PARTICLEALGORITHM::ParticleAlgorithm::prepare_time_step(bool print_header)
 {
   // increment time and step
   increment_time_and_step();
 
   // set current time
-  SetCurrentTime();
+  set_current_time();
 
   // set current step size
-  SetCurrentStepSize();
+  set_current_step_size();
 
   // print header
   if (print_header) PrintHeader();
@@ -245,10 +245,10 @@ void PARTICLEALGORITHM::ParticleAlgorithm::IntegrateTimeStep()
   particletimint_->pre_interaction_routine();
 
   // update connectivity
-  UpdateConnectivity();
+  update_connectivity();
 
   // evaluate time step
-  EvaluateTimeStep();
+  evaluate_time_step();
 
   // time integration scheme specific post-interaction routine
   particletimint_->post_interaction_routine();
@@ -267,7 +267,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::post_evaluate_time_step()
     if (particlerigidbody_->have_rigid_body_phase_change(particlesfromphasetophase))
     {
       // update connectivity
-      UpdateConnectivity();
+      update_connectivity();
 
       // evaluate rigid body phase change
       particlerigidbody_->evaluate_rigid_body_phase_change(particlesfromphasetophase);
@@ -378,14 +378,14 @@ PARTICLEALGORITHM::ParticleAlgorithm::CreateResultTests()
   return allresulttests;
 }
 
-void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleEngine()
+void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_engine()
 {
   // create and init particle engine
   particleengine_ = std::make_shared<PARTICLEENGINE::ParticleEngine>(Comm(), params_);
   particleengine_->Init();
 }
 
-void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleWall()
+void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_wall()
 {
   // get type of particle wall source
   INPAR::PARTICLE::ParticleWallSource particlewallsource =
@@ -500,7 +500,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_interaction()
   if (particleinteraction_) particleinteraction_->Init();
 }
 
-void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleGravity()
+void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_gravity()
 {
   // init gravity acceleration vector
   std::vector<double> gravity;
@@ -529,7 +529,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleGravity()
   if (particlegravity_) particlegravity_->Init(gravity);
 }
 
-void PARTICLEALGORITHM::ParticleAlgorithm::InitViscousDamping()
+void PARTICLEALGORITHM::ParticleAlgorithm::init_viscous_damping()
 {
   // get viscous damping factor
   const double viscdampfac = params_.get<double>("VISCOUS_DAMPING");
@@ -636,7 +636,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::setup_initial_rigid_bodies()
   particlerigidbody_->DistributeRigidBody();
 }
 
-void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialStates()
+void PARTICLEALGORITHM::ParticleAlgorithm::setup_initial_states()
 {
   // set initial states
   if (particleinteraction_) particleinteraction_->SetInitialStates();
@@ -657,19 +657,19 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialStates()
     PreEvaluateTimeStep();
 
     // update connectivity
-    UpdateConnectivity();
+    update_connectivity();
 
     // evaluate time step
-    EvaluateTimeStep();
+    evaluate_time_step();
 
     // post evaluate time step
     post_evaluate_time_step();
   }
 }
 
-void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
+void PARTICLEALGORITHM::ParticleAlgorithm::update_connectivity()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::ParticleAlgorithm::update_connectivity");
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   // check number of unique global ids
@@ -925,19 +925,19 @@ void PARTICLEALGORITHM::ParticleAlgorithm::set_initial_conditions()
   if (particlerigidbody_) particlerigidbody_->set_initial_conditions();
 }
 
-void PARTICLEALGORITHM::ParticleAlgorithm::SetCurrentTime()
+void PARTICLEALGORITHM::ParticleAlgorithm::set_current_time()
 {
   // set current time in particle time integration
-  particletimint_->SetCurrentTime(Time());
+  particletimint_->set_current_time(Time());
 
   // set current time in particle interaction
-  if (particleinteraction_) particleinteraction_->SetCurrentTime(Time());
+  if (particleinteraction_) particleinteraction_->set_current_time(Time());
 }
 
-void PARTICLEALGORITHM::ParticleAlgorithm::SetCurrentStepSize()
+void PARTICLEALGORITHM::ParticleAlgorithm::set_current_step_size()
 {
   // set current step size in particle interaction
-  if (particleinteraction_) particleinteraction_->SetCurrentStepSize(Dt());
+  if (particleinteraction_) particleinteraction_->set_current_step_size(Dt());
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::set_current_write_result_flag()
@@ -947,7 +947,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::set_current_write_result_flag()
     particleinteraction_->set_current_write_result_flag(writeresultsthisstep_);
 }
 
-void PARTICLEALGORITHM::ParticleAlgorithm::EvaluateTimeStep()
+void PARTICLEALGORITHM::ParticleAlgorithm::evaluate_time_step()
 {
   // clear forces and torques
   if (particlerigidbody_) particlerigidbody_->clear_forces_and_torques();

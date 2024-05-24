@@ -48,11 +48,11 @@ void FLD::TimIntRedModelsBDF2::Init()
 /*----------------------------------------------------------------------*
  |  read restart data                                   rasthofer 12/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedModelsBDF2::ReadRestart(int step)
+void FLD::TimIntRedModelsBDF2::read_restart(int step)
 {
   // call of base classes
-  TimIntBDF2::ReadRestart(step);
-  TimIntRedModels::ReadRestart(step);
+  TimIntBDF2::read_restart(step);
+  TimIntRedModels::read_restart(step);
 
   return;
 }

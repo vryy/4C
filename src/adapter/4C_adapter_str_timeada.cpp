@@ -35,7 +35,7 @@ ADAPTER::StructureTimeAda::StructureTimeAda(Teuchos::RCP<Structure> structure)
     FOUR_C_THROW("cast from ADAPTER::Structure to STR::TIMINT::Base failed");
 
   // call the setup once if stm_ has been setup
-  if (stm_->IsSetup()) SetupTimeAda();
+  if (stm_->is_setup()) setup_time_ada();
 }
 
 /*----------------------------------------------------------------------*/
@@ -71,12 +71,12 @@ void ADAPTER::StructureTimeAda::Setup()
   StructureWrapper::Setup();
 
   // self setup
-  SetupTimeAda();
+  setup_time_ada();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimeAda::SetupTimeAda()
+void ADAPTER::StructureTimeAda::setup_time_ada()
 {
   const Teuchos::ParameterList& sdynparams =
       GLOBAL::Problem::Instance()->structural_dynamic_params();
@@ -125,14 +125,14 @@ void ADAPTER::StructureTimeAda::SetupTimeAda()
   outsizefile_ = Teuchos::null;
 
   // allocate displacement local error vector
-  locerrdisn_ = CORE::LINALG::CreateVector(*(stm_->DofRowMap()), true);
+  locerrdisn_ = CORE::LINALG::CreateVector(*(stm_->dof_row_map()), true);
 
   // enable restart for adaptive timestepping
   const int restart = GLOBAL::Problem::Instance()->Restart();
   if (restart)
   {
     // read restart of marching time-integrator and reset initial time and step for adaptive loop
-    stm_->ReadRestart(restart);
+    stm_->read_restart(restart);
     timeinitial_ = stm_->TimeOld();
     timestepinitial_ = stm_->StepOld();
     IO::DiscretizationReader ioreader(
@@ -151,9 +151,9 @@ void ADAPTER::StructureTimeAda::SetupTimeAda()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimeAda::ReadRestart(int step)
+void ADAPTER::StructureTimeAda::read_restart(int step)
 {
-  SetupTimeAda();
+  setup_time_ada();
   SetupAuxiliar();
 }
 
@@ -193,7 +193,7 @@ int ADAPTER::StructureTimeAda::Integrate()
     {
       // modify step-size #stepsize_ according to output period
       // and store output type on #outstep_
-      SizeForOutput();
+      size_for_output();
 
       // set current step size
       stm_->SetDeltaTime(stepsize_);
@@ -206,7 +206,7 @@ int ADAPTER::StructureTimeAda::Integrate()
 
       // call the predictor
       PrePredict();
-      PrepareTimeStep();
+      prepare_time_step();
 
       // integrate system with marching TIS and
       // stm_->IntegrateStep();
@@ -243,7 +243,7 @@ int ADAPTER::StructureTimeAda::Integrate()
 
         stepsize_ = stpsiznew;
 
-        ResetStep();
+        reset_step();
       }
 
       // increment number of adapted step sizes in a row
@@ -270,7 +270,7 @@ int ADAPTER::StructureTimeAda::Integrate()
     // note: this has to be done before the update since otherwise a potential
     // material history is overwritten
     constexpr bool force_prepare = false;
-    PrepareOutput(force_prepare);
+    prepare_output(force_prepare);
 
     // update displacements, velocities, accelerations
     // after this call we will have disn_==dis_, etc
@@ -280,7 +280,7 @@ int ADAPTER::StructureTimeAda::Integrate()
 
     Update();
 
-    PostUpdate();
+    post_update();
 
     stepsizepre_ = stepsize_;
     stepsize_ = stpsiznew;
@@ -300,10 +300,10 @@ int ADAPTER::StructureTimeAda::Integrate()
     stm_->SetDeltaTime(stepsize_);
     stm_->SetTimeNp(time_ + stepsize_);
 
-    UpdatePeriod();
+    update_period();
     outrest_ = outsys_ = outstr_ = outene_ = false;
 
-    UpdateAuxiliar();
+    update_auxiliar();
 
     // the user reads but rarely listens
     if (myrank == 0)
@@ -322,7 +322,7 @@ int ADAPTER::StructureTimeAda::Integrate()
 
 /*----------------------------------------------------------------------*/
 /*  Modify step size to hit precisely output period */
-void ADAPTER::StructureTimeAda::SizeForOutput()
+void ADAPTER::StructureTimeAda::size_for_output()
 {
   // check output of restart data first
   if ((fabs(time_ + stepsize_) >= fabs(outresttime_)) and (outrestperiod_ != 0.0))
@@ -403,7 +403,7 @@ void ADAPTER::StructureTimeAda::Indicate(bool& accepted, double& stpsiznew)
 {
   // norm of local discretisation error vector
   const int numneglect = stm_->GetDBCMapExtractor()->CondMap()->NumGlobalElements();
-  const double norm = CalculateVectorNorm(errnorm_, locerrdisn_, numneglect);
+  const double norm = calculate_vector_norm(errnorm_, locerrdisn_, numneglect);
 
   // check if acceptable
   accepted = (norm < errtol_);
@@ -416,24 +416,24 @@ void ADAPTER::StructureTimeAda::Indicate(bool& accepted, double& stpsiznew)
               << ", Accept " << std::boolalpha << accepted << std::endl;
   }
 
-  stpsiznew = CalculateDt(norm);
+  stpsiznew = calculate_dt(norm);
 }
 
 /*----------------------------------------------------------------------*/
 /* Prepare repetition of current time step */
-void ADAPTER::StructureTimeAda::ResetStep()
+void ADAPTER::StructureTimeAda::reset_step()
 {
   outrest_ = outsys_ = outstr_ = outene_ = false;
   // set current step size
   stm_->SetDeltaTime(stepsize_);
   stm_->SetTimeNp(time_ + stepsize_);
   // reset the integrator
-  stm_->ResetStep();
+  stm_->reset_step();
 }
 
 /*----------------------------------------------------------------------*/
 /* Indicate error and determine new step size */
-double ADAPTER::StructureTimeAda::CalculateDt(const double norm)
+double ADAPTER::StructureTimeAda::calculate_dt(const double norm)
 {
   // get error order
   if (MethodAdaptDis() == ada_upward)
@@ -489,7 +489,7 @@ double ADAPTER::StructureTimeAda::CalculateDt(const double norm)
 
 /*----------------------------------------------------------------------*/
 /* Calculate vector norm */
-double ADAPTER::StructureTimeAda::CalculateVectorNorm(const enum INPAR::STR::VectorNorm norm,
+double ADAPTER::StructureTimeAda::calculate_vector_norm(const enum INPAR::STR::VectorNorm norm,
     const Teuchos::RCP<Epetra_Vector> vect, const int numneglect)
 {
   // L1 norm
@@ -529,7 +529,7 @@ double ADAPTER::StructureTimeAda::CalculateVectorNorm(const enum INPAR::STR::Vec
 
 /*----------------------------------------------------------------------*/
 /* Update output periods */
-void ADAPTER::StructureTimeAda::UpdatePeriod()
+void ADAPTER::StructureTimeAda::update_period()
 {
   if (outrest_) outresttime_ += outrestperiod_;
   if (outsys_) outsystime_ += outsysperiod_;

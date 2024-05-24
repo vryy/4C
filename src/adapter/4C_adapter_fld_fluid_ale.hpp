@@ -50,10 +50,10 @@ namespace ADAPTER
     FluidAle(const Teuchos::ParameterList& prbdyn, std::string condname);
 
     /// fluid field
-    const Teuchos::RCP<ADAPTER::Fluid>& FluidField() override { return fluid_; }
+    const Teuchos::RCP<ADAPTER::Fluid>& fluid_field() override { return fluid_; }
 
     /// ale field
-    const Teuchos::RCP<ADAPTER::AleFluidWrapper>& AleField() const { return ale_; }
+    const Teuchos::RCP<ADAPTER::AleFluidWrapper>& ale_field() const { return ale_; }
 
     /// discretization
     Teuchos::RCP<DRT::Discretization> Discretization() override;
@@ -65,7 +65,7 @@ namespace ADAPTER
     }
 
     /// Prepare a single time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     /// Update to go from time step \f$t_n\f$ to \f$t_{n+1}\f$
     void Update() override;
@@ -74,7 +74,7 @@ namespace ADAPTER
     void Output() override;
 
     /// Read resatart data
-    double ReadRestart(int step  ///< step number to restart from
+    double read_restart(int step  ///< step number to restart from
         ) override;
 
     void NonlinearSolve(

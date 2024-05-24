@@ -36,7 +36,7 @@ namespace CONTACT
         changed = 1
       };
 
-      static std::string Status2String(enum Status status)
+      static std::string status2_string(enum Status status)
       {
         switch (status)
         {
@@ -71,7 +71,7 @@ namespace CONTACT
 
      private:
       /// get the global update status
-      Status UpdateStatus(const CONTACT::ParamsInterface& cparams) const;
+      Status update_status(const CONTACT::ParamsInterface& cparams) const;
 
       /// @brief set the initial active status
       /** This routine is only executed in the very first step or directly after
@@ -88,27 +88,27 @@ namespace CONTACT
        *  @param(in) istatus  Interface active set status vector
        *
        *  \author hiermeier \date 03/18 */
-      Status UpdateInitialStatus(
+      Status update_initial_status(
           const CONTACT::ParamsInterface& cparams, const std::vector<enum Status>& istatus) const;
 
       /// update related node and dof maps
-      void UpdateMaps(const CONTACT::ParamsInterface& cparams);
+      void update_maps(const CONTACT::ParamsInterface& cparams);
 
       /// Merge the active set status of different contact interfaces
       Status Merge(const std::vector<Status>& istatus) const;
 
       /// Perform a sanity check
-      void SanityCheck(const CONTACT::ParamsInterface& cparams, const enum Status gstatus) const;
+      void sanity_check(const CONTACT::ParamsInterface& cparams, const enum Status gstatus) const;
 
       /// @brief Check if the active set update shall be skipped
       /**
        *  @return TRUE if the active set update shall be skipped.
        *
        *  @author hiermeier @date 03/18 */
-      bool SkipUpdate() const;
+      bool skip_update() const;
 
       /// post update routine
-      void PostUpdate(const CONTACT::ParamsInterface& cparams, const enum Status gstatus);
+      void post_update(const CONTACT::ParamsInterface& cparams, const enum Status gstatus);
 
      private:
       /// reference to the underlying augmented contact strategy

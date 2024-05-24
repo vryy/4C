@@ -71,7 +71,7 @@ class MonWriter
 
   virtual void FieldError(int node) = 0;
 
-  virtual void WriteHeader(std::ofstream& outfile) = 0;
+  virtual void write_header(std::ofstream& outfile) = 0;
 
   virtual void WriteTableHead(std::ofstream& outfile, int dim) = 0;
 
@@ -160,7 +160,7 @@ class FluidMonWriter : public FieldMonWriter
 
   void FieldError(int node) override;
 
-  void WriteHeader(std::ofstream& outfile) override;
+  void write_header(std::ofstream& outfile) override;
 
   void WriteTableHead(std::ofstream& outfile, int dim) override;
 
@@ -188,7 +188,7 @@ class RedAirwayMonWriter : public FieldMonWriter
 
   void FieldError(int node) override;
 
-  void WriteHeader(std::ofstream& outfile) override;
+  void write_header(std::ofstream& outfile) override;
 
   void WriteTableHead(std::ofstream& outfile, int dim) override;
 
@@ -216,7 +216,7 @@ class StructMonWriter : public FieldMonWriter
 
   void FieldError(int node) override;
 
-  void WriteHeader(std::ofstream& outfile) override;
+  void write_header(std::ofstream& outfile) override;
 
   void WriteTableHead(std::ofstream& outfile, int dim) override;
 
@@ -255,7 +255,7 @@ class AleMonWriter : public FieldMonWriter
 
   void FieldError(int node) override;
 
-  void WriteHeader(std::ofstream& outfile) override;
+  void write_header(std::ofstream& outfile) override;
 
   void WriteTableHead(std::ofstream& outfile, int dim) override;
 
@@ -283,7 +283,7 @@ class ScatraMonWriter : public FieldMonWriter
 
   void FieldError(int node) override;
 
-  void WriteHeader(std::ofstream& outfile) override;
+  void write_header(std::ofstream& outfile) override;
 
   void WriteTableHead(std::ofstream& outfile, int dim) override;
 
@@ -313,7 +313,7 @@ class ThermoMonWriter : public FieldMonWriter
 
   void FieldError(int node) override;
 
-  void WriteHeader(std::ofstream& outfile) override;
+  void write_header(std::ofstream& outfile) override;
 
   void WriteTableHead(std::ofstream& outfile, int dim) override;
 
@@ -352,7 +352,7 @@ class FsiFluidMonWriter : public FluidMonWriter
 
   PostField* GetFieldPtr(PostProblem& problem) override;
 
-  void WriteHeader(std::ofstream& outfile) override;
+  void write_header(std::ofstream& outfile) override;
 
   void WriteTableHead(std::ofstream& outfile, int dim) override;
 
@@ -381,7 +381,7 @@ class FsiStructMonWriter : public StructMonWriter
 
   PostField* GetFieldPtr(PostProblem& problem) override;
 
-  void WriteHeader(std::ofstream& outfile) override;
+  void write_header(std::ofstream& outfile) override;
 
   void WriteTableHead(std::ofstream& outfile, int dim) override;
 
@@ -410,7 +410,7 @@ class FsiAleMonWriter : public AleMonWriter
 
   PostField* GetFieldPtr(PostProblem& problem) override;
 
-  void WriteHeader(std::ofstream& outfile) override;
+  void write_header(std::ofstream& outfile) override;
 
  private:
 };  // end of class FsiAleMonWriter
@@ -434,7 +434,7 @@ class TsiStructMonWriter : public StructMonWriter
 
   PostField* GetFieldPtr(PostProblem& problem) override;
 
-  void WriteHeader(std::ofstream& outfile) override;
+  void write_header(std::ofstream& outfile) override;
 
  private:
 };  // end of class TsiStructMonWriter
@@ -457,7 +457,7 @@ class TsiThermoMonWriter : public ThermoMonWriter
 
   PostField* GetFieldPtr(PostProblem& problem) override;
 
-  void WriteHeader(std::ofstream& outfile) override;
+  void write_header(std::ofstream& outfile) override;
 
  private:
 };  // end of class TsiThermoMonWriter
@@ -487,7 +487,7 @@ class PoroFluidMultiMonWriter : public FieldMonWriter
   void FieldError(int node) override;
 
   //! write header into output file
-  void WriteHeader(std::ofstream& outfile) override;
+  void write_header(std::ofstream& outfile) override;
 
   //! write table head into output file
   void WriteTableHead(std::ofstream& outfile, int dim) override;
@@ -524,7 +524,7 @@ class PoroMultiElastScatraFluidMonWriter : public PoroFluidMultiMonWriter
   PostField* GetFieldPtr(PostProblem& problem) override;
 
   //! write header into output file
-  void WriteHeader(std::ofstream& outfile) override;
+  void write_header(std::ofstream& outfile) override;
 
  private:
 };  // end of class PoroMultiElastFluidMonWriter
@@ -550,7 +550,7 @@ class PoroMultiElastScatraScatraMonWriter : public ScatraMonWriter
   PostField* GetFieldPtr(PostProblem& problem) override;
 
   //! write header into output file
-  void WriteHeader(std::ofstream& outfile) override;
+  void write_header(std::ofstream& outfile) override;
 
  private:
 };  // end of class PoroMultiElastScatraScatraMonWriter
@@ -577,7 +577,7 @@ class PoroMultiElastScatraArteryScatraMonWriter : public ScatraMonWriter
   PostField* GetFieldPtr(PostProblem& problem) override;
 
   //! write header into output file
-  void WriteHeader(std::ofstream& outfile) override;
+  void write_header(std::ofstream& outfile) override;
 
  private:
 };  // end of class PoroMultiElastScatraArteryScatraMonWriter

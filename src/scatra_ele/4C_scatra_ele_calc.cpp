@@ -180,9 +180,9 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Evaluate(DRT::Element* ele,
   Sysmat(ele, elemat1_epetra, elevec1_epetra, elevec2_epetra);
 
   // perform finite difference check on element level
-  if (scatrapara_->FDCheck() == INPAR::SCATRA::fdcheck_local and
+  if (scatrapara_->fd_check() == INPAR::SCATRA::fdcheck_local and
       ele->Owner() == discretization.Comm().MyPID())
-    FDCheck(ele, elemat1_epetra, elevec1_epetra, elevec2_epetra);
+    fd_check(ele, elemat1_epetra, elevec1_epetra, elevec2_epetra);
 
   // ---------------------------------------------------------------------
   // output values of Prt, diffeff and Cs_delta_sq_Prt (channel flow only)
@@ -693,7 +693,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Sysmat(DRT::Element* ele,
       CalcMatConv(emat, k, timefacfac, densnp[k], sgconv);
 
       // add conservative contributions
-      if (scatrapara_->IsConservative()) CalcMatConvAddCons(emat, k, timefacfac, vdiv, densnp[k]);
+      if (scatrapara_->IsConservative())
+        calc_mat_conv_add_cons(emat, k, timefacfac, vdiv, densnp[k]);
 
       // calculation of diffusive element matrix
       CalcMatDiff(emat, k, timefacfac);
@@ -770,7 +771,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Sysmat(DRT::Element* ele,
       CalcRHSConv(erhs, k, rhsfac);
 
       // diffusive term
-      CalcRHSDiff(erhs, k, rhsfac);
+      calc_rhs_diff(erhs, k, rhsfac);
 
       //----------------------------------------------------------------
       // stabilization terms
@@ -1359,7 +1360,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatConv(
 /*------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatConvAddCons(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_conv_add_cons(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac, const double vdiv,
     const double densnp)
 {
@@ -1892,7 +1893,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSConv(
 /*-------------------------------------------------------------------- *
  *---------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSDiff(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_rhs_diff(
     CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac)
 {
   const CORE::LINALG::Matrix<nsd_, 1>& gradphi = scatravarmanager_->GradPhi(k);

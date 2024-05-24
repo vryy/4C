@@ -70,14 +70,14 @@ namespace CORE::GEO
       /*!
       \brief Moment fitting matrix is formed for the boundarycell integration
       */
-      void momentFittingMatrix(
+      void moment_fitting_matrix(
           std::vector<std::vector<double>>& mom, std::vector<std::vector<double>> gauspts);
 
       /*!
       \brief The geometry of boundarycell and the location of Gaussian points are written in GMSH
       output file for visualization and for debugging
       */
-      void BcellGaussPointGmsh(const std::vector<std::vector<double>> bcGausspts,
+      void bcell_gauss_point_gmsh(const std::vector<std::vector<double>> bcGausspts,
           const std::vector<std::vector<double>> corners);
     };
   }  // namespace CUT

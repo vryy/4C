@@ -83,7 +83,7 @@ STR::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input pa
       outsizefile_(Teuchos::null)
 {
   // allocate displacement local error vector
-  locerrdisn_ = CORE::LINALG::CreateVector(*(discret_->DofRowMap()), true);
+  locerrdisn_ = CORE::LINALG::CreateVector(*(discret_->dof_row_map()), true);
 
   // check whether energyout_ file handle was attached
   if ((not sti_->AttachedEnergyFile()) and (outeneperiod_ != 0.0) and (myrank_ == 0))
@@ -103,7 +103,7 @@ STR::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input pa
   if (restart)
   {
     // read restart of marching time-integrator and reset initial time and step for adaptive loop
-    tis->ReadRestart(restart);
+    tis->read_restart(restart);
     timeinitial_ = tis->TimeOld();
     timestepinitial_ = tis->StepOld();
 
@@ -149,7 +149,7 @@ int STR::TimAda::Integrate()
     {
       // modify step-size #stepsize_ according to output period
       // and store output type on #outstep_
-      SizeForOutput();
+      size_for_output();
 
       // set current step size
       sti_->dt_->SetStep(0, stepsize_);
@@ -178,7 +178,7 @@ int STR::TimAda::Integrate()
 
         stepsize_ = stpsiznew;
 
-        ResetStep();
+        reset_step();
       }
 
       // increment number of adapted step sizes in a row
@@ -212,7 +212,7 @@ int STR::TimAda::Integrate()
     sti_->PreUpdate();
     sti_->UpdateStepState();
     sti_->UpdateStepElement();
-    sti_->PostUpdate();
+    sti_->post_update();
     OutputPeriod();
     sti_->PostOutput();
     OutputStepSize();
@@ -224,7 +224,7 @@ int STR::TimAda::Integrate()
     time_ += stepsize_;
     UpdateStepSize(stpsiznew);
 
-    UpdatePeriod();
+    update_period();
     outrest_ = outsys_ = outstr_ = outene_ = false;
 
     // the user reads but rarely listens
@@ -267,7 +267,7 @@ void STR::TimAda::Indicate(bool& accepted, double& stpsiznew)
 {
   // norm of local discretisation error vector
   const int numneglect = sti_->GetDBCMapExtractor()->CondMap()->NumGlobalElements();
-  const double norm = STR::CalculateVectorNorm(errnorm_, locerrdisn_, numneglect);
+  const double norm = STR::calculate_vector_norm(errnorm_, locerrdisn_, numneglect);
 
   // check if acceptable
   accepted = (norm < errtol_);
@@ -279,14 +279,14 @@ void STR::TimAda::Indicate(bool& accepted, double& stpsiznew)
               << ", Accept " << std::boolalpha << accepted << std::endl;
   }
 
-  stpsiznew = CalculateDt(norm);
+  stpsiznew = calculate_dt(norm);
 
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /* Indicate error and determine new step size */
-double STR::TimAda::CalculateDt(const double norm)
+double STR::TimAda::calculate_dt(const double norm)
 {
   // get error order
   if (MethodAdaptDis() == ada_upward)
@@ -341,17 +341,17 @@ double STR::TimAda::CalculateDt(const double norm)
 
 /*----------------------------------------------------------------------*/
 /* Prepare repetition of current time step */
-void STR::TimAda::ResetStep()
+void STR::TimAda::reset_step()
 {
   outrest_ = outsys_ = outstr_ = outene_ = false;
-  sti_->ResetStep();
+  sti_->reset_step();
 
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /*  Modify step size to hit precisely output period */
-void STR::TimAda::SizeForOutput()
+void STR::TimAda::size_for_output()
 {
   // check output of restart data first
   if ((fabs(time_ + stepsize_) >= fabs(outresttime_)) and (outrestperiod_ != 0.0))
@@ -393,7 +393,7 @@ void STR::TimAda::SizeForOutput()
 
 /*----------------------------------------------------------------------*/
 /* Prepare output to file(s)                                            */
-void STR::TimAda::PrepareOutputPeriod(bool force_prepare) { sti_->PrepareOutput(force_prepare); }
+void STR::TimAda::PrepareOutputPeriod(bool force_prepare) { sti_->prepare_output(force_prepare); }
 
 /*----------------------------------------------------------------------*/
 /* Output to file(s) */
@@ -408,25 +408,25 @@ void STR::TimAda::OutputPeriod()
   // write restart step
   if (outrest_)
   {
-    sti_->OutputRestart(datawritten);
+    sti_->output_restart(datawritten);
   }
 
   // output results (not necessary if restart in same step)
   if (outsys_ and (not datawritten))
   {
-    sti_->OutputState(datawritten);
+    sti_->output_state(datawritten);
   }
 
   // output stress & strain
   if (outstr_)
   {
-    sti_->OutputStressStrain(datawritten);
+    sti_->output_stress_strain(datawritten);
   }
 
   // output energy
   if (outene_)
   {
-    sti_->OutputEnergy();
+    sti_->output_energy();
   }
 
   return;
@@ -434,7 +434,7 @@ void STR::TimAda::OutputPeriod()
 
 /*----------------------------------------------------------------------*/
 /* Update output periods */
-void STR::TimAda::UpdatePeriod()
+void STR::TimAda::update_period()
 {
   if (outrest_) outresttime_ += outrestperiod_;
   if (outsys_) outsystime_ += outsysperiod_;
@@ -522,7 +522,7 @@ void STR::TimAda::AttachFileStepSize()
 void STR::TimAda::UpdateStepSize(const double dtnew)
 {
   UpdateStepSize();
-  SetDt(dtnew);
+  set_dt(dtnew);
   sti_->UpdateStepTime();
 
   return;
@@ -539,10 +539,10 @@ void STR::TimAda::UpdateStepSize()
 
 /*----------------------------------------------------------------------*/
 /* Set new time step size                                               */
-void STR::TimAda::SetDt(const double dtnew)
+void STR::TimAda::set_dt(const double dtnew)
 {
-  stepsize_ = dtnew;   // in the adaptive time integrator
-  sti_->SetDt(dtnew);  // in the marching time integrator
+  stepsize_ = dtnew;    // in the adaptive time integrator
+  sti_->set_dt(dtnew);  // in the marching time integrator
 }
 
 /*======================================================================*/

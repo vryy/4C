@@ -49,7 +49,7 @@ void IMMERSED::ImmersedBase::create_volume_condition(const Teuchos::RCP<DRT::Dis
   dis->SetCondition(condname, condition);
 
   // fill complete if necessary
-  if (!dis->Filled()) dis->FillComplete(false, false, buildgeometry);
+  if (!dis->Filled()) dis->fill_complete(false, false, buildgeometry);
 
   std::map<int, Teuchos::RCP<DRT::Element>>& geom = dis->GetCondition(condname)->Geometry();
   std::map<int, Teuchos::RCP<DRT::Element>>::iterator it;
@@ -415,7 +415,7 @@ void IMMERSED::ImmersedBase::evaluate_sca_tra_with_internal_communication(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-/// Reduces to standard EvaluateCondition on one proc.
+/// Reduces to standard evaluate_condition on one proc.
 /// Evaluate a specific condition using assemble strategy allowing communication at element level
 /// until every conditioned element is evaluated. Needed especially during interpolation from an
 /// other discretization to the conditioned elements (e.g. in immersed method).
@@ -426,7 +426,7 @@ void IMMERSED::ImmersedBase::evaluate_interpolation_condition(
     CORE::FE::AssembleStrategy& strategy, const std::string& condstring, const int condid)
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (!(evaldis->Filled())) FOUR_C_THROW("FillComplete() was not called");
+  if (!(evaldis->Filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!(evaldis->HaveDofs())) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 #endif
 

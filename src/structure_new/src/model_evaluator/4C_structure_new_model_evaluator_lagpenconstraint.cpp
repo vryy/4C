@@ -44,7 +44,7 @@ STR::MODELEVALUATOR::LagPenConstraint::LagPenConstraint()
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::LagPenConstraint::Setup()
 {
-  CheckInit();
+  check_init();
 
   // build the NOX::NLN::CONSTRAINT::Interface::Required object
   noxinterface_ptr_ = Teuchos::rcp(new LAGPENCONSTRAINT::NoxInterface());
@@ -82,7 +82,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::Setup()
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::LagPenConstraint::Reset(const Epetra_Vector& x)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // update the structural displacement vector
   disnp_ptr_ = GState().GetDisNp();
@@ -93,16 +93,16 @@ void STR::MODELEVALUATOR::LagPenConstraint::Reset(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::LagPenConstraint::EvaluateForce()
+bool STR::MODELEVALUATOR::LagPenConstraint::evaluate_force()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   double time_np = GState().GetTimeNp();
   Teuchos::ParameterList pcon;  // empty parameter list
   Teuchos::RCP<const Epetra_Vector> disn = GState().GetDisN();
 
   // only forces are evaluated!
-  constrman_->EvaluateForceStiff(
+  constrman_->evaluate_force_stiff(
       time_np, disn, disnp_ptr_, fstrconstr_np_ptr_, Teuchos::null, pcon);
 
   return true;
@@ -110,16 +110,17 @@ bool STR::MODELEVALUATOR::LagPenConstraint::EvaluateForce()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::LagPenConstraint::EvaluateStiff()
+bool STR::MODELEVALUATOR::LagPenConstraint::evaluate_stiff()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   double time_np = GState().GetTimeNp();
   Teuchos::ParameterList pcon;  // empty parameter list
   Teuchos::RCP<const Epetra_Vector> disn = GState().GetDisN();
 
   // only stiffnesses are evaluated!
-  constrman_->EvaluateForceStiff(time_np, disn, disnp_ptr_, Teuchos::null, stiff_constr_ptr_, pcon);
+  constrman_->evaluate_force_stiff(
+      time_np, disn, disnp_ptr_, Teuchos::null, stiff_constr_ptr_, pcon);
 
   if (not stiff_constr_ptr_->Filled()) stiff_constr_ptr_->Complete();
 
@@ -128,15 +129,15 @@ bool STR::MODELEVALUATOR::LagPenConstraint::EvaluateStiff()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::LagPenConstraint::EvaluateForceStiff()
+bool STR::MODELEVALUATOR::LagPenConstraint::evaluate_force_stiff()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   double time_np = GState().GetTimeNp();
   Teuchos::ParameterList pcon;  // empty parameter list
   Teuchos::RCP<const Epetra_Vector> disn = GState().GetDisN();
 
-  constrman_->EvaluateForceStiff(
+  constrman_->evaluate_force_stiff(
       time_np, disn, disnp_ptr_, fstrconstr_np_ptr_, stiff_constr_ptr_, pcon);
 
   if (not stiff_constr_ptr_->Filled()) stiff_constr_ptr_->Complete();
@@ -147,7 +148,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::EvaluateForceStiff()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::LagPenConstraint::AssembleForce(
+bool STR::MODELEVALUATOR::LagPenConstraint::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
@@ -179,7 +180,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::AssembleForce(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::LagPenConstraint::AssembleJacobian(
+bool STR::MODELEVALUATOR::LagPenConstraint::assemble_jacobian(
     CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> block_ptr = Teuchos::null;
@@ -224,10 +225,10 @@ void STR::MODELEVALUATOR::LagPenConstraint::WriteRestart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::LagPenConstraint::ReadRestart(IO::DiscretizationReader& ioreader)
+void STR::MODELEVALUATOR::LagPenConstraint::read_restart(IO::DiscretizationReader& ioreader)
 {
   double time_n = GState().GetTimeN();
-  constrman_->ReadRestart(ioreader, time_n);
+  constrman_->read_restart(ioreader, time_n);
 }
 
 /*----------------------------------------------------------------------*
@@ -235,7 +236,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::ReadRestart(IO::DiscretizationReader
 void STR::MODELEVALUATOR::LagPenConstraint::RunPostComputeX(
     const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   Teuchos::RCP<Epetra_Vector> lagmult_incr =
       Teuchos::rcp(new Epetra_Vector(*get_block_dof_row_map_ptr()));
@@ -301,7 +302,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::OutputStepState(
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::LagPenConstraint::ResetStepState()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   FOUR_C_THROW("Not yet implemented");
 }
@@ -311,7 +312,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::ResetStepState()
 const Teuchos::RCP<LAGPENCONSTRAINT::NoxInterface>&
 STR::MODELEVALUATOR::LagPenConstraint::NoxInterfacePtr()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   return noxinterface_ptr_;
 }
@@ -321,7 +322,7 @@ STR::MODELEVALUATOR::LagPenConstraint::NoxInterfacePtr()
 const Teuchos::RCP<LAGPENCONSTRAINT::NoxInterfacePrec>&
 STR::MODELEVALUATOR::LagPenConstraint::NoxInterfacePrecPtr()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   return noxinterface_prec_ptr_;
 }
@@ -332,7 +333,7 @@ STR::MODELEVALUATOR::LagPenConstraint::NoxInterfacePrecPtr()
 Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::LagPenConstraint::get_block_dof_row_map_ptr()
     const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (noxinterface_prec_ptr_->IsSaddlePointSystem())
   {
@@ -340,7 +341,7 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::LagPenConstraint::get_block_
   }
   else
   {
-    return GState().DofRowMap();
+    return GState().dof_row_map();
   }
 }
 
@@ -366,7 +367,7 @@ STR::MODELEVALUATOR::LagPenConstraint::get_last_time_step_solution_ptr() const
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::LagPenConstraint::PostOutput()
 {
-  CheckInitSetup();
+  check_init_setup();
   // empty
 }  // PostOutput()
 

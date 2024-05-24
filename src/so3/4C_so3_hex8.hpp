@@ -353,7 +353,7 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -702,7 +702,7 @@ namespace DRT
         return std::vector<double>(3);
       };
 
-      /// FDCheck constitutive tensor and/or use the approximation as elastic stiffness matrix
+      /// fd_check constitutive tensor and/or use the approximation as elastic stiffness matrix
       void evaluate_finite_difference_material_tangent(
           CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* stiffmatrix,
           const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress,
@@ -718,7 +718,7 @@ namespace DRT
           Teuchos::ParameterList& params);
 
      private:
-      void PackEasData(CORE::COMM::PackBuffer& data) const
+      void pack_eas_data(CORE::COMM::PackBuffer& data) const
       {
         AddtoPack(data, easdata_.alpha);
         AddtoPack(data, easdata_.alpha_backup);
@@ -733,7 +733,7 @@ namespace DRT
         AddtoPack(data, easdata_.Kap);
       };
 
-      void UnpackEasData(std::vector<char>::size_type& position, const std::vector<char>& data)
+      void unpack_eas_data(std::vector<char>::size_type& position, const std::vector<char>& data)
       {
         ExtractfromPack(position, data, easdata_.alpha);
         ExtractfromPack(position, data, easdata_.alpha_backup);
@@ -754,7 +754,7 @@ namespace DRT
        * \date 04/16 */
       void soh8_recover(const std::vector<int>& lm, const std::vector<double>& residual);
 
-      void soh8_computeEASInc(
+      void soh8_compute_eas_inc(
           const std::vector<double>& residual, CORE::LINALG::SerialDenseMatrix* const eas_inc);
 
       /** \brief create a backup of the eas state consisting of enhanced strains and

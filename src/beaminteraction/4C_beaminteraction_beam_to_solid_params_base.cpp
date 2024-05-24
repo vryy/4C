@@ -74,7 +74,7 @@ void BEAMINTERACTION::BeamToSolidParamsBase::SetBaseParams(
  */
 void BEAMINTERACTION::BeamToSolidParamsBase::Setup()
 {
-  CheckInit();
+  check_init();
 
   // Empty for now.
 

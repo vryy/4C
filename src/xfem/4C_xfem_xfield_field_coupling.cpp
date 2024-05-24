@@ -181,43 +181,43 @@ void XFEM::XFieldField::Coupling::SlaveToMaster(const Teuchos::RCP<const Epetra_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::XFieldField::Coupling::BuildDofMaps(const DRT::Discretization& masterdis,
+void XFEM::XFieldField::Coupling::build_dof_maps(const DRT::Discretization& masterdis,
     const DRT::Discretization& slavedis, const Teuchos::RCP<const Epetra_Map>& masternodemap,
     const Teuchos::RCP<const Epetra_Map>& slavenodemap,
     const Teuchos::RCP<const Epetra_Map>& permmasternodemap,
     const Teuchos::RCP<const Epetra_Map>& permslavenodemap, const std::vector<int>& masterdofs,
     const std::vector<int>& slavedofs, const int nds_master, const int nds_slave)
 {
-  SaveNodeMaps(masternodemap, slavenodemap, permmasternodemap, permslavenodemap);
+  save_node_maps(masternodemap, slavenodemap, permmasternodemap, permslavenodemap);
 
   // call base class implementation
   if (masterdofs[0] != -1)
   {
-    CORE::ADAPTER::Coupling::BuildDofMaps(masterdis, slavedis, masternodemap, slavenodemap,
+    CORE::ADAPTER::Coupling::build_dof_maps(masterdis, slavedis, masternodemap, slavenodemap,
         permmasternodemap, permslavenodemap, masterdofs, slavedofs, nds_master, nds_slave);
     return;
   }
 
-  CheckInit();
+  check_init();
   /* This map contains the information how many DoF's per node have to be
    * considered, i.e. the number of DoF's per node of the min-dof discretization.
    * The map-key is the corresponding max-dof discretization nodal coupling GID. */
   std::map<int, unsigned> my_mindofpernode;
-  switch (MinDofDis())
+  switch (min_dof_dis())
   {
     case min_dof_slave:
     {
-      BuildMinDofMaps(slavedis, *slavenodemap, *permslavenodemap, SlDofMapPtr(),
+      build_min_dof_maps(slavedis, *slavenodemap, *permslavenodemap, SlDofMapPtr(),
           PermutedSlDofMapPtr(), SlExporterPtr(), *masternodemap, my_mindofpernode);
-      BuildMaxDofMaps(masterdis, *masternodemap, *permmasternodemap, MaDofMapPtr(),
+      build_max_dof_maps(masterdis, *masternodemap, *permmasternodemap, MaDofMapPtr(),
           PermutedMaDofMapPtr(), MaExporterPtr(), my_mindofpernode);
       break;
     }
     case min_dof_master:
     {
-      BuildMinDofMaps(masterdis, *masternodemap, *permmasternodemap, MaDofMapPtr(),
+      build_min_dof_maps(masterdis, *masternodemap, *permmasternodemap, MaDofMapPtr(),
           PermutedMaDofMapPtr(), MaExporterPtr(), *slavenodemap, my_mindofpernode);
-      BuildMaxDofMaps(slavedis, *slavenodemap, *permslavenodemap, SlDofMapPtr(),
+      build_max_dof_maps(slavedis, *slavenodemap, *permslavenodemap, SlDofMapPtr(),
           PermutedSlDofMapPtr(), SlExporterPtr(), my_mindofpernode);
       break;
     }
@@ -235,7 +235,8 @@ void XFEM::XFieldField::Coupling::BuildDofMaps(const DRT::Discretization& master
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::XFieldField::Coupling::SaveNodeMaps(const Teuchos::RCP<const Epetra_Map>& masternodemap,
+void XFEM::XFieldField::Coupling::save_node_maps(
+    const Teuchos::RCP<const Epetra_Map>& masternodemap,
     const Teuchos::RCP<const Epetra_Map>& slavenodemap,
     const Teuchos::RCP<const Epetra_Map>& permmasternodemap,
     const Teuchos::RCP<const Epetra_Map>& permslavenodemap)
@@ -253,7 +254,7 @@ void XFEM::XFieldField::Coupling::SaveNodeMaps(const Teuchos::RCP<const Epetra_M
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::XFieldField::Coupling::BuildMinDofMaps(const DRT::Discretization& min_dis,
+void XFEM::XFieldField::Coupling::build_min_dof_maps(const DRT::Discretization& min_dis,
     const Epetra_Map& min_nodemap, const Epetra_Map& min_permnodemap,
     Teuchos::RCP<const Epetra_Map>& min_dofmap, Teuchos::RCP<const Epetra_Map>& min_permdofmap,
     Teuchos::RCP<Epetra_Export>& min_exporter, const Epetra_Map& max_nodemap,
@@ -320,7 +321,7 @@ void XFEM::XFieldField::Coupling::BuildMinDofMaps(const DRT::Discretization& min
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::XFieldField::Coupling::BuildMaxDofMaps(const DRT::Discretization& max_dis,
+void XFEM::XFieldField::Coupling::build_max_dof_maps(const DRT::Discretization& max_dis,
     const Epetra_Map& max_nodemap, const Epetra_Map& max_permnodemap,
     Teuchos::RCP<const Epetra_Map>& max_dofmap, Teuchos::RCP<const Epetra_Map>& max_permdofmap,
     Teuchos::RCP<Epetra_Export>& max_exporter,

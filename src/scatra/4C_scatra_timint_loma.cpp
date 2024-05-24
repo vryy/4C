@@ -150,7 +150,7 @@ void SCATRA::ScaTraTimIntLoma::compute_initial_therm_pressure_deriv()
 
   // set scalar vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("phinp", phin_);
+  discret_->set_state("phinp", phin_);
 
   // set parameters for element evaluation
   CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
@@ -188,7 +188,7 @@ void SCATRA::ScaTraTimIntLoma::compute_initial_therm_pressure_deriv()
   condnames.push_back("ScaTraFluxCalc");
   for (unsigned int i = 0; i < condnames.size(); i++)
   {
-    discret_->EvaluateCondition(eleparams, Teuchos::null, Teuchos::null, Teuchos::null,
+    discret_->evaluate_condition(eleparams, Teuchos::null, Teuchos::null, Teuchos::null,
         Teuchos::null, Teuchos::null, condnames[i]);
   }
 
@@ -238,7 +238,7 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialMass()
 
   // set scalar values needed by elements
   discret_->ClearState();
-  discret_->SetState("phinp", phin_);
+  discret_->set_state("phinp", phin_);
   // set action for elements
   Teuchos::ParameterList eleparams;
   CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
@@ -280,7 +280,7 @@ void SCATRA::ScaTraTimIntLoma::compute_therm_pressure_from_mass_cons()
 {
   // set scalar values needed by elements
   discret_->ClearState();
-  discret_->SetState("phinp", phinp_);
+  discret_->set_state("phinp", phinp_);
   // set action for elements
   Teuchos::ParameterList eleparams;
   CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(

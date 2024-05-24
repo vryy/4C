@@ -63,7 +63,7 @@ namespace SCATRA
     void check_and_write_output_and_restart() override;
 
     /// read restart data
-    void ReadRestart(
+    void read_restart(
         const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override = 0;
 
     //! set the velocity field (zero or field by function) (pure level-set problems)
@@ -92,7 +92,7 @@ namespace SCATRA
     // -----------------------------------------------------------------
 
     /// setup the variables to do a new time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     /// solve level-set equation
     void Solve() override;
@@ -126,7 +126,7 @@ namespace SCATRA
 
     /** \brief calculation of nodal velocity field via L2-projection for reinitialization
      *
-     * (helper function for ReinitEq()) */
+     * (helper function for reinit_eq()) */
     virtual void calc_node_based_reinit_vel();
 
     /// execute the elliptic reinitialization procedure
@@ -137,7 +137,7 @@ namespace SCATRA
 
     /** \brief access nodal gradient-based values for reinitialization
      *
-     * (ReinitEq() only; Sussman and Elliptic) */
+     * (reinit_eq() only; Sussman and Elliptic) */
     inline Teuchos::RCP<Epetra_MultiVector>& NodalGradBasedValue() { return nb_grad_val_; }
     inline Teuchos::RCP<const Epetra_MultiVector> NodalGradBasedValue() const
     {
@@ -170,16 +170,16 @@ namespace SCATRA
     /// flag to switch between standard integration and sub-time loop for reinitialization
     bool switchreinit_;
 
-    /// maximal number of pseudo time steps (ReinitEq() only)
+    /// maximal number of pseudo time steps (reinit_eq() only)
     int pseudostepmax_;
 
-    /// pseudo time step counter (ReinitEq() only)
+    /// pseudo time step counter (reinit_eq() only)
     int pseudostep_;
 
-    /// pseudo time step length (ReinitEq() only)
+    /// pseudo time step length (reinit_eq() only)
     double dtau_;
 
-    /// pseudo theata (ReinitEq() only)
+    /// pseudo theata (reinit_eq() only)
     double thetareinit_;
 
    private:
@@ -197,64 +197,64 @@ namespace SCATRA
     // -----------------------------------------------------------------
 
     /// algebraic reinitialization via solution of equation to steady state
-    void ReinitEq();
+    void reinit_eq();
 
     /// set time parameters for reinitialization equation
     void set_reinitialization_element_time_parameters();
 
     /// preparations to solve reinitialization equation within existing framework (helper function
-    /// for ReinitEq())
+    /// for reinit_eq())
     void prepare_time_loop_reinit();
 
-    /// time loop for reinitialization equation (helper function for ReinitEq())
-    void TimeLoopReinit();
+    /// time loop for reinitialization equation (helper function for reinit_eq())
+    void time_loop_reinit();
 
     /// clean necessary modifications to solve reinitialization equation within existing framework
-    /// (helper function for ReinitEq())
+    /// (helper function for reinit_eq())
     void finish_time_loop_reinit();
 
-    /// setup the variables to do a new reinitialization time step (helper function for ReinitEq())
+    /// setup the variables to do a new reinitialization time step (helper function for reinit_eq())
     void prepare_time_step_reinit();
 
-    /// nonlinear solver for reinitialization equation (helper function for ReinitEq())
-    void SolveReinit();
+    /// nonlinear solver for reinitialization equation (helper function for reinit_eq())
+    void solve_reinit();
 
-    /// correction step according to Sussman & Fatemi 1999 (helper function for ReinitEq())
-    void CorrectionReinit();
+    /// correction step according to Sussman & Fatemi 1999 (helper function for reinit_eq())
+    void correction_reinit();
 
     /// convergence check for reinit equation according to Sussman et al. 1994 (helper function for
-    /// ReinitEq())
+    /// reinit_eq())
     bool convergence_check_reinit();
 
     /// update phi within the reinitialization loop
-    virtual void UpdateReinit() = 0;
+    virtual void update_reinit() = 0;
 
     /// geometric reinitialization via computation of distance of node to interface
-    void ReinitGeo(const std::map<int, CORE::GEO::BoundaryIntCells>& interface);
+    void reinit_geo(const std::map<int, CORE::GEO::BoundaryIntCells>& interface);
 
-    /// compute normal vector of interface patch (helper function for ReinitGeo())
+    /// compute normal vector of interface patch (helper function for reinit_geo())
     void compute_normal_vector_to_interface(const CORE::GEO::BoundaryIntCell& patch,
         const CORE::LINALG::SerialDenseMatrix& patchcoord, CORE::LINALG::Matrix<3, 1>& normal);
 
-    /// compute distance to vertex of patch (helper function for ReinitGeo())
+    /// compute distance to vertex of patch (helper function for reinit_geo())
     void compute_distance_to_patch(const CORE::LINALG::Matrix<3, 1>& node,
         const CORE::GEO::BoundaryIntCell& patch, const CORE::LINALG::SerialDenseMatrix& patchcoord,
         double& vertexdist);
 
-    /// compute distance to edge of patch (helper function for ReinitGeo())
+    /// compute distance to edge of patch (helper function for reinit_geo())
     void compute_distance_to_edge(const CORE::LINALG::Matrix<3, 1>& node,
         const CORE::GEO::BoundaryIntCell& patch, const CORE::LINALG::SerialDenseMatrix& patchcoord,
         double& edgedist);
 
     /// find a facing interface patch by projection of node into boundary cell space (helper
-    /// function for ReinitGeo())
+    /// function for reinit_geo())
     void find_facing_patch_proj_cell_space(const CORE::LINALG::Matrix<3, 1>& node,
         const CORE::GEO::BoundaryIntCell& patch, const CORE::LINALG::SerialDenseMatrix& patchcoord,
         const CORE::LINALG::Matrix<3, 1>& normal, bool& facenode, double& patchdist);
 
     /// compares the second entry of a pair<int,double>. To be passed to the sorting algo (helper
-    /// function for ReinitGeo())
-    static bool MyComparePairs(
+    /// function for reinit_geo())
+    static bool my_compare_pairs(
         const std::pair<int, double>& first, const std::pair<int, double>& second)
     {
       if (fabs(first.second) < fabs(second.second))
@@ -263,17 +263,17 @@ namespace SCATRA
         return false;
     };
 
-    /// project node into the boundary cell space (2D) (helper function for ReinitGeo())
+    /// project node into the boundary cell space (2D) (helper function for reinit_geo())
     template <CORE::FE::CellType DISTYPE>
-    bool ProjectNodeOnPatch(const CORE::LINALG::Matrix<3, 1>& node,
+    bool project_node_on_patch(const CORE::LINALG::Matrix<3, 1>& node,
         const CORE::GEO::BoundaryIntCell& patch, const CORE::LINALG::SerialDenseMatrix& patchcoord,
         const CORE::LINALG::Matrix<3, 1>& normal, CORE::LINALG::Matrix<2, 1>& eta, double& alpha);
 
     /// correct the volume of the minus domain after reinitialization
-    void CorrectVolume();
+    void correct_volume();
 
     /// elliptic reinitialization
-    void ReinitElliptic(std::map<int, CORE::GEO::BoundaryIntCells>& interface);
+    void reinit_elliptic(std::map<int, CORE::GEO::BoundaryIntCells>& interface);
 
     // -----------------------------------------------------------------
     // additional post-processing and evaluation methods
@@ -286,7 +286,7 @@ namespace SCATRA
     void mass_conservation_check(const double actvolminus, const bool writetofile = false);
 
     // reconstruction of interface and output of domains
-    void CaptureInterface(
+    void capture_interface(
         std::map<int, CORE::GEO::BoundaryIntCells>& interface, const bool writetofile = false);
 
     // -----------------------------------------------------------------
@@ -299,25 +299,25 @@ namespace SCATRA
     /// initial volume of minus domain
     double initvolminus_;
 
-    /// phinp before reinitialization (ReinitEq() only)
+    /// phinp before reinitialization (reinit_eq() only)
     Teuchos::RCP<Epetra_Vector> initialphireinit_;
 
-    /// nodal gradient-based values for reinitialization (ReinitEq() only; Sussman and Elliptic)
+    /// nodal gradient-based values for reinitialization (reinit_eq() only; Sussman and Elliptic)
     Teuchos::RCP<Epetra_MultiVector> nb_grad_val_;
 
     /// interval for reinitialization (every 'reinitinterval_' time steps)
     int reinitinterval_;
 
-    /// switch for reinitialization only within a band around the interface (ReinitGeo() only)
+    /// switch for reinitialization only within a band around the interface (reinit_geo() only)
     bool reinitband_;
 
     /// band width for reinitialization (maximum level-set value)
     double reinitbandwidth_;
 
-    /// flag to activate corrector step (ReinitEq() only)
+    /// flag to activate corrector step (reinit_eq() only)
     bool reinitcorrector_;
 
-    /// evaluation of velocity field for reinitialization (ReinitEq() only)
+    /// evaluation of velocity field for reinitialization (reinit_eq() only)
     INPAR::SCATRA::VelReinit useprojectedreinitvel_;
 
     /// 2D flag
@@ -327,14 +327,14 @@ namespace SCATRA
     bool projection_;
 
     // TODO:
-    //    /// vector containing denominator of penalty parameter for each element (ReinitEq() only)
+    //    /// vector containing denominator of penalty parameter for each element (reinit_eq() only)
     //    Teuchos::RCP<Epetra_Vector> lambda_ele_denominator_;
     //
-    //    /// vector containing smoothed haevyside function for each dof (ReinitEq() only)
+    //    /// vector containing smoothed haevyside function for each dof (reinit_eq() only)
     //    Teuchos::RCP<Epetra_Vector> node_deriv_smoothfunct_;
 
     /// tolerance for convergence check according to Sussman et al. 1994 (turned off negative)
-    /// (ReinitEq() only)
+    /// (reinit_eq() only)
     double reinit_tol_;
 
     /// flag to correct volume after reinitialization

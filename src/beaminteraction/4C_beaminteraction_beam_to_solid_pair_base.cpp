@@ -40,7 +40,7 @@ BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam,
 template <typename scalar_type, typename segments_scalar_type, typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam, solid>::Setup()
 {
-  CheckInit();
+  check_init();
 
   // Call setup of base class first.
   BeamContactPair::Setup();
@@ -131,7 +131,7 @@ template <typename scalar_type, typename segments_scalar_type, typename beam, ty
 void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam, solid>::Print(
     std::ostream& out) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // Print some general information: Element IDs and dofvecs.
   out << "\n------------------------------------------------------------------------";
@@ -151,7 +151,7 @@ template <typename scalar_type, typename segments_scalar_type, typename beam, ty
 void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam,
     solid>::print_summary_one_line_per_active_segment_pair(std::ostream& out) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // Only display information if a segment exists for this pair.
   if (line_to_3D_segments_.size() == 0) return;

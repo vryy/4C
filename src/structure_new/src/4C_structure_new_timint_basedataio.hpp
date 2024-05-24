@@ -75,47 +75,47 @@ namespace STR
 
      protected:
       /// get the init indicator status
-      virtual const bool& IsInit() const { return isinit_; };
+      virtual const bool& is_init() const { return isinit_; };
 
       /// get the setup indicator status
-      virtual const bool& IsSetup() const { return issetup_; };
+      virtual const bool& is_setup() const { return issetup_; };
 
       /// Check if Init() and Setup() have been called, yet.
-      virtual void CheckInitSetup() const;
+      virtual void check_init_setup() const;
 
      public:
       /// get the binary output writer
       Teuchos::RCP<IO::DiscretizationWriter> GetOutputPtr()
       {
-        CheckInitSetup();
+        check_init_setup();
         return output_;
       };
 
       /// get the binary output writer
       Teuchos::RCP<const IO::DiscretizationWriter> GetOutputPtr() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return output_;
       }
 
       /// get the data container for parameters regarding output at runtime
       Teuchos::RCP<const ParamsRuntimeOutput> get_runtime_output_params() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return params_runtime_vtk_output_;
       };
 
       /// get the data container for parameters regarding output at runtime
       Teuchos::RCP<const ParamsRuntimeVtpOutput> get_runtime_vtp_output_params() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return params_runtime_vtp_output_;
       };
 
       /// get the data container for parameters regarding output at runtime
       Teuchos::RCP<const ParamsMonitorDBC> GetMonitorDBCParams() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return params_monitor_dbc_;
       };
 
@@ -155,7 +155,7 @@ namespace STR
       /// get the output file for energy
       std::ostream& get_energy_output_stream()
       {
-        CheckInitSetup();
+        check_init_setup();
 
         FOUR_C_ASSERT(!energyfile_.is_null(), "energy file stream uninitialized");
 
@@ -165,154 +165,154 @@ namespace STR
       /// Is GMSH output of displacements required?
       const bool& IsGmsh() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return gmsh_out_;
       };
 
       /// Shall we print the logo?
       const bool& IsLogo() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return printlogo_;
       };
 
       /// Shall we print intermediate iterations during solution?
       const bool& is_print_intermediate_iterations() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return printiter_;
       };
 
       /// Shall we write output every iteration?
       const bool& IsOutputEveryIter() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return outputeveryiter_;
       };
 
       /// Shall we write surfactant output?
       const bool& IsSurfactantOutput() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return writesurfactant_;
       };
 
       /// Shall we write the current state?
       const bool& IsWriteState() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return writestate_;
       };
 
       /// Shall we write the velocities and accelerations?
       const bool& IsWriteVelAcc() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return writevelacc_;
       };
 
       /// Shall we write the current element volume?
       bool is_write_current_ele_volume() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return writecurrentelevolume_;
       }
 
       /// Shall we write the jacobian to MATLAB?
       bool is_write_jacobian_to_matlab() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return writejac2matlab_;
       }
 
       /// Shall we compute and write the condition number?
       INPAR::STR::ConditionNumber ConditionNumberType() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return conditionnumbertype_;
       }
 
       /// Is this the first output of the current run?
       const bool& IsFirstOutputOfRun() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return firstoutputofrun_;
       };
 
       /// Print infos to standard out every n step
       const int& get_print2_screen_every_n_step() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return printscreen_;
       };
 
       /// Get the output counter for OutputEveryIter
       const int& get_oei_output_counter() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return outputcounter_;
       };
 
       /// returns the offset added to the current step to shift the steps to be written
       int get_write_timestep_offset() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return writetimestepoffset_;
       }
 
       /// write restart every given step. if 0, restart is not written
       const int& get_write_restart_every_n_step() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return writerestartevery_;
       };
 
       /// write state/stress/strain every given step
       const int& get_write_results_every_n_step() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return writeresultsevery_;
       };
 
       /// write system energy every given step
       const int& get_write_energy_every_n_step() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return writeenergyevery_;
       }
 
       /// get stress output type
       const INPAR::STR::StressType& GetStressOutputType() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return writestress_;
       }
 
       /// get output type of coupling stress
       const INPAR::STR::StressType& get_coupling_stress_output_type() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return writecouplstress_;
       }
 
       /// get strain output type
       const INPAR::STR::StrainType& GetStrainOutputType() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return writestrain_;
       }
 
       /// get plastic strain output type
       const INPAR::STR::StrainType& get_plastic_strain_output_type() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return writeplstrain_;
       };
 
       /// get optional quantity output type
       const INPAR::STR::OptQuantityType& get_opt_quantity_output_type() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return writeoptquantity_;
       }
       ///@}
@@ -320,7 +320,7 @@ namespace STR
       /// set the flag indicator firstoutputofrun_
       void SetFirstOutputOfRun(const bool& firstoutputofrun)
       {
-        CheckInitSetup();
+        check_init_setup();
         firstoutputofrun_ = firstoutputofrun;
       }
 

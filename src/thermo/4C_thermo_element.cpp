@@ -362,13 +362,13 @@ DRT::Element* DRT::ELEMENTS::ThermoBoundary::Clone() const
  *----------------------------------------------------------------------*/
 CORE::FE::CellType DRT::ELEMENTS::ThermoBoundary::Shape() const
 {
-  switch (NumNode())
+  switch (num_node())
   {
     case 2:
       return CORE::FE::CellType::line2;
     case 3:
-      if ((ParentElement()->Shape() == CORE::FE::CellType::quad8) or
-          (ParentElement()->Shape() == CORE::FE::CellType::quad9))
+      if ((parent_element()->Shape() == CORE::FE::CellType::quad8) or
+          (parent_element()->Shape() == CORE::FE::CellType::quad9))
         return CORE::FE::CellType::line3;
       else
         return CORE::FE::CellType::tri3;
@@ -379,20 +379,20 @@ CORE::FE::CellType DRT::ELEMENTS::ThermoBoundary::Shape() const
     case 8:
       return CORE::FE::CellType::quad8;
     case 9:
-      if (ParentElement()->Shape() == CORE::FE::CellType::hex27)
+      if (parent_element()->Shape() == CORE::FE::CellType::hex27)
         return CORE::FE::CellType::quad9;
-      else if (ParentElement()->Shape() == CORE::FE::CellType::nurbs27)
+      else if (parent_element()->Shape() == CORE::FE::CellType::nurbs27)
         return CORE::FE::CellType::nurbs9;
       else
       {
         FOUR_C_THROW(
             "Your parent discretization type is %s. Ccurrently only hex27 and nurbs27 are "
             "implemented.",
-            CORE::FE::CellTypeToString(ParentElement()->Shape()).c_str());
+            CORE::FE::CellTypeToString(parent_element()->Shape()).c_str());
       }
       break;
     default:
-      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", num_node());
   }
 }  // Shape()
 

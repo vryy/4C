@@ -49,7 +49,7 @@ void FS3I::PartFS3I1Wc::Setup()
 /*----------------------------------------------------------------------*/
 void FS3I::PartFS3I1Wc::Timeloop()
 {
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
   // prepare time loop
@@ -67,7 +67,7 @@ void FS3I::PartFS3I1Wc::Timeloop()
 
   // output of initial state
   constexpr bool force_prepare = true;
-  fsi_->PrepareOutput(force_prepare);
+  fsi_->prepare_output(force_prepare);
   fsi_->Output();
   ScatraOutput();
 
@@ -86,10 +86,10 @@ void FS3I::PartFS3I1Wc::Timeloop()
 /*----------------------------------------------------------------------*/
 void FS3I::PartFS3I1Wc::DoFSIStep()
 {
-  fsi_->PrepareTimeStep();
+  fsi_->prepare_time_step();
   fsi_->TimeStep(fsi_);
   constexpr bool force_prepare = false;
-  fsi_->PrepareOutput(force_prepare);
+  fsi_->prepare_output(force_prepare);
   fsi_->Update();
   fsi_->Output();
 }
@@ -114,7 +114,7 @@ void FS3I::PartFS3I1Wc::DoScatraStep()
   bool stopnonliniter = false;
   int itnum = 0;
 
-  PrepareTimeStep();
+  prepare_time_step();
 
   while (stopnonliniter == false)
   {
@@ -130,23 +130,23 @@ void FS3I::PartFS3I1Wc::DoScatraStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I1Wc::PrepareTimeStep()
+void FS3I::PartFS3I1Wc::prepare_time_step()
 {
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
   // set mesh displacement field for present time step
-  SetMeshDisp();
+  set_mesh_disp();
 
   // set velocity fields from fluid and structure solution
   // for present time step
-  SetVelocityFields();
+  set_velocity_fields();
 
   // prepare time step for both fluid- and structure-based scatra field
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField()->PrepareTimeStep();
+    scatra->ScaTraField()->prepare_time_step();
   }
 }
 

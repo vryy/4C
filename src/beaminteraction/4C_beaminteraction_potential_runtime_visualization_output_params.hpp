@@ -82,16 +82,16 @@ namespace BEAMINTERACTION
 
    private:
     //! returns the isinit_ flag
-    inline const bool& IsInit() const { return isinit_; };
+    inline const bool& is_init() const { return isinit_; };
 
     //! returns the issetup_ flag
-    inline const bool& IsSetup() const { return issetup_; };
+    inline const bool& is_setup() const { return issetup_; };
 
     //! asserts the init and setup status
     void throw_error_if_not_init_and_setup() const;
 
     //! asserts the init status
-    void ThrowErrorIfNotInit() const;
+    void throw_error_if_not_init() const;
 
 
    private:

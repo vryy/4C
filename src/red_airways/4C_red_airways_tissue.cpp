@@ -164,11 +164,11 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
 /*----------------------------------------------------------------------*
  |  Read restart                                              roth 10/13|
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayTissue::ReadRestart(const int step)
+void AIRWAY::RedAirwayTissue::read_restart(const int step)
 {
-  structure_->ReadRestart(step);
+  structure_->read_restart(step);
   structure_->InitVol();
-  redairways_->ReadRestart(step);
+  redairways_->read_restart(step);
 
   // Read the coupling variables at restart
   redairways_->GetRestartReader(step)->ReadVector(couppres_im_, "couppres_im");
@@ -191,7 +191,7 @@ void AIRWAY::RedAirwayTissue::Integrate()
   {
     int iter = 0;
     increment_time_and_step();
-    redairways_->PrepareTimeStep();
+    redairways_->prepare_time_step();
 
     do
     {
@@ -339,7 +339,7 @@ void AIRWAY::RedAirwayTissue::RelaxPressure(int iter)
 void AIRWAY::RedAirwayTissue::DoStructureStep()
 {
   structure_->SetPressure(couppres_ip_);
-  structure_->PrepareTimeStep();
+  structure_->prepare_time_step();
   structure_->Solve();
   structure_->CalcFlux(coupflux_ip_, coupvol_ip_, Dt());
 }
@@ -440,7 +440,7 @@ void AIRWAY::RedAirwayTissue::OutputIteration(Teuchos::RCP<Epetra_Vector> pres_i
 void AIRWAY::RedAirwayTissue::UpdateAndOutput()
 {
   constexpr bool force_prepare = false;
-  structure_->PrepareOutput(force_prepare);
+  structure_->prepare_output(force_prepare);
   structure_->Update();
   structure_->Output();
 
@@ -466,7 +466,7 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
   // Set degrees of freedom in the discretization
   if (!actdis->Filled())
   {
-    actdis->FillComplete();
+    actdis->fill_complete();
   }
 
   // Context for output and restart

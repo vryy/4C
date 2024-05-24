@@ -86,17 +86,17 @@ void ssi_drt()
         ssi = Teuchos::rcp(new SSI::SSIPart2WCSolidToScatraRelaxAitken(comm, ssiparams));
         break;
       case INPAR::SSI::SolutionSchemeOverFields::ssi_Monolithic:
-        ssi = Teuchos::rcp(new SSI::SSIMono(comm, ssiparams));
+        ssi = Teuchos::rcp(new SSI::SsiMono(comm, ssiparams));
         break;
       default:
         FOUR_C_THROW("unknown coupling algorithm for SSI!");
         break;
     }
 
-    // 3.1.1 initial FillComplete
-    problem->GetDis("structure")->FillComplete(true, true, true);
-    problem->GetDis("scatra")->FillComplete(true, true, true);
-    if (is_scatra_manifold) problem->GetDis("scatra_manifold")->FillComplete(true, true, true);
+    // 3.1.1 initial fill_complete
+    problem->GetDis("structure")->fill_complete(true, true, true);
+    problem->GetDis("scatra")->fill_complete(true, true, true);
+    if (is_scatra_manifold) problem->GetDis("scatra_manifold")->fill_complete(true, true, true);
 
     // 3.1.2 init the chosen ssi algorithm
     // Construct time integrators of subproblems inside.
@@ -105,9 +105,9 @@ void ssi_drt()
     // now we can finally fill our discretizations
     // reinitialization of the structural elements is
     // vital for parallelization here!
-    problem->GetDis("structure")->FillComplete(true, true, true);
-    problem->GetDis("scatra")->FillComplete(true, false, true);
-    if (is_scatra_manifold) problem->GetDis("scatra_manifold")->FillComplete(true, false, true);
+    problem->GetDis("structure")->fill_complete(true, true, true);
+    problem->GetDis("scatra")->fill_complete(true, false, true);
+    if (is_scatra_manifold) problem->GetDis("scatra_manifold")->fill_complete(true, false, true);
 
     CORE::REBALANCE::UTILS::print_parallel_distribution(*problem->GetDis("structure"));
     CORE::REBALANCE::UTILS::print_parallel_distribution(*problem->GetDis("scatra"));
@@ -120,7 +120,7 @@ void ssi_drt()
     ssi->Setup();
 
     // 3.2- Read restart if needed. (Discretization called inside)
-    if (ssi->IsRestart()) ssi->ReadRestart(problem->Restart());
+    if (ssi->IsRestart()) ssi->read_restart(problem->Restart());
 
     // 3.3 AFTER restart: reset input filename of the problem so that results from other runs can be
     // read

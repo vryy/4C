@@ -85,7 +85,7 @@ namespace FS3I
     bool NotFinished() const { return ((step_ < numstep_) and ((time_ + 1e-14) < timemax_)); };
 
     //! read and set fields needed for restart
-    void ReadRestart() override;
+    void read_restart() override;
 
     /// redistribute the  FPSI interface, if running on parallel. Just needed in the case of FPS3I
     void redistribute_interface() override { return; };
@@ -117,13 +117,13 @@ namespace FS3I
     void ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector>>& vel,
         std::vector<Teuchos::RCP<const Epetra_Vector>>& convel) const;
 
-    void SetVelocityFields() const;
+    void set_velocity_fields() const;
 
     //! routine for preparing time step to be defined in inherited classes
     //! (structure depends on coupling, that is, either one- or two-way)
-    virtual void PrepareTimeStep() = 0;
+    virtual void prepare_time_step() = 0;
 
-    void SetMeshDisp() const;
+    void set_mesh_disp() const;
 
     /// provide wall shear stresses from FS3I subproblem for scatra subproblem
     virtual void set_wall_shear_stresses() const;

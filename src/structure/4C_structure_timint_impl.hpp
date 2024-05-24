@@ -817,11 +817,11 @@ namespace STR
     void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) override = 0;
 
     //! FORMERLY: Return residual displacements \f$\Delta D_{n+1}^{<k>}\f$
-    //! Called from the previous adapters as InitialGuess()
-    Teuchos::RCP<const Epetra_Vector> InitialGuess() override { return disi_; }
+    //! Called from the previous adapters as initial_guess()
+    Teuchos::RCP<const Epetra_Vector> initial_guess() override { return disi_; }
 
     //! Prepare time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     //! Update state incrementally for coupled problems with monolithic approach
     void update_state_incrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override
@@ -850,7 +850,7 @@ namespace STR
       UpdateStepState();
       UpdateStepTime();
       UpdateStepElement();
-      PostUpdate();
+      post_update();
       return;
     }
 
@@ -868,7 +868,7 @@ namespace STR
       stepn_ += 1;
 
       UpdateStepElement();
-      PostUpdate();
+      post_update();
       return;
     }
 
@@ -899,20 +899,20 @@ namespace STR
 
     //! Print to screen information about residual forces and displacements
     //! \author lw (originally) \date 12/07
-    void PrintNewtonIter();
+    void print_newton_iter();
 
-    //! Contains text to PrintNewtonIter
+    //! Contains text to print_newton_iter
     //! \author lw (originally) \date 12/07
-    void PrintNewtonIterText(FILE* ofile  //!< output file handle
+    void print_newton_iter_text(FILE* ofile  //!< output file handle
     );
 
-    //! Contains header to PrintNewtonIter
+    //! Contains header to print_newton_iter
     //! \author lw (originally) \date 12/07
     void print_newton_iter_header(FILE* ofile  //!< output file handle
     );
 
     //! print statistics of converged Newton-Raphson iteration
-    void PrintNewtonConv();
+    void print_newton_conv();
 
     //! print summary after step
     void PrintStep() override;

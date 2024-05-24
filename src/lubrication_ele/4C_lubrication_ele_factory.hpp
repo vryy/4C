@@ -40,7 +40,7 @@ namespace DRT
      private:
       //! define LubricationEle instances dependent on problem
       template <CORE::FE::CellType distype, int probdim>
-      static LubricationEleInterface* DefineProblemType(const std::string& disname);
+      static LubricationEleInterface* define_problem_type(const std::string& disname);
 
 
     };  // end class LubricationFactory

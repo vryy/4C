@@ -105,15 +105,15 @@ namespace BEAMINTERACTION
 
      protected:
       //! Returns true, if Init() has been called
-      inline const bool& IsInit() const { return isinit_; };
+      inline const bool& is_init() const { return isinit_; };
 
       //! Returns true, if Setup() has been called
-      inline const bool& IsSetup() const { return issetup_; };
+      inline const bool& is_setup() const { return issetup_; };
 
       //! Checks, if Init() and Setup() have been called
-      virtual void CheckInitSetup() const;
+      virtual void check_init_setup() const;
 
-      virtual void CheckInit() const;
+      virtual void check_init() const;
 
      public:
       //! Returns the type of the current model evaluator
@@ -123,14 +123,14 @@ namespace BEAMINTERACTION
       virtual void Reset() = 0;
 
       //! \brief Evaluate the current right-hand-side at \f$t_{n+1}\f$
-      virtual bool EvaluateForce() = 0;
+      virtual bool evaluate_force() = 0;
 
       //! \brief Evaluate the current tangential stiffness matrix at \f$t_{n+1}\f$
-      virtual bool EvaluateStiff() = 0;
+      virtual bool evaluate_stiff() = 0;
 
       //! \brief Evaluate the current right-hand-side vector and tangential stiffness matrix at
       //! \f$t_{n+1}\f$
-      virtual bool EvaluateForceStiff() = 0;
+      virtual bool evaluate_force_stiff() = 0;
 
       //! update state
       virtual void UpdateStepState(const double& timefac_n) = 0;
@@ -145,7 +145,7 @@ namespace BEAMINTERACTION
       virtual void post_update_step_element() = 0;
 
       //! get contributions to system energy
-      virtual std::map<STR::EnergyType, double> GetEnergy() const = 0;
+      virtual std::map<STR::EnergyType, double> get_energy() const = 0;
 
       //! write submodel specific output
       virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const = 0;
@@ -163,7 +163,7 @@ namespace BEAMINTERACTION
       /*! \brief read model specific restart information
        *
        *  \param ioreader (in) : input reader*/
-      virtual void ReadRestart(
+      virtual void read_restart(
           IO::DiscretizationReader& ia_writer, IO::DiscretizationReader& bin_writer) = 0;
 
       //! \brief do stuff pre reading of model specific restart information
@@ -197,7 +197,7 @@ namespace BEAMINTERACTION
       virtual bool post_partition_problem() { return false; };
 
       //! \brief do submodel specific stuff after setup
-      virtual void PostSetup() = 0;
+      virtual void post_setup() = 0;
 
       //! @name internal accessors
       //! @{

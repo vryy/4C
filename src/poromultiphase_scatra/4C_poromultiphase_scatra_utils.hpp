@@ -74,7 +74,7 @@ namespace POROMULTIPHASESCATRA
      * @param vect [in]: the vector of interest
      * @return: the norm
      */
-    double CalculateVectorNorm(const enum INPAR::POROMULTIPHASESCATRA::VectorNorm norm,
+    double calculate_vector_norm(const enum INPAR::POROMULTIPHASESCATRA::VectorNorm norm,
         const Teuchos::RCP<const Epetra_Vector> vect);
 
     /**

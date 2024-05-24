@@ -129,7 +129,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
   int bodyforcefuncnum = fluidparams.get<int>("BODYFORCEFUNCNO");
   if (bodyforcefuncnum > 0) local_solver_->ComputeBodyForce(interiorebodyforce_, bodyforcefuncnum);
 
-  ReadGlobalVectors(*ele, discretization, lm, updateLocally);
+  read_global_vectors(*ele, discretization, lm, updateLocally);
 
   // solves the local problem of the nonlinear iteration before
   if (updateLocally)
@@ -178,7 +178,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::ReadGlobalVectors(const DRT::Element& ele,
+void DRT::ELEMENTS::FluidEleCalcHDG<distype>::read_global_vectors(const DRT::Element& ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, const bool updateLocally)
 {
   // read the HDG solution vector (for traces)
@@ -267,7 +267,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateService(DRT::ELEMENTS::Flui
     case FLD::calc_fluid_error:
     {
       // compute error for a known analytical solution
-      return ComputeError(ele, params, mat, discretization, lm, elevec1);
+      return compute_error(ele, params, mat, discretization, lm, elevec1);
     }
     break;
     case FLD::interpolate_hdg_to_node:
@@ -311,7 +311,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateService(DRT::ELEMENTS::Flui
 
 
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ComputeError(DRT::ELEMENTS::Fluid* ele,
+int DRT::ELEMENTS::FluidEleCalcHDG<distype>::compute_error(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec)
@@ -439,7 +439,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
       for (unsigned int d = 0; d < nsd_; ++d) xyz(d) = shapes_->xyzreal(d, q);
       // Declaring vectors for velocity and grad(u) as well as the pressure scalar value
       CORE::LINALG::Matrix<nsd_, 1> u(false);
-      CORE::LINALG::Matrix<nsd_, nsd_> grad(true);  // is not necessarily set in EvaluateAll
+      CORE::LINALG::Matrix<nsd_, nsd_> grad(true);  // is not necessarily set in evaluate_all
       double p;
 
       FOUR_C_ASSERT(initfield != nullptr && startfunc != nullptr,
@@ -447,7 +447,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
 
       // This function returns the values of velocity, gradient and pressure from the given
       // initial field that can be a know field or a user-defined one
-      EvaluateAll(*startfunc, INPAR::FLUID::InitialField(*initfield), xyz, u, grad, p);
+      evaluate_all(*startfunc, INPAR::FLUID::InitialField(*initfield), xyz, u, grad, p);
 
       // now fill the components in the one-sided mass matrix and the right hand side
       // shapes_->ndofs_ gives the number of shape functions present in the element
@@ -582,7 +582,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
       // Deciding if we are initializing a field or if it is a time dependant
       // boundary condition
       if (initfield != nullptr)  // Initial function
-        EvaluateVelocity(*startfunc, INPAR::FLUID::InitialField(*initfield), xyz, u);
+        evaluate_velocity(*startfunc, INPAR::FLUID::InitialField(*initfield), xyz, u);
       else
       {
         // This is used to project a function only on the boundary during the
@@ -1214,21 +1214,21 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::project_initial_field_for_hit(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateVelocity(const int startfunc,
+void DRT::ELEMENTS::FluidEleCalcHDG<distype>::evaluate_velocity(const int startfunc,
     const INPAR::FLUID::InitialField initfield, const CORE::LINALG::Matrix<nsd_, 1>& xyz,
     CORE::LINALG::Matrix<nsd_, 1>& u) const
 {
   // pass on dummy entries (costs a little but will not be significant)
   CORE::LINALG::Matrix<nsd_, nsd_> grad(true);
   double p;
-  EvaluateAll(startfunc, initfield, xyz, u, grad, p);
+  evaluate_all(startfunc, initfield, xyz, u, grad, p);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateAll(const int startfunc,
+void DRT::ELEMENTS::FluidEleCalcHDG<distype>::evaluate_all(const int startfunc,
     const INPAR::FLUID::InitialField initfield, const CORE::LINALG::Matrix<nsd_, 1>& xyz,
     CORE::LINALG::Matrix<nsd_, 1>& u, CORE::LINALG::Matrix<nsd_, nsd_>& grad, double& p) const
 {

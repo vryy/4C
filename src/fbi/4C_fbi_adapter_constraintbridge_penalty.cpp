@@ -45,7 +45,7 @@ void ADAPTER::FBIConstraintBridgePenalty::Evaluate(
           BEAMINTERACTION::BeamToFluidAssemblyManagerFactory::create_assembly_manager(
               discretization1, discretization2, *(GetPairs()), GetParams(), assemblystrategy_);
   // compute and assembly the coupling matrices and vectors
-  assembly_manager->EvaluateForceStiff(
+  assembly_manager->evaluate_force_stiff(
       *discretization1, *discretization2, ff_, fs_, cff_, css_, csf_, cfs_, fluid_vel, beam_vel);
   cff_->Complete();
 

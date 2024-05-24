@@ -84,7 +84,7 @@ MAT::MatListChemotaxis::MatListChemotaxis(MAT::PAR::MatListChemotaxis* params)
   // setup of material map
   if (paramschemo_->local_)
   {
-    SetupMatMap();
+    setup_mat_map();
   }
 }
 
@@ -92,10 +92,10 @@ MAT::MatListChemotaxis::MatListChemotaxis(MAT::PAR::MatListChemotaxis* params)
 /*----------------------------------------------------------------------*
  | setup of material map                                     thon 06/15 |
  *----------------------------------------------------------------------*/
-void MAT::MatListChemotaxis::SetupMatMap()
+void MAT::MatListChemotaxis::setup_mat_map()
 {
   // We just have to add the chemotactic materials, since the rest is already done in
-  // MAT::MatList::SetupMatMap() called from the MatList constructor
+  // MAT::MatList::setup_mat_map() called from the MatList constructor
 
   // here's the recursive creation of materials
   std::vector<int>::const_iterator m;

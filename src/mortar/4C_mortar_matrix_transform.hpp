@@ -63,27 +63,27 @@ namespace MORTAR
         const CORE::LINALG::SparseMatrix& src_mat, CORE::LINALG::SparseMatrix& dst_mat);
 
    private:
-    void SetSlaveMapPairs(const plain_block_map_pairs& redistributed_row,
+    void set_slave_map_pairs(const plain_block_map_pairs& redistributed_row,
         const plain_block_map_pairs& redistributed_column);
 
-    void SetMasterMapPairs(const plain_block_map_pairs& unredistributed_row,
+    void set_master_map_pairs(const plain_block_map_pairs& unredistributed_row,
         const plain_block_map_pairs& unredistributed_column);
 
     // hide empty constructor
     MatrixRowColTransformer();
 
-    inline void ThrowIfNotInit() const
+    inline void throw_if_not_init() const
     {
       if (not isinit_) FOUR_C_THROW("Call Init() first!");
     }
 
     inline void throw_if_not_init_and_setup() const
     {
-      ThrowIfNotInit();
+      throw_if_not_init();
       if (not issetup_) FOUR_C_THROW("Call Setup() first!");
     }
 
-    void ResetExporter(Teuchos::RCP<Epetra_Export>& exporter) const;
+    void reset_exporter(Teuchos::RCP<Epetra_Export>& exporter) const;
 
    private:
     bool isinit_;

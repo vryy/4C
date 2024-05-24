@@ -120,7 +120,7 @@ namespace PARTICLEENGINE
      * \param[in]  reader          discretization reader
      * \param[out] particlestoread particle objects read in from restart
      */
-    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader,
+    void read_restart(const std::shared_ptr<IO::DiscretizationReader> reader,
         std::vector<ParticleObjShrdPtr>& particlestoread) const;
 
     /*!
@@ -463,7 +463,7 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 03/2018
      */
-    void InitBinningStrategy();
+    void init_binning_strategy();
 
     /*!
      * \brief setup binning strategy
@@ -477,7 +477,7 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 03/2018
      */
-    void SetupBinGhosting();
+    void setup_bin_ghosting();
 
     /*!
      * \brief init particle container bundle
@@ -517,7 +517,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] particlestatestotypes particle types and corresponding particle states
      */
-    void SetupDataStorage(
+    void setup_data_storage(
         const std::map<ParticleType, std::set<ParticleState>>& particlestatestotypes);
 
     /*!
@@ -539,7 +539,7 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 03/2019
      */
-    void SetupTypeWeights();
+    void setup_type_weights();
 
     //! @}
 
@@ -766,7 +766,7 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 05/2018
      */
-    void DetermineBinWeights();
+    void determine_bin_weights();
 
     /*!
      * \brief invalidate particle safety flags

@@ -66,7 +66,8 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
-  // Check whether the solid material PostSetup() routine has already been called and call it if not
+  // Check whether the solid material post_setup() routine has already been called and call it if
+  // not
   ensure_material_post_setup(params);
 
   set_params_interface_ptr(params);
@@ -623,7 +624,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
     break;
     //==================================================================================
     case ELEMENTS::struct_calc_eleload:
-      FOUR_C_THROW("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
+      FOUR_C_THROW("this method is not supposed to evaluate a load, use evaluate_neumann(...)");
       break;
     //==================================================================================
     case ELEMENTS::struct_calc_fsiload:
@@ -652,7 +653,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
         oldfeas->putScalar(0.0);
       }
       // Reset of history (if needed)
-      SolidMaterial()->ResetStep();
+      SolidMaterial()->reset_step();
     }
     break;
     //==================================================================================
@@ -1276,7 +1277,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)     maf 04/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::SoHex8::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::SoHex8::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -1377,7 +1378,7 @@ int DRT::ELEMENTS::SoHex8::EvaluateNeumann(Teuchos::ParameterList& params,
   } /* ==================================================== end of Loop over GP */
 
   return 0;
-}  // DRT::ELEMENTS::So_hex8::EvaluateNeumann
+}  // DRT::ELEMENTS::So_hex8::evaluate_neumann
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -1429,12 +1430,12 @@ void DRT::ELEMENTS::SoHex8::InitJacobianMapping()
 
     if (PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
     {
-      if (!(prestress_->IsInit()))
+      if (!(prestress_->is_init()))
         prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
     }
   }
 
-  if (PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
+  if (PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->is_init() = true;
 }
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping with respect to the    farah 06/13|
@@ -1495,12 +1496,12 @@ double DRT::ELEMENTS::SoHex8::soh8_get_min_det_jac_at_corners(
 void DRT::ELEMENTS::SoHex8::soh8_error_handling(const double& det_curr,
     Teuchos::ParameterList& params, const int line_id, const STR::ELEMENTS::EvalErrorFlag flag)
 {
-  ErrorHandling(det_curr, params, line_id, flag);
+  error_handling(det_curr, params, line_id, flag);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8::soh8_computeEASInc(
+void DRT::ELEMENTS::SoHex8::soh8_compute_eas_inc(
     const std::vector<double>& residual, CORE::LINALG::SerialDenseMatrix* const eas_inc)
 {
   auto* oldKaainv = &easdata_.invKaa;
@@ -1558,7 +1559,7 @@ void DRT::ELEMENTS::SoHex8::soh8_recover(
           NOX::NLN::StatusTest::quantity_eas, neas_, (*alpha)[0], Owner());
 
       // compute the eas increment
-      soh8_computeEASInc(residual, eas_inc);
+      soh8_compute_eas_inc(residual, eas_inc);
 
       /*--------------------------- update alpha += step_length * alfa_inc */
       for (int i = 0; i < neas_; ++i) (*alpha)(i, 0) += step_length * (*eas_inc)(i, 0);
@@ -1973,7 +1974,7 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
       }
 
       // calculate deformation gradient consistent with modified GL strain tensor
-      if (Teuchos::rcp_static_cast<MAT::So3Material>(Material())->NeedsDefgrd())
+      if (Teuchos::rcp_static_cast<MAT::So3Material>(Material())->needs_defgrd())
         calc_consistent_defgrd(defgrd, glstrain, defgrd_mod);
 
       const double det_defgrd_mod = defgrd_mod.Determinant();
@@ -2655,7 +2656,7 @@ void DRT::ELEMENTS::SoHex8::soh8_create_eas_backup_state(const std::vector<doubl
   {
     // compute the current eas increment
     CORE::LINALG::SerialDenseMatrix eas_inc(neas_, 1);
-    soh8_computeEASInc(displ_incr, &eas_inc);
+    soh8_compute_eas_inc(displ_incr, &eas_inc);
 
     auto* eas_inc_backup_ptr = &easdata_.eas_inc_backup;
     if (eas_inc_backup_ptr)
@@ -3123,7 +3124,7 @@ void DRT::ELEMENTS::SoHex8::evaluate_finite_difference_material_tangent(
       }
 
       // calculate deformation gradient consistent with modified GL strain tensor
-      if (Teuchos::rcp_static_cast<MAT::So3Material>(Material())->NeedsDefgrd())
+      if (Teuchos::rcp_static_cast<MAT::So3Material>(Material())->needs_defgrd())
         calc_consistent_defgrd(defgrd_fd, glstrain_fd, defgrd_fd_mod);
     }  // ------------------------------------------------------------------ EAS
 

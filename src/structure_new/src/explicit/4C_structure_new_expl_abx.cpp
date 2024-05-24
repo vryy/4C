@@ -37,7 +37,7 @@ STR::EXPLICIT::AdamsBashforthX<TOrder>::AdamsBashforthX()
 template <int TOrder>
 void STR::EXPLICIT::AdamsBashforthX<TOrder>::Setup()
 {
-  CheckInit();
+  check_init();
 
   // Call the Setup() of the abstract base class first.
   Generic::Setup();
@@ -71,7 +71,7 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::Setup()
   set_initial_displacement(
       TimInt().GetDataSDyn().GetInitialDisp(), TimInt().GetDataSDyn().StartFuncNo());
 
-  // Has to be set before the PostSetup() routine is called!
+  // Has to be set before the post_setup() routine is called!
   issetup_ = true;
 
   // Set the compute phase to compute the initial value
@@ -81,18 +81,18 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::Setup()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int TOrder>
-void STR::EXPLICIT::AdamsBashforthX<TOrder>::PostSetup()
+void STR::EXPLICIT::AdamsBashforthX<TOrder>::post_setup()
 {
-  CheckInitSetup();
+  check_init_setup();
   equilibrate_initial_state();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int TOrder>
-void STR::EXPLICIT::AdamsBashforthX<TOrder>::SetState(const Epetra_Vector& x)
+void STR::EXPLICIT::AdamsBashforthX<TOrder>::set_state(const Epetra_Vector& x)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // ---------------------------------------------------------------------------
   // new end-point acceleration
@@ -189,7 +189,7 @@ template <int TOrder>
 void STR::EXPLICIT::AdamsBashforthX<TOrder>::WriteRestart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
-  CheckInitSetup();
+  check_init_setup();
   // write dynamic forces
   iowriter.WriteVector("finert", finertian_ptr_);
   iowriter.WriteVector("fvisco", fviscon_ptr_);
@@ -222,9 +222,9 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::WriteRestart(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int TOrder>
-void STR::EXPLICIT::AdamsBashforthX<TOrder>::ReadRestart(IO::DiscretizationReader& ioreader)
+void STR::EXPLICIT::AdamsBashforthX<TOrder>::read_restart(IO::DiscretizationReader& ioreader)
 {
-  CheckInitSetup();
+  check_init_setup();
   // read dynamic forces
   ioreader.ReadVector(finertian_ptr_, "finert");
   ioreader.ReadVector(fviscon_ptr_, "fvisco");
@@ -260,7 +260,7 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::ReadRestart(IO::DiscretizationReade
     }
   }
 
-  ModelEval().ReadRestart(ioreader);
+  ModelEval().read_restart(ioreader);
   update_constant_state_contributions();
 }
 
@@ -269,7 +269,7 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::ReadRestart(IO::DiscretizationReade
 template <int TOrder>
 void STR::EXPLICIT::AdamsBashforthX<TOrder>::UpdateStepState()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // ---------------------------------------------------------------------------
   // dynamic effects

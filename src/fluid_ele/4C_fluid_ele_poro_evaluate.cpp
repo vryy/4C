@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void DRT::ELEMENTS::FluidPoroEleType::PreEvaluate(DRT::Discretization& dis,
+void DRT::ELEMENTS::FluidPoroEleType::pre_evaluate(DRT::Discretization& dis,
     Teuchos::ParameterList& p, Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -37,7 +37,7 @@ void DRT::ELEMENTS::FluidPoroEleType::PreEvaluate(DRT::Discretization& dis,
   else
   {
     // call standard fluid type
-    FluidType::PreEvaluate(
+    FluidType::pre_evaluate(
         dis, p, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);
   }
 }

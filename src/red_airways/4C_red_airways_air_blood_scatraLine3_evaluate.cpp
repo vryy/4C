@@ -170,7 +170,7 @@ int DRT::ELEMENTS::RedAirBloodScatraLine3::Evaluate(Teuchos::ParameterList& para
 }  // end of DRT::ELEMENTS::RedAirBloodScatraLine3::Evaluate
 
 
-int DRT::ELEMENTS::RedAirBloodScatraLine3::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::RedAirBloodScatraLine3::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -192,7 +192,7 @@ int DRT::ELEMENTS::RedAirBloodScatraLine3::EvaluateDirichlet(Teuchos::ParameterL
 
 
 // get optimal gaussrule for discretization type
-CORE::FE::GaussRule1D DRT::ELEMENTS::RedAirBloodScatraLine3::getOptimalGaussrule(
+CORE::FE::GaussRule1D DRT::ELEMENTS::RedAirBloodScatraLine3::get_optimal_gaussrule(
     const CORE::FE::CellType& distype)
 {
   CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::undefined;

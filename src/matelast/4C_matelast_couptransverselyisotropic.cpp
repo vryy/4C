@@ -163,7 +163,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::AddStrainEnergy(double& psi,
   rcg.Update(2.0, glstrain, 1.0);
   rcg.Update(1.0, identity, 1.0);
 
-  ResetInvariants(rcg);
+  reset_invariants(rcg);
 
   const double alpha = params_->alpha_;
   const double beta = params_->beta_;
@@ -179,7 +179,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::add_stress_aniso_principal(
     const int eleGID)
 {
   // direct return if an error occurred
-  if (ResetInvariants(rcg, &params)) return;
+  if (reset_invariants(rcg, &params)) return;
 
   // switch to stress notation
   CORE::LINALG::Matrix<6, 1> rcg_s(false);
@@ -254,7 +254,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::update_elasticity_tensor(
   }
 }
 
-int MAT::ELASTIC::CoupTransverselyIsotropic::ResetInvariants(
+int MAT::ELASTIC::CoupTransverselyIsotropic::reset_invariants(
     const CORE::LINALG::Matrix<6, 1>& rcg, const Teuchos::ParameterList* params)
 {
   // calculate the square root of the third invariant alias the determinant
@@ -266,7 +266,7 @@ int MAT::ELASTIC::CoupTransverselyIsotropic::ResetInvariants(
   {
     std::stringstream msg;
     msg << __LINE__ << " -- " << __PRETTY_FUNCTION__ << "I3 is negative!";
-    ErrorHandling(params, msg);
+    error_handling(params, msg);
     return -1;
   }
 
@@ -322,7 +322,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::update_second_piola_kirchhoff_stre
   }
 }
 
-void MAT::ELASTIC::CoupTransverselyIsotropic::ErrorHandling(
+void MAT::ELASTIC::CoupTransverselyIsotropic::error_handling(
     const Teuchos::ParameterList* params, std::stringstream& msg) const
 {
   if (params and params->isParameter("interface"))

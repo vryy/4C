@@ -94,7 +94,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Evaluate(DRT::ELEMENTS::Flu
     CORE::LINALG::SerialDenseVector&, CORE::LINALG::SerialDenseVector&, bool offdiag)
 {
   // read global vectors
-  ReadGlobalVectors(*ele, discretization, lm);
+  read_global_vectors(*ele, discretization, lm);
 
   // initialize shapes
   InitializeShapes(ele);
@@ -139,7 +139,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Evaluate(DRT::ELEMENTS::Flu
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ReadGlobalVectors(
+void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::read_global_vectors(
     const DRT::Element& ele, DRT::Discretization& discretization, const std::vector<int>& lm)
 {
   // initialize the vectors
@@ -163,13 +163,13 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ReadGlobalVectors(
   CORE::FE::ExtractMyValues(*matrix_state, interior_acc_, localDofs);
 
   // read ale vectors
-  ReadAleVectors(ele, discretization);
+  read_ale_vectors(ele, discretization);
 }
 
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ReadAleVectors(
+void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::read_ale_vectors(
     const DRT::Element& ele, DRT::Discretization& discretization)
 {
   // initialize ale vectors
@@ -238,7 +238,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateService(DRT::ELEMEN
     }
     case FLD::calc_fluid_error:
     {
-      return ComputeError(ele, params, mat, discretization, lm, elevec1);
+      return compute_error(ele, params, mat, discretization, lm, elevec1);
       break;
     }
     default:
@@ -258,7 +258,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::UpdateLocalSolution(DRT::EL
     CORE::LINALG::SerialDenseVector& interiorinc)
 {
   // read global vectors
-  ReadGlobalVectors(*ele, discretization, lm);
+  read_global_vectors(*ele, discretization, lm);
 
   // initialize shapes
   InitializeShapes(ele);
@@ -321,13 +321,13 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::UpdateLocalSolution(DRT::EL
 
 
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ComputeError(DRT::ELEMENTS::Fluid* ele,
+int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::compute_error(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec)
 {
   // read ale vectors
-  ReadAleVectors(*ele, discretization);
+  read_ale_vectors(*ele, discretization);
 
   // initialize shapes
   InitializeShapes(ele);
@@ -399,7 +399,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ComputeError(DRT::ELEMENTS:
     for (unsigned int d = 0; d < nsd_; ++d) xyz(d) = shapes_->xyzreal(d, q);
 
     // evaluate analytical solution
-    EvaluateAll(calcerrfunctno, xyz, time, L_ex, r_ex, w_ex);
+    evaluate_all(calcerrfunctno, xyz, time, L_ex, r_ex, w_ex);
 
     // evaluate errors
     for (unsigned int m = 0; m < msd_; ++m)
@@ -438,7 +438,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2)
 {
   // read ale vectors
-  ReadAleVectors(*ele, discretization);
+  read_ale_vectors(*ele, discretization);
 
   // Create the necessary objects to the solution of the problem as the solver
   // and the shape functions for both the interior, shapes_, and the trace, shapesface_.
@@ -651,7 +651,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::interpolate_solution_to_nod
     CORE::LINALG::SerialDenseVector& elevec1)
 {
   // read ale vectors
-  ReadAleVectors(*ele, discretization);
+  read_ale_vectors(*ele, discretization);
 
   InitializeShapes(ele);
   // Check if the vector has the correct size
@@ -832,7 +832,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::interpolate_solution_to_nod
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateAll(const int funcnum,
+void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::evaluate_all(const int funcnum,
     const CORE::LINALG::Matrix<nsd_, 1>& xyz, const double t, CORE::LINALG::Matrix<msd_, 1>& L,
     double& r, CORE::LINALG::Matrix<nsd_, 1>& w) const
 {

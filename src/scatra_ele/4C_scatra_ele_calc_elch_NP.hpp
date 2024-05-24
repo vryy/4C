@@ -135,12 +135,12 @@ namespace DRT
       //! @name methods for evaluation of individual terms
       /*========================================================================*/
 
-      //! CalcRes: Residual of Nernst-Planck equation in strong form
-      double CalcRes(const int k,  //!< index of current scalar
-          const double conint,     //!< concentration at GP
-          const double hist,       //!< history value at GP
-          const double convphi,    //!< convective term (without convective part of migration term)
-          const double frt,        //!< F/(RT)
+      //! calc_res: Residual of Nernst-Planck equation in strong form
+      double calc_res(const int k,  //!< index of current scalar
+          const double conint,      //!< concentration at GP
+          const double hist,        //!< history value at GP
+          const double convphi,     //!< convective term (without convective part of migration term)
+          const double frt,         //!< F/(RT)
           const CORE::LINALG::Matrix<nen_, 1>&
               migconv,         //!< migration operator: -F/(RT) \grad{\Phi} * \grad{N}
           const double rhsint  //!< rhs of Nernst-Planck equation (not of Newton-Raphson scheme) at
@@ -148,8 +148,9 @@ namespace DRT
       );
 
       //! CalcMat: SUPG Stabilization of convective term due to fluid flow and migration
-      void CalcMatConvStab(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
-          const int k,                                             //!< index of current scalar
+      void calc_mat_conv_stab(
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          const int k,                            //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double taufac,      //!< stabilization parameter tau times domain-integration factor
           const double
@@ -167,8 +168,8 @@ namespace DRT
       );
 
       //! CalcMat: Migration term
-      void CalcMatMigr(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                                         //!< index of current scalar
+      void calc_mat_migr(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                                           //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double frt,         //!< F/RT
           const CORE::LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
@@ -176,7 +177,7 @@ namespace DRT
       );
 
       //! CalcMat: Electroneutrality condition in PDE form
-      void CalcMatPotEquENCPDE(
+      void calc_mat_pot_equ_encpde(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
@@ -212,7 +213,7 @@ namespace DRT
       );
 
       //! CalcRhs: Additional contributions from conservative formulation of Nernst-Planck equations
-      void CalcRhsConvAddCons(
+      void calc_rhs_conv_add_cons(
           CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
           const int k,                            //!< index of current scalar
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
@@ -221,8 +222,9 @@ namespace DRT
       );
 
       //! CalcRhs: SUPG Stabilization of convective term due to fluid flow and migration
-      void CalcRhsConvStab(CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                                             //!< index of current scalar
+      void calc_rhs_conv_stab(
+          CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+          const int k,                            //!< index of current scalar
           const double rhstaufac,  //!< time-integration factor for rhs times tau times
                                    //!< domain-integration factor
           const CORE::LINALG::Matrix<nen_, 1>&
@@ -233,15 +235,15 @@ namespace DRT
       );
 
       //! CalcRhs: Migration term
-      void CalcRhsMigr(CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                                         //!< index of current scalar
+      void calc_rhs_migr(CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+          const int k,                                           //!< index of current scalar
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const CORE::LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
           const double conint                            //!< concentration at GP
       );
 
       //! CalcRhs: Electroneutrality condition in PDE form
-      void CalcRhsPotEquENCPDE(
+      void calc_rhs_pot_equ_encpde(
           CORE::LINALG::SerialDenseVector& erhs,         //!< element vector to be filled
           const int k,                                   //!< index of current scalar
           const double fac,                              //!< domain-integration factor
@@ -334,7 +336,7 @@ namespace DRT
       void set_internal_variables_for_mat_and_rhs() override;
 
       //! get internal variable manager for Nernst-Planck formulation
-      Teuchos::RCP<ScaTraEleInternalVariableManagerElchNP<nsd_, nen_>> VarManager()
+      Teuchos::RCP<ScaTraEleInternalVariableManagerElchNP<nsd_, nen_>> var_manager()
       {
         return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerElchNP<nsd_, nen_>>(
             my::scatravarmanager_);

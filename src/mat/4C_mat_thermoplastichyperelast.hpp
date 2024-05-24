@@ -188,7 +188,7 @@ namespace MAT
     double Density() const override { return params_->density_; }
 
     //! shear modulus
-    double ShearMod() const { return 0.5 * (params_->youngs_) / (1.0 + params_->poissonratio_); }
+    double shear_mod() const { return 0.5 * (params_->youngs_) / (1.0 + params_->poissonratio_); }
 
     //! yield stress
     virtual double Yield() const { return params_->yield_; }
@@ -326,7 +326,7 @@ namespace MAT
 
     //! computes temperature-dependent isotropic thermal elasticity tensor in
     //! matrix notion for 3d
-    void SetupCthermo(
+    void setup_cthermo(
         CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& ctemp,  //!< temperature dependent material tangent
         Teuchos::ParameterList& params                  //!< parameter list
     );
@@ -337,10 +337,10 @@ namespace MAT
         CORE::LINALG::Matrix<6, 6>& cmat_T, Teuchos::ParameterList& params);
 
     //! calculates stress-temperature modulus
-    double STModulus();
+    double st_modulus();
 
     //! finite difference check of material tangent
-    void FDCheck(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& stress,  // updated stress sigma_n+1
+    void fd_check(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& stress,  // updated stress sigma_n+1
         CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
             cmat,  // material tangent calculated with FD of stresses
         CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
@@ -350,7 +350,7 @@ namespace MAT
     );
 
     /// Return whether the material requires the deformation gradient for its evaluation
-    bool NeedsDefgrd() override { return true; };
+    bool needs_defgrd() override { return true; };
 
     //@}
 

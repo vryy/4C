@@ -45,7 +45,7 @@ STR::NLN::LinSystem::StcScaling::StcScaling(
   Teuchos::RCP<DRT::Discretization> discret = GState.GetDiscret();
 
   // action for elements
-  discret->SetState("displacement", GState.GetDisNp());
+  discret->set_state("displacement", GState.GetDisNp());
 
   const std::string action = "calc_stc_matrix";
   p.set("action", action);

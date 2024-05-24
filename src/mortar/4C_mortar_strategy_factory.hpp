@@ -99,19 +99,19 @@ namespace MORTAR
        *
        * @param[in] issetup Setup flag (default = true)
        */
-      inline void SetIsSetup(const bool issetup = true) { issetup_ = issetup; };
+      inline void set_is_setup(const bool issetup = true) { issetup_ = issetup; };
 
       //! Returns true, if Init() has been called
-      inline const bool& IsInit() const { return isinit_; };
+      inline const bool& is_init() const { return isinit_; };
 
       //! Returns true, if Setup() has been called
-      inline const bool& IsSetup() const { return issetup_; };
+      inline const bool& is_setup() const { return issetup_; };
 
       //! Checks, if Init() and Setup() have been called
-      void CheckInitSetup() const;
+      void check_init_setup() const;
 
       //! Checks if Init() has been called
-      void CheckInit() const;
+      void check_init() const;
 
       //! @name NURBS related stuff
       //!@{

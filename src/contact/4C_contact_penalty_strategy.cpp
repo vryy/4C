@@ -35,11 +35,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | ctor (public)                                              popp 05/09|
  *----------------------------------------------------------------------*/
-CONTACT::PenaltyStrategy::PenaltyStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
-    Teuchos::ParameterList params, std::vector<Teuchos::RCP<CONTACT::Interface>> interface,
-    const int spatialDim, const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
-    const int maxdof)
-    : AbstractStrategy(Teuchos::rcp(new CONTACT::AbstractStratDataContainer()), DofRowMap,
+CONTACT::PenaltyStrategy::PenaltyStrategy(const Epetra_Map* dof_row_map,
+    const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
+    std::vector<Teuchos::RCP<CONTACT::Interface>> interface, const int spatialDim,
+    const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
+    : AbstractStrategy(Teuchos::rcp(new CONTACT::AbstractStratDataContainer()), dof_row_map,
           NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
       interface_(interface),
       constrnorm_(0.0),
@@ -53,11 +53,11 @@ CONTACT::PenaltyStrategy::PenaltyStrategy(const Epetra_Map* DofRowMap, const Epe
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONTACT::PenaltyStrategy::PenaltyStrategy(
-    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
-    const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
+    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<Teuchos::RCP<CONTACT::Interface>> interface, const int spatialDim,
     const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
-    : AbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
+    : AbstractStrategy(data_ptr, dof_row_map, NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
       interface_(interface),
       constrnorm_(0.0),
       constrnormtan_(0.0),
@@ -74,7 +74,7 @@ CONTACT::PenaltyStrategy::PenaltyStrategy(
 void CONTACT::PenaltyStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis)
 {
   // initialize the displacement field
-  SetState(MORTAR::state_new_displacement, *dis);
+  set_state(MORTAR::state_new_displacement, *dis);
 
   // kappa will be the shape function integral on the slave sides
   // (1) build the nodal information
@@ -82,7 +82,7 @@ void CONTACT::PenaltyStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vect
   {
     // interface needs to be complete
     if (!interface_[i]->Filled() && Comm().MyPID() == 0)
-      FOUR_C_THROW("FillComplete() not called on interface %", i);
+      FOUR_C_THROW("fill_complete() not called on interface %", i);
 
     // do the computation of nodal shape function integral
     // (for convenience, the results will be stored in nodal gap)
@@ -250,7 +250,7 @@ void CONTACT::PenaltyStrategy::EvaluateContact(
     interface_[i]->AssembleLinDM(*lindmatrix_, *linmmatrix_);
   }
 
-  // FillComplete() global matrices LinD, LinM, LinZ
+  // fill_complete() global matrices LinD, LinM, LinZ
   lindmatrix_->Complete(*gsmdofrowmap_, *gsdofrowmap_);
   linmmatrix_->Complete(*gsmdofrowmap_, *gmdofrowmap_);
   linzmatrix_->Complete(*gsmdofrowmap_, *gsdofrowmap_);
@@ -437,8 +437,8 @@ void CONTACT::PenaltyStrategy::ResetPenalty()
   // reset penalty parameter in all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    interface_[i]->InterfaceParams().set<double>("PENALTYPARAM", InitialPenalty());
-    interface_[i]->InterfaceParams().set<double>("PENALTYPARAMTAN", InitialPenaltyTan());
+    interface_[i]->interface_params().set<double>("PENALTYPARAM", InitialPenalty());
+    interface_[i]->interface_params().set<double>("PENALTYPARAMTAN", InitialPenaltyTan());
   }
 
   return;
@@ -460,8 +460,8 @@ void CONTACT::PenaltyStrategy::ModifyPenalty()
   // modify penalty parameter in all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    interface_[i]->InterfaceParams().set<double>("PENALTYPARAM", pennew);
-    interface_[i]->InterfaceParams().set<double>("PENALTYPARAMTAN", pennew);
+    interface_[i]->interface_params().set<double>("PENALTYPARAM", pennew);
+    interface_[i]->interface_params().set<double>("PENALTYPARAMTAN", pennew);
   }
 
   return;
@@ -640,9 +640,9 @@ void CONTACT::PenaltyStrategy::update_constraint_norm(int uzawaiter)
         // update penalty parameter in all interfaces
         for (int i = 0; i < (int)interface_.size(); ++i)
         {
-          double ippcurr = interface_[i]->InterfaceParams().get<double>("PENALTYPARAM");
+          double ippcurr = interface_[i]->interface_params().get<double>("PENALTYPARAM");
           if (ippcurr != ppcurr) FOUR_C_THROW("Something wrong with penalty parameter");
-          interface_[i]->InterfaceParams().set<double>("PENALTYPARAM", 10 * ippcurr);
+          interface_[i]->interface_params().set<double>("PENALTYPARAM", 10 * ippcurr);
         }
         // in the case of frictional contact, the tangential penalty
         // parameter is also dated up when this is done for the normal one
@@ -656,9 +656,9 @@ void CONTACT::PenaltyStrategy::update_constraint_norm(int uzawaiter)
           // update penalty parameter in all interfaces
           for (int i = 0; i < (int)interface_.size(); ++i)
           {
-            double ippcurrtan = interface_[i]->InterfaceParams().get<double>("PENALTYPARAMTAN");
+            double ippcurrtan = interface_[i]->interface_params().get<double>("PENALTYPARAMTAN");
             if (ippcurrtan != ppcurrtan) FOUR_C_THROW("Something wrong with penalty parameter");
-            interface_[i]->InterfaceParams().set<double>("PENALTYPARAMTAN", 10 * ippcurrtan);
+            interface_[i]->interface_params().set<double>("PENALTYPARAMTAN", 10 * ippcurrtan);
           }
         }
       }
@@ -837,7 +837,7 @@ void CONTACT::PenaltyStrategy::Assemble()
     interface_[i]->AssembleLinDM(*lindmatrix_, *linmmatrix_);
   }
 
-  // FillComplete() global matrices LinD, LinM, LinZ
+  // fill_complete() global matrices LinD, LinM, LinZ
   lindmatrix_->Complete(*gsmdofrowmap_, *gsdofrowmap_);
   linmmatrix_->Complete(*gsmdofrowmap_, *gmdofrowmap_);
   linzmatrix_->Complete(*gsmdofrowmap_, *gsdofrowmap_);
@@ -973,7 +973,7 @@ void CONTACT::PenaltyStrategy::EvalForceStiff(CONTACT::ParamsInterface& cparams)
 /*----------------------------------------------------------------------*
  | set force evaluation flag before evaluation step          farah 08/16|
  *----------------------------------------------------------------------*/
-void CONTACT::PenaltyStrategy::PreEvaluate(CONTACT::ParamsInterface& cparams)
+void CONTACT::PenaltyStrategy::pre_evaluate(CONTACT::ParamsInterface& cparams)
 {
   const enum MORTAR::ActionType& act = cparams.GetActionType();
 
@@ -1003,7 +1003,7 @@ void CONTACT::PenaltyStrategy::PreEvaluate(CONTACT::ParamsInterface& cparams)
 /*----------------------------------------------------------------------*
  | set force evaluation flag after evaluation                farah 08/16|
  *----------------------------------------------------------------------*/
-void CONTACT::PenaltyStrategy::PostEvaluate(CONTACT::ParamsInterface& cparams)
+void CONTACT::PenaltyStrategy::post_evaluate(CONTACT::ParamsInterface& cparams)
 {
   const enum MORTAR::ActionType& act = cparams.GetActionType();
 

@@ -52,7 +52,7 @@ BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::BeamToSphe
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Setup()
 {
-  CheckInit();
+  check_init();
 
   // call setup of base class first
   BeamPotentialPair::Setup();
@@ -240,7 +240,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
   TYPE norm_dist = 0.0;                         // = |r1-r2|
 
   // Evaluate shape functions at gauss points and store values
-  GetShapeFunctions(N1_i, N1_i_xi, gausspoints);
+  get_shape_functions(N1_i, N1_i_xi, gausspoints);
 
   // evaluate charge density from DLINE charge condition specified in input file
   double q1 = chargeconds_[0]->parameters().Get<double>("val");
@@ -294,7 +294,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
   // loop over gauss points on ele1
   for (int gp1 = 0; gp1 < numgp; ++gp1)
   {
-    ComputeCoords(r1, N1_i[gp1], ele1pos_);
+    compute_coords(r1, N1_i[gp1], ele1pos_);
 
     dist = CORE::FADUTILS::DiffVector(r1, r2);
 
@@ -480,7 +480,7 @@ template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Print(
     std::ostream& out) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   out << "\nInstance of BeamToSpherePotentialPair (EleGIDs " << Element1()->Id() << " & "
       << Element2()->Id() << "):";
@@ -497,7 +497,7 @@ template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
     numnodalvalues>::print_summary_one_line_per_active_segment_pair(std::ostream& out) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // Todo difficulty here is that the same element pair is evaluated more than once
   //      to be more precise, once for every common potlaw;
@@ -507,7 +507,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::GetShapeFunctions(
+void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::get_shape_functions(
     std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i,
     std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i_xi,
     CORE::FE::IntegrationPoints1D& gausspoints)
@@ -550,7 +550,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::GetSh
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::ComputeCoords(
+void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::compute_coords(
     CORE::LINALG::Matrix<3, 1, TYPE>& r,
     const CORE::LINALG::Matrix<1, numnodes * numnodalvalues>& N_i,
     const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> elepos)

@@ -56,10 +56,10 @@ namespace POROELASTSCATRA
     void Timeloop() override;
 
     //! read and set fields needed for restart
-    void ReadRestart(int restart) override;
+    void read_restart(int restart) override;
 
     //! prepare time step
-    void PrepareTimeStep(bool printheader = true) override;
+    void prepare_time_step(bool printheader = true) override;
 
     //! is convergence reached of iterative solution technique?
     bool Converged();
@@ -81,10 +81,10 @@ namespace POROELASTSCATRA
     void SetupSystem() override;
 
     //! setup composed right hand side from field solvers
-    virtual void SetupRHS(bool firstcall = false);
+    virtual void setup_rhs(bool firstcall = false);
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix();
+    virtual void setup_system_matrix();
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
     virtual void Evaluate(
@@ -112,10 +112,10 @@ namespace POROELASTSCATRA
     Teuchos::RCP<Epetra_Vector> RHS() { return rhs_; };
 
     //! full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> DofRowMap() const;
+    Teuchos::RCP<const Epetra_Map> dof_row_map() const;
 
     //! unique map of all dofs that should be constrained with DBC
-    Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const;
+    Teuchos::RCP<const Epetra_Map> combined_dbc_map() const;
 
     //@}
 
@@ -135,7 +135,7 @@ namespace POROELASTSCATRA
      defines the number of blocks, their maps and the block order. The block
      maps must be row maps by themselves and must not contain identical GIDs.
      */
-    void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
+    void set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
 
     //! @name Apply current field state to system
 
@@ -150,23 +150,23 @@ namespace POROELASTSCATRA
 
    private:
     //! build block vector from field vectors, e.g. rhs, increment vector
-    void SetupVector(Epetra_Vector& f,         //!< vector of length of all dofs
+    void setup_vector(Epetra_Vector& f,        //!< vector of length of all dofs
         Teuchos::RCP<const Epetra_Vector> pv,  //!< vector containing only structural dofs
         Teuchos::RCP<const Epetra_Vector> sv   //!< vector containing only fluid dofs
     );
 
     //! perform one time step (setup + solve + output)
-    void DoTimeStep();
+    void do_time_step();
 
     //! calculate stress, strains, energies ...
-    void PrepareOutput() override;
+    void prepare_output() override;
 
     //! @name helper methods for Newton loop
 
     void build_convergence_norms();
 
     //! solve linear system
-    void LinearSolve();
+    void linear_solve();
 
     //@}
 
@@ -174,24 +174,24 @@ namespace POROELASTSCATRA
 
     //! print to screen information about residual forces and displacements
     //! \author lw (originally) \date 12/07
-    void PrintNewtonIter();
+    void print_newton_iter();
 
-    //! contains text to PrintNewtonIter
+    //! contains text to print_newton_iter
     //! \author lw (originally) \date 12/07
-    void PrintNewtonIterText(FILE* ofile  //!< output file handle
+    void print_newton_iter_text(FILE* ofile  //!< output file handle
     );
 
-    //! contains header to PrintNewtonIter
+    //! contains header to print_newton_iter
     //! \author lw (originally) \date 12/07
     void print_newton_iter_header(FILE* ofile  //!< output file handle
     );
 
     //! print statistics of converged Newton-Raphson iteration
-    void PrintNewtonConv();
+    void print_newton_conv();
 
     //@}
 
-    void FDCheck();
+    void fd_check();
 
     //! @name Printing and output
     //@{

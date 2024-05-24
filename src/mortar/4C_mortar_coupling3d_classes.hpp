@@ -264,7 +264,7 @@ namespace MORTAR
     {
       if (shape_ == CORE::FE::CellType::line2)
       {
-        if (i < 0 || i > 1) FOUR_C_THROW("IntLine has 2 vertex linearizations only!");
+        if (i < 0 || i > 1) FOUR_C_THROW("int_line has 2 vertex linearizations only!");
         return linvertex_[i];
       }
       else
@@ -278,7 +278,7 @@ namespace MORTAR
     \brief Return the 'DerivAuxn' map (vector) of this intcell
 
     */
-    virtual std::vector<CORE::GEN::Pairedvector<int, double>>& GetDerivAuxn() { return linauxn_; }
+    virtual std::vector<CORE::GEN::Pairedvector<int, double>>& get_deriv_auxn() { return linauxn_; }
 
     //@}
 

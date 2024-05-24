@@ -27,7 +27,7 @@ SSI::SSIResultTest::SSIResultTest(const Teuchos::RCP<const SSI::SSIBase> ssi_bas
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double SSI::SSIResultTest::ResultSpecial(const std::string& quantity) const
+double SSI::SSIResultTest::result_special(const std::string& quantity) const
 {
   // initialize variable for result
   double result(0.0);
@@ -43,7 +43,7 @@ double SSI::SSIResultTest::ResultSpecial(const std::string& quantity) const
   // (monolithic SSI only)
   else if (quantity == "numiterlastlinearsolve")
   {
-    result = static_cast<double>(SSIMono().Solver().getNumIters());
+    result = static_cast<double>(ssi_mono().Solver().getNumIters());
   }
 
   // test total number of time steps
@@ -65,9 +65,9 @@ double SSI::SSIResultTest::ResultSpecial(const std::string& quantity) const
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-const SSI::SSIMono& SSI::SSIResultTest::SSIMono() const
+const SSI::SsiMono& SSI::SSIResultTest::ssi_mono() const
 {
-  const auto* const ssi_mono = dynamic_cast<const SSI::SSIMono* const>(ssi_base_.get());
+  const auto* const ssi_mono = dynamic_cast<const SSI::SsiMono* const>(ssi_base_.get());
   if (ssi_mono == nullptr)
     FOUR_C_THROW("Couldn't access time integrator for monolithic scalar-structure interaction!");
   return *ssi_mono;
@@ -85,7 +85,7 @@ void SSI::SSIResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int&
     res.ExtractString("QUANTITY", quantity);
 
     // get result to be tested
-    const double result = ResultSpecial(quantity);
+    const double result = result_special(quantity);
 
     // compare values
     const int err = CompareValues(result, "SPECIAL", res);

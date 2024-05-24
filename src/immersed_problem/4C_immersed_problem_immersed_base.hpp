@@ -325,29 +325,29 @@ namespace IMMERSED
 
    protected:
     //! returns true if Setup() was called and is still valid
-    bool IsSetup() { return issetup_; };
+    bool is_setup() { return issetup_; };
 
     //! returns true if Init(..) was called and is still valid
-    bool IsInit() { return isinit_; };
+    bool is_init() { return isinit_; };
 
     //! check if \ref Setup() was called
     void CheckIsSetup()
     {
-      if (not IsSetup()) FOUR_C_THROW("Setup() was not called.");
+      if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
     };
 
     //! check if \ref Init() was called
-    void CheckIsInit()
+    void check_is_init()
     {
-      if (not IsInit()) FOUR_C_THROW("Init(...) was not called.");
+      if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
     };
 
    protected:
     //! set flag true after setup or false if setup became invalid
-    void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; };
+    void set_is_setup(bool trueorfalse) { issetup_ = trueorfalse; };
 
     //! set flag true after init or false if init became invalid
-    void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
+    void set_is_init(bool trueorfalse) { isinit_ = trueorfalse; };
 
 
   };  // class ImmersedBase
@@ -649,10 +649,10 @@ namespace IMMERSED
 
               // get nodal coords of source ele
               vector = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(3));
-              std::vector<double> distances(sourceele->NumNode());
+              std::vector<double> distances(sourceele->num_node());
 
               // loop over source element nodes and calc distance from targetpoint to those nodes
-              for (int sourcenode = 0; sourcenode < sourceele->NumNode(); sourcenode++)
+              for (int sourcenode = 0; sourcenode < sourceele->num_node(); sourcenode++)
               {
                 if (isALE)
                 {
@@ -831,7 +831,7 @@ namespace IMMERSED
 
         // ---- send ----
         MPI_Request request;
-        exporter.ISend(myrank, torank, sdata.data(), (int)sdata.size(), 1234, request);
+        exporter.i_send(myrank, torank, sdata.data(), (int)sdata.size(), 1234, request);
 
         // ---- receive ----
         int length = rdata.size();
@@ -1031,7 +1031,7 @@ namespace IMMERSED
             Teuchos::RCP<CORE::GEO::CUT::BoundingBox> bbside =
                 Teuchos::rcp(CORE::GEO::CUT::BoundingBox::Create());
             CORE::LINALG::Matrix<3, 1> nodalpos;
-            for (int i = 0; i < (int)(sourceele->NumNode()); ++i)
+            for (int i = 0; i < (int)(sourceele->num_node()); ++i)
             {
               nodalpos(0, 0) = (sourceele->Nodes())[i]->X()[0] + mysourcedispnp[i * 3 + 0];
               nodalpos(1, 0) = (sourceele->Nodes())[i]->X()[1] + mysourcedispnp[i * 3 + 1];
@@ -1159,7 +1159,7 @@ namespace IMMERSED
 
         // ---- send ----
         MPI_Request request;
-        exporter.ISend(myrank, torank, sdata.data(), (int)sdata.size(), 1234, request);
+        exporter.i_send(myrank, torank, sdata.data(), (int)sdata.size(), 1234, request);
 
         // ---- receive ----
         int length = rdata.size();
@@ -1378,7 +1378,7 @@ namespace IMMERSED
               int numfsinodes = 0;
 
               // loop over all nodes of current surface element
-              for (int surfnode = 0; surfnode < structele->NumNode(); ++surfnode)
+              for (int surfnode = 0; surfnode < structele->num_node(); ++surfnode)
               {
                 DRT::Node* checkNode = NodesPtr[surfnode];
                 // check whether a IMMERSEDCoupling condition is active on this node
@@ -1387,7 +1387,7 @@ namespace IMMERSED
 
               // only surface elements with IMMERSEDCoupling condition are relevant (all nodes of
               // this element have fsi condition)
-              if (numfsinodes == structele->NumNode())
+              if (numfsinodes == structele->num_node())
               {
                 // get displacements and velocities of structure dis
                 structele->LocationVector(*structdis, la, false);
@@ -1398,7 +1398,7 @@ namespace IMMERSED
 
                 // 1.) check if closest point is a node
                 // loop over all nodes of structural surface element
-                for (int inode = 0; inode < structele->NumNode(); ++inode)
+                for (int inode = 0; inode < structele->num_node(); ++inode)
                 {
                   // get current global position of structure node
                   std::vector<double> struct_node_postion(3);
@@ -1565,7 +1565,7 @@ namespace IMMERSED
 
         // ---- send ----
         MPI_Request request;
-        exporter.ISend(myrank, torank, sdata.data(), (int)sdata.size(), 1234, request);
+        exporter.i_send(myrank, torank, sdata.data(), (int)sdata.size(), 1234, request);
 
         // ---- receive ----
         int length = rdata.size();

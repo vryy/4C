@@ -48,11 +48,11 @@ void FLD::TimIntRedModelsStat::Init()
 /*----------------------------------------------------------------------*
  |  read restart data                                   rasthofer 12/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedModelsStat::ReadRestart(int step)
+void FLD::TimIntRedModelsStat::read_restart(int step)
 {
   // call of base classes
-  TimIntStationary::ReadRestart(step);
-  TimIntRedModels::ReadRestart(step);
+  TimIntStationary::read_restart(step);
+  TimIntRedModels::read_restart(step);
 
   return;
 }

@@ -182,7 +182,7 @@ namespace CORE::VOLMORTAR
      \brief Build maps based n coupling dofs
 
      */
-    virtual void BuildMaps(Teuchos::RCP<DRT::Discretization>& dis,
+    virtual void build_maps(Teuchos::RCP<DRT::Discretization>& dis,
         Teuchos::RCP<const Epetra_Map>& dofmap, const std::vector<int>* coupleddof,
         const int* nodes, int numnode, int dofset);
 
@@ -190,33 +190,33 @@ namespace CORE::VOLMORTAR
      \brief calc dops for background mesh
 
      */
-    virtual std::map<int, CORE::LINALG::Matrix<9, 2>> CalcBackgroundDops(
+    virtual std::map<int, CORE::LINALG::Matrix<9, 2>> calc_background_dops(
         Teuchos::RCP<DRT::Discretization> searchdis);
 
     /*!
      \brief calc dops for one element
 
      */
-    virtual CORE::LINALG::Matrix<9, 2> CalcDop(DRT::Element& ele);
+    virtual CORE::LINALG::Matrix<9, 2> calc_dop(DRT::Element& ele);
 
     /*!
      \brief center triangulation (if delaunay fails)
 
      */
-    virtual bool CenterTriangulation(std::vector<Teuchos::RCP<MORTAR::IntCell>>& cells,
+    virtual bool center_triangulation(std::vector<Teuchos::RCP<MORTAR::IntCell>>& cells,
         std::vector<MORTAR::Vertex>& clip, double tol);
 
     /*!
      \brief check if we need cut (3D)
 
      */
-    virtual bool CheckCut(DRT::Element& sele, DRT::Element& mele);
+    virtual bool check_cut(DRT::Element& sele, DRT::Element& mele);
 
     /*!
      \brief check if we can integrate element-wise (3D)
 
      */
-    virtual bool CheckEleIntegration(DRT::Element& sele, DRT::Element& mele);
+    virtual bool check_ele_integration(DRT::Element& sele, DRT::Element& mele);
 
     /*!
      \brief check initial coupling constraint
@@ -240,21 +240,22 @@ namespace CORE::VOLMORTAR
      \brief compute trafo operator
 
      */
-    virtual void CreateTrafoOperator(DRT::Element& ele, Teuchos::RCP<DRT::Discretization> searchdis,
-        bool dis, std::set<int>& donebefore);
+    virtual void create_trafo_operator(DRT::Element& ele,
+        Teuchos::RCP<DRT::Discretization> searchdis, bool dis, std::set<int>& donebefore);
 
     /*!
      \brief define vertices for 2D polygon clipping (master)
 
      */
     virtual void define_vertices_master(
-        DRT::Element& ele, std::vector<MORTAR::Vertex>& SlaveVertices);
+        DRT::Element& ele, std::vector<MORTAR::Vertex>& slave_vertices);
 
     /*!
      \brief define vertices for 2D polygon clipping (slave)
 
      */
-    virtual void DefineVerticesSlave(DRT::Element& ele, std::vector<MORTAR::Vertex>& SlaveVertices);
+    virtual void define_vertices_slave(
+        DRT::Element& ele, std::vector<MORTAR::Vertex>& slave_vertices);
 
     /*!
      \brief create integration cells for 2D volmortar
@@ -279,31 +280,31 @@ namespace CORE::VOLMORTAR
      \brief Evaluate element-based
 
      */
-    virtual void EvaluateElements();
+    virtual void evaluate_elements();
 
     /*!
      \brief Evaluate segment-based
 
      */
-    virtual void EvaluateSegments();
+    virtual void evaluate_segments();
 
     /*!
      \brief Evaluate segment-based for 2D problems
 
      */
-    virtual void EvaluateSegments2D(DRT::Element& Aele, DRT::Element& Bele);
+    virtual void evaluate_segments2_d(DRT::Element& Aele, DRT::Element& Bele);
 
     /*!
      \brief Evaluate segment-based for 3D problems
 
      */
-    virtual void EvaluateSegments3D(DRT::Element* Aele, DRT::Element* Bele);
+    virtual void evaluate_segments3_d(DRT::Element* Aele, DRT::Element* Bele);
 
     /*!
      \brief get adjacent node ids for quadr. dual shape functions (trafo calculation)
 
      */
-    std::vector<int> GetAdjacentNodes(CORE::FE::CellType shape, int& lid);
+    std::vector<int> get_adjacent_nodes(CORE::FE::CellType shape, int& lid);
 
     /*!
      \brief Initialize / reset volmortar coupling
@@ -315,27 +316,27 @@ namespace CORE::VOLMORTAR
      \brief Initialize DOP normals for DOP calculation (Search algorithm)
 
      */
-    virtual void InitDopNormals();
+    virtual void init_dop_normals();
 
     /*!
      \brief Initialize search tree
 
      */
-    virtual Teuchos::RCP<CORE::GEO::SearchTree> InitSearch(
+    virtual Teuchos::RCP<CORE::GEO::SearchTree> init_search(
         Teuchos::RCP<DRT::Discretization> searchdis);
 
     /*!
      \brief perform 2D integration
 
      */
-    virtual void Integrate2D(
+    virtual void integrate2_d(
         DRT::Element& sele, DRT::Element& mele, std::vector<Teuchos::RCP<MORTAR::IntCell>>& cells);
 
     /*!
      \brief perform 3D element-wise integration
 
      */
-    virtual void Integrate3D(DRT::Element& sele, DRT::Element& mele, int domain);
+    virtual void integrate3_d(DRT::Element& sele, DRT::Element& mele, int domain);
 
     /*!
      \brief perform 3D element-wise integration for P12
@@ -366,7 +367,7 @@ namespace CORE::VOLMORTAR
      \brief perform 3D integration of created cells
 
      */
-    virtual void Integrate3DCell(
+    virtual void integrate3_d_cell(
         DRT::Element& sele, DRT::Element& mele, std::vector<Teuchos::RCP<Cell>>& cells);
 
     /*!
@@ -379,7 +380,7 @@ namespace CORE::VOLMORTAR
      \brief perform mesh init procedure
 
      */
-    virtual void MeshInit();
+    virtual void mesh_init();
 
     /*!
      \brief get parameter list
@@ -391,7 +392,7 @@ namespace CORE::VOLMORTAR
      \brief perform cut and create integration cells (3D)
 
      */
-    virtual void PerformCut(DRT::Element* sele, DRT::Element* mele, bool switched_conf = false);
+    virtual void perform_cut(DRT::Element* sele, DRT::Element* mele, bool switched_conf = false);
 
     /*!
      \brief perform 2D polygon clipping
@@ -405,13 +406,13 @@ namespace CORE::VOLMORTAR
      \brief Output for evaluation status -- progress
 
      */
-    virtual void PrintStatus(int& i, bool dis_switch = false);
+    virtual void print_status(int& i, bool dis_switch = false);
 
     /*!
      \brief Get required parameters and check for validity
 
      */
-    virtual void ReadAndCheckInput(const Teuchos::ParameterList& volmortar_parameters);
+    virtual void read_and_check_input(const Teuchos::ParameterList& volmortar_parameters);
 
     /*!
      \brief search algorithm

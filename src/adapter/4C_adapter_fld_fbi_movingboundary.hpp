@@ -43,7 +43,7 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// fluid field
-    const Teuchos::RCP<ADAPTER::Fluid>& FluidField() override { return fluidadapter_; }
+    const Teuchos::RCP<ADAPTER::Fluid>& fluid_field() override { return fluidadapter_; }
 
     /// return the boundary discretization that matches the structure discretization
     Teuchos::RCP<DRT::Discretization> Discretization() override;
@@ -58,7 +58,7 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// start new time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     /// update at time step end
     void Update() override;
@@ -67,7 +67,7 @@ namespace ADAPTER
     void Output() override;
 
     /// read restart information for given time step
-    double ReadRestart(int step) override;
+    double read_restart(int step) override;
 
     /*========================================================================*/
     //! @name Solver calls

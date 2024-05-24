@@ -367,7 +367,7 @@ namespace DRT
                                   to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -480,12 +480,12 @@ namespace DRT
           CORE::LINALG::Matrix<noddof_, noddof_>& Q_localToGlobal) const;
 
       //! pushforward of 2nd Piola-Kirchhoff stresses to Cauchy stresses at Gauss point
-      void mem_PK2toCauchy(const CORE::LINALG::Matrix<noddof_, noddof_>& pkstress_global,
+      void mem_p_k2to_cauchy(const CORE::LINALG::Matrix<noddof_, noddof_>& pkstress_global,
           const CORE::LINALG::Matrix<noddof_, noddof_>& defgrd,
           CORE::LINALG::Matrix<noddof_, noddof_>& cauchy) const;
 
       // pushforward of Green-Lagrange to Euler-Almansi strains at Gauss point
-      void mem_GLtoEA(const CORE::LINALG::Matrix<noddof_, noddof_>& glstrain_global,
+      void mem_g_lto_ea(const CORE::LINALG::Matrix<noddof_, noddof_>& glstrain_global,
           const CORE::LINALG::Matrix<noddof_, noddof_>& defgrd,
           CORE::LINALG::Matrix<noddof_, noddof_>& euler_almansi) const;
 
@@ -703,9 +703,9 @@ namespace DRT
       /*!
        * \brief Return pointer to the parent element
        */
-      virtual DRT::ELEMENTS::Membrane<distype2>* ParentElement() const
+      virtual DRT::ELEMENTS::Membrane<distype2>* parent_element() const
       {
-        DRT::Element* parent = this->DRT::FaceElement::ParentElement();
+        DRT::Element* parent = this->DRT::FaceElement::parent_element();
         // make sure the static cast below is really valid
         FOUR_C_ASSERT(dynamic_cast<DRT::ELEMENTS::Membrane<distype2>*>(parent) != nullptr,
             "Parent element is no membrane element");
@@ -755,7 +755,7 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;

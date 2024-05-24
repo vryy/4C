@@ -51,11 +51,11 @@ namespace STI
 
    private:
     //! get special result to be tested
-    double ResultSpecial(const std::string& quantity  //! name of quantity to be tested
+    double result_special(const std::string& quantity  //! name of quantity to be tested
     ) const;
 
     //! return time integrator for monolithic scatra-thermo interaction
-    const STI::Monolithic& STIMonolithic() const;
+    const STI::Monolithic& sti_monolithic() const;
 
     //! time integrator for scatra-thermo interaction
     const Teuchos::RCP<const STI::Algorithm> sti_algorithm_;

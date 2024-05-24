@@ -43,17 +43,17 @@ FOUR_C_NAMESPACE_OPEN
 ADAPTER::AleBaseAlgorithm::AleBaseAlgorithm(
     const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis)
 {
-  SetupAle(prbdyn, actdis);
+  setup_ale(prbdyn, actdis);
 }
 
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ADAPTER::AleBaseAlgorithm::SetupAle(
+void ADAPTER::AleBaseAlgorithm::setup_ale(
     const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis)
 {
   Teuchos::RCP<Teuchos::Time> t =
-      Teuchos::TimeMonitor::getNewTimer("ALE::AleBaseAlgorithm::SetupAle");
+      Teuchos::TimeMonitor::getNewTimer("ALE::AleBaseAlgorithm::setup_ale");
   Teuchos::TimeMonitor monitor(*t);
 
   // what's the current problem type?
@@ -62,7 +62,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
   // ---------------------------------------------------------------------------
   // set degrees of freedom in the discretization
   // ---------------------------------------------------------------------------
-  if (!actdis->Filled()) actdis->FillComplete();
+  if (!actdis->Filled()) actdis->fill_complete();
 
   // ---------------------------------------------------------------------------
   // connect degrees of freedom for coupled nodes

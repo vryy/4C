@@ -1553,7 +1553,7 @@ namespace FLD
   Restart statistics collection
 
   ----------------------------------------------------------------------*/
-  void TurbulenceStatisticManager::ReadRestart(IO::DiscretizationReader& reader, int step)
+  void TurbulenceStatisticManager::read_restart(IO::DiscretizationReader& reader, int step)
   {
     if (samstart_ < step && step <= samstop_)
     {
@@ -1580,7 +1580,7 @@ namespace FLD
           std::cout << "\n\n";
         }
 
-        statistics_ldc_->ReadRestart(reader);
+        statistics_ldc_->read_restart(reader);
       }
     }
 

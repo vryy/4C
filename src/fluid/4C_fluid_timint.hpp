@@ -66,7 +66,7 @@ namespace FLD
 
     void Init() override = 0;
 
-    Teuchos::RCP<const Epetra_Vector> InitialGuess() override
+    Teuchos::RCP<const Epetra_Vector> initial_guess() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
@@ -174,8 +174,8 @@ namespace FLD
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<const Epetra_Map> DofRowMap() override { return DofRowMap(0); }
-    Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) override;
+    Teuchos::RCP<const Epetra_Map> dof_row_map() override { return dof_row_map(0); }
+    Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) override;
     Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
@@ -213,7 +213,7 @@ namespace FLD
       return Teuchos::null;
     }
     void Integrate() override = 0;
-    void PrepareTimeStep() override
+    void prepare_time_step() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
@@ -225,7 +225,7 @@ namespace FLD
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
-    virtual bool ConvergenceCheck(int itnum, int itmax, const double ittol)
+    virtual bool convergence_check(int itnum, int itmax, const double ittol)
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return false;
@@ -333,7 +333,7 @@ namespace FLD
       return ret;
     }
 
-    void ReadRestart(int step) override
+    void read_restart(int step) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
@@ -366,7 +366,7 @@ namespace FLD
      *
      *  \author mayr.mt \date 12/2013
      */
-    void TimeStepAuxiliar() override
+    void time_step_auxiliar() override
     {
       FOUR_C_THROW(
           "We do this in the Adapter until time adaptivity is available in the fluid field.");
@@ -393,7 +393,7 @@ namespace FLD
     //@}
 
     //! set time step size
-    void SetDt(const double dtnew) override
+    void set_dt(const double dtnew) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
@@ -418,7 +418,7 @@ namespace FLD
     \author mayr.mt
     \date 08/2013
     */
-    void ResetStep() override
+    void reset_step() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
@@ -436,7 +436,7 @@ namespace FLD
     \author mayr.mt
     \date 08/2013
      */
-    void ResetTime(const double dtold) override
+    void reset_time(const double dtold) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;

@@ -210,7 +210,7 @@ namespace MAT
      * @param[in] terms                  terms that can be precalculated and reused several times
      * @return residual vector
      */
-    CORE::LINALG::Matrix<2, 1>& CalculateResidual(const double equ_tens_stress_np,
+    CORE::LINALG::Matrix<2, 1>& calculate_residual(const double equ_tens_stress_np,
         const double equ_tens_trial_stress, const double flow_resistance_np,
         const double flow_resistance_n, const PreCalculatedTerms& terms);
 
@@ -282,7 +282,7 @@ namespace MAT
      * @param[in/out] x  solution vector
      * @param[in]     dt time step
      */
-    void LocalNewtonLoop(CORE::LINALG::Matrix<2, 1>& x, double dt);
+    void local_newton_loop(CORE::LINALG::Matrix<2, 1>& x, double dt);
 
     /*!
      * @brief Calculate and return terms of the formulation that can be reused several times
@@ -292,7 +292,7 @@ namespace MAT
      * @param[in] dt                  time step
      * @return pre-calculated terms
      */
-    PreCalculatedTerms PreCalculateTerms(
+    PreCalculatedTerms pre_calculate_terms(
         const double equ_tens_stress_np, const double flow_resistance_np, const double dt);
 
     //! @}
@@ -304,11 +304,11 @@ namespace MAT
      *
      * @param[out] cmat elasticity tensor in intermediate configuration
      */
-    void SetupCmat(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat);
+    void setup_cmat(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat);
 
     void Update() override;
 
-    bool NeedsDefgrd() override { return true; };
+    bool needs_defgrd() override { return true; };
 
     CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 

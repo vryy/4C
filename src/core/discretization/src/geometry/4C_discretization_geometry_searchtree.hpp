@@ -104,35 +104,35 @@ namespace CORE::GEO
        \param childIndex           index of child node
        \return returns node box
        */
-      CORE::LINALG::Matrix<3, 2> getChildNodeBox(const int childIndex) const;
+      CORE::LINALG::Matrix<3, 2> get_child_node_box(const int childIndex) const;
 
       /*!
        \brief returns the node box of a child node
        \param index           index of child node
        \param childNodeBox    child node box
        */
-      void getChildNodeBox(const int index, CORE::LINALG::Matrix<3, 2>& childNodeBox) const;
+      void get_child_node_box(const int index, CORE::LINALG::Matrix<3, 2>& childNodeBox) const;
 
       /*!
        \brief returns the child node indices which overlaps with a given AABB
        \param AABB            AABB
        \param octants         vector of octantcs
        */
-      void classifyXAABB(const CORE::LINALG::Matrix<3, 2>& AABB, std::vector<int>& octants) const;
+      void classify_xaabb(const CORE::LINALG::Matrix<3, 2>& AABB, std::vector<int>& octants) const;
 
       /*!
        \brief returns the child node indices which overlaps with a given AABB
        \param AABB            AABB
        \param octants         vector of octantcs
        */
-      void classifyKDOP(const CORE::LINALG::Matrix<9, 2>& KDOP, std::vector<int>& octants) const;
+      void classify_kdop(const CORE::LINALG::Matrix<9, 2>& KDOP, std::vector<int>& octants) const;
 
       /*!
        \brief returns the child node indices which overlaps with a given AABB
        \param AABB                AABB
        \return vector of childen indices
        */
-      std::vector<int> classifyXAABB(const CORE::LINALG::Matrix<3, 2>& AABB) const;
+      std::vector<int> classify_xaabb(const CORE::LINALG::Matrix<3, 2>& AABB) const;
 
       /*!
        \brief returns the index of the child node which overlaps with a given AABB
@@ -140,7 +140,7 @@ namespace CORE::GEO
        \param AABB                AABB
        \return vector of childen indices
        */
-      bool classifyXAABB(int& index, const CORE::LINALG::Matrix<3, 2>& AABB) const;
+      bool classify_xaabb(int& index, const CORE::LINALG::Matrix<3, 2>& AABB) const;
 
       /*!
        \brief returns the index of the child node which overlaps with a given AABB
@@ -148,7 +148,7 @@ namespace CORE::GEO
        \param AABB                AABB
        \return vector of childen indices
        */
-      bool classifyKDOP(int& index, const CORE::LINALG::Matrix<9, 2>& KDOP) const;
+      bool classify_kdop(int& index, const CORE::LINALG::Matrix<9, 2>& KDOP) const;
 
       /*!
        \brief return child(ren) of this tree node in which the ele has to be inserted
@@ -156,7 +156,7 @@ namespace CORE::GEO
        \param currentpositions     current nodal positions in discretization
        \return vector of children ids
        */
-      std::vector<int> classifyElement(const DRT::Element* element,
+      std::vector<int> classify_element(const DRT::Element* element,
           const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions) const;
 
       /*!
@@ -165,7 +165,7 @@ namespace CORE::GEO
        \param xyze_element         coordinates of element
        \return vector of children ids
        */
-      std::vector<int> classifyElement(
+      std::vector<int> classify_element(
           const DRT::Element* element, const CORE::LINALG::SerialDenseMatrix& xyze_element) const;
 
       /*!
@@ -174,14 +174,14 @@ namespace CORE::GEO
        \param xyze_element         coordinates of element
        \return vector of children ids
        */
-      std::vector<int> classifyElement(const Teuchos::RCP<DRT::Element> element,
+      std::vector<int> classify_element(const Teuchos::RCP<DRT::Element> element,
           const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions) const;
 
       /*!
        \brief return children, whose node box intersects with the circle with the given midpoint and
        radius \param radius              radius \param point               point \return child index
        */
-      std::vector<int> classifyRadius(
+      std::vector<int> classify_radius(
           const double radius, const CORE::LINALG::Matrix<3, 1>& point) const;
 
       /*!
@@ -189,7 +189,7 @@ namespace CORE::GEO
        \param dis                  discretization
        \param currentpositions     current nodal positions in discretization
        */
-      void createChildren(const DRT::Discretization& dis,
+      void create_children(const DRT::Discretization& dis,
           const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions);
 
       /*!
@@ -198,14 +198,14 @@ namespace CORE::GEO
 
        \param currentXAABBs        current elemental bounding boxes
        */
-      void createChildren(const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentXAABBs);
+      void create_children(const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentXAABBs);
 
       /*!
        \brief create children of a treenode and insert elements
 
        \param currentKDOPs        current elemental kdops
        */
-      void createChildren(const std::map<int, CORE::LINALG::Matrix<9, 2>>& currentKDOPs);
+      void create_children(const std::map<int, CORE::LINALG::Matrix<9, 2>>& currentKDOPs);
 
 
      public:

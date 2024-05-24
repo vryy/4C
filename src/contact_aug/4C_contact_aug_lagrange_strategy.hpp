@@ -33,7 +33,7 @@ namespace CONTACT
        public:
         /// constructor
         Strategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
-            const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
+            const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
             const Teuchos::ParameterList& params, const plain_interface_set& interfaces, int dim,
             const Teuchos::RCP<const Epetra_Comm>& comm, int maxdof);
 

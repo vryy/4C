@@ -39,8 +39,8 @@ void CONTACT::IntegratorNitsche::IntegrateGP_3D(MORTAR::Element& sele, MORTAR::E
     std::vector<CORE::GEN::Pairedvector<int, double>>& derivsxi,
     std::vector<CORE::GEN::Pairedvector<int, double>>& derivmxi)
 {
-  GPTSForces<3>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt, gap,
-      deriv_gap, normal, dnmap_unit, sxi, mxi);
+  gpts_forces<3>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt,
+      gap, deriv_gap, normal, dnmap_unit, sxi, mxi);
 }
 
 /*----------------------------------------------------------------------*
@@ -56,14 +56,14 @@ void CONTACT::IntegratorNitsche::IntegrateGP_2D(MORTAR::Element& sele, MORTAR::E
     std::vector<CORE::GEN::Pairedvector<int, double>>& derivsxi,
     std::vector<CORE::GEN::Pairedvector<int, double>>& derivmxi)
 {
-  GPTSForces<2>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt, gap,
-      deriv_gap, normal, dnmap_unit, sxi, mxi);
+  gpts_forces<2>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt,
+      gap, deriv_gap, normal, dnmap_unit, sxi, mxi);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::IntegratorNitsche::GPTSForces(MORTAR::Element& sele, MORTAR::Element& mele,
+void CONTACT::IntegratorNitsche::gpts_forces(MORTAR::Element& sele, MORTAR::Element& mele,
     const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseMatrix& sderiv,
     const std::vector<CORE::GEN::Pairedvector<int, double>>& dsxi,
     const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& mderiv,
@@ -103,7 +103,7 @@ void CONTACT::IntegratorNitsche::GPTSForces(MORTAR::Element& sele, MORTAR::Eleme
   {
     double cauchy_nn_weighted_average = 0.;
     CORE::GEN::Pairedvector<int, double> cauchy_nn_weighted_average_deriv(
-        sele.NumNode() * 3 * 12 + sele.MoData().ParentDisp().size() +
+        sele.num_node() * 3 * 12 + sele.MoData().ParentDisp().size() +
         mele.MoData().ParentDisp().size());
 
     CORE::LINALG::SerialDenseVector normal_adjoint_test_slave(sele.MoData().ParentDof().size());
@@ -125,13 +125,13 @@ void CONTACT::IntegratorNitsche::GPTSForces(MORTAR::Element& sele, MORTAR::Eleme
     std::vector<CORE::GEN::Pairedvector<int, double>> dt1, dt2;
     CORE::LINALG::Matrix<dim, 1> relVel;
     std::vector<CORE::GEN::Pairedvector<int, double>> relVel_deriv(
-        dim, sele.NumNode() * dim + mele.NumNode() * dim + dsxi[0].size() + dmxi[0].size());
+        dim, sele.num_node() * dim + mele.num_node() * dim + dsxi[0].size() + dmxi[0].size());
     double vt1(0.0), vt2(0.0);
     CORE::GEN::Pairedvector<int, double> dvt1(0);
     CORE::GEN::Pairedvector<int, double> dvt2(0);
     double cauchy_nt1_weighted_average = 0.;
     CORE::GEN::Pairedvector<int, double> cauchy_nt1_weighted_average_deriv(
-        sele.NumNode() * 3 * 12 + sele.MoData().ParentDisp().size() +
+        sele.num_node() * 3 * 12 + sele.MoData().ParentDisp().size() +
         mele.MoData().ParentDisp().size());
     CORE::LINALG::SerialDenseVector t1_adjoint_test_slave(sele.MoData().ParentDof().size());
     CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseVector> deriv_t1_adjoint_test_slave(
@@ -143,7 +143,7 @@ void CONTACT::IntegratorNitsche::GPTSForces(MORTAR::Element& sele, MORTAR::Eleme
         CORE::LINALG::SerialDenseVector(mele.MoData().ParentDof().size(), true));
     double cauchy_nt2_weighted_average = 0.;
     CORE::GEN::Pairedvector<int, double> cauchy_nt2_weighted_average_deriv(
-        sele.NumNode() * 3 * 12 + sele.MoData().ParentDisp().size() +
+        sele.num_node() * 3 * 12 + sele.MoData().ParentDisp().size() +
         mele.MoData().ParentDisp().size());
     CORE::LINALG::SerialDenseVector t2_adjoint_test_slave(sele.MoData().ParentDof().size());
     CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseVector> deriv_t2_adjoint_test_slave(
@@ -408,31 +408,31 @@ void CONTACT::UTILS::MapGPtoParent(MORTAR::Element& moEle, double* boundary_gpco
     const double wgt, CORE::LINALG::Matrix<dim, 1>& pxsi,
     CORE::LINALG::Matrix<dim, dim>& derivtravo_slave)
 {
-  CORE::FE::CellType distype = moEle.ParentElement()->Shape();
+  CORE::FE::CellType distype = moEle.parent_element()->Shape();
   switch (distype)
   {
     case CORE::FE::CellType::hex8:
-      CONTACT::UTILS::SoEleGP<CORE::FE::CellType::hex8, dim>(
+      CONTACT::UTILS::so_ele_gp<CORE::FE::CellType::hex8, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
     case CORE::FE::CellType::tet4:
-      CONTACT::UTILS::SoEleGP<CORE::FE::CellType::tet4, dim>(
+      CONTACT::UTILS::so_ele_gp<CORE::FE::CellType::tet4, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
     case CORE::FE::CellType::quad4:
-      CONTACT::UTILS::SoEleGP<CORE::FE::CellType::quad4, dim>(
+      CONTACT::UTILS::so_ele_gp<CORE::FE::CellType::quad4, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
     case CORE::FE::CellType::quad9:
-      CONTACT::UTILS::SoEleGP<CORE::FE::CellType::quad9, dim>(
+      CONTACT::UTILS::so_ele_gp<CORE::FE::CellType::quad9, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
     case CORE::FE::CellType::tri3:
-      CONTACT::UTILS::SoEleGP<CORE::FE::CellType::tri3, dim>(
+      CONTACT::UTILS::so_ele_gp<CORE::FE::CellType::tri3, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
     case CORE::FE::CellType::nurbs27:
-      CONTACT::UTILS::SoEleGP<CORE::FE::CellType::nurbs27, dim>(
+      CONTACT::UTILS::so_ele_gp<CORE::FE::CellType::nurbs27, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
     default:
@@ -480,7 +480,7 @@ void CONTACT::IntegratorNitsche::SoEleCauchy(MORTAR::Element& moEle, double* bou
   const double cauchy_n_dir = std::invoke(
       [&]()
       {
-        if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::SoBase*>(moEle.ParentElement());
+        if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::SoBase*>(moEle.parent_element());
             solid_ele != nullptr)
         {
           // old solid element
@@ -494,7 +494,7 @@ void CONTACT::IntegratorNitsche::SoEleCauchy(MORTAR::Element& moEle, double* bou
 
           return cauchy_n_dir;
         }
-        else if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::Solid*>(moEle.ParentElement());
+        else if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::Solid*>(moEle.parent_element());
                  solid_ele != nullptr)
         {
           // new solid element
@@ -510,7 +510,7 @@ void CONTACT::IntegratorNitsche::SoEleCauchy(MORTAR::Element& moEle, double* bou
 
   cauchy_nt += w * cauchy_n_dir;
 
-  for (int i = 0; i < moEle.ParentElement()->NumNode() * dim; ++i)
+  for (int i = 0; i < moEle.parent_element()->num_node() * dim; ++i)
     deriv_sigma_nt[moEle.MoData().ParentDof().at(i)] += w * d_cauchyndir_dd(i, 0);
 
   for (int i = 0; i < dim - 1; ++i)
@@ -552,12 +552,13 @@ void CONTACT::IntegratorNitsche::IntegrateTest(const double fac, MORTAR::Element
   {
     const double val = fac * jac * wgt * test_val * test_dir(d);
 
-    for (int s = 0; s < ele.NumNode(); ++s)
+    for (int s = 0; s < ele.num_node(); ++s)
     {
-      *(ele.GetNitscheContainer().Rhs(CORE::FE::getParentNodeNumberFromFaceNodeNumber(
-                                          ele.ParentElement()->Shape(), ele.FaceParentNumber(), s) *
-                                          dim +
-                                      d)) += val * shape(s);
+      *(ele.GetNitscheContainer().Rhs(
+          CORE::FE::getParentNodeNumberFromFaceNodeNumber(
+              ele.parent_element()->Shape(), ele.FaceParentNumber(), s) *
+              dim +
+          d)) += val * shape(s);
     }
 
     std::unordered_map<int, double> val_deriv;
@@ -571,10 +572,10 @@ void CONTACT::IntegratorNitsche::IntegrateTest(const double fac, MORTAR::Element
     for (const auto& p : val_deriv)
     {
       double* row = ele.GetNitscheContainer().K(p.first);
-      for (int s = 0; s < ele.NumNode(); ++s)
+      for (int s = 0; s < ele.num_node(); ++s)
       {
         row[CORE::FE::getParentNodeNumberFromFaceNodeNumber(
-                ele.ParentElement()->Shape(), ele.FaceParentNumber(), s) *
+                ele.parent_element()->Shape(), ele.FaceParentNumber(), s) *
                 dim +
             d] += p.second * shape(s);
       }
@@ -585,10 +586,10 @@ void CONTACT::IntegratorNitsche::IntegrateTest(const double fac, MORTAR::Element
       for (const auto& p : dxi[e])
       {
         double* row = ele.GetNitscheContainer().K(p.first);
-        for (int s = 0; s < ele.NumNode(); ++s)
+        for (int s = 0; s < ele.num_node(); ++s)
         {
           row[CORE::FE::getParentNodeNumberFromFaceNodeNumber(
-                  ele.ParentElement()->Shape(), ele.FaceParentNumber(), s) *
+                  ele.parent_element()->Shape(), ele.FaceParentNumber(), s) *
                   dim +
               d] += val * deriv(s, e) * p.second;
         }
@@ -610,11 +611,12 @@ void CONTACT::IntegratorNitsche::BuildAdjointTest(MORTAR::Element& moEle, const 
     CORE::LINALG::SerialDenseVector& adjoint_test,
     CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseVector>& deriv_adjoint_test)
 {
-  for (int i = 0; i < moEle.ParentElement()->NumNode() * dim; ++i)
+  for (int i = 0; i < moEle.parent_element()->num_node() * dim; ++i)
   {
     adjoint_test(i) = fac * dsntdd(i, 0);
     CORE::LINALG::SerialDenseVector& at = deriv_adjoint_test[moEle.MoData().ParentDof().at(i)];
-    for (int j = 0; j < moEle.ParentElement()->NumNode() * dim; ++j) at(j) += fac * d2sntdd2(i, j);
+    for (int j = 0; j < moEle.parent_element()->num_node() * dim; ++j)
+      at(j) += fac * d2sntdd2(i, j);
   }
 
   for (int d = 0; d < dim; ++d)
@@ -622,7 +624,7 @@ void CONTACT::IntegratorNitsche::BuildAdjointTest(MORTAR::Element& moEle, const 
     for (const auto& p : normal_deriv[d])
     {
       CORE::LINALG::SerialDenseVector& at = deriv_adjoint_test[p.first];
-      for (int i = 0; i < moEle.ParentElement()->NumNode() * dim; ++i)
+      for (int i = 0; i < moEle.parent_element()->num_node() * dim; ++i)
         at(i) += fac * d2sntDdDn(i, d) * p.second;
     }
   }
@@ -632,12 +634,12 @@ void CONTACT::IntegratorNitsche::BuildAdjointTest(MORTAR::Element& moEle, const 
     for (const auto& p : direction_deriv[d])
     {
       CORE::LINALG::SerialDenseVector& at = deriv_adjoint_test[p.first];
-      for (int i = 0; i < moEle.ParentElement()->NumNode() * dim; ++i)
+      for (int i = 0; i < moEle.parent_element()->num_node() * dim; ++i)
         at(i) += fac * d2sntDdDt(i, d) * p.second;
     }
   }
 
-  CORE::LINALG::SerialDenseMatrix tmp(moEle.ParentElement()->NumNode() * dim, dim, false);
+  CORE::LINALG::SerialDenseMatrix tmp(moEle.parent_element()->num_node() * dim, dim, false);
   CORE::LINALG::SerialDenseMatrix deriv_trafo(Teuchos::View, derivtravo_slave.A(),
       derivtravo_slave.numRows(), derivtravo_slave.numRows(), derivtravo_slave.numCols());
   if (CORE::LINALG::multiply(tmp, d2sntDdDpxi, deriv_trafo)) FOUR_C_THROW("multiply failed");
@@ -646,7 +648,7 @@ void CONTACT::IntegratorNitsche::BuildAdjointTest(MORTAR::Element& moEle, const 
     for (const auto& p : boundary_gpcoord_lin[d])
     {
       CORE::LINALG::SerialDenseVector& at = deriv_adjoint_test[p.first];
-      for (int i = 0; i < moEle.ParentElement()->NumNode() * dim; ++i)
+      for (int i = 0; i < moEle.parent_element()->num_node() * dim; ++i)
         at(i) += fac * tmp(i, d) * p.second;
     }
   }
@@ -735,7 +737,7 @@ void CONTACT::UTILS::RelVel(MORTAR::Element& ele, const CORE::LINALG::SerialDens
     CORE::LINALG::Matrix<dim, 1>& relVel,
     std::vector<CORE::GEN::Pairedvector<int, double>>& relVel_deriv)
 {
-  for (int n = 0; n < ele.NumNode(); ++n)
+  for (int n = 0; n < ele.num_node(); ++n)
   {
     for (int d = 0; d < dim; ++d)
     {
@@ -770,7 +772,7 @@ void CONTACT::UTILS::RelVelInvariant(MORTAR::Element& sele, const double* sxi,
   CORE::LINALG::Matrix<3, 1> n_old;
   CORE::LINALG::Matrix<3, 2> d_n_old_dxi;
   dynamic_cast<CONTACT::Element&>(sele).OldUnitNormalAtXi(sxi, n_old, d_n_old_dxi);
-  for (int i = 0; i < sele.NumNode(); ++i)
+  for (int i = 0; i < sele.num_node(); ++i)
   {
     for (int d = 0; d < dim; ++d)
     {
@@ -782,7 +784,7 @@ void CONTACT::UTILS::RelVelInvariant(MORTAR::Element& sele, const double* sxi,
     }
   }
 
-  for (int i = 0; i < mele.NumNode(); ++i)
+  for (int i = 0; i < mele.num_node(); ++i)
   {
     for (int d = 0; d < dim; ++d)
     {

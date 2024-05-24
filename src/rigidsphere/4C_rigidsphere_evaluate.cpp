@@ -202,20 +202,20 @@ void DRT::ELEMENTS::Rigidsphere::calc_brownian_forces_and_stiff(Teuchos::Paramet
     std::vector<double>& vel, std::vector<double>& disp,
     CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseVector* force)
 {
-  CalcDragForce(params, vel, disp, stiffmatrix, force);
-  CalcStochasticForce(params, vel, disp, stiffmatrix, force);
+  calc_drag_force(params, vel, disp, stiffmatrix, force);
+  calc_stochastic_force(params, vel, disp, stiffmatrix, force);
 }
 
 /*------------------------------------------------------------------------------------------------------------*
  | compute drag forces and contribution to stiffness matrix  (private) grill 03/14|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Rigidsphere::CalcDragForce(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::Rigidsphere::calc_drag_force(Teuchos::ParameterList& params,
     const std::vector<double>& vel,                //!< element velocity vector
     const std::vector<double>& disp,               //!< element displacement vector
     CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
     CORE::LINALG::SerialDenseVector* force)        //!< element internal force vector
 {
-  double gamma = MyDampingConstant();
+  double gamma = my_damping_constant();
 
   // get time step size
   double dt = ParamsInterface().GetDeltaTime();
@@ -311,7 +311,7 @@ void DRT::ELEMENTS::Rigidsphere::get_background_velocity(
 /*-----------------------------------------------------------------------------------------------------------*
  | computes damping coefficient                                             (private) grill   03/14|
  *----------------------------------------------------------------------------------------------------------*/
-double DRT::ELEMENTS::Rigidsphere::MyDampingConstant()
+double DRT::ELEMENTS::Rigidsphere::my_damping_constant()
 {
   // (dynamic) viscosity of background fluid
   double eta = ParamsInterface().get_brownian_dyn_param_interface()->GetViscosity();
@@ -383,7 +383,7 @@ void DRT::ELEMENTS::Rigidsphere::get_generalized_interpolation_matrix_increments
 /*-----------------------------------------------------------------------------------------------------------*
  | computes stochastic forces and resulting stiffness (public) grill   03/14|
  *----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Rigidsphere::CalcStochasticForce(
+void DRT::ELEMENTS::Rigidsphere::calc_stochastic_force(
     Teuchos::ParameterList& params,                //!< parameter list
     const std::vector<double>& vel,                //!< element velocity vector
     const std::vector<double>& disp,               //!< element disp vector
@@ -391,7 +391,7 @@ void DRT::ELEMENTS::Rigidsphere::CalcStochasticForce(
     CORE::LINALG::SerialDenseVector* force)        //!< element internal force vector
 {
   // damping coefficient
-  double gamma = MyDampingConstant();
+  double gamma = my_damping_constant();
 
   /*get pointer at Epetra multivector in parameter list linking to random numbers for stochastic
    * forces with zero mean and standard deviation (2*kT / dt)^0.5*/

@@ -88,10 +88,10 @@ namespace FLD
     void SetInterfaceFree();
 
     /// setup the variables to do a new time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     /// get initial guess for both fluids
-    Teuchos::RCP<const Epetra_Vector> InitialGuess() override;
+    Teuchos::RCP<const Epetra_Vector> initial_guess() override;
 
     /// prepare solution (cut happens here)
     void PrepareXFEMSolve() override;
@@ -135,7 +135,7 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector> write_access_disp_old_state() { return dispnpoldstate_; }
 
     /// get merged fluid dofmap
-    Teuchos::RCP<const Epetra_Map> DofRowMap() override
+    Teuchos::RCP<const Epetra_Map> dof_row_map() override
     {
       //    return Teuchos::rcp((xff_state_->xffluiddofrowmap_).get(), false); // TODO: does not
       //    work at the moment, no nox structure split gives segfault!
@@ -222,7 +222,7 @@ namespace FLD
     void CreateState() override;
 
     /// call the loop over elements to assemble volume and interface integrals
-    void AssembleMatAndRHS(int itnum  ///< iteration number
+    void assemble_mat_and_rhs(int itnum  ///< iteration number
         ) override;
 
     /// Update velocity and pressure by increment

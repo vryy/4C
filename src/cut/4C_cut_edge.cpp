@@ -45,7 +45,7 @@ bool CORE::GEO::CUT::Edge::find_cut_points_level_set(
     Point* p = *i;
     if (p->IsCut(&other))  // cut points may already obtained when some other side was considered
     {
-      p->AddElement(element);
+      p->add_element(element);
     }
   }
 
@@ -58,19 +58,19 @@ bool CORE::GEO::CUT::Edge::find_cut_points_level_set(
     Point* p = *i;
 
     p->AddEdge(this);
-    p->AddElement(element);
+    p->add_element(element);
 
     // These adds are implicitly done, but for documentation do them all explicitly.
 
-    p->AddSide(&side);
-    p->AddSide(&other);
+    p->add_side(&side);
+    p->add_side(&other);
     AddPoint(p);
   }
 
   return cut_points.size() > 0;
 }
 
-bool CORE::GEO::CUT::Edge::FindCutPoints(Mesh& mesh, Element* element, Side& side, Side& other)
+bool CORE::GEO::CUT::Edge::find_cut_points(Mesh& mesh, Element* element, Side& side, Side& other)
 {
   // dispatch function call between side = LevelSetSide and  normal side
   return other.find_cut_points_dispatch(mesh, element, side, *this);
@@ -109,8 +109,8 @@ bool CORE::GEO::CUT::Edge::find_cut_points_mesh_cut(
   // if 2 points found - we are done
   else if (point_stack.size() == 2)
   {
-    point_stack[0]->AddElement(element);
-    point_stack[1]->AddElement(element);
+    point_stack[0]->add_element(element);
+    point_stack[1]->add_element(element);
     cut = true;
   }
   // might be possible to have another intersection point (if edge is parallel to the size)
@@ -126,7 +126,7 @@ bool CORE::GEO::CUT::Edge::find_cut_points_mesh_cut(
       if (not parallel_cut)
       {
         cut = true;
-        p->AddElement(element);
+        p->add_element(element);
       }
     }
     // else we need to check for paralelism
@@ -169,12 +169,12 @@ bool CORE::GEO::CUT::Edge::find_cut_points_mesh_cut(
     Point* p = *i;
 
     p->AddEdge(this);
-    p->AddElement(element);
+    p->add_element(element);
 
     // These adds are implicitly done, but for documentation do them all explicitly.
 
-    p->AddSide(&side);
-    p->AddSide(&other);
+    p->add_side(&side);
+    p->add_side(&other);
 
     p->AddPair(&other, this);
 
@@ -479,7 +479,7 @@ void CORE::GEO::CUT::Edge::RectifyCutNumerics()
             for (PointPositionSet::const_iterator i = next; i != pi; ++i)
             {
               Point* p = *i;
-              p->AddSide(s);
+              p->add_side(s);
             }
           }
           j->second = pi;
@@ -573,7 +573,7 @@ template <unsigned probDim, CORE::FE::CellType edgeType, unsigned dimEdge, unsig
 bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Cut(
     Mesh& mesh, Side& side, PointSet& cuts)
 {
-  Teuchos::RCP<CORE::GEO::CUT::IntersectionBase> inter_ptr = IntersectionPtr(side.Shape());
+  Teuchos::RCP<CORE::GEO::CUT::IntersectionBase> inter_ptr = intersection_ptr(side.Shape());
 
   inter_ptr->Init(&mesh, this, &side, false, false, true);
   return inter_ptr->Intersect(cuts);
@@ -585,7 +585,7 @@ template <unsigned probDim, CORE::FE::CellType edgeType, unsigned dimEdge, unsig
 bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::JustParallelCut(
     Mesh& mesh, Side& side, PointSet& cuts, int skip_id)
 {
-  Teuchos::RCP<CORE::GEO::CUT::IntersectionBase> inter_ptr = IntersectionPtr(side.Shape());
+  Teuchos::RCP<CORE::GEO::CUT::IntersectionBase> inter_ptr = intersection_ptr(side.Shape());
 
   inter_ptr->Init(&mesh, this, &side, false, false, false);
   return (inter_ptr->handle_parallel_intersection(cuts, skip_id) > 0);
@@ -608,7 +608,7 @@ bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Han
   // nodes that belong to e1
   for (unsigned int i = 0; i < nodes_e1; ++i)
   {
-    Point* cut_point = Point::InsertCut(this, side, touch_nodes[i]);
+    Point* cut_point = Point::insert_cut(this, side, touch_nodes[i]);
     std::stringstream msg;
 #if CUT_CREATION_INFO
     msg << "//Added because " << cut_point->Id() << " lies on the edge" << this->Id() << std::endl;
@@ -634,7 +634,7 @@ bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Han
   // nodes that belong to e2
   for (unsigned int i = nodes_e1; i < touch_nodes.size(); ++i)
   {
-    Point* cut_point = Point::InsertCut(other, side, touch_nodes[i]);
+    Point* cut_point = Point::insert_cut(other, side, touch_nodes[i]);
     std::stringstream msg;
 #if CUT_CREATION_INFO
     msg << "//Added because " << cut_point->Id() << " lies on the edge" << other->Id() << std::endl;
@@ -717,7 +717,7 @@ void CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Get
       }
       default:
       {
-        FOUR_C_THROW("Unexpected floattype for KERNEL::ComputeDistance!");
+        FOUR_C_THROW("Unexpected floattype for KERNEL::compute_distance!");
       }
     }
 
@@ -748,7 +748,7 @@ void CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Get
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probDim, CORE::FE::CellType edgeType, unsigned dimEdge, unsigned numNodesEdge>
-bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::ComputeCut(
+bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::compute_cut(
     Mesh* mesh, Edge* other, Side* side, PointSet* cut_points, double& tolerance)
 {
 #if CUT_CREATION_INFO
@@ -767,7 +767,7 @@ bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Com
   xyze_other.shape(other->ProbDim(), other->NumNodes());
   other->Coordinates(xyze_other);
 
-  Teuchos::RCP<CORE::GEO::CUT::IntersectionBase> inter_ptr = IntersectionPtr(other->Shape());
+  Teuchos::RCP<CORE::GEO::CUT::IntersectionBase> inter_ptr = intersection_ptr(other->Shape());
   // other is line element, this is surface
   inter_ptr->Init(xyze_other, xyze_this, false, false, false, &(mesh->GetOptions()));
 
@@ -799,7 +799,7 @@ bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Com
         // NOTE: Might cause errors in the future, since local coordinate of the point on other edge
         // is based on the merged point, not original one
         p->AddEdge(other);
-        // might remove this one, as there is already one in cut_edge.cpp::FindCutPoints cln
+        // might remove this one, as there is already one in cut_edge.cpp::find_cut_points cln
         p->AddPair(side, this);
 
         std::stringstream msg;
@@ -845,7 +845,7 @@ bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Com
 
           p->AddEdge(this);
           p->AddEdge(other);
-          // might remove this one, as there is already one in cut_edge.cpp::FindCutPoints cln
+          // might remove this one, as there is already one in cut_edge.cpp::find_cut_points cln
           p->AddPair(side, this);
           p->AddEdgeIntersection(this, other, side, this, "MULTIPLE CUT POINTS");
 
@@ -882,7 +882,7 @@ bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Com
  *----------------------------------------------------------------------------*/
 template <unsigned probDim, CORE::FE::CellType edgeType, unsigned dimEdge, unsigned numNodesEdge>
 Teuchos::RCP<CORE::GEO::CUT::IntersectionBase>
-CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::IntersectionPtr(
+CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::intersection_ptr(
     const CORE::FE::CellType& sidetype) const
 {
   return CORE::GEO::CUT::IntersectionBase::Create(edgeType, sidetype);
@@ -899,7 +899,7 @@ Teuchos::RCP<CORE::GEO::CUT::Edge> CORE::GEO::CUT::EdgeFactory::CreateEdge(
   {
     case CORE::FE::CellType::line2:
     {
-      cedge_ptr = Teuchos::rcp(CreateConcreteEdge<CORE::FE::CellType::line2>(nodes, probdim));
+      cedge_ptr = Teuchos::rcp(create_concrete_edge<CORE::FE::CellType::line2>(nodes, probdim));
       break;
     }
     default:

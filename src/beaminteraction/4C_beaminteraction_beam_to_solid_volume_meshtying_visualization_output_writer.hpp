@@ -79,7 +79,7 @@ namespace BEAMINTERACTION
      * pointer since this function is called from within the sub model evaluator, which does not
      * (and probably can not) have a RCP to itself.
      */
-    void WriteOutputRuntime(
+    void write_output_runtime(
         const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact) const;
 
     /**
@@ -108,12 +108,12 @@ namespace BEAMINTERACTION
     /**
      * \brief Checks the init and setup status.
      */
-    void CheckInitSetup() const;
+    void check_init_setup() const;
 
     /**
      * \brief Checks the init status.
      */
-    void CheckInit() const;
+    void check_init() const;
 
    private:
     //! Flag if object is initialized.

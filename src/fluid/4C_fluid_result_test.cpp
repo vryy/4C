@@ -41,7 +41,7 @@ FLD::FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::FluidResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void FLD::FluidResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;

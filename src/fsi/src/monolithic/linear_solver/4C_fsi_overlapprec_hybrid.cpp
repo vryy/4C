@@ -286,7 +286,7 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
   //  if (err != 0)
   //    FOUR_C_THROW("InsertGlobalValues failed, error = %d!",err);
   //
-  //  testmat->FillComplete();
+  //  testmat->fill_complete();
   //  testmat->OptimizeStorage();
   //
   //  Teuchos::RCP<CORE::LINALG::SOLVER::IFPACKPreconditioner> testprec;

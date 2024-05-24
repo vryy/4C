@@ -108,7 +108,7 @@ namespace FSI
 
 
     /// read restart data
-    void ReadRestart(int step) override;
+    void read_restart(int step) override;
 
     //! create time integrator for structure field
     virtual void create_structure_time_integrator(
@@ -126,13 +126,13 @@ namespace FSI
     //! @name Time loop building blocks
 
     /// prepare time step for the whole fsi problem (including sub problems)
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     /// take current results for converged and save for next time step
     void Update() override = 0;
 
     /// calculate stresses, strains, energies
-    virtual void PrepareOutput(bool force_prepare);
+    virtual void prepare_output(bool force_prepare);
 
     /// write output
     void Output() override;
@@ -147,10 +147,10 @@ namespace FSI
     const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField() { return structure_; }
 
     /// access to fluid field
-    const Teuchos::RCP<ADAPTER::FluidFSI>& FluidField() { return fluid_; }
+    const Teuchos::RCP<ADAPTER::FluidFSI>& fluid_field() { return fluid_; }
 
     /// access to ale field
-    const Teuchos::RCP<ADAPTER::AleFsiWrapper>& AleField() { return ale_; }
+    const Teuchos::RCP<ADAPTER::AleFsiWrapper>& ale_field() { return ale_; }
 
     //@}
 
@@ -360,10 +360,10 @@ namespace FSI
     );
 
     /// apply infnorm scaling to linear block system
-    void ScaleSystem(Epetra_Vector& b) override {}
+    void scale_system(Epetra_Vector& b) override {}
 
     /// undo infnorm scaling from scaled solution
-    void UnscaleSolution(Epetra_Vector& x, Epetra_Vector& b) override {}
+    void unscale_solution(Epetra_Vector& x, Epetra_Vector& b) override {}
 
     /// return Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface
     virtual Teuchos::RCP<Epetra_Vector> GetLambda()
@@ -422,26 +422,26 @@ namespace FSI
      *  2) the Lagrange multiplier field lambda_
      *  3) terms in the first nonlinear iteration
      *
-     *  \sa SetupRHSResidual()
-     *  \sa SetupRHSLambda()
-     *  \sa SetupRHSFirstiter()
+     *  \sa setup_rhs_residual()
+     *  \sa setup_rhs_lambda()
+     *  \sa setup_rhs_firstiter()
      */
-    void SetupRHS(Epetra_Vector& f,  ///< empty rhs vector (to be filled)
+    void setup_rhs(Epetra_Vector& f,  ///< empty rhs vector (to be filled)
         bool firstcall = false  ///< indicates whether this is the first nonlinear iteration or not
         ) override;
 
     /// setup composed system matrix from field solvers
-    void SetupSystemMatrix() override = 0;
+    void setup_system_matrix() override = 0;
 
     //@}
 
     /// setup solver for global block system
-    virtual Teuchos::RCP<::NOX::Epetra::LinearSystem> CreateLinearSystem(
+    virtual Teuchos::RCP<::NOX::Epetra::LinearSystem> create_linear_system(
         Teuchos::ParameterList& nlParams, ::NOX::Epetra::Vector& noxSoln,
         Teuchos::RCP<::NOX::Utils> utils) = 0;
 
     //! setup of NOX convergence tests
-    virtual Teuchos::RCP<::NOX::StatusTest::Combo> CreateStatusTest(
+    virtual Teuchos::RCP<::NOX::StatusTest::Combo> create_status_test(
         Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp) = 0;
 
     /*! \brief Extract the three field vectors from a given composed vector
@@ -458,7 +458,7 @@ namespace FSI
      *  \param fx (o) fluid velocities and pressure
      *  \param ax (o) ale displacements
      */
-    virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+    virtual void extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx,
         Teuchos::RCP<const Epetra_Vector>& ax){};
 
@@ -473,12 +473,12 @@ namespace FSI
      *  @param [in] fv Fluid DOFs
      *  @param [in] av ALE DOfs
      */
-    void CombineFieldVectors(Epetra_Vector& v, Teuchos::RCP<const Epetra_Vector> sv,
+    void combine_field_vectors(Epetra_Vector& v, Teuchos::RCP<const Epetra_Vector> sv,
         Teuchos::RCP<const Epetra_Vector> fv, Teuchos::RCP<const Epetra_Vector> av);
 
     /*! @brief Put three field vectors together to a monolithic vector
      *
-     *  The monolithic vector is defined on the DofRowMap() of the underlying coupling class.
+     *  The monolithic vector is defined on the dof_row_map() of the underlying coupling class.
      * Depending on the formulation, certain sets of degrees of freedom at the FSI interface have
      * been condensed before building the monolithic system. Hence, we cannot assemble into those
      * DOFs.
@@ -499,7 +499,7 @@ namespace FSI
      *  @param [in] slave_vectors_contain_interface_dofs  Flag to indicate wheter all vectors
      * contain all DOFs (true) or slave vectors contain only inner DOFs (false)
      */
-    virtual void CombineFieldVectors(Epetra_Vector& v, Teuchos::RCP<const Epetra_Vector> sv,
+    virtual void combine_field_vectors(Epetra_Vector& v, Teuchos::RCP<const Epetra_Vector> sv,
         Teuchos::RCP<const Epetra_Vector> fv, Teuchos::RCP<const Epetra_Vector> av,
         const bool slave_vectors_contain_interface_dofs) = 0;
 
@@ -509,7 +509,7 @@ namespace FSI
     Teuchos::RCP<::NOX::Utils> Utils() const { return utils_; }
 
     /// full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> DofRowMap() const { return blockrowdofmap_.FullMap(); }
+    Teuchos::RCP<const Epetra_Map> dof_row_map() const { return blockrowdofmap_.FullMap(); }
 
     /*! \brief set full monolithic dof row map
      *
@@ -517,7 +517,7 @@ namespace FSI
      *  defines the number of blocks, their maps and the block order. The block
      *  maps must be row maps by themselves and must not contain identical GIDs.
      */
-    void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
+    void set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
 
     /// extractor to communicate between full monolithic map and block maps of single fields
     const CORE::LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
@@ -551,7 +551,7 @@ namespace FSI
     Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;
 
     //! Create initial guess for monolithic solution vector from data of the single fields
-    virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> initial_guess);
+    virtual void initial_guess(Teuchos::RCP<Epetra_Vector> initial_guess);
 
     //! @name FSI time adaptivity
     //@{
@@ -681,18 +681,18 @@ namespace FSI
 
     //! setup RHS contributions based on single field residuals
     //!
-    //! \sa SetupRHS()
-    virtual void SetupRHSResidual(Epetra_Vector& f) = 0;
+    //! \sa setup_rhs()
+    virtual void setup_rhs_residual(Epetra_Vector& f) = 0;
 
     //! setup RHS contributions based on the Lagrange multiplier field
     //!
-    //! \sa SetupRHS()
-    virtual void SetupRHSLambda(Epetra_Vector& f) = 0;
+    //! \sa setup_rhs()
+    virtual void setup_rhs_lambda(Epetra_Vector& f) = 0;
 
     //! setup RHS contributions based on terms for first nonlinear iteration
     //!
-    //! \sa SetupRHS()
-    virtual void SetupRHSFirstiter(Epetra_Vector& f) = 0;
+    //! \sa setup_rhs()
+    virtual void setup_rhs_firstiter(Epetra_Vector& f) = 0;
 
     //@}
 
@@ -721,7 +721,7 @@ namespace FSI
     //@{
 
     //! FSI time loop with constant time step size
-    void TimeloopConstDt(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
+    void timeloop_const_dt(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
 
     /*! \brief FSI time loop with adaptive time step size
      *
@@ -741,7 +741,7 @@ namespace FSI
      * Finite Elements in Analysis and Design, 141:55-69, 2018,
      * https://doi.org/10.1016/j.finel.2017.12.002
      */
-    void TimeloopAdaDt(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
+    void timeloop_ada_dt(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
 
     //@}
 
@@ -749,30 +749,30 @@ namespace FSI
     //@{
 
     //! do the auxiliary step needed for error estimation
-    virtual void TimeStepAuxiliar();
+    virtual void time_step_auxiliar();
 
     //! method to adapt time step size
-    void AdaptTimeStepSize();
+    void adapt_time_step_size();
 
     //! method to reset the recently calculated step if time step size adaption is necessary
-    void ResetStep();
+    void reset_step();
 
     /*!
-    \brief method complementing the ResetStep() method, taking care of time and step counter
+    \brief method complementing the reset_step() method, taking care of time and step counter
 
     Structure field increments time and step at the end of the time step.
     Fluid, ALE, and FSI do so right at the beginning. Thus, we have to decrement
     time and step in the fluid field, ALE field, and FSI algorithm
 
-    \sa ResetStep()
+    \sa reset_step()
     */
-    void ResetTime();
+    void reset_time();
 
     //! Set time step size in all fields (fsi routine, ale, fluid, structure)
-    void SetDt(const double dtnew);
+    void set_dt(const double dtnew);
 
     //! Update past time step sizes
-    void UpdateDtPast(const double dtnew);
+    void update_dt_past(const double dtnew);
 
     /*! \brief Who is responsible for changing the time step size
      *
@@ -783,7 +783,7 @@ namespace FSI
      *    - Newton: nonlinear solver did not converge and User wants to halve the
      *              time step size in such cases
      */
-    void DetermineAdaReason(const double dt);
+    void determine_ada_reason(const double dt);
 
     //! Prepare a time step for adaptive time stepping which might be repeated
     virtual void prepare_adaptive_time_step();
@@ -792,16 +792,16 @@ namespace FSI
     virtual void print_header_repeated_step() const;
 
     //! Write to .adaptivity-file
-    virtual void WriteAdaFile() const;
+    virtual void write_ada_file() const;
 
     //! Print information on time step adaptivity stuff
     virtual void print_adaptivity_summary() const;
 
     //! Initialize time adaptivity related stuff
-    void InitTimIntAda(const Teuchos::ParameterList& fsidyn);
+    void init_tim_int_ada(const Teuchos::ParameterList& fsidyn);
 
     //! Write to adaptivity file
-    void WriteAdaFileHeader() const;
+    void write_ada_file_header() const;
 
     /*! \brief Calculate time step size
      *
@@ -847,7 +847,7 @@ namespace FSI
      *  whether it has to be overruled by the one based on the convergence of
      *  the nonlinear solver.
      */
-    virtual double SelectDt() const;
+    virtual double select_dt() const;
 
     //@}
 
@@ -855,7 +855,7 @@ namespace FSI
     //@{
 
     //! Is the time step accepted?
-    bool StepNotAccepted() const { return (not accepted_); }
+    bool step_not_accepted() const { return (not accepted_); }
 
     //@}
 
@@ -1006,10 +1006,10 @@ namespace FSI
     //! @name Apply current field state to system
 
     /// setup composed system matrix from field solvers
-    void SetupSystemMatrix() override { SetupSystemMatrix(*SystemMatrix()); }
+    void setup_system_matrix() override { setup_system_matrix(*SystemMatrix()); }
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) = 0;
+    virtual void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) = 0;
 
     //@}
 
@@ -1021,12 +1021,12 @@ namespace FSI
      *  This affects only the main diagonal blocks, not the off-diagonal
      *  coupling blocks.
      */
-    void ScaleSystem(Epetra_Vector& b) override { ScaleSystem(*SystemMatrix(), b); }
+    void scale_system(Epetra_Vector& b) override { scale_system(*SystemMatrix(), b); }
 
     /// undo infnorm scaling from scaled solution
-    void UnscaleSolution(Epetra_Vector& x, Epetra_Vector& b) override
+    void unscale_solution(Epetra_Vector& x, Epetra_Vector& b) override
     {
-      UnscaleSolution(*SystemMatrix(), x, b);
+      unscale_solution(*SystemMatrix(), x, b);
     }
 
     /*! \brief Apply infnorm scaling to linear block system
@@ -1034,10 +1034,10 @@ namespace FSI
      *  This affects only the main diagonal blocks, not the off-diagonal
      *  coupling blocks.
      */
-    virtual void ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) {}
+    virtual void scale_system(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) {}
 
     /// undo infnorm scaling from scaled solution
-    virtual void UnscaleSolution(
+    virtual void unscale_solution(
         CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
     {
     }
@@ -1253,13 +1253,13 @@ namespace FSI
         Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>& mat, bool structuresplit);
 
     /// setup solver for global block system
-    Teuchos::RCP<::NOX::Epetra::LinearSystem> CreateLinearSystem(
+    Teuchos::RCP<::NOX::Epetra::LinearSystem> create_linear_system(
         Teuchos::ParameterList& nlParams,  ///< parameter list
         ::NOX::Epetra::Vector& noxSoln,    ///< solution vector in NOX format
         Teuchos::RCP<::NOX::Utils> utils   ///< NOX utils
         ) override;
 
-    void CombineFieldVectors(Epetra_Vector& v, Teuchos::RCP<const Epetra_Vector> sv,
+    void combine_field_vectors(Epetra_Vector& v, Teuchos::RCP<const Epetra_Vector> sv,
         Teuchos::RCP<const Epetra_Vector> fv, Teuchos::RCP<const Epetra_Vector> av,
         const bool slave_vectors_contain_interface_dofs) override{};
 
@@ -1282,13 +1282,13 @@ namespace FSI
     //@{
 
     /// setup RHS contributions based on single field residuals
-    void SetupRHSResidual(Epetra_Vector& f) override = 0;
+    void setup_rhs_residual(Epetra_Vector& f) override = 0;
 
     /// setup RHS contributions based on the Lagrange multiplier field
-    void SetupRHSLambda(Epetra_Vector& f) override = 0;
+    void setup_rhs_lambda(Epetra_Vector& f) override = 0;
 
     /// setup RHS contributions based on terms for first nonlinear iteration
-    void SetupRHSFirstiter(Epetra_Vector& f) override = 0;
+    void setup_rhs_firstiter(Epetra_Vector& f) override = 0;
 
     //@}
 

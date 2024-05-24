@@ -46,7 +46,7 @@ Discretization class only.
 
 This class represents one set of degrees of freedom for the
 Discretization class in the usual parallel fashion. That is there is a
-DofRowMap() and a DofColMap() that return the maps of the global FE
+dof_row_map() and a DofColMap() that return the maps of the global FE
 system of equation in row and column setting respectively. These maps
 are used by the algorithm's Epetra_Vector classes among others.
 
@@ -275,7 +275,7 @@ namespace CORE::Dofsets
     bool Initialized() const override;
 
     /// Get degree of freedom row map
-    const Epetra_Map* DofRowMap() const override;
+    const Epetra_Map* dof_row_map() const override;
 
     /// Get degree of freedom column map
     const Epetra_Map* DofColMap() const override;

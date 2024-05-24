@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
  * add this background element if it falls within the bounding box of cut mesh
  * If it is not within BB, this element is never cut
  *-----------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshIntersection::AddElement(int eid,
+CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshIntersection::add_element(int eid,
     const std::vector<int>& nids, const CORE::LINALG::SerialDenseMatrix& xyz,
     CORE::FE::CellType distype, const double* lsv)
 {
@@ -48,7 +48,7 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshIntersection::AddElement(int 
       }
 
       // create element
-      return mesh_.CreateElement(eid, nids, distype);
+      return mesh_.create_element(eid, nids, distype);
     }
   }
   return nullptr;
@@ -62,7 +62,7 @@ CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshIntersection::AddCutSide(
     int sid, const std::vector<int>& nids, CORE::FE::CellType distype, int mi)
 {
   // create side
-  return cut_mesh_[mi]->CreateSide(sid, nids, distype, options_);
+  return cut_mesh_[mi]->create_side(sid, nids, distype, options_);
 }
 
 /*----------------------------------------------------------------------------*
@@ -101,7 +101,7 @@ CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshIntersection::AddCutSide(int sid
   //     return;
 
   // create side
-  return cut_mesh_[mi]->CreateSide(sid, nids, distype, options_);
+  return cut_mesh_[mi]->create_side(sid, nids, distype, options_);
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -255,7 +255,7 @@ void CORE::GEO::CUT::MeshIntersection::CutTest_Cut(bool include_inner,
     fflush(stdout);
   }
 
-  // DumpGmshVolumeCells("CUT_vc", true);
+  // dump_gmsh_volume_cells("CUT_vc", true);
   // dump_gmsh_integration_cells("CUT_intcells");
 }
 
@@ -316,7 +316,7 @@ void CORE::GEO::CUT::MeshIntersection::cut_mesh_intersection(bool screenoutput)
 
   Mesh& m = NormalMesh();
 
-  m.FindCutPoints();
+  m.find_cut_points();
   m.MakeCutLines();
   m.MakeFacets();
   m.MakeVolumeCells();
@@ -358,7 +358,7 @@ void CORE::GEO::CUT::MeshIntersection::cut_positions_dofsets(bool include_inner,
  *-------------------------------------------------------------------------------------*/
 CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshIntersection::GetCutSide(int sid, int mi) const
 {
-  return cut_mesh_[mi]->GetSide(sid);
+  return cut_mesh_[mi]->get_side(sid);
 }
 
 FOUR_C_NAMESPACE_CLOSE

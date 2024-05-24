@@ -80,7 +80,7 @@ namespace STR
       void PreUpdate() override{/* do nothing for now */};
 
       //! things that should be done after updating (derived)
-      void PostUpdate() override{/* do nothing for now */};
+      void post_update() override{/* do nothing for now */};
 
       //! update constant contributions of the current state for the new time step \f$t_{n+1}\f$
       void update_constant_state_contributions() override{/* do nothing for some integrators */};
@@ -191,7 +191,7 @@ namespace STR
      private:
       /*! \brief Flag indicating if the current state is the predictor state.
        *
-       *  In the evaluation of the predictor state the SetState() routine is
+       *  In the evaluation of the predictor state the set_state() routine is
        *  not allowed to calculate the consistent velocities and accelerations
        *  as usual. This is due to the fact, that the predictor might lead to
        *  velocities and accelerations that are not consistently computed from
@@ -310,7 +310,7 @@ namespace NOX
           const Epetra_Vector& convert2_epetra_vector(const ::NOX::Abstract::Vector& vec) const;
 
           /// get the step length
-          bool getStep(double& step, const ::NOX::Solver::Generic& solver) const;
+          bool get_step(double& step, const ::NOX::Solver::Generic& solver) const;
 
           /// get the number of necessary system corrections in case of a mod newton direction
           int get_number_of_modified_newton_corrections(const ::NOX::Solver::Generic& solver) const;

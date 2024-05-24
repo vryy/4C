@@ -392,9 +392,9 @@ namespace CONTACT
           const double wgt, const double jac) const;
 
      private:
-      void Debug_Deriv1st_WGap(MORTAR::Element& sele) const;
+      void debug_deriv1st_w_gap(MORTAR::Element& sele) const;
 
-      void Debug_Deriv2nd_WGap(MORTAR::Element& sele) const;
+      void debug_deriv2nd_w_gap(MORTAR::Element& sele) const;
     };
 
     /*--------------------------------------------------------------------------*/
@@ -430,7 +430,7 @@ namespace CONTACT
           const double wgt, const double jac) const;
 
      private:
-      void Debug_Kappa(MORTAR::Element& sele,
+      void debug_kappa(MORTAR::Element& sele,
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double jac,
           const double wgt) const;
 
@@ -438,17 +438,18 @@ namespace CONTACT
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const Deriv1stMap& djac,
           const double wgt) const;
 
-      void Debug_GPN(MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
+      void debug_gpn(MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
           const double* gpn) const;
 
-      void Debug_Deriv1st_GPN(MORTAR::Element& sele,
+      void debug_deriv1st_gpn(MORTAR::Element& sele,
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
           const Deriv1stVecMap& d_gpn) const;
 
-      void Debug_WGap(MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
-          const double gapn_sl, const double gapn_ma, const double wgt, const double jac) const;
+      void debug_w_gap(MORTAR::Element& sele,
+          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double gapn_sl,
+          const double gapn_ma, const double wgt, const double jac) const;
 
-      void Debug_WGap_Sl(MORTAR::Element& sele,
+      void debug_w_gap_sl(MORTAR::Element& sele,
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double gapn_sl,
           const double wgt, const double jac) const;
 
@@ -471,18 +472,18 @@ namespace CONTACT
           const Deriv1stMap& d_gapn_sl_complete, const Deriv2ndMap& dd_jac, const double gapn_sl,
           const double wgt, const double jac) const;
 
-      void Debug_Deriv1st_WGap(MORTAR::Element& sele) const;
+      void debug_deriv1st_w_gap(MORTAR::Element& sele) const;
 
-      void Debug_Deriv2nd_WGap(MORTAR::Element& sele) const;
+      void debug_deriv2nd_w_gap(MORTAR::Element& sele) const;
 
-      void Debug_MXi(MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
+      void debug_m_xi(MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
           const double* mxigp) const;
 
-      void Debug_Deriv1st_MXi(MORTAR::Element& sele,
+      void debug_deriv1st_m_xi(MORTAR::Element& sele,
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
           const Deriv1stVecMap& dmxigp) const;
 
-      void Debug_Deriv2nd_MXi(MORTAR::Element& sele,
+      void debug_deriv2nd_m_xi(MORTAR::Element& sele,
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
           const Deriv2ndVecMap& ddmxigp) const;
 
@@ -490,10 +491,10 @@ namespace CONTACT
 
       void debug_deriv2nd_smooth_unit_normal(MORTAR::Element& sele) const;
 
-      void Debug_Deriv1st_Jac(MORTAR::Element& sele,
+      void debug_deriv1st_jac(MORTAR::Element& sele,
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const Deriv1stMap& djac) const;
 
-      void Debug_Deriv2nd_Jac(MORTAR::Element& sele,
+      void debug_deriv2nd_jac(MORTAR::Element& sele,
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const Deriv2ndMap& ddjac) const;
 
       void debug_deriv1st_jacobian(MORTAR::Element& sele,
@@ -516,9 +517,9 @@ namespace CONTACT
           const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv) const;
 
      private:
-      const Deriv1stMap& GetNodalDeriv1st(NodeDataContainer& data) const;
+      const Deriv1stMap& get_nodal_deriv1st(NodeDataContainer& data) const;
 
-      const Deriv2ndMap& GetNodalDeriv2nd(NodeDataContainer& data) const;
+      const Deriv2ndMap& get_nodal_deriv2nd(NodeDataContainer& data) const;
     };
   }  // namespace AUG
 }  // namespace CONTACT

@@ -96,13 +96,13 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::EvaluateAction
  | evaluate Neumann boundary condition                       fang 02/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::EvaluateNeumann(
+int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_neumann(
     DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     CORE::Conditions::Condition& condition, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseVector& elevec1, const double scalar)
 {
   // call base class routine
-  my::EvaluateNeumann(ele, params, discretization, condition, la, elevec1, scalar);
+  my::evaluate_neumann(ele, params, discretization, condition, la, elevec1, scalar);
 
   // add boundary flux contributions to potential equation
   switch (myelch::elchparams_->EquPot())
@@ -113,7 +113,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::EvaluateNeuman
       for (int k = 0; k < my::numscal_; ++k)
       {
         // get valence
-        const double valence_k = GetValence(ele->ParentElement()->Material(), k);
+        const double valence_k = GetValence(ele->parent_element()->Material(), k);
 
         for (int vi = 0; vi < nen_; ++vi)
           elevec1[vi * my::numdofpernode_ + my::numscal_] +=

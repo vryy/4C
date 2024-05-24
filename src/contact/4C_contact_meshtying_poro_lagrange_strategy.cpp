@@ -23,11 +23,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | ctor (public)                                      h.Willmann    2015|
  *----------------------------------------------------------------------*/
-CONTACT::PoroMtLagrangeStrategy::PoroMtLagrangeStrategy(const Epetra_Map* DofRowMap,
+CONTACT::PoroMtLagrangeStrategy::PoroMtLagrangeStrategy(const Epetra_Map* dof_row_map,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<Teuchos::RCP<MORTAR::Interface>> interface, int dim, Teuchos::RCP<Epetra_Comm> comm,
     double alphaf, int maxdof)
-    : MtLagrangeStrategy(DofRowMap, NodeRowMap, params, interface, dim, comm, alphaf, maxdof)
+    : MtLagrangeStrategy(dof_row_map, NodeRowMap, params, interface, dim, comm, alphaf, maxdof)
 {
   return;
 }

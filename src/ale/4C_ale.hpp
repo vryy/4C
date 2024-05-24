@@ -167,7 +167,7 @@ namespace ALE
     virtual bool Converged(const int iter);
 
     /// Evaluate all elements
-    virtual void EvaluateElements();
+    virtual void evaluate_elements();
 
     /// Convert element action enum to std::string
     virtual std::string ElementActionString(
@@ -180,7 +180,7 @@ namespace ALE
     int Integrate() override;
 
     /// start a new time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     /*! \brief Do a single time step
      *
@@ -200,7 +200,7 @@ namespace ALE
      *
      *  \author mayr.mt \date 08/2013
      */
-    void ResetStep() override;
+    void reset_step() override;
 
     /*! \brief Reset time and step in case that a time step has to be repeated
      *
@@ -212,7 +212,7 @@ namespace ALE
      *
      *  \author mayr.mt \date 08/2013
      */
-    void ResetTime(const double dtold) override;
+    void reset_time(const double dtold) override;
 
     /// Get current simulation time
     double Time() const override { return time_; }
@@ -224,10 +224,10 @@ namespace ALE
     double Dt() const override { return dt_; }
 
     /// set time step step size
-    void SetDt(const double dtnew) override;
+    void set_dt(const double dtnew) override;
 
     /// read restart for given step
-    void ReadRestart(const int step) override;
+    void read_restart(const int step) override;
 
     //@}
 
@@ -252,7 +252,7 @@ namespace ALE
     //! @name Vector access
 
     /// initial guess of Newton's method
-    Teuchos::RCP<const Epetra_Vector> InitialGuess() const override { return zeros_; }
+    Teuchos::RCP<const Epetra_Vector> initial_guess() const override { return zeros_; }
 
     /// rhs of Newton's method
     Teuchos::RCP<const Epetra_Vector> RHS() const override { return rhs_; }
@@ -262,7 +262,7 @@ namespace ALE
     //! @name Misc
 
     /// dof map of vector of unknowns
-    Teuchos::RCP<const Epetra_Map> DofRowMap() const override;
+    Teuchos::RCP<const Epetra_Map> dof_row_map() const override;
 
     /// direct access to system matrix
     Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override;
@@ -453,13 +453,13 @@ namespace ALE
 
 
     /// print info about current time step to screen
-    virtual void PrintTimeStepHeader() const;
+    virtual void print_time_step_header() const;
 
     /// write restart data
-    virtual void OutputRestart(bool& datawritten);
+    virtual void output_restart(bool& datawritten);
 
     /// write output data
-    virtual void OutputState(bool& datawritten);
+    virtual void output_state(bool& datawritten);
 
     /// ale formulation read from inputfile
     const INPAR::ALE::AleDynamic aletype_;
@@ -499,7 +499,7 @@ namespace ALE
    *
    *  Simplification of nonlinear ALE::Ale class in case of a linear mesh motion
    *  algorithm. Only functions related to nonlinear solution techniques must be
-   *  overloaded, i.e. EvaluateElements or the nonlinear solve.
+   *  overloaded, i.e. evaluate_elements or the nonlinear solve.
    *
    *  Linear mesh motion should be sufficient in case of small or uniform/
    *  volumetric mesh deformation, but evaluates the system matrix just once and
@@ -542,7 +542,7 @@ namespace ALE
      *
      *  \author mayr.mt \date 12/2015
      */
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     /*! \brief Do a single time step
      *
@@ -556,7 +556,7 @@ namespace ALE
     /*! \brief Evaluate all elements
      *
      *  In the linear case, the system matrix \f$K\f$ is kept constant throughout
-     *  the entire computation. Thus, we call ALE::Ale::EvaluateElements() once in
+     *  the entire computation. Thus, we call ALE::Ale::evaluate_elements() once in
      *  the beginning to compute the stiffness matrix. Afterwards, we only need to
      *  compute the current residual \f$f_{res}\f$ as
      *  \f[
@@ -564,12 +564,12 @@ namespace ALE
      *  \f]
      *  based on the current displacements \f$d\f$.
      *
-     *  In order to initially provide a matrix, we call Ale::EvaluateElements() in
+     *  In order to initially provide a matrix, we call Ale::evaluate_elements() in
      *  the very first call. This is kept track of by #validsysmat_.
      *
      *  \author mayr.mt \date 11/2015
      */
-    void EvaluateElements() override;
+    void evaluate_elements() override;
 
     //@}
 

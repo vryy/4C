@@ -65,8 +65,8 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
       CORE::LINALG::Matrix<numnode, numdim> xscurr;  // material coord. of element
       spatial_configuration(xscurr, mydisp);
       CORE::LINALG::Matrix<numdim, 1> elementnormal;
-      ComputeNormal(xscurr, elementnormal);
-      double normaldistance = ComputeNormalDist(xscurr, elementnormal);
+      compute_normal(xscurr, elementnormal);
+      double normaldistance = compute_normal_dist(xscurr, elementnormal);
       compute_first_deriv_dist(xscurr, elevec1, elementnormal);
       compute_second_deriv_dist(xscurr, elemat1, elementnormal);
       // update corresponding column in "constraint" matrix
@@ -85,7 +85,7 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
       CORE::LINALG::Matrix<numnode, numdim> xscurr;  // material coord. of element
       spatial_configuration(xscurr, mydisp);
 
-      double angle = ComputeAngle(xscurr);
+      double angle = compute_angle(xscurr);
 
       compute_first_deriv_angle(xscurr, elevec1);
       compute_second_deriv_angle(xscurr, elemat1);
@@ -105,7 +105,7 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------*
  * Evaluate Neumann (->FOUR_C_THROW) */
-int DRT::ELEMENTS::ConstraintElement2::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::ConstraintElement2::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -117,7 +117,7 @@ int DRT::ELEMENTS::ConstraintElement2::EvaluateNeumann(Teuchos::ParameterList& p
 
 /*----------------------------------------------------------------------*
  * compute 2d normal */
-void DRT::ELEMENTS::ConstraintElement2::ComputeNormal(
+void DRT::ELEMENTS::ConstraintElement2::compute_normal(
     const CORE::LINALG::Matrix<3, 2>& xc, CORE::LINALG::Matrix<2, 1>& elenorm)
 {
   elenorm(0, 0) = xc(0, 1) - xc(1, 1);
@@ -128,7 +128,7 @@ void DRT::ELEMENTS::ConstraintElement2::ComputeNormal(
 
 /*----------------------------------------------------------------------*
  * normal distance between third point and line */
-double DRT::ELEMENTS::ConstraintElement2::ComputeNormalDist(
+double DRT::ELEMENTS::ConstraintElement2::compute_normal_dist(
     const CORE::LINALG::Matrix<3, 2>& xc, const CORE::LINALG::Matrix<2, 1>& normal)
 {
   return (normal(0, 0) * (-xc(0, 0) + xc(2, 0)) - normal(1, 0) * (xc(0, 1) - xc(2, 1))) /
@@ -137,7 +137,7 @@ double DRT::ELEMENTS::ConstraintElement2::ComputeNormalDist(
 
 /*----------------------------------------------------------------------*
  * compute angle at second point */
-double DRT::ELEMENTS::ConstraintElement2::ComputeAngle(const CORE::LINALG::Matrix<3, 2>& xc)
+double DRT::ELEMENTS::ConstraintElement2::compute_angle(const CORE::LINALG::Matrix<3, 2>& xc)
 {
   return (acos((xc(0, 1) * (xc(1, 0) - xc(2, 0)) + xc(1, 1) * xc(2, 0) - xc(1, 0) * xc(2, 1) +
                    xc(0, 0) * (-xc(1, 1) + xc(2, 1))) /

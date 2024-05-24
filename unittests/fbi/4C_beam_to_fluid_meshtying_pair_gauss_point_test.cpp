@@ -123,7 +123,7 @@ namespace
       CORE::LINALG::SerialDenseMatrix local_kss;
       CORE::LINALG::SerialDenseVector local_fs;
       CORE::LINALG::SerialDenseVector local_ff;
-      pair.PreEvaluate();
+      pair.pre_evaluate();
       bool projects =
           pair.Evaluate(&local_fs, &local_ff, &local_kss, &local_ksf, &local_kfs, &local_kff);
 

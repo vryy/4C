@@ -190,11 +190,11 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int EvaluateNeumann(Teuchos::ParameterList& params,  ///< ParameterList for communication
-          DRT::Discretization& discretization,             ///< discretization
-          CORE::Conditions::Condition& condition,          ///< Neumann condition to evaluate
-          std::vector<int>& lm,                            ///< location vector
-          CORE::LINALG::SerialDenseVector& elevec1,        ///< vector to be filled by element
+      int evaluate_neumann(Teuchos::ParameterList& params,  ///< ParameterList for communication
+          DRT::Discretization& discretization,              ///< discretization
+          CORE::Conditions::Condition& condition,           ///< Neumann condition to evaluate
+          std::vector<int>& lm,                             ///< location vector
+          CORE::LINALG::SerialDenseVector& elevec1,         ///< vector to be filled by element
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
 
@@ -255,12 +255,12 @@ namespace DRT
 
 
       /// compute normal for 2D case using the first two nodes to specify a line
-      void ComputeNormal(const CORE::LINALG::Matrix<3, 2>& xc,  ///< nodal coords in spatial frame
-          CORE::LINALG::Matrix<2, 1>& elenormal                 ///< resulting element normal
+      void compute_normal(const CORE::LINALG::Matrix<3, 2>& xc,  ///< nodal coords in spatial frame
+          CORE::LINALG::Matrix<2, 1>& elenormal                  ///< resulting element normal
       );
 
       /// Compute normal distance between line and third node
-      double ComputeNormalDist(
+      double compute_normal_dist(
           const CORE::LINALG::Matrix<3, 2>& xc,        ///< nodal coords in spatial frame
           const CORE::LINALG::Matrix<2, 1>& elenormal  ///< element normal
       );
@@ -280,7 +280,7 @@ namespace DRT
       );
 
       /// Compute angle at second node
-      double ComputeAngle(const CORE::LINALG::Matrix<3, 2>& xc  ///< nodal coords in spatial frame
+      double compute_angle(const CORE::LINALG::Matrix<3, 2>& xc  ///< nodal coords in spatial frame
       );
 
       /// Compute first derivatives of angle at second node with respect to the nodal displacements

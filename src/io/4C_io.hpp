@@ -191,7 +191,7 @@ namespace IO
 
    private:
     /// find control file entry to given time step
-    void FindMeshGroup(int step, MAP* file);
+    void find_mesh_group(int step, MAP* file);
 
     /// find control file entry to given time step
     /*!
@@ -199,13 +199,13 @@ namespace IO
       my discretization and step. From that we need a backward search to find
       the entry that links to the binary files that cover our entry.
      */
-    void FindGroup(int step, MAP* file, const char* caption, const char* filestring,
+    void find_group(int step, MAP* file, const char* caption, const char* filestring,
         MAP*& result_info, MAP*& file_info);
 
 
 
     /// Open data files.
-    Teuchos::RCP<HDFReader> OpenFiles(const char* filestring, MAP* result_step);
+    Teuchos::RCP<HDFReader> open_files(const char* filestring, MAP* result_step);
 
 
     //! my discretization
@@ -380,13 +380,13 @@ namespace IO
     virtual void OverwriteResultFile();
 
     /// creating new result files
-    virtual void NewResultFile(int numb_run);
+    virtual void new_result_file(int numb_run);
 
     /// creating new result files for the mlmc
-    virtual void NewResultFile(std::string name_appendix, int numb_run);
+    virtual void new_result_file(std::string name_appendix, int numb_run);
 
     /// creating new result files using the provided name
-    virtual void NewResultFile(std::string name);
+    virtual void new_result_file(std::string name);
 
     //@}
 

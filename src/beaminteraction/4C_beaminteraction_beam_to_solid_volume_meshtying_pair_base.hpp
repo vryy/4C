@@ -74,7 +74,7 @@ namespace BEAMINTERACTION
      * \brief Things that need to be done in a separate loop before the actual evaluation loop over
      * all contact pairs.
      */
-    void PreEvaluate() override;
+    void pre_evaluate() override;
 
     /**
      * \brief Update state of translational nodal DoFs (absolute positions and tangents) of both

@@ -78,7 +78,7 @@ int DRT::ELEMENTS::Artery::Evaluate(Teuchos::ParameterList& params,
 }  // end of DRT::ELEMENTS::Artery::Evaluate
 
 
-int DRT::ELEMENTS::Artery::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Artery::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -100,7 +100,8 @@ int DRT::ELEMENTS::Artery::EvaluateDirichlet(Teuchos::ParameterList& params,
 
 
 // get optimal gaussrule for discretization type
-CORE::FE::GaussRule1D DRT::ELEMENTS::Artery::getOptimalGaussrule(const CORE::FE::CellType& distype)
+CORE::FE::GaussRule1D DRT::ELEMENTS::Artery::get_optimal_gaussrule(
+    const CORE::FE::CellType& distype)
 {
   CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::undefined;
   switch (distype)

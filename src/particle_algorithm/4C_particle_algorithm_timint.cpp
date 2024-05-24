@@ -122,7 +122,7 @@ void PARTICLEALGORITHM::TimInt::SetInitialStates()
     temperatureboundarycondition_->evaluate_temperature_boundary_condition(0.0);
 }
 
-void PARTICLEALGORITHM::TimInt::SetCurrentTime(const double currenttime) { time_ = currenttime; }
+void PARTICLEALGORITHM::TimInt::set_current_time(const double currenttime) { time_ = currenttime; }
 
 void PARTICLEALGORITHM::TimInt::init_dirichlet_boundary_condition()
 {

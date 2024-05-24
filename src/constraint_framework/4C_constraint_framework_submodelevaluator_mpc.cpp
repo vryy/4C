@@ -36,7 +36,7 @@ CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::RveMultiPointCon
   discret_ptr_ = disc_ptr;
   stiff_ptr_ = st_ptr;
 
-  CheckInput();
+  check_input();
 
   // Maps of relevant boundary nodesets of the rve
   std::map<std::string, const std::vector<int>*> rveBoundaryNodeIdMap;
@@ -102,20 +102,20 @@ CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::RveMultiPointCon
 
   // Create a vector with all MPCs describing the periodic BCs
   if (surface_periodic_rve_conditions_.size() != 0 || line_periodic_rve_conditions_.size() != 0)
-    BuildPeriodicMPCs(rveBoundaryNodeIdMap, rveCornerNodeIdMap);
+    build_periodic_mp_cs(rveBoundaryNodeIdMap, rveCornerNodeIdMap);
 
 
   // Add Linear Coupled Equation MPCs
   if (point_linear_coupled_equation_conditions_.size() != 0)
   {
-    int nLinCe = BuildLinearMPCs();
+    int nLinCe = build_linear_mp_cs();
     IO::cout(IO::verbose) << "Total number of linear coupled equations: " << nLinCe << IO::endl;
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::CheckInput()
+void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::check_input()
 {
   if (discret_ptr_->Comm().NumProc() > 1)
     FOUR_C_THROW("periodic boundary conditions for RVEs are not implemented in parallel.");
@@ -266,7 +266,7 @@ int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::find_opposit
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::BuildPeriodicMPCs(
+void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::build_periodic_mp_cs(
     std::map<std::string, const std::vector<int>*>& rveBoundaryNodeIdMap,
     std::map<std::string, int>& rveCornerNodeIdMap)
 {
@@ -535,7 +535,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::BuildPeriod
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::BuildLinearMPCs()
+int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::build_linear_mp_cs()
 {
   IO::cout(IO::verbose) << IO::endl << "-------------------------------------------" << IO::endl;
   IO::cout(IO::verbose) << "Reading linear coupled eq. from .dat file" << IO::endl;

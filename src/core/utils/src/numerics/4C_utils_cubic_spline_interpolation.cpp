@@ -35,13 +35,13 @@ CORE::UTILS::CubicSplineInterpolation::CubicSplineInterpolation(
   CORE::LINALG::SerialDenseMatrix A(N, N);
   CORE::LINALG::SerialDenseVector c(N), b(N);
 
-  BuildMatrixAndRhs(N, A, b);
-  SolveLinearSystem(A, c, b);
+  build_matrix_and_rhs(N, A, b);
+  solve_linear_system(A, c, b);
   setup_internal_vectors(c);
 }
 
 /*----------------------------------------------------------------------*/
-void CORE::UTILS::CubicSplineInterpolation::BuildMatrixAndRhs(
+void CORE::UTILS::CubicSplineInterpolation::build_matrix_and_rhs(
     const int N, CORE::LINALG::SerialDenseMatrix &A, CORE::LINALG::SerialDenseVector &b) const
 {
   // fill everything except the boundary condition lines
@@ -121,7 +121,7 @@ double CORE::UTILS::CubicSplineInterpolation::EvaluateDerivative(
 }
 
 /*----------------------------------------------------------------------*/
-void CORE::UTILS::CubicSplineInterpolation::SolveLinearSystem(CORE::LINALG::SerialDenseMatrix &A,
+void CORE::UTILS::CubicSplineInterpolation::solve_linear_system(CORE::LINALG::SerialDenseMatrix &A,
     CORE::LINALG::SerialDenseVector &c, CORE::LINALG::SerialDenseVector &b) const
 {
   // solve for third-order coefficients for cubic spline interpolation

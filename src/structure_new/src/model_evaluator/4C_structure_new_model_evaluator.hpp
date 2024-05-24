@@ -207,7 +207,7 @@ namespace STR
      *  \return Boolean flag to indicate success (true) or failure (false)
      *
      *  \author hiermeier \date 03/17 */
-    bool AssembleForce(const double timefac_np, Epetra_Vector& f,
+    bool assemble_force(const double timefac_np, Epetra_Vector& f,
         const std::vector<INPAR::STR::ModelType>* without_these_models) const;
 
 
@@ -222,7 +222,7 @@ namespace STR
      *  \return Boolean flag to indicate success (true) or failure (false)
      *
      *  \author farah \date 07/17 */
-    bool AssembleJacobian(const double timefac_np, CORE::LINALG::SparseOperator& jac,
+    bool assemble_jacobian(const double timefac_np, CORE::LINALG::SparseOperator& jac,
         const std::vector<INPAR::STR::ModelType>* without_these_models) const;
 
     /** \brief Assembly of all force contributions
@@ -233,9 +233,9 @@ namespace STR
      *  \return Boolean flag to indicate success (true) or failure (false)
      *
      *  \author hiermeier \date 03/17 */
-    inline bool AssembleForce(const double timefac_np, Epetra_Vector& f) const
+    inline bool assemble_force(const double timefac_np, Epetra_Vector& f) const
     {
-      return AssembleForce(*me_vec_ptr_, timefac_np, f);
+      return assemble_force(*me_vec_ptr_, timefac_np, f);
     }
 
     /** \brief Assembly of all Jacobian contributions
@@ -245,9 +245,9 @@ namespace STR
      *
      *  \return Boolean flag to indicate success (true) or failure (false)
      */
-    inline bool AssembleJacobian(const double timefac_np, CORE::LINALG::SparseOperator& jac) const
+    inline bool assemble_jacobian(const double timefac_np, CORE::LINALG::SparseOperator& jac) const
     {
-      return AssembleJacobian(*me_vec_ptr_, timefac_np, jac);
+      return assemble_jacobian(*me_vec_ptr_, timefac_np, jac);
     }
 
     /** \brief Assembly of a sub-set of force contributions
@@ -259,10 +259,11 @@ namespace STR
      *  \return Boolean flag to indicate success (true) or failure (false)
      *
      *  \author hiermeier \date 03/17 */
-    inline bool AssembleForce(const Vector& me_vec, const double timefac_np, Epetra_Vector& f) const
+    inline bool assemble_force(
+        const Vector& me_vec, const double timefac_np, Epetra_Vector& f) const
     {
       bool ok = true;
-      AssembleForce(ok, me_vec, timefac_np, f);
+      assemble_force(ok, me_vec, timefac_np, f);
       return ok;
     }
 
@@ -284,11 +285,11 @@ namespace STR
      *  \param jac       (out) : jacobian which is going to be assembled.
      *
      *  \author farah \date 07/17 */
-    inline bool AssembleJacobian(
+    inline bool assemble_jacobian(
         const Vector& me_vec, const double timefac_np, CORE::LINALG::SparseOperator& jac) const
     {
       bool ok = true;
-      AssembleJacobian(ok, me_vec, timefac_np, jac);
+      assemble_jacobian(ok, me_vec, timefac_np, jac);
       return ok;
     }
 
@@ -322,7 +323,7 @@ namespace STR
     void WriteRestart(IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const;
 
     //! Read restart information
-    void ReadRestart(IO::DiscretizationReader& ioreader);
+    void read_restart(IO::DiscretizationReader& ioreader);
 
     //! @name Accessors
     //!@{
@@ -437,19 +438,19 @@ namespace STR
 
    protected:
     //! Returns the init flag.
-    inline const bool& IsInit() const { return isinit_; };
+    inline const bool& is_init() const { return isinit_; };
 
     //! Returns the setup flag.
-    inline const bool& IsSetup() const { return issetup_; };
+    inline const bool& is_setup() const { return issetup_; };
 
     //! Check the init and setup state.
-    void CheckInitSetup() const;
+    void check_init_setup() const;
 
     //! Check the init state
-    void CheckInit() const;
+    void check_init() const;
 
    private:
-    Teuchos::RCP<STR::ModelEvaluator::Vector> TransformToVector(
+    Teuchos::RCP<STR::ModelEvaluator::Vector> transform_to_vector(
         const STR::ModelEvaluator::Map& model_map) const;
 
     /** \brief Assembly of all force contributions
@@ -462,7 +463,7 @@ namespace STR
      *  \param f         (out) : force vector which is going to be assembled.
      *
      *  \author hiermeier \date 03/17 */
-    void AssembleForce(
+    void assemble_force(
         bool& ok, const Vector& me_vec, const double timefac_np, Epetra_Vector& f) const;
 
     /** \brief Assembly of all jacobian contributions
@@ -473,32 +474,32 @@ namespace STR
      *  \param f         (out) : jacobian matrix object which is going to be assembled.
      *
      *  \author hiermeier \date 03/17 */
-    void AssembleJacobian(bool& ok, const Vector& me_vec, const double timefac_np,
+    void assemble_jacobian(bool& ok, const Vector& me_vec, const double timefac_np,
         CORE::LINALG::SparseOperator& jac) const;
 
-    void AssembleCheapSOCRhs(
+    void assemble_cheap_soc_rhs(
         bool& ok, const Vector& me_vec, const double timefac_np, Epetra_Vector& f) const;
 
-    void EvaluateForce(bool& ok, const Vector& me_vec) const;
+    void evaluate_force(bool& ok, const Vector& me_vec) const;
 
-    void EvaluateStiff(bool& ok, const Vector& me_vec) const;
+    void evaluate_stiff(bool& ok, const Vector& me_vec) const;
 
-    void EvaluateForceStiff(bool& ok, const Vector& me_vec) const;
+    void evaluate_force_stiff(bool& ok, const Vector& me_vec) const;
 
-    void EvaluateCheapSOCRhs(bool& ok, const Vector& me_vec) const;
+    void evaluate_cheap_soc_rhs(bool& ok, const Vector& me_vec) const;
 
-    void PostEvaluate(bool ok, const Vector& me_vec) const;
+    void post_evaluate(bool ok, const Vector& me_vec) const;
 
-    void PreEvaluate(bool ok, const Vector& me_vec) const;
+    void pre_evaluate(bool ok, const Vector& me_vec) const;
 
     /** \brief split the internally stored model vector and get the set without
      *  the specified models */
-    void SplitModelVector(Vector& partial_me_vec,
+    void split_model_vector(Vector& partial_me_vec,
         const std::vector<INPAR::STR::ModelType>& without_these_models) const;
 
     /** \brief Extract from the internally stored model vector all models
      *  with the desired types */
-    void ExtractModelVector(STR::ModelEvaluator::Vector& partial_me_vec,
+    void extract_model_vector(STR::ModelEvaluator::Vector& partial_me_vec,
         const std::vector<INPAR::STR::ModelType>& only_these_models) const;
 
    private:

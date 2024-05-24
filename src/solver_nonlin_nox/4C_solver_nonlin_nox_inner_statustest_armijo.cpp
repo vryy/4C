@@ -94,7 +94,7 @@ NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Armijo::Che
     std::ostringstream msg;
     msg << "Dynamic cast to NOX::NLN::LineSearch::Generic failed!\n\n"
         << "The Armijo rule status test supports only Line Search problems!";
-    throwError("CheckStatus", msg.str());
+    throw_error("CheckStatus", msg.str());
   }
 
   // setup for the current line search loop
@@ -168,7 +168,7 @@ std::ostream& NOX::NLN::INNER::StatusTest::Armijo::Print(std::ostream& stream, i
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Armijo::throwError(
+void NOX::NLN::INNER::StatusTest::Armijo::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   std::ostringstream msg;

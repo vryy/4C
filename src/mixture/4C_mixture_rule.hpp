@@ -167,7 +167,7 @@ namespace MIXTURE
      * Returns whether the constituent is already set up
      * @return true if the constituent is already set up, otherwise false
      */
-    bool IsSetup() { return is_setup_; }
+    bool is_setup() { return is_setup_; }
 
     /*!
      * \brief Setup the constituent
@@ -204,7 +204,7 @@ namespace MIXTURE
      * @param gp (in) : Gauss point
      * @param eleGID (in) : Global element id
      */
-    virtual void PreEvaluate(Teuchos::ParameterList& params, const int gp, const int eleGID)
+    virtual void pre_evaluate(Teuchos::ParameterList& params, const int gp, const int eleGID)
     {
       // do nothing in the default case
     }
@@ -278,7 +278,7 @@ namespace MIXTURE
      *
      * @return Number of Gauss points
      */
-    int NumGP() const { return numgp_; }
+    int num_gp() const { return numgp_; }
 
    private:
     ///! list of the references to the constituents

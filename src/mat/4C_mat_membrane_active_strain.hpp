@@ -199,7 +199,7 @@ namespace MAT
     void Update() override;
 
     /// Reset internal variables
-    void ResetStep() override;
+    void reset_step() override;
 
     /// Return quick accessible material parameter data
     CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
@@ -227,10 +227,10 @@ namespace MAT
     bool isinit_;
 
     // setup fiber vectors
-    void SetupFiberVectors(int numgp, INPUT::LineDefinition* linedef);
+    void setup_fiber_vectors(int numgp, INPUT::LineDefinition* linedef);
 
     // read RAD-AXI-CIR
-    void ReadDir(
+    void read_dir(
         INPUT::LineDefinition* linedef, std::string specifier, CORE::LINALG::Matrix<3, 1>& dir);
 
     // calculate normal direction from FIBER1 and FIBER2
@@ -242,10 +242,10 @@ namespace MAT
         CORE::LINALG::Matrix<3, 3>& cmat_reference);
 
     // transform voigt to tensor notation
-    void Tensor2x2Indices(int p, int* i, int* j);
+    void tensor2x2_indices(int p, int* i, int* j);
 
     // transform tensor to voigt notation
-    void Voigt3Index(int i, int j, int* p);
+    void voigt3_index(int i, int j, int* p);
 
    protected:
     /// vector of fiber vectors

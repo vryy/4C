@@ -44,7 +44,8 @@ DRT::ELEMENTS::RedAirBloodScatraImplInterface* DRT::ELEMENTS::RedAirBloodScatraI
       return acinus;
     }
     default:
-      FOUR_C_THROW("shape %d (%d nodes) not supported", red_acinus->Shape(), red_acinus->NumNode());
+      FOUR_C_THROW(
+          "shape %d (%d nodes) not supported", red_acinus->Shape(), red_acinus->num_node());
   }
   return nullptr;
 }

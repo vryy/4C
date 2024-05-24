@@ -81,7 +81,7 @@ namespace PARTICLEINTERACTION
     void WriteRestart() const;
 
     //! read restart of history pair handler
-    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
+    void read_restart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
     //! get reference to particle tangential history pair data
     inline DEMHistoryPairTangentialData& get_ref_to_particle_tangential_history_data()
@@ -143,13 +143,13 @@ namespace PARTICLEINTERACTION
 
     //! pack all history pairs
     template <typename historypairtype>
-    void PackAllHistoryPairs(std::vector<char>& buffer,
+    void pack_all_history_pairs(std::vector<char>& buffer,
         const std::unordered_map<int, std::unordered_map<int, std::pair<bool, historypairtype>>>&
             historydata) const;
 
     //! unpack history pairs
     template <typename historypairtype>
-    void UnpackHistoryPairs(const std::vector<char>& buffer,
+    void unpack_history_pairs(const std::vector<char>& buffer,
         std::unordered_map<int, std::unordered_map<int, std::pair<bool, historypairtype>>>&
             historydata);
 

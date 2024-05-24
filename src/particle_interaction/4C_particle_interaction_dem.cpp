@@ -53,10 +53,10 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::Init()
   init_history_pair_handler();
 
   // init contact handler
-  InitContactHandler();
+  init_contact_handler();
 
   // init adhesion handler
-  InitAdhesionHandler();
+  init_adhesion_handler();
 }
 
 void PARTICLEINTERACTION::ParticleInteractionDEM::Setup(
@@ -94,14 +94,14 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::WriteRestart() const
   historypairs_->WriteRestart();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::ReadRestart(
+void PARTICLEINTERACTION::ParticleInteractionDEM::read_restart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // call base class function
-  ParticleInteractionBase::ReadRestart(reader);
+  ParticleInteractionBase::read_restart(reader);
 
   // read restart of history pair handler
-  historypairs_->ReadRestart(reader);
+  historypairs_->read_restart(reader);
 }
 
 void PARTICLEINTERACTION::ParticleInteractionDEM::insert_particle_states_of_particle_types(
@@ -124,13 +124,13 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::insert_particle_states_of_part
 void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialStates()
 {
   // set initial radius
-  SetInitialRadius();
+  set_initial_radius();
 
   // set initial mass
-  SetInitialMass();
+  set_initial_mass();
 
   // set initial inertia
-  SetInitialInertia();
+  set_initial_inertia();
 }
 
 void PARTICLEINTERACTION::ParticleInteractionDEM::PreEvaluateTimeStep()
@@ -161,7 +161,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::evaluate_interactions()
   if (adhesion_) adhesion_->add_force_contribution();
 
   // compute acceleration from force and moment
-  ComputeAcceleration();
+  compute_acceleration();
 
   // update history pairs
   historypairs_->UpdateHistoryPairs();
@@ -200,13 +200,14 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::communicate_interaction_histor
   historypairs_->communicate_history_pairs();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::SetCurrentStepSize(const double currentstepsize)
+void PARTICLEINTERACTION::ParticleInteractionDEM::set_current_step_size(
+    const double currentstepsize)
 {
   // call base class method
-  ParticleInteractionBase::SetCurrentStepSize(currentstepsize);
+  ParticleInteractionBase::set_current_step_size(currentstepsize);
 
   // set current step size
-  contact_->SetCurrentStepSize(currentstepsize);
+  contact_->set_current_step_size(currentstepsize);
 }
 
 void PARTICLEINTERACTION::ParticleInteractionDEM::init_neighbor_pair_handler()
@@ -227,7 +228,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::init_history_pair_handler()
   historypairs_->Init();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::InitContactHandler()
+void PARTICLEINTERACTION::ParticleInteractionDEM::init_contact_handler()
 {
   // create contact handler
   contact_ = std::unique_ptr<PARTICLEINTERACTION::DEMContact>(
@@ -237,7 +238,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::InitContactHandler()
   contact_->Init();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::InitAdhesionHandler()
+void PARTICLEINTERACTION::ParticleInteractionDEM::init_adhesion_handler()
 {
   // get type of adhesion law
   INPAR::PARTICLE::AdhesionLaw adhesionlaw =
@@ -264,13 +265,13 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::setup_particle_interaction_wri
         particleinteractionwriter_->get_specific_runtime_csv_writer("particle-energy");
 
     // register all data vectors
-    runtime_csv_writer->RegisterDataVector("kin_energy", 1, 10);
-    runtime_csv_writer->RegisterDataVector("grav_pot_energy", 1, 10);
-    runtime_csv_writer->RegisterDataVector("elast_pot_energy", 1, 10);
+    runtime_csv_writer->register_data_vector("kin_energy", 1, 10);
+    runtime_csv_writer->register_data_vector("grav_pot_energy", 1, 10);
+    runtime_csv_writer->register_data_vector("elast_pot_energy", 1, 10);
   }
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialRadius()
+void PARTICLEINTERACTION::ParticleInteractionDEM::set_initial_radius()
 {
   // get allowed bounds for particle radius
   double r_min = params_dem_.get<double>("MIN_RADIUS");
@@ -321,7 +322,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialRadius()
         initradius[0] = material->initRadius_;
 
         // set initial radius for all particles of current type
-        container->SetState(initradius, PARTICLEENGINE::Radius);
+        container->set_state(initradius, PARTICLEENGINE::Radius);
       }
 
       break;
@@ -421,7 +422,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialRadius()
   }
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialMass()
+void PARTICLEINTERACTION::ParticleInteractionDEM::set_initial_mass()
 {
   // iterate over particle types
   for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
@@ -450,7 +451,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialMass()
   }
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialInertia()
+void PARTICLEINTERACTION::ParticleInteractionDEM::set_initial_inertia()
 {
   // iterate over particle types
   for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
@@ -496,9 +497,9 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::clear_force_and_moment_states(
   }
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::ComputeAcceleration() const
+void PARTICLEINTERACTION::ParticleInteractionDEM::compute_acceleration() const
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionDEM::ComputeAcceleration");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionDEM::compute_acceleration");
 
   // iterate over particle types
   for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())

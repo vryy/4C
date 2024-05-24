@@ -69,7 +69,7 @@ DRT::ELEMENTS::Ale3ImplInterface* DRT::ELEMENTS::Ale3ImplInterface::Impl(DRT::EL
       return Ale3Impl<CORE::FE::CellType::nurbs27>::Instance(CORE::UTILS::SingletonAction::create);
     }
     default:
-      FOUR_C_THROW("shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
+      FOUR_C_THROW("shape %d (%d nodes) not supported", ele->Shape(), ele->num_node());
       break;
   }
   return nullptr;
@@ -243,7 +243,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Ale3::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Ale3::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -288,7 +288,7 @@ inline void DRT::ELEMENTS::Ale3Impl<distype>::ElementNodeNormal(
   CORE::LINALG::Matrix<3, 3> xji;
 
   // gaussian points
-  const CORE::FE::GaussRule3D gaussrule = getOptimalGaussrule();
+  const CORE::FE::GaussRule3D gaussrule = get_optimal_gaussrule();
   const CORE::FE::IntegrationPoints3D intpoints(gaussrule);
 
   // integration loops
@@ -1411,7 +1411,7 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Discr
   CORE::LINALG::Matrix<6, numdof> bop;
   CORE::LINALG::Matrix<6, 6> D(true);
   // gaussian points
-  const CORE::FE::GaussRule3D gaussrule = getOptimalGaussrule();
+  const CORE::FE::GaussRule3D gaussrule = get_optimal_gaussrule();
   const CORE::FE::IntegrationPoints3D intpoints(gaussrule);
 
   /* =========================================================================*/
@@ -1644,7 +1644,7 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discret
   CORE::LINALG::Matrix<3 * iel, 1> tempmat2(true);
 
   // gaussian points
-  const CORE::FE::GaussRule3D gaussrule = getOptimalGaussrule();
+  const CORE::FE::GaussRule3D gaussrule = get_optimal_gaussrule();
   const CORE::FE::IntegrationPoints3D intpoints(gaussrule);
 
   // This whole method was copied from the ALE2 element and extended to 3D.
@@ -1722,7 +1722,7 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discret
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-inline CORE::FE::GaussRule3D DRT::ELEMENTS::Ale3Impl<distype>::getOptimalGaussrule()
+inline CORE::FE::GaussRule3D DRT::ELEMENTS::Ale3Impl<distype>::get_optimal_gaussrule()
 {
   switch (distype)
   {

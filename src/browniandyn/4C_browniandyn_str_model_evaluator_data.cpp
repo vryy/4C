@@ -114,7 +114,7 @@ void STR::MODELEVALUATOR::BrownianDynData::Init(
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BrownianDynData::Setup()
 {
-  CheckInit();
+  check_init();
 
   // set flag
   issetup_ = true;
@@ -127,7 +127,7 @@ void STR::MODELEVALUATOR::BrownianDynData::Setup()
 void STR::MODELEVALUATOR::BrownianDynData::resize_random_force_m_vector(
     Teuchos::RCP<DRT::Discretization> discret_ptr, int maxrandnumelement)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // resize in case of new crosslinkers that were set and are now part of the discretization
   randomforces_ = Teuchos::rcp(

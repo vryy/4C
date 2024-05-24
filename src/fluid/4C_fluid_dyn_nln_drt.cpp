@@ -71,7 +71,7 @@ void dyn_fluid_drt(const int restart)
         Teuchos::rcp(new FLD::TurbulentFlowAlgorithm(comm, fdyn));
 
     // read the restart information, set vectors and variables
-    if (restart) turbfluidalgo->ReadRestart(restart);
+    if (restart) turbfluidalgo->read_restart(restart);
 
     // run simulation for a separate part of the complete domain to get turbulent flow in it
     // after restart a turbulent inflow profile is computed in the separate inflow section and
@@ -92,14 +92,14 @@ void dyn_fluid_drt(const int restart)
         Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn, fdyn, "fluid", false));
 
     // read the restart information, set vectors and variables
-    if (restart) fluidalgo->FluidField()->ReadRestart(restart);
+    if (restart) fluidalgo->fluid_field()->read_restart(restart);
 
     // run the simulation
-    //    fluidalgo->FluidField()->TimeLoop();
-    fluidalgo->FluidField()->Integrate();
+    //    fluidalgo->fluid_field()->TimeLoop();
+    fluidalgo->fluid_field()->Integrate();
 
     // perform result tests if required
-    GLOBAL::Problem::Instance()->AddFieldTest(fluidalgo->FluidField()->CreateFieldTest());
+    GLOBAL::Problem::Instance()->AddFieldTest(fluidalgo->fluid_field()->CreateFieldTest());
     GLOBAL::Problem::Instance()->TestAll(comm);
   }
 

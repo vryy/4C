@@ -110,9 +110,9 @@ namespace DRT::ELEMENTS
     [[nodiscard]] int NumDofPerElement() const override { return 0; }
 
 
-    [[nodiscard]] DRT::ELEMENTS::Shell7p* ParentElement() const
+    [[nodiscard]] DRT::ELEMENTS::Shell7p* parent_element() const
     {
-      DRT::Element* parent = this->DRT::FaceElement::ParentElement();
+      DRT::Element* parent = this->DRT::FaceElement::parent_element();
       // make sure the static cast below is really valid
       FOUR_C_ASSERT(dynamic_cast<DRT::ELEMENTS::Shell7p*>(parent) != nullptr,
           "Parent element is no shell element");
@@ -129,7 +129,7 @@ namespace DRT::ELEMENTS
 
     //! @name Evaluate methods
     //! @{
-    int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
         CORE::Conditions::Condition& condition, std::vector<int>& dof_index_array,
         CORE::LINALG::SerialDenseVector& elevec1,
         CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -140,7 +140,7 @@ namespace DRT::ELEMENTS
     //! gaussian integration to be used
     CORE::FE::GaussRule1D gaussrule_;
 
-    void LineIntegration(double& dL, const CORE::LINALG::SerialDenseMatrix& x,
+    void line_integration(double& dL, const CORE::LINALG::SerialDenseMatrix& x,
         const CORE::LINALG::SerialDenseMatrix& deriv);
 
     /*!
@@ -150,8 +150,7 @@ namespace DRT::ELEMENTS
      */
     inline void material_configuration(CORE::LINALG::SerialDenseMatrix& x) const
     {
-      const int num_node = NumNode();
-      for (int i = 0; i < num_node; ++i)
+      for (int i = 0; i < num_node(); ++i)
       {
         x(i, 0) = Nodes()[i]->X()[0];
         x(i, 1) = Nodes()[i]->X()[1];

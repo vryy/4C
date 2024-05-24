@@ -136,7 +136,7 @@ namespace FLD
     For a turbulent channel flow, the averaging of the Smagorinsky
     constant is done in here.
     */
-    void DynSmagComputeCs();
+    void dyn_smag_compute_cs();
 
     /*!
     \brief Compute Prt using the filtered quantities.
@@ -145,7 +145,7 @@ namespace FLD
     For a turbulent channel flow, the averaging of the turbulent
     Prandtl number is done in here.
     */
-    void DynSmagComputePrt(Teuchos::ParameterList& extraparams, int& numele_layer);
+    void dyn_smag_compute_prt(Teuchos::ParameterList& extraparams, int& numele_layer);
 
 
     //! @name input arguments of the constructor

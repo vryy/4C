@@ -69,11 +69,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::Evaluat
 {
   // access primary and secondary materials of parent element
   Teuchos::RCP<const MAT::Soret> matsoret =
-      Teuchos::rcp_dynamic_cast<const MAT::Soret>(ele->ParentElement()->Material());
+      Teuchos::rcp_dynamic_cast<const MAT::Soret>(ele->parent_element()->Material());
   Teuchos::RCP<const MAT::FourierIso> matfourier =
-      Teuchos::rcp_dynamic_cast<const MAT::FourierIso>(ele->ParentElement()->Material());
+      Teuchos::rcp_dynamic_cast<const MAT::FourierIso>(ele->parent_element()->Material());
   Teuchos::RCP<const MAT::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material(1));
+      Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->parent_element()->Material(1));
   if ((matsoret == Teuchos::null and matfourier == Teuchos::null) or matelectrode == Teuchos::null)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
@@ -318,11 +318,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::evaluat
 {
   // access primary and secondary materials of parent element
   Teuchos::RCP<const MAT::Soret> matsoret =
-      Teuchos::rcp_dynamic_cast<const MAT::Soret>(ele->ParentElement()->Material());
+      Teuchos::rcp_dynamic_cast<const MAT::Soret>(ele->parent_element()->Material());
   Teuchos::RCP<const MAT::FourierIso> matfourier =
-      Teuchos::rcp_dynamic_cast<const MAT::FourierIso>(ele->ParentElement()->Material());
+      Teuchos::rcp_dynamic_cast<const MAT::FourierIso>(ele->parent_element()->Material());
   Teuchos::RCP<const MAT::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material(1));
+      Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->parent_element()->Material(1));
   if ((matsoret == Teuchos::null and matfourier == Teuchos::null) or matelectrode == Teuchos::null)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 

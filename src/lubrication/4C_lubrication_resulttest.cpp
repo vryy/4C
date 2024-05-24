@@ -34,7 +34,7 @@ LUBRICATION::ResultTest::ResultTest(Teuchos::RCP<TimIntImpl> lubrication)
 /*----------------------------------------------------------------------*
  | test node                                                wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::ResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void LUBRICATION::ResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
@@ -116,7 +116,7 @@ void LUBRICATION::ResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr,
     res.ExtractString("QUANTITY", quantity);
 
     // get result to be tested
-    const double result = ResultSpecial(quantity);
+    const double result = result_special(quantity);
 
     // compare values
     const int err = CompareValues(result, "SPECIAL", res);
@@ -131,7 +131,7 @@ void LUBRICATION::ResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr,
 /*----------------------------------------------------------------------*
  | get special result to be tested                          wirtz 11/15 |
  *----------------------------------------------------------------------*/
-double LUBRICATION::ResultTest::ResultSpecial(
+double LUBRICATION::ResultTest::result_special(
     const std::string quantity  //! name of quantity to be tested
 ) const
 {
@@ -144,6 +144,6 @@ double LUBRICATION::ResultTest::ResultSpecial(
     FOUR_C_THROW("Quantity '%s' not supported in result test!", quantity.c_str());
 
   return result;
-}  // LUBRICATION::ResultTest::ResultSpecial
+}  // LUBRICATION::ResultTest::result_special
 
 FOUR_C_NAMESPACE_CLOSE

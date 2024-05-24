@@ -184,9 +184,9 @@ void MAT::ConstraintMixtureHistory::Setup(const int ngp, const double massprodba
 }
 
 /*----------------------------------------------------------------------*
- |  History: SetStretches                         (private)        03/11|
+ |  History: set_stretches                         (private)        03/11|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::SetStretches(int gp, CORE::LINALG::Matrix<4, 1> stretches)
+void MAT::ConstraintMixtureHistory::set_stretches(int gp, CORE::LINALG::Matrix<4, 1> stretches)
 {
   if (gp < numgp_)
   {
@@ -196,13 +196,13 @@ void MAT::ConstraintMixtureHistory::SetStretches(int gp, CORE::LINALG::Matrix<4,
     collagenstretch4_->at(gp) = stretches(3);
   }
   else
-    FOUR_C_THROW("gp out of range in SetStretches");
+    FOUR_C_THROW("gp out of range in set_stretches");
 }
 
 /*----------------------------------------------------------------------*
- |  History: GetStretches                         (private)        03/11|
+ |  History: get_stretches                         (private)        03/11|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::GetStretches(int gp, CORE::LINALG::Matrix<4, 1>* stretches)
+void MAT::ConstraintMixtureHistory::get_stretches(int gp, CORE::LINALG::Matrix<4, 1>* stretches)
 {
   if (gp < numgp_)
   {
@@ -212,13 +212,13 @@ void MAT::ConstraintMixtureHistory::GetStretches(int gp, CORE::LINALG::Matrix<4,
     (*stretches)(3) = collagenstretch4_->at(gp);
   }
   else
-    FOUR_C_THROW("gp out of range in GetStretches");
+    FOUR_C_THROW("gp out of range in get_stretches");
 }
 
 /*----------------------------------------------------------------------*
- |  History: SetMass                              (private)        03/11|
+ |  History: set_mass                              (private)        03/11|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::SetMass(int gp, CORE::LINALG::Matrix<4, 1> massprod)
+void MAT::ConstraintMixtureHistory::set_mass(int gp, CORE::LINALG::Matrix<4, 1> massprod)
 {
   if (gp < numgp_)
   {
@@ -228,13 +228,13 @@ void MAT::ConstraintMixtureHistory::SetMass(int gp, CORE::LINALG::Matrix<4, 1> m
     massprod4_->at(gp) = massprod(3);
   }
   else
-    FOUR_C_THROW("gp out of range in SetMass");
+    FOUR_C_THROW("gp out of range in set_mass");
 }
 
 /*----------------------------------------------------------------------*
- |  History: SetMass                              (private)        04/13|
+ |  History: set_mass                              (private)        04/13|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::SetMass(int gp, double massprod, int idfiber)
+void MAT::ConstraintMixtureHistory::set_mass(int gp, double massprod, int idfiber)
 {
   if (gp < numgp_)
   {
@@ -258,13 +258,13 @@ void MAT::ConstraintMixtureHistory::SetMass(int gp, double massprod, int idfiber
       FOUR_C_THROW("no valid fiber id: %d", idfiber);
   }
   else
-    FOUR_C_THROW("gp out of range in SetMass");
+    FOUR_C_THROW("gp out of range in set_mass");
 }
 
 /*----------------------------------------------------------------------*
- |  History: GetMass                              (private)        03/11|
+ |  History: get_mass                              (private)        03/11|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::GetMass(int gp, CORE::LINALG::Matrix<4, 1>* massprod)
+void MAT::ConstraintMixtureHistory::get_mass(int gp, CORE::LINALG::Matrix<4, 1>* massprod)
 {
   if (gp < numgp_)
   {
@@ -274,13 +274,13 @@ void MAT::ConstraintMixtureHistory::GetMass(int gp, CORE::LINALG::Matrix<4, 1>* 
     (*massprod)(3) = massprod4_->at(gp);
   }
   else
-    FOUR_C_THROW("gp out of range in GetMass");
+    FOUR_C_THROW("gp out of range in get_mass");
 }
 
 /*----------------------------------------------------------------------*
- |  History: SetVarDegrad                         (private)        07/13|
+ |  History: set_var_degrad                         (private)        07/13|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::SetVarDegrad(int gp, int idfiber, double vardegrad)
+void MAT::ConstraintMixtureHistory::set_var_degrad(int gp, int idfiber, double vardegrad)
 {
   if (gp < numgp_)
   {
@@ -304,13 +304,13 @@ void MAT::ConstraintMixtureHistory::SetVarDegrad(int gp, int idfiber, double var
       FOUR_C_THROW("no valid fiber id: %d", idfiber);
   }
   else
-    FOUR_C_THROW("gp out of range in SetVarDegrad");
+    FOUR_C_THROW("gp out of range in set_var_degrad");
 }
 
 /*----------------------------------------------------------------------*
- |  History: GetVarDegrad                         (private)        07/13|
+ |  History: get_var_degrad                         (private)        07/13|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::GetVarDegrad(int gp, int idfiber, double* vardegrad)
+void MAT::ConstraintMixtureHistory::get_var_degrad(int gp, int idfiber, double* vardegrad)
 {
   if (gp < numgp_)
   {
@@ -334,7 +334,7 @@ void MAT::ConstraintMixtureHistory::GetVarDegrad(int gp, int idfiber, double* va
       FOUR_C_THROW("no valid fiber id: %d", idfiber);
   }
   else
-    FOUR_C_THROW("gp out of range in GetVarDegrad");
+    FOUR_C_THROW("gp out of range in get_var_degrad");
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -72,7 +72,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::SetupCalc(
     // element and boundary element, get weights
     bool zero_size =
         DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(ele, ele->FaceParentNumber(),
-            ele->ParentElement()->Id(), discretization, mypknots_, myknots_, weights_, normalfac_);
+            ele->parent_element()->Id(), discretization, mypknots_, myknots_, weights_, normalfac_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
     if (zero_size) return -1;
@@ -118,7 +118,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::extract_displacemen
     DRT::FaceElement* ele, const DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
 {
-  switch (ele->ParentElement()->Shape())
+  switch (ele->parent_element()->Shape())
   {
     case CORE::FE::CellType::hex8:
     {
@@ -156,7 +156,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::extract_displacemen
       break;
     }
     default:
-      FOUR_C_THROW("Not implemented for discretization type: %i!", ele->ParentElement()->Shape());
+      FOUR_C_THROW("Not implemented for discretization type: %i!", ele->parent_element()->Shape());
       break;
   }
 }
@@ -195,7 +195,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::extract_displacemen
 
     // determine location array information of parent element
     DRT::Element::LocationArray parent_la(discretization.NumDofSets());
-    ele->ParentElement()->LocationVector(discretization, parent_la, false);
+    ele->parent_element()->LocationVector(discretization, parent_la, false);
 
     const int num_node_parent_ele = CORE::FE::num_nodes<parentdistype>;
 
@@ -273,7 +273,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
           params.get<CORE::Conditions::Condition*>("condition");
       if (condition == nullptr) FOUR_C_THROW("Cannot access Neumann boundary condition!");
 
-      EvaluateNeumann(ele, params, discretization, *condition, la, elevec1_epetra, 1.);
+      evaluate_neumann(ele, params, discretization, *condition, la, elevec1_epetra, 1.);
 
       break;
     }
@@ -288,7 +288,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
     case SCATRA::BoundaryAction::calc_convective_heat_transfer:
     {
       // get the parent element including its material
-      DRT::Element* parentele = ele->ParentElement();
+      DRT::Element* parentele = ele->parent_element();
       Teuchos::RCP<CORE::MAT::Material> mat = parentele->Material();
 
       // get values of scalar
@@ -319,7 +319,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
     case SCATRA::BoundaryAction::calc_weak_Dirichlet:
     {
       // get the parent element including its material
-      DRT::Element* parentele = ele->ParentElement();
+      DRT::Element* parentele = ele->parent_element();
       Teuchos::RCP<CORE::MAT::Material> mat = parentele->Material();
 
       if (numscal_ > 1) FOUR_C_THROW("not yet implemented for more than one scalar\n");
@@ -329,7 +329,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
         // 2D:
         case CORE::FE::CellType::line2:
         {
-          if (ele->ParentElement()->Shape() == CORE::FE::CellType::quad4)
+          if (ele->parent_element()->Shape() == CORE::FE::CellType::quad4)
           {
             WeakDirichlet<CORE::FE::CellType::line2, CORE::FE::CellType::quad4>(
                 ele, params, discretization, mat, elemat1_epetra, elevec1_epetra);
@@ -344,7 +344,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
         // 3D:
         case CORE::FE::CellType::quad4:
         {
-          if (ele->ParentElement()->Shape() == CORE::FE::CellType::hex8)
+          if (ele->parent_element()->Shape() == CORE::FE::CellType::hex8)
           {
             WeakDirichlet<CORE::FE::CellType::quad4, CORE::FE::CellType::hex8>(
                 ele, params, discretization, mat, elemat1_epetra, elevec1_epetra);
@@ -489,7 +489,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateNeumann(DRT::FaceElement* ele,
+int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_neumann(DRT::FaceElement* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     CORE::Conditions::Condition& condition, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseVector& elevec1, const double scalar)
@@ -574,8 +574,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcNormalVectors(
   if constexpr (nsd_ == 3 and nsd_ele_ == 1)
   {
     // get first 3 nodes in parent element
-    auto* p_ele = ele->ParentElement();
-    FOUR_C_ASSERT(p_ele->NumNode() >= 3, "Parent element must at least have 3 nodes.");
+    auto* p_ele = ele->parent_element();
+    FOUR_C_ASSERT(p_ele->num_node() >= 3, "Parent element must at least have 3 nodes.");
     CORE::LINALG::Matrix<nsd_, 3> xyz_parent_ele;
 
     for (int i_node = 0; i_node < 3; ++i_node)
@@ -584,11 +584,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcNormalVectors(
       for (int dim = 0; dim < nsd_; ++dim) xyz_parent_ele(dim, i_node) = coords[dim];
     }
 
-    normal_ = GetConstNormal(xyze_, xyz_parent_ele);
+    normal_ = get_const_normal(xyze_, xyz_parent_ele);
   }
   else if constexpr (nsd_ - nsd_ele_ == 1)
   {
-    normal_ = GetConstNormal(xyze_);
+    normal_ = get_const_normal(xyze_);
   }
   else
     FOUR_C_THROW("This combination of space dimension and element dimension makes no sense.");
@@ -621,13 +621,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::NeumannInflow(
   std::vector<int>& lm = la[0].lm_;
 
   // get parent element
-  DRT::Element* parentele = ele->ParentElement();
+  DRT::Element* parentele = ele->parent_element();
 
   // get material of parent element
   Teuchos::RCP<CORE::MAT::Material> material = parentele->Material();
 
   // we don't know the parent element's lm vector; so we have to build it here
-  const int nenparent = parentele->NumNode();
+  const int nenparent = parentele->num_node();
   std::vector<int> lmparent(nenparent);
   std::vector<int> lmparentowner;
   std::vector<int> lmparentstride;
@@ -1007,7 +1007,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetConstNormal(
+CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::get_const_normal(
     const CORE::LINALG::Matrix<3, nen_>& xyze)
 {
   if (DRT::NURBS::IsNurbs(distype)) FOUR_C_THROW("Element normal not implemented for NURBS");
@@ -1027,12 +1027,12 @@ CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim
   normal.Scale(1.0 / length);
 
   return normal;
-}  // ScaTraEleBoundaryCalc<distype>::GetConstNormal
+}  // ScaTraEleBoundaryCalc<distype>::get_const_normal
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-CORE::LINALG::Matrix<2, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetConstNormal(
+CORE::LINALG::Matrix<2, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::get_const_normal(
     const CORE::LINALG::Matrix<2, nen_>& xyze)
 {
   if (DRT::NURBS::IsNurbs(distype)) FOUR_C_THROW("Element normal not implemented for NURBS");
@@ -1048,12 +1048,12 @@ CORE::LINALG::Matrix<2, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim
   normal.Scale(1.0 / length);
 
   return normal;
-}  // ScaTraEleBoundaryCalc<distype>::GetConstNormal
+}  // ScaTraEleBoundaryCalc<distype>::get_const_normal
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetConstNormal(
+CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::get_const_normal(
     const CORE::LINALG::Matrix<3, nen_>& xyze, const CORE::LINALG::Matrix<3, 3>& nodes_parent_ele)
 {
   if (DRT::NURBS::IsNurbs(distype)) FOUR_C_THROW("Element normal not implemented for NURBS");
@@ -1105,7 +1105,7 @@ CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim
   normal.Scale(1.0 / length);
 
   return normal;
-}  // ScaTraEleBoundaryCalc<distype>::GetConstNormal
+}  // ScaTraEleBoundaryCalc<distype>::get_const_normal
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1311,7 +1311,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calculate_det_f_o
 {
   if (scatraparams_->IsAle())
   {
-    switch (faceele->ParentElement()->Shape())
+    switch (faceele->parent_element()->Shape())
     {
       case CORE::FE::CellType::hex8:
       {
@@ -1324,7 +1324,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calculate_det_f_o
       default:
       {
         FOUR_C_THROW(
-            "Not implemented for discretization type: %i!", faceele->ParentElement()->Shape());
+            "Not implemented for discretization type: %i!", faceele->parent_element()->Shape());
         break;
       }
     }
@@ -1351,7 +1351,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calculate_det_f_o
 
   for (auto i = 0; i < parent_ele_num_nodes; ++i)
   {
-    const auto& x = faceele->ParentElement()->Nodes()[i]->X();
+    const auto& x = faceele->parent_element()->Nodes()[i]->X();
     for (auto dim = 0; dim < probdim; ++dim)
     {
       xdisp(i, dim) = eparentdispnp_.at(i * probdim + dim);
@@ -2128,7 +2128,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
   // element nodes
   //------------------------------------------------------------------------
   // get the parent element
-  DRT::Element* pele = ele->ParentElement();
+  DRT::Element* pele = ele->parent_element();
 
   // number of spatial dimensions regarding (boundary) element
   static const int bnsd = CORE::FE::dim<bdistype>;
@@ -2829,7 +2829,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype,
   // element nodes
   //------------------------------------------------------------------------
   // get the parent element
-  DRT::Element* pele = ele->ParentElement();
+  DRT::Element* pele = ele->parent_element();
 
   // number of spatial dimensions regarding (boundary) element
   static const int bnsd = CORE::FE::dim<bdistype>;

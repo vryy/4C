@@ -311,7 +311,7 @@ void XFEM::ConditionManager::Init()
 
 void XFEM::ConditionManager::Setup()
 {
-  CheckInit();
+  check_init();
 
   // do setup
 
@@ -425,7 +425,7 @@ Teuchos::RCP<const Epetra_Vector> XFEM::ConditionManager::GetLevelSetFieldCol()
   return bg_phinp_col;
 }
 
-void XFEM::ConditionManager::UpdateLevelSetField()
+void XFEM::ConditionManager::update_level_set_field()
 {
   //-------------------------------------------------------------------------------------------------
   // Boolean operations like \cap \cup \complementary \ ... are used to combine level-set functions
@@ -501,7 +501,7 @@ void XFEM::ConditionManager::UpdateLevelSetField()
   {
     const int gid = elerowmap->GID(leleid);
     DRT::Element* ele = bg_dis_->gElement(gid);
-    const int numnode = ele->NumNode();
+    const int numnode = ele->num_node();
     const int* nodeids = ele->NodeIds();
 
     std::set<int> lsc_coupling_indices;
@@ -538,13 +538,13 @@ void XFEM::ConditionManager::combine_level_set_field(Teuchos::RCP<Epetra_Vector>
   switch (ls_boolean_type)
   {
     case XFEM::CouplingBase::ls_cut:
-      SetMaximum(vec1, vec2, lsc_index_2, node_lsc_coup_idx);
+      set_maximum(vec1, vec2, lsc_index_2, node_lsc_coup_idx);
       break;
     case XFEM::CouplingBase::ls_union:
-      SetMinimum(vec1, vec2, lsc_index_2, node_lsc_coup_idx);
+      set_minimum(vec1, vec2, lsc_index_2, node_lsc_coup_idx);
       break;
     case XFEM::CouplingBase::ls_difference:
-      SetDifference(vec1, vec2, lsc_index_2, node_lsc_coup_idx);
+      set_difference(vec1, vec2, lsc_index_2, node_lsc_coup_idx);
       break;
     case XFEM::CouplingBase::ls_sym_difference:
       set_symmetric_difference(vec1, vec2, lsc_index_2, node_lsc_coup_idx);
@@ -556,20 +556,20 @@ void XFEM::ConditionManager::combine_level_set_field(Teuchos::RCP<Epetra_Vector>
 }
 
 
-void XFEM::ConditionManager::CheckForEqualMaps(
+void XFEM::ConditionManager::check_for_equal_maps(
     const Teuchos::RCP<Epetra_Vector>& vec1, const Teuchos::RCP<Epetra_Vector>& vec2)
 {
   if (not vec1->Map().PointSameAs(vec2->Map())) FOUR_C_THROW("maps do not match!");
 }
 
 
-void XFEM::ConditionManager::SetMinimum(Teuchos::RCP<Epetra_Vector>& vec1,
+void XFEM::ConditionManager::set_minimum(Teuchos::RCP<Epetra_Vector>& vec1,
     Teuchos::RCP<Epetra_Vector>& vec2, const int lsc_index_2,
     Teuchos::RCP<Epetra_IntVector>& node_lsc_coup_idx)
 {
   int err = -1;
 
-  CheckForEqualMaps(vec1, vec2);
+  check_for_equal_maps(vec1, vec2);
 
   // loop all nodes on the processor
   for (int lnodeid = 0; lnodeid < bg_dis_->NumMyRowNodes(); lnodeid++)
@@ -591,13 +591,13 @@ void XFEM::ConditionManager::SetMinimum(Teuchos::RCP<Epetra_Vector>& vec1,
 }
 
 
-void XFEM::ConditionManager::SetMaximum(Teuchos::RCP<Epetra_Vector>& vec1,
+void XFEM::ConditionManager::set_maximum(Teuchos::RCP<Epetra_Vector>& vec1,
     Teuchos::RCP<Epetra_Vector>& vec2, const int lsc_index_2,
     Teuchos::RCP<Epetra_IntVector>& node_lsc_coup_idx)
 {
   int err = -1;
 
-  CheckForEqualMaps(vec1, vec2);
+  check_for_equal_maps(vec1, vec2);
 
   // loop all nodes on the processor
   for (int lnodeid = 0; lnodeid < bg_dis_->NumMyRowNodes(); lnodeid++)
@@ -618,13 +618,13 @@ void XFEM::ConditionManager::SetMaximum(Teuchos::RCP<Epetra_Vector>& vec1,
 }
 
 
-void XFEM::ConditionManager::SetDifference(Teuchos::RCP<Epetra_Vector>& vec1,
+void XFEM::ConditionManager::set_difference(Teuchos::RCP<Epetra_Vector>& vec1,
     Teuchos::RCP<Epetra_Vector>& vec2, const int lsc_index_2,
     Teuchos::RCP<Epetra_IntVector>& node_lsc_coup_idx)
 {
   int err = -1;
 
-  CheckForEqualMaps(vec1, vec2);
+  check_for_equal_maps(vec1, vec2);
 
   // loop all nodes on the processor
   for (int lnodeid = 0; lnodeid < bg_dis_->NumMyRowNodes(); lnodeid++)
@@ -650,7 +650,7 @@ void XFEM::ConditionManager::set_symmetric_difference(Teuchos::RCP<Epetra_Vector
 {
   int err = -1;
 
-  CheckForEqualMaps(vec1, vec2);
+  check_for_equal_maps(vec1, vec2);
 
   // loop all nodes on the processor
   for (int lnodeid = 0; lnodeid < bg_dis_->NumMyRowNodes(); lnodeid++)
@@ -697,12 +697,12 @@ void XFEM::ConditionManager::ClearState()
   }
 }
 
-void XFEM::ConditionManager::SetState()
+void XFEM::ConditionManager::set_state()
 {
   // loop all mesh coupling objects
   for (int mc = 0; mc < (int)mesh_coupl_.size(); mc++)
   {
-    mesh_coupl_[mc]->SetState();
+    mesh_coupl_[mc]->set_state();
   }
 }
 
@@ -808,18 +808,18 @@ void XFEM::ConditionManager::LiftDrag(const int step, const double time)
   }
 }
 
-void XFEM::ConditionManager::ReadRestart(const int step)
+void XFEM::ConditionManager::read_restart(const int step)
 {
   // loop all mesh coupling objects
   for (int mc = 0; mc < (int)mesh_coupl_.size(); mc++)
   {
-    mesh_coupl_[mc]->ReadRestart(step);
+    mesh_coupl_[mc]->read_restart(step);
   }
 
   // loop all levelset coupling objects
   for (int lsc = 0; lsc < (int)levelset_coupl_.size(); lsc++)
   {
-    levelset_coupl_[lsc]->ReadRestart(step, lsc);
+    levelset_coupl_[lsc]->read_restart(step, lsc);
   }
 }
 
@@ -1077,7 +1077,7 @@ double XFEM::ConditionManager::get_trace_estimate_max_eigenvalue(
   if (mvolcoupling == Teuchos::null) FOUR_C_THROW("Cast to MeshVolCoupling failed!");
 
   return mvolcoupling->get_estimate_nitsche_trace_max_eigenvalue(
-      mvolcoupling->GetSide(cutterdis_sid));
+      mvolcoupling->get_side(cutterdis_sid));
 }
 
 FOUR_C_NAMESPACE_CLOSE

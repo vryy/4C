@@ -180,16 +180,16 @@ void STR::ResultTest::Init(
  *----------------------------------------------------------------------------*/
 void STR::ResultTest::Setup()
 {
-  CheckInit();
+  check_init();
   // currently unused
   issetup_ = true;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::ResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void STR::ResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // care for the case of multiple discretizations of the same field type
   std::string dis;
@@ -399,13 +399,13 @@ void STR::ResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_
 void STR::ResultTest::TestSpecial(
     INPUT::LineDefinition& res, int& nerr, int& test_count, int& uneval_test_count)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   std::string quantity;
   res.ExtractString("QUANTITY", quantity);
 
   Status special_status = Status::unevaluated;
-  const std::optional<double> result = GetSpecialResult(quantity, special_status);
+  const std::optional<double> result = get_special_result(quantity, special_status);
 
   switch (special_status)
   {
@@ -435,7 +435,7 @@ void STR::ResultTest::TestSpecial(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::optional<double> STR::ResultTest::GetSpecialResult(
+std::optional<double> STR::ResultTest::get_special_result(
     const std::string& quantity, Status& special_status) const
 {
   if (quantity.find("num_iter_step_") != quantity.npos)
@@ -458,7 +458,7 @@ std::optional<double> STR::ResultTest::GetSpecialResult(
            quantity == "beam_to_sphere_link_internal_energy" or
            quantity == "beam_to_sphere_link_kinetic_energy")
   {
-    return GetEnergy(quantity, special_status);
+    return get_energy(quantity, special_status);
   }
   else
     FOUR_C_THROW(
@@ -537,7 +537,7 @@ std::optional<int> STR::ResultTest::get_nodes_per_proc_number(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::optional<double> STR::ResultTest::GetEnergy(
+std::optional<double> STR::ResultTest::get_energy(
     const std::string& quantity, Status& special_status) const
 {
   std::optional<double> result = std::nullopt;

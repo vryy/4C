@@ -42,7 +42,7 @@ void FSI::FluidAleAlgorithm::Timeloop()
 {
   while (NotFinished())
   {
-    PrepareTimeStep();
+    prepare_time_step();
     Solve();
     Update();
     Output();
@@ -51,15 +51,15 @@ void FSI::FluidAleAlgorithm::Timeloop()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidAleAlgorithm::ReadRestart(int step)
+void FSI::FluidAleAlgorithm::read_restart(int step)
 {
-  time_ = MBFluidField()->ReadRestart(step);
+  time_ = MBFluidField()->read_restart(step);
   step_ = step;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidAleAlgorithm::PrepareTimeStep()
+void FSI::FluidAleAlgorithm::prepare_time_step()
 {
   step_ += 1;
   time_ += dt_;
@@ -70,7 +70,7 @@ void FSI::FluidAleAlgorithm::PrepareTimeStep()
               << "     DT = " << std::scientific << dt_ << "     STEP = " << std::setw(4) << step_
               << "/" << std::setw(4) << nstep_ << "\n\n";
 
-  MBFluidField()->PrepareTimeStep();
+  MBFluidField()->prepare_time_step();
 }
 
 

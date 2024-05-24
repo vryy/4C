@@ -88,7 +88,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::GetConductivit
     bool effCond)
 {
   // use precomputed conductivity
-  sigma_all = DiffManager()->GetCond();
+  sigma_all = diff_manager()->GetCond();
 }  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::GetConductivity
 
 
@@ -121,7 +121,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateCurre
     case INPAR::SCATRA::flux_total:
     {
       // ohmic contribution to current density
-      q.Update(-DiffManager()->GetCond(), VarManager()->GradPot());
+      q.Update(-diff_manager()->GetCond(), var_manager()->GradPot());
       break;
     }
 
@@ -225,7 +225,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
       const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
       // compute internal variables at current integration point
-      VarManager()->set_internal_variables_elch_electrode_soc_and_c_rate(
+      var_manager()->set_internal_variables_elch_electrode_soc_and_c_rate(
           my::funct_, my::derxy_, my::ephinp_, my::ephin_, my::econvelnp_, my::ehist_);
 
       // compute velocity and its divergence
@@ -282,7 +282,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateFlux(
     case INPAR::SCATRA::flux_total:
     {
       // diffusive flux contribution
-      q.Update(-DiffManager()->GetIsotropicDiff(k), VarManager()->GradPhi(k));
+      q.Update(-diff_manager()->GetIsotropicDiff(k), var_manager()->GradPhi(k));
       break;
     }
 
@@ -318,7 +318,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
     probdim>::set_internal_variables_for_mat_and_rhs()
 {
   // set internal variables
-  VarManager()->set_internal_variables_elch_electrode(
+  var_manager()->set_internal_variables_elch_electrode(
       my::funct_, my::derxy_, my::ephinp_, my::ephin_, my::econvelnp_, my::ehist_);
 }  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::set_internal_variables_for_mat_and_rhs()
 

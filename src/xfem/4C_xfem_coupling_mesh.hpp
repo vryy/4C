@@ -55,7 +55,7 @@ namespace XFEM
     }
 
     /// get the side element of the respective boundary discretization
-    DRT::Element* GetSide(const int sid  ///< global side element id w.r.t cutter discretization
+    DRT::Element* get_side(const int sid  ///< global side element id w.r.t cutter discretization
     )
     {
       return cutter_dis_->gElement(sid);
@@ -83,7 +83,7 @@ namespace XFEM
     virtual void ClearState();
 
     /// set state vectors for cutter discretization
-    virtual void SetState();
+    virtual void set_state();
 
     /// set displacement state vectors for cutter discretization
     virtual void set_state_displacement();
@@ -103,7 +103,7 @@ namespace XFEM
     virtual void LiftDrag(const int step, const double time) const {};
 
 
-    virtual void ReadRestart(const int step){};
+    virtual void read_restart(const int step){};
 
     bool HasMovingInterface() override { return true; }
 
@@ -240,7 +240,7 @@ namespace XFEM
       if (!fele) FOUR_C_THROW("Cast to FaceElement failed!");
       fele->set_parent_master_element(
           coupl_dis_->gElement(fele->ParentElementId()), fele->FaceParentNumber());
-      return fele->ParentElement();
+      return fele->parent_element();
     }
 
     //! get the element from the conditioned dis for a local coupling side element id
@@ -250,7 +250,7 @@ namespace XFEM
     {
       DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(cutter_dis_->gElement(sid));
       if (!fele) FOUR_C_THROW("Cast to FaceElement failed!");
-      return fele->ParentElement();
+      return fele->parent_element();
     }
 
     //! get auxiliary coupling discretization (embedded elements with nodes in the cutting surface
@@ -344,7 +344,7 @@ namespace XFEM
 
     virtual void set_interface_velocity();
 
-    virtual void EvaluateCondition(Teuchos::RCP<Epetra_Vector> ivec, const std::string& condname,
+    virtual void evaluate_condition(Teuchos::RCP<Epetra_Vector> ivec, const std::string& condname,
         const double time, const double dt = 0.0);
 
     bool HasMovingInterface() override;
@@ -600,7 +600,7 @@ namespace XFEM
 
     void LiftDrag(const int step, const double time) const override;
 
-    void ReadRestart(const int step) override;
+    void read_restart(const int step) override;
 
     void GetSlipCoefficient(double& slipcoeff, const CORE::LINALG::Matrix<3, 1>& x,
         const CORE::Conditions::Condition* cond) override;
@@ -795,7 +795,7 @@ namespace XFEM
     }
 
 
-    void ReadRestart(const int step) override;
+    void read_restart(const int step) override;
 
     void Output(const int step, const double time, const bool write_restart_data) override;
 

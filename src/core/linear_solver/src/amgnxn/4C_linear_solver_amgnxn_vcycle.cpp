@@ -132,7 +132,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::SetPosSmoothers(
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::DoVcycle(
+void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::do_vcycle(
     const BlockedVector& X, BlockedVector& Y, int level, bool InitialGuessIsZero) const
 {
   if (level != num_levels_ - 1)  // Perform one iteration of the V-cycle
@@ -152,7 +152,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::DoVcycle(
 
     // Damp error with coarser levels
     Teuchos::RCP<BlockedVector> DYcoarse = pvec_[level]->new_domain_blocked_vector(NV, false);
-    DoVcycle(*DXcoarse, *DYcoarse, level + 1, true);
+    do_vcycle(*DXcoarse, *DYcoarse, level + 1, true);
 
     // Compute correction
     BlockedVector DY = Y.DeepCopy();
@@ -185,7 +185,8 @@ void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::Solve(
   if (!flag_set_up_pos_) FOUR_C_THROW("Post-smoothers missing");
 
   // Work!
-  for (int i = 0; i < num_sweeps_; i++) DoVcycle(X, Y, first_level_, InitialGuessIsZero and i == 0);
+  for (int i = 0; i < num_sweeps_; i++)
+    do_vcycle(X, Y, first_level_, InitialGuessIsZero and i == 0);
   return;
 }
 
@@ -297,7 +298,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::SetPosSmoothers(
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::DoVcycle(
+void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::do_vcycle(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y, int level, bool InitialGuessIsZero) const
 {
   if (level != num_levels_ - 1)  // Perform one iteration of the V-cycle
@@ -319,7 +320,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::DoVcycle(
     // Damp error with coarser levels
     const Epetra_Map& Map2 = pvec_[level]->DomainMap();
     Epetra_MultiVector DYcoarse(Map2, NV, false);
-    DoVcycle(DXcoarse, DYcoarse, level + 1, true);
+    do_vcycle(DXcoarse, DYcoarse, level + 1, true);
 
     // Compute correction
     Epetra_MultiVector DY(Y.Map(), NV, false);
@@ -351,7 +352,8 @@ void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::Apply(
   if (!flag_set_up_pos_) FOUR_C_THROW("Post-smoothers missing");
 
   // Work!
-  for (int i = 0; i < num_sweeps_; i++) DoVcycle(X, Y, first_level_, InitialGuessIsZero and i == 0);
+  for (int i = 0; i < num_sweeps_; i++)
+    do_vcycle(X, Y, first_level_, InitialGuessIsZero and i == 0);
   return;
 }
 

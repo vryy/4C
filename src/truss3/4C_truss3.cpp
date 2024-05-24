@@ -351,7 +351,7 @@ void DRT::ELEMENTS::Truss3::scale_reference_length(double scalefac)
 void DRT::ELEMENTS::Truss3::LocationVector(
     const Discretization& dis, LocationArray& la, bool doDirichlet) const
 {
-  const int numnode = NumNode();
+  const int numnode = num_node();
   const DRT::Node* const* nodes = Nodes();
 
   la.Clear();

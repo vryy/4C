@@ -342,7 +342,7 @@ DRT::Element* DRT::ELEMENTS::ElemagBoundary::Clone() const
  *----------------------------------------------------------------------*/
 CORE::FE::CellType DRT::ELEMENTS::ElemagBoundary::Shape() const
 {
-  return CORE::FE::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
+  return CORE::FE::getShapeOfBoundaryElement(num_node(), ParentMasterElement()->Shape());
 }
 
 
@@ -441,7 +441,7 @@ int DRT::ELEMENTS::ElemagBoundary::Evaluate(Teuchos::ParameterList& params,
 /*-----------------------------------------------------------------------*
  |  Integrate a surface/line Neumann boundary condition berardocco 02/18 |
  *-----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ElemagBoundary::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::ElemagBoundary::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -539,7 +539,7 @@ DRT::Element* DRT::ELEMENTS::ElemagIntFace::Clone() const
 CORE::FE::CellType DRT::ELEMENTS::ElemagIntFace::Shape() const
 {
   // could be called for master parent or slave parent element, doesn't matter
-  return CORE::FE::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
+  return CORE::FE::getShapeOfBoundaryElement(num_node(), ParentMasterElement()->Shape());
 }
 
 /*----------------------------------------------------------------------*
@@ -586,7 +586,7 @@ void DRT::ELEMENTS::ElemagIntFace::PatchLocationVector(
   // *this ElemagIntFace element only once (no duplicates)
 
   //-----------------------------------------------------------------------
-  const int m_numnode = ParentMasterElement()->NumNode();
+  const int m_numnode = ParentMasterElement()->num_node();
   DRT::Node** m_nodes = ParentMasterElement()->Nodes();
 
   if (m_numnode != static_cast<int>(nds_master.size()))
@@ -595,7 +595,7 @@ void DRT::ELEMENTS::ElemagIntFace::PatchLocationVector(
   }
 
   //-----------------------------------------------------------------------
-  const int s_numnode = ParentSlaveElement()->NumNode();
+  const int s_numnode = ParentSlaveElement()->num_node();
   DRT::Node** s_nodes = ParentSlaveElement()->Nodes();
 
   if (s_numnode != static_cast<int>(nds_slave.size()))
@@ -604,7 +604,7 @@ void DRT::ELEMENTS::ElemagIntFace::PatchLocationVector(
   }
 
   //-----------------------------------------------------------------------
-  const int f_numnode = NumNode();
+  const int f_numnode = num_node();
   DRT::Node** f_nodes = Nodes();
 
   //-----------------------------------------------------------------------
@@ -812,7 +812,7 @@ int DRT::ELEMENTS::ElemagIntFace::Evaluate(Teuchos::ParameterList& params,
 /*------------------------------------------------------------------------*
  |  Integrate a surface/line Neumann boundary condition  berardocco 02/18 |
  *------------------------------------------------------------------------*/
-int DRT::ELEMENTS::ElemagIntFace::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::ElemagIntFace::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)

@@ -784,7 +784,7 @@ DRT::Element* DRT::ELEMENTS::TransportBoundary::Clone() const
  *----------------------------------------------------------------------*/
 CORE::FE::CellType DRT::ELEMENTS::TransportBoundary::Shape() const
 {
-  return CORE::FE::getShapeOfBoundaryElement(NumNode(), ParentElement()->Shape());
+  return CORE::FE::getShapeOfBoundaryElement(num_node(), parent_element()->Shape());
 }
 
 /*----------------------------------------------------------------------*

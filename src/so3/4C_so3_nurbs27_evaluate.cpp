@@ -40,7 +40,8 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
-  // Check whether the solid material PostSetup() routine has already been called and call it if not
+  // Check whether the solid material post_setup() routine has already been called and call it if
+  // not
   ensure_material_post_setup(params);
 
   CORE::LINALG::Matrix<81, 81> elemat1(elemat1_epetra.values(), true);
@@ -162,7 +163,7 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
     break;
 
     case calc_struct_eleload:
-      FOUR_C_THROW("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
+      FOUR_C_THROW("this method is not supposed to evaluate a load, use evaluate_neumann(...)");
       break;
 
     case calc_struct_fsiload:
@@ -179,7 +180,7 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
     case calc_struct_reset_istep:
     {
       // Reset of history (if needed)
-      SolidMaterial()->ResetStep();
+      SolidMaterial()->reset_step();
     }
     break;
 
@@ -535,7 +536,7 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::CalcSTCMatrix(CORE::LINALG::Matrix<81, 81>
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)              |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::NURBS::SoNurbs27::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::NURBS::SoNurbs27::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -671,7 +672,7 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::EvaluateNeumann(Teuchos::ParameterList& par
   } /* end of Loop over GP */
 
   return 0;
-}  // DRT::ELEMENTS::So_nurbs27::EvaluateNeumann
+}  // DRT::ELEMENTS::So_nurbs27::evaluate_neumann
 
 
 /*----------------------------------------------------------------------*

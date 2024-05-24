@@ -160,7 +160,7 @@ namespace CORE::LINALG
    \param transA     (in)     : flag indicating whether transposed of A should be used
    \param B          (in)     : Matrix to multiply with A (must have Filled()==true)
    \param transB     (in)     : flag indicating whether transposed of B should be used
-   \param complete   (in)     : flag indicating whether FillComplete should be called on C upon
+   \param complete   (in)     : flag indicating whether fill_complete should be called on C upon
    exit, (defaults to true) \return Matrix product A(^T)*B(^T)
    */
   Teuchos::RCP<Epetra_CrsMatrix> Multiply(const Epetra_CrsMatrix& A, bool transA,
@@ -179,7 +179,7 @@ namespace CORE::LINALG
    \param transA     (in)     : flag indicating whether transposed of A should be used
    \param B          (in)     : Matrix to multiply with A (must have Filled()==true)
    \param transB     (in)     : flag indicating whether transposed of B should be used
-   \param complete   (in)     : flag indicating whether FillComplete should be called on C upon
+   \param complete   (in)     : flag indicating whether fill_complete should be called on C upon
    exit, (defaults to true) \return Matrix product A(^T)*B(^T)
    */
   inline Teuchos::RCP<Epetra_CrsMatrix> Multiply(const Teuchos::RCP<Epetra_CrsMatrix>& A,
@@ -202,7 +202,7 @@ namespace CORE::LINALG
    \param transB     (in)     : flag indicating whether transposed of B should be used
    \param C          (in)     : Matrix C (must have Filled()==true)
    \param transC     (in)     : flag indicating whether transposed of C should be used
-   \param complete   (in)     : flag indicating whether FillComplete should be called on C upon
+   \param complete   (in)     : flag indicating whether fill_complete should be called on C upon
    exit, (defaults to true) \return Matrix product A(^T)*B(^T)*C(^T)
    */
   Teuchos::RCP<Epetra_CrsMatrix> Multiply(const Epetra_CrsMatrix& A, bool transA,
@@ -224,7 +224,7 @@ namespace CORE::LINALG
    \param transB     (in)     : flag indicating whether transposed of B should be used
    \param C          (in)     : Matrix C (must have Filled()==true)
    \param transC     (in)     : flag indicating whether transposed of C should be used
-   \param complete   (in)     : flag indicating whether FillComplete should be called on C upon
+   \param complete   (in)     : flag indicating whether fill_complete should be called on C upon
    exit, (defaults to true) \return Matrix product A(^T)*B(^T)*C(^T)
    */
   inline Teuchos::RCP<Epetra_CrsMatrix> Multiply(const Teuchos::RCP<Epetra_CrsMatrix>& A,

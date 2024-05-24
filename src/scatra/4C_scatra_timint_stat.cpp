@@ -47,7 +47,7 @@ void SCATRA::TimIntStationary::Init()
   // vectors and matrices
   //                 local <-> global dof numbering
   // -------------------------------------------------------------------
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // fine-scale vector
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
@@ -153,7 +153,7 @@ void SCATRA::TimIntStationary::AVM3Separation()
   Sep_->Multiply(false, *phinp_, *fsphinp_);
 
   // set fine-scale vector
-  discret_->SetState("fsphinp", fsphinp_);
+  discret_->set_state("fsphinp", fsphinp_);
 }
 
 
@@ -165,18 +165,18 @@ void SCATRA::TimIntStationary::add_time_integration_specific_vectors(bool forced
   // call base class routine
   ScaTraTimIntImpl::add_time_integration_specific_vectors(forcedincrementalsolver);
 
-  discret_->SetState("hist", hist_);
-  discret_->SetState("phinp", phinp_);
+  discret_->set_state("hist", hist_);
+  discret_->set_state("phinp", phinp_);
 }
 
 
 /*----------------------------------------------------------------------*
  |                                                            gjb 09/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input)
+void SCATRA::TimIntStationary::read_restart(const int step, Teuchos::RCP<IO::InputControl> input)
 {
   // call base class routine
-  ScaTraTimIntImpl::ReadRestart(step, input);
+  ScaTraTimIntImpl::read_restart(step, input);
 
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)

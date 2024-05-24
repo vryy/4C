@@ -65,11 +65,11 @@ namespace XFEM
     void Output(IO::DiscretizationWriter& writer) override;
 
     //! Read Restart (For lambda_)
-    void ReadRestart(IO::DiscretizationReader& reader) override;
+    void read_restart(IO::DiscretizationReader& reader) override;
 
    private:
     //! Get Timeface on the interface (for OST this is 1/(theta dt))
-    double GetInterfaceTimefac();
+    double get_interface_timefac();
 
 
 

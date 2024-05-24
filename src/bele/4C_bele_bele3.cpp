@@ -52,7 +52,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele3Type::Create(
       int numdof = -1;
       is >> numdof;
       Teuchos::RCP<DRT::ELEMENTS::Bele3> ele = Teuchos::rcp(new DRT::ELEMENTS::Bele3(id, owner));
-      ele->SetNumDofPerNode(numdof);
+      ele->set_num_dof_per_node(numdof);
       return ele;
     }
     else
@@ -159,7 +159,7 @@ DRT::Element* DRT::ELEMENTS::Bele3::Clone() const
  *----------------------------------------------------------------------*/
 CORE::FE::CellType DRT::ELEMENTS::Bele3::Shape() const
 {
-  switch (NumNode())
+  switch (num_node())
   {
     case 3:
       return CORE::FE::CellType::tri3;
@@ -172,7 +172,7 @@ CORE::FE::CellType DRT::ELEMENTS::Bele3::Shape() const
     case 9:
       return CORE::FE::CellType::quad9;
     default:
-      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", num_node());
       break;
   }
 }
@@ -244,7 +244,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Bele3::Surfaces()
 }
 
 
-CORE::FE::GaussRule2D DRT::ELEMENTS::Bele3::getOptimalGaussrule() const
+CORE::FE::GaussRule2D DRT::ELEMENTS::Bele3::get_optimal_gaussrule() const
 {
   CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::undefined;
   switch (Shape())

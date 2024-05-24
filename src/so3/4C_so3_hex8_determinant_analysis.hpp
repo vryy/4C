@@ -143,7 +143,7 @@ namespace DRT
        *              border coordinates, respectively.
        *
        *   \author hiermeier \date 09/18 */
-      void getSubCubeBorders(
+      void get_sub_cube_borders(
           const double* l, const double* r, std::list<BezierCube>& subcubes) const;
 
       /** \brief Returns TRUE if the tested entries contain one which is invalid
@@ -154,7 +154,7 @@ namespace DRT
        *  \param length   number of entries in the array
        *
        *  \author hiermeier \date 09/18 */
-      bool hasInvalidEntry(const double* entries, const unsigned length) const;
+      bool has_invalid_entry(const double* entries, const unsigned length) const;
 
       /** \brief Perform a recursive subdivision of the cubes and refine
        *  the estimates for the Jacobian determinant
@@ -240,7 +240,7 @@ namespace DRT
           const std::function<unsigned(unsigned i)>& f_index30,
           const std::function<unsigned(unsigned i)>& f_index31, unsigned offset) const;
 
-      double computeTet4Volume(const CORE::LINALG::Matrix<NUMDIM_SOH8, 4>& tet4_ncoords) const;
+      double compute_tet4_volume(const CORE::LINALG::Matrix<NUMDIM_SOH8, 4>& tet4_ncoords) const;
 
       /** \brief Evaluate the second order bezier function
        *
@@ -248,7 +248,7 @@ namespace DRT
        *  \param n  desired bezier polynomial. n must be between 0 and 2.
        *
        *  \author hiermeier \date 09/18 */
-      static double bezierFunc2(const double t, unsigned n)
+      static double bezier_func2(const double t, unsigned n)
       {
         switch (n)
         {

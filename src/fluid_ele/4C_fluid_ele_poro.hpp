@@ -48,7 +48,7 @@ namespace DRT
           override;
 
       //! pre-evaluation
-      void PreEvaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
+      void pre_evaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
           Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
           Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
           Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,

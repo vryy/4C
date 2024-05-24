@@ -52,13 +52,13 @@ XFEM::MeshProjector::MeshProjector(Teuchos::RCP<const DRT::Discretization> sourc
   switch (sourcedis_->lRowElement(0)->Shape())
   {
     case CORE::FE::CellType::hex8:
-      FindSearchRadius<CORE::FE::CellType::hex8>();
+      find_search_radius<CORE::FE::CellType::hex8>();
       break;
     case CORE::FE::CellType::hex20:
-      FindSearchRadius<CORE::FE::CellType::hex20>();
+      find_search_radius<CORE::FE::CellType::hex20>();
       break;
     case CORE::FE::CellType::hex27:
-      FindSearchRadius<CORE::FE::CellType::hex27>();
+      find_search_radius<CORE::FE::CellType::hex27>();
       break;
     default:
       searchradius_ = searchradius_fac_;  // avoid a
@@ -90,7 +90,7 @@ void XFEM::MeshProjector::set_source_position_vector(Teuchos::RCP<const Epetra_V
 }
 
 template <CORE::FE::CellType distype>
-void XFEM::MeshProjector::FindSearchRadius()
+void XFEM::MeshProjector::find_search_radius()
 {
   DRT::Element* actele = sourcedis_->lRowElement(0);
   const DRT::Node* const* nodes = actele->Nodes();
@@ -178,7 +178,7 @@ void XFEM::MeshProjector::FindSearchRadius()
   searchradius_ = searchradius_fac_ * max_diameter;
 }
 
-void XFEM::MeshProjector::SetupSearchTree()
+void XFEM::MeshProjector::setup_search_tree()
 {
   // init of 3D search tree
   search_tree_ = Teuchos::rcp(new CORE::GEO::SearchTree(5));
@@ -246,12 +246,12 @@ void XFEM::MeshProjector::Project(std::map<int, std::set<int>>& projection_nodeT
     interpolated_vecs.push_back(CORE::LINALG::Matrix<8, 1>(true));
   }
 
-  SetupSearchTree();
+  setup_search_tree();
 
   // vector which identifies if a target node has already interpolated values (initialize to false)
   std::vector<int> have_values(projection_targetnodes.size(), 0);
   if (sourcedis_->Comm().NumProc() > 1)
-    CommunicateNodes(tar_nodepositions_n, interpolated_vecs, projection_targetnodes, have_values);
+    communicate_nodes(tar_nodepositions_n, interpolated_vecs, projection_targetnodes, have_values);
   else
   {
     find_covering_elements_and_interpolate_values(
@@ -333,7 +333,7 @@ bool XFEM::MeshProjector::check_position_and_project(const DRT::Element* src_ele
   // nodal coordinates
   CORE::LINALG::Matrix<3, src_numnodes> src_xyze(true);
 
-  for (int in = 0; in < src_ele->NumNode(); ++in)
+  for (int in = 0; in < src_ele->num_node(); ++in)
   {
     const unsigned nid = src_ele->NodeIds()[in];
 
@@ -345,7 +345,7 @@ bool XFEM::MeshProjector::check_position_and_project(const DRT::Element* src_ele
 
   // compute node position w.r.t. embedded element
   Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-      CORE::GEO::CUT::PositionFactory::BuildPosition<3, distype>(src_xyze, node_xyz);
+      CORE::GEO::CUT::PositionFactory::build_position<3, distype>(src_xyze, node_xyz);
   bool inside = pos->Compute();
 
   if (inside)
@@ -359,7 +359,7 @@ bool XFEM::MeshProjector::check_position_and_project(const DRT::Element* src_ele
     CORE::FE::shape_function_3D(shp, xsi(0, 0), xsi(1, 0), xsi(2, 0), distype);
 
     // extract state values and interpolate
-    for (int in = 0; in < src_ele->NumNode(); ++in)
+    for (int in = 0; in < src_ele->num_node(); ++in)
     {
       const DRT::Node* node = src_ele->Nodes()[in];
       const unsigned numdofpernode = src_ele->NumDofPerNode(*node);
@@ -466,7 +466,7 @@ void XFEM::MeshProjector::find_covering_elements_and_interpolate_values(
   return;
 }
 
-void XFEM::MeshProjector::CommunicateNodes(
+void XFEM::MeshProjector::communicate_nodes(
     std::vector<CORE::LINALG::Matrix<3, 1>>& tar_nodepositions,
     std::vector<CORE::LINALG::Matrix<8, 1>>& interpolated_vecs,
     std::vector<int>& projection_targetnodes, std::vector<int>& have_values)
@@ -495,7 +495,7 @@ void XFEM::MeshProjector::CommunicateNodes(
     // in the first step, we cannot receive anything
     if (np > 0)
     {
-      ReceiveBlock(rblock, exporter, request);
+      receive_block(rblock, exporter, request);
 
       std::vector<char>::size_type position = 0;
       CORE::COMM::ParObject::ExtractfromPack(position, rblock, tar_nodepositions);
@@ -513,15 +513,16 @@ void XFEM::MeshProjector::CommunicateNodes(
           tar_nodepositions, interpolated_vecs, projection_targetnodes, have_values);
 
       // Pack info into block to send it
-      PackValues(tar_nodepositions, interpolated_vecs, projection_targetnodes, have_values, sblock);
+      pack_values(
+          tar_nodepositions, interpolated_vecs, projection_targetnodes, have_values, sblock);
 
       // add size to sendblock
-      SendBlock(sblock, exporter, request);
+      send_block(sblock, exporter, request);
     }
   }  // end of loop over processors
 }
 
-void XFEM::MeshProjector::ReceiveBlock(
+void XFEM::MeshProjector::receive_block(
     std::vector<char>& rblock, CORE::COMM::Exporter& exporter, MPI_Request& request)
 {
   // get number of processors and the current processors id
@@ -554,7 +555,7 @@ void XFEM::MeshProjector::ReceiveBlock(
   return;
 }
 
-void XFEM::MeshProjector::SendBlock(
+void XFEM::MeshProjector::send_block(
     std::vector<char>& sblock, CORE::COMM::Exporter& exporter, MPI_Request& request)
 {
   // get number of processors and the current processors id
@@ -571,7 +572,7 @@ void XFEM::MeshProjector::SendBlock(
   // << topid << IO::endl;
 #endif
 
-  exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
+  exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
   // for safety
   exporter.Comm().Barrier();
@@ -579,7 +580,7 @@ void XFEM::MeshProjector::SendBlock(
   return;
 }
 
-void XFEM::MeshProjector::PackValues(std::vector<CORE::LINALG::Matrix<3, 1>>& tar_nodepositions,
+void XFEM::MeshProjector::pack_values(std::vector<CORE::LINALG::Matrix<3, 1>>& tar_nodepositions,
     std::vector<CORE::LINALG::Matrix<8, 1>>& interpolated_vecs,
     std::vector<int>& projection_targetnodes, std::vector<int>& have_values,
     std::vector<char>& sblock)

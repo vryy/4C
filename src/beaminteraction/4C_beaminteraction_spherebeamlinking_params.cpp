@@ -261,7 +261,7 @@ void BEAMINTERACTION::SphereBeamLinkingParams::Init(STR::TIMINT::BaseDataGlobalS
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SphereBeamLinkingParams::Setup()
 {
-  CheckInit();
+  check_init();
 
   // empty for now
 
@@ -272,7 +272,7 @@ void BEAMINTERACTION::SphereBeamLinkingParams::Setup()
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SphereBeamLinkingParams::ResetTimeStep(double structure_delta_time)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (not own_deltatime_) deltatime_ = structure_delta_time;
 }

@@ -115,7 +115,7 @@ namespace DRT
         {
           return (0);
           /*
-          if (NumNode()==27 || NumNode()==8)
+          if (num_node()==27 || num_node()==8)
           {
             return 12;
           }
@@ -132,7 +132,7 @@ namespace DRT
         */
         int NumSurface() const override
         {
-          if (NumNode() == 27 || NumNode() == 8)
+          if (num_node() == 27 || num_node() == 8)
           {
             return 6;
           }

@@ -41,8 +41,8 @@ namespace
       testele_->SetNodeIds(2, node_ids.data());
 
       // create 1 element discretization
-      testdis_->AddElement(testele_);
-      testdis_->FillComplete(false, false, false);
+      testdis_->add_element(testele_);
+      testdis_->fill_complete(false, false, false);
 
       // setup internal beam element parameters
       // different data layout is necessary to call this method

@@ -108,7 +108,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
       // Postprocess the solution only if required
       if (params.get<bool>("postprocess")) local_solver_->PostProcessing(*hdgele);
 
-      local_solver_->ComputeError(hdgele, params, elevec1);
+      local_solver_->compute_error(hdgele, params, elevec1);
       break;
     }
     case ELEMAG::project_field_test:
@@ -141,8 +141,8 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
     case ELEMAG::fill_restart_vecs:
     {
       // bool padapty = params.get<bool>("padaptivity");
-      ReadGlobalVectors(hdgele, discretization, lm);
-      FillRestartVectors(hdgele, discretization);
+      read_global_vectors(hdgele, discretization, lm);
+      fill_restart_vectors(hdgele, discretization);
       break;
     }
     case ELEMAG::ele_init_from_restart:
@@ -152,7 +152,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
     }
     case ELEMAG::interpolate_hdg_to_node:
     {
-      ReadGlobalVectors(hdgele, discretization, lm);
+      read_global_vectors(hdgele, discretization, lm);
       // The post processing is only used to compute the error so far as it is computationally
       // extremely expensive.
       // TODO: Improve post processing efficiency
@@ -171,7 +171,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
         int nfdofs = CORE::FE::PolynomialSpaceCache<nsd_ - 1>::Instance().Create(params)->Size();
         sumindex += nfdofs;
       }
-      ReadGlobalVectors(hdgele, discretization, lm);
+      read_global_vectors(hdgele, discretization, lm);
       if (!params.isParameter("nodeindices"))
         local_solver_->ComputeAbsorbingBC(
             discretization, hdgele, params, mat, face, elemat1, sumindex, elevec1);
@@ -206,7 +206,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
       else
         params.set<double>("mod_mu", std::pow(mu, 0.0));
 
-      ReadGlobalVectors(hdgele, discretization, lm);
+      read_global_vectors(hdgele, discretization, lm);
       elevec1.putScalar(0.0);
       local_solver_->ComputeMatrices(discretization, mat, *hdgele, dt, dyna_, tau);
 
@@ -242,7 +242,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
       else
         params.set<double>("mod_mu", std::pow(mu, 0.0));
 
-      ReadGlobalVectors(hdgele, discretization, lm);
+      read_global_vectors(hdgele, discretization, lm);
 
       elevec1.putScalar(0.0);
       local_solver_->ComputeMatrices(discretization, mat, *hdgele, dt, dyna_, tau);
@@ -335,13 +335,13 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::InitializeShapes(
 }
 
 /*----------------------------------------------------------------------*
- * ReadGlobalVectors
+ * read_global_vectors
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::ReadGlobalVectors(
+void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::read_global_vectors(
     DRT::Element* ele, DRT::Discretization& discretization, const std::vector<int>& lm)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::ElemagDiffEleCalc::ReadGlobalVectors");
+  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::ElemagDiffEleCalc::read_global_vectors");
   DRT::ELEMENTS::ElemagDiff* elemagele = static_cast<DRT::ELEMENTS::ElemagDiff*>(ele);
 
   // read vectors from element storage
@@ -362,13 +362,13 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::ReadGlobalVectors(
   }
 
   return;
-}  // ReadGlobalVectors
+}  // read_global_vectors
 
 /*----------------------------------------------------------------------*
- * FillRestartVectors
+ * fill_restart_vectors
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::FillRestartVectors(
+void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::fill_restart_vectors(
     DRT::Element* ele, DRT::Discretization& discretization)
 {
   // sort this back to the interior values vector
@@ -514,7 +514,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectField(
     // be initialized to the same value.
     CORE::LINALG::SerialDenseVector intVal(nsd_);
     FOUR_C_ASSERT(start_func != nullptr, "funct not set for initial value");
-    EvaluateAll(*start_func, time, xyz, intVal);
+    evaluate_all(*start_func, time, xyz, intVal);
     // now fill the components in the one-sided mass matrix and the right hand side
     for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
     {
@@ -563,7 +563,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectField(
 
         CORE::LINALG::SerialDenseVector intVal(nsd_);
 
-        EvaluateAll(*start_func, time - s * dt, xyz, intVal);
+        evaluate_all(*start_func, time - s * dt, xyz, intVal);
         for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
         {
           massPart(i, q) = shapes_.shfunct(i, q);
@@ -681,10 +681,10 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::project_electric_fie
 }
 
 /*----------------------------------------------------------------------*
- * ComputeError
+ * compute_error
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeError(
+void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_error(
     DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec1)
 {
@@ -738,7 +738,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeError(
 
     // Evaluate error function and its derivatives in the integration point (real) coordinates
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = highshapes.xyzreal(idim, q);
-    EvaluateAll(func, time, xsi, analytical);
+    evaluate_all(func, time, xsi, analytical);
     compute_function_gradient(func, time, xsi, analytical_grad);
 
     for (unsigned int d = 0; d < nsd_; ++d)
@@ -795,7 +795,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeError(
 
       // Evaluate error function and its derivatives in the integration point (real) coordinates
       for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = highshapes_post.xyzreal(idim, q);
-      EvaluateAll(func, time, xsi, analytical);
+      evaluate_all(func, time, xsi, analytical);
       compute_function_gradient(func, time, xsi, analytical_grad);
 
       for (unsigned int d = 0; d < nsd_; ++d)
@@ -1001,7 +1001,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTest(
       // be initialized to the same value.
       CORE::LINALG::SerialDenseVector intVal(2 * nsd_);
       FOUR_C_ASSERT(start_func != nullptr, "funct not set for initial value");
-      EvaluateAll(*start_func, time, xyz, intVal);
+      evaluate_all(*start_func, time, xyz, intVal);
       // now fill the components in the one-sided mass matrix and the right hand side
       for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
       {
@@ -1052,7 +1052,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTest(
             postproc_shapes_.xyzreal(d, q);  // coordinates of quadrature point in real coordinates
 
       CORE::LINALG::SerialDenseVector intVal(nsd_);
-      EvaluateAll(*start_func, time, xyz, intVal);
+      evaluate_all(*start_func, time, xyz, intVal);
 
       for (unsigned int i = 0; i < postproc_shapes_.ndofs_; ++i)
       {
@@ -1140,7 +1140,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::project_field_test_t
       for (unsigned int d = 0; d < nsd_; ++d) xyz(d) = shapesface_->xyzreal(d, q);
 
       // Evaluation of the function in the quadrature point being considered
-      EvaluateAll(*start_func, time, xyz, trace);
+      evaluate_all(*start_func, time, xyz, trace);
 
       // Creating the mass matrix and the RHS vector
       for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
@@ -1241,7 +1241,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectDirichField(
     for (unsigned int d = 0; d < nsd_; ++d) xyz(d) = shapesface_->xyzreal(d, q);
 
     // Evaluation of the function in the quadrature point being considered
-    EvaluateAll((*functno)[0], time, xyz, trace);
+    evaluate_all((*functno)[0], time, xyz, trace);
 
     // Creating the mass matrix and the RHS vector
     for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
@@ -1283,10 +1283,10 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectDirichField(
 }
 
 /*----------------------------------------------------------------------*
- * EvaluateAll
+ * evaluate_all
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::EvaluateAll(const int start_func,
+void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::evaluate_all(const int start_func,
     const double t, const CORE::LINALG::Matrix<nsd_, 1>& xyz,
     CORE::LINALG::SerialDenseVector& v) const
 {
@@ -1826,7 +1826,7 @@ params.getPtr<Teuchos::RCP<CORE::Conditions::Condition>>("condition"); const std
       // be initialized to the same value.
       CORE::LINALG::SerialDenseVector intVal(2 * nsd_);
       FOUR_C_ASSERT(funct != nullptr, "funct not set for initial value");
-      EvaluateAll((*funct)[0], time, xyz, intVal);
+      evaluate_all((*funct)[0], time, xyz, intVal);
       // now fill the components in the one-sided mass matrix and the right hand side
       for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
       {

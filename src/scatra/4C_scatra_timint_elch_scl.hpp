@@ -61,9 +61,9 @@ namespace SCATRA
 
     void check_and_write_output_and_restart() override;
 
-    void PrepareTimeLoop() override;
+    void prepare_time_loop() override;
 
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     void read_restart_problem_specific(int step, IO::DiscretizationReader& reader) override;
 
@@ -94,10 +94,10 @@ namespace SCATRA
     void redistribute_micro_discretization();
 
     //! scale micro problem with associated area of macro field
-    void ScaleMicroProblem();
+    void scale_micro_problem();
 
     //! setup coupling between micro and macro field
-    void SetupCoupling();
+    void setup_coupling();
 
     //! update increments in micro and macro field
     void update_iter_micro_macro();
@@ -105,7 +105,7 @@ namespace SCATRA
     //! write coupled nodes and node coordinates to csv file
     //! \param glob_micro_macro_coupled_node_gids      coupled micro macro nodes of all procs
     //! \param glob_macro_slave_node_master_node_gids  macro slave/master nodes of all procs
-    void WriteCouplingToCSV(const std::map<int, int>& glob_micro_macro_coupled_node_gids,
+    void write_coupling_to_csv(const std::map<int, int>& glob_micro_macro_coupled_node_gids,
         const std::map<int, int>& glob_macro_slave_node_master_node_gids);
 
     //! the micro problem is split into sub discretiations. This map relates all nodes in the sub

@@ -60,16 +60,16 @@ void CONTACT::TSIInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstic
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(interface_params(), "FRICTION");
   if (ftype != INPAR::CONTACT::friction_coulomb) FOUR_C_THROW("only coulomb friction for CTSI");
 
   double frcoeff_in =
-      InterfaceParams().get<double>("FRCOEFF");  // the friction coefficient from the input
-  double cn = InterfaceParams().get<double>("SEMI_SMOOTH_CN");
+      interface_params().get<double>("FRCOEFF");  // the friction coefficient from the input
+  double cn = interface_params().get<double>("SEMI_SMOOTH_CN");
 
   // some things that are not implemented
-  bool gp_slip = CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR");
-  bool frilessfirst = CORE::UTILS::IntegralValue<int>(InterfaceParams(), "FRLESS_FIRST");
+  bool gp_slip = CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR");
+  bool frilessfirst = CORE::UTILS::IntegralValue<int>(interface_params(), "FRLESS_FIRST");
   if (gp_slip || frilessfirst)
     FOUR_C_THROW("this fancy option for the contact algorithm is not implemented for TSI");
 
@@ -181,19 +181,19 @@ void CONTACT::TSIInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipL
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(interface_params(), "FRICTION");
   if (ftype != INPAR::CONTACT::friction_coulomb) FOUR_C_THROW("only coulomb friction for CTSI");
 
   if (Dim() != 3) FOUR_C_THROW("CTSI only for 3D");
 
   double frcoeff_in =
-      InterfaceParams().get<double>("FRCOEFF");  // the friction coefficient from the input
-  double ct_input = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
-  double cn_input = InterfaceParams().get<double>("SEMI_SMOOTH_CN");
+      interface_params().get<double>("FRCOEFF");  // the friction coefficient from the input
+  double ct_input = interface_params().get<double>("SEMI_SMOOTH_CT");
+  double cn_input = interface_params().get<double>("SEMI_SMOOTH_CN");
 
   // some things that are not implemented
-  bool gp_slip = CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR");
-  bool frilessfirst = CORE::UTILS::IntegralValue<int>(InterfaceParams(), "FRLESS_FIRST");
+  bool gp_slip = CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR");
+  bool frilessfirst = CORE::UTILS::IntegralValue<int>(interface_params(), "FRLESS_FIRST");
   if (gp_slip || frilessfirst)
     FOUR_C_THROW("this fancy option for the contact algorithm is not implemented for TSI");
 
@@ -293,8 +293,8 @@ void CONTACT::TSIInterface::AssembleLinConduct(CORE::LINALG::SparseMatrix& linCo
   if (activenodes_->NumMyElements() == 0) return;
 
   // heat transfer factors
-  const double alpha_s = InterfaceParams().get<double>("HEATTRANSSLAVE");
-  const double alpha_m = InterfaceParams().get<double>("HEATTRANSMASTER");
+  const double alpha_s = interface_params().get<double>("HEATTRANSSLAVE");
+  const double alpha_m = interface_params().get<double>("HEATTRANSMASTER");
   const double beta_bar = alpha_s * alpha_m / (alpha_s + alpha_m);
   const double delta_bar = alpha_s / (alpha_s + alpha_m);
 
@@ -329,7 +329,7 @@ void CONTACT::TSIInterface::assemble_dual_mass_lumped(
     double thermo_lm = conode->TSIData().ThermoLM();
     std::map<int, std::map<int, double>>& derivDualMass = conode->Data().GetDerivD();
 
-    if (CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(InterfaceParams(), "LM_QUAD") !=
+    if (CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(interface_params(), "LM_QUAD") !=
         INPAR::MORTAR::lagmult_const)
     {
       /**********************************************dual mass matrix ******/
@@ -374,7 +374,7 @@ void CONTACT::TSIInterface::assemble_dual_mass_lumped(
       CONTACT::Element* coele = dynamic_cast<CONTACT::Element*>(conode->Elements()[0]);
       if (!coele) FOUR_C_THROW("this should be a contact element");
 
-      CORE::GEN::Pairedvector<int, double> derivArea(coele->NumNode() * Dim());
+      CORE::GEN::Pairedvector<int, double> derivArea(coele->num_node() * Dim());
       double area = coele->ComputeAreaDeriv(derivArea);
 
       dualMassGlobal.FEAssemble(area, conode->Dofs()[0], conode->Dofs()[0]);
@@ -397,7 +397,7 @@ void CONTACT::TSIInterface::AssembleLinDM_X(CORE::LINALG::SparseMatrix* linD_X,
   // no dissipation without friction
   if (!friction_ && mode == LinDM_Diss) return;
 
-  const double dt = InterfaceParams().get<double>("TIMESTEP");
+  const double dt = interface_params().get<double>("TIMESTEP");
 
   // loop over all LM slave nodes (row map)
   for (int j = 0; j < node_rowmap->NumMyElements(); ++j)
@@ -564,7 +564,7 @@ void CONTACT::TSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_Lin
   typedef std::map<int, double>::const_iterator _cim;
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator _cip;
 
-  const double dt = InterfaceParams().get<double>("TIMESTEP");
+  const double dt = interface_params().get<double>("TIMESTEP");
 
   // loop over all LM slave nodes (row map)
   for (int j = 0; j < activenodes_->NumMyElements(); ++j)

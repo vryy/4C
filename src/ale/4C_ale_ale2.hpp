@@ -112,9 +112,9 @@ namespace DRT
       */
       int NumLine() const override
       {
-        if (NumNode() == 9 || NumNode() == 8 || NumNode() == 4)
+        if (num_node() == 9 || num_node() == 8 || num_node() == 4)
           return 4;
-        else if (NumNode() == 3 || NumNode() == 6)
+        else if (num_node() == 3 || num_node() == 6)
           return 3;
         else
         {
@@ -265,7 +265,7 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -276,7 +276,7 @@ namespace DRT
       //! @name Other
 
       /// set number of gauss points to element shape default
-      CORE::FE::GaussRule2D getOptimalGaussrule(const CORE::FE::CellType& distype);
+      CORE::FE::GaussRule2D get_optimal_gaussrule(const CORE::FE::CellType& distype);
 
       //@}
 
@@ -353,9 +353,9 @@ namespace DRT
        *  for isoparametric finite elements, Trans. Can. Soc. Mech. Engrg.,
        *  Vol. 12 (4), pp. 213-217
        */
-      void EvaluateOddy(const CORE::LINALG::SerialDenseMatrix& xjm, double det, double& qm);
+      void evaluate_oddy(const CORE::LINALG::SerialDenseMatrix& xjm, double det, double& qm);
 
-      void CallMatGeoNonl(
+      void call_mat_geo_nonl(
           const CORE::LINALG::SerialDenseVector& strain,     ///< Green-Lagrange strain vector
           CORE::LINALG::SerialDenseMatrix& stress,           ///< stress vector
           CORE::LINALG::SerialDenseMatrix& C,                ///< elasticity matrix
@@ -373,11 +373,11 @@ namespace DRT
           int gp                                          ///< Integration point
       );
 
-      void MaterialResponse3d(CORE::LINALG::Matrix<6, 1>* stress,  ///< stress state (output)
-          CORE::LINALG::Matrix<6, 6>* cmat,                        ///< material tensor (output)
-          const CORE::LINALG::Matrix<6, 1>* glstrain,              ///< strain state (input)
-          Teuchos::ParameterList& params,                          ///< parameter list
-          int gp                                                   ///< Integration point
+      void material_response3d(CORE::LINALG::Matrix<6, 1>* stress,  ///< stress state (output)
+          CORE::LINALG::Matrix<6, 6>* cmat,                         ///< material tensor (output)
+          const CORE::LINALG::Matrix<6, 1>* glstrain,               ///< strain state (input)
+          Teuchos::ParameterList& params,                           ///< parameter list
+          int gp                                                    ///< Integration point
       );
 
       //! Transform Green-Lagrange notation from 2D to 3D
@@ -395,21 +395,21 @@ namespace DRT
       void ale2_torsional(int i, int j, int k, const CORE::LINALG::SerialDenseMatrix& xyze,
           CORE::LINALG::SerialDenseMatrix* k_torsion);
 
-      void CalcBOpLin(CORE::LINALG::SerialDenseMatrix& boplin,
+      void calc_b_op_lin(CORE::LINALG::SerialDenseMatrix& boplin,
           CORE::LINALG::SerialDenseMatrix& deriv, CORE::LINALG::SerialDenseMatrix& xjm, double& det,
           const int iel);
 
-      void BOpLinCure(CORE::LINALG::SerialDenseMatrix& b_cure,
+      void b_op_lin_cure(CORE::LINALG::SerialDenseMatrix& b_cure,
           const CORE::LINALG::SerialDenseMatrix& boplin, const CORE::LINALG::SerialDenseVector& F,
           const int numeps, const int nd);
 
-      void JacobianMatrix(const CORE::LINALG::SerialDenseMatrix& xrefe,
+      void jacobian_matrix(const CORE::LINALG::SerialDenseMatrix& xrefe,
           const CORE::LINALG::SerialDenseMatrix& deriv, CORE::LINALG::SerialDenseMatrix& xjm,
           double* det, const int iel);
 
       ///! Compute deformation gradient
-      void DefGrad(CORE::LINALG::SerialDenseVector& F,  ///< deformation gradient (to be filled)
-          CORE::LINALG::SerialDenseVector& strain,      ///< strain tensor (to be filled)
+      void def_grad(CORE::LINALG::SerialDenseVector& F,  ///< deformation gradient (to be filled)
+          CORE::LINALG::SerialDenseVector& strain,       ///< strain tensor (to be filled)
           const CORE::LINALG::SerialDenseMatrix&
               xrefe,  ///< nodal positions of reference configuration
           const CORE::LINALG::SerialDenseMatrix&
@@ -629,7 +629,7 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;

@@ -106,13 +106,13 @@ namespace CONTACT
     initial state. Only if both vectors point in the same direction integration shall be performed.
 
     */
-    bool RoughCheckRefConfig(int ele1gid, int ele2gid);
+    bool rough_check_ref_config(int ele1gid, int ele2gid);
 
     /*!
     \brief Evaluate unbiased binary search tree
 
     */
-    void SearchContact() final;
+    void search_contact() final;
 
     /*!
     \brief Communicate the Search Elements to all processors

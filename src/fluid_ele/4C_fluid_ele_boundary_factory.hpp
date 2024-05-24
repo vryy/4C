@@ -39,7 +39,7 @@ namespace DRT
      private:
       //! define FluidEleBoundaryCalc instances dependent on problemtype
       template <CORE::FE::CellType distype>
-      static FluidBoundaryInterface* DefineProblemType(std::string problem);
+      static FluidBoundaryInterface* define_problem_type(std::string problem);
     };
 
   }  // namespace ELEMENTS

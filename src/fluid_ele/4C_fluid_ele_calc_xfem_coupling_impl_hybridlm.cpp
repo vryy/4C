@@ -61,7 +61,7 @@ namespace DRT
           {
             const double tmp = fac * normal(jvel);
 
-            const unsigned sigma = stressIndex(ivel, jvel);
+            const unsigned sigma = stress_index(ivel, jvel);
             // G_sus
             BG_sus_(sigma, ivel)->Update(tmp, bK_ms, 1.0);
             rhs_s(sigma, 0)->Update(-tmp * velint_s(ivel), funct, 1.0);
@@ -130,8 +130,8 @@ namespace DRT
              *  | \tau^m n, u^s  |
              *   \              /
              */
-            BG_sus_(stressIndex(ivel, jvel), ivel)->Update(fac * normal(jvel), bG_ms, 1.0);
-            rhs_s(stressIndex(ivel, jvel), 0)
+            BG_sus_(stress_index(ivel, jvel), ivel)->Update(fac * normal(jvel), bG_ms, 1.0);
+            rhs_s(stress_index(ivel, jvel), 0)
                 ->Update(-fac * normal(jvel) * velint_s(ivel), funct, 1.0);
 
             /*
@@ -143,7 +143,7 @@ namespace DRT
              *   \                 /
              *
              */
-            BG_uss_(ivel, stressIndex(ivel, jvel))->Update(fac * normal(jvel), bG_sm, 1.0);
+            BG_uss_(ivel, stress_index(ivel, jvel))->Update(fac * normal(jvel), bG_sm, 1.0);
           }
 
           // Build cross-interface pressure-velocity coupling matrices G_uip, G_pui!
@@ -196,10 +196,10 @@ namespace DRT
         {
           for (unsigned ivel = 0; ivel < nsd_; ++ivel)
           {
-            rhC_us_(sIndex(ir, ivel), 0) += press * fac * normal(ivel) * slave_funct(ir);
+            rhC_us_(s_index(ir, ivel), 0) += press * fac * normal(ivel) * slave_funct(ir);
           }
 
-          rhC_us_(sIndex(ir, Pres), 0) = 0.0;
+          rhC_us_(s_index(ir, Pres), 0) = 0.0;
         }
 
         const double km = 1.0;  // only master-sided weighting
@@ -247,7 +247,7 @@ namespace DRT
             const double funct_s_km_timefacfac_traction =
                 funct_s_timefacfac_km(ir) * itraction_jump(ivel);
 
-            const unsigned row = sIndex(ir, ivel);
+            const unsigned row = s_index(ir, ivel);
             rhC_us_(row, 0) += funct_s_km_timefacfac_traction;
           }
         }  // end loop over velocity components
@@ -319,7 +319,7 @@ namespace DRT
                 // loop over background element nodes
                 for (unsigned imn = 0; imn < nen_; ++imn)
                 {
-                  C_umus_(mIndex(imn, imdof), sIndex(isn, isvel)) -= bCumus(imn, isn);
+                  C_umus_(m_index(imn, imdof), s_index(isn, isvel)) -= bCumus(imn, isn);
                 }
               }
             }  // (um-us)
@@ -334,7 +334,7 @@ namespace DRT
                 // loop over background element nodes
                 for (unsigned imn = 0; imn < nen_; ++imn)
                 {
-                  C_usum_(sIndex(isn, isvel), mIndex(imn, imdof)) -= bCusum(isn, imn);
+                  C_usum_(s_index(isn, isvel), m_index(imn, imdof)) -= bCusum(isn, imn);
                 }
               }
             }  // (us-um), MHCS: (us-pm)
@@ -352,7 +352,7 @@ namespace DRT
               // loop over background element nodes
               for (unsigned imn = 0; imn < nen_; ++imn)
               {
-                C_usum_(sIndex(isn, isvel), mIndex(imn, Pres)) = bGuspm(isn, imn);
+                C_usum_(s_index(isn, isvel), m_index(imn, Pres)) = bGuspm(isn, imn);
               }
             }
           }  // (us-pm)
@@ -367,7 +367,7 @@ namespace DRT
               // loop over background element nodes
               for (unsigned imn = 0; imn < nen_; ++imn)
               {
-                C_umus_(mIndex(imn, Pres), sIndex(isn, isvel)) = bGpmus(imn, isn);
+                C_umus_(m_index(imn, Pres), s_index(isn, isvel)) = bGpmus(imn, isn);
               }
             }
           }  // (pm-us)
@@ -381,7 +381,7 @@ namespace DRT
             // loop over slave element nodes
             for (unsigned isn = 0; isn < slave_nen_; ++isn)
             {
-              rhC_us_(sIndex(isn, isvel), 0) -= bGussinvKssrhs_s(isn, 0);
+              rhC_us_(s_index(isn, isvel), 0) -= bGussinvKssrhs_s(isn, 0);
             }
           }  // rhs - us
         }    // end loop over slave velocity dof

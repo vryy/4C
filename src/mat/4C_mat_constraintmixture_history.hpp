@@ -60,33 +60,33 @@ namespace MAT
     /// @name Access to History
     //@{
     /// set time variables
-    void SetTime(double deptime, double dt)
+    void set_time(double deptime, double dt)
     {
       depositiontime_ = deptime;
       dt_ = dt;
     };
     /// get time variables
-    void GetTime(double* deptime, double* dt)
+    void get_time(double* deptime, double* dt)
     {
       *deptime = depositiontime_;
       *dt = dt_;
     };
     /// set stretches
-    void SetStretches(int gp, CORE::LINALG::Matrix<4, 1> stretches);
+    void set_stretches(int gp, CORE::LINALG::Matrix<4, 1> stretches);
     /// get stretches
-    void GetStretches(int gp, CORE::LINALG::Matrix<4, 1>* stretches);
+    void get_stretches(int gp, CORE::LINALG::Matrix<4, 1>* stretches);
     /// set mass production rates
-    void SetMass(int gp, CORE::LINALG::Matrix<4, 1> massprod);
+    void set_mass(int gp, CORE::LINALG::Matrix<4, 1> massprod);
     /// set mass production rate of single fiber
-    void SetMass(int gp, double massprod, int idfiber);
+    void set_mass(int gp, double massprod, int idfiber);
     /// get mass production rates
-    void GetMass(int gp, CORE::LINALG::Matrix<4, 1>* massprod);
+    void get_mass(int gp, CORE::LINALG::Matrix<4, 1>* massprod);
     /// set vardegrad
-    void SetVarDegrad(int gp, int idfiber, double vardegrad);
+    void set_var_degrad(int gp, int idfiber, double vardegrad);
     /// get vardegrad
-    void GetVarDegrad(int gp, int idfiber, double* vardegrad);
+    void get_var_degrad(int gp, int idfiber, double* vardegrad);
     /// return number of gausspoints
-    int NumGP() const { return numgp_; }
+    int num_gp() const { return numgp_; }
     //@}
 
     /// deposition time of collagen fibers

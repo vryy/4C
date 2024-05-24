@@ -96,7 +96,7 @@ namespace BEAMINTERACTION
      * @param discret (in) Discretization.
      * @param beaminteraction_data_state (in) Datastate of the beaminteraction model evaluator.
      */
-    virtual void SetState(const Teuchos::RCP<const DRT::Discretization>& discret,
+    virtual void set_state(const Teuchos::RCP<const DRT::Discretization>& discret,
         const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
             beaminteraction_data_state)
     {
@@ -178,7 +178,7 @@ namespace BEAMINTERACTION
      * @param discret (in) Discretization.
      * @param beaminteraction_data_state (in) Datastate of the beaminteraction model evaluator.
      */
-    virtual void SetState(const Teuchos::RCP<const DRT::Discretization>& discret,
+    virtual void set_state(const Teuchos::RCP<const DRT::Discretization>& discret,
         const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
             beaminteraction_data_state);
 

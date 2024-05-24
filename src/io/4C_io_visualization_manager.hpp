@@ -97,7 +97,7 @@ namespace IO
      * @brief Clear all visualization data from this container. The registered visualization data
      * names will remain.
      */
-    void ClearData();
+    void clear_data();
 
     /**
      * @brief Write all contained visualization data containers to disk

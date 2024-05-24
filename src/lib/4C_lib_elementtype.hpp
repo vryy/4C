@@ -37,7 +37,7 @@ namespace DRT
 
   /// Subclass of ParObjectType that adds element type specific methods
   /*!
-    Element types need to be initialized. Furthermore, there is a PreEvaluate
+    Element types need to be initialized. Furthermore, there is a pre_evaluate
     method and the ability to read elements from dat files. And finally the
     element specific setup of null spaces for multi grid preconditioning is
     here, too.
@@ -75,7 +75,7 @@ namespace DRT
     virtual int Initialize(DRT::Discretization& dis);
 
     /// preevaluation
-    virtual inline void PreEvaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
+    virtual inline void pre_evaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,

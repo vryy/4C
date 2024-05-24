@@ -107,7 +107,7 @@ namespace NOX
         virtual ::NOX::StatusTest::StatusType check_status_first_iter();
 
         //! throws an NOX error
-        void throwError(const std::string& functionName, const std::string& errorMsg) const;
+        void throw_error(const std::string& functionName, const std::string& errorMsg) const;
 
        protected:
         //! number of status tests

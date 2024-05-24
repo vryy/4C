@@ -205,7 +205,7 @@ namespace MORTAR
 
     */
     StrategyBase(const Teuchos::RCP<MORTAR::StratDataContainer>& data_ptr,
-        const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
+        const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params, const int spatialDim,
         const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof);
 
@@ -327,7 +327,7 @@ namespace MORTAR
     virtual void update_displacements_and_l_mincrements(
         Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) = 0;
     virtual void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) = 0;
-    virtual void SetState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) = 0;
+    virtual void set_state(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) = 0;
     virtual Teuchos::RCP<Epetra_Map> SlipRowNodes() = 0;
     virtual void store_dirichlet_status(Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps) = 0;
     virtual void store_nodal_quantities(MORTAR::StrategyBase::QuantityType type) = 0;

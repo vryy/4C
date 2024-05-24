@@ -125,24 +125,24 @@ void FSI::Algorithm::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Algorithm::ReadRestart(int step)
+void FSI::Algorithm::read_restart(int step)
 {
-  StructureField()->ReadRestart(step);
-  double time = MBFluidField()->ReadRestart(step);
+  StructureField()->read_restart(step);
+  double time = MBFluidField()->read_restart(step);
   SetTimeStep(time, step);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Algorithm::PrepareTimeStep()
+void FSI::Algorithm::prepare_time_step()
 {
   increment_time_and_step();
 
   PrintHeader();
 
-  StructureField()->PrepareTimeStep();
-  MBFluidField()->PrepareTimeStep();
+  StructureField()->prepare_time_step();
+  MBFluidField()->prepare_time_step();
 }
 
 
@@ -157,9 +157,9 @@ void FSI::Algorithm::Update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Algorithm::PrepareOutput(bool force_prepare)
+void FSI::Algorithm::prepare_output(bool force_prepare)
 {
-  StructureField()->PrepareOutput(force_prepare);
+  StructureField()->prepare_output(force_prepare);
 }
 
 

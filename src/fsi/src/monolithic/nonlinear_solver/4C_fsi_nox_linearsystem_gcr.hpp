@@ -243,7 +243,7 @@ namespace NOX
       /// helper for GMRES
       void generate_plane_rotation(double& dx, double& dy, double& cs, double& sn);
 
-      virtual void throwError(const std::string& functionName, const std::string& errorMsg) const;
+      virtual void throw_error(const std::string& functionName, const std::string& errorMsg) const;
 
      protected:
       //! Printing Utilities object

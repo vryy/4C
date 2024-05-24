@@ -33,7 +33,7 @@ namespace DRT
      evaluated all integrals implemented there. It will do so, if the evaluate action
      given by the control routine is not known (see method Evaluate).
 
-     The main methods are the Evaluate and the EvaluateOD routines. Therein,
+     The main methods are the Evaluate and the evaluate_od routines. Therein,
      the stiffness matrixes of a porous fluid problem are evaluated. OD means
      off diagonal, indicating linearizations with respect to structural degrees of freedom,
      that will be assembled into off diagonal entries in the global system matrix.
@@ -108,7 +108,7 @@ namespace DRT
       \param intpoints        (i) Gaussian integration points
 
       */
-      int EvaluateOD(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+      int evaluate_od(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -140,7 +140,7 @@ namespace DRT
             \param isale            (i) ALE flag
             \param intpoints        (i) Gaussian integration points
        */
-      int EvaluateOD(Teuchos::ParameterList& params,
+      int evaluate_od(Teuchos::ParameterList& params,
           const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
           CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& elemat1,
           CORE::LINALG::Matrix<(nsd_ + 1) * nen_, 1>& elevec1,
@@ -182,7 +182,8 @@ namespace DRT
         \param isale            (i) ALE flag
         \param intpoints        (i) Gaussian integration points
       */
-      void SysmatOD(Teuchos::ParameterList& params, const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
+      void sysmat_od(Teuchos::ParameterList& params,
+          const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
           const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
           const CORE::LINALG::Matrix<nsd_, nen_>& evelnp,
           const CORE::LINALG::Matrix<nsd_, nen_>& eveln,

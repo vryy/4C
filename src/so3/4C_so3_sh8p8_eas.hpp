@@ -85,7 +85,7 @@ void DRT::ELEMENTS::SoSh8p8::eas_materialise_shape_fcts(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int NUMEAS_T>
-void DRT::ELEMENTS::SoSh8p8::EasAddStrain(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain,
+void DRT::ELEMENTS::SoSh8p8::eas_add_strain(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain,
     const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& M,
     const CORE::LINALG::SerialDenseMatrix* alpha)
 {
@@ -215,7 +215,7 @@ void DRT::ELEMENTS::SoSh8p8::eas_constraint_and_tangent(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int NUMEAS_T>
-void DRT::ELEMENTS::SoSh8p8::EasCondensation(
+void DRT::ELEMENTS::SoSh8p8::eas_condensation(
     CORE::LINALG::Matrix<NUMDISP_, 1>* force,               ///< element internal force vector
     CORE::LINALG::Matrix<NUMDISP_, NUMDISP_>* stiffmatrix,  // element stiffness matrix
     CORE::LINALG::Matrix<NUMDISP_, NUMPRES_>* gradmatrix,   // element gradient matrix

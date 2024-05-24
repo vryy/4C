@@ -81,11 +81,11 @@ void SCATRA::TimIntCardiacMonodomainOST::WriteRestart() const
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainOST::ReadRestart(
+void SCATRA::TimIntCardiacMonodomainOST::read_restart(
     const int step, Teuchos::RCP<IO::InputControl> input)
 {
   // Call function from baseclass
-  TimIntOneStepTheta::ReadRestart(step, input);
+  TimIntOneStepTheta::read_restart(step, input);
 
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
@@ -110,7 +110,7 @@ void SCATRA::TimIntCardiacMonodomainOST::add_time_integration_specific_vectors(
 {
   // Call function from baseclass
   TimIntOneStepTheta::add_time_integration_specific_vectors(forcedincrementalsolver);
-  discret_->SetState("phin", phin_);
+  discret_->set_state("phin", phin_);
 
   return;
 }
@@ -178,11 +178,11 @@ void SCATRA::TimIntCardiacMonodomainBDF2::WriteRestart() const
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainBDF2::ReadRestart(
+void SCATRA::TimIntCardiacMonodomainBDF2::read_restart(
     const int step, Teuchos::RCP<IO::InputControl> input)
 {
   // Call function from baseclass
-  TimIntBDF2::ReadRestart(step, input);
+  TimIntBDF2::read_restart(step, input);
 
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
@@ -263,11 +263,11 @@ void SCATRA::TimIntCardiacMonodomainGenAlpha::WriteRestart() const
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainGenAlpha::ReadRestart(
+void SCATRA::TimIntCardiacMonodomainGenAlpha::read_restart(
     const int step, Teuchos::RCP<IO::InputControl> input)
 {
   // Call function from baseclass
-  TimIntGenAlpha::ReadRestart(step, input);
+  TimIntGenAlpha::read_restart(step, input);
 
   IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
 
@@ -288,7 +288,7 @@ void SCATRA::TimIntCardiacMonodomainGenAlpha::add_time_integration_specific_vect
   // Call function from baseclass
   TimIntGenAlpha::add_time_integration_specific_vectors(forcedincrementalsolver);
 
-  if (incremental_ or forcedincrementalsolver) discret_->SetState("phin", phin_);
+  if (incremental_ or forcedincrementalsolver) discret_->set_state("phin", phin_);
 
   return;
 }

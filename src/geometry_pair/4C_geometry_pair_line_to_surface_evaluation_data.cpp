@@ -59,11 +59,11 @@ void GEOMETRYPAIR::LineToSurfaceEvaluationData::Setup(
 /**
  *
  */
-void GEOMETRYPAIR::LineToSurfaceEvaluationData::SetState(
+void GEOMETRYPAIR::LineToSurfaceEvaluationData::set_state(
     const Teuchos::RCP<const Epetra_Vector>& displacement_col_np)
 {
   for (const auto& [id, face_element] : face_elements_)
-    if (face_element->IsPartOfPair()) face_element->SetState(displacement_col_np, face_elements_);
+    if (face_element->IsPartOfPair()) face_element->set_state(displacement_col_np, face_elements_);
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -302,7 +302,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
 
     Teuchos::RCP<const Epetra_Vector> disp =
         params.get<Teuchos::RCP<const Epetra_Vector>>("new disp");
-    actdisc_->SetState("displacement", disp);
+    actdisc_->set_state("displacement", disp);
 
     // global and local ID of this bc in the redundant vectors
     std::vector<int> gindex(numdof_per_cond);
@@ -331,7 +331,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
       elevector.size(eledim);
 
       DRT::Element* element = curr->second.get();
-      int numnode = element->NumNode();
+      int numnode = element->num_node();
 
       // allocate vector for shape functions and matrix for derivatives
       CORE::LINALG::SerialDenseVector funct(numnode);
@@ -490,11 +490,11 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0D::SetState(const std::string& state,  ///< name of state to set
-    Teuchos::RCP<Epetra_Vector> V                                 ///< values to set
+void UTILS::Cardiovascular0D::set_state(const std::string& state,  ///< name of state to set
+    Teuchos::RCP<Epetra_Vector> V                                  ///< values to set
 )
 {
-  actdisc_->SetState(state, V);
+  actdisc_->set_state(state, V);
 }
 
 FOUR_C_NAMESPACE_CLOSE

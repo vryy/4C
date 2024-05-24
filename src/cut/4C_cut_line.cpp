@@ -19,9 +19,9 @@ CORE::GEO::CUT::Line::Line(
     Point* p1, Point* p2, Side* cut_side1, Side* cut_side2, Element* cut_element)
     : p1_(p1), p2_(p2)
 {
-  if (cut_side1) AddSide(cut_side1);
-  if (cut_side2) AddSide(cut_side2);
-  if (cut_element) AddElement(cut_element);
+  if (cut_side1) add_side(cut_side1);
+  if (cut_side2) add_side(cut_side2);
+  if (cut_element) add_element(cut_element);
 
   p1_->Register(this);
   p2_->Register(this);
@@ -39,7 +39,7 @@ CORE::GEO::CUT::Line::Line(
   for (plain_side_set::iterator i = sides.begin(); i != sides.end(); ++i)
   {
     Side* s = *i;
-    AddSide(s);
+    add_side(s);
   }
 
   // self-register at all elements
@@ -55,19 +55,19 @@ CORE::GEO::CUT::Line::Line(
   for (plain_element_set::iterator i = elements.begin(); i != elements.end(); ++i)
   {
     Element* s = *i;
-    AddElement(s);
+    add_element(s);
   }
 }
 
-void CORE::GEO::CUT::Line::AddSide(Side* cut_side)
+void CORE::GEO::CUT::Line::add_side(Side* cut_side)
 {
-  p1_->AddSide(cut_side);
-  p2_->AddSide(cut_side);
+  p1_->add_side(cut_side);
+  p2_->add_side(cut_side);
   cut_sides_.insert(cut_side);
   cut_side->AddLine(this);
 }
 
-void CORE::GEO::CUT::Line::AddElement(Element* cut_element)
+void CORE::GEO::CUT::Line::add_element(Element* cut_element)
 {
   if (cut_element != nullptr)
   {
@@ -78,8 +78,8 @@ void CORE::GEO::CUT::Line::AddElement(Element* cut_element)
 
     cut_elements_.insert(cut_element);
 
-    p1_->AddElement(cut_element);
-    p2_->AddElement(cut_element);
+    p1_->add_element(cut_element);
+    p2_->add_element(cut_element);
   }
 }
 

@@ -108,7 +108,7 @@ THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
   if ((writeenergyevery_ != 0) and (myrank_ == 0)) AttachEnergyFile();
 
   // a zero vector of full length
-  zeros_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+  zeros_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
 
   // Map containing Dirichlet DOFs
   {
@@ -119,22 +119,22 @@ THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
   }
 
   // temperatures T_{n}
-  temp_ =
-      Teuchos::rcp(new TIMESTEPPING::TimIntMStep<Epetra_Vector>(0, 0, discret_->DofRowMap(), true));
+  temp_ = Teuchos::rcp(
+      new TIMESTEPPING::TimIntMStep<Epetra_Vector>(0, 0, discret_->dof_row_map(), true));
   // temperature rates R_{n}
-  rate_ =
-      Teuchos::rcp(new TIMESTEPPING::TimIntMStep<Epetra_Vector>(0, 0, discret_->DofRowMap(), true));
+  rate_ = Teuchos::rcp(
+      new TIMESTEPPING::TimIntMStep<Epetra_Vector>(0, 0, discret_->dof_row_map(), true));
 
   // temperatures T_{n+1} at t_{n+1}
-  tempn_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+  tempn_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
   // temperature rates R_{n+1} at t_{n+1}
-  raten_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+  raten_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
 
   // create empty interface force vector
-  fifc_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fifc_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
 
   // create empty matrix
-  tang_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*discret_->DofRowMap(), 81, true, true));
+  tang_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*discret_->dof_row_map(), 81, true, true));
   // we condensed the capacity matrix out of the system
 
   // -------------------------------------------------------------------
@@ -158,15 +158,15 @@ void THR::TimInt::determine_capa_consist_temp_rate()
 {
   // temporary force vectors in this routine
   Teuchos::RCP<Epetra_Vector> fext =
-      CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);  //!< external force
+      CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);  //!< external force
   Teuchos::RCP<Epetra_Vector> fint =
-      CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);  //!< internal force
+      CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);  //!< internal force
 
   // overwrite initial state vectors with DirichletBCs
   ApplyDirichletBC((*time_)[0], (*temp_)(0), (*rate_)(0), false);
 
   // get external force
-  ApplyForceExternal((*time_)[0], (*temp_)(0), fext);
+  apply_force_external((*time_)[0], (*temp_)(0), fext);
   // apply_force_external_conv is applied in the derived classes!
 
   // initialise matrices
@@ -187,9 +187,9 @@ void THR::TimInt::determine_capa_consist_temp_rate()
     p.set("delta time", (*dt_)[0]);
     // set vector values needed by elements
     discret_->ClearState();
-    // SetState(0,...) in case of multiple dofsets (e.g. TSI)
-    discret_->SetState(0, "residual temperature", zeros_);
-    discret_->SetState(0, "temperature", (*temp_)(0));
+    // set_state(0,...) in case of multiple dofsets (e.g. TSI)
+    discret_->set_state(0, "residual temperature", zeros_);
+    discret_->set_state(0, "temperature", (*temp_)(0));
 
     // calculate the capacity matrix onto tang_, instead of buildung 2 matrices
     discret_->Evaluate(p, Teuchos::null, tang_, fint, Teuchos::null, Teuchos::null);
@@ -206,7 +206,7 @@ void THR::TimInt::determine_capa_consist_temp_rate()
   {
     // rhs corresponds to residual on the rhs
     // K . DT = - R_n+1 = - R_n - (fint_n+1 - fext_n+1)
-    Teuchos::RCP<Epetra_Vector> rhs = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+    Teuchos::RCP<Epetra_Vector> rhs = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
     rhs->Update(-1.0, *fint, 1.0, *fext, -1.0);
     // blank RHS on DBC DOFs
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), rhs);
@@ -280,7 +280,7 @@ void THR::TimInt::UpdateStepTime()
 /*----------------------------------------------------------------------*
  | reset configuration after time step                      bborn 06/08 |
  *----------------------------------------------------------------------*/
-void THR::TimInt::ResetStep()
+void THR::TimInt::reset_step()
 {
   // reset state vectors
   tempn_->Update(1.0, (*temp_)[0], 0.0);
@@ -302,13 +302,13 @@ void THR::TimInt::ResetStep()
   // I am gone
   return;
 
-}  // ResetStep()
+}  // reset_step()
 
 
 /*----------------------------------------------------------------------*
  | read and set restart values                              bborn 06/08 |
  *----------------------------------------------------------------------*/
-void THR::TimInt::ReadRestart(const int step)
+void THR::TimInt::read_restart(const int step)
 {
   IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
   if (step != reader.ReadInt("step")) FOUR_C_THROW("Time step on file not equal to given step");
@@ -321,7 +321,7 @@ void THR::TimInt::ReadRestart(const int step)
   ReadRestartState();
   ReadRestartForce();
 
-}  // ReadRestart()
+}  // read_restart()
 
 
 /*----------------------------------------------------------------------*
@@ -369,13 +369,13 @@ void THR::TimInt::OutputStep(bool forced_writerestart)
   // write restart step
   if ((writerestartevery_ and (step_ % writerestartevery_ == 0)) or forced_writerestart)
   {
-    OutputRestart(datawritten);
+    output_restart(datawritten);
   }
 
   // output results (not necessary if restart in same step)
   if (writeglob_ and writeglobevery_ and (step_ % writeglobevery_ == 0) and (not datawritten))
   {
-    OutputState(datawritten);
+    output_state(datawritten);
   }
 
   // output heatflux & tempgrad
@@ -389,7 +389,7 @@ void THR::TimInt::OutputStep(bool forced_writerestart)
   // output energy
   if (writeenergyevery_ and (step_ % writeenergyevery_ == 0))
   {
-    OutputEnergy();
+    output_energy();
   }
 
   // what's next?
@@ -401,7 +401,7 @@ void THR::TimInt::OutputStep(bool forced_writerestart)
 /*----------------------------------------------------------------------*
  | write restart                                            mwgee 03/07 |
  *----------------------------------------------------------------------*/
-void THR::TimInt::OutputRestart(bool& datawritten)
+void THR::TimInt::output_restart(bool& datawritten)
 {
   // Yes, we are going to write...
   datawritten = true;
@@ -428,14 +428,14 @@ void THR::TimInt::OutputRestart(bool& datawritten)
     fflush(stdout);
   }
 
-}  // OutputRestart()
+}  // output_restart()
 
 
 /*----------------------------------------------------------------------*
  | output temperature,temperature rate                      bborn 06/08 |
  | originally by mwgee 03/07                                            |
  *----------------------------------------------------------------------*/
-void THR::TimInt::OutputState(bool& datawritten)
+void THR::TimInt::output_state(bool& datawritten)
 {
   // Yes, we are going to write...
   datawritten = true;
@@ -451,7 +451,7 @@ void THR::TimInt::OutputState(bool& datawritten)
   // leave for good
   return;
 
-}  // OutputState()
+}  // output_state()
 
 
 /*----------------------------------------------------------------------*
@@ -502,9 +502,9 @@ void THR::TimInt::output_heatflux_tempgrad(bool& datawritten)
 
   // set vector values needed by elements
   discret_->ClearState();
-  // SetState(0,...) in case of multiple dofsets (e.g. TSI)
-  discret_->SetState(0, "residual temperature", zeros_);
-  discret_->SetState(0, "temperature", (*temp_)(0));
+  // set_state(0,...) in case of multiple dofsets (e.g. TSI)
+  discret_->set_state(0, "residual temperature", zeros_);
+  discret_->set_state(0, "temperature", (*temp_)(0));
 
   discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   discret_->ClearState();
@@ -563,7 +563,7 @@ void THR::TimInt::output_heatflux_tempgrad(bool& datawritten)
 /*----------------------------------------------------------------------*
  | output system energies                                   bborn 06/08 |
  *----------------------------------------------------------------------*/
-void THR::TimInt::OutputEnergy()
+void THR::TimInt::output_energy()
 {
   // internal/tempgrad energy
   double intergy = 0.0;  // total internal energy
@@ -574,8 +574,8 @@ void THR::TimInt::OutputEnergy()
 
     // set vector values needed by elements
     discret_->ClearState();
-    // SetState(0,...) in case of multiple dofsets (e.g. TSI)
-    discret_->SetState(0, "temperature", (*temp_)(0));
+    // set_state(0,...) in case of multiple dofsets (e.g. TSI)
+    discret_->set_state(0, "temperature", (*temp_)(0));
     // get energies
     Teuchos::RCP<CORE::LINALG::SerialDenseVector> energies =
         Teuchos::rcp(new CORE::LINALG::SerialDenseVector(1));
@@ -615,7 +615,7 @@ void THR::TimInt::OutputEnergy()
   // in God we trust
   return;
 
-}  // OutputEnergy()
+}  // output_energy()
 
 
 /*----------------------------------------------------------------------*
@@ -631,9 +631,9 @@ Teuchos::RCP<CORE::UTILS::ResultTest> THR::TimInt::CreateFieldTest()
 /*----------------------------------------------------------------------*
  | evaluate external forces at t_{n+1}                      bborn 06/08 |
  *----------------------------------------------------------------------*/
-void THR::TimInt::ApplyForceExternal(const double time,  //!< evaluation time
-    const Teuchos::RCP<Epetra_Vector> temp,              //!< temperature state
-    Teuchos::RCP<Epetra_Vector>& fext                    //!< external force
+void THR::TimInt::apply_force_external(const double time,  //!< evaluation time
+    const Teuchos::RCP<Epetra_Vector> temp,                //!< temperature state
+    Teuchos::RCP<Epetra_Vector>& fext                      //!< external force
 )
 {
   Teuchos::ParameterList p;
@@ -647,16 +647,16 @@ void THR::TimInt::ApplyForceExternal(const double time,  //!< evaluation time
 
   // set vector values needed by elements
   discret_->ClearState();
-  // SetState(0,...) in case of multiple dofsets (e.g. TSI)
-  discret_->SetState(0, "temperature", temp);
+  // set_state(0,...) in case of multiple dofsets (e.g. TSI)
+  discret_->set_state(0, "temperature", temp);
   // get load vector
-  discret_->EvaluateNeumann(p, *fext);
+  discret_->evaluate_neumann(p, *fext);
   discret_->ClearState();
 
   // go away
   return;
 
-}  // ApplyForceExternal()
+}  // apply_force_external()
 
 
 /*----------------------------------------------------------------------*
@@ -689,13 +689,13 @@ void THR::TimInt::apply_force_external_conv(Teuchos::ParameterList& p,
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState(0, "old temperature", tempn);  // T_n (*temp_)(0)
-  discret_->SetState(0, "temperature", temp);       // T_{n+1} tempn_
+  discret_->set_state(0, "old temperature", tempn);  // T_n (*temp_)(0)
+  discret_->set_state(0, "temperature", temp);       // T_{n+1} tempn_
 
   // get load vector
-  // use general version of EvaluateCondition()
+  // use general version of evaluate_condition()
   std::string condstring("ThermoConvections");
-  discret_->EvaluateCondition(
+  discret_->evaluate_condition(
       p, tang, Teuchos::null, fext, Teuchos::null, Teuchos::null, condstring);
   discret_->ClearState();
 
@@ -726,9 +726,9 @@ void THR::TimInt::apply_force_tang_internal(
   p.set("delta time", dt);
   // set vector values needed by elements
   discret_->ClearState();
-  // SetState(0,...) in case of multiple dofsets (e.g. TSI)
-  discret_->SetState(0, "residual temperature", tempi);
-  discret_->SetState(0, "temperature", temp);
+  // set_state(0,...) in case of multiple dofsets (e.g. TSI)
+  discret_->set_state(0, "residual temperature", tempi);
+  discret_->set_state(0, "temperature", temp);
 
   discret_->Evaluate(p, tang, Teuchos::null, fint, Teuchos::null, Teuchos::null);
 
@@ -779,11 +779,11 @@ void THR::TimInt::apply_force_tang_internal(
   p.set("delta time", dt);
   // set vector values needed by elements
   discret_->ClearState();
-  // SetState(0,...) in case of multiple dofsets (e.g. TSI)
-  discret_->SetState(0, "residual temperature", tempi);
-  discret_->SetState(0, "temperature", temp);
+  // set_state(0,...) in case of multiple dofsets (e.g. TSI)
+  discret_->set_state(0, "residual temperature", tempi);
+  discret_->set_state(0, "temperature", temp);
   // required for linearization of T-dependent capacity
-  discret_->SetState(0, "last temperature", (*temp_)(0));
+  discret_->set_state(0, "last temperature", (*temp_)(0));
 
   // in case of genalpha extract midpoint temperature rate R_{n+alpha_m}
   // extract it after ClearState() is called.
@@ -791,7 +791,7 @@ void THR::TimInt::apply_force_tang_internal(
   {
     Teuchos::RCP<const Epetra_Vector> ratem =
         p.get<Teuchos::RCP<const Epetra_Vector>>("mid-temprate");
-    if (ratem != Teuchos::null) discret_->SetState(0, "mid-temprate", ratem);
+    if (ratem != Teuchos::null) discret_->set_state(0, "mid-temprate", ratem);
   }
 
   // call the element Evaluate()
@@ -822,7 +822,8 @@ void THR::TimInt::apply_force_tang_internal(
 /*----------------------------------------------------------------------*
  | evaluate ordinary internal force                         bborn 06/08 |
  *----------------------------------------------------------------------*/
-void THR::TimInt::ApplyForceInternal(Teuchos::ParameterList& p, const double time, const double dt,
+void THR::TimInt::apply_force_internal(
+    Teuchos::ParameterList& p, const double time, const double dt,
     const Teuchos::RCP<Epetra_Vector> temp,   //!< temperature state
     const Teuchos::RCP<Epetra_Vector> tempi,  //!< incremental temperature
     Teuchos::RCP<Epetra_Vector> fint          //!< internal force
@@ -838,9 +839,9 @@ void THR::TimInt::ApplyForceInternal(Teuchos::ParameterList& p, const double tim
   p.set("delta time", dt);
   // set vector values needed by elements
   discret_->ClearState();
-  // SetState(0,...) in case of multiple dofsets (e.g. TSI)
-  discret_->SetState(0, "residual temperature", tempi);
-  discret_->SetState(0, "temperature", temp);
+  // set_state(0,...) in case of multiple dofsets (e.g. TSI)
+  discret_->set_state(0, "residual temperature", tempi);
+  discret_->set_state(0, "temperature", temp);
 
   // call the element Evaluate()
   discret_->Evaluate(p, Teuchos::null, Teuchos::null, fint, Teuchos::null, Teuchos::null);
@@ -874,7 +875,7 @@ void THR::TimInt::SetInitialField(const INPAR::THR::InitialField init, const int
 
     case INPAR::THR::initfield_field_by_function:
     {
-      const Epetra_Map* dofrowmap = discret_->DofRowMap();
+      const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
       // loop all nodes on the processor
       for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
@@ -965,7 +966,7 @@ Teuchos::RCP<std::vector<double>> THR::TimInt::evaluate_error_compared_to_analyt
       eleparams.set<int>("calculate error", calcerror_);
       eleparams.set<int>("error function number", errorfunctno_);
 
-      discret_->SetState("temperature", tempn_);
+      discret_->set_state("temperature", tempn_);
 
       // get (squared) error values
       // 0: delta temperature for L2-error norm

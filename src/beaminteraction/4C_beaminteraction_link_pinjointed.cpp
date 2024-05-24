@@ -59,7 +59,7 @@ void BEAMINTERACTION::BeamLinkPinJointed::Init(int id,
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLinkPinJointed::Setup(const int matnum)
 {
-  CheckInit();
+  check_init();
 
   // the flag issetup_ will be set in the derived method!
 }
@@ -105,7 +105,7 @@ void BEAMINTERACTION::BeamLinkPinJointed::ResetState(
     std::vector<CORE::LINALG::Matrix<3, 1>>& bspotpos,
     std::vector<CORE::LINALG::Matrix<3, 3>>& bspottriad)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   BeamLink::ResetState(bspotpos, bspottriad);
 }
@@ -131,7 +131,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> BEAMINTERACTION::BeamLinkPinJo
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLinkPinJointed::Print(std::ostream& out) const
 {
-  CheckInit();
+  check_init();
 
   BeamLink::Print(out);
 

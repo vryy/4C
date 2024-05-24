@@ -230,7 +230,7 @@ namespace MAT
     );
 
     //! computes isotropic elasticity tensor in matrix notion for 3d
-    void SetupCmat(
+    void setup_cmat(
         CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat  //!< elastic material tangent
     );
 

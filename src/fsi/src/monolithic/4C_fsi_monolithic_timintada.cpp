@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
+void FSI::Monolithic::init_tim_int_ada(const Teuchos::ParameterList& fsidyn)
 {
   // access to structural time adaptivity parameters
   const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
@@ -130,7 +130,7 @@ void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
       erroractionstrategy != INPAR::FSI::divcont_continue)
     isadasolver_ = true;
 
-  flmethod_ = FluidField()->GetTimAdaMethodName();
+  flmethod_ = fluid_field()->GetTimAdaMethodName();
 
   //----------------------------------------------------------------------------
   // Handling of Dirichlet BCs in error estimation
@@ -138,8 +138,8 @@ void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
   // Create intersection of fluid DOFs that hold a Dirichlet boundary condition
   // and are located at the FSI interface.
   std::vector<Teuchos::RCP<const Epetra_Map>> intersectionmapsfluid;
-  intersectionmapsfluid.push_back(FluidField()->GetDBCMapExtractor()->CondMap());
-  intersectionmapsfluid.push_back(FluidField()->Interface()->FSICondMap());
+  intersectionmapsfluid.push_back(fluid_field()->GetDBCMapExtractor()->CondMap());
+  intersectionmapsfluid.push_back(fluid_field()->Interface()->FSICondMap());
   Teuchos::RCP<Epetra_Map> intersectionmapfluid =
       CORE::LINALG::MultiMapExtractor::IntersectMaps(intersectionmapsfluid);
 
@@ -162,7 +162,7 @@ void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
 
   /* safety check for BDF2 time integration in fluid
    * (cf. PhD Thesis [Bornemann, 2003, p. 61, eq. (3.40)]) */
-  if (FluidField()->TimIntScheme() == INPAR::FLUID::timeint_bdf2 and
+  if (fluid_field()->TimIntScheme() == INPAR::FLUID::timeint_bdf2 and
       fsiada.get<double>("SIZERATIOMAX") >= 1.0 + sqrt(2))
   {
     FOUR_C_THROW(
@@ -178,7 +178,7 @@ void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::TimeloopAdaDt(
+void FSI::Monolithic::timeloop_ada_dt(
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface)
 {
   /*--------------------------------------------------------------------------*/
@@ -207,19 +207,19 @@ void FSI::Monolithic::TimeloopAdaDt(
     prepare_adaptive_time_step();
 
     // time step adaptivity loop
-    while (StepNotAccepted() and (adaptstep_ < adaptstepmax) and (not dtminused_))
+    while (step_not_accepted() and (adaptstep_ < adaptstepmax) and (not dtminused_))
     {
       print_header_repeated_step();
-      PrepareTimeStep();
+      prepare_time_step();
 
       // Do the auxiliary step first
-      TimeStepAuxiliar();
+      time_step_auxiliar();
 
       // Do the time step with the marching time integrator
       TimeStep(interface);
 
       // adjust the time step size
-      AdaptTimeStepSize();
+      adapt_time_step_size();
 
       /* continue with the next time step if the step has been repeated with the minimum
        * time step size --> no more refinement is possible anyway!*/
@@ -235,7 +235,7 @@ void FSI::Monolithic::TimeloopAdaDt(
         accepted_ = true;
       }
 
-      if (StepNotAccepted())
+      if (step_not_accepted())
       {
         if (adaptstep_ >= adaptstepmax)
         {
@@ -260,8 +260,8 @@ void FSI::Monolithic::TimeloopAdaDt(
         }
         else
         {
-          ResetStep();
-          ResetTime();
+          reset_step();
+          reset_time();
 
           if (Comm().MyPID() == 0)
           {
@@ -279,12 +279,12 @@ void FSI::Monolithic::TimeloopAdaDt(
       print_adaptivity_summary();
     }
     constexpr bool force_prepare = false;
-    PrepareOutput(force_prepare);
-    Update();            // Update in single fields
-    UpdateDtPast(Dt());  // Update of adaptive time step sizes
+    prepare_output(force_prepare);
+    Update();              // Update in single fields
+    update_dt_past(Dt());  // Update of adaptive time step sizes
     Output();
 
-    WriteAdaFile();
+    write_ada_file();
   }
 
   return;
@@ -322,7 +322,7 @@ void FSI::Monolithic::print_header_repeated_step() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::WriteAdaFileHeader() const
+void FSI::Monolithic::write_ada_file_header() const
 {
   // write to adaptivity file
   if (Comm().MyPID() == 0 and (not logada_.is_null()))
@@ -358,7 +358,7 @@ void FSI::Monolithic::WriteAdaFileHeader() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::WriteAdaFile() const
+void FSI::Monolithic::write_ada_file() const
 {
   if (logada_.is_null()) FOUR_C_THROW("No access to adaptivity file!");
 
@@ -403,7 +403,7 @@ void FSI::Monolithic::print_adaptivity_summary() const
                << " No further refinement possible. Go to next time step.\n";
     }
 
-    if (not StepNotAccepted())
+    if (not step_not_accepted())
     {
       IO::cout << "Time step " << Step() << " has been accepted after " << adaptstep_ - 1
                << " repetitions."
@@ -420,9 +420,9 @@ void FSI::Monolithic::print_adaptivity_summary() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::TimeStepAuxiliar()
+void FSI::Monolithic::time_step_auxiliar()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::TimeStepAuxiliar");
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::time_step_auxiliar");
 
   // ---------------------------------------------------------------------------
   // Structure field
@@ -430,7 +430,7 @@ void FSI::Monolithic::TimeStepAuxiliar()
   if (IsAdaStructure())
   {
     Teuchos::rcp_dynamic_cast<ADAPTER::StructureFSITimIntAda>(StructureField(), true)
-        ->TimeStepAuxiliar();
+        ->time_step_auxiliar();
   }
   // ---------------------------------------------------------------------------
 
@@ -439,7 +439,7 @@ void FSI::Monolithic::TimeStepAuxiliar()
   // ---------------------------------------------------------------------------
   if (IsAdaFluid())
   {
-    FluidField()->TimeStepAuxiliar();
+    fluid_field()->time_step_auxiliar();
   }
   // ---------------------------------------------------------------------------
 
@@ -448,9 +448,9 @@ void FSI::Monolithic::TimeStepAuxiliar()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::AdaptTimeStepSize()
+void FSI::Monolithic::adapt_time_step_size()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::AdaptTimeStepSize");
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::adapt_time_step_size");
 
   // Increment counter for repetition of time steps
   adaptstep_++;
@@ -469,11 +469,11 @@ void FSI::Monolithic::AdaptTimeStepSize()
 
     // structure based time step size suggestions
     dtstr_ = Teuchos::rcp_dynamic_cast<ADAPTER::StructureFSITimIntAda>(StructureField(), true)
-                 ->CalculateDt(strnorm_);
+                 ->calculate_dt(strnorm_);
     dtstrfsi_ = Teuchos::rcp_dynamic_cast<ADAPTER::StructureFSITimIntAda>(StructureField(), true)
-                    ->CalculateDt(strfsinorm_);
+                    ->calculate_dt(strfsinorm_);
     dtstrinner_ = Teuchos::rcp_dynamic_cast<ADAPTER::StructureFSITimIntAda>(StructureField(), true)
-                      ->CalculateDt(strinnernorm_);
+                      ->calculate_dt(strinnernorm_);
   }
   // ---------------------------------------------------------------------------
 
@@ -482,11 +482,11 @@ void FSI::Monolithic::AdaptTimeStepSize()
   // ---------------------------------------------------------------------------
   if (IsAdaFluid())
   {
-    FluidField()->IndicateErrorNorms(
+    fluid_field()->IndicateErrorNorms(
         flnorm_, flfsinorm_, flinnernorm_, flinfnorm_, flinffsinorm_, flinfinnernorm_);
 
     // error order
-    const double order = FluidField()->GetTimAdaErrOrder();
+    const double order = fluid_field()->GetTimAdaErrOrder();
 
     // calculate time step sizes resulting from errors in the fluid field
     dtfl_ = calculate_time_step_size(flnorm_, errtolfl_, order);
@@ -528,7 +528,7 @@ void FSI::Monolithic::AdaptTimeStepSize()
   // ---------------------------------------------------------------------------
 
   // Select new time step size
-  dtnew = SelectDt();
+  dtnew = select_dt();
 
   // optional averaging of time step size in case of increasing time step size
   if (dtnew > DtPast(1))
@@ -545,7 +545,7 @@ void FSI::Monolithic::AdaptTimeStepSize()
   if (dtnew <= dtmin_ and DtPast(1) <= dtmin_) dtminused_ = true;
 
   // Who is responsible for changing the time step size?
-  DetermineAdaReason(dtnew);
+  determine_ada_reason(dtnew);
 
   // Check whether the step can be accepted, now
   accepted_ = SetAccepted();
@@ -560,14 +560,14 @@ void FSI::Monolithic::AdaptTimeStepSize()
   // Finally, distribute new time step size to all participating fields/algorithms
   if (dtnew <= DtPast(1))  // time step size reduction is always done immediately
   {
-    SetDt(dtnew);
+    set_dt(dtnew);
   }
   else if (dtnew > DtPast(1))  // time step size increase may be delayed based on user's will
   {
     if (numincreasesteps_ <= 0)
     {
       // Finally, distribute new time step size to all participating fields/algorithms
-      SetDt(dtnew);
+      set_dt(dtnew);
 
       // reset
       numincreasesteps_ = GLOBAL::Problem::Instance()
@@ -591,7 +591,7 @@ void FSI::Monolithic::AdaptTimeStepSize()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::DetermineAdaReason(const double dt)
+void FSI::Monolithic::determine_ada_reason(const double dt)
 {
   const std::string oldreason = adareason_;
 
@@ -679,24 +679,24 @@ double FSI::Monolithic::calculate_time_step_size(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::ResetStep()
+void FSI::Monolithic::reset_step()
 {
   if (IsAdaStructure())
-    Teuchos::rcp_dynamic_cast<ADAPTER::StructureFSITimIntAda>(StructureField(), true)->ResetStep();
+    Teuchos::rcp_dynamic_cast<ADAPTER::StructureFSITimIntAda>(StructureField(), true)->reset_step();
   else
-    StructureField()->ResetStep();
+    StructureField()->reset_step();
 
-  FluidField()->ResetStep();
-  AleField()->ResetStep();
+  fluid_field()->reset_step();
+  ale_field()->reset_step();
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::ResetTime()
+void FSI::Monolithic::reset_time()
 {
   // Fluid and ALE
-  FluidField()->ResetTime(DtPast(1));
-  AleField()->ResetTime(DtPast(1));
+  fluid_field()->reset_time(DtPast(1));
+  ale_field()->reset_time(DtPast(1));
 
   // FSI routine
   SetTimeStep(Time() - DtPast(1), Step() - 1);
@@ -704,29 +704,30 @@ void FSI::Monolithic::ResetTime()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::SetDt(const double dtnew)
+void FSI::Monolithic::set_dt(const double dtnew)
 {
   // single fields
   if (IsAdaStructure())
-    Teuchos::rcp_dynamic_cast<ADAPTER::StructureFSITimIntAda>(StructureField(), true)->SetDt(dtnew);
+    Teuchos::rcp_dynamic_cast<ADAPTER::StructureFSITimIntAda>(StructureField(), true)
+        ->set_dt(dtnew);
   else
-    StructureField()->SetDt(dtnew);
+    StructureField()->set_dt(dtnew);
 
-  FluidField()->SetDt(dtnew);
-  AleField()->SetDt(dtnew);
+  fluid_field()->set_dt(dtnew);
+  ale_field()->set_dt(dtnew);
 
   // FSI algorithm
   if (IsAdaStructure() or IsAdaFluid() or IsAdaSolver())
-    dt_->SetStep(1, Dt());  // save step size of previous run of this time step for ResetTime()
+    dt_->SetStep(1, Dt());  // save step size of previous run of this time step for reset_time()
 
-  ADAPTER::AlgorithmBase::SetDt(dtnew);
+  ADAPTER::AlgorithmBase::set_dt(dtnew);
 
   return;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-double FSI::Monolithic::SelectDt() const
+double FSI::Monolithic::select_dt() const
 {
   // First, take the new time step size based on error estimation
   double dtnew = SelectDtErrorBased();
@@ -759,8 +760,8 @@ bool FSI::Monolithic::CheckIfDtsSame()
   // get time step sizes from all fields
   const double dtfsi = Dt();
   const double dtstruct = StructureField()->Dt();
-  const double dtfluid = FluidField()->Dt();
-  const double dtale = AleField()->Dt();
+  const double dtfluid = fluid_field()->Dt();
+  const double dtale = ale_field()->Dt();
 
   double dtstrada = -1.0;
   if (IsAdaStructure())
@@ -804,6 +805,6 @@ double FSI::Monolithic::DtPast(const int step) const { return (*dt_)[step]; }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::UpdateDtPast(const double dtnew) { dt_->UpdateSteps(dtnew); }
+void FSI::Monolithic::update_dt_past(const double dtnew) { dt_->UpdateSteps(dtnew); }
 
 FOUR_C_NAMESPACE_CLOSE

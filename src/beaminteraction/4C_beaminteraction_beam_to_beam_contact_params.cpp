@@ -48,7 +48,7 @@ void BEAMINTERACTION::BeamToBeamContactParams::Init()
 
   // Teuchos parameter list for beam contact
   const Teuchos::ParameterList& beam_contact_params_list =
-      GLOBAL::Problem::Instance()->BeamContactParams();
+      GLOBAL::Problem::Instance()->beam_contact_params();
 
   /****************************************************************************/
   // get and check required parameters
@@ -219,7 +219,7 @@ void BEAMINTERACTION::BeamToBeamContactParams::Init()
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamToBeamContactParams::Setup()
 {
-  CheckInit();
+  check_init();
 
   // empty for now
 

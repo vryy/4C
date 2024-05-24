@@ -65,18 +65,18 @@ namespace STR
       void Setup(Teuchos::RCP<const DRT::Discretization> const& ia_discret);
 
      protected:
-      inline const bool& IsInit() const { return isinit_; };
+      inline const bool& is_init() const { return isinit_; };
 
-      inline const bool& IsSetup() const { return issetup_; };
+      inline const bool& is_setup() const { return issetup_; };
 
-      inline void CheckInitSetup() const
+      inline void check_init_setup() const
       {
-        if (!IsInit() or !IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
+        if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
       }
 
-      inline void CheckInit() const
+      inline void check_init() const
       {
-        if (!IsInit()) FOUR_C_THROW("Init() has not been called, yet!");
+        if (!is_init()) FOUR_C_THROW("Init() has not been called, yet!");
       }
 
      public:
@@ -86,7 +86,7 @@ namespace STR
       /// ID of actual processor in parallel
       int const& GetMyRank() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return myrank_;
       };
       ///@}
@@ -97,49 +97,49 @@ namespace STR
       /// get extended bin to ele map
       std::map<int, std::set<int>> const& GetBinToRowEleMap() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return bintorowelemap_;
       };
 
       /// get mutable extended bin to ele map
       std::map<int, std::set<int>>& GetBinToRowEleMap()
       {
-        CheckInitSetup();
+        check_init_setup();
         return bintorowelemap_;
       };
 
       /// get extended bin to ele map
       std::map<int, std::set<int>> const& get_extended_bin_to_row_ele_map() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return exbintorowelemap_;
       };
 
       /// get mutable extended bin to ele map
       std::map<int, std::set<int>>& get_extended_bin_to_row_ele_map()
       {
-        CheckInitSetup();
+        check_init_setup();
         return exbintorowelemap_;
       };
 
       /// get extended ele to bin map
       std::map<int, std::set<int>> const& GetRowEleToBinMap() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return roweletobinmap_;
       };
 
       /// get extended ele to bin map
       std::set<int> const& GetRowEleToBinSet(int const i)
       {
-        CheckInitSetup();
+        check_init_setup();
         return roweletobinmap_[i];
       };
 
       /// get mutable extended ele to bin map
       std::map<int, std::set<int>>& GetRowEleToBinMap()
       {
-        CheckInitSetup();
+        check_init_setup();
         return roweletobinmap_;
       };
       ///@}
@@ -150,49 +150,49 @@ namespace STR
       /// Return displacements at the restart step \f$D_{restart}\f$
       Teuchos::RCP<const Epetra_Vector> GetDisRestart() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return dis_restart_;
       }
 
       /// Return displacements at the restart step \f$D_{restart}\f$
       Teuchos::RCP<const Epetra_Vector> GetDisRestartCol() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return dis_restart_col_;
       }
 
       /// Return displacements \f$D_{n+1}\f$
       Teuchos::RCP<const Epetra_Vector> GetDisNp() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return disnp_;
       }
 
       /// Return displacements \f$D_{n+1}\f$
       Teuchos::RCP<const Epetra_Vector> GetDisColNp() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return discolnp_;
       }
 
       /// Return displacements \f$D_{n}\f$
       Teuchos::RCP<const Epetra_Vector> GetDisN() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return (*dis_)(0);
       }
 
       /// Return internal force \f$fint_{n}\f$
       Teuchos::RCP<const Epetra_FEVector> GetForceN() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return forcen_;
       }
 
       /// Return internal force \f$fint_{n+1}\f$
       Teuchos::RCP<const Epetra_FEVector> GetForceNp() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return forcenp_;
       }
 
@@ -201,7 +201,7 @@ namespace STR
       /// returns the entire structural jacobian
       Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetStiff() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return stiff_;
       }
       ///@}
@@ -212,56 +212,56 @@ namespace STR
       /// Return displacements at the restart step \f$D_{restart}\f$
       Teuchos::RCP<Epetra_Vector>& GetDisRestart()
       {
-        CheckInitSetup();
+        check_init_setup();
         return dis_restart_;
       }
 
       /// Return displacements at the restart step \f$D_{restart}\f$
       Teuchos::RCP<Epetra_Vector>& GetDisRestartCol()
       {
-        CheckInitSetup();
+        check_init_setup();
         return dis_restart_col_;
       }
 
       /// Return displacements \f$D_{n+1}\f$
       Teuchos::RCP<Epetra_Vector>& GetDisNp()
       {
-        CheckInitSetup();
+        check_init_setup();
         return disnp_;
       }
 
       /// Return displacements \f$D_{n+1}\f$
       Teuchos::RCP<Epetra_Vector>& GetDisColNp()
       {
-        CheckInitSetup();
+        check_init_setup();
         return discolnp_;
       }
 
       /// Return displacements \f$D_{n}\f$
       Teuchos::RCP<Epetra_Vector> GetDisN()
       {
-        CheckInitSetup();
+        check_init_setup();
         return (*dis_)(0);
       }
 
       /// Return multi-displacement vector \f$D_{n}, D_{n-1}, ...\f$
       Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>> GetMultiDis()
       {
-        CheckInitSetup();
+        check_init_setup();
         return dis_;
       }
 
       /// Return internal force \f$fint_{n}\f$
       Teuchos::RCP<Epetra_FEVector>& GetForceN()
       {
-        CheckInitSetup();
+        check_init_setup();
         return forcen_;
       }
 
       /// Return internal force \f$fint_{n+1}\f$
       Teuchos::RCP<Epetra_FEVector>& GetForceNp()
       {
-        CheckInitSetup();
+        check_init_setup();
         return forcenp_;
       }
 
@@ -272,14 +272,14 @@ namespace STR
       /// returns the entire structural jacobian
       Teuchos::RCP<CORE::LINALG::SparseMatrix>& GetStiff()
       {
-        CheckInitSetup();
+        check_init_setup();
         return stiff_;
       }
 
       /// Return the restart coupling flag.
       bool get_restart_coupling_flag() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return is_restart_coupling_;
       }
 

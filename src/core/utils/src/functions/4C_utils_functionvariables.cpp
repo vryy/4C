@@ -505,13 +505,13 @@ CORE::UTILS::PiecewiseVariable::PiecewiseVariable(
 
 double CORE::UTILS::PiecewiseVariable::Value(const double t)
 {
-  return FindPieceForTime(t).Value(t);
+  return find_piece_for_time(t).Value(t);
 }
 
 
 double CORE::UTILS::PiecewiseVariable::TimeDerivativeValue(const double t, const unsigned int deg)
 {
-  return FindPieceForTime(t).TimeDerivativeValue(t, deg);
+  return find_piece_for_time(t).TimeDerivativeValue(t, deg);
 }
 
 
@@ -524,7 +524,7 @@ bool CORE::UTILS::PiecewiseVariable::ContainTime(const double t)
 }
 
 
-CORE::UTILS::FunctionVariable& CORE::UTILS::PiecewiseVariable::FindPieceForTime(const double t)
+CORE::UTILS::FunctionVariable& CORE::UTILS::PiecewiseVariable::find_piece_for_time(const double t)
 {
   auto active_piece =
       std::find_if(pieces_.begin(), pieces_.end(), [t](auto& var) { return var->ContainTime(t); });

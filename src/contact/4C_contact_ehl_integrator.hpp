@@ -91,7 +91,7 @@ namespace CONTACT
         const CORE::GEN::Pairedvector<int, double>& jacintcellmap);
 
     // integrate relative and average tangential velocity
-    void GP_WeightedAvRelVel(MORTAR::Element& sele, MORTAR::Element& mele,
+    void gp_weighted_av_rel_vel(MORTAR::Element& sele, MORTAR::Element& mele,
         const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseVector& lmval,
         const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& sderiv,
         const CORE::LINALG::SerialDenseMatrix& mderiv,

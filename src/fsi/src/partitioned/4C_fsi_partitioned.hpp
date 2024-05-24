@@ -91,7 +91,7 @@ namespace FSI
    * residual via computeF(). So the field solvers themselves must be
    * clean, subsequent calls with the same interface input must yield the
    * same results. The time stepping therefore needs the further methods
-   * PrepareTimeStep() to start a new time step as wellas Update() and
+   * prepare_time_step() to start a new time step as wellas Update() and
    * Output() to finish the current step, save the result and write the
    * files.
    */
@@ -123,10 +123,10 @@ namespace FSI
     virtual void Remeshing();
 
     /// setup of coupling at fsi interface
-    virtual void SetupCoupling(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm);
+    virtual void setup_coupling(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm);
 
     /// read restart data
-    void ReadRestart(int step) override;
+    void read_restart(int step) override;
 
    protected:
     //! @name Transfer helpers
@@ -154,7 +154,7 @@ namespace FSI
     //! @name Encapsulation of interface unknown
     /// default is displacement, but subclasses might change that
 
-    virtual Teuchos::RCP<Epetra_Vector> InitialGuess();
+    virtual Teuchos::RCP<Epetra_Vector> initial_guess();
 
     //@}
 
@@ -183,7 +183,7 @@ namespace FSI
     /*!
       Extract structural displacement at t(n+1)
      */
-    Teuchos::RCP<Epetra_Vector> InterfaceDisp();
+    Teuchos::RCP<Epetra_Vector> interface_disp();
 
     /// current interface forces
     /*!
@@ -194,7 +194,7 @@ namespace FSI
     //@}
 
     /// create convergence tests
-    virtual void CreateStatusTest(Teuchos::ParameterList& nlParams,
+    virtual void create_status_test(Teuchos::ParameterList& nlParams,
         Teuchos::RCP<::NOX::Epetra::Group> grp, Teuchos::RCP<::NOX::StatusTest::Combo> converged);
 
     Teuchos::RCP<UTILS::DebugWriter> MyDebugWriter() const { return debugwriter_; }
@@ -226,12 +226,12 @@ namespace FSI
 
    private:
     /// create linear solver framework
-    Teuchos::RCP<::NOX::Epetra::LinearSystem> CreateLinearSystem(Teuchos::ParameterList& nlParams,
+    Teuchos::RCP<::NOX::Epetra::LinearSystem> create_linear_system(Teuchos::ParameterList& nlParams,
         const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface,
         ::NOX::Epetra::Vector& noxSoln, Teuchos::RCP<::NOX::Utils> utils);
 
     /// create convergence tests including testing framework
-    Teuchos::RCP<::NOX::StatusTest::Combo> CreateStatusTest(
+    Teuchos::RCP<::NOX::StatusTest::Combo> create_status_test(
         Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp);
 
     //! connection of interface dofs for finite differences

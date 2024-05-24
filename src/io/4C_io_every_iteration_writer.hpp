@@ -47,8 +47,8 @@ namespace IO
     /// destructor
     virtual ~EveryIterationWriterInterface() = default;
 
-    /// Prepare the output before it is accessed via OutputState.
-    virtual void PrepareOutput(bool force_prepare) = 0;
+    /// Prepare the output before it is accessed via output_state.
+    virtual void prepare_output(bool force_prepare) = 0;
 
     /** @brief Access the entire output state
      *
@@ -184,26 +184,26 @@ namespace IO
     }
 
     /// Throw if Setup() has not been called.
-    inline void ThrowIfNotSetup(const int line) const
+    inline void throw_if_not_setup(const int line) const
     {
       if (not issetup_) FOUR_C_THROW("LINE %d: Call Setup() first!", line);
     }
 
     /// Returns true if the current load/time step is supposed to be written.
-    bool WriteThisStep() const;
+    bool write_this_step() const;
 
     /** Create a new run directory if the corresponding input parameter
      *  is specified. */
-    std::string CreateRunDirectory(const std::string& file_dir_path) const;
+    std::string create_run_directory(const std::string& file_dir_path) const;
 
     /// Create a new directory.
-    void CreateDirectory(const std::string& dir_path) const;
+    void create_directory(const std::string& dir_path) const;
 
     /// Adjust the specified steps per file.
-    void AdjustStepsPerFile(IO::OutputControl& control) const;
+    void adjust_steps_per_file(IO::OutputControl& control) const;
 
     /// Read-only access to the parent discretization writer.
-    const IO::DiscretizationWriter& ParentWriter() const
+    const IO::DiscretizationWriter& parent_writer() const
     {
       if (not parent_writer_) FOUR_C_THROW("The parent writer has not been initialized correctly.");
 
@@ -220,7 +220,7 @@ namespace IO
     }
 
     /// print current output path to the os
-    void PrintPath2Screen(const std::string& path) const;
+    void print_path2_screen(const std::string& path) const;
 
    private:
     bool isinit_;
@@ -250,7 +250,7 @@ namespace IO
   std::string RemoveRestartStepFromFileName(const std::string& filename, int restart_step);
 
   /// Create a new directory.
-  void CreateDirectory(const std::string& dir_path, const int myrank);
+  void create_directory(const std::string& dir_path, const int myrank);
 
   /// Return number of lines in the given file
   int CountLinesInFile(const std::string& filepath);

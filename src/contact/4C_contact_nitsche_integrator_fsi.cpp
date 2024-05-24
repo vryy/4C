@@ -85,17 +85,17 @@ void CONTACT::IntegratorNitscheFsi::IntegrateGP_3D(MORTAR::Element& sele, MORTAR
   // Contact
   double n[3];
   sele.compute_unit_normal_at_xi(sxi, n);
-  std::vector<CORE::GEN::Pairedvector<int, double>> dn(3, sele.NumNode() * 3);
+  std::vector<CORE::GEN::Pairedvector<int, double>> dn(3, sele.num_node() * 3);
   dynamic_cast<CONTACT::Element&>(sele).DerivUnitNormalAtXi(sxi, dn);
 
-  GPTSForces<3>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt, gap,
-      deriv_gap, n, dn, sxi, mxi);
+  gpts_forces<3>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt,
+      gap, deriv_gap, n, dn, sxi, mxi);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::IntegratorNitscheFsi::GPTSForces(MORTAR::Element& sele, MORTAR::Element& mele,
+void CONTACT::IntegratorNitscheFsi::gpts_forces(MORTAR::Element& sele, MORTAR::Element& mele,
     const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseMatrix& sderiv,
     const std::vector<CORE::GEN::Pairedvector<int, double>>& dsxi,
     const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& mderiv,
@@ -133,7 +133,7 @@ void CONTACT::IntegratorNitscheFsi::GPTSForces(MORTAR::Element& sele, MORTAR::El
 #ifdef WRITE_GMSH
   {
     CORE::LINALG::Matrix<3, 1> sgp_x;
-    for (int i = 0; i < sele.NumNode(); ++i)
+    for (int i = 0; i < sele.num_node(); ++i)
       for (int d = 0; d < dim; ++d)
         sgp_x(d) += sval(i) * dynamic_cast<CONTACT::Node*>(sele.Nodes()[i])->xspatial()[d];
     xf_c_comm_->Gmsh_Write(sgp_x, gp_on_this_proc, 7);
@@ -161,7 +161,7 @@ void CONTACT::IntegratorNitscheFsi::GPTSForces(MORTAR::Element& sele, MORTAR::El
 #ifdef WRITE_GMSH
   {
     CORE::LINALG::Matrix<3, 1> sgp_x;
-    for (int i = 0; i < sele.NumNode(); ++i)
+    for (int i = 0; i < sele.num_node(); ++i)
       for (int d = 0; d < dim; ++d)
         sgp_x(d) += sval(i) * dynamic_cast<CONTACT::Node*>(sele.Nodes()[i])->xspatial()[d];
     xf_c_comm_->Gmsh_Write(sgp_x, snn_pengap, 4);
@@ -178,7 +178,7 @@ void CONTACT::IntegratorNitscheFsi::GPTSForces(MORTAR::Element& sele, MORTAR::El
 #ifdef WRITE_GMSH
     {
       CORE::LINALG::Matrix<3, 1> sgp_x;
-      for (int i = 0; i < sele.NumNode(); ++i)
+      for (int i = 0; i < sele.num_node(); ++i)
         for (int d = 0; d < dim; ++d)
           sgp_x(d) += sval(i) * dynamic_cast<CONTACT::Node*>(sele.Nodes()[i])->xspatial()[d];
       xf_c_comm_->Gmsh_Write(sgp_x, normal_contact_transition, 0);
@@ -200,7 +200,7 @@ void CONTACT::IntegratorNitscheFsi::GPTSForces(MORTAR::Element& sele, MORTAR::El
 
   double cauchy_nn_weighted_average = 0.;
   CORE::GEN::Pairedvector<int, double> cauchy_nn_weighted_average_deriv(
-      sele.NumNode() * 3 * 12 + sele.MoData().ParentDisp().size() +
+      sele.num_node() * 3 * 12 + sele.MoData().ParentDisp().size() +
       mele.MoData().ParentDisp().size());
 
   CORE::LINALG::SerialDenseVector normal_adjoint_test_slave(sele.MoData().ParentDof().size());
@@ -234,7 +234,7 @@ void CONTACT::IntegratorNitscheFsi::GPTSForces(MORTAR::Element& sele, MORTAR::El
 #ifdef WRITE_GMSH
   {
     CORE::LINALG::Matrix<3, 1> sgp_x;
-    for (int i = 0; i < sele.NumNode(); ++i)
+    for (int i = 0; i < sele.num_node(); ++i)
       for (int d = 0; d < dim; ++d)
         sgp_x(d) += sval(i) * dynamic_cast<CONTACT::Node*>(sele.Nodes()[i])->xspatial()[d];
 
@@ -265,25 +265,25 @@ double CONTACT::UTILS::SolidCauchyAtXi(CONTACT::Element* cele,
     const CORE::LINALG::Matrix<2, 1>& xsi, const CORE::LINALG::Matrix<3, 1>& n,
     const CORE::LINALG::Matrix<3, 1>& dir)
 {
-  if (cele->ParentElement()->Shape() != CORE::FE::CellType::hex8)
+  if (cele->parent_element()->Shape() != CORE::FE::CellType::hex8)
     FOUR_C_THROW("This Element shape is not implemented for CONTACT::UTILS::CauchyStressatXi");
 
   CORE::LINALG::Matrix<3, 1> pxsi(true);
   CORE::LINALG::Matrix<3, 3> trafo;
-  CONTACT::UTILS::SoEleGP<CORE::FE::CellType::hex8, 3>(*cele, 1., xsi.A(), pxsi, trafo);
+  CONTACT::UTILS::so_ele_gp<CORE::FE::CellType::hex8, 3>(*cele, 1., xsi.A(), pxsi, trafo);
 
   double sigma_nt;
 
   if (!cele->MoData().ParentPFPres().size())
   {  // The element can be either an old so3 element or a new solid element
-    if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::SoBase*>(cele->ParentElement());
+    if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::SoBase*>(cele->parent_element());
         solid_ele != nullptr)
     {
       solid_ele->get_cauchy_n_dir_and_derivatives_at_xi(pxsi, cele->MoData().ParentDisp(), n, dir,
           sigma_nt, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
           nullptr, nullptr, nullptr, nullptr);
     }
-    else if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::Solid*>(cele->ParentElement());
+    else if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::Solid*>(cele->parent_element());
              solid_ele != nullptr)
     {
       DRT::ELEMENTS::CauchyNDirLinearizations<3> cauchy_linearizations{};
@@ -298,7 +298,7 @@ double CONTACT::UTILS::SolidCauchyAtXi(CONTACT::Element* cele,
   else
   {
     dynamic_cast<DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>*>(
-        cele->ParentElement())
+        cele->parent_element())
         ->get_cauchy_n_dir_and_derivatives_at_xi(pxsi, cele->MoData().ParentDisp(),
             cele->MoData().ParentPFPres(), n, dir, sigma_nt, nullptr, nullptr, nullptr, nullptr,
             nullptr);

@@ -44,7 +44,8 @@ namespace IO
     //! Register name of column @p dataname for a future call to AppendDataVector(). The column can
     //! be split into @p numcomponents columns which are indicated by a post fixed identifier
     //! (":<number of component>"). The numerical precision is @p precision.
-    void RegisterDataVector(const std::string& dataname, unsigned int numcomponents, int precision);
+    void register_data_vector(
+        const std::string& dataname, unsigned int numcomponents, int precision);
 
     //! set current time and time step number
     void reset_time_and_time_step(double time, unsigned int timestep);

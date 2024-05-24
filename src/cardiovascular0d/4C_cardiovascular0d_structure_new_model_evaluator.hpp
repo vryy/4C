@@ -47,25 +47,25 @@ namespace STR
       void Reset(const Epetra_Vector& x) override;
 
       //! derived
-      bool EvaluateForce() override;
+      bool evaluate_force() override;
 
       //! derived
-      bool EvaluateStiff() override;
+      bool evaluate_stiff() override;
 
       //! derived
-      bool EvaluateForceStiff() override;
+      bool evaluate_force_stiff() override;
 
       //! derived
-      void PreEvaluate() override { return; };
+      void pre_evaluate() override { return; };
 
       //! derived
-      void PostEvaluate() override { return; };
+      void post_evaluate() override { return; };
 
       //! derived
-      bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
+      bool assemble_force(Epetra_Vector& f, const double& timefac_np) const override;
 
       //! derived
-      bool AssembleJacobian(
+      bool assemble_jacobian(
           CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
 
       //! derived
@@ -73,7 +73,7 @@ namespace STR
           IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! derived
-      void ReadRestart(IO::DiscretizationReader& ioreader) override;
+      void read_restart(IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
       void Predict(const INPAR::STR::PredEnum& pred_type) override { return; };

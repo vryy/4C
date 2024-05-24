@@ -39,13 +39,13 @@ bool NOX::NLN::Direction::Newton::compute(::NOX::Abstract::Vector& dir,
 
   if (nlnSoln == nullptr)
   {
-    throwError("compute", "dynamic_cast to nox_nln_group failed!");
+    throw_error("compute", "dynamic_cast to nox_nln_group failed!");
   }
 
   // Compute F and Jacobian at current solution at once.
   status = nlnSoln->computeFandJacobian();
   if (status != ::NOX::Abstract::Group::Ok)
-    throwError("compute", "Unable to compute F and/or Jacobian at once");
+    throw_error("compute", "Unable to compute F and/or Jacobian at once");
 
   // ------------------------------------------------
   // call base class version
@@ -70,7 +70,7 @@ bool NOX::NLN::Direction::Newton::compute(::NOX::Abstract::Vector& dir,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Direction::Newton::throwError(
+void NOX::NLN::Direction::Newton::throw_error(
     const std::string& functionName, const std::string& errorMsg)
 {
   if (utils_->isPrintType(::NOX::Utils::Error))

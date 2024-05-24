@@ -44,10 +44,10 @@ namespace CORE::GEO
       void Execute(Mesh& mesh);
 
       /// fill the point1 boundary cell
-      bool CreatePoint1Cell(Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
+      bool create_point1_cell(Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
 
       /// fill the line2 volume cell
-      bool CreateLine2Cell(Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
+      bool create_line2_cell(Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
 
       /** \brief fill the 2-D volume cells
        *
@@ -55,23 +55,23 @@ namespace CORE::GEO
       template <CORE::FE::CellType celltype,
           CORE::FE::CellType facetype = CORE::FE::DisTypeToFaceShapeType<celltype>::shape,
           unsigned numfaces = CORE::FE::num_faces<celltype>>
-      bool Create2DCell(Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
+      bool create2_d_cell(Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
 
       /// fill the tet4 volume cell
-      bool CreateTet4Cell(Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
+      bool create_tet4_cell(Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
 
       /// fill the hex8 volume cell
-      bool CreateHex8Cell(Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
+      bool create_hex8_cell(Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
 
       /// fill the wedge6 volume cell
-      bool CreateWedge6Cell(Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
+      bool create_wedge6_cell(Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
 
       /// fill the pyramid5 volume cell
-      bool CreatePyramid5Cell(Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
+      bool create_pyramid5_cell(Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
 
-      bool CreateSpecialCases(Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
+      bool create_special_cases(Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
 
-      bool Hex8HorizontalCut(Mesh& mesh, Element* element, VolumeCell* cell,
+      bool hex8_horizontal_cut(Mesh& mesh, Element* element, VolumeCell* cell,
           const plain_facet_set& facets, int axis, double r);
 
       /// add the volume cell information during the Create<Shape>Cell calls
@@ -90,11 +90,11 @@ namespace CORE::GEO
        *         for the desired boundary cell positions
        *
        *  \author hiermeier \date 01/17   */
-      void AddSide(INPAR::CUT::BoundaryCellPosition bcell_position, VolumeCell* vc, Facet* facet,
+      void add_side(INPAR::CUT::BoundaryCellPosition bcell_position, VolumeCell* vc, Facet* facet,
           CORE::FE::CellType shape, const std::vector<Point*>& side);
 
       /// add the side (boundary cell) information during the Create<Shape>Cell calls
-      void AddSide(
+      void add_side(
           VolumeCell* vc, Facet* facet, CORE::FE::CellType shape, const std::vector<Point*>& side)
       {
         Volume& cell = cells_[vc];
@@ -143,7 +143,7 @@ namespace CORE::GEO
         /** \brief This routine initiates the volume and boundary cell creation.
          *
          *  At this point the necessary information for the creation must have been
-         *  already added by the Add() and AddSide() methods. */
+         *  already added by the Add() and add_side() methods. */
         void Execute(Mesh& mesh, VolumeCell* vc)
         {
           for (std::vector<Ic>::iterator i = domain_.begin(); i != domain_.end(); ++i)

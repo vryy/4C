@@ -68,7 +68,7 @@ namespace FSI
     virtual void SetupSystem() = 0;
 
     //! read restart data
-    void ReadRestart(int step  //!< step number where the calculation is continued
+    void read_restart(int step  //!< step number where the calculation is continued
         ) override = 0;
 
     //--------------------------------------------------------------------------//
@@ -78,13 +78,13 @@ namespace FSI
     const Teuchos::RCP<ADAPTER::StructurePoroWrapper>& StructurePoro() { return structureporo_; }
 
     //! access to fluid field
-    const Teuchos::RCP<FLD::XFluid>& FluidField() { return fluid_; }
+    const Teuchos::RCP<FLD::XFluid>& fluid_field() { return fluid_; }
 
     //! access to ale field
-    const Teuchos::RCP<ADAPTER::AleFpsiWrapper>& AleField() { return ale_; }
+    const Teuchos::RCP<ADAPTER::AleFpsiWrapper>& ale_field() { return ale_; }
 
     //! is an monolithic ale computations
-    bool HaveAle() { return (AleField() != Teuchos::null); }
+    bool HaveAle() { return (ale_field() != Teuchos::null); }
 
     //! number of physical fields to solve involved
     int NumFields() { return num_fields_; }
@@ -96,10 +96,10 @@ namespace FSI
     //! @name Time loop building blocks
 
     //! start a new time step
-    void PrepareTimeStep() override = 0;
+    void prepare_time_step() override = 0;
 
     //! calculate stresses, strains, energies
-    virtual void PrepareOutput(bool force_prepare);
+    virtual void prepare_output(bool force_prepare);
 
     //! take current results for converged and save for next time step
     void Update() override;

@@ -83,7 +83,7 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& ele)
     }
     default:
       FOUR_C_THROW(
-          "Element shape %d (%d nodes) not activated. Just do it.", ele.Shape(), ele.NumNode());
+          "Element shape %d (%d nodes) not activated. Just do it.", ele.Shape(), ele.num_node());
       break;
   }
   return nullptr;
@@ -441,7 +441,7 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& sele, MORTAR::Elemen
     }
     default:
       FOUR_C_THROW(
-          "Element shape %d (%d nodes) not activated. Just do it.", sele.Shape(), sele.NumNode());
+          "Element shape %d (%d nodes) not activated. Just do it.", sele.Shape(), sele.num_node());
       break;
   }
   return nullptr;
@@ -640,7 +640,7 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint2D(
     {
       CORE::LINALG::SerialDenseVector auxval(ns_);
       CORE::LINALG::SerialDenseMatrix deriv(ns_, 1);
-      gpele.EvaluateShape(gpeta, auxval, deriv, gpele.NumNode());
+      gpele.EvaluateShape(gpeta, auxval, deriv, gpele.num_node());
 
       for (int i = 0; i < ns_; ++i) val(i) = auxval(i);
     }
@@ -721,7 +721,7 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::check_projection4_auxpla
     return true;
   }
 
-  int nnode = ele.NumNode();
+  int nnode = ele.num_node();
   DRT::Node** mynodes = ele.Nodes();
   if (!mynodes) FOUR_C_THROW("Project: Null pointer!");
 
@@ -887,7 +887,7 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint3D(
     {
       CORE::LINALG::SerialDenseVector auxval(ns_);
       CORE::LINALG::SerialDenseMatrix deriv(ns_, 2);
-      gpele.EvaluateShape(gpeta, auxval, deriv, gpele.NumNode());
+      gpele.EvaluateShape(gpeta, auxval, deriv, gpele.num_node());
 
       for (int i = 0; i < ns_; ++i) val(i) = auxval(i);
     }
@@ -917,7 +917,7 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint3D(
       }
     }
 
-    for (int i = 0; i < gpele.NumNode(); ++i)
+    for (int i = 0; i < gpele.num_node(); ++i)
     {
       Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
       for (int j = 0; j < ndim_; ++j)
@@ -2674,7 +2674,7 @@ double MORTAR::ProjectorCalc<distype>::evaluate_f_element_normal(
   {
     CORE::LINALG::SerialDenseVector auxval(n_);
     CORE::LINALG::SerialDenseMatrix deriv(n_, 1);
-    ele.EvaluateShape(eta, auxval, deriv, ele.NumNode());
+    ele.EvaluateShape(eta, auxval, deriv, ele.num_node());
 
     for (int i = 0; i < n_; ++i) val(i) = auxval(i);
   }
@@ -2748,7 +2748,7 @@ double MORTAR::ProjectorCalc<distype>::evaluate_grad_f_element_normal(
   {
     CORE::LINALG::SerialDenseVector auxval(n_);
     CORE::LINALG::SerialDenseMatrix auxderiv(n_, 1);
-    ele.EvaluateShape(eta, auxval, auxderiv, ele.NumNode());
+    ele.EvaluateShape(eta, auxval, auxderiv, ele.num_node());
 
     for (int i = 0; i < n_; ++i)
     {

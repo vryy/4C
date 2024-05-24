@@ -41,10 +41,10 @@ namespace FLD
       virtual ~FluidInfNormScaling() = default;
 
       //! perform infnorm-scaling of linear system
-      void ScaleSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> matrix, Epetra_Vector& b);
+      void scale_system(Teuchos::RCP<CORE::LINALG::SparseOperator> matrix, Epetra_Vector& b);
 
       //! perform un-scaling of solution (and the system, just to be on the safe side)
-      void UnscaleSolution(
+      void unscale_solution(
           Teuchos::RCP<CORE::LINALG::SparseOperator> matrix, Epetra_Vector& x, Epetra_Vector& b);
 
      private:

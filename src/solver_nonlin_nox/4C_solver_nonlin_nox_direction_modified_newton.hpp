@@ -75,7 +75,7 @@ namespace NOX
         void update_successive_reduction_counter();
 
         /// return true if the system shall be modified
-        bool useUnmodifiedSystem() const;
+        bool use_unmodified_system() const;
 
         /// fill the default step test set
         void fill_default_step_tests(Teuchos::ParameterList& pmodnewton);
@@ -93,15 +93,15 @@ namespace NOX
             const ::NOX::Solver::Generic& solver);
 
         /// solve the modified system
-        bool solveModifiedSystem(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp,
+        bool solve_modified_system(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp,
             const ::NOX::Solver::Generic& solver);
 
         /// detect a stagnation, update the counter and inform the user if necessary
         void set_stagnation_counter(::NOX::Abstract::Vector& dir);
 
         /// modify the system matrix
-        bool modifySystem(::NOX::Abstract::Group& grp, Epetra_Vector* diagonal);
-        bool modifySystem(
+        bool modify_system(::NOX::Abstract::Group& grp, Epetra_Vector* diagonal);
+        bool modify_system(
             ::NOX::Abstract::Group& grp, Epetra_Vector* diagonal, const double primal_diag_corr);
 
         /// return the primal diagonal correction
@@ -118,13 +118,13 @@ namespace NOX
         void store_correction_factor();
 
         /// get diagonal vector (currently unused)
-        Teuchos::RCP<Epetra_Vector> getDiagonal(const ::NOX::Abstract::Group& grp) const;
+        Teuchos::RCP<Epetra_Vector> get_diagonal(const ::NOX::Abstract::Group& grp) const;
 
         /// print info to stream
         void print(std::ostream& os, const NOX::NLN::CorrectionType* corr_type = nullptr) const;
 
         /// throw error which can be caught
-        void throwError(
+        void throw_error(
             const int line, const std::string& functionName, const std::string& errorMsg) const;
 
        private:

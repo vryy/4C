@@ -54,7 +54,7 @@ namespace PARTICLEINTERACTION
     void Setup();
 
     //! read restart of interaction writer
-    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
+    void read_restart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
     //! register specific runtime output writer
     void register_specific_runtime_output_writer(const std::string& fieldname);

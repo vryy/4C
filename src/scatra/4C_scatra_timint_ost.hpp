@@ -45,7 +45,7 @@ namespace SCATRA
 
     void PostSolve() override{};
 
-    void PrintTimeStepInfo() override;
+    void print_time_step_info() override;
 
     void compute_intermediate_values() override{};
 
@@ -57,7 +57,8 @@ namespace SCATRA
 
     void Update() override;
 
-    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
+    void read_restart(
+        const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
     Teuchos::RCP<Epetra_Vector> Phiaf() override { return Teuchos::null; }
 
@@ -84,8 +85,8 @@ namespace SCATRA
     }
 
     //! set state on micro scale in multi-scale simulations
-    void SetState(Teuchos::RCP<Epetra_Vector> phin,  //!< micro-scale state vector at old time step
-        Teuchos::RCP<Epetra_Vector> phinp,           //!< micro-scale state vector at new time step
+    void set_state(Teuchos::RCP<Epetra_Vector> phin,  //!< micro-scale state vector at old time step
+        Teuchos::RCP<Epetra_Vector> phinp,            //!< micro-scale state vector at new time step
         Teuchos::RCP<Epetra_Vector>
             phidtn,  //!< time derivative of micro-scale state vector at old time step
         Teuchos::RCP<Epetra_Vector>

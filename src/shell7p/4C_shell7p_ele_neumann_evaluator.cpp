@@ -24,19 +24,19 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumannByElement(DRT::Element& ele,
   switch (ele.Shape())
   {
     case CORE::FE::CellType::quad4:
-      return EvaluateNeumann<CORE::FE::CellType::quad4>(ele, discretization, condition,
+      return evaluate_neumann<CORE::FE::CellType::quad4>(ele, discretization, condition,
           dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
     case CORE::FE::CellType::quad8:
-      return EvaluateNeumann<CORE::FE::CellType::quad8>(ele, discretization, condition,
+      return evaluate_neumann<CORE::FE::CellType::quad8>(ele, discretization, condition,
           dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
     case CORE::FE::CellType::quad9:
-      return EvaluateNeumann<CORE::FE::CellType::quad9>(ele, discretization, condition,
+      return evaluate_neumann<CORE::FE::CellType::quad9>(ele, discretization, condition,
           dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
     case CORE::FE::CellType::tri3:
-      return EvaluateNeumann<CORE::FE::CellType::tri3>(ele, discretization, condition,
+      return evaluate_neumann<CORE::FE::CellType::tri3>(ele, discretization, condition,
           dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
     case CORE::FE::CellType::tri6:
-      return EvaluateNeumann<CORE::FE::CellType::tri6>(ele, discretization, condition,
+      return evaluate_neumann<CORE::FE::CellType::tri6>(ele, discretization, condition,
           dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
     default:
       FOUR_C_THROW(
@@ -46,7 +46,7 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumannByElement(DRT::Element& ele,
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::SHELL::EvaluateNeumann(DRT::Element& ele,
+void DRT::ELEMENTS::SHELL::evaluate_neumann(DRT::Element& ele,
     const DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     const std::vector<int>& dof_index_array, CORE::LINALG::SerialDenseVector& element_force_vector,
     CORE::LINALG::SerialDenseMatrix* element_stiffness_matrix, double total_time)

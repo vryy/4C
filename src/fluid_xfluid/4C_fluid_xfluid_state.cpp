@@ -48,11 +48,11 @@ FLD::XFluidState::CouplingState::CouplingState(
   C_xs_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
       *xfluiddofrowmap, 300, false, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
   C_sx_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *slavediscret_mat->DofRowMap(), 300, false, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
+      *slavediscret_mat->dof_row_map(), 300, false, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
   C_ss_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *slavediscret_mat->DofRowMap(), 300, false, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
+      *slavediscret_mat->dof_row_map(), 300, false, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
 
-  rhC_s_ = CORE::LINALG::CreateVector(*slavediscret_rhs->DofRowMap(), true);
+  rhC_s_ = CORE::LINALG::CreateVector(*slavediscret_rhs->dof_row_map(), true);
   rhC_s_col_ = CORE::LINALG::CreateVector(*slavediscret_rhs->DofColMap(), true);
 }
 
@@ -333,7 +333,7 @@ void FLD::XFluidState::complete_coupling_matrices_and_rhs(
     {
       Teuchos::RCP<XFEM::CouplingBase> coupling = condition_manager_->GetCouplingByIdx(coupl_idx);
       cs->second->complete_coupling_matrices_and_rhs(
-          *fluiddofrowmap, *coupling->GetCondDis()->DofRowMap());  // complete w.r.t
+          *fluiddofrowmap, *coupling->GetCondDis()->dof_row_map());  // complete w.r.t
     }
   }
 }

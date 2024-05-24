@@ -44,7 +44,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+SSI::SsiMono::SsiMono(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
     : SSIBase(comm, globaltimeparams),
       equilibration_method_{Teuchos::getIntegralValue<CORE::LINALG::EquilibrationMethod>(
                                 globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION"),
@@ -70,7 +70,7 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void SSI::SSIMono::apply_contact_to_sub_problems()
+void SSI::SsiMono::apply_contact_to_sub_problems()
 {
   // uncomplete matrices; we need to do this here since in contact simulations the dofs that
   // interact with each other can change and thus the graph of the matrix can also change.
@@ -87,7 +87,7 @@ void SSI::SSIMono::apply_contact_to_sub_problems()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void SSI::SSIMono::ApplyDBCToSystem()
+void SSI::SsiMono::apply_dbc_to_system()
 {
   // apply Dirichlet boundary conditions to global system matrix
   dbc_handler_->apply_dbc_to_system_matrix(ssi_matrices_->SystemMatrix());
@@ -98,7 +98,7 @@ void SSI::SSIMono::ApplyDBCToSystem()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-bool SSI::SSIMono::is_uncomplete_of_matrices_necessary_for_mesh_tying() const
+bool SSI::SsiMono::is_uncomplete_of_matrices_necessary_for_mesh_tying() const
 {
   // check for first iteration in calculation of initial time derivative
   if (IterationCount() == 0 and Step() == 0 and !do_calculate_initial_potential_field())
@@ -128,7 +128,7 @@ bool SSI::SSIMono::is_uncomplete_of_matrices_necessary_for_mesh_tying() const
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void SSI::SSIMono::apply_meshtying_to_sub_problems()
+void SSI::SsiMono::apply_meshtying_to_sub_problems()
 {
   TEUCHOS_FUNC_TIME_MONITOR("SSI mono: apply mesh tying");
   if (ssi_interface_meshtying())
@@ -185,7 +185,7 @@ void SSI::SSIMono::apply_meshtying_to_sub_problems()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSIMono::apply_manifold_meshtying()
+void SSI::SsiMono::apply_manifold_meshtying()
 {
   if (!manifoldscatraflux_->system_matrix_manifold()->Filled())
     manifoldscatraflux_->system_matrix_manifold()->Complete();
@@ -232,11 +232,11 @@ void SSI::SSIMono::apply_manifold_meshtying()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSIMono::AssembleMatAndRHS()
+void SSI::SsiMono::assemble_mat_and_rhs()
 {
   TEUCHOS_FUNC_TIME_MONITOR("SSI mono: assemble global system");
 
-  AssembleMatScaTra();
+  assemble_mat_sca_tra();
 
   assemble_mat_structure();
 
@@ -253,7 +253,7 @@ void SSI::SSIMono::AssembleMatAndRHS()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSIMono::AssembleMatScaTra()
+void SSI::SsiMono::assemble_mat_sca_tra()
 {
   // assemble scatra-scatra block into system matrix
   strategy_assemble_->assemble_scatra_scatra(
@@ -266,7 +266,7 @@ void SSI::SSIMono::AssembleMatScaTra()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSIMono::assemble_mat_sca_tra_manifold()
+void SSI::SsiMono::assemble_mat_sca_tra_manifold()
 {
   // assemble scatra manifold - scatra manifold block into system matrix
   strategy_assemble_->assemble_scatramanifold_scatramanifold(
@@ -297,7 +297,7 @@ void SSI::SSIMono::assemble_mat_sca_tra_manifold()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSIMono::assemble_mat_structure()
+void SSI::SsiMono::assemble_mat_structure()
 {  // assemble structure-scatra block into system matrix
   strategy_assemble_->assemble_structure_scatra(
       ssi_matrices_->SystemMatrix(), ssi_matrices_->structure_sca_tra_matrix());
@@ -309,7 +309,7 @@ void SSI::SSIMono::assemble_mat_structure()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSIMono::EvaluateSubproblems()
+void SSI::SsiMono::evaluate_subproblems()
 {
   TEUCHOS_FUNC_TIME_MONITOR("SSI mono: evaluate sub problems");
 
@@ -324,7 +324,7 @@ void SSI::SSIMono::EvaluateSubproblems()
   StructureField()->Evaluate();
 
   // build system matrix and residual for scalar transport field
-  EvaluateScaTra();
+  evaluate_sca_tra();
 
   // build system matrix and residual for scalar transport field on manifold
   if (IsScaTraManifold()) evaluate_sca_tra_manifold();
@@ -344,7 +344,7 @@ void SSI::SSIMono::EvaluateSubproblems()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void SSI::SSIMono::evaluate_off_diag_contributions()
+void SSI::SsiMono::evaluate_off_diag_contributions()
 {
   // evaluate off-diagonal scatra-structure block (domain contributions) of global system matrix
   scatrastructure_off_diagcoupling_->evaluate_off_diag_block_scatra_structure_domain(
@@ -370,7 +370,7 @@ void SSI::SSIMono::evaluate_off_diag_contributions()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void SSI::SSIMono::BuildNullSpaces() const
+void SSI::SsiMono::build_null_spaces() const
 {
   switch (ScaTraField()->MatrixType())
   {
@@ -442,11 +442,11 @@ void SSI::SSIMono::BuildNullSpaces() const
   // equip smoother for structural matrix block with null space associated with all degrees of
   // freedom on structural discretization
   StructureField()->Discretization()->compute_null_space_if_necessary(blocksmootherparams);
-}  // SSI::SSIMono::BuildNullSpaces
+}  // SSI::ssi_mono::build_null_spaces
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSIMono::complete_subproblem_matrices()
+void SSI::SsiMono::complete_subproblem_matrices()
 {
   ssi_matrices_->ScaTraMatrix()->Complete();
   ssi_matrices_->complete_sca_tra_structure_matrix();
@@ -471,14 +471,14 @@ void SSI::SSIMono::complete_subproblem_matrices()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-const Teuchos::RCP<const Epetra_Map>& SSI::SSIMono::DofRowMap() const
+const Teuchos::RCP<const Epetra_Map>& SSI::SsiMono::dof_row_map() const
 {
   return MapsSubProblems()->FullMap();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::SSIMono::setup_contact_strategy()
+void SSI::SsiMono::setup_contact_strategy()
 {
   // get the contact solution strategy
   auto contact_solution_type = CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
@@ -503,7 +503,7 @@ void SSI::SSIMono::setup_contact_strategy()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSIMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+void SSI::SsiMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
     const std::string& struct_disname, const std::string& scatra_disname, bool isAle)
 {
@@ -528,17 +528,17 @@ void SSI::SSIMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
       if (IsScaTraManifold())
       {
         strategy_convcheck_ =
-            Teuchos::rcp(new SSI::SSIMono::ConvCheckStrategyElchScaTraManifold(globaltimeparams));
+            Teuchos::rcp(new SSI::SsiMono::ConvCheckStrategyElchScaTraManifold(globaltimeparams));
       }
       else
         strategy_convcheck_ =
-            Teuchos::rcp(new SSI::SSIMono::ConvCheckStrategyElch(globaltimeparams));
+            Teuchos::rcp(new SSI::SsiMono::ConvCheckStrategyElch(globaltimeparams));
       break;
     }
 
     case INPAR::SSI::ScaTraTimIntType::standard:
     {
-      strategy_convcheck_ = Teuchos::rcp(new SSI::SSIMono::ConvCheckStrategyStd(globaltimeparams));
+      strategy_convcheck_ = Teuchos::rcp(new SSI::SsiMono::ConvCheckStrategyStd(globaltimeparams));
       break;
     }
 
@@ -557,7 +557,7 @@ void SSI::SSIMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSIMono::Output()
+void SSI::SsiMono::Output()
 {
   // output scalar transport field
   ScaTraField()->check_and_write_output_and_restart();
@@ -577,22 +577,22 @@ void SSI::SSIMono::Output()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::SSIMono::ReadRestart(int restart)
+void SSI::SsiMono::read_restart(int restart)
 {
   // call base class
-  SSIBase::ReadRestart(restart);
+  SSIBase::read_restart(restart);
 
   // do ssi contact specific tasks
   if (SSIInterfaceContact())
   {
     setup_contact_strategy();
-    SetSSIContactStates(ScaTraField()->Phinp());
+    set_ssi_contact_states(ScaTraField()->Phinp());
   }
 }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSIMono::PrepareTimeLoop()
+void SSI::SsiMono::prepare_time_loop()
 {
   SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp(),
       is_s2_i_kinetics_with_pseudo_contact());
@@ -603,13 +603,13 @@ void SSI::SSIMono::PrepareTimeLoop()
   // calculate initial time derivatives
   calc_initial_time_derivative();
 
-  ScaTraField()->PrepareTimeLoop();
-  if (IsScaTraManifold()) ScaTraManifold()->PrepareTimeLoop();
+  ScaTraField()->prepare_time_loop();
+  if (IsScaTraManifold()) ScaTraManifold()->prepare_time_loop();
 }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSIMono::PrepareTimeStep()
+void SSI::SsiMono::prepare_time_step()
 {
   // update time and time step
   increment_time_and_step();
@@ -619,15 +619,15 @@ void SSI::SSIMono::PrepareTimeStep()
       is_s2_i_kinetics_with_pseudo_contact());
 
   // prepare time step for scalar transport field
-  ScaTraField()->PrepareTimeStep();
-  if (IsScaTraManifold()) ScaTraManifold()->PrepareTimeStep();
+  ScaTraField()->prepare_time_step();
+  if (IsScaTraManifold()) ScaTraManifold()->prepare_time_step();
 
   // if adaptive time stepping and different time step size: calculate time step in scatra
-  // (PrepareTimeStep() of Scatra) and pass to other fields
+  // (prepare_time_step() of Scatra) and pass to other fields
   if (ScaTraField()->TimeStepAdapted()) set_dt_from_sca_tra_to_ssi();
 
   // pass scalar transport degrees of freedom to structural discretization
-  // has to be called AFTER ScaTraField()->PrepareTimeStep() to ensure
+  // has to be called AFTER ScaTraField()->prepare_time_step() to ensure
   // consistent scalar transport state vector with valid Dirichlet conditions
   SetScatraSolution(ScaTraField()->Phinp());
   if (IsScaTraManifold()) set_scatra_manifold_solution(ScaTraManifold()->Phinp());
@@ -636,11 +636,11 @@ void SSI::SSIMono::PrepareTimeStep()
   evaluate_and_set_temperature_field();
 
   // prepare time step for structural field
-  StructureField()->PrepareTimeStep();
+  StructureField()->prepare_time_step();
 
-  // StructureField()->PrepareTimeStep() evaluates the DBC displaements on the master side. Now, the
-  // master side displacements are copied to slave side to consider non zero DBC values in the first
-  // Newton step on the slave side in case of interface mesh tying
+  // StructureField()->prepare_time_step() evaluates the DBC displaements on the master side. Now,
+  // the master side displacements are copied to slave side to consider non zero DBC values in the
+  // first Newton step on the slave side in case of interface mesh tying
   if (ssi_interface_meshtying())
   {
     for (const auto& meshtying : ssi_structure_mesh_tying()->MeshTyingHandlers())
@@ -653,16 +653,16 @@ void SSI::SSIMono::PrepareTimeStep()
           coupling_adapter->MasterToSlave(
               coupling_map_extractor->ExtractVector(StructureField()->Dispnp(), 2)),
           1, StructureField()->WriteAccessDispnp());
-      StructureField()->SetState(StructureField()->WriteAccessDispnp());
+      StructureField()->set_state(StructureField()->WriteAccessDispnp());
     }
   }
 
-  PrintTimeStepInfo();
+  print_time_step_info();
 }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSIMono::Setup()
+void SSI::SsiMono::Setup()
 {
   // call base class routine
   SSIBase::Setup();
@@ -732,7 +732,7 @@ void SSI::SSIMono::Setup()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSIMono::SetupSystem()
+void SSI::SsiMono::SetupSystem()
 {
   SSI::SSIBase::SetupSystem();
 
@@ -751,7 +751,7 @@ void SSI::SSIMono::SetupSystem()
 
       // feed AMGnxn block preconditioner with null space information for each block of global
       // block system matrix
-      BuildNullSpaces();
+      build_null_spaces();
 
       break;
     }
@@ -823,25 +823,25 @@ void SSI::SSIMono::SetupSystem()
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::SSIMono::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) const
+void SSI::SsiMono::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) const
 {
   // call base class
   SSIBase::SetScatraSolution(phi);
 
   // set state for contact evaluation
-  if (contact_strategy_nitsche_ != Teuchos::null) SetSSIContactStates(phi);
+  if (contact_strategy_nitsche_ != Teuchos::null) set_ssi_contact_states(phi);
 }
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::SSIMono::SetSSIContactStates(Teuchos::RCP<const Epetra_Vector> phi) const
+void SSI::SsiMono::set_ssi_contact_states(Teuchos::RCP<const Epetra_Vector> phi) const
 {
-  contact_strategy_nitsche_->SetState(MORTAR::state_scalar, *phi);
+  contact_strategy_nitsche_->set_state(MORTAR::state_scalar, *phi);
 }
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::SSIMono::SolveLinearSystem()
+void SSI::SsiMono::solve_linear_system()
 {
   TEUCHOS_FUNC_TIME_MONITOR("SSI mono: solve linear system");
   strategy_equilibration_->EquilibrateSystem(
@@ -868,7 +868,7 @@ void SSI::SSIMono::SolveLinearSystem()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSIMono::NewtonLoop()
+void SSI::SsiMono::newton_loop()
 {
   TEUCHOS_FUNC_TIME_MONITOR("SSI mono: solve Newton loop");
   // reset counter for Newton-Raphson iteration
@@ -889,16 +889,16 @@ void SSI::SSIMono::NewtonLoop()
     distribute_solution_all_fields();
 
     // evaluate sub problems and get all matrices and right-hand-sides
-    EvaluateSubproblems();
+    evaluate_subproblems();
 
     // complete the sub problem matrices
     complete_subproblem_matrices();
 
     // assemble global system of equations
-    AssembleMatAndRHS();
+    assemble_mat_and_rhs();
 
     // apply the Dirichlet boundary conditions to global system
-    ApplyDBCToSystem();
+    apply_dbc_to_system();
 
     // time needed for evaluating elements and assembling global system of equations
     double my_evaluation_time = timer_->wallTime() - time_before_evaluate;
@@ -909,7 +909,7 @@ void SSI::SSIMono::NewtonLoop()
       FOUR_C_THROW("Complete() has not been called on global system matrix yet!");
 
     // check termination criterion for Newton-Raphson iteration
-    if (strategy_convcheck_->ExitNewtonRaphson(*this)) break;
+    if (strategy_convcheck_->exit_newton_raphson(*this)) break;
 
     // clear the global increment vector
     ssi_vectors_->ClearIncrement();
@@ -917,7 +917,7 @@ void SSI::SSIMono::NewtonLoop()
     // store time before solving global system of equations
     const double time_before_solving = timer_->wallTime();
 
-    SolveLinearSystem();
+    solve_linear_system();
 
     // time needed for solving global system of equations
     double my_solve_time = timer_->wallTime() - time_before_solving;
@@ -931,29 +931,29 @@ void SSI::SSIMono::NewtonLoop()
           ssi_vectors_->Residual()->Map().NumGlobalElements());
 
     // update states for next Newton iteration
-    UpdateIterScaTra();
-    UpdateIterStructure();
+    update_iter_sca_tra();
+    update_iter_structure();
   }
 }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSIMono::Timeloop()
+void SSI::SsiMono::Timeloop()
 {
-  if (Step() == 0) PrepareTimeLoop();
+  if (Step() == 0) prepare_time_loop();
 
   // time loop
   while (NotFinished() and ScaTraField()->NotFinished())
   {
     TEUCHOS_FUNC_TIME_MONITOR("SSI mono: solve time step");
     // prepare time step
-    PrepareTimeStep();
+    prepare_time_step();
 
     // store time before calling nonlinear solver
     const double time = timer_->wallTime();
 
     // evaluate time step
-    NewtonLoop();
+    newton_loop();
 
     // determine time spent by nonlinear solver and take maximum over all processors via
     // communication
@@ -966,7 +966,7 @@ void SSI::SSIMono::Timeloop()
             *ScaTraField()->ScatraParameterList(), "OUTPUTNONLINSOLVERSTATS"))
       ScaTraField()->output_nonlin_solver_stats(IterationCount(), dtnonlinsolve, Step(), Comm());
 
-    PrepareOutput();
+    prepare_output();
 
     // update scalar transport and structure fields
     Update();
@@ -979,7 +979,7 @@ void SSI::SSIMono::Timeloop()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SSI::SSIMono::Update()
+void SSI::SsiMono::Update()
 {
   // update scalar transport field
   ScaTraField()->Update();
@@ -991,7 +991,7 @@ void SSI::SSIMono::Update()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SSI::SSIMono::UpdateIterScaTra()
+void SSI::SsiMono::update_iter_sca_tra()
 {
   // update scalar transport field
   ScaTraField()->UpdateIter(MapsSubProblems()->ExtractVector(
@@ -1025,7 +1025,7 @@ void SSI::SSIMono::UpdateIterScaTra()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SSI::SSIMono::UpdateIterStructure()
+void SSI::SsiMono::update_iter_structure()
 {
   // set up structural increment vector
   const Teuchos::RCP<Epetra_Vector> increment_structure = MapsSubProblems()->ExtractVector(
@@ -1044,7 +1044,7 @@ void SSI::SSIMono::UpdateIterStructure()
           coupling_adapter->MasterToSlave(
               coupling_map_extractor->ExtractVector(StructureField()->Dispnp(), 2)),
           1, StructureField()->WriteAccessDispnp());
-      StructureField()->SetState(StructureField()->WriteAccessDispnp());
+      StructureField()->set_state(StructureField()->WriteAccessDispnp());
 
       // increment
       coupling_map_extractor->InsertVector(
@@ -1060,7 +1060,7 @@ void SSI::SSIMono::UpdateIterStructure()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-std::vector<CORE::LINALG::EquilibrationMethod> SSI::SSIMono::get_block_equilibration()
+std::vector<CORE::LINALG::EquilibrationMethod> SSI::SsiMono::get_block_equilibration()
 {
   std::vector<CORE::LINALG::EquilibrationMethod> equilibration_method_vector;
   switch (matrixtype_)
@@ -1135,7 +1135,7 @@ std::vector<CORE::LINALG::EquilibrationMethod> SSI::SSIMono::get_block_equilibra
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SSI::SSIMono::EvaluateScaTra()
+void SSI::SsiMono::evaluate_sca_tra()
 {
   // evaluate the scatra field
   ScaTraField()->PrepareLinearSolve();
@@ -1151,7 +1151,7 @@ void SSI::SSIMono::EvaluateScaTra()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SSI::SSIMono::evaluate_sca_tra_manifold()
+void SSI::SsiMono::evaluate_sca_tra_manifold()
 {
   // evaluate single problem
   ScaTraManifold()->PrepareLinearSolve();
@@ -1167,10 +1167,10 @@ void SSI::SSIMono::evaluate_sca_tra_manifold()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SSI::SSIMono::PrepareOutput()
+void SSI::SsiMono::prepare_output()
 {
   constexpr bool force_prepare = false;
-  StructureField()->PrepareOutput(force_prepare);
+  StructureField()->prepare_output(force_prepare);
 
   // prepare output of coupling sctra manifold - scatra
   if (IsScaTraManifold() and manifoldscatraflux_->DoOutput())
@@ -1182,7 +1182,7 @@ void SSI::SSIMono::PrepareOutput()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SSI::SSIMono::distribute_solution_all_fields(const bool restore_velocity)
+void SSI::SsiMono::distribute_solution_all_fields(const bool restore_velocity)
 {
   // has to be called before the call of 'SetStructSolution()' to have updated stress/strain states
   if (is_s2_i_kinetics_with_pseudo_contact()) StructureField()->determine_stress_strain();
@@ -1196,11 +1196,11 @@ void SSI::SSIMono::distribute_solution_all_fields(const bool restore_velocity)
   if (restore_velocity)
   {
     auto vel_temp = *StructureField()->Velnp();
-    StructureField()->SetState(StructureField()->WriteAccessDispnp());
+    StructureField()->set_state(StructureField()->WriteAccessDispnp());
     StructureField()->WriteAccessVelnp()->Update(1.0, vel_temp, 0.0);
   }
   else
-    StructureField()->SetState(StructureField()->WriteAccessDispnp());
+    StructureField()->set_state(StructureField()->WriteAccessDispnp());
 
   // distribute states to other fields
   SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp(),
@@ -1211,7 +1211,7 @@ void SSI::SSIMono::distribute_solution_all_fields(const bool restore_velocity)
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SSI::SSIMono::calc_initial_potential_field()
+void SSI::SsiMono::calc_initial_potential_field()
 {
   const auto equpot = CORE::UTILS::IntegralValue<INPAR::ELCH::EquPot>(
       GLOBAL::Problem::Instance()->ELCHControlParams(), "EQUPOT");
@@ -1254,13 +1254,13 @@ void SSI::SSIMono::calc_initial_potential_field()
 
     // prepare full SSI system
     distribute_solution_all_fields(true);
-    EvaluateSubproblems();
+    evaluate_subproblems();
 
     // complete the sub problem matrices
     complete_subproblem_matrices();
 
-    AssembleMatAndRHS();
-    ApplyDBCToSystem();
+    assemble_mat_and_rhs();
+    apply_dbc_to_system();
 
     // apply artificial Dirichlet boundary conditions to system of equations (on concentration
     // dofs and on structure dofs)
@@ -1269,12 +1269,12 @@ void SSI::SSIMono::calc_initial_potential_field()
     {
       auto conc_map = CORE::LINALG::MergeMap(
           scatra_elch_splitter->OtherMap(), manifold_elch_splitter->OtherMap());
-      pseudo_dbc_map = CORE::LINALG::MergeMap(conc_map, StructureField()->DofRowMap());
+      pseudo_dbc_map = CORE::LINALG::MergeMap(conc_map, StructureField()->dof_row_map());
     }
     else
     {
       pseudo_dbc_map =
-          CORE::LINALG::MergeMap(scatra_elch_splitter->OtherMap(), StructureField()->DofRowMap());
+          CORE::LINALG::MergeMap(scatra_elch_splitter->OtherMap(), StructureField()->dof_row_map());
     }
 
     auto dbc_zeros = Teuchos::rcp(new Epetra_Vector(*pseudo_dbc_map, true));
@@ -1296,14 +1296,14 @@ void SSI::SSIMono::calc_initial_potential_field()
     // store time before solving global system of equations
     const double time_before_solving = timer_->wallTime();
 
-    SolveLinearSystem();
+    solve_linear_system();
 
     // time needed for solving global system of equations
     double my_solve_time = timer_->wallTime() - time_before_solving;
     Comm().MaxAll(&my_solve_time, &dt_solve_, 1);
 
     // update potential dofs in scatra and manifold fields
-    UpdateIterScaTra();
+    update_iter_sca_tra();
 
     // copy initial state vector
     ScaTraField()->Phin()->Update(1.0, *ScaTraField()->Phinp(), 0.0);
@@ -1322,7 +1322,7 @@ void SSI::SSIMono::calc_initial_potential_field()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SSI::SSIMono::calc_initial_time_derivative()
+void SSI::SsiMono::calc_initial_time_derivative()
 {
   // store initial velocity to restore them afterwards
   auto init_velocity = *StructureField()->Velnp();
@@ -1357,42 +1357,42 @@ void SSI::SSIMono::calc_initial_time_derivative()
 
   // In a first step, we assemble the standard global system of equations (we need the residual)
   distribute_solution_all_fields(true);
-  EvaluateSubproblems();
+  evaluate_subproblems();
 
   // complete the sub problem matrices
   complete_subproblem_matrices();
 
-  AssembleMatAndRHS();
-  ApplyDBCToSystem();
+  assemble_mat_and_rhs();
+  apply_dbc_to_system();
 
   // prepare mass matrices of sub problems and global system
   auto massmatrix_scatra =
       ScaTraField()->MatrixType() == CORE::LINALG::MatrixType::sparse
           ? Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseOperator>(
-                UTILS::SSIMatrices::SetupSparseMatrix(ScaTraField()->DofRowMap()))
+                UTILS::SSIMatrices::setup_sparse_matrix(ScaTraField()->dof_row_map()))
           : Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseOperator>(
-                UTILS::SSIMatrices::SetupBlockMatrix(
+                UTILS::SSIMatrices::setup_block_matrix(
                     ScaTraField()->BlockMaps(), ScaTraField()->BlockMaps()));
 
   auto massmatrix_manifold =
       IsScaTraManifold()
           ? (ScaTraManifold()->MatrixType() == CORE::LINALG::MatrixType::sparse
                     ? Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseOperator>(
-                          UTILS::SSIMatrices::SetupSparseMatrix(ScaTraManifold()->DofRowMap()))
+                          UTILS::SSIMatrices::setup_sparse_matrix(ScaTraManifold()->dof_row_map()))
                     : Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseOperator>(
-                          UTILS::SSIMatrices::SetupBlockMatrix(
+                          UTILS::SSIMatrices::setup_block_matrix(
                               ScaTraManifold()->BlockMaps(), ScaTraManifold()->BlockMaps())))
           : Teuchos::null;
 
   auto massmatrix_system = MatrixType() == CORE::LINALG::MatrixType::sparse
                                ? Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseOperator>(
-                                     UTILS::SSIMatrices::SetupSparseMatrix(DofRowMap()))
+                                     UTILS::SSIMatrices::setup_sparse_matrix(dof_row_map()))
                                : Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseOperator>(
-                                     UTILS::SSIMatrices::SetupBlockMatrix(
+                                     UTILS::SSIMatrices::setup_block_matrix(
                                          block_map_system_matrix(), block_map_system_matrix()));
 
   // fill ones on main diag of structure block (not solved)
-  auto ones_struct = Teuchos::rcp(new Epetra_Vector(*StructureField()->DofRowMap(), true));
+  auto ones_struct = Teuchos::rcp(new Epetra_Vector(*StructureField()->dof_row_map(), true));
   ones_struct->PutScalar(1.0);
   MatrixType() == CORE::LINALG::MatrixType::sparse
       ? CORE::LINALG::InsertMyRowDiagonalIntoUnfilledMatrix(
@@ -1404,9 +1404,9 @@ void SSI::SSIMono::calc_initial_time_derivative()
             *ones_struct);
 
   // extract residuals of scatra and manifold from global residual
-  auto rhs_scatra = Teuchos::rcp(new Epetra_Vector(*ScaTraField()->DofRowMap(), true));
+  auto rhs_scatra = Teuchos::rcp(new Epetra_Vector(*ScaTraField()->dof_row_map(), true));
   auto rhs_manifold = IsScaTraManifold()
-                          ? Teuchos::rcp(new Epetra_Vector(*ScaTraManifold()->DofRowMap(), true))
+                          ? Teuchos::rcp(new Epetra_Vector(*ScaTraManifold()->dof_row_map(), true))
                           : Teuchos::null;
 
   rhs_scatra->Update(1.0,
@@ -1517,7 +1517,7 @@ void SSI::SSIMono::calc_initial_time_derivative()
         massmatrix_system_sparse->Add(
             *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(massmatrix_manifold), false, 1.0, 1.0);
 
-      massmatrix_system->Complete(*DofRowMap(), *DofRowMap());
+      massmatrix_system->Complete(*dof_row_map(), *dof_row_map());
       break;
     }
     default:
@@ -1528,7 +1528,7 @@ void SSI::SSIMono::calc_initial_time_derivative()
   }
 
   // reconstruct global residual from partial residuals
-  auto rhs_system = Teuchos::RCP<Epetra_Vector>(new Epetra_Vector(*DofRowMap(), true));
+  auto rhs_system = Teuchos::RCP<Epetra_Vector>(new Epetra_Vector(*dof_row_map(), true));
   MapsSubProblems()->InsertVector(
       rhs_scatra, UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport), rhs_system);
   if (IsScaTraManifold())
@@ -1542,20 +1542,20 @@ void SSI::SSIMono::calc_initial_time_derivative()
   {
     auto conc_map =
         CORE::LINALG::MergeMap(scatra_elch_splitter->CondMap(), manifold_elch_splitter->CondMap());
-    pseudo_dbc_map = CORE::LINALG::MergeMap(conc_map, StructureField()->DofRowMap());
+    pseudo_dbc_map = CORE::LINALG::MergeMap(conc_map, StructureField()->dof_row_map());
   }
   else if (is_elch)
   {
     pseudo_dbc_map =
-        CORE::LINALG::MergeMap(scatra_elch_splitter->CondMap(), StructureField()->DofRowMap());
+        CORE::LINALG::MergeMap(scatra_elch_splitter->CondMap(), StructureField()->dof_row_map());
   }
   else
-    pseudo_dbc_map = Teuchos::rcp(new Epetra_Map(*StructureField()->DofRowMap()));
+    pseudo_dbc_map = Teuchos::rcp(new Epetra_Map(*StructureField()->dof_row_map()));
 
   auto dbc_zeros = Teuchos::rcp(new Epetra_Vector(*pseudo_dbc_map, true));
 
   // temporal derivative of transported scalars
-  auto phidtnp_system = Teuchos::RCP<Epetra_Vector>(new Epetra_Vector(*DofRowMap(), true));
+  auto phidtnp_system = Teuchos::RCP<Epetra_Vector>(new Epetra_Vector(*dof_row_map(), true));
   CORE::LINALG::apply_dirichlet_to_system(
       *massmatrix_system, *phidtnp_system, *rhs_system, *dbc_zeros, *(pseudo_dbc_map));
 
@@ -1590,42 +1590,42 @@ void SSI::SSIMono::calc_initial_time_derivative()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> SSI::SSIMono::MapsSubProblems() const
+Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> SSI::SsiMono::MapsSubProblems() const
 {
   return ssi_maps_->MapsSubProblems();
 }
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> SSI::SSIMono::BlockMapScaTra() const
+Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> SSI::SsiMono::BlockMapScaTra() const
 {
   return ssi_maps_->BlockMapScaTra();
 }
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> SSI::SSIMono::block_map_sca_tra_manifold() const
+Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> SSI::SsiMono::block_map_sca_tra_manifold() const
 {
   return ssi_maps_->block_map_sca_tra_manifold();
 }
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> SSI::SSIMono::BlockMapStructure() const
+Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> SSI::SsiMono::BlockMapStructure() const
 {
   return ssi_maps_->BlockMapStructure();
 }
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> SSI::SSIMono::block_map_system_matrix() const
+Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> SSI::SsiMono::block_map_system_matrix() const
 {
   return ssi_maps_->block_map_system_matrix();
 }
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SSI::SSIMono::PrintTimeStepInfo()
+void SSI::SsiMono::print_time_step_info()
 {
   if (Comm().MyPID() == 0)
   {
@@ -1638,7 +1638,7 @@ void SSI::SSIMono::PrintTimeStepInfo()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SSI::SSIMono::print_system_matrix_rhs_to_mat_lab_format()
+void SSI::SsiMono::print_system_matrix_rhs_to_mat_lab_format()
 {
   // print system matrix
   switch (matrixtype_)
@@ -1699,11 +1699,11 @@ void SSI::SSIMono::print_system_matrix_rhs_to_mat_lab_format()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIMono::set_scatra_manifold_solution(Teuchos::RCP<const Epetra_Vector> phi)
+void SSI::SsiMono::set_scatra_manifold_solution(Teuchos::RCP<const Epetra_Vector> phi)
 {
   // scatra values on master side copied to manifold
   auto manifold_on_scatra =
-      CORE::LINALG::CreateVector(*ScaTraField()->Discretization()->DofRowMap(), true);
+      CORE::LINALG::CreateVector(*ScaTraField()->Discretization()->dof_row_map(), true);
 
   for (const auto& coup : manifoldscatraflux_->sca_tra_manifold_couplings())
   {
@@ -1711,6 +1711,6 @@ void SSI::SSIMono::set_scatra_manifold_solution(Teuchos::RCP<const Epetra_Vector
     auto manifold_on_scatra_cond = coup->CouplingAdapter()->SlaveToMaster(manifold_cond);
     coup->ScaTraMapExtractor()->InsertCondVector(manifold_on_scatra_cond, manifold_on_scatra);
   }
-  ScaTraField()->Discretization()->SetState(0, "manifold_on_scatra", manifold_on_scatra);
+  ScaTraField()->Discretization()->set_state(0, "manifold_on_scatra", manifold_on_scatra);
 }
 FOUR_C_NAMESPACE_CLOSE

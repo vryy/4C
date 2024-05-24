@@ -205,13 +205,13 @@ void MIXTURE::MixtureConstituentElastHyperBase::Setup(
   MixtureConstituent::Setup(params, eleGID);
   if (params_->get_prestressing_mat_id() > 0)
   {
-    prestretch_.resize(NumGP());
+    prestretch_.resize(num_gp());
 
-    prestress_strategy_->Setup(*this, params, NumGP(), eleGID);
+    prestress_strategy_->Setup(*this, params, num_gp(), eleGID);
   }
 }
 
-void MIXTURE::MixtureConstituentElastHyperBase::PreEvaluate(
+void MIXTURE::MixtureConstituentElastHyperBase::pre_evaluate(
     MixtureRule& mixtureRule, Teuchos::ParameterList& params, int gp, int eleGID)
 {
   // do nothing in the default case
@@ -238,7 +238,7 @@ bool MIXTURE::MixtureConstituentElastHyperBase::EvaluateOutputData(
   if (prestress_strategy_ != nullptr &&
       name == "mixture_constituent_" + std::to_string(Id()) + "_elasthyper_prestretch")
   {
-    for (int gp = 0; gp < NumGP(); ++gp)
+    for (int gp = 0; gp < num_gp(); ++gp)
     {
       static CORE::LINALG::Matrix<9, 1> tmp(false);
       tmp.Clear();

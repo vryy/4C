@@ -42,7 +42,7 @@ void ADAPTER::LubricationBaseAlgorithm::Setup(
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
   // -------------------------------------------------------------------
-  if (!actdis->Filled()) actdis->FillComplete();
+  if (!actdis->Filled()) actdis->fill_complete();
 
   // -------------------------------------------------------------------
   // context for output and restart

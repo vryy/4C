@@ -130,7 +130,7 @@ namespace MAT
 
    private:
     /// setup of material map
-    void SetupMatMap() override;
+    void setup_mat_map() override;
 
     /// clear everything
     void Clear();

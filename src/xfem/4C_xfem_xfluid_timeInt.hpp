@@ -162,7 +162,7 @@ namespace XFEM
     );
 
     /// copy dofs from old vectors to new vector for all row vectors
-    void CopyDofs(const DRT::Node* node,          /// drt node
+    void copy_dofs(const DRT::Node* node,         /// drt node
         const int nds_new,                        /// nodal dofset at t^(n+1)
         const int nds_old,                        /// nodal dofset at t^n
         const INPAR::XFEM::XFluidTimeInt method,  /// reconstruction method
@@ -174,8 +174,8 @@ namespace XFEM
     );
 
     /// mark nodal dofs of vector w.r.t new interface position for reconstruction
-    void MarkDofs(const DRT::Node* node,  /// drt node
-        const int nds_new,                /// nodal dofset at t^(n+1)
+    void mark_dofs(const DRT::Node* node,  /// drt node
+        const int nds_new,                 /// nodal dofset at t^(n+1)
         const std::vector<Teuchos::RCP<Epetra_Vector>>&
             newRowStateVectors,                   /// row map based state vectors at t^(n+1)
         const INPAR::XFEM::XFluidTimeInt method,  /// reconstruction method
@@ -184,21 +184,21 @@ namespace XFEM
     );
 
     /// mark one specific nodal dofset with used for export
-    void MarkDofsForExport(const int nid,  /// node id
-        const int dofset,                  /// ghost dofset number
+    void mark_dofs_for_export(const int nid,  /// node id
+        const int dofset,                     /// ghost dofset number
         const INPAR::XFEM::XFluidTimeInt
             method  /// reconstruction method used for marking the nodal dofset
     );
 
     /// set the reconstruction method for current nodal dofset, return if set
-    bool SetReconstrMethod(const DRT::Node* node,  /// drt node
-        const int nds_new,                         /// nodal dofset at t^(n+1)
-        const INPAR::XFEM::XFluidTimeInt method    /// which type of reconstruction method
+    bool set_reconstr_method(const DRT::Node* node,  /// drt node
+        const int nds_new,                           /// nodal dofset at t^(n+1)
+        const INPAR::XFEM::XFluidTimeInt method      /// which type of reconstruction method
     );
 
     /// identify cellsets at time t^n with cellsets at time t^(n+1)
-    int IdentifyOldSets(const CORE::GEO::CUT::Node* n_old,  /// node w.r.t to old wizard
-        const CORE::GEO::CUT::Node* n_new,                  /// node w.r.t to new wizard
+    int identify_old_sets(const CORE::GEO::CUT::Node* n_old,  /// node w.r.t to old wizard
+        const CORE::GEO::CUT::Node* n_new,                    /// node w.r.t to new wizard
         const std::vector<Teuchos::RCP<CORE::GEO::CUT::NodalDofSet>>&
             dof_cellsets_old,  /// all dofcellsets at t^n
         const CORE::GEO::CUT::NodalDofSet*
@@ -235,17 +235,17 @@ namespace XFEM
     /// check if the node is within the space time side
     template <CORE::FE::CellType side_distype,
         CORE::FE::CellType space_time_distype>
-    bool WithinSpaceTimeSide(bool& within_space_time_side,  /// within the space time side
+    bool within_space_time_side(bool& within_space_time_side,  /// within the space time side
         DRT::Element* side, const int coup_sid,
         const CORE::LINALG::Matrix<3, 1>& n_coord  /// node coodinates
     );
 
     /// check the volume of the space time side, distorted space-time side ?
     template <CORE::FE::CellType space_time_distype, const int numnode_space_time>
-    bool CheckSTSideVolume(const CORE::LINALG::Matrix<3, numnode_space_time>& xyze_st);
+    bool check_st_side_volume(const CORE::LINALG::Matrix<3, numnode_space_time>& xyze_st);
 
     /// export data about reconstruction method to neighbor proc and receive data from previous proc
-    void ExportMethods(
+    void export_methods(
         const std::vector<Teuchos::RCP<Epetra_Vector>>&
             newRowStateVectors,  /// row map based vectors w.r.t new interface position
         const Teuchos::RCP<std::set<int>>
@@ -255,10 +255,10 @@ namespace XFEM
     /*!
     \brief Basic function sending data to destination and receiving data from source
      */
-    void sendData(CORE::COMM::PackBuffer& dataSend,  //!< pack buffer
-        int& dest,                                   //!< destination proc
-        int& source,                                 //!< source proc
-        std::vector<char>& dataRecv                  //!< received data
+    void send_data(CORE::COMM::PackBuffer& dataSend,  //!< pack buffer
+        int& dest,                                    //!< destination proc
+        int& source,                                  //!< source proc
+        std::vector<char>& dataRecv                   //!< received data
     ) const;
 
     const bool is_newton_increment_transfer_;  /// monolithic newton increment transfer or time step

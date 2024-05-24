@@ -81,7 +81,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Get jacobi factor
     */
-    TYPE GetJacobi() const { return jacobi_; };
+    TYPE get_jacobi() const { return jacobi_; };
 
     /*!
     \brief Set gap
@@ -156,7 +156,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Get penalty energy
     */
-    TYPE GetEnergy() const { return energy_; };
+    TYPE get_energy() const { return energy_; };
 
     /*!
     \brief Set length integrated penalty energy

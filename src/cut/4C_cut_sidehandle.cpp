@@ -37,22 +37,22 @@ CORE::GEO::CUT::Tri6SideHandle::Tri6SideHandle(
   nids[0] = node_ids[0];
   nids[1] = node_ids[3];
   nids[2] = node_ids[5];
-  subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+  subsides_.push_back(mesh.get_side(sid, nids, top_data));
 
   nids[0] = node_ids[3];
   nids[1] = node_ids[1];
   nids[2] = node_ids[4];
-  subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+  subsides_.push_back(mesh.get_side(sid, nids, top_data));
 
   nids[0] = node_ids[3];
   nids[1] = node_ids[4];
   nids[2] = node_ids[5];
-  subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+  subsides_.push_back(mesh.get_side(sid, nids, top_data));
 
   nids[0] = node_ids[5];
   nids[1] = node_ids[4];
   nids[2] = node_ids[2];
-  subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+  subsides_.push_back(mesh.get_side(sid, nids, top_data));
 }
 
 /*----------------------------------------------------------------------------*
@@ -91,22 +91,22 @@ CORE::GEO::CUT::Quad4SideHandle::Quad4SideHandle(
   nids[0] = node_ids[0];
   nids[1] = node_ids[1];
   nids[2] = middle_id;
-  subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+  subsides_.push_back(mesh.get_side(sid, nids, top_data));
 
   nids[0] = node_ids[1];
   nids[1] = node_ids[2];
   nids[2] = middle_id;
-  subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+  subsides_.push_back(mesh.get_side(sid, nids, top_data));
 
   nids[0] = node_ids[2];
   nids[1] = node_ids[3];
   nids[2] = middle_id;
-  subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+  subsides_.push_back(mesh.get_side(sid, nids, top_data));
 
   nids[0] = node_ids[3];
   nids[1] = node_ids[0];
   nids[2] = middle_id;
-  subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+  subsides_.push_back(mesh.get_side(sid, nids, top_data));
 }
 
 /*----------------------------------------------------------------------------*
@@ -128,32 +128,32 @@ CORE::GEO::CUT::Quad8SideHandle::Quad8SideHandle(
     nids[0] = node_ids[7];
     nids[1] = node_ids[0];
     nids[2] = node_ids[4];
-    subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+    subsides_.push_back(mesh.get_side(sid, nids, top_data));
 
     nids[0] = node_ids[4];
     nids[1] = node_ids[1];
     nids[2] = node_ids[5];
-    subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+    subsides_.push_back(mesh.get_side(sid, nids, top_data));
 
     nids[0] = node_ids[5];
     nids[1] = node_ids[2];
     nids[2] = node_ids[6];
-    subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+    subsides_.push_back(mesh.get_side(sid, nids, top_data));
 
     nids[0] = node_ids[6];
     nids[1] = node_ids[3];
     nids[2] = node_ids[7];
-    subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+    subsides_.push_back(mesh.get_side(sid, nids, top_data));
 
     nids[0] = node_ids[4];
     nids[1] = node_ids[5];
     nids[2] = node_ids[6];
-    subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+    subsides_.push_back(mesh.get_side(sid, nids, top_data));
 
     nids[0] = node_ids[6];
     nids[1] = node_ids[7];
     nids[2] = node_ids[4];
-    subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+    subsides_.push_back(mesh.get_side(sid, nids, top_data));
   }
   else
   {
@@ -189,25 +189,25 @@ CORE::GEO::CUT::Quad8SideHandle::Quad8SideHandle(
     nids[1] = node_ids[4];
     nids[2] = middle_id;
     nids[3] = node_ids[7];
-    subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+    subsides_.push_back(mesh.get_side(sid, nids, top_data));
 
     nids[0] = node_ids[4];
     nids[1] = node_ids[1];
     nids[2] = node_ids[5];
     nids[3] = middle_id;
-    subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+    subsides_.push_back(mesh.get_side(sid, nids, top_data));
 
     nids[0] = middle_id;
     nids[1] = node_ids[5];
     nids[2] = node_ids[2];
     nids[3] = node_ids[6];
-    subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+    subsides_.push_back(mesh.get_side(sid, nids, top_data));
 
     nids[0] = node_ids[7];
     nids[1] = middle_id;
     nids[2] = node_ids[6];
     nids[3] = node_ids[3];
-    subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+    subsides_.push_back(mesh.get_side(sid, nids, top_data));
   }
 }
 
@@ -230,35 +230,35 @@ CORE::GEO::CUT::Quad9SideHandle::Quad9SideHandle(
     nids[0] = node_ids[7];
     nids[1] = node_ids[0];
     nids[2] = node_ids[4];
-    subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+    subsides_.push_back(mesh.get_side(sid, nids, top_data));
     nids[0] = node_ids[4];
     nids[1] = node_ids[8];
     nids[2] = node_ids[7];
-    subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+    subsides_.push_back(mesh.get_side(sid, nids, top_data));
     nids[0] = node_ids[4];
     nids[1] = node_ids[1];
     nids[2] = node_ids[5];
-    subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+    subsides_.push_back(mesh.get_side(sid, nids, top_data));
     nids[0] = node_ids[5];
     nids[1] = node_ids[8];
     nids[2] = node_ids[4];
-    subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+    subsides_.push_back(mesh.get_side(sid, nids, top_data));
     nids[0] = node_ids[5];
     nids[1] = node_ids[2];
     nids[2] = node_ids[6];
-    subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+    subsides_.push_back(mesh.get_side(sid, nids, top_data));
     nids[0] = node_ids[6];
     nids[1] = node_ids[8];
     nids[2] = node_ids[5];
-    subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+    subsides_.push_back(mesh.get_side(sid, nids, top_data));
     nids[0] = node_ids[6];
     nids[1] = node_ids[3];
     nids[2] = node_ids[7];
-    subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+    subsides_.push_back(mesh.get_side(sid, nids, top_data));
     nids[0] = node_ids[7];
     nids[1] = node_ids[8];
     nids[2] = node_ids[6];
-    subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+    subsides_.push_back(mesh.get_side(sid, nids, top_data));
   }
   else
   {
@@ -279,25 +279,25 @@ CORE::GEO::CUT::Quad9SideHandle::Quad9SideHandle(
     nids[1] = node_ids[4];
     nids[2] = node_ids[8];
     nids[3] = node_ids[7];
-    subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+    subsides_.push_back(mesh.get_side(sid, nids, top_data));
 
     nids[0] = node_ids[4];
     nids[1] = node_ids[1];
     nids[2] = node_ids[5];
     nids[3] = node_ids[8];
-    subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+    subsides_.push_back(mesh.get_side(sid, nids, top_data));
 
     nids[0] = node_ids[8];
     nids[1] = node_ids[5];
     nids[2] = node_ids[2];
     nids[3] = node_ids[6];
-    subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+    subsides_.push_back(mesh.get_side(sid, nids, top_data));
 
     nids[0] = node_ids[7];
     nids[1] = node_ids[8];
     nids[2] = node_ids[6];
     nids[3] = node_ids[3];
-    subsides_.push_back(mesh.GetSide(sid, nids, top_data));
+    subsides_.push_back(mesh.get_side(sid, nids, top_data));
   }
 }
 
@@ -315,7 +315,7 @@ void CORE::GEO::CUT::Tri6SideHandle::LocalCoordinates(
   }
 
   Teuchos::RCP<Position> pos =
-      PositionFactory::BuildPosition<3, CORE::FE::CellType::tri6>(xyze, xyz);
+      PositionFactory::build_position<3, CORE::FE::CellType::tri6>(xyze, xyz);
   bool success = pos->Compute();
   if (not success)
   {
@@ -337,7 +337,7 @@ void CORE::GEO::CUT::Quad4SideHandle::LocalCoordinates(
   }
 
   Teuchos::RCP<Position> pos =
-      PositionFactory::BuildPosition<3, CORE::FE::CellType::quad4>(xyze, xyz);
+      PositionFactory::build_position<3, CORE::FE::CellType::quad4>(xyze, xyz);
   bool success = pos->Compute();
   if (not success)
   {
@@ -359,7 +359,7 @@ void CORE::GEO::CUT::Quad8SideHandle::LocalCoordinates(
   }
 
   Teuchos::RCP<Position> pos =
-      PositionFactory::BuildPosition<3, CORE::FE::CellType::quad8>(xyze, xyz);
+      PositionFactory::build_position<3, CORE::FE::CellType::quad8>(xyze, xyz);
   bool success = pos->Compute();
   if (not success)
   {
@@ -381,7 +381,7 @@ void CORE::GEO::CUT::Quad9SideHandle::LocalCoordinates(
   }
 
   Teuchos::RCP<Position> pos =
-      PositionFactory::BuildPosition<3, CORE::FE::CellType::quad9>(xyze, xyz);
+      PositionFactory::build_position<3, CORE::FE::CellType::quad9>(xyze, xyz);
   bool success = pos->Compute();
   if (not success)
   {

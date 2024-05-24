@@ -143,7 +143,7 @@ namespace NOX
       void Setup();
 
       //! check the constructor input
-      void CheckInput() const;
+      void check_input() const;
 
       /*! \brief set printing parameters
        *

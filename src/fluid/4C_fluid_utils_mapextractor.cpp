@@ -37,7 +37,7 @@ void FLD::UTILS::MapExtractor::Setup(
       new CORE::Conditions::NDimConditionSelector(dis, "Mortar", 0, ndim + withpressure)));
   mcs.AddSelector(Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(
       dis, "ALEUPDATECoupling", 0, ndim + withpressure)));
-  mcs.SetupExtractor(dis, *dis.DofRowMap(nds_master), *this);
+  mcs.SetupExtractor(dis, *dis.dof_row_map(nds_master), *this);
 }
 
 /*----------------------------------------------------------------------*/
@@ -104,7 +104,7 @@ void FLD::UTILS::VolumetricFlowMapExtractor::Setup(const DRT::Discretization& di
   mcs.SetOverlapping(true);  // defines if maps can overlap
   mcs.AddSelector(Teuchos::rcp(
       new CORE::Conditions::NDimConditionSelector(dis, "VolumetricSurfaceFlowCond", 0, ndim)));
-  mcs.SetupExtractor(dis, *dis.DofRowMap(), *this);
+  mcs.SetupExtractor(dis, *dis.dof_row_map(), *this);
 }
 
 /*----------------------------------------------------------------------*/
@@ -114,7 +114,7 @@ void FLD::UTILS::KSPMapExtractor::Setup(const DRT::Discretization& dis)
   CORE::Conditions::MultiConditionSelector mcs;
   mcs.AddSelector(
       Teuchos::rcp(new CORE::Conditions::ConditionSelector(dis, "KrylovSpaceProjection")));
-  mcs.SetupExtractor(dis, *dis.DofRowMap(), *this);
+  mcs.SetupExtractor(dis, *dis.dof_row_map(), *this);
 }
 
 
@@ -145,7 +145,7 @@ void FLD::UTILS::FsiMapExtractor::Setup(const DRT::Discretization& dis)
   CORE::Conditions::MultiConditionSelector mcs;
   mcs.AddSelector(
       Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "FSICoupling", 0, ndim)));
-  mcs.SetupExtractor(dis, *dis.DofRowMap(), *this);
+  mcs.SetupExtractor(dis, *dis.dof_row_map(), *this);
 }
 
 /*----------------------------------------------------------------------*/

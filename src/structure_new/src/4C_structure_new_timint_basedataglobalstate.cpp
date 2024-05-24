@@ -156,7 +156,7 @@ void STR::TIMINT::BaseDataGlobalState::Init(const Teuchos::RCP<DRT::Discretizati
 void STR::TIMINT::BaseDataGlobalState::Setup()
 {
   // safety check
-  CheckInit();
+  check_init();
 
   // --------------------------------------
   // control parameters
@@ -258,7 +258,7 @@ Teuchos::RCP<::NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlob
 int STR::TIMINT::BaseDataGlobalState::setup_block_information(
     const STR::MODELEVALUATOR::Generic& me, const INPAR::STR::ModelType& mt)
 {
-  CheckInit();
+  check_init();
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   Teuchos::RCP<const Epetra_Map> me_map_ptr = me.get_block_dof_row_map_ptr();
 
@@ -421,7 +421,7 @@ int STR::TIMINT::BaseDataGlobalState::setup_block_information(
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::BaseDataGlobalState::setup_multi_map_extractor()
 {
-  CheckInit();
+  check_init();
   /* copy the std::map into a std::vector and keep the numbering of the model-id
    * map */
   std::vector<Teuchos::RCP<const Epetra_Map>> maps_vec(MaxBlockNumber(), Teuchos::null);
@@ -440,7 +440,7 @@ void STR::TIMINT::BaseDataGlobalState::setup_multi_map_extractor()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::BaseDataGlobalState::setup_element_technology_map_extractors()
 {
-  CheckInit();
+  check_init();
 
   // loop all active element technologies
   const std::set<enum INPAR::STR::EleTech>& ele_techs = datasdyn_->get_element_technologies();
@@ -496,7 +496,7 @@ STR::TIMINT::BaseDataGlobalState::get_element_technology_map_extractor(
 void STR::TIMINT::BaseDataGlobalState::setup_rot_vec_map_extractor(
     CORE::LINALG::MultiMapExtractor& multimapext)
 {
-  CheckInit();
+  check_init();
 
   /* all additive DoFs, i.e. members of real value vector spaces
    * such as translational displacements, tangent vector displacements,
@@ -571,7 +571,7 @@ void STR::TIMINT::BaseDataGlobalState::setup_rot_vec_map_extractor(
 void STR::TIMINT::BaseDataGlobalState::SetupPressExtractor(
     CORE::LINALG::MultiMapExtractor& multimapext)
 {
-  CheckInit();
+  check_init();
 
   // identify pressure DOFs
   CORE::LINALG::CreateMapExtractorFromDiscretization(*discret_, 3, multimapext);
@@ -592,7 +592,7 @@ Teuchos::RCP<::NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlob
     const enum VecInitType& vecinittype,
     const Teuchos::RCP<const STR::ModelEvaluator>& modeleval_ptr) const
 {
-  CheckInit();
+  check_init();
   Teuchos::RCP<Epetra_Vector> xvec_ptr = Teuchos::rcp(new Epetra_Vector(GlobalProblemMap(), true));
 
   // switch between the different vector initialization options
@@ -660,7 +660,7 @@ STR::TIMINT::BaseDataGlobalState::create_structural_stiffness_matrix_block()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::SparseOperator>& STR::TIMINT::BaseDataGlobalState::CreateJacobian()
 {
-  CheckInit();
+  check_init();
   jac_ = Teuchos::null;
 
   if (max_block_num_ > 1)
@@ -683,7 +683,7 @@ Teuchos::RCP<CORE::LINALG::SparseOperator>& STR::TIMINT::BaseDataGlobalState::Cr
 Teuchos::RCP<CORE::LINALG::SparseOperator> STR::TIMINT::BaseDataGlobalState::CreateAuxJacobian()
     const
 {
-  CheckInit();
+  check_init();
   Teuchos::RCP<CORE::LINALG::SparseOperator> jac = Teuchos::null;
 
   if (max_block_num_ > 1)
@@ -703,10 +703,10 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> STR::TIMINT::BaseDataGlobalState::Cre
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::TIMINT::BaseDataGlobalState::DofRowMap() const
+Teuchos::RCP<const Epetra_Map> STR::TIMINT::BaseDataGlobalState::dof_row_map() const
 {
-  CheckInit();
-  const Epetra_Map* dofrowmap_ptr = discret_->DofRowMap();
+  check_init();
+  const Epetra_Map* dofrowmap_ptr = discret_->dof_row_map();
   // since it's const, we do not need to copy the map
   return Teuchos::rcp(dofrowmap_ptr, false);
 }
@@ -714,10 +714,10 @@ Teuchos::RCP<const Epetra_Map> STR::TIMINT::BaseDataGlobalState::DofRowMap() con
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::TIMINT::BaseDataGlobalState::DofRowMap(unsigned nds) const
+Teuchos::RCP<const Epetra_Map> STR::TIMINT::BaseDataGlobalState::dof_row_map(unsigned nds) const
 {
-  CheckInit();
-  const Epetra_Map* dofrowmap_ptr = discret_->DofRowMap(nds);
+  check_init();
+  const Epetra_Map* dofrowmap_ptr = discret_->dof_row_map(nds);
   // since it's const, we do not need to copy the map
   return Teuchos::rcp(dofrowmap_ptr, false);
 }
@@ -727,15 +727,15 @@ Teuchos::RCP<const Epetra_Map> STR::TIMINT::BaseDataGlobalState::DofRowMap(unsig
  *----------------------------------------------------------------------------*/
 const Epetra_Map* STR::TIMINT::BaseDataGlobalState::DofRowMapView() const
 {
-  CheckInit();
-  return discret_->DofRowMap();
+  check_init();
+  return discret_->dof_row_map();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 const Epetra_Map* STR::TIMINT::BaseDataGlobalState::additive_dof_row_map_view() const
 {
-  CheckInit();
+  check_init();
   return get_element_technology_map_extractor(INPAR::STR::EleTech::rotvec).Map(0).get();
 }
 
@@ -743,7 +743,7 @@ const Epetra_Map* STR::TIMINT::BaseDataGlobalState::additive_dof_row_map_view() 
  *----------------------------------------------------------------------------*/
 const Epetra_Map* STR::TIMINT::BaseDataGlobalState::RotVecDofRowMapView() const
 {
-  CheckInit();
+  check_init();
   return get_element_technology_map_extractor(INPAR::STR::EleTech::rotvec).Map(1).get();
 }
 
@@ -1112,7 +1112,7 @@ Teuchos::RCP<const CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState:
  *----------------------------------------------------------------------------*/
 int STR::TIMINT::BaseDataGlobalState::get_last_lin_iteration_number(const unsigned step) const
 {
-  CheckInitSetup();
+  check_init_setup();
   if (step < 1) FOUR_C_THROW("The given step number must be larger than 1. (step=%d)", step);
 
   auto linsolvers = datasdyn_->GetLinSolvers();
@@ -1149,7 +1149,7 @@ int STR::TIMINT::BaseDataGlobalState::get_last_lin_iteration_number(const unsign
  *----------------------------------------------------------------------------*/
 int STR::TIMINT::BaseDataGlobalState::get_nln_iteration_number(const unsigned step) const
 {
-  CheckInitSetup();
+  check_init_setup();
   if (step < 1) FOUR_C_THROW("The given step number must be larger than 1. (step=%d)", step);
 
   auto cit = nln_iter_numbers_.begin();
@@ -1167,7 +1167,7 @@ int STR::TIMINT::BaseDataGlobalState::get_nln_iteration_number(const unsigned st
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::BaseDataGlobalState::set_nln_iteration_number(const int nln_iter)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   auto cit = nln_iter_numbers_.cbegin();
   while (cit != nln_iter_numbers_.end())

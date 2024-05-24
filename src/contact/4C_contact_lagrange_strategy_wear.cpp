@@ -39,12 +39,12 @@ FOUR_C_NAMESPACE_OPEN
  | ctor (public)                                             farah 09/13|
  *----------------------------------------------------------------------*/
 WEAR::LagrangeStrategyWear::LagrangeStrategyWear(
-    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
-    const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
+    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<Teuchos::RCP<CONTACT::Interface>> interfaces, int dim,
     Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof)
     : LagrangeStrategy(
-          data_ptr, DofRowMap, NodeRowMap, params, interfaces, dim, comm, alphaf, maxdof),
+          data_ptr, dof_row_map, NodeRowMap, params, interfaces, dim, comm, alphaf, maxdof),
       weightedwear_(false),
       wbothpv_(false),
       wearimpl_(false),
@@ -101,14 +101,14 @@ void WEAR::LagrangeStrategyWear::Setup(bool redistributed, bool init)
   AbstractStrategy::Setup(redistributed, init);
 
   // wear specific setup
-  SetupWear(redistributed, init);
+  setup_wear(redistributed, init);
 }
 
 
 /*----------------------------------------------------------------------*
  | setup this strategy object                               farah 09/13 |
  *----------------------------------------------------------------------*/
-void WEAR::LagrangeStrategyWear::SetupWear(bool redistributed, bool init)
+void WEAR::LagrangeStrategyWear::setup_wear(bool redistributed, bool init)
 {
   // max dof number -- disp dofs and lm dofs considered
   maxdofwear_ = maxdof_ + glmdofrowmap_->NumGlobalElements();
@@ -454,7 +454,7 @@ void WEAR::LagrangeStrategyWear::AssembleMortar()
   }
 
   //********************************************
-  // FillComplete() matrix for both-sided wear *
+  // fill_complete() matrix for both-sided wear *
   //********************************************
   d2matrix_->Complete(*gmdofrowmap_, *gmdofrowmap_);
 
@@ -674,7 +674,7 @@ void WEAR::LagrangeStrategyWear::condense_wear_impl_expl(
   if (ParRedist())
   {
     // split and transform to redistributed maps
-    CORE::LINALG::SplitVector(*ProblemDofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
+    CORE::LINALG::split_vector(*ProblemDofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
     Teuchos::RCP<Epetra_Vector> fsmtemp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
     CORE::LINALG::Export(*fsm, *fsmtemp);
     fsm = fsmtemp;
@@ -682,7 +682,7 @@ void WEAR::LagrangeStrategyWear::condense_wear_impl_expl(
   else
   {
     // only split, no need to transform
-    CORE::LINALG::SplitVector(*ProblemDofs(), *feff, gsmdofrowmap_, fsm, gndofrowmap_, fn);
+    CORE::LINALG::split_vector(*ProblemDofs(), *feff, gsmdofrowmap_, fsm, gndofrowmap_, fn);
   }
 
   // abbreviations for slave and master set
@@ -694,7 +694,7 @@ void WEAR::LagrangeStrategyWear::condense_wear_impl_expl(
   fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
 
   // do the vector splitting sm -> s+m
-  CORE::LINALG::SplitVector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
+  CORE::LINALG::split_vector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
 
   // store some stuff for static condensation of LM
   fs_ = fs;
@@ -773,14 +773,14 @@ void WEAR::LagrangeStrategyWear::condense_wear_impl_expl(
   Teuchos::RCP<Epetra_Vector> fi = Teuchos::rcp(new Epetra_Vector(*gidofs));
 
   // do the vector splitting s -> a+i
-  CORE::LINALG::SplitVector(*gsdofrowmap_, *fs, gactivedofs_, fa, gidofs, fi);
+  CORE::LINALG::split_vector(*gsdofrowmap_, *fs, gactivedofs_, fa, gidofs, fi);
 
   // we want to split fa into 2 groups sl,st
   Teuchos::RCP<Epetra_Vector> fsl = Teuchos::rcp(new Epetra_Vector(*gslipdofs_));
   Teuchos::RCP<Epetra_Vector> fst = Teuchos::rcp(new Epetra_Vector(*gstdofs));
 
   // do the vector splitting a -> sl+st
-  if (aset) CORE::LINALG::SplitVector(*gactivedofs_, *fa, gslipdofs_, fsl, gstdofs, fst);
+  if (aset) CORE::LINALG::split_vector(*gactivedofs_, *fa, gslipdofs_, fsl, gstdofs, fst);
 
   /********************************************************************/
   /* (6) Isolate necessary parts from invd and mhatmatrix             */
@@ -807,7 +807,7 @@ void WEAR::LagrangeStrategyWear::condense_wear_impl_expl(
     Teuchos::RCP<Epetra_Vector> za = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
     Teuchos::RCP<Epetra_Vector> zi = Teuchos::rcp(new Epetra_Vector(*gidofs));
 
-    CORE::LINALG::SplitVector(*gsdofrowmap_, *z_, gactivedofs_, za, gidofs, zi);
+    CORE::LINALG::split_vector(*gsdofrowmap_, *z_, gactivedofs_, za, gidofs, zi);
 
     // split wlinmatrix into wa for active dofs
     CORE::LINALG::SplitMatrix2x2(
@@ -1220,8 +1220,8 @@ void WEAR::LagrangeStrategyWear::condense_wear_impl_expl(
   Teuchos::RCP<Epetra_Vector> zst = Teuchos::rcp(new Epetra_Vector(*gstickdofs));
   Teuchos::RCP<Epetra_Vector> zsl = Teuchos::rcp(new Epetra_Vector(*gslipdofs_));
 
-  CORE::LINALG::SplitVector(*gsdofrowmap_, *z_, gactivedofs_, za, gidofs, zi);
-  CORE::LINALG::SplitVector(*gactivedofs_, *za, gstickdofs, zst, gslipdofs_, zsl);
+  CORE::LINALG::split_vector(*gsdofrowmap_, *z_, gactivedofs_, za, gidofs, zi);
+  CORE::LINALG::split_vector(*gactivedofs_, *za, gstickdofs, zst, gslipdofs_, zsl);
   Teuchos::RCP<Epetra_Vector> tempvec1;
 
   // fst: mutliply with linstickLM
@@ -1420,7 +1420,7 @@ void WEAR::LagrangeStrategyWear::condense_wear_impl_expl(
     // if (slipset and stickset) kteffnew->Add(*kslwstmod,false,1.0,1.0);
   }
 
-  // FillComplete kteffnew (square)
+  // fill_complete kteffnew (square)
   kteffnew->Complete();
 
   /********************************************************************/
@@ -1659,7 +1659,7 @@ void WEAR::LagrangeStrategyWear::CondenseWearDiscr(
   if (ParRedist())
   {
     // split and transform to redistributed maps
-    CORE::LINALG::SplitVector(*ProblemDofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
+    CORE::LINALG::split_vector(*ProblemDofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
     Teuchos::RCP<Epetra_Vector> fsmtemp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
     CORE::LINALG::Export(*fsm, *fsmtemp);
     fsm = fsmtemp;
@@ -1667,7 +1667,7 @@ void WEAR::LagrangeStrategyWear::CondenseWearDiscr(
   else
   {
     // only split, no need to transform
-    CORE::LINALG::SplitVector(*ProblemDofs(), *feff, gsmdofrowmap_, fsm, gndofrowmap_, fn);
+    CORE::LINALG::split_vector(*ProblemDofs(), *feff, gsmdofrowmap_, fsm, gndofrowmap_, fn);
   }
 
   // abbreviations for slave and master set
@@ -1679,7 +1679,7 @@ void WEAR::LagrangeStrategyWear::CondenseWearDiscr(
   fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
 
   // do the vector splitting sm -> s+m
-  CORE::LINALG::SplitVector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
+  CORE::LINALG::split_vector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
 
   // store some stuff for static condensation of LM
   fs_ = fs;
@@ -1759,14 +1759,14 @@ void WEAR::LagrangeStrategyWear::CondenseWearDiscr(
   Teuchos::RCP<Epetra_Vector> fi = Teuchos::rcp(new Epetra_Vector(*gidofs));
 
   // do the vector splitting s -> a+i
-  CORE::LINALG::SplitVector(*gsdofrowmap_, *fs, gactivedofs_, fa, gidofs, fi);
+  CORE::LINALG::split_vector(*gsdofrowmap_, *fs, gactivedofs_, fa, gidofs, fi);
 
   // we want to split fa into 2 groups sl,st
   Teuchos::RCP<Epetra_Vector> fsl = Teuchos::rcp(new Epetra_Vector(*gslipdofs_));
   Teuchos::RCP<Epetra_Vector> fst = Teuchos::rcp(new Epetra_Vector(*gstdofs));
 
   // do the vector splitting a -> sl+st
-  if (aset) CORE::LINALG::SplitVector(*gactivedofs_, *fa, gslipdofs_, fsl, gstdofs, fst);
+  if (aset) CORE::LINALG::split_vector(*gactivedofs_, *fa, gslipdofs_, fsl, gstdofs, fst);
 
   /********************************************************************/
   /* (6) Isolate necessary parts from invd and mhatmatrix             */
@@ -2317,8 +2317,8 @@ void WEAR::LagrangeStrategyWear::CondenseWearDiscr(
   Teuchos::RCP<Epetra_Vector> zst = Teuchos::rcp(new Epetra_Vector(*gstickdofs));
   Teuchos::RCP<Epetra_Vector> zsl = Teuchos::rcp(new Epetra_Vector(*gslipdofs_));
 
-  CORE::LINALG::SplitVector(*gsdofrowmap_, *z_, gactivedofs_, za, gidofs, zi);
-  CORE::LINALG::SplitVector(*gactivedofs_, *za, gstickdofs, zst, gslipdofs_, zsl);
+  CORE::LINALG::split_vector(*gsdofrowmap_, *z_, gactivedofs_, za, gidofs, zi);
+  CORE::LINALG::split_vector(*gactivedofs_, *za, gstickdofs, zst, gslipdofs_, zsl);
   Teuchos::RCP<Epetra_Vector> tempvec1;
 
   // fst: mutliply with linstickLM
@@ -2496,7 +2496,7 @@ void WEAR::LagrangeStrategyWear::CondenseWearDiscr(
   if (slipset && (iset)) kteffnew->Add(*ksliw, false, -1.0, 1.0);
   if (slipset) kteffnew->Add(*kslaw, false, -1.0, 1.0);
 
-  // FillComplete kteffnew (square)
+  // fill_complete kteffnew (square)
   kteffnew->Complete();
 
   /********************************************************************/
@@ -2713,25 +2713,25 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
   /**********************************************************************/
   /* Complete matrices                                                  */
   /**********************************************************************/
-  // FillComplete() global matrix T
+  // fill_complete() global matrix T
   tmatrix_->Complete(*gactivedofs_, *gactivet_);
 
-  // FillComplete() global matrix S
+  // fill_complete() global matrix S
   smatrix_->Complete(*gsmdofrowmap_, *gactiven_);
 
-  // FillComplete() global matrices LinD, LinM
+  // fill_complete() global matrices LinD, LinM
   // (again for linD gsdofrowmap_ is sufficient as domain map,
   // but in the edge node modification case, master entries occur!)
   lindmatrix_->Complete(*gsmdofrowmap_, *gsdofrowmap_);
   linmmatrix_->Complete(*gsmdofrowmap_, *gmdofrowmap_);
 
-  // FillComplete global Matrix linstickLM_, linstickDIS_
+  // fill_complete global Matrix linstickLM_, linstickDIS_
   Teuchos::RCP<Epetra_Map> gstickt = CORE::LINALG::SplitMap(*gactivet_, *gslipt_);
   Teuchos::RCP<Epetra_Map> gstickdofs = CORE::LINALG::SplitMap(*gactivedofs_, *gslipdofs_);
   linstickLM_->Complete(*gstickdofs, *gstickt);
   linstickDIS_->Complete(*gsmdofrowmap_, *gstickt);
 
-  // FillComplete global Matrix linslipLM_ and linslipDIS_
+  // fill_complete global Matrix linslipLM_ and linslipDIS_
   linslipLM_->Complete(*gslipdofs_, *gslipt_);
   linslipDIS_->Complete(*gsmdofrowmap_, *gslipt_);
 
@@ -4112,7 +4112,7 @@ void WEAR::LagrangeStrategyWear::OutputWear()
     Teuchos::RCP<Epetra_Vector> wear_vectori = Teuchos::rcp(new Epetra_Vector(*gidofs));
 
     // split the vector
-    CORE::LINALG::SplitVector(
+    CORE::LINALG::split_vector(
         *gsdofrowmap_, *wear_vector, gactivedofs_, wear_vectora, gidofs, wear_vectori);
 
     /* approx. undo the weighting of the wear by solving D * w = w~
@@ -4193,7 +4193,7 @@ void WEAR::LagrangeStrategyWear::OutputWear()
       Teuchos::RCP<Epetra_Vector> wear2_vectorn = Teuchos::rcp(new Epetra_Vector(*gndofs));
 
       // split the vector
-      CORE::LINALG::SplitVector(
+      CORE::LINALG::split_vector(
           *gmdofrowmap_, *wear_master, gminvolveddofs_, wear2_vectori, gndofs, wear2_vectorn);
 
       /* Note: Due to dual shape functions, d2ii is diagonal. So we don't need an actual solver.
@@ -4662,8 +4662,8 @@ bool WEAR::LagrangeStrategyWear::RedistributeContact(
 
   // set old and current displacement state
   // (needed for search within redistribution)
-  SetState(MORTAR::state_new_displacement, *dis);
-  SetState(MORTAR::state_old_displacement, *dis);
+  set_state(MORTAR::state_new_displacement, *dis);
+  set_state(MORTAR::state_old_displacement, *dis);
 
   // parallel redistribution of all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
@@ -4672,7 +4672,7 @@ bool WEAR::LagrangeStrategyWear::RedistributeContact(
     interface_[i]->Redistribute();
 
     // call fill complete again
-    interface_[i]->FillComplete(true, maxdof_);
+    interface_[i]->fill_complete(true, maxdof_);
 
     // print new parallel distribution
     interface_[i]->print_parallel_distribution();
@@ -4686,7 +4686,7 @@ bool WEAR::LagrangeStrategyWear::RedistributeContact(
 
   // re-setup strategy with redistributed=TRUE, init=FALSE
   Setup(true, false);
-  SetupWear(true, false);
+  setup_wear(true, false);
 
   // time measurement
   Comm().Barrier();
@@ -4713,8 +4713,8 @@ void WEAR::LagrangeStrategyWear::DoReadRestart(
   bool restartwithcontact = CORE::UTILS::IntegralValue<int>(Params(), "RESTART_WITH_CONTACT");
 
   // set restart displacement state
-  SetState(MORTAR::state_new_displacement, *dis);
-  SetState(MORTAR::state_old_displacement, *dis);
+  set_state(MORTAR::state_new_displacement, *dis);
+  set_state(MORTAR::state_old_displacement, *dis);
 
   // evaluate interface and restart mortar quantities
   // in the case of SELF CONTACT, also re-setup master/slave maps

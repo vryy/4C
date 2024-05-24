@@ -59,7 +59,7 @@ CORE::GEO::CUT::TetMesh::TetMesh(
 {
   std::vector<std::vector<int>> original_tets;
 
-  CallQHull(points_, original_tets, project);
+  call_q_hull(points_, original_tets, project);
 
   tets_.reserve(original_tets.size());
   for (std::vector<std::vector<int>>::iterator i = original_tets.begin(); i != original_tets.end();
@@ -72,7 +72,7 @@ CORE::GEO::CUT::TetMesh::TetMesh(
     {
       tet.push_back(points_[*i]);
     }
-    if (IsValidTet(tet))
+    if (is_valid_tet(tet))
     {
       tets_.push_back(t);
     }
@@ -91,12 +91,12 @@ CORE::GEO::CUT::TetMesh::TetMesh(
    triangulated point is added to the cut information. Might have to look into this....
 
 */
-bool CORE::GEO::CUT::TetMesh::FillFacetMesh()
+bool CORE::GEO::CUT::TetMesh::fill_facet_mesh()
 {
   for (plain_facet_set::const_iterator i = facets_.begin(); i != facets_.end(); ++i)
   {
     Facet* f = *i;
-    if (not FillFacet(f))  // Possible to FillFacet?
+    if (not fill_facet(f))  // Possible to fill_facet?
     {
       return false;
     }
@@ -106,7 +106,7 @@ bool CORE::GEO::CUT::TetMesh::FillFacetMesh()
       for (plain_facet_set::const_iterator i = holes.begin(); i != holes.end(); ++i)
       {
         Facet* h = *i;
-        if (not FillFacet(h))
+        if (not fill_facet(h))
         {
           return false;
         }
@@ -120,7 +120,7 @@ bool CORE::GEO::CUT::TetMesh::FillFacetMesh()
 /* From the input create TETs.
    1) First remove the TETs which are too small for arithmetic precision from the "accepted_tet_set"
    of TETs. However they might be needed later (for boundary-cell creation) so don't throw them
-   away. 2) Try to "FillFacetMesh(...)", this means that for the given given element (either a tet
+   away. 2) Try to "fill_facet_mesh(...)", this means that for the given given element (either a tet
    or a hex8) find the facets on the boundaries and find if they are associated with an unique TET.
 
     2.1) If NOT assume the tesselation (i.e. on TET or more) is cut, and call the Tesselation
@@ -133,10 +133,10 @@ void CORE::GEO::CUT::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
     const plain_side_set& cut_sides,  //<- cut_facets_ of parent ele.
     int count, bool tetcellsonly)
 {
-  FixBrokenTets();
+  fix_broken_tets();
 
   // Can the mesh be "filled from the facets"
-  if (FillFacetMesh())
+  if (fill_facet_mesh())
   {
     for (plain_volumecell_set::const_iterator i = cells.begin(); i != cells.end(); ++i)
     {
@@ -157,14 +157,14 @@ void CORE::GEO::CUT::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
         const PlainEntitySet<3>& tris = fm.SurfaceTris();
 
         // All tris are added to the cell_border, i.e. (border_ in class Domain).
-        //  These are later used to create "done_border_" later in SeedDomain.
+        //  These are later used to create "done_border_" later in seed_domain.
         std::copy(tris.begin(), tris.end(), std::inserter(cell_border, cell_border.begin()));
       }
 
       for (plain_facet_set::const_iterator i = facets.begin(); i != facets.end(); ++i)
       {
         Facet* f = *i;
-        SeedDomain(cell_domain, f);
+        seed_domain(cell_domain, f);
       }
 
       if (cell_domain.Empty())
@@ -179,7 +179,7 @@ void CORE::GEO::CUT::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
           for (plain_facet_set::const_iterator i = facets.begin(); i != facets.end(); ++i)
           {
             Facet* f = *i;
-            SeedDomain(cell_domain, f, true);
+            seed_domain(cell_domain, f, true);
           }
         }
 
@@ -208,7 +208,7 @@ void CORE::GEO::CUT::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
               continue;
             }
 
-            if (not f->IsPlanar(mesh, f->CornerPoints()))
+            if (not f->is_planar(mesh, f->CornerPoints()))
             {
               std::cout << "Warning: This volume cell has no integration cells AND not all on same "
                            "cut-side."
@@ -265,9 +265,9 @@ void CORE::GEO::CUT::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
               sides_xyz[f];  // create entry for facet and get a reference to the facets side
                              // coordinates
           std::vector<std::vector<int>> sides;
-          FindProperSides(tris, sides, &cell_members);
-          CollectCoordinates(sides, side_coords);  // fill the side coordinates, if all the side's
-                                                   // coordinates are on cut surface
+          find_proper_sides(tris, sides, &cell_members);
+          collect_coordinates(sides, side_coords);  // fill the side coordinates, if all the side's
+                                                    // coordinates are on cut surface
         }
       }
 
@@ -331,7 +331,7 @@ void CORE::GEO::CUT::TetMesh::Init()
 
    One might want to take a look at the call to Qhull to improve it for non-local coordinate cuts.
 */
-void CORE::GEO::CUT::TetMesh::CallQHull(
+void CORE::GEO::CUT::TetMesh::call_q_hull(
     const std::vector<Point*>& points, std::vector<std::vector<int>>& tets, bool project)
 {
   const int dim = 3;
@@ -561,7 +561,7 @@ void CORE::GEO::CUT::TetMesh::CallQHull(
  exact...
 
 */
-bool CORE::GEO::CUT::TetMesh::IsValidTet(const std::vector<Point*>& t)
+bool CORE::GEO::CUT::TetMesh::is_valid_tet(const std::vector<Point*>& t)
 {
   plain_side_set sides;
   // Find if the points of the tet share a common side.
@@ -681,7 +681,7 @@ bool CORE::GEO::CUT::TetMesh::IsValidTet(const std::vector<Point*>& t)
 
 /* This function is unused....
  */
-void CORE::GEO::CUT::TetMesh::TestUsedPoints(const std::vector<std::vector<int>>& tets)
+void CORE::GEO::CUT::TetMesh::test_used_points(const std::vector<std::vector<int>>& tets)
 {
   plain_int_set used_points;
   for (std::vector<std::vector<int>>::const_iterator i = tets.begin(); i != tets.end(); ++i)
@@ -698,7 +698,7 @@ void CORE::GEO::CUT::TetMesh::TestUsedPoints(const std::vector<std::vector<int>>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::TetMesh::FixBrokenTets()
+void CORE::GEO::CUT::TetMesh::fix_broken_tets()
 {
   for (std::vector<std::vector<int>>::iterator i = tets_.begin(); i != tets_.end(); ++i)
   {
@@ -788,7 +788,7 @@ void CORE::GEO::CUT::TetMesh::FixBrokenTets()
 /* Take the tri from the facet and test whether it belongs to more than one tet,
    if not add the tri as a side with an error check.
  */
-void CORE::GEO::CUT::TetMesh::FindProperSides(const PlainEntitySet<3>& tris,
+void CORE::GEO::CUT::TetMesh::find_proper_sides(const PlainEntitySet<3>& tris,
     std::vector<std::vector<int>>& sides, const PlainEntitySet<4>* members)
 {
   sides.reserve(tris.size());
@@ -852,7 +852,7 @@ void CORE::GEO::CUT::TetMesh::FindProperSides(const PlainEntitySet<3>& tris,
 }
 
 /// Collects the coordinates for the tri3 sides of the facet if all its points are on cut surface
-void CORE::GEO::CUT::TetMesh::CollectCoordinates(
+void CORE::GEO::CUT::TetMesh::collect_coordinates(
     const std::vector<std::vector<int>>& sides, std::vector<Point*>& side_coords)
 {
   for (std::vector<std::vector<int>>::const_iterator i = sides.begin(); i != sides.end(); ++i)

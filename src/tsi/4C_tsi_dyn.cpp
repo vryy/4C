@@ -83,7 +83,7 @@ void tsi_dyn_drt()
   if (restart)
   {
     // read the restart information, set vectors and variables
-    tsi->ReadRestart(restart);
+    tsi->read_restart(restart);
   }
 
   // now do the coupling setup and create the combined dofmap

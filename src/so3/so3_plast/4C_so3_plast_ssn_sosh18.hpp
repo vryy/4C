@@ -88,12 +88,12 @@ namespace DRT
       {
         return SoSh18::VisData(name, data);
       }
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override
       {
-        return SoSh18::EvaluateNeumann(params, discretization, condition, lm, elevec1, elemat1);
+        return SoSh18::evaluate_neumann(params, discretization, condition, lm, elevec1, elemat1);
       }
 
       //! Deep copy this instance of Solid3 and return pointer to the copy

@@ -91,23 +91,23 @@ namespace ADAPTER
 
    protected:
     //! returns true if Setup() was called and is still valid
-    bool IsSetup() const { return issetup_; };
+    bool is_setup() const { return issetup_; };
 
     //! returns true if Init(..) was called and is still valid
-    bool IsInit() const { return isinit_; };
+    bool is_init() const { return isinit_; };
 
     //! check if \ref Setup() was called
     void CheckIsSetup() const;
 
     //! check if \ref Init() was called
-    void CheckIsInit() const;
+    void check_is_init() const;
 
    private:
     //! set flag true after setup or false if setup became invalid
-    void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; };
+    void set_is_setup(bool trueorfalse) { issetup_ = trueorfalse; };
 
     //! set flag true after init or false if init became invalid
-    void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
+    void set_is_init(bool trueorfalse) { isinit_ = trueorfalse; };
 
   };  // class ScaTraBaseAlgorithm
 

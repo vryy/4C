@@ -51,7 +51,7 @@ void CORE::REBALANCE::RebalanceDiscretizationsByBinning(
                             << IO::endl;
       for (const auto& curr_dis : vector_of_discretizations)
       {
-        if (!curr_dis->Filled()) FOUR_C_THROW("FillComplete(false,false,false) was not called");
+        if (!curr_dis->Filled()) FOUR_C_THROW("fill_complete(false,false,false) was not called");
         IO::cout(IO::verbose) << "| Rebalance discretization " << std::setw(11) << curr_dis->Name()
                               << IO::endl;
       }
@@ -78,7 +78,7 @@ void CORE::REBALANCE::RebalanceDiscretizationsByBinning(
           vector_of_discretizations, stdelecolmap, stdnodecolmap);
   }  // if more than 1 proc
   else
-    for (const auto& curr_dis : vector_of_discretizations) curr_dis->FillComplete();
+    for (const auto& curr_dis : vector_of_discretizations) curr_dis->fill_complete();
 
 }  // CORE::REBALANCE::RebalanceDiscretizationsByBinning
 
@@ -209,7 +209,7 @@ void CORE::REBALANCE::MatchNodalDistributionOfMatchingDiscretizations(
         -1, rebalance_colnodegid_vec.size(), rebalance_colnodegid_vec.data(), 0, *com));
 
     // we finally rebalance.
-    // FillComplete(...) inside.
+    // fill_complete(...) inside.
     dis_to_rebalance.Redistribute(*rebalanced_noderowmap, *rebalanced_nodecolmap,
         false,  // assigndegreesoffreedom
         false,  // initelements
@@ -299,9 +299,9 @@ void CORE::REBALANCE::MatchElementDistributionOfMatchingDiscretizations(
     ////////////////////////////////////////
     // FINISH
     ////////////////////////////////////////
-    int err = dis_to_rebalance.FillComplete(false, false, false);
+    int err = dis_to_rebalance.fill_complete(false, false, false);
 
-    if (err) FOUR_C_THROW("FillComplete() returned err=%d", err);
+    if (err) FOUR_C_THROW("fill_complete() returned err=%d", err);
 
     // print to screen
     CORE::REBALANCE::UTILS::print_parallel_distribution(dis_to_rebalance);
@@ -437,7 +437,7 @@ void CORE::REBALANCE::MatchElementDistributionOfMatchingConditionedElements(
       bool conditionedele = false;
       DRT::Element* ele = dis_to_rebalance.gElement(dis_to_rebalance.ElementColMap()->GID(lid));
       DRT::Node** nodes = ele->Nodes();
-      for (int node = 0; node < ele->NumNode(); node++)
+      for (int node = 0; node < ele->num_node(); node++)
       {
         CORE::Conditions::Condition* nodal_cond = nodes[node]->GetCondition(condname_rebalance);
         if (nodal_cond != nullptr)
@@ -579,9 +579,9 @@ void CORE::REBALANCE::MatchElementDistributionOfMatchingConditionedElements(
     ////////////////////////////////////////
     // FINISH
     ////////////////////////////////////////
-    int err = dis_to_rebalance.FillComplete(false, false, false);
+    int err = dis_to_rebalance.fill_complete(false, false, false);
 
-    if (err) FOUR_C_THROW("FillComplete() returned err=%d", err);
+    if (err) FOUR_C_THROW("fill_complete() returned err=%d", err);
 
     // print to screen
     CORE::REBALANCE::UTILS::print_parallel_distribution(dis_to_rebalance);
@@ -595,12 +595,12 @@ Teuchos::RCP<const Epetra_Vector> CORE::REBALANCE::GetColVersionOfRowVector(
     const Teuchos::RCP<const DRT::Discretization> dis,
     const Teuchos::RCP<const Epetra_Vector> state, const int nds)
 {
-  // note that this routine has the same functionality as SetState,
+  // note that this routine has the same functionality as set_state,
   // although here we do not store the new vector anywhere
-  // maybe this routine can be used in SetState or become a member function of the discretization
+  // maybe this routine can be used in set_state or become a member function of the discretization
   // class
 
-  if (!dis->HaveDofs()) FOUR_C_THROW("FillComplete() was not called");
+  if (!dis->HaveDofs()) FOUR_C_THROW("fill_complete() was not called");
   const Epetra_Map* colmap = dis->DofColMap(nds);
   const Epetra_BlockMap& vecmap = state->Map();
 

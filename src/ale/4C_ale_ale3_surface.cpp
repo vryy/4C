@@ -49,7 +49,7 @@ DRT::Element* DRT::ELEMENTS::Ale3Surface::Clone() const
 /*----------------------------------------------------------------------------*/
 CORE::FE::CellType DRT::ELEMENTS::Ale3Surface::Shape() const
 {
-  switch (NumNode())
+  switch (num_node())
   {
     case 3:
       return CORE::FE::CellType::tri3;
@@ -62,7 +62,7 @@ CORE::FE::CellType DRT::ELEMENTS::Ale3Surface::Shape() const
     case 9:
       return CORE::FE::CellType::quad9;
     default:
-      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", num_node());
       break;
   }
 }

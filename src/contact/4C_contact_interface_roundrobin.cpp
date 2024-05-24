@@ -40,7 +40,7 @@ void CONTACT::Interface::round_robin_extend_ghosting(bool firstevaluation)
 
       element_GIDs_to_be_ghosted.push_back(melement->Id());
 
-      for (int z = 0; z < melement->NumNode(); ++z)
+      for (int z = 0; z < melement->num_node(); ++z)
       {
         int gidn = melement->NodeIds()[z];
         node_GIDs_to_be_ghosted.push_back(gidn);
@@ -82,7 +82,7 @@ void CONTACT::Interface::round_robin_change_ownership()
 
   // get friction type
   INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(interface_params(), "FRICTION");
 
   // change master-side proc ownership
   // some local variables
@@ -176,7 +176,7 @@ void CONTACT::Interface::round_robin_change_ownership()
 
   // send the information
   MPI_Request request;
-  exporter.ISend(myrank, torank, sdataeles.data(), (int)sdataeles.size(), 1234, request);
+  exporter.i_send(myrank, torank, sdataeles.data(), (int)sdataeles.size(), 1234, request);
 
   // receive the information
   int length = rdataeles.size();
@@ -208,7 +208,7 @@ void CONTACT::Interface::round_robin_change_ownership()
       if (ghost == 1)
       {
         ele->SetOwner(myrank);
-        idiscret_->AddElement(ele);
+        idiscret_->add_element(ele);
 
         // to new ele
         erow.push_back(ele->Id());
@@ -314,7 +314,7 @@ void CONTACT::Interface::round_robin_change_ownership()
 
   // ---- send ----
   MPI_Request requestn;
-  exportern.ISend(myrank, torank, sdatanodes.data(), (int)sdatanodes.size(), 1234, requestn);
+  exportern.i_send(myrank, torank, sdatanodes.data(), (int)sdatanodes.size(), 1234, requestn);
 
   // ---- receive ----
   int lengthn = rdatanodes.size();
@@ -418,7 +418,7 @@ void CONTACT::Interface::round_robin_change_ownership()
   // call the (very) expensive FILLCOMPLETE()!
   // ********************************************
   // make sure discretization is complete
-  FillComplete(true);
+  fill_complete(true);
 
   return;
 }
@@ -502,7 +502,7 @@ void CONTACT::Interface::round_robin_detect_ghosting()
   // finally extend ghosting
   Discret().export_column_elements(*eextendedghosting_);
   Discret().ExportColumnNodes(*nextendedghosting_);
-  FillComplete(true);
+  fill_complete(true);
 
   // reset extended ghosting maps
   eextendedghosting_ = Teuchos::null;

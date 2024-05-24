@@ -63,7 +63,7 @@ namespace ADAPTER
     StructureFSITimIntAda(Teuchos::RCP<STR::TimAda> sta, Teuchos::RCP<Structure> sti);
 
     //! Do one time step with auxiliary time integration scheme
-    virtual void TimeStepAuxiliar();
+    virtual void time_step_auxiliar();
 
     //! Indicate norms of local discretization error
     virtual void IndicateErrorNorms(
@@ -77,7 +77,7 @@ namespace ADAPTER
     );
 
     //! Calculate time step size suggestion
-    virtual double CalculateDt(const double norm);
+    virtual double calculate_dt(const double norm);
 
     //! Get time step size of adaptive structural time integrator
     double Dt() const override;
@@ -86,20 +86,20 @@ namespace ADAPTER
     double Time() const override;
 
     //! Set new time step size
-    void SetDt(const double dtnew) override;
+    void set_dt(const double dtnew) override;
 
     //! Update step size
     virtual void UpdateStepSize(const double dtnew);
 
     //! Reset certain quantities to prepare repetition of current time step
-    void ResetStep() override;
+    void reset_step() override;
 
     //! return pointer to structure time integration
     Teuchos::RCP<Structure> GetStrTimIntPtr() { return str_time_integrator_; };
 
    private:
     //! Indicate local discretization error
-    void IndicateErrors(
+    void indicate_errors(
         double& err,       ///< L2-norm of temporal discretization error based on all DOFs
         double& errcond,   ///< L2-norm of temporal discretization error based on interface DOFs
         double& errother,  ///< L2-norm of temporal discretization error based on interior DOFs

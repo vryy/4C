@@ -43,9 +43,9 @@ namespace STR::NLN::SOLVER
 
    private:
     //! set the full newton parameters in the nox parameter list
-    void SetSingleStepParams();
+    void set_single_step_params();
 
-    void SetSingleStepParams(Teuchos::ParameterList& p);
+    void set_single_step_params(Teuchos::ParameterList& p);
 
   };  // class SingleStep
 }  // namespace STR::NLN::SOLVER

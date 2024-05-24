@@ -207,7 +207,7 @@ namespace MAT
     double Density() const override { return params_->density_; }
 
     /// shear modulus
-    double ShearMod() const
+    double shear_mod() const
     {
       FOUR_C_THROW("Cannot provide shear modulus equivalent");
       return 0.0;

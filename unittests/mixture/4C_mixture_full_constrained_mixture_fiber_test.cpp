@@ -198,7 +198,7 @@ namespace
     {
       const double time = timestep * dt;
       cm_fiber.RecomputeState(lambda_f, time, dt);
-      remodel_fiber.SetState(lambda_f, 1.0);
+      remodel_fiber.set_state(lambda_f, 1.0);
 
       remodel_fiber.integrate_local_evolution_equations_implicit(dt);
 
@@ -234,7 +234,7 @@ namespace
       const double time = timestep * dt;
       cm_fiber.RecomputeState(lambda_f, time, dt);
 
-      remodel_fiber.SetState(lambda_f, 1.0);
+      remodel_fiber.set_state(lambda_f, 1.0);
       remodel_fiber.integrate_local_evolution_equations_implicit(dt);
 
       // compare
@@ -629,7 +629,7 @@ namespace
       {
         time = timestep * dt;
         cm_fiber.RecomputeState(lambda_f[interval_id], time, dt);
-        remodel_fiber.SetState(lambda_f[interval_id], 1.0);
+        remodel_fiber.set_state(lambda_f[interval_id], 1.0);
 
         remodel_fiber.integrate_local_evolution_equations_implicit(dt);
 

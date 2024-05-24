@@ -780,7 +780,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
     if (isale) gridvelint_.Multiply(egridv, funct_);
 
     // get convective velocity at integration point
-    SetConvectiveVelint(isale);
+    set_convective_velint(isale);
 
 
     if (fldpara_->Tds() == INPAR::FLUID::subscales_time_dependent)
@@ -854,7 +854,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
     if (isale) gridvelint_.Multiply(egridv, funct_);
 
     // get convective velocity at integration point
-    SetConvectiveVelint(isale);
+    set_convective_velint(isale);
 
 
     // get pressure at integration point
@@ -1777,7 +1777,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetGridDispALE(
  |  set the (relative) convective velocity at integration point schott 11/14 |
  *---------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SetConvectiveVelint(const bool isale)
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::set_convective_velint(const bool isale)
 {
   // get convective velocity at integration point
   switch (fldpara_->PhysicalType())
@@ -2591,7 +2591,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
  |  Get mk                                                     bk 09/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-double DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMK()
+double DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::get_mk()
 {
   return DRT::ELEMENTS::MK<distype>();
 }
@@ -2636,7 +2636,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
   //       tau_Mp for this definition
   //---------------------------------------------------------------------
   // get element-type constant for tau
-  const double mk = GetMK();
+  const double mk = get_mk();
 
 
   if (fldpara_->Tds() == INPAR::FLUID::subscales_quasistatic)  // quasistatic case
@@ -6116,7 +6116,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateService(DRT::ELEMENTS
     case FLD::calc_fluid_error:
     {
       // compute error for a known analytical solution
-      return ComputeError(ele, params, mat, discretization, lm, elevec1);
+      return compute_error(ele, params, mat, discretization, lm, elevec1);
     }
     break;
     case FLD::calc_dissipation:
@@ -6608,7 +6608,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeDivU(DRT::ELEMENTS::Fl
  * Action type: Compute Error                              shahmiri 01/12
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::Fluid* ele,
+int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_error(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1)
@@ -6617,7 +6617,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::F
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
   // degree 5
   const CORE::FE::GaussIntegration intpoints(distype, ele->Degree() * 2 + 3);
-  return ComputeError(ele, params, mat, discretization, lm, elevec1, intpoints);
+  return compute_error(ele, params, mat, discretization, lm, elevec1, intpoints);
 }
 
 
@@ -6625,7 +6625,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::F
  * Action type: Compute Error                              shahmiri 01/12
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::Fluid* ele,
+int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_error(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, const CORE::FE::GaussIntegration& intpoints)
@@ -7555,9 +7555,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
   // this will be the y-coordinate of a point in the element interior
   double center = 0.0;
   // get node coordinates of element
-  for (int inode = 0; inode < ele->NumNode(); inode++) center += xyze_(1, inode);
+  for (int inode = 0; inode < ele->num_node(); inode++) center += xyze_(1, inode);
 
-  center /= (double)ele->NumNode();
+  center /= (double)ele->num_node();
 
   // working arrays for the quantities we want to compute
   CORE::LINALG::Matrix<nsd_, 1> mean_res;
@@ -8485,7 +8485,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
   (*incrtauM)[nlayer] += averaged_tauM;
 
   // element mk in stabilisation parameter
-  (*incrmk)[nlayer] += GetMK();
+  (*incrmk)[nlayer] += get_mk();
 
   // averages of momentum residuals, subscale velocity and accelerations
   for (int mm = 0; mm < 3; ++mm)
@@ -10662,7 +10662,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ResetImmersedEle(
 
   // reset node information
   DRT::Node** nodes = immersedele->Nodes();
-  for (int i = 0; i < immersedele->NumNode(); ++i)
+  for (int i = 0; i < immersedele->num_node(); ++i)
   {
     static_cast<DRT::ImmersedNode*>(nodes[i])->SetIsMatched(0);
     static_cast<DRT::ImmersedNode*>(nodes[i])->set_is_boundary_immersed(0);
@@ -12587,7 +12587,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
     }
 
     // get convective velocity at integration point
-    SetConvectiveVelint(isale);
+    set_convective_velint(isale);
 
 
     if (fldpara_->Tds() == INPAR::FLUID::subscales_time_dependent)
@@ -12665,7 +12665,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
     }
 
     // get convective velocity at integration point
-    SetConvectiveVelint(isale);
+    set_convective_velint(isale);
 
 
     // get pressure at integration point

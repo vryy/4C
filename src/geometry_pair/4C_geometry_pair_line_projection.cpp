@@ -203,7 +203,7 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::intersect_line_with_other(const pair
  *
  */
 template <typename pair_type>
-void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::PreEvaluate(const pair_type* pair,
+void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::pre_evaluate(const pair_type* pair,
     const ElementData<line, scalar_type>& element_data_line,
     const ElementData<other, scalar_type>& element_data_other,
     std::vector<LineSegment<scalar_type>>& segments)
@@ -278,7 +278,7 @@ void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::Evaluate(const pair_
         "value is %d!",
         segments.size());
 
-  // Check if one point projected in PreEvaluate.
+  // Check if one point projected in pre_evaluate.
   if (segments.size() == 1 && segments[0].get_number_of_projection_points() > 0)
   {
     // Flag if segmentation is needed.

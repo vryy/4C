@@ -43,7 +43,7 @@ XFEM::XfsCouplingManager::XfsCouplingManager(Teuchos::RCP<ConditionManager> cond
       Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(condmanager->GetMeshCoupling(cond_name_));
   if (mcfsi_ == Teuchos::null) FOUR_C_THROW(" Failed to get MeshCouplingFSI for Structure!");
 
-  mcfsi_->SetTimeFac(1. / GetInterfaceTimefac());
+  mcfsi_->SetTimeFac(1. / get_interface_timefac());
 
   // safety check
   if (!mcfsi_->IDispnp()->Map().SameAs(*GetMapExtractor(0)->Map(1)))
@@ -51,7 +51,7 @@ XFEM::XfsCouplingManager::XfsCouplingManager(Teuchos::RCP<ConditionManager> cond
 
   // storage of the resulting Robin-type structural forces from the old timestep
   // Recovering of Lagrange multiplier happens on fluid field
-  lambda_ = Teuchos::rcp(new Epetra_Vector(*mcfsi_->GetCouplingDis()->DofRowMap(), true));
+  lambda_ = Teuchos::rcp(new Epetra_Vector(*mcfsi_->GetCouplingDis()->dof_row_map(), true));
 }
 
 /*-----------------------------------------------------------------------------------------*
@@ -85,7 +85,7 @@ void XFEM::XfsCouplingManager::SetCouplingStates()
   velnp->Update(1.0, *mcfsi_->IDispnp(), -1.0, *mcfsi_->IDispn(), 0.0);
 
   // inverse of FSI (1st order, 2nd order) scaling
-  const double scaling_FSI = GetInterfaceTimefac();  // 1/(theta_FSI * dt) =  1/weight^FSI_np
+  const double scaling_FSI = get_interface_timefac();  // 1/(theta_FSI * dt) =  1/weight^FSI_np
   const double dt = xfluid_->Dt();
 
   // v^{n+1} = -(1-theta)/theta * v^{n} - 1/(theta*dt)*(d^{n+1}-d^{n0})
@@ -98,13 +98,13 @@ void XFEM::XfsCouplingManager::SetCouplingStates()
   if (mcfsi_->get_averaging_strategy() != INPAR::XFEM::Xfluid_Sided)
   {
     // Set Dispnp (used to calc local coord of gausspoints)
-    struct_->Discretization()->SetState("dispnp", struct_->Dispnp());
+    struct_->Discretization()->set_state("dispnp", struct_->Dispnp());
     // Set Velnp (used for interface integration)
     Teuchos::RCP<Epetra_Vector> fullvelnp =
         Teuchos::rcp(new Epetra_Vector(struct_->Velnp()->Map(), true));
     fullvelnp->Update(1.0, *struct_->Dispnp(), -1.0, *struct_->Dispn(), 0.0);
     fullvelnp->Update(-(dt - 1 / scaling_FSI) * scaling_FSI, *struct_->Veln(), scaling_FSI);
-    struct_->Discretization()->SetState("velaf", fullvelnp);
+    struct_->Discretization()->set_state("velaf", fullvelnp);
   }
 }
 
@@ -121,7 +121,7 @@ void XFEM::XfsCouplingManager::AddCouplingMatrix(
   /*----------------------------------------------------------------------*/
   // scaling factor for displacement <-> velocity conversion (FSI)
   // inverse of FSI (1st order, 2nd order) scaling
-  const double scaling_FSI = GetInterfaceTimefac();  // 1/(theta_FSI * dt) =  1/weight^FSI_np
+  const double scaling_FSI = get_interface_timefac();  // 1/(theta_FSI * dt) =  1/weight^FSI_np
 
   // * all the coupling matrices are scaled with the weighting of the fluid w.r.t new time step np
   //    -> Unscale the blocks with (1/(theta_f*dt) = 1/weight(t^f_np))
@@ -245,7 +245,7 @@ void XFEM::XfsCouplingManager::Output(IO::DiscretizationWriter& writer)
 /*----------------------------------------------------------------------*/
 /* Read Restart on the interface                            ager 06/2016 |
  *-----------------------------------------------------------------------*/
-void XFEM::XfsCouplingManager::ReadRestart(IO::DiscretizationReader& reader)
+void XFEM::XfsCouplingManager::read_restart(IO::DiscretizationReader& reader)
 {
   Teuchos::RCP<Epetra_Vector> lambdafull =
       Teuchos::rcp(new Epetra_Vector(*GetMapExtractor(0)->FullMap(), true));
@@ -257,7 +257,7 @@ void XFEM::XfsCouplingManager::ReadRestart(IO::DiscretizationReader& reader)
 /*-----------------------------------------------------------------------------------------*
 | Get Timeface on the interface (for OST this is 1/(theta dt))                ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
-double XFEM::XfsCouplingManager::GetInterfaceTimefac()
+double XFEM::XfsCouplingManager::get_interface_timefac()
 {
   /*
    * Delta u(n+1,i+1) = fac * (Delta d(n+1,i+1) - dt * u(n))

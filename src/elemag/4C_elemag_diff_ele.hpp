@@ -252,7 +252,7 @@ namespace DRT
       */
       int NumDofPerNode(const DRT::Node& node) const override
       {
-        return ParentElement()->NumDofPerNode(node);
+        return parent_element()->NumDofPerNode(node);
       }
 
       /*!

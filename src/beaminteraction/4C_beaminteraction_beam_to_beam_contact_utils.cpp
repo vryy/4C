@@ -39,11 +39,11 @@ bool BEAMINTERACTION::ElementsShareNode(const DRT::Element& element1, const DRT:
 {
   bool sharenode = false;
 
-  for (int i = 0; i < element1.NumNode(); i++)
+  for (int i = 0; i < element1.num_node(); i++)
   {
     int id = element1.NodeIds()[i];
 
-    for (int j = 0; j < element2.NumNode(); j++)
+    for (int j = 0; j < element2.num_node(); j++)
     {
       if (id == element2.NodeIds()[j]) sharenode = true;
     }

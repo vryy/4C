@@ -137,7 +137,7 @@ namespace DRT
 
     /// error computation
     template <CORE::FE::CellType distype>
-    int FluidEleCalcXFEM<distype>::ComputeError(DRT::ELEMENTS::Fluid* ele,
+    int FluidEleCalcXFEM<distype>::compute_error(DRT::ELEMENTS::Fluid* ele,
         Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
         DRT::Discretization& discretization, std::vector<int>& lm,
         CORE::LINALG::SerialDenseVector& ele_dom_norms)
@@ -146,11 +146,11 @@ namespace DRT
       // more GP than usual due to (possible) cos/exp fcts in analytical solutions
       // degree 5
       const CORE::FE::GaussIntegration intpoints(distype, 8);
-      return ComputeError(ele, params, mat, discretization, lm, ele_dom_norms, intpoints);
+      return compute_error(ele, params, mat, discretization, lm, ele_dom_norms, intpoints);
     }
 
     template <CORE::FE::CellType distype>
-    int FluidEleCalcXFEM<distype>::ComputeError(DRT::ELEMENTS::Fluid* ele,
+    int FluidEleCalcXFEM<distype>::compute_error(DRT::ELEMENTS::Fluid* ele,
         Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
         DRT::Discretization& discretization, std::vector<int>& lm,
         CORE::LINALG::SerialDenseVector& ele_dom_norms,  // squared element domain norms
@@ -256,12 +256,12 @@ namespace DRT
         else
           FOUR_C_THROW("Material is not Newtonian Fluid");
 
-        AnalyticalReference(calcerr,  ///< which reference solution
-            calcerrfunctno,           ///< error function number
-            u_analyt,                 ///< exact velocity
-            grad_u_analyt,            ///< exact velocity gradient
-            p_analyt,                 ///< exact pressure
-            xyzint,                   ///< xyz position of gaussian point
+        analytical_reference(calcerr,  ///< which reference solution
+            calcerrfunctno,            ///< error function number
+            u_analyt,                  ///< exact velocity
+            grad_u_analyt,             ///< exact velocity gradient
+            p_analyt,                  ///< exact pressure
+            xyzint,                    ///< xyz position of gaussian point
             t, mat);
 
         // compute difference between analytical solution and numerical solution
@@ -351,7 +351,7 @@ namespace DRT
     }
 
     template <CORE::FE::CellType distype>
-    void FluidEleCalcXFEM<distype>::AnalyticalReference(
+    void FluidEleCalcXFEM<distype>::analytical_reference(
         const int calcerr,                         ///< which reference solution
         const int calcerrfunctno,                  ///< error function number
         CORE::LINALG::Matrix<nsd_, 1>& u,          ///< exact jump vector (coupled)
@@ -988,7 +988,7 @@ namespace DRT
         if (is_mesh_coupling_side)
         {
           // get the side element and its coordinates for projection of Gaussian points
-          side = cond_manager->GetSide(coup_sid);
+          side = cond_manager->get_side(coup_sid);
           CORE::GEO::InitialPositionArray(side_xyze, side);
 
           // create auxiliary coupling object for the boundary element, in order to perform
@@ -1077,7 +1077,7 @@ namespace DRT
 
             // find element local position of gauss point
             Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-                CORE::GEO::CUT::PositionFactory::BuildPosition<nsd_, distype>(my::xyze_, x_gp_lin);
+                CORE::GEO::CUT::PositionFactory::build_position<nsd_, distype>(my::xyze_, x_gp_lin);
             pos->Compute();
             pos->LocalCoordinates(rst);
 
@@ -1122,7 +1122,7 @@ namespace DRT
 
             if (eval_deriv)
             {
-              EvalFuncAndDeriv(rst);
+              eval_func_and_deriv(rst);
             }
             else
             {
@@ -1144,7 +1144,7 @@ namespace DRT
 
             //----------------------------------------------
             // get convective velocity at integration point
-            my::SetConvectiveVelint(ele->IsAle());
+            my::set_convective_velint(ele->IsAle());
 
             //--------------------------------------------
             // compute errors
@@ -1155,8 +1155,8 @@ namespace DRT
             CORE::LINALG::Matrix<nsd_, nsd_> grad_u_analyt(true);
             p_analyt = 0.0;
 
-            AnalyticalReference(calcerr,  ///< which reference solution
-                calcerrfunctno,           ///< error function number
+            analytical_reference(calcerr,  ///< which reference solution
+                calcerrfunctno,            ///< error function number
                 u_analyt,       ///< exact velocity (onesided), exact jump vector (coupled)
                 grad_u_analyt,  ///< exact velocity gradient
                 p_analyt,       ///< exact pressure
@@ -1633,7 +1633,7 @@ namespace DRT
           if (mc_fsi != Teuchos::null) assemble_iforce = true;
 
           // get the side element and its coordinates for projection of Gaussian points
-          side = cond_manager->GetSide(coup_sid);
+          side = cond_manager->get_side(coup_sid);
           CORE::GEO::InitialPositionArray(side_xyze, side);
 
           // create auxiliary coupling object for the boundary element, in order to perform
@@ -1667,7 +1667,7 @@ namespace DRT
           else
           {
             // TODO get the coupling element / the coupling side!!!
-            coupl_ele = cond_manager->GetSide(coup_sid);
+            coupl_ele = cond_manager->get_side(coup_sid);
           }
 
           CORE::GEO::InitialPositionArray(coupl_xyze, coupl_ele);
@@ -1858,7 +1858,7 @@ namespace DRT
 
             // find element local position of gauss point
             Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-                CORE::GEO::CUT::PositionFactory::BuildPosition<nsd_, distype>(my::xyze_, x_gp_lin);
+                CORE::GEO::CUT::PositionFactory::build_position<nsd_, distype>(my::xyze_, x_gp_lin);
             pos->Compute();
             pos->LocalCoordinates(rst);
 
@@ -1907,7 +1907,7 @@ namespace DRT
 
             if (assemble_iforce)  // evaluate derivatives to assemble iforce vector
             {
-              EvalFuncAndDeriv(rst);
+              eval_func_and_deriv(rst);
             }
             else
             {
@@ -1954,8 +1954,8 @@ namespace DRT
             {
               //-----------------------------------------------------------------------------
               // evaluate the Neumann boundary condition term
-              EvaluateNeumann(timefacfac,  ///< theta*dt
-                  my::funct_,              ///< coupling master shape functions
+              evaluate_neumann(timefacfac,  ///< theta*dt
+                  my::funct_,               ///< coupling master shape functions
                   itraction_jump,  ///< prescribed interface traction, jump height for coupled
                                    ///< problems
                   elevec1_epetra   ///< element rhs vector
@@ -1989,7 +1989,7 @@ namespace DRT
                 double NIT_full_stab_fac = 0.0;
                 const double NIT_visc_stab_fac = 0.0;
 
-                my::SetConvectiveVelint(ele->IsAle());
+                my::set_convective_velint(ele->IsAle());
 
 
                 //-----------------------------------------------------------------------------
@@ -2143,7 +2143,7 @@ namespace DRT
             // t= (-p*I + 2mu*eps(u))*n^f
             CORE::LINALG::Matrix<nsd_, 1> traction(true);
 
-            BuildTractionVector(traction, press, normal);
+            build_traction_vector(traction, press, normal);
 
             ci[coup_sid]->compute_interface_force(iforce, traction, surf_fac);
 
@@ -3465,7 +3465,7 @@ namespace DRT
           }
 
           // get the side element and its coordinates for projection of Gaussian points
-          side = cond_manager->GetSide(coup_sid);
+          side = cond_manager->get_side(coup_sid);
           CORE::GEO::InitialPositionArray(side_xyze, side);
 
           // create auxiliary coupling object for the boundary element, in order to perform
@@ -3669,7 +3669,8 @@ namespace DRT
 
                 // find element local position of gauss point
                 Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-                    CORE::GEO::CUT::PositionFactory::BuildPosition<nsd_, distype>(my::xyze_, x_ref);
+                    CORE::GEO::CUT::PositionFactory::build_position<nsd_, distype>(
+                        my::xyze_, x_ref);
                 pos->Compute();
                 pos->LocalCoordinates(rst_);
               }
@@ -3677,7 +3678,7 @@ namespace DRT
               {
                 // find element local position of gauss point
                 Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-                    CORE::GEO::CUT::PositionFactory::BuildPosition<nsd_, distype>(
+                    CORE::GEO::CUT::PositionFactory::build_position<nsd_, distype>(
                         my::xyze_, x_gp_lin_);
                 pos->Compute();
                 pos->LocalCoordinates(rst_);
@@ -3713,7 +3714,7 @@ namespace DRT
             const double timefacfac = surf_fac * my::fldparatimint_->TimeFac();
 
             // evaluate background element shape functions
-            EvalFuncAndDeriv(rst_);
+            eval_func_and_deriv(rst_);
 
             // get velocity at integration point
             // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -3729,7 +3730,7 @@ namespace DRT
 
             //----------------------------------------------
             // get convective velocity at integration point
-            my::SetConvectiveVelint(ele->IsAle());
+            my::set_convective_velint(ele->IsAle());
 
             //-----------------------------------------------------------------------------
             // compute stabilization factors
@@ -3769,8 +3770,8 @@ namespace DRT
             {
               //-----------------------------------------------------------------------------
               // evaluate the Neumann boundary condition term
-              EvaluateNeumann(timefacfac,  ///< theta*dt
-                  my::funct_,              ///< coupling master shape functions
+              evaluate_neumann(timefacfac,  ///< theta*dt
+                  my::funct_,               ///< coupling master shape functions
                   itraction_jump_,  ///< prescribed interface traction, jump height for coupled
                                     ///< problems
                   elevec1_epetra    ///< element rhs vector
@@ -3958,7 +3959,7 @@ namespace DRT
             // t= (-p*I + 2mu*eps(u))*n^f
             CORE::LINALG::Matrix<nsd_, 1> traction;
 
-            BuildTractionVector(traction, press, normal_);
+            build_traction_vector(traction, press, normal_);
             ci->compute_interface_force(iforce, traction, surf_fac);
 
           }  // end loop gauss points of boundary cell
@@ -3973,7 +3974,7 @@ namespace DRT
       // build Cuiui coupling matrix (includes patch of Cuiui matrices for all sides)
       //-----------------------------------------------------------------------------------
 
-      NIT_BuildPatchCuiui(Cuiui, Cuiui_coupling);
+      nit_build_patch_cuiui(Cuiui, Cuiui_coupling);
 
       return;
     }
@@ -4305,14 +4306,14 @@ namespace DRT
      * build the patch coupling matrix Cuiui containing Cuiui for all cutting sides
      *--------------------------------------------------------------------------------*/
     template <CORE::FE::CellType distype>
-    void FluidEleCalcXFEM<distype>::NIT_BuildPatchCuiui(
+    void FluidEleCalcXFEM<distype>::nit_build_patch_cuiui(
         CORE::LINALG::SerialDenseMatrix&
             Cuiui,  ///< ui-ui patch coupling matrix containing Cuiui for all cutting sides
         std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>&
             Cuiui_coupling  ///< Cuiui matrices for all cutting sides
     )
     {
-      // TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::NIT_BuildPatchCuiui");
+      // TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::nit_build_patch_cuiui");
 
       // build patch-Cuiui matrix
       int ipatchsizesbefore = 0;
@@ -4374,7 +4375,7 @@ namespace DRT
         if (cond_manager->IsMeshCoupling(coup_sid))
           cutter_dis = cond_manager->GetCutterDis(coup_sid);
 
-        DRT::Element* side = cond_manager->GetSide(
+        DRT::Element* side = cond_manager->get_side(
             coup_sid);  // for each boundary element there is one corresponding side
 
         std::vector<int> patchlm;
@@ -4399,7 +4400,7 @@ namespace DRT
      | evaluate shape functions and derivatives at given local coordinates  |
      *----------------------------------------------------------------------*/
     template <CORE::FE::CellType distype>
-    void FluidEleCalcXFEM<distype>::EvalFuncAndDeriv(CORE::LINALG::Matrix<3, 1>& rst)
+    void FluidEleCalcXFEM<distype>::eval_func_and_deriv(CORE::LINALG::Matrix<3, 1>& rst)
     {
       // evaluate shape functions
       CORE::FE::shape_function<distype>(rst, my::funct_);
@@ -4420,7 +4421,7 @@ namespace DRT
      | build traction vector w.r.t fluid domain                             |
      *----------------------------------------------------------------------*/
     template <CORE::FE::CellType distype>
-    void FluidEleCalcXFEM<distype>::BuildTractionVector(
+    void FluidEleCalcXFEM<distype>::build_traction_vector(
         CORE::LINALG::Matrix<nsd_, 1>& traction,  ///< traction vector
         double& press,                            ///< pressure at gaussian point
         CORE::LINALG::Matrix<nsd_, 1>& normal     ///< normal vector
@@ -4476,7 +4477,7 @@ namespace DRT
     /*----------------------------------------------------------------------*
      *----------------------------------------------------------------------*/
     template <CORE::FE::CellType distype>
-    void FluidEleCalcXFEM<distype>::EvaluateNeumann(const double& timefacfac,  ///< theta*dt
+    void FluidEleCalcXFEM<distype>::evaluate_neumann(const double& timefacfac,  ///< theta*dt
         const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< coupling master shape functions
         const CORE::LINALG::Matrix<nsd_, 1>&
             itraction_jump,  ///< prescribed interface traction, jump height for coupled problems

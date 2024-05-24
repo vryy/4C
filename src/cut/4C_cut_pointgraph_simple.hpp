@@ -44,7 +44,7 @@ namespace CORE::GEO
           /** \brief Simplified version of the base class implementation
            *
            *  \author hiermeier \date 11/16 */
-          void FindCycles(Element* element, Side* side, Cycle& cycle, Location location,
+          void find_cycles(Element* element, Side* side, Cycle& cycle, Location location,
               Strategy strategy) override;
 
         };  // struct Graph
@@ -108,7 +108,7 @@ namespace CORE::GEO
            *  is performed.
            *
            *  \author hiermeier \date 11/16 */
-          void FindCycles(Element* element, Side* side, Cycle& cycle, Location location,
+          void find_cycles(Element* element, Side* side, Cycle& cycle, Location location,
               Strategy strategy) override;
 
           inline const std::vector<Cycle>& SurfaceMainCycles() const
@@ -179,7 +179,7 @@ namespace CORE::GEO
         void fill_graph_and_cycle_with_line_facets(
             const plain_facet_set& line_facets, Cycle& cycle);
 
-        void FindCycles(Element* element, Cycle& cycle);
+        void find_cycles(Element* element, Cycle& cycle);
 
        private:
         Teuchos::RCP<SimplePointGraph2D::Graph> graph_2d_;

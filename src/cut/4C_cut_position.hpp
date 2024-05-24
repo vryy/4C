@@ -53,7 +53,7 @@ namespace CORE::GEO
       };
 
       //! Map Status enum to std::string
-      static inline std::string Status2String(enum Status pstatus)
+      static inline std::string status2_string(enum Status pstatus)
       {
         switch (pstatus)
         {
@@ -305,7 +305,7 @@ namespace CORE::GEO
           std::ostringstream msg;
           msg << "The local coordinates are not valid. "
                  "( Position::Status = "
-              << Status2String(pos_status_) << " )";
+              << status2_string(pos_status_) << " )";
           FOUR_C_THROW(msg.str());
         }
 
@@ -481,7 +481,7 @@ namespace CORE::GEO
           std::ostringstream msg;
           msg << "Neither the position nor the distance value is valid! "
                  "( Position::Status = "
-              << Position::Status2String(this->pos_status_) << " )";
+              << Position::status2_string(this->pos_status_) << " )";
           FOUR_C_THROW(msg.str());
         }
 
@@ -502,7 +502,7 @@ namespace CORE::GEO
           std::ostringstream msg;
           msg << "Neither the position nor the distance value is valid! "
                  "( Position::Status = "
-              << Position::Status2String(this->pos_status_) << " )";
+              << Position::status2_string(this->pos_status_) << " )";
           FOUR_C_THROW(msg.str());
         }
 
@@ -699,7 +699,7 @@ namespace CORE::GEO
             const CORE::LINALG::Matrix<probdim, 1>& xyz,
             INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double)
         {
-          switch (UseDistFloattype(floattype))
+          switch (use_dist_floattype(floattype))
           {
             case INPAR::CUT::floattype_double:
             {
@@ -729,7 +729,7 @@ namespace CORE::GEO
             const CORE::LINALG::Matrix<dim, 1>& xyz,
             INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double)
         {
-          switch (UsePosFloattype(floattype))
+          switch (use_pos_floattype(floattype))
           {
             case INPAR::CUT::floattype_double:
             {
@@ -765,7 +765,7 @@ namespace CORE::GEO
        *  \author hiermeier \date 08/16 */
       template <unsigned probdim, CORE::FE::CellType eletype, unsigned dim = CORE::FE::dim<eletype>,
           unsigned numNodesElement = CORE::FE::num_nodes<eletype>>
-      Teuchos::RCP<Position> BuildPosition(const Element& element, const Point& point,
+      Teuchos::RCP<Position> build_position(const Element& element, const Point& point,
           INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double) const
       {
         CORE::LINALG::Matrix<probdim, numNodesElement> xyze;
@@ -807,9 +807,9 @@ namespace CORE::GEO
         switch (probdim_)
         {
           case 2:
-            return BuildPosition<2, eletype>(element, point, floattype);
+            return build_position<2, eletype>(element, point, floattype);
           case 3:
-            return BuildPosition<3, eletype>(element, point, floattype);
+            return build_position<3, eletype>(element, point, floattype);
           default:
             FOUR_C_THROW("Unsupported problem dimension! (probdim = %d)", probdim_);
             exit(EXIT_FAILURE);
@@ -833,7 +833,7 @@ namespace CORE::GEO
        *  \author hiermeier \date 08/16 */
       template <unsigned probdim, CORE::FE::CellType eletype, unsigned dim = CORE::FE::dim<eletype>,
           unsigned numNodesElement = CORE::FE::num_nodes<eletype>>
-      static Teuchos::RCP<Position> BuildPosition(const Element& element,
+      static Teuchos::RCP<Position> build_position(const Element& element,
           const CORE::LINALG::Matrix<probdim, 1>& xyz,
           INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double)
       {
@@ -877,12 +877,12 @@ namespace CORE::GEO
           case 2:
           {
             CORE::LINALG::Matrix<2, 1> xyz_mat(xyz, true);
-            return BuildPosition<2, eletype>(element, xyz_mat, floattype);
+            return build_position<2, eletype>(element, xyz_mat, floattype);
           }
           case 3:
           {
             CORE::LINALG::Matrix<3, 1> xyz_mat(xyz, true);
-            return BuildPosition<3, eletype>(element, xyz_mat, floattype);
+            return build_position<3, eletype>(element, xyz_mat, floattype);
           }
           default:
             FOUR_C_THROW("Unsupported problem dimension! (probdim = %d)", probdim_);
@@ -906,7 +906,7 @@ namespace CORE::GEO
        *  \author hiermeier \date 08/16 */
       template <unsigned probdim, CORE::FE::CellType eletype, unsigned dim = CORE::FE::dim<eletype>,
           unsigned numNodesElement = CORE::FE::num_nodes<eletype>>
-      static Teuchos::RCP<Position> BuildPosition(
+      static Teuchos::RCP<Position> build_position(
           const CORE::LINALG::Matrix<probdim, numNodesElement>& xyze,
           const CORE::LINALG::Matrix<probdim, 1>& xyz,
           INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double)
@@ -943,13 +943,13 @@ namespace CORE::GEO
           {
             CORE::LINALG::Matrix<2, num_nodes_ele> xyze_mat(xyze, true);
             CORE::LINALG::Matrix<2, 1> xyz_mat(xyz, true);
-            return BuildPosition<2, eletype>(xyze_mat, xyz_mat, floattype);
+            return build_position<2, eletype>(xyze_mat, xyz_mat, floattype);
           }
           case 3:
           {
             CORE::LINALG::Matrix<3, num_nodes_ele> xyze_mat(xyze, true);
             CORE::LINALG::Matrix<3, 1> xyz_mat(xyz, true);
-            return BuildPosition<3, eletype>(xyze_mat, xyz_mat, floattype);
+            return build_position<3, eletype>(xyze_mat, xyz_mat, floattype);
           }
           default:
             FOUR_C_THROW("Unsupported problem dimension! (probdim = %d)", probdim_);
@@ -973,7 +973,7 @@ namespace CORE::GEO
        *  \author hiermeier \date 08/16 */
       template <unsigned probdim, CORE::FE::CellType eletype, unsigned dim = CORE::FE::dim<eletype>,
           unsigned numNodesElement = CORE::FE::num_nodes<eletype>>
-      static Teuchos::RCP<Position> BuildPosition(const std::vector<Node*> nodes,
+      static Teuchos::RCP<Position> build_position(const std::vector<Node*> nodes,
           const CORE::LINALG::Matrix<probdim, 1>& xyz,
           INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double)
       {
@@ -1021,12 +1021,12 @@ namespace CORE::GEO
           case 2:
           {
             CORE::LINALG::Matrix<2, 1> xyz_mat(xyz, true);
-            return BuildPosition<2, eletype>(nodes, xyz_mat, floattype);
+            return build_position<2, eletype>(nodes, xyz_mat, floattype);
           }
           case 3:
           {
             CORE::LINALG::Matrix<3, 1> xyz_mat(xyz, true);
-            return BuildPosition<3, eletype>(nodes, xyz_mat, floattype);
+            return build_position<3, eletype>(nodes, xyz_mat, floattype);
           }
           default:
             FOUR_C_THROW("Unsupported problem dimension! (probdim = %d)", probdim_);
@@ -1039,8 +1039,8 @@ namespace CORE::GEO
       /// @}
 
       /*! \brief get general floattype for all geometric operations in CORE::GEO::CUT::POSITON*/
-      static INPAR::CUT::CutFloattype UsePosFloattype(INPAR::CUT::CutFloattype floattype);
-      static INPAR::CUT::CutFloattype UseDistFloattype(INPAR::CUT::CutFloattype floattype);
+      static INPAR::CUT::CutFloattype use_pos_floattype(INPAR::CUT::CutFloattype floattype);
+      static INPAR::CUT::CutFloattype use_dist_floattype(INPAR::CUT::CutFloattype floattype);
 
       /*! \brief general floattype for all geometric operations in CORE::GEO::CUT::POSITON*/
       static INPAR::CUT::CutFloattype general_pos_floattype_;

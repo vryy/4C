@@ -122,7 +122,7 @@ namespace GEOMETRYPAIR
      * @param displacement (in) Current displacement vector.
      * @param face_elements (in) Map with all the faces in this condition.
      */
-    virtual void SetState(const Teuchos::RCP<const Epetra_Vector>& displacement,
+    virtual void set_state(const Teuchos::RCP<const Epetra_Vector>& displacement,
         const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements) = 0;
 
     /**
@@ -226,7 +226,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Set the needed displacement vectors for this face (derived).
      */
-    void SetState(const Teuchos::RCP<const Epetra_Vector>& displacement,
+    void set_state(const Teuchos::RCP<const Epetra_Vector>& displacement,
         const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
         override;
 
@@ -361,7 +361,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Set the needed displacement vectors for this face (derived).
      */
-    void SetState(const Teuchos::RCP<const Epetra_Vector>& displacement,
+    void set_state(const Teuchos::RCP<const Epetra_Vector>& displacement,
         const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
         override;
 
@@ -387,7 +387,7 @@ namespace GEOMETRYPAIR
      * element.
      */
     template <typename T>
-    void AverageNodalNormals(
+    void average_nodal_normals(
         CORE::LINALG::Matrix<surface::n_nodes_, 1, CORE::LINALG::Matrix<3, 1, T>>& normals,
         CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, T>& averaged_normals) const;
 
@@ -440,7 +440,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Set the needed displacement vectors for this face (derived).
      */
-    void SetState(const Teuchos::RCP<const Epetra_Vector>& displacement,
+    void set_state(const Teuchos::RCP<const Epetra_Vector>& displacement,
         const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
         override;
 

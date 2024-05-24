@@ -258,19 +258,19 @@ namespace STR
       Teuchos::RCP<CORE::LINALG::SparseOperator> CreateAuxJacobian() const;
 
      protected:
-      inline const bool& IsInit() const { return isinit_; };
+      inline const bool& is_init() const { return isinit_; };
 
-      inline const bool& IsSetup() const { return issetup_; };
+      inline const bool& is_setup() const { return issetup_; };
 
-      inline void CheckInitSetup() const
+      inline void check_init_setup() const
       {
         FOUR_C_ASSERT(
-            IsInit() and IsSetup(), "Call STR::BaseDataGlobalState::Init() and Setup() first!");
+            is_init() and is_setup(), "Call STR::BaseDataGlobalState::Init() and Setup() first!");
       }
 
-      inline void CheckInit() const
+      inline void check_init() const
       {
-        FOUR_C_ASSERT(IsInit(), "STR::BaseDataGlobalState::Init() has not been called, yet!");
+        FOUR_C_ASSERT(is_init(), "STR::BaseDataGlobalState::Init() has not been called, yet!");
       }
 
      public:
@@ -280,27 +280,27 @@ namespace STR
       /// attached discretisation
       Teuchos::RCP<const DRT::Discretization> GetDiscret() const
       {
-        CheckInit();
+        check_init();
         return discret_;
       };
 
       /// communicator
       Teuchos::RCP<const Epetra_Comm> GetCommPtr() const
       {
-        CheckInit();
+        check_init();
         return comm_;
       };
 
       const Epetra_Comm& GetComm() const
       {
-        CheckInit();
+        check_init();
         return *comm_;
       };
 
       /// ID of actual processor in parallel
       const int& GetMyRank() const
       {
-        CheckInit();
+        check_init();
         return my_rank_;
       };
 
@@ -310,11 +310,11 @@ namespace STR
       ///@{
 
       /// dof map of vector of unknowns
-      virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const;
+      virtual Teuchos::RCP<const Epetra_Map> dof_row_map() const;
 
       /// dof map of vector of unknowns
       /// method for multiple dofsets
-      virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) const;
+      virtual Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) const;
 
       /// view of dof map of vector of unknowns
       virtual const Epetra_Map* DofRowMapView() const;
@@ -336,42 +336,42 @@ namespace STR
       /// Return target time \f$t_{n+1}\f$
       const double& GetTimeNp() const
       {
-        CheckInit();
+        check_init();
         return timenp_;
       };
 
       /// Return time \f$t_{n}\f$ of last converged step
       const double& GetTimeN() const
       {
-        CheckInit();
+        check_init();
         return (*timen_)[0];
       };
 
       /// Return time vector \f$t_{n}, t_{n-1}, ...\f$ of last converged steps
       Teuchos::RCP<const TIMESTEPPING::TimIntMStep<double>> GetMultiTime() const
       {
-        CheckInit();
+        check_init();
         return timen_;
       };
 
       /// Return time step index for \f$t_{n+1}\f$
       const int& GetStepNp() const
       {
-        CheckInit();
+        check_init();
         return stepnp_;
       };
 
       /// Return time step index for \f$t_{n}\f$
       const int& GetStepN() const
       {
-        CheckInit();
+        check_init();
         return stepn_;
       };
 
       /// Return the restart step
       int GetRestartStep() const
       {
-        CheckInit();
+        check_init();
         return restartstep_;
       }
 
@@ -384,35 +384,35 @@ namespace STR
       /// Return time for lin solver
       const double& GetLinearSolverTime() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return dtsolve_;
       };
 
       /// Return element evaluation time
       const double& get_element_evaluation_time() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return dtele_;
       };
 
       /// Return time step size \f$\Delta t\f$
       Teuchos::RCP<const TIMESTEPPING::TimIntMStep<double>> GetDeltaTime() const
       {
-        CheckInit();
+        check_init();
         return dt_;
       };
 
       /// Return timer for solution technique
       Teuchos::RCP<const Teuchos::Time> GetTimer() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return timer_;
       };
 
       /// returns the prediction indicator
       const bool& IsPredict() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return ispredict_;
       };
       ///@}
@@ -423,119 +423,119 @@ namespace STR
       /// Return displacements \f$D_{n+1}\f$
       Teuchos::RCP<const Epetra_Vector> GetDisNp() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return disnp_;
       }
 
       /// Return displacements \f$D_{n}\f$
       Teuchos::RCP<const Epetra_Vector> GetDisN() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return (*dis_)(0);
       }
 
       /// Return velocities \f$V_{n+1}\f$
       Teuchos::RCP<const Epetra_Vector> GetVelNp() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return velnp_;
       }
 
       /// Return velocities \f$V_{n}\f$
       Teuchos::RCP<const Epetra_Vector> GetVelN() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return (*vel_)(0);
       }
 
       /// Return velocities \f$V_{n}\f$
       Teuchos::RCP<const Epetra_Vector> GetVelNm() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return (*vel_)(-1);
       }
 
       /// Return accelerations \f$A_{n+1}\f$
       Teuchos::RCP<const Epetra_Vector> GetAccNp() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return accnp_;
       }
 
       /// Return accelerations \f$A_{n}\f$
       Teuchos::RCP<const Epetra_Vector> GetAccN() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return (*acc_)(0);
       }
 
       /// Return internal force \f$fint_{n}\f$
       Teuchos::RCP<const Epetra_Vector> GetFintN() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return fintn_;
       }
 
       /// Return internal force \f$fint_{n+1}\f$
       Teuchos::RCP<const Epetra_Vector> GetFintNp() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return fintnp_;
       }
 
       /// Return external force \f$fext_{n}\f$
       Teuchos::RCP<const Epetra_Vector> GetFextN() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return fextn_;
       }
 
       /// Return external force \f$fext_{n+1}\f$
       Teuchos::RCP<const Epetra_Vector> GetFextNp() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return fextnp_;
       }
 
       /// Return reaction force \f$freact_{n}\f$
       Teuchos::RCP<const Epetra_Vector> GetFreactN() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return freactn_;
       }
 
       /// Return reaction force \f$freact_{n+1}\f$
       Teuchos::RCP<const Epetra_Vector> GetFreactNp() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return freactnp_;
       }
 
       /// Return inertia force \f$finertial_{n}\f$
       Teuchos::RCP<const Epetra_Vector> GetFinertialN() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return finertialn_;
       }
 
       /// Return inertial force \f$finertial_{n+1}\f$
       Teuchos::RCP<const Epetra_Vector> GetFinertialNp() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return finertialnp_;
       }
 
       /// Return visco force \f$fvisco_{n}\f$
       Teuchos::RCP<const Epetra_Vector> GetFviscoN() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return fviscon_;
       }
 
       /// Return visco force \f$fvisco_{n+1}\f$
       Teuchos::RCP<const Epetra_Vector> GetFviscoNp() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return fvisconp_;
       }
 
@@ -546,7 +546,7 @@ namespace STR
        *  different time integration factors! */
       Teuchos::RCP<const Epetra_Vector> GetFstructureOld() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return fstructold_;
       }
       ///@}
@@ -556,21 +556,21 @@ namespace STR
       /// returns the entire structural jacobian
       Teuchos::RCP<const CORE::LINALG::SparseOperator> GetJacobian() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return jac_;
       }
 
       /// mass matrix (constant)
       Teuchos::RCP<const CORE::LINALG::SparseOperator> GetMassMatrix() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return mass_;
       }
 
       /// damping matrix
       Teuchos::RCP<const CORE::LINALG::SparseOperator> GetDampMatrix() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return damp_;
       }
       ///@}
@@ -580,7 +580,7 @@ namespace STR
       /// attached discretization
       Teuchos::RCP<DRT::Discretization> GetDiscret()
       {
-        CheckInit();
+        check_init();
         return discret_;
       };
 
@@ -624,7 +624,7 @@ namespace STR
       /// Returns the maximal block number
       int MaxBlockNumber() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return max_block_num_;
       };
 
@@ -648,35 +648,35 @@ namespace STR
       /// Return target time \f$t_{n+1}\f$
       double& GetTimeNp()
       {
-        CheckInit();
+        check_init();
         return timenp_;
       };
 
       /// Return time \f$t_{n}\f$ of last converged step
       double& GetTimeN()
       {
-        CheckInit();
+        check_init();
         return (*timen_)[0];
       };
 
       /// Return time \f$t_{n}, t_{n-1}, ...\f$ of last converged steps
       Teuchos::RCP<TIMESTEPPING::TimIntMStep<double>>& GetMultiTime()
       {
-        CheckInit();
+        check_init();
         return timen_;
       };
 
       /// Return time step index for \f$t_{n+1}\f$
       int& GetStepNp()
       {
-        CheckInit();
+        check_init();
         return stepnp_;
       };
 
       /// Return time step index for \f$t_{n}\f$
       int& GetStepN()
       {
-        CheckInit();
+        check_init();
         return stepn_;
       };
 
@@ -686,35 +686,35 @@ namespace STR
       /// Return time for linear solver
       double& GetLinearSolverTime()
       {
-        CheckInitSetup();
+        check_init_setup();
         return dtsolve_;
       };
 
       /// Return element evaluation time
       double& get_element_evaluation_time()
       {
-        CheckInitSetup();
+        check_init_setup();
         return dtele_;
       };
 
       /// Return time step size \f$\Delta t\f$
       Teuchos::RCP<TIMESTEPPING::TimIntMStep<double>>& GetDeltaTime()
       {
-        CheckInit();
+        check_init();
         return dt_;
       };
 
       /// Return timer for solution technique
       Teuchos::RCP<Teuchos::Time>& GetTimer()
       {
-        CheckInitSetup();
+        check_init_setup();
         return timer_;
       };
 
       /// Return the prediction indicator
       bool& IsPredict()
       {
-        CheckInitSetup();
+        check_init_setup();
         return ispredict_;
       }
       ///@}
@@ -725,147 +725,147 @@ namespace STR
       /// Return displacements \f$D_{n+1}\f$
       Teuchos::RCP<Epetra_Vector>& GetDisNp()
       {
-        CheckInitSetup();
+        check_init_setup();
         return disnp_;
       }
 
       /// Return displacements \f$D_{n}\f$
       Teuchos::RCP<Epetra_Vector> GetDisN()
       {
-        CheckInitSetup();
+        check_init_setup();
         return (*dis_)(0);
       }
 
       /// Return multi-displacement vector \f$D_{n}, D_{n-1}, ...\f$
       Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>>& GetMultiDis()
       {
-        CheckInitSetup();
+        check_init_setup();
         return dis_;
       }
 
       /// Return velocities \f$V_{n+1}\f$
       Teuchos::RCP<Epetra_Vector>& GetVelNp()
       {
-        CheckInitSetup();
+        check_init_setup();
         return velnp_;
       }
 
       /// Return velocities \f$V_{n}\f$
       Teuchos::RCP<Epetra_Vector> GetVelN()
       {
-        CheckInitSetup();
+        check_init_setup();
         return (*vel_)(0);
       }
 
       /// Return multi-velocity vector \f$V_{n}, V_{n-1}, ...\f$
       Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>>& GetMultiVel()
       {
-        CheckInitSetup();
+        check_init_setup();
         return vel_;
       }
 
       /// Return multi-velocity vector \f$V_{n}, V_{n-1}, ...\f$
       const Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>>& GetMultiVel() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return vel_;
       }
 
       /// Return accelerations \f$A_{n+1}\f$
       Teuchos::RCP<Epetra_Vector>& GetAccNp()
       {
-        CheckInitSetup();
+        check_init_setup();
         return accnp_;
       }
 
       /// Return accelerations \f$A_{n}\f$
       Teuchos::RCP<Epetra_Vector> GetAccN()
       {
-        CheckInitSetup();
+        check_init_setup();
         return (*acc_)(0);
       }
 
       /// Return multi-acceleration vector \f$A_{n}, A_{n-1}, ...\f$
       Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>>& GetMultiAcc()
       {
-        CheckInitSetup();
+        check_init_setup();
         return acc_;
       }
 
       /// Return multi-acceleration vector \f$A_{n}, A_{n-1}, ...\f$
       const Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>>& GetMultiAcc() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return acc_;
       }
 
       /// Return internal force \f$fint_{n}\f$
       Teuchos::RCP<Epetra_Vector>& GetFintN()
       {
-        CheckInitSetup();
+        check_init_setup();
         return fintn_;
       }
 
       /// Return internal force \f$fint_{n+1}\f$
       Teuchos::RCP<Epetra_Vector>& GetFintNp()
       {
-        CheckInitSetup();
+        check_init_setup();
         return fintnp_;
       }
 
       /// Return external force \f$fext_{n}\f$
       Teuchos::RCP<Epetra_Vector>& GetFextN()
       {
-        CheckInitSetup();
+        check_init_setup();
         return fextn_;
       }
 
       /// Return external force \f$fext_{n+1}\f$
       Teuchos::RCP<Epetra_Vector>& GetFextNp()
       {
-        CheckInitSetup();
+        check_init_setup();
         return fextnp_;
       }
 
       /// Return reaction force \f$freact_{n}\f$
       Teuchos::RCP<Epetra_Vector>& GetFreactN()
       {
-        CheckInitSetup();
+        check_init_setup();
         return freactn_;
       }
 
       /// Return reaction force \f$freact_{n+1}\f$
       Teuchos::RCP<Epetra_Vector>& GetFreactNp()
       {
-        CheckInitSetup();
+        check_init_setup();
         return freactnp_;
       }
 
       /// Return inertia force \f$finertial_{n}\f$
       Teuchos::RCP<Epetra_Vector>& GetFinertialN()
       {
-        CheckInitSetup();
+        check_init_setup();
         return finertialn_;
       }
 
       /// Return inertial force \f$finertial_{n+1}\f$
       Teuchos::RCP<Epetra_Vector>& GetFinertialNp()
       {
-        CheckInitSetup();
+        check_init_setup();
         return finertialnp_;
       }
 
       /// Return viscous force \f$f_{viscous,n}\f$
       Teuchos::RCP<Epetra_Vector>& GetFviscoN()
       {
-        CheckInitSetup();
+        check_init_setup();
         return fviscon_;
       }
 
       /// Return viscous force \f$fviscous_{n+1}\f$
       Teuchos::RCP<Epetra_Vector>& GetFviscoNp()
       {
-        CheckInitSetup();
+        check_init_setup();
         return fvisconp_;
       }
 
@@ -875,7 +875,7 @@ namespace STR
        *  different time integration factors! */
       Teuchos::RCP<Epetra_Vector>& GetFstructureOld()
       {
-        CheckInitSetup();
+        check_init_setup();
         return fstructold_;
       }
 
@@ -886,21 +886,21 @@ namespace STR
       /// returns the entire structural jacobian
       Teuchos::RCP<CORE::LINALG::SparseOperator>& GetJacobian()
       {
-        CheckInitSetup();
+        check_init_setup();
         return jac_;
       }
 
       /// mass matrix (constant)
       Teuchos::RCP<CORE::LINALG::SparseOperator>& GetMassMatrix()
       {
-        CheckInitSetup();
+        check_init_setup();
         return mass_;
       }
 
       /// damping matrix
       Teuchos::RCP<CORE::LINALG::SparseOperator>& GetDampMatrix()
       {
-        CheckInitSetup();
+        check_init_setup();
         return damp_;
       }
       ///@}

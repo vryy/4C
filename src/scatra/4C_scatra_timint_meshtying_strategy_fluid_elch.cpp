@@ -33,7 +33,7 @@ void SCATRA::MeshtyingStrategyFluidElch::InitMeshtying()
   // safety check
   if (CORE::UTILS::IntegralValue<INPAR::FLUID::MeshTying>(*(scatratimint_->ScatraParameterList()),
           "MESHTYING") == INPAR::FLUID::condensed_bmat_merged and
-      ElchTimInt()->EquPot() == INPAR::ELCH::equpot_enc)
+      elch_tim_int()->EquPot() == INPAR::ELCH::equpot_enc)
     FOUR_C_THROW(
         "In the context of meshtying, the ion-transport system including the electroneutrality "
         "condition cannot be solved in a block matrix!");
@@ -56,7 +56,7 @@ void SCATRA::MeshtyingStrategyFluidElch::SetupMeshtying()
   // special case: only potential is coupled
   // =>   coupleddof = [0, 0, ..., 0, 1]
   std::vector<int> coupleddof(scatratimint_->NumScal() + 1, 1);
-  if (CORE::UTILS::IntegralValue<int>(*(ElchTimInt()->ElchParameterList()), "ONLYPOTENTIAL"))
+  if (CORE::UTILS::IntegralValue<int>(*(elch_tim_int()->ElchParameterList()), "ONLYPOTENTIAL"))
     for (int i = 0; i < scatratimint_->NumScal(); ++i) coupleddof[i] = 0;
 
   meshtying_->SetupMeshtying(coupleddof);

@@ -187,7 +187,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Throw an error if setup was not called on the object prior to this function call.
      */
-    inline void CheckSetup() const
+    inline void check_setup() const
     {
       if (!is_setup_) FOUR_C_THROW("Setup not called on BeamToSolidMortarManager!");
     }
@@ -216,7 +216,7 @@ namespace BEAMINTERACTION
      *
      * @return Inverted global_kappa_ vector.
      */
-    Teuchos::RCP<Epetra_Vector> InvertKappa() const;
+    Teuchos::RCP<Epetra_Vector> invert_kappa() const;
 
    private:
     //! Flag if setup was called.

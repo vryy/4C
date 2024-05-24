@@ -294,7 +294,7 @@ namespace NOX
 
      private:
       //! Throw an NOX_error
-      void throwError(const std::string& functionName, const std::string& errorMsg) const;
+      void throw_error(const std::string& functionName, const std::string& errorMsg) const;
 
      protected:
       /*! flag whether update of x vector should be skipped

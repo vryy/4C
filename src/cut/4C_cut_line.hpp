@@ -30,9 +30,9 @@ namespace CORE::GEO
      public:
       Line(Point* p1, Point* p2, Side* cut_side1, Side* cut_side2, Element* cut_element);
 
-      void AddSide(Side* cut_side);
+      void add_side(Side* cut_side);
 
-      void AddElement(Element* cut_element);
+      void add_element(Element* cut_element);
 
       bool IsCut(Side* s1, Side* s2)
       {

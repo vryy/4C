@@ -514,7 +514,7 @@ namespace XFEM
     /*========================================================================*/
 
     //! basic function for parallel sending of data
-    void sendData(CORE::COMM::PackBuffer& dataSend, int& dest, int& source,
+    void send_data(CORE::COMM::PackBuffer& dataSend, int& dest, int& source,
         std::vector<char>& dataRecv) const;
 
     //! packing a node

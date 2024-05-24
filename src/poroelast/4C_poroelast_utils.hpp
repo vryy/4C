@@ -94,7 +94,7 @@ namespace POROELAST
         DRT::Discretization* voldiscret2 = nullptr);
 
     //! Determine norm of vector
-    double CalculateVectorNorm(const enum INPAR::POROELAST::VectorNorm norm,  //!< norm to use
+    double calculate_vector_norm(const enum INPAR::POROELAST::VectorNorm norm,  //!< norm to use
         const Teuchos::RCP<const Epetra_Vector> vect  //!< the vector of interest
     );
 

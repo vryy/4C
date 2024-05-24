@@ -50,11 +50,11 @@ CONSTRAINTS::SpringDashpot::SpringDashpot(
       offset_prestr_(),
       offset_prestr_new_(Teuchos::null)
 {
-  offset_prestr_new_ = Teuchos::rcp(new Epetra_Vector(*actdisc_->DofRowMap()));
+  offset_prestr_new_ = Teuchos::rcp(new Epetra_Vector(*actdisc_->dof_row_map()));
   offset_prestr_new_->PutScalar(0.0);
 
   // set type of this spring
-  SetSpringType();
+  set_spring_type();
 
   if (springtype_ != cursurfnormal && coupling_ >= 0)
   {
@@ -87,7 +87,7 @@ CONSTRAINTS::SpringDashpot::SpringDashpot(
     std::map<int, Teuchos::RCP<DRT::Element>>& geom = spring_->Geometry();
     // calculate nodal area
     if (!actdisc_->Comm().MyPID()) IO::cout << "Computing area for spring dashpot condition...\n";
-    GetArea(geom);
+    get_area(geom);
     initialize_cur_surf_normal();
   }
 
@@ -111,9 +111,9 @@ void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::Sparse
   const bool assmat = stiff != Teuchos::null;
 
   actdisc_->ClearState();
-  actdisc_->SetState("displacement", disp);
-  actdisc_->SetState("velocity", velo);
-  actdisc_->SetState("offset_prestress", offset_prestr_new_);
+  actdisc_->set_state("displacement", disp);
+  actdisc_->set_state("velocity", velo);
+  actdisc_->set_state("offset_prestress", offset_prestr_new_);
 
   // get values and switches from the condition
   const auto* onoff = &spring_->parameters().Get<std::vector<int>>("onoff");
@@ -190,7 +190,7 @@ void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::Sparse
         const int numdf = 3;
         std::vector<double> stress(numdim, 0.0);
 
-        for (int node = 0; node < curr.second->NumNode(); ++node)
+        for (int node = 0; node < curr.second->num_node(); ++node)
         {
           for (int dim = 0; dim < numdim; dim++) stress[dim] = elevector3[node * numdf + dim];
           springstress_.insert(
@@ -235,7 +235,7 @@ void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::Sparse
           if (dof_onoff == 0) continue;
 
           const int dof_gid = dofs_gid[dof];
-          const int dof_lid = actdisc_->DofRowMap()->LID(dof_gid);
+          const int dof_lid = actdisc_->dof_row_map()->LID(dof_gid);
 
           const double dof_disp = (*disp)[dof_lid];
           const double dof_vel = (*velo)[dof_lid];
@@ -315,13 +315,13 @@ void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::Sparse
 /*----------------------------------------------------------------------*
  |                                                         pfaller Mar16|
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::SpringDashpot::EvaluateForce(Epetra_Vector& fint,
+void CONSTRAINTS::SpringDashpot::evaluate_force(Epetra_Vector& fint,
     const Teuchos::RCP<const Epetra_Vector> disp, const Teuchos::RCP<const Epetra_Vector> vel,
     const Teuchos::ParameterList& p)
 {
   if (disp == Teuchos::null) FOUR_C_THROW("Cannot find displacement state in discretization");
 
-  if (springtype_ == cursurfnormal) GetCurNormals(disp, p);
+  if (springtype_ == cursurfnormal) get_cur_normals(disp, p);
 
   // loop nodes of current condition
   for (int node_gid : *nodes_)
@@ -430,7 +430,7 @@ void CONSTRAINTS::SpringDashpot::EvaluateForce(Epetra_Vector& fint,
 /*----------------------------------------------------------------------*
  |                                                         pfaller mar16|
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::SpringDashpot::EvaluateForceStiff(CORE::LINALG::SparseMatrix& stiff,
+void CONSTRAINTS::SpringDashpot::evaluate_force_stiff(CORE::LINALG::SparseMatrix& stiff,
     Epetra_Vector& fint, const Teuchos::RCP<const Epetra_Vector> disp,
     const Teuchos::RCP<const Epetra_Vector> vel, Teuchos::ParameterList p)
 {
@@ -438,7 +438,7 @@ void CONSTRAINTS::SpringDashpot::EvaluateForceStiff(CORE::LINALG::SparseMatrix& 
 
   if (springtype_ == cursurfnormal)
   {
-    GetCurNormals(disp, p);
+    get_cur_normals(disp, p);
     stiff.UnComplete();  // sparsity pattern might change
   }
 
@@ -772,7 +772,7 @@ void CONSTRAINTS::SpringDashpot::initialize_cur_surf_normal()
 
   // empty displacement vector
   Teuchos::RCP<Epetra_Vector> disp;
-  disp = CORE::LINALG::CreateVector(*(actdisc_->DofRowMap()), true);
+  disp = CORE::LINALG::CreateVector(*(actdisc_->dof_row_map()), true);
 
   // initialize gap in reference configuration
   mortar_->Interface()->EvaluateDistances(disp, tmpnormals_, tmpdnormals_, gap0_, tmpdgap_);
@@ -783,7 +783,7 @@ void CONSTRAINTS::SpringDashpot::initialize_cur_surf_normal()
 /*-----------------------------------------------------------------------*
 |(private) adapted from mhv 01/14                           pfaller Apr15|
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::Element>>& geom)
+void CONSTRAINTS::SpringDashpot::get_area(const std::map<int, Teuchos::RCP<DRT::Element>>& geom)
 {
   for (const auto& ele : geom)
   {
@@ -812,7 +812,7 @@ void CONSTRAINTS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::E
     // loop over all nodes of the element that share the area
     // do only contribute to my own row nodes
     double apernode = 0.;
-    for (int i = 0; i < element->NumNode(); ++i)
+    for (int i = 0; i < element->num_node(); ++i)
     {
       /* here we have to take care to assemble the right stiffness to the nodes!!! (mhv 05/2014):
           we do some sort of "manual" gauss integration here since we have to pay attention to
@@ -821,7 +821,7 @@ void CONSTRAINTS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::E
       switch (shape)
       {
         case CORE::FE::CellType::tri3:
-          apernode = a / element->NumNode();
+          apernode = a / element->num_node();
           break;
         case CORE::FE::CellType::tri6:
         {
@@ -842,7 +842,7 @@ void CONSTRAINTS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::E
         }
         break;
         case CORE::FE::CellType::quad4:
-          apernode = a / element->NumNode();
+          apernode = a / element->num_node();
           break;
         case CORE::FE::CellType::quad8:
         {
@@ -938,7 +938,7 @@ void CONSTRAINTS::SpringDashpot::initialize_prestr_offset()
 /*-----------------------------------------------------------------------*
 |(private)                                                  pfaller Apr15|
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::SpringDashpot::GetCurNormals(
+void CONSTRAINTS::SpringDashpot::get_cur_normals(
     const Teuchos::RCP<const Epetra_Vector>& disp, Teuchos::ParameterList p)
 {
   // get current time step size
@@ -967,7 +967,7 @@ void CONSTRAINTS::SpringDashpot::GetCurNormals(
 /*-----------------------------------------------------------------------*
 |(private)                                                  pfaller Apr15|
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::SpringDashpot::SetSpringType()
+void CONSTRAINTS::SpringDashpot::set_spring_type()
 {
   // get spring direction from condition
   const auto dir = spring_->parameters().Get<std::string>("direction");

@@ -123,7 +123,7 @@ namespace XFEM
 
     void LiftDrag(const int step, const double time) const override;
 
-    void ReadRestart(const int step) override;
+    void read_restart(const int step) override;
 
     // interface foces
     Teuchos::RCP<Epetra_Vector> ITrueResidual() { return itrueresidual_; }
@@ -224,7 +224,7 @@ namespace XFEM
     );
 
     //! Caluculate the Porosity for J,porosity pair on this FaceElement
-    double CalctrPermeability(DRT::Element* ele, double& porosity, double& J);
+    double calctr_permeability(DRT::Element* ele, double& porosity, double& J);
 
     //! Compute Jacobian and extract PoroFluidPressure this FaceElement Gausspoint
     double compute_jacobianand_pressure(

@@ -45,7 +45,7 @@ namespace SCATRA
     explicit MeshtyingStrategyStd(SCATRA::ScaTraTimIntImpl* scatratimint);
 
     //! return global map of degrees of freedom
-    const Epetra_Map& DofRowMap() const override;
+    const Epetra_Map& dof_row_map() const override;
 
     /*!
     \brief Evaluate a given condition
@@ -56,14 +56,14 @@ namespace SCATRA
     \date 08/16
     \author rauch
     */
-    void EvaluateCondition(Teuchos::ParameterList& params,
+    void evaluate_condition(Teuchos::ParameterList& params,
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
         Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring,
         const int condid) override
     {
-      FOUR_C_THROW("EvaluateCondition(...) is not implemented in MeshtyingStrategyStd.");
+      FOUR_C_THROW("evaluate_condition(...) is not implemented in MeshtyingStrategyStd.");
     };
 
     //! compute meshtying residual terms and their linearizations

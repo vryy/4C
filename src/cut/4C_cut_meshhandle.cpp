@@ -18,11 +18,11 @@ FOUR_C_NAMESPACE_OPEN
  * create a new side (sidehandle) of the cutter discretization and return the sidehandle
  * non-tri3 sides will be subdivided into tri3 subsides
  *-----------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshHandle::CreateSide(int sid,
+CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshHandle::create_side(int sid,
     const std::vector<int>& nids, CORE::FE::CellType distype, CORE::GEO::CUT::Options& options)
 {
 #ifdef CUT_DUMPCREATION
-  std::cout << "CreateSide( " << sid << ", ";
+  std::cout << "create_side( " << sid << ", ";
   std::copy(nids.begin(), nids.end(), std::ostream_iterator<int>(std::cout, ", "));
   std::cout << distype << " );\n";
 #endif
@@ -35,7 +35,7 @@ CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshHandle::CreateSide(int sid,
       return &i->second;
     }
 
-    Side* s = mesh_.CreateSide(sid, nids, distype);
+    Side* s = mesh_.create_side(sid, nids, distype);
     LinearSideHandle& lsh = linearsides_[sid];
     lsh = LinearSideHandle(s);
     return &lsh;
@@ -94,7 +94,7 @@ CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshHandle::CreateSide(int sid,
  * create a new data structure for face oriented stabilization; the sides of
  * the linear element are included into a sidehandle                            wirtz 11/13
  *-----------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::MeshHandle::CreateElementSides(Element& element)
+void CORE::GEO::CUT::MeshHandle::create_element_sides(Element& element)
 {
   std::vector<Side*> elementsides = element.Sides();
   for (std::vector<Side*>::iterator i = elementsides.begin(); i != elementsides.end(); ++i)
@@ -117,13 +117,13 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(Element& element)
     {
       if (elementsidenodeids.size() == 3)
       {
-        Side* s = mesh_.CreateSide(-1, sidenodeids, CORE::FE::CellType::tri3);
+        Side* s = mesh_.create_side(-1, sidenodeids, CORE::FE::CellType::tri3);
         LinearSideHandle& lsh = elementlinearsides_[elementsidenodeids];
         lsh = LinearSideHandle(s);
       }
       else if (elementsidenodeids.size() == 4)
       {
-        Side* s = mesh_.CreateSide(-1, sidenodeids, CORE::FE::CellType::quad4);
+        Side* s = mesh_.create_side(-1, sidenodeids, CORE::FE::CellType::quad4);
         LinearSideHandle& lsh = elementlinearsides_[elementsidenodeids];
         lsh = LinearSideHandle(s);
       }
@@ -135,7 +135,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(Element& element)
  * create a new data structure for face oriented stabilization; the sides of
  * the quadratic element are included into a sidehandle                         wirtz 11/13
  *-----------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::MeshHandle::CreateElementSides(
+void CORE::GEO::CUT::MeshHandle::create_element_sides(
     const std::vector<int>& nids, CORE::FE::CellType distype)
 {
   switch (distype)
@@ -703,11 +703,11 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
  * create a new element (elementhandle) of the background discretization and return the
  *elementhandle, quadratic elements will create linear shadow elements
  *-----------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshHandle::CreateElement(
+CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshHandle::create_element(
     int eid, const std::vector<int>& nids, CORE::FE::CellType distype)
 {
 #ifdef CUT_DUMPCREATION
-  std::cout << "CreateElement( " << eid << ", ";
+  std::cout << "create_element( " << eid << ", ";
   std::copy(nids.begin(), nids.end(), std::ostream_iterator<int>(std::cout, ", "));
   std::cout << distype << " );\n";
 #endif
@@ -727,10 +727,10 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshHandle::CreateElement(
         return &i->second;
       }
 
-      Element* e = mesh_.CreateElement(eid, nids, distype);
+      Element* e = mesh_.create_element(eid, nids, distype);
       LinearElementHandle& leh = linearelements_[eid];
       leh = LinearElementHandle(e);
-      CreateElementSides(*e);
+      create_element_sides(*e);
       return &leh;
     }
     case CORE::FE::CellType::hex20:
@@ -773,7 +773,7 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshHandle::CreateElement(
           exit(EXIT_FAILURE);
       }
       quadraticelements_[eid] = Teuchos::rcp(qeh);
-      CreateElementSides(nids, distype);
+      create_element_sides(nids, distype);
       return qeh;
     }
     default:
@@ -796,7 +796,7 @@ CORE::GEO::CUT::Node* CORE::GEO::CUT::MeshHandle::GetNode(int nid) const
 /*-----------------------------------------------------------------------------------------*
  * get the side (handle) based on side id of the cut mesh
  *-----------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshHandle::GetSide(int sid) const
+CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshHandle::get_side(int sid) const
 {
   // loop the linear sides
   std::map<int, LinearSideHandle>::const_iterator i = linearsides_.find(sid);
@@ -843,7 +843,7 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshHandle::GetElement(int eid) c
 /*-----------------------------------------------------------------------------------------*
  * get the element' side of the mesh's element based on node ids
  *-----------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshHandle::GetSide(std::vector<int>& nodeids) const
+CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshHandle::get_side(std::vector<int>& nodeids) const
 {
   plain_int_set nids;
   for (std::vector<int>::iterator i = nodeids.begin(); i != nodeids.end(); i++)

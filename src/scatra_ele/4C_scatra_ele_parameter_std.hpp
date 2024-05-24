@@ -55,7 +55,7 @@ namespace DRT
       bool SphericalCoords() const { return sphericalcoords_; };
       INPAR::SCATRA::FluxType CalcFluxDomain() const { return calcflux_domain_; };
       Teuchos::RCP<std::vector<int>> WriteFluxIds() const { return writefluxids_; };
-      INPAR::SCATRA::FDCheck FDCheck() const { return fdcheck_; };
+      INPAR::SCATRA::FdCheck fd_check() const { return fdcheck_; };
       double FDCheckEps() const { return fdcheckeps_; };
       double FDCheckTol() const { return fdchecktol_; };
       int ProbNum() const { return probnum_; };
@@ -125,7 +125,7 @@ namespace DRT
       Teuchos::RCP<std::vector<int>> writefluxids_;
 
       //! flag for finite difference check
-      INPAR::SCATRA::FDCheck fdcheck_;
+      INPAR::SCATRA::FdCheck fdcheck_;
 
       //! perturbation magnitude for finite difference check
       double fdcheckeps_;

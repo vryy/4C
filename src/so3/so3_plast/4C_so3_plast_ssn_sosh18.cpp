@@ -387,7 +387,7 @@ void DRT::ELEMENTS::SoSh18Plast::nln_stiffmass(std::vector<double>& disp,  // cu
     // calculate the deformation gradient consistent to the modified strains
     // but only if the material needs a deformation gradient (e.g. plasticity)
     CORE::LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> defgrd;
-    if (Teuchos::rcp_static_cast<MAT::So3Material>(Material())->NeedsDefgrd() ||
+    if (Teuchos::rcp_static_cast<MAT::So3Material>(Material())->needs_defgrd() ||
         iostrain == INPAR::STR::strain_ea || iostress == INPAR::STR::stress_cauchy)
     {
       // compute the deformation gradient - shell-style

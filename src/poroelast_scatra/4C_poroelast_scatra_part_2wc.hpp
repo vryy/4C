@@ -31,16 +31,16 @@ namespace POROELASTSCATRA
     void Timeloop() override;
 
     //! read and set fields needed for restart
-    void ReadRestart(int restart) override;
+    void read_restart(int restart) override;
 
     //! prepare time step for single fields
-    void PrepareTimeStep(bool printheader = true) override;
+    void prepare_time_step(bool printheader = true) override;
 
     //! perform iteration loop between fields
     void Solve() override;
 
     //! prepare output
-    void PrepareOutput() override;
+    void prepare_output() override;
 
     //! update time step
     void Update() override;
@@ -56,7 +56,7 @@ namespace POROELASTSCATRA
     void DoScatraStep() override;
 
     //! convergence check of outer loop
-    bool ConvergenceCheck(int itnum);
+    bool convergence_check(int itnum);
 
     //! scalar increment of the outer loop
     Teuchos::RCP<Epetra_Vector> scaincnp_;

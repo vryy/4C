@@ -283,7 +283,8 @@ Teuchos::RCP<CORE::GEO::SearchTree::TreeNode> CORE::GEO::SearchTree::TreeNode::g
   return children_[index];
 }
 
-CORE::LINALG::Matrix<3, 2> CORE::GEO::SearchTree::TreeNode::getChildNodeBox(const int index) const
+CORE::LINALG::Matrix<3, 2> CORE::GEO::SearchTree::TreeNode::get_child_node_box(
+    const int index) const
 {
   CORE::LINALG::Matrix<3, 2> childNodeBox;
 
@@ -333,7 +334,7 @@ CORE::LINALG::Matrix<3, 2> CORE::GEO::SearchTree::TreeNode::getChildNodeBox(cons
   return childNodeBox;
 }
 
-void CORE::GEO::SearchTree::TreeNode::getChildNodeBox(
+void CORE::GEO::SearchTree::TreeNode::get_child_node_box(
     const int index, CORE::LINALG::Matrix<3, 2>& childNodeBox) const
 {
   childNodeBox.Clear();
@@ -391,13 +392,13 @@ void CORE::GEO::SearchTree::TreeNode::insertElement(const int label, const int e
   return;
 }
 
-void CORE::GEO::SearchTree::TreeNode::createChildren(const DRT::Discretization& dis,
+void CORE::GEO::SearchTree::TreeNode::create_children(const DRT::Discretization& dis,
     const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions)
 {
   // create empty children
   for (int index = 0; index < getNumChildren(); index++)
     children_[index] =
-        Teuchos::rcp(new TreeNode(this, (treedepth_ - 1), getChildNodeBox(index), tree_type_));
+        Teuchos::rcp(new TreeNode(this, (treedepth_ - 1), get_child_node_box(index), tree_type_));
 
   // insert elements into child node
   for (std::map<int, std::set<int>>::const_iterator labelIter = element_list_.begin();
@@ -406,7 +407,7 @@ void CORE::GEO::SearchTree::TreeNode::createChildren(const DRT::Discretization& 
          eleIter != (labelIter->second).end(); eleIter++)
     {
       std::vector<int> elementClassification =
-          classifyElement(dis.gElement(*eleIter), currentpositions);
+          classify_element(dis.gElement(*eleIter), currentpositions);
       for (unsigned int count = 0; count < elementClassification.size(); count++)
       {
         children_[elementClassification[count]]->insertElement(labelIter->first, *eleIter);
@@ -418,14 +419,14 @@ void CORE::GEO::SearchTree::TreeNode::createChildren(const DRT::Discretization& 
 }
 
 
-void CORE::GEO::SearchTree::TreeNode::createChildren(
+void CORE::GEO::SearchTree::TreeNode::create_children(
     const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentXAABBs)
 {
   // create empty children
   CORE::LINALG::Matrix<3, 2> childNodeBox;
   for (int index = 0; index < getNumChildren(); index++)
   {
-    getChildNodeBox(index, childNodeBox);
+    get_child_node_box(index, childNodeBox);
     children_[index] = Teuchos::rcp(new TreeNode(this, (treedepth_ - 1), childNodeBox, tree_type_));
   }
   std::vector<int> elementClassification;
@@ -436,7 +437,7 @@ void CORE::GEO::SearchTree::TreeNode::createChildren(
     for (std::set<int>::const_iterator eleIter = (labelIter->second).begin();
          eleIter != (labelIter->second).end(); eleIter++)
     {
-      classifyXAABB(currentXAABBs.find(*eleIter)->second, elementClassification);
+      classify_xaabb(currentXAABBs.find(*eleIter)->second, elementClassification);
       for (unsigned int count = 0; count < elementClassification.size(); count++)
         children_[elementClassification[count]]->insertElement(labelIter->first, *eleIter);
     }
@@ -449,14 +450,14 @@ void CORE::GEO::SearchTree::TreeNode::createChildren(
 /*----------------------------------------------------------------------*
  | create children using KDOPS                             u.may   02/09|
  *----------------------------------------------------------------------*/
-void CORE::GEO::SearchTree::TreeNode::createChildren(
+void CORE::GEO::SearchTree::TreeNode::create_children(
     const std::map<int, CORE::LINALG::Matrix<9, 2>>& currentKDOPs)
 {
   // create empty children
   static CORE::LINALG::Matrix<3, 2> childNodeBox;
   for (int index = 0; index < getNumChildren(); index++)
   {
-    getChildNodeBox(index, childNodeBox);
+    get_child_node_box(index, childNodeBox);
     children_[index] = Teuchos::rcp(new TreeNode(this, (treedepth_ - 1), childNodeBox, tree_type_));
   }
 
@@ -468,7 +469,7 @@ void CORE::GEO::SearchTree::TreeNode::createChildren(
     for (std::set<int>::const_iterator eleIter = (labelIter->second).begin();
          eleIter != (labelIter->second).end(); eleIter++)
     {
-      classifyKDOP(currentKDOPs.find(*eleIter)->second, elementClassification);
+      classify_kdop(currentKDOPs.find(*eleIter)->second, elementClassification);
       for (unsigned int count = 0; count < elementClassification.size(); count++)
         children_[elementClassification[count]]->insertElement(labelIter->first, *eleIter);
     }
@@ -481,7 +482,7 @@ void CORE::GEO::SearchTree::TreeNode::createChildren(
 /*----------------------------------------------------------------------*
  | classifiy AABB in node                                  u.may   07/08|
  *----------------------------------------------------------------------*/
-std::vector<int> CORE::GEO::SearchTree::TreeNode::classifyXAABB(
+std::vector<int> CORE::GEO::SearchTree::TreeNode::classify_xaabb(
     const CORE::LINALG::Matrix<3, 2>& AABB) const
 {
   // collect all children the XAABB is lying in
@@ -566,7 +567,7 @@ std::vector<int> CORE::GEO::SearchTree::TreeNode::classifyXAABB(
 /*----------------------------------------------------------------------*
  | classifiy AABB in node                                  u.may   07/08|
  *----------------------------------------------------------------------*/
-void CORE::GEO::SearchTree::TreeNode::classifyXAABB(
+void CORE::GEO::SearchTree::TreeNode::classify_xaabb(
     const CORE::LINALG::Matrix<3, 2>& AABB, std::vector<int>& octants) const
 {
   // collect all children the XAABB is lying in
@@ -650,7 +651,7 @@ void CORE::GEO::SearchTree::TreeNode::classifyXAABB(
 /*----------------------------------------------------------------------*
  | classifiy AABB in node                                  u.may   02/09|
  *----------------------------------------------------------------------*/
-void CORE::GEO::SearchTree::TreeNode::classifyKDOP(
+void CORE::GEO::SearchTree::TreeNode::classify_kdop(
     const CORE::LINALG::Matrix<9, 2>& KDOP, std::vector<int>& octants) const
 {
   // collect all children the XAABB is lying in
@@ -714,7 +715,7 @@ void CORE::GEO::SearchTree::TreeNode::classifyKDOP(
 /*----------------------------------------------------------------------*
  | classifiy AABB in node                                  u.may   07/08|
  *----------------------------------------------------------------------*/
-bool CORE::GEO::SearchTree::TreeNode::classifyXAABB(
+bool CORE::GEO::SearchTree::TreeNode::classify_xaabb(
     int& index, const CORE::LINALG::Matrix<3, 2>& AABB) const
 {
   // collect all children the XAABB is lying in
@@ -900,7 +901,7 @@ bool CORE::GEO::SearchTree::TreeNode::classifyXAABB(
 /*----------------------------------------------------------------------*
  | classifiy KDOP in node                                  u.may   02/09|
  *----------------------------------------------------------------------*/
-bool CORE::GEO::SearchTree::TreeNode::classifyKDOP(
+bool CORE::GEO::SearchTree::TreeNode::classify_kdop(
     int& index, const CORE::LINALG::Matrix<9, 2>& KDOP) const
 {
   // collect all children the XAABB is lying in
@@ -1085,7 +1086,7 @@ bool CORE::GEO::SearchTree::TreeNode::classifyKDOP(
 /*----------------------------------------------------------------------*
  | classifiy element in node                               peder   07/08|
  *----------------------------------------------------------------------*/
-std::vector<int> CORE::GEO::SearchTree::TreeNode::classifyElement(const DRT::Element* element,
+std::vector<int> CORE::GEO::SearchTree::TreeNode::classify_element(const DRT::Element* element,
     const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions) const
 {
   const CORE::LINALG::SerialDenseMatrix xyze(
@@ -1094,13 +1095,13 @@ std::vector<int> CORE::GEO::SearchTree::TreeNode::classifyElement(const DRT::Ele
   CORE::GEO::checkRoughGeoType(element, xyze, eleGeoType);
   const CORE::LINALG::Matrix<3, 2> elemXAABB(
       CORE::GEO::computeFastXAABB(element->Shape(), xyze, eleGeoType));
-  return classifyXAABB(elemXAABB);
+  return classify_xaabb(elemXAABB);
 }
 
 /*----------------------------------------------------------------------*
  | classifiy element in tree node                           u.may   07/08|
  *----------------------------------------------------------------------*/
-std::vector<int> CORE::GEO::SearchTree::TreeNode::classifyElement(
+std::vector<int> CORE::GEO::SearchTree::TreeNode::classify_element(
     const Teuchos::RCP<DRT::Element> element,
     const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions) const
 {
@@ -1110,26 +1111,26 @@ std::vector<int> CORE::GEO::SearchTree::TreeNode::classifyElement(
   CORE::GEO::checkRoughGeoType(element, xyze, eleGeoType);
   const CORE::LINALG::Matrix<3, 2> elemXAABB(
       CORE::GEO::computeFastXAABB(element->Shape(), xyze, eleGeoType));
-  return classifyXAABB(elemXAABB);
+  return classify_xaabb(elemXAABB);
 }
 
 /*----------------------------------------------------------------------*
  | classifiy element in tree node                          u.may   07/08|
  *----------------------------------------------------------------------*/
-std::vector<int> CORE::GEO::SearchTree::TreeNode::classifyElement(
+std::vector<int> CORE::GEO::SearchTree::TreeNode::classify_element(
     const DRT::Element* element, const CORE::LINALG::SerialDenseMatrix& xyze_element) const
 {
   CORE::GEO::EleGeoType eleGeoType(CORE::GEO::HIGHERORDER);
   CORE::GEO::checkRoughGeoType(element, xyze_element, eleGeoType);
   const CORE::LINALG::Matrix<3, 2> elemXAABB(
       CORE::GEO::computeFastXAABB(element->Shape(), xyze_element, eleGeoType));
-  return classifyXAABB(elemXAABB);
+  return classify_xaabb(elemXAABB);
 }
 
 /*----------------------------------------------------------------------*
  | classifiy element in node                               u.may   08/08|
  *----------------------------------------------------------------------*/
-std::vector<int> CORE::GEO::SearchTree::TreeNode::classifyRadius(
+std::vector<int> CORE::GEO::SearchTree::TreeNode::classify_radius(
     const double radius, const CORE::LINALG::Matrix<3, 1>& point) const
 {
   /*coordinates of axis-aligned boundary box around point, which stretechs over
@@ -1150,7 +1151,7 @@ std::vector<int> CORE::GEO::SearchTree::TreeNode::classifyRadius(
 
   // return indices of childs which overlap with given axis-aligned boundary box of edge length
   // 2*radius around point
-  return classifyXAABB(radiusXAABB);
+  return classify_xaabb(radiusXAABB);
 }
 
 /*----------------------------------------------------------------------*
@@ -1167,7 +1168,7 @@ std::map<int, std::set<int>> CORE::GEO::SearchTree::TreeNode::search_elements_in
   {
     case INNER_NODE:
     {
-      const std::vector<int> childindex = classifyRadius(radius, point);
+      const std::vector<int> childindex = classify_radius(radius, point);
       if (childindex.size() < 1)
         FOUR_C_THROW("no child found\n");
       else if (childindex.size() == 1)  // child node found which encloses AABB so step down
@@ -1190,12 +1191,12 @@ std::map<int, std::set<int>> CORE::GEO::SearchTree::TreeNode::search_elements_in
 
       // dynamically grow tree otherwise, create children and set label for empty children
       // search in appropriate child node
-      const std::vector<int> childindex = classifyRadius(radius, point);
+      const std::vector<int> childindex = classify_radius(radius, point);
       if (childindex.size() < 1)
         FOUR_C_THROW("no child found\n");
       else if (childindex.size() == 1)  // child node found which encloses AABB so refine further
       {
-        createChildren(dis, currentpositions);
+        create_children(dis, currentpositions);
         return children_[childindex[0]]->search_elements_in_radius(
             dis, currentpositions, point, radius, label);
       }
@@ -1222,7 +1223,7 @@ void CORE::GEO::SearchTree::TreeNode::build_static_search_tree(
   if (treedepth_ > 0 and (element_list_.begin()->second).size() >
                              1)  // ************************* > 8 could be interesting
   {
-    createChildren(currentBVs);
+    create_children(currentBVs);
     for (int count = 0; count < getNumChildren(); count++)
       children_[count]->build_static_search_tree(currentBVs);
     return;
@@ -1241,7 +1242,7 @@ void CORE::GEO::SearchTree::TreeNode::build_static_search_tree(
   if (treedepth_ > 0 and (element_list_.begin()->second).size() >
                              1)  // ************************* > 8 could be interesting
   {
-    createChildren(currentBVs);
+    create_children(currentBVs);
     for (int count = 0; count < getNumChildren(); count++)
       children_[count]->build_static_search_tree(currentBVs);
     return;
@@ -1261,7 +1262,7 @@ void CORE::GEO::SearchTree::TreeNode::searchCollisions(
     case INNER_NODE:
     {
       std::vector<int> elementClassification;
-      classifyXAABB(queryBV, elementClassification);
+      classify_xaabb(queryBV, elementClassification);
       for (unsigned int count = 0; count < elementClassification.size(); count++)
         children_[elementClassification[count]]->searchCollisions(
             currentBVs, queryBV, label, collisions);
@@ -1280,9 +1281,9 @@ void CORE::GEO::SearchTree::TreeNode::searchCollisions(
       }
       // dynamically grow tree otherwise, create children and set label for empty children
       // search in apropriate child node
-      createChildren(currentBVs);
+      create_children(currentBVs);
       std::vector<int> elementClassification;
-      classifyXAABB(queryBV, elementClassification);
+      classify_xaabb(queryBV, elementClassification);
       for (unsigned int count = 0; count < elementClassification.size(); count++)
         children_[elementClassification[count]]->searchCollisions(
             currentBVs, queryBV, label, collisions);
@@ -1307,7 +1308,7 @@ void CORE::GEO::SearchTree::TreeNode::searchCollisions(
     case INNER_NODE:
     {
       std::vector<int> elementClassification;
-      classifyKDOP(queryBV, elementClassification);
+      classify_kdop(queryBV, elementClassification);
       for (unsigned int count = 0; count < elementClassification.size(); count++)
         children_[elementClassification[count]]->searchCollisions(
             currentBVs, queryBV, label, collisions);
@@ -1326,9 +1327,9 @@ void CORE::GEO::SearchTree::TreeNode::searchCollisions(
       }
       // dynamically grow tree otherwise, create children and set label for empty children
       // search in apropriate child node
-      createChildren(currentBVs);
+      create_children(currentBVs);
       std::vector<int> elementClassification;
-      classifyKDOP(queryBV, elementClassification);
+      classify_kdop(queryBV, elementClassification);
       for (unsigned int count = 0; count < elementClassification.size(); count++)
         children_[elementClassification[count]]->searchCollisions(
             currentBVs, queryBV, label, collisions);

@@ -312,10 +312,10 @@ void MAT::ScalarDepInterp::Update()
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::ScalarDepInterp::ResetStep()
+void MAT::ScalarDepInterp::reset_step()
 {
-  lambda_zero_mat_->ResetStep();
-  lambda_unit_mat_->ResetStep();
+  lambda_zero_mat_->reset_step();
+  lambda_unit_mat_->reset_step();
 }
 
 /*----------------------------------------------------------------------*/

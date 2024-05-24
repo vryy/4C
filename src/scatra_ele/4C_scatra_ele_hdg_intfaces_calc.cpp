@@ -56,7 +56,7 @@ DRT::ELEMENTS::ScaTraHDGIntFaceImplInterface* DRT::ELEMENTS::ScaTraHDGIntFaceImp
     }
     default:
       FOUR_C_THROW(
-          "Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
+          "Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->num_node());
       break;
   }
   return nullptr;

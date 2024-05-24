@@ -44,7 +44,7 @@ void CORE::GEO::CUT::LevelSetIntersection::AddCutSide(int levelset_sid)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::LevelSetIntersection::AddElement(int eid,
+CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::LevelSetIntersection::add_element(int eid,
     const std::vector<int>& nids, const CORE::LINALG::SerialDenseMatrix& xyz,
     CORE::FE::CellType distype, const double* lsv, const bool lsv_only_plus_domain,
     const bool& check_lsv)
@@ -79,7 +79,7 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::LevelSetIntersection::AddElement(
     }
 
     // create element
-    return mesh_.CreateElement(eid, nids, distype);
+    return mesh_.create_element(eid, nids, distype);
   }
 
   return nullptr;

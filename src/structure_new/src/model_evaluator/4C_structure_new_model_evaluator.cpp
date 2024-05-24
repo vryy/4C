@@ -44,14 +44,14 @@ STR::ModelEvaluator::ModelEvaluator()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::CheckInitSetup() const
+void STR::ModelEvaluator::check_init_setup() const
 {
-  FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::CheckInit() const { FOUR_C_ASSERT(IsInit(), "Call Init() first!"); }
+void STR::ModelEvaluator::check_init() const { FOUR_C_ASSERT(is_init(), "Call Init() first!"); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -78,12 +78,12 @@ void STR::ModelEvaluator::Init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& ev
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::Setup()
 {
-  CheckInit();
+  check_init();
 
   me_map_ptr_ = STR::MODELEVALUATOR::build_model_evaluators(
       sdyn_ptr_->GetModelTypes(), sdyn_ptr_->CouplingModelPtr());
 
-  me_vec_ptr_ = TransformToVector(*me_map_ptr_);
+  me_vec_ptr_ = transform_to_vector(*me_map_ptr_);
 
   Map::iterator me_iter;
   int dof_offset = 0;
@@ -116,7 +116,7 @@ void STR::ModelEvaluator::setup_multi_map_extractor()
 bool STR::ModelEvaluator::initialize_inertia_and_damping(
     const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // initialize stiffness matrix to zero
   jac.Zero();
@@ -131,54 +131,54 @@ bool STR::ModelEvaluator::initialize_inertia_and_damping(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::ModelEvaluator::AssembleForce(const double timefac_np, Epetra_Vector& f,
+bool STR::ModelEvaluator::assemble_force(const double timefac_np, Epetra_Vector& f,
     const std::vector<INPAR::STR::ModelType>* without_these_models) const
 {
-  if (not without_these_models) return AssembleForce(timefac_np, f);
+  if (not without_these_models) return assemble_force(timefac_np, f);
 
   Vector partial_me_vec;
   partial_me_vec.reserve(me_vec_ptr_->size());
-  SplitModelVector(partial_me_vec, *without_these_models);
+  split_model_vector(partial_me_vec, *without_these_models);
 
-  return AssembleForce(partial_me_vec, timefac_np, f);
+  return assemble_force(partial_me_vec, timefac_np, f);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::AssembleForce(
+void STR::ModelEvaluator::assemble_force(
     bool& ok, const Vector& me_vec, const double timefac_np, Epetra_Vector& f) const
 {
   if (not ok) return;
 
   for (Vector::const_iterator cit = me_vec.begin(); cit != me_vec.end(); ++cit)
     // if one model evaluator failed, skip the remaining ones and return false
-    ok = (ok ? (*cit)->AssembleForce(f, timefac_np) : false);
+    ok = (ok ? (*cit)->assemble_force(f, timefac_np) : false);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::ModelEvaluator::AssembleJacobian(const double timefac_np,
+bool STR::ModelEvaluator::assemble_jacobian(const double timefac_np,
     CORE::LINALG::SparseOperator& jac,
     const std::vector<INPAR::STR::ModelType>* without_these_models) const
 {
-  if (not without_these_models) return AssembleJacobian(timefac_np, jac);
+  if (not without_these_models) return assemble_jacobian(timefac_np, jac);
 
   Vector partial_me_vec;
-  SplitModelVector(partial_me_vec, *without_these_models);
+  split_model_vector(partial_me_vec, *without_these_models);
 
-  return AssembleJacobian(partial_me_vec, timefac_np, jac);
+  return assemble_jacobian(partial_me_vec, timefac_np, jac);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::AssembleJacobian(bool& ok, const Vector& me_vec, const double timefac_np,
+void STR::ModelEvaluator::assemble_jacobian(bool& ok, const Vector& me_vec, const double timefac_np,
     CORE::LINALG::SparseOperator& jac) const
 {
   if (not ok) return;
 
   for (Vector::const_iterator cit = me_vec.begin(); cit != me_vec.end(); ++cit)
     // if one model evaluator failed, skip the remaining ones and return false
-    ok = (ok ? (*cit)->AssembleJacobian(jac, timefac_np) : false);
+    ok = (ok ? (*cit)->assemble_jacobian(jac, timefac_np) : false);
 }
 
 /*----------------------------------------------------------------------------*
@@ -192,72 +192,72 @@ void STR::ModelEvaluator::assemble_jacobian_contributions_from_element_level_for
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::EvaluateForce(bool& ok, const Vector& me_vec) const
+void STR::ModelEvaluator::evaluate_force(bool& ok, const Vector& me_vec) const
 {
   if (not ok) return;
 
-  PreEvaluate(ok, me_vec);
+  pre_evaluate(ok, me_vec);
 
   for (Vector::const_iterator cit = me_vec.begin(); cit != me_vec.end(); ++cit)
     // if one model evaluator failed, skip the remaining ones and return false
-    ok = (ok ? (*cit)->EvaluateForce() : false);
+    ok = (ok ? (*cit)->evaluate_force() : false);
 
-  PostEvaluate(ok, me_vec);
+  post_evaluate(ok, me_vec);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::EvaluateStiff(bool& ok, const Vector& me_vec) const
+void STR::ModelEvaluator::evaluate_stiff(bool& ok, const Vector& me_vec) const
 {
   if (not ok) return;
 
-  PreEvaluate(ok, me_vec);
+  pre_evaluate(ok, me_vec);
 
   for (Vector::const_iterator cit = me_vec.begin(); cit != me_vec.end(); ++cit)
     // if one model evaluator failed, skip the remaining ones and return false
-    ok = (ok ? (*cit)->EvaluateStiff() : false);
+    ok = (ok ? (*cit)->evaluate_stiff() : false);
 
-  PostEvaluate(ok, me_vec);
+  post_evaluate(ok, me_vec);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::EvaluateForceStiff(bool& ok, const Vector& me_vec) const
+void STR::ModelEvaluator::evaluate_force_stiff(bool& ok, const Vector& me_vec) const
 {
   if (not ok) return;
 
-  PreEvaluate(ok, me_vec);
+  pre_evaluate(ok, me_vec);
 
 
   for (Vector::const_iterator cit = me_vec.begin(); cit != me_vec.end(); ++cit)
     // if one model evaluator failed, skip the remaining ones and return false
-    ok = (ok ? (*cit)->EvaluateForceStiff() : false);
+    ok = (ok ? (*cit)->evaluate_force_stiff() : false);
 
-  PostEvaluate(ok, me_vec);
+  post_evaluate(ok, me_vec);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::PreEvaluate(bool ok, const Vector& me_vec) const
+void STR::ModelEvaluator::pre_evaluate(bool ok, const Vector& me_vec) const
 {
-  for (auto& me : me_vec) me->PreEvaluate();
+  for (auto& me : me_vec) me->pre_evaluate();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::PostEvaluate(bool ok, const Vector& me_vec) const
+void STR::ModelEvaluator::post_evaluate(bool ok, const Vector& me_vec) const
 {
   if (not ok) return;
 
   for (Vector::const_iterator cit = me_vec.begin(); cit != me_vec.end(); ++cit)
-    (*cit)->PostEvaluate();
+    (*cit)->post_evaluate();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::ModelEvaluator::ApplyInitialForce(const Epetra_Vector& x, Epetra_Vector& f)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   Vector::iterator me_iter;
   bool ok = true;
@@ -276,12 +276,12 @@ bool STR::ModelEvaluator::ApplyInitialForce(const Epetra_Vector& x, Epetra_Vecto
     // if one model evaluator failed, skip the remaining ones and return false
     ok = (ok ? (*me_iter)->evaluate_initial_force() : false);
 
-  PostEvaluate(ok, *me_vec_ptr_);
+  post_evaluate(ok, *me_vec_ptr_);
 
   // ---------------------------------------------------------------------------
   // put everything together, including mass and viscous contributions
   // ---------------------------------------------------------------------------
-  AssembleForce(ok, *me_vec_ptr_, 1.0, f);
+  assemble_force(ok, *me_vec_ptr_, 1.0, f);
 
   // ---------------------------------------------------------------------------
   // subtract mass and viscous contributions from initial force vector
@@ -312,7 +312,7 @@ void STR::ModelEvaluator::ResetStates(const Epetra_Vector& x, bool setstate) con
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::ResetStates(const Epetra_Vector& x, bool setstate, Vector& me_vec) const
 {
-  if (setstate) int_ptr_->SetState(x);
+  if (setstate) int_ptr_->set_state(x);
   for (auto& me_iter : me_vec) me_iter->Reset(x);
 }
 
@@ -321,7 +321,7 @@ void STR::ModelEvaluator::ResetStates(const Epetra_Vector& x, bool setstate, Vec
 bool STR::ModelEvaluator::ApplyForce(
     const Epetra_Vector& x, Epetra_Vector& f, const double& timefac_np) const
 {
-  CheckInitSetup();
+  check_init_setup();
   Vector::iterator me_iter;
   bool ok = true;
   // initialize right hand side to zero
@@ -336,12 +336,12 @@ bool STR::ModelEvaluator::ApplyForce(
   // ---------------------------------------------------------------------------
   // evaluate all terms
   // ---------------------------------------------------------------------------
-  EvaluateForce(ok, *me_vec_ptr_);
+  evaluate_force(ok, *me_vec_ptr_);
 
   // ---------------------------------------------------------------------------
   // put everything together
   // ---------------------------------------------------------------------------
-  AssembleForce(ok, *me_vec_ptr_, timefac_np, f);
+  assemble_force(ok, *me_vec_ptr_, timefac_np, f);
 
   return ok;
 }
@@ -351,7 +351,7 @@ bool STR::ModelEvaluator::ApplyForce(
 bool STR::ModelEvaluator::ApplyStiff(
     const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
-  CheckInitSetup();
+  check_init_setup();
   Vector::iterator me_iter;
   bool ok = true;
   // initialize stiffness matrix to zero
@@ -366,12 +366,12 @@ bool STR::ModelEvaluator::ApplyStiff(
   // ---------------------------------------------------------------------------
   // evaluate all terms
   // ---------------------------------------------------------------------------
-  EvaluateStiff(ok, *me_vec_ptr_);
+  evaluate_stiff(ok, *me_vec_ptr_);
 
   // ---------------------------------------------------------------------------
   // put everything together
   // ---------------------------------------------------------------------------
-  AssembleJacobian(ok, *me_vec_ptr_, timefac_np, jac);
+  assemble_jacobian(ok, *me_vec_ptr_, timefac_np, jac);
 
   return ok;
 }
@@ -381,7 +381,7 @@ bool STR::ModelEvaluator::ApplyStiff(
 bool STR::ModelEvaluator::ApplyStiff(const INPAR::STR::ModelType& mt, const Epetra_Vector& x,
     CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
-  CheckInitSetup();
+  check_init_setup();
   bool ok = true;
   Teuchos::RCP<STR::MODELEVALUATOR::Generic> model_ptr = me_map_ptr_->at(mt);
   const Vector me_vec(1, model_ptr);
@@ -390,18 +390,18 @@ bool STR::ModelEvaluator::ApplyStiff(const INPAR::STR::ModelType& mt, const Epet
   jac.Zero();
 
   // update the state variables of the current time integrator
-  int_ptr_->SetState(x);
+  int_ptr_->set_state(x);
   model_ptr->Reset(x);
 
   // ---------------------------------------------------------------------------
   // evaluate all terms
   // ---------------------------------------------------------------------------
-  EvaluateStiff(ok, me_vec);
+  evaluate_stiff(ok, me_vec);
 
   // ---------------------------------------------------------------------------
   // put everything together
   // ---------------------------------------------------------------------------
-  AssembleJacobian(ok, me_vec, timefac_np, jac);
+  assemble_jacobian(ok, me_vec, timefac_np, jac);
 
   return ok;
 }
@@ -412,7 +412,7 @@ bool STR::ModelEvaluator::ApplyStiff(const INPAR::STR::ModelType& mt, const Epet
 bool STR::ModelEvaluator::ApplyForceStiff(const Epetra_Vector& x, Epetra_Vector& f,
     CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
-  CheckInitSetup();
+  check_init_setup();
   Vector::iterator me_iter;
   bool ok = true;
   // initialize stiffness matrix and right hand side to zero
@@ -428,13 +428,13 @@ bool STR::ModelEvaluator::ApplyForceStiff(const Epetra_Vector& x, Epetra_Vector&
   // ---------------------------------------------------------------------------
   // evaluate all terms
   // ---------------------------------------------------------------------------
-  EvaluateForceStiff(ok, *me_vec_ptr_);
+  evaluate_force_stiff(ok, *me_vec_ptr_);
 
   // ---------------------------------------------------------------------------
   // put everything together
   // ---------------------------------------------------------------------------
-  AssembleForce(ok, *me_vec_ptr_, timefac_np, f);
-  AssembleJacobian(ok, *me_vec_ptr_, timefac_np, jac);
+  assemble_force(ok, *me_vec_ptr_, timefac_np, f);
+  assemble_jacobian(ok, *me_vec_ptr_, timefac_np, jac);
 
   return ok;
 }
@@ -445,10 +445,10 @@ bool STR::ModelEvaluator::ApplyCheapSOCRhs(const enum NOX::NLN::CorrectionType t
     const std::vector<INPAR::STR::ModelType>& constraint_models, const Epetra_Vector& x,
     Epetra_Vector& f, const double& timefac_np) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   Vector constraint_me_vec;
-  ExtractModelVector(constraint_me_vec, constraint_models);
+  extract_model_vector(constraint_me_vec, constraint_models);
 
   bool ok = true;
   // initialize right hand side to zero
@@ -463,39 +463,39 @@ bool STR::ModelEvaluator::ApplyCheapSOCRhs(const enum NOX::NLN::CorrectionType t
   // ---------------------------------------------------------------------------
   // evaluate all rhs terms of the constraint models
   // ---------------------------------------------------------------------------
-  EvaluateCheapSOCRhs(ok, constraint_me_vec);
+  evaluate_cheap_soc_rhs(ok, constraint_me_vec);
 
   // ---------------------------------------------------------------------------
   // put everything together
   // ---------------------------------------------------------------------------
-  AssembleCheapSOCRhs(ok, constraint_me_vec, timefac_np, f);
+  assemble_cheap_soc_rhs(ok, constraint_me_vec, timefac_np, f);
 
   return ok;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::EvaluateCheapSOCRhs(bool& ok, const Vector& me_vec) const
+void STR::ModelEvaluator::evaluate_cheap_soc_rhs(bool& ok, const Vector& me_vec) const
 {
   if (not ok) return;
 
   for (Vector::const_iterator cit = me_vec.begin(); cit != me_vec.end(); ++cit)
     // if one model evaluator failed, skip the remaining ones and return false
-    ok = (ok ? (*cit)->EvaluateCheapSOCRhs() : false);
+    ok = (ok ? (*cit)->evaluate_cheap_soc_rhs() : false);
 
-  PostEvaluate(ok, me_vec);
+  post_evaluate(ok, me_vec);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::AssembleCheapSOCRhs(
+void STR::ModelEvaluator::assemble_cheap_soc_rhs(
     bool& ok, const Vector& me_vec, const double timefac_np, Epetra_Vector& f) const
 {
   if (not ok) return;
 
   for (Vector::const_iterator cit = me_vec.begin(); cit != me_vec.end(); ++cit)
     // if one model evaluator failed, skip the remaining ones and return false
-    ok = (ok ? (*cit)->AssembleCheapSOCRhs(f, timefac_np) : false);
+    ok = (ok ? (*cit)->assemble_cheap_soc_rhs(f, timefac_np) : false);
 }
 
 /*----------------------------------------------------------------------------*
@@ -514,7 +514,7 @@ bool STR::ModelEvaluator::CorrectParameters(const enum NOX::NLN::CorrectionType 
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::Predict(const INPAR::STR::PredEnum& pred_type) const
 {
-  CheckInitSetup();
+  check_init_setup();
   for (Vector::iterator me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
     (*me_iter)->Predict(pred_type);
 }
@@ -524,7 +524,7 @@ void STR::ModelEvaluator::Predict(const INPAR::STR::PredEnum& pred_type) const
 void STR::ModelEvaluator::WriteRestart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
-  CheckInitSetup();
+  check_init_setup();
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
     (*me_iter)->WriteRestart(iowriter, forced_writerestart);
@@ -532,19 +532,19 @@ void STR::ModelEvaluator::WriteRestart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::ReadRestart(IO::DiscretizationReader& ioreader)
+void STR::ModelEvaluator::read_restart(IO::DiscretizationReader& ioreader)
 {
-  CheckInitSetup();
+  check_init_setup();
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->ReadRestart(ioreader);
+    (*me_iter)->read_restart(ioreader);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::RunRecover() const
 {
-  CheckInitSetup();
+  check_init_setup();
   // set some parameters for the element evaluation
   eval_data_ptr_->SetIsDefaultStep(true);
   eval_data_ptr_->SetStepLength(1.0);
@@ -559,7 +559,7 @@ void STR::ModelEvaluator::RunRecover() const
 void STR::ModelEvaluator::RunPostComputeX(const Epetra_Vector& xold, const Epetra_Vector& dir,
     const double& step, const Epetra_Vector& xnew, const bool isdefaultstep) const
 {
-  CheckInitSetup();
+  check_init_setup();
   // set some parameters for the element evaluation
   eval_data_ptr_->SetIsDefaultStep(isdefaultstep);
   eval_data_ptr_->SetStepLength(step);
@@ -634,7 +634,7 @@ void STR::ModelEvaluator::run_pre_apply_jacobian_inverse(const Epetra_Vector& rh
  *----------------------------------------------------------------------------*/
 const STR::TIMINT::BaseDataGlobalState& STR::ModelEvaluator::GetGlobalState() const
 {
-  CheckInitSetup();
+  check_init_setup();
   return *gstate_ptr_;
 }
 
@@ -642,7 +642,7 @@ const STR::TIMINT::BaseDataGlobalState& STR::ModelEvaluator::GetGlobalState() co
  *----------------------------------------------------------------------------*/
 const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& STR::ModelEvaluator::GlobalStatePtr()
 {
-  CheckInitSetup();
+  check_init_setup();
   return gstate_ptr_;
 }
 
@@ -650,7 +650,7 @@ const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& STR::ModelEvaluator::Globa
  *----------------------------------------------------------------------------*/
 const Teuchos::RCP<const STR::TIMINT::Base>& STR::ModelEvaluator::GetTimIntPtr() const
 {
-  CheckInitSetup();
+  check_init_setup();
   return timint_ptr_;
 }
 
@@ -658,7 +658,7 @@ const Teuchos::RCP<const STR::TIMINT::Base>& STR::ModelEvaluator::GetTimIntPtr()
  *----------------------------------------------------------------------------*/
 STR::MODELEVALUATOR::Generic& STR::ModelEvaluator::Evaluator(const enum INPAR::STR::ModelType& mt)
 {
-  CheckInitSetup();
+  check_init_setup();
   // sanity check, if there is a model evaluator for the given model type
   STR::ModelEvaluator::Map::const_iterator me_iter = me_map_ptr_->find(mt);
   if (me_iter == me_map_ptr_->end())
@@ -673,7 +673,7 @@ STR::MODELEVALUATOR::Generic& STR::ModelEvaluator::Evaluator(const enum INPAR::S
 const STR::MODELEVALUATOR::Generic& STR::ModelEvaluator::Evaluator(
     const enum INPAR::STR::ModelType& mt) const
 {
-  CheckInitSetup();
+  check_init_setup();
   // sanity check, if there is a model evaluator for the given model type
   STR::ModelEvaluator::Map::const_iterator me_iter = me_map_ptr_->find(mt);
   if (me_iter == me_map_ptr_->end())
@@ -687,7 +687,7 @@ const STR::MODELEVALUATOR::Generic& STR::ModelEvaluator::Evaluator(
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::UpdateStepState(const double& timefac_n)
 {
-  CheckInitSetup();
+  check_init_setup();
   /* Reset old structural right hand side.
    * It will be filled within the model evaluators */
   gstate_ptr_->GetFstructureOld()->PutScalar(0.0);
@@ -716,7 +716,7 @@ void STR::ModelEvaluator::compute_jacobian_contributions_from_element_level_for_
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const
 {
-  CheckInitSetup();
+  check_init_setup();
   for (auto& me : *me_vec_ptr_) me->remove_condensed_contributions_from_rhs(rhs);
 }
 
@@ -724,7 +724,7 @@ void STR::ModelEvaluator::remove_condensed_contributions_from_rhs(Epetra_Vector&
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::UpdateStepElement()
 {
-  CheckInitSetup();
+  check_init_setup();
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
     (*me_iter)->UpdateStepElement();
@@ -734,7 +734,7 @@ void STR::ModelEvaluator::UpdateStepElement()
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::UpdateResidual()
 {
-  CheckInitSetup();
+  check_init_setup();
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
     (*me_iter)->UpdateResidual();
@@ -744,7 +744,7 @@ void STR::ModelEvaluator::UpdateResidual()
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::determine_stress_strain()
 {
-  CheckInitSetup();
+  check_init_setup();
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
     (*me_iter)->determine_stress_strain();
@@ -754,7 +754,7 @@ void STR::ModelEvaluator::determine_stress_strain()
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::DetermineEnergy()
 {
-  CheckInitSetup();
+  check_init_setup();
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
     (*me_iter)->DetermineEnergy();
@@ -764,7 +764,7 @@ void STR::ModelEvaluator::DetermineEnergy()
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::determine_optional_quantity()
 {
-  CheckInitSetup();
+  check_init_setup();
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
     (*me_iter)->determine_optional_quantity();
@@ -774,7 +774,7 @@ void STR::ModelEvaluator::determine_optional_quantity()
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::OutputStepState(IO::DiscretizationWriter& iowriter) const
 {
-  CheckInitSetup();
+  check_init_setup();
   Vector::const_iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
     (*me_iter)->OutputStepState(iowriter);
@@ -784,7 +784,7 @@ void STR::ModelEvaluator::OutputStepState(IO::DiscretizationWriter& iowriter) co
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::runtime_pre_output_step_state()
 {
-  CheckInitSetup();
+  check_init_setup();
   for (auto me : *me_vec_ptr_) me->runtime_pre_output_step_state();
 }
 
@@ -792,7 +792,7 @@ void STR::ModelEvaluator::runtime_pre_output_step_state()
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::runtime_output_step_state() const
 {
-  CheckInitSetup();
+  check_init_setup();
   Vector::const_iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
     (*me_iter)->runtime_output_step_state();
@@ -802,7 +802,7 @@ void STR::ModelEvaluator::runtime_output_step_state() const
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::PostOutput()
 {
-  CheckInitSetup();
+  check_init_setup();
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
     (*me_iter)->PostOutput();
@@ -812,7 +812,7 @@ void STR::ModelEvaluator::PostOutput()
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::ResetStepState()
 {
-  CheckInitSetup();
+  check_init_setup();
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
     (*me_iter)->ResetStepState();
@@ -820,7 +820,7 @@ void STR::ModelEvaluator::ResetStepState()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::ModelEvaluator::Vector> STR::ModelEvaluator::TransformToVector(
+Teuchos::RCP<STR::ModelEvaluator::Vector> STR::ModelEvaluator::transform_to_vector(
     const STR::ModelEvaluator::Map& model_map) const
 {
   Teuchos::RCP<STR::ModelEvaluator::Vector> me_vec_ptr =
@@ -846,7 +846,7 @@ Teuchos::RCP<STR::ModelEvaluator::Vector> STR::ModelEvaluator::TransformToVector
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::SplitModelVector(STR::ModelEvaluator::Vector& partial_me_vec,
+void STR::ModelEvaluator::split_model_vector(STR::ModelEvaluator::Vector& partial_me_vec,
     const std::vector<INPAR::STR::ModelType>& without_these_models) const
 {
   partial_me_vec.reserve(me_vec_ptr_->size());
@@ -869,7 +869,7 @@ void STR::ModelEvaluator::SplitModelVector(STR::ModelEvaluator::Vector& partial_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::ExtractModelVector(STR::ModelEvaluator::Vector& partial_me_vec,
+void STR::ModelEvaluator::extract_model_vector(STR::ModelEvaluator::Vector& partial_me_vec,
     const std::vector<INPAR::STR::ModelType>& only_these_models) const
 {
   partial_me_vec.reserve(only_these_models.size());
@@ -893,7 +893,7 @@ void STR::ModelEvaluator::ExtractModelVector(STR::ModelEvaluator::Vector& partia
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::CreateBackupState(const Epetra_Vector& dir)
 {
-  CheckInitSetup();
+  check_init_setup();
   for (const auto& me_iter : *me_vec_ptr_) me_iter->CreateBackupState(dir);
 }
 
@@ -901,7 +901,7 @@ void STR::ModelEvaluator::CreateBackupState(const Epetra_Vector& dir)
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::recover_from_backup_state()
 {
-  CheckInitSetup();
+  check_init_setup();
   for (const auto& me_iter : *me_vec_ptr_) me_iter->recover_from_backup_state();
 }
 

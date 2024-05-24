@@ -279,7 +279,7 @@ namespace DRT
       /*!
       \brief Evaluate a Neumann boundary condition dummy
 
-      An element derived from this class uses the EvaluateNeumann method to receive commands
+      An element derived from this class uses the evaluate_neumann method to receive commands
       and parameters from some control routine in params and evaluates a Neumann boundary condition
       given in condition
 
@@ -295,7 +295,7 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override

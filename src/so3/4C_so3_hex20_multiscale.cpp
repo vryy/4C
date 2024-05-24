@@ -59,7 +59,7 @@ void DRT::ELEMENTS::SoHex20::soh20_read_restart_multi()
     if (GLOBAL::Problem::Instance()->GetDis("structure")->Comm().MyPID() == Owner())
       eleowner = true;
 
-    for (int gp = 0; gp < NUMGPT_SOH20; ++gp) micro->ReadRestart(gp, eleID, eleowner);
+    for (int gp = 0; gp < NUMGPT_SOH20; ++gp) micro->read_restart(gp, eleID, eleowner);
   }
 
   return;

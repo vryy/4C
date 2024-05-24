@@ -51,13 +51,13 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::Create(
   Teuchos::RCP<CORE::GEO::CutWizard> wizard;
   Teuchos::RCP<XFEM::XFEMDofSet> dofset;
 
-  CreateNewCutState(dofset, wizard, xdiscret, back_disp_col, solver_params, step);
+  create_new_cut_state(dofset, wizard, xdiscret, back_disp_col, solver_params, step);
 
   //--------------------------------------------------------------------------------------
   // Create the XFluidState object
 
   Teuchos::RCP<const Epetra_Map> xfluiddofrowmap =
-      Teuchos::rcp(new Epetra_Map(*xdiscret->DofRowMap()));
+      Teuchos::rcp(new Epetra_Map(*xdiscret->dof_row_map()));
 
   Teuchos::RCP<const Epetra_Map> xfluiddofcolmap =
       Teuchos::rcp(new Epetra_Map(*xdiscret->DofColMap()));
@@ -94,19 +94,19 @@ Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidStateCreator::Create(
   Teuchos::RCP<CORE::GEO::CutWizard> wizard;
   Teuchos::RCP<XFEM::XFEMDofSet> dofset;
 
-  CreateNewCutState(dofset, wizard, xdiscret, back_disp_col, solver_params, step);
+  create_new_cut_state(dofset, wizard, xdiscret, back_disp_col, solver_params, step);
 
   //--------------------------------------------------------------------------------------
   // Create the XFluidFluidState object
 
   Teuchos::RCP<const Epetra_Map> xfluiddofrowmap =
-      Teuchos::rcp(new Epetra_Map(*xdiscret->DofRowMap()));
+      Teuchos::rcp(new Epetra_Map(*xdiscret->dof_row_map()));
 
   Teuchos::RCP<const Epetra_Map> xfluiddofcolmap =
       Teuchos::rcp(new Epetra_Map(*xdiscret->DofColMap()));
 
   Teuchos::RCP<const Epetra_Map> embfluiddofrowmap =
-      Teuchos::rcp(new Epetra_Map(*embfluiddiscret->DofRowMap()));
+      Teuchos::rcp(new Epetra_Map(*embfluiddiscret->dof_row_map()));
 
   Teuchos::RCP<FLD::XFluidFluidState> state = Teuchos::rcp(new FLD::XFluidFluidState(
       condition_manager_, wizard, dofset, xfluiddofrowmap, xfluiddofcolmap, embfluiddofrowmap));
@@ -121,7 +121,7 @@ Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidStateCreator::Create(
 /*----------------------------------------------------------------------*
  |  Initialize ALE state vectors                           schott 12/14 |
  *----------------------------------------------------------------------*/
-void FLD::XFluidStateCreator::CreateNewCutState(
+void FLD::XFluidStateCreator::create_new_cut_state(
     Teuchos::RCP<XFEM::XFEMDofSet>& dofset,  //!< xfem dofset obtained from the new wizard
     Teuchos::RCP<CORE::GEO::CutWizard>&
         wizard,  //!< cut wizard associated with current intersection state
@@ -198,12 +198,12 @@ void FLD::XFluidStateCreator::CreateNewCutState(
   dofset = Teuchos::rcp(new XFEM::XFEMDofSet(*wizard, maxNumMyReservedDofsperNode, *xdiscret));
 
   const int restart = GLOBAL::Problem::Instance()->Restart();
-  if ((step < 1) or restart) minnumdofsets_ = xdiscret->DofRowMap()->MinAllGID();
+  if ((step < 1) or restart) minnumdofsets_ = xdiscret->dof_row_map()->MinAllGID();
 
   dofset->SetMinGID(minnumdofsets_);         // set the minimal GID of xfem dis
   xdiscret->ReplaceDofSet(0, dofset, true);  // fluid dofset has nds = 0
 
-  xdiscret->FillComplete(true, false, false);
+  xdiscret->fill_complete(true, false, false);
 
   // print all dofsets
   xdiscret->GetDofSetProxy()->PrintAllDofsets(xdiscret->Comm());

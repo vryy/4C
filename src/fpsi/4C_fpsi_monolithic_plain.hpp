@@ -71,10 +71,10 @@ namespace FPSI
     }
 
     /// setup composed right hand side from field solvers
-    void SetupRHS(bool firstcall = false) override;
+    void setup_rhs(bool firstcall = false) override;
 
     /// setup composed system matrix from field solvers
-    void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
+    void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
 
     /// Recover the Lagrange multiplier at the interface   mayr.mt (03/2012)
     void recover_lagrange_multiplier() override;
@@ -87,10 +87,10 @@ namespace FPSI
     defines the number of blocks, their maps and the block order. The block
     maps must be row maps by themselves and must not contain identical GIDs.
     */
-    void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
+    void set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
 
     /// extract the three field vectors from a given composed vector
-    void ExtractFieldVectors(
+    void extract_field_vectors(
         Teuchos::RCP<const Epetra_Vector> x,    ///< composed vector that contains all field vectors
         Teuchos::RCP<const Epetra_Vector>& sx,  ///< structural displacements
         Teuchos::RCP<const Epetra_Vector>& pfx,  ///< fluid velocities and pressure
@@ -101,7 +101,7 @@ namespace FPSI
 
    private:
     /// build block vector from field vectors
-    void SetupVector(Epetra_Vector& f,          ///< composed vector that contains all field vectors
+    void setup_vector(Epetra_Vector& f,         ///< composed vector that contains all field vectors
         Teuchos::RCP<const Epetra_Vector> sv,   ///< structural dofs
         Teuchos::RCP<const Epetra_Vector> pfv,  ///< poro fluid velocities and pressure
         Teuchos::RCP<const Epetra_Vector> fv,   ///< fluid velocities and pressure
@@ -109,10 +109,10 @@ namespace FPSI
         double fluidscale                       ///< residual scaling for fluid
     );
 
-    void SetupRHSLambda(Epetra_Vector& f  ///< composed vector that contains all field vectors
+    void setup_rhs_lambda(Epetra_Vector& f  ///< composed vector that contains all field vectors
     );
 
-    void SetupRHSFirstIter(Epetra_Vector& f  ///< composed vector that contains all field vectors
+    void setup_rhs_first_iter(Epetra_Vector& f  ///< composed vector that contains all field vectors
     );
 
     /// @name Matrix block transform objects
@@ -128,30 +128,30 @@ namespace FPSI
     Teuchos::RCP<CORE::LINALG::MatrixRowTransform> fgitransform1_;  // g_fsi || F->S transform (FSI)
     Teuchos::RCP<CORE::LINALG::MatrixRowTransform> fgitransform2_;  // g_fsi || F->S transform (FSI)
     Teuchos::RCP<CORE::LINALG::MatrixRowTransform>
-        cfgtransform_;  // full FluidField || F->S transform (FSI)
+        cfgtransform_;  // full fluid_field || F->S transform (FSI)
     Teuchos::RCP<CORE::LINALG::MatrixRowTransform>
-        cfptransform_;  // full FluidField || F->S transform (FSI)
+        cfptransform_;  // full fluid_field || F->S transform (FSI)
     Teuchos::RCP<CORE::LINALG::MatrixRowTransform>
-        cfptransform2_;  // full FluidField || F->S transform (FSI)
+        cfptransform2_;  // full fluid_field || F->S transform (FSI)
 
     Teuchos::RCP<CORE::LINALG::MatrixColTransform>
-        figtransform1_;  // for Row/Col-Map for Full - FluidField & F->S transform (FSI)
+        figtransform1_;  // for Row/Col-Map for Full - fluid_field & F->S transform (FSI)
     Teuchos::RCP<CORE::LINALG::MatrixColTransform>
-        figtransform2_;  // for Row/Col-Map for Full - FluidField & F->S transform (FSI)
+        figtransform2_;  // for Row/Col-Map for Full - fluid_field & F->S transform (FSI)
     Teuchos::RCP<CORE::LINALG::MatrixColTransform>
-        figtransform3_;  // for Row/Col-Map for Full - FluidField & F->S transform (FSI)
+        figtransform3_;  // for Row/Col-Map for Full - fluid_field & F->S transform (FSI)
     Teuchos::RCP<CORE::LINALG::MatrixColTransform>
-        figtransform4_;  // for Row/Col-Map for Full - FluidField & F->S transform (FSI)
+        figtransform4_;  // for Row/Col-Map for Full - fluid_field & F->S transform (FSI)
     Teuchos::RCP<CORE::LINALG::MatrixColTransform>
-        aigtransform_;  // for Row/Col-Map for Full - AleField & F->S transform (FSI)
+        aigtransform_;  // for Row/Col-Map for Full - ale_field & F->S transform (FSI)
     Teuchos::RCP<CORE::LINALG::MatrixColTransform>
-        aigtransform2_;  // for Row/Col-Map for Full - AleField & F->S transform (FPSI)
+        aigtransform2_;  // for Row/Col-Map for Full - ale_field & F->S transform (FPSI)
 
     Teuchos::RCP<CORE::LINALG::MatrixColTransform>
-        couplingcoltransform_;  // for Row/Col-Map for Full - FluidField & F->A transform
+        couplingcoltransform_;  // for Row/Col-Map for Full - fluid_field & F->A transform
                                 // (FluidVolume)
     Teuchos::RCP<CORE::LINALG::MatrixColTransform>
-        couplingcoltransformfs_;  // for Row/Col-Map for Full - FluidField & F->S transform (FPSI)
+        couplingcoltransformfs_;  // for Row/Col-Map for Full - fluid_field & F->S transform (FPSI)
     ///@}
 
 

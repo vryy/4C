@@ -75,7 +75,7 @@ namespace CONTACT
       };
 
       /// convert to string
-      inline std::string Status2String(enum Status status) const
+      inline std::string status2_string(enum Status status) const
       {
         switch (status)
         {
@@ -121,7 +121,7 @@ namespace CONTACT
       void Update(const CONTACT::ParamsInterface& cparams);
 
       /// update the state in this object
-      virtual void SetState(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
+      virtual void set_state(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
           const Epetra_Vector& dir);
 
       /* Step length parameter: Variations are possible, see for example:
@@ -155,7 +155,7 @@ namespace CONTACT
       virtual Status Execute(const CONTACT::ParamsInterface& cparams) = 0;
 
       /// do stuff after the update
-      virtual void PostUpdate();
+      virtual void post_update();
 
       /// execute the decrease
       virtual Status ExecuteDecrease(const CONTACT::ParamsInterface& cparams);
@@ -340,15 +340,15 @@ namespace CONTACT
 
       Status ExecuteDecrease(const CONTACT::ParamsInterface& cparams) override;
 
-      void SetState(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
+      void set_state(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
           const Epetra_Vector& dir) override;
 
      private:
       /// return the \f$\beta^{c_{\mathrm{N}}}_{\Theta}\f$ parameter set by the user
-      double BetaTheta() const;
+      double beta_theta() const;
 
       /// return the \f$\beta^{c_{\mathrm{N}}}_{\Theta\mathrm{crit}}\f$ parameter set by the user
-      double BetaThetaDecrease() const;
+      double beta_theta_decrease() const;
     };
 
     /*--------------------------------------------------------------------------*/
@@ -370,12 +370,12 @@ namespace CONTACT
      protected:
       Status Execute(const CONTACT::ParamsInterface& cparams) override;
 
-      void SetState(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
+      void set_state(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
           const Epetra_Vector& dir) override;
 
      private:
       /// return the \f$\beta^{c_{\mathrm{N}}}_{\varphi}\f$ parameter set by the user
-      double BetaAngle() const;
+      double beta_angle() const;
     };
 
   }  // namespace AUG

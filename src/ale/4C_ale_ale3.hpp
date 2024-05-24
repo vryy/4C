@@ -191,7 +191,7 @@ namespace DRT
       */
       int NumSurface() const override
       {
-        switch (NumNode())
+        switch (num_node())
         {
           case 8:
           case 20:
@@ -341,7 +341,7 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -533,7 +533,7 @@ namespace DRT
           const CORE::LINALG::Matrix<3, iel>& xyze);
 
 
-      inline CORE::FE::GaussRule3D getOptimalGaussrule();
+      inline CORE::FE::GaussRule3D get_optimal_gaussrule();
 
       Ale3Impl<distype> operator=(const Ale3Impl<distype> other);
     };
@@ -734,7 +734,7 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -858,7 +858,7 @@ namespace DRT
       //               const CORE::LINALG::Matrix<3,iel>& xyze);
       //
       //
-      //  inline CORE::FE::GaussRule3D getOptimalGaussrule();
+      //  inline CORE::FE::GaussRule3D get_optimal_gaussrule();
 
       // Ale3SurfaceImpl<distype> operator=(const Ale3SurfaceImpl<distype> other);
 

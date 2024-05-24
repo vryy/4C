@@ -236,7 +236,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::SetGlobalMaps()
 void BEAMINTERACTION::BeamToFluidMortarManager::SetLocalMaps(
     const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs)
 {
-  CheckSetup();
+  check_setup();
   CheckGlobalMaps();
 
   // At this point the global multi vectors are filled up completely. To get the map for global
@@ -345,7 +345,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::LocationVector(
     const Teuchos::RCP<const BEAMINTERACTION::BeamContactPair>& contact_pair,
     std::vector<int>& lambda_row) const
 {
-  CheckSetup();
+  check_setup();
   CheckLocalMaps();
 
   // Clear the output vectors.
@@ -354,7 +354,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::LocationVector(
   // Get the global DOFs ids of the nodal Lagrange multipliers.
   if (n_lambda_node_ > 0)
   {
-    for (int i_node = 0; i_node < contact_pair->Element1()->NumNode(); i_node++)
+    for (int i_node = 0; i_node < contact_pair->Element1()->num_node(); i_node++)
     {
       const DRT::Node& node = *(contact_pair->Element1()->Nodes()[i_node]);
       if (BEAMINTERACTION::UTILS::IsBeamCenterlineNode(node))
@@ -394,7 +394,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::LocationVector(
 void BEAMINTERACTION::BeamToFluidMortarManager::EvaluateGlobalDM(
     const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs)
 {
-  CheckSetup();
+  check_setup();
   CheckGlobalMaps();
 
   // Clear the old values of D, M and kappa.
@@ -495,13 +495,13 @@ void BEAMINTERACTION::BeamToFluidMortarManager::add_global_force_stiffness_contr
     Teuchos::RCP<CORE::LINALG::SparseMatrix> kff, Teuchos::RCP<CORE::LINALG::SparseMatrix> kfb,
     Teuchos::RCP<const Epetra_Vector> beam_vel, Teuchos::RCP<const Epetra_Vector> fluid_vel) const
 {
-  CheckSetup();
+  check_setup();
   CheckGlobalMaps();
 
   int linalg_error = 0;
 
   // Scale D and M with kappa^-1.
-  Teuchos::RCP<Epetra_Vector> global_kappa_inv = InvertKappa();
+  Teuchos::RCP<Epetra_Vector> global_kappa_inv = invert_kappa();
   Teuchos::RCP<CORE::LINALG::SparseMatrix> kappa_inv_mat =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(*global_kappa_inv));
   kappa_inv_mat->Complete();
@@ -566,7 +566,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::add_global_force_stiffness_contr
 Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToFluidMortarManager::GetGlobalLambda(
     Teuchos::RCP<const Epetra_Vector> vel) const
 {
-  CheckSetup();
+  check_setup();
   CheckGlobalMaps();
 
   // Get the velocity of the beams and the fluid.
@@ -591,7 +591,7 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToFluidMortarManager::GetGlobal
   if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
 
   // Scale Lambda with kappa^-1.
-  Teuchos::RCP<Epetra_Vector> global_kappa_inv = InvertKappa();
+  Teuchos::RCP<Epetra_Vector> global_kappa_inv = invert_kappa();
   Teuchos::RCP<CORE::LINALG::SparseMatrix> kappa_inv_mat =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(*global_kappa_inv));
   kappa_inv_mat->Complete();
@@ -615,7 +615,7 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToFluidMortarManager::GetGlobal
 /**
  *
  */
-Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToFluidMortarManager::InvertKappa() const
+Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToFluidMortarManager::invert_kappa() const
 {
   // Create the inverse vector.
   Teuchos::RCP<Epetra_Vector> global_kappa_inv =

@@ -75,7 +75,7 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::Setup(bool write_ghosted_particle
   }
 }
 
-void PARTICLEENGINE::ParticleRuntimeVtpWriter::ReadRestart(
+void PARTICLEENGINE::ParticleRuntimeVtpWriter::read_restart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // get restart time

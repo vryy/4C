@@ -122,7 +122,7 @@ namespace DRT
   a discretization starts in its non-filled state. In the non-filled state there
   are no lids calculated yet. The discretization is not fit for any calculation.
 
-  A call for FillComplete() fills the discretization, that is brings it to its
+  A call for fill_complete() fills the discretization, that is brings it to its
   filled state. Now all lids are available. See below for details.
 
   <h3>DofSets</h3>
@@ -199,7 +199,7 @@ namespace DRT
     [[nodiscard]] virtual Teuchos::RCP<IO::DiscretizationWriter> Writer() const { return writer_; }
 
     /*!
-    \brief Get flag indicating whether FillComplete() has been called
+    \brief Get flag indicating whether fill_complete() has been called
     */
     [[nodiscard]] virtual bool Filled() const { return filled_; }
 
@@ -642,7 +642,7 @@ namespace DRT
     - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
 
     */
-    [[nodiscard]] virtual const Epetra_Map* DofRowMap(unsigned nds = 0) const;
+    [[nodiscard]] virtual const Epetra_Map* dof_row_map(unsigned nds = 0) const;
 
     /*!
     \brief Get degree of freedom column map (Filled()==true prerequisite)
@@ -674,7 +674,7 @@ namespace DRT
     This map includes all nodes stored on this proc and also owned by this proc.
     This map is non-ambiguous, meaning that it is a non-overlapping map.
 
-    \return nullptr if Filled() is false. A call to FillComplete() is a prerequisite.
+    \return nullptr if Filled() is false. A call to fill_complete() is a prerequisite.
     */
     [[nodiscard]] virtual const Epetra_Map* NodeRowMap() const;
 
@@ -685,7 +685,7 @@ namespace DRT
     This map includes all nodes stored on this proc including any ghosted nodes
     This map is ambiguous, meaning that it is an overlapping map
 
-    \return nullptr if Filled() is false. A call to FillComplete() is a prerequisite.
+    \return nullptr if Filled() is false. A call to fill_complete() is a prerequisite.
     */
     virtual const Epetra_Map* NodeColMap() const;
     /*!
@@ -695,7 +695,7 @@ namespace DRT
     This map includes all elements stored on this proc and also owned by this proc.
     This map is non-ambiguous, meaning that it is a non-overlapping map.
 
-    \return nullptr if Filled() is false. A call to FillComplete() is a prerequisite.
+    \return nullptr if Filled() is false. A call to fill_complete() is a prerequisite.
     */
     [[nodiscard]] virtual const Epetra_Map* ElementRowMap() const;
     /*!
@@ -705,7 +705,7 @@ namespace DRT
     This map includes all elements stored on this proc including any ghosted elements
     This map is ambiguous, meaning that it is an overlapping map
 
-    \return nullptr if Filled() is false. A call to FillComplete() is a prerequisite.
+    \return nullptr if Filled() is false. A call to fill_complete() is a prerequisite.
     */
     virtual const Epetra_Map* ElementColMap() const;
 
@@ -924,7 +924,7 @@ namespace DRT
 
     \note Sets Filled()=false
     */
-    virtual void AddElement(Teuchos::RCP<DRT::Element> ele);
+    virtual void add_element(Teuchos::RCP<DRT::Element> ele);
 
     /*!
     \brief Add a node to the discretization  (Filled()==true NOT prerequisite)
@@ -1076,13 +1076,13 @@ namespace DRT
 
     \note Sets Filled()=true
     */
-    virtual int FillComplete(bool assigndegreesoffreedom = true, bool initelements = true,
+    virtual int fill_complete(bool assigndegreesoffreedom = true, bool initelements = true,
         bool doboundaryconditions = true);
 
     /*!
     \brief Synchronize filled_ flag on all processors
 
-    Modifying the discretization on some processors only (e.g. using AddElement, AddNode,
+    Modifying the discretization on some processors only (e.g. using add_element, AddNode,
     DeleteElement) may amount to filled_ == false on some processors only, but not on each
     processor; as one may consider the discretization as incomplete already if filled_ == false on
     at least one processor, it is recommended to set filled_ == false on each processor as soon as
@@ -1309,10 +1309,10 @@ namespace DRT
     This method communicates the nodes such that after
     the export the nodes are stored as provided in newmap.<br>
     There are some important aspects to this method:<br>
-    - Filled()=false on exit. This means FillComplete() needs to be called again.<br>
+    - Filled()=false on exit. This means fill_complete() needs to be called again.<br>
     - This is a dull export meaning that there is no notion of whether the
       exported node distribution still matches the element distribution. A call
-      to FillComplete() might therefore not be possible until elements are
+      to fill_complete() might therefore not be possible until elements are
       distributed accordingly.<br>
     - newmap has to be a non-overlapping map (will be tested) as
       the ownership of an exported node changes to the receiving proc<br>
@@ -1341,10 +1341,10 @@ namespace DRT
       otherwise a node is shipped to a different proc and deleted from the
       originating proc. It then merely exists as a ghost node on the receiving proc.
       (which is a state not tolerated)<br>
-    - Filled()=false on exit. This means FillComplete() needs to be called again.<br>
+    - Filled()=false on exit. This means fill_complete() needs to be called again.<br>
     - This is a dull export meaning that there is no notion of whether the
       exported node distribution still matches the element distribution. A call
-      to FillComplete() might therefore not be possible until elements are
+      to fill_complete() might therefore not be possible until elements are
       distributed accordingly.<br>
     - newmap should be an overlapping map.<br>
     - The ownership of an exported node does not change on the receiving proc.<br>
@@ -1386,10 +1386,10 @@ namespace DRT
     This method communicates the elements in this discretization such that after
     the export the elements are stored as provided in newmap.<br>
     There are some important aspects to this method:<br>
-    - Filled()=false on exit. This means FillComplete() needs to be called again.<br>
+    - Filled()=false on exit. This means fill_complete() needs to be called again.<br>
     - This is a dull export meaning that there is no notion of whether the
       exported element distribution still matches the node distribution. A call
-      to FillComplete() might therefore not be possible until nodes are
+      to fill_complete() might therefore not be possible until nodes are
       distributed accordingly.<br>
     - newmap has to be a non-overlapping map (will be tested) as
       the ownership of an exported element changes to the receiving proc<br>
@@ -1415,10 +1415,10 @@ namespace DRT
     - newmap must contain all elements of elerowmap_ (will be tested) because
       otherwise an element is shipped to a different proc and deleted from the
       originating proc. It then merely exists as a ghost element on the receiving proc.<br>
-    - Filled()=false on exit. This means FillComplete() needs to be called again.<br>
+    - Filled()=false on exit. This means fill_complete() needs to be called again.<br>
     - This is a dull export meaning that there is no notion of whether the
       exported element distribution still matches the node distribution. A call
-      to FillComplete() might therefore not be possible until elements are
+      to fill_complete() might therefore not be possible until elements are
       distributed accordingly.<br>
     - newmap should be an overlapping map<br>
     - The ownership of an exported element does not change on the receiving proc.<br>
@@ -1456,7 +1456,7 @@ namespace DRT
     coordinate vector. The user can specify a node rowmap to calculate the coordinate vector on.
     The map has to be a submap of the overall full node rowmap of this discretization.
 
-    \pre Discretization does have to be FillComplete().
+    \pre Discretization does have to be fill_complete().
 
     @param[in] noderowmap Map representing the nodal distribution of the discretization (can be a
                submap of the full node rowmap returned from NodeRowMap())
@@ -1478,7 +1478,7 @@ namespace DRT
     The method expects state to be either of dof row map or of
     dof column map.
     If the vector is supplied in DofColMap() a reference to it will be stored.
-    If the vector is NOT supplied in DofColMap(), but in DofRowMap(),
+    If the vector is NOT supplied in DofColMap(), but in dof_row_map(),
      a vector with column map is allocated and the supplied vector is exported to it.
     Everything is stored/referenced using Teuchos::RCP.
 
@@ -1487,9 +1487,9 @@ namespace DRT
 
     \note This class will not take ownership or in any way modify the solution vector.
     */
-    void SetState(const std::string& name, Teuchos::RCP<const Epetra_Vector> state)
+    void set_state(const std::string& name, Teuchos::RCP<const Epetra_Vector> state)
     {
-      SetState(0, name, state);
+      set_state(0, name, state);
     }
 
     /*!
@@ -1501,7 +1501,7 @@ namespace DRT
     The method expects state to be either of dof row map or of
     dof column map.
     If the vector is supplied in DofColMap() a reference to it will be stored.
-    If the vector is NOT supplied in DofColMap(), but in DofRowMap(),
+    If the vector is NOT supplied in DofColMap(), but in dof_row_map(),
      a vector with column map is allocated and the supplied vector is exported to it.
     Everything is stored/referenced using Teuchos::RCP.
 
@@ -1511,7 +1511,7 @@ namespace DRT
 
     \note This class will not take ownership or in any way modify the solution vector.
     */
-    virtual void SetState(
+    virtual void set_state(
         unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state);
 
     /*!
@@ -1738,13 +1738,13 @@ namespace DRT
      *                             this method.
      *  \param systemvector (out): Optional matrix to assemble linearization
      *                             of Neumann BCs to. */
-    void EvaluateNeumann(Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector,
+    void evaluate_neumann(Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector,
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix = Teuchos::null)
     {
       if (systemmatrix.is_null())
-        EvaluateNeumann(params, *systemvector);
+        evaluate_neumann(params, *systemvector);
       else
-        EvaluateNeumann(params, *systemvector, systemmatrix.get());
+        evaluate_neumann(params, *systemvector, systemmatrix.get());
     }
 
     /*!
@@ -1766,7 +1766,7 @@ namespace DRT
     \param systemvector (out): Vector to assemble Neumann BCs to.
                                The vector is NOT initialized to zero by this method.
     */
-    virtual void EvaluateNeumann(Teuchos::ParameterList& params, Epetra_Vector& systemvector,
+    virtual void evaluate_neumann(Teuchos::ParameterList& params, Epetra_Vector& systemvector,
         CORE::LINALG::SparseOperator* systemmatrix = nullptr);
 
     /*!
@@ -1807,7 +1807,7 @@ namespace DRT
         Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmapextractor = Teuchos::null) const;
 
     /// Evaluate a specific condition using assemble strategy
-    virtual void EvaluateCondition(Teuchos::ParameterList& params,
+    virtual void evaluate_condition(Teuchos::ParameterList& params,
         CORE::FE::AssembleStrategy& strategy, const std::string& condstring, const int condid = -1);
 
     /** \brief Evaluate a specified condition
@@ -1815,17 +1815,18 @@ namespace DRT
      *  Loop all conditions attached to the discretization and evaluate them.
      *  This method considers all conditions in condition_ with the names
      *  matching the user-provided string condstring.
-     *  Calls more general EvaluateCondition method, see below.
+     *  Calls more general evaluate_condition method, see below.
      *
      *  \param params        (in): List of parameters for use at element level
      *  \param systemvector (out): Vector to assemble BCs to.(NOT initialized to zero
      *                             by this method)
      *  \param condstring    (in): Name of condition to be evaluated
      *  \param condid        (in): condition ID */
-    void EvaluateCondition(Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector,
-        const std::string& condstring, const int condid = -1)
+    void evaluate_condition(Teuchos::ParameterList& params,
+        Teuchos::RCP<Epetra_Vector> systemvector, const std::string& condstring,
+        const int condid = -1)
     {
-      EvaluateCondition(params, Teuchos::null, Teuchos::null, systemvector, Teuchos::null,
+      evaluate_condition(params, Teuchos::null, Teuchos::null, systemvector, Teuchos::null,
           Teuchos::null, condstring, condid);
     }
 
@@ -1834,15 +1835,15 @@ namespace DRT
      *  Loop all conditions attached to the discretization and evaluate them.
      *  This method considers all conditions in condition_ with the names
      *  matching the user-provided string condstring.
-     *  Calls more general EvaluateCondition method, see below.
+     *  Calls more general evaluate_condition method, see below.
      *
      *  \param params     (in): List of parameters for use at element level
      *  \param condstring (in): Name of condition to be evaluated
      *  \param condid     (in): condition ID */
-    void EvaluateCondition(
+    void evaluate_condition(
         Teuchos::ParameterList& params, const std::string& condstring, const int condid = -1)
     {
-      EvaluateCondition(params, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null,
+      evaluate_condition(params, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null,
           Teuchos::null, condstring, condid);
     }
 
@@ -1875,7 +1876,7 @@ namespace DRT
       \param condstring (in):    Name of condition to be evaluated
       \param condid (in):        Condition ID
       */
-    virtual void EvaluateCondition(Teuchos::ParameterList& params,
+    virtual void evaluate_condition(Teuchos::ParameterList& params,
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -2038,7 +2039,7 @@ namespace DRT
 
     \note This is a collective call
     */
-    virtual void BuildNodeRowMap();
+    virtual void build_node_row_map();
 
     /*!
     \brief Build nodecolmap_ (Filled()==true NOT prerequisite)
@@ -2050,7 +2051,7 @@ namespace DRT
 
     \note This is a collective call
     */
-    virtual void BuildNodeColMap();
+    virtual void build_node_col_map();
 
     /*!
     \brief Build elerowmap_ (Filled()==true NOT prerequisite)
@@ -2063,7 +2064,7 @@ namespace DRT
     \note This is a collective call
 
     */
-    virtual void BuildElementRowMap();
+    virtual void build_element_row_map();
 
     /*!
     \brief Build elecolmap_ (Filled()==true NOT prerequisite)
@@ -2075,7 +2076,7 @@ namespace DRT
     \note This is a collective call
 
     */
-    virtual void BuildElementColMap();
+    virtual void build_element_col_map();
 
     /*!
     \brief Build pointers elements -> Nodes (Filled()==true NOT prerequisite)
@@ -2201,7 +2202,7 @@ namespace DRT
     //! DiscretizationWriter
     Teuchos::RCP<IO::DiscretizationWriter> writer_;
 
-    //! Flag indicating whether FillComplete() has been called
+    //! Flag indicating whether fill_complete() has been called
     bool filled_;
 
     //! Flag indicating whether degrees of freedom where assigned

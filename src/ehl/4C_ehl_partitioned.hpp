@@ -36,19 +36,19 @@ namespace EHL
 
    protected:
     /// prepare time step of single fields
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     //! perform iteration loop between fields
-    void OuterLoop();
+    void outer_loop();
 
     //! update time step and print to screen
     void UpdateAndOutput();
 
     //! convergence check of outer loop
-    bool ConvergenceCheck(int itnum);
+    bool convergence_check(int itnum);
 
     /// do one inner iteration loop step of the structure
-    void DoStructStep();
+    void do_struct_step();
 
     /// do one inner iteration loop step of the lubrication
     void DoLubricationStep();

@@ -80,7 +80,7 @@ namespace CORE::LINEAR_SOLVER
     void Params_TSI_AMG_BGS(Teuchos::ParameterList &params);
 
     // Helper function to convert int to std::string
-    std::string ConvertInt(int number)
+    std::string convert_int(int number)
     {
       std::stringstream ss;
       ss << number;

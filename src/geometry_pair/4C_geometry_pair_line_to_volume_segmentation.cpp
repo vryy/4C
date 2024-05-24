@@ -50,7 +50,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, line, volum
     const ElementData<volume, scalar_type>& element_data_volume,
     std::vector<LineSegment<scalar_type>>& segments) const
 {
-  // Call the PreEvaluate method of the general Gauss point projection class.
+  // Call the pre_evaluate method of the general Gauss point projection class.
   LineTo3DSegmentation<GeometryPairLineToVolumeSegmentation<scalar_type, line, volume>>::Evaluate(
       this, element_data_line, element_data_volume, segments);
 }

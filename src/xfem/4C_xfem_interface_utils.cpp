@@ -1063,7 +1063,7 @@ void XFEM::UTILS::EvaluteStateatGP(const DRT::Element *sele,
   if (sele->Shape() == CORE::FE::CellType::quad4)
   {
     CORE::LINALG::Matrix<3, 4> vels;
-    for (int n = 0; n < sele->NumNode(); ++n)
+    for (int n = 0; n < sele->num_node(); ++n)
     {
       for (int dof = 0; dof < 3; ++dof)
       {

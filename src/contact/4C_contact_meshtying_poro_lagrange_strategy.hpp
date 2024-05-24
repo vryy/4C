@@ -28,7 +28,7 @@ namespace CONTACT
     \brief Standard Constructor
 
     */
-    PoroMtLagrangeStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
+    PoroMtLagrangeStrategy(const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
         Teuchos::ParameterList params, std::vector<Teuchos::RCP<MORTAR::Interface>> interface,
         int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
 

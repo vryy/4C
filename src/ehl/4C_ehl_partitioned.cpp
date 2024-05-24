@@ -30,8 +30,8 @@ EHL::Partitioned::Partitioned(const Epetra_Comm& comm,
     : Base(comm, globaltimeparams, lubricationparams, structparams, struct_disname,
           lubrication_disname),
       preincnp_(CORE::LINALG::CreateVector(
-          *lubrication_->LubricationField()->Discretization()->DofRowMap(0), true)),
-      dispincnp_(CORE::LINALG::CreateVector(*structure_->DofRowMap(0), true))
+          *lubrication_->LubricationField()->Discretization()->dof_row_map(0), true)),
+      dispincnp_(CORE::LINALG::CreateVector(*structure_->dof_row_map(0), true))
 {
   // call the EHL parameter lists
   const Teuchos::ParameterList& ehlparams =
@@ -44,7 +44,7 @@ EHL::Partitioned::Partitioned(const Epetra_Comm& comm,
     FOUR_C_THROW("Different time stepping for two way coupling not implemented yet.");
   }
 
-  // Get the parameters for the ConvergenceCheck
+  // Get the parameters for the convergence_check
   itmax_ = ehlparams.get<int>("ITEMAX");          // default: =10
   ittol_ = ehlparamspart.get<double>("CONVTOL");  // default: =1e-6
 
@@ -59,9 +59,9 @@ void EHL::Partitioned::Timeloop()
 {
   while (NotFinished())
   {
-    PrepareTimeStep();
+    prepare_time_step();
 
-    OuterLoop();
+    outer_loop();
 
     UpdateAndOutput();
   }
@@ -71,22 +71,22 @@ void EHL::Partitioned::Timeloop()
 /*----------------------------------------------------------------------*
  | prepare time step                                        wirtz 12/15 |
  *----------------------------------------------------------------------*/
-void EHL::Partitioned::PrepareTimeStep()
+void EHL::Partitioned::prepare_time_step()
 {
   increment_time_and_step();
   PrintHeader();
 
   SetStructSolution(structure_->Dispn());
-  structure_->PrepareTimeStep();
+  structure_->prepare_time_step();
   //  set_lubrication_solution(lubrication_->LubricationField()->Quantity()); // todo: what quantity
-  lubrication_->LubricationField()->PrepareTimeStep();
+  lubrication_->LubricationField()->prepare_time_step();
 }
 
 
 /*----------------------------------------------------------------------*
  | outer Timeloop for EHL without relaxation                wirtz 12/15 |
  *----------------------------------------------------------------------*/
-void EHL::Partitioned::OuterLoop()
+void EHL::Partitioned::outer_loop()
 {
   int itnum = 0;
   bool stopnonliniter = false;
@@ -110,7 +110,7 @@ void EHL::Partitioned::OuterLoop()
     set_lubrication_solution(lubrication_->LubricationField()->Prenp());
     if (itnum != 1) structure_->prepare_partition_step();
     // solve structural system
-    DoStructStep();
+    do_struct_step();
 
     // set mesh displacement, velocity fields and film thickness
     SetStructSolution(structure_->Dispnp());
@@ -122,7 +122,7 @@ void EHL::Partitioned::OuterLoop()
 
     // check convergence for all fields and stop iteration loop if
     // convergence is achieved overall
-    stopnonliniter = ConvergenceCheck(itnum);
+    stopnonliniter = convergence_check(itnum);
   }
 
   return;
@@ -135,7 +135,7 @@ void EHL::Partitioned::OuterLoop()
 void EHL::Partitioned::UpdateAndOutput()
 {
   constexpr bool force_prepare = false;
-  structure_->PrepareOutput(force_prepare);
+  structure_->prepare_output(force_prepare);
 
   structure_->Update();
   lubrication_->LubricationField()->Update();
@@ -150,7 +150,7 @@ void EHL::Partitioned::UpdateAndOutput()
 /*----------------------------------------------------------------------*
  | solve structure filed                                    wirtz 12/15 |
  *----------------------------------------------------------------------*/
-void EHL::Partitioned::DoStructStep()
+void EHL::Partitioned::do_struct_step()
 {
   if (Comm().MyPID() == 0)
   {
@@ -183,7 +183,7 @@ void EHL::Partitioned::DoLubricationStep()
  | convergence check for both fields (lubrication & structure)          |
  |                                                          wirtz 12/15 |
  *----------------------------------------------------------------------*/
-bool EHL::Partitioned::ConvergenceCheck(int itnum)
+bool EHL::Partitioned::convergence_check(int itnum)
 {
   // convergence check based on the pressure increment
   bool stopnonliniter = false;

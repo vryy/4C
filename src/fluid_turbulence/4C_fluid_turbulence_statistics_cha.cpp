@@ -202,7 +202,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
 
   //----------------------------------------------------------------------
   // allocate some (toggle) vectors
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   meanvelnp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
   // this vector is only necessary for low-Mach-number flow or
@@ -338,7 +338,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
 
         int length = sblock.size();
 
-        exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
+        exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
         rblock.clear();
 
@@ -466,7 +466,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
 
       // want to loop all control points of the element,
       // so get the number of points
-      const int numnp = actele->NumNode();
+      const int numnp = actele->num_node();
 
       // access elements knot span
       std::vector<CORE::LINALG::SerialDenseVector> knots(3);
@@ -1954,10 +1954,10 @@ void FLD::TurbulenceStatisticsCha::evaluate_integral_mean_values_in_planes()
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("u and p (n+1,converged)", meanvelnp_);
+  discret_->set_state("u and p (n+1,converged)", meanvelnp_);
   if (alefluid_)
   {
-    discret_->SetState("dispnp", dispnp_);
+    discret_->set_state("dispnp", dispnp_);
   }
 
   // call loop over elements
@@ -2188,8 +2188,8 @@ void FLD::TurbulenceStatisticsCha::evaluate_loma_integral_mean_values_in_planes(
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("u and p (n+1,converged)", meanvelnp_);
-  discret_->SetState("scalar (n+1,converged)", meanscanp_);
+  discret_->set_state("u and p (n+1,converged)", meanvelnp_);
+  discret_->set_state("scalar (n+1,converged)", meanscanp_);
 
   // call loop over elements
   discret_->Evaluate(
@@ -2403,8 +2403,8 @@ void FLD::TurbulenceStatisticsCha::evaluate_scatra_integral_mean_values_in_plane
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("u and p (n+1,converged)", meanvelnp_);
-  discret_->SetState("scalar (n+1,converged)", meanscanp_);
+  discret_->set_state("u and p (n+1,converged)", meanvelnp_);
+  discret_->set_state("scalar (n+1,converged)", meanscanp_);
 
   // call loop over elements
   discret_->Evaluate(
@@ -2852,9 +2852,9 @@ void FLD::TurbulenceStatisticsCha::add_model_params_multifractal(
 
   // set state vectors for element call
   discret_->ClearState();
-  discret_->SetState("velnp", velnp);
+  discret_->set_state("velnp", velnp);
   if (fsvelnp == Teuchos::null) FOUR_C_THROW("Haven't got fine-scale velocity!");
-  discret_->SetState("fsvelnp", fsvelnp);
+  discret_->set_state("fsvelnp", fsvelnp);
 
   // call loop over elements to compute means
   discret_->Evaluate(
@@ -3080,7 +3080,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     for (std::map<std::string, Teuchos::RCP<Epetra_Vector>>::iterator state = statevecs.begin();
          state != statevecs.end(); ++state)
     {
-      discret_->SetState(state->first, state->second);
+      discret_->set_state(state->first, state->second);
     }
 
     if (myxwall_ != Teuchos::null) myxwall_->SetXWallParams(eleparams_);
@@ -3126,7 +3126,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
                scatrastatevecs.begin();
            state != scatrastatevecs.end(); ++state)
       {
-        scatradiscret_->SetState(state->first, state->second);
+        scatradiscret_->set_state(state->first, state->second);
       }
 
       // call loop over elements to compute means

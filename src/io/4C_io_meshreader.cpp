@@ -84,9 +84,9 @@ void IO::MeshReader::ReadAndPartition()
 
   graph_.resize(element_readers_.size());
 
-  ReadMeshFromDatFile(max_node_id);
+  read_mesh_from_dat_file(max_node_id);
   Rebalance();
-  CreateInlineMesh(max_node_id);
+  create_inline_mesh(max_node_id);
 
   // last check if there are enough nodes
   {
@@ -101,9 +101,9 @@ void IO::MeshReader::ReadAndPartition()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::MeshReader::ReadMeshFromDatFile(int& max_node_id)
+void IO::MeshReader::read_mesh_from_dat_file(int& max_node_id)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("IO::MeshReader::ReadMeshFromDatFile");
+  TEUCHOS_FUNC_TIME_MONITOR("IO::MeshReader::read_mesh_from_dat_file");
 
   // read element information
   for (auto& element_reader : element_readers_) element_reader.ReadAndDistribute();
@@ -220,7 +220,7 @@ void IO::MeshReader::Rebalance()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::MeshReader::CreateInlineMesh(int& max_node_id)
+void IO::MeshReader::create_inline_mesh(int& max_node_id)
 {
   for (const auto& domain_reader : domain_readers_)
   {

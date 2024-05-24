@@ -91,7 +91,7 @@ namespace XFEM
 
     Teuchos::RCP<Epetra_Vector> get_level_set_field_as_node_row_vector();
 
-    virtual void ReadRestart(const int step, const int lsc_idx = 0);
+    virtual void read_restart(const int step, const int lsc_idx = 0);
 
     bool HasMovingInterface() override { return true; }
 
@@ -111,7 +111,7 @@ namespace XFEM
     void SetConditionsToCopy() override;
 
     /// set level-set field implemented in this routine
-    double FunctImplementation(const int func_no, const double* coords, const double t);
+    double funct_implementation(const int func_no, const double* coords, const double t);
 
    protected:
     //! Output specific

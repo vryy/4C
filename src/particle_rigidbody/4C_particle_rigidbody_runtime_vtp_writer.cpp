@@ -41,7 +41,7 @@ void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::Init(
       comm_, "rigidbody");
 }
 
-void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::ReadRestart(
+void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::read_restart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // get restart time

@@ -50,7 +50,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::evaluate_and_solve_nodal_l2_projectio
 
   for (auto* actele : dis.MyColElementRange())
   {
-    const int numnode = actele->NumNode();
+    const int numnode = actele->num_node();
 
     actele->LocationVector(dis, la, false);
     lmowner = la[0].lmowner_;

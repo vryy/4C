@@ -237,6 +237,6 @@ void test_alex52()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, CORE::FE::CellType::hex8);
+  intersection.add_element(1, nids, hex8_xyze, CORE::FE::CellType::hex8);
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
 }

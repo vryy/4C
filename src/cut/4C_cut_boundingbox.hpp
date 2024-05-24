@@ -137,8 +137,8 @@ namespace CORE::GEO
       }
 
      protected:
-      bool InBetween(const double& norm, const double& smin, const double& smax, const double& omin,
-          const double& omax) const;
+      bool in_between(const double& norm, const double& smin, const double& smax,
+          const double& omin, const double& omax) const;
 
       bool empty_;
       CORE::LINALG::Matrix<3, 2> box_;

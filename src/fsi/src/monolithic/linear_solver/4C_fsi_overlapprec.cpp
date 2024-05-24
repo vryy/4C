@@ -52,19 +52,19 @@ FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(
   // check and fix ml nullspace if neccessary
   {
     CORE::LINALG::Solver& solver = *(structure.LinearSolver());
-    const Epetra_Map& oldmap = *(structure.Discretization()->DofRowMap());
+    const Epetra_Map& oldmap = *(structure.Discretization()->dof_row_map());
     const Epetra_Map& newmap = Matrix(0, 0).EpetraMatrix()->RowMap();
     CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Structure", oldmap, newmap, solver.Params());
   }
   {
     CORE::LINALG::Solver& solver = *(fluid.LinearSolver());
-    const Epetra_Map& oldmap = *(fluid.DofRowMap());
+    const Epetra_Map& oldmap = *(fluid.dof_row_map());
     const Epetra_Map& newmap = Matrix(1, 1).EpetraMatrix()->RowMap();
     CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Fluid", oldmap, newmap, solver.Params());
   }
   {
     CORE::LINALG::Solver& solver = *(ale.LinearSolver());
-    const Epetra_Map& oldmap = *(ale.Discretization()->DofRowMap());
+    const Epetra_Map& oldmap = *(ale.Discretization()->dof_row_map());
     const Epetra_Map& newmap = Matrix(2, 2).EpetraMatrix()->RowMap();
     CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Ale", oldmap, newmap, solver.Params());
   }

@@ -438,7 +438,7 @@ DRT::Element* DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Clone() const
  *----------------------------------------------------------------------*/
 CORE::FE::CellType DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Shape() const
 {
-  return CORE::FE::getShapeOfBoundaryElement(NumNode(), ParentElement()->Shape());
+  return CORE::FE::getShapeOfBoundaryElement(num_node(), parent_element()->Shape());
 }
 
 /*----------------------------------------------------------------------*

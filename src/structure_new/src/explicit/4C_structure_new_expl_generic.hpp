@@ -70,7 +70,7 @@ namespace STR
           Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr) override;
 
       //! Assemble the right hand side
-      bool AssembleForce(Epetra_Vector& f,
+      bool assemble_force(Epetra_Vector& f,
           const std::vector<INPAR::STR::ModelType>* without_these_models = nullptr) const override;
 
       //! @name Monolithic update routines
@@ -87,7 +87,7 @@ namespace STR
       void UpdateStepElement() override;
 
       //! things that should be done after updating (derived)
-      void PostUpdate() override;
+      void post_update() override;
 
       /*! \brief Remove contributions from the structural right-hand side stemming
        *  from any condensation operations (typical example is contact) (derived)

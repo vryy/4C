@@ -102,15 +102,15 @@ bool NOX::NLN::Direction::ModifiedNewton::compute_correction_direction(::NOX::Ab
      * instead the correction of the previous step is used. */
     case NOX::NLN::CorrectionType::soc_full:
     {
-      Teuchos::RCP<Epetra_Vector> diagonal = getDiagonal(grp);
-      if (not useUnmodifiedSystem()) modifySystem(grp, diagonal.get(), primal_diag_corr_last_);
-      return solveModifiedSystem(dir, grp, solver);
+      Teuchos::RCP<Epetra_Vector> diagonal = get_diagonal(grp);
+      if (not use_unmodified_system()) modify_system(grp, diagonal.get(), primal_diag_corr_last_);
+      return solve_modified_system(dir, grp, solver);
     }
     /* In this case the system matrix did not change and still contains the
      * previous modification. Therefore, just a solve call is performed. */
     case NOX::NLN::CorrectionType::soc_cheap:
     {
-      return solveModifiedSystem(dir, grp, solver);
+      return solve_modified_system(dir, grp, solver);
     }
     default:
     {
@@ -175,7 +175,7 @@ bool NOX::NLN::Direction::ModifiedNewton::compute(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::Direction::ModifiedNewton::useUnmodifiedSystem() const
+bool NOX::NLN::Direction::ModifiedNewton::use_unmodified_system() const
 {
   return (successive_red_counter_ > 2);
 }
@@ -192,7 +192,7 @@ void NOX::NLN::Direction::ModifiedNewton::update_successive_reduction_counter()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> NOX::NLN::Direction::ModifiedNewton::getDiagonal(
+Teuchos::RCP<Epetra_Vector> NOX::NLN::Direction::ModifiedNewton::get_diagonal(
     const ::NOX::Abstract::Group& grp) const
 {
   // fill the diagonal
@@ -235,7 +235,7 @@ bool NOX::NLN::Direction::ModifiedNewton::test_default_step_quality(::NOX::Abstr
 
   // fill the diagonal
   diagonal = Teuchos::null;
-  diagonal = getDiagonal(grp);
+  diagonal = get_diagonal(grp);
 
   return status;
 }
@@ -250,12 +250,12 @@ bool NOX::NLN::Direction::ModifiedNewton::compute_modified_newton(::NOX::Abstrac
   NOX::NLN::Group& nln_grp = dynamic_cast<NOX::NLN::Group&>(grp);
   ::NOX::Abstract::Group::ReturnType status = nln_grp.computeFandJacobian();
   if (status != ::NOX::Abstract::Group::Ok)
-    throwError(__LINE__, "compute", "Unable to compute F and/or Jacobian");
+    throw_error(__LINE__, "compute", "Unable to compute F and/or Jacobian");
 
-  if (not modifySystem(grp, diagonal)) return false;
+  if (not modify_system(grp, diagonal)) return false;
 
   // try to solve the modified system
-  bool success = solveModifiedSystem(dir, grp, solver);
+  bool success = solve_modified_system(dir, grp, solver);
 
   // recursive call if the solving attempt fails
   return (success ? true : compute_modified_newton(dir, grp, solver));
@@ -263,7 +263,7 @@ bool NOX::NLN::Direction::ModifiedNewton::compute_modified_newton(::NOX::Abstrac
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::Direction::ModifiedNewton::solveModifiedSystem(
+bool NOX::NLN::Direction::ModifiedNewton::solve_modified_system(
     ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp, const ::NOX::Solver::Generic& solver)
 {
   // sanity check
@@ -298,7 +298,7 @@ bool NOX::NLN::Direction::ModifiedNewton::solveModifiedSystem(
 bool NOX::NLN::Direction::ModifiedNewton::solve_unmodified_system(
     ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp, const ::NOX::Solver::Generic& solver)
 {
-  if (not useUnmodifiedSystem()) return false;
+  if (not use_unmodified_system()) return false;
 
   try
   {
@@ -321,7 +321,7 @@ bool NOX::NLN::Direction::ModifiedNewton::solve_unmodified_system(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::Direction::ModifiedNewton::modifySystem(
+bool NOX::NLN::Direction::ModifiedNewton::modify_system(
     ::NOX::Abstract::Group& grp, Epetra_Vector* diagonal)
 {
   primal_diag_corr_ = get_primal_diag_correction(*corr_counter_ == 0);
@@ -329,7 +329,7 @@ bool NOX::NLN::Direction::ModifiedNewton::modifySystem(
   // the maximal correction factor is reached without success
   if (primal_diag_corr_ > max_primal_diag_corr_) return false;
 
-  return modifySystem(grp, diagonal, primal_diag_corr_);
+  return modify_system(grp, diagonal, primal_diag_corr_);
 }
 
 /*----------------------------------------------------------------------------*
@@ -353,7 +353,7 @@ void NOX::NLN::Direction::ModifiedNewton::set_stagnation_counter(::NOX::Abstract
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::Direction::ModifiedNewton::modifySystem(
+bool NOX::NLN::Direction::ModifiedNewton::modify_system(
     ::NOX::Abstract::Group& grp, Epetra_Vector* diagonal, const double primal_diag_corr)
 {
   NOX::NLN::Group& nln_grp = dynamic_cast<NOX::NLN::Group&>(grp);
@@ -456,7 +456,7 @@ void NOX::NLN::Direction::ModifiedNewton::print(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Direction::ModifiedNewton::throwError(
+void NOX::NLN::Direction::ModifiedNewton::throw_error(
     const int line, const std::string& functionName, const std::string& errorMsg) const
 {
   if (utils_->isPrintType(::NOX::Utils::Error))

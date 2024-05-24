@@ -40,7 +40,7 @@ void CORE::GEO::UpdateMaterialConfigWithDispVector(
     {
       const int disp_gid = disp->Map().GID(disp_lid);
       FOUR_C_ASSERT(
-          dis->DofRowMap()->LID(disp_gid) >= 0, "Displacement dofs not part of DofRowMap()");
+          dis->dof_row_map()->LID(disp_gid) >= 0, "Displacement dofs not part of dof_row_map()");
     }
 #endif
 

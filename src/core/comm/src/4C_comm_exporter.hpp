@@ -246,8 +246,8 @@ namespace CORE::COMM
 
     \note This is an individual call
     */
-    void ISend(const int frompid, const int topid, const char* data, const int dsize, const int tag,
-        MPI_Request& request) const;
+    void i_send(const int frompid, const int topid, const char* data, const int dsize,
+        const int tag, MPI_Request& request) const;
 
     /*!
     \brief Send data from one processor to another (nonblocking)
@@ -273,7 +273,7 @@ namespace CORE::COMM
 
     \note This is an individual call
     */
-    void ISend(const int frompid, const int topid, const int* data, const int dsize, const int tag,
+    void i_send(const int frompid, const int topid, const int* data, const int dsize, const int tag,
         MPI_Request& request) const;
 
     /*!
@@ -300,7 +300,7 @@ namespace CORE::COMM
 
     \note This is an individual call
     */
-    void ISend(const int frompid, const int topid, const double* data, const int dsize,
+    void i_send(const int frompid, const int topid, const double* data, const int dsize,
         const int tag, MPI_Request& request) const;
 
     /*!
@@ -312,7 +312,7 @@ namespace CORE::COMM
     recvbuff is resized to fit received message.
     the method is blocking for the calling (receiving) proc but for none of the
     other processors.
-    It is used together with ISend and Wait to do nonblocking chaotic
+    It is used together with i_send and Wait to do nonblocking chaotic
     point to point communication.
 
     \note This is an individual call.
@@ -339,7 +339,7 @@ namespace CORE::COMM
     recvbuff is resized to fit received message.
     the method is blocking for the calling (receiving) proc but for none of the
     other processors.
-    It is used together with ISend and Wait to do nonblocking chaotic
+    It is used together with i_send and Wait to do nonblocking chaotic
     point to point communication.
 
     \note This is an individual call.
@@ -366,7 +366,7 @@ namespace CORE::COMM
     recvbuff is resized to fit received message.
     the method is blocking for the calling (receiving) proc but for none of the
     other processors.
-    It is used together with ISend and Wait to do nonblocking chaotic
+    It is used together with i_send and Wait to do nonblocking chaotic
     point to point communication.
 
     \note This is an individual call.
@@ -441,7 +441,7 @@ namespace CORE::COMM
     /*!
     \brief Do initialization of the exporter
     */
-    void ConstructExporter();
+    void construct_exporter();
 
     /*!
     \brief Get PID
@@ -455,12 +455,12 @@ namespace CORE::COMM
     /*!
     \brief Get sendplan_
     */
-    inline std::vector<std::set<int>>& SendPlan() { return sendplan_; }
+    inline std::vector<std::set<int>>& send_plan() { return sendplan_; }
 
     /*!
     \brief generic export algorithm that delegates the specific pack/unpack to a helper
      */
-    void GenericExport(ExporterHelper& helper);
+    void generic_export(ExporterHelper& helper);
 
    private:
     //! dummy map in case of empty exporter
@@ -824,28 +824,28 @@ template <typename T>
 void CORE::COMM::Exporter::Export(std::map<int, Teuchos::RCP<T>>& parobjects)
 {
   ParObjectExporterHelper<T> helper(parobjects);
-  GenericExport(helper);
+  generic_export(helper);
 }
 
 template <typename T>
 void CORE::COMM::Exporter::Export(std::map<int, std::vector<T>>& data)
 {
   PODVectorExporterHelper<T> helper(data);
-  GenericExport(helper);
+  generic_export(helper);
 }
 
 template <typename T>
 void CORE::COMM::Exporter::Export(std::map<int, std::set<T>>& data)
 {
   PODSetExporterHelper<T> helper(data);
-  GenericExport(helper);
+  generic_export(helper);
 }
 
 template <typename T, typename U>
 void CORE::COMM::Exporter::Export(std::map<int, std::map<T, U>>& data)
 {
   PODMapExporterHelper<T, U> helper(data);
-  GenericExport(helper);
+  generic_export(helper);
 }
 
 FOUR_C_NAMESPACE_CLOSE

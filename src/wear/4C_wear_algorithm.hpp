@@ -74,18 +74,18 @@ namespace WEAR
     virtual void TimeLoop() = 0;
 
     //! read restart data
-    void ReadRestart(int step  //!< step number where the calculation is continued
+    void read_restart(int step  //!< step number where the calculation is continued
         ) override = 0;
 
     //! access to structural field
     Teuchos::RCP<ADAPTER::FSIStructureWrapper> StructureField() { return structure_; }
 
     //! access to ALE field
-    ADAPTER::AleWearWrapper& AleField() { return *ale_; }
+    ADAPTER::AleWearWrapper& ale_field() { return *ale_; }
 
    private:
     //! check compatibility if input parameters
-    void CheckInput();
+    void check_input();
 
     //! create mortar interfaces for material conf.
     void create_material_interface();

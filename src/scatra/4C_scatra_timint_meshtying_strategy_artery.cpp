@@ -187,7 +187,7 @@ void SCATRA::MeshtyingStrategyArtery::initialize_linear_solver(
 /*-----------------------------------------------------------------------*
  | return global map of degrees of freedom              kremheller 04/18 |
  *-----------------------------------------------------------------------*/
-const Epetra_Map& SCATRA::MeshtyingStrategyArtery::DofRowMap() const
+const Epetra_Map& SCATRA::MeshtyingStrategyArtery::dof_row_map() const
 {
   return *arttoscatracoupling_->FullMap();
 }
@@ -350,9 +350,9 @@ void SCATRA::MeshtyingStrategyArtery::SetNearbyElePairs(
 /*--------------------------------------------------------------------------*
  | setup the coupled matrix                                kremheller 04/18 |
  *--------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyArtery::PrepareTimeStep() const
+void SCATRA::MeshtyingStrategyArtery::prepare_time_step() const
 {
-  artscatratimint_->PrepareTimeStep();
+  artscatratimint_->prepare_time_step();
   return;
 }
 
@@ -361,7 +361,7 @@ void SCATRA::MeshtyingStrategyArtery::PrepareTimeStep() const
  *--------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyArtery::SetArteryPressure() const
 {
-  artscatradis_->SetState(2, "one_d_artery_pressure", arttimint_->Pressurenp());
+  artscatradis_->set_state(2, "one_d_artery_pressure", arttimint_->Pressurenp());
   return;
 }
 

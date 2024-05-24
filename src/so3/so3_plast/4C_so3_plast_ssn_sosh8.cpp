@@ -266,7 +266,7 @@ int DRT::ELEMENTS::SoSh8PlastType::Initialize(DRT::Discretization& dis)
 
   // fill complete again to reconstruct element-node pointers,
   // but without element init, etc.
-  dis.FillComplete(false, false, false);
+  dis.fill_complete(false, false, false);
 
   // loop again to init Jacobian for Sosh8's
   for (int i = 0; i < dis.NumMyColElements(); ++i)
@@ -458,7 +458,7 @@ bool DRT::ELEMENTS::SoSh8Plast::ReadElement(
     FOUR_C_THROW("unknown EAS type for so3_plast");
 
   // initialize EAS data
-  EasInit();
+  eas_init();
 
   // read ANS technology flag
   linedef->ExtractString("ANS", buffer);
@@ -1249,7 +1249,7 @@ void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // cur
 /*----------------------------------------------------------------------*
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8Plast::CalculateBop(CORE::LINALG::Matrix<numstr_, numdofperelement_>* bop,
+void DRT::ELEMENTS::SoSh8Plast::calculate_bop(CORE::LINALG::Matrix<numstr_, numdofperelement_>* bop,
     const CORE::LINALG::Matrix<nsd_, nsd_>* defgrd, const CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ,
     const int gp)
 {

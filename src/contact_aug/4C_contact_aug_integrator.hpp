@@ -95,28 +95,28 @@ namespace CONTACT
           CONTACT::Integrator* wrapper);
 
      private:
-      static CONTACT::AUG::IntegratorGeneric* Create2D(CORE::FE::CellType slavetype,
+      static CONTACT::AUG::IntegratorGeneric* create2_d(CORE::FE::CellType slavetype,
           CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
           CONTACT::Integrator* wrapper);
 
       template <CORE::FE::CellType slavetype>
-      static CONTACT::AUG::IntegratorGeneric* Create2D(CORE::FE::CellType mastertype,
+      static CONTACT::AUG::IntegratorGeneric* create2_d(CORE::FE::CellType mastertype,
           CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 
       template <CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-      static CONTACT::AUG::IntegratorGeneric* Create2D(
+      static CONTACT::AUG::IntegratorGeneric* create2_d(
           CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 
-      static CONTACT::AUG::IntegratorGeneric* Create3D(CORE::FE::CellType slavetype,
+      static CONTACT::AUG::IntegratorGeneric* create3_d(CORE::FE::CellType slavetype,
           CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
           CONTACT::Integrator* wrapper);
 
       template <CORE::FE::CellType slavetype>
-      static CONTACT::AUG::IntegratorGeneric* Create3D(CORE::FE::CellType mastertype,
+      static CONTACT::AUG::IntegratorGeneric* create3_d(CORE::FE::CellType mastertype,
           CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 
       template <CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-      static CONTACT::AUG::IntegratorGeneric* Create3D(
+      static CONTACT::AUG::IntegratorGeneric* create3_d(
           CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 
      protected:
@@ -247,10 +247,10 @@ namespace CONTACT
       class EvaluatorDeriv1stOnly;
       class EvaluatorFull;
 
-      void SetEvaluator(const enum MORTAR::ActionType action);
+      void set_evaluator(const enum MORTAR::ActionType action);
 
       //! element based integration
-      void IntegrateDerivEle(MORTAR::Element& sele, MORTAR::Element& mele, bool boundary_ele,
+      void integrate_deriv_ele(MORTAR::Element& sele, MORTAR::Element& mele, bool boundary_ele,
           const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo);
 
       void integrate_weighted_gap(MORTAR::Element& sele, MORTAR::Element& mele, bool boundary_ele,
@@ -263,34 +263,34 @@ namespace CONTACT
       void extract_active_slave_node_li_ds(
           std::vector<unsigned>& active_nlids, const MORTAR::Element& sele) const;
 
-      int GetLinSize(MORTAR::Element& sele) const;
+      int get_lin_size(MORTAR::Element& sele) const;
 
       /// reset member variables at the beginning of each gauss point loop
-      void HardReset(const unsigned linsize);
+      void hard_reset(const unsigned linsize);
 
-      void WeakReset(const unsigned linsize);
+      void weak_reset(const unsigned linsize);
 
       //! evaluate the scaling factor kappa at gp
-      void GP_kappa(MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
+      void gp_kappa(MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
           double wgt, double jac) const;
 
       /// \brief evaluate the lin. of the scaling factor kappa at gp (3-D)
-      void Get_Deriv1st_Kappa(MORTAR::Element& sele,
+      void get_deriv1st_kappa(MORTAR::Element& sele,
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt,
           const Deriv1stMap& d_jac);
 
 
       //! evaluate the weighted element Area at gp
-      void GP_AugA(MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
+      void gp_aug_a(MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
           double wgt, double jac) const;
 
       //! evaluate the linearization of weighted element area at gp
-      void Get_Deriv1st_AugA(MORTAR::Element& sele,
+      void get_deriv1st_aug_a(MORTAR::Element& sele,
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt, double jac,
           const Deriv1stMap& derivjac) const;
 
       /// fill unified gauss point normal
-      void GP_Normal(MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
+      void gp_normal(MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
           double* gpn) const;
 
       /** \brief pure element based variant
@@ -307,19 +307,19 @@ namespace CONTACT
           Deriv2ndVecMap& ddn_unit);
 
       //! evaluate the linearization of weighted element area at gp
-      void Get_Deriv2nd_Kappa(MORTAR::Element& sele,
+      void get_deriv2nd_kappa(MORTAR::Element& sele,
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
           const Deriv2ndMap& dd_jac) const;
 
       /** \brief Evaluate the discrete gap at the current GP
        *
        *  \author hiermeier \date 06/17 */
-      void GapN(MORTAR::Element& sele, MORTAR::Element& mele,
+      void gap_n(MORTAR::Element& sele, MORTAR::Element& mele,
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
           const CORE::LINALG::Matrix<my::MASTERNUMNODE, 1>& mval, const double* gpn,
           double& gapn_sl, double& gapn_ma) const;
 
-      void GP_WGap(MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
+      void gp_w_gap(MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
           const double gapn_sl, const double gapn_ma, const double wg, const double jac) const;
 
      private:

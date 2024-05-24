@@ -211,7 +211,7 @@ void DRT::ELEMENTS::ScaTraEleParameterStd::SetParameters(Teuchos::ParameterList&
   }
 
   // get quantities for finite difference check
-  fdcheck_ = CORE::UTILS::GetAsEnum<INPAR::SCATRA::FDCheck>(parameters, "fdcheck");
+  fdcheck_ = CORE::UTILS::GetAsEnum<INPAR::SCATRA::FdCheck>(parameters, "fdcheck");
   fdcheckeps_ = parameters.get<double>("fdcheckeps");
   fdchecktol_ = parameters.get<double>("fdchecktol");
 

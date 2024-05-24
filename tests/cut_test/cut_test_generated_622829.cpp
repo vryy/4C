@@ -1347,7 +1347,7 @@ void test_generated_622829()
     hex8_xyze(2, 7) = -0.0055550208030329603637;
     nids.push_back(1653805);
 
-    intersection.AddElement(622295, nids, hex8_xyze, CORE::FE::CellType::hex8);
+    intersection.add_element(622295, nids, hex8_xyze, CORE::FE::CellType::hex8);
   }
 
   {
@@ -1387,7 +1387,7 @@ void test_generated_622829()
     hex8_xyze(2, 7) = -0.0055550089610411400656;
     nids.push_back(1654348);
 
-    intersection.AddElement(622820, nids, hex8_xyze, CORE::FE::CellType::hex8);
+    intersection.add_element(622820, nids, hex8_xyze, CORE::FE::CellType::hex8);
   }
 
   {
@@ -1427,7 +1427,7 @@ void test_generated_622829()
     hex8_xyze(2, 7) = 0.0055550181922827601352;
     nids.push_back(1654356);
 
-    intersection.AddElement(622828, nids, hex8_xyze, CORE::FE::CellType::hex8);
+    intersection.add_element(622828, nids, hex8_xyze, CORE::FE::CellType::hex8);
   }
 
   {
@@ -1467,7 +1467,7 @@ void test_generated_622829()
     hex8_xyze(2, 7) = -0.0055550176470937602871;
     nids.push_back(1654357);
 
-    intersection.AddElement(622829, nids, hex8_xyze, CORE::FE::CellType::hex8);
+    intersection.add_element(622829, nids, hex8_xyze, CORE::FE::CellType::hex8);
   }
 
   {
@@ -1507,7 +1507,7 @@ void test_generated_622829()
     hex8_xyze(2, 7) = -0.0055550180418534201437;
     nids.push_back(1654360);
 
-    intersection.AddElement(622832, nids, hex8_xyze, CORE::FE::CellType::hex8);
+    intersection.add_element(622832, nids, hex8_xyze, CORE::FE::CellType::hex8);
   }
 
   {
@@ -1547,7 +1547,7 @@ void test_generated_622829()
     hex8_xyze(2, 7) = -0.016665059622743800399;
     nids.push_back(1654358);
 
-    intersection.AddElement(622854, nids, hex8_xyze, CORE::FE::CellType::hex8);
+    intersection.add_element(622854, nids, hex8_xyze, CORE::FE::CellType::hex8);
   }
 
   {
@@ -1587,7 +1587,7 @@ void test_generated_622829()
     hex8_xyze(2, 7) = -0.0055550495644879202203;
     nids.push_back(1666897);
 
-    intersection.AddElement(634961, nids, hex8_xyze, CORE::FE::CellType::hex8);
+    intersection.add_element(634961, nids, hex8_xyze, CORE::FE::CellType::hex8);
   }
 
   intersection.CutTest_Cut(

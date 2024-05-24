@@ -35,7 +35,7 @@ FLD::UTILS::FluidInfNormScaling::FluidInfNormScaling(CORE::LINALG::MapExtractor&
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::UTILS::FluidInfNormScaling::ScaleSystem(
+void FLD::UTILS::FluidInfNormScaling::scale_system(
     Teuchos::RCP<CORE::LINALG::SparseOperator> matrix, Epetra_Vector& b)
 {
   if (myrank_ == 0) std::cout << "Performing scaling of linear system" << std::endl;
@@ -192,7 +192,7 @@ void FLD::UTILS::FluidInfNormScaling::ScaleSystem(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::UTILS::FluidInfNormScaling::UnscaleSolution(
+void FLD::UTILS::FluidInfNormScaling::unscale_solution(
     Teuchos::RCP<CORE::LINALG::SparseOperator> matrix, Epetra_Vector& x, Epetra_Vector& b)
 {
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> matrcp =

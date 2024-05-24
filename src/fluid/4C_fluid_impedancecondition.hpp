@@ -84,9 +84,9 @@ namespace FLD
       void WriteRestart(IO::DiscretizationWriter& output);
 
       /*!
-      \brief Wrapper for FluidImpedacnceBc::ReadRestart
+      \brief Wrapper for FluidImpedacnceBc::read_restart
       */
-      void ReadRestart(IO::DiscretizationReader& reader);
+      void read_restart(IO::DiscretizationReader& reader);
 
       /*!
       \brief return vector of relative pressure errors of last cycle
@@ -166,7 +166,7 @@ namespace FLD
       /*!
       \brief read flowrates_ and flowratespos_
       */
-      void ReadRestart(IO::DiscretizationReader& reader, const int condnum);
+      void read_restart(IO::DiscretizationReader& reader, const int condnum);
 
      private:
       /*!
@@ -177,7 +177,7 @@ namespace FLD
       /*!
       \brief return relative error of last cycle
       */
-      double getWKrelerror() { return w_krelerror_; }
+      double get_w_krelerror() { return w_krelerror_; }
 
      private:
       //! fluid discretization

@@ -225,7 +225,7 @@ namespace CONTACT
     /*!
     \brief Read restart
     */
-    void ReadRestart(IO::DiscretizationReader& reader);
+    void read_restart(IO::DiscretizationReader& reader);
 
     /*!
     \brief Write restart
@@ -468,7 +468,7 @@ namespace CONTACT
     We search pairs of elements that might get in contact. Pairs of elements that are direct
     neighbours, i.e. share one node, will be rejected.
     */
-    std::vector<std::vector<DRT::Element*>> BruteForceSearch(
+    std::vector<std::vector<DRT::Element*>> brute_force_search(
         std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, const double searchradius,
         const double sphericalsearchradius);
 
@@ -490,7 +490,7 @@ namespace CONTACT
     of beam elements was high, it would have to be called more often!
 
     */
-    void ComputeSearchRadius();
+    void compute_search_radius();
 
     /*!
     \brief Get maximum element radius
@@ -499,7 +499,7 @@ namespace CONTACT
     sections. Stores the values in corresponing class variables.
 
     */
-    void SetMinMaxEleRadius();
+    void set_min_max_ele_radius();
 
     /*
     \brief Test if element midpoints are close (spherical bounding box intersection)
@@ -528,7 +528,7 @@ namespace CONTACT
     of the two end nodes is computed. Yet, this is assumed to be accurate enough.
 
     */
-    void GetMaxEleLength(double& maxelelength);
+    void get_max_ele_length(double& maxelelength);
 
     /*!
     \brief Compute rotation matrix R from given angle theta in 3D
@@ -547,14 +547,14 @@ namespace CONTACT
     Compute spin matrix according to Crisfield Vol. 2, equation (16.8)
 
     */
-    void ComputeSpin(
+    void compute_spin(
         CORE::LINALG::SerialDenseMatrix& spin, CORE::LINALG::SerialDenseVector& rotationangle);
 
     /*!
     \brief Shift map of displacement vector
 
     */
-    void ShiftDisMap(const Epetra_Vector& disrow, Epetra_Vector& disccol);
+    void shift_dis_map(const Epetra_Vector& disrow, Epetra_Vector& disccol);
 
 
     /** \brief set up the discretization btsoldiscret_ to be used within beam contact manager
@@ -567,7 +567,7 @@ namespace CONTACT
     \brief Store current displacment state in currentpositions
 
     */
-    void SetCurrentPositions(
+    void set_current_positions(
         std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, const Epetra_Vector& disccol);
 
     /*!
@@ -576,7 +576,7 @@ namespace CONTACT
     The contact element pairs are updated with these current positions and also with
     the current tangent vectors in case of Kirchhoff beam elements
     */
-    void SetState(
+    void set_state(
         std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, const Epetra_Vector& disccol);
 
     /*!
@@ -584,7 +584,7 @@ namespace CONTACT
     potential)
 
     */
-    void EvaluateAllPairs(Teuchos::ParameterList timeintparams);
+    void evaluate_all_pairs(Teuchos::ParameterList timeintparams);
 
     /*!
     \brief Sort found element pairs and fill vectors of contact pairs (BTB, BTSOL and BTSPH)
@@ -602,33 +602,33 @@ namespace CONTACT
     \brief Compute coordinates for GMSH-Output for two-noded-elements
 
     */
-    void GMSH_2_noded(const int& n, const CORE::LINALG::SerialDenseMatrix& coord,
+    void gmsh_2_noded(const int& n, const CORE::LINALG::SerialDenseMatrix& coord,
         const DRT::Element* thisele, std::stringstream& gmshfilecontent);
 
     /*!
     \brief Compute coordinates for GMSH-Output for three-noded-elements
 
     */
-    void GMSH_3_noded(const int& n, const CORE::LINALG::SerialDenseMatrix& allcoord,
+    void gmsh_3_noded(const int& n, const CORE::LINALG::SerialDenseMatrix& allcoord,
         const DRT::Element* thisele, std::stringstream& gmshfilecontent);
 
     /*!
     \brief Compute coordinates for GMSH-Output for four-noded-elements
 
     */
-    void GMSH_4_noded(const int& n, const CORE::LINALG::SerialDenseMatrix& allcoord,
+    void gmsh_4_noded(const int& n, const CORE::LINALG::SerialDenseMatrix& allcoord,
         const DRT::Element* thisele, std::stringstream& gmshfilecontent);
 
     /*!
     \brief Compute coordinates for GMSH-Output for N-noded-elements
     */
-    void GMSH_N_noded(const int& n, int& n_axial, const CORE::LINALG::SerialDenseMatrix& allcoord,
+    void gmsh_n_noded(const int& n, int& n_axial, const CORE::LINALG::SerialDenseMatrix& allcoord,
         const DRT::Element* thisele, std::stringstream& gmshfilecontent);
 
     /*!
     \brief Compute coordinates for GMSH-Line-Output for N-noded-elements
     */
-    void GMSH_N_nodedLine(const int& n, const int& n_axial,
+    void gmsh_n_noded_line(const int& n, const int& n_axial,
         const CORE::LINALG::SerialDenseMatrix& allcoord, const DRT::Element* thisele,
         std::stringstream& gmshfilecontent);
 
@@ -636,7 +636,7 @@ namespace CONTACT
     \brief Compute coordinates for GMSH-Output of rigid sphere
 
     */
-    void GMSH_sphere(const CORE::LINALG::SerialDenseMatrix& coord, const DRT::Element* thisele,
+    void gmsh_sphere(const CORE::LINALG::SerialDenseMatrix& coord, const DRT::Element* thisele,
         std::stringstream& gmshfilecontent);
 
     /*!
@@ -650,14 +650,14 @@ namespace CONTACT
     \brief Refine the icosphere by subdivision of each face in four new triangles
 
     */
-    void GmshRefineIcosphere(std::vector<std::vector<double>>& vertexlist,
+    void gmsh_refine_icosphere(std::vector<std::vector<double>>& vertexlist,
         std::vector<std::vector<int>>& facelist, double radius);
 
     //**********************Begin: Output-Methods for BTS-Contact****************************
     /*!
     \brief GMSH-Surface-Output for solid elements
     */
-    void GMSH_Solid(const DRT::Element* element, const Epetra_Vector& disrow,
+    void gmsh_solid(const DRT::Element* element, const Epetra_Vector& disrow,
         std::stringstream& gmshfilecontent);
 
     /*!
@@ -669,19 +669,19 @@ namespace CONTACT
     /*!
     \brief Get color of solid element surfaces for GMSH-Output
     */
-    void GMSH_GetSurfColor(const DRT::Element* element, const int& n_surfNodes,
+    void gmsh_get_surf_color(const DRT::Element* element, const int& n_surfNodes,
         const int surfNodes[6][9], double surfColor[6]);
 
     /*!
     \brief GMSH-Surface-Output for 4-noded quadrangle (SQ)
     */
-    void GMSH_SQ(
+    void gmsh_sq(
         const double coords[3][4], const double color[4], std::stringstream& gmshfilecontent);
 
     /*!
     \brief GMSH-Surface-Output for 3-noded triangle (ST)
     */
-    void GMSH_ST(
+    void gmsh_st(
         const double coords[3][3], const double color[3], std::stringstream& gmshfilecontent);
     //**********************End: Output-Methods for BTS-Contact****************************
 

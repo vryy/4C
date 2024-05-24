@@ -127,7 +127,7 @@ void dyn_nlnstructural_drt()
   const int restart = GLOBAL::Problem::Instance()->Restart();
   if (restart)
   {
-    structadapter->ReadRestart(restart);
+    structadapter->read_restart(restart);
   }
   // write output at beginnning of calc
   else
@@ -135,7 +135,7 @@ void dyn_nlnstructural_drt()
     if (write_initial_state)
     {
       constexpr bool force_prepare = true;
-      structadapter->PrepareOutput(force_prepare);
+      structadapter->prepare_output(force_prepare);
       structadapter->Output();
       structadapter->PostOutput();
     }
@@ -148,14 +148,14 @@ void dyn_nlnstructural_drt()
   {
     constexpr bool forceWriteRestart = true;
     constexpr bool force_prepare = true;
-    structadapter->PrepareOutput(force_prepare);
+    structadapter->prepare_output(force_prepare);
     structadapter->Output(forceWriteRestart);
     structadapter->PostOutput();
   }
 
   // test results
   GLOBAL::Problem::Instance()->AddFieldTest(structadapter->CreateFieldTest());
-  GLOBAL::Problem::Instance()->TestAll(structadapter->DofRowMap()->Comm());
+  GLOBAL::Problem::Instance()->TestAll(structadapter->dof_row_map()->Comm());
 
   // print monitoring of time consumption
   Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =

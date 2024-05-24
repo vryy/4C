@@ -59,12 +59,12 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
 int IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Init(const Teuchos::ParameterList& params)
 {
   // reset the setup flag
-  SetIsSetup(false);
+  set_is_setup(false);
 
   // do all init stuff here
 
   // set isinit_ flag true
-  SetIsInit(true);
+  set_is_init(true);
 
   return 0;
 }
@@ -72,9 +72,9 @@ int IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Init(const Teuchos::Parame
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ReadRestart(int step)
+void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::read_restart(int step)
 {
-  FSI::Partitioned::ReadRestart(step);
+  FSI::Partitioned::read_restart(step);
 
   setup_structural_discretization();
 
@@ -91,7 +91,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ReadRestart(int step)
 void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Setup()
 {
   // make sure Init(...) was called first
-  CheckIsInit();
+  check_is_init();
 
   // call setup of base class
   FSI::PartitionedImmersed::Setup();
@@ -181,11 +181,12 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Setup()
 
   // vector of fluid stresses interpolated to structural bdry. int. points and integrated over
   // structural surface
-  struct_bdry_traction_ = Teuchos::rcp(new Epetra_Vector(*(immersedstructure_->DofRowMap()), true));
+  struct_bdry_traction_ =
+      Teuchos::rcp(new Epetra_Vector(*(immersedstructure_->dof_row_map()), true));
 
   // vector with fluid velocities interpolated from structure
   fluid_artificial_velocity_ =
-      Teuchos::rcp(new Epetra_Vector(*(MBFluidField()->FluidField()->DofRowMap()), true));
+      Teuchos::rcp(new Epetra_Vector(*(MBFluidField()->fluid_field()->dof_row_map()), true));
 
   // build 3D search tree for fluid domain
   fluid_SearchTree_ = Teuchos::rcp(new CORE::GEO::SearchTree(5));
@@ -256,7 +257,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Setup()
   Comm().Barrier();
 
   // set flag issetup true
-  SetIsSetup(true);
+  set_is_setup(true);
 }
 
 
@@ -265,7 +266,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Setup()
 void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FSIOp(
     const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag)
 {
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
   if (displacementcoupling_)
@@ -324,7 +325,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FSIOp(
   {
     int iter = ((FSI::Partitioned::IterationCounter())[0]);
     constexpr bool force_prepare = false;
-    StructureField()->PrepareOutput(force_prepare);
+    StructureField()->prepare_output(force_prepare);
 
     Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapperImmersed>(StructureField())
         ->Output(false, (Step() * 100) + (iter - 1), Time() - Dt() * ((100 - iter) / 100.0));
@@ -435,7 +436,7 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumann::St
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumann::InitialGuess()
+Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumann::initial_guess()
 {
   if (myrank_ == 0) std::cout << "\n Do Initial Guess." << std::endl;
 
@@ -464,7 +465,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::build_immersed_dirich_map
     if (immersedele->has_projected_dirichlet())
     {
       DRT::Node** nodes = immersedele->Nodes();
-      for (int inode = 0; inode < (immersedele->NumNode()); inode++)
+      for (int inode = 0; inode < (immersedele->num_node()); inode++)
       {
         if (static_cast<DRT::ImmersedNode*>(nodes[inode])->IsMatched() and
             nodes[inode]->Owner() == myrank_)
@@ -565,8 +566,8 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::setup_structural_discreti
 void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::SetStatesFluidOP()
 {
   // for FluidOP
-  structdis_->SetState(0, "displacement", immersedstructure_->Dispnp());
-  structdis_->SetState(0, "velocity", immersedstructure_->Velnp());
+  structdis_->set_state(0, "displacement", immersedstructure_->Dispnp());
+  structdis_->set_state(0, "velocity", immersedstructure_->Velnp());
 
   return;
 }
@@ -575,9 +576,9 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::SetStatesFluidOP()
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::set_states_velocity_correction()
 {
-  structdis_->SetState(0, "displacement", immersedstructure_->Dispnp());
-  structdis_->SetState(0, "velocity", immersedstructure_->Velnp());
-  fluiddis_->SetState(0, "velnp", MBFluidField()->FluidField()->Velnp());
+  structdis_->set_state(0, "displacement", immersedstructure_->Dispnp());
+  structdis_->set_state(0, "velocity", immersedstructure_->Velnp());
+  fluiddis_->set_state(0, "velnp", MBFluidField()->fluid_field()->Velnp());
 
   return;
 }
@@ -586,9 +587,9 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::set_states_velocity_corre
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::SetStatesStructOP()
 {
-  structdis_->SetState(0, "displacement", immersedstructure_->Dispnp());
-  fluiddis_->SetState(0, "velnp",
-      Teuchos::rcp_dynamic_cast<ADAPTER::FluidImmersed>(MBFluidField())->FluidField()->Velnp());
+  structdis_->set_state(0, "displacement", immersedstructure_->Dispnp());
+  fluiddis_->set_state(0, "velnp",
+      Teuchos::rcp_dynamic_cast<ADAPTER::FluidImmersed>(MBFluidField())->fluid_field()->Velnp());
   return;
 }
 
@@ -681,7 +682,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
               << std::endl;
     std::cout << "Size of currpositions_struct_=" << currpositions_struct_.size() << " on PROC "
               << myrank_ << std::endl;
-    std::cout << "My DofRowMap Size=" << structdis_->DofRowMap()->NumMyElements()
+    std::cout << "My dof_row_map Size=" << structdis_->dof_row_map()->NumMyElements()
               << "  My DofColMap Size=" << structdis_->DofColMap()->NumMyElements() << " on PROC "
               << myrank_ << std::endl;
     std::cout << "Dis Structure NumColEles: " << structdis_->NumMyColElements() << " on PROC "
@@ -942,14 +943,14 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::apply_immersed_dirichlet(
     Teuchos::RCP<Epetra_Vector> artificial_velocity)
 {
   build_immersed_dirich_map(MBFluidField()->Discretization(), dbcmap_immersed_,
-      MBFluidField()->FluidField()->GetDBCMapExtractor()->CondMap());
+      MBFluidField()->fluid_field()->GetDBCMapExtractor()->CondMap());
   AddDirichCond();
 
   // apply immersed dirichlets
   do_immersed_dirichlet_cond(
-      MBFluidField()->FluidField()->WriteAccessVelnp(), artificial_velocity, dbcmap_immersed_);
+      MBFluidField()->fluid_field()->WriteAccessVelnp(), artificial_velocity, dbcmap_immersed_);
   double normofvelocities = -1234.0;
-  MBFluidField()->FluidField()->ExtractVelocityPart(artificial_velocity)->Norm2(&normofvelocities);
+  MBFluidField()->fluid_field()->ExtractVelocityPart(artificial_velocity)->Norm2(&normofvelocities);
 
   if (myrank_ == 0)
   {
@@ -1011,15 +1012,15 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::correct_interface_velocit
 
     // Build new dirich map
     build_immersed_dirich_map(MBFluidField()->Discretization(), dbcmap_immersed_,
-        MBFluidField()->FluidField()->GetDBCMapExtractor()->CondMap());
+        MBFluidField()->fluid_field()->GetDBCMapExtractor()->CondMap());
     AddDirichCond();
 
     // apply new dirichlets after velocity correction
-    do_immersed_dirichlet_cond(MBFluidField()->FluidField()->WriteAccessVelnp(),
+    do_immersed_dirichlet_cond(MBFluidField()->fluid_field()->WriteAccessVelnp(),
         fluid_artificial_velocity_, dbcmap_immersed_);
     double normofnewvelocities;
     MBFluidField()
-        ->FluidField()
+        ->fluid_field()
         ->ExtractVelocityPart(fluid_artificial_velocity_)
         ->Norm2(&normofnewvelocities);
 

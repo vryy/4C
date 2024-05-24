@@ -212,7 +212,7 @@ namespace DRT::ELEMENTS
     inline bool IsCenterlineNode(const DRT::Node& node) const override { return true; }
 
     //! \brief Get jacobian this element
-    const double& GetJacobi() const { return jacobi_; }
+    const double& get_jacobi() const { return jacobi_; }
 
     //! \brief get access to the reference length
     inline double RefLength() const override { return 2.0 * jacobi_; }
@@ -382,7 +382,7 @@ namespace DRT::ELEMENTS
     /*!
     \brief Evaluate a Neumann boundary condition
 
-    An element derived from this class uses the EvaluateNeumann method to receive commands
+    An element derived from this class uses the evaluate_neumann method to receive commands
     and parameters from some control routine in params and evaluates a Neumann boundary condition
     given in condition
 
@@ -398,7 +398,7 @@ namespace DRT::ELEMENTS
 
     \return 0 if successful, negative otherwise
     */
-    int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
         CORE::Conditions::Condition& condition, std::vector<int>& lm,
         CORE::LINALG::SerialDenseVector& elevec1,
         CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -567,7 +567,7 @@ namespace DRT::ELEMENTS
         CORE::LINALG::SerialDenseVector* force);
 
     template <unsigned int nnode, unsigned int dofpn>
-    void UpdateDispTotlag(
+    void update_disp_totlag(
         const std::vector<double>& disp, CORE::LINALG::Matrix<dofpn * nnode, 1>& disp_totlag) const;
 
     //! lump mass matrix

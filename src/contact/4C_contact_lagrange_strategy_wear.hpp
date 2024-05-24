@@ -38,7 +38,7 @@ namespace WEAR
 
     */
     LagrangeStrategyWear(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
-        const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
+        const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
         std::vector<Teuchos::RCP<CONTACT::Interface>> interfaces, int dim,
         Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof);
 
@@ -334,7 +334,7 @@ namespace WEAR
 
     All wear specific maps here
     */
-    void SetupWear(bool redistributed, bool init);
+    void setup_wear(bool redistributed, bool init);
 
    private:
     // don't want = operator and cctor

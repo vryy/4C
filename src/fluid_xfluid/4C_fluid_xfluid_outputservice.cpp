@@ -41,10 +41,10 @@ FLD::XFluidOutputService::XFluidOutputService(const Teuchos::RCP<DRT::Discretiza
   // mapped to initial fluid dofmap
   dofset_out_ = Teuchos::rcp(new CORE::Dofsets::IndependentDofSet());
   velpressplitter_out_ = Teuchos::rcp(new CORE::LINALG::MapExtractor());
-  PrepareOutput();
+  prepare_output();
 }
 
-void FLD::XFluidOutputService::PrepareOutput()
+void FLD::XFluidOutputService::prepare_output()
 {
   dofset_out_->Reset();
   dofset_out_->assign_degrees_of_freedom(*discret_, 0, 0);
@@ -54,7 +54,7 @@ void FLD::XFluidOutputService::PrepareOutput()
       *discret_, *dofset_out_, ndim, *velpressplitter_out_);
 
   // create vector according to the dofset_out row map holding all standard fluid unknowns
-  outvec_fluid_ = CORE::LINALG::CreateVector(*dofset_out_->DofRowMap(), true);
+  outvec_fluid_ = CORE::LINALG::CreateVector(*dofset_out_->dof_row_map(), true);
 }
 
 void FLD::XFluidOutputService::Output(int step, double time, bool write_restart_data,
@@ -66,8 +66,8 @@ void FLD::XFluidOutputService::Output(int step, double time, bool write_restart_
   // create vector according to the initial row map holding all standard fluid unknowns
   outvec_fluid_->PutScalar(0.0);
 
-  const Epetra_Map* dofrowmap = dofset_out_->DofRowMap();  // original fluid unknowns
-  const Epetra_Map* xdofrowmap = discret_->DofRowMap();    // fluid unknown for current cut
+  const Epetra_Map* dofrowmap = dofset_out_->dof_row_map();  // original fluid unknowns
+  const Epetra_Map* xdofrowmap = discret_->dof_row_map();    // fluid unknown for current cut
 
   for (int i = 0; i < discret_->NumMyRowNodes(); ++i)
   {
@@ -227,7 +227,7 @@ void FLD::XFluidOutputService::Output(int step, double time, bool write_restart_
   // every time, when output-vectors are written based on a new(!), still unknown map
   // the map is stored in a mapstack (io.cpp, WriteVector-routine) for efficiency in standard
   // applications. However, in the XFEM for each timestep or FSI-iteration we have to cut and the
-  // map is created newly (done by the FillComplete call). This is the reason why the MapStack
+  // map is created newly (done by the fill_complete call). This is the reason why the MapStack
   // increases and the storage is overwritten for large problems. Hence, we have clear the MapCache
   // in regular intervals of written restarts. In case of writing paraview-output, here, we use a
   // standard map which does not change over time, that's okay. For the moment, restart_count = 5 is
@@ -574,10 +574,10 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
             }
             else
             {
-              GmshOutputElement(*discret_, gmshfilecontent_vel, gmshfilecontent_press,
+              gmsh_output_element(*discret_, gmshfilecontent_vel, gmshfilecontent_press,
                   gmshfilecontent_acc, actele, nds, vel, acc, dispnp);
             }
-            GmshOutputElement(*discret_, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost,
+            gmsh_output_element(*discret_, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost,
                 gmshfilecontent_acc_ghost, actele, nds, vel, acc, dispnp);
           }
           set_counter += 1;
@@ -588,7 +588,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
         std::vector<int>& nds = nds_sets[0];
 
         // one standard uncut physical element
-        GmshOutputElement(*discret_, gmshfilecontent_vel, gmshfilecontent_press,
+        gmsh_output_element(*discret_, gmshfilecontent_vel, gmshfilecontent_press,
             gmshfilecontent_acc, actele, nds, vel, acc, dispnp);
       }
       else
@@ -599,9 +599,9 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
     else  // no element handle
     {
       std::vector<int> nds;  // empty vector
-      GmshOutputElement(*discret_, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc,
-          actele, nds, vel, acc, dispnp);
-      GmshOutputElement(*discret_, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost,
+      gmsh_output_element(*discret_, gmshfilecontent_vel, gmshfilecontent_press,
+          gmshfilecontent_acc, actele, nds, vel, acc, dispnp);
+      gmsh_output_element(*discret_, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost,
           gmshfilecontent_acc_ghost, actele, nds, vel, acc, dispnp);
     }
   }  // loop elements
@@ -626,7 +626,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
 }
 
 /// Gmsh output function for elements without an CORE::GEO::CUT::ElementHandle
-void FLD::XFluidOutputServiceGmsh::GmshOutputElement(
+void FLD::XFluidOutputServiceGmsh::gmsh_output_element(
     DRT::Discretization& discret,             ///< background fluid discretization
     std::ofstream& vel_f,                     ///< output file stream for velocity
     std::ofstream& press_f,                   ///< output file stream for pressure
@@ -801,11 +801,11 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
     CORE::FE::ExtractMyValues(*accvec, m_acc, la[0].lm_);
   }
 
-  CORE::LINALG::SerialDenseMatrix vel(3, actele->NumNode());
-  CORE::LINALG::SerialDenseMatrix press(1, actele->NumNode());
-  CORE::LINALG::SerialDenseMatrix acc(3, actele->NumNode());
+  CORE::LINALG::SerialDenseMatrix vel(3, actele->num_node());
+  CORE::LINALG::SerialDenseMatrix press(1, actele->num_node());
+  CORE::LINALG::SerialDenseMatrix acc(3, actele->num_node());
 
-  for (int i = 0; i < actele->NumNode(); ++i)
+  for (int i = 0; i < actele->num_node(); ++i)
   {
     vel(0, i) = m[4 * i + 0];
     vel(1, i) = m[4 * i + 1];
@@ -1171,11 +1171,11 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
 
     if (!cond_manager_->IsMeshCoupling(sid)) continue;
 
-    DRT::Element* side = cond_manager_->GetSide(sid);
+    DRT::Element* side = cond_manager_->get_side(sid);
 
     CORE::GEO::CUT::SideHandle* s = wizard->GetMeshCuttingSide(sid, 0);
 
-    const int numnodes = side->NumNode();
+    const int numnodes = side->num_node();
     DRT::Node** nodes = side->Nodes();
     CORE::LINALG::SerialDenseMatrix side_xyze(3, numnodes);
     for (int i = 0; i < numnodes; ++i)

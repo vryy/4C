@@ -141,18 +141,18 @@ POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::Parame
   }
 }
 
-void POROELAST::Monolithic::DoTimeStep()
+void POROELAST::Monolithic::do_time_step()
 {
   // counter and print header
   // predict solution of both field (call the adapter)
-  PrepareTimeStep();
+  prepare_time_step();
 
   // Newton-Raphson iteration
   Solve();
 
   // calculate stresses, strains, energies
   constexpr bool force_prepare = false;
-  PrepareOutput(force_prepare);
+  prepare_output(force_prepare);
 
   // update all single field solvers
   Update();
@@ -198,8 +198,8 @@ void POROELAST::Monolithic::Solve()
     {
       // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
       // is done in prepare_system_for_newton_solve() within Evaluate(iterinc_)
-      LinearSolve();
-      // std::cout << "  time for Evaluate LinearSolve: " << timer.totalElapsedTime(true) << "\n";
+      linear_solve();
+      // std::cout << "  time for Evaluate linear_solve: " << timer.totalElapsedTime(true) << "\n";
       // timer.reset();
 
       // reset solver tolerance
@@ -210,7 +210,7 @@ void POROELAST::Monolithic::Solve()
     }
 
     // print stuff
-    PrintNewtonIter();
+    print_newton_iter();
 
     // Aitken();
 
@@ -248,7 +248,7 @@ void POROELAST::Monolithic::Solve()
   // test whether max iterations was hit
   if ((Converged()) and (Comm().MyPID() == 0))
   {
-    PrintNewtonConv();
+    print_newton_conv();
   }
   else if (iter_ >= itermax_)
   {
@@ -273,7 +273,7 @@ void POROELAST::Monolithic::update_state_incrementally(Teuchos::RCP<const Epetra
   {
     // extract displacement sx and fluid fx incremental vector of global
     // unknown incremental vector x (different for splits)
-    ExtractFieldVectors(iterinc, s_iterinc, f_iterinc);
+    extract_field_vectors(iterinc, s_iterinc, f_iterinc);
 
     // update poro iterinc
     if (is_part_of_multifield_problem_) UpdatePoroIterinc(iterinc);
@@ -288,7 +288,7 @@ void POROELAST::Monolithic::update_state_incrementally(
   // Newton update of the fluid field
   // update velocities and pressures before passed to the structural field
   //  update_iter_incrementally(fx),
-  FluidField()->UpdateNewton(f_iterinc);
+  fluid_field()->UpdateNewton(f_iterinc);
 
   // call all elements and assemble rhs and matrices
   // structural field
@@ -323,7 +323,7 @@ void POROELAST::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> iterinc, 
   EvaluateFields(iterinc);
 
   // fill off diagonal blocks and fill global system matrix
-  SetupSystemMatrix();
+  setup_system_matrix();
 
   // check whether we have a sanely filled tangent matrix
   if (not systemmatrix_->Filled())
@@ -332,7 +332,7 @@ void POROELAST::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> iterinc, 
   }
 
   // create full monolithic rhs vector
-  SetupRHS(firstiter);
+  setup_rhs(firstiter);
 
   // Modify System for Contact or Meshtying!
   EvalPoroMortar();
@@ -347,7 +347,7 @@ void POROELAST::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> s_iterinc
   EvaluateFields(s_iterinc, f_iterinc);
 
   // fill off diagonal blocks and fill global system matrix
-  SetupSystemMatrix();
+  setup_system_matrix();
 
   // check whether we have a sanely filled tangent matrix
   if (not systemmatrix_->Filled())
@@ -356,7 +356,7 @@ void POROELAST::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> s_iterinc
   }
 
   // create full monolithic rhs vector
-  SetupRHS(firstiter);
+  setup_rhs(firstiter);
 
   // Modify System for Contact or Meshtying!
   EvalPoroMortar();
@@ -376,7 +376,7 @@ void POROELAST::Monolithic::EvaluateFields(
   // monolithic Poroelasticity accesses the linearised fluid problem
   //   evaluate_rhs_tang_residual() and
   //   prepare_system_for_newton_solve()
-  FluidField()->Evaluate(Teuchos::null);
+  fluid_field()->Evaluate(Teuchos::null);
 }
 
 void POROELAST::Monolithic::EvaluateFields(Teuchos::RCP<const Epetra_Vector> iterinc)
@@ -392,13 +392,13 @@ void POROELAST::Monolithic::EvaluateFields(Teuchos::RCP<const Epetra_Vector> ite
   // monolithic Poroelasticity accesses the linearised fluid problem
   //   evaluate_rhs_tang_residual() and
   //   prepare_system_for_newton_solve()
-  FluidField()->Evaluate(Teuchos::null);
+  fluid_field()->Evaluate(Teuchos::null);
 }
 
-void POROELAST::Monolithic::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+void POROELAST::Monolithic::extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
     Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx, bool firstcall)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("POROELAST::Monolithic::ExtractFieldVectors");
+  TEUCHOS_FUNC_TIME_MONITOR("POROELAST::Monolithic::extract_field_vectors");
 
   // process structure unknowns of the first field
   sx = Extractor()->ExtractVector(x, 0);
@@ -415,17 +415,17 @@ void POROELAST::Monolithic::SetupSystem()
 
     // Note:
     // when using constraints applied via Lagrange-Multipliers there is a
-    // difference between StructureField()->DofRowMap() and StructureField()->DofRowMap(0).
-    // StructureField()->DofRowMap(0) returns the DofRowMap
+    // difference between StructureField()->dof_row_map() and StructureField()->dof_row_map(0).
+    // StructureField()->dof_row_map(0) returns the dof_row_map
     // known to the discretization (without lagrange multipliers)
-    // while StructureField()->DofRowMap() returns the DofRowMap known to
+    // while StructureField()->dof_row_map() returns the dof_row_map known to
     // the constraint manager (with lagrange multipliers)
     // In the constrained case we want the "whole" RowDofMap,
     // otherwise both calls are equivalent
 
-    vecSpaces.push_back(StructureField()->DofRowMap());
-    // use its own DofRowMap, that is the 0th map of the discretization
-    vecSpaces.push_back(FluidField()->DofRowMap(0));
+    vecSpaces.push_back(StructureField()->dof_row_map());
+    // use its own dof_row_map, that is the 0th map of the discretization
+    vecSpaces.push_back(fluid_field()->dof_row_map(0));
 
     if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No structure equation. Panic.");
     if (vecSpaces[1]->NumGlobalElements() == 0) FOUR_C_THROW("No fluid equation. Panic.");
@@ -447,13 +447,13 @@ void POROELAST::Monolithic::SetupSystem()
           *Extractor(), *Extractor(), 81, false, true));
 
   k_sf_ = Teuchos::rcp(
-      new CORE::LINALG::SparseMatrix(*(StructureField()->DofRowMap()), 81, true, true));
-  k_fs_ =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(FluidField()->Discretization()->DofRowMap(0)),
-          //*(FluidField()->DofRowMap()),
+      new CORE::LINALG::SparseMatrix(*(StructureField()->dof_row_map()), 81, true, true));
+  k_fs_ = Teuchos::rcp(
+      new CORE::LINALG::SparseMatrix(*(fluid_field()->Discretization()->dof_row_map(0)),
+          //*(fluid_field()->dof_row_map()),
           81, true, true));
 
-  nopen_handle_->Setup(DofRowMap(), (FluidField()->Discretization()->DofRowMap(0)));
+  nopen_handle_->Setup(dof_row_map(), (fluid_field()->Discretization()->dof_row_map(0)));
 
   SetupEquilibration();
 }  // SetupSystem()
@@ -467,9 +467,9 @@ void POROELAST::Monolithic::SetupEquilibration()
       CORE::LINALG::MatrixType::block_field, equilibration_method, fullmap_);
 }
 
-void POROELAST::Monolithic::SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat)
+void POROELAST::Monolithic::setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("POROELAST::Monolithic::SetupSystemMatrix");
+  TEUCHOS_FUNC_TIME_MONITOR("POROELAST::Monolithic::setup_system_matrix");
 
   // pure structural part k_ss (3nx3n)
 
@@ -494,8 +494,8 @@ void POROELAST::Monolithic::SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBas
 
   if (!matchinggrid_)
   {
-    k_sf->Complete(*(StructureField()->Discretization()->DofRowMap(1)),
-        *(StructureField()->Discretization()->DofRowMap(0)));
+    k_sf->Complete(*(StructureField()->Discretization()->dof_row_map(1)),
+        *(StructureField()->Discretization()->dof_row_map(0)));
 
     k_sf = volcoupl_->apply_matrix_mapping12(k_sf);
   }
@@ -508,14 +508,14 @@ void POROELAST::Monolithic::SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBas
   // The maps of the block matrix have to match the maps of the blocks we
   // insert here. Extract Jacobian matrices and put them into composite system
   // matrix W
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ff = FluidField()->SystemMatrix();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ff = fluid_field()->SystemMatrix();
 
   if (k_ff == Teuchos::null) FOUR_C_THROW("fuid system matrix null pointer!");
 
   if (nopen_handle_->HasCond())
   {
     // Evaluate poroelasticity specific conditions
-    EvaluateCondition(k_ff);
+    evaluate_condition(k_ff);
   }
 
   /*----------------------------------------------------------------------*/
@@ -530,8 +530,8 @@ void POROELAST::Monolithic::SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBas
 
   if (!matchinggrid_)
   {
-    k_fs->Complete(*(FluidField()->Discretization()->DofRowMap(1)),
-        *(FluidField()->Discretization()->DofRowMap(0)));
+    k_fs->Complete(*(fluid_field()->Discretization()->dof_row_map(1)),
+        *(fluid_field()->Discretization()->dof_row_map(0)));
 
     k_fs = volcoupl_->apply_matrix_mapping21(k_fs);
   }
@@ -550,23 +550,23 @@ void POROELAST::Monolithic::SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBas
   mat.Complete();
 }
 
-void POROELAST::Monolithic::SetupRHS(bool firstcall)
+void POROELAST::Monolithic::setup_rhs(bool firstcall)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("POROELAST::Monolithic::SetupRHS");
+  TEUCHOS_FUNC_TIME_MONITOR("POROELAST::Monolithic::setup_rhs");
 
   // create full monolithic rhs vector
-  if (rhs_ == Teuchos::null) rhs_ = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
+  if (rhs_ == Teuchos::null) rhs_ = Teuchos::rcp(new Epetra_Vector(*dof_row_map(), true));
 
   // fill the Poroelasticity rhs vector rhs_ with the single field rhss
-  SetupVector(*rhs_, StructureField()->RHS(), FluidField()->RHS());
+  setup_vector(*rhs_, StructureField()->RHS(), fluid_field()->RHS());
 
   // add rhs terms due to no penetration condition
   nopen_handle_->ApplyCondRHS(iterinc_, rhs_);
 }
 
-void POROELAST::Monolithic::PrepareTimeStep() { PoroBase::PrepareTimeStep(); }
+void POROELAST::Monolithic::prepare_time_step() { PoroBase::prepare_time_step(); }
 
-void POROELAST::Monolithic::LinearSolve()
+void POROELAST::Monolithic::linear_solve()
 {
   CORE::LINALG::SolverParams solver_params;
   if (solveradapttol_ and (iter_ > 1))
@@ -586,7 +586,8 @@ void POROELAST::Monolithic::LinearSolve()
     Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
 
     // apply dirichlet boundary conditions
-    CORE::LINALG::apply_dirichlet_to_system(*sparse, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
+    CORE::LINALG::apply_dirichlet_to_system(
+        *sparse, *iterinc_, *rhs_, *zeros_, *combined_dbc_map());
 
     // standard solver call
 
@@ -598,7 +599,7 @@ void POROELAST::Monolithic::LinearSolve()
   {
     // apply dirichlet boundary conditions
     CORE::LINALG::apply_dirichlet_to_system(
-        *systemmatrix_, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
+        *systemmatrix_, *iterinc_, *rhs_, *zeros_, *combined_dbc_map());
 
     // standard solver call
     solver_params.refactor = true;
@@ -609,7 +610,7 @@ void POROELAST::Monolithic::LinearSolve()
   equilibration_->unequilibrate_increment(iterinc_);
 }
 
-void POROELAST::Monolithic::CreateLinearSolver()
+void POROELAST::Monolithic::create_linear_solver()
 {
   // get dynamic section
   const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->poroelast_dynamic_params();
@@ -700,24 +701,24 @@ void POROELAST::Monolithic::CreateLinearSolver()
   // prescribe rigid body modes
   StructureField()->Discretization()->compute_null_space_if_necessary(
       solver_->Params().sublist("Inverse1"));
-  FluidField()->Discretization()->compute_null_space_if_necessary(
+  fluid_field()->Discretization()->compute_null_space_if_necessary(
       solver_->Params().sublist("Inverse2"));
 }
 
-void POROELAST::Monolithic::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
+void POROELAST::Monolithic::initial_guess(Teuchos::RCP<Epetra_Vector> ig)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("POROELAST::Monolithic::InitialGuess");
+  TEUCHOS_FUNC_TIME_MONITOR("POROELAST::Monolithic::initial_guess");
 
   // InitalGuess() is called of the single fields and results are put in
   // increment vector ig
-  SetupVector(*ig,
+  setup_vector(*ig,
       // returns residual displacements \f$\Delta D_{n+1}^{<k>}\f$ - disi_
-      StructureField()->InitialGuess(),
+      StructureField()->initial_guess(),
       // returns residual velocities or iterative fluid increment - incvel_
-      FluidField()->InitialGuess());
+      fluid_field()->initial_guess());
 }
 
-void POROELAST::Monolithic::SetupVector(
+void POROELAST::Monolithic::setup_vector(
     Epetra_Vector& f, Teuchos::RCP<const Epetra_Vector> sv, Teuchos::RCP<const Epetra_Vector> fv)
 {
   // extract dofs of the two fields
@@ -797,14 +798,14 @@ bool POROELAST::Monolithic::Converged()
   return conv;
 }
 
-void POROELAST::Monolithic::PrintNewtonIter()
+void POROELAST::Monolithic::print_newton_iter()
 {
   // print to standard out
   // replace myrank_ here general by Comm().MyPID()
   if ((Comm().MyPID() == 0) and printscreen_ and (Step() % printscreen_ == 0) and printiter_)
   {
     if (iter_ == 1) print_newton_iter_header(stdout);
-    PrintNewtonIterText(stdout);
+    print_newton_iter_text(stdout);
   }
 }
 
@@ -889,7 +890,7 @@ void POROELAST::Monolithic::print_newton_iter_header_stream(std::ostringstream& 
   }
 }
 
-void POROELAST::Monolithic::PrintNewtonIterText(FILE* ofile)
+void POROELAST::Monolithic::print_newton_iter_text(FILE* ofile)
 {
   // open outstringstream
   std::ostringstream oss;
@@ -976,7 +977,7 @@ void POROELAST::Monolithic::print_newton_iter_text_stream(std::ostringstream& os
   }
 }
 
-void POROELAST::Monolithic::PrintNewtonConv() {}
+void POROELAST::Monolithic::print_newton_conv() {}
 
 void POROELAST::Monolithic::ApplyStrCouplMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> k_sf)
 {
@@ -1008,8 +1009,8 @@ void POROELAST::Monolithic::ApplyStrCouplMatrix(Teuchos::RCP<CORE::LINALG::Spars
   }
 
   StructureField()->Discretization()->ClearState();
-  StructureField()->Discretization()->SetState(0, "displacement", StructureField()->Dispnp());
-  StructureField()->Discretization()->SetState(0, "velocity", StructureField()->Velnp());
+  StructureField()->Discretization()->set_state(0, "displacement", StructureField()->Dispnp());
+  StructureField()->Discretization()->set_state(0, "velocity", StructureField()->Velnp());
 
   // build specific assemble strategy for mechanical-fluid system matrix
   // from the point of view of StructureField:
@@ -1020,7 +1021,7 @@ void POROELAST::Monolithic::ApplyStrCouplMatrix(Teuchos::RCP<CORE::LINALG::Spars
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate the mechanical-fluid system matrix on the structural element
-  StructureField()->Discretization()->EvaluateCondition(
+  StructureField()->Discretization()->evaluate_condition(
       sparams, structuralstrategy, "PoroCoupling");
   // StructureField()->Discretization()->Evaluate( sparams, structuralstrategy);
   StructureField()->Discretization()->ClearState();
@@ -1039,38 +1040,38 @@ void POROELAST::Monolithic::apply_fluid_coupl_matrix(
   // action for elements
   fparams.set<int>("action", FLD::calc_porousflow_fluid_coupling);
   // physical type
-  fparams.set<int>("Physical Type", FluidField()->PhysicalType());
+  fparams.set<int>("Physical Type", fluid_field()->PhysicalType());
   // other parameters that might be needed by the elements
   fparams.set("delta time", Dt());
   fparams.set("total time", Time());
 
-  FluidField()->Discretization()->ClearState();
+  fluid_field()->Discretization()->ClearState();
 
   // set general vector values needed by elements
-  FluidField()->Discretization()->SetState(0, "dispnp", FluidField()->Dispnp());
-  FluidField()->Discretization()->SetState(0, "dispn", FluidField()->Dispn());
-  FluidField()->Discretization()->SetState(0, "gridv", FluidField()->GridVel());
-  FluidField()->Discretization()->SetState(0, "gridvn", FluidField()->GridVeln());
-  FluidField()->Discretization()->SetState(0, "veln", FluidField()->Veln());
-  FluidField()->Discretization()->SetState(0, "accnp", FluidField()->Accnp());
-  FluidField()->Discretization()->SetState(0, "accam", FluidField()->Accam());
-  FluidField()->Discretization()->SetState(0, "accn", FluidField()->Accn());
+  fluid_field()->Discretization()->set_state(0, "dispnp", fluid_field()->Dispnp());
+  fluid_field()->Discretization()->set_state(0, "dispn", fluid_field()->Dispn());
+  fluid_field()->Discretization()->set_state(0, "gridv", fluid_field()->GridVel());
+  fluid_field()->Discretization()->set_state(0, "gridvn", fluid_field()->GridVeln());
+  fluid_field()->Discretization()->set_state(0, "veln", fluid_field()->Veln());
+  fluid_field()->Discretization()->set_state(0, "accnp", fluid_field()->Accnp());
+  fluid_field()->Discretization()->set_state(0, "accam", fluid_field()->Accam());
+  fluid_field()->Discretization()->set_state(0, "accn", fluid_field()->Accn());
 
-  FluidField()->Discretization()->SetState(0, "scaaf", FluidField()->Scaaf());
+  fluid_field()->Discretization()->set_state(0, "scaaf", fluid_field()->Scaaf());
 
-  FluidField()->Discretization()->SetState(0, "hist", FluidField()->Hist());
+  fluid_field()->Discretization()->set_state(0, "hist", fluid_field()->Hist());
 
   // set scheme-specific element parameters and vector values
-  if (FluidField()->TimIntScheme() == INPAR::FLUID::timeint_npgenalpha or
-      FluidField()->TimIntScheme() == INPAR::FLUID::timeint_npgenalpha)
-    FluidField()->Discretization()->SetState(0, "velaf", FluidField()->Velaf());
+  if (fluid_field()->TimIntScheme() == INPAR::FLUID::timeint_npgenalpha or
+      fluid_field()->TimIntScheme() == INPAR::FLUID::timeint_npgenalpha)
+    fluid_field()->Discretization()->set_state(0, "velaf", fluid_field()->Velaf());
   else
-    FluidField()->Discretization()->SetState(0, "velaf", FluidField()->Velnp());
+    fluid_field()->Discretization()->set_state(0, "velaf", fluid_field()->Velnp());
 
-  FluidField()->Discretization()->SetState(0, "velnp", FluidField()->Velnp());
+  fluid_field()->Discretization()->set_state(0, "velnp", fluid_field()->Velnp());
 
   // build specific assemble strategy for the fluid-mechanical system matrix
-  // from the point of view of FluidField:
+  // from the point of view of fluid_field:
   // fluiddofset = 0, structdofset = 1
   CORE::FE::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
       1,                                       // structdofset for column
@@ -1079,8 +1080,8 @@ void POROELAST::Monolithic::apply_fluid_coupl_matrix(
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate the fluid-mechanical system matrix on the fluid element
-  FluidField()->Discretization()->EvaluateCondition(fparams, fluidstrategy, "PoroCoupling");
-  // FluidField()->Discretization()->Evaluate( fparams, fluidstrategy );
+  fluid_field()->Discretization()->evaluate_condition(fparams, fluidstrategy, "PoroCoupling");
+  // fluid_field()->Discretization()->Evaluate( fparams, fluidstrategy );
 
   // evaluate coupling terms from partial integration of continuity equation
   if (part_int_cond_)
@@ -1092,18 +1093,18 @@ void POROELAST::Monolithic::apply_fluid_coupl_matrix(
     params.set("total time", Time());
     params.set("delta time", Dt());
     params.set<POROELAST::Coupltype>("coupling", POROELAST::fluidstructure);
-    params.set("timescale", FluidField()->ResidualScaling());
-    params.set<int>("Physical Type", FluidField()->PhysicalType());
+    params.set("timescale", fluid_field()->ResidualScaling());
+    params.set<int>("Physical Type", fluid_field()->PhysicalType());
 
-    FluidField()->Discretization()->ClearState();
-    FluidField()->Discretization()->SetState(0, "dispnp", FluidField()->Dispnp());
-    FluidField()->Discretization()->SetState(0, "gridv", FluidField()->GridVel());
-    FluidField()->Discretization()->SetState(0, "velnp", FluidField()->Velnp());
-    FluidField()->Discretization()->SetState(0, "scaaf", FluidField()->Scaaf());
+    fluid_field()->Discretization()->ClearState();
+    fluid_field()->Discretization()->set_state(0, "dispnp", fluid_field()->Dispnp());
+    fluid_field()->Discretization()->set_state(0, "gridv", fluid_field()->GridVel());
+    fluid_field()->Discretization()->set_state(0, "velnp", fluid_field()->Velnp());
+    fluid_field()->Discretization()->set_state(0, "scaaf", fluid_field()->Scaaf());
 
-    FluidField()->Discretization()->EvaluateCondition(params, fluidstrategy, "PoroPartInt");
+    fluid_field()->Discretization()->evaluate_condition(params, fluidstrategy, "PoroPartInt");
 
-    FluidField()->Discretization()->ClearState();
+    fluid_field()->Discretization()->ClearState();
   }
   if (pres_int_cond_)
   {
@@ -1112,26 +1113,26 @@ void POROELAST::Monolithic::apply_fluid_coupl_matrix(
     // action for elements
     params.set<int>("action", FLD::poro_prescoupl);
     params.set<POROELAST::Coupltype>("coupling", POROELAST::fluidstructure);
-    params.set<int>("Physical Type", FluidField()->PhysicalType());
+    params.set<int>("Physical Type", fluid_field()->PhysicalType());
 
-    FluidField()->Discretization()->ClearState();
-    FluidField()->Discretization()->SetState(0, "dispnp", FluidField()->Dispnp());
-    FluidField()->Discretization()->SetState(0, "velnp", FluidField()->Velnp());
+    fluid_field()->Discretization()->ClearState();
+    fluid_field()->Discretization()->set_state(0, "dispnp", fluid_field()->Dispnp());
+    fluid_field()->Discretization()->set_state(0, "velnp", fluid_field()->Velnp());
 
-    FluidField()->Discretization()->EvaluateCondition(params, fluidstrategy, "PoroPresInt");
+    fluid_field()->Discretization()->evaluate_condition(params, fluidstrategy, "PoroPresInt");
 
-    FluidField()->Discretization()->ClearState();
+    fluid_field()->Discretization()->ClearState();
   }
 
   // apply normal flux condition on coupling part
   if (nopen_handle_->HasCond())
   {
     k_fs->Complete(
-        StructureField()->SystemMatrix()->RangeMap(), FluidField()->SystemMatrix()->RangeMap());
-    EvaluateCondition(k_fs, POROELAST::fluidstructure);
+        StructureField()->SystemMatrix()->RangeMap(), fluid_field()->SystemMatrix()->RangeMap());
+    evaluate_condition(k_fs, POROELAST::fluidstructure);
   }
 
-  FluidField()->Discretization()->ClearState();
+  fluid_field()->Discretization()->ClearState();
 }
 
 [[maybe_unused]] void POROELAST::Monolithic::PoroFDCheck()
@@ -1146,8 +1147,8 @@ void POROELAST::Monolithic::apply_fluid_coupl_matrix(
 
   Teuchos::RCP<Epetra_Vector> iterinc = Teuchos::null;
   Teuchos::RCP<Epetra_Vector> abs_iterinc = Teuchos::null;
-  iterinc = CORE::LINALG::CreateVector(*DofRowMap(), true);
-  abs_iterinc = CORE::LINALG::CreateVector(*DofRowMap(), true);
+  iterinc = CORE::LINALG::CreateVector(*dof_row_map(), true);
+  abs_iterinc = CORE::LINALG::CreateVector(*dof_row_map(), true);
 
   const int dofs = iterinc->GlobalLength();
   std::cout << "in total " << dofs << " DOFs" << std::endl;
@@ -1160,11 +1161,11 @@ void POROELAST::Monolithic::apply_fluid_coupl_matrix(
   abs_iterinc->Update(1.0, *iterinc_, 0.0);
 
   Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = Teuchos::null;
-  stiff_approx = CORE::LINALG::CreateMatrix(*DofRowMap(), 81);
+  stiff_approx = CORE::LINALG::CreateMatrix(*dof_row_map(), 81);
 
-  Teuchos::RCP<Epetra_Vector> rhs_old = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
+  Teuchos::RCP<Epetra_Vector> rhs_old = Teuchos::rcp(new Epetra_Vector(*dof_row_map(), true));
   rhs_old->Update(1.0, *rhs_, 0.0);
-  Teuchos::RCP<Epetra_Vector> rhs_copy = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
+  Teuchos::RCP<Epetra_Vector> rhs_copy = Teuchos::rcp(new Epetra_Vector(*dof_row_map(), true));
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
   Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse_copy =
@@ -1175,11 +1176,11 @@ void POROELAST::Monolithic::apply_fluid_coupl_matrix(
   {
     std::cout << "iterinc_" << std::endl << *iterinc_ << std::endl;
     std::cout << "iterinc" << std::endl << *iterinc << std::endl;
-    std::cout << "meshdisp: " << std::endl << *(FluidField()->Dispnp());
+    std::cout << "meshdisp: " << std::endl << *(fluid_field()->Dispnp());
     std::cout << "disp: " << std::endl << *(StructureField()->Dispnp());
-    std::cout << "fluid vel" << std::endl << *(FluidField()->Velnp());
-    std::cout << "fluid acc" << std::endl << *(FluidField()->Accnp());
-    std::cout << "gridvel fluid" << std::endl << *(FluidField()->GridVel());
+    std::cout << "fluid vel" << std::endl << *(fluid_field()->Velnp());
+    std::cout << "fluid acc" << std::endl << *(fluid_field()->Accnp());
+    std::cout << "gridvel fluid" << std::endl << *(fluid_field()->GridVel());
     std::cout << "gridvel struct" << std::endl << *(StructureField()->Velnp());
   }
 
@@ -1187,7 +1188,7 @@ void POROELAST::Monolithic::apply_fluid_coupl_matrix(
   const int column_number = -1;
   for (int i = 0; i < dofs; ++i)
   {
-    if (CombinedDBCMap()->MyGID(i))
+    if (combined_dbc_map()->MyGID(i))
     {
       iterinc->ReplaceGlobalValue(i, 0, 0.0);
     }
@@ -1203,7 +1204,7 @@ void POROELAST::Monolithic::apply_fluid_coupl_matrix(
 
     iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
     CORE::LINALG::apply_dirichlet_to_system(
-        *sparse_copy, *iterinc_, *rhs_copy, *zeros_, *CombinedDBCMap());
+        *sparse_copy, *iterinc_, *rhs_copy, *zeros_, *combined_dbc_map());
 
 
     if (i == column_number)
@@ -1227,11 +1228,11 @@ void POROELAST::Monolithic::apply_fluid_coupl_matrix(
                   << std::endl;
         std::cout << "iterinc_" << std::endl << *iterinc_ << std::endl;
         std::cout << "iterinc" << std::endl << *iterinc << std::endl;
-        std::cout << "meshdisp: " << std::endl << *(FluidField()->Dispnp());
+        std::cout << "meshdisp: " << std::endl << *(fluid_field()->Dispnp());
         std::cout << "disp: " << std::endl << *(StructureField()->Dispnp());
-        std::cout << "fluid vel" << std::endl << *(FluidField()->Velnp());
-        std::cout << "fluid acc" << std::endl << *(FluidField()->Accnp());
-        std::cout << "gridvel fluid" << std::endl << *(FluidField()->GridVel());
+        std::cout << "fluid vel" << std::endl << *(fluid_field()->Velnp());
+        std::cout << "fluid acc" << std::endl << *(fluid_field()->Accnp());
+        std::cout << "gridvel fluid" << std::endl << *(fluid_field()->GridVel());
         std::cout << "gridvel struct" << std::endl << *(StructureField()->Velnp());
 
         std::cout << "stiff_apprx(" << row_number << "," << column_number
@@ -1243,7 +1244,7 @@ void POROELAST::Monolithic::apply_fluid_coupl_matrix(
       }
     }
 
-    if (not CombinedDBCMap()->MyGID(i)) iterinc->ReplaceGlobalValue(i, 0, -delta);
+    if (not combined_dbc_map()->MyGID(i)) iterinc->ReplaceGlobalValue(i, 0, -delta);
 
     iterinc->ReplaceGlobalValue(i - 1, 0, 0.0);
 
@@ -1276,11 +1277,11 @@ void POROELAST::Monolithic::apply_fluid_coupl_matrix(
   double abs_error_max = 0.0;
   for (int i = 0; i < dofs; ++i)
   {
-    if (not CombinedDBCMap()->MyGID(i))
+    if (not combined_dbc_map()->MyGID(i))
     {
       for (int j = 0; j < dofs; ++j)
       {
-        if (not CombinedDBCMap()->MyGID(j))
+        if (not combined_dbc_map()->MyGID(j))
         {
           double stiff_approx_ij = 0.0;
           double sparse_ij = 0.0;
@@ -1385,7 +1386,7 @@ void POROELAST::Monolithic::apply_fluid_coupl_matrix(
     FOUR_C_THROW("PoroFDCheck failed in step: %d, iter: %d", Step(), iter_);
 }
 
-void POROELAST::Monolithic::EvaluateCondition(
+void POROELAST::Monolithic::evaluate_condition(
     Teuchos::RCP<CORE::LINALG::SparseOperator> Sysmat, POROELAST::Coupltype coupltype)
 {
   nopen_handle_->Clear(coupltype);
@@ -1395,7 +1396,7 @@ void POROELAST::Monolithic::EvaluateCondition(
       nopen_handle_->struct_vel_constraint_matrix(coupltype);
 
   // evaluate condition on elements and assemble matrices
-  FluidField()->evaluate_no_penetration_cond(nopen_handle_->RHS(), ConstraintMatrix,
+  fluid_field()->evaluate_no_penetration_cond(nopen_handle_->RHS(), ConstraintMatrix,
       struct_vel_constraint_matrix, nopen_handle_->CondVector(), nopen_handle_->CondIDs(),
       coupltype);
 
@@ -1403,18 +1404,18 @@ void POROELAST::Monolithic::EvaluateCondition(
   {
     ConstraintMatrix->Complete();
     nopen_handle_->buid_no_penetration_map(
-        FluidField()->Discretization()->Comm(), FluidField()->DofRowMap());
+        fluid_field()->Discretization()->Comm(), fluid_field()->dof_row_map());
   }
   else  // fluid structure part
   {
-    // double timescale = FluidField()->TimeScaling();
-    double timescale = FluidField()->ResidualScaling();
+    // double timescale = fluid_field()->TimeScaling();
+    double timescale = fluid_field()->ResidualScaling();
     struct_vel_constraint_matrix->Scale(timescale);
     struct_vel_constraint_matrix->Complete(
-        StructureField()->SystemMatrix()->RangeMap(), FluidField()->SystemMatrix()->RangeMap());
+        StructureField()->SystemMatrix()->RangeMap(), fluid_field()->SystemMatrix()->RangeMap());
     ConstraintMatrix->Add(*struct_vel_constraint_matrix, false, 1.0, 1.0);
     ConstraintMatrix->Complete(
-        StructureField()->SystemMatrix()->RangeMap(), FluidField()->SystemMatrix()->RangeMap());
+        StructureField()->SystemMatrix()->RangeMap(), fluid_field()->SystemMatrix()->RangeMap());
   }
 
   const Teuchos::RCP<const Epetra_Map>& nopenetrationmap = nopen_handle_->Extractor()->Map(1);
@@ -1485,13 +1486,13 @@ void POROELAST::Monolithic::SetupNewton()
 
   // incremental solution vector with length of all dofs
   if (iterinc_ == Teuchos::null)
-    iterinc_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
+    iterinc_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
   else
     iterinc_->PutScalar(0.0);
 
   // a zero vector of full length
   if (zeros_ == Teuchos::null)
-    zeros_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
+    zeros_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
   else
     zeros_->PutScalar(0.0);
 
@@ -1501,7 +1502,7 @@ void POROELAST::Monolithic::SetupNewton()
 void POROELAST::Monolithic::build_convergence_norms()
 {
   //------------------------------------------------------------ build residual force norms
-  normrhs_ = UTILS::CalculateVectorNorm(vectornormfres_, rhs_);
+  normrhs_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_);
   Teuchos::RCP<const Epetra_Vector> rhs_s;
   Teuchos::RCP<const Epetra_Vector> rhs_f;
   Teuchos::RCP<const Epetra_Vector> rhs_fvel;
@@ -1511,23 +1512,23 @@ void POROELAST::Monolithic::build_convergence_norms()
   rhs_s = Extractor()->ExtractVector(rhs_, 0);
   // process fluid unknowns of the second field
   rhs_f = Extractor()->ExtractVector(rhs_, 1);
-  rhs_fvel = FluidField()->ExtractVelocityPart(rhs_f);
-  rhs_fpres = FluidField()->ExtractPressurePart(rhs_f);
+  rhs_fvel = fluid_field()->ExtractVelocityPart(rhs_f);
+  rhs_fpres = fluid_field()->ExtractPressurePart(rhs_f);
 
   if (porosity_dof_)
   {
     Teuchos::RCP<const Epetra_Vector> rhs_poro = porosity_splitter_->ExtractCondVector(rhs_s);
     Teuchos::RCP<const Epetra_Vector> rhs_sdisp = porosity_splitter_->ExtractOtherVector(rhs_s);
 
-    normrhsstruct_ = UTILS::CalculateVectorNorm(vectornormfres_, rhs_sdisp);
-    normrhsporo_ = UTILS::CalculateVectorNorm(vectornormfres_, rhs_poro);
+    normrhsstruct_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_sdisp);
+    normrhsporo_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_poro);
   }
   else
-    normrhsstruct_ = UTILS::CalculateVectorNorm(vectornormfres_, rhs_s);
+    normrhsstruct_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_s);
 
-  normrhsfluid_ = UTILS::CalculateVectorNorm(vectornormfres_, rhs_f);
-  normrhsfluidvel_ = UTILS::CalculateVectorNorm(vectornormfres_, rhs_fvel);
-  normrhsfluidpres_ = UTILS::CalculateVectorNorm(vectornormfres_, rhs_fpres);
+  normrhsfluid_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_f);
+  normrhsfluidvel_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_fvel);
+  normrhsfluidpres_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_fpres);
 
 
   //------------------------------------------------------------- build residual increment norms
@@ -1542,8 +1543,8 @@ void POROELAST::Monolithic::build_convergence_norms()
   interincs = Extractor()->ExtractVector(iterinc_, 0);
   // process fluid unknowns of the second field
   interincf = Extractor()->ExtractVector(iterinc_, 1);
-  interincfvel = FluidField()->ExtractVelocityPart(interincf);
-  interincfpres = FluidField()->ExtractPressurePart(interincf);
+  interincfvel = fluid_field()->ExtractVelocityPart(interincf);
+  interincfpres = fluid_field()->ExtractPressurePart(interincf);
 
   if (porosity_dof_)
   {
@@ -1552,15 +1553,15 @@ void POROELAST::Monolithic::build_convergence_norms()
     Teuchos::RCP<const Epetra_Vector> interincsdisp =
         porosity_splitter_->ExtractOtherVector(interincs);
 
-    normincstruct_ = UTILS::CalculateVectorNorm(vectornorminc_, interincsdisp);
-    normincporo_ = UTILS::CalculateVectorNorm(vectornorminc_, interincporo);
+    normincstruct_ = UTILS::calculate_vector_norm(vectornorminc_, interincsdisp);
+    normincporo_ = UTILS::calculate_vector_norm(vectornorminc_, interincporo);
   }
   else
-    normincstruct_ = UTILS::CalculateVectorNorm(vectornorminc_, interincs);
+    normincstruct_ = UTILS::calculate_vector_norm(vectornorminc_, interincs);
 
-  normincfluid_ = UTILS::CalculateVectorNorm(vectornorminc_, interincf);
-  normincfluidvel_ = UTILS::CalculateVectorNorm(vectornorminc_, interincfvel);
-  normincfluidpres_ = UTILS::CalculateVectorNorm(vectornorminc_, interincfpres);
+  normincfluid_ = UTILS::calculate_vector_norm(vectornorminc_, interincf);
+  normincfluidvel_ = UTILS::calculate_vector_norm(vectornorminc_, interincfvel);
+  normincfluidpres_ = UTILS::calculate_vector_norm(vectornorminc_, interincfpres);
 }
 
 bool POROELAST::Monolithic::SetupSolver()
@@ -1593,7 +1594,7 @@ bool POROELAST::Monolithic::SetupSolver()
   }
   else
     // create a linear solver
-    CreateLinearSolver();
+    create_linear_solver();
 
   // Get the parameters for the Newton iteration
   itermax_ = poroelastdyn.get<int>("ITEMAX");
@@ -1645,8 +1646,8 @@ void POROELAST::Monolithic::Aitken()
   // difference of last two solutions
   if (del_ == Teuchos::null)  // first iteration, itnum==1
   {
-    del_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
-    delhist_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
+    del_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
+    delhist_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
     del_->PutScalar(1.0e20);
     delhist_->PutScalar(0.0);
   }
@@ -1682,8 +1683,8 @@ void POROELAST::Monolithic::Aitken()
 {
   if (del_ == Teuchos::null)  // first iteration, itnum==1
   {
-    del_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
-    delhist_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
+    del_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
+    delhist_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
   }
   del_->PutScalar(1.0e20);
   delhist_->PutScalar(0.0);
@@ -1692,12 +1693,12 @@ void POROELAST::Monolithic::Aitken()
 
 const Epetra_Map& POROELAST::Monolithic::FluidRangeMap()
 {
-  return FluidField()->SystemMatrix()->RangeMap();
+  return fluid_field()->SystemMatrix()->RangeMap();
 }
 
 const Epetra_Map& POROELAST::Monolithic::FluidDomainMap()
 {
-  return FluidField()->SystemMatrix()->DomainMap();
+  return fluid_field()->SystemMatrix()->DomainMap();
 }
 
 const Epetra_Map& POROELAST::Monolithic::StructureDomainMap()
@@ -1705,7 +1706,7 @@ const Epetra_Map& POROELAST::Monolithic::StructureDomainMap()
   return StructureField()->DomainMap();
 }
 
-Teuchos::RCP<const Epetra_Map> POROELAST::Monolithic::DofRowMap()
+Teuchos::RCP<const Epetra_Map> POROELAST::Monolithic::dof_row_map()
 {
   return blockrowdofmap_->FullMap();
 }
@@ -1739,7 +1740,7 @@ void POROELAST::Monolithic::recover_lagrange_multiplier_after_newton_step(
         // displacement and fluid velocity & pressure incremental vector
         Teuchos::RCP<const Epetra_Vector> s_iterinc;
         Teuchos::RCP<const Epetra_Vector> f_iterinc;
-        ExtractFieldVectors(iterinc, s_iterinc, f_iterinc);
+        extract_field_vectors(iterinc, s_iterinc, f_iterinc);
 
         // RecoverStructuralLM
         Teuchos::RCP<Epetra_Vector> tmpsx =
@@ -1759,7 +1760,7 @@ void POROELAST::Monolithic::recover_lagrange_multiplier_after_newton_step(
         // displacement and fluid velocity & pressure incremental vector
         Teuchos::RCP<const Epetra_Vector> s_iterinc;
         Teuchos::RCP<const Epetra_Vector> f_iterinc;
-        ExtractFieldVectors(iterinc, s_iterinc, f_iterinc);
+        extract_field_vectors(iterinc, s_iterinc, f_iterinc);
 
         Teuchos::RCP<Epetra_Vector> tmpfx =
             Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*f_iterinc));
@@ -1785,16 +1786,16 @@ void POROELAST::Monolithic::set_poro_contact_states()
           CONTACT::LagrangeStrategyPoro& costrategy = static_cast<CONTACT::LagrangeStrategyPoro&>(
               StructureField()->meshtying_contact_bridge()->ContactManager()->GetStrategy());
           Teuchos::RCP<Epetra_Vector> fvel = Teuchos::rcp(
-              new Epetra_Vector(*FluidField()->ExtractVelocityPart(FluidField()->Velnp())));
+              new Epetra_Vector(*fluid_field()->ExtractVelocityPart(fluid_field()->Velnp())));
           fvel = fluid_structure_coupling().SlaveToMaster(fvel);
-          costrategy.SetState(MORTAR::state_fvelocity, *fvel);
+          costrategy.set_state(MORTAR::state_fvelocity, *fvel);
 
           // To get pressure dofs into first structural component!!! - any idea for nice
           // implementation?
           Teuchos::RCP<const Epetra_Vector> fpres =
-              FluidField()->ExtractPressurePart(FluidField()->Velnp());
+              fluid_field()->ExtractPressurePart(fluid_field()->Velnp());
           Teuchos::RCP<Epetra_Vector> modfpres =
-              Teuchos::rcp(new Epetra_Vector(*FluidField()->VelocityRowMap(), true));
+              Teuchos::rcp(new Epetra_Vector(*fluid_field()->VelocityRowMap(), true));
 
           int* mygids = fpres->Map().MyGlobalElements();
           double* val = fpres->Values();
@@ -1806,7 +1807,7 @@ void POROELAST::Monolithic::set_poro_contact_states()
           }
 
           modfpres = fluid_structure_coupling().SlaveToMaster(modfpres);
-          costrategy.SetState(MORTAR::state_fpressure, *modfpres);
+          costrategy.set_state(MORTAR::state_fpressure, *modfpres);
 
           Teuchos::RCP<Epetra_Vector> dis =
               Teuchos::rcp(new Epetra_Vector(*StructureField()->Dispnp()));
@@ -1817,7 +1818,7 @@ void POROELAST::Monolithic::set_poro_contact_states()
         {
           CONTACT::NitscheStrategyPoro& costrategy = dynamic_cast<CONTACT::NitscheStrategyPoro&>(
               StructureField()->meshtying_contact_bridge()->ContactManager()->GetStrategy());
-          costrategy.SetParentState(MORTAR::state_fvelocity, *FluidField()->Velnp());
+          costrategy.SetParentState(MORTAR::state_fvelocity, *fluid_field()->Velnp());
         }
       }
     }
@@ -1864,7 +1865,7 @@ void POROELAST::Monolithic::EvalPoroMortar()
           {
             //---Initialize Poro Contact
             costrategy.PoroInitialize(fluid_structure_coupling(),
-                FluidField()->DofRowMap());  // true stands for the no_penetration condition !!!
+                fluid_field()->dof_row_map());  // true stands for the no_penetration condition !!!
             // Get matrix blocks & rhs vector!
             Teuchos::RCP<CORE::LINALG::SparseMatrix> f = Teuchos::rcp<CORE::LINALG::SparseMatrix>(
                 new CORE::LINALG::SparseMatrix(systemmatrix_->Matrix(1, 1)));
@@ -1932,14 +1933,14 @@ void POROELAST::Monolithic::EvalPoroMortar()
 void POROELAST::Monolithic::BuildCombinedDBCMap()
 {
   const Teuchos::RCP<const Epetra_Map> scondmap = StructureField()->GetDBCMapExtractor()->CondMap();
-  const Teuchos::RCP<const Epetra_Map> fcondmap = FluidField()->GetDBCMapExtractor()->CondMap();
+  const Teuchos::RCP<const Epetra_Map> fcondmap = fluid_field()->GetDBCMapExtractor()->CondMap();
   combinedDBCMap_ = CORE::LINALG::MergeMap(scondmap, fcondmap, false);
 }
 
-void POROELAST::Monolithic::ReadRestart(const int step)
+void POROELAST::Monolithic::read_restart(const int step)
 {
   // call base class
-  POROELAST::PoroBase::ReadRestart(step);
+  POROELAST::PoroBase::read_restart(step);
 
   // set states for porous contact
   // apply current velocity of fluid to ContactMangager if contact problem

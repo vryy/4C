@@ -201,7 +201,7 @@ void DRT::ELEMENTS::Wall1::material_response3d_plane(CORE::LINALG::SerialDenseMa
   // call 3d stress response
   CORE::LINALG::Matrix<6, 1> pk2(true);   // must be zerofied!!!
   CORE::LINALG::Matrix<6, 6> cmat(true);  // must be zerofied!!!
-  MaterialResponse3d(&pk2, &cmat, &gl, params, gp);
+  material_response3d(&pk2, &cmat, &gl, params, gp);
 
   // dimension reduction type
   if (wtype_ == plane_strain)
@@ -256,7 +256,7 @@ void DRT::ELEMENTS::Wall1::material_response3d_plane(CORE::LINALG::SerialDenseMa
       // call for new 3d stress response
       pk2.Clear();   // must be blanked!!
       cmat.Clear();  // must be blanked!!
-      MaterialResponse3d(&pk2, &cmat, &gl, params, gp);
+      material_response3d(&pk2, &cmat, &gl, params, gp);
 
       // current plane stress error
       pserr = std::sqrt(pk2(2) * pk2(2) + pk2(4) * pk2(4) + pk2(5) * pk2(5));
@@ -342,7 +342,7 @@ void DRT::ELEMENTS::Wall1::material_response3d_plane(CORE::LINALG::SerialDenseMa
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::MaterialResponse3d(CORE::LINALG::Matrix<6, 1>* stress,
+void DRT::ELEMENTS::Wall1::material_response3d(CORE::LINALG::Matrix<6, 1>* stress,
     CORE::LINALG::Matrix<6, 6>* cmat, const CORE::LINALG::Matrix<6, 1>* glstrain,
     Teuchos::ParameterList& params, const int gp)
 {
@@ -426,8 +426,8 @@ double DRT::ELEMENTS::Wall1::EnergyKinetic(
     const CORE::LINALG::SerialDenseMatrix& mass, const std::vector<double>& vel)
 {
   double kin = 0.0;
-  for (int i = 0; i < 2 * NumNode(); ++i)
-    for (int j = 0; j < 2 * NumNode(); ++j) kin += 0.5 * vel[i] * mass(i, j) * vel[j];
+  for (int i = 0; i < 2 * num_node(); ++i)
+    for (int j = 0; j < 2 * num_node(); ++j) kin += 0.5 * vel[i] * mass(i, j) * vel[j];
   return kin;
 }
 

@@ -45,7 +45,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Get energy for Gauss point to segment coupling.
      */
-    double GetEnergy() const override;
+    double get_energy() const override;
 
    protected:
     /**

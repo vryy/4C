@@ -212,7 +212,7 @@ namespace CONTACT
      coordinates XiGP on a 1D slave / master overlap
 
      */
-    void DerivXiGP2D(MORTAR::Element& sele, MORTAR::Element& mele, double sxigp, double mxigp,
+    void deriv_xi_g_p2_d(MORTAR::Element& sele, MORTAR::Element& mele, double sxigp, double mxigp,
         const CORE::GEN::Pairedvector<int, double>& derivsxi,
         CORE::GEN::Pairedvector<int, double>& derivmxi, int& linsize);
 
@@ -373,7 +373,7 @@ namespace CONTACT
      \brief evaluate D/M-matrix entries at GP
 
      */
-    void GP_DM(MORTAR::Element& sele, MORTAR::Element& mele, CORE::LINALG::SerialDenseVector& lmval,
+    void gp_dm(MORTAR::Element& sele, MORTAR::Element& mele, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& mval, double& jac,
         double& wgt, bool& bound);
 
@@ -381,7 +381,7 @@ namespace CONTACT
      \brief evaluate D/M-matrix entries at GP (3D quadratic)
 
      */
-    void inline GP_3D_DM_Quad(MORTAR::Element& sele, MORTAR::Element& mele,
+    void inline gp_3_d_dm_quad(MORTAR::Element& sele, MORTAR::Element& mele,
         MORTAR::IntElement& sintele, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& lmintval, CORE::LINALG::SerialDenseVector& sval,
         CORE::LINALG::SerialDenseVector& mval, const double& jac, double& wgt, const int& nrow,

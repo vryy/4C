@@ -71,13 +71,14 @@ bool CORE::LINALG::MatrixLogicalSplitAndTransform::operator()(const CORE::LINALG
     matching_dst_rows = row_converter->DstMap().get();
   }
 
-  SetupGidMap(col_converter ? *col_converter->SrcMap() : esrc->RowMap(), esrc->ColMap(),
+  setup_gid_map(col_converter ? *col_converter->SrcMap() : esrc->RowMap(), esrc->ColMap(),
       col_converter, src.Comm());
 
   if (!addmatrix) dst.Zero();
 
-  InternalAdd(esrc, *final_range_map, col_converter ? *col_converter->SrcMap() : logical_domain_map,
-      *matching_dst_rows, dst.EpetraMatrix(), exactmatch, scale);
+  internal_add(esrc, *final_range_map,
+      col_converter ? *col_converter->SrcMap() : logical_domain_map, *matching_dst_rows,
+      dst.EpetraMatrix(), exactmatch, scale);
 
   return true;
 }
@@ -86,7 +87,7 @@ bool CORE::LINALG::MatrixLogicalSplitAndTransform::operator()(const CORE::LINALG
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::LINALG::MatrixLogicalSplitAndTransform::SetupGidMap(const Epetra_Map& rowmap,
+void CORE::LINALG::MatrixLogicalSplitAndTransform::setup_gid_map(const Epetra_Map& rowmap,
     const Epetra_Map& colmap, const CORE::ADAPTER::CouplingConverter* converter,
     const Epetra_Comm& comm)
 {
@@ -108,7 +109,7 @@ void CORE::LINALG::MatrixLogicalSplitAndTransform::SetupGidMap(const Epetra_Map&
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::LINALG::MatrixLogicalSplitAndTransform::InternalAdd(Teuchos::RCP<Epetra_CrsMatrix> esrc,
+void CORE::LINALG::MatrixLogicalSplitAndTransform::internal_add(Teuchos::RCP<Epetra_CrsMatrix> esrc,
     const Epetra_Map& logical_range_map, const Epetra_Map& logical_domain_map,
     const Epetra_Map& matching_dst_rows, Teuchos::RCP<Epetra_CrsMatrix> edst, bool exactmatch,
     double scale)
@@ -128,18 +129,18 @@ void CORE::LINALG::MatrixLogicalSplitAndTransform::InternalAdd(Teuchos::RCP<Epet
   CORE::LINALG::Export(dselector, selector);
 
   if (edst->Filled())
-    AddIntoFilled(esrc, logical_range_map, logical_domain_map, selector, matching_dst_rows, edst,
+    add_into_filled(esrc, logical_range_map, logical_domain_map, selector, matching_dst_rows, edst,
         exactmatch, scale);
   else
-    AddIntoUnfilled(esrc, logical_range_map, logical_domain_map, selector, matching_dst_rows, edst,
-        exactmatch, scale);
+    add_into_unfilled(esrc, logical_range_map, logical_domain_map, selector, matching_dst_rows,
+        edst, exactmatch, scale);
 }
 
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::LINALG::MatrixLogicalSplitAndTransform::AddIntoFilled(
+void CORE::LINALG::MatrixLogicalSplitAndTransform::add_into_filled(
     Teuchos::RCP<Epetra_CrsMatrix> esrc, const Epetra_Map& logical_range_map,
     const Epetra_Map& logical_domain_map, const Epetra_Vector& selector,
     const Epetra_Map& matching_dst_rows, Teuchos::RCP<Epetra_CrsMatrix> edst, bool exactmatch,
@@ -227,7 +228,7 @@ void CORE::LINALG::MatrixLogicalSplitAndTransform::AddIntoFilled(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::LINALG::MatrixLogicalSplitAndTransform::AddIntoUnfilled(
+void CORE::LINALG::MatrixLogicalSplitAndTransform::add_into_unfilled(
     Teuchos::RCP<Epetra_CrsMatrix> esrc, const Epetra_Map& logical_range_map,
     const Epetra_Map& logical_domain_map, const Epetra_Vector& selector,
     const Epetra_Map& matching_dst_rows, Teuchos::RCP<Epetra_CrsMatrix> edst, bool exactmatch,

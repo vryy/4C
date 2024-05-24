@@ -57,7 +57,7 @@ void NOX::NLN::StatusTest::NormUpdate::ComputeNorm(
 {
   // cast the nox_abstract_group to nox_nln_group
   const NOX::NLN::Group* nlngrp = dynamic_cast<const NOX::NLN::Group*>(&grp);
-  if (nlngrp == nullptr) throwError("ComputeNorm", "Dynamic cast to NOX::NLN::Group failed!");
+  if (nlngrp == nullptr) throw_error("ComputeNorm", "Dynamic cast to NOX::NLN::Group failed!");
 
   // get the old solution vector
   const ::NOX::Abstract::Vector& xOld = problem.getPreviousSolutionGroup().getX();
@@ -303,7 +303,7 @@ std::ostream& NOX::NLN::StatusTest::NormUpdate::print(std::ostream& stream, int 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::StatusTest::NormUpdate::throwError(
+void NOX::NLN::StatusTest::NormUpdate::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   if (utils_.isPrintType(::NOX::Utils::Error))

@@ -64,7 +64,7 @@ namespace SCATRA
     void ResetPhase();
 
     //! read restart
-    void ReadRestart(IO::DiscretizationReader& reader);
+    void read_restart(IO::DiscretizationReader& reader);
 
    private:
     //! adaptive time stepping at end of phases?
@@ -167,7 +167,7 @@ namespace SCATRA
     int NumDofs() const { return num_dofs_; }
 
     //! read restart
-    void ReadRestart(IO::DiscretizationReader& reader);
+    void read_restart(IO::DiscretizationReader& reader);
 
     //! reset phasechanged_
     void reset_phase_change_observer();

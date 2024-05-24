@@ -43,7 +43,7 @@ STR::IMPLICIT::OneStepTheta::OneStepTheta()
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::OneStepTheta::Setup()
 {
-  CheckInit();
+  check_init();
   // Call the Setup() of the abstract base class first.
   Generic::Setup();
 
@@ -51,7 +51,7 @@ void STR::IMPLICIT::OneStepTheta::Setup()
   // setup time integration parameters
   // ---------------------------------------------------------------------------
   // get a copy of the input parameters
-  theta_ = GetTheta();
+  theta_ = get_theta();
 
   // sanity checks and some screen output
   if (GlobalState().GetMyRank() == 0)
@@ -82,9 +82,9 @@ void STR::IMPLICIT::OneStepTheta::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::PostSetup()
+void STR::IMPLICIT::OneStepTheta::post_setup()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (SDyn().GetMassLinType() != INPAR::STR::ml_rotations and !SDyn().NeglectInertia())
   {
@@ -118,27 +118,27 @@ void STR::IMPLICIT::OneStepTheta::PostSetup()
     PreUpdate();
     UpdateStepState();
     UpdateStepElement();
-    PostUpdate();
+    post_update();
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::IMPLICIT::OneStepTheta::GetTheta() const
+double STR::IMPLICIT::OneStepTheta::get_theta() const
 {
-  if (IsInit() and IsSetup()) return theta_;
+  if (is_init() and is_setup()) return theta_;
 
   const STR::TIMINT::OneStepThetaDataSDyn& onesteptheta_sdyn =
       dynamic_cast<const STR::TIMINT::OneStepThetaDataSDyn&>(TimInt().GetDataSDyn());
 
-  return onesteptheta_sdyn.GetTheta();
+  return onesteptheta_sdyn.get_theta();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::SetState(const Epetra_Vector& x)
+void STR::IMPLICIT::OneStepTheta::set_state(const Epetra_Vector& x)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (IsPredictorState()) return;
 
@@ -190,7 +190,7 @@ void STR::IMPLICIT::OneStepTheta::update_constant_state_contributions()
  *----------------------------------------------------------------------------*/
 bool STR::IMPLICIT::OneStepTheta::ApplyForce(const Epetra_Vector& x, Epetra_Vector& f)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // ---------------------------------------------------------------------------
   // evaluate the different model types (static case) at t_{n+1}^{i}
@@ -205,7 +205,7 @@ bool STR::IMPLICIT::OneStepTheta::ApplyForce(const Epetra_Vector& x, Epetra_Vect
 bool STR::IMPLICIT::OneStepTheta::ApplyStiff(
     const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // ---------------------------------------------------------------------------
   // evaluate the different model types (static case) at t_{n+1}^{i}
@@ -226,7 +226,7 @@ bool STR::IMPLICIT::OneStepTheta::ApplyStiff(
 bool STR::IMPLICIT::OneStepTheta::ApplyForceStiff(
     const Epetra_Vector& x, Epetra_Vector& f, CORE::LINALG::SparseOperator& jac)
 {
-  CheckInitSetup();
+  check_init_setup();
   // ---------------------------------------------------------------------------
   // evaluate the different model types (static case) at t_{n+1}^{i}
   // ---------------------------------------------------------------------------
@@ -243,10 +243,10 @@ bool STR::IMPLICIT::OneStepTheta::ApplyForceStiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::OneStepTheta::AssembleForce(
+bool STR::IMPLICIT::OneStepTheta::assemble_force(
     Epetra_Vector& f, const std::vector<INPAR::STR::ModelType>* without_these_models) const
 {
-  return ModelEval().AssembleForce(theta_, f, without_these_models);
+  return ModelEval().assemble_force(theta_, f, without_these_models);
 }
 
 /*----------------------------------------------------------------------------*
@@ -283,7 +283,7 @@ void STR::IMPLICIT::OneStepTheta::add_visco_mass_contributions(
 void STR::IMPLICIT::OneStepTheta::WriteRestart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
-  CheckInitSetup();
+  check_init_setup();
   // write dynamic forces
   iowriter.WriteVector("finert", finertian_ptr_);
   iowriter.WriteVector("fvisco", fviscon_ptr_);
@@ -293,13 +293,13 @@ void STR::IMPLICIT::OneStepTheta::WriteRestart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::ReadRestart(IO::DiscretizationReader& ioreader)
+void STR::IMPLICIT::OneStepTheta::read_restart(IO::DiscretizationReader& ioreader)
 {
-  CheckInitSetup();
+  check_init_setup();
   ioreader.ReadVector(finertian_ptr_, "finert");
   ioreader.ReadVector(fviscon_ptr_, "fvisco");
 
-  ModelEval().ReadRestart(ioreader);
+  ModelEval().read_restart(ioreader);
   update_constant_state_contributions();
 }
 
@@ -314,13 +314,13 @@ double STR::IMPLICIT::OneStepTheta::CalcRefNormForce(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::IMPLICIT::OneStepTheta::GetIntParam() const { return (1.0 - GetTheta()); }
+double STR::IMPLICIT::OneStepTheta::GetIntParam() const { return (1.0 - get_theta()); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::OneStepTheta::UpdateStepState()
 {
-  CheckInitSetup();
+  check_init_setup();
   // ---------------------------------------------------------------------------
   // dynamic effects
   // ---------------------------------------------------------------------------
@@ -341,20 +341,20 @@ void STR::IMPLICIT::OneStepTheta::UpdateStepState()
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::OneStepTheta::UpdateStepElement()
 {
-  CheckInitSetup();
+  check_init_setup();
   ModelEval().UpdateStepElement();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::PostUpdate() { update_constant_state_contributions(); }
+void STR::IMPLICIT::OneStepTheta::post_update() { update_constant_state_contributions(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::OneStepTheta::predict_const_dis_consist_vel_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
-  CheckInitSetup();
+  check_init_setup();
   Teuchos::RCP<const Epetra_Vector> disn = GlobalState().GetDisN();
   Teuchos::RCP<const Epetra_Vector> veln = GlobalState().GetVelN();
   Teuchos::RCP<const Epetra_Vector> accn = GlobalState().GetAccN();
@@ -381,7 +381,7 @@ void STR::IMPLICIT::OneStepTheta::predict_const_dis_consist_vel_acc(
 bool STR::IMPLICIT::OneStepTheta::predict_const_vel_consist_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   Teuchos::RCP<const Epetra_Vector> disn = GlobalState().GetDisN();
   Teuchos::RCP<const Epetra_Vector> veln = GlobalState().GetVelN();
@@ -409,7 +409,7 @@ bool STR::IMPLICIT::OneStepTheta::predict_const_vel_consist_acc(
 bool STR::IMPLICIT::OneStepTheta::PredictConstAcc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   Teuchos::RCP<const Epetra_Vector> disn = GlobalState().GetDisN();
   Teuchos::RCP<const Epetra_Vector> veln = GlobalState().GetVelN();

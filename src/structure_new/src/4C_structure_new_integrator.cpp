@@ -69,7 +69,7 @@ void STR::Integrator::Init(const Teuchos::RCP<STR::TIMINT::BaseDataSDyn>& sdyn_p
  *----------------------------------------------------------------------------*/
 void STR::Integrator::Setup()
 {
-  CheckInit();
+  check_init();
   // ---------------------------------------------------------------------------
   // build model evaluator data container
   // ---------------------------------------------------------------------------
@@ -113,7 +113,7 @@ void STR::Integrator::set_initial_displacement(
     }
     case INPAR::STR::initdisp_disp_by_function:
     {
-      const Epetra_Map* dofrowmap = GlobalState().GetDiscret()->DofRowMap();
+      const Epetra_Map* dofrowmap = GlobalState().GetDiscret()->dof_row_map();
 
       // loop all nodes on the processor
       for (int lnodeid = 0; lnodeid < GlobalState().GetDiscret()->NumMyRowNodes(); lnodeid++)
@@ -153,20 +153,20 @@ void STR::Integrator::set_initial_displacement(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::CheckInit() const { FOUR_C_ASSERT(IsInit(), "Call Init() first!"); }
+void STR::Integrator::check_init() const { FOUR_C_ASSERT(is_init(), "Call Init() first!"); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::CheckInitSetup() const
+void STR::Integrator::check_init_setup() const
 {
-  FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::Integrator::ResetModelStates(const Epetra_Vector& x)
 {
-  CheckInitSetup();
+  check_init_setup();
   ModelEval().ResetStates(x);
 }
 
@@ -174,7 +174,7 @@ void STR::Integrator::ResetModelStates(const Epetra_Vector& x)
  *----------------------------------------------------------------------------*/
 void STR::Integrator::equilibrate_initial_state()
 {
-  CheckInit();
+  check_init();
 
   // temporary right-hand-side
   Teuchos::RCP<Epetra_Vector> rhs_ptr =
@@ -311,14 +311,14 @@ void STR::Integrator::equilibrate_initial_state()
   PreUpdate();
   UpdateStepState();
   UpdateStepElement();
-  PostUpdate();
+  post_update();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::Integrator::current_state_is_equilibrium(const double& tol)
 {
-  CheckInit();
+  check_init();
 
   // temporary right-hand-side
   Teuchos::RCP<Epetra_Vector> rhs_ptr =
@@ -354,7 +354,7 @@ bool STR::Integrator::current_state_is_equilibrium(const double& tol)
  *----------------------------------------------------------------------------*/
 void STR::Integrator::determine_stress_strain()
 {
-  CheckInitSetup();
+  check_init_setup();
   ModelEval().determine_stress_strain();
 }
 
@@ -362,7 +362,7 @@ void STR::Integrator::determine_stress_strain()
  *----------------------------------------------------------------------------*/
 void STR::Integrator::DetermineEnergy()
 {
-  CheckInitSetup();
+  check_init_setup();
   ModelEval().DetermineEnergy();
 }
 
@@ -380,7 +380,7 @@ double STR::Integrator::GetModelValue(const Epetra_Vector& x)
  *----------------------------------------------------------------------------*/
 double STR::Integrator::get_total_mid_time_str_energy(const Epetra_Vector& x)
 {
-  CheckInitSetup();
+  check_init_setup();
   if (not mt_energy_.is_correctly_configured())
     FOUR_C_THROW(
         "You are trying to compute the mid-time energy in case of a non-static"
@@ -391,7 +391,7 @@ double STR::Integrator::get_total_mid_time_str_energy(const Epetra_Vector& x)
   Teuchos::RCP<const Epetra_Vector> disnp_ptr = GlobalState().ExtractDisplEntries(x);
   const Epetra_Vector& disnp = *disnp_ptr;
 
-  SetState(disnp);
+  set_state(disnp);
 
   Teuchos::RCP<const Epetra_Vector> velnp_ptr = GlobalState().GetVelNp();
   const Epetra_Vector& velnp = *velnp_ptr;
@@ -430,7 +430,7 @@ void STR::Integrator::update_structural_energy()
  *----------------------------------------------------------------------------*/
 void STR::Integrator::determine_optional_quantity()
 {
-  CheckInitSetup();
+  check_init_setup();
   ModelEval().determine_optional_quantity();
 }
 
@@ -439,7 +439,7 @@ void STR::Integrator::determine_optional_quantity()
 bool STR::Integrator::determine_element_volumes(
     const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols)
 {
-  CheckInitSetup();
+  check_init_setup();
   STR::MODELEVALUATOR::Generic& model = Evaluator(INPAR::STR::model_structure);
   STR::MODELEVALUATOR::Structure& smodel = dynamic_cast<STR::MODELEVALUATOR::Structure&>(model);
 
@@ -450,7 +450,7 @@ bool STR::Integrator::determine_element_volumes(
  *----------------------------------------------------------------------------*/
 void STR::Integrator::OutputStepState(IO::DiscretizationWriter& iowriter) const
 {
-  CheckInitSetup();
+  check_init_setup();
   ModelEval().OutputStepState(iowriter);
 }
 
@@ -465,7 +465,7 @@ void STR::Integrator::MonitorDbc(IO::DiscretizationWriter& writer) const
  *----------------------------------------------------------------------------*/
 void STR::Integrator::runtime_pre_output_step_state()
 {
-  CheckInitSetup();
+  check_init_setup();
   ModelEval().runtime_pre_output_step_state();
 }
 
@@ -473,7 +473,7 @@ void STR::Integrator::runtime_pre_output_step_state()
  *----------------------------------------------------------------------------*/
 void STR::Integrator::runtime_output_step_state() const
 {
-  CheckInitSetup();
+  check_init_setup();
   ModelEval().runtime_output_step_state();
 }
 
@@ -481,7 +481,7 @@ void STR::Integrator::runtime_output_step_state() const
  *----------------------------------------------------------------------------*/
 void STR::Integrator::PostOutput()
 {
-  CheckInitSetup();
+  check_init_setup();
   ModelEval().PostOutput();
 }
 
@@ -489,7 +489,7 @@ void STR::Integrator::PostOutput()
  *----------------------------------------------------------------------------*/
 void STR::Integrator::ResetStepState()
 {
-  CheckInitSetup();
+  check_init_setup();
   ModelEval().ResetStepState();
 }
 
@@ -498,10 +498,11 @@ void STR::Integrator::ResetStepState()
 double STR::Integrator::get_condensed_update_norm(
     const enum NOX::NLN::StatusTest::QuantityType& qtype) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   double myupdatenorm = eval_data_ptr_->GetMyUpdateNorm(qtype);
-  const enum ::NOX::Abstract::Vector::NormType normtype = eval_data_ptr_->GetUpdateNormType(qtype);
+  const enum ::NOX::Abstract::Vector::NormType normtype =
+      eval_data_ptr_->get_update_norm_type(qtype);
 
   return get_condensed_global_norm(qtype, normtype, myupdatenorm);
 }
@@ -511,10 +512,11 @@ double STR::Integrator::get_condensed_update_norm(
 double STR::Integrator::get_condensed_previous_sol_norm(
     const enum NOX::NLN::StatusTest::QuantityType& qtype) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   double myprevsolnorm = eval_data_ptr_->get_my_previous_sol_norm(qtype);
-  const enum ::NOX::Abstract::Vector::NormType normtype = eval_data_ptr_->GetUpdateNormType(qtype);
+  const enum ::NOX::Abstract::Vector::NormType normtype =
+      eval_data_ptr_->get_update_norm_type(qtype);
 
   return get_condensed_global_norm(qtype, normtype, myprevsolnorm);
 }
@@ -524,7 +526,7 @@ double STR::Integrator::get_condensed_previous_sol_norm(
 double STR::Integrator::get_condensed_solution_update_rms(
     const enum NOX::NLN::StatusTest::QuantityType& qtype) const
 {
-  CheckInitSetup();
+  check_init_setup();
   // global relative mean square norm
   double grmsnorm = 0.0;
   // get proc data
@@ -543,7 +545,7 @@ double STR::Integrator::get_condensed_solution_update_rms(
 int STR::Integrator::get_condensed_dof_number(
     const enum NOX::NLN::StatusTest::QuantityType& qtype) const
 {
-  CheckInitSetup();
+  check_init_setup();
   // global dof number of the given quantity
   int gdofnumber = 0.0;
   int mydofnumber = eval_data_ptr_->GetMyDofNumber(qtype);
@@ -585,7 +587,7 @@ double STR::Integrator::get_condensed_global_norm(
  *----------------------------------------------------------------------------*/
 STR::ModelEvaluator& STR::Integrator::ModelEval()
 {
-  CheckInit();
+  check_init();
   return *modelevaluator_ptr_;
 }
 
@@ -593,7 +595,7 @@ STR::ModelEvaluator& STR::Integrator::ModelEval()
  *----------------------------------------------------------------------------*/
 const STR::ModelEvaluator& STR::Integrator::ModelEval() const
 {
-  CheckInit();
+  check_init();
   return *modelevaluator_ptr_;
 }
 
@@ -601,7 +603,7 @@ const STR::ModelEvaluator& STR::Integrator::ModelEval() const
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const STR::ModelEvaluator> STR::Integrator::ModelEvalPtr() const
 {
-  CheckInit();
+  check_init();
   return modelevaluator_ptr_;
 }
 
@@ -609,7 +611,7 @@ Teuchos::RCP<const STR::ModelEvaluator> STR::Integrator::ModelEvalPtr() const
  *----------------------------------------------------------------------------*/
 STR::MODELEVALUATOR::Generic& STR::Integrator::Evaluator(const INPAR::STR::ModelType& mt)
 {
-  CheckInitSetup();
+  check_init_setup();
   return ModelEval().Evaluator(mt);
 }
 
@@ -618,7 +620,7 @@ STR::MODELEVALUATOR::Generic& STR::Integrator::Evaluator(const INPAR::STR::Model
 const STR::MODELEVALUATOR::Generic& STR::Integrator::Evaluator(
     const INPAR::STR::ModelType& mt) const
 {
-  CheckInitSetup();
+  check_init_setup();
   return ModelEval().Evaluator(mt);
 }
 
@@ -626,7 +628,7 @@ const STR::MODELEVALUATOR::Generic& STR::Integrator::Evaluator(
  *----------------------------------------------------------------------------*/
 const STR::MODELEVALUATOR::Data& STR::Integrator::EvalData() const
 {
-  CheckInit();
+  check_init();
   return *eval_data_ptr_;
 }
 
@@ -634,7 +636,7 @@ const STR::MODELEVALUATOR::Data& STR::Integrator::EvalData() const
  *----------------------------------------------------------------------------*/
 STR::MODELEVALUATOR::Data& STR::Integrator::EvalData()
 {
-  CheckInit();
+  check_init();
   return *eval_data_ptr_;
 }
 
@@ -642,7 +644,7 @@ STR::MODELEVALUATOR::Data& STR::Integrator::EvalData()
  *----------------------------------------------------------------------------*/
 STR::TIMINT::BaseDataSDyn& STR::Integrator::SDyn()
 {
-  CheckInit();
+  check_init();
   return *sdyn_ptr_;
 }
 
@@ -650,7 +652,7 @@ STR::TIMINT::BaseDataSDyn& STR::Integrator::SDyn()
  *----------------------------------------------------------------------------*/
 const STR::TIMINT::BaseDataSDyn& STR::Integrator::SDyn() const
 {
-  CheckInit();
+  check_init();
   return *sdyn_ptr_;
 }
 
@@ -658,7 +660,7 @@ const STR::TIMINT::BaseDataSDyn& STR::Integrator::SDyn() const
  *----------------------------------------------------------------------------*/
 const STR::TIMINT::BaseDataGlobalState& STR::Integrator::GlobalState() const
 {
-  CheckInit();
+  check_init();
   return *gstate_ptr_;
 }
 
@@ -666,7 +668,7 @@ const STR::TIMINT::BaseDataGlobalState& STR::Integrator::GlobalState() const
  *----------------------------------------------------------------------------*/
 STR::TIMINT::BaseDataGlobalState& STR::Integrator::GlobalState()
 {
-  CheckInit();
+  check_init();
   return *gstate_ptr_;
 }
 
@@ -674,7 +676,7 @@ STR::TIMINT::BaseDataGlobalState& STR::Integrator::GlobalState()
  *----------------------------------------------------------------------------*/
 STR::Dbc& STR::Integrator::Dbc()
 {
-  CheckInit();
+  check_init();
   return *dbc_ptr_;
 }
 
@@ -682,7 +684,7 @@ STR::Dbc& STR::Integrator::Dbc()
  *----------------------------------------------------------------------------*/
 const STR::Dbc& STR::Integrator::GetDbc() const
 {
-  CheckInit();
+  check_init();
   return *dbc_ptr_;
 }
 
@@ -690,7 +692,7 @@ const STR::Dbc& STR::Integrator::GetDbc() const
  *----------------------------------------------------------------------------*/
 const STR::TIMINT::Base& STR::Integrator::TimInt() const
 {
-  CheckInit();
+  check_init();
   return *timint_ptr_;
 }
 
@@ -698,7 +700,7 @@ const STR::TIMINT::Base& STR::Integrator::TimInt() const
  *----------------------------------------------------------------------------*/
 void STR::Integrator::CreateBackupState(const Epetra_Vector& dir)
 {
-  CheckInitSetup();
+  check_init_setup();
   ModelEval().CreateBackupState(dir);
 }
 
@@ -706,7 +708,7 @@ void STR::Integrator::CreateBackupState(const Epetra_Vector& dir)
  *----------------------------------------------------------------------------*/
 void STR::Integrator::recover_from_backup_state()
 {
-  CheckInitSetup();
+  check_init_setup();
   ModelEval().recover_from_backup_state();
 }
 

@@ -129,7 +129,7 @@ namespace SCATRA
         const Teuchos::RCP<Epetra_Vector>& residual, const bool calcinittimederiv = false) const {};
 
     //! return global map of degrees of freedom
-    virtual const Epetra_Map& DofRowMap() const = 0;
+    virtual const Epetra_Map& dof_row_map() const = 0;
 
     /*!
     \brief Evaluate a given condition
@@ -158,13 +158,13 @@ namespace SCATRA
     \date 08/16
     \author rauch
     */
-    virtual void EvaluateCondition(Teuchos::ParameterList& params,
+    virtual void evaluate_condition(Teuchos::ParameterList& params,
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
         Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring, const int condid)
     {
-      FOUR_C_THROW("EvaluateCondition(...) is not implemented in MeshtyingStrategyBase.");
+      FOUR_C_THROW("evaluate_condition(...) is not implemented in MeshtyingStrategyBase.");
     };
 
     //! compute meshtying residual terms and their linearizations
@@ -204,7 +204,7 @@ namespace SCATRA
      * @param step  restart step
      * @param input control file manager
      */
-    virtual void ReadRestart(
+    virtual void read_restart(
         const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) const {};
 
     //! set general parameters for element evaluation
@@ -220,7 +220,7 @@ namespace SCATRA
     /*!
     \brief Set state on an discretization hidden in any MeshtyingStrategy.
 
-     This method should encapsulate a standard SetState(...) of the discretizations
+     This method should encapsulate a standard set_state(...) of the discretizations
      you want to consider. See \ref HeterogeneousReactionStrategy for an example.
 
     \param nds (in): number of dofset
@@ -231,12 +231,12 @@ namespace SCATRA
     \date 12/16
     \author rauch
     */
-    virtual void SetState(
+    virtual void set_state(
         unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state)
     {
       FOUR_C_THROW(
-          "SetState(...) is not implemented in MeshtyingStrategyBase.\n"
-          "SetState(...) allows to set states on discretizations held within any\n"
+          "set_state(...) is not implemented in MeshtyingStrategyBase.\n"
+          "set_state(...) allows to set states on discretizations held within any\n"
           "specific MeshtyingStrategy. See e.g. HeterogeneousReactionStrategy for\n"
           "an example implementation.");
     };

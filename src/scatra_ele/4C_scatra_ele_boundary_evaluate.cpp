@@ -44,7 +44,7 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(Teuchos::ParameterList& params,
   int numscal = numdofpernode;
 
   // perform additional operations specific to implementation type
-  switch (ParentElement()->ImplType())
+  switch (parent_element()->ImplType())
   {
     case INPAR::SCATRA::impltype_elch_diffcond:
     case INPAR::SCATRA::impltype_elch_diffcond_thermo:
@@ -59,7 +59,7 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(Teuchos::ParameterList& params,
       // get the material of the first element
       // we assume here, that the material is equal for all elements in this discretization
       // get the parent element including its material
-      Teuchos::RCP<CORE::MAT::Material> material = ParentElement()->Material();
+      Teuchos::RCP<CORE::MAT::Material> material = parent_element()->Material();
       if (material->MaterialType() == CORE::Materials::m_elchmat)
         numscal = static_cast<const MAT::ElchMat*>(material.get())->NumScal();
 
@@ -98,7 +98,7 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(Teuchos::ParameterList& params,
   // generalized implementation class, you have to do a switch here in order to
   // call element-specific routines
   return DRT::ELEMENTS::ScaTraBoundaryFactory::ProvideImpl(
-      this, ParentElement()->ImplType(), numdofpernode, numscal, discretization.Name())
+      this, parent_element()->ImplType(), numdofpernode, numscal, discretization.Name())
       ->Evaluate(this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
 }
 
@@ -106,7 +106,7 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  | evaluate Neumann boundary condition on boundary element   fang 01/15 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::TransportBoundary::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::TransportBoundary::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -137,7 +137,7 @@ void DRT::ELEMENTS::TransportBoundary::LocationVector(const Discretization& dis,
       // the inner dofs of its parent element
       // note: using these actions, the element will get the parent location vector
       //       as input in the respective evaluate routines
-      ParentElement()->LocationVector(dis, la, doDirichlet);
+      parent_element()->LocationVector(dis, la, doDirichlet);
       break;
     default:
       DRT::Element::LocationVector(dis, la, doDirichlet);

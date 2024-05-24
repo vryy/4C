@@ -36,7 +36,8 @@ int DRT::ELEMENTS::SoTet4av::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
-  // Check whether the solid material PostSetup() routine has already been called and call it if not
+  // Check whether the solid material post_setup() routine has already been called and call it if
+  // not
   ensure_material_post_setup(params);
 
   CORE::LINALG::Matrix<NUMDOF_SOTET4av, NUMDOF_SOTET4av> elemat1(elemat1_epetra.values(), true);
@@ -176,7 +177,7 @@ int DRT::ELEMENTS::SoTet4av::Evaluate(Teuchos::ParameterList& params,
     case calc_struct_reset_istep:
     {
       // Reset of history (if needed)
-      SolidMaterial()->ResetStep();
+      SolidMaterial()->reset_step();
     }
     break;
 
@@ -192,7 +193,7 @@ int DRT::ELEMENTS::SoTet4av::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)  seitz 03/16 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::SoTet4av::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::SoTet4av::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -298,7 +299,7 @@ int DRT::ELEMENTS::SoTet4av::EvaluateNeumann(Teuchos::ParameterList& params,
   } /* ==================================================== end of Loop over GP */
 
   return 0;
-}  // DRT::ELEMENTS::So_tet4av::EvaluateNeumann
+}  // DRT::ELEMENTS::So_tet4av::evaluate_neumann
 
 
 /*----------------------------------------------------------------------*

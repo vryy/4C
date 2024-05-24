@@ -82,12 +82,12 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
 
     void Setup();
 
-    Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>> BuildMueLuHierarchy(
-        Teuchos::ParameterList paramListFromXml, int numdf, int dimns,
+    Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
+    build_mue_lu_hierarchy(Teuchos::ParameterList paramListFromXml, int numdf, int dimns,
         Teuchos::RCP<std::vector<double>> nsdata, Teuchos::RCP<Epetra_Operator> A_eop, int block,
         int NumBlocks, std::vector<int>& offsets, int offsetFineLevel);
 
-    std::string ConvertInt(int number)
+    std::string convert_int(int number)
     {
       std::stringstream ss;
       ss << number;
@@ -124,7 +124,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     Teuchos::ParameterList params_smoothers_;
 
     void Setup();
-    Teuchos::RCP<AMGNXN::GenericSmoother> BuildSmoother(int level);
+    Teuchos::RCP<AMGNXN::GenericSmoother> build_smoother(int level);
   };
 }  // namespace CORE::LINEAR_SOLVER::AMGNXN
 

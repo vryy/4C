@@ -42,7 +42,7 @@ namespace CONTACT
     two contact boundary conditions. It extracts all contact boundary conditions
     and constructs one or multiple contact interfaces from them and stores them.
 
-    All interfaces will be FillComplete in order to get their internal discretization ready for
+    All interfaces will be fill_complete in order to get their internal discretization ready for
     further usage. This step also takes care of extending the interface ghosting depending on the
     user's choice.
 
@@ -97,7 +97,7 @@ namespace CONTACT
     \param zero (in)  : global dof zero vector
 
     */
-    void ReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
+    void read_restart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<Epetra_Vector> zero) final;
 
     /*!
@@ -161,7 +161,7 @@ namespace CONTACT
      sorted out and throw a FOUR_C_THROW.
 
      */
-    bool ReadAndCheckInput(Teuchos::ParameterList& cparams);
+    bool read_and_check_input(Teuchos::ParameterList& cparams);
 
     //! don't want operator=
     Manager operator=(const Manager& old) = delete;

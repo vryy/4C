@@ -155,7 +155,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::Setup(
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::SetCurrentTime(const double currenttime)
+void PARTICLEINTERACTION::SPHSurfaceTension::set_current_time(const double currenttime)
 {
   time_ = currenttime;
 }
@@ -225,7 +225,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::add_acceleration_contribution()
       "PARTICLEINTERACTION::SPHSurfaceTension::add_acceleration_contribution");
 
   // compute curvature
-  ComputeCurvature();
+  compute_curvature();
 
   // compute surface tension contribution
   compute_surface_tension_contribution();
@@ -618,7 +618,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::correct_triple_point_normal() const
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::ComputeCurvature() const
+void PARTICLEINTERACTION::SPHSurfaceTension::compute_curvature() const
 {
   // determine size of vectors indexed by particle types
   const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
@@ -864,7 +864,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::compute_temp_grad_driven_contributi
       const double* ifn_i = container_i->GetPtrToState(PARTICLEENGINE::InterfaceNormal, particle_i);
       const double* temp_i = container_i->GetPtrToState(PARTICLEENGINE::Temperature, particle_i);
       const double* tempgrad_i =
-          container_i->GetPtrToState(PARTICLEENGINE::TemperatureGradient, particle_i);
+          container_i->GetPtrToState(PARTICLEENGINE::temperature_gradient, particle_i);
       double* acc_i = container_i->GetPtrToState(PARTICLEENGINE::Acceleration, particle_i);
 
       // evaluation only for non-zero interface normal

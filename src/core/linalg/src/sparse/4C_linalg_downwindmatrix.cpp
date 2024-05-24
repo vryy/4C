@@ -34,7 +34,7 @@ CORE::LINALG::DownwindMatrix::DownwindMatrix(Teuchos::RCP<Epetra_CrsMatrix> A, c
 void CORE::LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
 {
   Teuchos::Time time("", true);
-  if (!A.Filled()) FOUR_C_THROW("Input matrix has to be FillComplete");
+  if (!A.Filled()) FOUR_C_THROW("Input matrix has to be fill_complete");
   const int numdofrows = A.RowMap().NumMyElements();
   const int bsize = bs_;
   const int vsize = nv_;
@@ -220,8 +220,8 @@ void CORE::LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
 
   Epetra_IntVector index(nnodegraph->RowMap(), false);
 
-  DownwindBeyWittum(*nnodegraph, index, oninflow);
-  // DownwindHackbusch(*nnodegraph,index,oninflow);
+  downwind_bey_wittum(*nnodegraph, index, oninflow);
+  // downwind_hackbusch(*nnodegraph,index,oninflow);
 
   // index now specifies the local order in which the rows should be processed
   Teuchos::RCP<Epetra_Map> nnoderowmap;
@@ -270,7 +270,7 @@ void CORE::LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 03/08|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::DownwindMatrix::DownwindBeyWittum(
+void CORE::LINALG::DownwindMatrix::downwind_bey_wittum(
     const Epetra_CrsMatrix& nnodegraph, Epetra_IntVector& index, const Epetra_IntVector& oninflow)
 {
   const int myrank = nnodegraph.Comm().MyPID();
@@ -287,7 +287,7 @@ void CORE::LINALG::DownwindMatrix::DownwindBeyWittum(
 
   // do downwind numbering
   for (int i = 0; i < nnodegraph.NumMyRows(); ++i)
-    if (index[i] < 0) SetF(i, nf, index, nnodegraph, 0);
+    if (index[i] < 0) set_f(i, nf, index, nnodegraph, 0);
   if (outlevel_)
   {
     nnodegraph.Comm().Barrier();
@@ -311,7 +311,7 @@ void CORE::LINALG::DownwindMatrix::DownwindBeyWittum(
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 03/08|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::DownwindMatrix::DownwindHackbusch(
+void CORE::LINALG::DownwindMatrix::downwind_hackbusch(
     const Epetra_CrsMatrix& nnodegraph, Epetra_IntVector& index, const Epetra_IntVector& oninflow)
 {
   const int myrank = nnodegraph.Comm().MyPID();
@@ -329,8 +329,8 @@ void CORE::LINALG::DownwindMatrix::DownwindHackbusch(
   // do down- and upwind numbering
   for (int i = 0; i < nnodegraph.NumMyRows(); ++i)
   {
-    if (index[i] < 0) SetF(i, nf, index, nnodegraph, 0);
-    if (index[i] < 0) SetL(i, nl, index, nnodegraph, 0);
+    if (index[i] < 0) set_f(i, nf, index, nnodegraph, 0);
+    if (index[i] < 0) set_l(i, nl, index, nnodegraph, 0);
   }
   if (outlevel_)
   {
@@ -354,10 +354,10 @@ void CORE::LINALG::DownwindMatrix::DownwindHackbusch(
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 03/08|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::DownwindMatrix::SetF(
+void CORE::LINALG::DownwindMatrix::set_f(
     const int i, int& nf, Epetra_IntVector& index, const Epetra_CrsMatrix& graph, int rec)
 {
-  // std::cout << "SetF::Recursion " << rec << "\n"; fflush(stdout);
+  // std::cout << "set_f::Recursion " << rec << "\n"; fflush(stdout);
   const Epetra_Map& rowmap = graph.RowMap();
   const Epetra_Map& colmap = graph.ColMap();
   const int gi = rowmap.GID(i);
@@ -386,7 +386,7 @@ void CORE::LINALG::DownwindMatrix::SetF(
     for (int k = 0; k < graph.NumMyRows(); ++k)
     {
       if (index[k] >= 0) continue;
-      if (IsSuccessor(k, gi, graph)) SetF(k, nf, index, graph, rec + 1);
+      if (is_successor(k, gi, graph)) set_f(k, nf, index, graph, rec + 1);
     }
   }
   return;
@@ -397,10 +397,10 @@ void CORE::LINALG::DownwindMatrix::SetF(
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 03/08|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::DownwindMatrix::SetL(
+void CORE::LINALG::DownwindMatrix::set_l(
     const int i, int& nl, Epetra_IntVector& index, const Epetra_CrsMatrix& graph, int rec)
 {
-  // std::cout << "SetL::Recursion " << rec << "\n"; fflush(stdout);
+  // std::cout << "set_l::Recursion " << rec << "\n"; fflush(stdout);
   const Epetra_Map& rowmap = graph.RowMap();
   const Epetra_Map& colmap = graph.ColMap();
   int numentries;
@@ -411,7 +411,7 @@ void CORE::LINALG::DownwindMatrix::SetL(
   const int gi = rowmap.GID(i);
   for (int k = 0; k < graph.NumMyRows(); ++k)
   {
-    if (!IsSuccessor(k, gi, graph)) continue;
+    if (!is_successor(k, gi, graph)) continue;
     if (index[k] < 0)
     {
       allhaveindex = false;
@@ -434,7 +434,7 @@ void CORE::LINALG::DownwindMatrix::SetL(
       if (!rowmap.MyGID(gj)) continue;
       int lj = rowmap.LID(gj);
       if (index[lj] >= 0) continue;
-      SetL(lj, nl, index, graph, rec + 1);
+      set_l(lj, nl, index, graph, rec + 1);
     }
   }
 

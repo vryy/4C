@@ -122,7 +122,7 @@ namespace CORE::GEO
       /*========================================================================*/
 
       /// Create a point with the specified ID
-      Teuchos::RCP<Point> CreatePoint(
+      Teuchos::RCP<Point> create_point(
           unsigned newid, const double* x, Edge* cut_edge, Side* cut_side, double tolerance);
 
       /// get the leaf where the point with the given coordinates lies in

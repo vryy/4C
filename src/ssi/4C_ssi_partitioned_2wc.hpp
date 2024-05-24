@@ -77,20 +77,20 @@ namespace SSI
     void Timeloop() override;
 
     //! perform iteration loop between fields
-    virtual void OuterLoop();
+    virtual void outer_loop();
 
     //! prepare time loop
-    virtual void PrepareTimeLoop();
+    virtual void prepare_time_loop();
 
     //! prepare time step for single fields
-    void PrepareTimeStep(bool printheader = true) override;
+    void prepare_time_step(bool printheader = true) override;
 
     //! update time step and print to screen
     virtual void UpdateAndOutput();
 
    protected:
     //! solve field 1
-    virtual void Operator1() { DoStructStep(); };
+    virtual void Operator1() { do_struct_step(); };
 
     //! solve field 2
     virtual void Operator2() { DoScatraStep(); };
@@ -109,17 +109,17 @@ namespace SSI
 
     //! perform iteration step of structure field and set the new disp and vel states in the scatra
     //! field
-    void DoStructStep() override;
+    void do_struct_step() override;
 
     //! perform iteration step of scatra field and set the new phi state in the structure field
     void DoScatraStep() override;
 
     //! update the current states in every iteration
     //! states are set to the last solutions obtained
-    virtual void IterUpdateStates();
+    virtual void iter_update_states();
 
     //! convergence check of outer loop
-    virtual bool ConvergenceCheck(int itnum);
+    virtual bool convergence_check(int itnum);
 
     /// velocity calculation given the displacements
     Teuchos::RCP<Epetra_Vector> CalcVelocity(Teuchos::RCP<const Epetra_Vector> dispnp);
@@ -163,7 +163,7 @@ namespace SSI
 
    protected:
     //! perform iteration loop between fields with relaxed displacements
-    void OuterLoop() override;
+    void outer_loop() override;
 
     //! //! calculate relaxation parameter
     virtual void CalcOmega(double& omega, const int itnum);
@@ -240,7 +240,7 @@ namespace SSI
 
    protected:
     //! perform iteration loop between fields with relaxed scalar
-    void OuterLoop() override;
+    void outer_loop() override;
 
     //! calculate relaxation parameter
     virtual void CalcOmega(double& omega, const int itnum);

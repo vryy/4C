@@ -37,11 +37,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONTACT::LagrangeStrategy::LagrangeStrategy(
-    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
-    const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
+    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<Teuchos::RCP<CONTACT::Interface>> interface, const int spatialDim,
     Teuchos::RCP<const Epetra_Comm> comm, const double alphaf, const int maxdof)
-    : AbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
+    : AbstractStrategy(data_ptr, dof_row_map, NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
       interface_(interface),
       evalForceCalled_(false),
       activesetssconv_(false),
@@ -222,17 +222,17 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(
   }
   else
   {
-    // FillComplete() global matrix S
+    // fill_complete() global matrix S
     smatrix_->Complete(*gsmdofrowmap_, *gactiven_);
   }
 
-  // FillComplete() global matrices LinD, LinM
+  // fill_complete() global matrices LinD, LinM
   // (again for linD gsdofrowmap_ is sufficient as domain map,
   // but in the edge node modification case, master entries occur!)
   lindmatrix_->Complete(*gsmdofrowmap_, *gsdofrowmap_);
   linmmatrix_->Complete(*gsmdofrowmap_, *gmdofrowmap_);
 
-  // FillComplete global Matrix linstickLM_, linstickDIS_
+  // fill_complete global Matrix linstickLM_, linstickDIS_
   Teuchos::RCP<Epetra_Map> gstickt = CORE::LINALG::SplitMap(*gactivet_, *gslipt_);
   Teuchos::RCP<Epetra_Map> gstickdofs = CORE::LINALG::SplitMap(*gactivedofs_, *gslipdofs_);
 
@@ -248,7 +248,7 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(
     linstickLM_->Complete(*gstickdofs, *gstickt);
     linstickDIS_->Complete(*gsmdofrowmap_, *gstickt);
 
-    // FillComplete global Matrix linslipLM_ and linslipDIS_
+    // fill_complete global Matrix linslipLM_ and linslipDIS_
     linslipLM_->Complete(*gslipdofs_, *gslipt_);
     linslipDIS_->Complete(*gsmdofrowmap_, *gslipt_);
   }
@@ -509,7 +509,7 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(
     if (ParRedist())
     {
       // split and transform to redistributed maps
-      CORE::LINALG::SplitVector(*ProblemDofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
+      CORE::LINALG::split_vector(*ProblemDofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
       Teuchos::RCP<Epetra_Vector> fsmtemp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
       CORE::LINALG::Export(*fsm, *fsmtemp);
       fsm = fsmtemp;
@@ -517,7 +517,7 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(
     else
     {
       // only split, no need to transform
-      CORE::LINALG::SplitVector(*ProblemDofs(), *feff, gsmdofrowmap_, fsm, gndofrowmap_, fn);
+      CORE::LINALG::split_vector(*ProblemDofs(), *feff, gsmdofrowmap_, fsm, gndofrowmap_, fn);
     }
 
     // abbreviations for slave and master set
@@ -529,7 +529,7 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(
     fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
 
     // do the vector splitting sm -> s+m
-    CORE::LINALG::SplitVector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
+    CORE::LINALG::split_vector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
 
     // store some stuff for static condensation of LM
     fs_ = fs;
@@ -609,14 +609,14 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(
     Teuchos::RCP<Epetra_Vector> fi = Teuchos::rcp(new Epetra_Vector(*gidofs));
 
     // do the vector splitting s -> a+i
-    CORE::LINALG::SplitVector(*gsdofrowmap_, *fs, gactivedofs_, fa, gidofs, fi);
+    CORE::LINALG::split_vector(*gsdofrowmap_, *fs, gactivedofs_, fa, gidofs, fi);
 
     // we want to split fa into 2 groups sl,st
     Teuchos::RCP<Epetra_Vector> fsl = Teuchos::rcp(new Epetra_Vector(*gslipdofs_));
     Teuchos::RCP<Epetra_Vector> fst = Teuchos::rcp(new Epetra_Vector(*gstdofs));
 
     // do the vector splitting a -> sl+st
-    if (aset) CORE::LINALG::SplitVector(*gactivedofs_, *fa, gslipdofs_, fsl, gstdofs, fst);
+    if (aset) CORE::LINALG::split_vector(*gactivedofs_, *fa, gslipdofs_, fsl, gstdofs, fst);
 
     /********************************************************************/
     /* (6) Isolate necessary parts from invd and mhatmatrix             */
@@ -949,8 +949,8 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(
     Teuchos::RCP<Epetra_Vector> zst = Teuchos::rcp(new Epetra_Vector(*gstickdofs));
     Teuchos::RCP<Epetra_Vector> zsl = Teuchos::rcp(new Epetra_Vector(*gslipdofs_));
 
-    CORE::LINALG::SplitVector(*gsdofrowmap_, *z_, gactivedofs_, za, gidofs, zi);
-    CORE::LINALG::SplitVector(*gactivedofs_, *za, gstickdofs, zst, gslipdofs_, zsl);
+    CORE::LINALG::split_vector(*gsdofrowmap_, *z_, gactivedofs_, za, gidofs, zi);
+    CORE::LINALG::split_vector(*gactivedofs_, *za, gstickdofs, zst, gslipdofs_, zsl);
     Teuchos::RCP<Epetra_Vector> tempvec1;
 
     // fst: mutliply with linstickLM
@@ -1112,7 +1112,7 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(
     // add terms of linearization of slip condition to kteffnew and feffnew
     if (slipset) kteffnew->Add(*linslipDIS_, false, -1.0, +1.0);
 
-    // FillComplete kteffnew (square)
+    // fill_complete kteffnew (square)
     kteffnew->Complete();
 
     /********************************************************************/
@@ -1501,7 +1501,7 @@ void CONTACT::LagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vec
   if (!nonSmoothContact_) return;
 
   // initialize the displacement field
-  SetState(MORTAR::state_new_displacement, *dis);
+  set_state(MORTAR::state_new_displacement, *dis);
 
   // guarantee uniquness
   std::set<std::pair<int, int>> donebefore;
@@ -1512,7 +1512,7 @@ void CONTACT::LagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vec
   {
     // interface needs to be complete
     if (!interface_[i]->Filled() && Comm().MyPID() == 0)
-      FOUR_C_THROW("FillComplete() not called on interface %", i);
+      FOUR_C_THROW("fill_complete() not called on interface %", i);
 
     // reset kappa
     // loop over all slave row nodes on the current interface
@@ -1535,7 +1535,7 @@ void CONTACT::LagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vec
       Element* selement = dynamic_cast<Element*>(ele1);
 
       // loop over slave edges -> match node number for tri3/quad4
-      for (int k = 0; k < selement->NumNode(); ++k)
+      for (int k = 0; k < selement->num_node(); ++k)
       {
         int nodeIds[2] = {0, 0};
         int nodeLIds[2] = {0, 0};
@@ -1952,10 +1952,10 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
   }
   if (constr_direction_ == INPAR::CONTACT::constr_xyz)
   {
-    // FillComplete() global matrix T
+    // fill_complete() global matrix T
     tmatrix_->Complete(*gactivedofs_, *gactivedofs_);
 
-    // FillComplete() global matrix N
+    // fill_complete() global matrix N
     if (nmatrix_ != Teuchos::null) nmatrix_->Complete(*gactivedofs_, *gactivedofs_);
     smatrix_->Complete(*gsmdofrowmap_, *gactivedofs_);
     tderivmatrix_->Complete(*gsmdofrowmap_, *gactivedofs_);
@@ -1963,25 +1963,25 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
   }
   else
   {
-    // FillComplete() global matrix T
+    // fill_complete() global matrix T
     tmatrix_->Complete(*gactivedofs_, *gactivet_);
 
-    // FillComplete() global matrix N
+    // fill_complete() global matrix N
     if (nmatrix_ != Teuchos::null) nmatrix_->Complete(*gactivedofs_, *gactiven_);
 
-    // FillComplete() global matrix S
+    // fill_complete() global matrix S
     smatrix_->Complete(*gsmdofrowmap_, *gactiven_);
 
-    // FillComplete() global matrix Tderiv
+    // fill_complete() global matrix Tderiv
     // (actually gsdofrowmap_ is in general sufficient as domain map,
     // but in the edge node modification case, master entries occur!)
     tderivmatrix_->Complete(*gsmdofrowmap_, *gactivet_);
 
-    // FillComplete() global matrix Nderiv
+    // fill_complete() global matrix Nderiv
     if (nderivmatrix_ != Teuchos::null) nderivmatrix_->Complete(*gsmdofrowmap_, *gactiven_);
   }
 
-  // FillComplete() global matrices LinD, LinM
+  // fill_complete() global matrices LinD, LinM
   // (again for linD gsdofrowmap_ is sufficient as domain map,
   // but in the edge node modification case, master entries occur!)
   lindmatrix_->Complete(*gsmdofrowmap_, *gsdofrowmap_);
@@ -2277,7 +2277,7 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
     if (ParRedist())
     {
       // split and transform to redistributed maps
-      CORE::LINALG::SplitVector(*ProblemDofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
+      CORE::LINALG::split_vector(*ProblemDofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
       Teuchos::RCP<Epetra_Vector> fsmtemp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
       CORE::LINALG::Export(*fsm, *fsmtemp);
       fsm = fsmtemp;
@@ -2285,7 +2285,7 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
     else
     {
       // only split, no need to transform
-      CORE::LINALG::SplitVector(*ProblemDofs(), *feff, gsmdofrowmap_, fsm, gndofrowmap_, fn);
+      CORE::LINALG::split_vector(*ProblemDofs(), *feff, gsmdofrowmap_, fsm, gndofrowmap_, fn);
     }
 
     // abbreviations for slave  and master set
@@ -2297,7 +2297,7 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
     fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
 
     // do the vector splitting sm -> s+m
-    CORE::LINALG::SplitVector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
+    CORE::LINALG::split_vector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
 
     // store some stuff for static condensation of LM
     fs_ = fs;
@@ -2359,7 +2359,7 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
     Teuchos::RCP<Epetra_Vector> fi = Teuchos::rcp(new Epetra_Vector(*gidofs));
 
     // do the vector splitting s -> a+i
-    CORE::LINALG::SplitVector(*gsdofrowmap_, *fs, gactivedofs_, fa, gidofs, fi);
+    CORE::LINALG::split_vector(*gsdofrowmap_, *fs, gactivedofs_, fa, gidofs, fi);
 
     /**********************************************************************/
     /* (6) Isolate necessary parts from invd and mhatmatrix               */
@@ -2728,7 +2728,7 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
     if (aset) kteffnew->Add(*kaamod, false, 1.0, 1.0);
     if (aset) kteffnew->Add(*tderivmatrix_, false, -1.0, 1.0);
 
-    // FillComplete kteffnew (square)
+    // fill_complete kteffnew (square)
     kteffnew->Complete();
 
     /**********************************************************************/
@@ -3064,7 +3064,7 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
     kzz->Complete(*gsdofrowmap_, *gsdofrowmap_);
   }
 
-  /* Step 1: Transform matrix blocks to current Lagrange multiplier DofRowMap
+  /* Step 1: Transform matrix blocks to current Lagrange multiplier dof_row_map
    *
    * This does not change the parallel layout, but only replace the slave displacement GIDs with the
    * Lagrange multiplier DOF GIDs. There is no communication involved.
@@ -3080,7 +3080,7 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
     trkdz = MORTAR::MatrixColTransformGIDs(kdz, glmdofrowmap_);
   }
 
-  /* Step 2: Transform matrix blocks back to original DofRowMap as it was prior to the
+  /* Step 2: Transform matrix blocks back to original dof_row_map as it was prior to the
    * redistribution of the interface
    *
    * Now, we keep the GID numbering, but change the parallel layout. This actually moves data
@@ -3477,17 +3477,17 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_friction()
   }
   else
   {
-    // FillComplete() global matrix S
+    // fill_complete() global matrix S
     smatrix_->Complete(*gsmdofrowmap_, *gactiven_);
   }
 
-  // FillComplete() global matrices LinD, LinM
+  // fill_complete() global matrices LinD, LinM
   // (again for linD gsdofrowmap_ is sufficient as domain map,
   // but in the edge node modification case, master entries occur!)
   lindmatrix_->Complete(*gsmdofrowmap_, *gsdofrowmap_);
   linmmatrix_->Complete(*gsmdofrowmap_, *gmdofrowmap_);
 
-  // FillComplete global Matrix linstickLM_, linstickDIS_
+  // fill_complete global Matrix linstickLM_, linstickDIS_
   Teuchos::RCP<Epetra_Map> gstickt = CORE::LINALG::SplitMap(*gactivet_, *gslipt_);
   Teuchos::RCP<Epetra_Map> gstickdofs = CORE::LINALG::SplitMap(*gactivedofs_, *gslipdofs_);
 
@@ -3503,7 +3503,7 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_friction()
     linstickLM_->Complete(*gstickdofs, *gstickt);
     linstickDIS_->Complete(*gsmdofrowmap_, *gstickt);
 
-    // FillComplete global Matrix linslipLM_ and linslipDIS_
+    // fill_complete global Matrix linslipLM_ and linslipDIS_
     linslipLM_->Complete(*gslipdofs_, *gslipt_);
     linslipDIS_->Complete(*gsmdofrowmap_, *gslipt_);
   }
@@ -3734,10 +3734,10 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_frictionless()
   }
   if (constr_direction_ == INPAR::CONTACT::constr_xyz)
   {
-    // FillComplete() global matrix T
+    // fill_complete() global matrix T
     tmatrix_->Complete(*gactivedofs_, *gactivedofs_);
 
-    // FillComplete() global matrix N
+    // fill_complete() global matrix N
     if (nmatrix_ != Teuchos::null) nmatrix_->Complete(*gactivedofs_, *gactivedofs_);
     smatrix_->Complete(*gsmdofrowmap_, *gactivedofs_);
     tderivmatrix_->Complete(*gsmdofrowmap_, *gactivedofs_);
@@ -3745,25 +3745,25 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_frictionless()
   }
   else
   {
-    // FillComplete() global matrix T
+    // fill_complete() global matrix T
     tmatrix_->Complete(*gactivedofs_, *gactivet_);
 
-    // FillComplete() global matrix N
+    // fill_complete() global matrix N
     if (nmatrix_ != Teuchos::null) nmatrix_->Complete(*gactivedofs_, *gactiven_);
 
-    // FillComplete() global matrix S
+    // fill_complete() global matrix S
     smatrix_->Complete(*gsmdofrowmap_, *gactiven_);
 
-    // FillComplete() global matrix Tderiv
+    // fill_complete() global matrix Tderiv
     // (actually gsdofrowmap_ is in general sufficient as domain map,
     // but in the edge node modification case, master entries occur!)
     tderivmatrix_->Complete(*gsmdofrowmap_, *gactivet_);
 
-    // FillComplete() global matrix Nderiv
+    // fill_complete() global matrix Nderiv
     if (nderivmatrix_ != Teuchos::null) nderivmatrix_->Complete(*gsmdofrowmap_, *gactiven_);
   }
 
-  // FillComplete() global matrices LinD, LinM
+  // fill_complete() global matrices LinD, LinM
   // (again for linD gsdofrowmap_ is sufficient as domain map,
   // but in the edge node modification case, master entries occur!)
   lindmatrix_->Complete(*gsmdofrowmap_, *gsdofrowmap_);
@@ -4046,7 +4046,7 @@ void CONTACT::LagrangeStrategy::EvalStrContactRHS()
 /*----------------------------------------------------------------------*
  | set force evaluation flag before evaluation step          farah 08/16|
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::PreEvaluate(CONTACT::ParamsInterface& cparams)
+void CONTACT::LagrangeStrategy::pre_evaluate(CONTACT::ParamsInterface& cparams)
 {
   const enum MORTAR::ActionType& act = cparams.GetActionType();
 
@@ -4076,7 +4076,7 @@ void CONTACT::LagrangeStrategy::PreEvaluate(CONTACT::ParamsInterface& cparams)
 /*----------------------------------------------------------------------*
  | set force evaluation flag after evaluation                farah 08/16|
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::PostEvaluate(CONTACT::ParamsInterface& cparams)
+void CONTACT::LagrangeStrategy::post_evaluate(CONTACT::ParamsInterface& cparams)
 {
   const enum MORTAR::ActionType& act = cparams.GetActionType();
 
@@ -4674,7 +4674,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
                 interface_[i]->GetCtRef()[interface_[i]->GetCtRef().Map().LID(frinode->Id())];
 
             // CAREFUL: friction bound is now interface-local (popp 08/2012)
-            double frbound = interface_[i]->InterfaceParams().get<double>("FRBOUND");
+            double frbound = interface_[i]->interface_params().get<double>("FRBOUND");
 
             if (frinode->FriData().Slip() == false)
             {
@@ -4712,7 +4712,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
                 interface_[i]->GetCtRef()[interface_[i]->GetCtRef().Map().LID(frinode->Id())];
 
             // CAREFUL: friction coefficient is now interface-local (popp 08/2012)
-            double frcoeff = interface_[i]->InterfaceParams().get<double>("FRCOEFF");
+            double frcoeff = interface_[i]->interface_params().get<double>("FRCOEFF");
 
             if (frinode->FriData().Slip() == false)
             {
@@ -5511,7 +5511,7 @@ void CONTACT::LagrangeStrategy::CondenseFriction(
     }
   }
 
-  // FillComplete global Matrix linstickLM_, linstickDIS_
+  // fill_complete global Matrix linstickLM_, linstickDIS_
   Teuchos::RCP<Epetra_Map> gstickt = CORE::LINALG::SplitMap(*gactivet_, *gslipt_);
   Teuchos::RCP<Epetra_Map> gstickdofs = CORE::LINALG::SplitMap(*gactivedofs_, *gslipdofs_);
 
@@ -5590,7 +5590,7 @@ void CONTACT::LagrangeStrategy::CondenseFriction(
   if (ParRedist())
   {
     // split and transform to redistributed maps
-    CORE::LINALG::SplitVector(*ProblemDofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
+    CORE::LINALG::split_vector(*ProblemDofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
     Teuchos::RCP<Epetra_Vector> fsmtemp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
     CORE::LINALG::Export(*fsm, *fsmtemp);
     fsm = fsmtemp;
@@ -5598,7 +5598,7 @@ void CONTACT::LagrangeStrategy::CondenseFriction(
   else
   {
     // only split, no need to transform
-    CORE::LINALG::SplitVector(*ProblemDofs(), *feff, gsmdofrowmap_, fsm, gndofrowmap_, fn);
+    CORE::LINALG::split_vector(*ProblemDofs(), *feff, gsmdofrowmap_, fsm, gndofrowmap_, fn);
   }
 
   // abbreviations for slave set
@@ -5609,7 +5609,7 @@ void CONTACT::LagrangeStrategy::CondenseFriction(
   fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
 
   // do the vector splitting sm -> s+m
-  CORE::LINALG::SplitVector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
+  CORE::LINALG::split_vector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
 
   // store some stuff for static condensation of LM
   fs_ = fs;
@@ -5666,14 +5666,14 @@ void CONTACT::LagrangeStrategy::CondenseFriction(
   Teuchos::RCP<Epetra_Vector> fi = Teuchos::rcp(new Epetra_Vector(*gidofs));
 
   // do the vector splitting s -> a+i
-  CORE::LINALG::SplitVector(*gsdofrowmap_, *fs, gactivedofs_, fa, gidofs, fi);
+  CORE::LINALG::split_vector(*gsdofrowmap_, *fs, gactivedofs_, fa, gidofs, fi);
 
   // we want to split fa into 2 groups sl,st
   Teuchos::RCP<Epetra_Vector> fsl = Teuchos::rcp(new Epetra_Vector(*gslipdofs_));
   Teuchos::RCP<Epetra_Vector> fst = Teuchos::rcp(new Epetra_Vector(*gstdofs));
 
   // do the vector splitting a -> sl+st
-  if (aset) CORE::LINALG::SplitVector(*gactivedofs_, *fa, gslipdofs_, fsl, gstdofs, fst);
+  if (aset) CORE::LINALG::split_vector(*gactivedofs_, *fa, gslipdofs_, fsl, gstdofs, fst);
 
   /********************************************************************/
   /* (6) Isolate necessary parts from invd and mhatmatrix             */
@@ -5948,8 +5948,8 @@ void CONTACT::LagrangeStrategy::CondenseFriction(
   Teuchos::RCP<Epetra_Vector> zst = Teuchos::rcp(new Epetra_Vector(*gstickdofs));
   Teuchos::RCP<Epetra_Vector> zsl = Teuchos::rcp(new Epetra_Vector(*gslipdofs_));
 
-  CORE::LINALG::SplitVector(*gsdofrowmap_, *z_, gactivedofs_, za, gidofs, zi);
-  CORE::LINALG::SplitVector(*gactivedofs_, *za, gstickdofs, zst, gslipdofs_, zsl);
+  CORE::LINALG::split_vector(*gsdofrowmap_, *z_, gactivedofs_, za, gidofs, zi);
+  CORE::LINALG::split_vector(*gactivedofs_, *za, gstickdofs, zst, gslipdofs_, zsl);
   Teuchos::RCP<Epetra_Vector> tempvec1;
 
   // fst: mutliply with linstickLM
@@ -6118,7 +6118,7 @@ void CONTACT::LagrangeStrategy::CondenseFriction(
     kteffnew->Assemble(0., gid, gid);
   }
 
-  // FillComplete kteffnew (square)
+  // fill_complete kteffnew (square)
   kteffnew->Complete();
 
   /********************************************************************/
@@ -6417,7 +6417,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   if (ParRedist())
   {
     // split and transform to redistributed maps
-    CORE::LINALG::SplitVector(*ProblemDofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
+    CORE::LINALG::split_vector(*ProblemDofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
     Teuchos::RCP<Epetra_Vector> fsmtemp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
     CORE::LINALG::Export(*fsm, *fsmtemp);
     fsm = fsmtemp;
@@ -6425,7 +6425,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   else
   {
     // only split, no need to transform
-    CORE::LINALG::SplitVector(*ProblemDofs(), *feff, gsmdofrowmap_, fsm, gndofrowmap_, fn);
+    CORE::LINALG::split_vector(*ProblemDofs(), *feff, gsmdofrowmap_, fsm, gndofrowmap_, fn);
   }
 
   // abbreviations for slave set
@@ -6436,7 +6436,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
 
   // do the vector splitting sm -> s+m
-  CORE::LINALG::SplitVector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
+  CORE::LINALG::split_vector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
 
   // store some stuff for static condensation of LM
   fs_ = fs;
@@ -6475,7 +6475,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   Teuchos::RCP<Epetra_Vector> fi = Teuchos::rcp(new Epetra_Vector(*gidofs));
 
   // do the vector splitting s -> a+i
-  CORE::LINALG::SplitVector(*gsdofrowmap_, *fs, gactivedofs_, fa, gidofs, fi);
+  CORE::LINALG::split_vector(*gsdofrowmap_, *fs, gactivedofs_, fa, gidofs, fi);
 
   /**********************************************************************/
   /* (6) Isolate necessary parts from invd and mhatmatrix               */
@@ -6787,7 +6787,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   if (aset) kteffnew->Add(*kaamod, false, 1.0, 1.0);
   if (aset) kteffnew->Add(*tderivmatrix_, false, -1.0, 1.0);
 
-  // FillComplete kteffnew (square)
+  // fill_complete kteffnew (square)
   kteffnew->Complete();
 
   /**********************************************************************/

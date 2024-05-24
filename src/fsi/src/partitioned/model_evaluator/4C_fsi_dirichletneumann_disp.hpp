@@ -83,7 +83,7 @@ namespace FSI
         Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag) final;
 
     //! Predictor
-    Teuchos::RCP<Epetra_Vector> InitialGuess() override;
+    Teuchos::RCP<Epetra_Vector> initial_guess() override;
   };
 
 }  // namespace FSI

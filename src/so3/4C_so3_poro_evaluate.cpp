@@ -31,7 +31,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Poro<so3_ele, distype>::PreEvaluate(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::So3Poro<so3_ele, distype>::pre_evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
   if (scatra_coupling_)
@@ -146,7 +146,7 @@ int DRT::ELEMENTS::So3Poro<so3_ele, distype>::Evaluate(Teuchos::ParameterList& p
     default:
     {
       // in some cases we need to write/change some data before evaluating
-      PreEvaluate(params, discretization, la);
+      pre_evaluate(params, discretization, la);
 
       // evaluate parent solid element
       so3_ele::Evaluate(params, discretization, la[0].lm_, elemat1_epetra, elemat2_epetra,

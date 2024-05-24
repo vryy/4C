@@ -74,9 +74,9 @@ namespace CORE::LINALG::VOIGT
      */
     static inline double Determinant(const CORE::LINALG::Matrix<6, 1>& vtensor)
     {
-      return TripleEntryProduct(vtensor, 0, 1, 2) + 2 * TripleEntryProduct(vtensor, 3, 4, 5) -
-             TripleEntryProduct(vtensor, 1, 5, 5) - TripleEntryProduct(vtensor, 2, 3, 3) -
-             TripleEntryProduct(vtensor, 0, 4, 4);
+      return triple_entry_product(vtensor, 0, 1, 2) + 2 * triple_entry_product(vtensor, 3, 4, 5) -
+             triple_entry_product(vtensor, 1, 5, 5) - triple_entry_product(vtensor, 2, 3, 3) -
+             triple_entry_product(vtensor, 0, 4, 4);
     }
 
     /** \brief Compute the three principal invariants of a matrix in Voigt <type> notation
@@ -209,7 +209,7 @@ namespace CORE::LINALG::VOIGT
      * @param k third entry's Voigt index
      * @return product of the three entries
      */
-    static inline double TripleEntryProduct(
+    static inline double triple_entry_product(
         const CORE::LINALG::Matrix<6, 1>& vtensor, unsigned i, unsigned j, unsigned k)
     {
       return vtensor(i) * UnscaleFactor(i) * vtensor(j) * UnscaleFactor(j) * vtensor(k) *

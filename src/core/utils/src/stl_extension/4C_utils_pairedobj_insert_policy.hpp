@@ -503,55 +503,55 @@ namespace CORE::GEN
 
     iterator begin(const iterator& first)
     {
-      throwIfNotFilled(__LINE__, __FUNCTION__);
+      throw_if_not_filled(__LINE__, __FUNCTION__);
       return base_type::begin(first);
     }
 
     const_iterator begin(const const_iterator& first) const
     {
-      throwIfNotFilled(__LINE__, __FUNCTION__);
+      throw_if_not_filled(__LINE__, __FUNCTION__);
       return base_type::begin(first);
     }
 
     iterator end(const iterator& last)
     {
-      throwIfNotFilled(__LINE__, __FUNCTION__);
+      throw_if_not_filled(__LINE__, __FUNCTION__);
       return base_type::end(last);
     }
 
     const_iterator end(const const_iterator& last) const
     {
-      throwIfNotFilled(__LINE__, __FUNCTION__);
+      throw_if_not_filled(__LINE__, __FUNCTION__);
       return base_type::end(last);
     }
 
     iterator find(const Key k, pairedvector_type& data, size_t entries)
     {
-      throwIfNotFilled(__LINE__, __FUNCTION__);
+      throw_if_not_filled(__LINE__, __FUNCTION__);
       return base_type::find(k, data, entries);
     }
 
     const_iterator find(const Key k, const pairedvector_type& data, size_t entries) const
     {
-      throwIfNotFilled(__LINE__, __FUNCTION__);
+      throw_if_not_filled(__LINE__, __FUNCTION__);
       return base_type::find(k, data, entries);
     }
 
     T& get(const Key k, pairedvector_type& data, size_t& entries)
     {
-      throwIfNotFilled(__LINE__, __FUNCTION__);
+      throw_if_not_filled(__LINE__, __FUNCTION__);
       return base_type::get(k, data, entries);
     }
 
     T& at(const Key k, pairedvector_type& data, size_t entries)
     {
-      throwIfNotFilled(__LINE__, __FUNCTION__);
+      throw_if_not_filled(__LINE__, __FUNCTION__);
       return base_type::at(k, data, entries);
     }
 
     const T& at(const Key k, const pairedvector_type& data, size_t entries) const
     {
-      throwIfNotFilled(__LINE__, __FUNCTION__);
+      throw_if_not_filled(__LINE__, __FUNCTION__);
       return base_type::at(k, data, entries);
     }
 
@@ -578,27 +578,27 @@ namespace CORE::GEN
       if (non_unique_entries_ == dyn_max_allowed_capacity_ and
           (not set_dynamic_max_allowed_capacity(2 * entries)))
       {
-        entries = midComplete(data, entries);
+        entries = mid_complete(data, entries);
       }
 
       if (isfilled_)
       {
         isfilled_ = false;
-        initCapacity();
+        init_capacity();
         ++non_unique_entries_;
       }
 
-      pair_type* pair_ptr = non_unique_vec_.data() + currentId();
+      pair_type* pair_ptr = non_unique_vec_.data() + current_id();
 
-      setMaxValue(pair_ptr->second);
+      set_max_value(pair_ptr->second);
 
       /* If reasonable values have been inserted, we check the capacity and go
        * to the next entry. Otherwise, we stick to the current entry. */
       if (std::abs(pair_ptr->second) > get_relative_machine_precision())
       {
-        increaseCapacity();
+        increase_capacity();
         ++non_unique_entries_;
-        pair_ptr = non_unique_vec_.data() + currentId();
+        pair_ptr = non_unique_vec_.data() + current_id();
       }
 
       pair_ptr->first = k;
@@ -611,9 +611,9 @@ namespace CORE::GEN
     {
       if (isfilled_) return unique_entries;
 
-      const size_t new_unique_entries = groupAndMerge(unique_vec, unique_entries);
+      const size_t new_unique_entries = group_and_merge(unique_vec, unique_entries);
 
-      finalPostComplete();
+      final_post_complete();
 
       return new_unique_entries;
     }
@@ -641,7 +641,7 @@ namespace CORE::GEN
       non_unique_vec_.swap(x.non_unique_vec_);
     }
 
-    void clone(const class_type& source) { throwIfNotFilled(__LINE__, __FUNCTION__); }
+    void clone(const class_type& source) { throw_if_not_filled(__LINE__, __FUNCTION__); }
 
    private:
     /** @brief Internal complete call
@@ -659,13 +659,13 @@ namespace CORE::GEN
      *  @return The number of the unique data in the end of this routine.
      *
      *  @author hiermeier @data 07/17 */
-    size_t midComplete(pairedvector_type& unique_vec, const size_t unique_entries)
+    size_t mid_complete(pairedvector_type& unique_vec, const size_t unique_entries)
     {
       if (isfilled_) return unique_entries;
 
-      const size_t new_unique_entries = groupAndMerge(unique_vec, unique_entries);
+      const size_t new_unique_entries = group_and_merge(unique_vec, unique_entries);
 
-      midPostComplete();
+      mid_post_complete();
 
       return new_unique_entries;
     }
@@ -677,7 +677,7 @@ namespace CORE::GEN
      *  @param[in] functname   Function name of the calling function.
      *
      *  @author hiermeier @date 07/17 */
-    inline void throwIfNotFilled(int linenumber, const std::string& functname) const
+    inline void throw_if_not_filled(int linenumber, const std::string& functname) const
     {
       if (not isfilled_)
       {
@@ -699,7 +699,7 @@ namespace CORE::GEN
      *  @return Number of the new unique entries contained in unique_vec.
      *
      *  @author hiermeier @date 07/17 */
-    size_t groupAndMerge(pairedvector_type& unique_vec, const size_t unique_entries)
+    size_t group_and_merge(pairedvector_type& unique_vec, const size_t unique_entries)
     {
       // get total number of entries and merge all entries temporal in the
       // _non_unique_vec member
@@ -729,7 +729,7 @@ namespace CORE::GEN
 #endif
 
       // group the entries
-      const size_t num_grps = groupData(non_unique_vec_.begin(), merged_entries);
+      const size_t num_grps = group_data(non_unique_vec_.begin(), merged_entries);
 
 #if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_DEBUG)
       if (this->_isdebug)
@@ -749,7 +749,7 @@ namespace CORE::GEN
       if (unique_vec.size() < num_grps) unique_vec.resize(num_grps);
 
       // copy and merge all non-unique entries into one unique vector
-      const typename pairedvector_type::iterator last_result = mergeGroupData(
+      const typename pairedvector_type::iterator last_result = merge_group_data(
           non_unique_vec_.begin(), non_unique_vec_.begin() + merged_entries, unique_vec.begin());
 
       const size_t corrected_length = static_cast<size_t>(last_result - unique_vec.begin());
@@ -773,13 +773,13 @@ namespace CORE::GEN
 
     /** @brief reset stuff after an internal complete call
      *
-     *  In contrast to the %finalPostComplete method we do not free the
+     *  In contrast to the %final_post_complete method we do not free the
      *  allocated memory for the %_non_unique_vec, instead we just clear the
      *  content. The %_max_value and the current necessary dynamic
      *  maximal allowed capacity are also kept.
      *
      *  @author hiermeier @date 07/17 */
-    void midPostComplete()
+    void mid_post_complete()
     {
       std::fill(
           non_unique_vec_.begin(), non_unique_vec_.begin() + non_unique_entries_, pair_type());
@@ -797,7 +797,7 @@ namespace CORE::GEN
      *  all class members which are only important during one call are reset.
      *
      *  @author hiermeier @date 07/17 */
-    void finalPostComplete()
+    void final_post_complete()
     {
       non_unique_vec_.clear();
 
@@ -818,7 +818,7 @@ namespace CORE::GEN
      *  @return Number of groups.
      *
      *  @author hiermeier @date 07/17 */
-    size_t groupData(typename pairedvector_type::iterator sbegin, const size_t num_entries) const
+    size_t group_data(typename pairedvector_type::iterator sbegin, const size_t num_entries) const
     {
       switch (num_entries)
       {
@@ -832,7 +832,7 @@ namespace CORE::GEN
           return 2;
         }
         default:
-          return groupBigData(sbegin, sbegin + num_entries);
+          return group_big_data(sbegin, sbegin + num_entries);
       }
     }
 
@@ -847,7 +847,7 @@ namespace CORE::GEN
      *  @return Number of groups.
      *
      *  @author hiermeier @date 07/17 */
-    size_t groupBigData(typename pairedvector_type::iterator sbegin,
+    size_t group_big_data(typename pairedvector_type::iterator sbegin,
         const typename pairedvector_type::iterator slast) const
     {
       typename pairedvector_type::iterator result = sbegin;
@@ -897,7 +897,7 @@ namespace CORE::GEN
      *          result interval
      *
      *  @author hiermeier @date 07/17 */
-    typename pairedvector_type::iterator mergeGroupData(
+    typename pairedvector_type::iterator merge_group_data(
         typename pairedvector_type::const_iterator sbegin,
         typename pairedvector_type::iterator slast,
         typename pairedvector_type::iterator result) const
@@ -930,7 +930,7 @@ namespace CORE::GEN
     }
 
     /// Return the local id of the last element
-    inline size_t currentId() const { return (non_unique_entries_ - 1); }
+    inline size_t current_id() const { return (non_unique_entries_ - 1); }
 
     /** @brief Set a new maximal allowed capacity of the non-unique vector
      *
@@ -957,7 +957,7 @@ namespace CORE::GEN
      *  @param[in] curr_val This is the current value which is going to be inserted.
      *
      *  @author hiermeier @date 07/17 */
-    void setMaxValue(const double curr_val)
+    void set_max_value(const double curr_val)
     {
       const double abs_curr_val = std::abs(curr_val);
       if (abs_curr_val > max_value_) max_value_ = abs_curr_val;
@@ -966,17 +966,17 @@ namespace CORE::GEN
     /** @brief Get the relative machine precision
      *
      *  Relative to the max value occurring during the current insertion
-     *  interval. See setMaxValue for more information.
+     *  interval. See set_max_value for more information.
      *
      *  @author hiermeier @date 07/17 */
     inline double get_relative_machine_precision() const { return max_value_ * MACHINE_PRECISION; }
 
-    inline void initCapacity()
+    inline void init_capacity()
     {
       non_unique_vec_.resize(std::max(1, static_cast<int>(_max_capacity)), pair_type());
     }
 
-    void increaseCapacity()
+    void increase_capacity()
     {
       const size_t curr_length = non_unique_vec_.size();
       if (non_unique_entries_ < curr_length) return;

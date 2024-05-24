@@ -66,7 +66,7 @@ namespace INPUT
   DatFileReader::DatFileReader(std::string filename, Teuchos::RCP<Epetra_Comm> comm, int outflag)
       : filename_(std::move(filename)), comm_(std::move(comm)), outflag_(outflag)
   {
-    ReadDat();
+    read_dat();
   }
 
 
@@ -133,7 +133,7 @@ namespace INPUT
 
       const auto& [key, value] = ReadKeyValue(line);
 
-      AddEntry(key, value, sublist);
+      add_entry(key, value, sublist);
     }
 
     return true;
@@ -846,7 +846,7 @@ namespace INPUT
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void DatFileReader::AddEntry(
+  void DatFileReader::add_entry(
       const std::string& key, const std::string& value, Teuchos::ParameterList& list)
   {
     // safety check: Is there a duplicate of the same parameter?
@@ -910,7 +910,7 @@ namespace INPUT
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void DatFileReader::ReadDat()
+  void DatFileReader::read_dat()
   {
     std::vector<std::string> exclude;
 

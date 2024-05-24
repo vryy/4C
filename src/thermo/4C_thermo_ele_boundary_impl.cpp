@@ -91,7 +91,7 @@ DRT::ELEMENTS::TemperBoundaryImplInterface* DRT::ELEMENTS::TemperBoundaryImplInt
        return cl3;
      }*/
     default:
-      FOUR_C_THROW("Shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
+      FOUR_C_THROW("Shape %d (%d nodes) not supported", ele->Shape(), ele->num_node());
       break;
   }
   return nullptr;
@@ -136,11 +136,11 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(const DRT::ELEMENTS::Th
   // ( action=="ba_integrate_shape_functions" )
 
   // prepare nurbs
-  PrepareNurbsEval(ele, discretization);
+  prepare_nurbs_eval(ele, discretization);
 
   // First, do the things that are needed for all actions:
   // get the material (of the parent element)
-  DRT::Element* genericparent = ele->ParentElement();
+  DRT::Element* genericparent = ele->parent_element();
   // make sure the static cast below is really valid
   FOUR_C_ASSERT(dynamic_cast<DRT::ELEMENTS::Thermo*>(genericparent) != nullptr,
       "Parent element is no fluid element");
@@ -161,7 +161,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(const DRT::ELEMENTS::Th
         ele, xyze_);
 
     // determine constant normal to this element
-    GetConstNormal(normal_, xyze_);
+    get_const_normal(normal_, xyze_);
 
     // loop over the boundary element nodes
     for (int j = 0; j < nen_; j++)
@@ -584,13 +584,13 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(const DRT::ELEMENTS::Th
  | i.e. calculate q^ = q . n over surface da                            |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(const DRT::Element* ele,
+int DRT::ELEMENTS::TemperBoundaryImpl<distype>::evaluate_neumann(const DRT::Element* ele,
     Teuchos::ParameterList& params, const DRT::Discretization& discretization,
     const CORE::Conditions::Condition& condition, const std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1)
 {
   // prepare nurbs
-  PrepareNurbsEval(ele, discretization);
+  prepare_nurbs_eval(ele, discretization);
 
   // get node coordinates (we have a nsd_+1 dimensional domain!)
   CORE::GEO::fillInitialPositionArray<distype, nsd_ + 1, CORE::LINALG::Matrix<nsd_ + 1, nen_>>(
@@ -660,7 +660,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(const DRT::Eleme
   }  // end of loop over integration points
 
   return 0;
-}  // EvaluateNeumann()
+}  // evaluate_neumann()
 
 
 /*----------------------------------------------------------------------*
@@ -804,7 +804,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::calculate_nln_convection_fint_c
     // calculate the current normal vector normal and the area
     CORE::LINALG::Matrix<nsd_ + 1, 1> normal;  // (3x1)
     double detA = 0.0;
-    SurfaceIntegration(detA, normal, xcurr);
+    surface_integration(detA, normal, xcurr);
     // the total surface corresponds to the sum over all GPs.
     // fext and k_ii is calculated by assembling over all nodes
     // --> multiply the corresponding sub-area to the terms
@@ -989,7 +989,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::eval_shape_func_and_int_fac(
  | get constant normal                                        gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal(
+void DRT::ELEMENTS::TemperBoundaryImpl<distype>::get_const_normal(
     CORE::LINALG::Matrix<nsd_ + 1, 1>& normal,
     const CORE::LINALG::Matrix<nsd_ + 1, nen_>& xyze  // node coordinates
 ) const
@@ -1036,7 +1036,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal(
   normal.Scale(1 / length);
 
   return;
-}  // GetConstNormal()
+}  // get_const_normal()
 
 
 /*----------------------------------------------------------------------*
@@ -1090,7 +1090,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::integrate_shape_functions(const
  | evaluate sqrt of determinant of metric at gp (private)    dano 12/12 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperBoundaryImpl<distype>::SurfaceIntegration(
+void DRT::ELEMENTS::TemperBoundaryImpl<distype>::surface_integration(
     double& detA, CORE::LINALG::Matrix<nsd_ + 1, 1>& normal,
     const CORE::LINALG::Matrix<nen_, nsd_ + 1>& xcurr  // current coordinates of nodes
 )
@@ -1154,7 +1154,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::SurfaceIntegration(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperBoundaryImpl<distype>::PrepareNurbsEval(
+void DRT::ELEMENTS::TemperBoundaryImpl<distype>::prepare_nurbs_eval(
     const DRT::Element* ele,                   // the element whose matrix is calculated
     const DRT::Discretization& discretization  // current discretisation
 )

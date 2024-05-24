@@ -43,7 +43,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerInd
   // Create the mortar manager.
   mortar_manager_ = Teuchos::rcp<BEAMINTERACTION::BeamToFluidMortarManager>(
       new BEAMINTERACTION::BeamToFluidMortarManager(discretization1, discretization2,
-          beam_contact_params_ptr, discretization1->DofRowMap()->MaxAllGID()));
+          beam_contact_params_ptr, discretization1->dof_row_map()->MaxAllGID()));
 
   // Setup the mortar manager.
   mortar_manager_->Setup();
@@ -55,7 +55,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerInd
  *
  */
 void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerIndirect::
-    EvaluateForceStiff(const DRT::Discretization& discretization1,
+    evaluate_force_stiff(const DRT::Discretization& discretization1,
         const DRT::Discretization& discretization2, Teuchos::RCP<Epetra_FEVector>& ff,
         Teuchos::RCP<Epetra_FEVector>& fb, Teuchos::RCP<CORE::LINALG::SparseOperator> cff,
         Teuchos::RCP<CORE::LINALG::SparseMatrix>& cbb,
@@ -69,8 +69,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManag
 
   for (auto& elepairptr : assembly_contact_elepairs_)
   {
-    // PreEvaluate the pair
-    elepairptr->PreEvaluate();
+    // pre_evaluate the pair
+    elepairptr->pre_evaluate();
   }
   // Evaluate the global mortar matrices.
   mortar_manager_->EvaluateGlobalDM(assembly_contact_elepairs_);

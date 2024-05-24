@@ -87,8 +87,8 @@ namespace UTILS
     bool have_cardiovascular0_d() { return cardiovascular0dtype_ != none; };
 
     /// Set state of the underlying discretization
-    void SetState(const std::string& state,  ///< name of state to set
-        Teuchos::RCP<Epetra_Vector> V        ///< values to set
+    void set_state(const std::string& state,  ///< name of state to set
+        Teuchos::RCP<Epetra_Vector> V         ///< values to set
     );
 
 

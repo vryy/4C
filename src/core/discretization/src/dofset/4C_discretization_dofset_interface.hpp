@@ -137,7 +137,7 @@ namespace CORE::Dofsets
     virtual int NumGlobalElements() const = 0;
 
     /// Get degree of freedom row map
-    virtual const Epetra_Map* DofRowMap() const = 0;
+    virtual const Epetra_Map* dof_row_map() const = 0;
 
     /// Get degree of freedom column map
     virtual const Epetra_Map* DofColMap() const = 0;

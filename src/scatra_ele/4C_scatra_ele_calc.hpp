@@ -129,7 +129,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
           CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
-      int EvaluateOD(DRT::Element* ele, Teuchos::ParameterList& params,
+      int evaluate_od(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -233,7 +233,7 @@ namespace DRT
       virtual void update_node_coordinates() { xyze_ += edispnp_; };
 
       //! finite difference check for debugging purposes
-      virtual void FDCheck(DRT::Element* ele,         //!< the element we are dealing with
+      virtual void fd_check(DRT::Element* ele,        //!< the element we are dealing with
           CORE::LINALG::SerialDenseMatrix& emat,      //!< element matrix to calculate
           CORE::LINALG::SerialDenseVector& erhs,      //!< element rhs to calculate
           CORE::LINALG::SerialDenseVector& subgrdiff  //!< subgrid-diff.-scaling vector
@@ -710,7 +710,7 @@ namespace DRT
       );
 
       //! calculation of convective element matrix: add conservative contributions
-      virtual void CalcMatConvAddCons(
+      virtual void calc_mat_conv_add_cons(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
@@ -836,7 +836,7 @@ namespace DRT
       );
 
       //! standard Galerkin diffusive term on right hand side
-      virtual void CalcRHSDiff(
+      virtual void calc_rhs_diff(
           CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
           const int k,                            //!< index of current scalar
           const double rhsfac  //!< time-integration factor for rhs times domain-integration factor

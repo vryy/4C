@@ -73,12 +73,12 @@ void XFEM::XfaCouplingManager::predict_coupling_states()
       Ale_Struct_coupling_->InsertVector(1,structure_->Dispnp(),0,ale_->WriteAccessDispnp(),XFEM::Coupling_Comm_Manager::full_to_full);
 
       // apply inner Dirichlet conditions (don't forget to reset the time and the step!)
-      ale_->PrepareTimeStep(); // applies DBCs to the current dispnp
+      ale_->prepare_time_step(); // applies DBCs to the current dispnp
 
       ale_->TimeStep(ALE::UTILS::MapExtractor::dbc_set_structale);
 
-      // Reset the time and dt to be called incremented again in the actual ale->PrepareTimeStep
-      ale_->ResetTime(ale_->Dt());
+      // Reset the time and dt to be called incremented again in the actual ale->prepare_time_step
+      ale_->reset_time(ale_->Dt());
     }
   */
 }
@@ -133,7 +133,7 @@ void XFEM::XfaCouplingManager::AddCouplingMatrix(
 
   //  //////////////////////////////////////////////
   //  //////                                  //////
-  //  //////    Linearization of FluidField   //////
+  //  //////    Linearization of fluid_field   //////
   //  //////    with respect to ale mesh      //////
   //  //////             motion               //////
   //  //////                                  //////

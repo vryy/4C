@@ -123,14 +123,14 @@ DRT::Element* DRT::ELEMENTS::RedAirway::Clone() const
  *----------------------------------------------------------------------*/
 CORE::FE::CellType DRT::ELEMENTS::RedAirway::Shape() const
 {
-  switch (NumNode())
+  switch (num_node())
   {
     case 2:
       return CORE::FE::CellType::line2;
     case 3:
       return CORE::FE::CellType::line3;
     default:
-      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", num_node());
       break;
   }
 }

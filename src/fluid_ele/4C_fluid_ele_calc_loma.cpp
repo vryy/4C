@@ -61,7 +61,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele
     return my::Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
         elevec1_epetra, elevec2_epetra, elevec3_epetra, my::intpoints_);
   else
-    return EvaluateOD(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
+    return evaluate_od(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
         elevec1_epetra, elevec2_epetra, elevec3_epetra, my::intpoints_);
 }
 
@@ -70,7 +70,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele
  * evaluation of off-diagonal matrix block for monolithic loma solver (2)
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* ele,
+int DRT::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
     Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -198,7 +198,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* e
   // set element id
   my::eid_ = ele->Id();
   // call inner evaluate (does not know about DRT element or discretization object)
-  int result = EvaluateOD(params, ebofoaf, eprescpgaf, elemat1, evelaf, epreaf, epream, escaaf,
+  int result = evaluate_od(params, ebofoaf, eprescpgaf, elemat1, evelaf, epreaf, epream, escaaf,
       emhist, eaccam, escadtam, escabofoaf, eveln, escaam, edispnp, egridv, mat, ele->IsAle(),
       CsDeltaSq, CiDeltaSq, intpoints);
 
@@ -210,7 +210,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* e
  * evaluation of off-diagonal matrix block for monolithic loma solver (3)
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(Teuchos::ParameterList& params,
     const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
     const CORE::LINALG::Matrix<nsd_, nen_>& eprescpgaf,
     CORE::LINALG::Matrix<(nsd_ + 1) * nen_, nen_>& elemat1,
@@ -258,7 +258,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(Teuchos::ParameterList&
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix
   // ---------------------------------------------------------------------
-  SysmatOD(ebofoaf, eprescpgaf, evelaf, eveln, epreaf, epream, eaccam, escaaf, escaam, escadtam,
+  sysmat_od(ebofoaf, eprescpgaf, evelaf, eveln, epreaf, epream, eaccam, escaaf, escaam, escadtam,
       escabofoaf, emhist, edispnp, egridv, elemat1, thermpressaf, thermpressam, thermpressdtaf,
       thermpressdtam, mat, Cs_delta_sq, Ci_delta_sq, isale, intpoints);
 
@@ -271,7 +271,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(Teuchos::ParameterList&
  |  for monolithic low-Mach-number solver                      vg 10/11 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
+void DRT::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
     const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
     const CORE::LINALG::Matrix<nsd_, nen_>& eprescpgaf,
     const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const CORE::LINALG::Matrix<nsd_, nen_>& eveln,

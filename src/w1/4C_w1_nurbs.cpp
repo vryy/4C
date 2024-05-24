@@ -144,14 +144,14 @@ void DRT::ELEMENTS::NURBS::Wall1Nurbs::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 CORE::FE::CellType DRT::ELEMENTS::NURBS::Wall1Nurbs::Shape() const
 {
-  switch (NumNode())
+  switch (num_node())
   {
     case 4:
       return CORE::FE::CellType::nurbs4;
     case 9:
       return CORE::FE::CellType::nurbs9;
     default:
-      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", num_node());
   }
 }
 

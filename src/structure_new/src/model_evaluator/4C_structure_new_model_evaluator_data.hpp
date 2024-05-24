@@ -102,35 +102,35 @@ namespace STR
       //! get the desired action type [derived]
       [[nodiscard]] inline enum DRT::ELEMENTS::ActionType GetActionType() const override
       {
-        CheckInitSetup();
+        check_init_setup();
         return ele_action_;
       }
 
       //! get the total time for the element evaluation [derived]
       [[nodiscard]] inline double GetTotalTime() const override
       {
-        CheckInitSetup();
+        check_init_setup();
         return total_time_;
       }
 
       //! get the current time step for the element evaluation [derived]
       [[nodiscard]] inline double GetDeltaTime() const override
       {
-        CheckInitSetup();
+        check_init_setup();
         return delta_time_;
       }
 
       //! get the current step length [derived]
       [[nodiscard]] inline double GetStepLength() const override
       {
-        CheckInitSetup();
+        check_init_setup();
         return step_length_;
       }
 
       //! get the is_default_step indicator [derived]
       [[nodiscard]] inline bool IsDefaultStep() const override
       {
-        CheckInitSetup();
+        check_init_setup();
         return is_default_step_;
       }
 
@@ -140,28 +140,28 @@ namespace STR
       //! get the tolerate errors indicator [derived]
       [[nodiscard]] inline bool IsTolerateErrors() const override
       {
-        CheckInitSetup();
+        check_init_setup();
         return is_tolerate_errors_;
       }
 
       //! get the structural time integration factor for the displacement [derived]
       [[nodiscard]] inline double GetTimIntFactorDisp() const override
       {
-        CheckInitSetup();
+        check_init_setup();
         return timintfactor_disp_;
       }
 
       //! get the structural time integration factor for the velocities [derived]
       [[nodiscard]] inline double GetTimIntFactorVel() const override
       {
-        CheckInitSetup();
+        check_init_setup();
         return timintfactor_vel_;
       }
 
       //! get the predictor type of the structural time integration
       [[nodiscard]] enum INPAR::STR::PredEnum GetPredictorType() const override
       {
-        CheckInitSetup();
+        check_init_setup();
         return predict_type_;
       }
 
@@ -231,7 +231,7 @@ namespace STR
       [[nodiscard]] inline Teuchos::RCP<BROWNIANDYN::ParamsInterface>
       get_brownian_dyn_param_interface() const override
       {
-        CheckInitSetup();
+        check_init_setup();
         return browniandyn_data_ptr_;
       }
 
@@ -257,14 +257,14 @@ namespace STR
       /// get the current non-linear solver correction type
       NOX::NLN::CorrectionType GetCorrectionType() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return corr_type_;
       }
 
       /// get number of system modifications in case of a mod. Newton direction method
       int get_number_of_modified_newton_corrections() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return num_corr_mod_newton_;
       }
 
@@ -328,7 +328,7 @@ namespace STR
        */
       inline double GetMyUpdateNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype) const
       {
-        CheckInitSetup();
+        check_init_setup();
         std::map<enum NOX::NLN::StatusTest::QuantityType, double>::const_iterator c_it;
         c_it = my_update_norm_.find(qtype);
         // not on this proc
@@ -345,7 +345,7 @@ namespace STR
        */
       inline double GetMyRMSNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype) const
       {
-        CheckInitSetup();
+        check_init_setup();
         std::map<enum NOX::NLN::StatusTest::QuantityType, double>::const_iterator c_it;
         c_it = my_rms_norm_.find(qtype);
         // not on this proc
@@ -364,7 +364,7 @@ namespace STR
       inline double get_my_previous_sol_norm(
           const enum NOX::NLN::StatusTest::QuantityType& qtype) const
       {
-        CheckInitSetup();
+        check_init_setup();
         std::map<enum NOX::NLN::StatusTest::QuantityType, double>::const_iterator c_it;
         c_it = my_prev_sol_norm_.find(qtype);
         // not on this proc
@@ -379,10 +379,10 @@ namespace STR
        * @param[in] qtype Quantity type which is tested
        * @return
        */
-      inline enum ::NOX::Abstract::Vector::NormType GetUpdateNormType(
+      inline enum ::NOX::Abstract::Vector::NormType get_update_norm_type(
           const enum NOX::NLN::StatusTest::QuantityType& qtype) const
       {
-        CheckInitSetup();
+        check_init_setup();
         // collect the norm types only once
         static bool iscollected = false;
         if (not iscollected)
@@ -409,7 +409,7 @@ namespace STR
        */
       inline int GetMyDofNumber(const enum NOX::NLN::StatusTest::QuantityType& qtype) const
       {
-        CheckInitSetup();
+        check_init_setup();
         std::map<enum NOX::NLN::StatusTest::QuantityType, std::size_t>::const_iterator c_it;
         c_it = my_dof_number_.find(qtype);
         // not on this proc
@@ -525,7 +525,7 @@ namespace STR
       inline const Teuchos::RCP<GaussPointDataOutputManager>&
       get_gauss_point_data_output_manager_ptr() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return gauss_point_data_manager_ptr_;
       }
 
@@ -697,28 +697,28 @@ namespace STR
       //! Time integration strategy
       inline const STR::TIMINT::Base& TimInt() const
       {
-        CheckInit();
+        check_init();
         return *timint_ptr_;
       }
 
       //! Structural dynamic data
       inline const STR::TIMINT::BaseDataSDyn& SDyn() const
       {
-        CheckInit();
+        check_init();
         return *sdyn_ptr_;
       }
 
       //! input/ouput parameters
       inline const STR::TIMINT::BaseDataIO& InOutput() const
       {
-        CheckInit();
+        check_init();
         return *io_ptr_;
       }
 
       //! global state variables
       inline const STR::TIMINT::BaseDataGlobalState& GState() const
       {
-        CheckInit();
+        check_init();
         return *gstate_ptr_;
       }
 
@@ -739,36 +739,39 @@ namespace STR
 
      protected:
       //! returns the isinit_ flag
-      inline const bool& IsInit() const { return isinit_; };
+      inline const bool& is_init() const { return isinit_; };
 
       //! returns the issetup_ flag
-      inline const bool& IsSetup() const { return issetup_; };
+      inline const bool& is_setup() const { return issetup_; };
 
       //! Checks the init and setup status
-      inline void CheckInitSetup() const
+      inline void check_init_setup() const
       {
-        FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+        FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
       }
 
       //! Checks the init status
-      inline void CheckInit() const { FOUR_C_ASSERT(IsInit(), "Init() has not been called, yet!"); }
+      inline void check_init() const
+      {
+        FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
+      }
 
      private:
       //! fill the normtype maps
-      void FillNormTypeMaps();
+      void fill_norm_type_maps();
 
       /*! \brief Get the norm type of the desired quantity.
        *
        *  If the norm type can be found, the function returns true,
        *  otherwise false. */
-      bool GetUpdateNormType(const enum NOX::NLN::StatusTest::QuantityType& qtype,
+      bool get_update_norm_type(const enum NOX::NLN::StatusTest::QuantityType& qtype,
           enum ::NOX::Abstract::Vector::NormType& normtype);
 
       /*! \brief Get the WRMS absolute and relative tolerances of the desired quantity.
        *
        *  If the tolerances can be found, the function returns true,
        *  otherwise false. */
-      bool GetWRMSTolerances(
+      bool get_wrms_tolerances(
           const enum NOX::NLN::StatusTest::QuantityType& qtype, double& atol, double& rtol);
 
       /*! \brief Sum locally values into a norm of the desired type
@@ -781,7 +784,7 @@ namespace STR
        * @param[in] step_length
        * @param[in/out] my_norm
        */
-      void SumIntoMyNorm(const int& numentries, const double* my_values,
+      void sum_into_my_norm(const int& numentries, const double* my_values,
           const enum ::NOX::Abstract::Vector::NormType& normtype, const double& step_length,
           double& my_norm) const;
 
@@ -993,25 +996,25 @@ namespace STR
       //! get the Lie group GenAlpha time integration parameters [derived]
       [[nodiscard]] inline double GetBeta() const override
       {
-        CheckInitSetup();
+        check_init_setup();
         return beta_;
       }
 
       [[nodiscard]] inline double GetGamma() const override
       {
-        CheckInitSetup();
+        check_init_setup();
         return gamma_;
       }
 
       [[nodiscard]] inline double GetAlphaf() const override
       {
-        CheckInitSetup();
+        check_init_setup();
         return alphaf_;
       }
 
       [[nodiscard]] inline double GetAlpham() const override
       {
-        CheckInitSetup();
+        check_init_setup();
         return alpham_;
       }
 
@@ -1032,19 +1035,22 @@ namespace STR
 
      protected:
       //! returns the #isinit_ flag
-      inline const bool& IsInit() const { return isinit_; };
+      inline const bool& is_init() const { return isinit_; };
 
       //! returns the #issetup_ flag
-      inline const bool& IsSetup() const { return issetup_; };
+      inline const bool& is_setup() const { return issetup_; };
 
       //! Checks the init and setup status
-      inline void CheckInitSetup() const
+      inline void check_init_setup() const
       {
-        FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+        FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
       }
 
       //! Checks the init status
-      inline void CheckInit() const { FOUR_C_ASSERT(IsInit(), "Init() has not been called, yet!"); }
+      inline void check_init() const
+      {
+        FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
+      }
 
      private:
       bool isinit_;
@@ -1093,41 +1099,41 @@ namespace STR
       //! returns the mortar/contact action type
       [[nodiscard]] inline enum MORTAR::ActionType GetActionType() const override
       {
-        CheckInitSetup();
+        check_init_setup();
         return mortar_action_;
       };
 
       //! get the nonlinear iteration number
       [[nodiscard]] int GetNlnIter() const override
       {
-        CheckInit();
+        check_init();
         return str_data_ptr_->GetNlnIter();
       };
 
       //! get the current step counter \f$(n+1)\f$
       [[nodiscard]] int GetStepNp() const override
       {
-        CheckInit();
+        check_init();
         return str_data_ptr_->GetStepNp();
       };
 
       [[nodiscard]] bool IsPredictor() const override
       {
-        CheckInit();
+        check_init();
         return str_data_ptr_->IsPredictor();
       };
 
       /// derived
       NOX::NLN::CorrectionType GetCorrectionType() const override
       {
-        CheckInit();
+        check_init();
         return str_data_ptr_->GetCorrectionType();
       }
 
       /// derived
       int get_number_of_modified_newton_corrections() const override
       {
-        CheckInit();
+        check_init();
         return str_data_ptr_->get_number_of_modified_newton_corrections();
       }
 
@@ -1140,42 +1146,42 @@ namespace STR
        * \author hiermeier \date 02/18 */
       [[nodiscard]] enum INPAR::STR::PredEnum GetPredictorType() const override
       {
-        CheckInit();
+        check_init();
         return str_data_ptr_->GetPredictorType();
       }
 
       //! get the current step length [derived]
       [[nodiscard]] inline double GetStepLength() const override
       {
-        CheckInit();
+        check_init();
         return str_data_ptr_->GetStepLength();
       };
 
       //! get the is_default_step indicator [derived]
       [[nodiscard]] inline bool IsDefaultStep() const override
       {
-        CheckInit();
+        check_init();
         return str_data_ptr_->IsDefaultStep();
       };
 
       //! is the current state the predictor state?
       inline bool IsPredictorState() const override
       {
-        CheckInit();
+        check_init();
         return str_data_ptr_->IsPredictorState();
       }
 
       //! get the current time step [derived]
       [[nodiscard]] inline double GetDeltaTime() const override
       {
-        CheckInit();
+        check_init();
         return str_data_ptr_->GetDeltaTime();
       }
 
       //! get reference to the set model evaluator
       [[nodiscard]] const Generic& GetModelEvaluator() const override
       {
-        CheckInit();
+        check_init();
         return str_data_ptr_->GetModelEvaluator();
       }
 
@@ -1214,7 +1220,7 @@ namespace STR
        */
       [[nodiscard]] int GetRestartStep() const override
       {
-        CheckInit();
+        check_init();
         return str_data_ptr_->GetRestartStep();
       }
 
@@ -1233,45 +1239,48 @@ namespace STR
 
      protected:
       //! returns the isinit_ flag
-      inline const bool& IsInit() const { return isinit_; };
+      inline const bool& is_init() const { return isinit_; };
 
       //! returns the issetup_ flag
-      inline const bool& IsSetup() const { return issetup_; };
+      inline const bool& is_setup() const { return issetup_; };
 
       //! Checks the init and setup status
-      inline void CheckInitSetup() const
+      inline void check_init_setup() const
       {
-        FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+        FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
       }
 
       //! Checks the init status
-      inline void CheckInit() const { FOUR_C_ASSERT(IsInit(), "Init() has not been called, yet!"); }
+      inline void check_init() const
+      {
+        FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
+      }
 
       //! Time integration strategy
       inline const STR::TIMINT::Base& TimInt() const
       {
-        CheckInit();
+        check_init();
         return str_data_ptr_->TimInt();
       }
 
       //! Structural dynamic data
       inline const STR::TIMINT::BaseDataSDyn& SDyn() const
       {
-        CheckInit();
+        check_init();
         return str_data_ptr_->SDyn();
       }
 
       //! input/ouput parameters
       inline const STR::TIMINT::BaseDataIO& InOutput() const
       {
-        CheckInit();
+        check_init();
         return str_data_ptr_->InOutput();
       }
 
       //! global state variables
       inline const STR::TIMINT::BaseDataGlobalState& GState() const
       {
-        CheckInit();
+        check_init();
         return str_data_ptr_->GState();
       }
 
@@ -1309,14 +1318,14 @@ namespace STR
       //! Structural dynamic data
       inline STR::TIMINT::BaseDataSDyn const& SDyn() const
       {
-        CheckInit();
+        check_init();
         return str_data_ptr_->SDyn();
       }
 
       /// thermal energy
       double const& KT() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return kt_;
       };
 
@@ -1327,21 +1336,21 @@ namespace STR
       //! get mutable random force vector
       Teuchos::RCP<Epetra_MultiVector>& GetRandomForces()
       {
-        CheckInitSetup();
+        check_init_setup();
         return randomforces_;
       };
 
       /// ~ 1e-3 / 2.27 according to cyron2011 eq 52 ff, viscosity of surrounding fluid
       double const& MaxRandForce() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return maxrandforce_;
       };
 
       /// thermal energy
       double const& time_step_const_rand_numb() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return timeintconstrandnumb_;
       };
       //! @}
@@ -1351,14 +1360,14 @@ namespace STR
       //! @{
       Teuchos::RCP<Epetra_MultiVector> const& GetRandomForces() const override
       {
-        CheckInitSetup();
+        check_init_setup();
         return randomforces_;
       };
 
       /// ~ 1e-3 / 2.27 according to cyron2011 eq 52 ff, viscosity of surrounding fluid
       double const& GetViscosity() const override
       {
-        CheckInitSetup();
+        check_init_setup();
         return viscosity_;
       };
 
@@ -1366,7 +1375,7 @@ namespace STR
       [[nodiscard]] INPAR::BROWNIANDYN::BeamDampingCoefficientSpecificationType
       how_beam_damping_coefficients_are_specified() const override
       {
-        CheckInitSetup();
+        check_init_setup();
         return beam_damping_coeff_specified_via_;
       }
 
@@ -1374,7 +1383,7 @@ namespace STR
       [[nodiscard]] std::vector<double> const&
       get_beam_damping_coefficient_prefactors_from_input_file() const override
       {
-        CheckInitSetup();
+        check_init_setup();
         return beams_damping_coefficient_prefactors_perunitlength_;
       };
 
@@ -1382,26 +1391,29 @@ namespace STR
       [[nodiscard]] Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const&
       get_periodic_bounding_box() const override
       {
-        CheckInitSetup();
+        check_init_setup();
         return str_data_ptr_->SDyn().get_periodic_bounding_box();
       }
       //! @}
 
      protected:
       //! returns the isinit_ flag
-      inline const bool& IsInit() const { return isinit_; };
+      inline const bool& is_init() const { return isinit_; };
 
       //! returns the issetup_ flag
-      inline const bool& IsSetup() const { return issetup_; };
+      inline const bool& is_setup() const { return issetup_; };
 
       //! Checks the init and setup status
-      inline void CheckInitSetup() const
+      inline void check_init_setup() const
       {
-        FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+        FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
       }
 
       //! Checks the init status
-      inline void CheckInit() const { FOUR_C_ASSERT(IsInit(), "Init() has not been called, yet!"); }
+      inline void check_init() const
+      {
+        FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
+      }
 
      private:
       bool isinit_;

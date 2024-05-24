@@ -239,7 +239,7 @@ void DRT::ELEMENTS::Wall1::Pack(CORE::COMM::PackBuffer& data) const
   // eas type
   AddtoPack(data, eastype_);
   // eas data
-  PackEasData(data);
+  pack_eas_data(data);
   // structale
   AddtoPack(data, structale_);
   // distype
@@ -280,7 +280,7 @@ void DRT::ELEMENTS::Wall1::Unpack(const std::vector<char>& data)
   // eastype_
   eastype_ = static_cast<EasType>(ExtractInt(position, data));
   // easdata_
-  UnpackEasData(position, data);
+  unpack_eas_data(position, data);
   // structale_
   structale_ = ExtractInt(position, data);
   // distype_

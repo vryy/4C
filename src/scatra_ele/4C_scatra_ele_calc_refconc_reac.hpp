@@ -48,7 +48,7 @@ namespace DRT
           ) override;
 
       //! calculation of convective element matrix: add conservative contributions
-      void CalcMatConvAddCons(
+      void calc_mat_conv_add_cons(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
@@ -84,8 +84,8 @@ namespace DRT
       };
 
       //! standard Galerkin diffusive term on right hand side
-      void CalcRHSDiff(CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                                         //!< index of current scalar
+      void calc_rhs_diff(CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+          const int k,                                           //!< index of current scalar
           const double rhsfac  //!< time-integration factor for rhs times domain-integration factor
           ) override;
 

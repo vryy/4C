@@ -54,7 +54,7 @@ PARTICLEENGINE::ParticleEngine::~ParticleEngine() = default;
 void PARTICLEENGINE::ParticleEngine::Init()
 {
   // init binning strategy
-  InitBinningStrategy();
+  init_binning_strategy();
 
   // init particle container bundle
   init_particle_container_bundle();
@@ -79,13 +79,13 @@ void PARTICLEENGINE::ParticleEngine::Setup(
   setup_particle_unique_global_id_handler();
 
   // setup data storage
-  SetupDataStorage(particlestatestotypes);
+  setup_data_storage(particlestatestotypes);
 
   // setup particle runtime vtp writer
   setup_particle_vtp_writer();
 
   // setup particle type weights for dynamic load balancing
-  SetupTypeWeights();
+  setup_type_weights();
 }
 
 void PARTICLEENGINE::ParticleEngine::WriteRestart(const int step, const double time) const
@@ -107,7 +107,7 @@ void PARTICLEENGINE::ParticleEngine::WriteRestart(const int step, const double t
   particleuniqueglobalidhandler_->WriteRestart(binwriter);
 }
 
-void PARTICLEENGINE::ParticleEngine::ReadRestart(
+void PARTICLEENGINE::ParticleEngine::read_restart(
     const std::shared_ptr<IO::DiscretizationReader> reader,
     std::vector<ParticleObjShrdPtr>& particlestoread) const
 {
@@ -136,10 +136,10 @@ void PARTICLEENGINE::ParticleEngine::ReadRestart(
         "mismatch in size of data %d <-> %d", static_cast<int>(particledata->size()), position);
 
   // read restart of unique global identifier handler
-  particleuniqueglobalidhandler_->ReadRestart(reader);
+  particleuniqueglobalidhandler_->read_restart(reader);
 
   // read restart of runtime vtp writer
-  particlevtpwriter_->ReadRestart(reader);
+  particlevtpwriter_->read_restart(reader);
 }
 
 void PARTICLEENGINE::ParticleEngine::write_particle_runtime_output(
@@ -414,7 +414,7 @@ void PARTICLEENGINE::ParticleEngine::dynamic_load_balancing()
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEENGINE::ParticleEngine::dynamic_load_balancing");
 
   // determine bin weights needed for repartitioning
-  DetermineBinWeights();
+  determine_bin_weights();
 
   // distribute bins via recursive coordinate bisection
   binstrategy_->distribute_bins_recurs_coord_bisection(binrowmap_, bincenters_, binweights_);
@@ -423,7 +423,7 @@ void PARTICLEENGINE::ParticleEngine::dynamic_load_balancing()
   binstrategy_->BinDiscret()->ExportRowElements(*binrowmap_);
 
   // setup ghosting of bins
-  SetupBinGhosting();
+  setup_bin_ghosting();
 
   // determine bin distribution dependent maps/sets
   determine_bin_dis_dependent_maps_and_sets();
@@ -917,7 +917,7 @@ void PARTICLEENGINE::ParticleEngine::WriteBinDisOutput(const int step, const dou
   binstrategy_->WriteBinOutput(step, time);
 }
 
-void PARTICLEENGINE::ParticleEngine::InitBinningStrategy()
+void PARTICLEENGINE::ParticleEngine::init_binning_strategy()
 {
   // create and init binning strategy and create bins
   binstrategy_ = std::make_shared<BINSTRATEGY::BinningStrategy>();
@@ -949,7 +949,7 @@ void PARTICLEENGINE::ParticleEngine::setup_binning_strategy()
   binstrategy_->fill_bins_into_bin_discretization(binrowmap_);
 
   // setup ghosting of bins
-  SetupBinGhosting();
+  setup_bin_ghosting();
 
   // determine bin distribution dependent maps/sets
   determine_bin_dis_dependent_maps_and_sets();
@@ -958,7 +958,7 @@ void PARTICLEENGINE::ParticleEngine::setup_binning_strategy()
   determine_ghosting_dependent_maps_and_sets();
 }
 
-void PARTICLEENGINE::ParticleEngine::SetupBinGhosting()
+void PARTICLEENGINE::ParticleEngine::setup_bin_ghosting()
 {
   // gather bins of row map and all its neighbors (row + ghost)
   std::set<int> bins;
@@ -1044,7 +1044,7 @@ void PARTICLEENGINE::ParticleEngine::setup_particle_unique_global_id_handler() c
   particleuniqueglobalidhandler_->Setup();
 }
 
-void PARTICLEENGINE::ParticleEngine::SetupDataStorage(
+void PARTICLEENGINE::ParticleEngine::setup_data_storage(
     const std::map<ParticleType, std::set<ParticleState>>& particlestatestotypes)
 {
   // determine size of vectors indexed by particle types
@@ -1075,7 +1075,7 @@ void PARTICLEENGINE::ParticleEngine::setup_particle_vtp_writer() const
   particlevtpwriter_->Setup(write_ghosted_particles);
 }
 
-void PARTICLEENGINE::ParticleEngine::SetupTypeWeights()
+void PARTICLEENGINE::ParticleEngine::setup_type_weights()
 {
   // allocate memory to hold particle types
   typeweights_.resize(typevectorsize_);
@@ -2106,7 +2106,7 @@ void PARTICLEENGINE::ParticleEngine::determine_min_relevant_bin_size()
     if (binperdir[i] > 1) minbinsize_ = std::min(minbinsize_, binsize[i]);
 }
 
-void PARTICLEENGINE::ParticleEngine::DetermineBinWeights()
+void PARTICLEENGINE::ParticleEngine::determine_bin_weights()
 {
   // safety check
   if (not validownedparticles_) FOUR_C_THROW("invalid relation of owned particles to bins!");

@@ -26,12 +26,12 @@ FOUR_C_NAMESPACE_OPEN
  | ctor (public)                                              ager 02/15|
  *----------------------------------------------------------------------*/
 CONTACT::MonoCoupledLagrangeStrategy::MonoCoupledLagrangeStrategy(
-    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
-    const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
+    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
     Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof)
     : LagrangeStrategy(
-          data_ptr, DofRowMap, NodeRowMap, params, interface, dim, comm, alphaf, maxdof),
+          data_ptr, dof_row_map, NodeRowMap, params, interface, dim, comm, alphaf, maxdof),
       has_to_evaluate_(false),
       has_to_recover_(false)
 {
@@ -302,7 +302,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     // add a submatrices to kteffnew
     if (aset) kteffnew->Add(*kamod, false, 1.0, 1.0);
 
-    // FillComplete kteffnew (square)
+    // fill_complete kteffnew (square)
     kteffnew->Complete(*domainmap, *gdisprowmap_);
 
     // finally do the replacement

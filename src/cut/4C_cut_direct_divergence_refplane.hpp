@@ -55,17 +55,18 @@ namespace CORE::GEO
       /*!
       \brief Compute reference plane based on the diagonals of the element
        */
-      bool DiagonalBasedRef(
+      bool diagonal_based_ref(
           std::vector<double>& RefPlaneEqn, std::vector<Point*> points, double tol);
 
       /*!
       \brief Compute reference plane based on the facets of the volumecell
        */
-      bool FacetBasedRef(std::vector<double>& RefPlaneEqn, std::vector<Point*> points, double tol);
+      bool facet_based_ref(
+          std::vector<double>& RefPlaneEqn, std::vector<Point*> points, double tol);
       /*!
       \brief Compute reference plane based on the sides of the element
        */
-      bool SideBasedRef(std::vector<double>& RefPlaneEqn, std::vector<Point*> points, double tol);
+      bool side_based_ref(std::vector<double>& RefPlaneEqn, std::vector<Point*> points, double tol);
 
       /*!
       \brief Returns true if all the projected points are within the element

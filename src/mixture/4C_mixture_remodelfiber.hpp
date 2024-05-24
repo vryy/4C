@@ -83,12 +83,12 @@ namespace MIXTURE
      * @param lambda_f (in) : total stretch in fiber direction
      * @param lambda_ext (in) : inelastic external stretch
      */
-    void SetState(double lambda_f, double lambda_ext);
+    void set_state(double lambda_f, double lambda_ext);
 
    public:
     /// @brief Evaluation methods
     ///
-    /// @note It is important to call #SetState(double) first.
+    /// @note It is important to call #set_state(double) first.
     ///
     /// @{
 

@@ -66,7 +66,7 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
   Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(
       new ADAPTER::AleBaseAlgorithm(GLOBAL::Problem::Instance()->structural_dynamic_params(),
           GLOBAL::Problem::Instance()->GetDis("ale")));
-  ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleWearWrapper>(ale->AleField());
+  ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleWearWrapper>(ale->ale_field());
   if (ale_ == Teuchos::null)
     FOUR_C_THROW("cast from ADAPTER::Ale to ADAPTER::AleFsiWrapper failed");
 
@@ -91,7 +91,7 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
   create_material_interface();
 
   // input
-  CheckInput();
+  check_input();
 }
 
 
@@ -99,7 +99,7 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
 /*----------------------------------------------------------------------*
  | Check compatibility of input parameters                  farah 09/14 |
  *----------------------------------------------------------------------*/
-void WEAR::Algorithm::CheckInput()
+void WEAR::Algorithm::check_input()
 {
   //  Teuchos::ParameterList apara = GLOBAL::Problem::Instance()->AleDynamicParams();
   //
@@ -123,7 +123,7 @@ void WEAR::Algorithm::create_material_interface()
   if (dim != 2 && dim != 3) FOUR_C_THROW("Contact problem must be 2D or 3D");
   Teuchos::ParameterList cparams = cstrategy.Params();
 
-  // check for FillComplete of discretization
+  // check for fill_complete of discretization
   if (!structure_->Discretization()->Filled()) FOUR_C_THROW("Discretization is not fillcomplete");
 
   // let's check for contact boundary conditions in discret
@@ -156,7 +156,7 @@ void WEAR::Algorithm::create_material_interface()
   // maximum dof number in discretization
   // later we want to create NEW Lagrange multiplier degrees of
   // freedom, which of course must not overlap with displacement dofs
-  int maxdof = structure_->Discretization()->DofRowMap()->MaxAllGID();
+  int maxdof = structure_->Discretization()->dof_row_map()->MaxAllGID();
 
   // get input par.
   INPAR::CONTACT::SolvingStrategy stype =
@@ -461,7 +461,7 @@ void WEAR::Algorithm::create_material_interface()
         Teuchos::RCP<DRT::Element> ele = fool->second;
         Teuchos::RCP<CONTACT::Element> cele =
             Teuchos::rcp(new CONTACT::Element(ele->Id() + ggsize, ele->Owner(), ele->Shape(),
-                ele->NumNode(), ele->NodeIds(), isslave[j], cparams.get<bool>("NURBS")));
+                ele->num_node(), ele->NodeIds(), isslave[j], cparams.get<bool>("NURBS")));
 
         //------------------------------------------------------------------
         // get knotvector, normal factor and zero-size information for nurbs
@@ -486,14 +486,14 @@ void WEAR::Algorithm::create_material_interface()
           cele->NormalFac() = normalfac;
         }
 
-        interface->AddElement(cele);
+        interface->add_element(cele);
       }  // for (fool=ele1.start(); fool != ele1.end(); ++fool)
 
       ggsize += gsize;  // update global element counter
     }
 
     //-------------------- finalize the contact interface construction
-    interface->FillComplete(maxdof);
+    interface->fill_complete(maxdof);
 
   }  // for (int i=0; i<(int)contactconditions.size(); ++i)
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;

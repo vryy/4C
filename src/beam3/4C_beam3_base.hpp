@@ -491,7 +491,7 @@ namespace DRT
        *
        * The parameter disp_totlag has to contain the absolute (total Lagrange) values of the
        * centerline degrees of freedom, i.e., the reference values + the current displacement
-       * values (\ref UpdateDispTotlag or \ref add_ref_values_disp_centerline).
+       * values (\ref update_disp_totlag or \ref add_ref_values_disp_centerline).
        */
       template <unsigned int nnode, unsigned int vpernode, typename T>
       void GetPosAtXi(CORE::LINALG::Matrix<3, 1, T>& r, const double& xi,

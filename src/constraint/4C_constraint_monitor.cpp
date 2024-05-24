@@ -27,7 +27,7 @@ CONSTRAINTS::Monitor::Monitor(Teuchos::RCP<DRT::Discretization> discr,
   actdisc_->GetCondition(conditionname, moncond_);
   if (moncond_.size())
   {
-    montype_ = GetMoniType(conditionname);
+    montype_ = get_moni_type(conditionname);
     for (auto& i : moncond_)
     {
       int condID = i->parameters().Get<int>("ConditionID");
@@ -52,7 +52,7 @@ CONSTRAINTS::Monitor::Monitor(Teuchos::RCP<DRT::Discretization> discr,
 /*-----------------------------------------------------------------------*
 |(private)                                                       tk 07/08|
 *-----------------------------------------------------------------------*/
-CONSTRAINTS::Monitor::MoniType CONSTRAINTS::Monitor::GetMoniType(const std::string& name)
+CONSTRAINTS::Monitor::MoniType CONSTRAINTS::Monitor::get_moni_type(const std::string& name)
 {
   if (name == "VolumeMonitor_3D")
     return volmonitor3d;
@@ -87,7 +87,7 @@ void CONSTRAINTS::Monitor::Evaluate(
     default:
       FOUR_C_THROW("Unknown monitor type to be evaluated in Monitor class!");
   }
-  EvaluateMonitor(params, systemvector);
+  evaluate_monitor(params, systemvector);
 }
 
 
@@ -96,10 +96,10 @@ void CONSTRAINTS::Monitor::Evaluate(
  |Evaluate method, calling element evaluates of a condition and          |
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::Monitor::EvaluateMonitor(
+void CONSTRAINTS::Monitor::evaluate_monitor(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector)
 {
-  if (!(actdisc_->Filled())) FOUR_C_THROW("FillComplete() was not called");
+  if (!(actdisc_->Filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!actdisc_->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   //----------------------------------------------------------------------
@@ -153,11 +153,11 @@ void CONSTRAINTS::Monitor::EvaluateMonitor(
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::Monitor::SetState(const std::string& state,  ///< name of state to set
-    Teuchos::RCP<Epetra_Vector> V                              ///< values to set
+void CONSTRAINTS::Monitor::set_state(const std::string& state,  ///< name of state to set
+    Teuchos::RCP<Epetra_Vector> V                               ///< values to set
 )
 {
-  actdisc_->SetState(state, V);
+  actdisc_->set_state(state, V);
 }
 
 FOUR_C_NAMESPACE_CLOSE

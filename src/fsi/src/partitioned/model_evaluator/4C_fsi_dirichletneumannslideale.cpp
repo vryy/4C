@@ -147,7 +147,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::StructOp(
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::InitialGuess()
+Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::initial_guess()
 {
   if (get_kinematic_coupling())
   {

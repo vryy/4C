@@ -156,10 +156,10 @@ namespace CORE::GEO
       bool Cut(Mesh& mesh, Side& cut_side);
 
       /*! \brief cut this element with its cut faces */
-      void FindCutPoints(Mesh& mesh);
+      void find_cut_points(Mesh& mesh);
 
       /*! \brief cut this element with given cut_side */
-      bool FindCutPoints(Mesh& mesh, Side& cut_side);
+      bool find_cut_points(Mesh& mesh, Side& cut_side);
 
       /*! \brief Create cut lines over this element by connecting appropriate cut points */
       void MakeCutLines(Mesh& mesh);
@@ -587,9 +587,9 @@ namespace CORE::GEO
      private:
       /*! \brief Returns true if there is at least one cut point between the background
        *  element side and the cut side ("other") */
-      bool FindCutPoints(Mesh& mesh, Side& side, Side& cut_side);
+      bool find_cut_points(Mesh& mesh, Side& side, Side& cut_side);
 
-      bool FindCutLines(Mesh& mesh, Side& side, Side& cut_side);
+      bool find_cut_lines(Mesh& mesh, Side& side, Side& cut_side);
 
       /// element Id of the linear element (sub-element for quadratic elements)
       int eid_;
@@ -997,7 +997,7 @@ namespace CORE::GEO
       /// constructor
       ElementFactory(){};
 
-      Teuchos::RCP<Element> CreateElement(CORE::FE::CellType elementtype, int eid,
+      Teuchos::RCP<Element> create_element(CORE::FE::CellType elementtype, int eid,
           const std::vector<Side*>& sides, const std::vector<Node*>& nodes, bool active) const;
 
      private:

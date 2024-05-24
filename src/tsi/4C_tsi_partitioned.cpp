@@ -56,7 +56,7 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   const Teuchos::ParameterList& tsidynpart =
       GLOBAL::Problem::Instance()->TSIDynamicParams().sublist("PARTITIONED");
 
-  // get the parameters for the ConvergenceCheck
+  // get the parameters for the convergence_check
   itmax_ = tsidyn.get<int>("ITEMAX");          // default: =1
   ittol_ = tsidynpart.get<double>("CONVTOL");  // default: =1e-6
   normtypeinc_ = CORE::UTILS::IntegralValue<INPAR::TSI::ConvNorm>(tsidyn, "NORM_INC");
@@ -91,13 +91,13 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
 #ifdef TSIPARTITIONEDASOUTPUT
   // now check if the two dofmaps are available and then bye bye
   std::cout << "structure dofmap" << std::endl;
-  std::cout << *StructureField()->DofRowMap(0) << std::endl;
+  std::cout << *StructureField()->dof_row_map(0) << std::endl;
   std::cout << "thermo dofmap" << std::endl;
-  std::cout << *StructureField()->DofRowMap(1) << std::endl;
+  std::cout << *StructureField()->dof_row_map(1) << std::endl;
   std::cout << "thermo dofmap" << std::endl;
-  std::cout << *ThermoField()->DofRowMap(0) << std::endl;
+  std::cout << *ThermoField()->dof_row_map(0) << std::endl;
   std::cout << "structure dofmap" << std::endl;
-  std::cout << *ThermoField()->DofRowMap(1) << std::endl;
+  std::cout << *ThermoField()->dof_row_map(1) << std::endl;
 //    exit(0);
 #endif
 
@@ -108,32 +108,32 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
 /*----------------------------------------------------------------------*
  | read restart information for given time step (public)     dano 12/09 |
  *----------------------------------------------------------------------*/
-void TSI::Partitioned::ReadRestart(int step)
+void TSI::Partitioned::read_restart(int step)
 {
-  ThermoField()->ReadRestart(step);
-  StructureField()->ReadRestart(step);
+  ThermoField()->read_restart(step);
+  StructureField()->read_restart(step);
   SetTimeStep(ThermoField()->TimeOld(), step);
 
-  // Material pointers to other field were deleted during ReadRestart().
+  // Material pointers to other field were deleted during read_restart().
   // They need to be reset.
   TSI::UTILS::SetMaterialPointersMatchingGrid(
       StructureField()->Discretization(), ThermoField()->Discretization());
 
   // structural and thermal contact
   prepare_contact_strategy();
-}  // ReadRestart()
+}  // read_restart()
 
 
 /*----------------------------------------------------------------------*
  | prepare time step (public)                                dano 11/10 |
  *----------------------------------------------------------------------*/
-void TSI::Partitioned::PrepareTimeStep()
+void TSI::Partitioned::prepare_time_step()
 {
   // counter and print header
   increment_time_and_step();
   PrintHeader();
 
-}  // PrepareTimeStep()
+}  // prepare_time_step()
 
 
 /*----------------------------------------------------------------------*
@@ -194,17 +194,17 @@ void TSI::Partitioned::TimeLoop()
   while (NotFinished())
   {
     // counter and print header
-    PrepareTimeStep();
+    prepare_time_step();
 
-    // normally PrepareTimeStep() should be called outside the nonlinear loop,
+    // normally prepare_time_step() should be called outside the nonlinear loop,
     // but at this point the coupling variables are not known, yet!
-    // call PrepareTimeStep() after ApplyCouplingState()/ApplyStructVariables()
+    // call prepare_time_step() after ApplyCouplingState()/ApplyStructVariables()
 
     // integrate time step
     Solve();
 
     // calculate stresses, strains, energies
-    PrepareOutput();
+    prepare_output();
 
     // update all single field solvers
     Update();
@@ -236,7 +236,7 @@ void TSI::Partitioned::TimeLoopOneWay()
     // -------------------------------------------------- structure field
 
     // predict the structure field without influence of temperatures
-    StructureField()->PrepareTimeStep();
+    StructureField()->prepare_time_step();
 
     /// solve structural system
     // get current displacement due to solve structure step
@@ -263,7 +263,7 @@ void TSI::Partitioned::TimeLoopOneWay()
 
     // call the predictor here, because the displacement field is now also
     // available
-    ThermoField()->PrepareTimeStep();
+    ThermoField()->prepare_time_step();
 
     /// solve temperature system
     // do the solve for the time step. All boundary conditions have been set
@@ -275,7 +275,7 @@ void TSI::Partitioned::TimeLoopOneWay()
     // ----------------------------------------------------- thermo field
 
     // predict the thermal field without influence of structure
-    ThermoField()->PrepareTimeStep();
+    ThermoField()->prepare_time_step();
 
     /// solve temperature system
     // get current temperatures due to Solve Thermo Step
@@ -290,7 +290,7 @@ void TSI::Partitioned::TimeLoopOneWay()
     apply_thermo_coupling_state(temp_);
 
     // call the predictor here, because the temperature is now also available
-    StructureField()->PrepareTimeStep();
+    StructureField()->prepare_time_step();
 
     /// solve structure system
     // do the nonlinear solve for the time step. All boundary conditions have
@@ -332,7 +332,7 @@ void TSI::Partitioned::TimeLoopSequStagg()
     apply_struct_coupling_state(disp_, vel_);
 
     // prepare time step with coupled variables
-    ThermoField()->PrepareTimeStep();
+    ThermoField()->prepare_time_step();
 
     // solve thermal system
 
@@ -345,7 +345,7 @@ void TSI::Partitioned::TimeLoopSequStagg()
     apply_thermo_coupling_state(temp_);
 
     // prepare time step with coupled variables
-    StructureField()->PrepareTimeStep();
+    StructureField()->prepare_time_step();
 
     // solve coupled equation
     DoStructureStep();
@@ -376,7 +376,7 @@ void TSI::Partitioned::TimeLoopSequStagg()
     apply_thermo_coupling_state(temp_);
 
     // prepare time step with coupled variables
-    StructureField()->PrepareTimeStep();
+    StructureField()->prepare_time_step();
 
     // solve structural coupled equation
     DoStructureStep();
@@ -392,7 +392,7 @@ void TSI::Partitioned::TimeLoopSequStagg()
     apply_struct_coupling_state(disp_, vel_);
 
     // prepare time step with coupled variables
-    ThermoField()->PrepareTimeStep();
+    ThermoField()->prepare_time_step();
 
     /// solve temperature system
     /// do the nonlinear solve for the time step. All boundary conditions have
@@ -462,7 +462,7 @@ void TSI::Partitioned::OuterIterationLoop()
       // d^p_n+1 = d_n, v^p_n+1 = v_n
       // initialise new time step n+1 with values of old time step n
       Teuchos::RCP<Epetra_Vector> dispnp =
-          CORE::LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
+          CORE::LINALG::CreateVector(*(StructureField()->dof_row_map(0)), true);
       if (Step() == 1)
       {
         dispnp->Update(1.0, *(StructureField()->Dispn()), 0.0);
@@ -493,7 +493,7 @@ void TSI::Partitioned::OuterIterationLoop()
         apply_struct_coupling_state(dispnp, vel_);
 
         // prepare time step with coupled variables
-        if (itnum == 1) ThermoField()->PrepareTimeStep();
+        if (itnum == 1) ThermoField()->prepare_time_step();
         // within the nonlinear loop, e.g. itnum>1 call only prepare_partition_step
         else if (itnum != 1)
           ThermoField()->prepare_partition_step();
@@ -511,7 +511,7 @@ void TSI::Partitioned::OuterIterationLoop()
         apply_thermo_coupling_state(temp_);
 
         // prepare time step with coupled variables
-        if (itnum == 1) StructureField()->PrepareTimeStep();
+        if (itnum == 1) StructureField()->prepare_time_step();
 
         // solve coupled structural equation
         DoStructureStep();
@@ -525,7 +525,7 @@ void TSI::Partitioned::OuterIterationLoop()
           vel_ = StructureField()->Velnp();
 
         // check convergence of both field for "partitioned scheme"
-        stopnonliniter = ConvergenceCheck(itnum, itmax_, ittol_);
+        stopnonliniter = convergence_check(itnum, itmax_, ittol_);
 
         // end nonlinear solver / outer iteration ******************************
 
@@ -559,7 +559,7 @@ void TSI::Partitioned::OuterIterationLoop()
         apply_thermo_coupling_state(temp_);
 
         // prepare time step with coupled variables
-        if (itnum == 1) StructureField()->PrepareTimeStep();
+        if (itnum == 1) StructureField()->prepare_time_step();
 
         // solve coupled structural equation
         DoStructureStep();
@@ -576,7 +576,7 @@ void TSI::Partitioned::OuterIterationLoop()
         apply_struct_coupling_state(disp_, vel_);
 
         // prepare time step with coupled variables
-        if (itnum == 1) ThermoField()->PrepareTimeStep();
+        if (itnum == 1) ThermoField()->prepare_time_step();
         // within the nonlinear loop, e.g. itnum>1 call only prepare_partition_step
         else if (itnum != 1)
           ThermoField()->prepare_partition_step();
@@ -588,7 +588,7 @@ void TSI::Partitioned::OuterIterationLoop()
         // end nonlinear solver / outer iteration ****************************
 
         // check convergence of both field for "partitioned scheme"
-        stopnonliniter = ConvergenceCheck(itnum, itmax_, ittol_);
+        stopnonliniter = convergence_check(itnum, itmax_, ittol_);
 
       }  // end OUTER ITERATION
 
@@ -632,7 +632,7 @@ void TSI::Partitioned::OuterIterationLoop()
       // d^p_n+1 = d_n, v^p_n+1 = v_n
       // initialise new time step n+1 with values of old time step n
       Teuchos::RCP<Epetra_Vector> dispnp =
-          CORE::LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
+          CORE::LINALG::CreateVector(*(StructureField()->dof_row_map(0)), true);
       if (Step() == 1)
       {
         dispnp->Update(1.0, *(StructureField()->Dispn()), 0.0);
@@ -684,7 +684,7 @@ void TSI::Partitioned::OuterIterationLoop()
         apply_struct_coupling_state(dispnp, vel_);
 
         // prepare time step with coupled variables
-        if (itnum == 1) ThermoField()->PrepareTimeStep();
+        if (itnum == 1) ThermoField()->prepare_time_step();
         // within the nonlinear loop, e.g. itnum>1 call only prepare_partition_step
         else if (itnum != 1)
           ThermoField()->prepare_partition_step();
@@ -701,7 +701,7 @@ void TSI::Partitioned::OuterIterationLoop()
         apply_thermo_coupling_state(temp_);
 
         // prepare time step with coupled variables
-        if (itnum == 1) StructureField()->PrepareTimeStep();
+        if (itnum == 1) StructureField()->prepare_time_step();
 
         if (coupling == INPAR::TSI::IterStaggFixedRel)
         {
@@ -715,10 +715,10 @@ void TSI::Partitioned::OuterIterationLoop()
         // end nonlinear solver / outer iteration *****************************
 
         // check convergence of both field for "partitioned scheme"
-        stopnonliniter = ConvergenceCheck(itnum, itmax_, ittol_);
+        stopnonliniter = convergence_check(itnum, itmax_, ittol_);
 
         // ------------------------------------------------------------
-        // if r_{i+1} not converged in ConvergenceCheck()
+        // if r_{i+1} not converged in convergence_check()
         // --> apply relaxation to displacements
 
         if (coupling == INPAR::TSI::IterStaggFixedRel)
@@ -758,8 +758,8 @@ void TSI::Partitioned::OuterIterationLoop()
           // difference of last two solutions
           if (del_ == Teuchos::null)  // first iteration, itnum==1
           {
-            del_ = CORE::LINALG::CreateVector(*(ThermoField()->DofRowMap(0)), true);
-            delhist_ = CORE::LINALG::CreateVector(*(ThermoField()->DofRowMap(0)), true);
+            del_ = CORE::LINALG::CreateVector(*(ThermoField()->dof_row_map(0)), true);
+            delhist_ = CORE::LINALG::CreateVector(*(ThermoField()->dof_row_map(0)), true);
             del_->PutScalar(1.0e20);
             delhist_->PutScalar(0.0);
           }
@@ -900,11 +900,11 @@ void TSI::Partitioned::OuterIterationLoop()
         // todo
         // ApplyCouplingState() also calls prepare_partition_step() for prediction
         // with just calculated incremental solutions
-        // StructureField()->Discretization()->SetState(1,"temperature",temp_);
+        // StructureField()->Discretization()->set_state(1,"temperature",temp_);
         apply_thermo_coupling_state(temp_);
 
         // prepare time step with coupled variables
-        if (itnum == 1) StructureField()->PrepareTimeStep();
+        if (itnum == 1) StructureField()->prepare_time_step();
 
         // solve coupled structural equation
         DoStructureStep();
@@ -920,7 +920,7 @@ void TSI::Partitioned::OuterIterationLoop()
         apply_struct_coupling_state(disp_, vel_);
 
         // prepare time step with coupled variables
-        if (itnum == 1) ThermoField()->PrepareTimeStep();
+        if (itnum == 1) ThermoField()->prepare_time_step();
         // within the nonlinear loop, e.g. itnum>1 call only prepare_partition_step
         else if (itnum != 1)
           ThermoField()->prepare_partition_step();
@@ -938,8 +938,8 @@ void TSI::Partitioned::OuterIterationLoop()
         // end nonlinear solver / outer iteration *****************************
 
         // check convergence of both field for "partitioned scheme"
-        stopnonliniter = ConvergenceCheck(itnum, itmax_, ittol_);
-        // --> update of tempincnp_ is done in ConvergenceCheck()
+        stopnonliniter = convergence_check(itnum, itmax_, ittol_);
+        // --> update of tempincnp_ is done in convergence_check()
 
         // --------------------------------------------- start relaxation
 
@@ -960,7 +960,7 @@ void TSI::Partitioned::OuterIterationLoop()
         else
         {
           // ------------------------------------------------------------
-          // if r_{i+1} not converged in ConvergenceCheck()
+          // if r_{i+1} not converged in convergence_check()
           // --> apply Aitken relaxation to temperatures
           // as implemented in FSI by Irons and Tuck (1969)
 
@@ -985,8 +985,8 @@ void TSI::Partitioned::OuterIterationLoop()
           // difference of last two solutions
           if (del_ == Teuchos::null)  // first iteration, itnum==1
           {
-            del_ = CORE::LINALG::CreateVector(*(ThermoField()->DofRowMap(0)), true);
-            delhist_ = CORE::LINALG::CreateVector(*(ThermoField()->DofRowMap(0)), true);
+            del_ = CORE::LINALG::CreateVector(*(ThermoField()->dof_row_map(0)), true);
+            delhist_ = CORE::LINALG::CreateVector(*(ThermoField()->dof_row_map(0)), true);
             del_->PutScalar(1.0e20);
             delhist_->PutScalar(0.0);
           }
@@ -1114,7 +1114,7 @@ void TSI::Partitioned::DoThermoStep()
  | convergence check for both fields (thermo & structure)    dano 02/10 |
  | originally by vg 01/09                                               |
  *----------------------------------------------------------------------*/
-bool TSI::Partitioned::ConvergenceCheck(int itnum, const int itmax, const double ittol)
+bool TSI::Partitioned::convergence_check(int itnum, const int itmax, const double ittol)
 {
   // convergence check based on the temperature increment
   bool stopnonliniter = false;
@@ -1291,22 +1291,22 @@ bool TSI::Partitioned::ConvergenceCheck(int itnum, const int itmax, const double
 
   return stopnonliniter;
 
-}  // ConvergenceCheck()
+}  // convergence_check()
 
 
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void TSI::Partitioned::PrepareOutput()
+void TSI::Partitioned::prepare_output()
 {
   // prepare output (i.e. calculate stresses, strains, energies)
   constexpr bool force_prepare = false;
-  StructureField()->PrepareOutput(force_prepare);
+  StructureField()->prepare_output(force_prepare);
 
   // reset states
   StructureField()->Discretization()->ClearState(true);
 
-}  // PrepareOutput()
+}  // prepare_output()
 
 
 /*----------------------------------------------------------------------*

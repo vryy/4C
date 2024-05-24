@@ -82,12 +82,12 @@ int DRT::ELEMENTS::PoroFluidMultiPhase::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  dummy                                                   vuong 08/16 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::PoroFluidMultiPhase::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::PoroFluidMultiPhase::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
 {
-  FOUR_C_THROW("EvaluateNeumann for PoroFluidMultiPhase  not yet implemented!");
+  FOUR_C_THROW("evaluate_neumann for PoroFluidMultiPhase  not yet implemented!");
   //    The function is just a dummy. For PoroFluidMultiPhase elements, the integration
   //    integration of volume Neumann conditions (body forces) takes place
   //    in the element. We need it there for potential stabilisation terms!
@@ -97,7 +97,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhase::EvaluateNeumann(Teuchos::ParameterList& 
 /*---------------------------------------------------------------------*
 |  Call the element to set all basic parameter             vuong 08/16 |
 *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidMultiPhaseType::PreEvaluate(DRT::Discretization& dis,
+void DRT::ELEMENTS::PoroFluidMultiPhaseType::pre_evaluate(DRT::Discretization& dis,
     Teuchos::ParameterList& p, Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,

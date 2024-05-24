@@ -574,7 +574,7 @@ void CORE::GEO::CUT::SelfCut::CreateSelfCutEdges()
           Teuchos::RCP<Edge> selfcutedge =
               CORE::GEO::CUT::Edge::Create(CORE::FE::CellType::line2, commonselfcutnodes);
           selfcutedge->SelfCutPosition(Point::oncutsurface);
-          mesh_.GetEdge(commonselfcutnodeids, selfcutedge);
+          mesh_.get_edge(commonselfcutnodeids, selfcutedge);
           const std::map<plain_int_set, Teuchos::RCP<Edge>>& cutsideedgercp = mesh_.Edges();
           std::map<plain_int_set, Teuchos::RCP<Edge>>::const_iterator edgeiterator =
               cutsideedgercp.find(commonselfcutnodeids);
@@ -782,7 +782,7 @@ void CORE::GEO::CUT::SelfCut::CreateSelfCutSides()
         FOUR_C_THROW("SelfCut: triangulation unsuccessful; triangle with two identical points");
       }
       Side* selfcutside =
-          mesh_.CreateSide(cutside->Id(), selfcutsidenodeids, CORE::FE::CellType::tri3);
+          mesh_.create_side(cutside->Id(), selfcutsidenodeids, CORE::FE::CellType::tri3);
       meshhandle_.AddSubSide(selfcutside);
       const std::map<plain_int_set, Teuchos::RCP<Side>>& cutsideedgercp = mesh_.Sides();
       std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator sideiterator =

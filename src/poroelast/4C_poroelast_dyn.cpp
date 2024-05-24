@@ -41,7 +41,7 @@ void poroelast_drt()
 
   // read the restart information, set vectors and variables
   const int restart = problem->Restart();
-  poroalgo->ReadRestart(restart);
+  poroalgo->read_restart(restart);
 
   // now do the coupling setup and create the combined dofmap
   poroalgo->SetupSystem();

@@ -114,7 +114,7 @@ void FS3I::PartFPS3I::Init()
   int coupling = CORE::UTILS::IntegralValue<int>(fpsidynparams, "COUPALGO");
   if (coupling == fpsi_monolithic_plain)
   {
-    // Cast needed because functions such as PoroField() and FluidField() are just a
+    // Cast needed because functions such as poro_field() and fluid_field() are just a
     // member-functions of the derived class MonolithicPlain, but not of the base class FPSI_Base
     fpsi_ = Teuchos::rcp_dynamic_cast<FPSI::MonolithicPlain>(fpsi_algo);
   }
@@ -127,8 +127,8 @@ void FS3I::PartFPS3I::Init()
   }
 
   // ##################      3. Discretization of Scatra problem       //##################
-  problem->GetDis("scatra1")->FillComplete();
-  problem->GetDis("scatra2")->FillComplete();
+  problem->GetDis("scatra1")->fill_complete();
+  problem->GetDis("scatra2")->fill_complete();
 
   //---------------------------------------------------------------------
   // access discretizations for poro (structure) and fluid as well as fluid-
@@ -162,7 +162,7 @@ void FS3I::PartFPS3I::Init()
   {
     // fill fluid-based scatra discretization by cloning fluid discretization
     DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis, fluidscatradis);
-    fluidscatradis->FillComplete();
+    fluidscatradis->fill_complete();
 
     // set implementation type of cloned scatra elements to advanced reactions
     for (int i = 0; i < fluidscatradis->NumMyColElements(); ++i)
@@ -184,7 +184,7 @@ void FS3I::PartFPS3I::Init()
   //--------------------------------------------------------------------
   if (fluiddis->NumGlobalNodes() == 0) FOUR_C_THROW("Fluid discretization is empty!");
 
-  if (!structscatradis->Filled()) structscatradis->FillComplete();
+  if (!structscatradis->Filled()) structscatradis->fill_complete();
   if (structscatradis->NumGlobalNodes() == 0)
   {
     // fill poro-based scatra discretization by cloning structure discretization
@@ -354,7 +354,7 @@ void FS3I::PartFPS3I::Setup()
 /*----------------------------------------------------------------------*
  |  Restart                                               hemmler 07/14 |
  *----------------------------------------------------------------------*/
-void FS3I::PartFPS3I::ReadRestart()
+void FS3I::PartFPS3I::read_restart()
 {
   // read restart information, set vectors and variables
   // (Note that dofmaps might have changed in a redistribution call!)
@@ -364,17 +364,17 @@ void FS3I::PartFPS3I::ReadRestart()
   if (restart)
   {
     // restart of FPSI problem
-    fpsi_->ReadRestart(restart);
+    fpsi_->read_restart(restart);
 
     // restart of scatra problem
     for (unsigned i = 0; i < scatravec_.size(); ++i)
     {
       Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
-      currscatra->ScaTraField()->ReadRestart(restart);
+      currscatra->ScaTraField()->read_restart(restart);
     }
 
-    time_ = fpsi_->FluidField()->Time();
-    step_ = fpsi_->FluidField()->Step();
+    time_ = fpsi_->fluid_field()->Time();
+    step_ = fpsi_->fluid_field()->Step();
   }
 }
 
@@ -437,7 +437,7 @@ void FS3I::PartFPS3I::SetupSystem()
     CORE::Conditions::MultiConditionSelector mcs;
     mcs.AddSelector(Teuchos::rcp(
         new CORE::Conditions::NDimConditionSelector(*currdis, "ScaTraCoupling", 0, numscal)));
-    mcs.SetupExtractor(*currdis, *currdis->DofRowMap(), *mapex);
+    mcs.SetupExtractor(*currdis, *currdis->dof_row_map(), *mapex);
     scatrafieldexvec_.push_back(mapex);
   }
 
@@ -485,7 +485,7 @@ void FS3I::PartFPS3I::SetupSystem()
           Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(scatraglobalex_->Map(i)), 27, false, true));
       scatracoupmat_.push_back(scatracoupmat);
 
-      const Epetra_Map* dofrowmap = scatravec_[i]->ScaTraField()->Discretization()->DofRowMap();
+      const Epetra_Map* dofrowmap = scatravec_[i]->ScaTraField()->Discretization()->dof_row_map();
       Teuchos::RCP<Epetra_Vector> zeros = CORE::LINALG::CreateVector(*dofrowmap, true);
       scatrazeros_.push_back(zeros);
     }
@@ -572,9 +572,9 @@ void FS3I::PartFPS3I::SetupSystem()
  *----------------------------------------------------------------------*/
 void FS3I::PartFPS3I::TestResults(const Epetra_Comm& comm)
 {
-  GLOBAL::Problem::Instance()->AddFieldTest(fpsi_->FluidField()->CreateFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(fpsi_->fluid_field()->CreateFieldTest());
 
-  fpsi_->PoroField()->StructureField()->CreateFieldTest();
+  fpsi_->poro_field()->StructureField()->CreateFieldTest();
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
@@ -598,8 +598,8 @@ void FS3I::PartFPS3I::SetFPSISolution()
     scatravec_[i]->ScaTraField()->clear_external_concentrations();
   }
 
-  SetMeshDisp();
-  SetVelocityFields();
+  set_mesh_disp();
+  set_velocity_fields();
   set_wall_shear_stresses();
   SetPressureFields();
   set_membrane_concentration();
@@ -611,7 +611,7 @@ void FS3I::PartFPS3I::SetFPSISolution()
 // only needed for two-way coupling; at the moment function is not used
 void FS3I::PartFPS3I::set_struct_scatra_solution()
 {
-  fpsi_->PoroField()->StructureField()->Discretization()->SetState(
+  fpsi_->poro_field()->StructureField()->Discretization()->set_state(
       1, "scalarfield", (scatravec_[1])->ScaTraField()->Phinp());
 }
 
@@ -619,20 +619,20 @@ void FS3I::PartFPS3I::set_struct_scatra_solution()
 /*----------------------------------------------------------------------*
  |  Set displacements                                     hemmler 07/14 |
  *----------------------------------------------------------------------*/
-void FS3I::PartFPS3I::SetMeshDisp()
+void FS3I::PartFPS3I::set_mesh_disp()
 {
   // fluid field
-  scatravec_[0]->ScaTraField()->ApplyMeshMovement(fpsi_->FluidField()->Dispnp());
+  scatravec_[0]->ScaTraField()->ApplyMeshMovement(fpsi_->fluid_field()->Dispnp());
 
   // Poro field
-  scatravec_[1]->ScaTraField()->ApplyMeshMovement(fpsi_->PoroField()->StructureField()->Dispnp());
+  scatravec_[1]->ScaTraField()->ApplyMeshMovement(fpsi_->poro_field()->StructureField()->Dispnp());
 }
 
 
 /*----------------------------------------------------------------------*
  |  Set velocities                                        hemmler 07/14 |
  *----------------------------------------------------------------------*/
-void FS3I::PartFPS3I::SetVelocityFields()
+void FS3I::PartFPS3I::set_velocity_fields()
 {
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   const Teuchos::ParameterList& scatradyn = problem->scalar_transport_dynamic_params();
@@ -740,12 +740,12 @@ void FS3I::PartFPS3I::ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector>>&
     std::vector<Teuchos::RCP<const Epetra_Vector>>& vel)
 {
   // ############ Fluid Field ###############
-  convel.push_back(fpsi_->FluidField()->ConvectiveVel());
-  vel.push_back(fpsi_->FluidField()->Velnp());
+  convel.push_back(fpsi_->fluid_field()->ConvectiveVel());
+  vel.push_back(fpsi_->fluid_field()->Velnp());
 
   // ############ Poro Field ###############
-  convel.push_back(fpsi_->PoroField()->FluidField()->ConvectiveVel());
-  vel.push_back(fpsi_->PoroField()->FluidField()->Velnp());
+  convel.push_back(fpsi_->poro_field()->fluid_field()->ConvectiveVel());
+  vel.push_back(fpsi_->poro_field()->fluid_field()->Velnp());
 }
 
 
@@ -757,7 +757,7 @@ void FS3I::PartFPS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>&
   // ############ Fluid Field ###############
 
   Teuchos::RCP<ADAPTER::FluidFSI> fluid =
-      Teuchos::rcp_dynamic_cast<ADAPTER::FluidFSI>(fpsi_->FluidField());
+      Teuchos::rcp_dynamic_cast<ADAPTER::FluidFSI>(fpsi_->fluid_field());
   if (fluid == Teuchos::null) FOUR_C_THROW("Dynamic cast to ADAPTER::FluidFSI failed!");
 
   Teuchos::RCP<Epetra_Vector> WallShearStress =
@@ -780,7 +780,7 @@ void FS3I::PartFPS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>&
 
   // insert porofluid interface entries into vector with full porofluid length
   Teuchos::RCP<Epetra_Vector> porofluid =
-      CORE::LINALG::CreateVector(*(fpsi_->PoroField()->FluidField()->DofRowMap()), true);
+      CORE::LINALG::CreateVector(*(fpsi_->poro_field()->fluid_field()->dof_row_map()), true);
 
   // Parameter int block of function InsertVector:
   fpsi_->FPSICoupl()->poro_fluid_fpsi_vel_pres_extractor()->InsertVector(
@@ -796,11 +796,11 @@ void FS3I::PartFPS3I::ExtractPressure(std::vector<Teuchos::RCP<const Epetra_Vect
 {
   // ############ Fluid Field ###############
   pressure.push_back(
-      fpsi_->FluidField()->Velnp());  // we extract the velocities as well. We sort them out later.
+      fpsi_->fluid_field()->Velnp());  // we extract the velocities as well. We sort them out later.
 
   // ############ Poro Field ###############
-  pressure.push_back(fpsi_->PoroField()
-                         ->FluidField()
+  pressure.push_back(fpsi_->poro_field()
+                         ->fluid_field()
                          ->Velnp());  // we extract the velocities as well. We sort them out later.
 }
 

@@ -76,7 +76,7 @@ namespace BEAMINTERACTION
       bool post_partition_problem() override;
 
       //! derive
-      void PostSetup() override;
+      void post_setup() override;
 
       //! Returns the type of the current model evaluator
       INPAR::BEAMINTERACTION::SubModelType Type() const override
@@ -88,13 +88,13 @@ namespace BEAMINTERACTION
       void Reset() override;
 
       //! derived
-      bool EvaluateForce() override;
+      bool evaluate_force() override;
 
       //! derived
-      bool EvaluateStiff() override;
+      bool evaluate_stiff() override;
 
       //! derived
-      bool EvaluateForceStiff() override;
+      bool evaluate_force_stiff() override;
 
       //! derived
       void UpdateStepState(const double& timefac_n) override;
@@ -109,7 +109,7 @@ namespace BEAMINTERACTION
       void post_update_step_element() override;
 
       //! derived
-      std::map<STR::EnergyType, double> GetEnergy() const override;
+      std::map<STR::EnergyType, double> get_energy() const override;
 
       //! derived
       void OutputStepState(IO::DiscretizationWriter& iowriter) const override;
@@ -128,7 +128,7 @@ namespace BEAMINTERACTION
       void PreReadRestart() override;
 
       //! derived
-      void ReadRestart(
+      void read_restart(
           IO::DiscretizationReader& ia_reader, IO::DiscretizationReader& bin_reader) override;
 
       //! derived
@@ -207,7 +207,7 @@ namespace BEAMINTERACTION
       void add_crosslinker_to_bin_discretization();
 
       /// set filament types on elements
-      void SetFilamentTypes();
+      void set_filament_types();
 
       /// set double bonded linker between all binding spots that match certain
       /// neigbhoring criteria
@@ -237,7 +237,7 @@ namespace BEAMINTERACTION
           std::map<int, NewDoubleBonds>& mynewdbondcl, std::vector<int> const& newlinkermatid);
 
       /// diffuse crosslinker depending on number of bonds they have
-      void DiffuseCrosslinker();
+      void diffuse_crosslinker();
 
       /// diffuse unbound crosslinker according to brownian dynamics
       void diffuse_unbound_crosslinker(
@@ -277,7 +277,7 @@ namespace BEAMINTERACTION
       void bind_and_unbind_crosslinker();
 
       /// bind crossslinker
-      int BindCrosslinker();
+      int bind_crosslinker();
 
       /// search and set crosslinker
       /*! -------------------------------------------------------------------------
@@ -317,7 +317,7 @@ namespace BEAMINTERACTION
 
       /// search for binding events on each proc separately (i.e. pretending myrank is alone)
       /// communication to ensure correct binding over all procs is done afterwards
-      void PrepareBinding(DRT::Node* node_i, std::set<DRT::Element*> const& neighboring_beams,
+      void prepare_binding(DRT::Node* node_i, std::set<DRT::Element*> const& neighboring_beams,
           std::map<int, Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>& mybonds,
           std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>>&
               undecidedbonds,
@@ -417,7 +417,7 @@ namespace BEAMINTERACTION
           const std::map<int, NewDoubleBonds>& mynewdbondcl);
 
       /// unbind crosslinker if criteria are met
-      int UnBindCrosslinker();
+      int un_bind_crosslinker();
 
       /// calclulate force dependent unbind probability for double bonded crosslinker
       /// according to Bell's equation (Howard, eq 5.10, p.89)
@@ -448,7 +448,7 @@ namespace BEAMINTERACTION
       void update_my_double_bonds_remote_id_list();
 
       /// dissolve certain bonds
-      void DissolveBond(DRT::Node* linker, int freedbspotid, int numbondsold,
+      void dissolve_bond(DRT::Node* linker, int freedbspotid, int numbondsold,
           std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::UnBindEventData>>>&
               sendunbindevents,
           std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::UnBindEventData>>& myrankunbindevents);
@@ -460,7 +460,7 @@ namespace BEAMINTERACTION
 
       /// send data T to rank= mapkey
       template <typename T>
-      void ISend(CORE::COMM::Exporter& exporter, std::vector<MPI_Request>& request,
+      void i_send(CORE::COMM::Exporter& exporter, std::vector<MPI_Request>& request,
           std::map<int, std::vector<Teuchos::RCP<T>>> const& send) const;
 
       /// get number of request for each proc
@@ -471,12 +471,12 @@ namespace BEAMINTERACTION
 
       /// recieve "receivesize" number of T and store in vector recv
       template <typename T>
-      void RecvAny(CORE::COMM::Exporter& exporter, int receivesize,
+      void recv_any(CORE::COMM::Exporter& exporter, int receivesize,
           std::vector<Teuchos::RCP<T>>& recv) const;
 
       /// unblocking send and blocking recvany
       template <typename T>
-      void ISendRecvAny(std::map<int, std::vector<Teuchos::RCP<T>>> const& send,
+      void i_send_recv_any(std::map<int, std::vector<Teuchos::RCP<T>>> const& send,
           std::vector<Teuchos::RCP<T>>& recv) const;
 
       // wait for all communication to finish

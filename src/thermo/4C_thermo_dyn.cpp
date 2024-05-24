@@ -29,7 +29,7 @@ void thr_dyn_drt()
   thermodis = GLOBAL::Problem::Instance()->GetDis("thermo");
 
   // set degrees of freedom in the discretization
-  if (not thermodis->Filled()) thermodis->FillComplete();
+  if (not thermodis->Filled()) thermodis->fill_complete();
 
   const Teuchos::ParameterList& tdyn = GLOBAL::Problem::Instance()->thermal_dynamic_params();
 
@@ -41,7 +41,7 @@ void thr_dyn_drt()
   const int restart = GLOBAL::Problem::Instance()->Restart();
   if (restart)
   {
-    thermoonly->ThermoField().ReadRestart(restart);
+    thermoonly->ThermoField().read_restart(restart);
   }
 
   // enter time loop to solve problem

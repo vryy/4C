@@ -63,9 +63,9 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
   thermo_->Setup();
 
   // check maps from scatra and thermo discretizations
-  if (scatra_->ScaTraField()->Discretization()->DofRowMap()->NumGlobalElements() == 0)
+  if (scatra_->ScaTraField()->Discretization()->dof_row_map()->NumGlobalElements() == 0)
     FOUR_C_THROW("Scatra discretization does not have any degrees of freedom!");
-  if (thermo_->ScaTraField()->Discretization()->DofRowMap()->NumGlobalElements() == 0)
+  if (thermo_->ScaTraField()->Discretization()->dof_row_map()->NumGlobalElements() == 0)
     FOUR_C_THROW("Thermo discretization does not have any degrees of freedom!");
 
   // additional safety check
@@ -210,7 +210,7 @@ void STI::Algorithm::Output()
 
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
-void STI::Algorithm::PrepareTimeStep()
+void STI::Algorithm::prepare_time_step()
 {
   // update time and time step
   increment_time_and_step();
@@ -224,28 +224,28 @@ void STI::Algorithm::PrepareTimeStep()
   if (Step() == 1) transfer_thermo_to_scatra(thermo_->ScaTraField()->Phiafnp());
 
   // prepare time step for scatra field
-  scatra_->ScaTraField()->PrepareTimeStep();
+  scatra_->ScaTraField()->prepare_time_step();
 
   // pass scatra degrees of freedom to thermo discretization for preparation of first time step
   // (calculation of initial time derivatives etc.)
   if (Step() == 1) transfer_scatra_to_thermo(scatra_->ScaTraField()->Phiafnp());
 
   // prepare time step for thermo field
-  thermo_->ScaTraField()->PrepareTimeStep();
-}  // STI::Algorithm::PrepareTimeStep()
+  thermo_->ScaTraField()->prepare_time_step();
+}  // STI::Algorithm::prepare_time_step()
 
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
-void STI::Algorithm::ReadRestart(int step  //! time step for restart
+void STI::Algorithm::read_restart(int step  //! time step for restart
 )
 {
   // read scatra and thermo restart variables
-  scatra_->ScaTraField()->ReadRestart(step);
-  thermo_->ScaTraField()->ReadRestart(step);
+  scatra_->ScaTraField()->read_restart(step);
+  thermo_->ScaTraField()->read_restart(step);
 
   // set time and time step
   SetTimeStep(scatra_->ScaTraField()->Time(), step);
-}  // STI::Algorithm::ReadRestart
+}  // STI::Algorithm::read_restart
 
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
@@ -256,15 +256,15 @@ void STI::Algorithm::TimeLoop()
   {
     transfer_thermo_to_scatra(thermo_->ScaTraField()->Phiafnp());
     transfer_scatra_to_thermo(scatra_->ScaTraField()->Phiafnp());
-    ScaTraField()->PrepareTimeLoop();
-    ThermoField()->PrepareTimeLoop();
+    ScaTraField()->prepare_time_loop();
+    ThermoField()->prepare_time_loop();
   }
 
   // time loop
   while (NotFinished())
   {
     // prepare time step
-    PrepareTimeStep();
+    prepare_time_step();
 
     // store time before calling nonlinear solver
     double time = timer_->wallTime();
@@ -295,7 +295,7 @@ void STI::Algorithm::TimeLoop()
 void STI::Algorithm::transfer_scatra_to_thermo(const Teuchos::RCP<const Epetra_Vector> scatra) const
 {
   // pass scatra degrees of freedom to thermo discretization
-  thermo_->ScaTraField()->Discretization()->SetState(2, "scatra", scatra);
+  thermo_->ScaTraField()->Discretization()->set_state(2, "scatra", scatra);
 
   // transfer state vector for evaluation of scatra-scatra interface mesh tying
   if (thermo_->ScaTraField()->S2IMeshtying())
@@ -306,12 +306,12 @@ void STI::Algorithm::transfer_scatra_to_thermo(const Teuchos::RCP<const Epetra_V
       {
         // pass master-side scatra degrees of freedom to thermo discretization
         const Teuchos::RCP<Epetra_Vector> imasterphinp = CORE::LINALG::CreateVector(
-            *scatra_->ScaTraField()->Discretization()->DofRowMap(), true);
+            *scatra_->ScaTraField()->Discretization()->dof_row_map(), true);
         strategyscatra_->InterfaceMaps()->InsertVector(
             strategyscatra_->CouplingAdapter()->MasterToSlave(
                 strategyscatra_->InterfaceMaps()->ExtractVector(*scatra, 2)),
             1, imasterphinp);
-        thermo_->ScaTraField()->Discretization()->SetState(2, "imasterscatra", imasterphinp);
+        thermo_->ScaTraField()->Discretization()->set_state(2, "imasterscatra", imasterphinp);
 
         break;
       }
@@ -337,9 +337,9 @@ void STI::Algorithm::transfer_scatra_to_thermo(const Teuchos::RCP<const Epetra_V
 
             // pass interfacial scatra degrees of freedom to thermo discretization
             const Teuchos::RCP<Epetra_Vector> iscatra =
-                Teuchos::rcp(new Epetra_Vector(*thermodis.DofRowMap(1)));
+                Teuchos::rcp(new Epetra_Vector(*thermodis.dof_row_map(1)));
             CORE::LINALG::Export(*scatra, *iscatra);
-            thermodis.SetState(1, "scatra", iscatra);
+            thermodis.set_state(1, "scatra", iscatra);
           }
         }
 
@@ -359,7 +359,7 @@ void STI::Algorithm::transfer_scatra_to_thermo(const Teuchos::RCP<const Epetra_V
 void STI::Algorithm::transfer_thermo_to_scatra(const Teuchos::RCP<const Epetra_Vector> thermo) const
 {
   // pass thermo degrees of freedom to scatra discretization
-  scatra_->ScaTraField()->Discretization()->SetState(2, "thermo", thermo);
+  scatra_->ScaTraField()->Discretization()->set_state(2, "thermo", thermo);
 
   // transfer state vector for evaluation of scatra-scatra interface mesh tying
   if (scatra_->ScaTraField()->S2IMeshtying() and
@@ -384,9 +384,9 @@ void STI::Algorithm::transfer_thermo_to_scatra(const Teuchos::RCP<const Epetra_V
 
         // pass interfacial thermo degrees of freedom to scatra discretization
         const Teuchos::RCP<Epetra_Vector> ithermo =
-            Teuchos::rcp(new Epetra_Vector(*scatradis.DofRowMap(1)));
+            Teuchos::rcp(new Epetra_Vector(*scatradis.dof_row_map(1)));
         CORE::LINALG::Export(*thermo, *ithermo);
-        scatradis.SetState(1, "thermo", ithermo);
+        scatradis.set_state(1, "thermo", ithermo);
       }
     }
   }

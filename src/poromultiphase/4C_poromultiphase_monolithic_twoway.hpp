@@ -93,7 +93,7 @@ namespace POROMULTIPHASE
     }
 
     //! unique map of all dofs that should be constrained with DBC
-    Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const override { return combinedDBCMap_; };
+    Teuchos::RCP<const Epetra_Map> combined_dbc_map() const override { return combinedDBCMap_; };
 
    protected:
     //! Newton output to screen
@@ -106,14 +106,14 @@ namespace POROMULTIPHASE
     virtual void BuildCombinedDBCMap();
 
     //! full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> DofRowMap();
+    Teuchos::RCP<const Epetra_Map> dof_row_map();
 
-    virtual void SetupRHS();
+    virtual void setup_rhs();
 
     virtual Teuchos::RCP<Epetra_Vector> setup_structure_partof_rhs();
 
     //! build block vector from field vectors, e.g. rhs, increment vector
-    void SetupVector(Epetra_Vector& f,         //!< vector of length of all dofs
+    void setup_vector(Epetra_Vector& f,        //!< vector of length of all dofs
         Teuchos::RCP<const Epetra_Vector> sv,  //!< vector containing only structural dofs
         Teuchos::RCP<const Epetra_Vector> fv   //!< vector containing only fluid dofs
     );
@@ -125,7 +125,7 @@ namespace POROMULTIPHASE
      \param fx (o) fluid vector (primary variables of fluid field, i.e. pressures or saturations,
      and 1D artery pressure)
      */
-    virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+    virtual void extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx);
 
     //! extract only the structure and fluid field vectors from a given composed vector x.
@@ -138,10 +138,10 @@ namespace POROMULTIPHASE
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx);
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix() { SetupSystemMatrix(*systemmatrix_); }
+    virtual void setup_system_matrix() { setup_system_matrix(*systemmatrix_); }
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat);
+    virtual void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat);
 
     /// setup composed system matrix from field solvers
     virtual void SetupMaps();
@@ -172,10 +172,10 @@ namespace POROMULTIPHASE
     Teuchos::RCP<CORE::LINALG::SparseMatrix> fluid_struct_coupling_matrix();
 
     //! Solve the linear system of equations
-    void LinearSolve();
+    void linear_solve();
 
     //! Create the linear solver
-    virtual void CreateLinearSolver(const Teuchos::ParameterList& solverparams,
+    virtual void create_linear_solver(const Teuchos::ParameterList& solverparams,
         const CORE::LINEAR_SOLVER::SolverType solvertype);
 
     //! Setup Newton-Raphson
@@ -286,7 +286,7 @@ namespace POROMULTIPHASE
     Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
 
     //! flag for finite difference check
-    INPAR::POROMULTIPHASE::FDCheck fdcheck_;
+    INPAR::POROMULTIPHASE::FdCheck fdcheck_;
 
   };  // PoroMultiPhasePartitioned
 
@@ -306,7 +306,7 @@ namespace POROMULTIPHASE
      \param fx (o) fluid vector (primary variables of fluid field, i.e. pressures or saturations,
      and 1D artery pressure)
      */
-    void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+    void extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx) override;
 
     //! build norms for convergence check
@@ -317,16 +317,16 @@ namespace POROMULTIPHASE
     void SetupMaps() override;
 
     /// setup composed system matrix from field solvers
-    void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
+    void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
 
     /// setup global rhs
-    void SetupRHS() override;
+    void setup_rhs() override;
 
     //! build the combined dirichletbcmap
     void BuildCombinedDBCMap() override;
 
     //! Create the linear solver
-    void CreateLinearSolver(const Teuchos::ParameterList& solverparams,
+    void create_linear_solver(const Teuchos::ParameterList& solverparams,
         const CORE::LINEAR_SOLVER::SolverType solvertype) override;
 
     //! build the block null spaces

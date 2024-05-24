@@ -90,11 +90,11 @@ namespace IO
     /**
      * @brief Return a mutable reference to the point coordinates
      *
-     * @param additional_reserve (in) If this is larger than 0, additional entries will be reserved
+     * @param n (in) If this is larger than 0, additional entries will be reserved
      */
-    [[nodiscard]] std::vector<double>& GetPointCoordinates(const size_t additional_reserve = 0)
+    [[nodiscard]] std::vector<double>& GetPointCoordinates(const size_t n = 0)
     {
-      return AdditionalReserve(point_coordinates_, additional_reserve);
+      return additional_reserve(point_coordinates_, n);
     }
 
     /**
@@ -110,11 +110,11 @@ namespace IO
     /**
      * @brief Return a mutable reference to the cell types
      *
-     * @param additional_reserve (in) If this is larger than 0, additional entries will be reserved
+     * @param n (in) If this is larger than 0, additional entries will be reserved
      */
-    [[nodiscard]] std::vector<uint8_t>& GetCellTypes(const size_t additional_reserve = 0)
+    [[nodiscard]] std::vector<uint8_t>& GetCellTypes(const size_t n = 0)
     {
-      return AdditionalReserve(cell_types_, additional_reserve);
+      return additional_reserve(cell_types_, n);
     }
 
     /**
@@ -128,11 +128,11 @@ namespace IO
     /**
      * @brief Return a mutable reference to the cell connectivity
      *
-     * @param additional_reserve (in) If this is larger than 0, additional entries will be reserved
+     * @param n (in) If this is larger than 0, additional entries will be reserved
      */
-    [[nodiscard]] std::vector<index_type>& GetCellConnectivity(const size_t additional_reserve = 0)
+    [[nodiscard]] std::vector<index_type>& GetCellConnectivity(const size_t n = 0)
     {
-      return AdditionalReserve(cell_connectivity_, additional_reserve);
+      return additional_reserve(cell_connectivity_, n);
     }
 
     /**
@@ -143,11 +143,11 @@ namespace IO
     /**
      * @brief Return a mutable reference to the cell offsets
      *
-     * @param additional_reserve (in) If this is larger than 0, additional entries will be reserved
+     * @param n (in) If this is larger than 0, additional entries will be reserved
      */
-    [[nodiscard]] std::vector<index_type>& GetCellOffsets(const size_t additional_reserve = 0)
+    [[nodiscard]] std::vector<index_type>& GetCellOffsets(const size_t n = 0)
     {
-      return AdditionalReserve(cell_offsets_, additional_reserve);
+      return additional_reserve(cell_offsets_, n);
     }
 
     /**
@@ -161,11 +161,11 @@ namespace IO
     /**
      * @brief Return a mutable reference to the face connectivity
      *
-     * @param additional_reserve (in) If this is larger than 0, additional entries will be reserved
+     * @param n (in) If this is larger than 0, additional entries will be reserved
      */
-    [[nodiscard]] std::vector<index_type>& GetFaceConnectivity(const size_t additional_reserve = 0)
+    [[nodiscard]] std::vector<index_type>& GetFaceConnectivity(const size_t n = 0)
     {
-      return AdditionalReserve(face_connectivity_, additional_reserve);
+      return additional_reserve(face_connectivity_, n);
     }
 
     /**
@@ -176,11 +176,11 @@ namespace IO
     /**
      * @brief Return a mutable reference to the face offsets
      *
-     * @param additional_reserve (in) If this is larger than 0, additional entries will be reserved
+     * @param n (in) If this is larger than 0, additional entries will be reserved
      */
-    [[nodiscard]] std::vector<index_type>& GetFaceOffsets(const size_t additional_reserve = 0)
+    [[nodiscard]] std::vector<index_type>& GetFaceOffsets(const size_t n = 0)
     {
-      return AdditionalReserve(face_offsets_, additional_reserve);
+      return additional_reserve(face_offsets_, n);
     }
 
     /**
@@ -192,7 +192,7 @@ namespace IO
     template <typename T>
     [[nodiscard]] const std::vector<T>& GetPointData(const std::string& data_name) const
     {
-      return GetData<std::vector<T>>(point_data_, data_name);
+      return get_data<std::vector<T>>(point_data_, data_name);
     }
 
     /**
@@ -200,16 +200,14 @@ namespace IO
      *
      * @tparam T Expected type of the data
      * @param data_name (in) Name of the data field
-     * @param additional_reserve (in) If this is larger than 0, additional entries will be reserved
+     * @param n (in) If this is larger than 0, additional entries will be reserved
      */
     template <typename T>
-    [[nodiscard]] std::vector<T>& GetPointData(
-        const std::string& data_name, const size_t additional_reserve = 0)
+    [[nodiscard]] std::vector<T>& GetPointData(const std::string& data_name, const size_t n = 0)
     {
       // The const_cast can be done here, since we know that the underlying data is not const
-      return AdditionalReserve(
-          const_cast<std::vector<T>&>(GetData<std::vector<T>>(point_data_, data_name)),
-          additional_reserve);
+      return additional_reserve(
+          const_cast<std::vector<T>&>(get_data<std::vector<T>>(point_data_, data_name)), n);
     }
 
     /**
@@ -220,7 +218,7 @@ namespace IO
     [[nodiscard]] const visualization_vector_type_variant& GetPointDataVariant(
         const std::string& data_name) const
     {
-      return get_data_vector_from_map_item(GetDataMapItem(point_data_, data_name));
+      return get_data_vector_from_map_item(get_data_map_item(point_data_, data_name));
     }
 
     /**
@@ -232,7 +230,7 @@ namespace IO
     template <typename T>
     [[nodiscard]] const std::vector<T>& GetCellData(const std::string& data_name) const
     {
-      return GetData<std::vector<T>>(cell_data_, data_name);
+      return get_data<std::vector<T>>(cell_data_, data_name);
     }
 
     /**
@@ -240,16 +238,14 @@ namespace IO
      *
      * @tparam T Expected type of the data
      * @param data_name (in) Name of the data field
-     * @param additional_reserve (in) If this is larger than 0, additional entries will be reserved
+     * @param n (in) If this is larger than 0, additional entries will be reserved
      */
     template <typename T>
-    [[nodiscard]] std::vector<T>& GetCellData(
-        const std::string& data_name, const size_t additional_reserve = 0)
+    [[nodiscard]] std::vector<T>& GetCellData(const std::string& data_name, const size_t n = 0)
     {
       // The const_cast can be done here, since we know that the underlying data is not const
-      return AdditionalReserve(
-          const_cast<std::vector<T>&>(GetData<std::vector<T>>(cell_data_, data_name)),
-          additional_reserve);
+      return additional_reserve(
+          const_cast<std::vector<T>&>(get_data<std::vector<T>>(cell_data_, data_name)), n);
     }
 
     /**
@@ -261,7 +257,7 @@ namespace IO
     [[nodiscard]] const visualization_vector_type_variant& GetCellDataVariant(
         const std::string& data_name) const
     {
-      return get_data_vector_from_map_item(GetDataMapItem(cell_data_, data_name));
+      return get_data_vector_from_map_item(get_data_map_item(cell_data_, data_name));
     }
 
     /**
@@ -273,7 +269,7 @@ namespace IO
     template <typename T>
     [[nodiscard]] const std::vector<T>& GetFieldData(const std::string& data_name) const
     {
-      return GetData<std::vector<T>>(field_data_, data_name);
+      return get_data<std::vector<T>>(field_data_, data_name);
     }
 
     /**
@@ -281,16 +277,14 @@ namespace IO
      *
      * @tparam T Expected type of the data
      * @param data_name (in) Name of the data field
-     * @param additional_reserve (in) If this is larger than 0, additional entries will be reserved
+     * @param n (in) If this is larger than 0, additional entries will be reserved
      */
     template <typename T>
-    [[nodiscard]] std::vector<T>& GetFieldData(
-        const std::string& data_name, const size_t additional_reserve = 0)
+    [[nodiscard]] std::vector<T>& GetFieldData(const std::string& data_name, const size_t n = 0)
     {
       // The const_cast can be done here, since we know that the underlying data is not const
-      return AdditionalReserve(
-          const_cast<std::vector<T>&>(GetData<std::vector<T>>(field_data_, data_name)),
-          additional_reserve);
+      return additional_reserve(
+          const_cast<std::vector<T>&>(get_data<std::vector<T>>(field_data_, data_name)), n);
     }
 
     /**
@@ -301,7 +295,7 @@ namespace IO
     [[nodiscard]] const visualization_vector_type_variant& GetFieldDataVariant(
         const std::string& data_name) const
     {
-      return get_data_vector_from_map_item(GetDataMapItem(field_data_, data_name));
+      return get_data_vector_from_map_item(get_data_map_item(field_data_, data_name));
     }
 
     /**
@@ -326,7 +320,7 @@ namespace IO
     std::vector<T>& RegisterPointData(
         const std::string& data_name, const unsigned int n_dim, const size_t reserve = 0)
     {
-      return RegisterDataVector<T>(point_data_, data_name, n_dim, reserve);
+      return register_data_vector<T>(point_data_, data_name, n_dim, reserve);
     }
 
     /**
@@ -342,7 +336,7 @@ namespace IO
     std::vector<T>& RegisterCellData(
         const std::string& data_name, const unsigned int n_dim, const size_t reserve = 0)
     {
-      return RegisterDataVector<T>(cell_data_, data_name, n_dim, reserve);
+      return register_data_vector<T>(cell_data_, data_name, n_dim, reserve);
     }
 
     /**
@@ -380,7 +374,7 @@ namespace IO
     void SetPointDataVector(
         const std::string& data_name, const std::vector<T>& result, const unsigned int n_dim)
     {
-      SetDataVector(point_data_, data_name, n_dim, result);
+      set_data_vector(point_data_, data_name, n_dim, result);
     }
 
     /**
@@ -396,7 +390,7 @@ namespace IO
     void SetCellDataVector(
         const std::string& data_name, const std::vector<T>& result, const unsigned int n_dim)
     {
-      SetDataVector(cell_data_, data_name, n_dim, result);
+      set_data_vector(cell_data_, data_name, n_dim, result);
     }
 
     /**
@@ -431,7 +425,7 @@ namespace IO
      */
     [[nodiscard]] std::set<std::string> GetPointDataNames() const
     {
-      return GetDataNames(point_data_);
+      return get_data_names(point_data_);
     }
 
     /**
@@ -439,7 +433,7 @@ namespace IO
      */
     [[nodiscard]] std::set<std::string> GetCellDataNames() const
     {
-      return GetDataNames(cell_data_);
+      return get_data_names(cell_data_);
     }
 
     /**
@@ -447,7 +441,7 @@ namespace IO
      */
     [[nodiscard]] std::set<std::string> GetFieldDataNames() const
     {
-      return GetDataNames(field_data_);
+      return get_data_names(field_data_);
     }
 
     /**
@@ -457,8 +451,8 @@ namespace IO
      */
     [[nodiscard]] size_t GetPointDataSize(const std::string& data_name) const
     {
-      return GetDataVectorSize(
-          get_data_vector_from_map_item(GetDataMapItem(point_data_, data_name)));
+      return get_data_vector_size(
+          get_data_vector_from_map_item(get_data_map_item(point_data_, data_name)));
     }
 
     /**
@@ -468,8 +462,8 @@ namespace IO
      */
     [[nodiscard]] size_t GetCellDataSize(const std::string& data_name) const
     {
-      return GetDataVectorSize(
-          get_data_vector_from_map_item(GetDataMapItem(cell_data_, data_name)));
+      return get_data_vector_size(
+          get_data_vector_from_map_item(get_data_map_item(cell_data_, data_name)));
     }
 
     /**
@@ -479,7 +473,7 @@ namespace IO
      */
     [[nodiscard]] size_t get_point_data_dimension(const std::string& data_name) const
     {
-      return GetDataDimension(GetDataMapItem(point_data_, data_name));
+      return get_data_dimension(get_data_map_item(point_data_, data_name));
     }
 
     /**
@@ -489,7 +483,7 @@ namespace IO
      */
     [[nodiscard]] size_t get_cell_data_dimension(const std::string& data_name) const
     {
-      return GetDataDimension(GetDataMapItem(cell_data_, data_name));
+      return get_data_dimension(get_data_map_item(cell_data_, data_name));
     }
 
     /**
@@ -499,14 +493,14 @@ namespace IO
      */
     [[nodiscard]] size_t get_field_data_dimension(const std::string& data_name) const
     {
-      return GetDataVectorSize(
-          get_data_vector_from_map_item(GetDataMapItem(field_data_, data_name)));
+      return get_data_vector_size(
+          get_data_vector_from_map_item(get_data_map_item(field_data_, data_name)));
     }
 
     /**
      * @brief Clear all data from this container while the registered data names will remain
      */
-    void ClearData();
+    void clear_data();
 
     /**
      * @brief Clear all data from this container, the registered data names will also be removed
@@ -571,7 +565,7 @@ namespace IO
      *
      * This function is mainly used for detailed error output.
      */
-    [[nodiscard]] std::string GetDataType(
+    [[nodiscard]] std::string get_data_type(
         const std::map<std::string, std::pair<visualization_vector_type_variant, uint8_t>>& data)
         const;
 
@@ -580,7 +574,7 @@ namespace IO
      *
      * This function is mainly used for detailed error output.
      */
-    [[nodiscard]] std::string GetDataType(
+    [[nodiscard]] std::string get_data_type(
         const std::map<std::string, visualization_vector_type_variant>& data) const;
 
     /**
@@ -611,12 +605,12 @@ namespace IO
      * @param data_name (in) Name of the data
      */
     template <typename V>
-    [[nodiscard]] const V& GetDataMapItem(
+    [[nodiscard]] const V& get_data_map_item(
         const std::map<std::string, V>& data, const std::string& data_name) const
     {
       if (data.find(data_name) == data.end())
       {
-        FOUR_C_THROW("The requested %s field \"%s\" does not exist", GetDataType(data).c_str(),
+        FOUR_C_THROW("The requested %s field \"%s\" does not exist", get_data_type(data).c_str(),
             data_name.c_str());
       }
       else
@@ -632,9 +626,9 @@ namespace IO
      * @param data_name (in) Name of the data
      */
     template <typename T, typename V>
-    [[nodiscard]] const T& GetData(const V& data, const std::string& data_name) const
+    [[nodiscard]] const T& get_data(const V& data, const std::string& data_name) const
     {
-      auto& data_vector = get_data_vector_from_map_item(GetDataMapItem(data, data_name));
+      auto& data_vector = get_data_vector_from_map_item(get_data_map_item(data, data_name));
       try
       {
         return std::get<T>(data_vector);
@@ -652,7 +646,7 @@ namespace IO
           allocated_type = "UNKNOWN";
 
         FOUR_C_THROW("Requested %s field \"%s\" with type %s, but the allocated type is %s",
-            GetDataType(data).c_str(), data_name.c_str(), requested_type.c_str(),
+            get_data_type(data).c_str(), data_name.c_str(), requested_type.c_str(),
             allocated_type.c_str());
       }
     }
@@ -661,7 +655,7 @@ namespace IO
      * @brief Get all existent names of the given data (keys in the map)
      */
     template <typename V>
-    [[nodiscard]] std::set<std::string> GetDataNames(const V& data) const
+    [[nodiscard]] std::set<std::string> get_data_names(const V& data) const
     {
       std::set<std::string> data_names;
       for (const auto& [key, _] : data)
@@ -675,7 +669,7 @@ namespace IO
      * @brief Return the size of the given data vector variant
      */
     template <typename V>
-    [[nodiscard]] size_t GetDataVectorSize(const V& data_vector) const
+    [[nodiscard]] size_t get_data_vector_size(const V& data_vector) const
     {
       auto size_visitor = [](const auto& data_vector) { return data_vector.size(); };
       return std::visit(size_visitor, data_vector);
@@ -687,7 +681,7 @@ namespace IO
      * @param data_item (in) Item from the point or cell data map
      */
     template <typename V>
-    [[nodiscard]] size_t GetDataDimension(V& data_item) const
+    [[nodiscard]] size_t get_data_dimension(V& data_item) const
     {
       return data_item.second;
     }
@@ -702,20 +696,20 @@ namespace IO
      * reserved
      */
     template <typename T, typename V>
-    std::vector<T>& RegisterDataVector(
+    std::vector<T>& register_data_vector(
         V& data, const std::string& data_name, const unsigned int n_dim, const size_t reserve) const
     {
       if (data.find(data_name) != data.end())
       {
         FOUR_C_THROW("The %s vector with the name \"%s\" you want to add already exists.",
-            GetDataType(data).c_str(), data_name.c_str());
+            get_data_type(data).c_str(), data_name.c_str());
       }
       if (n_dim == 0)
       {
         FOUR_C_THROW(
             "You are trying to set the %s vector with the name \"%s\" and n_dim==0, this is not "
             "possible.",
-            GetDataType(data).c_str(), data_name.c_str());
+            get_data_type(data).c_str(), data_name.c_str());
       }
 
       std::vector<T> new_vector;
@@ -737,18 +731,18 @@ namespace IO
      * @param result (in) Vector containing the data that will be copied to the data map
      */
     template <typename T, typename V>
-    void SetDataVector(V& data, const std::string& data_name, const unsigned int n_dim,
+    void set_data_vector(V& data, const std::string& data_name, const unsigned int n_dim,
         const std::vector<T>& result)
     {
       // Check if data name is already registered
-      const auto data_names = GetDataNames(data);
+      const auto data_names = get_data_names(data);
       if (data_names.find(data_name) == data_names.end())
       {
-        RegisterDataVector<T>(data, data_name, n_dim, 0);
+        register_data_vector<T>(data, data_name, n_dim, 0);
       }
       else
       {  // Safety check that the number of dimensions is consistent
-        const unsigned int data_n_dim = GetDataDimension(GetDataMapItem(data, data_name));
+        const unsigned int data_n_dim = get_data_dimension(get_data_map_item(data, data_name));
         if (data_n_dim != n_dim)
         {
           FOUR_C_THROW("Dimensions do not match");
@@ -757,7 +751,7 @@ namespace IO
 
       // Copy the result vector data to this data container
       // The const_cast can be done here, since we know that the underlying data is not const
-      auto& vector = const_cast<std::vector<T>&>(GetData<std::vector<T>>(data, data_name));
+      auto& vector = const_cast<std::vector<T>&>(get_data<std::vector<T>>(data, data_name));
       vector = result;
     }
 
@@ -768,27 +762,26 @@ namespace IO
      * @param data_name (in) Name of the data that shall be cleared
      */
     template <typename V>
-    void ClearData(V& data, const std::string& data_name)
+    void clear_data(V& data, const std::string& data_name)
     {
       auto clear_visitor = [](auto& data_vector) { data_vector.clear(); };
       // The const_cast can be done here, since we know that the underlying data is not const
       std::visit(
           clear_visitor, const_cast<visualization_vector_type_variant&>(
-                             get_data_vector_from_map_item(GetDataMapItem(data, data_name))));
+                             get_data_vector_from_map_item(get_data_map_item(data, data_name))));
     }
 
     /**
      * @brief Take a vector and reserve additional entries
      *
      * @param vector (in) Data vector
-     * @param additional_reserve (in) If this is larger than 0, additional entries will be reserved
+     * @param n (in) If this is larger than 0, additional entries will be reserved
      * @return std::vector<T>& A reference to the vector with additionally reserved entries
      */
     template <typename T>
-    [[nodiscard]] static std::vector<T>& AdditionalReserve(
-        std::vector<T>& vector, const size_t additional_reserve)
+    [[nodiscard]] static std::vector<T>& additional_reserve(std::vector<T>& vector, const size_t n)
     {
-      if (additional_reserve > 0) vector.reserve(vector.size() + additional_reserve);
+      if (n > 0) vector.reserve(vector.size() + n);
       return vector;
     }
 

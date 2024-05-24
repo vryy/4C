@@ -398,7 +398,7 @@ int CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::ApplyInverse(
   mmex_.ExtractVector(X, 1, *pb_);
 
 #if CHEAPSIMPLE_ALGORITHM  // SIMPLE and SIMPLEC but without solve, just AMG
-  CheapSimple(*vx_, *px_, *vb_, *pb_);
+  cheap_simple(*vx_, *px_, *vb_, *pb_);
 #else
 
 #if SIMPLER_ALGORITHM
@@ -492,8 +492,8 @@ void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::Simple(CORE::LINALG::A
  |                                                                      |
  | all solves replaced by single AMG sweeps                             |
  *----------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::CheapSimple(CORE::LINALG::ANA::Vector& vx,
-    CORE::LINALG::ANA::Vector& px, CORE::LINALG::ANA::Vector& vb,
+void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::cheap_simple(
+    CORE::LINALG::ANA::Vector& vx, CORE::LINALG::ANA::Vector& px, CORE::LINALG::ANA::Vector& vb,
     CORE::LINALG::ANA::Vector& pb) const
 {
   CORE::LINALG::SparseMatrix& A10 = (*a_)(1, 0);

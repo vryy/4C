@@ -53,7 +53,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::Setup()
   // print out summary of pairs
   if (contdis_->Name() == "porofluid" &&
       (CORE::UTILS::IntegralValue<int>(couplingparams_, "PRINT_OUT_SUMMARY_PAIRS")))
-    OutputCouplingPairs();
+    output_coupling_pairs();
 
   // error-checks
   if (has_varying_diam_)
@@ -69,13 +69,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::Setup()
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::pre_evaluate_coupling_pairs()
 {
   // pre-evaluate
-  for (auto& coupl_elepair : coupl_elepairs_) coupl_elepair->PreEvaluate(Teuchos::null);
+  for (auto& coupl_elepair : coupl_elepairs_) coupl_elepair->pre_evaluate(Teuchos::null);
 
   // delete the inactive pairs
   coupl_elepairs_.erase(
       std::remove_if(coupl_elepairs_.begin(), coupl_elepairs_.end(),
           [](const Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>
-                  coupling_pair) { return not coupling_pair->IsActive(); }),
+                  coupling_pair) { return not coupling_pair->is_active(); }),
       coupl_elepairs_.end());
 
   // output
@@ -145,7 +145,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::print_out_co
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::OutputCouplingPairs() const
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::output_coupling_pairs() const
 {
   if (myrank_ == 0)
   {

@@ -52,7 +52,7 @@ namespace CONTACT
        * \param[in/out] params ParameterList with mortar/contact parameters from input file
        *
        * \author Popp */
-      void ReadAndCheckInput(Teuchos::ParameterList& params) const;
+      void read_and_check_input(Teuchos::ParameterList& params) const;
 
       /** \brief Create the contact interfaces
        *
@@ -150,7 +150,7 @@ namespace CONTACT
       void fully_overlapping_interfaces(
           std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces) const;
 
-      int IdentifyFullSubset(const Epetra_Map& map_0, const Epetra_Map& map_1,
+      int identify_full_subset(const Epetra_Map& map_0, const Epetra_Map& map_1,
           bool throw_if_partial_subset_on_proc = true) const;
 
       /*!

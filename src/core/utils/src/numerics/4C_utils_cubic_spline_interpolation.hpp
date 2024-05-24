@@ -103,7 +103,7 @@ namespace CORE::UTILS
      * @note The first and last line of the implementation represent the so-called natural
      * boundary conditions, i.e. that the second derivative equals zero at the boundary
      */
-    void BuildMatrixAndRhs(
+    void build_matrix_and_rhs(
         const int N, CORE::LINALG::SerialDenseMatrix& A, CORE::LINALG::SerialDenseVector& b) const;
 
     /*!
@@ -128,7 +128,7 @@ namespace CORE::UTILS
      * @param[out] c solution vector, equals coefficient vector #c_
      * @param[in]  b right-hand side vector
      */
-    void SolveLinearSystem(CORE::LINALG::SerialDenseMatrix& A, CORE::LINALG::SerialDenseVector& c,
+    void solve_linear_system(CORE::LINALG::SerialDenseMatrix& A, CORE::LINALG::SerialDenseVector& c,
         CORE::LINALG::SerialDenseVector& b) const;
 
     //! zeroth-order coefficients for cubic spline interpolation

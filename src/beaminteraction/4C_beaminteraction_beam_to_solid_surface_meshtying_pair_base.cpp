@@ -55,12 +55,13 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type_fad, beam,
  *
  */
 template <typename scalar_type, typename beam, typename surface>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>::PreEvaluate()
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
+    surface>::pre_evaluate()
 {
-  // Call PreEvaluate on the geometry Pair.
+  // Call pre_evaluate on the geometry Pair.
   if (!meshtying_is_evaluated_)
   {
-    CastGeometryPair()->PreEvaluate(this->ele1posref_,
+    CastGeometryPair()->pre_evaluate(this->ele1posref_,
         this->face_element_->get_face_reference_element_data(), this->line_to_3D_segments_);
   }
 }

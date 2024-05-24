@@ -25,39 +25,39 @@ void DRT::ELEMENTS::EvaluateNeumannByElement(DRT::Element& element,
   switch (element.Shape())
   {
     case CORE::FE::CellType::hex8:
-      return EvaluateNeumann<CORE::FE::CellType::hex8>(
+      return evaluate_neumann<CORE::FE::CellType::hex8>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
     case CORE::FE::CellType::hex27:
-      return EvaluateNeumann<CORE::FE::CellType::hex27>(
+      return evaluate_neumann<CORE::FE::CellType::hex27>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
     case CORE::FE::CellType::hex20:
-      return EvaluateNeumann<CORE::FE::CellType::hex20>(
+      return evaluate_neumann<CORE::FE::CellType::hex20>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
     case CORE::FE::CellType::hex18:
-      return EvaluateNeumann<CORE::FE::CellType::hex18>(
+      return evaluate_neumann<CORE::FE::CellType::hex18>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
     case CORE::FE::CellType::nurbs27:
-      return EvaluateNeumann<CORE::FE::CellType::nurbs27>(
+      return evaluate_neumann<CORE::FE::CellType::nurbs27>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
     case CORE::FE::CellType::pyramid5:
-      return EvaluateNeumann<CORE::FE::CellType::pyramid5>(
+      return evaluate_neumann<CORE::FE::CellType::pyramid5>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
     case CORE::FE::CellType::wedge6:
-      return EvaluateNeumann<CORE::FE::CellType::wedge6>(
+      return evaluate_neumann<CORE::FE::CellType::wedge6>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
     case CORE::FE::CellType::tet4:
-      return EvaluateNeumann<CORE::FE::CellType::tet4>(
+      return evaluate_neumann<CORE::FE::CellType::tet4>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
     case CORE::FE::CellType::tet10:
-      return EvaluateNeumann<CORE::FE::CellType::tet10>(
+      return evaluate_neumann<CORE::FE::CellType::tet10>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
     default:
@@ -69,7 +69,7 @@ void DRT::ELEMENTS::EvaluateNeumannByElement(DRT::Element& element,
 }
 
 template <CORE::FE::CellType celltype>
-void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
+void DRT::ELEMENTS::evaluate_neumann(DRT::Element& element,
     const DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     const std::vector<int>& dof_index_array, CORE::LINALG::SerialDenseVector& element_force_vector,
     double total_time)

@@ -39,7 +39,7 @@ void ADAPTER::StructureTimeAdaZienXie::integrate_step_auxiliar()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimeAdaZienXie::UpdateAuxiliar()
+void ADAPTER::StructureTimeAdaZienXie::update_auxiliar()
 {
   // NOTHING TO UPDATE
 }

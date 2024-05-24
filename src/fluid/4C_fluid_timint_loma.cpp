@@ -242,7 +242,7 @@ void FLD::TimIntLoma::print_turbulence_model()
 }
 
 /*----------------------------------------------------------------------*
-| set custom ele params in AssembleMatAndRHS                   bk 11/13 |
+| set custom ele params in assemble_mat_and_rhs                   bk 11/13 |
 *----------------------------------------------------------------------*/
 void FLD::TimIntLoma::set_custom_ele_params_assemble_mat_and_rhs(Teuchos::ParameterList& eleparams)
 {

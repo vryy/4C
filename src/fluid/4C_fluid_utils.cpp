@@ -58,8 +58,8 @@ FLD::UTILS::StressManager::StressManager(Teuchos::RCP<DRT::Discretization> discr
       isinit_ = false;  // we do this in InitAggr()
       break;
     case INPAR::FLUID::wss_mean:
-      sum_stresses_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true)),
-      sum_wss_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true)), isinit_ = true;
+      sum_stresses_ = Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true)),
+      sum_wss_ = Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true)), isinit_ = true;
       break;
     default:
       FOUR_C_THROW(
@@ -76,7 +76,7 @@ void FLD::UTILS::StressManager::InitAggr(Teuchos::RCP<CORE::LINALG::SparseOperat
   if (wss_type_ != INPAR::FLUID::wss_aggregation)
     FOUR_C_THROW("One should end up here just in case of aggregated stresses!");
 
-  CalcSepEnr(sysmat);
+  calc_sep_enr(sysmat);
   if (sep_enr_ == Teuchos::null)
     FOUR_C_THROW("SepEnr matrix has not been build correctly. Strange...");
 
@@ -99,10 +99,10 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::get_wall_shear_stresses(
       // nothing to do
       break;
     case INPAR::FLUID::wss_aggregation:
-      wss = AggreagteStresses(wss);
+      wss = aggreagte_stresses(wss);
       break;
     case INPAR::FLUID::wss_mean:
-      wss = TimeAverageWss(wss, dt);
+      wss = time_average_wss(wss, dt);
       break;
     default:
       FOUR_C_THROW(
@@ -119,7 +119,8 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::get_wall_shear_stresses(
 Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::get_pre_calc_wall_shear_stresses(
     Teuchos::RCP<const Epetra_Vector> trueresidual)
 {
-  Teuchos::RCP<Epetra_Vector> wss = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
+  Teuchos::RCP<Epetra_Vector> wss =
+      Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true));
 
   switch (wss_type_)
   {
@@ -128,7 +129,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::get_pre_calc_wall_shear_s
       break;
     case INPAR::FLUID::wss_aggregation:
       wss = get_wall_shear_stresses_wo_agg(trueresidual);
-      wss = AggreagteStresses(wss);
+      wss = aggreagte_stresses(wss);
       break;
     case INPAR::FLUID::wss_mean:
       if (sum_dt_wss_ > 0.0)  // iff we have actually calculated some mean wss
@@ -151,7 +152,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::get_wall_shear_stresses_w
 {
   if (not isinit_) FOUR_C_THROW("StressManager not initialized");
 
-  Teuchos::RCP<Epetra_Vector> stresses = CalcStresses(trueresidual);
+  Teuchos::RCP<Epetra_Vector> stresses = calc_stresses(trueresidual);
   // calculate wss from stresses
   Teuchos::RCP<Epetra_Vector> wss = calc_wall_shear_stresses(stresses);
 
@@ -164,7 +165,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::get_wall_shear_stresses_w
 Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetStressesWOAgg(
     Teuchos::RCP<const Epetra_Vector> trueresidual)
 {
-  Teuchos::RCP<Epetra_Vector> stresses = CalcStresses(trueresidual);
+  Teuchos::RCP<Epetra_Vector> stresses = calc_stresses(trueresidual);
 
   return stresses;
 }  // FLD::UTILS::StressManager::GetStressesWOAgg()
@@ -183,10 +184,10 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetStresses(
       // nothing to do
       break;
     case INPAR::FLUID::wss_aggregation:
-      stresses = AggreagteStresses(stresses);
+      stresses = aggreagte_stresses(stresses);
       break;
     case INPAR::FLUID::wss_mean:
-      stresses = TimeAverageStresses(stresses, dt);
+      stresses = time_average_stresses(stresses, dt);
       break;
     default:
       FOUR_C_THROW(
@@ -204,7 +205,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetPreCalcStresses(
     Teuchos::RCP<const Epetra_Vector> trueresidual)
 {
   Teuchos::RCP<Epetra_Vector> stresses =
-      Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
+      Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true));
 
   switch (wss_type_)
   {
@@ -213,7 +214,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetPreCalcStresses(
       break;
     case INPAR::FLUID::wss_aggregation:
       stresses = GetStressesWOAgg(trueresidual);
-      stresses = AggreagteStresses(stresses);
+      stresses = aggreagte_stresses(stresses);
       break;
     case INPAR::FLUID::wss_mean:
       if (sum_dt_stresses_ > 0.0)  // iff we have actually calculated some mean stresses
@@ -231,7 +232,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetPreCalcStresses(
 /*-----------------------------------------------------------------------------*
  |  calculate traction vector at (Dirichlet) boundary (public) Thon/Krank 07/07|
  *-----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::CalcStresses(
+Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::calc_stresses(
     Teuchos::RCP<const Epetra_Vector> trueresidual)
 {
   if (not isinit_) FOUR_C_THROW("StressManager not initialized");
@@ -251,7 +252,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::CalcStresses(
   }
 
   return integratedshapefunc;
-}  // FLD::UTILS::StressManager::CalcStresses()
+}  // FLD::UTILS::StressManager::calc_stresses()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -265,7 +266,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::integrate_interface_shape
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
   //                 local <-> global dof numbering
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // create vector (+ initialization with zeros)
   Teuchos::RCP<Epetra_Vector> integratedshapefunc = CORE::LINALG::CreateVector(*dofrowmap, true);
@@ -274,9 +275,9 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::integrate_interface_shape
   discret_->ClearState();
   if (alefluid_)
   {
-    discret_->SetState("dispnp", dispnp_);
+    discret_->set_state("dispnp", dispnp_);
   }
-  discret_->EvaluateCondition(eleparams, integratedshapefunc, condname);
+  discret_->evaluate_condition(eleparams, integratedshapefunc, condname);
   discret_->ClearState();
 
   return integratedshapefunc;
@@ -300,19 +301,19 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::calc_wall_shear_stresses(
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
   //                 local <-> global dof numbering
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
-  // vector ndnorm0 with pressure-entries is needed for EvaluateCondition
+  // vector ndnorm0 with pressure-entries is needed for evaluate_condition
   Teuchos::RCP<Epetra_Vector> ndnorm0 = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // call loop over elements, note: normal vectors do not yet have length = 1.0
   discret_->ClearState();  // TODO: (Thon) Do we really have to to this in here?
   if (alefluid_)
   {
-    discret_->SetState("dispnp", dispnp_);
+    discret_->set_state("dispnp", dispnp_);
   }
   // evaluate the normals of the surface
-  discret_->EvaluateCondition(eleparams, ndnorm0, "FluidStressCalc");
+  discret_->evaluate_condition(eleparams, ndnorm0, "FluidStressCalc");
   discret_->ClearState();
 
   // -------------------------------------------------------------------
@@ -373,13 +374,13 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::calc_wall_shear_stresses(
 /*----------------------------------------------------------------------*
  | smooth stresses/wss via ML-aggregation              Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::AggreagteStresses(
+Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::aggreagte_stresses(
     Teuchos::RCP<Epetra_Vector> wss)
 {
   if (sep_enr_ == Teuchos::null) FOUR_C_THROW("no scale separation matrix");
 
   Teuchos::RCP<Epetra_Vector> mean_wss =
-      Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
+      Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true));
 
   // Do the actual aggregation
   sep_enr_->Multiply(false, *wss, *mean_wss);
@@ -390,14 +391,14 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::AggreagteStresses(
 /*----------------------------------------------------------------------*
  | time average stresses                                     Thon 03/15 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::TimeAverageStresses(
+Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::time_average_stresses(
     Teuchos::RCP<const Epetra_Vector> stresses, const double dt)
 {
   sum_stresses_->Update(dt, *stresses, 1.0);  // weighted sum of all prior stresses
   sum_dt_stresses_ += dt;
 
   Teuchos::RCP<Epetra_Vector> mean_stresses =
-      Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
+      Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true));
   mean_stresses->Update(1.0 / sum_dt_stresses_, *sum_stresses_, 0.0);
 
   return mean_stresses;
@@ -406,14 +407,14 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::TimeAverageStresses(
 /*----------------------------------------------------------------------*
  | time average wss                                          Thon 03/15 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::TimeAverageWss(
+Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::time_average_wss(
     Teuchos::RCP<const Epetra_Vector> wss, const double dt)
 {
   sum_wss_->Update(dt, *wss, 1.0);  // weighted sum of all prior stresses
   sum_dt_wss_ += dt;
 
   Teuchos::RCP<Epetra_Vector> mean_wss =
-      Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
+      Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true));
   mean_wss->Update(1.0 / sum_dt_wss_, *sum_wss_, 0.0);
 
   return mean_wss;
@@ -423,7 +424,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::TimeAverageWss(
  | Calculate Aggregation Matrix and set is as member variable SepEnr_   |
  |                                                     Thon/Krank 11/14 |
  *------------------------------------------------- --------------------*/
-void FLD::UTILS::StressManager::CalcSepEnr(Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat)
+void FLD::UTILS::StressManager::calc_sep_enr(Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat)
 {
   if (wss_type_ == INPAR::FLUID::wss_aggregation)  // iff we have not specified a ML-solver one does
                                                    // not want to smooth the wss
@@ -469,7 +470,7 @@ void FLD::UTILS::StressManager::CalcSepEnr(Teuchos::RCP<CORE::LINALG::SparseOper
     if (nsdim != 4)
       FOUR_C_THROW("The calculation of mean WSS is only tested for three space dimensions!");
 
-    int lrowdofs = discret_->DofRowMap()->NumMyElements();
+    int lrowdofs = discret_->dof_row_map()->NumMyElements();
 
     for (int j = 0; j < discret_->NodeRowMap()->NumMyElements(); ++j)
     {
@@ -482,7 +483,7 @@ void FLD::UTILS::StressManager::CalcSepEnr(Teuchos::RCP<CORE::LINALG::SparseOper
         if (!node) FOUR_C_THROW("Cannot find node");
 
         int firstglobaldofid = discret_->Dof(node, 0);
-        int firstlocaldofid = discret_->DofRowMap()->LID(firstglobaldofid);
+        int firstlocaldofid = discret_->dof_row_map()->LID(firstglobaldofid);
 
         std::vector<CORE::Conditions::Condition*> nodedircond;
         node->GetCondition("FluidStressCalc", nodedircond);
@@ -896,7 +897,7 @@ std::map<int, double> FLD::UTILS::ComputeFlowRates(DRT::Discretization& dis,
 
     // get a vector layout from the discretization to construct matching
     // vectors and matrices local <-> global dof numbering
-    const Epetra_Map* dofrowmap = dis.DofRowMap();
+    const Epetra_Map* dofrowmap = dis.dof_row_map();
 
     // create vector (+ initialization with zeros)
     Teuchos::RCP<Epetra_Vector> flowrates = CORE::LINALG::CreateVector(*dofrowmap, true);
@@ -904,11 +905,11 @@ std::map<int, double> FLD::UTILS::ComputeFlowRates(DRT::Discretization& dis,
     // call loop over elements
     dis.ClearState();
 
-    dis.SetState("velaf", velnp);
-    if (dispnp != Teuchos::null) dis.SetState("dispnp", dispnp);
-    if (gridv != Teuchos::null) dis.SetState("gridv", gridv);
+    dis.set_state("velaf", velnp);
+    if (dispnp != Teuchos::null) dis.set_state("dispnp", dispnp);
+    if (gridv != Teuchos::null) dis.set_state("gridv", gridv);
 
-    dis.EvaluateCondition(eleparams, flowrates, condstring, condID);
+    dis.evaluate_condition(eleparams, flowrates, condstring, condID);
     dis.ClearState();
 
     double local_flowrate = 0.0;
@@ -944,9 +945,9 @@ std::map<int, double> FLD::UTILS::ComputeVolume(DRT::Discretization& dis,
 
   // call loop over elements
   dis.ClearState();
-  dis.SetState("velnp", velnp);
-  if (dispnp != Teuchos::null) dis.SetState("dispnp", dispnp);
-  if (gridv != Teuchos::null) dis.SetState("gridv", gridv);
+  dis.set_state("velnp", velnp);
+  if (dispnp != Teuchos::null) dis.set_state("dispnp", dispnp);
+  if (gridv != Teuchos::null) dis.set_state("gridv", gridv);
 
   Teuchos::RCP<CORE::LINALG::SerialDenseVector> volumes =
       Teuchos::rcp(new CORE::LINALG::SerialDenseVector(1));
@@ -991,8 +992,8 @@ std::map<int, CORE::LINALG::Matrix<3, 1>> FLD::UTILS::ComputeSurfaceImpulsRates(
 
     // call loop over elements
     dis.ClearState();
-    dis.SetState("velnp", velnp);
-    dis.EvaluateCondition(eleparams, impulsrates, "SurfImpulsRate", condID);
+    dis.set_state("velnp", velnp);
+    dis.evaluate_condition(eleparams, impulsrates, "SurfImpulsRate", condID);
     dis.ClearState();
     CORE::LINALG::Matrix<3, 1> locflowrate(true);
     for (int inode = 0; inode < dis.NumMyRowNodes(); inode++)
@@ -1098,7 +1099,7 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
   Teuchos::RCP<Epetra_MultiVector> projected_velgrad = Teuchos::null;
 
   // dependent on the desired projection, just remove this line
-  if (not vel->Map().SameAs(*discret->DofRowMap()))
+  if (not vel->Map().SameAs(*discret->dof_row_map()))
     FOUR_C_THROW("input map is not a dof row map of the fluid");
 
   switch (recomethod)
@@ -1147,7 +1148,7 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
 
       // set given state for element evaluation
       discret->ClearState();
-      discret->SetState("vel", vel);
+      discret->set_state("vel", vel);
 
       // project velocity gradient of fluid to nodal level via L2 projection
       projected_velgrad =

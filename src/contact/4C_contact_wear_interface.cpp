@@ -1258,12 +1258,12 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
   if (sticknodes->NumMyElements() == 0) return;
 
   // information from interface contact parameter list
-  const double frcoeff = InterfaceParams().get<double>("FRCOEFF");
-  double ct = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
-  double cn = InterfaceParams().get<double>("SEMI_SMOOTH_CN");
+  const double frcoeff = interface_params().get<double>("FRCOEFF");
+  double ct = interface_params().get<double>("SEMI_SMOOTH_CT");
+  double cn = interface_params().get<double>("SEMI_SMOOTH_CN");
 
   INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(interface_params(), "FRICTION");
 
   bool consistent = false;
 
@@ -1348,7 +1348,7 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
       for (int i = 0; i < Dim(); i++) znor += n[i] * z[i];
 
       // for slip
-      if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+      if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         jumptxi = cnode->FriData().jump_var()[0];
 
@@ -1414,7 +1414,7 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
       // 3) Entries from differentiation with respect to displacements
       /******************************************************************/
 
-      if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+      if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         std::vector<std::map<int, double>> derivjump_ = cnode->FriData().GetDerivVarJump();
 
@@ -1629,7 +1629,7 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
       double* jump = cnode->FriData().jump();
 
       // slip
-      if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+      if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         jumptxi = cnode->FriData().jump_var()[0];
 
@@ -1680,7 +1680,7 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
 
       // Entries from differentiation with respect to displacements
       /*** 1 ************************************** tangent.deriv(jump) ***/
-      if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+      if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         std::map<int, double> derivjump1 = cnode->FriData().GetDerivVarJump()[0];
         std::map<int, double> derivjump2 = cnode->FriData().GetDerivVarJump()[1];
@@ -1775,10 +1775,10 @@ void WEAR::WearInterface::AssembleLinSlip_W(CORE::LINALG::SparseMatrix& linslipW
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
-  double frcoeff = InterfaceParams().get<double>("FRCOEFF");
-  double ct = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
-  double cn = InterfaceParams().get<double>("SEMI_SMOOTH_CN");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(interface_params(), "FRICTION");
+  double frcoeff = interface_params().get<double>("FRCOEFF");
+  double ct = interface_params().get<double>("SEMI_SMOOTH_CT");
+  double cn = interface_params().get<double>("SEMI_SMOOTH_CN");
 
   //**********************************************************************
   //**********************************************************************
@@ -1859,7 +1859,7 @@ void WEAR::WearInterface::AssembleLinSlip_W(CORE::LINALG::SparseMatrix& linslipW
       double* jump = cnode->FriData().jump();
 
       // for slip
-      if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+      if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         jumptxi = cnode->FriData().jump_var()[0];
 
@@ -1961,10 +1961,10 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
-  double frcoeff = InterfaceParams().get<double>("FRCOEFF");
-  double ct = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
-  double cn = InterfaceParams().get<double>("SEMI_SMOOTH_CN");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(interface_params(), "FRICTION");
+  double frcoeff = interface_params().get<double>("FRCOEFF");
+  double ct = interface_params().get<double>("SEMI_SMOOTH_CT");
+  double cn = interface_params().get<double>("SEMI_SMOOTH_CN");
 
   //**********************************************************************
   //**********************************************************************
@@ -2045,7 +2045,7 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
       double* jump = cnode->FriData().jump();
 
       // for gp slip
-      if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+      if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         jumptxi = cnode->FriData().jump_var()[0];
 
@@ -2283,7 +2283,7 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
         std::vector<std::map<int, double>> derivjump;  // for dm slip
 
         /*** 01  ********* -Deriv(euclidean).ct.tangent.deriv(u)*ztan ***/
-        if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+        if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           derivjump1 = cnode->FriData().GetDerivVarJump()[0];
           derivjump2 = cnode->FriData().GetDerivVarJump()[1];
@@ -2386,7 +2386,7 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
 
 
         /*** 02 ***************** frcoeff*znor*ct*tangent.deriv(jump) ***/
-        if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+        if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           for (colcurr = derivjump1.begin(); colcurr != derivjump1.end(); ++colcurr)
           {
@@ -2520,7 +2520,7 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
         }
 
         /*** 3 ****************** deriv(euclidean).deriv(T).jump.ztan ***/
-        if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+        if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           //!!!!!!!!!!!!!!! DO NOTHING !!!!!!!
         }
@@ -2607,7 +2607,7 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
         }
 
         /*** 5 *********************** (frcoeff*znor).deriv(T).jump ***/
-        if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+        if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           //!!!!!!!!!!!!!!! DO NOTHING !!!!!!!!!!!!!!!!!!!!!!
         }
@@ -2801,9 +2801,9 @@ void WEAR::WearInterface::AssembleLinWLmSt(CORE::LINALG::SparseMatrix& sglobal)
   if (sticknodes->NumMyElements() == 0) return;
 
   // get input params
-  double ct = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
-  double cn = InterfaceParams().get<double>("SEMI_SMOOTH_CN");
-  double frcoeff = InterfaceParams().get<double>("FRCOEFF");
+  double ct = interface_params().get<double>("SEMI_SMOOTH_CT");
+  double cn = interface_params().get<double>("SEMI_SMOOTH_CN");
+  double frcoeff = interface_params().get<double>("FRCOEFF");
 
 
   // loop over all stick slave nodes of the interface
@@ -2886,9 +2886,9 @@ void WEAR::WearInterface::AssembleLinWLmSl(CORE::LINALG::SparseMatrix& sglobal)
   if (!wearimpl_) FOUR_C_THROW("This matrix deriv. is only required for implicit wear algorithm!");
 
   // get input params
-  double ct = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
-  double cn = InterfaceParams().get<double>("SEMI_SMOOTH_CN");
-  double frcoeff = InterfaceParams().get<double>("FRCOEFF");
+  double ct = interface_params().get<double>("SEMI_SMOOTH_CT");
+  double cn = interface_params().get<double>("SEMI_SMOOTH_CN");
+  double frcoeff = interface_params().get<double>("FRCOEFF");
 
   // loop over all active slave nodes of the interface
   for (int i = 0; i < slipnodes_->NumMyElements(); ++i)
@@ -3215,7 +3215,7 @@ bool WEAR::WearInterface::build_active_set_master()
         // nodes cor. to this master element
         if (celement->IsAttached() == true)
         {
-          for (int p = 0; p < celement->NumNode(); ++p)
+          for (int p = 0; p < celement->num_node(); ++p)
           {
             CONTACT::FriNode* mnode = dynamic_cast<CONTACT::FriNode*>(celement->Nodes()[p]);
 
@@ -3623,9 +3623,9 @@ void WEAR::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
   }
 
   INPAR::CONTACT::SystemType systype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(InterfaceParams(), "SYSTEM");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(interface_params(), "SYSTEM");
 
-  double wcoeff = InterfaceParams().get<double>("WEARCOEFF");
+  double wcoeff = interface_params().get<double>("WEARCOEFF");
 
   typedef std::map<int, double>::const_iterator CI;
 
@@ -3713,9 +3713,9 @@ void WEAR::WearInterface::assemble_wear_cond_rhs_master(Epetra_FEVector& RHS)
   if (slipmasternodes_ == Teuchos::null) return;
 
   INPAR::CONTACT::SystemType systype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(InterfaceParams(), "SYSTEM");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(interface_params(), "SYSTEM");
 
-  double wcoeff = InterfaceParams().get<double>("WEARCOEFF_MASTER");
+  double wcoeff = interface_params().get<double>("WEARCOEFF_MASTER");
 
   typedef std::map<int, double>::const_iterator CI;
 
@@ -3890,7 +3890,7 @@ void WEAR::WearInterface::Initialize()
       frinode->FriData().GetMNodes().clear();
 
       // for gp slip
-      if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+      if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         // reset jump deriv.
         for (int j = 0; j < (int)((frinode->FriData().GetDerivVarJump()).size()); ++j)

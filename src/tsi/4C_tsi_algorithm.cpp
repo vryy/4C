@@ -106,9 +106,9 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
             GLOBAL::Problem::Instance()->TSIDynamicParams(), "COUPALGO") != INPAR::TSI::Monolithic)
     {
       if (matchinggrid_)
-        structdis->SetState(1, "temperature", ThermoField()->Tempnp());
+        structdis->set_state(1, "temperature", ThermoField()->Tempnp());
       else
-        structdis->SetState(
+        structdis->set_state(
             1, "temperature", volcoupl_->apply_vector_mapping12(ThermoField()->Tempnp()));
     }
 
@@ -136,7 +136,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   if (matchinggrid_)
   {
     coupST_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-    coupST_->SetupCoupling(*StructureField()->Discretization(), *ThermoField()->Discretization(),
+    coupST_->setup_coupling(*StructureField()->Discretization(), *ThermoField()->Discretization(),
         *StructureField()->Discretization()->NodeRowMap(),
         *ThermoField()->Discretization()->NodeRowMap(), 1, true);
   }
@@ -239,7 +239,7 @@ void TSI::Algorithm::Output(bool forced_writerestart)
         {
           // global and processor's local fluid dof ID
           const int sgid = thermnodedofs_1[index];
-          const int slid = ThermoField()->Discretization()->DofRowMap(1)->LID(sgid);
+          const int slid = ThermoField()->Discretization()->dof_row_map(1)->LID(sgid);
 
 
           // get value of corresponding displacement component
@@ -287,7 +287,7 @@ void TSI::Algorithm::Output(bool forced_writerestart)
 
         // global and processor's local structure dof ID
         const int sgid = structdofs[0];
-        const int slid = StructureField()->Discretization()->DofRowMap(1)->LID(sgid);
+        const int slid = StructureField()->Discretization()->dof_row_map(1)->LID(sgid);
 
         // get value of corresponding displacement component
         double temp = (*dummy1)[slid];
@@ -319,7 +319,7 @@ void TSI::Algorithm::output_deformation_in_thr(
   int err(0);
 
   // get dofrowmap of structural discretisation
-  const Epetra_Map* structdofrowmap = structdis->DofRowMap(0);
+  const Epetra_Map* structdofrowmap = structdis->dof_row_map(0);
 
   // loop over all local nodes of thermal discretisation
   for (int lnodeid = 0; lnodeid < (ThermoField()->Discretization()->NumMyRowNodes()); lnodeid++)
@@ -391,24 +391,25 @@ void TSI::Algorithm::apply_thermo_coupling_state(
 {
   if (matchinggrid_)
   {
-    if (temp != Teuchos::null) StructureField()->Discretization()->SetState(1, "temperature", temp);
+    if (temp != Teuchos::null)
+      StructureField()->Discretization()->set_state(1, "temperature", temp);
     if (temp_res != Teuchos::null)
-      StructureField()->Discretization()->SetState(1, "residual temperature", temp_res);
+      StructureField()->Discretization()->set_state(1, "residual temperature", temp_res);
   }
   else
   {
     if (temp != Teuchos::null)
-      StructureField()->Discretization()->SetState(
+      StructureField()->Discretization()->set_state(
           1, "temperature", volcoupl_->apply_vector_mapping12(temp));
   }
 
   // set new temperatures to contact
   {
     if (contact_strategy_lagrange_ != Teuchos::null)
-      contact_strategy_lagrange_->SetState(
+      contact_strategy_lagrange_->set_state(
           MORTAR::state_temperature, *coupST_()->SlaveToMaster(ThermoField()->Tempnp()));
     if (contact_strategy_nitsche_ != Teuchos::null)
-      contact_strategy_nitsche_->SetState(MORTAR::state_temperature, *ThermoField()->Tempnp());
+      contact_strategy_nitsche_->set_state(MORTAR::state_temperature, *ThermoField()->Tempnp());
   }
 }  // apply_thermo_coupling_state()
 
@@ -421,16 +422,16 @@ void TSI::Algorithm::apply_struct_coupling_state(
 {
   if (matchinggrid_)
   {
-    if (disp != Teuchos::null) ThermoField()->Discretization()->SetState(1, "displacement", disp);
-    if (vel != Teuchos::null) ThermoField()->Discretization()->SetState(1, "velocity", vel);
+    if (disp != Teuchos::null) ThermoField()->Discretization()->set_state(1, "displacement", disp);
+    if (vel != Teuchos::null) ThermoField()->Discretization()->set_state(1, "velocity", vel);
   }
   else
   {
     if (disp != Teuchos::null)
-      ThermoField()->Discretization()->SetState(
+      ThermoField()->Discretization()->set_state(
           1, "displacement", volcoupl_->apply_vector_mapping21(disp));
     if (vel != Teuchos::null)
-      ThermoField()->Discretization()->SetState(
+      ThermoField()->Discretization()->set_state(
           1, "velocity", volcoupl_->apply_vector_mapping21(vel));
   }
 }  // apply_struct_coupling_state()
@@ -489,7 +490,7 @@ void TSI::Algorithm::prepare_contact_strategy()
     Teuchos::ParameterList cparams;
 
     // read and check contact input parameters
-    factory.ReadAndCheckInput(cparams);
+    factory.read_and_check_input(cparams);
 
     // ---------------------------------------------------------------------
     // build the contact interfaces
@@ -518,8 +519,8 @@ void TSI::Algorithm::prepare_contact_strategy()
     contact_strategy_lagrange_->store_dirichlet_status(StructureField()->GetDBCMapExtractor());
 
     Teuchos::RCP<Epetra_Vector> zero_disp =
-        Teuchos::rcp(new Epetra_Vector(*StructureField()->DofRowMap(), true));
-    contact_strategy_lagrange_->SetState(MORTAR::state_new_displacement, *zero_disp);
+        Teuchos::rcp(new Epetra_Vector(*StructureField()->dof_row_map(), true));
+    contact_strategy_lagrange_->set_state(MORTAR::state_new_displacement, *zero_disp);
     contact_strategy_lagrange_->SaveReferenceState(zero_disp);
     contact_strategy_lagrange_->evaluate_reference_state();
     contact_strategy_lagrange_->Inttime_init();

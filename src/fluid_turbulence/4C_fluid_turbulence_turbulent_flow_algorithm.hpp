@@ -38,12 +38,12 @@ namespace FLD
 
     /// read restart
     /// only during inflow generation
-    void ReadRestart(const int restart);
+    void read_restart(const int restart);
 
     /// do result check
     Teuchos::RCP<CORE::UTILS::ResultTest> DoResultCheck()
     {
-      return fluidalgo_->FluidField()->CreateFieldTest();
+      return fluidalgo_->fluid_field()->CreateFieldTest();
     };
 
    private:

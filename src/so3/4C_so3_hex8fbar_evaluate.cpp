@@ -44,7 +44,8 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
-  // Check whether the solid material PostSetup() routine has already been called and call it if not
+  // Check whether the solid material post_setup() routine has already been called and call it if
+  // not
   ensure_material_post_setup(params);
 
   set_params_interface_ptr(params);
@@ -272,7 +273,7 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
     break;
 
     case ELEMENTS::struct_calc_eleload:
-      FOUR_C_THROW("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
+      FOUR_C_THROW("this method is not supposed to evaluate a load, use evaluate_neumann(...)");
       break;
 
     case ELEMENTS::struct_calc_fsiload:
@@ -293,7 +294,7 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::struct_calc_reset_istep:
     {
       // Reset of history (if needed)
-      SolidMaterial()->ResetStep();
+      SolidMaterial()->reset_step();
     }
     break;
 
@@ -598,13 +599,13 @@ void DRT::ELEMENTS::SoHex8fbar::InitJacobianMapping()
     if (detJ_[gp] <= 0.0) FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
 
     if (PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
-      if (!(prestress_->IsInit()))
+      if (!(prestress_->is_init()))
         prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
   }
 
   // init the centroid invJ
   if (PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
-    if (!(prestress_->IsInit()))
+    if (!(prestress_->is_init()))
     {
       CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
       CORE::FE::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, CORE::FE::CellType::hex8);
@@ -615,7 +616,7 @@ void DRT::ELEMENTS::SoHex8fbar::InitJacobianMapping()
     }
 
 
-  if (PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
+  if (PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->is_init() = true;
 
   return;
 }
@@ -623,7 +624,7 @@ void DRT::ELEMENTS::SoHex8fbar::InitJacobianMapping()
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)               |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::SoHex8fbar::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::SoHex8fbar::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -727,7 +728,7 @@ int DRT::ELEMENTS::SoHex8fbar::EvaluateNeumann(Teuchos::ParameterList& params,
   } /* ==================================================== end of Loop over GP */
 
   return 0;
-}  // DRT::ELEMENTS::So_hex8fbar::EvaluateNeumann
+}  // DRT::ELEMENTS::So_hex8fbar::evaluate_neumann
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                                      |

@@ -36,7 +36,7 @@ void PARTICLEWALL::WallDataState::Init(const Teuchos::RCP<DRT::Discretization> w
   bool isloaded = CORE::UTILS::IntegralValue<int>(params_, "PARTICLE_WALL_LOADED");
 
   // set current dof row and column map
-  curr_dof_row_map_ = Teuchos::rcp(new Epetra_Map(*walldiscretization_->DofRowMap()));
+  curr_dof_row_map_ = Teuchos::rcp(new Epetra_Map(*walldiscretization_->dof_row_map()));
 
   // create states needed for moving walls
   if (ismoving)
@@ -63,7 +63,7 @@ void PARTICLEWALL::WallDataState::Setup()
 void PARTICLEWALL::WallDataState::CheckForCorrectMaps()
 {
   if (disp_row_ != Teuchos::null)
-    if (not disp_row_->Map().SameAs(*walldiscretization_->DofRowMap()))
+    if (not disp_row_->Map().SameAs(*walldiscretization_->dof_row_map()))
       FOUR_C_THROW("map of state 'disp_row_' corrupt!");
 
   if (disp_col_ != Teuchos::null)
@@ -71,7 +71,7 @@ void PARTICLEWALL::WallDataState::CheckForCorrectMaps()
       FOUR_C_THROW("map of state 'disp_col_' corrupt!");
 
   if (disp_row_last_transfer_ != Teuchos::null)
-    if (not disp_row_last_transfer_->Map().SameAs(*walldiscretization_->DofRowMap()))
+    if (not disp_row_last_transfer_->Map().SameAs(*walldiscretization_->dof_row_map()))
       FOUR_C_THROW("map of state 'disp_row_last_transfer_' corrupt!");
 
   if (vel_col_ != Teuchos::null)
@@ -93,7 +93,7 @@ void PARTICLEWALL::WallDataState::update_maps_of_state_vectors()
   {
     // export row map based displacement vector
     Teuchos::RCP<Epetra_Vector> temp = disp_row_;
-    disp_row_ = Teuchos::rcp(new Epetra_Vector(*walldiscretization_->DofRowMap(), true));
+    disp_row_ = Teuchos::rcp(new Epetra_Vector(*walldiscretization_->dof_row_map(), true));
     CORE::LINALG::Export(*temp, *disp_row_);
 
     // update column map based displacement vector
@@ -135,7 +135,7 @@ void PARTICLEWALL::WallDataState::update_maps_of_state_vectors()
   }
 
   // set new dof row map
-  curr_dof_row_map_ = Teuchos::rcp(new Epetra_Map(*walldiscretization_->DofRowMap()));
+  curr_dof_row_map_ = Teuchos::rcp(new Epetra_Map(*walldiscretization_->dof_row_map()));
 }
 
 FOUR_C_NAMESPACE_CLOSE

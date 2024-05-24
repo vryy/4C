@@ -155,7 +155,7 @@ namespace DRT
       //! this method evaluates a surfaces Neumann condition on the wall element
       //!
       //! \return 0 if successful, negative otherwise
-      int EvaluateNeumann(
+      int evaluate_neumann(
           Teuchos::ParameterList& params,  //!< (in/out) ParameterList for communication between
                                            //!< control routine and elements
           DRT::Discretization& discretization,     //!< A reference to the underlying discretization

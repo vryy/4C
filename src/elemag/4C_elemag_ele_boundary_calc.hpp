@@ -51,7 +51,7 @@ namespace DRT
         This class does not provide a definition for this function, it
         must be defined in ElemagBoundaryImpl.
        */
-      virtual int EvaluateNeumann(DRT::ELEMENTS::ElemagBoundary* ele,
+      virtual int evaluate_neumann(DRT::ELEMENTS::ElemagBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -93,7 +93,7 @@ namespace DRT
       static constexpr int nsd_ = bdrynsd_ + 1;
 
       //! Evaluate a Neumann boundary condition
-      int EvaluateNeumann(DRT::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,
+      int evaluate_neumann(DRT::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
           std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseMatrix* elemat1) override;

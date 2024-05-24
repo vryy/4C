@@ -127,23 +127,23 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::Output(IO::DiscretizationWri
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |  ReadRestart (public)                                    ismail 10/10|
+ |  read_restart (public)                                    ismail 10/10|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::ReadRestart(IO::DiscretizationReader& reader)
+void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::read_restart(IO::DiscretizationReader& reader)
 {
   std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
 
   for (mapiter = fvsf_map_.begin(); mapiter != fvsf_map_.end(); mapiter++)
   {
-    mapiter->second->FluidVolumetricSurfaceFlowBc::ReadRestart(
+    mapiter->second->FluidVolumetricSurfaceFlowBc::read_restart(
         reader, "VolumetricSurfaceFlowCond", mapiter->first);
   }
 
   return;
-}  // FluidVolumetricSurfaceFlowWrapper::ReadRestart
+}  // FluidVolumetricSurfaceFlowWrapper::read_restart
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -206,7 +206,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
   // -------------------------------------------------------------------
   // get dof row map
   // -------------------------------------------------------------------
-  const Epetra_Map* dofrowmap = actdis->DofRowMap();
+  const Epetra_Map* dofrowmap = actdis->dof_row_map();
 
   // -------------------------------------------------------------------
   // get condition
@@ -356,7 +356,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
   // -------------------------------------------------------------------
   // evaluate the surface dof row map
   this->build_condition_dof_row_map(discret_, ds_condname, condid_, condnum_s_, cond_dofrowmap_);
-  const Epetra_Map* drt_dofrowMap = discret_->DofRowMap();
+  const Epetra_Map* drt_dofrowMap = discret_->dof_row_map();
 
   // -------------------------------------------------------------------
   // calculate the normalized  of mass of the surface condition
@@ -403,7 +403,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::center_of_mass_calculation(
 
   const std::string condstring(ds_condname);
 
-  discret_->EvaluateCondition(eleparams, Teuchos::null, condstring, condid_);
+  discret_->evaluate_condition(eleparams, Teuchos::null, condstring, condid_);
 
   // get center of mass in parallel case
   std::vector<double> par_coord(3, 0.0);
@@ -785,7 +785,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::build_condition_node_row_map(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |  Build condition DofRowMap (public)                      ismail 10/10|
+ |  Build condition dof_row_map (public)                      ismail 10/10|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -879,12 +879,12 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Output(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |  ReadRestart (public)                                    ismail 11/10|
+ |  read_restart (public)                                    ismail 11/10|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::ReadRestart(
+void FLD::UTILS::FluidVolumetricSurfaceFlowBc::read_restart(
     IO::DiscretizationReader& reader, std::string ds_condname, int condnum)
 {
   // condnum contains the number of the present condition
@@ -1031,7 +1031,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::evaluate_traction_velocity_comp(
 
   eleparams.set<int>("action", FLD::traction_velocity_component);
   eleparams.set("velocities", cond_velocities_);
-  discret_->EvaluateCondition(eleparams, cond_traction_vel_, condname, condid_);
+  discret_->evaluate_condition(eleparams, cond_traction_vel_, condname, condid_);
 }
 
 
@@ -1456,14 +1456,14 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::FlowRateCalculation(
 
   // get a vector layout from the discretization to construct matching
   // vectors and matrices local <-> global dof numbering
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // create vector (+ initialization with zeros)
   Teuchos::RCP<Epetra_Vector> flowrates = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   const std::string condstring(ds_condname);
 
-  discret_->EvaluateCondition(eleparams, flowrates, condstring, condid);
+  discret_->evaluate_condition(eleparams, flowrates, condstring, condid);
 
   double local_flowrate = 0.0;
   for (int i = 0; i < dofrowmap->NumMyElements(); i++)
@@ -1492,13 +1492,13 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::PressureCalculation(
 
   // get a vector layout from the discretization to construct matching
   // vectors and matrices local <-> global dof numbering
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // create vector (+ initialization with zeros)
   Teuchos::RCP<Epetra_Vector> flowrates = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   const std::string condstring(ds_condname);
-  discret_->EvaluateCondition(eleparams, flowrates, condstring, condid);
+  discret_->evaluate_condition(eleparams, flowrates, condstring, condid);
 
   pressure = eleparams.get<double>("Inlet integrated pressure");
   std::cout << "avg pressure: " << pressure / area_ << std::endl;
@@ -1576,9 +1576,9 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::WomersleyVelocity(double r, dou
   std::complex<double> z = alpha * pow(i, 1.5);
 
   // bessel functions
-  Jo_z = this->BesselJ01(z, false);
-  J1_z = this->BesselJ01(z, true);
-  Jo_rz = this->BesselJ01(z * r, false);
+  Jo_z = this->bessel_j01(z, false);
+  J1_z = this->bessel_j01(z, true);
+  Jo_rz = this->bessel_j01(z * r, false);
 
   // velocity
   velocity = (Bn) * (z * (Jo_z - Jo_rz) / (z * Jo_z - 2.0 * J1_z)) * eiwt_phi;
@@ -1598,7 +1598,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::WomersleyVelocity(double r, dou
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-std::complex<double> FLD::UTILS::FluidVolumetricSurfaceFlowBc::BesselJ01(
+std::complex<double> FLD::UTILS::FluidVolumetricSurfaceFlowBc::bessel_j01(
     std::complex<double> z, bool order)
 {
   // DESCRIPTION:
@@ -1724,7 +1724,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::Area(
 
   const std::string condstring(ds_condname);
 
-  discret_->EvaluateCondition(eleparams, condstring, condid);
+  discret_->evaluate_condition(eleparams, condstring, condid);
 
   double actarea = eleparams.get<double>("area");
   density = eleparams.get<double>("density");
@@ -2026,7 +2026,7 @@ void FLD::UTILS::TotalTractionCorrector::EvaluateVelocities(
   {
     double flowrate = 0.0;
 
-    if (mapiter->second->PrebiasingFlag() == "FORCED")
+    if (mapiter->second->prebiasing_flag() == "FORCED")
     {
       flowrate = mapiter->second->EvaluateFlowrate("TotalTractionCorrectionCond", time);
     }
@@ -2034,7 +2034,7 @@ void FLD::UTILS::TotalTractionCorrector::EvaluateVelocities(
     {
       Teuchos::ParameterList eleparams;
 
-      discret_->SetState("velaf", velocities);
+      discret_->set_state("velaf", velocities);
 
       flowrate = mapiter->second->FluidVolumetricSurfaceFlowBc::FlowRateCalculation(
           eleparams, time, "TotalTractionCorrectionCond", FLD::calc_flowrate, mapiter->first);
@@ -2103,23 +2103,23 @@ void FLD::UTILS::TotalTractionCorrector::Output(IO::DiscretizationWriter& output
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |  ReadRestart (public)                                    ismail 04/11|
+ |  read_restart (public)                                    ismail 04/11|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::TotalTractionCorrector::ReadRestart(IO::DiscretizationReader& reader)
+void FLD::UTILS::TotalTractionCorrector::read_restart(IO::DiscretizationReader& reader)
 {
   std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
 
   for (mapiter = fvsf_map_.begin(); mapiter != fvsf_map_.end(); mapiter++)
   {
-    mapiter->second->FluidVolumetricSurfaceFlowBc::ReadRestart(
+    mapiter->second->FluidVolumetricSurfaceFlowBc::read_restart(
         reader, "TotalTractionCorrectionCond", mapiter->first);
   }
 
   return;
-}  // FluidVolumetricSurfaceFlowWrapper::ReadRestart
+}  // FluidVolumetricSurfaceFlowWrapper::read_restart
 
 
 
@@ -2142,7 +2142,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::export_and_set_boundary_values(
   // check if the exporting was successful
   if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
   // Set state
-  discret_->SetState(name, target);
+  discret_->set_state(name, target);
 }
 
 
@@ -2166,7 +2166,7 @@ void FLD::UTILS::TotalTractionCorrector::export_and_set_boundary_values(
   // check if the exporting was successful
   if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
   // Set state
-  discret_->SetState(name, target);
+  discret_->set_state(name, target);
 }
 
 FOUR_C_NAMESPACE_CLOSE

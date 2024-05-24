@@ -59,10 +59,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::pre_evaluate_c
       Teuchos::rcp(new Epetra_MultiVector(*arterydis_->ElementColMap(), numgp_per_artele));
 
   // pre-evaluate
-  for (unsigned i = 0; i < coupl_elepairs_.size(); i++) coupl_elepairs_[i]->PreEvaluate(gp_vector);
+  for (unsigned i = 0; i < coupl_elepairs_.size(); i++) coupl_elepairs_[i]->pre_evaluate(gp_vector);
 
   // delete the inactive pairs
-  coupl_elepairs_.erase(std::remove_if(coupl_elepairs_.begin(), coupl_elepairs_.end(), IsNotActive),
+  coupl_elepairs_.erase(
+      std::remove_if(coupl_elepairs_.begin(), coupl_elepairs_.end(), is_not_active),
       coupl_elepairs_.end());
 
   // the following takes care of a very special case, namely, if a GP on the lateral surface lies
@@ -135,7 +136,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::pre_evaluate_c
   {
     // segment ID not needed in this case, just set to zero
     coupl_elepairs_[i]->SetSegmentID(0);
-    numgp = numgp + coupl_elepairs_[i]->NumGP();
+    numgp = numgp + coupl_elepairs_[i]->num_gp();
   }
   // safety check
   Comm().SumAll(&numgp, &total_num_gp, 1);
@@ -165,11 +166,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::pre_evaluate_c
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::IsNotActive(
+bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::is_not_active(
     const Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>
         coupling_pair)
 {
-  return not coupling_pair->IsActive();
+  return not coupling_pair->is_active();
 }
 
 /*----------------------------------------------------------------------*

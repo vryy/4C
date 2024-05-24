@@ -53,7 +53,7 @@ namespace BEAMINTERACTION
       void Setup() override;
 
       //! derived
-      void PostSetup() override;
+      void post_setup() override;
 
       //! Returns the type of the current submodel evaluator
       INPAR::BEAMINTERACTION::SubModelType Type() const override
@@ -68,22 +68,22 @@ namespace BEAMINTERACTION
       void Reset() override;
 
       //! derived
-      bool EvaluateForce() override;
+      bool evaluate_force() override;
 
       //! derived
-      bool EvaluateStiff() override;
+      bool evaluate_stiff() override;
 
       //! derived
-      bool EvaluateForceStiff() override;
+      bool evaluate_force_stiff() override;
 
       /**
-       * \brief Call PreEvaluate on each pair.
+       * \brief Call pre_evaluate on each pair.
        *
-       * This has to be done outside of the the assembly managers, as PreEvaluate should only be
+       * This has to be done outside of the the assembly managers, as pre_evaluate should only be
        * called once per pair, and it is technically possible that the same pair is in multiple
        * assembly managers.
        */
-      void PreEvaluate();
+      void pre_evaluate();
 
       //! derived
       void UpdateStepState(const double& timefac_n) override;
@@ -98,7 +98,7 @@ namespace BEAMINTERACTION
       void post_update_step_element() override;
 
       //! derived
-      std::map<STR::EnergyType, double> GetEnergy() const override;
+      std::map<STR::EnergyType, double> get_energy() const override;
 
       //! derived
       void OutputStepState(IO::DiscretizationWriter& iowriter) const override;
@@ -117,7 +117,7 @@ namespace BEAMINTERACTION
       void PreReadRestart() override;
 
       //! derived
-      void ReadRestart(
+      void read_restart(
           IO::DiscretizationReader& ia_reader, IO::DiscretizationReader& bin_reader) override;
 
       //! derived
@@ -184,21 +184,21 @@ namespace BEAMINTERACTION
       //! @}
 
      private:
-      inline BEAMINTERACTION::BeamContactParams const& BeamContactParams() const
+      inline BEAMINTERACTION::BeamContactParams const& beam_contact_params() const
       {
-        CheckInit();
+        check_init();
         return *beam_contact_params_ptr_;
       }
 
-      inline BEAMINTERACTION::BeamContactParams& BeamContactParams()
+      inline BEAMINTERACTION::BeamContactParams& beam_contact_params()
       {
-        CheckInit();
+        check_init();
         return *beam_contact_params_ptr_;
       }
 
       inline Teuchos::RCP<BEAMINTERACTION::BeamContactParams> beam_contact_params_ptr() const
       {
-        CheckInit();
+        check_init();
         return beam_contact_params_ptr_;
       }
 

@@ -178,7 +178,7 @@ void CONTACT::AUG::Strategy::FdDebug::Evaluate(
               << ") of node " << gid << "..." << std::flush;
 
     // do the finite difference step
-    DoPerturbation(gid, dof);
+    do_perturbation(gid, dof);
 
     // Update matrix and rhs
     for (auto& iptr : strat_->Interfaces()) iptr->SetElementAreas();
@@ -195,7 +195,7 @@ void CONTACT::AUG::Strategy::FdDebug::Evaluate(
     }
 
     // Undo finite difference step
-    UndoPerturbation(gid, dof);
+    undo_perturbation(gid, dof);
 
     // Update matrix and rhs
     for (auto& iptr : strat_->Interfaces()) iptr->SetElementAreas();
@@ -304,9 +304,9 @@ void CONTACT::AUG::Strategy::FdDebug::Evaluate(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Strategy::FdDebug::DoPerturbation(const int gid, const int dof)
+void CONTACT::AUG::Strategy::FdDebug::do_perturbation(const int gid, const int dof)
 {
-  DRT::Node* node = FindINode(gid);
+  DRT::Node* node = find_i_node(gid);
 
   Node* cnode = dynamic_cast<Node*>(node);
 
@@ -334,9 +334,9 @@ void CONTACT::AUG::Strategy::FdDebug::DoPerturbation(const int gid, const int do
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Strategy::FdDebug::UndoPerturbation(const int gid, const int dof) const
+void CONTACT::AUG::Strategy::FdDebug::undo_perturbation(const int gid, const int dof) const
 {
-  DRT::Node* node = FindINode(gid);
+  DRT::Node* node = find_i_node(gid);
 
   Node* cnode = dynamic_cast<Node*>(node);
 
@@ -347,7 +347,7 @@ void CONTACT::AUG::Strategy::FdDebug::UndoPerturbation(const int gid, const int 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-DRT::Node* CONTACT::AUG::Strategy::FdDebug::FindINode(const int gid) const
+DRT::Node* CONTACT::AUG::Strategy::FdDebug::find_i_node(const int gid) const
 {
   DRT::Node* node = nullptr;
 

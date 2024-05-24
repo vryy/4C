@@ -187,7 +187,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec2,
           CORE::LINALG::SerialDenseVector& elevec3) override;
 
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& dof_index_array,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1) override;

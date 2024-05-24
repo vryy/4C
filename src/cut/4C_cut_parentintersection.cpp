@@ -171,7 +171,7 @@ void CORE::GEO::CUT::ParentIntersection::CreateNodalDofSet(
     if (e == nullptr) FOUR_C_THROW(" element not found, this should not be! ");
 
     // get the nodes of this element
-    int numnode = e->NumNode();
+    int numnode = e->num_node();
     const int* nids = e->NodeIds();
     std::vector<Node*> nodes(numnode);
 
@@ -563,18 +563,18 @@ CORE::GEO::CUT::Node* CORE::GEO::CUT::ParentIntersection::GetNode(int nid) const
 /*--------------------------------------------------------------------------------------*
  * get the mesh's side based on node ids and return the side
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::ParentIntersection::GetSide(
+CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::ParentIntersection::get_side(
     std::vector<int>& nodeids) const
 {
-  return mesh_.GetSide(nodeids);
+  return mesh_.get_side(nodeids);
 }
 
 /*--------------------------------------------------------------------------------------*
  * get the mesh's side based on side id and return the sidehandle
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::ParentIntersection::GetSide(int sid) const
+CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::ParentIntersection::get_side(int sid) const
 {
-  return mesh_.GetSide(sid);
+  return mesh_.get_side(sid);
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -588,7 +588,7 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::ParentIntersection::GetElement(in
 /*--------------------------------------------------------------------------------------*
  * print cell statistics
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::ParentIntersection::PrintCellStats() { NormalMesh().PrintCellStats(); }
+void CORE::GEO::CUT::ParentIntersection::print_cell_stats() { NormalMesh().print_cell_stats(); }
 
 /*--------------------------------------------------------------------------------------*
  * write gmsh debug output for nodal cell sets
@@ -721,7 +721,7 @@ void CORE::GEO::CUT::ParentIntersection::DumpGmshCellSets(
 /*--------------------------------------------------------------------------------------*
  * write gmsh cut output for number of dofsets and the connected vc sets
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::ParentIntersection::DumpGmshNumDOFSets(
+void CORE::GEO::CUT::ParentIntersection::dump_gmsh_num_dof_sets(
     std::string filename, bool include_inner, const DRT::Discretization& dis)
 {
   std::stringstream str;
@@ -883,9 +883,10 @@ void CORE::GEO::CUT::ParentIntersection::DumpGmshNumDOFSets(
 /*--------------------------------------------------------------------------------------*
  * write gmsh output for volumecells
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::ParentIntersection::DumpGmshVolumeCells(std::string name, bool include_inner)
+void CORE::GEO::CUT::ParentIntersection::dump_gmsh_volume_cells(
+    std::string name, bool include_inner)
 {
-  NormalMesh().DumpGmshVolumeCells(name, include_inner);
+  NormalMesh().dump_gmsh_volume_cells(name, include_inner);
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -899,9 +900,9 @@ void CORE::GEO::CUT::ParentIntersection::dump_gmsh_integration_cells(std::string
 /*--------------------------------------------------------------------------------------*
  * write gmsh output for volumecells
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::ParentIntersection::DumpGmshVolumeCells(std::string name)
+void CORE::GEO::CUT::ParentIntersection::dump_gmsh_volume_cells(std::string name)
 {
-  NormalMesh().DumpGmshVolumeCells(name);
+  NormalMesh().dump_gmsh_volume_cells(name);
 }
 
 FOUR_C_NAMESPACE_CLOSE

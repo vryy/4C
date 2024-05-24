@@ -34,7 +34,7 @@ namespace CONTACT
     /*!
     \brief Standard Constructor
 
-    \param[in] DofRowMap Dof row map of underlying problem
+    \param[in] dof_row_map Dof row map of underlying problem
     \param[in] NodeRowMap Node row map of underlying problem
     \param[in] params List of contact/parameters
     \param[in] interface All contact interface objects
@@ -43,7 +43,7 @@ namespace CONTACT
     \param[in] alphaf Mid-point for Generalized-alpha time integration
     \param[in] maxdof Highest DOF number in global problem
     */
-    MtLagrangeStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
+    MtLagrangeStrategy(const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
         Teuchos::ParameterList params, std::vector<Teuchos::RCP<MORTAR::Interface>> interface,
         const int spatialDim, const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
         const int maxdof);
@@ -166,21 +166,21 @@ namespace CONTACT
      * @param[in] dis Current displacement field
      * @return Boolean flag indicating successfull evaluation
      */
-    bool EvaluateForce(const Teuchos::RCP<const Epetra_Vector> dis) override;
+    bool evaluate_force(const Teuchos::RCP<const Epetra_Vector> dis) override;
 
     /*! \brief Evaluate stiffness term
      *
      * @param[in] dis Current displacement field
      * @return Boolean flag indicating successfull evaluation
      */
-    bool EvaluateStiff(const Teuchos::RCP<const Epetra_Vector> dis) override;
+    bool evaluate_stiff(const Teuchos::RCP<const Epetra_Vector> dis) override;
 
     /*! \brief Evaluate residual and stiffness matrix
      *
      * @param[in] dis Current displacement field
      * @return Boolean flag indicating successfull evaluation
      */
-    bool EvaluateForceStiff(const Teuchos::RCP<const Epetra_Vector> dis) override;
+    bool evaluate_force_stiff(const Teuchos::RCP<const Epetra_Vector> dis) override;
 
     //! Return the desired right-hand-side block pointer (read-only) [derived]
     Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(

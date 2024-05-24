@@ -62,23 +62,23 @@ void STR::MODELEVALUATOR::Generic::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Generic::CheckInitSetup() const
+void STR::MODELEVALUATOR::Generic::check_init_setup() const
 {
-  FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Generic::CheckInit() const
+void STR::MODELEVALUATOR::Generic::check_init() const
 {
-  FOUR_C_ASSERT(IsInit(), "Call Init() first!");
+  FOUR_C_ASSERT(is_init(), "Call Init() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::MODELEVALUATOR::Data& STR::MODELEVALUATOR::Generic::EvalData()
 {
-  CheckInit();
+  check_init();
   return *eval_data_ptr_;
 }
 
@@ -86,7 +86,7 @@ STR::MODELEVALUATOR::Data& STR::MODELEVALUATOR::Generic::EvalData()
  *----------------------------------------------------------------------------*/
 const STR::MODELEVALUATOR::Data& STR::MODELEVALUATOR::Generic::EvalData() const
 {
-  CheckInit();
+  check_init();
   return *eval_data_ptr_;
 }
 
@@ -94,7 +94,7 @@ const STR::MODELEVALUATOR::Data& STR::MODELEVALUATOR::Generic::EvalData() const
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::MODELEVALUATOR::Data>& STR::MODELEVALUATOR::Generic::EvalDataPtr()
 {
-  CheckInit();
+  check_init();
   return eval_data_ptr_;
 }
 
@@ -102,7 +102,7 @@ Teuchos::RCP<STR::MODELEVALUATOR::Data>& STR::MODELEVALUATOR::Generic::EvalDataP
  *----------------------------------------------------------------------------*/
 STR::TIMINT::BaseDataGlobalState& STR::MODELEVALUATOR::Generic::GState()
 {
-  CheckInit();
+  check_init();
   return *gstate_ptr_;
 }
 
@@ -110,7 +110,7 @@ STR::TIMINT::BaseDataGlobalState& STR::MODELEVALUATOR::Generic::GState()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& STR::MODELEVALUATOR::Generic::GStatePtr()
 {
-  CheckInit();
+  check_init();
   return gstate_ptr_;
 }
 
@@ -118,7 +118,7 @@ Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& STR::MODELEVALUATOR::Generic::GS
  *----------------------------------------------------------------------------*/
 const STR::TIMINT::BaseDataGlobalState& STR::MODELEVALUATOR::Generic::GState() const
 {
-  CheckInit();
+  check_init();
   return *gstate_ptr_;
 }
 
@@ -126,7 +126,7 @@ const STR::TIMINT::BaseDataGlobalState& STR::MODELEVALUATOR::Generic::GState() c
  *----------------------------------------------------------------------------*/
 STR::TIMINT::BaseDataIO& STR::MODELEVALUATOR::Generic::GInOutput()
 {
-  CheckInit();
+  check_init();
   return *gio_ptr_;
 }
 
@@ -134,7 +134,7 @@ STR::TIMINT::BaseDataIO& STR::MODELEVALUATOR::Generic::GInOutput()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::TIMINT::BaseDataIO> STR::MODELEVALUATOR::Generic::GInOutputPtr()
 {
-  CheckInit();
+  check_init();
   return gio_ptr_;
 }
 
@@ -142,7 +142,7 @@ Teuchos::RCP<STR::TIMINT::BaseDataIO> STR::MODELEVALUATOR::Generic::GInOutputPtr
  *----------------------------------------------------------------------------*/
 const STR::TIMINT::BaseDataIO& STR::MODELEVALUATOR::Generic::GInOutput() const
 {
-  CheckInit();
+  check_init();
   return *gio_ptr_;
 }
 
@@ -150,7 +150,7 @@ const STR::TIMINT::BaseDataIO& STR::MODELEVALUATOR::Generic::GInOutput() const
  *----------------------------------------------------------------------------*/
 DRT::Discretization& STR::MODELEVALUATOR::Generic::Discret()
 {
-  CheckInit();
+  check_init();
   return *discret_ptr_;
 }
 
@@ -158,7 +158,7 @@ DRT::Discretization& STR::MODELEVALUATOR::Generic::Discret()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Discretization>& STR::MODELEVALUATOR::Generic::DiscretPtr()
 {
-  CheckInit();
+  check_init();
   return discret_ptr_;
 }
 
@@ -166,7 +166,7 @@ Teuchos::RCP<DRT::Discretization>& STR::MODELEVALUATOR::Generic::DiscretPtr()
  *----------------------------------------------------------------------------*/
 const DRT::Discretization& STR::MODELEVALUATOR::Generic::Discret() const
 {
-  CheckInit();
+  check_init();
   return *discret_ptr_;
 }
 
@@ -174,7 +174,7 @@ const DRT::Discretization& STR::MODELEVALUATOR::Generic::Discret() const
  *----------------------------------------------------------------------------*/
 STR::Integrator& STR::MODELEVALUATOR::Generic::Int()
 {
-  CheckInit();
+  check_init();
   return *int_ptr_;
 }
 
@@ -182,7 +182,7 @@ STR::Integrator& STR::MODELEVALUATOR::Generic::Int()
  *----------------------------------------------------------------------------*/
 const STR::Integrator& STR::MODELEVALUATOR::Generic::Int() const
 {
-  CheckInit();
+  check_init();
   return *int_ptr_;
 }
 
@@ -194,7 +194,7 @@ Teuchos::RCP<STR::Integrator>& STR::MODELEVALUATOR::Generic::IntPtr() { return i
  *----------------------------------------------------------------------------*/
 const STR::TIMINT::Base& STR::MODELEVALUATOR::Generic::TimInt() const
 {
-  CheckInit();
+  check_init();
   return *timint_ptr_;
 }
 
@@ -202,7 +202,7 @@ const STR::TIMINT::Base& STR::MODELEVALUATOR::Generic::TimInt() const
  *----------------------------------------------------------------------------*/
 const int& STR::MODELEVALUATOR::Generic::DofOffset() const
 {
-  CheckInit();
+  check_init();
   return dof_offset_;
 }
 
@@ -210,7 +210,7 @@ const int& STR::MODELEVALUATOR::Generic::DofOffset() const
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> STR::MODELEVALUATOR::Generic::GetFextIncr() const
 {
-  CheckInitSetup();
+  check_init_setup();
   const Epetra_Vector& fextn = *GState().GetFextN();
   const Epetra_Vector& fextnp = *GState().GetFextNp();
 

@@ -45,7 +45,7 @@ BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::BeamToFluidMeshtying
 template <typename beam, typename fluid>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::Setup()
 {
-  this->CheckInit();
+  this->check_init();
 
   BeamToSolidVolumeMeshtyingPairBase<beam, fluid>::Setup();
 
@@ -108,12 +108,12 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::CreateGeometryP
  *
  */
 template <typename beam, typename fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::PreEvaluate()
+void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::pre_evaluate()
 {
-  // Call PreEvaluate on the geometry Pair.
+  // Call pre_evaluate on the geometry Pair.
   if (!this->meshtying_is_evaluated_)
   {
-    this->CastGeometryPair()->PreEvaluate(ele1poscur_, ele2poscur_, this->line_to_3D_segments_);
+    this->CastGeometryPair()->pre_evaluate(ele1poscur_, ele2poscur_, this->line_to_3D_segments_);
   }
 }
 
@@ -123,7 +123,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::PreEvaluate()
 template <typename beam, typename fluid>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::Print(std::ostream& out) const
 {
-  this->CheckInitSetup();
+  this->check_init_setup();
 
   // Print some general information: Element IDs and dofvecs.
   out << "\n------------------------------------------------------------------------";
@@ -146,7 +146,7 @@ template <typename beam, typename fluid>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam,
     fluid>::print_summary_one_line_per_active_segment_pair(std::ostream& out) const
 {
-  this->CheckInitSetup();
+  this->check_init_setup();
 
   // Only display information if a segment exists for this pair.
   if (this->line_to_3D_segments_.size() == 0) return;

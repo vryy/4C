@@ -69,7 +69,7 @@ FPSI::FPSICoupling::FPSICoupling(Teuchos::RCP<POROELAST::Monolithic> poro,
 void FPSI::FPSICoupling::init_coupling_matrixes_rhs()
 {
   // fluid extractor
-  CORE::LINALG::MapExtractor fluidextractor(*fluid_->DofRowMap(), fluid_->DofRowMap(), false);
+  CORE::LINALG::MapExtractor fluidextractor(*fluid_->dof_row_map(), fluid_->dof_row_map(), false);
   // ale extractor
   CORE::LINALG::MapExtractor aleextractor(
       *(ale_->Interface()->OtherMap()), ale_->Interface()->OtherMap(), false);
@@ -90,13 +90,13 @@ void FPSI::FPSICoupling::init_coupling_matrixes_rhs()
       new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
           aleextractor, *poro_->Extractor(), 81, true, true));
   c_fa_ = Teuchos::RCP<CORE::LINALG::SparseMatrix>(
-      new CORE::LINALG::SparseMatrix(*fluid_->DofRowMap(), 81, true, true));
+      new CORE::LINALG::SparseMatrix(*fluid_->dof_row_map(), 81, true, true));
 
   c_rhs_s_ =
-      Teuchos::RCP<Epetra_Vector>(new Epetra_Vector(*poro_->StructureField()->DofRowMap(), true));
+      Teuchos::RCP<Epetra_Vector>(new Epetra_Vector(*poro_->StructureField()->dof_row_map(), true));
   c_rhs_pf_ =
-      Teuchos::RCP<Epetra_Vector>(new Epetra_Vector(*poro_->FluidField()->DofRowMap(), true));
-  c_rhs_f_ = Teuchos::RCP<Epetra_Vector>(new Epetra_Vector(*fluid_->DofRowMap(), true));
+      Teuchos::RCP<Epetra_Vector>(new Epetra_Vector(*poro_->fluid_field()->dof_row_map(), true));
+  c_rhs_f_ = Teuchos::RCP<Epetra_Vector>(new Epetra_Vector(*fluid_->dof_row_map(), true));
 
   return;
 }
@@ -108,16 +108,17 @@ void FPSI::FPSICoupling::setup_interface_coupling()
 {
   const int ndim = GLOBAL::Problem::Instance()->NDim();
 
-  Teuchos::RCP<DRT::Discretization> fluiddis = FluidField()->Discretization();
-  Teuchos::RCP<DRT::Discretization> porofluiddis = PoroField()->FluidField()->Discretization();
-  Teuchos::RCP<DRT::Discretization> porostructdis = PoroField()->StructureField()->Discretization();
+  Teuchos::RCP<DRT::Discretization> fluiddis = fluid_field()->Discretization();
+  Teuchos::RCP<DRT::Discretization> porofluiddis = poro_field()->fluid_field()->Discretization();
+  Teuchos::RCP<DRT::Discretization> porostructdis =
+      poro_field()->StructureField()->Discretization();
 
   {
     porofluid_extractor_ = Teuchos::rcp(new CORE::LINALG::MapExtractor());
     CORE::Conditions::MultiConditionSelector mcs;
     mcs.AddSelector(Teuchos::rcp(
         new CORE::Conditions::NDimConditionSelector(*porofluiddis, "FPSICoupling", 0, ndim + 1)));
-    mcs.SetupExtractor(*porofluiddis, *(porofluiddis->DofRowMap()), *porofluid_extractor_);
+    mcs.SetupExtractor(*porofluiddis, *(porofluiddis->dof_row_map()), *porofluid_extractor_);
   }
 
   {
@@ -125,7 +126,7 @@ void FPSI::FPSICoupling::setup_interface_coupling()
     CORE::Conditions::MultiConditionSelector mcs;
     mcs.AddSelector(Teuchos::rcp(
         new CORE::Conditions::NDimConditionSelector(*porostructdis, "FPSICoupling", 0, ndim)));
-    mcs.SetupExtractor(*porostructdis, *(porostructdis->DofRowMap()), *porostruct_extractor_);
+    mcs.SetupExtractor(*porostructdis, *(porostructdis->dof_row_map()), *porostruct_extractor_);
   }
 
   {
@@ -133,7 +134,7 @@ void FPSI::FPSICoupling::setup_interface_coupling()
     CORE::Conditions::MultiConditionSelector mcs;
     mcs.AddSelector(Teuchos::rcp(
         new CORE::Conditions::NDimConditionSelector(*fluiddis, "FPSICoupling", 0, ndim + 1)));
-    mcs.SetupExtractor(*fluiddis, *(fluiddis->DofRowMap()), *fluidvelpres_extractor_);
+    mcs.SetupExtractor(*fluiddis, *(fluiddis->dof_row_map()), *fluidvelpres_extractor_);
   }
 
   {
@@ -141,7 +142,7 @@ void FPSI::FPSICoupling::setup_interface_coupling()
     CORE::Conditions::MultiConditionSelector mcs;
     mcs.AddSelector(Teuchos::rcp(
         new CORE::Conditions::NDimConditionSelector(*fluiddis, "FPSICoupling", 0, ndim)));
-    mcs.SetupExtractor(*fluiddis, *(fluiddis->DofRowMap()), *fluidvel_extractor_);
+    mcs.SetupExtractor(*fluiddis, *(fluiddis->dof_row_map()), *fluidvel_extractor_);
   }
 
   {
@@ -151,23 +152,23 @@ void FPSI::FPSICoupling::setup_interface_coupling()
         new CORE::Conditions::NDimConditionSelector(*fluiddis, "FSICoupling", 0, ndim)));
     mcs.AddSelector(Teuchos::rcp(
         new CORE::Conditions::NDimConditionSelector(*fluiddis, "FPSICoupling", 0, ndim)));
-    mcs.SetupExtractor(*fluiddis, *(fluiddis->DofRowMap()), *fluid_fsifpsi_extractor_);
+    mcs.SetupExtractor(*fluiddis, *(fluiddis->dof_row_map()), *fluid_fsifpsi_extractor_);
   }
 
   {
     std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
 
-    // Split PoroField into:
+    // Split poro_field into:
     //                      --> Structure (inside + FSI-Interface)
     //                      --> Structure FPSI-Interface
     //                      --> PoroFluid (inside + FSI-Interface)
     //                      --> PoroFluid FPSI-Interface
 
     Teuchos::RCP<const Epetra_Map> s_other_map = CORE::LINALG::MergeMap(
-        PoroField()->StructureField()->Interface()->Map(STR::MapExtractor::cond_other),
-        PoroField()->StructureField()->Interface()->Map(STR::MapExtractor::cond_fsi));
+        poro_field()->StructureField()->Interface()->Map(STR::MapExtractor::cond_other),
+        poro_field()->StructureField()->Interface()->Map(STR::MapExtractor::cond_fsi));
     vecSpaces.push_back(s_other_map);  // other map
-    vecSpaces.push_back(PoroField()->StructureField()->Interface()->Map(
+    vecSpaces.push_back(poro_field()->StructureField()->Interface()->Map(
         STR::MapExtractor::cond_fpsi));                     // FPSICoupling
     vecSpaces.push_back(porofluid_extractor_->OtherMap());  // other map
     vecSpaces.push_back(porofluid_extractor_->CondMap());   // FPSICoupling
@@ -191,7 +192,7 @@ void FPSI::FPSICoupling::setup_interface_coupling()
   // porous structure to ale
   icoup_ps_a_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
   icoup_ps_a_->setup_condition_coupling(*porostructdis, porostruct_extractor_->CondMap(),
-      *AleField()->Discretization(), AleField()->Interface()->FPSICondMap(), "FPSICoupling", ndim,
+      *ale_field()->Discretization(), ale_field()->Interface()->FPSICondMap(), "FPSICoupling", ndim,
       false);
 
   return;
@@ -222,10 +223,11 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
   // Evaluates all Coupling Matrixes ...
   TEUCHOS_FUNC_TIME_MONITOR("FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs");
 
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> k_fp_porofluid = Teuchos::rcp(
-      new CORE::LINALG::SparseMatrix(*(PoroField()->FluidField()->DofRowMap()), 81, true, true));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> k_fp_porofluid =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+          *(poro_field()->fluid_field()->dof_row_map()), 81, true, true));
   Teuchos::RCP<CORE::LINALG::SparseMatrix> k_pf_porofluid =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(FluidField()->DofRowMap()), 81, true, true));
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(fluid_field()->dof_row_map()), 81, true, true));
 
   // set all coupling matrixes to zero!!
   c_pp_->Zero();
@@ -255,40 +257,40 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
   {
     // set general vector values needed by elements
 
-    PoroField()->FluidField()->Discretization()->ClearState();
+    poro_field()->fluid_field()->Discretization()->ClearState();
 
-    PoroField()->FluidField()->Discretization()->SetState(
-        0, "dispnp", PoroField()->FluidField()->Dispnp());
+    poro_field()->fluid_field()->Discretization()->set_state(
+        0, "dispnp", poro_field()->fluid_field()->Dispnp());
 
-    PoroField()->FluidField()->Discretization()->SetState(
-        0, "gridv", PoroField()->FluidField()->GridVel());
-    PoroField()->FluidField()->Discretization()->SetState(
-        0, "dispn", PoroField()->FluidField()->Dispn());
-    PoroField()->FluidField()->Discretization()->SetState(
-        0, "veln", PoroField()->FluidField()->Veln());
-    PoroField()->FluidField()->Discretization()->SetState(
-        0, "velaf", PoroField()->FluidField()->Velnp());
-    PoroField()->FluidField()->Discretization()->SetState(
-        0, "velnp", PoroField()->FluidField()->Velnp());
+    poro_field()->fluid_field()->Discretization()->set_state(
+        0, "gridv", poro_field()->fluid_field()->GridVel());
+    poro_field()->fluid_field()->Discretization()->set_state(
+        0, "dispn", poro_field()->fluid_field()->Dispn());
+    poro_field()->fluid_field()->Discretization()->set_state(
+        0, "veln", poro_field()->fluid_field()->Veln());
+    poro_field()->fluid_field()->Discretization()->set_state(
+        0, "velaf", poro_field()->fluid_field()->Velnp());
+    poro_field()->fluid_field()->Discretization()->set_state(
+        0, "velnp", poro_field()->fluid_field()->Velnp());
 
-    FluidField()->Discretization()->ClearState();
+    fluid_field()->Discretization()->ClearState();
 
-    FluidField()->Discretization()->SetState(0, "dispnp", FluidField()->Dispnp());
-    FluidField()->Discretization()->SetState(0, "gridv", FluidField()->GridVel());
-    FluidField()->Discretization()->SetState(0, "dispn", FluidField()->Dispn());
-    FluidField()->Discretization()->SetState(0, "veln", FluidField()->Veln());
-    FluidField()->Discretization()->SetState(0, "velaf", FluidField()->Velnp());
-    FluidField()->Discretization()->SetState(0, "velnp", FluidField()->Velnp());
+    fluid_field()->Discretization()->set_state(0, "dispnp", fluid_field()->Dispnp());
+    fluid_field()->Discretization()->set_state(0, "gridv", fluid_field()->GridVel());
+    fluid_field()->Discretization()->set_state(0, "dispn", fluid_field()->Dispn());
+    fluid_field()->Discretization()->set_state(0, "veln", fluid_field()->Veln());
+    fluid_field()->Discretization()->set_state(0, "velaf", fluid_field()->Velnp());
+    fluid_field()->Discretization()->set_state(0, "velnp", fluid_field()->Velnp());
 
     // create the parameters for the discretization
     Teuchos::ParameterList fparams;
 
     // action for elements
     fparams.set<int>("action", FLD::fpsi_coupling);
-    fparams.set("timescale", PoroField()->FluidField()->ResidualScaling());
+    fparams.set("timescale", poro_field()->fluid_field()->ResidualScaling());
 
     fparams.set("dt", fpsidynparams.get<double>("TIMESTEP"));
-    fparams.set<int>("Physical Type", PoroField()->FluidField()->PhysicalType());
+    fparams.set<int>("Physical Type", poro_field()->fluid_field()->PhysicalType());
 
     if (method == INPAR::FPSI::monolithic)
     {
@@ -314,8 +316,8 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
         fparams.set("membrane conductivity", conductivity_);
       }
 
-      FluidField()->Discretization()->EvaluateCondition(fparams, fluidstrategy, "FPSICoupling");
-      k_pf_porofluid->Complete(*FluidField()->DofRowMap(), *FluidField()->DofRowMap());
+      fluid_field()->Discretization()->evaluate_condition(fparams, fluidstrategy, "FPSICoupling");
+      k_pf_porofluid->Complete(*fluid_field()->dof_row_map(), *fluid_field()->dof_row_map());
 
       {
         TEUCHOS_FUNC_TIME_MONITOR("FPSI::Monolithic::transform");
@@ -332,9 +334,9 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
           Teuchos::null,                             // no other matrix or vectors
           Teuchos::null, Teuchos::null, Teuchos::null);
 
-      FluidField()->Discretization()->EvaluateCondition(fparams, fluidstrategy21, "FPSICoupling");
+      fluid_field()->Discretization()->evaluate_condition(fparams, fluidstrategy21, "FPSICoupling");
 
-      k_pf_porofluid->Complete(*FluidField()->DofRowMap(), *FluidField()->DofRowMap());
+      k_pf_porofluid->Complete(*fluid_field()->dof_row_map(), *fluid_field()->dof_row_map());
       {
         TEUCHOS_FUNC_TIME_MONITOR("FPSI::Monolithic::transform");
         (*couplingrowcoltransform2_)(*k_pf_porofluid, 1.0,
@@ -356,9 +358,9 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
           Teuchos::null,                               // no other matrix or vectors
           Teuchos::null, Teuchos::null, Teuchos::null);
 
-      PoroField()->FluidField()->Discretization()->EvaluateCondition(
+      poro_field()->fluid_field()->Discretization()->evaluate_condition(
           fparams, porofluidstrategy, "FPSICoupling");
-      k_fp_porofluid->Complete(PoroField()->FluidDomainMap(), PoroField()->FluidRangeMap());
+      k_fp_porofluid->Complete(poro_field()->FluidDomainMap(), poro_field()->FluidRangeMap());
 
       {
         TEUCHOS_FUNC_TIME_MONITOR("FPSI::Monolithic::transform");
@@ -372,7 +374,7 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
 
       // move me somewhere else
       Teuchos::RCP<CORE::LINALG::SparseMatrix> k_pfs_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-          *(PoroField()->FluidField()->Discretization()->DofRowMap()), 81, true, true));
+          *(poro_field()->fluid_field()->Discretization()->dof_row_map()), 81, true, true));
 
       k_pfs_->UnComplete();
 
@@ -382,10 +384,10 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
           Teuchos::null,                               // no other matrix or vectors
           Teuchos::null, Teuchos::null, Teuchos::null);
 
-      PoroField()->FluidField()->Discretization()->EvaluateCondition(
+      poro_field()->fluid_field()->Discretization()->evaluate_condition(
           fparams, structurestrategy, "FPSICoupling");
 
-      k_pfs_->Complete(PoroField()->StructureDomainMap(), PoroField()->FluidRangeMap());
+      k_pfs_->Complete(poro_field()->StructureDomainMap(), poro_field()->FluidRangeMap());
       {
         TEUCHOS_FUNC_TIME_MONITOR("FPSI::Monolithic::transform");
         (*couplingrowtransform3_)(*k_pfs_, 1.0,
@@ -405,15 +407,15 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
           Teuchos::null, Teuchos::null, Teuchos::null);
 
       fparams.set("InterfaceFacingElementMap", fluid_poro_fluid_interface_map_);
-      FluidField()->Discretization()->EvaluateCondition(
+      fluid_field()->Discretization()->evaluate_condition(
           fparams, structurestrategy2, "FPSICoupling");
 
-      k_pf_porofluid->Complete(*FluidField()->DofRowMap(), *FluidField()->DofRowMap());
+      k_pf_porofluid->Complete(*fluid_field()->dof_row_map(), *fluid_field()->dof_row_map());
 
       {
         TEUCHOS_FUNC_TIME_MONITOR("FPSI::Monolithic::transform");
-        (*couplingcoltransform_)(FluidField()->BlockSystemMatrix()->FullRowMap(),
-            FluidField()->BlockSystemMatrix()->FullColMap(), *k_pf_porofluid, 1.0,
+        (*couplingcoltransform_)(fluid_field()->BlockSystemMatrix()->FullRowMap(),
+            fluid_field()->BlockSystemMatrix()->FullColMap(), *k_pf_porofluid, 1.0,
             CORE::ADAPTER::CouplingSlaveConverter(
                 coupsf_fpsi),  // row converter: important to use slave converter
             c_fp_->Matrix(0, 0),
@@ -432,7 +434,7 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
           Teuchos::null,                                // no other matrix or vectors
           Teuchos::null, Teuchos::null, Teuchos::null);
 
-      FluidField()->Discretization()->EvaluateCondition(
+      fluid_field()->Discretization()->evaluate_condition(
           fparams, fluidfluidstrategy, "FPSICoupling");
 
       fparams.set<std::string>("fillblock", "Structure_Fluid");
@@ -446,10 +448,10 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
           Teuchos::null,                                    // no other matrix or vectors
           Teuchos::null, Teuchos::null, Teuchos::null);
 
-      FluidField()->Discretization()->EvaluateCondition(
+      fluid_field()->Discretization()->evaluate_condition(
           fparams, structurefluidstrategy, "FPSICoupling");
 
-      k_pf_porofluid->Complete(*FluidField()->DofRowMap(), *FluidField()->DofRowMap());
+      k_pf_porofluid->Complete(*fluid_field()->dof_row_map(), *fluid_field()->dof_row_map());
       {
         TEUCHOS_FUNC_TIME_MONITOR("FPSI::Monolithic::transform");
         (*couplingrowtransform4_)(
@@ -470,11 +472,11 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
           Teuchos::null,                                        // no other matrix or vectors
           Teuchos::null, Teuchos::null, Teuchos::null);
 
-      FluidField()->Discretization()->EvaluateCondition(
+      fluid_field()->Discretization()->evaluate_condition(
           fparams, structurestructurestrategy, "FPSICoupling");
       // condense linearization with respect to the ale mesh motion (interface structural
       // displacements = interface ale displacements)
-      k_pf_porofluid->Complete(*FluidField()->DofRowMap(), *FluidField()->DofRowMap());
+      k_pf_porofluid->Complete(*fluid_field()->dof_row_map(), *fluid_field()->dof_row_map());
 
       {
         TEUCHOS_FUNC_TIME_MONITOR("FPSI::Monolithic::transform");
@@ -497,8 +499,8 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
       Teuchos::RCP<CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>>
           temp6 = Teuchos::rcp(
               new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
-                  *AleField()->Interface(), *FluidField()->Interface(), 81, false,
-                  false));  // Use FluidField()->Interface =
+                  *ale_field()->Interface(), *fluid_field()->Interface(), 81, false,
+                  false));  // Use fluid_field()->Interface =
 
       // assemble into fluid row and column dofs -> need to transform rows to structure dofs and
       // cols to ale dofs
@@ -509,7 +511,7 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
           Teuchos::null, Teuchos::null, Teuchos::null);
 
       // evaluate coupling terms
-      FluidField()->Discretization()->EvaluateCondition(
+      fluid_field()->Discretization()->evaluate_condition(
           fparams, structurealestrategy, "FPSICoupling");
       temp6->Complete();  // for row transform!
 
@@ -544,8 +546,8 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
 
     fparams.set<std::string>("fillblock", "conti");
     fparams.set("InterfaceFacingElementMap", fluid_poro_fluid_interface_map_);
-    temprhs = Teuchos::rcp(new Epetra_Vector(*FluidField()->DofRowMap(), true));
-    temprhs2 = Teuchos::rcp(new Epetra_Vector(*PoroField()->DofRowMap(), true));
+    temprhs = Teuchos::rcp(new Epetra_Vector(*fluid_field()->dof_row_map(), true));
+    temprhs2 = Teuchos::rcp(new Epetra_Vector(*poro_field()->dof_row_map(), true));
     temprhs->PutScalar(0.0);
     temprhs2->PutScalar(0.0);
 
@@ -555,7 +557,7 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
         temprhs,  // rhs vector
         Teuchos::null, Teuchos::null);
 
-    FluidField()->Discretization()->EvaluateCondition(fparams, rhscontistrategy, "FPSICoupling");
+    fluid_field()->Discretization()->evaluate_condition(fparams, rhscontistrategy, "FPSICoupling");
 
     // extract FPSI part of the fluid field
     temprhs = fluidvelpres_extractor_->ExtractCondVector(temprhs);
@@ -575,8 +577,8 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
 
     fparams.set<std::string>("fillblock", "structure");
     fparams.set("InterfaceFacingElementMap", fluid_poro_fluid_interface_map_);
-    temprhs = Teuchos::rcp(new Epetra_Vector(*FluidField()->DofRowMap(), true));
-    temprhs2 = Teuchos::rcp(new Epetra_Vector(*PoroField()->DofRowMap(), true));
+    temprhs = Teuchos::rcp(new Epetra_Vector(*fluid_field()->dof_row_map(), true));
+    temprhs2 = Teuchos::rcp(new Epetra_Vector(*poro_field()->dof_row_map(), true));
 
     CORE::FE::AssembleStrategy rhsstructurestrategy(0,  // fluid dofset for row
         0,                                              // fluid dofset for column
@@ -584,7 +586,7 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
         temprhs,  // rhs vector
         Teuchos::null, Teuchos::null);
 
-    FluidField()->Discretization()->EvaluateCondition(
+    fluid_field()->Discretization()->evaluate_condition(
         fparams, rhsstructurestrategy, "FPSICoupling");
 
     // extract FPSI part of the fluid field
@@ -599,8 +601,8 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
 
     fparams.set<std::string>("fillblock", "fluid");
     fparams.set("InterfaceFacingElementMap", poro_fluid_fluid_interface_map_);
-    temprhs = Teuchos::rcp(new Epetra_Vector(*PoroField()->FluidField()->DofRowMap(0), true));
-    temprhs2 = Teuchos::rcp(new Epetra_Vector(*FluidField()->DofRowMap(0), true));
+    temprhs = Teuchos::rcp(new Epetra_Vector(*poro_field()->fluid_field()->dof_row_map(0), true));
+    temprhs2 = Teuchos::rcp(new Epetra_Vector(*fluid_field()->dof_row_map(0), true));
 
     CORE::FE::AssembleStrategy rhsfluidstrategy(0,  // fluid dofset for row
         0,                                          // fluid dofset for column
@@ -608,7 +610,7 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
         temprhs,  // rhs vector
         Teuchos::null, Teuchos::null);
 
-    PoroField()->FluidField()->Discretization()->EvaluateCondition(
+    poro_field()->fluid_field()->Discretization()->evaluate_condition(
         fparams, rhsfluidstrategy, "FPSICoupling");
     // extract FPSI part of the poro fluid field
     temprhs = porofluid_extractor_->ExtractCondVector(temprhs);  //
@@ -625,7 +627,7 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
 
     fparams.set<std::string>("fillblock", "fluidfluid");  // (wot,tangentialfac*uot) part
     fparams.set("InterfaceFacingElementMap", fluid_poro_fluid_interface_map_);
-    temprhs = Teuchos::rcp(new Epetra_Vector(*FluidField()->DofRowMap(0), true));
+    temprhs = Teuchos::rcp(new Epetra_Vector(*fluid_field()->dof_row_map(0), true));
 
     CORE::FE::AssembleStrategy rhsfluidfluidstrategy(0,  // fluid dofset for row
         0,                                               // fluid dofset for column
@@ -633,7 +635,7 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
         temprhs,  // rhs vector
         Teuchos::null, Teuchos::null);
 
-    FluidField()->Discretization()->EvaluateCondition(
+    fluid_field()->Discretization()->evaluate_condition(
         fparams, rhsfluidfluidstrategy, "FPSICoupling");
 
     c_rhs_f_->Update(1.0, *temprhs, 1.0);
@@ -658,7 +660,7 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
           temprhs,  // rhs vector
           Teuchos::null, Teuchos::null);
 
-      FluidField()->Discretization()->EvaluateCondition(
+      fluid_field()->Discretization()->evaluate_condition(
           fparams, rhsfluidfluidstrategy2, "NeumannIntegration");
 
       c_rhs_f_->Update(1.0, *temprhs, 1.0);
@@ -670,14 +672,14 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
 
         Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> tmp_c_fa = Teuchos::rcp(
             new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
-                *AleField()->Interface(), *FluidField()->FPSIInterface(), 81, false, true));
+                *ale_field()->Interface(), *fluid_field()->FPSIInterface(), 81, false, true));
 
         CORE::FE::AssembleStrategy rhsfluidfluidstrategy3(0,  // fluid dofset for row
             1,                                                // ale dofset for column
             tmp_c_fa,                                         // coupling matrix with fluid rowmap
             Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
-        FluidField()->Discretization()->EvaluateCondition(
+        fluid_field()->Discretization()->evaluate_condition(
             fparams, rhsfluidfluidstrategy3, "NeumannIntegration");
         tmp_c_fa->Complete();
 
@@ -692,7 +694,7 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
         //-->now transform ale fpsi block to structure (is condensed)!!!
         // still in ale domain map!!!
         CORE::LINALG::SparseMatrix tmp_c_fp =
-            CORE::LINALG::SparseMatrix(*FluidField()->DofRowMap(), 81);
+            CORE::LINALG::SparseMatrix(*fluid_field()->dof_row_map(), 81);
 
         // Add all condensed parts to tmp_c_fa...
         tmp_c_fp.Add(tmp_c_fa->Matrix(
@@ -707,11 +709,11 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
         tmp_c_fp.Add(tmp_c_fa->Matrix(
                          FLD::UTILS::MapExtractor::cond_fsi, ALE::UTILS::MapExtractor::cond_fsi),
             false, 1.0, 1.0);
-        tmp_c_fp.Complete(*AleField()->Interface()->FPSICondMap(), *FluidField()->DofRowMap());
+        tmp_c_fp.Complete(*ale_field()->Interface()->FPSICondMap(), *fluid_field()->dof_row_map());
 
         // For Ale Condensation ==> AleColumns to StructuralColumns
-        (*couplingcoltransform2_)(AleField()->BlockSystemMatrix()->FullRowMap(),
-            AleField()->BlockSystemMatrix()->FullColMap(), tmp_c_fp, 1.0,
+        (*couplingcoltransform2_)(ale_field()->BlockSystemMatrix()->FullRowMap(),
+            ale_field()->BlockSystemMatrix()->FullColMap(), tmp_c_fp, 1.0,
             CORE::ADAPTER::CouplingSlaveConverter(
                 coup_ps_a_fpsi),  // row converter: important to use slave converter
             c_fp_->Matrix(0, 0),
@@ -725,7 +727,7 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
       fparams.set("InterfaceFacingElementMap", fluid_poro_fluid_interface_map_);
       temprhs->PutScalar(0.0);
       temprhs2->PutScalar(0.0);
-      FluidField()->Discretization()->EvaluateCondition(
+      fluid_field()->Discretization()->evaluate_condition(
           fparams, rhsfluidfluidstrategy, "NeumannIntegration");
 
       c_rhs_f_->Update(1.0, *temprhs, 1.0);
@@ -733,8 +735,8 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
 
     ////////////////////////////
     // DONE -> CLEAR STATES
-    PoroField()->FluidField()->Discretization()->ClearState();
-    FluidField()->Discretization()->ClearState();
+    poro_field()->fluid_field()->Discretization()->ClearState();
+    fluid_field()->Discretization()->ClearState();
 
   }  // if not nocoupling
 

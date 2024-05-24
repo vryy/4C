@@ -40,10 +40,10 @@ PASI::PartitionedAlgo::PartitionedAlgo(
 void PASI::PartitionedAlgo::Init()
 {
   // reset setup flag
-  SetIsSetup(false);
+  set_is_setup(false);
 
   // init structure field
-  InitStructureField();
+  init_structure_field();
 
   // init particle algorithm
   init_particle_algorithm();
@@ -57,13 +57,13 @@ void PASI::PartitionedAlgo::Init()
   intfaccnp_ = CORE::LINALG::CreateVector(*interface_->PASICondMap(), true);
 
   // set init flag
-  SetIsInit(true);
+  set_is_init(true);
 }
 
 void PASI::PartitionedAlgo::Setup()
 {
   // check correct initialization
-  CheckIsInit();
+  check_is_init();
 
   // setup particle algorithm
   particlealgorithm_->Setup();
@@ -72,16 +72,16 @@ void PASI::PartitionedAlgo::Setup()
   structurefield_->Output();
 
   // set setup flag
-  SetIsSetup(true);
+  set_is_setup(true);
 }
 
-void PASI::PartitionedAlgo::ReadRestart(int restartstep)
+void PASI::PartitionedAlgo::read_restart(int restartstep)
 {
   // read restart information for structure field
-  structurefield_->ReadRestart(restartstep);
+  structurefield_->read_restart(restartstep);
 
   // read restart information for particle algorithm
-  particlealgorithm_->ReadRestart(restartstep);
+  particlealgorithm_->read_restart(restartstep);
 
   // set time and step after restart
   SetTimeStep(structurefield_->TimeOld(), restartstep);
@@ -113,7 +113,7 @@ void PASI::PartitionedAlgo::TestResults(const Epetra_Comm& comm)
   problem->TestAll(comm);
 }
 
-void PASI::PartitionedAlgo::PrepareTimeStep(bool printheader)
+void PASI::PartitionedAlgo::prepare_time_step(bool printheader)
 {
   // increment time and step
   increment_time_and_step();
@@ -122,8 +122,8 @@ void PASI::PartitionedAlgo::PrepareTimeStep(bool printheader)
   if (printheader) PrintHeader();
 
   // prepare time step of structure field and particle algorithm
-  structurefield_->PrepareTimeStep();
-  particlealgorithm_->PrepareTimeStep(false);
+  structurefield_->prepare_time_step();
+  particlealgorithm_->prepare_time_step(false);
 }
 
 void PASI::PartitionedAlgo::PreEvaluateTimeStep()
@@ -216,7 +216,7 @@ void PASI::PartitionedAlgo::StructOutput()
 {
   // calculate stresses, strains, energies
   constexpr bool force_prepare = false;
-  structurefield_->PrepareOutput(force_prepare);
+  structurefield_->prepare_output(force_prepare);
 
   // update all single field solvers
   structurefield_->Update();
@@ -234,7 +234,7 @@ void PASI::PartitionedAlgo::ParticleOutput()
   particlealgorithm_->WriteRestart();
 }
 
-void PASI::PartitionedAlgo::InitStructureField()
+void PASI::PartitionedAlgo::init_structure_field()
 {
   // get instance of global problem
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
@@ -284,7 +284,7 @@ void PASI::PartitionedAlgo::init_particle_algorithm()
 void PASI::PartitionedAlgo::build_structure_model_evaluator()
 {
   // if adapter base has not already been set up outside.
-  if (not struct_adapterbase_ptr_->IsSetup())
+  if (not struct_adapterbase_ptr_->is_setup())
   {
     // build and register pasi model evaluator
     Teuchos::RCP<STR::MODELEVALUATOR::Generic> pasi_model_ptr =
