@@ -49,12 +49,4 @@ void CORE::LINEAR_SOLVER::KrylovProjectionPreconditioner::Setup(
   SetupLinearProblem(&*a_, lp.GetLHS(), lp.GetRHS());
 }
 
-//----------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------
-void CORE::LINEAR_SOLVER::KrylovProjectionPreconditioner::Finish(
-    Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
-{
-  preconditioner_->Finish(matrix, x, b);
-}
-
 FOUR_C_NAMESPACE_CLOSE
