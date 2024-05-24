@@ -28,8 +28,6 @@ CORE::LINEAR_SOLVER::IFPACKPreconditioner::IFPACKPreconditioner(
 void CORE::LINEAR_SOLVER::IFPACKPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
-  SetupLinearProblem(matrix, x, b);
-
   if (create)
   {
     Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>(matrix);

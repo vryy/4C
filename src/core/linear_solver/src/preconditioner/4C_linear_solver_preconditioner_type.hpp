@@ -44,27 +44,6 @@ namespace CORE::LINEAR_SOLVER
     /// virtual destruction
     virtual ~PreconditionerTypeBase() = default;
 
-    /// linear problem created (managed) by this preconditioner
-    /*!
-       This is how the iterative solver sees the linear problem that needs to be solved.
-    */
-    virtual Epetra_LinearProblem& LinearProblem() { return lp_; }
-
-    /*! \brief Support routine for setup
-     *
-     * Pass the components of the linear system on to the Epetra_LinearProblem.
-     *
-     * @param matrix Matrix of the linear problem
-     * @param x Solution vector of the linear problem
-     * @param b Right-hand side of the linear problem
-     */
-    void SetupLinearProblem(Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
-    {
-      lp_.SetOperator(matrix);
-      lp_.SetLHS(x);
-      lp_.SetRHS(b);
-    }
-
     /// Setup preconditioner with a given linear system.
     virtual void Setup(
         bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) = 0;
@@ -78,10 +57,6 @@ namespace CORE::LINEAR_SOLVER
 
     /// linear operator used for preconditioning
     virtual Teuchos::RCP<Epetra_Operator> PrecOperator() const = 0;
-
-   protected:
-    //! a linear problem wrapper class used by Trilinos and for scaling of the system
-    Epetra_LinearProblem lp_;
   };
 }  // namespace CORE::LINEAR_SOLVER
 

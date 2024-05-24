@@ -36,17 +36,11 @@ void CORE::LINEAR_SOLVER::KrylovProjectionPreconditioner::Setup(
   // Wrap the linear operator of the contained preconditioner. This way the
   // actual preconditioner is called first and the projection is done
   // afterwards.
-
-  Epetra_LinearProblem& lp = preconditioner_->LinearProblem();
-  Epetra_Operator* A = lp.GetOperator();
-
   a_ = Teuchos::rcp(
-      new CORE::LINALG::LinalgProjectedOperator(Teuchos::rcp(A, false), true, projector_));
+      new CORE::LINALG::LinalgProjectedOperator(Teuchos::rcp(matrix, false), true, projector_));
 
   p_ = Teuchos::rcp(
       new CORE::LINALG::LinalgPrecondOperator(preconditioner_->PrecOperator(), true, projector_));
-
-  SetupLinearProblem(&*a_, lp.GetLHS(), lp.GetRHS());
 }
 
 //----------------------------------------------------------------------------------

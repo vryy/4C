@@ -34,8 +34,6 @@ namespace CORE::LINEAR_SOLVER
     KrylovProjectionPreconditioner(Teuchos::RCP<PreconditionerTypeBase> preconditioner,
         Teuchos::RCP<CORE::LINALG::KrylovProjector> projector);
 
-    // virtual Epetra_LinearProblem & LinearProblem() { return preconditioner_->LinearProblem(); }
-
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 

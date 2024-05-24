@@ -50,9 +50,6 @@ Teuchos::RCP<Epetra_Operator> CORE::LINEAR_SOLVER::AmGnxnPreconditioner::PrecOpe
 void CORE::LINEAR_SOLVER::AmGnxnPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
-  // Setup underlying linear system
-  SetupLinearProblem(matrix, x, b);
-
   // Decide if the setup has to be done
   if (!create) return;
 
