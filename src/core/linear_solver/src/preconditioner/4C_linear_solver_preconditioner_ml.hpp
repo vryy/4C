@@ -30,17 +30,11 @@ namespace CORE::LINEAR_SOLVER
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
-    /// linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> PrecOperator() const override { return p_; }
-
    private:
     Teuchos::ParameterList& mllist_;
 
     //! system of equations used for preconditioning used by P_ only
     Teuchos::RCP<Epetra_RowMatrix> pmatrix_;
-
-    /// preconditioner
-    Teuchos::RCP<Epetra_Operator> p_;
   };
 }  // namespace CORE::LINEAR_SOLVER
 

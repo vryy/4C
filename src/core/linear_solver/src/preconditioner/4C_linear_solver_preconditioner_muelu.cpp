@@ -55,9 +55,6 @@ using NO = Node;
 CORE::LINEAR_SOLVER::MueLuPreconditioner::MueLuPreconditioner(Teuchos::ParameterList& muelulist)
     : muelulist_(muelulist)
 {
-  P_ = Teuchos::null;
-  pmatrix_ = Teuchos::null;
-  H_ = Teuchos::null;
 }
 
 //----------------------------------------------------------------------------------
@@ -127,7 +124,7 @@ void CORE::LINEAR_SOLVER::MueLuPreconditioner::Setup(
       mueLuFactory.SetupHierarchy(*H);
 
       // set preconditioner
-      P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
+      preconditioner_operator_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
 
       // store multigrid hierarchy
       H_ = H;
@@ -138,7 +135,7 @@ void CORE::LINEAR_SOLVER::MueLuPreconditioner::Setup(
       H_->setlib(Xpetra::UseEpetra);  // not very nice, but safe.
       H_->GetLevel(0)->Set("A", mueluOp);
 
-      P_ = Teuchos::rcp(new MueLu::EpetraOperator(H_));
+      preconditioner_operator_ = Teuchos::rcp(new MueLu::EpetraOperator(H_));
 
     }  // else (create)
   }    // if (xmlfile)
@@ -157,7 +154,7 @@ void CORE::LINEAR_SOLVER::MueLuPreconditioner::Setup(
     mueLuFactory.SetupHierarchy(*H);
 
     // set preconditioner
-    P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
+    preconditioner_operator_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
 
   }  // else (xml file)
 }
@@ -288,7 +285,7 @@ void CORE::LINEAR_SOLVER::MueLuFluidBlockPreconditioner::Setup(
       mueLuFactory.SetupHierarchy(*H);
 
       // set multigrid preconditioner
-      P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
+      preconditioner_operator_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
 
     }  // else (create)
   }    // if (xmlfile)
@@ -407,7 +404,7 @@ void CORE::LINEAR_SOLVER::MueLuTsiBlockPreconditioner::Setup(
       mueLuFactory.SetupHierarchy(*H);
 
       // set multigrid preconditioner
-      P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
+      preconditioner_operator_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
     }
   }
   else
@@ -626,7 +623,7 @@ void CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::Setup(
     // (Re-)create the preconditioner
 
     // free old matrix first
-    P_ = Teuchos::null;
+    preconditioner_operator_ = Teuchos::null;
 
     if (!contactList.isParameter("MUELU_XML_FILE"))
       FOUR_C_THROW(
@@ -681,7 +678,7 @@ void CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::Setup(
     mueLuFactory.SetupHierarchy(*H);
 
     // set multigrid preconditioner
-    P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
+    preconditioner_operator_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
 
     // store multigrid hierarchy
     H_ = H;
@@ -696,7 +693,7 @@ void CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::Setup(
     H_->setlib(Xpetra::UseEpetra);  // not very nice, but safe.
     H_->GetLevel(0)->Set("A", Teuchos::rcp_dynamic_cast<Xpetra::Matrix<SC, LO, GO, NO>>(bOp, true));
 
-    P_ = Teuchos::rcp(new MueLu::EpetraOperator(H_));
+    preconditioner_operator_ = Teuchos::rcp(new MueLu::EpetraOperator(H_));
   }
 
   return;
@@ -834,7 +831,7 @@ void CORE::LINEAR_SOLVER::MueLuBeamSolidBlockPreconditioner::Setup(
       mueLuFactory.SetupHierarchy(*H);
 
       // set preconditioner
-      P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
+      preconditioner_operator_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
     }
   }
   else
@@ -1026,7 +1023,7 @@ void CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner::Setup(
     mueLuFactory.SetupHierarchy(*H_);
 
     // set multigrid preconditioner
-    P_ = Teuchos::rcp(new MueLu::EpetraOperator(H_));
+    preconditioner_operator_ = Teuchos::rcp(new MueLu::EpetraOperator(H_));
   }
 }
 

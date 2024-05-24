@@ -48,8 +48,11 @@ namespace CORE::LINEAR_SOLVER
     virtual void Setup(
         bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) = 0;
 
-    /// linear operator used for preconditioning
-    virtual Teuchos::RCP<Epetra_Operator> PrecOperator() const = 0;
+    Teuchos::RCP<Epetra_Operator> PrecOperator() { return preconditioner_operator_; }
+
+   protected:
+    //! linear operator used for preconditioning
+    Teuchos::RCP<Epetra_Operator> preconditioner_operator_;
   };
 }  // namespace CORE::LINEAR_SOLVER
 

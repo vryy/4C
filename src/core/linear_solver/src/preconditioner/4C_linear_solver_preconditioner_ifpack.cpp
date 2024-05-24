@@ -34,7 +34,6 @@ void CORE::LINEAR_SOLVER::IFPACKPreconditioner::Setup(
     if (A == nullptr) FOUR_C_THROW("CrsMatrix expected");
 
     // free old matrix first
-    prec_ = Teuchos::null;
     pmatrix_ = Teuchos::null;
 
     // create a copy of the scaled matrix
@@ -47,15 +46,18 @@ void CORE::LINEAR_SOLVER::IFPACKPreconditioner::Setup(
 
     // create the preconditioner
     Ifpack Factory;
-    prec_ = Teuchos::rcp(Factory.Create(prectype, pmatrix_.get(), overlap));
+    Teuchos::RCP<Ifpack_Preconditioner> prec =
+        Teuchos::rcp(Factory.Create(prectype, pmatrix_.get(), overlap));
 
-    if (prec_.is_null())
+    if (prec.is_null())
       FOUR_C_THROW("Creation of IFPACK preconditioner of type '%s' failed.", prectype.c_str());
 
     // setup
-    prec_->SetParameters(ifpacklist_);
-    prec_->Initialize();
-    prec_->Compute();
+    prec->SetParameters(ifpacklist_);
+    prec->Initialize();
+    prec->Compute();
+
+    preconditioner_operator_ = prec;
 
     return;
   }
