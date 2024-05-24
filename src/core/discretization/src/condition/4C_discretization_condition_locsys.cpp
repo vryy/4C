@@ -15,7 +15,6 @@ vectors and matrices.
 
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_fem_general_largerotations.hpp"
-#include "4C_global_data.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -28,12 +27,9 @@ FOUR_C_NAMESPACE_OPEN
 /*-------------------------------------------------------------------*
  |  ctor (public)                                         meier 06/13|
  *-------------------------------------------------------------------*/
-CORE::Conditions::LocsysManager::LocsysManager(DRT::Discretization& discret)
-    : discret_(discret), dim_(-1), numlocsys_(-1), locsysfunct_(false)
+CORE::Conditions::LocsysManager::LocsysManager(DRT::Discretization& discret, const int dim)
+    : discret_(discret), dim_(dim), numlocsys_(-1), locsysfunct_(false)
 {
-  // get problem dimension (2D or 3D) and store into dim_
-  dim_ = GLOBAL::Problem::Instance()->NDim();
-
   if (Dim() != 2 && Dim() != 3) FOUR_C_THROW("Locsys problem must be 2D or 3D");
 
   // get node row layout of discretization
@@ -72,8 +68,9 @@ CORE::Conditions::LocsysManager::LocsysManager(DRT::Discretization& discret)
 
 /*-------------------------------------------------------------------*
  *-------------------------------------------------------------------*/
-void CORE::Conditions::LocsysManager::Update(
-    const double time, std::vector<Teuchos::RCP<Epetra_Vector>> nodenormals)
+void CORE::Conditions::LocsysManager::Update(const double time,
+    std::vector<Teuchos::RCP<Epetra_Vector>> nodenormals,
+    const CORE::UTILS::FunctionManager& function_manager)
 {
   nodenormals_ = std::move(nodenormals);
   // IMPORTANT NOTE:
@@ -229,18 +226,16 @@ void CORE::Conditions::LocsysManager::Update(
                   for (int dim = 0; dim < Dim(); ++dim) currPos[dim] = xp[dim] + currDisp[dim];
 
                   // Evaluate function with current node position
-                  functfac =
-                      (GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
-                           (*funct)[j] - 1))
-                          .Evaluate(currPos.data(), time, j);
+                  functfac = (function_manager.FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
+                                  (*funct)[j] - 1))
+                                 .Evaluate(currPos.data(), time, j);
                 }
                 else
                 {
                   // Evaluate function with reference node position
-                  functfac =
-                      (GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
-                           (*funct)[j] - 1))
-                          .Evaluate(node->X().data(), time, j);
+                  functfac = (function_manager.FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
+                                  (*funct)[j] - 1))
+                                 .Evaluate(node->X().data(), time, j);
                 }
               }
               currotangle(j) = (*rotangle)[j] * functfac;

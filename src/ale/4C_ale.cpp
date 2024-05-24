@@ -115,7 +115,8 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINAL
     if (locsysconditions.size())
     {
       // Initialize locsys manager
-      locsysman_ = Teuchos::rcp(new CORE::Conditions::LocsysManager(*discret_));
+      locsysman_ = Teuchos::rcp(
+          new CORE::Conditions::LocsysManager(*discret_, GLOBAL::Problem::Instance()->NDim()));
     }
   }
 
@@ -527,7 +528,7 @@ void ALE::Ale::prepare_time_step()
   {
     discret_->ClearState();
     discret_->set_state("dispnp", dispnp_);
-    locsysman_->Update(time_, {});
+    locsysman_->Update(time_, {}, GLOBAL::Problem::Instance()->FunctionManager());
     discret_->ClearState();
   }
 

@@ -279,10 +279,11 @@ void STR::TimInt::Setup()
     discret_->GetCondition("Locsys", locsysconditions);
     if (locsysconditions.size())
     {
-      locsysman_ = Teuchos::rcp(new CORE::Conditions::LocsysManager(*discret_));
+      locsysman_ = Teuchos::rcp(
+          new CORE::Conditions::LocsysManager(*discret_, GLOBAL::Problem::Instance()->NDim()));
       // in case we have no time dependent locsys conditions in our problem,
       // this is the only time where the whole setup routine is conducted.
-      locsysman_->Update(-1.0, {});
+      locsysman_->Update(-1.0, {}, GLOBAL::Problem::Instance()->FunctionManager());
     }
   }
 

@@ -361,7 +361,8 @@ void STR::TimIntImpl::Predict()
   PrePredict();
 
   // Update locals systems (which may be time dependent)
-  if (locsysman_ != Teuchos::null) locsysman_->Update(timen_, {});
+  if (locsysman_ != Teuchos::null)
+    locsysman_->Update(timen_, {}, GLOBAL::Problem::Instance()->FunctionManager());
 
   // set iteration step to 0 (predictor)
   iter_ = 0;

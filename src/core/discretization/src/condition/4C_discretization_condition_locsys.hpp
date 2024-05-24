@@ -16,6 +16,7 @@
 
 #include "4C_discretization_condition.hpp"
 #include "4C_lib_discret.hpp"
+#include "4C_utils_function_manager.hpp"
 
 #include <Teuchos_RCP.hpp>
 
@@ -94,14 +95,15 @@ namespace CORE::Conditions
      *                                to be applied on sysmatrix, if true
      *
      */
-    explicit LocsysManager(DRT::Discretization& discret);
+    explicit LocsysManager(DRT::Discretization& discret, int dim);
 
     /*!
      * Set current @p time and @p nodenormals to the locsys manager. The vector of @p
      * nodenormals my remain empty. It is only required for
      * calc_rotation_vector_for_normal_system().
      */
-    void Update(double time, std::vector<Teuchos::RCP<Epetra_Vector>> nodenormals);
+    void Update(double time, std::vector<Teuchos::RCP<Epetra_Vector>> nodenormals,
+        const CORE::UTILS::FunctionManager& function_manager);
 
     /*!
      *\brief Print this Manager

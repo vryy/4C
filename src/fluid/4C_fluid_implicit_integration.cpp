@@ -221,7 +221,8 @@ void FLD::FluidImplicitTimeInt::Init()
     if (locsysconditions.size())
     {
       // Initialize locsys manager
-      locsysman_ = Teuchos::rcp(new CORE::Conditions::LocsysManager(*discret_));
+      locsysman_ = Teuchos::rcp(
+          new CORE::Conditions::LocsysManager(*discret_, GLOBAL::Problem::Instance()->NDim()));
       setup_locsys_dirichlet_bc(-1.0);
     }
   }
@@ -659,10 +660,10 @@ void FLD::FluidImplicitTimeInt::setup_locsys_dirichlet_bc(double time)
       }
       discret_->evaluate_condition(nodeNormalParams, loc_sys_node_normals[i], "Locsys", i);
     }
-    locsysman_->Update(time, loc_sys_node_normals);
+    locsysman_->Update(time, loc_sys_node_normals, GLOBAL::Problem::Instance()->FunctionManager());
   }
   else
-    locsysman_->Update(time, {});
+    locsysman_->Update(time, {}, GLOBAL::Problem::Instance()->FunctionManager());
 
   discret_->ClearState();
 }
