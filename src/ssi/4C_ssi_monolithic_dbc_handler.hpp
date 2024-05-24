@@ -22,13 +22,10 @@ namespace ADAPTER
   class SSIStructureWrapper;
 }
 
-namespace DRT
+namespace CORE::Conditions
 {
-  namespace UTILS
-  {
-    class LocsysManager;
-  }
-}  // namespace DRT
+  class LocsysManager;
+}
 
 namespace CORE::LINALG
 {
@@ -116,7 +113,7 @@ namespace SSI
     virtual void apply_structure_dbc_with_loc_sys_rotation_to_system_matrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix,
         const Teuchos::RCP<const Epetra_Map>& dbcmap_structure,
-        Teuchos::RCP<const DRT::UTILS::LocsysManager> locsysmanager_structure) = 0;
+        Teuchos::RCP<const CORE::Conditions::LocsysManager> locsysmanager_structure) = 0;
 
     //! solve additional scatra field on manifolds
     const bool is_scatra_manifold_;
@@ -150,7 +147,7 @@ namespace SSI
     void apply_structure_dbc_with_loc_sys_rotation_to_system_matrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix,
         const Teuchos::RCP<const Epetra_Map>& dbcmap_structure,
-        Teuchos::RCP<const DRT::UTILS::LocsysManager> locsysmanager_structure) override;
+        Teuchos::RCP<const CORE::Conditions::LocsysManager> locsysmanager_structure) override;
   };
 
   //! Dirichlet boundary condition handler class for monolithic scalar-structure interaction if the
@@ -168,7 +165,7 @@ namespace SSI
     void apply_structure_dbc_with_loc_sys_rotation_to_system_matrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix,
         const Teuchos::RCP<const Epetra_Map>& dbcmap_structure,
-        Teuchos::RCP<const DRT::UTILS::LocsysManager> locsysmanager_structure) override;
+        Teuchos::RCP<const CORE::Conditions::LocsysManager> locsysmanager_structure) override;
 
     //! position of structure block in system matrix
     int position_structure() const { return position_structure_; };

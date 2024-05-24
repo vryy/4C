@@ -24,6 +24,7 @@
 #include "4C_contact_meshtying_abstract_strategy.hpp"  // needed in CmtLinearSolve (for feeding the contact solver with latest information about the contact status)
 #include "4C_contact_meshtying_contact_bridge.hpp"
 #include "4C_contact_meshtying_manager.hpp"
+#include "4C_discretization_condition_locsys.hpp"
 #include "4C_discretization_condition_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_beamcontact.hpp"
@@ -32,7 +33,6 @@
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_lib_discret_nullspace.hpp"
-#include "4C_lib_locsys.hpp"
 #include "4C_linalg_krylov_projector.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_multiply.hpp"

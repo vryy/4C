@@ -426,7 +426,7 @@ namespace ADAPTER
     Teuchos::RCP<CONTACT::MeshtyingContactBridge> meshtying_contact_bridge() override = 0;
 
     /// access to locsys manager
-    Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() override = 0;
+    Teuchos::RCP<CORE::Conditions::LocsysManager> LocsysManager() override = 0;
 
     /// access the desired model evaluator (read-only)
     [[nodiscard]] virtual const STR::MODELEVALUATOR::Generic& ModelEvaluator(

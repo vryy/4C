@@ -39,18 +39,12 @@ namespace DRT
 {
   class Discretization;
   class ResultTest;
-  namespace UTILS
-  {
-    class LocsysManager;
-  }
 }  // namespace DRT
-
 
 namespace IO
 {
   class DiscretizationWriter;
 }
-
 
 namespace CORE::LINALG
 {
@@ -60,6 +54,12 @@ namespace CORE::LINALG
   class MapExtractor;
   class MultiMapExtractor;
 }  // namespace CORE::LINALG
+
+namespace CORE::Conditions
+{
+  class LocsysManager;
+}
+
 
 namespace CONTACT
 {

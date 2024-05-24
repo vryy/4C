@@ -27,6 +27,7 @@
 #include "4C_ale_ale3.hpp"
 #include "4C_comm_utils.hpp"
 #include "4C_coupling_adapter_mortar.hpp"
+#include "4C_discretization_condition_locsys.hpp"
 #include "4C_discretization_condition_utils.hpp"
 #include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_discretization_geometry_position_array.hpp"
@@ -56,7 +57,6 @@
 #include "4C_io_gmsh.hpp"
 #include "4C_lib_discret_faces.hpp"
 #include "4C_lib_discret_hdg.hpp"
-#include "4C_lib_locsys.hpp"
 #include "4C_lib_utils_discret.hpp"
 #include "4C_linalg_krylov_projector.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
@@ -221,7 +221,7 @@ void FLD::FluidImplicitTimeInt::Init()
     if (locsysconditions.size())
     {
       // Initialize locsys manager
-      locsysman_ = Teuchos::rcp(new DRT::UTILS::LocsysManager(*discret_));
+      locsysman_ = Teuchos::rcp(new CORE::Conditions::LocsysManager(*discret_));
       setup_locsys_dirichlet_bc(-1.0);
     }
   }

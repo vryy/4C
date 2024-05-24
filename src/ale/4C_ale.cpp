@@ -14,6 +14,7 @@
 #include "4C_ale_meshsliding.hpp"
 #include "4C_ale_resulttest.hpp"
 #include "4C_ale_utils_mapextractor.hpp"
+#include "4C_discretization_condition_locsys.hpp"
 #include "4C_discretization_condition_periodic.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_ale.hpp"
@@ -22,7 +23,6 @@
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_locsys.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_sparseoperator.hpp"
@@ -115,7 +115,7 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINAL
     if (locsysconditions.size())
     {
       // Initialize locsys manager
-      locsysman_ = Teuchos::rcp(new DRT::UTILS::LocsysManager(*discret_));
+      locsysman_ = Teuchos::rcp(new CORE::Conditions::LocsysManager(*discret_));
     }
   }
 

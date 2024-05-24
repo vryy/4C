@@ -36,12 +36,13 @@ namespace DRT
 {
   class ResultTest;
   class Discretization;
-
-  namespace UTILS
-  {
-    class LocsysManager;
-  }  // namespace UTILS
 }  // namespace DRT
+
+namespace CORE::Conditions
+{
+  class LocsysManager;
+}
+
 
 namespace IO
 {
@@ -314,7 +315,7 @@ namespace ALE
     void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& a) override;
 
     //! Return locsys manager
-    Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() override { return locsysman_; }
+    Teuchos::RCP<CORE::Conditions::LocsysManager> LocsysManager() override { return locsysman_; }
 
     //! Apply Dirichlet boundary conditions on provided state vectors
     void ApplyDirichletBC(Teuchos::ParameterList& params,
@@ -365,7 +366,7 @@ namespace ALE
     Teuchos::RCP<IO::DiscretizationWriter> output_;
 
     //! Dirichlet BCs with local co-ordinate system
-    Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
+    Teuchos::RCP<CORE::Conditions::LocsysManager> locsysman_;
 
     //@}
 

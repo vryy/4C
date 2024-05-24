@@ -30,10 +30,6 @@ namespace DRT
 {
   class Discretization;
   class ResultTest;
-  namespace UTILS
-  {
-    class LocsysManager;
-  }  // namespace UTILS
 }  // namespace DRT
 
 namespace IO
@@ -49,6 +45,12 @@ namespace CORE::LINALG
   class MapExtractor;
   class MultiMapExtractor;
 }  // namespace CORE::LINALG
+
+namespace CORE::Conditions
+{
+  class LocsysManager;
+}
+
 
 namespace CONTACT
 {
@@ -222,7 +224,7 @@ namespace ADAPTER
     virtual STR::MODELEVALUATOR::Generic& ModelEvaluator(INPAR::STR::ModelType mtype) = 0;
 
     // access to locsys manager
-    virtual Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() = 0;
+    virtual Teuchos::RCP<CORE::Conditions::LocsysManager> LocsysManager() = 0;
 
     /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;

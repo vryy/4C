@@ -13,10 +13,10 @@
 /* headers */
 #include "4C_structure_timint_genalpha.hpp"
 
+#include "4C_discretization_condition_locsys.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_locsys.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_structure_aux.hpp"

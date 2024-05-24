@@ -31,11 +31,6 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-
-  namespace UTILS
-  {
-    class LocsysManager;
-  }  // namespace UTILS
 }  // namespace DRT
 
 namespace CORE::LINALG
@@ -44,6 +39,11 @@ namespace CORE::LINALG
   class SparseMatrix;
   class MapExtractor;
 }  // namespace CORE::LINALG
+
+namespace CORE::Conditions
+{
+  class LocsysManager;
+}
 
 namespace STR
 {
@@ -119,7 +119,7 @@ namespace STR
     Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const;
 
     //! Get a pointer to the local system manager
-    Teuchos::RCP<DRT::UTILS::LocsysManager> LocSysManagerPtr();
+    Teuchos::RCP<CORE::Conditions::LocsysManager> LocSysManagerPtr();
 
     //! Get the zeros vector
     const Epetra_Vector& GetZeros() const;
@@ -239,7 +239,7 @@ namespace STR
     Teuchos::RCP<const STR::TIMINT::Base> timint_ptr_;
 
     //! Pointer to the local coordinate system manager
-    Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_ptr_;
+    Teuchos::RCP<CORE::Conditions::LocsysManager> locsysman_ptr_;
 
     //! Some vector with system size and filled with zeros.
     Teuchos::RCP<Epetra_Vector> zeros_ptr_;
