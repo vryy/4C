@@ -131,7 +131,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
 
     // want to loop all control points of the element,
     // so get the number of points
-    const int numnp = actele->NumNode();
+    const int numnp = actele->num_node();
 
     // access elements knot span
     zero_size = (*knotvec).GetEleKnots(knots, actele->Id());
@@ -1802,7 +1802,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
     actele->LocationVector(*nurbsdis, lm, lmowner, lmstride);
 
     // do not forget to consider a (potential) offset in dof numbering for all results!
-    for (int inode = 0; inode < actele->NumNode(); ++inode)
+    for (int inode = 0; inode < actele->num_node(); ++inode)
     {
       if (name == "velocity" || name == "averaged_velocity" || name == "ale_displacement" ||
           name == "convective_velocity" || name == "grid_velocity")
@@ -1956,7 +1956,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
     DRT::Node** nodes = actele->Nodes();
 
     // number of all control points of the element
-    const int numnp = actele->NumNode();
+    const int numnp = actele->num_node();
 
     // aquire weights from nodes
     CORE::LINALG::SerialDenseVector weights(numnp);
@@ -2168,7 +2168,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
   using namespace FourC;
 
   // number of all control points of the element
-  const int numnp = actele->NumNode();
+  const int numnp = actele->num_node();
 
   // get shapefunctions, compute all visualisation point positions
   CORE::LINALG::SerialDenseVector nurbs_shape_funct(numnp);
@@ -3416,7 +3416,7 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
     */
     // do not forget to consider a (potential) offset in dof numbering for all results!
     const int* nodeids = actele->NodeIds();
-    for (int inode = 0; inode < actele->NumNode(); ++inode)
+    for (int inode = 0; inode < actele->num_node(); ++inode)
     {
       colnodeset.insert(nodeids[inode]);
     }
@@ -3478,7 +3478,7 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
     DRT::Node** nodes = actele->Nodes();
 
     // number of all control points of the element
-    const int numnp = actele->NumNode();
+    const int numnp = actele->num_node();
 
     // aquire weights from nodes
     CORE::LINALG::SerialDenseVector weights(numnp);

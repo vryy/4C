@@ -82,7 +82,7 @@ namespace MOR
         Teuchos::RCP<Epetra_Map> rangemap, Teuchos::RCP<Epetra_Map> domainmap,
         Teuchos::RCP<CORE::LINALG::SparseMatrix> sparsemat);
 
-    bool IsOrthogonal(Teuchos::RCP<Epetra_MultiVector> M);
+    bool is_orthogonal(Teuchos::RCP<Epetra_MultiVector> M);
 
     Teuchos::RCP<DRT::Discretization> actdisc_;
     int myrank_;  //!< ID of actual processor in parallel

@@ -56,7 +56,7 @@ void FLD::TimIntHDG::Init()
   Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux =
       Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(0, elementndof, 0, false));
   discret_->AddDofSet(dofsetaux);
-  discret_->FillComplete();
+  discret_->fill_complete();
 
   // build velocity/pressure splitting
   std::set<int> conddofset;
@@ -86,7 +86,7 @@ void FLD::TimIntHDG::Init()
   otherdofset.clear();
   Teuchos::RCP<Epetra_Map> otherdofmap = Teuchos::rcp(
       new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, hdgdis->Comm()));
-  velpressplitter_->Setup(*hdgdis->DofRowMap(), conddofmap, otherdofmap);
+  velpressplitter_->Setup(*hdgdis->dof_row_map(), conddofmap, otherdofmap);
 
   // implement ost and bdf2 through gen-alpha facilities
   if (timealgo_ == INPAR::FLUID::timeint_bdf2)
@@ -277,10 +277,10 @@ void FLD::TimIntHDG::gen_alpha_intermediate_values()
 *-----------------------------------------------------------------------*/
 void FLD::TimIntHDG::SetStateTimInt()
 {
-  discret_->SetState(0, "velaf", velaf_);
-  discret_->SetState(1, "intvelaf", intvelaf_);
-  discret_->SetState(1, "intaccam", intaccam_);
-  discret_->SetState(1, "intvelnp", intvelnp_);
+  discret_->set_state(0, "velaf", velaf_);
+  discret_->set_state(1, "intvelaf", intvelaf_);
+  discret_->set_state(1, "intaccam", intaccam_);
+  discret_->set_state(1, "intvelnp", intvelnp_);
 }
 
 /*----------------------------------------------------------------------*
@@ -352,8 +352,8 @@ void FLD::TimIntHDG::SetInitialFlowField(
   }
   else
   {
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
-    const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
+    const Epetra_Map* dofrowmap = discret_->dof_row_map();
+    const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
     CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
     CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
     Teuchos::ParameterList initParams;
@@ -425,7 +425,7 @@ Teuchos::RCP<std::vector<double>> FLD::TimIntHDG::evaluate_error_compared_to_ana
     case INPAR::FLUID::shear_flow:
     case INPAR::FLUID::fsi_fluid_pusher:
     case INPAR::FLUID::byfunct:
-      discret_->SetState(1, "intvelnp", intvelnp_);
+      discret_->set_state(1, "intvelnp", intvelnp_);
       break;
     default:
       break;
@@ -442,7 +442,7 @@ Teuchos::RCP<std::vector<double>> FLD::TimIntHDG::evaluate_error_compared_to_ana
 void FLD::TimIntHDG::Reset(bool completeReset, int numsteps, int iter)
 {
   FluidImplicitTimeInt::Reset(completeReset, numsteps, iter);
-  const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
+  const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
   intvelnp_ = CORE::LINALG::CreateVector(*intdofrowmap, true);
   intvelaf_ = CORE::LINALG::CreateVector(*intdofrowmap, true);
   intvelnm_ = CORE::LINALG::CreateVector(*intdofrowmap, true);
@@ -453,7 +453,7 @@ void FLD::TimIntHDG::Reset(bool completeReset, int numsteps, int iter)
   intaccn_ = CORE::LINALG::CreateVector(*intdofrowmap, true);
   if (discret_->Comm().MyPID() == 0)
     std::cout << "Number of degrees of freedom in HDG system: "
-              << discret_->DofRowMap(0)->NumGlobalElements() << std::endl;
+              << discret_->dof_row_map(0)->NumGlobalElements() << std::endl;
 }
 
 
@@ -479,8 +479,8 @@ namespace
     // call element routine for interpolate HDG to elements
     Teuchos::ParameterList params;
     params.set<int>("action", FLD::interpolate_hdg_to_node);
-    dis.SetState(1, "intvelnp", interiorValues);
-    dis.SetState(0, "velnp", traceValues);
+    dis.set_state(1, "intvelnp", interiorValues);
+    dis.set_state(0, "velnp", traceValues);
     std::vector<int> dummy;
     CORE::LINALG::SerialDenseMatrix dummyMat;
     CORE::LINALG::SerialDenseVector dummyVec;
@@ -491,25 +491,25 @@ namespace
     for (int el = 0; el < dis.NumMyColElements(); ++el)
     {
       DRT::Element* ele = dis.lColElement(el);
-      if (interpolVec.numRows() == 0) interpolVec.resize(ele->NumNode() * (2 * ndim + 1) + 1);
+      if (interpolVec.numRows() == 0) interpolVec.resize(ele->num_node() * (2 * ndim + 1) + 1);
 
       ele->Evaluate(params, dis, dummy, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
 
       // sum values on nodes into vectors and record the touch count (build average of values)
-      for (int i = 0; i < ele->NumNode(); ++i)
+      for (int i = 0; i < ele->num_node(); ++i)
       {
         DRT::Node* node = ele->Nodes()[i];
         const int localIndex = dis.NodeRowMap()->LID(node->Id());
         if (localIndex < 0) continue;
         touchCount[localIndex]++;
         for (int d = 0; d < ndim; ++d)
-          (*velocity)[d][localIndex] += interpolVec(i + d * ele->NumNode());
-        (*pressure)[localIndex] += interpolVec(i + ndim * ele->NumNode());
+          (*velocity)[d][localIndex] += interpolVec(i + d * ele->num_node());
+        (*pressure)[localIndex] += interpolVec(i + ndim * ele->num_node());
         for (int d = 0; d < ndim; ++d)
-          (*tracevel)[d][localIndex] += interpolVec(i + (ndim + 1 + d) * ele->NumNode());
+          (*tracevel)[d][localIndex] += interpolVec(i + (ndim + 1 + d) * ele->num_node());
       }
       const int eleIndex = dis.ElementRowMap()->LID(ele->Id());
-      if (eleIndex >= 0) (*cellPres)[eleIndex] += interpolVec((2 * ndim + 1) * ele->NumNode());
+      if (eleIndex >= 0) (*cellPres)[eleIndex] += interpolVec((2 * ndim + 1) * ele->num_node());
     }
 
     for (int i = 0; i < pressure->MyLength(); ++i)
@@ -569,7 +569,8 @@ void FLD::TimIntHDG::calc_intermediate_solution()
       CORE::UTILS::IntegralValue<INPAR::FLUID::ForcingType>(params_->sublist("TURBULENCE MODEL"),
           "FORCING_TYPE") == INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
   {
-    Teuchos::RCP<Epetra_Vector> inttmp = CORE::LINALG::CreateVector(*discret_->DofRowMap(1), true);
+    Teuchos::RCP<Epetra_Vector> inttmp =
+        CORE::LINALG::CreateVector(*discret_->dof_row_map(1), true);
     inttmp->Update(1.0, *intvelnp_, 0.0);
 
     FLD::FluidImplicitTimeInt::calc_intermediate_solution();
@@ -615,7 +616,7 @@ void FLD::TimIntHDG::InitForcing()
       special_flow_ == "decaying_homogeneous_isotropic_turbulence" or
       special_flow_ == "periodic_hill")
   {
-    forcing_ = CORE::LINALG::CreateVector(*(discret_->DofRowMap(1)), true);
+    forcing_ = CORE::LINALG::CreateVector(*(discret_->dof_row_map(1)), true);
 
     if (special_flow_ == "forced_homogeneous_isotropic_turbulence" or
         special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence" or

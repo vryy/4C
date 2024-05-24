@@ -409,7 +409,7 @@ namespace CONTACT
     CORE::LINALG::Matrix<3 * numnodes, 1> nodaltangentssmooth2_;
 
     //! Comparator for comparing the beam parameter of two parameter sets
-    static bool CompareParsets(
+    static bool compare_parsets(
         const std::pair<CORE::LINALG::Matrix<3, 1, TYPEBTS>, CORE::LINALG::Matrix<2, 1, int>>& lhs,
         const std::pair<CORE::LINALG::Matrix<3, 1, TYPEBTS>, CORE::LINALG::Matrix<2, 1, int>>& rhs)
     {
@@ -418,7 +418,7 @@ namespace CONTACT
     }
 
     //! Comparator for comparing the beam parameter of two normal sets
-    static bool CompareNormalsets(
+    static bool compare_normalsets(
         const std::pair<TYPEBTS, CORE::LINALG::Matrix<3, 1, TYPEBTS>>& lhs, const TYPEBTS& rhs)
     {
       // Compare eta
@@ -460,7 +460,7 @@ namespace CONTACT
     /*!
     \brief Evaluate contact forces
     */
-    void EvaluateFcContact(const TYPEBTS& fp,
+    void evaluate_fc_contact(const TYPEBTS& fp,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPEBTS>& fc1,
         CORE::LINALG::Matrix<3 * numnodessol, 1, TYPEBTS>& fc2, const TYPEBTS& eta_a,
         const TYPEBTS& eta_b, const double& w_gp, const double& sgn,
@@ -505,7 +505,7 @@ namespace CONTACT
     /*!
     \brief Compute linearizations of element parameters xi1, xi2 and eta
     */
-    void ComputeLinParameter(const int& fixed_par,
+    void compute_lin_parameter(const int& fixed_par,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& xi1_d,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& xi2_d,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& eta_d,
@@ -525,7 +525,7 @@ namespace CONTACT
     /*!
     \brief Compute linearization of gap
     */
-    void ComputeLinGap(
+    void compute_lin_gap(
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& gap_d,
         const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>&
             xi1_d,
@@ -546,7 +546,7 @@ namespace CONTACT
     /*!
     \brief Compute linearization of unit distance vector nD and surface unit normal vector n2
     */
-    void ComputeLinNormal(
+    void compute_lin_normal(
         CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& nD_d,
         const CORE::LINALG::Matrix<3, 1, TYPEBTS>& nD, const TYPEBTS& norm_rD,
         CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& n2_d,
@@ -707,14 +707,14 @@ namespace CONTACT
     /*!
     \brief Check, if we have contact or not
     */
-    void CheckContactStatus(const double& pp, const TYPEBTS& gap, bool& contactflag);
+    void check_contact_status(const double& pp, const TYPEBTS& gap, bool& contactflag);
 
     /*!
     \brief These method shifts the nodal positions applied within the beam contact framework py a
     small pre-defined amount in order to enable contact evaluation in the case of two identical
     contact points, i.e r1=r2
     */
-    void ShiftNodalPositions();
+    void shift_nodal_positions();
 
     void fad_check_lin_parameter(const int& fixed_par,
         const CORE::LINALG::Matrix<3, 1, TYPEBTS>& rD,
@@ -755,7 +755,7 @@ namespace CONTACT
         const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>&
             rD_d);
 
-    void FADCheckLinNormal(const CORE::LINALG::Matrix<3, 1, TYPEBTS>& nD,
+    void fad_check_lin_normal(const CORE::LINALG::Matrix<3, 1, TYPEBTS>& nD,
         const CORE::LINALG::Matrix<3, 1, TYPEBTS>& n2,
         const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>&
             xi1_d,
@@ -770,7 +770,7 @@ namespace CONTACT
         const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>&
             n2_d);
 
-    void FDCheckStiffness(const double& pp,
+    void fd_check_stiffness(const double& pp,
         const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPEBTS>& fc1,
         const CORE::LINALG::Matrix<3 * numnodessol, 1, TYPEBTS>& fc2,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues,
@@ -778,8 +778,8 @@ namespace CONTACT
         CORE::LINALG::Matrix<3 * numnodessol, 3 * numnodes * numnodalvalues + 3 * numnodessol,
             TYPEBTS>& stiffc2);
 
-    void FADCheckStiffness(const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues,
-                               3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& stiffc1,
+    void fad_check_stiffness(const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues,
+                                 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& stiffc1,
         const CORE::LINALG::Matrix<3 * numnodessol, 3 * numnodes * numnodalvalues + 3 * numnodessol,
             TYPEBTS>& stiffc2,
         const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues,
@@ -796,7 +796,7 @@ namespace CONTACT
     then transfers these dofs to their actual GIDs in the underlying
     problem discretization by applying the pre-computed dofoffset_.
     */
-    std::vector<int> GetGlobalDofs(const DRT::Node* node);
+    std::vector<int> get_global_dofs(const DRT::Node* node);
 
     //@}
 

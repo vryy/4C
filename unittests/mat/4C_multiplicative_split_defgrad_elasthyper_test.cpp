@@ -232,7 +232,7 @@ namespace
       params.set<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc", gpconc_lin);
 
       // call pre evaluate to have concentration during actual call
-      multiplicative_split_defgrad_->PreEvaluate(params, 0);
+      multiplicative_split_defgrad_->pre_evaluate(params, 0);
     }
 
     void set_ref_values_evaluated_sdi_fin()

@@ -54,7 +54,7 @@ BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::BeamToBea
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Setup()
 {
-  CheckInit();
+  check_init();
 
   // call setup of base class first
   BeamPotentialPair::Setup();
@@ -3531,7 +3531,7 @@ template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Print(
     std::ostream& out) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   out << "\nInstance of BeamToBeamPotentialPair (EleGIDs " << Element1()->Id() << " & "
       << Element2()->Id() << "):";
@@ -3549,7 +3549,7 @@ template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     T>::print_summary_one_line_per_active_segment_pair(std::ostream& out) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // Todo difficulty here is that the same element pair is evaluated more than once
   //      to be more precise, once for every common potlaw;
@@ -3559,7 +3559,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::GetShapeFunctions(
+void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::get_shape_functions(
     std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues, double>>& N1_i,
     std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues, double>>& N2_i,
     std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues, double>>& N1_i_xi,

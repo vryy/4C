@@ -34,11 +34,11 @@ namespace CONTACT
   {
    public:
     //! Standard constructor
-    NitscheStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
+    NitscheStrategy(const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params,
         std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
         const Teuchos::RCP<Epetra_Comm>& comm, double alphaf, int maxdof)
-        : AbstractStrategy(Teuchos::rcp(new CONTACT::AbstractStratDataContainer()), DofRowMap,
+        : AbstractStrategy(Teuchos::rcp(new CONTACT::AbstractStratDataContainer()), dof_row_map,
               NodeRowMap, params, dim, comm, alphaf, maxdof),
           interface_(std::move(interface)),
           curr_state_eval_(false)
@@ -47,11 +47,11 @@ namespace CONTACT
 
     //! Shared data constructor
     NitscheStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
-        const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
+        const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params,
         std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
         const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof)
-        : AbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params, dim, comm, alphaf, maxdof),
+        : AbstractStrategy(data_ptr, dof_row_map, NodeRowMap, params, dim, comm, alphaf, maxdof),
           interface_(std::move(interface)),
           curr_state_eval_(false)
     { /* empty */
@@ -111,7 +111,7 @@ namespace CONTACT
         /* nothing stored in nitsche strategy that would need to be written */};
     void compute_contact_stresses() final{/* nothing stress output in nitsche strategy yet */};
     virtual void reconnect_parent_elements();
-    void SetState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
+    void set_state(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
 
     /*!
      * @brief  Set the parent state

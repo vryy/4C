@@ -59,10 +59,10 @@ namespace ADAPTER
     Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
 
     /// read restart
-    void ReadRestart(int restart) override;
+    void read_restart(int restart) override;
 
     /// access dof row map
-    Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds = 0) const override;
+    Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds = 0) const override;
 
     /// access dof row map
     Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const override;
@@ -78,7 +78,7 @@ namespace ADAPTER
         ) override;
 
     //! set state on discretization
-    void SetState(
+    void set_state(
         unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state) override;
 
     //! set convective velocity field (+ pressure and acceleration field as
@@ -117,7 +117,7 @@ namespace ADAPTER
     void TimeLoop() override;
 
     //! initialization procedure prior to evaluation of a time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     //! output solution and restart data to file
     void Output() override;
@@ -132,7 +132,7 @@ namespace ADAPTER
     void Solve() override;
 
     /// prepare timeloop of coupled problem
-    void PrepareTimeLoop() override;
+    void prepare_time_loop() override;
 
     //! Return MapExtractor for Dirichlet boundary conditions
     Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const override;

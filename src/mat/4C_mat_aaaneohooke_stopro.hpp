@@ -148,7 +148,7 @@ namespace MAT
     double Density() const override { return params_->density_; }
 
     /// shear modulus
-    double ShearMod() const { return 0.5 * params_->youngs_mean_ / (1.0 + params_->nue_); }
+    double shear_mod() const { return 0.5 * params_->youngs_mean_ / (1.0 + params_->nue_); }
 
     // material type
     CORE::Materials::MaterialType MaterialType() const override

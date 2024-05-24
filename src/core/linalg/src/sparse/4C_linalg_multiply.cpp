@@ -45,9 +45,9 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::MLMultiply(
     const CORE::LINALG::SparseMatrix& A, bool transA, const CORE::LINALG::SparseMatrix& B,
     bool transB, bool explicitdirichlet, bool savegraph, bool completeoutput)
 {
-  // make sure FillComplete was called on the matrices
-  if (!A.Filled()) FOUR_C_THROW("A has to be FillComplete");
-  if (!B.Filled()) FOUR_C_THROW("B has to be FillComplete");
+  // make sure fill_complete was called on the matrices
+  if (!A.Filled()) FOUR_C_THROW("A has to be fill_complete");
+  if (!B.Filled()) FOUR_C_THROW("B has to be fill_complete");
 
   // EpetraExt::RowMatrix_Transpose transposera(true,nullptr,false);
   // EpetraExt::RowMatrix_Transpose transposerb(true,nullptr,false);
@@ -82,9 +82,9 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::MLMultiply(const Epetra_C
   const Epetra_CrsMatrix& A = Atransform(const_cast<Epetra_CrsMatrix&>(Aorig));
   const Epetra_CrsMatrix& B = Btransform(const_cast<Epetra_CrsMatrix&>(Borig));
 
-  // make sure FillComplete was called on the matrices
-  if (!A.Filled()) FOUR_C_THROW("A has to be FillComplete");
-  if (!B.Filled()) FOUR_C_THROW("B has to be FillComplete");
+  // make sure fill_complete was called on the matrices
+  if (!A.Filled()) FOUR_C_THROW("A has to be fill_complete");
+  if (!B.Filled()) FOUR_C_THROW("B has to be fill_complete");
 
   // For debugging, it might be helpful when all columns are
   // sorted and all zero values are wiped from the input:

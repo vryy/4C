@@ -278,7 +278,7 @@ void STR::TimIntStatics::evaluate_force_residual()
 
   // build new external forces
   fextn_->PutScalar(0.0);
-  ApplyForceExternal(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_);
+  apply_force_external(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_);
 
   // additional external forces are added (e.g. interface forces)
   fextn_->Update(1.0, *fifc_, 1.0);
@@ -289,7 +289,7 @@ void STR::TimIntStatics::evaluate_force_residual()
   fintn_->PutScalar(0.0);
 
   // ordinary internal force and stiffness
-  ApplyForceInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_);
+  apply_force_internal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_);
 
   // ************************** (3) INERTIAL FORCES ***************************
   // This is statics, so there are no inertial forces.
@@ -328,15 +328,15 @@ double STR::TimIntStatics::CalcRefNormForce()
 
   // norm of the internal forces
   double fintnorm = 0.0;
-  fintnorm = STR::CalculateVectorNorm(iternorm_, fintn_);
+  fintnorm = STR::calculate_vector_norm(iternorm_, fintn_);
 
   // norm of the external forces
   double fextnorm = 0.0;
-  fextnorm = STR::CalculateVectorNorm(iternorm_, fextn_);
+  fextnorm = STR::calculate_vector_norm(iternorm_, fextn_);
 
   // norm of reaction forces
   double freactnorm = 0.0;
-  freactnorm = STR::CalculateVectorNorm(iternorm_, freact_);
+  freactnorm = STR::calculate_vector_norm(iternorm_, freact_);
 
   // return char norm
   return std::max(fintnorm, std::max(fextnorm, freactnorm));
@@ -431,10 +431,10 @@ void STR::TimIntStatics::UpdateStepElement()
   p.set("action", "calc_struct_update_istep");
   // go to elements
   discret_->ClearState();
-  discret_->SetState("displacement", (*dis_)(0));
+  discret_->set_state("displacement", (*dis_)(0));
 
   // Set material displacement state for ale-wear formulation
-  if ((dismat_ != Teuchos::null)) discret_->SetState("material_displacement", (*dismat_)(0));
+  if ((dismat_ != Teuchos::null)) discret_->set_state("material_displacement", (*dismat_)(0));
 
   discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   discret_->ClearState();

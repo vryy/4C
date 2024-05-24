@@ -59,10 +59,10 @@ namespace STR
       void Setup() override;
 
       //! Post setup operation (compute initial equilibrium state) (derived)
-      void PostSetup() override;
+      void post_setup() override;
 
       //! Set state variables (derived)
-      void SetState(const Epetra_Vector& x) override;
+      void set_state(const Epetra_Vector& x) override;
 
       //! return integration factor (derived)
       [[nodiscard]] double GetIntParam() const override { return -1.0; }
@@ -84,7 +84,7 @@ namespace STR
 
       /*! read restart information of the different time integration schemes
        *  and model evaluators (derived) */
-      void ReadRestart(IO::DiscretizationReader& ioreader) override;
+      void read_restart(IO::DiscretizationReader& ioreader) override;
 
       //! @name Attribute access functions
       //@{

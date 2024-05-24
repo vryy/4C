@@ -88,7 +88,7 @@ namespace FLD
     }
 
     // read restart including wall stresses
-    void ReadRestart(IO::DiscretizationReader& reader);
+    void read_restart(IO::DiscretizationReader& reader);
 
     // fix residual at Dirichlet-inflow nodes such that the wss can be calculated
     Teuchos::RCP<Epetra_Vector> FixDirichletInflow(Teuchos::RCP<Epetra_Vector> trueresidual);
@@ -130,7 +130,7 @@ namespace FLD
         Teuchos::RCP<Epetra_Vector> accn);
 
     // calculate parameter for stabilization parameter mk
-    void CalcMK();
+    void calc_mk();
 
     // for inflowchannel
     void TransferAndSaveTauw();

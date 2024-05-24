@@ -33,7 +33,7 @@ DRT::ELEMENTS::Ale3SurfaceImplInterface* DRT::ELEMENTS::Ale3SurfaceImplInterface
           CORE::UTILS::SingletonAction::create);
     }
     default:
-      FOUR_C_THROW("shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
+      FOUR_C_THROW("shape %d (%d nodes) not supported", ele->Shape(), ele->num_node());
       break;
   }
   return nullptr;
@@ -93,7 +93,7 @@ int DRT::ELEMENTS::Ale3Surface::Evaluate(Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Ale3Surface::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Ale3Surface::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)

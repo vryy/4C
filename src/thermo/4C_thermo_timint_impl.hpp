@@ -115,10 +115,10 @@ namespace THR
     void predict_tang_temp_consist_rate();
 
     //! prepare time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     // finite difference check for the tangent K_TT
-    void FDCheck();
+    void fd_check();
 
     //@}
 
@@ -254,20 +254,20 @@ namespace THR
 
     //! Print to screen information about residual forces and temperatures
     //! \author lw (originally) \date 12/07
-    void PrintNewtonIter();
+    void print_newton_iter();
 
-    //! Contains text to PrintNewtonIter
+    //! Contains text to print_newton_iter
     //! \author lw (originally) \date 12/07
-    void PrintNewtonIterText(FILE* ofile  //!< output file handle
+    void print_newton_iter_text(FILE* ofile  //!< output file handle
     );
 
-    //! Contains header to PrintNewtonIter
+    //! Contains header to print_newton_iter
     //! \author lw (originally) \date 12/07
     void print_newton_iter_header(FILE* ofile  //!< output file handle
     );
 
     //! print statistics of converged Newton-Raphson iteration
-    void PrintNewtonConv();
+    void print_newton_conv();
 
     //! print summary after step
     void PrintStep() override;
@@ -329,7 +329,7 @@ namespace THR
     Teuchos::RCP<const Epetra_Vector> TempRes() const { return tempi_; }
 
     //! initial guess of Newton's method
-    Teuchos::RCP<const Epetra_Vector> InitialGuess() override { return tempi_; }
+    Teuchos::RCP<const Epetra_Vector> initial_guess() override { return tempi_; }
 
     //! Set residual temperatures \f$\Delta T_{n+1}^{<k>}\f$
     void SetTempResidual(

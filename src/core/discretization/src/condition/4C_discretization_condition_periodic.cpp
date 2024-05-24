@@ -144,7 +144,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::update_dofs_for_periodic_boun
     }
 
     {
-      const Epetra_Map* dofrowmap = discret_->DofRowMap();
+      const Epetra_Map* dofrowmap = discret_->dof_row_map();
       const Epetra_Map* noderowmap = discret_->NodeRowMap();
 
       int mypid = discret_->Comm().MyPID();
@@ -833,7 +833,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::AddConnectivity(
 
           // ---- send ----
           MPI_Request request;
-          exporter.ISend(myrank, torank, sdata.data(), (int)sdata.size(), 1337, request);
+          exporter.i_send(myrank, torank, sdata.data(), (int)sdata.size(), 1337, request);
 
           // ---- receive ----
           int length = rdata.size();
@@ -949,7 +949,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
     // accessing the noderowmap requires a 'completed' discretization
     if (!discret_->Filled())
     {
-      discret_->FillComplete(false, false, false);
+      discret_->fill_complete(false, false, false);
     }
 
     // a list of all nodes on this proc
@@ -1323,7 +1323,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
     //--------------------------------------------------
     // redistribute the nodes
     //
-    // this contains a call to FillComplete and assigns the same
+    // this contains a call to fill_complete and assigns the same
     // degree of freedom to the matching nodes
 
     discret_->Redistribute(*newrownodemap, *newcolnodemap);
@@ -1429,7 +1429,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::BalanceLoad()
       DRT::Element* ele = discret_->lColElement(ele_lid);
 
       // get its nodes and nodeids
-      const int num_nodes_per_ele = ele->NumNode();
+      const int num_nodes_per_ele = ele->num_node();
       const int* node_gids_per_ele = ele->NodeIds();
 
       for (int row = 0; row < num_nodes_per_ele; ++row)
@@ -1461,7 +1461,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::BalanceLoad()
       DRT::Element* ele = discret_->lColElement(ele_lid);
 
       // get its nodes and nodeids
-      const int num_nodes_per_ele = ele->NumNode();
+      const int num_nodes_per_ele = ele->num_node();
       const int* node_gids_per_ele = ele->NodeIds();
 
       for (int row = 0; row < num_nodes_per_ele; ++row)

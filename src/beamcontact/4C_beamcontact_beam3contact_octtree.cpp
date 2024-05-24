@@ -194,7 +194,7 @@ std::vector<std::vector<DRT::Element*>> Beam3ContactOctTree::OctTreeSearch(
   double t_01 = Teuchos::Time::wallTime();
 #endif
   // build axis aligned bounding boxes
-  CreateBoundingBoxes(currentpositions);
+  create_bounding_boxes(currentpositions);
 
 #ifdef OCTREEDEBUG
   double t_02 = Teuchos::Time::wallTime();
@@ -202,7 +202,7 @@ std::vector<std::vector<DRT::Element*>> Beam3ContactOctTree::OctTreeSearch(
   // call recursive octtree build
   // clear vector for assigning bounding boxes to octants to be on the safe side before
   // (re)assigning bounding boxes
-  bool bboxesfound = locateAll();
+  bool bboxesfound = locate_all();
 
 #ifdef OCTREEDEBUG
   double t_03 = Teuchos::Time::wallTime();
@@ -286,13 +286,13 @@ bool Beam3ContactOctTree::IntersectBBoxesWith(
   switch (boundingbox_)
   {
     case Beam3ContactOctTree::axisaligned:
-      CreateAABB(nodecoords, 0, bboxlimits);
+      create_aabb(nodecoords, 0, bboxlimits);
       break;
     case Beam3ContactOctTree::cyloriented:
-      CreateCOBB(nodecoords, 0, bboxlimits);
+      create_cobb(nodecoords, 0, bboxlimits);
       break;
     case Beam3ContactOctTree::spherical:
-      CreateSPBB(nodecoords, 0, bboxlimits);
+      create_spbb(nodecoords, 0, bboxlimits);
       break;
     default:
       FOUR_C_THROW("No or an invalid Octree type was chosen. Check your input file!");
@@ -326,7 +326,7 @@ bool Beam3ContactOctTree::IntersectBBoxesWith(
              * the intersection test will turn out positive. We skip those cases.*/
             // note: bounding box IDs are equal to element GIDs
             bool sharednode = false;
-            for (int j = 0; j < searchdis_.gElement(bboxinoct[0])->NumNode(); j++)
+            for (int j = 0; j < searchdis_.gElement(bboxinoct[0])->num_node(); j++)
             {
               for (int k = 0; k < (int)nodeLID.numRows(); k++)
               {
@@ -345,13 +345,13 @@ bool Beam3ContactOctTree::IntersectBBoxesWith(
               switch (boundingbox_)
               {
                 case Beam3ContactOctTree::axisaligned:
-                  intersection = IntersectionAABB(bboxinoct, bboxlimits);
+                  intersection = intersection_aabb(bboxinoct, bboxlimits);
                   break;
                 case Beam3ContactOctTree::cyloriented:
-                  intersection = IntersectionCOBB(bboxinoct, bboxlimits);
+                  intersection = intersection_cobb(bboxinoct, bboxlimits);
                   break;
                 case Beam3ContactOctTree::spherical:
-                  intersection = IntersectionSPBB(bboxinoct, bboxlimits);
+                  intersection = intersection_spbb(bboxinoct, bboxlimits);
                   break;
                 default:
                   FOUR_C_THROW("No or an invalid Octree type was chosen. Check your input file!");
@@ -470,7 +470,7 @@ void Beam3ContactOctTree::initialize_octree_search()
   diameter_ = Teuchos::rcp(new Epetra_Vector(*(searchdis_.ElementColMap())));
   switch (boundingbox_)
   {
-    // for this case, the diameter is calculated in CreateSPBB()
+    // for this case, the diameter is calculated in create_spbb()
     case Beam3ContactOctTree::spherical:
       diameter_->PutScalar(0.0);
       break;
@@ -523,7 +523,7 @@ void Beam3ContactOctTree::initialize_octree_search()
  |  Bounding Box creation function (private)               mueller 01/11|
  |  generates bounding boxes extended with factor 1.05                  |
  *----------------------------------------------------------------------*/
-void Beam3ContactOctTree::CreateBoundingBoxes(
+void Beam3ContactOctTree::create_bounding_boxes(
     std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions)
 {
 #ifdef MEASURETIME
@@ -573,7 +573,7 @@ void Beam3ContactOctTree::CreateBoundingBoxes(
         switch (boundingbox_)
         {
           case Beam3ContactOctTree::axisaligned:
-            CalcCornerPos(element, currentpositions, coord);
+            calc_corner_pos(element, currentpositions, coord);
             break;
           case Beam3ContactOctTree::cyloriented:
             FOUR_C_THROW(
@@ -581,7 +581,7 @@ void Beam3ContactOctTree::CreateBoundingBoxes(
                 "contact!");
             break;
           case Beam3ContactOctTree::spherical:
-            CalcCornerPos(element, currentpositions, coord);
+            calc_corner_pos(element, currentpositions, coord);
             break;
           default:
             FOUR_C_THROW("No or an invalid Octree type was chosen. Check your input file!");
@@ -592,13 +592,13 @@ void Beam3ContactOctTree::CreateBoundingBoxes(
       switch (boundingbox_)
       {
         case Beam3ContactOctTree::axisaligned:
-          CreateAABB(coord, elecolid);
+          create_aabb(coord, elecolid);
           break;
         case Beam3ContactOctTree::cyloriented:
-          CreateCOBB(coord, elecolid);
+          create_cobb(coord, elecolid);
           break;
         case Beam3ContactOctTree::spherical:
-          CreateSPBB(coord, elecolid);
+          create_spbb(coord, elecolid);
           break;
         default:
           FOUR_C_THROW("No or an invalid Octree type was chosen. Check your input file!");
@@ -612,7 +612,7 @@ void Beam3ContactOctTree::CreateBoundingBoxes(
   if (boundingbox_ == Beam3ContactOctTree::spherical)
   {
     Epetra_Vector diameterrow(*(searchdis_.ElementRowMap()), true);
-    CommunicateVector(diameterrow, *diameter_);
+    communicate_vector(diameterrow, *diameter_);
   }
   // communication of findings
   Epetra_MultiVector allbboxesrow(*(searchdis_.ElementRowMap()), allbboxes_->NumVectors(), true);
@@ -621,7 +621,7 @@ void Beam3ContactOctTree::CreateBoundingBoxes(
   if (periodic_bc_)
   {
     Epetra_Vector numshiftsrow(*(searchdis_.ElementRowMap()), true);
-    CommunicateVector(numshiftsrow, *numshifts_);
+    communicate_vector(numshiftsrow, *numshifts_);
   }
 
 #ifdef MEASURETIME
@@ -640,7 +640,7 @@ void Beam3ContactOctTree::CreateBoundingBoxes(
 /*-----------------------------------------------------------------------------------------*
  |  Create an Axis Aligned Bounding Box   (private)                           mueller 11/11|
  *----------------------------------------------------------------------------------------*/
-void Beam3ContactOctTree::CreateAABB(CORE::LINALG::SerialDenseMatrix& coord, const int& elecolid,
+void Beam3ContactOctTree::create_aabb(CORE::LINALG::SerialDenseMatrix& coord, const int& elecolid,
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> bboxlimits)
 {
   // Why bboxlimits separately: The idea is that we can use this method to check whether a
@@ -747,7 +747,7 @@ void Beam3ContactOctTree::CreateAABB(CORE::LINALG::SerialDenseMatrix& coord, con
 /*-----------------------------------------------------------------------------------------*
  |  Create Cylindrical an Oriented Bounding Box   (private)                   mueller 11/11|
  *----------------------------------------------------------------------------------------*/
-void Beam3ContactOctTree::CreateCOBB(CORE::LINALG::SerialDenseMatrix& coord, const int& elecolid,
+void Beam3ContactOctTree::create_cobb(CORE::LINALG::SerialDenseMatrix& coord, const int& elecolid,
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> bboxlimits)
 {
   // Why bboxlimits separately: The idea is that we can use this method to check whether a
@@ -850,7 +850,7 @@ void Beam3ContactOctTree::CreateCOBB(CORE::LINALG::SerialDenseMatrix& coord, con
 /*-----------------------------------------------------------------------------------------*
  |  Create Spherical Bounding Box   (private)                                  mueller 1/12|
  *-----------------------------------------------------------------------------------------*/
-void Beam3ContactOctTree::CreateSPBB(CORE::LINALG::SerialDenseMatrix& coord, const int& elecolid,
+void Beam3ContactOctTree::create_spbb(CORE::LINALG::SerialDenseMatrix& coord, const int& elecolid,
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> bboxlimits)
 {
   // Why bboxlimits separately: The idea is that we can use this method to check whether a
@@ -964,15 +964,15 @@ void Beam3ContactOctTree::CreateSPBB(CORE::LINALG::SerialDenseMatrix& coord, con
   return;
 }
 /*-----------------------------------------------------------------------------------------*
- |  locateAll function (private); Recursive division of a 3-dimensional set.    meier 02/11|
- |  [Oct_ID, element-ID] = locateAll( &allbboxes_)                                          |
+ |  locate_all function (private); Recursive division of a 3-dimensional set.    meier 02/11|
+ |  [Oct_ID, element-ID] = locate_all( &allbboxes_)                                          |
  |  Performs recursive tree-like division of a set of Bounding Boxes.                      |
  |  N0 is maximum permissible number of "counted" boxes in the leaf octant.                |
  |  Returns vector IND of the same size as rows of allbboxes_ showing which region each     |
  |  box of a set belongs to; binary matrices BX, BY, BZ where each row shows               |
  |  "binary address" of each region are written to .dat- files each.                       |
  *----------------------------------------------------------------------------------------*/
-bool Beam3ContactOctTree::locateAll()
+bool Beam3ContactOctTree::locate_all()
 {
 #ifdef MEASURETIME
   double t_octree = Teuchos::Time::wallTime();
@@ -987,7 +987,7 @@ bool Beam3ContactOctTree::locateAll()
       allbboxes_->MyLength(), std::vector<double>(allbboxes_->NumVectors(), 0.0));
   epetra_multi_vec_to_std_vec(*allbboxes_, allbboxesstdvec);
 
-  // initial tree depth value (will be incremented with each recursive call of locateBox()
+  // initial tree depth value (will be incremented with each recursive call of locate_box()
   int treedepth = 0;
 
   // Parameters and Initialization
@@ -1011,10 +1011,10 @@ bool Beam3ContactOctTree::locateAll()
 
 
   // calculate root box limits
-  rootbox_ = GetRootBox();
+  rootbox_ = get_root_box();
   if (searchdis_.Comm().MyPID() == 0)
   {
-    locateBox(allbboxesstdvec, rootbox_, octreelimits_, bboxesinoctants, bbox2octant, treedepth);
+    locate_box(allbboxesstdvec, rootbox_, octreelimits_, bboxesinoctants, bbox2octant, treedepth);
 
     for (int i = 0; i < (int)bbox2octant.size(); i++)
       if ((int)bbox2octant[i].size() > maxnumoctlocal) maxnumoctlocal = (int)bbox2octant[i].size();
@@ -1104,13 +1104,13 @@ bool Beam3ContactOctTree::locateAll()
   {
     return false;
   }
-}  // end of method locateAll
+}  // end of method locate_all
 
 
 /*-----------------------------------------------------------------------------------------*
- |  locateBox function (private);                                               meier 02/11|
+ |  locate_box function (private);                                               meier 02/11|
  *----------------------------------------------------------------------------------------*/
-void Beam3ContactOctTree::locateBox(std::vector<std::vector<double>>& allbboxesstdvec,
+void Beam3ContactOctTree::locate_box(std::vector<std::vector<double>>& allbboxesstdvec,
     CORE::LINALG::Matrix<6, 1>& lim, std::vector<CORE::LINALG::Matrix<6, 1>>& octreelimits,
     std::vector<std::vector<int>>& bboxesinoctants, std::vector<std::vector<int>>& bbox2octant,
     int& treedepth)
@@ -1121,7 +1121,7 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double>>& allbboxess
   CORE::LINALG::Matrix<3, 1> newedgelength;
   // vector with limits of the 8 sub octants
   std::vector<CORE::LINALG::Matrix<6, 1>> suboctlimits;
-  CreateSubOctants(lim, newedgelength, suboctlimits);
+  create_sub_octants(lim, newedgelength, suboctlimits);
 
   /* Decision to which child box belongs....................
    *
@@ -1184,21 +1184,21 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double>>& allbboxess
         {
           case Beam3ContactOctTree::axisaligned:
           {
-            if (AABBIsInThisOctant(suboctlimits[oct], allbboxesstdvec[i], shift))
+            if (aabb_is_in_this_octant(suboctlimits[oct], allbboxesstdvec[i], shift))
               assignbboxtooctant = true;
           }
           break;
           case Beam3ContactOctTree::cyloriented:
           {
             //            std::cout<<"Octant-Lim:"<<suboctlimits[oct]<<std::endl;
-            if (COBBIsInThisOctant(
+            if (cobb_is_in_this_octant(
                     *octcenter, newedgelength, allbboxesstdvec[i], extrusionvalue, lid, shift))
               assignbboxtooctant = true;
           }
           break;
           case Beam3ContactOctTree::spherical:
           {
-            if (SPBBIsInThisOctant(*octcenter, newedgelength, allbboxesstdvec[i], lid, shift))
+            if (spbb_is_in_this_octant(*octcenter, newedgelength, allbboxesstdvec[i], lid, shift))
               assignbboxtooctant = true;
           }
           break;
@@ -1222,7 +1222,7 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double>>& allbboxess
 
     // If to divide further, let LocateBox call itself with updated inputs
     if (N > minbboxesinoctant_ && currtreedepth < maxtreedepth_ - 1)
-      locateBox(
+      locate_box(
           bboxsubset, suboctlimits[oct], octreelimits, bboxesinoctants, bbox2octant, currtreedepth);
     else
     {
@@ -1257,12 +1257,12 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double>>& allbboxess
     }
   }  // end of loop which goes through all suboctants
   return;
-}  // end of method locateBox
+}  // end of method locate_box
 
 /*----------------------------------------------------------------------------------*
  |  Calculate limits of the root box   (public)                        mueller 11/11|
  *----------------------------------------------------------------------------------*/
-CORE::LINALG::Matrix<6, 1> Beam3ContactOctTree::GetRootBox()
+CORE::LINALG::Matrix<6, 1> Beam3ContactOctTree::get_root_box()
 {
   int entriesperbbox = 0;
   if (boundingbox_ == Beam3ContactOctTree::spherical)
@@ -1302,7 +1302,7 @@ CORE::LINALG::Matrix<6, 1> Beam3ContactOctTree::GetRootBox()
 /*-----------------------------------------------------------------------------------*
  |  Create limits of sub octants      (private)                        mueller 02/15|
  |----------------------------------------------------------------------------------*/
-void Beam3ContactOctTree::CreateSubOctants(CORE::LINALG::Matrix<6, 1>& parentoctlimits,
+void Beam3ContactOctTree::create_sub_octants(CORE::LINALG::Matrix<6, 1>& parentoctlimits,
     CORE::LINALG::Matrix<3, 1>& suboctedgelength,
     std::vector<CORE::LINALG::Matrix<6, 1>>& suboctlimits)
 {
@@ -1318,7 +1318,7 @@ void Beam3ContactOctTree::CreateSubOctants(CORE::LINALG::Matrix<6, 1>& parentoct
   // safety: only cubic octants for now.
   if (fabs(suboctedgelength(0) - suboctedgelength(1)) > 1e-8 ||
       fabs(suboctedgelength(0) - suboctedgelength(2)) > 1e-8)
-    FOUR_C_THROW("Check GetRootBox()! Octants must be cubic!");
+    FOUR_C_THROW("Check get_root_box()! Octants must be cubic!");
 
   suboctlimits.clear();
   for (int i = 0; i < 2; i++)
@@ -1345,7 +1345,7 @@ void Beam3ContactOctTree::CreateSubOctants(CORE::LINALG::Matrix<6, 1>& parentoct
 /*-----------------------------------------------------------------------------------*
  |  Check if AABB in octant           (private)                        mueller 02/15|
  |----------------------------------------------------------------------------------*/
-bool Beam3ContactOctTree::AABBIsInThisOctant(
+bool Beam3ContactOctTree::aabb_is_in_this_octant(
     CORE::LINALG::Matrix<6, 1>& suboctlimits, std::vector<double>& bboxcoords, int& shift)
 {
   if (!((suboctlimits(0) >= bboxcoords[6 * shift + 1]) ||
@@ -1362,7 +1362,7 @@ bool Beam3ContactOctTree::AABBIsInThisOctant(
 /*-----------------------------------------------------------------------------------*
  |  Check if COBB in octant           (private)                        mueller 02/15|
  |----------------------------------------------------------------------------------*/
-bool Beam3ContactOctTree::COBBIsInThisOctant(CORE::LINALG::Matrix<3, 1>& octcenter,
+bool Beam3ContactOctTree::cobb_is_in_this_octant(CORE::LINALG::Matrix<3, 1>& octcenter,
     CORE::LINALG::Matrix<3, 1>& newedgelength, std::vector<double>& bboxcoords,
     double& extrusionvalue, int& lid, int& shift)
 {
@@ -1484,7 +1484,7 @@ bool Beam3ContactOctTree::COBBIsInThisOctant(CORE::LINALG::Matrix<3, 1>& octcent
 /*-----------------------------------------------------------------------------------*
  |  Check if SPBB in octant           (private)                        mueller 02/15|
  |----------------------------------------------------------------------------------*/
-bool Beam3ContactOctTree::SPBBIsInThisOctant(CORE::LINALG::Matrix<3, 1>& octcenter,
+bool Beam3ContactOctTree::spbb_is_in_this_octant(CORE::LINALG::Matrix<3, 1>& octcenter,
     CORE::LINALG::Matrix<3, 1>& newedgelength, std::vector<double>& bboxcoords, int& lid,
     int& shift)
 {
@@ -1555,13 +1555,13 @@ void Beam3ContactOctTree::bounding_box_intersection(
           switch (boundingbox_)
           {
             case Beam3ContactOctTree::axisaligned:
-              intersection = IntersectionAABB(bboxIDs);
+              intersection = intersection_aabb(bboxIDs);
               break;
             case Beam3ContactOctTree::cyloriented:
-              intersection = IntersectionCOBB(bboxIDs);
+              intersection = intersection_cobb(bboxIDs);
               break;
             case Beam3ContactOctTree::spherical:
-              intersection = IntersectionSPBB(bboxIDs);
+              intersection = intersection_spbb(bboxIDs);
               break;
             default:
               FOUR_C_THROW("No or an invalid Octree type was chosen. Check your input file!");
@@ -1591,17 +1591,17 @@ void Beam3ContactOctTree::bounding_box_intersection(
     DRT::Element* tempele1 = searchdis_.lColElement(collid1);
     DRT::Element* tempele2 = searchdis_.lColElement(collid2);
     // matrices to store nodal coordinates
-    CORE::LINALG::SerialDenseMatrix ele1pos(3, tempele1->NumNode());
-    CORE::LINALG::SerialDenseMatrix ele2pos(3, tempele2->NumNode());
+    CORE::LINALG::SerialDenseMatrix ele1pos(3, tempele1->num_node());
+    CORE::LINALG::SerialDenseMatrix ele2pos(3, tempele2->num_node());
     // store nodal coordinates of element 1
-    for (int m = 0; m < tempele1->NumNode(); ++m)
+    for (int m = 0; m < tempele1->num_node(); ++m)
     {
       int tempGID = (tempele1->NodeIds())[m];
       CORE::LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
       for (int n = 0; n < 3; n++) ele1pos(n, m) = temppos(n);
     }
     // store nodal coordinates of element 2
-    for (int m = 0; m < tempele2->NumNode(); ++m)
+    for (int m = 0; m < tempele2->num_node(); ++m)
     {
       int tempGID = (tempele2->NodeIds())[m];
       CORE::LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
@@ -1633,7 +1633,7 @@ void Beam3ContactOctTree::bounding_box_intersection(
  |  Axis Aligned Bounding Box Intersection function when both bounding boxes         |
  |  represent actual finite elements  (private)                         mueller 11/11|
  *----------------------------------------------------------------------------------*/
-bool Beam3ContactOctTree::IntersectionAABB(
+bool Beam3ContactOctTree::intersection_aabb(
     const std::vector<int>& bboxIDs, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> bboxlimits)
 {
   // Why bboxlimits separately: The idea is that we can use this method to check whether a
@@ -1694,7 +1694,7 @@ bool Beam3ContactOctTree::IntersectionAABB(
  |  Cylindrical Oriented Bounding Box Intersection function when both bounding boxes |
  |  represent actual finite elements  (private)                         mueller 11/11|
  *----------------------------------------------------------------------------------*/
-bool Beam3ContactOctTree::IntersectionCOBB(
+bool Beam3ContactOctTree::intersection_cobb(
     const std::vector<int>& bboxIDs, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> bboxlimits)
 {
   // Why bboxlimits separately: The idea is that we can use this method to check whether a
@@ -1811,7 +1811,7 @@ bool Beam3ContactOctTree::IntersectionCOBB(
  |  Spherical Bounding Box Intersection function when both bounding boxes           |
  |  for linkers                                       (private)        mueller 01/12|
  *----------------------------------------------------------------------------------*/
-bool Beam3ContactOctTree::IntersectionSPBB(
+bool Beam3ContactOctTree::intersection_spbb(
     const std::vector<int>& bboxIDs, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> bboxlimits)
 {
   // Why bboxlimits separately: The idea is that we can use this method to check whether a
@@ -1858,7 +1858,7 @@ bool Beam3ContactOctTree::IntersectionSPBB(
 /*-----------------------------------------------------------------------*
  | communicate Vector to all Processors                    mueller 11/11 |
  *-----------------------------------------------------------------------*/
-void Beam3ContactOctTree::CommunicateVector(
+void Beam3ContactOctTree::communicate_vector(
     Epetra_Vector& InVec, Epetra_Vector& OutVec, bool zerofy, bool doexport, bool doimport)
 {
   /* zerofy InVec at the beginning of each search except for Proc 0
@@ -1900,7 +1900,7 @@ void Beam3ContactOctTree::communicate_multi_vector(Epetra_MultiVector& InVec,
 /*-----------------------------------------------------------------------*
  | Calc. max and min values of node coordinates              meier 05/14 |
  *-----------------------------------------------------------------------*/
-void Beam3ContactOctTree::CalcCornerPos(DRT::Element* element,
+void Beam3ContactOctTree::calc_corner_pos(DRT::Element* element,
     std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
     CORE::LINALG::SerialDenseMatrix& coord)
 {
@@ -1912,7 +1912,7 @@ void Beam3ContactOctTree::CalcCornerPos(DRT::Element* element,
     coord_min(k) = 1.0e12;
   }
 
-  for (int i = 0; i < element->NumNode(); i++)
+  for (int i = 0; i < element->num_node(); i++)
   {
     int gid = element->Nodes()[i]->Id();
     CORE::LINALG::Matrix<3, 1> coord_aux = currentpositions[gid];
@@ -1926,7 +1926,7 @@ void Beam3ContactOctTree::CalcCornerPos(DRT::Element* element,
   for (int k = 0; k < 3; ++k)
   {
     if (coord_max(k) == -1.0e12 || coord_min(k) == 1.0e12)
-      FOUR_C_THROW("ERROR: CalcCornerPos was not successful");
+      FOUR_C_THROW("ERROR: calc_corner_pos was not successful");
   }
   /*  We don't fill real node coordinates in the matrix coord, but only the min/max x-,y-,z- values
      over all nodes of the considered elements. These coordinates coord_max and coord_min can thus

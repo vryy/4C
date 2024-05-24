@@ -83,7 +83,7 @@ namespace MIXTURE
        * @param lambda_f (in) : total stretch in fiber direction
        * @param lambda_ext (in) : external inelastic stretch in fiber direction
        */
-      void SetState(T lambda_f, T lambda_ext);
+      void set_state(T lambda_f, T lambda_ext);
 
       [[nodiscard]] T evaluate_growth_evolution_equation_dt(
           T lambda_f, T lambda_r, T lambda_ext, T growth_scalar) const;
@@ -142,7 +142,7 @@ namespace MIXTURE
       /// @}
       /// @brief Evaluation methods
       ///
-      /// @note It is important to call #SetState(#T) first.
+      /// @note It is important to call #set_state(#T) first.
       ///
       /// @{
       [[nodiscard]] T evaluate_current_homeostatic_fiber_cauchy_stress() const;

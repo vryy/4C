@@ -83,7 +83,7 @@ namespace ADAPTER
 
     /*! \brief Update the auxiliar integrator
      */
-    void UpdateAuxiliar() override;
+    void update_auxiliar() override;
   };
 
 }  // namespace ADAPTER

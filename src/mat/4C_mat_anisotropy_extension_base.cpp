@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void MAT::BaseAnisotropyExtension::SetAnisotropy(MAT::Anisotropy& anisotropy)
+void MAT::BaseAnisotropyExtension::set_anisotropy(MAT::Anisotropy& anisotropy)
 {
   anisotropy_ = Teuchos::rcpFromRef(anisotropy);
 }

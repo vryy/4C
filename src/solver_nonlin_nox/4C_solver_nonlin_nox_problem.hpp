@@ -65,7 +65,7 @@ namespace NOX
           const Teuchos::RCP<CORE::LINALG::SparseOperator>& A);
 
       //! create the linear system for the NOX framework
-      virtual Teuchos::RCP<::NOX::Epetra::LinearSystem> CreateLinearSystem() const;
+      virtual Teuchos::RCP<::NOX::Epetra::LinearSystem> create_linear_system() const;
 
       //! create a nox group
       virtual Teuchos::RCP<::NOX::Abstract::Group> CreateGroup(
@@ -86,7 +86,7 @@ namespace NOX
       Teuchos::RCP<NOX::NLN::GlobalData> NlnGlobalDataPtr() { return noxNlnGlobalData_; }
 
      protected:
-      inline void CheckInit() const
+      inline void check_init() const
       {
         if (not isinit_)
           FOUR_C_THROW(

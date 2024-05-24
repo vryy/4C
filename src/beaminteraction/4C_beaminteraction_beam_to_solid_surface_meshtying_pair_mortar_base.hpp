@@ -65,7 +65,7 @@ namespace BEAMINTERACTION
     /**
      * \brief The mortar energy contribution will be calculated globally in the mortar manager.
      */
-    double GetEnergy() const override { return 0.0; }
+    double get_energy() const override { return 0.0; }
 
    protected:
     //! Number of rotational Lagrange multipliers.

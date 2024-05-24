@@ -57,7 +57,7 @@ namespace NOX
 
        private:
         //! Throw an NOX_error
-        void throwError(const std::string& functionName, const std::string& errorMsg) const;
+        void throw_error(const std::string& functionName, const std::string& errorMsg) const;
       };
     }  // namespace SINGLESTEP
   }    // namespace NLN

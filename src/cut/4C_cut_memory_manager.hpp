@@ -299,7 +299,7 @@ namespace CORE::GEO
 
       // Set state for a memory pool allocator, with a memory pattern specified by
       // memory_allocations
-      void SetState(int newstate, std::unordered_map<size_t, int>& memory_allocations_);
+      void set_state(int newstate, std::unordered_map<size_t, int>& memory_allocations_);
 
       inline void Free(void* ptr) { mem_->Free(ptr); }
 

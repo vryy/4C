@@ -50,14 +50,14 @@ namespace DRT
       /// whether to write displacements
       bool output_displacement_state() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return output_displacement_state_;
       };
 
       /// whether to write triads at the Gauss points
       bool is_write_triad_visualization_points() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return write_triads_visualizationpoints_;
       };
 
@@ -65,117 +65,117 @@ namespace DRT
       /// (i.e. for the visualization point coordinates)
       bool use_absolute_positions() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return use_absolute_positions_visualizationpoint_coordinates_;
       };
 
       /// whether to write material cross-section strains at the Gauss points
       bool is_write_internal_energy_element() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return write_internal_energy_element_;
       };
 
       /// whether to write material cross-section strains at the Gauss points
       bool is_write_kinetic_energy_element() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return write_kinetic_energy_element_;
       };
 
       /// whether to write material cross-section strains at the Gauss points
       bool is_write_material_strains_gauss_points() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return write_material_crosssection_strains_gausspoints_;
       };
 
       /// whether to write material cross-section strains at the visualization points
       bool is_write_material_strains_continuous() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return write_material_crosssection_strains_continuous_;
       };
 
       /// whether to write material cross-section stresses at the Gauss points
       bool is_write_material_stresses_gauss_points() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return write_material_crosssection_stresses_gausspoints_;
       };
 
       /// whether to write material cross-section stresses at the visualization points
       bool is_write_material_stress_continuous() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return write_material_crosssection_strains_continuous_;
       };
 
       /// whether to write material cross-section stresses at the Gauss points
       bool is_write_spatial_stresses_gauss_points() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return write_spatial_crosssection_stresses_gausspoints_;
       };
 
       /// whether to write material cross-section stresses at the Gauss points
       bool is_write_element_filament_condition() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return write_filament_condition_;
       };
 
       /// whether to write element and network orientation parameter
       bool is_write_orientation_paramter() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return write_orientation_parameter_;
       };
 
       /// whether to write crosssection forces of periodic rve in x, y, and z direction
       bool is_write_rve_crosssection_forces() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return write_rve_crosssection_forces_;
       };
 
       /// whether to write the element reference length
       bool IsWriteRefLength() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return write_ref_length_;
       };
 
       /// whether to write beam element GIDs.
       bool IsWriteElementGID() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return write_element_gid_;
       };
 
       /// write ghosting information
       bool is_write_element_ghosting() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return write_element_ghosting_;
       };
 
       /// number of visualization subsegments.
       unsigned int get_number_visualization_subsegments() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return n_subsegments_;
       };
 
      private:
       /// get the init indicator status
-      const bool& IsInit() const { return isinit_; };
+      const bool& is_init() const { return isinit_; };
 
       /// get the setup indicator status
-      const bool& IsSetup() const { return issetup_; };
+      const bool& is_setup() const { return issetup_; };
 
       /// Check if Init() and Setup() have been called, yet.
-      void CheckInitSetup() const;
+      void check_init_setup() const;
 
 
      private:

@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
  | algebraic reinitialization via solution of equation  rasthofer 09/13 |
  | pde-based reinitialization according to Sussman 1994                 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::ReinitEq()
+void SCATRA::LevelSetAlgorithm::reinit_eq()
 {
   if (myrank_ == 0)
     std::cout << "\n---------------------------------------  REINITIALIZATION SOLVER  "
@@ -45,7 +45,7 @@ void SCATRA::LevelSetAlgorithm::ReinitEq()
   // -----------------------------------------------------------------
   //            time loop for reinitialization equation
   // -----------------------------------------------------------------
-  TimeLoopReinit();
+  time_loop_reinit();
 
   // -----------------------------------------------------------------
   //            complete reinitialization via equation
@@ -178,7 +178,7 @@ void SCATRA::LevelSetAlgorithm::prepare_time_loop_reinit()
 /*----------------------------------------------------------------------*
  | internal time loop for reinitialization equation     rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::TimeLoopReinit()
+void SCATRA::LevelSetAlgorithm::time_loop_reinit()
 {
   // time measurement: time loop
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:  + reinitialization time loop");
@@ -196,12 +196,12 @@ void SCATRA::LevelSetAlgorithm::TimeLoopReinit()
     // -------------------------------------------------------------------
     //                  solve nonlinear equation
     // -------------------------------------------------------------------
-    SolveReinit();
+    solve_reinit();
 
     // -------------------------------------------------------------------
     //                  interface correction
     // -------------------------------------------------------------------
-    if (reinitcorrector_) CorrectionReinit();
+    if (reinitcorrector_) correction_reinit();
 
     // -------------------------------------------------------------------
     //                        check for convergence
@@ -211,7 +211,7 @@ void SCATRA::LevelSetAlgorithm::TimeLoopReinit()
     // -------------------------------------------------------------------
     //                        update solution
     // -------------------------------------------------------------------
-    UpdateReinit();
+    update_reinit();
   }
 
   return;
@@ -355,7 +355,7 @@ void SCATRA::LevelSetAlgorithm::prepare_time_step_reinit()
   // compute node-based velocity field
   // -------------------------------------------------------------------
   // TODO phin oder phinp: fuer phinp in add_problem_specific_parameters_and_vectors
-  //     muss vor oder gleich zu Beginn von AssembleMatAndRHS gerufen werden
+  //     muss vor oder gleich zu Beginn von assemble_mat_and_rhs gerufen werden
 #ifdef USE_PHIN_FOR_VEL
   if (useprojectedreinitvel_ == INPAR::SCATRA::vel_reinit_node_based) calc_node_based_reinit_vel();
 #endif
@@ -375,7 +375,7 @@ void SCATRA::LevelSetAlgorithm::calc_node_based_reinit_vel()
   for (int idim = 0; idim < 3; idim++)
   {
     // define vector for velocity component
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    const Epetra_Map* dofrowmap = discret_->dof_row_map();
     Teuchos::RCP<Epetra_Vector> velcomp = CORE::LINALG::CreateVector(*dofrowmap, true);
     velcomp->PutScalar(0.0);
 
@@ -402,24 +402,24 @@ void SCATRA::LevelSetAlgorithm::calc_node_based_reinit_vel()
 
       discret_->ClearState();  // TODO Caution if called from NonlinearSolve
       // set initial phi, i.e., solution of level-set equation
-      discret_->SetState("phizero", initialphireinit_);
+      discret_->set_state("phizero", initialphireinit_);
 
       switch (reinitaction_)
       {
         case INPAR::SCATRA::reinitaction_sussman:
         {
           // set phin as phi used for velocity
-          // note:read as phinp in SysmatNodalVel()
+          // note:read as phinp in sysmat_nodal_vel()
 #ifdef USE_PHIN_FOR_VEL
-          discret_->SetState("phinp", phin_);
+          discret_->set_state("phinp", phin_);
 #else
-          discret_->SetState("phinp", phinp_);
+          discret_->set_state("phinp", phinp_);
 #endif
           break;
         }
         case INPAR::SCATRA::reinitaction_ellipticeq:
         {
-          discret_->SetState("phinp", phinp_);
+          discret_->set_state("phinp", phinp_);
           break;
         }
         default:
@@ -465,7 +465,7 @@ void SCATRA::LevelSetAlgorithm::calc_node_based_reinit_vel()
  | contains call of nonlinear solver for reinitialization equation      |
  |                                                      rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::SolveReinit()
+void SCATRA::LevelSetAlgorithm::solve_reinit()
 {
   // we simply call the NonlinearSolve (since the reinitialization equation is
   // indeed nonlinear), and all the rest concerning the correct action type and
@@ -480,7 +480,7 @@ void SCATRA::LevelSetAlgorithm::SolveReinit()
 /*----------------------------------------------------------------------*
  | correction step according to Sussman & Fatemi 1999   rasthofer 12/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::CorrectionReinit()
+void SCATRA::LevelSetAlgorithm::correction_reinit()
 {
   if (myrank_ == 0) std::cout << "\n---------------  Correction projection\n";
 
@@ -504,8 +504,8 @@ void SCATRA::LevelSetAlgorithm::CorrectionReinit()
 
   // set state vectors
   discret_->ClearState();
-  discret_->SetState("phizero", initialphireinit_);
-  discret_->SetState("phinp", phinp_);
+  discret_->set_state("phizero", initialphireinit_);
+  discret_->set_state("phinp", phinp_);
 
 
   // call loop over elements
@@ -536,7 +536,7 @@ void SCATRA::LevelSetAlgorithm::CorrectionReinit()
 /*----------------------------------------------------------------------*
  | geometric reinitialization via distance to interface rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::ReinitGeo(
+void SCATRA::LevelSetAlgorithm::reinit_geo(
     const std::map<int, CORE::GEO::BoundaryIntCells>& interface)
 {
   if (myrank_ == 0)
@@ -549,7 +549,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
   // map holding pbc nodes (masters or slaves) <pbc node id, distance to flame front>
   std::map<int, double> pbcnodes;
 
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // determine the number of nodes per element
   int numnodesperele = 0;
@@ -680,7 +680,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
         const int coordbase = 3 * numnodesperele * ivec;
         const DRT::Element* ele = discret_->lRowElement(elelid);
         const DRT::Node* const* nodes = ele->Nodes();
-        for (int inode = 0; inode < ele->NumNode(); ++inode)
+        for (int inode = 0; inode < ele->num_node(); ++inode)
         {
           const int nodecoordbase = coordbase + 3 * inode;
           nodecoords[nodecoordbase + 0] = nodes[inode]->X()[0];
@@ -768,7 +768,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
     // sort the the vector in ascending order by the estimated distance
     //==================================================================
     // this is the STL sorting, which is pretty fast
-    eledistance.sort(MyComparePairs);
+    eledistance.sort(my_compare_pairs);
 
     //--------------------------------------------------------------------------------
     // if a reinitbandwith is used the nodes not within the band will be set to the
@@ -1031,13 +1031,13 @@ void SCATRA::LevelSetAlgorithm::find_facing_patch_proj_cell_space(
   {
     case CORE::FE::CellType::tri3:
     {
-      converged =
-          ProjectNodeOnPatch<CORE::FE::CellType::tri3>(node, patch, patchcoord, normal, eta, alpha);
+      converged = project_node_on_patch<CORE::FE::CellType::tri3>(
+          node, patch, patchcoord, normal, eta, alpha);
       break;
     }
     case CORE::FE::CellType::quad4:
     {
-      converged = ProjectNodeOnPatch<CORE::FE::CellType::quad4>(
+      converged = project_node_on_patch<CORE::FE::CellType::quad4>(
           node, patch, patchcoord, normal, eta, alpha);
       break;
     }
@@ -1278,7 +1278,7 @@ void SCATRA::LevelSetAlgorithm::compute_normal_vector_to_interface(
  | project node into the boundary cell space                               henke 08/09 |
  *------------------------------------------------- ---------------------------------- */
 template <CORE::FE::CellType DISTYPE>
-bool SCATRA::LevelSetAlgorithm::ProjectNodeOnPatch(const CORE::LINALG::Matrix<3, 1>& node,
+bool SCATRA::LevelSetAlgorithm::project_node_on_patch(const CORE::LINALG::Matrix<3, 1>& node,
     const CORE::GEO::BoundaryIntCell& patch, const CORE::LINALG::SerialDenseMatrix& patchcoord,
     const CORE::LINALG::Matrix<3, 1>& normal, CORE::LINALG::Matrix<2, 1>& eta, double& alpha)
 {
@@ -1416,7 +1416,7 @@ bool SCATRA::LevelSetAlgorithm::ProjectNodeOnPatch(const CORE::LINALG::Matrix<3,
  |                                                                                    DA wichmann |
  | Idea: shift level-set so that volume is conserved                                              |
  *------------------------------------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::CorrectVolume()
+void SCATRA::LevelSetAlgorithm::correct_volume()
 {
   double volminus = 0.0;
   double volplus = 0.0;
@@ -1451,7 +1451,7 @@ void SCATRA::LevelSetAlgorithm::CorrectVolume()
 /*----------------------------------------------------------------------*
  | elliptic reinitialization                            rasthofer 09/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::ReinitElliptic(
+void SCATRA::LevelSetAlgorithm::reinit_elliptic(
     std::map<int, CORE::GEO::BoundaryIntCells>& interface)
 {
   // store interface
@@ -1480,20 +1480,21 @@ void SCATRA::LevelSetAlgorithm::reinitialize_with_elliptic_equation()
   // this vector is only initialized: currently function calc_node_based_reinit_vel() is also
   // used to compute nodal level-set gradients, and this function expects that initialphireinit_ has
   // been set although it is not used for the present purposes
-  initialphireinit_ = CORE::LINALG::CreateVector(*(discret_->DofRowMap()), true);
+  initialphireinit_ = CORE::LINALG::CreateVector(*(discret_->dof_row_map()), true);
 
   //-------------------------------------------------
   // solve
   //-------------------------------------------------
 
-  // we simply call the LinearSolve (since the elliptic reinitialization equation is
+  // we simply call the linear_solve (since the elliptic reinitialization equation is
   // indeed nonlinear), and all the rest concerning the correct action type and
   // parameters is handled via the switchreinit_-flag in the concrete time-integration
   // schemes for level-set problems
 
   // some preparations
   Teuchos::RCP<Epetra_Vector> phinmloc = Teuchos::rcp(new Epetra_Vector(*phinp_));
-  Teuchos::RCP<Epetra_Vector> inc = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
+  Teuchos::RCP<Epetra_Vector> inc =
+      Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true));
   int step = 0;
   bool not_conv = true;
 
@@ -1509,8 +1510,8 @@ void SCATRA::LevelSetAlgorithm::reinitialize_with_elliptic_equation()
     //-----------------------------
     // setup and solve system
     //-----------------------------
-    // caution: we can only use LinearSolve together with linear-full strategy here
-    LinearSolve();
+    // caution: we can only use linear_solve together with linear-full strategy here
+    linear_solve();
 
     //-----------------------------
     // check convergence

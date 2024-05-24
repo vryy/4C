@@ -76,7 +76,7 @@ namespace FSI
     //! @name Apply current field state to system
 
     /// setup composed system matrix from field solvers
-    void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) final;
+    void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) final;
 
     //@}
 
@@ -84,7 +84,7 @@ namespace FSI
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const override;
 
     /// read restart
-    void ReadRestart(int step) final;
+    void read_restart(int step) final;
 
     //! @name Time Adaptivity
     //@{
@@ -127,7 +127,7 @@ namespace FSI
    protected:
     void CreateSystemMatrix();
 
-    Teuchos::RCP<::NOX::StatusTest::Combo> CreateStatusTest(
+    Teuchos::RCP<::NOX::StatusTest::Combo> create_status_test(
         Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp) final;
 
     void Update() final;
@@ -138,12 +138,12 @@ namespace FSI
     void OutputLambda() final;
 
     /*!
-    @copydoc FSI::Monolithic::ExtractFieldVectors
+    @copydoc FSI::Monolithic::extract_field_vectors
 
     Since this is a saddle-point formulation, we also need to extract the Lagrange multipliers
     #lag_mult_ from the monolithic solution vector.
     */
-    void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+    void extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx,
         Teuchos::RCP<const Epetra_Vector>& ax, Teuchos::RCP<const Epetra_Vector>& lagx);
 
@@ -158,7 +158,7 @@ namespace FSI
         Teuchos::RCP<const Epetra_Vector> step_increment  ///< increment between time step n and n+1
         ) override;
 
-    void InitialGuess(Teuchos::RCP<Epetra_Vector> initial_guess) final;
+    void initial_guess(Teuchos::RCP<Epetra_Vector> initial_guess) final;
 
    private:
     /*! \brief Create the combined DOF row map for the FSI problem
@@ -175,7 +175,7 @@ namespace FSI
      */
     virtual void create_lagrange_multiplier_dof_row_map();
 
-    virtual void CombineFieldVectors(
+    virtual void combine_field_vectors(
         Epetra_Vector& f,  ///< composed vector containing all field vectors
         Teuchos::RCP<const Epetra_Vector> solid_vector,     ///< structural DOFs
         Teuchos::RCP<const Epetra_Vector> fluid_vector,     ///< fluid DOFs
@@ -193,16 +193,16 @@ namespace FSI
     void setup_dbc_map_extractor() final;
 
     /// setup RHS contributions based on single field residuals
-    void SetupRHSResidual(Epetra_Vector& f) final;
+    void setup_rhs_residual(Epetra_Vector& f) final;
 
     /// setup RHS contributions based on the Lagrange multiplier field
-    void SetupRHSLambda(Epetra_Vector& f) final;
+    void setup_rhs_lambda(Epetra_Vector& f) final;
 
     /// setup RHS contributions based on terms for first nonlinear iteration
-    void SetupRHSFirstiter(Epetra_Vector& f) final;
+    void setup_rhs_firstiter(Epetra_Vector& f) final;
 
     //! Create #lag_mult_
-    virtual void SetLagMult();
+    virtual void set_lag_mult();
 
     //! Set #notsetup_ = true after redistribution
     void SetNotSetup() override { notsetup_ = true; }
@@ -211,10 +211,10 @@ namespace FSI
     //!@{
 
     /// apply infnorm scaling to linear block system
-    void ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) override;
+    void scale_system(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) override;
 
     /// undo infnorm scaling from scaled solution
-    void UnscaleSolution(
+    void unscale_solution(
         CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b) override;
 
     //!@}

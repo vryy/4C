@@ -71,14 +71,14 @@ void ADAPTER::StructureRedAirway::SetPressure(Teuchos::RCP<Epetra_Vector> couppr
 /*======================================================================*/
 void ADAPTER::StructureRedAirway::CalcVol(std::map<int, double>& V)
 {
-  if (!(Discretization()->Filled())) FOUR_C_THROW("FillComplete() was not called");
+  if (!(Discretization()->Filled())) FOUR_C_THROW("fill_complete() was not called");
 
   Teuchos::ParameterList params;
   params.set("action", "calc_struct_constrvol");
 
   // set displacements
   Discretization()->ClearState();
-  Discretization()->SetState("displacement", Dispnp());
+  Discretization()->set_state("displacement", Dispnp());
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion

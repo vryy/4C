@@ -73,7 +73,7 @@ bool NOX::FSI::MinimalPolynomial::compute(
 
     // Compute F at current solution
     status = group.computeF();
-    if (status != ::NOX::Abstract::Group::Ok) throwError("compute", "Unable to compute F");
+    if (status != ::NOX::Abstract::Group::Ok) throw_error("compute", "Unable to compute F");
 
     // get f = d(k+1) - d(k)
     const ::NOX::Epetra::Vector& f = dynamic_cast<const ::NOX::Epetra::Vector&>(group.getF());
@@ -125,7 +125,7 @@ bool NOX::FSI::MinimalPolynomial::compute(
 
       if (fabs(sc) < 1e-16)
       {
-        throwError("compute", "sum(c) equals zero");
+        throw_error("compute", "sum(c) equals zero");
       }
 
       CORE::LINALG::Update(1 / sc, c, 0.0, gamma);
@@ -222,7 +222,7 @@ bool NOX::FSI::MinimalPolynomial::compute(::NOX::Abstract::Vector& dir,
 }
 
 
-void NOX::FSI::MinimalPolynomial::throwError(
+void NOX::FSI::MinimalPolynomial::throw_error(
     const std::string& functionName, const std::string& errorMsg)
 {
   if (utils_->isPrintType(::NOX::Utils::Error))

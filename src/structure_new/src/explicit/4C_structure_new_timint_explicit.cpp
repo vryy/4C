@@ -35,7 +35,7 @@ STR::TIMINT::Explicit::Explicit() : STR::TIMINT::Base()
 void STR::TIMINT::Explicit::Setup()
 {
   // safety check
-  CheckInit();
+  check_init();
   STR::TIMINT::Base::Setup();
   // ---------------------------------------------------------------------------
   // cast the base class integrator
@@ -70,9 +70,9 @@ void STR::TIMINT::Explicit::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Explicit::PrepareTimeStep()
+void STR::TIMINT::Explicit::prepare_time_step()
 {
-  CheckInitSetup();
+  check_init_setup();
   // things that need to be done before Predict
   PrePredict();
 
@@ -84,7 +84,7 @@ void STR::TIMINT::Explicit::PrepareTimeStep()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Explicit::update_state_incrementally(Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
-  CheckInitSetup();
+  check_init_setup();
   FOUR_C_THROW(
       "All monolithically coupled problems work with implicit time "
       "integration schemes. Thus, calling Evaluate() in an explicit scheme "
@@ -99,7 +99,7 @@ void STR::TIMINT::Explicit::determine_stress_strain() { ExplInt().determine_stre
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Explicit::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
-  CheckInitSetup();
+  check_init_setup();
   FOUR_C_THROW(
       "All monolithically coupled problems work with implicit time "
       "integration schemes. Thus, calling Evaluate() in an explicit scheme "
@@ -110,7 +110,7 @@ void STR::TIMINT::Explicit::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterin
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Explicit::Evaluate()
 {
-  CheckInitSetup();
+  check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();
   ::NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
 
@@ -129,27 +129,27 @@ void STR::TIMINT::Explicit::Evaluate()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Explicit::SetState(const Teuchos::RCP<Epetra_Vector>& x)
+void STR::TIMINT::Explicit::set_state(const Teuchos::RCP<Epetra_Vector>& x)
 {
   FOUR_C_THROW(
       "All coupled problems work with implicit time "
-      "integration schemes. Thus, calling SetState() in an explicit scheme "
+      "integration schemes. Thus, calling set_state() in an explicit scheme "
       "is not considered, yet.");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Explicit::ResetStep()
+void STR::TIMINT::Explicit::reset_step()
 {
   // calling the base reset
-  STR::TIMINT::Base::ResetStep();
+  STR::TIMINT::Base::reset_step();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 INPAR::STR::ConvergenceStatus STR::TIMINT::Explicit::Solve()
 {
-  CheckInitSetup();
+  check_init_setup();
   IntegrateStep();
   return INPAR::STR::conv_success;
 }
@@ -165,7 +165,7 @@ void STR::TIMINT::Explicit::prepare_partition_step()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Explicit::Update(double endtime)
 {
-  CheckInitSetup();
+  check_init_setup();
   FOUR_C_THROW("Not implemented. No time adaptivity available for explicit time integration.");
 }
 
@@ -174,7 +174,7 @@ void STR::TIMINT::Explicit::Update(double endtime)
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Explicit::PrintStep()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (DataGlobalState().GetMyRank() != 0 or GroupId() != 0) return;
 
@@ -210,7 +210,7 @@ void STR::TIMINT::Explicit::PrintStep()
  *----------------------------------------------------------------------------*/
 INPAR::STR::StcScale STR::TIMINT::Explicit::GetSTCAlgo()
 {
-  CheckInitSetup();
+  check_init_setup();
   FOUR_C_THROW("GetSTCAlgo() has not been tested for explicit time integration.");
   return INPAR::STR::stc_none;
 };
@@ -220,7 +220,7 @@ INPAR::STR::StcScale STR::TIMINT::Explicit::GetSTCAlgo()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::Explicit::GetSTCMat()
 {
-  CheckInitSetup();
+  check_init_setup();
   FOUR_C_THROW("GetSTCMat() has not been tested for explicit time integration.");
   return Teuchos::null;
 };
@@ -241,7 +241,7 @@ int STR::TIMINT::Explicit::Integrate()
  *----------------------------------------------------------------------------*/
 int STR::TIMINT::Explicit::IntegrateStep()
 {
-  CheckInitSetup();
+  check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();
   // reset the non-linear solver
   NlnSolver().Reset();
@@ -253,9 +253,9 @@ int STR::TIMINT::Explicit::IntegrateStep()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::TIMINT::Explicit::InitialGuess()
+Teuchos::RCP<const Epetra_Vector> STR::TIMINT::Explicit::initial_guess()
 {
-  FOUR_C_THROW("InitialGuess() is not available for explicit time integration");
+  FOUR_C_THROW("initial_guess() is not available for explicit time integration");
   return Teuchos::null;
 }
 
@@ -273,7 +273,7 @@ Teuchos::RCP<const Epetra_Vector> STR::TIMINT::Explicit::GetF() const
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> STR::TIMINT::Explicit::Freact()
 {
-  CheckInitSetup();
+  check_init_setup();
   FOUR_C_THROW("Not implemented!");
   return Teuchos::null;
 }

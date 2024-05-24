@@ -34,7 +34,7 @@ void DRT::Discretization::boundary_conditions_geometry()
   // and set a communicator to the condition
   for (auto& [name, condition] : condition_)
   {
-    condition->ClearGeometry();
+    condition->clear_geometry();
   }
 
   // for all conditions, we set a ptr in the nodes to the condition
@@ -270,7 +270,7 @@ bool DRT::Discretization::build_linesin_condition(
       {
         Teuchos::RCP<DRT::Element> actline = lines[j];
         // find lines that are attached to actnode
-        const int nnodeperline = actline->NumNode();
+        const int nnodeperline = actline->num_node();
         DRT::Node** nodesperline = actline->Nodes();
         if (!nodesperline) FOUR_C_THROW("Line returned no nodes");
         for (int k = 0; k < nnodeperline; ++k)
@@ -291,8 +291,8 @@ bool DRT::Discretization::build_linesin_condition(
             // if all nodes on line are in our cloud, add line
             if (allin)
             {
-              std::vector<int> nodes(actline->NumNode());
-              transform(actline->Nodes(), actline->Nodes() + actline->NumNode(), nodes.begin(),
+              std::vector<int> nodes(actline->num_node());
+              transform(actline->Nodes(), actline->Nodes() + actline->num_node(), nodes.begin(),
                   std::mem_fn(&DRT::Node::Id));
               sort(nodes.begin(), nodes.end());
 
@@ -317,7 +317,7 @@ bool DRT::Discretization::build_linesin_condition(
 
   AssignGlobalIDs(Comm(), linemap, *finallines);
 
-  cond->AddGeometry(finallines);
+  cond->add_geometry(finallines);
 
   // elements where created that need new unique ids
   bool havenewelements = true;
@@ -412,7 +412,7 @@ bool DRT::Discretization::build_surfacesin_condition(
       {
         Teuchos::RCP<DRT::Element> actsurf = surfs[j];
         // find surfs attached to actnode
-        const int nnodepersurf = actsurf->NumNode();
+        const int nnodepersurf = actsurf->num_node();
         DRT::Node** nodespersurf = actsurf->Nodes();
         if (!nodespersurf) FOUR_C_THROW("Surface returned no nodes");
         for (int k = 0; k < nnodepersurf; ++k)
@@ -438,8 +438,8 @@ bool DRT::Discretization::build_surfacesin_condition(
               DRT::Node** actsurfnodes = actsurf->Nodes();
 
               // get sorted vector of node ids
-              std::vector<int> nodes(actsurf->NumNode());
-              transform(actsurf->Nodes(), actsurf->Nodes() + actsurf->NumNode(), nodes.begin(),
+              std::vector<int> nodes(actsurf->num_node());
+              transform(actsurf->Nodes(), actsurf->Nodes() + actsurf->num_node(), nodes.begin(),
                   std::mem_fn(&DRT::Node::Id));
               sort(nodes.begin(), nodes.end());
 
@@ -484,9 +484,9 @@ bool DRT::Discretization::build_surfacesin_condition(
                     for (int n = 0; n < adjacentvolelenumsurfs; ++n)
                     {
                       // current surf of adjacent vol ele
-                      std::vector<int> nodesadj(adjacentvolelesurfs[n]->NumNode());
+                      std::vector<int> nodesadj(adjacentvolelesurfs[n]->num_node());
                       transform(adjacentvolelesurfs[n]->Nodes(),
-                          adjacentvolelesurfs[n]->Nodes() + adjacentvolelesurfs[n]->NumNode(),
+                          adjacentvolelesurfs[n]->Nodes() + adjacentvolelesurfs[n]->num_node(),
                           nodesadj.begin(), std::mem_fn(&DRT::Node::Id));
                       sort(nodesadj.begin(), nodesadj.end());
 
@@ -546,7 +546,7 @@ bool DRT::Discretization::build_surfacesin_condition(
       Teuchos::rcp(new std::map<int, Teuchos::RCP<DRT::Element>>());
 
   AssignGlobalIDs(Comm(), surfmap, *final_geometry);
-  cond->AddGeometry(final_geometry);
+  cond->add_geometry(final_geometry);
 
   // elements were created that need new unique ids
   bool havenewelements = true;
@@ -580,7 +580,7 @@ bool DRT::Discretization::build_volumesin_condition(
 
   for (const auto& [ele_id, actele] : element_)
   {
-    std::vector<int> myelenodes(actele->NodeIds(), actele->NodeIds() + actele->NumNode());
+    std::vector<int> myelenodes(actele->NodeIds(), actele->NodeIds() + actele->num_node());
 
     // check whether all node ids of the element are nodes belonging
     // to the condition and stored on this proc
@@ -601,7 +601,7 @@ bool DRT::Discretization::build_volumesin_condition(
     }
   }
 
-  cond->AddGeometry(geom);
+  cond->add_geometry(geom);
 
   // no elements where created to assign new unique ids to
   return false;
@@ -637,7 +637,7 @@ void DRT::Discretization::find_associated_ele_i_ds(Teuchos::RCP<CORE::Conditions
 
       for (const auto& [ele_id, actele] : element_)
       {
-        std::vector<int> myelenodes(actele->NodeIds(), actele->NodeIds() + actele->NumNode());
+        std::vector<int> myelenodes(actele->NodeIds(), actele->NodeIds() + actele->num_node());
 
         // check whether all node ids of the element are nodes belonging
         // to the condition and stored on this proc

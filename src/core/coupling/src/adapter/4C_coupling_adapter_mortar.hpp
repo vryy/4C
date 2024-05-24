@@ -307,18 +307,18 @@ feel free to write your own tailored Setup() method.
     void matrix_row_col_transform();
 
     /// check setup call
-    const bool& IsSetup() const { return issetup_; };
+    const bool& is_setup() const { return issetup_; };
 
     /// check init and setup call
-    virtual void CheckSetup() const
+    virtual void check_setup() const
     {
-      if (!IsSetup()) FOUR_C_THROW("Call Setup() first!");
+      if (!is_setup()) FOUR_C_THROW("Call Setup() first!");
     }
 
    private:
     /// perform mesh relocation
-    void MeshRelocation(Teuchos::RCP<DRT::Discretization> slavedis,  ///< [in] Slave discretization
-        Teuchos::RCP<DRT::Discretization> aledis,                    ///< [in] ALE discretization
+    void mesh_relocation(Teuchos::RCP<DRT::Discretization> slavedis,  ///< [in] Slave discretization
+        Teuchos::RCP<DRT::Discretization> aledis,                     ///< [in] ALE discretization
         Teuchos::RCP<const Epetra_Map>
             masterdofrowmap,  ///< [in] DOF row map of master discretization
         Teuchos::RCP<const Epetra_Map>

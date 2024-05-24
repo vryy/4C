@@ -58,7 +58,7 @@ void DRT::UTILS::ISendReceiveAny(Teuchos::RCP<DRT::Discretization> const& discre
   int tag = 0;
   for (std::map<int, std::vector<char>>::const_iterator p = sdata.begin(); p != sdata.end(); ++p)
   {
-    exporter.ISend(
+    exporter.i_send(
         myrank, p->first, (p->second).data(), (int)(p->second).size(), 1234, request[tag]);
     ++tag;
   }

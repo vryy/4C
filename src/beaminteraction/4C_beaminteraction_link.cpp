@@ -86,7 +86,7 @@ void BEAMINTERACTION::BeamLink::Init(const int id, const std::vector<std::pair<i
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLink::Setup(const int matnum)
 {
-  CheckInit();
+  check_init();
 
   // the flag issetup_ will be set in the derived method!
 }
@@ -163,7 +163,7 @@ void BEAMINTERACTION::BeamLink::Unpack(const std::vector<char>& data)
 void BEAMINTERACTION::BeamLink::ResetState(std::vector<CORE::LINALG::Matrix<3, 1>>& bspotpos,
     std::vector<CORE::LINALG::Matrix<3, 3>>& bspottriad)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   /* the two positions of the linkage element coincide with the positions of the
    * binding spots on the parent elements */
@@ -175,7 +175,7 @@ void BEAMINTERACTION::BeamLink::ResetState(std::vector<CORE::LINALG::Matrix<3, 1
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLink::Print(std::ostream& out) const
 {
-  CheckInit();
+  check_init();
 
   out << "\nBeamLinkRigidJointed (ID " << Id() << "):";
   out << "\nbspotIds_[0] = ";

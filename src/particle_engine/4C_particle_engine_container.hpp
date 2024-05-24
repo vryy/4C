@@ -334,7 +334,7 @@ namespace PARTICLEENGINE
      * \param[in] val   particle state
      * \param[in] state particle state
      */
-    inline void SetState(std::vector<double> val, ParticleState state)
+    inline void set_state(std::vector<double> val, ParticleState state)
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not storedstates_.count(state))

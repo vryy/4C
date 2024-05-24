@@ -50,7 +50,7 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate loma thermal press
-      void CalcLomaThermPress(DRT::FaceElement* ele, Teuchos::ParameterList& params,
+      void calc_loma_therm_press(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la);
 
       //! calculate Neumann inflow boundary conditions

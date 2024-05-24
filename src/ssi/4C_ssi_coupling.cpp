@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 void SSI::SSICouplingMatchingVolume::Init(const int ndim,
     Teuchos::RCP<DRT::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
 {
-  SetIsSetup(false);
+  set_is_setup(false);
 
   int scatra_dofset_counter = 0;
   int structure_dofset_counter = 0;
@@ -86,16 +86,16 @@ void SSI::SSICouplingMatchingVolume::Init(const int ndim,
 
   assign_material_pointers(structdis, scatradis);
 
-  SetIsInit(true);
+  set_is_init(true);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::Setup()
 {
-  CheckIsInit();
+  check_is_init();
 
-  SetIsSetup(true);
+  set_is_setup(true);
 }
 
 /*----------------------------------------------------------------------*/
@@ -123,12 +123,12 @@ void SSI::SSICouplingMatchingVolume::assign_material_pointers(
 void SSI::SSICouplingMatchingVolume::set_mechanical_stress_state(
     DRT::Discretization& scatradis, Teuchos::RCP<const Epetra_Vector> stress_state, unsigned nds)
 {
-  scatradis.SetState(nds, "mechanicalStressState", stress_state);
+  scatradis.set_state(nds, "mechanicalStressState", stress_state);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingMatchingVolume::SetMeshDisp(
+void SSI::SSICouplingMatchingVolume::set_mesh_disp(
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra, Teuchos::RCP<const Epetra_Vector> disp)
 {
   scatra->ScaTraField()->ApplyMeshMovement(disp);
@@ -136,7 +136,7 @@ void SSI::SSICouplingMatchingVolume::SetMeshDisp(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingMatchingVolume::SetVelocityFields(
+void SSI::SSICouplingMatchingVolume::set_velocity_fields(
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra, Teuchos::RCP<const Epetra_Vector> convvel,
     Teuchos::RCP<const Epetra_Vector> vel)
 {
@@ -152,7 +152,7 @@ void SSI::SSICouplingMatchingVolume::SetVelocityFields(
 void SSI::SSICouplingMatchingVolume::SetScalarField(
     DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
 {
-  dis.SetState(nds, "scalarfield", phi);
+  dis.set_state(nds, "scalarfield", phi);
 }
 
 /*----------------------------------------------------------------------*/
@@ -160,7 +160,7 @@ void SSI::SSICouplingMatchingVolume::SetScalarField(
 void SSI::SSICouplingMatchingVolume::SetScalarFieldMicro(
     DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
 {
-  dis.SetState(nds, "MicroCon", phi);
+  dis.set_state(nds, "MicroCon", phi);
 }
 
 /*----------------------------------------------------------------------*/
@@ -168,7 +168,7 @@ void SSI::SSICouplingMatchingVolume::SetScalarFieldMicro(
 void SSI::SSICouplingMatchingVolume::SetTemperatureField(
     DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp)
 {
-  structdis.SetState(2, "tempfield", temp);
+  structdis.set_state(2, "tempfield", temp);
 }
 
 /*----------------------------------------------------------------------*/
@@ -176,7 +176,7 @@ void SSI::SSICouplingMatchingVolume::SetTemperatureField(
 void SSI::SSICouplingMatchingVolumeAndBoundary::SetTemperatureField(
     DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp)
 {
-  structdis.SetState(2, "tempfield", temp);
+  structdis.set_state(2, "tempfield", temp);
 }
 
 /*----------------------------------------------------------------------*/
@@ -184,7 +184,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::SetTemperatureField(
 void SSI::SSICouplingNonMatchingBoundary::Init(const int ndim,
     Teuchos::RCP<DRT::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
 {
-  SetIsSetup(false);
+  set_is_setup(false);
 
   int scatra_dofset_counter = 0;
   int structure_dofset_counter = 0;
@@ -198,10 +198,10 @@ void SSI::SSICouplingNonMatchingBoundary::Init(const int ndim,
   // set problem dimension
   problem_dimension_ = ndim;
 
-  // first call FillComplete for single discretizations.
+  // first call fill_complete for single discretizations.
   // This way the physical dofs are numbered successively
-  structdis_->FillComplete();
-  scatradis_->FillComplete();
+  structdis_->fill_complete();
+  scatradis_->fill_complete();
 
   // build auxiliary dofsets, i.e. pseudo dofs on each discretization
   const int ndofpernode_scatra = scatradis_->NumDof(0, scatradis_->lRowNode(0));
@@ -221,13 +221,13 @@ void SSI::SSICouplingNonMatchingBoundary::Init(const int ndim,
   scatra_integrator->set_number_of_dof_set_velocity(scatra_dofset_counter);
 
   // call assign_degrees_of_freedom also for auxiliary dofsets
-  // note: the order of FillComplete() calls determines the gid numbering!
+  // note: the order of fill_complete() calls determines the gid numbering!
   // 1. structure dofs
   // 2. scatra dofs
   // 3. structure auxiliary dofs
   // 4. scatra auxiliary dofs
-  structdis_->FillComplete(true, false, false);
-  scatradis_->FillComplete(true, false, false);
+  structdis_->fill_complete(true, false, false);
+  scatradis_->fill_complete(true, false, false);
 
   // setup mortar adapter for surface volume coupling
   adaptermeshtying_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(
@@ -235,14 +235,14 @@ void SSI::SSICouplingNonMatchingBoundary::Init(const int ndim,
       GLOBAL::Problem::Instance()->contact_dynamic_params(),
       GLOBAL::Problem::Instance()->spatial_approximation_type()));
 
-  SetIsInit(true);
+  set_is_init(true);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingBoundary::Setup()
 {
-  CheckIsInit();
+  check_is_init();
 
   std::vector<int> coupleddof(problem_dimension_, 1);
   // Setup of meshtying adapter
@@ -251,9 +251,9 @@ void SSI::SSICouplingNonMatchingBoundary::Setup()
 
   // extractor for coupled surface of structure discretization with surface scatra
   extractor_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(
-      *structdis_->DofRowMap(0), adaptermeshtying_->MasterDofMap(), true));
+      *structdis_->dof_row_map(0), adaptermeshtying_->MasterDofMap(), true));
 
-  SetIsSetup(true);
+  set_is_setup(true);
 }
 
 /*----------------------------------------------------------------------*/
@@ -268,7 +268,7 @@ void SSI::SSICouplingNonMatchingBoundary::assign_material_pointers(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingNonMatchingBoundary::SetMeshDisp(
+void SSI::SSICouplingNonMatchingBoundary::set_mesh_disp(
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra, Teuchos::RCP<const Epetra_Vector> disp)
 {
   scatra->ScaTraField()->ApplyMeshMovement(
@@ -277,7 +277,7 @@ void SSI::SSICouplingNonMatchingBoundary::SetMeshDisp(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingNonMatchingBoundary::SetVelocityFields(
+void SSI::SSICouplingNonMatchingBoundary::set_velocity_fields(
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra, Teuchos::RCP<const Epetra_Vector> convvel,
     Teuchos::RCP<const Epetra_Vector> vel)
 {
@@ -312,17 +312,17 @@ void SSI::SSICouplingNonMatchingBoundary::SetScalarFieldMicro(
 void SSI::SSICouplingNonMatchingVolume::Init(const int ndim,
     Teuchos::RCP<DRT::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
 {
-  SetIsSetup(false);
+  set_is_setup(false);
 
   int scatra_dofset_counter = 0;
   int structure_dofset_counter = 0;
 
   auto scatra_integrator = ssi_base->ScaTraField();
   auto scatradis = scatra_integrator->Discretization();
-  // first call FillComplete for single discretizations.
+  // first call fill_complete for single discretizations.
   // This way the physical dofs are numbered successively
-  structdis->FillComplete();
-  scatradis->FillComplete();
+  structdis->fill_complete();
+  scatradis->fill_complete();
 
   // build auxiliary dofsets, i.e. pseudo dofs on each discretization
   const int ndofpernode_scatra = scatradis->NumDof(0, scatradis->lRowNode(0));
@@ -342,13 +342,13 @@ void SSI::SSICouplingNonMatchingVolume::Init(const int ndim,
   scatra_integrator->set_number_of_dof_set_velocity(scatra_dofset_counter);
 
   // call assign_degrees_of_freedom also for auxiliary dofsets
-  // note: the order of FillComplete() calls determines the gid numbering!
+  // note: the order of fill_complete() calls determines the gid numbering!
   // 1. structure dofs
   // 2. scatra dofs
   // 3. structure auxiliary dofs
   // 4. scatra auxiliary dofs
-  structdis->FillComplete(true, false, false);
-  scatradis->FillComplete(true, false, false);
+  structdis->fill_complete(true, false, false);
+  scatradis->fill_complete(true, false, false);
 
   // Scheme: non matching meshes --> volumetric mortar coupling...
   volcoupl_structurescatra_ = Teuchos::rcp(new CORE::ADAPTER::MortarVolCoupl());
@@ -360,19 +360,19 @@ void SSI::SSICouplingNonMatchingVolume::Init(const int ndim,
   // algorithm. We redistribute between Init(...) and Setup().
   // volcoupl_structurescatra_->Redistribute();
 
-  SetIsInit(true);
+  set_is_init(true);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingVolume::Setup()
 {
-  CheckIsInit();
+  check_is_init();
 
   // setup projection matrices (use default material strategy)
   volcoupl_structurescatra_->Setup(GLOBAL::Problem::Instance()->VolmortarParams());
 
-  SetIsSetup(true);
+  set_is_setup(true);
 }
 
 /*----------------------------------------------------------------------*/
@@ -386,7 +386,7 @@ void SSI::SSICouplingNonMatchingVolume::assign_material_pointers(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingNonMatchingVolume::SetMeshDisp(
+void SSI::SSICouplingNonMatchingVolume::set_mesh_disp(
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra, Teuchos::RCP<const Epetra_Vector> disp)
 {
   scatra->ScaTraField()->ApplyMeshMovement(volcoupl_structurescatra_->apply_vector_mapping21(disp));
@@ -394,7 +394,7 @@ void SSI::SSICouplingNonMatchingVolume::SetMeshDisp(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingNonMatchingVolume::SetVelocityFields(
+void SSI::SSICouplingNonMatchingVolume::set_velocity_fields(
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra, Teuchos::RCP<const Epetra_Vector> convvel,
     Teuchos::RCP<const Epetra_Vector> vel)
 {
@@ -411,7 +411,7 @@ void SSI::SSICouplingNonMatchingVolume::SetVelocityFields(
 void SSI::SSICouplingNonMatchingVolume::SetScalarField(
     DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
 {
-  dis.SetState(nds, "scalarfield", volcoupl_structurescatra_->apply_vector_mapping12(phi));
+  dis.set_state(nds, "scalarfield", volcoupl_structurescatra_->apply_vector_mapping12(phi));
 }
 
 /*----------------------------------------------------------------------*/
@@ -427,7 +427,7 @@ void SSI::SSICouplingNonMatchingVolume::SetScalarFieldMicro(
 void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
     Teuchos::RCP<DRT::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
 {
-  SetIsSetup(false);
+  set_is_setup(false);
 
   int scatra_dofset_counter = 0;
   int structure_dofset_counter = 0;
@@ -561,16 +561,16 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
   // exchange material pointers for coupled material formulations
   assign_material_pointers(structdis, scatradis);
 
-  SetIsInit(true);
+  set_is_init(true);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolumeAndBoundary::Setup()
 {
-  CheckIsInit();
+  check_is_init();
 
-  SetIsSetup(true);
+  set_is_setup(true);
 }
 
 /*----------------------------------------------------------------------*/
@@ -582,7 +582,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::assign_material_pointers(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingMatchingVolumeAndBoundary::SetMeshDisp(
+void SSI::SSICouplingMatchingVolumeAndBoundary::set_mesh_disp(
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra, Teuchos::RCP<const Epetra_Vector> disp)
 {
   scatra->ScaTraField()->ApplyMeshMovement(disp);
@@ -590,7 +590,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::SetMeshDisp(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingMatchingVolumeAndBoundary::SetVelocityFields(
+void SSI::SSICouplingMatchingVolumeAndBoundary::set_velocity_fields(
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra, Teuchos::RCP<const Epetra_Vector> convvel,
     Teuchos::RCP<const Epetra_Vector> vel)
 {
@@ -606,7 +606,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::SetVelocityFields(
 void SSI::SSICouplingMatchingVolumeAndBoundary::SetScalarField(
     DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
 {
-  dis.SetState(nds, "scalarfield", phi);
+  dis.set_state(nds, "scalarfield", phi);
 }
 
 /*----------------------------------------------------------------------*/

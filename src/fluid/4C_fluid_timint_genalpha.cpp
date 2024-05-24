@@ -74,7 +74,7 @@ void FLD::TimIntGenAlpha::Init()
 /*----------------------------------------------------------------------*
 | Print information about current time step to screen          bk 11/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntGenAlpha::PrintTimeStepInfo()
+void FLD::TimIntGenAlpha::print_time_step_info()
 {
   if (myrank_ == 0)
   {
@@ -307,9 +307,9 @@ void FLD::TimIntGenAlpha::gen_alpha_intermediate_values(
 *-----------------------------------------------------------------------*/
 void FLD::TimIntGenAlpha::SetStateTimInt()
 {
-  discret_->SetState("velaf", velaf_);
-  discret_->SetState("velam", velam_);
-  if (timealgo_ == INPAR::FLUID::timeint_npgenalpha) discret_->SetState("velnp", velnp_);
+  discret_->set_state("velaf", velaf_);
+  discret_->set_state("velam", velam_);
+  if (timealgo_ == INPAR::FLUID::timeint_npgenalpha) discret_->set_state("velnp", velnp_);
 
   return;
 }
@@ -380,7 +380,7 @@ void FLD::TimIntGenAlpha::UpdateVelafGenAlpha()
 void FLD::TimIntGenAlpha::OutputofFilteredVel(
     Teuchos::RCP<Epetra_Vector> outvec, Teuchos::RCP<Epetra_Vector> fsoutvec)
 {
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
   Teuchos::RCP<Epetra_Vector> row_finescaleveltmp;
   row_finescaleveltmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap, true));
 

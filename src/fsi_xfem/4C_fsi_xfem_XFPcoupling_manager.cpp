@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 XFEM::XfpCouplingManager::XfpCouplingManager(Teuchos::RCP<XFEM::ConditionManager> condmanager,
     Teuchos::RCP<POROELAST::PoroBase> poro, Teuchos::RCP<FLD::XFluid> xfluid, std::vector<int> idx)
     : CouplingCommManager(poro->StructureField()->Discretization(),
-          poro->FluidField()->Discretization(), "XFEMSurfFPIMono", 0, 3),
+          poro->fluid_field()->Discretization(), "XFEMSurfFPIMono", 0, 3),
       poro_(poro),
       xfluid_(xfluid),
       cond_name_ps_ps_("XFEMSurfFPIMono_ps_ps"),
@@ -97,13 +97,13 @@ void XFEM::XfpCouplingManager::SetCouplingStates()
 
   // As interfaces embedded into the background mesh are fully ghosted, we don't know which
   Teuchos::RCP<Epetra_Map> sfulldofmap =
-      CORE::LINALG::AllreduceEMap(*poro_->StructureField()->Discretization()->DofRowMap());
+      CORE::LINALG::AllreduceEMap(*poro_->StructureField()->Discretization()->dof_row_map());
   Teuchos::RCP<Epetra_Vector> dispnp_col = Teuchos::rcp(new Epetra_Vector(*sfulldofmap, true));
   CORE::LINALG::Export(*poro_->StructureField()->Dispnp(), *dispnp_col);
   Teuchos::RCP<Epetra_Map> ffulldofmap =
-      CORE::LINALG::AllreduceEMap(*poro_->FluidField()->Discretization()->DofRowMap());
+      CORE::LINALG::AllreduceEMap(*poro_->fluid_field()->Discretization()->dof_row_map());
   Teuchos::RCP<Epetra_Vector> velnp_col = Teuchos::rcp(new Epetra_Vector(*ffulldofmap, true));
-  CORE::LINALG::Export(*poro_->FluidField()->Velnp(), *velnp_col);
+  CORE::LINALG::Export(*poro_->fluid_field()->Velnp(), *velnp_col);
 
   mcfpi_ps_ps_->SetFullState(dispnp_col, velnp_col);
   mcfpi_ps_pf_->SetFullState(dispnp_col, velnp_col);
@@ -118,12 +118,12 @@ void XFEM::XfpCouplingManager::SetCouplingStates()
       CouplingCommManager::full_to_partial);
   //  poro_->StructureField()->Velnp()->Print(std::cout);
 
-  //  InsertVector(1,poro_->FluidField()->GridVel(),0,mcfpi_ps_ps_->IVelnp(),Coupling_Comm_Manager::full_to_partial);
-  //  InsertVector(1,poro_->FluidField()->GridVel(),0,mcfpi_pf_ps_->IVelnp(),Coupling_Comm_Manager::full_to_partial);
+  //  InsertVector(1,poro_->fluid_field()->GridVel(),0,mcfpi_ps_ps_->IVelnp(),Coupling_Comm_Manager::full_to_partial);
+  //  InsertVector(1,poro_->fluid_field()->GridVel(),0,mcfpi_pf_ps_->IVelnp(),Coupling_Comm_Manager::full_to_partial);
   // 3 Set Fluid Velocity onto pf mesh coupling
-  InsertVector(1, poro_->FluidField()->Velnp(), 0, mcfpi_ps_pf_->IVelnp(),
+  InsertVector(1, poro_->fluid_field()->Velnp(), 0, mcfpi_ps_pf_->IVelnp(),
       CouplingCommManager::full_to_partial);
-  InsertVector(1, poro_->FluidField()->Velnp(), 0, mcfpi_pf_pf_->IVelnp(),
+  InsertVector(1, poro_->fluid_field()->Velnp(), 0, mcfpi_pf_pf_->IVelnp(),
       CouplingCommManager::full_to_partial);
 }
 
@@ -132,7 +132,7 @@ void XFEM::XfpCouplingManager::AddCouplingMatrix(
 {
   const double scaling_disp_vel =
       1 / ((1 - poro_->StructureField()->TimIntParam()) * poro_->StructureField()->Dt());
-  const double dt = poro_->FluidField()->Dt();
+  const double dt = poro_->fluid_field()->Dt();
   if (idx_.size() == 2)  // assum that the poro field is not split and we just have a blockmatrix
                          // P/F
   {
@@ -169,7 +169,7 @@ void XFEM::XfpCouplingManager::AddCouplingMatrix(
     C_pf_ps->Complete(*GetMapExtractor(0)->Map(1), *GetMapExtractor(1)->Map(1));
     InsertMatrix(-1, 0, *xfluid_->C_sx_Matrix(cond_name_pf_ps_), 1, *C_pf_f,
         CouplingCommManager::row, 1, true, false);
-    C_pf_f->Complete(*xfluid_->DofRowMap(), *GetMapExtractor(1)->Map(1));
+    C_pf_f->Complete(*xfluid_->dof_row_map(), *GetMapExtractor(1)->Map(1));
     C_ss_block.Add(*C_pf_ps, false, scaling * scaling_disp_vel * dt, 1.0);
     C_sf_block.Add(*C_pf_f, false, scaling * dt, 1.0);
 
@@ -227,7 +227,7 @@ void XFEM::XfpCouplingManager::AddCouplingMatrix(
 void XFEM::XfpCouplingManager::AddCouplingRHS(
     Teuchos::RCP<Epetra_Vector> rhs, const CORE::LINALG::MultiMapExtractor& me, double scaling)
 {
-  const double dt = poro_->FluidField()->Dt();
+  const double dt = poro_->fluid_field()->Dt();
   if (idx_.size() == 2)  // assum that the poro field is not split and we just have a blockmatrix
                          // P/F
   {
@@ -337,7 +337,7 @@ void XFEM::XfpCouplingManager::Update(double scaling)
   lambda_ps_->Update(scaling, *xfluid_->RHS_s_Vec(cond_name_ps_ps_), 0.0);
   lambda_ps_->Update(scaling, *xfluid_->RHS_s_Vec(cond_name_ps_pf_), 1.0);
 
-  const double dt = poro_->FluidField()->Dt();
+  const double dt = poro_->fluid_field()->Dt();
   lambda_pf_->Update(scaling * dt, *xfluid_->RHS_s_Vec(cond_name_pf_ps_), 0.0);
   lambda_pf_->Update(scaling * dt, *xfluid_->RHS_s_Vec(cond_name_pf_pf_), 1.0);
   return;
@@ -365,7 +365,7 @@ void XFEM::XfpCouplingManager::Output(IO::DiscretizationWriter& writer)
 /*----------------------------------------------------------------------*/
 /* Read Restart on the interface                            ager 06/2016 |
  *-----------------------------------------------------------------------*/
-void XFEM::XfpCouplingManager::ReadRestart(IO::DiscretizationReader& reader)
+void XFEM::XfpCouplingManager::read_restart(IO::DiscretizationReader& reader)
 {
   Teuchos::RCP<Epetra_Vector> lambdafull =
       Teuchos::rcp(new Epetra_Vector(*GetMapExtractor(0)->FullMap(), true));
@@ -381,7 +381,7 @@ void XFEM::XfpCouplingManager::ReadRestart(IO::DiscretizationReader& reader)
 /*-----------------------------------------------------------------------------------------*
 | Get Timeface on the interface (for OST this is 1/(theta dt))                ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
-double XFEM::XfpCouplingManager::GetInterfaceTimefac()
+double XFEM::XfpCouplingManager::get_interface_timefac()
 {
   FOUR_C_THROW("Check if you really want this!");
   /*

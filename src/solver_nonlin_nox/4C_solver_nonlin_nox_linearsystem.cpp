@@ -323,7 +323,7 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
   // solve
   int iter = linearSolverParams.get<int>("Number of Nonlinear Iterations", -10);
   if (iter == -10)
-    throwError("applyJacobianInverse", "\"Number of Nonlinear Iterations\" was not specified");
+    throw_error("applyJacobianInverse", "\"Number of Nonlinear Iterations\" was not specified");
 
   solver_params.refactor = true;
   solver_params.reset = iter == 0;
@@ -435,7 +435,7 @@ void NOX::NLN::LinearSystem::adjust_pseudo_time_step(double& delta, const double
   Teuchos::RCP<CORE::LINALG::SparseMatrix> jac =
       Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(JacobianPtr());
   if (jac.is_null())
-    throwError("adjust_pseudo_time_step()", "Cast to CORE::LINALG::SparseMatrix failed!");
+    throw_error("adjust_pseudo_time_step()", "Cast to CORE::LINALG::SparseMatrix failed!");
   // get the diagonal terms of the jacobian
   Teuchos::RCP<Epetra_Vector> diag = CORE::LINALG::CreateVector(jac->RowMap(), false);
   jac->ExtractDiagonalCopy(*diag);
@@ -489,7 +489,7 @@ void NOX::NLN::LinearSystem::adjust_pseudo_time_step(double& delta, const double
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LinearSystem::throwError(
+void NOX::NLN::LinearSystem::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   if (utils_.isPrintType(::NOX::Utils::Error))
@@ -553,7 +553,7 @@ void NOX::NLN::LinearSystem::setJacobianOperatorForSolve(
   const Teuchos::RCP<const CORE::LINALG::SparseOperator>& linalgSprOp =
       Teuchos::rcp_dynamic_cast<const CORE::LINALG::SparseOperator>(solveJacOp);
   if (linalgSprOp.is_null())
-    throwError("setJacobianOperatorForSolve", "dynamic_cast to LINALG_SparseOperator failed!");
+    throw_error("setJacobianOperatorForSolve", "dynamic_cast to LINALG_SparseOperator failed!");
 
   set_jacobian_operator_for_solve(linalgSprOp);
   return;
@@ -565,7 +565,7 @@ void NOX::NLN::LinearSystem::set_jacobian_operator_for_solve(
     const Teuchos::RCP<const CORE::LINALG::SparseOperator>& solveJacOp)
 {
   if (jacType_ != NOX::NLN::AUX::GetOperatorType(*solveJacOp))
-    throwError("set_jacobian_operator_for_solve", "wrong operator type!");
+    throw_error("set_jacobian_operator_for_solve", "wrong operator type!");
 
   jac_ptr_ = Teuchos::rcp_const_cast<CORE::LINALG::SparseOperator>(solveJacOp);
   return;
@@ -626,7 +626,7 @@ Teuchos::RCP<Epetra_Operator> NOX::NLN::LinearSystem::getGeneratedPrecOperator()
 void NOX::NLN::LinearSystem::setPrecOperatorForSolve(
     const Teuchos::RCP<const Epetra_Operator>& solvePrecOp)
 {
-  throwError("setPrecOperatorForSolve", "no preconditioner supported");
+  throw_error("setPrecOperatorForSolve", "no preconditioner supported");
   return;
 }
 

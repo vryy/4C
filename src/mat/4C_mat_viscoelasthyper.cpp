@@ -534,7 +534,7 @@ void MAT::ViscoElastHyper::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     if (summandProperties_.isomod)
     {
       // calculate modified invariants
-      InvariantsModified(modinv, prinv);
+      invariants_modified(modinv, prinv);
     }
     // calculate viscous quantities
     EvaluateKinQuantVis(C_strain, C_stress, iC_stress, prinv, rateinv, modC_strain, params, scgrate,

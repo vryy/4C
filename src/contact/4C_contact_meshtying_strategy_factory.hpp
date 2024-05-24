@@ -61,7 +61,7 @@ namespace MORTAR
        *
        * \author Popp
        */
-      void ReadAndCheckInput(Teuchos::ParameterList& params) const;
+      void read_and_check_input(Teuchos::ParameterList& params) const;
 
       /** \brief Create the meshtying interfaces
        *

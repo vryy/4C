@@ -29,7 +29,7 @@ namespace CORE::LINALG
 
 namespace SSI
 {
-  class SSIMono;
+  class SsiMono;
 
   namespace UTILS
   {

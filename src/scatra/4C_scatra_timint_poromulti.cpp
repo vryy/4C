@@ -59,7 +59,7 @@ void SCATRA::ScaTraTimIntPoroMulti::set_l2_flux_of_multi_fluid(
   {
     // initialize velocity vectors
     Teuchos::RCP<Epetra_Vector> phaseflux =
-        CORE::LINALG::CreateVector(*discret_->DofRowMap(NdsVel()), true);
+        CORE::LINALG::CreateVector(*discret_->dof_row_map(NdsVel()), true);
 
     std::stringstream statename;
     statename << stateprefix << curphase;
@@ -93,7 +93,7 @@ void SCATRA::ScaTraTimIntPoroMulti::set_l2_flux_of_multi_fluid(
     }
 
     // provide scatra discretization with convective velocity
-    discret_->SetState(NdsVel(), statename.str(), phaseflux);
+    discret_->set_state(NdsVel(), statename.str(), phaseflux);
   }
 }  // ScaTraTimIntImpl::SetSolutionFields
 
@@ -107,8 +107,8 @@ void SCATRA::ScaTraTimIntPoroMulti::set_solution_field_of_multi_fluid(
     FOUR_C_THROW("Too few dofsets on scatra discretization!");
 
   // provide scatra discretization with fluid primary variable field
-  discret_->SetState(NdsPressure(), "phinp_fluid", phinp_fluid);
-  discret_->SetState(NdsPressure(), "phin_fluid", phin_fluid);
+  discret_->set_state(NdsPressure(), "phinp_fluid", phinp_fluid);
+  discret_->set_state(NdsPressure(), "phin_fluid", phin_fluid);
 }
 
 /*----------------------------------------------------------------------*
@@ -125,7 +125,7 @@ void SCATRA::ScaTraTimIntPoroMulti::add_problem_specific_parameters_and_vectors(
 /*----------------------------------------------------------------------*
  |  write current state to BINIO                           vuong  08/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMulti::OutputState()
+void SCATRA::ScaTraTimIntPoroMulti::output_state()
 {
   // solution
   output_->WriteVector("phinp", phinp_);
@@ -155,7 +155,7 @@ void SCATRA::ScaTraTimIntPoroMulti::OutputState()
         convert_dof_vector_to_componentwise_node_vector(mobility, NdsVel());
     output_->WriteVector("intrinsic_mobility", output_intrinsic_mobility, IO::nodevector);
   }
-}  // ScaTraTimIntImpl::OutputState
+}  // ScaTraTimIntImpl::output_state
 
 /*----------------------------------------------------------------------*
  | problem specific output                             kremheller 10/18 |
@@ -221,7 +221,7 @@ void SCATRA::ScaTraTimIntPoroMulti::output_oxygen_partial_pressure()
         {
           // get dof
           int myoxydof = discret_->Dof(0, node, oxyscalar);
-          const int lidoxydof = discret_->DofRowMap()->LID(myoxydof);
+          const int lidoxydof = discret_->dof_row_map()->LID(myoxydof);
           if (lidoxydof < 0) FOUR_C_THROW("Couldn't extract local ID of oxygen dof!");
           // compute CaO2
           const double CaO2 = (*phinp_)[lidoxydof] * rho_bl / rho_oxy;

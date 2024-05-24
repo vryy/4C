@@ -114,19 +114,19 @@ namespace CORE::GEN
     template <typename T>
     void Set(const T* data, const unsigned id = 0)
     {
-      SetData<T, DataType::any>(data, id);
+      set_data<T, DataType::any>(data, id);
     }
 
     template <typename T>
     T* Get(const unsigned id = 0)
     {
-      return const_cast<T*>(GetData<T, DataType::any>(id));
+      return const_cast<T*>(get_data<T, DataType::any>(id));
     }
 
     template <typename T>
     const T* Get(const unsigned id = 0) const
     {
-      return GetData<T, DataType::any>(id);
+      return get_data<T, DataType::any>(id);
     }
 
     /// @}
@@ -137,19 +137,19 @@ namespace CORE::GEN
     template <typename... Ts>
     void SetVector(const Vec<Ts...>* unordered_map, const unsigned id = 0)
     {
-      SetData<Vec<Ts...>, DataType::vector>(unordered_map, id);
+      set_data<Vec<Ts...>, DataType::vector>(unordered_map, id);
     }
 
     template <typename... Ts>
     Vec<Ts...>* GetVector(const unsigned id = 0)
     {
-      return const_cast<Vec<Ts...>*>(GetData<Vec<Ts...>, DataType::vector>(id));
+      return const_cast<Vec<Ts...>*>(get_data<Vec<Ts...>, DataType::vector>(id));
     }
 
     template <typename... Ts>
     const Vec<Ts...>* GetVector(const unsigned id = 0) const
     {
-      return GetData<Vec<Ts...>, DataType::vector>(id);
+      return get_data<Vec<Ts...>, DataType::vector>(id);
     }
 
     /// @}
@@ -160,19 +160,19 @@ namespace CORE::GEN
     template <typename... Ts>
     void SetUnorderedMap(const UMap<Ts...>* unordered_map, const unsigned id = 0)
     {
-      SetData<UMap<Ts...>, DataType::unordered_map>(unordered_map, id);
+      set_data<UMap<Ts...>, DataType::unordered_map>(unordered_map, id);
     }
 
     template <typename... Ts>
     UMap<Ts...>* GetUnorderedMap(const unsigned id = 0)
     {
-      return const_cast<UMap<Ts...>*>(GetData<UMap<Ts...>, DataType::unordered_map>(id));
+      return const_cast<UMap<Ts...>*>(get_data<UMap<Ts...>, DataType::unordered_map>(id));
     }
 
     template <typename... Ts>
     const UMap<Ts...>* GetUnorderedMap(const unsigned id = 0) const
     {
-      return GetData<UMap<Ts...>, DataType::unordered_map>(id);
+      return get_data<UMap<Ts...>, DataType::unordered_map>(id);
     }
 
     /// @}
@@ -183,20 +183,20 @@ namespace CORE::GEN
     template <typename enum_class>
     void SetTimer(const CONTACT::AUG::TimeMonitor<enum_class>* timer, const unsigned id = 0)
     {
-      SetData<TimeMonitor<enum_class>, DataType::time_monitor>(timer, id);
+      set_data<TimeMonitor<enum_class>, DataType::time_monitor>(timer, id);
     }
 
     template <typename enum_class>
     TimeMonitor<enum_class>* GetTimer(const unsigned id = 0)
     {
       return const_cast<TimeMonitor<enum_class>*>(
-          GetData<TimeMonitor<enum_class>, DataType::time_monitor>(id));
+          get_data<TimeMonitor<enum_class>, DataType::time_monitor>(id));
     }
 
     template <typename enum_class>
     const TimeMonitor<enum_class>* GetTimer(const unsigned id = 0) const
     {
-      return GetData<TimeMonitor<enum_class>, DataType::time_monitor>(id);
+      return get_data<TimeMonitor<enum_class>, DataType::time_monitor>(id);
     }
 
     /// @}
@@ -267,39 +267,39 @@ namespace CORE::GEN
 
     /// pack and set the data pointer
     template <typename T, DataType type>
-    void SetData(const T* data, const unsigned id)
+    void set_data(const T* data, const unsigned id)
     {
       std::any any_data(data);
-      SetAnyData<type>(any_data, id);
+      set_any_data<type>(any_data, id);
     }
 
     /// set the data in the respective container
     template <DataType type>
-    void SetAnyData(const std::any& any_data, const unsigned id)
+    void set_any_data(const std::any& any_data, const unsigned id)
     {
       switch (type)
       {
         case DataType::vector:
         {
-          AddToAnyDataVec(any_data, id, vector_data_);
+          add_to_any_data_vec(any_data, id, vector_data_);
 
           break;
         }
         case DataType::unordered_map:
         {
-          AddToAnyDataVec(any_data, id, unordered_map_data_);
+          add_to_any_data_vec(any_data, id, unordered_map_data_);
 
           break;
         }
         case DataType::time_monitor:
         {
-          AddToAnyDataVec(any_data, id, time_monitor_data_);
+          add_to_any_data_vec(any_data, id, time_monitor_data_);
 
           break;
         }
         case DataType::any:
         {
-          AddToAnyDataVec(any_data, id, any_data_);
+          add_to_any_data_vec(any_data, id, any_data_);
 
           break;
         }
@@ -310,33 +310,33 @@ namespace CORE::GEN
 
     /// access the data and cast the any pointer
     template <typename T, DataType type>
-    const T* GetData(const unsigned id) const
+    const T* get_data(const unsigned id) const
     {
-      const std::any& any_data = GetAnyData<type>(id);
+      const std::any& any_data = get_any_data<type>(id);
       return std::any_cast<const T*>(any_data);
     }
 
     /// access the data
     template <DataType type>
-    const std::any& GetAnyData(const unsigned id) const
+    const std::any& get_any_data(const unsigned id) const
     {
       switch (type)
       {
         case DataType::vector:
         {
-          return GetFromAnyDataVec(id, vector_data_);
+          return get_from_any_data_vec(id, vector_data_);
         }
         case DataType::unordered_map:
         {
-          return GetFromAnyDataVec(id, unordered_map_data_);
+          return get_from_any_data_vec(id, unordered_map_data_);
         }
         case DataType::time_monitor:
         {
-          return GetFromAnyDataVec(id, time_monitor_data_);
+          return get_from_any_data_vec(id, time_monitor_data_);
         }
         case DataType::any:
         {
-          return GetFromAnyDataVec(id, any_data_);
+          return get_from_any_data_vec(id, any_data_);
         }
         default:
         {
@@ -347,7 +347,7 @@ namespace CORE::GEN
     }
 
     /// add to any data vector
-    void AddToAnyDataVec(
+    void add_to_any_data_vec(
         const std::any& any_data, const unsigned id, std::vector<AnyData>& any_data_vec) const
     {
       if (any_data_vec.size() <= id) any_data_vec.resize(id + 1);
@@ -357,7 +357,7 @@ namespace CORE::GEN
     }
 
     /// access content of any data vector
-    inline const std::any& GetFromAnyDataVec(
+    inline const std::any& get_from_any_data_vec(
         const unsigned id, const std::vector<AnyData>& any_data_vec) const
     {
       if (id >= any_data_vec.size())

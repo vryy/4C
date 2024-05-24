@@ -164,7 +164,7 @@ namespace CORE::Conditions
 
    private:
     /// evaluate the ConditionSelector objects
-    void SetupCondDofSets(const DRT::Discretization& dis);
+    void setup_cond_dof_sets(const DRT::Discretization& dis);
 
     /// condition selectors
     std::vector<Teuchos::RCP<ConditionSelector>> selectors_;

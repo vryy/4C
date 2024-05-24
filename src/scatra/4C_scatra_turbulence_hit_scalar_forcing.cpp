@@ -152,7 +152,7 @@ namespace SCATRA
 
         int length = sblock.size();
 
-        exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
+        exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
         rblock.clear();
 
@@ -339,7 +339,7 @@ namespace SCATRA
       const int pos = loc[2] + nummodes_ * (loc[1] + nummodes_ * loc[0]);
 
       // get local dof id corresponding to the global id
-      int lid = discret_->DofRowMap()->LID(dofs[0]);
+      int lid = discret_->dof_row_map()->LID(dofs[0]);
       // set value
       // since we are interested at E at n+1, we use phi at n+1 also for gen-alpha
       (*local_phi)[pos] = (*phinp_)[lid];
@@ -678,7 +678,7 @@ namespace SCATRA
         const int pos = loc[2] + nummodes_ * (loc[1] + nummodes_ * loc[0]);
 
         // get local dof id corresponding to the global id
-        int lid = discret_->DofRowMap()->LID(dofs[0]);
+        int lid = discret_->dof_row_map()->LID(dofs[0]);
         // set value
         if (not is_genalpha_)
         {
@@ -798,7 +798,7 @@ namespace SCATRA
         const int pos = loc[2] + nummodes_ * (loc[1] + nummodes_ * loc[0]);
 
         // get local dof id corresponding to the global id
-        int lid = discret_->DofRowMap()->LID(dofs[0]);
+        int lid = discret_->dof_row_map()->LID(dofs[0]);
         // set value
         int err = forcing_->ReplaceMyValues(1, &((*fphi)[pos]), &lid);
         if (err > 0) FOUR_C_THROW("Could not set forcing!");

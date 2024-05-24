@@ -69,7 +69,7 @@ namespace
 
     IO::GRIDGENERATOR::CreateRectangularCuboidDiscretization(*testdis_, inputData_, true);
 
-    testdis_->FillComplete(false, false, false);
+    testdis_->fill_complete(false, false, false);
 
     DRT::Node* lastNode = testdis_->lRowNode(testdis_->NumMyRowNodes() - 1);
     const auto nodePosition = lastNode->X();
@@ -118,7 +118,7 @@ namespace
 
     IO::GRIDGENERATOR::CreateRectangularCuboidDiscretization(*testdis_, inputData_, true);
 
-    testdis_->FillComplete(false, false, false);
+    testdis_->fill_complete(false, false, false);
 
     DRT::Node* lastNode = testdis_->lRowNode(testdis_->NumMyRowNodes() - 1);
     const auto nodePosition = lastNode->X();

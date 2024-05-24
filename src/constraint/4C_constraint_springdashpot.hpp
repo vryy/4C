@@ -66,14 +66,14 @@ namespace CONSTRAINTS
 
     //! add contribution of spring dashpot BC to residual vector
     // old version, NOT consistently integrated over element surface!!
-    void EvaluateForce(Epetra_Vector& fint, const Teuchos::RCP<const Epetra_Vector> disp,
+    void evaluate_force(Epetra_Vector& fint, const Teuchos::RCP<const Epetra_Vector> disp,
         const Teuchos::RCP<const Epetra_Vector> vel, const Teuchos::ParameterList& p);
 
     //! add contribution of spring dashpot BC to stiffness matrix
     // old version, NOT consistently integrated over element surface!!
-    // ToDo: remove redundant code in EvaluateForce and EvaluateForceStiff
+    // ToDo: remove redundant code in evaluate_force and evaluate_force_stiff
     // -> however should migrate to new EvaluateRobin... mhv 08/2016
-    void EvaluateForceStiff(CORE::LINALG::SparseMatrix& stiff, Epetra_Vector& fint,
+    void evaluate_force_stiff(CORE::LINALG::SparseMatrix& stiff, Epetra_Vector& fint,
         const Teuchos::RCP<const Epetra_Vector> disp, const Teuchos::RCP<const Epetra_Vector> vel,
         Teuchos::ParameterList p);
 
@@ -130,16 +130,16 @@ namespace CONSTRAINTS
 
    private:
     //! set type of spring during initialization
-    void SetSpringType();
+    void set_spring_type();
 
     //! set up MORTAR interface for direction cursurfnormal
     void initialize_cur_surf_normal();
 
     //! calculate nodal area - old!
-    void GetArea(const std::map<int, Teuchos::RCP<DRT::Element>>& geom);
+    void get_area(const std::map<int, Teuchos::RCP<DRT::Element>>& geom);
 
     //! get current normal
-    void GetCurNormals(const Teuchos::RCP<const Epetra_Vector>& disp, Teuchos::ParameterList p);
+    void get_cur_normals(const Teuchos::RCP<const Epetra_Vector>& disp, Teuchos::ParameterList p);
 
     //! initialize prestr offset
     void initialize_prestr_offset();

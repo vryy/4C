@@ -185,7 +185,7 @@ namespace IO::GRIDGENERATOR
               CreateHexElement(eleid, inputData.node_gid_of_first_new_node_, myrank, linedef,
                   inputData.interval_, inputData.elementtype_, inputData.distype_);
           // add element to discretization
-          dis.AddElement(ele);
+          dis.add_element(ele);
           break;
         }
         case CORE::FE::CellType::wedge6:
@@ -194,7 +194,7 @@ namespace IO::GRIDGENERATOR
           Teuchos::RCP<DRT::Element> ele =
               IO::GRIDGENERATOR::CreateWedgeElement(eleid, inputData.node_gid_of_first_new_node_,
                   myrank, linedef, inputData.interval_, inputData.elementtype_, inputData.distype_);
-          dis.AddElement(ele);
+          dis.add_element(ele);
           break;
         }
         default:

@@ -258,7 +258,7 @@ void PARTICLEINTERACTION::SPHRigidParticleContactElastic::
     DRT::Element* ele = particlewallpair.ele_;
 
     // number of nodes of wall element
-    const int numnodes = ele->NumNode();
+    const int numnodes = ele->num_node();
 
     // shape functions and location vector of wall element
     CORE::LINALG::SerialDenseVector funct(numnodes);

@@ -100,7 +100,7 @@ namespace POROMULTIPHASESCATRA
     void pre_evaluate_coupling_pairs();
 
     //! Output Coupling pairs
-    void OutputCouplingPairs() const;
+    void output_coupling_pairs() const;
   };
 }  // namespace POROMULTIPHASESCATRA
 

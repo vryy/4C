@@ -57,7 +57,7 @@ namespace SCATRA
     );
 
     //! return global map of degrees of freedom
-    const Epetra_Map& DofRowMap() const override;
+    const Epetra_Map& dof_row_map() const override;
 
     //! return global map of degrees of freedom
     Teuchos::RCP<const Epetra_Map> ArtScatraDofRowMap() const;
@@ -123,7 +123,7 @@ namespace SCATRA
     void SetNearbyElePairs(const std::map<int, std::set<int>>* nearbyelepairs);
 
     //! prepare a time step
-    void PrepareTimeStep() const;
+    void prepare_time_step() const;
 
     //! set the artery pressure
     void SetArteryPressure() const;

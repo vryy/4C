@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 void IO::GMSH::ScalarFieldToGmsh(const Teuchos::RCP<DRT::Discretization> discret,
     const Teuchos::RCP<const Epetra_Vector> scalarfield_row, std::ostream& s)
 {
-  // tranform solution vector from DofRowMap to DofColMap
+  // tranform solution vector from dof_row_map to DofColMap
   const Teuchos::RCP<const Epetra_Vector> scalarfield =
       CORE::REBALANCE::GetColVersionOfRowVector(discret, scalarfield_row);
 
@@ -78,7 +78,7 @@ void IO::GMSH::ScalarFieldToGmsh(const Teuchos::RCP<DRT::Discretization> discret
 void IO::GMSH::ScalarFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discretization> discret,
     const Teuchos::RCP<const Epetra_Vector> scalarfield_row, const int nds, std::ostream& s)
 {
-  // tranform solution vector from DofRowMap to DofColMap
+  // tranform solution vector from dof_row_map to DofColMap
   const Teuchos::RCP<const Epetra_Vector> scalarfield =
       CORE::REBALANCE::GetColVersionOfRowVector(discret, scalarfield_row, nds);
 
@@ -182,7 +182,7 @@ void IO::GMSH::ScalarElementFieldToGmsh(const Teuchos::RCP<DRT::Discretization> 
     double eleval = (*scalarfield_ele_row)[iele];
 
     // constant value for all nodes
-    CORE::LINALG::SerialDenseVector myscalarfield(ele->NumNode());
+    CORE::LINALG::SerialDenseVector myscalarfield(ele->num_node());
     for (int inode = 0; inode < numnode; ++inode) myscalarfield(inode) = eleval;
 
     // write scalar field to Gmsh stream
@@ -199,7 +199,7 @@ void IO::GMSH::VectorFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discretization>
     const Teuchos::RCP<const Epetra_Vector> vectorfield_row, std::ostream& s, const int nds,
     bool displacenodes)
 {
-  // tranform solution vector from DofRowMap to DofColMap
+  // tranform solution vector from dof_row_map to DofColMap
   const Teuchos::RCP<const Epetra_Vector> vectorfield =
       CORE::REBALANCE::GetColVersionOfRowVector(discret, vectorfield_row, nds);
 
@@ -263,7 +263,7 @@ void IO::GMSH::VectorFieldMultiVectorDofBasedToGmsh(
 {
   // TODO: Remove dependence on size of Epetra_Multivector!!!
 
-  // tranform solution vector from DofRowMap to DofColMap
+  // tranform solution vector from dof_row_map to DofColMap
   const Teuchos::RCP<Epetra_MultiVector> vectorfield =
       Teuchos::rcp(new Epetra_MultiVector(*discret->DofColMap(nds), 3, true));
   CORE::LINALG::Export(*vectorfield_row, *vectorfield);
@@ -325,7 +325,7 @@ void IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discreti
     std::map<int, CORE::LINALG::Matrix<3, 1>>& currpos, std::ostream& s, const int nsd,
     const int numdofpernode)
 {
-  // tranform solution vector from DofRowMap to DofColMap
+  // tranform solution vector from dof_row_map to DofColMap
   const Teuchos::RCP<const Epetra_Vector> vectorfield =
       CORE::REBALANCE::GetColVersionOfRowVector(discret, vectorfield_row);
 
@@ -385,7 +385,7 @@ void IO::GMSH::VelocityPressureFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discr
     const Teuchos::RCP<const Epetra_Vector> vectorfield_row, const std::string field,
     std::ostream& s, const int nds)
 {
-  // tranform solution vector from DofRowMap to DofColMap
+  // tranform solution vector from dof_row_map to DofColMap
   const Teuchos::RCP<const Epetra_Vector> vectorfield =
       CORE::REBALANCE::GetColVersionOfRowVector(discret, vectorfield_row, nds);
 
@@ -476,7 +476,7 @@ void IO::GMSH::VectorFieldNodeBasedToGmsh(const Teuchos::RCP<const DRT::Discreti
 {
   // tranform solution vector from NodeRowMap to NodeColMap
   // remark: CORE::REBALANCE::GetColVersionOfRowVector() does only work for Epetra_Vectors
-  // on DofRowMap
+  // on dof_row_map
   const Teuchos::RCP<Epetra_MultiVector> vectorfield =
       Teuchos::rcp(new Epetra_MultiVector(*discret->NodeColMap(), 3, true));
   CORE::LINALG::Export(*vectorfield_row, *vectorfield);
@@ -486,7 +486,7 @@ void IO::GMSH::VectorFieldNodeBasedToGmsh(const Teuchos::RCP<const DRT::Discreti
   {
     const DRT::Element* ele = discret->lRowElement(iele);
     const CORE::FE::CellType distype = ele->Shape();
-    const int numnode = ele->NumNode();
+    const int numnode = ele->num_node();
     const int nsd = CORE::FE::getDimension(distype);
 
     CORE::LINALG::SerialDenseMatrix xyze(nsd, numnode);
@@ -523,7 +523,7 @@ void IO::GMSH::ScalarFieldNodeBasedToGmsh(const Teuchos::RCP<const DRT::Discreti
 {
   // tranform solution vector from NodeRowMap to NodeColMap
   // remark: CORE::REBALANCE::GetColVersionOfRowVector() does only work for Epetra_Vectors
-  // on DofRowMap
+  // on dof_row_map
   //         something similar is done in COMBUST::FlameFront::ProcessFlameFront, although not for
   //         Epetra_MultiVectors
   const Teuchos::RCP<Epetra_Vector> scalarfield =
@@ -535,7 +535,7 @@ void IO::GMSH::ScalarFieldNodeBasedToGmsh(const Teuchos::RCP<const DRT::Discreti
   {
     const DRT::Element* ele = discret->lRowElement(iele);
     const CORE::FE::CellType distype = ele->Shape();
-    const int numnode = ele->NumNode();
+    const int numnode = ele->num_node();
 
     CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
 

@@ -34,7 +34,7 @@ void SSTI::SSTIResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, in
     res.ExtractString("QUANTITY", quantity);
 
     // get result to be tested
-    const double result = ResultSpecial(quantity);
+    const double result = result_special(quantity);
 
     // compare values
     const int err = CompareValues(result, "SPECIAL", res);
@@ -45,7 +45,7 @@ void SSTI::SSTIResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, in
 
 /*-------------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------------*/
-double SSTI::SSTIResultTest::ResultSpecial(const std::string& quantity) const
+double SSTI::SSTIResultTest::result_special(const std::string& quantity) const
 {
   double result(0.0);
 

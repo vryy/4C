@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------------*/
 void STR::EXPLICIT::Generic::Setup()
 {
-  CheckInit();
+  check_init();
 
   // call base class first
   STR::Integrator::Setup();
@@ -64,7 +64,7 @@ void STR::EXPLICIT::Generic::Setup()
  *----------------------------------------------------------------------------*/
 bool STR::EXPLICIT::Generic::ApplyForce(const Epetra_Vector& x, Epetra_Vector& f)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // ---------------------------------------------------------------------------
   // evaluate the different model types (static case) at t_{n+1}^{i}
@@ -79,7 +79,7 @@ bool STR::EXPLICIT::Generic::ApplyForce(const Epetra_Vector& x, Epetra_Vector& f
  *----------------------------------------------------------------------------*/
 bool STR::EXPLICIT::Generic::ApplyStiff(const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // ---------------------------------------------------------------------------
   // evaluate the different model types (static case) at t_{n+1}^{i}
@@ -100,7 +100,7 @@ bool STR::EXPLICIT::Generic::ApplyStiff(const Epetra_Vector& x, CORE::LINALG::Sp
 bool STR::EXPLICIT::Generic::ApplyForceStiff(
     const Epetra_Vector& x, Epetra_Vector& f, CORE::LINALG::SparseOperator& jac)
 {
-  CheckInitSetup();
+  check_init_setup();
   // ---------------------------------------------------------------------------
   // evaluate the different model types (static case) at t_{n+1}^{i}
   // ---------------------------------------------------------------------------
@@ -134,7 +134,7 @@ void STR::EXPLICIT::Generic::compute_jacobian_contributions_from_element_level_f
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::EXPLICIT::Generic::AssembleForce(
+bool STR::EXPLICIT::Generic::assemble_force(
     Epetra_Vector& f, const std::vector<INPAR::STR::ModelType>* without_these_models) const
 {
   FOUR_C_THROW("%s is not yet implemented", __FUNCTION__);
@@ -152,7 +152,7 @@ void STR::EXPLICIT::Generic::remove_condensed_contributions_from_rhs(Epetra_Vect
  *----------------------------------------------------------------------------*/
 void STR::EXPLICIT::Generic::UpdateStepElement()
 {
-  CheckInitSetup();
+  check_init_setup();
   ModelEval().UpdateStepElement();
 }
 
@@ -162,7 +162,7 @@ void STR::EXPLICIT::Generic::update_constant_state_contributions() {}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::Generic::PostUpdate() { update_constant_state_contributions(); }
+void STR::EXPLICIT::Generic::post_update() { update_constant_state_contributions(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

@@ -312,7 +312,7 @@ namespace DRT
       /*!
       \brief Get jacobi factor of first Gauss point
       */
-      const double& GetJacobi() const { return jacobi_[0]; }
+      const double& get_jacobi() const { return jacobi_[0]; }
 
       /** \brief get Jacobi factor ds/dxi(xi) at xi \in [-1;1]
        *
@@ -484,7 +484,7 @@ namespace DRT
       /*!
       \brief Evaluate a Neumann boundary condition
 
-      An element derived from this class uses the EvaluateNeumann method to receive commands
+      An element derived from this class uses the evaluate_neumann method to receive commands
       and parameters from some control routine in params and evaluates a Neumann boundary condition
       given in condition
 
@@ -502,7 +502,7 @@ namespace DRT
 
       \author meier
       \date 01/16 */
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1) override;
@@ -915,7 +915,7 @@ namespace DRT
        *  \author grill
        *  \date 02/17 */
       template <unsigned int nnodecl>
-      void EvaluateLineNeumann(CORE::LINALG::SerialDenseVector& forcevec,
+      void evaluate_line_neumann(CORE::LINALG::SerialDenseVector& forcevec,
           CORE::LINALG::SerialDenseMatrix* stiffmat,
           const CORE::LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, double>&
               disp_totlag,
@@ -1135,7 +1135,7 @@ namespace DRT
 
       //! Compute the material triad in case of the strong Kirchhoff (SK)beam formulation
       template <typename T>
-      void ComputeTriadSK(const T& phi, const CORE::LINALG::Matrix<3, 1, T>& r_s,
+      void compute_triad_sk(const T& phi, const CORE::LINALG::Matrix<3, 1, T>& r_s,
           const CORE::LINALG::Matrix<3, 3, T>& triad_ref,
           CORE::LINALG::Matrix<3, 3, T>& triad) const
       {
@@ -1167,7 +1167,7 @@ namespace DRT
 
       //! update absolute values for primary Dof vector based on the given displacement vector
       template <unsigned int nnodecl, typename T>
-      void UpdateDispTotlag(const std::vector<double>& disp,
+      void update_disp_totlag(const std::vector<double>& disp,
           CORE::LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& disp_totlag) const;
 
       //! update positions vectors and tangents at boundary nodes and triads at all CPs
@@ -1191,7 +1191,7 @@ namespace DRT
       //! "add" reference values to displacement state vector (multiplicative in case of rotation
       //! pseudo vectors)
       template <unsigned int nnodecl, typename T>
-      void AddRefValuesDisp(
+      void add_ref_values_disp(
           CORE::LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& dofvec) const;
 
       //! set positions at boundary nodes
@@ -1226,7 +1226,7 @@ namespace DRT
 
       //! Pre-multiply trafo matrix if rotvec_==true: \tilde{\vec{f}_int}=\mat{T}^T*\vec{f}_int
       template <unsigned int nnodecl, typename T>
-      void ApplyRotVecTrafo(
+      void apply_rot_vec_trafo(
           const CORE::LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>&
               disp_totlag_centerline,
           CORE::LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& f_int) const;
@@ -1264,7 +1264,7 @@ namespace DRT
       }
 
       template <typename T>
-      void computestrainSK(const T& phi_s, const CORE::LINALG::Matrix<3, 1, T>& kappacl,
+      void computestrain_sk(const T& phi_s, const CORE::LINALG::Matrix<3, 1, T>& kappacl,
           const CORE::LINALG::Matrix<3, 3, T>& triadref,
           const CORE::LINALG::Matrix<3, 3, T>& triad_mat, CORE::LINALG::Matrix<3, 1, T>& K) const
       {
@@ -1382,7 +1382,7 @@ namespace DRT
        *  \author grill
        *  \date 02/17 */
       template <unsigned int nnodecl, unsigned int vpernode, unsigned int ndim>
-      void Calc_velocity(
+      void calc_velocity(
           const CORE::LINALG::Matrix<ndim * vpernode * nnodecl, 1, double>& velocity_dofvec,
           const CORE::LINALG::Matrix<1, vpernode * nnodecl, double>& N_i,
           CORE::LINALG::Matrix<ndim, 1, double>& velocity,
@@ -1393,7 +1393,7 @@ namespace DRT
        *  \author grill
        *  \date 02/17 */
       template <unsigned int nnodecl, unsigned int vpernode, unsigned int ndim>
-      void Calc_velocity(
+      void calc_velocity(
           const CORE::LINALG::Matrix<ndim * vpernode * nnodecl, 1, double>& velocity_dofvec,
           const CORE::LINALG::Matrix<1, vpernode * nnodecl, double>& N_i,
           CORE::LINALG::Matrix<ndim, 1, FAD>& velocity,
@@ -1404,7 +1404,7 @@ namespace DRT
        *  \author grill
        *  \date 02/17 */
       template <unsigned int nnodecl, typename T>
-      void Calc_v_thetaperp(
+      void calc_v_thetaperp(
           CORE::LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3, T>& v_thetaperp,
           const CORE::LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, T>& N_s,
           const CORE::LINALG::Matrix<3, 1, T>& r_s, T abs_r_s) const;
@@ -1424,7 +1424,7 @@ namespace DRT
        *  \author grill
        *  \date 02/17 */
       template <unsigned int nnodecl>
-      void Calc_lin_thetaperp(
+      void calc_lin_thetaperp(
           CORE::LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_thetaperp,
           const CORE::LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
           const CORE::LINALG::Matrix<3, 1, double>& r_s, double abs_r_s) const;
@@ -1434,7 +1434,7 @@ namespace DRT
        *  \author grill
        *  \date 02/17 */
       template <unsigned int nnodecl>
-      void Calc_lin_thetapar(
+      void calc_lin_thetapar(
           CORE::LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_thetapar,
           const CORE::LINALG::Matrix<1, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& L,
           const CORE::LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
@@ -1472,7 +1472,7 @@ namespace DRT
        *  \author grill
        *  \date 02/17 */
       template <unsigned int nnodecl>
-      void Calc_lin_g_1(
+      void calc_lin_g_1(
           CORE::LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_g_1,
           const CORE::LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
           const CORE::LINALG::Matrix<3, 1, double>& g_1, double abs_r_s) const;
@@ -1482,7 +1482,7 @@ namespace DRT
        *  \author grill
        *  \date 02/17 */
       template <unsigned int nnodecl>
-      void Calc_lin_g_1_s(
+      void calc_lin_g_1_s(
           CORE::LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_g_1_s,
           const CORE::LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
           const CORE::LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_ss,
@@ -1496,7 +1496,7 @@ namespace DRT
        *  \author grill
        *  \date 02/17 */
       template <unsigned int nnodecl>
-      void Calc_lin_v_epsilon(CORE::LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
+      void calc_lin_v_epsilon(CORE::LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
                                   6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_v_epsilon,
           const CORE::LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
           const CORE::LINALG::Matrix<3, 1, double>& g_1, double abs_r_s) const;

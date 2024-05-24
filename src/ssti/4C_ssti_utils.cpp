@@ -39,11 +39,11 @@ SSTI::SSTIMaps::SSTIMaps(const SSTI::SSTIMono& ssti_mono_algorithm)
   // setup maps containing dofs of subproblems
   std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps(3, Teuchos::null);
   partial_maps[ssti_mono_algorithm.GetProblemPosition(Subproblem::scalar_transport)] =
-      Teuchos::rcp(new Epetra_Map(*ssti_mono_algorithm.ScaTraField()->DofRowMap()));
+      Teuchos::rcp(new Epetra_Map(*ssti_mono_algorithm.ScaTraField()->dof_row_map()));
   partial_maps[ssti_mono_algorithm.GetProblemPosition(Subproblem::structure)] =
-      Teuchos::rcp(new Epetra_Map(*ssti_mono_algorithm.StructureField()->DofRowMap()));
+      Teuchos::rcp(new Epetra_Map(*ssti_mono_algorithm.StructureField()->dof_row_map()));
   partial_maps[ssti_mono_algorithm.GetProblemPosition(Subproblem::thermo)] =
-      Teuchos::rcp(new Epetra_Map(*ssti_mono_algorithm.ThermoField()->DofRowMap()));
+      Teuchos::rcp(new Epetra_Map(*ssti_mono_algorithm.ThermoField()->dof_row_map()));
   Teuchos::RCP<const Epetra_Map> temp_map =
       CORE::LINALG::MergeMap(partial_maps[0], partial_maps[1], false);
   Teuchos::RCP<const Epetra_Map> merged_map =
@@ -55,21 +55,21 @@ SSTI::SSTIMaps::SSTIMaps(const SSTI::SSTIMono& ssti_mono_algorithm)
 
   // initialize map extractors associated with blocks of subproblems
   block_map_structure_ = Teuchos::rcp(
-      new CORE::LINALG::MultiMapExtractor(*ssti_mono_algorithm.StructureField()->DofRowMap(),
+      new CORE::LINALG::MultiMapExtractor(*ssti_mono_algorithm.StructureField()->dof_row_map(),
           std::vector<Teuchos::RCP<const Epetra_Map>>(
-              1, ssti_mono_algorithm.StructureField()->DofRowMap())));
+              1, ssti_mono_algorithm.StructureField()->dof_row_map())));
   switch (ssti_mono_algorithm.ScaTraField()->MatrixType())
   {
     case CORE::LINALG::MatrixType::sparse:
     {
       block_map_scatra_ = Teuchos::rcp(
-          new CORE::LINALG::MultiMapExtractor(*ssti_mono_algorithm.ScaTraField()->DofRowMap(),
+          new CORE::LINALG::MultiMapExtractor(*ssti_mono_algorithm.ScaTraField()->dof_row_map(),
               std::vector<Teuchos::RCP<const Epetra_Map>>(
-                  1, ssti_mono_algorithm.ScaTraField()->DofRowMap())));
+                  1, ssti_mono_algorithm.ScaTraField()->dof_row_map())));
       block_map_thermo_ = Teuchos::rcp(
-          new CORE::LINALG::MultiMapExtractor(*ssti_mono_algorithm.ThermoField()->DofRowMap(),
+          new CORE::LINALG::MultiMapExtractor(*ssti_mono_algorithm.ThermoField()->dof_row_map(),
               std::vector<Teuchos::RCP<const Epetra_Map>>(
-                  1, ssti_mono_algorithm.ThermoField()->DofRowMap())));
+                  1, ssti_mono_algorithm.ThermoField()->dof_row_map())));
       break;
     }
     case CORE::LINALG::MatrixType::block_condition:
@@ -256,14 +256,14 @@ SSTI::SSTIMatrices::SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono
   {
     case CORE::LINALG::MatrixType::block_field:
     {
-      systemmatrix_ = SetupBlockMatrix(
+      systemmatrix_ = setup_block_matrix(
           ssti_maps_mono->block_map_system_matrix(), ssti_maps_mono->block_map_system_matrix());
       break;
     }
 
     case CORE::LINALG::MatrixType::sparse:
     {
-      systemmatrix_ = SetupSparseMatrix(ssti_maps_mono->MapsSubProblems()->FullMap());
+      systemmatrix_ = setup_sparse_matrix(ssti_maps_mono->MapsSubProblems()->FullMap());
       break;
     }
 
@@ -280,46 +280,48 @@ SSTI::SSTIMatrices::SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono
     case CORE::LINALG::MatrixType::block_condition:
     {
       scatrastructuredomain_ =
-          SetupBlockMatrix(ssti_maps_mono->BlockMapScatra(), ssti_maps_mono->BlockMapStructure());
+          setup_block_matrix(ssti_maps_mono->BlockMapScatra(), ssti_maps_mono->BlockMapStructure());
       structurescatradomain_ =
-          SetupBlockMatrix(ssti_maps_mono->BlockMapStructure(), ssti_maps_mono->BlockMapScatra());
+          setup_block_matrix(ssti_maps_mono->BlockMapStructure(), ssti_maps_mono->BlockMapScatra());
       structurethermodomain_ =
-          SetupBlockMatrix(ssti_maps_mono->BlockMapStructure(), ssti_maps_mono->BlockMapThermo());
+          setup_block_matrix(ssti_maps_mono->BlockMapStructure(), ssti_maps_mono->BlockMapThermo());
       thermostructuredomain_ =
-          SetupBlockMatrix(ssti_maps_mono->BlockMapThermo(), ssti_maps_mono->BlockMapStructure());
+          setup_block_matrix(ssti_maps_mono->BlockMapThermo(), ssti_maps_mono->BlockMapStructure());
       scatrathermodomain_ =
-          SetupBlockMatrix(ssti_maps_mono->BlockMapScatra(), ssti_maps_mono->BlockMapThermo());
+          setup_block_matrix(ssti_maps_mono->BlockMapScatra(), ssti_maps_mono->BlockMapThermo());
       thermoscatradomain_ =
-          SetupBlockMatrix(ssti_maps_mono->BlockMapThermo(), ssti_maps_mono->BlockMapScatra());
+          setup_block_matrix(ssti_maps_mono->BlockMapThermo(), ssti_maps_mono->BlockMapScatra());
 
       if (interfacemeshtying_)
       {
-        scatrastructureinterface_ =
-            SetupBlockMatrix(ssti_maps_mono->BlockMapScatra(), ssti_maps_mono->BlockMapStructure());
-        thermostructureinterface_ =
-            SetupBlockMatrix(ssti_maps_mono->BlockMapThermo(), ssti_maps_mono->BlockMapStructure());
+        scatrastructureinterface_ = setup_block_matrix(
+            ssti_maps_mono->BlockMapScatra(), ssti_maps_mono->BlockMapStructure());
+        thermostructureinterface_ = setup_block_matrix(
+            ssti_maps_mono->BlockMapThermo(), ssti_maps_mono->BlockMapStructure());
         scatrathermointerface_ =
-            SetupBlockMatrix(ssti_maps_mono->BlockMapScatra(), ssti_maps_mono->BlockMapThermo());
+            setup_block_matrix(ssti_maps_mono->BlockMapScatra(), ssti_maps_mono->BlockMapThermo());
         thermoscatrainterface_ =
-            SetupBlockMatrix(ssti_maps_mono->BlockMapThermo(), ssti_maps_mono->BlockMapScatra());
+            setup_block_matrix(ssti_maps_mono->BlockMapThermo(), ssti_maps_mono->BlockMapScatra());
       }
       break;
     }
     case CORE::LINALG::MatrixType::sparse:
     {
-      scatrastructuredomain_ = SetupSparseMatrix(ssti_maps_mono->BlockMapScatra()->FullMap());
-      structurescatradomain_ = SetupSparseMatrix(ssti_maps_mono->BlockMapStructure()->FullMap());
-      structurethermodomain_ = SetupSparseMatrix(ssti_maps_mono->BlockMapStructure()->FullMap());
-      thermostructuredomain_ = SetupSparseMatrix(ssti_maps_mono->BlockMapThermo()->FullMap());
-      scatrathermodomain_ = SetupSparseMatrix(ssti_maps_mono->BlockMapScatra()->FullMap());
-      thermoscatradomain_ = SetupSparseMatrix(ssti_maps_mono->BlockMapThermo()->FullMap());
+      scatrastructuredomain_ = setup_sparse_matrix(ssti_maps_mono->BlockMapScatra()->FullMap());
+      structurescatradomain_ = setup_sparse_matrix(ssti_maps_mono->BlockMapStructure()->FullMap());
+      structurethermodomain_ = setup_sparse_matrix(ssti_maps_mono->BlockMapStructure()->FullMap());
+      thermostructuredomain_ = setup_sparse_matrix(ssti_maps_mono->BlockMapThermo()->FullMap());
+      scatrathermodomain_ = setup_sparse_matrix(ssti_maps_mono->BlockMapScatra()->FullMap());
+      thermoscatradomain_ = setup_sparse_matrix(ssti_maps_mono->BlockMapThermo()->FullMap());
 
       if (interfacemeshtying_)
       {
-        scatrastructureinterface_ = SetupSparseMatrix(ssti_maps_mono->BlockMapScatra()->FullMap());
-        thermostructureinterface_ = SetupSparseMatrix(ssti_maps_mono->BlockMapThermo()->FullMap());
-        scatrathermointerface_ = SetupSparseMatrix(ssti_maps_mono->BlockMapScatra()->FullMap());
-        thermoscatrainterface_ = SetupSparseMatrix(ssti_maps_mono->BlockMapThermo()->FullMap());
+        scatrastructureinterface_ =
+            setup_sparse_matrix(ssti_maps_mono->BlockMapScatra()->FullMap());
+        thermostructureinterface_ =
+            setup_sparse_matrix(ssti_maps_mono->BlockMapThermo()->FullMap());
+        scatrathermointerface_ = setup_sparse_matrix(ssti_maps_mono->BlockMapScatra()->FullMap());
+        thermoscatrainterface_ = setup_sparse_matrix(ssti_maps_mono->BlockMapThermo()->FullMap());
       }
       break;
     }
@@ -437,7 +439,7 @@ void SSTI::SSTIMatrices::un_complete_coupling_matrices()
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SSTI::SSTIMatrices::SetupBlockMatrix(
+Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SSTI::SSTIMatrices::setup_block_matrix(
     Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> row_map,
     Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> col_map)
 {
@@ -451,7 +453,7 @@ Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SSTI::SSTIMatrices::SetupBlock
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix> SSTI::SSTIMatrices::SetupSparseMatrix(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> SSTI::SSTIMatrices::setup_sparse_matrix(
     const Teuchos::RCP<const Epetra_Map> row_map)
 {
   const int expected_entries_per_row = 27;

@@ -549,7 +549,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_elch_boundary_
     fns *= stoich[k];
 
     // get valence of the single reactant
-    const double valence_k = DiffManager()->GetValence(k);
+    const double valence_k = diff_manager()->GetValence(k);
 
     // call utility class for evaluation of electrode boundary kinetics point condition
     utils_->evaluate_elch_kinetics_at_integration_point(ele, emat, erhs, ephinp, ehist, timefac, 1.,
@@ -669,7 +669,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_electrode_stat
  | finite difference check on element level (for debugging only) (protected)   fang 10/14 |
  *----------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::FDCheck(DRT::Element* ele,
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::fd_check(DRT::Element* ele,
     CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
     CORE::LINALG::SerialDenseVector& subgrdiff)
 {

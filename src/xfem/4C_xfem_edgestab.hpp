@@ -130,7 +130,7 @@ namespace XFEM
 
    private:
     //! get the cut side for face's element identified using the sorted node ids
-    CORE::GEO::CUT::SideHandle* GetFace(
+    CORE::GEO::CUT::SideHandle* get_face(
         DRT::Element* faceele, Teuchos::RCP<CORE::GEO::CutWizard> wizard);
 
     // reset maps for output

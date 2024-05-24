@@ -325,7 +325,7 @@ void DRT::ELEMENTS::Beam3k::calc_internal_and_inertia_forces_and_stiff(
   CORE::LINALG::Matrix<numdofelement, 1, double> disp_totlag(true);
 
   // Set current positions and orientations at all nodes:
-  UpdateDispTotlag<nnodecl, double>(disp, disp_totlag);
+  update_disp_totlag<nnodecl, double>(disp, disp_totlag);
 
 
   // analytic linearization of internal forces
@@ -466,7 +466,7 @@ void DRT::ELEMENTS::Beam3k::calc_internal_and_inertia_forces_and_stiff(
 
     if (rotvec_ == true)
     {
-      ApplyRotVecTrafo<nnodecl, FAD>(disp_totlag_centerline_FAD, internal_force_FAD);
+      apply_rot_vec_trafo<nnodecl, FAD>(disp_totlag_centerline_FAD, internal_force_FAD);
     }
 
 
@@ -505,7 +505,7 @@ void DRT::ELEMENTS::Beam3k::calc_internal_and_inertia_forces_and_stiff(
 
       if (rotvec_ == true)
       {
-        ApplyRotVecTrafo<nnodecl, FAD>(disp_totlag_centerline_FAD, inertia_force_FAD);
+        apply_rot_vec_trafo<nnodecl, FAD>(disp_totlag_centerline_FAD, inertia_force_FAD);
       }
 
       if (force_inert != nullptr)
@@ -708,7 +708,7 @@ void DRT::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_wk(Teuchos::Para
     v_epsilon_cp[ind].MultiplyTN(N_s, r_s);
     v_epsilon_cp[ind].Scale(1.0 / abs_r_s);
 
-    Calc_v_thetaperp<nnodecl>(v_thetaperp_cp[ind], N_s, r_s, abs_r_s);
+    calc_v_thetaperp<nnodecl>(v_thetaperp_cp[ind], N_s, r_s, abs_r_s);
 
     calc_v_thetapartheta<nnodecl>(v_thetapar_cp[ind], L, r_s, abs_r_s);
 
@@ -1127,15 +1127,15 @@ void DRT::ELEMENTS::Beam3k::pre_compute_terms_at_cp_for_stiffmat_contributions_a
   // CP values of strain increments
   CORE::LINALG::Matrix<ndim, numdofelement, double> lin_theta_perp(true), lin_theta_par(true);
 
-  Calc_lin_thetapar<nnodecl>(lin_theta_par, L, N_s, g_1, g_1_bar, abs_r_s);
+  calc_lin_thetapar<nnodecl>(lin_theta_par, L, N_s, g_1, g_1_bar, abs_r_s);
 
-  Calc_lin_thetaperp<nnodecl>(lin_theta_perp, N_s, r_s, abs_r_s);
+  calc_lin_thetaperp<nnodecl>(lin_theta_perp, N_s, r_s, abs_r_s);
 
   // lin_theta
   lin_theta.Clear();
   lin_theta.Update(1.0, lin_theta_par, 1.0, lin_theta_perp);
 
-  Calc_lin_v_epsilon<nnodecl>(lin_v_epsilon, N_s, g_1, abs_r_s);
+  calc_lin_v_epsilon<nnodecl>(lin_v_epsilon, N_s, g_1, abs_r_s);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -1548,14 +1548,14 @@ void DRT::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_sk(Teuchos::Para
 
     // Compute material triad and centerline curvature at Gauss point
     triad_mat_gp[numgp].Clear();
-    ComputeTriadSK(phi, r_s, triad_mat_cp[REFERENCE_NODE], triad_mat_gp[numgp]);
+    compute_triad_sk(phi, r_s, triad_mat_cp[REFERENCE_NODE], triad_mat_gp[numgp]);
     kappacl.Clear();
     calculate_clcurvature(r_s, r_ss, kappacl);
 
     // compute material strain K at Gauss point
     K.Clear();
     Omega.Clear();
-    computestrainSK(phi_s, kappacl, triad_mat_cp[REFERENCE_NODE], triad_mat_gp[numgp], K);
+    computestrain_sk(phi_s, kappacl, triad_mat_cp[REFERENCE_NODE], triad_mat_gp[numgp], K);
     for (unsigned int i = 0; i < 3; i++)
     {
       Omega(i) = K(i) - k0_[numgp](i);
@@ -2063,7 +2063,7 @@ void DRT::ELEMENTS::Beam3k::calculate_mass_matrix_contributions_analytic_wk(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Beam3k::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -2071,7 +2071,7 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
   set_params_interface_ptr(params);
 
   /* As long as only endpoint forces and moments as well as distributed forces
-   * (i.e. no distributed moments) are considered, the method EvaluateNeumann is identical
+   * (i.e. no distributed moments) are considered, the method evaluate_neumann is identical
    * for the WK and the SK case. */
 
   if (BEAM3K_COLLOCATION_POINTS != 2 and BEAM3K_COLLOCATION_POINTS != 3 and
@@ -2092,7 +2092,7 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
   CORE::LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, double> disp_totlag(true);
 
   // Set current positions and orientations at all nodes:
-  UpdateDispTotlag<nnodecl, double>(mydisp, disp_totlag);
+  update_disp_totlag<nnodecl, double>(mydisp, disp_totlag);
 
 
   // find out whether we will use a time curve
@@ -2183,7 +2183,7 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
     }
 
 
-    EvaluateLineNeumann<nnodecl>(
+    evaluate_line_neumann<nnodecl>(
         elevec1, elemat1, disp_totlag, load_vector_neumann, function_numbers, time);
   }
 
@@ -2446,7 +2446,7 @@ void DRT::ELEMENTS::Beam3k::evaluate_stiff_matrix_analytic_from_point_neumann_mo
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl>
-void DRT::ELEMENTS::Beam3k::EvaluateLineNeumann(CORE::LINALG::SerialDenseVector& forcevec,
+void DRT::ELEMENTS::Beam3k::evaluate_line_neumann(CORE::LINALG::SerialDenseVector& forcevec,
     CORE::LINALG::SerialDenseMatrix* stiffmat,
     const CORE::LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, double>& disp_totlag,
     const CORE::LINALG::Matrix<6, 1, double>& load_vector_neumann,
@@ -2504,7 +2504,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateLineNeumann(CORE::LINALG::SerialDenseVector&
 
     if (rotvec_ == true)
     {
-      ApplyRotVecTrafo<nnodecl, FAD>(disp_totlag_centerline_FAD, f_ext);
+      apply_rot_vec_trafo<nnodecl, FAD>(disp_totlag_centerline_FAD, f_ext);
     }
 
 
@@ -2645,7 +2645,7 @@ inline void DRT::ELEMENTS::Beam3k::calc_brownian_forces_and_stiff(Teuchos::Param
       true);
 
   // Set current positions and tangents and triads at all nodes
-  UpdateDispTotlag<nnode, double>(disp, disp_totlag);
+  update_disp_totlag<nnode, double>(disp, disp_totlag);
 
 
   // velocity state of element
@@ -2841,7 +2841,7 @@ void DRT::ELEMENTS::Beam3k::evaluate_translational_damping(Teuchos::ParameterLis
      *
      * Be careful here:
      * special treatment is required if Fad is used. see method with Fad parameters for details */
-    Calc_velocity<nnode, vpernode, ndim>(vel, N_i, vel_rel, evaluationpoint, gp);
+    calc_velocity<nnode, vpernode, ndim>(vel, N_i, vel_rel, evaluationpoint, gp);
 
     vel_rel -= velbackground;
 
@@ -3477,9 +3477,9 @@ void DRT::ELEMENTS::Beam3k::
   // CP values of strain increments
   CORE::LINALG::Matrix<ndim, numdofelement, double> lin_theta_perp(true), lin_theta_par(true);
 
-  Calc_lin_thetapar<nnode>(lin_theta_par, L, N_s, g_1, g_1_bar, abs_r_s);
+  calc_lin_thetapar<nnode>(lin_theta_par, L, N_s, g_1, g_1_bar, abs_r_s);
 
-  Calc_lin_thetaperp<nnode>(lin_theta_perp, N_s, r_s, abs_r_s);
+  calc_lin_thetaperp<nnode>(lin_theta_perp, N_s, r_s, abs_r_s);
 
   // lin_theta
   lin_theta.Clear();
@@ -3627,7 +3627,7 @@ void DRT::ELEMENTS::Beam3k::assemble_shapefunctions_n(CORE::LINALG::Matrix<1, 4,
  01/16|
  *-----------------------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl, typename T>
-void DRT::ELEMENTS::Beam3k::ApplyRotVecTrafo(
+void DRT::ELEMENTS::Beam3k::apply_rot_vec_trafo(
     const CORE::LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>&
         disp_totlag_centerline,
     CORE::LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& f_int) const
@@ -3938,7 +3938,7 @@ template void DRT::ELEMENTS::Beam3k::evaluate_stiff_matrix_analytic_from_point_n
     CORE::LINALG::SerialDenseMatrix&, const CORE::LINALG::Matrix<3, 1, double>&,
     const CORE::LINALG::Matrix<3, 1, double>&, double, int) const;
 
-template void DRT::ELEMENTS::Beam3k::EvaluateLineNeumann<2>(CORE::LINALG::SerialDenseVector&,
+template void DRT::ELEMENTS::Beam3k::evaluate_line_neumann<2>(CORE::LINALG::SerialDenseVector&,
     CORE::LINALG::SerialDenseMatrix*,
     const CORE::LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, double>&,
     const CORE::LINALG::Matrix<6, 1, double>&, const std::vector<int>*, double) const;
@@ -4065,10 +4065,10 @@ template void DRT::ELEMENTS::Beam3k::assemble_shapefunctions_n<double, Sacado::F
     CORE::LINALG::Matrix<1, 4, double>&,
     CORE::LINALG::Matrix<3, 2 * 6 + BEAM3K_COLLOCATION_POINTS, Sacado::Fad::DFad<double>>&) const;
 
-template void DRT::ELEMENTS::Beam3k::ApplyRotVecTrafo<2, double>(
+template void DRT::ELEMENTS::Beam3k::apply_rot_vec_trafo<2, double>(
     const CORE::LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, double>&,
     CORE::LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, double>&) const;
-template void DRT::ELEMENTS::Beam3k::ApplyRotVecTrafo<2, Sacado::Fad::DFad<double>>(
+template void DRT::ELEMENTS::Beam3k::apply_rot_vec_trafo<2, Sacado::Fad::DFad<double>>(
     const CORE::LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, Sacado::Fad::DFad<double>>&,
     CORE::LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, Sacado::Fad::DFad<double>>&) const;
 

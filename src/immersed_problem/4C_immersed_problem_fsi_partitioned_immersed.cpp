@@ -29,11 +29,11 @@ void FSI::PartitionedImmersed::Setup()
 }
 
 
-void FSI::PartitionedImmersed::SetupCoupling(
+void FSI::PartitionedImmersed::setup_coupling(
     const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm)
 {
   if (Comm().MyPID() == 0)
-    std::cout << "\n SetupCoupling in FSI::PartitionedImmersed ..." << std::endl;
+    std::cout << "\n setup_coupling in FSI::PartitionedImmersed ..." << std::endl;
 
   // for immersed fsi
   coupsfm_ = Teuchos::null;

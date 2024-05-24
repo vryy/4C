@@ -139,7 +139,7 @@ namespace ELEMAG
     /*!
     \brief Compare the numerical solution to the analytical one.
     */
-    virtual Teuchos::RCP<CORE::LINALG::SerialDenseVector> ComputeError();
+    virtual Teuchos::RCP<CORE::LINALG::SerialDenseVector> compute_error();
 
     /*!
     \brief Print the computed errors to screen.
@@ -169,8 +169,8 @@ namespace ELEMAG
     /*!
     \brief Call elements to calculate system matrix and RHS.
     */
-    virtual void AssembleMatAndRHS();
-    // void AssembleMatAndRHS();
+    virtual void assemble_mat_and_rhs();
+    // void assemble_mat_and_rhs();
 
     /*!
     \brief Updates the local solution and updates the RHS wioth the new values.
@@ -197,7 +197,7 @@ namespace ELEMAG
 
     \param[in]  do_rhs Boolean indicating if we want to compute the rhs OR the matrix.
 
-    \note We can not do both the matrix and the rhs as the underlying EvaluateCondition does not
+    \note We can not do both the matrix and the rhs as the underlying evaluate_condition does not
     replace the values in the rhs vector but assembles it. Therefore, by doing both the matrix and
     the vector we would end up summing more than one contribution at once
     */
@@ -227,7 +227,7 @@ namespace ELEMAG
     \brief Write restart.
 
     This function allow the restart of a simulation from the result of the current
-    simulation. It is needed to write the restart values that will be read by the #ReadRestart
+    simulation. It is needed to write the restart values that will be read by the #read_restart
     function.
     */
     virtual void WriteRestart();
@@ -240,8 +240,8 @@ namespace ELEMAG
     simulation. It is needed to read the restart values that are written by the #WriteRestart
     function.
     */
-    virtual void ReadRestart(int step);
-    // void ReadRestart(int step);
+    virtual void read_restart(int step);
+    // void read_restart(int step);
 
     /*!
     \brief Obtain system matrix

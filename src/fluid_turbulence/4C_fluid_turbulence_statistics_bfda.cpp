@@ -77,7 +77,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
 
   //----------------------------------------------------------------------
   // allocate some (toggle) vectors
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
   togglew_ = CORE::LINALG::CreateVector(*dofrowmap, true);
   togglep_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
@@ -142,7 +142,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
 
     int length = sblock.size();
 
-    exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
+    exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
     rblock.clear();
 
@@ -310,7 +310,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
 
       int length = sblock.size();
 
-      exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
+      exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
       rblock.clear();
 

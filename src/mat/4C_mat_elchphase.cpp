@@ -74,14 +74,14 @@ MAT::ElchPhase::ElchPhase(MAT::PAR::ElchPhase* params) : params_(params)
   // setup of material map
   if (params_->local_)
   {
-    SetupMatMap();
+    setup_mat_map();
   }
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElchPhase::SetupMatMap()
+void MAT::ElchPhase::setup_mat_map()
 {
   // safety first
   mat_.clear();

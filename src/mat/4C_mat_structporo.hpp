@@ -330,7 +330,7 @@ namespace MAT
 
     void Update() override { mat_->Update(); }
 
-    void ResetStep() override { mat_->ResetStep(); }
+    void reset_step() override { mat_->reset_step(); }
 
     //!@}
 

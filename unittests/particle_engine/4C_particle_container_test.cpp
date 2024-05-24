@@ -446,7 +446,7 @@ namespace
     }
   }
 
-  TEST_F(ParticleContainerTest, SetState)
+  TEST_F(ParticleContainerTest, set_state)
   {
     int globalid(0);
 
@@ -469,9 +469,9 @@ namespace
 
     particle_reference = createTestParticle(pos, vel, mass);
 
-    container_->SetState(pos, PARTICLEENGINE::Position);
-    container_->SetState(vel, PARTICLEENGINE::Velocity);
-    container_->SetState(mass, PARTICLEENGINE::Mass);
+    container_->set_state(pos, PARTICLEENGINE::Position);
+    container_->set_state(vel, PARTICLEENGINE::Velocity);
+    container_->set_state(mass, PARTICLEENGINE::Mass);
 
     for (int index = 0; index < 3; ++index)
     {

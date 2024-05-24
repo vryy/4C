@@ -252,10 +252,10 @@ void IO::ElementReader::get_and_distribute_elements(const int nblock, const int 
             }
 
             // add element to discretization
-            dis_->AddElement(ele);
+            dis_->add_element(ele);
 
             // get the node ids of this element
-            const int numnode = ele->NumNode();
+            const int numnode = ele->num_node();
             const int* nodeids = ele->NodeIds();
 
             // all node gids of this element are inserted into a set of

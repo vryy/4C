@@ -131,7 +131,7 @@ CORE::LINALG::Matrix<parent_ele_dim, 1> CORE::FE::CalculateParentGPFromFaceEleme
   CORE::LINALG::SerialDenseMatrix pqxg(1, parent_ele_dim);
   CORE::LINALG::Matrix<parent_ele_dim, parent_ele_dim> derivtrafo(true);
   CORE::FE::BoundaryGPToParentGP<parent_ele_dim>(pqxg, derivtrafo, intpoints,
-      faceele->ParentElement()->Shape(), faceele->Shape(), faceele->FaceParentNumber());
+      faceele->parent_element()->Shape(), faceele->Shape(), faceele->FaceParentNumber());
 
   CORE::LINALG::Matrix<parent_ele_dim, 1> xi_parent(true);
   for (auto i = 0; i < parent_ele_dim; ++i)

@@ -61,7 +61,7 @@ CONSTRAINTS::MPConstraint3Penalty::MPConstraint3Penalty(
           Teuchos::rcp(new CORE::Dofsets::TransparentDofSet(actdisc_));
       (discriter->second)->ReplaceDofSet(newdofset);
       newdofset = Teuchos::null;
-      (discriter->second)->FillComplete();
+      (discriter->second)->fill_complete();
     }
 
     int nummyele = 0;
@@ -132,7 +132,7 @@ void CONSTRAINTS::MPConstraint3Penalty::Initialize(Teuchos::ParameterList& param
         FOUR_C_THROW("Constraint/monitor is not an multi point constraint!");
     }
 
-    EvaluateError(constraintdis_.find(condID)->second, params, initerror_, true);
+    evaluate_error(constraintdis_.find(condID)->second, params, initerror_, true);
 
     activecons_.find(condID)->second = true;
     if (actdisc_->Comm().MyPID() == 0)
@@ -168,7 +168,7 @@ void CONSTRAINTS::MPConstraint3Penalty::Evaluate(Teuchos::ParameterList& params,
   std::map<int, Teuchos::RCP<DRT::Discretization>>::iterator discriter;
   for (discriter = constraintdis_.begin(); discriter != constraintdis_.end(); discriter++)
 
-    EvaluateError(discriter->second, params, acterror_);
+    evaluate_error(discriter->second, params, acterror_);
 
   //    std::cout << "current error "<< *acterror_<<std::endl;
 
@@ -184,7 +184,7 @@ void CONSTRAINTS::MPConstraint3Penalty::Evaluate(Teuchos::ParameterList& params,
       FOUR_C_THROW("Constraint/monitor is not an multi point constraint!");
   }
   for (discriter = constraintdis_.begin(); discriter != constraintdis_.end(); discriter++)
-    EvaluateConstraint(discriter->second, params, systemmatrix1, systemmatrix2, systemvector1,
+    evaluate_constraint(discriter->second, params, systemmatrix1, systemmatrix2, systemvector1,
         systemvector2, systemvector3);
 
   return;
@@ -203,7 +203,7 @@ CONSTRAINTS::MPConstraint3Penalty::create_discretization_from_condition(
 
   if (!actdisc->Filled())
   {
-    actdisc->FillComplete();
+    actdisc->fill_complete();
   }
 
   if (constrcondvec.size() == 0)
@@ -293,7 +293,7 @@ CONSTRAINTS::MPConstraint3Penalty::create_discretization_from_condition(
         // set the same global node ids to the ale element
         constraintele->SetNodeIds(ngid_ele.size(), ngid_ele.data());
         // add constraint element
-        newdis->AddElement(constraintele);
+        newdis->add_element(constraintele);
       }
       // save the connection between element and condition
       eletocond_id_[nodeiter + startID] = (*conditer)->parameters().Get<int>("ConditionID");
@@ -334,13 +334,13 @@ CONSTRAINTS::MPConstraint3Penalty::create_discretization_from_condition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint3Penalty::EvaluateConstraint(Teuchos::RCP<DRT::Discretization> disc,
+void CONSTRAINTS::MPConstraint3Penalty::evaluate_constraint(Teuchos::RCP<DRT::Discretization> disc,
     Teuchos::ParameterList& params, Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  if (!(disc->Filled())) FOUR_C_THROW("FillComplete() was not called");
+  if (!(disc->Filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!(disc->HaveDofs())) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // define element matrices and vectors
@@ -424,14 +424,14 @@ void CONSTRAINTS::MPConstraint3Penalty::EvaluateConstraint(Teuchos::RCP<DRT::Dis
       CORE::LINALG::Assemble(*systemvector1, elevector1, lm, lmowner);
     }
   }
-}  // end of EvaluateCondition
+}  // end of evaluate_condition
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint3Penalty::EvaluateError(Teuchos::RCP<DRT::Discretization> disc,
+void CONSTRAINTS::MPConstraint3Penalty::evaluate_error(Teuchos::RCP<DRT::Discretization> disc,
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector, bool init)
 {
-  if (!(disc->Filled())) FOUR_C_THROW("FillComplete() was not called");
+  if (!(disc->Filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!(disc->HaveDofs())) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // define element matrices and vectors
@@ -493,6 +493,6 @@ void CONSTRAINTS::MPConstraint3Penalty::EvaluateError(Teuchos::RCP<DRT::Discreti
   acterrdist->Export(*systemvector, *errorexport_, Add);
   systemvector->Import(*acterrdist, *errorimport_, Insert);
   return;
-}  // end of EvaluateError
+}  // end of evaluate_error
 
 FOUR_C_NAMESPACE_CLOSE

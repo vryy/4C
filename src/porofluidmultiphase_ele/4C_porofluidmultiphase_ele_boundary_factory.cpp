@@ -29,36 +29,36 @@ DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::ProvideImpl(
   {
     case CORE::FE::CellType::quad4:
     {
-      return DefineProblemType<CORE::FE::CellType::quad4>(numdofpernode, disname);
+      return define_problem_type<CORE::FE::CellType::quad4>(numdofpernode, disname);
     }
     case CORE::FE::CellType::quad8:
     {
-      return DefineProblemType<CORE::FE::CellType::quad8>(numdofpernode, disname);
+      return define_problem_type<CORE::FE::CellType::quad8>(numdofpernode, disname);
     }
     case CORE::FE::CellType::quad9:
     {
-      return DefineProblemType<CORE::FE::CellType::quad9>(numdofpernode, disname);
+      return define_problem_type<CORE::FE::CellType::quad9>(numdofpernode, disname);
     }
     case CORE::FE::CellType::tri3:
     {
-      return DefineProblemType<CORE::FE::CellType::tri3>(numdofpernode, disname);
+      return define_problem_type<CORE::FE::CellType::tri3>(numdofpernode, disname);
     }
     case CORE::FE::CellType::tri6:
     {
-      return DefineProblemType<CORE::FE::CellType::tri6>(numdofpernode, disname);
+      return define_problem_type<CORE::FE::CellType::tri6>(numdofpernode, disname);
     }
     case CORE::FE::CellType::line2:
     {
-      return DefineProblemType<CORE::FE::CellType::line2>(numdofpernode, disname);
+      return define_problem_type<CORE::FE::CellType::line2>(numdofpernode, disname);
     }
     case CORE::FE::CellType::line3:
     {
-      return DefineProblemType<CORE::FE::CellType::line3>(numdofpernode, disname);
+      return define_problem_type<CORE::FE::CellType::line3>(numdofpernode, disname);
     }
     default:
     {
       FOUR_C_THROW(
-          "Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
+          "Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->num_node());
       break;
     }
   }
@@ -72,7 +72,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::ProvideImpl(
  *--------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 DRT::ELEMENTS::PoroFluidMultiPhaseEleInterface*
-DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::DefineProblemType(
+DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::define_problem_type(
     const int numdofpernode, const std::string& disname)
 {
   return DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Instance(

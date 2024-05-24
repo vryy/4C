@@ -141,7 +141,7 @@ void SSI::DBCHandlerSparse::apply_structure_dbc_with_loc_sys_rotation_to_system_
   auto systemmatrix_sparse = CORE::LINALG::CastToSparseMatrixAndCheckSuccess(system_matrix);
 
   // structure dof row map
-  const auto& dofrowmap_structure = StructureField()->DofRowMap();
+  const auto& dofrowmap_structure = StructureField()->dof_row_map();
 
   // extract structure rows of global system matrix
   const auto systemmatrix_structure =
@@ -173,12 +173,12 @@ void SSI::DBCHandlerBlock::apply_structure_dbc_with_loc_sys_rotation_to_system_m
   for (int iblock = 0; iblock < systemmatrix_block->Cols(); ++iblock)
   {
     locsysmanager_structure->RotateGlobalToLocal(
-        Teuchos::rcp(&systemmatrix_block->Matrix(PositionStructure(), iblock), false));
-    systemmatrix_block->Matrix(PositionStructure(), iblock)
+        Teuchos::rcp(&systemmatrix_block->Matrix(position_structure(), iblock), false));
+    systemmatrix_block->Matrix(position_structure(), iblock)
         .apply_dirichlet_with_trafo(
-            *locsysmanager_structure->Trafo(), *dbcmap_structure, (iblock == PositionStructure()));
+            *locsysmanager_structure->Trafo(), *dbcmap_structure, (iblock == position_structure()));
     locsysmanager_structure->RotateLocalToGlobal(
-        Teuchos::rcp(&systemmatrix_block->Matrix(PositionStructure(), iblock), false));
+        Teuchos::rcp(&systemmatrix_block->Matrix(position_structure(), iblock), false));
   }
 }
 

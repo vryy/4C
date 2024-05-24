@@ -62,7 +62,7 @@ namespace INPAR
     };
 
     /// type of finite difference check
-    enum FDCheck
+    enum FdCheck
     {
       fdcheck_none,
       fdcheck_global

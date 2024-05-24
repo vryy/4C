@@ -83,7 +83,7 @@ DRT::Element* DRT::ELEMENTS::FluidIntFace::Clone() const
 CORE::FE::CellType DRT::ELEMENTS::FluidIntFace::Shape() const
 {
   // could be called for master parent or slave parent element, doesn't matter
-  return CORE::FE::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
+  return CORE::FE::getShapeOfBoundaryElement(num_node(), ParentMasterElement()->Shape());
 }
 
 /*----------------------------------------------------------------------*
@@ -131,7 +131,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
 
 
   //-----------------------------------------------------------------------
-  const int m_numnode = ParentMasterElement()->NumNode();
+  const int m_numnode = ParentMasterElement()->num_node();
   DRT::Node** m_nodes = ParentMasterElement()->Nodes();
 
   if (m_numnode != static_cast<int>(nds_master.size()))
@@ -140,7 +140,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
   }
 
   //-----------------------------------------------------------------------
-  const int s_numnode = ParentSlaveElement()->NumNode();
+  const int s_numnode = ParentSlaveElement()->num_node();
   DRT::Node** s_nodes = ParentSlaveElement()->Nodes();
 
   if (s_numnode != static_cast<int>(nds_slave.size()))
@@ -149,7 +149,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
   }
 
   //-----------------------------------------------------------------------
-  const int f_numnode = NumNode();
+  const int f_numnode = num_node();
   DRT::Node** f_nodes = Nodes();
 
 
@@ -342,7 +342,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
   TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: PatchLocationVector");
 
   //-----------------------------------------------------------------------
-  const int m_numnode = ParentMasterElement()->NumNode();
+  const int m_numnode = ParentMasterElement()->num_node();
   DRT::Node** m_nodes = ParentMasterElement()->Nodes();
 
   if (m_numnode != static_cast<int>(nds_master.size()))
@@ -351,7 +351,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
   }
 
   //-----------------------------------------------------------------------
-  const int s_numnode = ParentSlaveElement()->NumNode();
+  const int s_numnode = ParentSlaveElement()->num_node();
   DRT::Node** s_nodes = ParentSlaveElement()->Nodes();
 
   if (s_numnode != static_cast<int>(nds_slave.size()))
@@ -360,7 +360,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
   }
 
   //-----------------------------------------------------------------------
-  const int f_numnode = NumNode();
+  const int f_numnode = num_node();
   DRT::Node** f_nodes = Nodes();
 
   //-----------------------------------------------------------------------
@@ -609,7 +609,7 @@ int DRT::ELEMENTS::FluidIntFace::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a surface/line Neumann boundary condition    schott 03/12 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::FluidIntFace::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::FluidIntFace::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)

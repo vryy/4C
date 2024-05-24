@@ -256,7 +256,7 @@ namespace STR
     );
 
     /// start new time step
-    void PrepareTimeStep() override = 0;
+    void prepare_time_step() override = 0;
 
     //! Do time integration of multiple steps
     int Integrate() override
@@ -365,7 +365,7 @@ namespace STR
     //! Thus the last converged state is copied back on the predictor
     //! for current time step. This applies only to element-wise
     //! quantities
-    void ResetStep() override;
+    void reset_step() override;
 
     //! Set initial fields in structure (e.g. initial velocities)
     void SetInitialFields();
@@ -377,7 +377,7 @@ namespace STR
     //@{
     //! Calculate all output quantities depending on the constitutive model
     //  (and, hence, on a potential material history)
-    void PrepareOutput(bool force_prepare_timestep) override;
+    void prepare_output(bool force_prepare_timestep) override;
 
     //! Calculate stresses, strains on micro-scale
     void PrepareOutputMicro();
@@ -429,8 +429,8 @@ namespace STR
 
     //! Write restart
     //! \author mwgee (originally) \date 03/07
-    virtual void OutputRestart(bool& datawritten  //!< (in/out) read and append if
-                                                  //!< it was written at this time step
+    virtual void output_restart(bool& datawritten  //!< (in/out) read and append if
+                                                   //!< it was written at this time step
     );
     //! Get data that is written during restart
     //! \author biehler \data 06/13
@@ -446,21 +446,21 @@ namespace STR
     //! Output displacements, velocities and accelerations
     //! and more system vectors
     //! \author mwgee (originally) \date 03/07
-    virtual void OutputState(bool& datawritten  //!< (in/out) read and append if
-                                                //!< it was written at this time step
+    virtual void output_state(bool& datawritten  //!< (in/out) read and append if
+                                                 //!< it was written at this time step
     );
 
-    //! Add restart information to OutputState
+    //! Add restart information to output_state
     void add_restart_to_output_state();
 
     //! Stress & strain output
     //! \author lw (originally)
-    void OutputStressStrain(bool& datawritten  //!< (in/out) read and append if
-                                               //!< it was written at this time step
+    void output_stress_strain(bool& datawritten  //!< (in/out) read and append if
+                                                 //!< it was written at this time step
     );
 
     //! Energy output
-    void OutputEnergy();
+    void output_energy();
 
     //! Optional quantity output
     void OutputOptQuantity(bool& datawritten  //!< (in/out) read and append if
@@ -513,11 +513,11 @@ namespace STR
     //@{
 
     //! Apply external force
-    void ApplyForceExternal(const double time,   //!< evaluation time
-        const Teuchos::RCP<Epetra_Vector> dis,   //!< old displacement state
-        const Teuchos::RCP<Epetra_Vector> disn,  //!< new displacement state
-        const Teuchos::RCP<Epetra_Vector> vel,   // velocity state
-        Teuchos::RCP<Epetra_Vector>& fext        //!< external force
+    void apply_force_external(const double time,  //!< evaluation time
+        const Teuchos::RCP<Epetra_Vector> dis,    //!< old displacement state
+        const Teuchos::RCP<Epetra_Vector> disn,   //!< new displacement state
+        const Teuchos::RCP<Epetra_Vector> vel,    // velocity state
+        Teuchos::RCP<Epetra_Vector>& fext         //!< external force
     );
 
     /*! \brief Evaluate ordinary internal force
@@ -532,12 +532,12 @@ namespace STR
      *  residual displacements replaced by the full-step displacement
      *  increment \f$D_{n+1}-D_{n}\f$.
      */
-    void ApplyForceInternal(const double time,   //!< evaluation time
-        const double dt,                         //!< step size
-        Teuchos::RCP<const Epetra_Vector> dis,   //!< displacement state
-        Teuchos::RCP<const Epetra_Vector> disi,  //!< incremental displacements
-        Teuchos::RCP<const Epetra_Vector> vel,   // velocity state
-        Teuchos::RCP<Epetra_Vector> fint         //!< internal force
+    void apply_force_internal(const double time,  //!< evaluation time
+        const double dt,                          //!< step size
+        Teuchos::RCP<const Epetra_Vector> dis,    //!< displacement state
+        Teuchos::RCP<const Epetra_Vector> disi,   //!< incremental displacements
+        Teuchos::RCP<const Epetra_Vector> vel,    // velocity state
+        Teuchos::RCP<Epetra_Vector> fint          //!< internal force
     );
 
     //@}
@@ -644,7 +644,7 @@ namespace STR
     Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() override { return output_; }
 
     //! Read restart values
-    void ReadRestart(const int step  //!< restart step
+    void read_restart(const int step  //!< restart step
         ) override;
 
     //! Set restart values
@@ -658,7 +658,7 @@ namespace STR
         ) override;
 
     //! Set the state of the nox group and the global state data container (implicit only)
-    void SetState(const Teuchos::RCP<Epetra_Vector>& x) override
+    void set_state(const Teuchos::RCP<Epetra_Vector>& x) override
     {
       FOUR_C_THROW("new structural time integration only...");
     }
@@ -696,7 +696,7 @@ namespace STR
     void read_restart_multi_scale();
 
     //! initial guess of Newton's method
-    Teuchos::RCP<const Epetra_Vector> InitialGuess() override = 0;
+    Teuchos::RCP<const Epetra_Vector> initial_guess() override = 0;
 
     //! right-hand-side of Newton's method
     Teuchos::RCP<const Epetra_Vector> RHS() override = 0;
@@ -774,11 +774,11 @@ namespace STR
     // Teuchos::RCP<std::vector<char> > ElementData() {return discret_->PackMyElements();}
 
     //! dof map of vector of unknowns
-    Teuchos::RCP<const Epetra_Map> DofRowMap() override;
+    Teuchos::RCP<const Epetra_Map> dof_row_map() override;
 
     //! dof map of vector of unknowns
     // new method for multiple dofsets
-    Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) override;
+    Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) override;
 
     //! Return stiffness,
     //! i.e. force residual differentiated by displacements
@@ -829,7 +829,7 @@ namespace STR
     double Time() const override { return timen_; }
 
     //! Sets the current time \f$t_{n}\f$
-    void SetTime(const double time) override { (*time_)[0] = time; }
+    void set_time(const double time) override { (*time_)[0] = time; }
 
     //! Sets the target time \f$t_{n+1}\f$ of this time step
     void SetTimen(const double time) override { timen_ = time; }
@@ -850,7 +850,7 @@ namespace STR
     double Dt() const override { return (*dt_)[0]; }
 
     //! Set time step size \f$\Delta t_n\f$
-    void SetDt(const double dtnew) override { (*dt_)[0] = dtnew; }
+    void set_dt(const double dtnew) override { (*dt_)[0] = dtnew; }
 
     //! Return current step number $n$
     int StepOld() const override { return step_; }
@@ -960,7 +960,7 @@ namespace STR
     //! evaluate reference state for frictional contact at t=0)
     void PrepareStepContact();
 
-    /// wrapper for things that should be done before PrepareTimeStep is called
+    /// wrapper for things that should be done before prepare_time_step is called
     void PrePredict() final{};
 
     /// wrapper for things that should be done before solving the nonlinear iterations
@@ -970,7 +970,7 @@ namespace STR
     void PreUpdate() final{};
 
     /// wrapper for things that should be done after solving the update
-    void PostUpdate() final{};
+    void post_update() final{};
 
     /// wrapper for things that should be done after convergence of Newton scheme
     void PostOutput() final{};
@@ -1252,29 +1252,29 @@ namespace STR
 
    protected:
     //! returns true if Setup() was called and is still valid
-    bool IsSetup() { return issetup_; };
+    bool is_setup() { return issetup_; };
 
     //! returns true if Init(..) was called and is still valid
-    bool IsInit() const { return isinit_; };
+    bool is_init() const { return isinit_; };
 
     //! check if \ref Setup() was called
     void CheckIsSetup()
     {
-      if (not IsSetup()) FOUR_C_THROW("Setup() was not called.");
+      if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
     };
 
     //! check if \ref Init() was called
-    void CheckIsInit() const
+    void check_is_init() const
     {
-      if (not IsInit()) FOUR_C_THROW("Init(...) was not called.");
+      if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
     };
 
    public:
     //! set flag true after setup or false if setup became invalid
-    void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; };
+    void set_is_setup(bool trueorfalse) { issetup_ = trueorfalse; };
 
     //! set flag true after init or false if init became invalid
-    void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
+    void set_is_init(bool trueorfalse) { isinit_ = trueorfalse; };
 
   };  // class TimInt
 

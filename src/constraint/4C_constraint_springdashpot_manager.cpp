@@ -61,7 +61,7 @@ void CONSTRAINTS::SpringDashpotManager::stiffness_and_internal_forces(
         stype == CONSTRAINTS::SpringDashpot::refsurfnormal)
       springs_[i]->EvaluateRobin(stiff, fint, disn, veln, parlist);
     if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal)
-      springs_[i]->EvaluateForceStiff(*stiff, *fint, disn, veln, parlist);
+      springs_[i]->evaluate_force_stiff(*stiff, *fint, disn, veln, parlist);
   }
 
   return;
@@ -120,12 +120,13 @@ void CONSTRAINTS::SpringDashpotManager::Output(Teuchos::RCP<IO::DiscretizationWr
   return;
 }
 
-void CONSTRAINTS::SpringDashpotManager::OutputRestart(Teuchos::RCP<IO::DiscretizationWriter> output,
-    Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp)
+void CONSTRAINTS::SpringDashpotManager::output_restart(
+    Teuchos::RCP<IO::DiscretizationWriter> output, Teuchos::RCP<DRT::Discretization> discret,
+    Teuchos::RCP<Epetra_Vector> disp)
 {
   // row maps for export
   Teuchos::RCP<Epetra_Vector> springoffsetprestr =
-      Teuchos::rcp(new Epetra_Vector(*actdisc_->DofRowMap()));
+      Teuchos::rcp(new Epetra_Vector(*actdisc_->dof_row_map()));
   Teuchos::RCP<Epetra_MultiVector> springoffsetprestr_old =
       Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->NodeRowMap()), 3, true));
 
@@ -158,10 +159,10 @@ void CONSTRAINTS::SpringDashpotManager::OutputRestart(Teuchos::RCP<IO::Discretiz
 |(public)                                                      mhv 03/15|
 |Read restart information                                               |
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::SpringDashpotManager::ReadRestart(
+void CONSTRAINTS::SpringDashpotManager::read_restart(
     IO::DiscretizationReader& reader, const double& time)
 {
-  Teuchos::RCP<Epetra_Vector> tempvec = Teuchos::rcp(new Epetra_Vector(*actdisc_->DofRowMap()));
+  Teuchos::RCP<Epetra_Vector> tempvec = Teuchos::rcp(new Epetra_Vector(*actdisc_->dof_row_map()));
   Teuchos::RCP<Epetra_MultiVector> tempvecold =
       Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->NodeRowMap()), 3, true));
 

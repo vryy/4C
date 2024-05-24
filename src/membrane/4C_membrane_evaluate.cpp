@@ -160,7 +160,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::struct_calc_reset_istep:
     {
       // Reset of history (if needed)
-      SolidMaterial()->ResetStep();
+      SolidMaterial()->reset_step();
     }
     break;
 
@@ -468,7 +468,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a Surface Neumann boundary condition (public) fbraeu 06/16 |
  *-----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Membrane<distype>::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseMatrix* elemat1_epetra)
@@ -974,7 +974,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
 
         // pushforward of gl strains to ea strains
         CORE::LINALG::Matrix<noddof_, noddof_> euler_almansi(true);
-        mem_GLtoEA(glstrain_glob, defgrd_glob, euler_almansi);
+        mem_g_lto_ea(glstrain_glob, defgrd_glob, euler_almansi);
 
         (*elestrain)(gp, 0) = euler_almansi(0, 0);
         (*elestrain)(gp, 1) = euler_almansi(1, 1);
@@ -1138,7 +1138,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
         CORE::LINALG::TENSOR::TensorRotation<3>(Q_localToGlobal, pkstressM_loc, pkstress_glob);
 
         CORE::LINALG::Matrix<noddof_, noddof_> cauchy_glob(true);
-        mem_PK2toCauchy(pkstress_glob, defgrd_glob, cauchy_glob);
+        mem_p_k2to_cauchy(pkstress_glob, defgrd_glob, cauchy_glob);
 
         (*elestress)(gp, 0) = cauchy_glob(0, 0);
         (*elestress)(gp, 1) = cauchy_glob(1, 1);
@@ -1352,7 +1352,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_orthonormalbase(
  |  pushforward of 2nd PK stresses to Cauchy stresses at gp                           fbraeu 06/16 |
  *-------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Membrane<distype>::mem_PK2toCauchy(
+void DRT::ELEMENTS::Membrane<distype>::mem_p_k2to_cauchy(
     const CORE::LINALG::Matrix<noddof_, noddof_>& pkstress_global,
     const CORE::LINALG::Matrix<noddof_, noddof_>& defgrd,
     CORE::LINALG::Matrix<noddof_, noddof_>& cauchy) const
@@ -1370,13 +1370,13 @@ void DRT::ELEMENTS::Membrane<distype>::mem_PK2toCauchy(
 
   return;
 
-}  // DRT::ELEMENTS::Membrane::mem_PK2toCauchy
+}  // DRT::ELEMENTS::Membrane::mem_p_k2to_cauchy
 
 /*-------------------------------------------------------------------------------------------------*
  |  pushforward of Green-Lagrange to Euler-Almansi strains at gp                      fbraeu 06/16 |
  *-------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Membrane<distype>::mem_GLtoEA(
+void DRT::ELEMENTS::Membrane<distype>::mem_g_lto_ea(
     const CORE::LINALG::Matrix<noddof_, noddof_>& glstrain_global,
     const CORE::LINALG::Matrix<noddof_, noddof_>& defgrd,
     CORE::LINALG::Matrix<noddof_, noddof_>& euler_almansi) const
@@ -1397,7 +1397,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_GLtoEA(
 
   return;
 
-}  // DRT::ELEMENTS::Membrane::mem_GLtoEA
+}  // DRT::ELEMENTS::Membrane::mem_g_lto_ea
 
 /*-------------------------------------------------------------------------------------------------*
  |  determine deformation gradient in global coordinates                              fbraeu 06/16 |

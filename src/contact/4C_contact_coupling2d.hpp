@@ -145,7 +145,7 @@ namespace CONTACT
     \brief Calculate consistent dual shape functions in boundary elements
 
     */
-    void ConsistDualShape() override;
+    void consist_dual_shape() override;
 
    protected:
     // don't want = operator and cctor

@@ -34,13 +34,13 @@ void dyn_ale_drt()
   // -------------------------------------------------------------------
   Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(
       new ADAPTER::AleBaseAlgorithm(GLOBAL::Problem::Instance()->AleDynamicParams(), actdis));
-  Teuchos::RCP<ADAPTER::Ale> aletimint = ale->AleField();
+  Teuchos::RCP<ADAPTER::Ale> aletimint = ale->ale_field();
 
   // -------------------------------------------------------------------
   // read the restart information, set vectors and variables if necessary
   // -------------------------------------------------------------------
   const int restart = GLOBAL::Problem::Instance()->Restart();
-  if (restart) aletimint->ReadRestart(restart);
+  if (restart) aletimint->read_restart(restart);
 
   // -------------------------------------------------------------------
   // call time loop

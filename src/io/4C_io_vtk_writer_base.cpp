@@ -332,7 +332,7 @@ void VtkWriterBase::write_vtk_field_data_and_or_time_and_or_cycle(
       std::vector<double> temp_vector;
       temp_vector.resize(1);
       temp_vector[0] = time_;
-      WriteFieldDataArray("TIME", temp_vector);
+      write_field_data_array("TIME", temp_vector);
     }
 
     if (cycle_ != std::numeric_limits<int>::max())
@@ -340,13 +340,13 @@ void VtkWriterBase::write_vtk_field_data_and_or_time_and_or_cycle(
       std::vector<int> temp_vector;
       temp_vector.resize(1);
       temp_vector[0] = cycle_;
-      WriteFieldDataArray("CYCLE", temp_vector);
+      write_field_data_array("CYCLE", temp_vector);
     }
   }
 
   // Write every field data array.
   for (const auto& field_data_iterator : field_data_map)
-    WriteFieldDataArray(
+    write_field_data_array(
         field_data_iterator.first, std::get<std::vector<double>>(field_data_iterator.second));
 
   // Finalize field data section.
@@ -398,7 +398,8 @@ void VtkWriterBase::write_vtk_header_this_processor(const std::string& byteorder
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <typename T>
-void VtkWriterBase::WriteFieldDataArray(const std::string& name, const std::vector<T>& field_data)
+void VtkWriterBase::write_field_data_array(
+    const std::string& name, const std::vector<T>& field_data)
 {
   const unsigned int n_data = field_data.size();
 
@@ -721,11 +722,11 @@ void VtkWriterBase::create_restarted_initial_collection_file_mid_section(
     // found line with timestep
     if (line.find("timestep=", 0) != std::string::npos)
     {
-      double readtime = std::atof(GetXmlOptionValue(line, "timestep").c_str());
+      double readtime = std::atof(get_xml_option_value(line, "timestep").c_str());
 
       if (readtime <= (restart_time + 1e-12))
       {
-        std::string filename = GetXmlOptionValue(line, "file");
+        std::string filename = get_xml_option_value(line, "file");
         std::filesystem::path p_restart(restartfilename);
 
         if (p_restart.is_absolute())

@@ -996,7 +996,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::SetSmootherName(std::string i
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::SetType(std::string in)
+void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::set_type(std::string in)
 {
   set_type_ = true;
   type_ = std::move(in);
@@ -1103,7 +1103,7 @@ bool CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::is_set_null_space_all_blocks(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::SmootherFactory::SetTypeAndParams()
+void CORE::LINEAR_SOLVER::AMGNXN::SmootherFactory::set_type_and_params()
 {
   // Valid types
   std::vector<std::string> valid_types;
@@ -1131,7 +1131,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::SmootherFactory::SetTypeAndParams()
   else
     smoother_type = "none";
 
-  SetType(smoother_type);
+  set_type(smoother_type);
   SetParams(smoother_params);
 }
 
@@ -1159,7 +1159,7 @@ CORE::LINEAR_SOLVER::AMGNXN::SmootherFactory::Create()
   if (not IsSetSmootherName()) FOUR_C_THROW("IsSetSmootherName() returns false");
 
   // Determine the type of smoother to be constructed and its parameters
-  SetTypeAndParams();
+  set_type_and_params();
 
   // Create the corresponding factory
   Teuchos::RCP<SmootherFactoryBase> mySmootherFactory = Teuchos::null;
@@ -1741,7 +1741,7 @@ CORE::LINEAR_SOLVER::AMGNXN::BgsSmootherFactory::Create()
   // Determine the subsolver names
   std::string smoothers_string = GetParams().get<std::string>("smoothers", "none");
   std::vector<std::string> SubSolverNames;
-  ParseSmootherNames(smoothers_string, SubSolverNames, SuperBlocks2Blocks);
+  parse_smoother_names(smoothers_string, SubSolverNames, SuperBlocks2Blocks);
 
   // sweeps and damping
   unsigned iter = static_cast<unsigned>(GetParams().get<int>("sweeps", 1));
@@ -1873,7 +1873,7 @@ CORE::LINEAR_SOLVER::AMGNXN::BgsSmootherFactory::Create()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::BgsSmootherFactory::ParseSmootherNames(
+void CORE::LINEAR_SOLVER::AMGNXN::BgsSmootherFactory::parse_smoother_names(
     const std::string& smoothers_string, std::vector<std::string>& smoothers_vector,
     std::vector<std::vector<int>> superblocks)
 {
@@ -2075,7 +2075,7 @@ CORE::LINEAR_SOLVER::AMGNXN::SimpleSmootherFactory::Create()
     if (num_rows != App->GetNumCols()) FOUR_C_THROW("We spect here a square matrix");
     invApp = Teuchos::rcp(new DiagonalBlockedMatrix(num_rows));
     for (int i = 0; i < num_rows; i++)
-      invApp->SetMatrix(ApproximateInverse(*(App->GetMatrix(i, i)), inverse_method), i, i);
+      invApp->SetMatrix(approximate_inverse(*(App->GetMatrix(i, i)), inverse_method), i, i);
   }
 
   // Compute the schur complement
@@ -2212,7 +2212,7 @@ CORE::LINEAR_SOLVER::AMGNXN::SimpleSmootherFactory::compute_schur_complement(
 /*------------------------------------------------------------------------------*/
 
 Teuchos::RCP<CORE::LINALG::SparseMatrix>
-CORE::LINEAR_SOLVER::AMGNXN::SimpleSmootherFactory::ApproximateInverse(
+CORE::LINEAR_SOLVER::AMGNXN::SimpleSmootherFactory::approximate_inverse(
     const CORE::LINALG::SparseMatrixBase& A, const std::string& method)
 {
   Teuchos::RCP<Epetra_Vector> invAVector = Teuchos::rcp(new Epetra_Vector(A.RowMap()));

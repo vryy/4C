@@ -156,7 +156,7 @@ namespace DRT
       /// Return number of lines of this element
       int NumLine() const override
       {
-        if (NumNode() == 4 || NumNode() == 8 || NumNode() == 9)
+        if (num_node() == 4 || num_node() == 8 || num_node() == 9)
           return 4;
         else
           return 3;
@@ -264,7 +264,7 @@ namespace DRT
       /// this method evaluates a surfaces Neumann condition on the wall element
       ///
       /// \return 0 if successful, negative otherwise
-      int EvaluateNeumann(
+      int evaluate_neumann(
           Teuchos::ParameterList& params,  ///< (in/out) ParameterList for communication between
                                            ///< control routine and elements
           DRT::Discretization& discretization,     ///< A reference to the underlying discretization
@@ -599,7 +599,7 @@ namespace DRT
           const double fac                        ///< integration factor
       );
 
-      void PackEasData(CORE::COMM::PackBuffer& data) const
+      void pack_eas_data(CORE::COMM::PackBuffer& data) const
       {
         AddtoPack(data, easdata_.alpha);
         AddtoPack(data, easdata_.alphao);
@@ -610,7 +610,7 @@ namespace DRT
         AddtoPack(data, easdata_.eas_inc);
       };
 
-      void UnpackEasData(std::vector<char>::size_type& position, const std::vector<char>& data)
+      void unpack_eas_data(std::vector<char>::size_type& position, const std::vector<char>& data)
       {
         ExtractfromPack(position, data, easdata_.alpha);
         ExtractfromPack(position, data, easdata_.alphao);
@@ -651,7 +651,7 @@ namespace DRT
       /// Generic 3D stress response
       ///
       /// \author bborn \date 06/09
-      void MaterialResponse3d(
+      void material_response3d(
           CORE::LINALG::Matrix<6, 1>* stress,          ///< 3D 2nd Piola-Kirchhoff stress vector
           CORE::LINALG::Matrix<6, 6>* cmat,            ///< 3D elasticity matrix
           const CORE::LINALG::Matrix<6, 1>* glstrain,  ///< 3D Green-Lagrange strain vector
@@ -831,7 +831,7 @@ namespace DRT
       /// this method evaluates a line Neumann condition on the wall element
       ///
       /// \return 0 if successful, negative otherwise
-      int EvaluateNeumann(
+      int evaluate_neumann(
           Teuchos::ParameterList&
               params,  ///< (in/out) ParameterList for communication between control routine
                        ///<   and elements
@@ -893,7 +893,7 @@ namespace DRT
           const CORE::LINALG::SerialDenseMatrix& deriv, std::vector<double>* unrm, const int iel);
 
       /// set number of gauss points to element shape default
-      CORE::FE::GaussRule1D getOptimalGaussrule(const CORE::FE::CellType& distype);
+      CORE::FE::GaussRule1D get_optimal_gaussrule(const CORE::FE::CellType& distype);
 
     };  // class Wall1Line
 

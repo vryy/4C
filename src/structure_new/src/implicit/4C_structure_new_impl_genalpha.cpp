@@ -52,7 +52,7 @@ STR::IMPLICIT::GenAlpha::GenAlpha()
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::GenAlpha::Setup()
 {
-  CheckInit();
+  check_init();
   // Call the Setup() of the abstract base class first.
   Generic::Setup();
 
@@ -127,15 +127,15 @@ void STR::IMPLICIT::GenAlpha::Setup()
   set_initial_displacement(
       TimInt().GetDataSDyn().GetInitialDisp(), TimInt().GetDataSDyn().StartFuncNo());
 
-  // Has to be set before the PostSetup() routine is called!
+  // Has to be set before the post_setup() routine is called!
   issetup_ = true;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlpha::PostSetup()
+void STR::IMPLICIT::GenAlpha::post_setup()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // ---------------------------------------------------------------------------
   // check for applicability of classical GenAlpha scheme
@@ -158,7 +158,7 @@ void STR::IMPLICIT::GenAlpha::PostSetup()
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::GenAlpha::set_time_integration_coefficients(Coefficients& coeffs) const
 {
-  if (IsInit() and IsSetup())
+  if (is_init() and is_setup())
   {
     coeffs = coeffs_;
     return;
@@ -247,9 +247,9 @@ double STR::IMPLICIT::GenAlpha::GetModelValue(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlpha::SetState(const Epetra_Vector& x)
+void STR::IMPLICIT::GenAlpha::set_state(const Epetra_Vector& x)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (IsPredictorState()) return;
 
@@ -302,7 +302,7 @@ void STR::IMPLICIT::GenAlpha::update_constant_state_contributions()
  *----------------------------------------------------------------------------*/
 bool STR::IMPLICIT::GenAlpha::ApplyForce(const Epetra_Vector& x, Epetra_Vector& f)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // ---------------------------------------------------------------------------
   // evaluate the different model types (static case) at t_{n+1}^{i}
@@ -316,7 +316,7 @@ bool STR::IMPLICIT::GenAlpha::ApplyForce(const Epetra_Vector& x, Epetra_Vector& 
  *----------------------------------------------------------------------------*/
 bool STR::IMPLICIT::GenAlpha::ApplyStiff(const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // ---------------------------------------------------------------------------
   // evaluate the different model types (static case) at t_{n+1}^{i}
@@ -337,7 +337,7 @@ bool STR::IMPLICIT::GenAlpha::ApplyStiff(const Epetra_Vector& x, CORE::LINALG::S
 bool STR::IMPLICIT::GenAlpha::ApplyForceStiff(
     const Epetra_Vector& x, Epetra_Vector& f, CORE::LINALG::SparseOperator& jac)
 {
-  CheckInitSetup();
+  check_init_setup();
   // ---------------------------------------------------------------------------
   // evaluate the different model types (static case) at t_{n+1}^{i}
   // ---------------------------------------------------------------------------
@@ -354,13 +354,13 @@ bool STR::IMPLICIT::GenAlpha::ApplyForceStiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::GenAlpha::AssembleForce(
+bool STR::IMPLICIT::GenAlpha::assemble_force(
     Epetra_Vector& f, const std::vector<INPAR::STR::ModelType>* without_these_models) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // set the time step dependent parameters for the assembly
-  return ModelEval().AssembleForce(1.0 - GetIntParam(), f, without_these_models);
+  return ModelEval().assemble_force(1.0 - GetIntParam(), f, without_these_models);
 }
 
 /*----------------------------------------------------------------------------*
@@ -368,10 +368,10 @@ bool STR::IMPLICIT::GenAlpha::AssembleForce(
 bool STR::IMPLICIT::GenAlpha::AssembleJac(CORE::LINALG::SparseOperator& jac,
     const std::vector<INPAR::STR::ModelType>* without_these_models) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // set the time step dependent parameters for the assembly
-  return ModelEval().AssembleJacobian(1.0 - GetIntParam(), jac, without_these_models);
+  return ModelEval().assemble_jacobian(1.0 - GetIntParam(), jac, without_these_models);
 }
 
 
@@ -406,7 +406,7 @@ void STR::IMPLICIT::GenAlpha::add_visco_mass_contributions(CORE::LINALG::SparseO
 void STR::IMPLICIT::GenAlpha::WriteRestart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
-  CheckInitSetup();
+  check_init_setup();
   // write dynamic forces
   iowriter.WriteVector("finert", finertian_ptr_);
   iowriter.WriteVector("fvisco", fviscon_ptr_);
@@ -416,13 +416,13 @@ void STR::IMPLICIT::GenAlpha::WriteRestart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlpha::ReadRestart(IO::DiscretizationReader& ioreader)
+void STR::IMPLICIT::GenAlpha::read_restart(IO::DiscretizationReader& ioreader)
 {
-  CheckInitSetup();
+  check_init_setup();
   ioreader.ReadVector(finertian_ptr_, "finert");
   ioreader.ReadVector(fviscon_ptr_, "fvisco");
 
-  ModelEval().ReadRestart(ioreader);
+  ModelEval().read_restart(ioreader);
   update_constant_state_contributions();
 }
 
@@ -431,7 +431,7 @@ void STR::IMPLICIT::GenAlpha::ReadRestart(IO::DiscretizationReader& ioreader)
 double STR::IMPLICIT::GenAlpha::CalcRefNormForce(
     const enum ::NOX::Abstract::Vector::NormType& type) const
 {
-  CheckInitSetup();
+  check_init_setup();
   FOUR_C_THROW("Not yet implemented! (see the Statics integration for an example)");
   return -1.0;
 }
@@ -451,7 +451,7 @@ double STR::IMPLICIT::GenAlpha::GetIntParam() const
  *----------------------------------------------------------------------------*/
 double STR::IMPLICIT::GenAlpha::GetAccIntParam() const
 {
-  CheckInitSetup();
+  check_init_setup();
   return alpham_;
 }
 
@@ -459,7 +459,7 @@ double STR::IMPLICIT::GenAlpha::GetAccIntParam() const
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::GenAlpha::UpdateStepState()
 {
-  CheckInitSetup();
+  check_init_setup();
   // ---------------------------------------------------------------------------
   // dynamic effects
   // ---------------------------------------------------------------------------
@@ -480,20 +480,20 @@ void STR::IMPLICIT::GenAlpha::UpdateStepState()
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::GenAlpha::UpdateStepElement()
 {
-  CheckInitSetup();
+  check_init_setup();
   ModelEval().UpdateStepElement();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlpha::PostUpdate() { update_constant_state_contributions(); }
+void STR::IMPLICIT::GenAlpha::post_update() { update_constant_state_contributions(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::GenAlpha::predict_const_dis_consist_vel_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
-  CheckInitSetup();
+  check_init_setup();
   Teuchos::RCP<const Epetra_Vector> disn = GlobalState().GetDisN();
   Teuchos::RCP<const Epetra_Vector> veln = GlobalState().GetVelN();
   Teuchos::RCP<const Epetra_Vector> accn = GlobalState().GetAccN();
@@ -521,7 +521,7 @@ void STR::IMPLICIT::GenAlpha::predict_const_dis_consist_vel_acc(
 bool STR::IMPLICIT::GenAlpha::predict_const_vel_consist_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
-  CheckInitSetup();
+  check_init_setup();
   /* In the general dynamic case there is no need to design a special start-up
    * procedure, since it is possible to prescribe an initial velocity or
    * acceleration. The corresponding accelerations are calculated in the
@@ -554,7 +554,7 @@ bool STR::IMPLICIT::GenAlpha::predict_const_vel_consist_acc(
 bool STR::IMPLICIT::GenAlpha::PredictConstAcc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
-  CheckInitSetup();
+  check_init_setup();
   /* In the general dynamic case there is no need to design a special start-up
    * procedure, since it is possible to prescribe an initial velocity or
    * acceleration. The corresponding accelerations are calculated in the

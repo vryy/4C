@@ -66,7 +66,7 @@ namespace ADAPTER
     void RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoremove) override;
 
     /// set the state of the nox group and the global state data container
-    void SetState(const Teuchos::RCP<Epetra_Vector>& x) override;
+    void set_state(const Teuchos::RCP<Epetra_Vector>& x) override;
 
     /// @name Apply interface forces
 

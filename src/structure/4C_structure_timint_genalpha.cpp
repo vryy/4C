@@ -193,7 +193,7 @@ void STR::TimIntGenAlpha::Setup()
   // external force vector F_{n+1} at new time
   fextn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
   // set initial external force vector
-  ApplyForceExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_);
+  apply_force_external((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_);
 
   // inertial force vector F_{int;n} at last time
   finert_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
@@ -533,7 +533,7 @@ void STR::TimIntGenAlpha::evaluate_force_residual()
 
   // build new external forces
   fextn_->PutScalar(0.0);
-  ApplyForceExternal(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_);
+  apply_force_external(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_);
 
   // additional external forces are added (e.g. interface forces)
   fextn_->Update(1.0, *fifc_, 1.0);
@@ -549,7 +549,7 @@ void STR::TimIntGenAlpha::evaluate_force_residual()
   // build new internal forces and stiffness
   if (HaveNonlinearMass() == INPAR::STR::ml_none)
   {
-    ApplyForceInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_);
+    apply_force_internal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_);
   }
   else
   {
@@ -652,26 +652,26 @@ double STR::TimIntGenAlpha::CalcRefNormForce()
 
   // norm of the internal forces
   double fintnorm = 0.0;
-  fintnorm = STR::CalculateVectorNorm(iternorm_, fintm_);
+  fintnorm = STR::calculate_vector_norm(iternorm_, fintm_);
 
   // norm of the external forces
   double fextnorm = 0.0;
-  fextnorm = STR::CalculateVectorNorm(iternorm_, fextm_);
+  fextnorm = STR::calculate_vector_norm(iternorm_, fextm_);
 
   // norm of the inertial forces
   double finertnorm = 0.0;
-  finertnorm = STR::CalculateVectorNorm(iternorm_, finertm_);
+  finertnorm = STR::calculate_vector_norm(iternorm_, finertm_);
 
   // norm of viscous forces
   double fviscnorm = 0.0;
   if (damping_ == INPAR::STR::damp_rayleigh)
   {
-    fviscnorm = STR::CalculateVectorNorm(iternorm_, fviscm_);
+    fviscnorm = STR::calculate_vector_norm(iternorm_, fviscm_);
   }
 
   // norm of reaction forces
   double freactnorm = 0.0;
-  freactnorm = STR::CalculateVectorNorm(iternorm_, freact_);
+  freactnorm = STR::calculate_vector_norm(iternorm_, freact_);
 
   // determine worst value ==> charactersitic norm
   return std::max(
@@ -784,10 +784,10 @@ void STR::TimIntGenAlpha::UpdateStepElement()
 
   // go to elements
   discret_->ClearState();
-  discret_->SetState("displacement", (*dis_)(0));
+  discret_->set_state("displacement", (*dis_)(0));
 
   // Set material displacement state for ale-wear formulation
-  if ((dismat_ != Teuchos::null)) discret_->SetState("material_displacement", (*dismat_)(0));
+  if ((dismat_ != Teuchos::null)) discret_->set_state("material_displacement", (*dismat_)(0));
 
   if (!HaveNonlinearMass())
   {
@@ -802,8 +802,8 @@ void STR::TimIntGenAlpha::UpdateStepElement()
      * rule has to be implemented in the element, otherwise displacements,
      * velocities and accelerations remain unchanged.
      */
-    discret_->SetState("velocity", (*vel_)(0));
-    discret_->SetState("acceleration", (*acc_)(0));
+    discret_->set_state("velocity", (*vel_)(0));
+    discret_->set_state("acceleration", (*acc_)(0));
 
     Teuchos::RCP<Epetra_Vector> update_disp;
     update_disp = CORE::LINALG::CreateVector(*DofRowMapView(), true);

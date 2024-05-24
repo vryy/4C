@@ -60,7 +60,7 @@ namespace POROMULTIPHASESCATRA
     virtual Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const = 0;
 
     //! access full dof row map
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const = 0;
+    virtual Teuchos::RCP<const Epetra_Map> dof_row_map() const = 0;
 
     //! print out the coupling method
     virtual void print_out_coupling_method() const = 0;
@@ -91,7 +91,7 @@ namespace POROMULTIPHASESCATRA
      * @param[in]   vec_cont vector containing quantities from continuous field
      * @param[in]   vec_art vector containing quantities from artery field
      */
-    virtual void SetupVector(Teuchos::RCP<Epetra_Vector> vec,
+    virtual void setup_vector(Teuchos::RCP<Epetra_Vector> vec,
         Teuchos::RCP<const Epetra_Vector> vec_cont, Teuchos::RCP<const Epetra_Vector> vec_art) = 0;
 
     /*!

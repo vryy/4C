@@ -85,7 +85,7 @@ namespace BEAMINTERACTION
      * \brief Things that need to be done in a separate loop before the actual evaluation loop over
      * the contact pairs.
      */
-    void PreEvaluate() override;
+    void pre_evaluate() override;
 
     /**
      * \brief Add the visualization of this pair to the beam to solid visualization output writer.

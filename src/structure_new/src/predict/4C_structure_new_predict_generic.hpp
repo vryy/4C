@@ -94,14 +94,14 @@ namespace STR
 
      protected:
       //! returns init state
-      const bool& IsInit() const { return isinit_; };
+      const bool& is_init() const { return isinit_; };
 
       //! returns setup state
-      const bool& IsSetup() const { return issetup_; };
+      const bool& is_setup() const { return issetup_; };
 
-      void CheckInit() const;
+      void check_init() const;
 
-      void CheckInitSetup() const;
+      void check_init_setup() const;
 
       Teuchos::RCP<STR::IMPLICIT::Generic>& ImplIntPtr();
       STR::IMPLICIT::Generic& ImplInt();

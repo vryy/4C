@@ -49,7 +49,7 @@ const Epetra_Comm& MORTAR::Coupling2d::Comm() const { return idiscret_.Comm(); }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling2d::RoughCheckOrient()
+bool MORTAR::Coupling2d::rough_check_orient()
 {
   // we first need the master element center
   std::array<double, 2> loccenter = {0.0, 0.0};
@@ -81,7 +81,7 @@ bool MORTAR::Coupling2d::Project()
   // rough check of orientation of element centers
   // if slave and master element center normals form an
   // angle > 90 degrees the pair will not be considered further
-  bool orient = RoughCheckOrient();
+  bool orient = rough_check_orient();
   if (!orient) return false;
 
   // get slave and master element nodes
@@ -91,7 +91,7 @@ bool MORTAR::Coupling2d::Project()
   if (!mymnodes) FOUR_C_THROW("IntegrateOverlap: Null pointer for mymnodes!");
 
   // project slave nodes onto master element
-  for (int i = 0; i < SlaveElement().NumNode(); ++i)
+  for (int i = 0; i < SlaveElement().num_node(); ++i)
   {
     auto* snode = dynamic_cast<MORTAR::Node*>(mysnodes[i]);
     std::array<double, 2> xi = {0.0, 0.0};
@@ -157,11 +157,11 @@ bool MORTAR::Coupling2d::Project()
       // for nurbs, we introduce a dummy mortar node at the actual spatial position of the master
       // side element boundary. Hence, we need that location
       std::vector<double> xm(2, 0.0);
-      CORE::LINALG::SerialDenseVector mval(mele_.NumNode());
-      CORE::LINALG::SerialDenseMatrix deriv(mele_.NumNode(), 1);
-      mele_.EvaluateShape(xinode.data(), mval, deriv, mele_.NumNode());
+      CORE::LINALG::SerialDenseVector mval(mele_.num_node());
+      CORE::LINALG::SerialDenseMatrix deriv(mele_.num_node(), 1);
+      mele_.EvaluateShape(xinode.data(), mval, deriv, mele_.num_node());
 
-      for (int mn = 0; mn < MasterElement().NumNode(); mn++)
+      for (int mn = 0; mn < MasterElement().num_node(); mn++)
       {
         auto* mnode2 = dynamic_cast<MORTAR::Node*>(mymnodes[mn]);
         for (int dim = 0; dim < 2; ++dim) xm[dim] += mval(mn) * mnode2->xspatial()[dim];
@@ -826,7 +826,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInter
   // set segmentation status of all slave nodes
   // (hassegment_ of a slave node is true if ANY segment/cell
   // is integrated that contributes to this slave node)
-  int nnodes = SlaveElement().NumNode();
+  int nnodes = SlaveElement().num_node();
   DRT::Node** mynodes = SlaveElement().Nodes();
   if (!mynodes) FOUR_C_THROW("Null pointer!");
   for (int k = 0; k < nnodes; ++k)
@@ -860,7 +860,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInter
       (Quad() && lmtype == INPAR::MORTAR::lagmult_const))
   {
     // do the overlap integration (integrate and linearize both M and gap)
-    MORTAR::Integrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
+    MORTAR::Integrator::Impl(SlaveElement(), MasterElement(), interface_params())
         ->IntegrateSegment2D(SlaveElement(), sxia, sxib, MasterElement(), mxia, mxib, Comm());
   }
 
@@ -937,7 +937,7 @@ void MORTAR::Coupling2dManager::IntegrateCoupling(
 
     // special treatment of boundary elements
     // calculate consistent dual shape functions for this element
-    ConsistDualShape();
+    consist_dual_shape();
 
     // do mortar integration
     for (int m = 0; m < (int)MasterElements().size(); ++m)
@@ -1001,7 +1001,7 @@ void MORTAR::Coupling2dManager::IntegrateCoupling(
             }
 
             // calculate consistent dual shape functions for this element
-            ConsistDualShape();
+            consist_dual_shape();
 
             // do mortar integration
             for (int m = 0; m < (int)MasterElements().size(); ++m)
@@ -1082,7 +1082,7 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::Coupling2dManager::ConsistDualShape()
+void MORTAR::Coupling2dManager::consist_dual_shape()
 {
   // For standard shape functions no modification is necessary
   // A switch erlier in the process improves computational efficiency
@@ -1136,7 +1136,7 @@ void MORTAR::Coupling2dManager::ConsistDualShape()
   // Consistent treatment of boundaries with mortar contact formulations, CMAME 2010
 
   // get number of nodes of present slave element
-  int nnodes = SlaveElement().NumNode();
+  int nnodes = SlaveElement().num_node();
 
   // compute entries to bi-ortho matrices me/de with Gauss quadrature
   MORTAR::ElementIntegrator integrator(SlaveElement().Shape());

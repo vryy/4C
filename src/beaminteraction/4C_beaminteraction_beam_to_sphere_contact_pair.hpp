@@ -74,7 +74,7 @@ namespace BEAMINTERACTION
     \brief things that need to be done in a separate loop before the actual evaluation loop
            over all contact pairs
     */
-    void PreEvaluate() override;
+    void pre_evaluate() override;
 
     /*!
     \brief Evaluate this contact element pair, return value indicates whether pair is active,
@@ -166,7 +166,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Get energy of penalty contact.
     */
-    double GetEnergy() const override
+    double get_energy() const override
     {
       FOUR_C_THROW("not implemented yet!");
       return 0.0;
@@ -198,7 +198,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Evaluate and assemble contact forces
     */
-    void EvaluateFcContact(CORE::LINALG::SerialDenseVector& forcevec1,
+    void evaluate_fc_contact(CORE::LINALG::SerialDenseVector& forcevec1,
         CORE::LINALG::SerialDenseVector& forcevec2, const double& pp, const TYPE& gap,
         const CORE::LINALG::Matrix<3, 1, TYPE>& normal,
         const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i,
@@ -221,18 +221,18 @@ namespace BEAMINTERACTION
     /*!
     \brief Compute normal vector in contact point
     */
-    void ComputeNormal(CORE::LINALG::Matrix<3, 1, TYPE>& normal, TYPE& gap, TYPE& norm,
+    void compute_normal(CORE::LINALG::Matrix<3, 1, TYPE>& normal, TYPE& gap, TYPE& norm,
         const CORE::LINALG::Matrix<3, 1, TYPE>& x1, const CORE::LINALG::Matrix<3, 1, TYPE>& x2);
 
     /*!
     \brief Evaluate gap function
     */
-    void ComputeGap(TYPE& gap, const TYPE& norm);
+    void compute_gap(TYPE& gap, const TYPE& norm);
 
     /*!
     \brief Compute radius of cross section based on moment of inertia
     */
-    void ComputeEleRadius(double& radius, const double& moi);
+    void compute_ele_radius(double& radius, const double& moi);
 
     /*!
     \brief Compute coordinates and their derivatives from the discretization
@@ -247,14 +247,14 @@ namespace BEAMINTERACTION
     /*!
     \brief Get shape functions and their derivatives at eta
     */
-    void GetShapeFunctions(CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i,
+    void get_shape_functions(CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i,
         CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xi,
         CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xixi, const TYPE& eta);
 
     /*!
     \brief Compute linearizations of contact point
     */
-    void ComputeLinXi(CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3, 1, TYPE>& delta_xi,
+    void compute_lin_xi(CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3, 1, TYPE>& delta_xi,
         const CORE::LINALG::Matrix<3, 1, TYPE>& x1, const CORE::LINALG::Matrix<3, 1, TYPE>& x2,
         const CORE::LINALG::Matrix<3, 1, TYPE>& dx1, const CORE::LINALG::Matrix<3, 1, TYPE>& ddx1,
         const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i,
@@ -263,7 +263,8 @@ namespace BEAMINTERACTION
     /*!
     \brief Compute linearization of gap
     */
-    void ComputeLinGap(CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3, 1, TYPE>& delta_gap,
+    void compute_lin_gap(
+        CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3, 1, TYPE>& delta_gap,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3, 1, TYPE>& delta_xi,
         const CORE::LINALG::Matrix<3, 1, TYPE>& x1, const CORE::LINALG::Matrix<3, 1, TYPE>& x2,
         const CORE::LINALG::Matrix<3, 1, TYPE>& dx1,
@@ -275,7 +276,7 @@ namespace BEAMINTERACTION
     \brief Compute linearization of normal
     */
 
-    void ComputeLinNormal(
+    void compute_lin_normal(
         CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3, TYPE>& delta_normal,
         const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3, 1, TYPE>& delta_xi,
         const CORE::LINALG::Matrix<3, 1, TYPE>& normal, const TYPE& norm_delta_x,
@@ -285,7 +286,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Compute normal contact disctance
     */
-    void ComputeDistance(CORE::LINALG::Matrix<3, 1, TYPE>& distance, TYPE& normdist,
+    void compute_distance(CORE::LINALG::Matrix<3, 1, TYPE>& distance, TYPE& normdist,
         const CORE::LINALG::Matrix<3, 1, TYPE>& normal, const TYPE& norm);
 
     /*!

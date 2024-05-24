@@ -104,27 +104,27 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
   const Teuchos::ParameterList& fluiddynparams = problem->FluidDynamicParams();
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid =
       Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams, fluiddynparams, "porofluid", true));
-  fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::FluidPoro>(fluid->FluidField());
+  fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::FluidPoro>(fluid->fluid_field());
 
   if (fluid_ == Teuchos::null)
     FOUR_C_THROW("cast from ADAPTER::FluidBaseAlgorithm to ADAPTER::FluidPoro failed");
 
   // as this is a two way coupled problem, every discretization needs to know the other one.
   // For this we use DofSetProxies and coupling objects which are setup here
-  SetupCoupling();
+  setup_coupling();
 
-  if (submeshes_) ReplaceDofSets();
+  if (submeshes_) replace_dof_sets();
 
   // extractor for constraints on structure phase
   //
   // when using constraints applied via Lagrange-Multipliers there is a
-  // difference between StructureField()->DofRowMap() and StructureField()->DofRowMap(0).
-  // StructureField()->DofRowMap(0) returns the DofRowMap
+  // difference between StructureField()->dof_row_map() and StructureField()->dof_row_map(0).
+  // StructureField()->dof_row_map(0) returns the dof_row_map
   // known to the discretization (without lagrange multipliers)
-  // while StructureField()->DofRowMap() returns the DofRowMap known to
+  // while StructureField()->dof_row_map() returns the dof_row_map known to
   // the constraint manager (with lagrange multipliers)
   cond_splitter_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(
-      *StructureField()->DofRowMap(), StructureField()->DofRowMap(0)));
+      *StructureField()->dof_row_map(), StructureField()->dof_row_map(0)));
 
   // look for special poro conditions and set flags
   check_for_poro_conditions();
@@ -135,7 +135,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     const Teuchos::ParameterList& fdyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
 
     std::vector<CORE::Conditions::Condition*> porocoupl;
-    FluidField()->Discretization()->GetCondition("PoroCoupling", porocoupl);
+    fluid_field()->Discretization()->GetCondition("PoroCoupling", porocoupl);
     if (porocoupl.size() == 0)
       FOUR_C_THROW(
           "no Poro Coupling Condition defined for porous media problem. Fix your input file!");
@@ -230,7 +230,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
   }
 }
 
-void POROELAST::PoroBase::ReadRestart(const int step)
+void POROELAST::PoroBase::read_restart(const int step)
 {
   if (step)
   {
@@ -241,33 +241,33 @@ void POROELAST::PoroBase::ReadRestart(const int step)
     // apply current structural displacements to fluid
     SetStructSolution();
 
-    FluidField()->ReadRestart(step);
-    StructureField()->ReadRestart(step);
+    fluid_field()->read_restart(step);
+    StructureField()->read_restart(step);
 
     // in case of submeshes, we need to rebuild the subproxies, also (they are reset during restart)
-    if (submeshes_) ReplaceDofSets();
+    if (submeshes_) replace_dof_sets();
 
     // apply current velocity and pressures to structure
     SetFluidSolution();
     // apply current structural displacements to fluid
     SetStructSolution();
 
-    // second ReadRestart needed due to the coupling variables
-    FluidField()->ReadRestart(step);
-    StructureField()->ReadRestart(step);
+    // second read_restart needed due to the coupling variables
+    fluid_field()->read_restart(step);
+    StructureField()->read_restart(step);
 
     // in case of submeshes, we need to rebuild the subproxies, also (they are reset during restart)
-    if (submeshes_) ReplaceDofSets();
+    if (submeshes_) replace_dof_sets();
 
     // set the current time in the algorithm (taken from fluid field)
-    SetTimeStep(FluidField()->Time(), step);
+    SetTimeStep(fluid_field()->Time(), step);
 
-    // Material pointers to other field were deleted during ReadRestart().
+    // Material pointers to other field were deleted during read_restart().
     // They need to be reset.
     if (matchinggrid_)
     {
       POROELAST::UTILS::SetMaterialPointersMatchingGrid(
-          StructureField()->Discretization(), FluidField()->Discretization());
+          StructureField()->Discretization(), fluid_field()->Discretization());
     }
     else
     {
@@ -275,13 +275,14 @@ void POROELAST::PoroBase::ReadRestart(const int step)
       Teuchos::RCP<UTILS::PoroMaterialStrategy> materialstrategy =
           Teuchos::rcp(new UTILS::PoroMaterialStrategy());
 
-      volcoupl_->AssignMaterials(StructureField()->Discretization(), FluidField()->Discretization(),
-          GLOBAL::Problem::Instance()->VolmortarParams(), materialstrategy);
+      volcoupl_->AssignMaterials(StructureField()->Discretization(),
+          fluid_field()->Discretization(), GLOBAL::Problem::Instance()->VolmortarParams(),
+          materialstrategy);
     }
   }
 }
 
-void POROELAST::PoroBase::PrepareTimeStep()
+void POROELAST::PoroBase::prepare_time_step()
 {
   // counter and print header
   increment_time_and_step();
@@ -291,19 +292,19 @@ void POROELAST::PoroBase::PrepareTimeStep()
   SetFluidSolution();
 
   // call the predictor
-  StructureField()->PrepareTimeStep();
+  StructureField()->prepare_time_step();
 
   // set structure displacements onto the fluid
   SetStructSolution();
 
   // call the predictor
-  FluidField()->PrepareTimeStep();
+  fluid_field()->prepare_time_step();
 }
 
 void POROELAST::PoroBase::Update()
 {
   StructureField()->Update();
-  FluidField()->Update();
+  fluid_field()->Update();
   // clean up as soon as old time integration is unused!
   if (oldstructimint_)
   {
@@ -319,15 +320,15 @@ void POROELAST::PoroBase::Update()
   }
 }
 
-void POROELAST::PoroBase::PrepareOutput(bool force_prepare_timestep)
+void POROELAST::PoroBase::prepare_output(bool force_prepare_timestep)
 {
-  StructureField()->PrepareOutput(force_prepare_timestep);
+  StructureField()->prepare_output(force_prepare_timestep);
 }
 
 void POROELAST::PoroBase::TestResults(const Epetra_Comm& comm)
 {
   GLOBAL::Problem::Instance()->AddFieldTest(StructureField()->CreateFieldTest());
-  GLOBAL::Problem::Instance()->AddFieldTest(FluidField()->CreateFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(fluid_field()->CreateFieldTest());
   GLOBAL::Problem::Instance()->TestAll(comm);
 }
 
@@ -346,7 +347,7 @@ Teuchos::RCP<Epetra_Vector> POROELAST::PoroBase::structure_to_fluid_field(
     Teuchos::RCP<const Epetra_Vector> mv = volcoupl_->apply_vector_mapping21(iv);
 
     Teuchos::RCP<Epetra_Vector> sv =
-        CORE::LINALG::CreateVector(*(FluidField()->VelPresSplitter()->OtherMap()));
+        CORE::LINALG::CreateVector(*(fluid_field()->VelPresSplitter()->OtherMap()));
 
     std::copy(mv->Values(),
         mv->Values() + (static_cast<ptrdiff_t>(mv->MyLength() * mv->NumVectors())), sv->Values());
@@ -370,23 +371,23 @@ void POROELAST::PoroBase::SetStructSolution()
 
   // transfer the current structure displacement to the fluid field
   Teuchos::RCP<Epetra_Vector> structdisp = structure_to_fluid_field(dispnp);
-  FluidField()->apply_mesh_displacement(structdisp);
+  fluid_field()->apply_mesh_displacement(structdisp);
 
   // transfer the current structure velocity to the fluid field
   Teuchos::RCP<Epetra_Vector> structvel = structure_to_fluid_field(velnp);
-  FluidField()->ApplyMeshVelocity(structvel);
+  fluid_field()->ApplyMeshVelocity(structvel);
 }
 
 void POROELAST::PoroBase::SetFluidSolution()
 {
   if (matchinggrid_)
   {
-    StructureField()->Discretization()->SetState(1, "fluidvel", FluidField()->Velnp());
+    StructureField()->Discretization()->set_state(1, "fluidvel", fluid_field()->Velnp());
   }
   else
   {
-    StructureField()->Discretization()->SetState(
-        1, "fluidvel", volcoupl_->apply_vector_mapping12(FluidField()->Velnp()));
+    StructureField()->Discretization()->set_state(
+        1, "fluidvel", volcoupl_->apply_vector_mapping12(fluid_field()->Velnp()));
   }
 }
 
@@ -395,7 +396,7 @@ void POROELAST::PoroBase::TimeLoop()
   while (NotFinished())
   {
     // solve one time step
-    DoTimeStep();
+    do_time_step();
   }
 }
 
@@ -405,15 +406,15 @@ void POROELAST::PoroBase::Output(bool forced_writerestart)
   // written. And these entries define the order in which the filters handle
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
-  FluidField()->StatisticsAndOutput();
+  fluid_field()->StatisticsAndOutput();
   StructureField()->Output(forced_writerestart);
 }
 
-void POROELAST::PoroBase::SetupCoupling()
+void POROELAST::PoroBase::setup_coupling()
 {
   // get discretizations
   Teuchos::RCP<DRT::Discretization> structdis = StructureField()->Discretization();
-  Teuchos::RCP<DRT::Discretization> fluiddis = FluidField()->Discretization();
+  Teuchos::RCP<DRT::Discretization> fluiddis = fluid_field()->Discretization();
 
   // if one discretization is a subset of the other, they will differ in node number (and element
   // number) we assume matching grids for the overlapping part here
@@ -432,7 +433,7 @@ void POROELAST::PoroBase::SetupCoupling()
     submeshes_ = false;
 
   const int ndim = GLOBAL::Problem::Instance()->NDim();
-  const int numglobalstructdofs = structdis->DofRowMap()->NumGlobalElements();
+  const int numglobalstructdofs = structdis->dof_row_map()->NumGlobalElements();
   if (numglobalstructdofs == numglobalstructnodes * ndim)
     porosity_dof_ = false;
   else
@@ -459,7 +460,7 @@ void POROELAST::PoroBase::SetupCoupling()
       // The node matching search tree is used to find matching structure and fluid nodes.
       // Note, that the structure discretization must be the bigger one (because it is the
       // masterdis).
-      coupling_fluid_structure_->SetupCoupling(
+      coupling_fluid_structure_->setup_coupling(
           *structdis, *fluiddis, *fluidnoderowmap, *fluidnoderowmap, ndof, false);
     }
     else
@@ -467,29 +468,29 @@ void POROELAST::PoroBase::SetupCoupling()
       // matching grid case: we rely on that the cloning strategy build the fluid node map with
       // equal node gids as the structure and also identical parallel distribution. Hence, we do not
       // use the node search tree here and use the same fluid node map also as permuted map.
-      coupling_fluid_structure_->SetupCoupling(
+      coupling_fluid_structure_->setup_coupling(
           *structdis, *fluiddis, *structnoderowmap, *fluidnoderowmap, *fluidnoderowmap, ndof);
     }
 
-    FluidField()->SetMeshMap(coupling_fluid_structure_->SlaveDofMap());
+    fluid_field()->SetMeshMap(coupling_fluid_structure_->SlaveDofMap());
 
     if (submeshes_)
       psi_extractor_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(
-          *StructureField()->DofRowMap(), coupling_fluid_structure_->MasterDofMap()));
+          *StructureField()->dof_row_map(), coupling_fluid_structure_->MasterDofMap()));
   }
   else
   {
-    FluidField()->SetMeshMap(FluidField()->VelPresSplitter()->OtherMap());
+    fluid_field()->SetMeshMap(fluid_field()->VelPresSplitter()->OtherMap());
   }
 }
 
-void POROELAST::PoroBase::ReplaceDofSets()
+void POROELAST::PoroBase::replace_dof_sets()
 {
   // the problem is two way coupled, thus each discretization must know the other discretization
 
   // get discretizations
   Teuchos::RCP<DRT::Discretization> structdis = StructureField()->Discretization();
-  Teuchos::RCP<DRT::Discretization> fluiddis = FluidField()->Discretization();
+  Teuchos::RCP<DRT::Discretization> fluiddis = fluid_field()->Discretization();
 
   /* When coupling porous media with a pure structure we will have two discretizations
    * of different size. In this case we need a special proxy, which can handle submeshes.
@@ -515,24 +516,24 @@ void POROELAST::PoroBase::ReplaceDofSets()
     structdis->ReplaceDofSet(1, fluiddofsetproxy);
   }
 
-  fluiddis->FillComplete(true, true, true);
-  structdis->FillComplete(true, true, true);
+  fluiddis->fill_complete(true, true, true);
+  structdis->fill_complete(true, true, true);
 }
 
 void POROELAST::PoroBase::check_for_poro_conditions()
 {
   std::vector<CORE::Conditions::Condition*> nopencond;
-  FluidField()->Discretization()->GetCondition("NoPenetration", nopencond);
+  fluid_field()->Discretization()->GetCondition("NoPenetration", nopencond);
   nopen_handle_ = Teuchos::rcp(new POROELAST::NoPenetrationConditionHandle(nopencond));
 
   part_int_cond_ = false;
   std::vector<CORE::Conditions::Condition*> poroPartInt;
-  FluidField()->Discretization()->GetCondition("PoroPartInt", poroPartInt);
+  fluid_field()->Discretization()->GetCondition("PoroPartInt", poroPartInt);
   if (poroPartInt.size()) part_int_cond_ = true;
 
   pres_int_cond_ = false;
   std::vector<CORE::Conditions::Condition*> poroPresInt;
-  FluidField()->Discretization()->GetCondition("PoroPresInt", poroPresInt);
+  fluid_field()->Discretization()->GetCondition("PoroPresInt", poroPresInt);
   if (poroPresInt.size()) pres_int_cond_ = true;
 }
 

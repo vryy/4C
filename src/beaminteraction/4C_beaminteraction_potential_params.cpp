@@ -47,7 +47,7 @@ void BEAMINTERACTION::BeamPotentialParams::Init(const double restart_time)
 
   // Teuchos parameter list for beam potential-based interactions
   const Teuchos::ParameterList& beam_potential_params_list =
-      GLOBAL::Problem::Instance()->BeamPotentialParams();
+      GLOBAL::Problem::Instance()->beam_potential_params();
 
   /****************************************************************************/
   // get and check required parameters
@@ -205,7 +205,7 @@ void BEAMINTERACTION::BeamPotentialParams::Init(const double restart_time)
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamPotentialParams::Setup()
 {
-  ThrowErrorIfNotInit();
+  throw_error_if_not_init();
 
   // empty for now
 
@@ -216,14 +216,14 @@ void BEAMINTERACTION::BeamPotentialParams::Setup()
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamPotentialParams::throw_error_if_not_init_and_setup() const
 {
-  if (!IsInit() or !IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
+  if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamPotentialParams::ThrowErrorIfNotInit() const
+void BEAMINTERACTION::BeamPotentialParams::throw_error_if_not_init() const
 {
-  if (!IsInit()) FOUR_C_THROW("Init() has not been called, yet!");
+  if (!is_init()) FOUR_C_THROW("Init() has not been called, yet!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

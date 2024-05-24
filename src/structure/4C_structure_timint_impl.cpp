@@ -333,10 +333,10 @@ void STR::TimIntImpl::Output(const bool forced_writerestart)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::TimIntImpl::PrepareTimeStep()
+void STR::TimIntImpl::prepare_time_step()
 {
   // safety checks
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
   // update end time \f$t_{n+1}\f$ of this time step to cope with time step size adaptivity
@@ -354,7 +354,7 @@ void STR::TimIntImpl::PrepareTimeStep()
 void STR::TimIntImpl::Predict()
 {
   // safety checks
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
   // things that need to be done before Predict
@@ -460,14 +460,14 @@ void STR::TimIntImpl::Predict()
   if (pressure_ != Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> fres = pressure_->ExtractOtherVector(fres_);
-    normfres_ = STR::CalculateVectorNorm(iternorm_, fres);
+    normfres_ = STR::calculate_vector_norm(iternorm_, fres);
     Teuchos::RCP<Epetra_Vector> fpres = pressure_->ExtractCondVector(fres_);
-    normpfres_ = STR::CalculateVectorNorm(iternorm_, fpres);
+    normpfres_ = STR::calculate_vector_norm(iternorm_, fpres);
   }
   else
   {
     // build residual force norm
-    normfres_ = STR::CalculateVectorNorm(iternorm_, fres_);
+    normfres_ = STR::calculate_vector_norm(iternorm_, fres_);
   }
 
   // determine characteristic norms
@@ -522,14 +522,14 @@ void STR::TimIntImpl::prepare_partition_step()
   if (pressure_ != Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> fres = pressure_->ExtractOtherVector(fres_);
-    normfres_ = STR::CalculateVectorNorm(iternorm_, fres);
+    normfres_ = STR::calculate_vector_norm(iternorm_, fres);
     Teuchos::RCP<Epetra_Vector> fpres = pressure_->ExtractCondVector(fres_);
-    normpfres_ = STR::CalculateVectorNorm(iternorm_, fpres);
+    normpfres_ = STR::calculate_vector_norm(iternorm_, fpres);
   }
   else
   {
     // build residual force norm
-    normfres_ = STR::CalculateVectorNorm(iternorm_, fres_);
+    normfres_ = STR::calculate_vector_norm(iternorm_, fres_);
   }
 
   // determine characteristic norms
@@ -704,14 +704,14 @@ void STR::TimIntImpl::predict_tang_dis_consist_vel_acc()
   if (bPressure == false && bContactSP == false)
   {
     // build residual displacement norm
-    normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
+    normdisi_ = STR::calculate_vector_norm(iternorm_, disi_);
   }
   if (bPressure)
   {
     Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(disi_);
     Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(disi_);
-    normpres_ = STR::CalculateVectorNorm(iternorm_, pres);
-    normdisi_ = STR::CalculateVectorNorm(iternorm_, disp);
+    normpres_ = STR::calculate_vector_norm(iternorm_, pres);
+    normdisi_ = STR::calculate_vector_norm(iternorm_, disp);
   }
   if (bContactSP)
   {
@@ -719,10 +719,10 @@ void STR::TimIntImpl::predict_tang_dis_consist_vel_acc()
     Teuchos::RCP<Epetra_Vector> lagrincr = cmtbridge_->GetStrategy().LagrMultSolveIncr();
 
     // build residual displacement norm
-    normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
+    normdisi_ = STR::calculate_vector_norm(iternorm_, disi_);
     // build lagrange multiplier increment norm
     if (lagrincr != Teuchos::null)
-      normlagr_ = STR::CalculateVectorNorm(iternorm_, lagrincr);
+      normlagr_ = STR::calculate_vector_norm(iternorm_, lagrincr);
     else
       normlagr_ = -1.0;
   }
@@ -786,7 +786,7 @@ void STR::TimIntImpl::setup_krylov_space_projection(CORE::Conditions::Condition*
 
   // create the projector
   projector_ = Teuchos::rcp(
-      new CORE::LINALG::KrylovProjector(activemodeids, weighttype, discret_->DofRowMap()));
+      new CORE::LINALG::KrylovProjector(activemodeids, weighttype, discret_->dof_row_map()));
 
   // update the projector
   update_krylov_space_projection();
@@ -810,7 +810,7 @@ void STR::TimIntImpl::update_krylov_space_projection()
   // get number of modes and their ids
   std::vector<int> modeids = projector_->Modes();
 
-  Teuchos::RCP<Epetra_Map> nullspaceMap = Teuchos::rcp(new Epetra_Map(*discret_->DofRowMap()));
+  Teuchos::RCP<Epetra_Map> nullspaceMap = Teuchos::rcp(new Epetra_Map(*discret_->dof_row_map()));
   Teuchos::RCP<Epetra_MultiVector> nullspace = DRT::ComputeNullSpace(*discret_, 3, 6, nullspaceMap);
   if (nullspace == Teuchos::null) FOUR_C_THROW("nullspace not successfully computed");
 
@@ -827,7 +827,7 @@ void STR::TimIntImpl::update_krylov_space_projection()
   }
 
   // fillcomplete the projector to compute (w^T c)^(-1)
-  projector_->FillComplete();
+  projector_->fill_complete();
 }
 
 /*----------------------------------------------------------------------*/
@@ -846,19 +846,19 @@ void STR::TimIntImpl::apply_force_stiff_external(const double time,  //!< evalua
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState(0, "displacement", dis);
+  discret_->set_state(0, "displacement", dis);
 
-  if (damping_ == INPAR::STR::damp_material) discret_->SetState(0, "velocity", vel);
+  if (damping_ == INPAR::STR::damp_material) discret_->set_state(0, "velocity", vel);
   // get load vector
   const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
   bool loadlin = (CORE::UTILS::IntegralValue<int>(sdyn, "LOADLIN") == 1);
 
   if (!loadlin)
-    discret_->EvaluateNeumann(p, *fext);
+    discret_->evaluate_neumann(p, *fext);
   else
   {
-    discret_->SetState(0, "displacement new", disn);
-    discret_->EvaluateNeumann(p, fext, fextlin);
+    discret_->set_state(0, "displacement new", disn);
+    discret_->evaluate_neumann(p, fext, fextlin);
   }
 
   // go away
@@ -888,13 +888,13 @@ void STR::TimIntImpl::apply_force_stiff_internal(const double time, const double
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState(0, "residual displacement", disi);
-  discret_->SetState(0, "displacement", dis);
-  if (damping_ == INPAR::STR::damp_material) discret_->SetState(0, "velocity", vel);
+  discret_->set_state(0, "residual displacement", disi);
+  discret_->set_state(0, "displacement", dis);
+  if (damping_ == INPAR::STR::damp_material) discret_->set_state(0, "velocity", vel);
   // fintn_->PutScalar(0.0);  // initialise internal force vector
 
   // Set material displacement state for ale-wear formulation
-  if ((dismatn_ != Teuchos::null)) discret_->SetState(0, "material_displacement", dismatn_);
+  if ((dismatn_ != Teuchos::null)) discret_->set_state(0, "material_displacement", dismatn_);
 
 
   /* Additionally we hand in "fint_str_"
@@ -942,13 +942,13 @@ void STR::TimIntImpl::apply_force_stiff_internal_and_inertial(const double time,
   }
 
   discret_->ClearState();
-  discret_->SetState(0, "residual displacement", disi);
-  discret_->SetState(0, "displacement", dis);
-  discret_->SetState(0, "velocity", vel);
-  discret_->SetState(0, "acceleration", acc);
+  discret_->set_state(0, "residual displacement", disi);
+  discret_->set_state(0, "displacement", dis);
+  discret_->set_state(0, "velocity", vel);
+  discret_->set_state(0, "acceleration", acc);
 
   // Set material displacement state for struct-ale
-  if ((dismatn_ != Teuchos::null)) discret_->SetState(0, "material_displacement", dismatn_);
+  if ((dismatn_ != Teuchos::null)) discret_->set_state(0, "material_displacement", dismatn_);
 
   /* Additionally we hand in "fint_str_"
    * This is usually Teuchos::null unless we do line search in
@@ -974,7 +974,7 @@ void STR::TimIntImpl::apply_force_stiff_constraint(const double time,
 {
   if (conman_->HaveConstraint())
   {
-    conman_->EvaluateForceStiff(time, dis, disn, fint, stiff, pcon);
+    conman_->evaluate_force_stiff(time, dis, disn, fint, stiff, pcon);
   }
 
   return;
@@ -988,7 +988,7 @@ void STR::TimIntImpl::apply_force_stiff_cardiovascular0_d(const double time,
 {
   if (cardvasc0dman_->have_cardiovascular0_d())
   {
-    cardvasc0dman_->EvaluateForceStiff(time, disn, fint, stiff, pwindk);
+    cardvasc0dman_->evaluate_force_stiff(time, disn, fint, stiff, pwindk);
   }
 
   return;
@@ -1034,7 +1034,7 @@ void STR::TimIntImpl::apply_force_stiff_contact_meshtying(
       {
         // set structural velocity for poro normal no penetration
         Teuchos::RCP<Epetra_Vector> svel = Teuchos::rcp(new Epetra_Vector(*Velnp()));
-        cmtbridge_->ContactManager()->GetStrategy().SetState(MORTAR::state_svelocity, *svel);
+        cmtbridge_->ContactManager()->GetStrategy().set_state(MORTAR::state_svelocity, *svel);
       }
     }
 
@@ -1158,10 +1158,10 @@ double STR::TimIntImpl::calc_ref_norm_displacement()
   if (pressure_ != Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector((*dis_)(0));
-    charnormdis = STR::CalculateVectorNorm(iternorm_, disp);
+    charnormdis = STR::calculate_vector_norm(iternorm_, disp);
   }
   else
-    charnormdis = STR::CalculateVectorNorm(iternorm_, (*dis_)(0));
+    charnormdis = STR::calculate_vector_norm(iternorm_, (*dis_)(0));
 
   // rise your hat
   return charnormdis;
@@ -1387,7 +1387,7 @@ bool STR::TimIntImpl::Converged()
 INPAR::STR::ConvergenceStatus STR::TimIntImpl::Solve()
 {
   // safety check
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
   // things to be done before solving
@@ -1630,21 +1630,21 @@ int STR::TimIntImpl::NewtonFull()
     if (bPressure == false && bContactSP == false)
     {
       // build residual force norm
-      normfres_ = STR::CalculateVectorNorm(iternorm_, fres_);
+      normfres_ = STR::calculate_vector_norm(iternorm_, fres_);
       // build residual displacement norm
-      normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
+      normdisi_ = STR::calculate_vector_norm(iternorm_, disi_);
     }
     if (bPressure)
     {
       Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
       Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(fres_);
-      normpfres_ = STR::CalculateVectorNorm(iternorm_, pres);
-      normfres_ = STR::CalculateVectorNorm(iternorm_, disp);
+      normpfres_ = STR::calculate_vector_norm(iternorm_, pres);
+      normfres_ = STR::calculate_vector_norm(iternorm_, disp);
 
       pres = pressure_->ExtractCondVector(disi_);
       disp = pressure_->ExtractOtherVector(disi_);
-      normpres_ = STR::CalculateVectorNorm(iternorm_, pres);
-      normdisi_ = STR::CalculateVectorNorm(iternorm_, disp);
+      normpres_ = STR::calculate_vector_norm(iternorm_, pres);
+      normdisi_ = STR::calculate_vector_norm(iternorm_, disp);
     }
     if (bContactSP)
     {
@@ -1653,18 +1653,18 @@ int STR::TimIntImpl::NewtonFull()
       Teuchos::RCP<Epetra_Vector> constrrhs = cmtbridge_->GetStrategy().ConstrRhs();
 
       // build residual force norm
-      normfres_ = STR::CalculateVectorNorm(iternorm_, fres_);
+      normfres_ = STR::calculate_vector_norm(iternorm_, fres_);
       // build residual displacement norm
-      normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
+      normdisi_ = STR::calculate_vector_norm(iternorm_, disi_);
       // build residual constraint norm
       if (constrrhs != Teuchos::null)
-        normcontconstr_ = STR::CalculateVectorNorm(iternorm_, constrrhs);
+        normcontconstr_ = STR::calculate_vector_norm(iternorm_, constrrhs);
       else
         normcontconstr_ = -1.0;
 
       // build lagrange multiplier increment norm
       if (lagrincr != Teuchos::null)
-        normlagr_ = STR::CalculateVectorNorm(iternorm_, lagrincr);
+        normlagr_ = STR::calculate_vector_norm(iternorm_, lagrincr);
       else
         normlagr_ = -1.0;
 
@@ -1680,12 +1680,12 @@ int STR::TimIntImpl::NewtonFull()
         Teuchos::RCP<Epetra_Vector> wearrhs = cmtbridge_->GetStrategy().WearRhs();
 
         if (wearrhs != Teuchos::null)
-          normwrhs_ = STR::CalculateVectorNorm(iternorm_, wearrhs);
+          normwrhs_ = STR::calculate_vector_norm(iternorm_, wearrhs);
         else
           normwrhs_ = -1.0;
 
         if (wincr != Teuchos::null)
-          normw_ = STR::CalculateVectorNorm(iternorm_, wincr);
+          normw_ = STR::calculate_vector_norm(iternorm_, wincr);
         else
           normw_ = -1.0;
 
@@ -1695,12 +1695,12 @@ int STR::TimIntImpl::NewtonFull()
           Teuchos::RCP<Epetra_Vector> wearmrhs = cmtbridge_->GetStrategy().WearMRhs();
 
           if (wearmrhs != Teuchos::null)
-            normwmrhs_ = STR::CalculateVectorNorm(iternorm_, wearmrhs);
+            normwmrhs_ = STR::calculate_vector_norm(iternorm_, wearmrhs);
           else
             normwmrhs_ = -1.0;
 
           if (wmincr != Teuchos::null)
-            normwm_ = STR::CalculateVectorNorm(iternorm_, wmincr);
+            normwm_ = STR::calculate_vector_norm(iternorm_, wmincr);
           else
             normwm_ = -1.0;
         }
@@ -1720,7 +1720,7 @@ int STR::TimIntImpl::NewtonFull()
     }
 
     // print stuff
-    PrintNewtonIter();
+    print_newton_iter();
 
     // increment equilibrium loop index
     iter_ += 1;
@@ -1746,7 +1746,7 @@ int STR::TimIntImpl::newton_full_error_check(int linerror, int eleerror)
   // if everything is fine print to screen and return
   if (Converged())
   {
-    if (myrank_ == 0) PrintNewtonConv();
+    if (myrank_ == 0) print_newton_conv();
     return 0;
   }
   // now some error checks: do we have an element problem
@@ -2052,11 +2052,11 @@ int STR::TimIntImpl::NewtonLS()
     ***************************************************************/
 
     // build residual force norm
-    normfres_ = STR::CalculateVectorNorm(iternorm_, fres_);
+    normfres_ = STR::calculate_vector_norm(iternorm_, fres_);
     // build residual displacement norm
-    normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
+    normdisi_ = STR::calculate_vector_norm(iternorm_, disi_);
 
-    PrintNewtonIter();
+    print_newton_iter();
 
     // increment equilibrium loop index
     iter_ += 1;
@@ -2279,7 +2279,7 @@ int STR::TimIntImpl::LsEvalMeritFct(double& merit_fct)
 /*----------------------------------------------------------------------*/
 void STR::TimIntImpl::ls_print_line_search_iter(double* mf_value, int iter_ls, double step_red)
 {
-  normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
+  normdisi_ = STR::calculate_vector_norm(iternorm_, disi_);
   // print to standard out
   if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0) and printiter_)
   {
@@ -2363,7 +2363,7 @@ int STR::TimIntImpl::uzawa_non_linear_newton_full()
   if (error) return error;
 
   // compute constraint error ...
-  conman_->ComputeError(timen_, disn_);
+  conman_->compute_error(timen_, disn_);
   // ... and its norm
   normcon_ = conman_->GetErrorNorm();
   // talk to user
@@ -2392,7 +2392,7 @@ int STR::TimIntImpl::uzawa_non_linear_newton_full()
 
 
     // compute constraint error ...
-    conman_->ComputeError(timen_, disn_);
+    conman_->compute_error(timen_, disn_);
     // ... and its norm
     normcon_ = conman_->GetErrorNorm();
     // talk to user
@@ -2611,9 +2611,9 @@ int STR::TimIntImpl::uzawa_linear_newton_full()
 
       // why was this here? part of else statement below!!! (mhv 01/2015)
       //      // build residual force norm
-      //      normfres_ = STR::CalculateVectorNorm(iternorm_, fres_);
+      //      normfres_ = STR::calculate_vector_norm(iternorm_, fres_);
       //      // build residual displacement norm
-      //      normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
+      //      normdisi_ = STR::calculate_vector_norm(iternorm_, disi_);
       //      // build residual Lagrange multiplier norm
       //      normcon_ = conman_->GetErrorNorm();
 
@@ -2621,26 +2621,26 @@ int STR::TimIntImpl::uzawa_linear_newton_full()
       {
         Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
         Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(fres_);
-        normpfres_ = STR::CalculateVectorNorm(iternorm_, pres);
-        normfres_ = STR::CalculateVectorNorm(iternorm_, disp);
+        normpfres_ = STR::calculate_vector_norm(iternorm_, pres);
+        normfres_ = STR::calculate_vector_norm(iternorm_, disp);
 
         pres = pressure_->ExtractCondVector(disi_);
         disp = pressure_->ExtractOtherVector(disi_);
-        normpres_ = STR::CalculateVectorNorm(iternorm_, pres);
-        normdisi_ = STR::CalculateVectorNorm(iternorm_, disp);
+        normpres_ = STR::calculate_vector_norm(iternorm_, pres);
+        normdisi_ = STR::calculate_vector_norm(iternorm_, disp);
       }
       else
       {
         // build residual force norm
-        normfres_ = STR::CalculateVectorNorm(iternorm_, fres_);
+        normfres_ = STR::calculate_vector_norm(iternorm_, fres_);
         // build residual displacement norm
-        normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
+        normdisi_ = STR::calculate_vector_norm(iternorm_, disi_);
         // build residual Lagrange multiplier norm
         normcon_ = conman_->GetErrorNorm();
       }
 
       // print stuff
-      PrintNewtonIter();
+      print_newton_iter();
 
       // increment equilibrium loop index
       iter_ += 1;
@@ -2789,13 +2789,13 @@ int STR::TimIntImpl::uzawa_linear_newton_full()
       {
         Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
         Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(fres_);
-        normpfres_ = STR::CalculateVectorNorm(iternorm_, pres);
-        normfres_ = STR::CalculateVectorNorm(iternorm_, disp);
+        normpfres_ = STR::calculate_vector_norm(iternorm_, pres);
+        normfres_ = STR::calculate_vector_norm(iternorm_, disp);
 
         pres = pressure_->ExtractCondVector(disi_);
         disp = pressure_->ExtractOtherVector(disi_);
-        normpres_ = STR::CalculateVectorNorm(iternorm_, pres);
-        normdisi_ = STR::CalculateVectorNorm(iternorm_, disp);
+        normpres_ = STR::calculate_vector_norm(iternorm_, pres);
+        normdisi_ = STR::calculate_vector_norm(iternorm_, disp);
       }
       else
       {
@@ -2803,17 +2803,17 @@ int STR::TimIntImpl::uzawa_linear_newton_full()
         {
           // build residual force norm with reduced force residual
           Teuchos::RCP<Epetra_Vector> fres_r = mor_->ReduceResidual(fres_);
-          normfresr_ = STR::CalculateVectorNorm(iternorm_, fres_r);
+          normfresr_ = STR::calculate_vector_norm(iternorm_, fres_r);
 
           // build residual displacement norm with reduced residual displacements
           Teuchos::RCP<Epetra_Vector> disi_r = mor_->ReduceResidual(disi_);
-          normdisir_ = STR::CalculateVectorNorm(iternorm_, disi_r);
+          normdisir_ = STR::calculate_vector_norm(iternorm_, disi_r);
         }
 
         // build residual force norm
-        normfres_ = STR::CalculateVectorNorm(iternorm_, fres_);
+        normfres_ = STR::calculate_vector_norm(iternorm_, fres_);
         // build residual displacement norm
-        normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
+        normdisi_ = STR::calculate_vector_norm(iternorm_, disi_);
         // build residual 0D cardiovascular residual norm
         normcardvasc0d_ = cardvasc0dman_->get_cardiovascular0_drhs_norm();
         // build residual 0D cardiovascular residual dof increment norm
@@ -2821,7 +2821,7 @@ int STR::TimIntImpl::uzawa_linear_newton_full()
       }
 
       // print stuff
-      PrintNewtonIter();
+      print_newton_iter();
 
       // update ptc
       if (ptc_3D0D)
@@ -3476,21 +3476,21 @@ int STR::TimIntImpl::PTC()
     if (bPressure == false && bContactSP == false)
     {
       // build residual force norm
-      normfres_ = STR::CalculateVectorNorm(iternorm_, fres_);
+      normfres_ = STR::calculate_vector_norm(iternorm_, fres_);
       // build residual displacement norm
-      normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
+      normdisi_ = STR::calculate_vector_norm(iternorm_, disi_);
     }
     if (bPressure)
     {
       Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
       Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(fres_);
-      normpfres_ = STR::CalculateVectorNorm(iternorm_, pres);
-      normfres_ = STR::CalculateVectorNorm(iternorm_, disp);
+      normpfres_ = STR::calculate_vector_norm(iternorm_, pres);
+      normfres_ = STR::calculate_vector_norm(iternorm_, disp);
 
       pres = pressure_->ExtractCondVector(disi_);
       disp = pressure_->ExtractOtherVector(disi_);
-      normpres_ = STR::CalculateVectorNorm(iternorm_, pres);
-      normdisi_ = STR::CalculateVectorNorm(iternorm_, disp);
+      normpres_ = STR::calculate_vector_norm(iternorm_, pres);
+      normdisi_ = STR::calculate_vector_norm(iternorm_, disp);
     }
     if (bContactSP)
     {
@@ -3499,24 +3499,24 @@ int STR::TimIntImpl::PTC()
       Teuchos::RCP<Epetra_Vector> constrrhs = cmtbridge_->GetStrategy().ConstrRhs();
 
       // build residual force norm
-      normfres_ = STR::CalculateVectorNorm(iternorm_, fres_);
+      normfres_ = STR::calculate_vector_norm(iternorm_, fres_);
       // build residual displacement norm
-      normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
+      normdisi_ = STR::calculate_vector_norm(iternorm_, disi_);
       // build residual constraint norm
       if (constrrhs != Teuchos::null)
-        normcontconstr_ = STR::CalculateVectorNorm(iternorm_, constrrhs);
+        normcontconstr_ = STR::calculate_vector_norm(iternorm_, constrrhs);
       else
         normcontconstr_ = -1.0;
       // build lagrange multiplier increment norm
       if (lagrincr != Teuchos::null)
-        normlagr_ = STR::CalculateVectorNorm(iternorm_, lagrincr);
+        normlagr_ = STR::calculate_vector_norm(iternorm_, lagrincr);
       else
         normlagr_ = -1.0;
     }
 
     // print stuff
     dti_ = dti;
-    PrintNewtonIter();
+    print_newton_iter();
 
     // update ptc
     {
@@ -3636,13 +3636,13 @@ void STR::TimIntImpl::PrintPredictor()
 /*----------------------------------------------------------------------*/
 /* print Newton-Raphson iteration to screen and error file
  * originally by lw 12/07, tk 01/08 */
-void STR::TimIntImpl::PrintNewtonIter()
+void STR::TimIntImpl::print_newton_iter()
 {
   // print to standard out
   if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0) and printiter_)
   {
     if (iter_ == 1) print_newton_iter_header(stdout);
-    PrintNewtonIterText(stdout);
+    print_newton_iter_text(stdout);
   }
 }
 
@@ -3826,7 +3826,7 @@ void STR::TimIntImpl::print_newton_iter_header(FILE* ofile)
 /*----------------------------------------------------------------------*/
 /* print Newton-Raphson iteration to screen
  * originally by lw 12/07, tk 01/08 */
-void STR::TimIntImpl::PrintNewtonIterText(FILE* ofile)
+void STR::TimIntImpl::print_newton_iter_text(FILE* ofile)
 {
   // open outstd::stringstream
   std::ostringstream oss;
@@ -4061,7 +4061,7 @@ void STR::TimIntImpl::export_contact_quantities()
 
 /*----------------------------------------------------------------------*/
 /* print statistics of converged NRI */
-void STR::TimIntImpl::PrintNewtonConv()
+void STR::TimIntImpl::print_newton_conv()
 {
 #ifdef CONTACTEXPORT
   // output integration time for contact and more...
@@ -4242,11 +4242,11 @@ void STR::TimIntImpl::UseBlockMatrix(Teuchos::RCP<const CORE::LINALG::MultiMapEx
     if (pressure_ != Teuchos::null) p.set("volume", 0.0);
     // set vector values needed by elements
     discret_->ClearState();
-    discret_->SetState("residual displacement", zeros_);
-    discret_->SetState("displacement", (*dis_)(0));
-    discret_->SetState(0, "velocity", (*vel_)(0));
-    discret_->SetState(0, "acceleration", (*acc_)(0));
-    if (damping_ == INPAR::STR::damp_material) discret_->SetState("velocity", (*vel_)(0));
+    discret_->set_state("residual displacement", zeros_);
+    discret_->set_state("displacement", (*dis_)(0));
+    discret_->set_state(0, "velocity", (*vel_)(0));
+    discret_->set_state(0, "acceleration", (*acc_)(0));
+    if (damping_ == INPAR::STR::damp_material) discret_->set_state("velocity", (*vel_)(0));
 
     discret_->Evaluate(p, stiff_, mass_, fint, finert, Teuchos::null);
     discret_->ClearState();
@@ -4312,8 +4312,8 @@ void STR::TimIntImpl::ComputeSTCMatrix()
   // create the parameters for the discretization
   Teuchos::ParameterList p;
   // action for elements
-  discret_->SetState("residual displacement", disi_);
-  discret_->SetState("displacement", disn_);
+  discret_->set_state("residual displacement", disi_);
+  discret_->set_state("displacement", disn_);
 
   const std::string action = "calc_stc_matrix";
   p.set("action", action);

@@ -101,7 +101,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(Teuchos::RCP<DRT::Discre
       algochoice_(CORE::UTILS::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DSolveAlgo>(
           cv0dparams, "SOLALGORITHM")),
       dirichtoggle_(Teuchos::null),
-      zeros_(CORE::LINALG::CreateVector(*(actdisc_->DofRowMap()), true)),
+      zeros_(CORE::LINALG::CreateVector(*(actdisc_->dof_row_map()), true)),
       theta_(cv0dparams.get("TIMINT_THETA", 0.5)),
       enhanced_output_(CORE::UTILS::IntegralValue<int>(cv0dparams, "ENHANCED_OUTPUT")),
       ptc_3d0d_(CORE::UTILS::IntegralValue<int>(cv0dparams, "PTC_3D0D")),
@@ -204,8 +204,8 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(Teuchos::RCP<DRT::Discre
     offset_id_ = cardiovascular0ddofset_->FirstGID();
 
     cardiovascular0dmap_full_ =
-        Teuchos::rcp(new Epetra_Map(*(cardiovascular0ddofset_full_->DofRowMap())));
-    cardiovascular0dmap_ = Teuchos::rcp(new Epetra_Map(*(cardiovascular0ddofset_->DofRowMap())));
+        Teuchos::rcp(new Epetra_Map(*(cardiovascular0ddofset_full_->dof_row_map())));
+    cardiovascular0dmap_ = Teuchos::rcp(new Epetra_Map(*(cardiovascular0ddofset_->dof_row_map())));
     redcardiovascular0dmap_ = CORE::LINALG::AllreduceEMap(*cardiovascular0dmap_);
     cardvasc0dimpo_ =
         Teuchos::rcp(new Epetra_Export(*redcardiovascular0dmap_, *cardiovascular0dmap_));
@@ -230,9 +230,9 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(Teuchos::RCP<DRT::Discre
     cardiovascular0dstiffness_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
         *cardiovascular0dmap_, num_cardiovascular0_did_, false, true));
     mat_dcardvasc0d_dd_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-        *(actdisc_->DofRowMap()), num_cardiovascular0_did_, false, true));
+        *(actdisc_->dof_row_map()), num_cardiovascular0_did_, false, true));
     mat_dstruct_dcv0ddof_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-        *(actdisc_->DofRowMap()), num_cardiovascular0_did_, false, true));
+        *(actdisc_->dof_row_map()), num_cardiovascular0_did_, false, true));
 
     Teuchos::ParameterList p;
     const double time = strparams.get<double>("total time", 0.0);
@@ -273,7 +273,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(Teuchos::RCP<DRT::Discre
     p.set("NumberofID", num_cardiovascular0_did_);
     p.set("scale_timint", sc_timint);
     p.set("time_step_size", ts_size);
-    actdisc_->SetState("displacement", disp);
+    actdisc_->set_state("displacement", disp);
 
     Teuchos::RCP<Epetra_Vector> v_n_red = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
     Teuchos::RCP<Epetra_Vector> v_n_red2 =
@@ -336,7 +336,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(Teuchos::RCP<DRT::Discre
 |do all the time integration, evaluation and assembling of stiffnesses   |
 |and right-hand sides                                                    |
  *-----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0DManager::EvaluateForceStiff(const double time,
+void UTILS::Cardiovascular0DManager::evaluate_force_stiff(const double time,
     Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<Epetra_Vector> fint,
     Teuchos::RCP<CORE::LINALG::SparseOperator> stiff, Teuchos::ParameterList scalelist)
 {
@@ -345,7 +345,7 @@ void UTILS::Cardiovascular0DManager::EvaluateForceStiff(const double time,
 
   // create the parameters for the discretization
   Teuchos::ParameterList p;
-  const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
+  const Epetra_Map* dofrowmap = actdisc_->dof_row_map();
 
   cardiovascular0dstiffness_->Zero();
   mat_dcardvasc0d_dd_->Zero();
@@ -371,7 +371,7 @@ void UTILS::Cardiovascular0DManager::EvaluateForceStiff(const double time,
       Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
 
   actdisc_->ClearState();
-  actdisc_->SetState("displacement", disp);
+  actdisc_->set_state("displacement", disp);
 
   // evaluate current 3D volume only
   cardvasc0d_model_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null,
@@ -504,7 +504,7 @@ bool UTILS::Cardiovascular0DManager::modulo_is_realtive_zero(
 
 
 
-void UTILS::Cardiovascular0DManager::ResetStep()
+void UTILS::Cardiovascular0DManager::reset_step()
 {
   cv0ddof_np_->Update(1.0, *cv0ddof_n_, 0.0);
   v_np_->Update(1.0, *v_n_, 0.0);
@@ -530,7 +530,7 @@ void UTILS::Cardiovascular0DManager::UpdateCv0DDof(Teuchos::RCP<Epetra_Vector> c
 |(public)                                                      mhv 03/15|
 |Read restart information                                               |
  *-----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0DManager::ReadRestart(
+void UTILS::Cardiovascular0DManager::read_restart(
     IO::DiscretizationReader& reader, const double& time)
 {
   // check if restart from non-Cardiovascular0D simulation is desired
@@ -646,7 +646,7 @@ void UTILS::Cardiovascular0DManager::evaluate_neumann_cardiovascular0_d_coupling
 
     Teuchos::RCP<const Epetra_Vector> disp =
         params.get<Teuchos::RCP<const Epetra_Vector>>("new disp");
-    actdisc_->SetState("displacement new", disp);
+    actdisc_->set_state("displacement new", disp);
 
     CORE::LINALG::SerialDenseVector elevector;
     CORE::LINALG::SerialDenseMatrix elematrix;
@@ -667,11 +667,11 @@ void UTILS::Cardiovascular0DManager::evaluate_neumann_cardiovascular0_d_coupling
         elematrix.shape(size, size);
       else
         elematrix.putScalar(0.0);
-      curr->second->EvaluateNeumann(params, *actdisc_, *coupcond, lm, elevector, &elematrix);
+      curr->second->evaluate_neumann(params, *actdisc_, *coupcond, lm, elevector, &elematrix);
       // minus sign here since we sum into fint_ !!
       elevector.scale(-1.0);
       if (assvec) CORE::LINALG::Assemble(*systemvector, elevector, lm, lmowner);
-      // plus sign here since EvaluateNeumann already assumes that an fext vector enters, and thus
+      // plus sign here since evaluate_neumann already assumes that an fext vector enters, and thus
       // puts a minus infront of the load linearization matrix !!
       // elematrix.Scale(1.0);
       if (assmat) systemmatrix->Assemble(curr->second->Id(), lmstride, elematrix, lm, lmowner);

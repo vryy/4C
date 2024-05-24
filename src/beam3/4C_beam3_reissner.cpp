@@ -72,7 +72,7 @@ void DRT::ELEMENTS::Beam3rType::nodal_block_information(
   DRT::ELEMENTS::Beam3r* currele = dynamic_cast<DRT::ELEMENTS::Beam3r*>(dwele);
   if (!currele) FOUR_C_THROW("cast to Beam3r* failed");
 
-  if (currele->hermite_centerline_interpolation() or currele->NumNode() > 2)
+  if (currele->hermite_centerline_interpolation() or currele->num_node() > 2)
   {
     FOUR_C_THROW(
         "method nodal_block_information not implemented for element type beam3r in case of Hermite "
@@ -192,7 +192,7 @@ int DRT::ELEMENTS::Beam3rType::Initialize(DRT::Discretization& dis)
     std::vector<double> xrefe;
     std::vector<double> rotrefe;
 
-    /* the triad field is discretized with Lagrange polynomials of order NumNode()-1;
+    /* the triad field is discretized with Lagrange polynomials of order num_node()-1;
      * the centerline is either discretized in the same way or with 3rd order Hermite polynomials;
      * in case of Hermite interpolation of the centerline, always the two boundary nodes are used
      * for centerline interpolation*/
@@ -201,7 +201,7 @@ int DRT::ELEMENTS::Beam3rType::Initialize(DRT::Discretization& dis)
     // nnodetriad: number of nodes used for interpolation of triad field
     // nnodecl: number of nodes used for interpolation of centerline
     // assumptions: nnodecl<=nnodetriad; centerline nodes have local ID 0...nnodecl-1
-    const int nnodetriad = currele->NumNode();
+    const int nnodetriad = currele->num_node();
     int nnodecl = nnodetriad;
     if (centerline_hermite) nnodecl = 2;
 
@@ -394,7 +394,7 @@ void DRT::ELEMENTS::Beam3r::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 CORE::FE::CellType DRT::ELEMENTS::Beam3r::Shape() const
 {
-  int numnodes = NumNode();
+  int numnodes = num_node();
   switch (numnodes)
   {
     case 2:
@@ -947,7 +947,7 @@ void DRT::ELEMENTS::Beam3r::set_up_reference_geometry(
 
       /* compute material strain Gamma according to Jelenic 1999, eq. (2.12) for reference
        * configuration, i.e. call this function with gammaref=zerovector*/
-      computeGamma<double>(dr0dxi, Lambda, dummy, gammaref_gp_[numgp]);
+      compute_gamma<double>(dr0dxi, Lambda, dummy, gammaref_gp_[numgp]);
     }
 
     //*********************** preparation for residual contributions from moments
@@ -1017,7 +1017,7 @@ void DRT::ELEMENTS::Beam3r::set_up_reference_geometry(
 
       /* compute material curvature K according to Jelenic 1999, eq. (2.12) for reference
        * configuration, i.e. call this function with kapparef=zerovector*/
-      computeK<double>(Psi_l, Psi_l_s, dummy, kref_gp_[numgp]);
+      compute_k<double>(Psi_l, Psi_l_s, dummy, kref_gp_[numgp]);
     }
 
 
@@ -1170,7 +1170,7 @@ void DRT::ELEMENTS::Beam3r::GetPosAtXi(
 {
   const unsigned int numnodalvalues = this->hermite_centerline_interpolation() ? 2 : 1;
   const unsigned int nnodecl = this->NumCenterlineNodes();
-  const unsigned int nnodetriad = this->NumNode();
+  const unsigned int nnodetriad = this->num_node();
 
   std::vector<double> disp_centerline(3 * numnodalvalues * nnodecl, 0.0);
 
@@ -1273,7 +1273,7 @@ void DRT::ELEMENTS::Beam3r::GetTriadAtXi(
 {
   const unsigned int numnodalvalues = this->hermite_centerline_interpolation() ? 2 : 1;
   const unsigned int nnodecl = this->NumCenterlineNodes();
-  const unsigned int nnodetriad = this->NumNode();
+  const unsigned int nnodetriad = this->num_node();
 
   std::vector<CORE::LINALG::Matrix<3, 1, double>> nodal_rotvecs(nnodetriad);
 
@@ -1338,7 +1338,7 @@ void DRT::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_variations_at_x
 {
   const unsigned int vpernode = this->hermite_centerline_interpolation() ? 2 : 1;
   const unsigned int nnodecl = this->NumCenterlineNodes();
-  const unsigned int nnodetriad = this->NumNode();
+  const unsigned int nnodetriad = this->num_node();
 
   // safety check
   if (static_cast<unsigned int>(Ivar.numRows()) != 6 or
@@ -1456,7 +1456,7 @@ void DRT::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_increments_at_x
 {
   const unsigned int vpernode = this->hermite_centerline_interpolation() ? 2 : 1;
   const unsigned int nnodecl = this->NumCenterlineNodes();
-  const unsigned int nnodetriad = this->NumNode();
+  const unsigned int nnodetriad = this->num_node();
 
   // safety check
   if (static_cast<unsigned int>(Iinc.numRows()) != 6 or
@@ -1694,9 +1694,9 @@ void DRT::ELEMENTS::Beam3r::extract_centerline_dof_values_from_element_state_vec
   const int dofpertriadnode = 3;
   const int dofpercombinode = dofperclnode + dofpertriadnode;
 
-  if (dofvec.size() != dofperclnode * nnodecl + dofpertriadnode * this->NumNode())
+  if (dofvec.size() != dofperclnode * nnodecl + dofpertriadnode * this->num_node())
     FOUR_C_THROW("size mismatch: expected %d values for element state vector and got %d",
-        dofperclnode * nnodecl + dofpertriadnode * this->NumNode(), dofvec.size());
+        dofperclnode * nnodecl + dofpertriadnode * this->num_node(), dofvec.size());
 
   // get current values for DOFs relevant for centerline interpolation
   for (unsigned int dim = 0; dim < 3; ++dim)
@@ -1809,7 +1809,7 @@ void DRT::ELEMENTS::Beam3r::extract_rot_vec_dof_values(const std::vector<double>
 void DRT::ELEMENTS::Beam3r::extract_rot_vec_dof_values(const std::vector<double>& dofvec,
     std::vector<CORE::LINALG::Matrix<3, 1, double>>& dofvec_rotvec) const
 {
-  switch (this->NumNode())
+  switch (this->num_node())
   {
     case 2:
     {

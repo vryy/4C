@@ -155,15 +155,15 @@ namespace MAT
 
    private:
     /// return curve defining the transference number
-    int TransNrCurve() const { return params_->transnrcurve_; }
+    int trans_nr_curve() const { return params_->transnrcurve_; }
     /// return curve defining the thermodynamic factor
-    int ThermFacCurve() const { return params_->thermfaccurve_; }
+    int therm_fac_curve() const { return params_->thermfaccurve_; }
 
     /// parameter needed for implemented concentration dependence
-    const std::vector<double>& TransNrParams() const { return params_->transnrpara_; }
+    const std::vector<double>& trans_nr_params() const { return params_->transnrpara_; }
 
     /// parameter needed for implemented concentration dependence
-    const std::vector<double>& ThermFacParams() const { return params_->thermfacpara_; }
+    const std::vector<double>& therm_fac_params() const { return params_->thermfacpara_; }
 
     /// Return quick accessible material parameter data
     CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }

@@ -90,7 +90,7 @@ namespace CORE::Dofsets
     int NumDof(const DRT::Node* node  ///< node, for which you want to know the number of dofs
     ) const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       return dofset_->NumDof(node);
     };
 
@@ -99,7 +99,7 @@ namespace CORE::Dofsets
         const DRT::Element* element  ///< element, for which you want to know the number of dofs
     ) const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       return dofset_->NumDof(element);
     };
 
@@ -108,14 +108,14 @@ namespace CORE::Dofsets
         const DRT::Node& node  ///< node, for which you want to know the number of dofs
     ) const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       return dofset_->NumDofPerNode(node);
     };
 
     /// Get the gid of a dof for given node
     int Dof(const DRT::Node* node, int dof) const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       return dofset_->Dof(node, dof);
     };
 
@@ -123,7 +123,7 @@ namespace CORE::Dofsets
     int Dof(const DRT::Element* element,  ///< element, for which you want the dof positions
         int dof) const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       return dofset_->Dof(element, dof);
     };
 
@@ -131,7 +131,7 @@ namespace CORE::Dofsets
     std::vector<int> Dof(const DRT::Node* node  ///< node, for which you want the dof positions
     ) const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       return dofset_->Dof(node);
     };
 
@@ -141,21 +141,21 @@ namespace CORE::Dofsets
         unsigned nodaldofset  ///< number of nodal dof set of the node (currently !=0 only for XFEM)
     ) const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       dofset_->Dof(dof, node, nodaldofset);
     };
 
     /// Get the gid of all dofs of a element
     std::vector<int> Dof(const DRT::Element* element) const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       return dofset_->Dof(element);
     };
 
     /// Get the gid of all dofs of a node and the location matrix
     void Dof(const DRT::Node* node, std::vector<int>& lm) const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       dofset_->Dof(node, lm);
     };
 
@@ -165,14 +165,14 @@ namespace CORE::Dofsets
         std::vector<int>& lm         ///< already allocated vector to be filled with dof positions
     ) const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       dofset_->Dof(node, startindex, lm);
     };
 
     /// Get the gid of all dofs of a element and the location matrix
     void Dof(const DRT::Element* element, std::vector<int>& lm) const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       dofset_->Dof(element, lm);
     };
 
@@ -183,7 +183,7 @@ namespace CORE::Dofsets
         std::vector<int>& lm    ///< already allocated vector to be filled with DOF positions
     ) const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       dofset_->Dof(element, node, lm);
     };
 
@@ -199,35 +199,35 @@ namespace CORE::Dofsets
     /// Get Number of Global Elements of degree of freedom row map
     int NumGlobalElements() const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       return dofset_->NumGlobalElements();
     };
 
     /// Get degree of freedom row map
-    const Epetra_Map* DofRowMap() const override
+    const Epetra_Map* dof_row_map() const override
     {
-      CheckIsAssigned();
-      return dofset_->DofRowMap();
+      check_is_assigned();
+      return dofset_->dof_row_map();
     };
 
     /// Get degree of freedom column map
     const Epetra_Map* DofColMap() const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       return dofset_->DofColMap();
     };
 
     /// Get maximum GID of degree of freedom row map
     int MaxAllGID() const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       return dofset_->MaxAllGID();
     };
 
     /// Get minimum GID of degree of freedom row map
     int MinAllGID() const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       return dofset_->MinAllGID();
     };
 
@@ -235,20 +235,20 @@ namespace CORE::Dofsets
     /// #static_dofsets_
     int MaxGIDinList(const Epetra_Comm& comm) const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       return dofset_->MaxGIDinList(comm);
     };
 
     /// are the dof maps already initialized?
     bool Initialized() const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       return dofset_->Initialized();
     };
 
    protected:
     /// check if \ref assign_degrees_of_freedom was called on parent dofset
-    void CheckIsAssigned() const;
+    void check_is_assigned() const;
 
     /// pointer to the parent dofset represented by this proxy
     DofSetInterface* dofset_;

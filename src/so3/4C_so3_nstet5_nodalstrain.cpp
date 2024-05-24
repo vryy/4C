@@ -74,13 +74,13 @@ void DRT::ELEMENTS::NStet5Type::element_deformation_gradient(DRT::Discretization
 /*----------------------------------------------------------------------*
  |  pre-evaluation of elements (public)                        gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
+void DRT::ELEMENTS::NStet5Type::pre_evaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStet5Type::PreEvaluate");
+  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStet5Type::pre_evaluate");
 
   // nodal integration for nlnstiff and internal forces only
   // (this method does not compute stresses/strains/element updates/mass matrix)
@@ -176,8 +176,8 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
       force.size(ndofperpatch);
       CORE::LINALG::SerialDenseMatrix* stiffptr = &stiff;
       if (action == "calc_struct_internalforce") stiffptr = nullptr;
-      TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStet5Type::NodalIntegration");
-      NodalIntegration(stiffptr, &force, adjnode, adjele, adjsubele, lm, lmlm, *disp, dis, nullptr,
+      TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStet5Type::nodal_integration");
+      nodal_integration(stiffptr, &force, adjnode, adjele, adjsubele, lm, lmlm, *disp, dis, nullptr,
           nullptr, INPAR::STR::stress_none, INPAR::STR::strain_none);
     }
     else if (action == "calc_struct_stress")
@@ -188,7 +188,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
           CORE::UTILS::GetAsEnum<INPAR::STR::StrainType>(p, "iostrain", INPAR::STR::strain_none);
       std::vector<double> nodalstress(6);
       std::vector<double> nodalstrain(6);
-      NodalIntegration(nullptr, nullptr, adjnode, adjele, adjsubele, lm, lmlm, *disp, dis,
+      nodal_integration(nullptr, nullptr, adjnode, adjele, adjsubele, lm, lmlm, *disp, dis,
           &nodalstress, &nodalstrain, iostress, iostrain);
 
       const int lid = dis.NodeRowMap()->LID(nodeLid);
@@ -212,7 +212,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
 
     if (assemblemat1)
     {
-      TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStet5Type::PreEvaluate Assembly");
+      TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStet5Type::pre_evaluate Assembly");
       std::vector<int> lrlm;
       std::vector<int> lclm;
 
@@ -388,7 +388,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
 /*----------------------------------------------------------------------*
  |  do nodal integration (public)                              gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5Type::NodalIntegration(CORE::LINALG::SerialDenseMatrix* stiff,
+void DRT::ELEMENTS::NStet5Type::nodal_integration(CORE::LINALG::SerialDenseMatrix* stiff,
     CORE::LINALG::SerialDenseVector* force, std::map<int, DRT::Node*>& adjnode,
     std::vector<DRT::ELEMENTS::NStet5*>& adjele, std::map<int, std::vector<int>>& adjsubele,
     std::vector<int>& lm, std::vector<std::vector<std::vector<int>>>& lmlm,
@@ -396,7 +396,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(CORE::LINALG::SerialDenseMatrix
     std::vector<double>* nodalstrain, const INPAR::STR::StressType iostress,
     const INPAR::STR::StrainType iostrain)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStet5Type::NodalIntegration");
+  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStet5Type::nodal_integration");
   //  typedef Sacado::Fad::DFad<double> FAD; // for first derivs
   //  typedef Sacado::Fad::DFad<Sacado::Fad::DFad<double> > FADFAD; // for second derivs
 
@@ -458,7 +458,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(CORE::LINALG::SerialDenseMatrix
       //     CORE::LINALG::Matrix<3,3,FADFAD> tF(true);
       //     F = ele->BuildF(eledispmat,ele->SubNxyz(subeleid));
       CORE::LINALG::Matrix<3, 3> F = ele->SubF(subeleid);
-      //     tF = TBuildF(teledispmat,ele->SubNxyz(subeleid));
+      //     tF = t_build_f(teledispmat,ele->SubNxyz(subeleid));
 
       // add 1/3 of subelement material volume to this node
       const double V = ele->SubV(subeleid) / 3.0;
@@ -573,9 +573,9 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(CORE::LINALG::SerialDenseMatrix
   if (iostrain != INPAR::STR::strain_none)
   {
 #ifndef PUSO_NSTET5
-    StrainOutput(iostrain, *nodalstrain, Fnode, Fnode.Determinant(), 1.0, 1.0 - ALPHA_NSTET5);
+    strain_output(iostrain, *nodalstrain, Fnode, Fnode.Determinant(), 1.0, 1.0 - ALPHA_NSTET5);
 #else
-    StrainOutput(iostrain, *nodalstrain, Fnode, glstrain, 1.0 - ALPHA_NSTET5);
+    strain_output(iostrain, *nodalstrain, Fnode, glstrain, 1.0 - ALPHA_NSTET5);
 #endif
   }
 
@@ -591,7 +591,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(CORE::LINALG::SerialDenseMatrix
     Teuchos::RCP<CORE::MAT::Material> mat = adjele[0]->Material();
     // EleGID is set to -1 errorcheck is performed in
     // MAT::Evaluate. I.e if we have elementwise mat params you will catch an error
-    SelectMaterial(mat, stress, cmat, density, glstrain, Fnode, 0, -1);
+    select_material(mat, stress, cmat, density, glstrain, Fnode, 0, -1);
   }
   else
   {
@@ -612,7 +612,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(CORE::LINALG::SerialDenseMatrix
       Teuchos::RCP<CORE::MAT::Material> mat = actele->Material();
       // EleGID is set to -1 errorcheck is performed in
       // MAT::Evaluate. I.e if we have elementwise mat params you will catch an error
-      SelectMaterial(mat, stressele, cmatele, density, glstrain, Fnode, 0, -1);
+      select_material(mat, stressele, cmatele, density, glstrain, Fnode, 0, -1);
       cmat.Update(V, cmatele, 1.0);
       stress.Update(V, stressele, 1.0);
     }  // for (int ele=0; ele<neleinpatch; ++ele)
@@ -631,7 +631,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(CORE::LINALG::SerialDenseMatrix
     CORE::LINALG::Matrix<6, 6> cmatvol(true);
 
     // compute deviatoric stress and tangent from total stress and tangent
-    DevStressTangent(stressdev, cmatdev, cmat, stress, cauchygreen);
+    dev_stress_tangent(stressdev, cmatdev, cmat, stress, cauchygreen);
 
     // compute volumetric stress and tangent
     stressvol.Update(-1.0, stressdev, 1.0, stress, 0.0);
@@ -651,7 +651,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(CORE::LINALG::SerialDenseMatrix
   // stress output
   if (iostress != INPAR::STR::stress_none)
   {
-    StressOutput(iostress, *nodalstress, stress, Fnode, Fnode.Determinant());
+    stress_output(iostress, *nodalstress, stress, Fnode, Fnode.Determinant());
   }
   //----------------------------------------------------- internal forces
   if (force)
@@ -706,7 +706,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(CORE::LINALG::SerialDenseMatrix
 /*----------------------------------------------------------------------*
  | material laws for NStet5 (protected)                        gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5Type::SelectMaterial(const Teuchos::RCP<CORE::MAT::Material>& mat,
+void DRT::ELEMENTS::NStet5Type::select_material(const Teuchos::RCP<CORE::MAT::Material>& mat,
     CORE::LINALG::Matrix<6, 1>& stress, CORE::LINALG::Matrix<6, 6>& cmat, double& density,
     CORE::LINALG::Matrix<6, 1>& glstrain, CORE::LINALG::Matrix<3, 3>& defgrd, const int gp,
     const int eleGID)
@@ -747,12 +747,12 @@ void DRT::ELEMENTS::NStet5Type::SelectMaterial(const Teuchos::RCP<CORE::MAT::Mat
 
   /*--------------------------------------------------------------------*/
   return;
-}  // DRT::ELEMENTS::NStet5::SelectMaterial
+}  // DRT::ELEMENTS::NStet5::select_material
 
 /*----------------------------------------------------------------------*
  |  compute deviatoric tangent and stresses (private/static)   gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5Type::DevStressTangent(CORE::LINALG::Matrix<6, 1>& Sdev,
+void DRT::ELEMENTS::NStet5Type::dev_stress_tangent(CORE::LINALG::Matrix<6, 1>& Sdev,
     CORE::LINALG::Matrix<6, 6>& CCdev, CORE::LINALG::Matrix<6, 6>& CC,
     const CORE::LINALG::Matrix<6, 1>& S, const CORE::LINALG::Matrix<3, 3>& C)
 {
@@ -836,7 +836,7 @@ void DRT::ELEMENTS::NStet5Type::DevStressTangent(CORE::LINALG::Matrix<6, 1>& Sde
 /*----------------------------------------------------------------------*
  |                                                             gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5Type::StrainOutput(const INPAR::STR::StrainType iostrain,
+void DRT::ELEMENTS::NStet5Type::strain_output(const INPAR::STR::StrainType iostrain,
     std::vector<double>& nodalstrain, CORE::LINALG::Matrix<3, 3>& F, const double& detF,
     const double volweight, const double devweight)
 {
@@ -922,7 +922,7 @@ void DRT::ELEMENTS::NStet5Type::StrainOutput(const INPAR::STR::StrainType iostra
 /*----------------------------------------------------------------------*
  |                                                             gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5Type::StrainOutput(const INPAR::STR::StrainType iostrain,
+void DRT::ELEMENTS::NStet5Type::strain_output(const INPAR::STR::StrainType iostrain,
     std::vector<double>& nodalstrain, CORE::LINALG::Matrix<3, 3>& F,
     CORE::LINALG::Matrix<6, 1>& glstrain, const double weight)
 {
@@ -978,7 +978,7 @@ void DRT::ELEMENTS::NStet5Type::StrainOutput(const INPAR::STR::StrainType iostra
 /*----------------------------------------------------------------------*
  |                                                             gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5Type::StressOutput(const INPAR::STR::StressType iostress,
+void DRT::ELEMENTS::NStet5Type::stress_output(const INPAR::STR::StressType iostress,
     std::vector<double>& nodalstress, CORE::LINALG::Matrix<6, 1>& stress,
     CORE::LINALG::Matrix<3, 3>& F, const double& detF)
 {

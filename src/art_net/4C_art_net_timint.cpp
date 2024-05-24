@@ -101,7 +101,7 @@ void ART::TimInt::Integrate(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterLis
         "defined\n");
   }
   // Prepare the loop
-  PrepareTimeLoop();
+  prepare_time_loop();
 
   TimeLoop(CoupledTo3D, CouplingParams);
 
@@ -123,7 +123,7 @@ void ART::TimInt::Integrate(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterLis
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::TimInt::PrepareTimeLoop()
+void ART::TimInt::prepare_time_loop()
 {
   // do nothing
   return;
@@ -151,7 +151,7 @@ void ART::TimInt::TimeLoop(
 
   while (step_ < stepmax_ and time_ < maxtime_)
   {
-    PrepareTimeStep();
+    prepare_time_step();
     // -------------------------------------------------------------------
     //                       output to screen
     // -------------------------------------------------------------------
@@ -223,7 +223,7 @@ void ART::TimInt::TimeLoop(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::TimInt::PrepareTimeStep()
+void ART::TimInt::prepare_time_step()
 {
   // -------------------------------------------------------------------
   //              set time dependent parameters

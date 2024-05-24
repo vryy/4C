@@ -171,12 +171,12 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
 
     // REMARK: standard fluid could also step into this routine, as a special case! (remove
     // FOUR_C_THROW)
-    if (!dis->Filled()) dis->FillComplete();
+    if (!dis->Filled()) dis->fill_complete();
 
     return;
   }
 
-  if (!xdis->Filled()) xdis->FillComplete();
+  if (!xdis->Filled()) xdis->fill_complete();
 
   const Epetra_Map* noderowmap = xdis->NodeRowMap();
   if (noderowmap == nullptr) FOUR_C_THROW("we expect a fill-complete call before!");
@@ -208,11 +208,11 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
     Teuchos::RCP<DRT::Discretization> embedded_dis, const std::string& embedded_cond_name,
     int numdof) const
 {
-  if (!embedded_dis->Filled()) embedded_dis->FillComplete();
+  if (!embedded_dis->Filled()) embedded_dis->fill_complete();
 
   Teuchos::RCP<DRT::DiscretizationXFEM> xdis =
       Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(dis, true);
-  if (!xdis->Filled()) xdis->FillComplete();
+  if (!xdis->Filled()) xdis->fill_complete();
 
   // get fluid mesh conditions: hereby we specify standalone embedded discretizations
   std::vector<CORE::Conditions::Condition*> conditions;
@@ -238,9 +238,9 @@ int XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
     Teuchos::RCP<DRT::Discretization> target_dis,
     const std::vector<CORE::Conditions::Condition*>& boundary_conds) const
 {
-  if (!target_dis->Filled()) target_dis->FillComplete();
+  if (!target_dis->Filled()) target_dis->fill_complete();
 
-  if (!src_dis->Filled()) src_dis->FillComplete();
+  if (!src_dis->Filled()) src_dis->fill_complete();
 
   // get the number of DoF's per node
   int gid_node = src_dis->NodeRowMap()->MinMyGID();
@@ -285,13 +285,13 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_condition(
   CORE::Conditions::FindConditionObjects(
       *sourcedis, sourcenodes, sourcegnodes, sourceelements, conditions);
 
-  SplitDiscretization(
+  split_discretization(
       sourcedis, targetdis, sourcenodes, sourcegnodes, sourceelements, conditions_to_copy);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::UTILS::XFEMDiscretizationBuilder::SplitDiscretization(
+void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
     Teuchos::RCP<DRT::Discretization> sourcedis, Teuchos::RCP<DRT::Discretization> targetdis,
     const std::map<int, DRT::Node*>& sourcenodes, const std::map<int, DRT::Node*>& sourcegnodes,
     const std::map<int, Teuchos::RCP<DRT::Element>>& sourceelements,
@@ -310,7 +310,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SplitDiscretization(
   {
     if (sourceele_iter->second->Owner() == myrank)
     {
-      targetdis->AddElement(Teuchos::rcp(sourceele_iter->second->Clone(), false));
+      targetdis->add_element(Teuchos::rcp(sourceele_iter->second->Clone(), false));
     }
   }
 
@@ -353,7 +353,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SplitDiscretization(
     for (unsigned i = 0; i < conds.size(); ++i)
     {
       Teuchos::RCP<CORE::Conditions::Condition> cond_to_copy =
-          SplitCondition(conds[i], targetnodecolvec, targetdis->Comm());
+          split_condition(conds[i], targetnodecolvec, targetdis->Comm());
       if (not cond_to_copy.is_null()) targetdis->SetCondition(*conditername, cond_to_copy);
     }
   }
@@ -371,7 +371,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SplitDiscretization(
     if (sourceelements.find(source_ele_gid) != sourceelements.end()) continue;
     DRT::Element* source_ele = sourcedis->gElement(source_ele_gid);
     const int* nid = source_ele->NodeIds();
-    for (unsigned i = 0; i < static_cast<unsigned>(source_ele->NumNode()); ++i)
+    for (unsigned i = 0; i < static_cast<unsigned>(source_ele->num_node()); ++i)
     {
       // Remove all nodes from the condition sets, which should stay in
       // the source discretization, since they belong to elements
@@ -425,7 +425,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SplitDiscretization(
     sourcedis->GetCondition(*conditername, conds);
     std::vector<Teuchos::RCP<CORE::Conditions::Condition>> src_conds(conds.size(), Teuchos::null);
     for (unsigned i = 0; i < conds.size(); ++i)
-      src_conds[i] = SplitCondition(conds[i], othernodecolvec, sourcedis->Comm());
+      src_conds[i] = split_condition(conds[i], othernodecolvec, sourcedis->Comm());
     sourcedis->ReplaceConditions(*conditername, src_conds);
   }
   // re-partioning
@@ -466,7 +466,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::Redistribute(Teuchos::RCP<DRT::Disc
   dis->ExportColumnNodes(*nodecolmap);
   dis->export_column_elements(*coleles);
 
-  dis->FillComplete();
+  dis->fill_complete();
 }
 
 /*----------------------------------------------------------------------------*
@@ -502,11 +502,11 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_boundary_co
       FOUR_C_THROW(
           "Dynamic cast failed! The src element %d is no DRT::FaceElement!", cit->second->Id());
     // get the parent element
-    DRT::Element* src_ele = src_face_element->ParentElement();
+    DRT::Element* src_ele = src_face_element->parent_element();
     int src_ele_gid = src_face_element->ParentElementId();
     src_elements[src_ele_gid] = Teuchos::rcp<DRT::Element>(src_ele, false);
     const int* n = src_ele->NodeIds();
-    for (unsigned i = 0; i < static_cast<unsigned>(src_ele->NumNode()); ++i)
+    for (unsigned i = 0; i < static_cast<unsigned>(src_ele->num_node()); ++i)
     {
       const int gid = n[i];
       if (sourcedis->HaveGlobalNode(gid))
@@ -521,14 +521,14 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_boundary_co
     }
   }
 
-  SplitDiscretization(
+  split_discretization(
       sourcedis, targetdis, src_my_gnodes, src_gnodes, src_elements, conditions_to_copy);
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Conditions::Condition> XFEM::UTILS::XFEMDiscretizationBuilder::SplitCondition(
+Teuchos::RCP<CORE::Conditions::Condition> XFEM::UTILS::XFEMDiscretizationBuilder::split_condition(
     const CORE::Conditions::Condition* src_cond, const std::vector<int>& nodecolvec,
     const Epetra_Comm& comm) const
 {

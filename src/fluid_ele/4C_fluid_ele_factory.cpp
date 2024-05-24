@@ -36,64 +36,64 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImpl(
   {
     case CORE::FE::CellType::hex8:
     {
-      return DefineProblemType<CORE::FE::CellType::hex8>(problem);
+      return define_problem_type<CORE::FE::CellType::hex8>(problem);
     }
     case CORE::FE::CellType::hex20:
     {
-      return DefineProblemType<CORE::FE::CellType::hex20>(problem);
+      return define_problem_type<CORE::FE::CellType::hex20>(problem);
     }
     case CORE::FE::CellType::hex27:
     {
-      return DefineProblemType<CORE::FE::CellType::hex27>(problem);
+      return define_problem_type<CORE::FE::CellType::hex27>(problem);
     }
     case CORE::FE::CellType::tet4:
     {
-      return DefineProblemType<CORE::FE::CellType::tet4>(problem);
+      return define_problem_type<CORE::FE::CellType::tet4>(problem);
     }
     case CORE::FE::CellType::tet10:
     {
-      return DefineProblemType<CORE::FE::CellType::tet10>(problem);
+      return define_problem_type<CORE::FE::CellType::tet10>(problem);
     }
     case CORE::FE::CellType::wedge6:
     {
-      return DefineProblemType<CORE::FE::CellType::wedge6>(problem);
+      return define_problem_type<CORE::FE::CellType::wedge6>(problem);
     }
     case CORE::FE::CellType::wedge15:
     {
-      return DefineProblemType<CORE::FE::CellType::wedge15>(problem);
+      return define_problem_type<CORE::FE::CellType::wedge15>(problem);
     }
     case CORE::FE::CellType::pyramid5:
     {
-      return DefineProblemType<CORE::FE::CellType::pyramid5>(problem);
+      return define_problem_type<CORE::FE::CellType::pyramid5>(problem);
     }
     case CORE::FE::CellType::quad4:
     {
-      return DefineProblemType<CORE::FE::CellType::quad4>(problem);
+      return define_problem_type<CORE::FE::CellType::quad4>(problem);
     }
     case CORE::FE::CellType::quad8:
     {
-      return DefineProblemType<CORE::FE::CellType::quad8>(problem);
+      return define_problem_type<CORE::FE::CellType::quad8>(problem);
     }
     case CORE::FE::CellType::quad9:
     {
-      return DefineProblemType<CORE::FE::CellType::quad9>(problem);
+      return define_problem_type<CORE::FE::CellType::quad9>(problem);
     }
     case CORE::FE::CellType::tri3:
     {
-      return DefineProblemType<CORE::FE::CellType::tri3>(problem);
+      return define_problem_type<CORE::FE::CellType::tri3>(problem);
     }
     case CORE::FE::CellType::tri6:
     {
-      return DefineProblemType<CORE::FE::CellType::tri6>(problem);
+      return define_problem_type<CORE::FE::CellType::tri6>(problem);
     }
     // Nurbs support
     case CORE::FE::CellType::nurbs9:
     {
-      return DefineProblemType<CORE::FE::CellType::nurbs9>(problem);
+      return define_problem_type<CORE::FE::CellType::nurbs9>(problem);
     }
     case CORE::FE::CellType::nurbs27:
     {
-      return DefineProblemType<CORE::FE::CellType::nurbs27>(problem);
+      return define_problem_type<CORE::FE::CellType::nurbs27>(problem);
     }
     // no 1D elements
     default:
@@ -108,7 +108,7 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImpl(
  |                                                 (public) rasthofer Jan13 |
  *--------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType(
+DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::define_problem_type(
     std::string problem)
 {
   if (problem == "std")

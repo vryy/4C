@@ -456,7 +456,7 @@ void MAT::GrowthRemodelElastHyper::Setup(int numgp, INPUT::LineDefinition* lined
   for (auto& p : potsumrf_) nr_rf_tot_ += p->GetNumFibers();
 }
 
-void MAT::GrowthRemodelElastHyper::PostSetup(Teuchos::ParameterList& params, const int eleGID)
+void MAT::GrowthRemodelElastHyper::post_setup(Teuchos::ParameterList& params, const int eleGID)
 {
   anisotropy_.read_anisotropy_from_parameter_list(params);
 }
@@ -474,17 +474,17 @@ void MAT::GrowthRemodelElastHyper::setup_axi_cir_rad_structural_tensor(
     CORE::LINALG::Matrix<3, 1> dir;
 
     // Axial direction
-    ReadDir(linedef, "AXI", dir);
+    read_dir(linedef, "AXI", dir);
     for (int i = 0; i < 3; ++i) radaxicirc_(i, 1) = dir(i);
     aax_m_.MultiplyNT(1.0, dir, dir, 0.0);
 
     // Circumferential direction
-    ReadDir(linedef, "CIR", dir);
+    read_dir(linedef, "CIR", dir);
     for (int i = 0; i < 3; ++i) radaxicirc_(i, 2) = dir(i);
     acir_m_.MultiplyNT(1.0, dir, dir, 0.0);
 
     // Radial direction
-    ReadDir(linedef, "RAD", dir);
+    read_dir(linedef, "RAD", dir);
     for (int i = 0; i < 3; ++i) radaxicirc_(i, 0) = dir(i);
     arad_m_.MultiplyNT(1.0, dir, dir, 0.0);
 
@@ -526,7 +526,7 @@ void MAT::GrowthRemodelElastHyper::setup_aniso_growth_tensors()
 /*----------------------------------------------------------------------*
  * Function which reads in the AXI CIR RAD directions
  *----------------------------------------------------------------------*/
-void MAT::GrowthRemodelElastHyper::ReadDir(
+void MAT::GrowthRemodelElastHyper::read_dir(
     INPUT::LineDefinition* linedef, const std::string& specifier, CORE::LINALG::Matrix<3, 1>& dir)
 {
   std::vector<double> fiber;
@@ -629,7 +629,7 @@ void MAT::GrowthRemodelElastHyper::Update(CORE::LINALG::Matrix<3, 3> const& defg
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::GrowthRemodelElastHyper::EvaluatePrestretch(
+void MAT::GrowthRemodelElastHyper::evaluate_prestretch(
     CORE::LINALG::Matrix<3, 3> const* const defgrd, int const gp, int const eleGID)
 {
   // setup prestretch of elastin in axial and circumferential direction
@@ -741,7 +741,7 @@ void MAT::GrowthRemodelElastHyper::EvaluatePrestretch(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::GrowthRemodelElastHyper::SetupGR3D(CORE::LINALG::Matrix<3, 3> const* const defgrd,
+void MAT::GrowthRemodelElastHyper::setup_g_r3_d(CORE::LINALG::Matrix<3, 3> const* const defgrd,
     Teuchos::ParameterList& params, const double dt, const int gp, const int eleGID)
 {
   CORE::LINALG::Matrix<3, 1> axdir(true);
@@ -773,7 +773,7 @@ void MAT::GrowthRemodelElastHyper::SetupGR3D(CORE::LINALG::Matrix<3, 3> const* c
   // a cylindrical geometry.
   //       The principle of the prestretching routine can easily be adapted to other materials or
   //       general geometries!!!
-  EvaluatePrestretch(defgrd, gp, eleGID);
+  evaluate_prestretch(defgrd, gp, eleGID);
 }
 
 
@@ -792,7 +792,7 @@ void MAT::GrowthRemodelElastHyper::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
 
   if (setup_[gp] == 1)
   {
-    SetupGR3D(defgrd, params, dt, gp, eleGID);
+    setup_g_r3_d(defgrd, params, dt, gp, eleGID);
     setup_[gp] = 0;
   }
 
@@ -879,7 +879,7 @@ void MAT::GrowthRemodelElastHyper::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
       case 1:
       {
         static CORE::LINALG::SerialDenseMatrix K_T(2 * nr_rf_tot_, 2 * nr_rf_tot_, true);
-        SolveForRhoLambr(K_T, FgM, iFgM, dFgdrhoM, diFgdrhoM, defgrd, dt, gp, eleGID);
+        solve_for_rho_lambr(K_T, FgM, iFgM, dFgdrhoM, diFgdrhoM, defgrd, dt, gp, eleGID);
 
         // split solution vector in dlambda_r/dC and drho/dC
         static std::vector<CORE::LINALG::Matrix<1, 6>> drhodC(
@@ -932,7 +932,7 @@ void MAT::GrowthRemodelElastHyper::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::GrowthRemodelElastHyper::SolveForRhoLambr(CORE::LINALG::SerialDenseMatrix& K_T,
+void MAT::GrowthRemodelElastHyper::solve_for_rho_lambr(CORE::LINALG::SerialDenseMatrix& K_T,
     CORE::LINALG::Matrix<3, 3>& FgM, CORE::LINALG::Matrix<3, 3>& iFgM,
     CORE::LINALG::Matrix<3, 3>& dFgdrhoM, CORE::LINALG::Matrix<3, 3>& diFgdrhoM,
     CORE::LINALG::Matrix<3, 3> const* const defgrd, double const& dt, int const gp,
@@ -1119,7 +1119,7 @@ void MAT::GrowthRemodelElastHyper::evaluate_stress_cmat_iso(
 
   evaluate_isotropic_princ_elast(stressiso, cmatiso, iCinv, iCinCiCinv, iCv, gamma, delta);
 
-  EvaluatedSdiFg(dSdiFg, gamma, delta, iFinM, iCinCM, iCinv, CiFin9x1, CiFinCe9x1, iCinCiCinv,
+  evaluated_sdi_fg(dSdiFg, gamma, delta, iFinM, iCinCM, iCinv, CiFin9x1, CiFinCe9x1, iCinCiCinv,
       CiFiniCe9x1, iCv, iFinCeM, gp);
 }
 
@@ -1216,7 +1216,7 @@ void MAT::GrowthRemodelElastHyper::evaluate_invariant_derivatives(
   // derivatives of decoupled (volumetric or isochoric) materials weighted with their mass fraction
   // in the constraint mixture
   static CORE::LINALG::Matrix<3, 1> modinv(true);
-  InvariantsModified(modinv, prinv);
+  invariants_modified(modinv, prinv);
   CORE::LINALG::Matrix<3, 1> dPmodI(true);
   CORE::LINALG::Matrix<6, 1> ddPmodII(true);
   for (const auto& p : potsumeliso_)
@@ -1236,13 +1236,13 @@ void MAT::GrowthRemodelElastHyper::evaluate_invariant_derivatives(
   ddPmodII.Update(cur_rho_el_[gp], ddPgrowthII, 1.0);
 
   // convert decoupled derivatives to principal derivatives
-  ConvertModToPrinc(prinv, dPmodI, ddPmodII, dPIw, ddPIIw);
+  convert_mod_to_princ(prinv, dPmodI, ddPmodII, dPIw, ddPIIw);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::GrowthRemodelElastHyper::InvariantsModified(
+void MAT::GrowthRemodelElastHyper::invariants_modified(
     CORE::LINALG::Matrix<3, 1>& modinv, CORE::LINALG::Matrix<3, 1> const& prinv) const
 {
   // 1st invariant, trace
@@ -1258,7 +1258,7 @@ void MAT::GrowthRemodelElastHyper::InvariantsModified(
  * Converts derivatives with respect to modified invariants in derivatives
  * with respect to principal invariants                                 */
 /*----------------------------------------------------------------------*/
-void MAT::GrowthRemodelElastHyper::ConvertModToPrinc(CORE::LINALG::Matrix<3, 1> const& prinv,
+void MAT::GrowthRemodelElastHyper::convert_mod_to_princ(CORE::LINALG::Matrix<3, 1> const& prinv,
     CORE::LINALG::Matrix<3, 1> const& dPmodI, CORE::LINALG::Matrix<6, 1> const& ddPmodII,
     CORE::LINALG::Matrix<3, 1>& dPI, CORE::LINALG::Matrix<6, 1>& ddPII) const
 {
@@ -1323,7 +1323,7 @@ void MAT::GrowthRemodelElastHyper::evaluate_isotropic_princ_elast(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::GrowthRemodelElastHyper::EvaluatedSdiFg(CORE::LINALG::Matrix<6, 9>& dSdiFg,
+void MAT::GrowthRemodelElastHyper::evaluated_sdi_fg(CORE::LINALG::Matrix<6, 9>& dSdiFg,
     CORE::LINALG::Matrix<3, 1> const& gamma, CORE::LINALG::Matrix<8, 1> const& delta,
     CORE::LINALG::Matrix<3, 3> const& iFinM, CORE::LINALG::Matrix<3, 3> const& iCinCM,
     CORE::LINALG::Matrix<6, 1> const& iCinv, CORE::LINALG::Matrix<9, 1> const& CiFin9x1,
@@ -1571,7 +1571,7 @@ void MAT::GrowthRemodelElastHyper::evaluate_growth_def_grad(CORE::LINALG::Matrix
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::GrowthRemodelElastHyper::SetupGR2D(
+void MAT::GrowthRemodelElastHyper::setup_g_r2_d(
     Teuchos::ParameterList& params, const double dt, const int gp)
 {
   CORE::LINALG::Matrix<3, 1> axdir(true);
@@ -1658,7 +1658,7 @@ double MAT::GrowthRemodelElastHyper::evaluate_membrane_thickness_stretch(
 
   if (setup_[gp] == 1)
   {
-    SetupGR2D(params, dt, gp);
+    setup_g_r2_d(params, dt, gp);
     setup_[gp] = 0;
   }
 

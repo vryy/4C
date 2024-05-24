@@ -58,7 +58,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::SphereBeamLinking()
  *-------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::Setup()
 {
-  CheckInit();
+  check_init();
 
   // construct, init and setup data container for crosslinking
   spherebeamlinking_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::SphereBeamLinkingParams());
@@ -72,7 +72,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::Setup()
       DiscretPtr(), spherebeamlinking_params_ptr_);
 
   // build runtime visualization output writer
-  if (GInOutput().get_runtime_vtp_output_params() != Teuchos::null) InitOutputRuntime();
+  if (GInOutput().get_runtime_vtp_output_params() != Teuchos::null) init_output_runtime();
 
   // set flag
   issetup_ = true;
@@ -80,9 +80,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::Setup()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::PostSetup()
+void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::post_setup()
 {
-  CheckInitSetup();
+  check_init_setup();
   // nothing to do (yet)
 }
 
@@ -91,7 +91,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::PostSetup()
 void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::init_submodel_dependencies(
     Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> const submodelmap)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // init pointer to crosslinker submodel
   STR::MODELEVALUATOR::BeamInteraction::Map::const_iterator miter;
@@ -106,7 +106,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::init_submodel_depend
  *-------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::Reset()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // reset crosslinker pairs
   int unsigned const numrowsphereeles = ele_type_map_extractor_ptr()->SphereMap()->NumMyElements();
@@ -166,9 +166,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::Reset()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::EvaluateForce()
+bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_force()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // force and moment exerted on the two connection sites due to the mechanical connection
   std::vector<CORE::LINALG::SerialDenseVector> bspotforce(2, CORE::LINALG::SerialDenseVector(6));
@@ -200,7 +200,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::EvaluateForce()
       }
 
       // evaluate beam linkage object to get forces of binding spots
-      elepairptr->EvaluateForce(bspotforce[0], bspotforce[1]);
+      elepairptr->evaluate_force(bspotforce[0], bspotforce[1]);
 
       // apply forces on binding spots to parent elements
       // and get their discrete element force vectors
@@ -221,9 +221,9 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::EvaluateForce()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::EvaluateStiff()
+bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_stiff()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   /* linearizations, i.e. stiffness contributions due to forces on the two
    * connection sites due to the mechanical connection */
@@ -261,7 +261,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::EvaluateStiff()
       }
 
       // evaluate beam linkage object to get linearizations of forces on binding spots
-      elepairptr->EvaluateStiff(
+      elepairptr->evaluate_stiff(
           bspotstiff[0][0], bspotstiff[0][1], bspotstiff[1][0], bspotstiff[1][1]);
 
       // apply linearizations to parent elements and get their discrete element stiffness matrices
@@ -282,9 +282,9 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::EvaluateStiff()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::EvaluateForceStiff()
+bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_force_stiff()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // force and moment exerted on the two connection sites due to the mechanical connection
   std::vector<CORE::LINALG::SerialDenseVector> bspotforce(2, CORE::LINALG::SerialDenseVector(6));
@@ -326,7 +326,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::EvaluateForceStiff()
       }
 
       // evaluate beam linkage object to get forces on binding spots
-      elepairptr->EvaluateForceStiff(bspotforce[0], bspotforce[1], bspotstiff[0][0],
+      elepairptr->evaluate_force_stiff(bspotforce[0], bspotforce[1], bspotstiff[0][0],
           bspotstiff[0][1], bspotstiff[1][0], bspotstiff[1][1]);
 
       // apply forces on binding spots and corresponding linearizations to parent elements
@@ -351,14 +351,14 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::EvaluateForceStiff()
  *-------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UpdateStepState(const double& timefac_n)
 {
-  CheckInitSetup();
+  check_init_setup();
 }
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
 bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::pre_update_step_element(
     bool beam_redist)
 {
-  CheckInitSetup();
+  check_init_setup();
   // not repartition of binning discretization necessary
   return false;
 }
@@ -368,7 +368,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::pre_update_step_elem
 void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UpdateStepElement(
     bool repartition_was_done)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // some screen output ( 0 = num_linker, 1 = num_newlinker, 2 = num_dissolved)
   std::vector<int> num_local(3, 0);
@@ -400,7 +400,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UpdateStepElement(
   }
 
   // consider sphere linker contraction
-  UpdateLinkerLength();
+  update_linker_length();
 
   // build sum over all procs
   MPI_Reduce(num_local.data(), num_global.data(), 3, MPI_INT, MPI_SUM, 0,
@@ -420,7 +420,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UpdateStepElement(
  *-------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::post_update_step_element()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   //  std::set<int> spherebingids;
   //  int spheregid = -1;
@@ -443,10 +443,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::post_update_step_ele
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-std::map<STR::EnergyType, double> BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::GetEnergy()
-    const
+std::map<STR::EnergyType, double>
+BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::get_energy() const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   std::map<STR::EnergyType, double> sp_beam_link_energies;
 
@@ -474,23 +474,23 @@ std::map<STR::EnergyType, double> BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeam
 void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::OutputStepState(
     IO::DiscretizationWriter& iowriter) const
 {
-  CheckInitSetup();
+  check_init_setup();
 }
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::runtime_output_step_state() const
 {
-  CheckInitSetup();
+  check_init_setup();
 
-  if (visualization_manager_ptr_ != Teuchos::null) WriteOutputRuntime();
+  if (visualization_manager_ptr_ != Teuchos::null) write_output_runtime();
 }
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::ResetStepState()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // in case time step is same as structure time step, update it
   spherebeamlinking_params_ptr_->ResetTimeStep((*GState().GetDeltaTime())[0]);
@@ -501,7 +501,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::ResetStepState()
 void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::WriteRestart(
     IO::DiscretizationWriter& ia_writer, IO::DiscretizationWriter& bin_writer) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // as bonds are stored in rigid sphere element, nothing to do here
 }
@@ -515,10 +515,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::PreReadRestart()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::ReadRestart(
+void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::read_restart(
     IO::DiscretizationReader& ia_reader, IO::DiscretizationReader& bin_reader)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // as bonds are stored in rigid sphere element, nothing to do here
 }
@@ -543,7 +543,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::AddBinsToBinColMap(
 void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::
     add_bins_with_relevant_content_for_ia_discret_col_map(std::set<int>& colbins) const
 {
-  CheckInitSetup();
+  check_init_setup();
   // empty
 }
 
@@ -595,9 +595,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::get_half_interaction
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::InitOutputRuntime()
+void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::init_output_runtime()
 {
-  CheckInit();
+  check_init();
 
   visualization_manager_ptr_ = Teuchos::rcp(new IO::VisualizationManager(
       IO::VisualizationParametersFactory(
@@ -608,9 +608,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::InitOutputRuntime()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::WriteOutputRuntime() const
+void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::write_output_runtime() const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // get number of linker on current proc
   unsigned int num_row_points = 0;
@@ -712,7 +712,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::find_and_store_neigh
       "BEAMINTERACTION::SUBMODELEVALUATOR::"
       "SphereBeamLinking::find_and_store_neighboring_elements");
 
-  CheckInitSetup();
+  check_init_setup();
 
   std::unordered_set<int> tobebonded;
 
@@ -768,7 +768,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::check_feasibility_of
     std::unordered_set<int>& tobebonded,
     std::map<int, std::vector<std::pair<int, int>>>& newlinks) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   int numnewbondsthisstep = 0;
 
@@ -913,7 +913,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::check_feasibility_of
 void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::create_beam_to_sphere_joint(
     std::map<int, std::vector<std::pair<int, int>>> const& newlinks)
 {
-  CheckInitSetup();
+  check_init_setup();
 
 
   // loop over cells
@@ -988,7 +988,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::create_beam_to_spher
 void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::unbind_sphere_beam_bonds(
     int& num_dissolved)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // safety check
   if (spherebeamlinking_params_ptr_->DeltaTime() < 1.0e-8)
@@ -1041,7 +1041,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::unbind_sphere_beam_b
 
     // dissolve all bonds
     for (unsigned int i_td = 0; i_td < to_dissolve.size(); ++i_td)
-      sphere->DissolveBond(to_dissolve[i_td]);
+      sphere->dissolve_bond(to_dissolve[i_td]);
   }
 }
 
@@ -1051,7 +1051,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::
     calc_force_dependent_catch_slip_bond_unbind_probability(
         Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> linkelepairptr, double& p_unbind)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // Note: this needs to come after a contraction was equilibrated by the network. Doing this
   // directly after changing the linker reference length does not make sense.
@@ -1109,9 +1109,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UpdateLinkerLength()
+void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::update_linker_length()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // adapt force/strain in linker
   // note: problem time step is used here

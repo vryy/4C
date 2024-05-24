@@ -45,7 +45,7 @@ CONTACT::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim, bool qua
 /*----------------------------------------------------------------------*
  |  Build auxiliary plane from slave element (public)         popp 11/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling3d::AuxiliaryPlane()
+bool CONTACT::Coupling3d::auxiliary_plane()
 {
   // we first need the element center:
   // for quad4, quad8, quad9 elements: xi = eta = 0.0
@@ -65,7 +65,7 @@ bool CONTACT::Coupling3d::AuxiliaryPlane()
     loccenter[1] = 0.0;
   }
   else
-    FOUR_C_THROW("AuxiliaryPlane called for unknown element type");
+    FOUR_C_THROW("auxiliary_plane called for unknown element type");
 
   // compute element center via shape fct. interpolation
   SlaveIntElement().LocalToGlobal(loccenter, Auxc(), 0);
@@ -75,7 +75,7 @@ bool CONTACT::Coupling3d::AuxiliaryPlane()
 
   // THIS IS CONTACT-SPECIFIC!
   // also compute linearization of the unit normal vector
-  SlaveIntElement().DerivUnitNormalAtXi(loccenter, GetDerivAuxn());
+  SlaveIntElement().DerivUnitNormalAtXi(loccenter, get_deriv_auxn());
 
   // std::cout << "Slave Element: " << SlaveIntElement().Id() << std::endl;
   // std::cout << "->Center: " << Auxc()[0] << " " << Auxc()[1] << " " << Auxc()[2] << std::endl;
@@ -101,7 +101,7 @@ bool CONTACT::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterf
   // do nothing if there are no cells
   if (Cells().size() == 0) return false;
 
-  // create a CONTACT integrator instance with correct NumGP and Dim
+  // create a CONTACT integrator instance with correct num_gp and Dim
   // it is sufficient to do this once as all IntCells are triangles
   Teuchos::RCP<CONTACT::Integrator> integrator =
       CONTACT::INTEGRATOR::BuildIntegrator(stype_, imortar_, Cells()[0]->Shape(), Comm());
@@ -118,7 +118,7 @@ bool CONTACT::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterf
     // set segmentation status of all slave nodes
     // (hassegment_ of a slave node is true if ANY segment/cell
     // is integrated that contributes to this slave node)
-    int nnodes = SlaveIntElement().NumNode();
+    int nnodes = SlaveIntElement().num_node();
     DRT::Node** mynodes = SlaveIntElement().Nodes();
     if (!mynodes) FOUR_C_THROW("Null pointer!");
     for (int k = 0; k < nnodes; ++k)
@@ -227,15 +227,15 @@ bool CONTACT::Coupling3d::VertexLinearization(
   // never linearize the SAME slave or master vertex more than once)
 
   // number of nodes
-  const int nsrows = SlaveIntElement().NumNode();
-  const int nmrows = MasterIntElement().NumNode();
+  const int nsrows = SlaveIntElement().num_node();
+  const int nmrows = MasterIntElement().num_node();
 
   // prepare storage for slave and master linearizations
   std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>> linsnodes(
-      nsrows, std::vector<CORE::GEN::Pairedvector<int, double>>(3, 3 * SlaveElement().NumNode()));
+      nsrows, std::vector<CORE::GEN::Pairedvector<int, double>>(3, 3 * SlaveElement().num_node()));
   std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>> linmnodes(
       nmrows, std::vector<CORE::GEN::Pairedvector<int, double>>(
-                  3, 3 * SlaveElement().NumNode() + 3 * MasterElement().NumNode()));
+                  3, 3 * SlaveElement().num_node() + 3 * MasterElement().num_node()));
 
   // compute slave linearizations (nsrows)
   slave_vertex_linearization(linsnodes);
@@ -297,30 +297,30 @@ bool CONTACT::Coupling3d::VertexLinearization(
       // get references to the two slave vertices
       int sindex1 = -1;
       int sindex2 = -1;
-      for (int j = 0; j < (int)SlaveVertices().size(); ++j)
+      for (int j = 0; j < (int)slave_vertices().size(); ++j)
       {
-        if (SlaveVertices()[j].Nodeids()[0] == currv.Nodeids()[0]) sindex1 = j;
-        if (SlaveVertices()[j].Nodeids()[0] == currv.Nodeids()[1]) sindex2 = j;
+        if (slave_vertices()[j].Nodeids()[0] == currv.Nodeids()[0]) sindex1 = j;
+        if (slave_vertices()[j].Nodeids()[0] == currv.Nodeids()[1]) sindex2 = j;
       }
       if (sindex1 < 0 || sindex2 < 0 || sindex1 == sindex2)
         FOUR_C_THROW("Lineclip linearization: (S) Something went wrong!");
 
-      MORTAR::Vertex* sv1 = &SlaveVertices()[sindex1];
-      MORTAR::Vertex* sv2 = &SlaveVertices()[sindex2];
+      MORTAR::Vertex* sv1 = &slave_vertices()[sindex1];
+      MORTAR::Vertex* sv2 = &slave_vertices()[sindex2];
 
       // get references to the two master vertices
       int mindex1 = -1;
       int mindex2 = -1;
-      for (int j = 0; j < (int)MasterVertices().size(); ++j)
+      for (int j = 0; j < (int)master_vertices().size(); ++j)
       {
-        if (MasterVertices()[j].Nodeids()[0] == currv.Nodeids()[2]) mindex1 = j;
-        if (MasterVertices()[j].Nodeids()[0] == currv.Nodeids()[3]) mindex2 = j;
+        if (master_vertices()[j].Nodeids()[0] == currv.Nodeids()[2]) mindex1 = j;
+        if (master_vertices()[j].Nodeids()[0] == currv.Nodeids()[3]) mindex2 = j;
       }
       if (mindex1 < 0 || mindex2 < 0 || mindex1 == mindex2)
         FOUR_C_THROW("Lineclip linearization: (M) Something went wrong!");
 
-      MORTAR::Vertex* mv1 = &MasterVertices()[mindex1];
-      MORTAR::Vertex* mv2 = &MasterVertices()[mindex2];
+      MORTAR::Vertex* mv1 = &master_vertices()[mindex1];
+      MORTAR::Vertex* mv2 = &master_vertices()[mindex2];
 
       // do lineclip vertex linearization
       lineclip_vertex_linearization(currv, currlin, sv1, sv2, mv1, mv2, linsnodes, linmnodes);
@@ -360,7 +360,7 @@ bool CONTACT::Coupling3d::slave_vertex_linearization(
     FOUR_C_THROW("slave_vertex_linearization called for unknown element type");
 
   // evlauate shape functions + derivatives at scxi
-  const int nrow = SlaveIntElement().NumNode();
+  const int nrow = SlaveIntElement().num_node();
   CORE::LINALG::SerialDenseVector sval(nrow);
   CORE::LINALG::SerialDenseMatrix sderiv(nrow, 2, true);
   SlaveIntElement().EvaluateShape(scxi, sval, sderiv, nrow);
@@ -395,7 +395,7 @@ bool CONTACT::Coupling3d::slave_vertex_linearization(
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator
       _CI;  // linearization of element center Auxc()
   std ::vector<CORE::GEN::Pairedvector<int, double>> linauxc(
-      3, SlaveElement().NumNode());  // assume 3 dofs per node
+      3, SlaveElement().num_node());  // assume 3 dofs per node
 
   for (int i = 0; i < nrow; ++i)
     for (int dim = 0; dim < 3; ++dim)
@@ -403,11 +403,11 @@ bool CONTACT::Coupling3d::slave_vertex_linearization(
         linauxc[dim][p->first] = sval[i] * p->second;
 
   // linearization of element normal Auxn()
-  std::vector<CORE::GEN::Pairedvector<int, double>>& linauxn = GetDerivAuxn();
+  std::vector<CORE::GEN::Pairedvector<int, double>>& linauxn = get_deriv_auxn();
 
   // put everything together for slave vertex linearization
   // loop over all vertices
-  for (int i = 0; i < SlaveIntElement().NumNode(); ++i)
+  for (int i = 0; i < SlaveIntElement().num_node(); ++i)
   {
     MORTAR::Node* mrtrsnode = dynamic_cast<MORTAR::Node*>(SlaveIntElement().Nodes()[i]);
     if (!mrtrsnode) FOUR_C_THROW("cast to mortar node failed");
@@ -499,7 +499,7 @@ bool CONTACT::Coupling3d::master_vertex_linearization(
     FOUR_C_THROW("master_vertex_linearization called for unknown element type");
 
   // evlauate shape functions + derivatives at scxi
-  int nrow = SlaveIntElement().NumNode();
+  int nrow = SlaveIntElement().num_node();
   CORE::LINALG::SerialDenseVector sval(nrow);
   CORE::LINALG::SerialDenseMatrix sderiv(nrow, 2, true);
   SlaveIntElement().EvaluateShape(scxi, sval, sderiv, nrow);
@@ -534,7 +534,7 @@ bool CONTACT::Coupling3d::master_vertex_linearization(
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator
       _CI;  // linearization of element center Auxc()
   std ::vector<CORE::GEN::Pairedvector<int, double>> linauxc(
-      3, SlaveElement().NumNode());  // assume 3 dofs per node
+      3, SlaveElement().num_node());  // assume 3 dofs per node
 
   for (int i = 0; i < nrow; ++i)
     for (int dim = 0; dim < 3; ++dim)
@@ -542,7 +542,7 @@ bool CONTACT::Coupling3d::master_vertex_linearization(
         linauxc[dim][p->first] = sval[i] * p->second;
 
   // linearization of element normal Auxn()
-  std::vector<CORE::GEN::Pairedvector<int, double>>& linauxn = GetDerivAuxn();
+  std::vector<CORE::GEN::Pairedvector<int, double>>& linauxn = get_deriv_auxn();
 
   // linearization of the MasterIntEle spatial coords
   std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>> mnodelin(0);
@@ -552,10 +552,10 @@ bool CONTACT::Coupling3d::master_vertex_linearization(
   {
     // resize the linearizations
     mnodelin.resize(
-        MasterIntElement().NumNode(), std::vector<CORE::GEN::Pairedvector<int, double>>(3, 1));
+        MasterIntElement().num_node(), std::vector<CORE::GEN::Pairedvector<int, double>>(3, 1));
 
     // loop over all intEle nodes
-    for (int in = 0; in < MasterIntElement().NumNode(); ++in)
+    for (int in = 0; in < MasterIntElement().num_node(); ++in)
     {
       MORTAR::Node* mrtrmnode = dynamic_cast<MORTAR::Node*>(MasterIntElement().Nodes()[in]);
       if (mrtrmnode == nullptr) FOUR_C_THROW("dynamic cast to mortar node went wrong");
@@ -568,7 +568,7 @@ bool CONTACT::Coupling3d::master_vertex_linearization(
 
   // put everything together for slave vertex linearization
   // loop over all vertices
-  for (int i = 0; i < MasterIntElement().NumNode(); ++i)
+  for (int i = 0; i < MasterIntElement().num_node(); ++i)
   {
     MORTAR::Node* mrtrmnode = dynamic_cast<MORTAR::Node*>(MasterIntElement().Nodes()[i]);
     if (!mrtrmnode) FOUR_C_THROW("cast to mortar node failed");
@@ -643,8 +643,8 @@ bool CONTACT::Coupling3d::lineclip_vertex_linearization(MORTAR::Vertex& currv,
     std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linmnodes)
 {
   // number of nodes
-  const int nsrows = SlaveIntElement().NumNode();
-  const int nmrows = MasterIntElement().NumNode();
+  const int nsrows = SlaveIntElement().num_node();
+  const int nmrows = MasterIntElement().num_node();
 
   // iterator
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
@@ -782,7 +782,7 @@ bool CONTACT::Coupling3d::lineclip_vertex_linearization(MORTAR::Vertex& currv,
   std::vector<CORE::GEN::Pairedvector<int, double>>& masterlin1 = linmnodes[k];
 
   // linearization of element normal Auxn()
-  std::vector<CORE::GEN::Pairedvector<int, double>>& linauxn = GetDerivAuxn();
+  std::vector<CORE::GEN::Pairedvector<int, double>>& linauxn = get_deriv_auxn();
 
   const double ZNfac = Zfac / Nfac;
   const double ZNNfac = Zfac / (Nfac * Nfac);
@@ -851,8 +851,8 @@ bool CONTACT::Coupling3d::CenterLinearization(
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
 
   // number of nodes
-  const int nsrows = SlaveElement().NumNode();
-  const int nmrows = MasterElement().NumNode();
+  const int nsrows = SlaveElement().num_node();
+  const int nmrows = MasterElement().num_node();
 
   std::vector<double> clipcenter(3);
   for (int k = 0; k < 3; ++k) clipcenter[k] = 0.0;
@@ -1126,7 +1126,7 @@ void CONTACT::Coupling3dManager::IntegrateCoupling(
     }
 
     // special treatment of boundary elements
-    ConsistDualShape();
+    consist_dual_shape();
 
     // TODO modification of boundary shapes!
 
@@ -1165,7 +1165,7 @@ void CONTACT::Coupling3dManager::IntegrateCoupling(
       std::vector<MORTAR::Element*> feasible_ma_eles(MasterElements().size());
       find_feasible_master_elements(feasible_ma_eles);
 
-      // create an integrator instance with correct NumGP and Dim
+      // create an integrator instance with correct num_gp and Dim
       Teuchos::RCP<CONTACT::Integrator> integrator =
           CONTACT::INTEGRATOR::BuildIntegrator(stype_, imortar_, SlaveElement().Shape(), Comm());
 
@@ -1193,7 +1193,7 @@ void CONTACT::Coupling3dManager::IntegrateCoupling(
           }
 
           // special treatment of boundary elements
-          ConsistDualShape();
+          consist_dual_shape();
 
           // integrate cells
           for (int i = 0; i < (int)Coupling().size(); ++i)
@@ -1326,7 +1326,7 @@ void CONTACT::Coupling3dQuadManager::IntegrateCoupling(
       }    // for saux
     }      // for m
 
-    ConsistDualShape();
+    consist_dual_shape();
 
     // integrate cells
     for (int i = 0; i < (int)Coupling().size(); ++i)
@@ -1360,7 +1360,7 @@ void CONTACT::Coupling3dQuadManager::IntegrateCoupling(
 
     if ((int)MasterElements().size() == 0) return;
 
-    // create an integrator instance with correct NumGP and Dim
+    // create an integrator instance with correct num_gp and Dim
     Teuchos::RCP<CONTACT::Integrator> integrator =
         CONTACT::INTEGRATOR::BuildIntegrator(stype_, Params(), SlaveElement().Shape(), Comm());
 
@@ -1407,7 +1407,7 @@ void CONTACT::Coupling3dQuadManager::IntegrateCoupling(
           }    // for saux
         }      // for m
 
-        ConsistDualShape();
+        consist_dual_shape();
 
         for (int i = 0; i < (int)Coupling().size(); ++i)
         {
@@ -1472,7 +1472,7 @@ bool CONTACT::Coupling3dQuadManager::EvaluateCoupling(
 /*----------------------------------------------------------------------*
  |  Calculate dual shape functions                           seitz 07/13|
  *----------------------------------------------------------------------*/
-void CONTACT::Coupling3dManager::ConsistDualShape()
+void CONTACT::Coupling3dManager::consist_dual_shape()
 {
   static const INPAR::MORTAR::AlgorithmType algo =
       CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
@@ -1499,7 +1499,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
   if (Coupling().size() == 0) return;
 
   // check for boundary elements in segment-based integration
-  // (fast integration already has this check, so that ConsistDualShape()
+  // (fast integration already has this check, so that consist_dual_shape()
   // is only called for boundary elements)
   //
   // For NURBS elements, always compute consistent dual functions.
@@ -1523,12 +1523,12 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
     bool proj_test = false;
 
     DRT::Node** mynodes_test = SlaveElement().Nodes();
-    if (!mynodes_test) FOUR_C_THROW("HasProjStatus: Null pointer!");
+    if (!mynodes_test) FOUR_C_THROW("has_proj_status: Null pointer!");
 
     if (dt_s == CORE::FE::CellType::quad4 || dt_s == CORE::FE::CellType::quad8 ||
         dt_s == CORE::FE::CellType::nurbs9)
     {
-      for (int s_test = 0; s_test < SlaveElement().NumNode(); ++s_test)
+      for (int s_test = 0; s_test < SlaveElement().num_node(); ++s_test)
       {
         if (s_test == 0)
         {
@@ -1604,7 +1604,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
 
     else if (dt_s == CORE::FE::CellType::tri3 || dt_s == CORE::FE::CellType::tri6)
     {
-      for (int s_test = 0; s_test < SlaveElement().NumNode(); ++s_test)
+      for (int s_test = 0; s_test < SlaveElement().num_node(); ++s_test)
       {
         if (s_test == 0)
         {
@@ -1678,7 +1678,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
 
   // slave nodes and dofs
   const int max_nnodes = 9;
-  const int nnodes = SlaveElement().NumNode();
+  const int nnodes = SlaveElement().num_node();
   if (nnodes > max_nnodes)
     FOUR_C_THROW(
         "this function is not implemented to handle elements with that many nodes. Just adjust "
@@ -1688,7 +1688,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
 
   // get number of master nodes
   int mnodes = 0;
-  for (int m = 0; m < msize; ++m) mnodes += MasterElements()[m]->NumNode();
+  for (int m = 0; m < msize; ++m) mnodes += MasterElements()[m]->num_node();
 
   // Dual shape functions coefficient matrix and linearization
   SlaveElement().MoData().DerivDualShape() =
@@ -1719,11 +1719,11 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
   for (int m = 0; m < (int)Coupling().size(); ++m)
   {
     if (!Coupling()[m]->RoughCheckCenters()) continue;
-    if (!Coupling()[m]->RoughCheckOrient()) continue;
+    if (!Coupling()[m]->rough_check_orient()) continue;
     if (!Coupling()[m]->RoughCheckCenters()) continue;
 
     // get number of master nodes
-    const int ncol = Coupling()[m]->MasterElement().NumNode();
+    const int ncol = Coupling()[m]->MasterElement().num_node();
 
     // loop over all integration cells
     for (int c = 0; c < (int)Coupling()[m]->Cells().size(); ++c)
@@ -1813,7 +1813,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
 
         // compute GP slave coordinate derivatives
         integrator.DerivXiGP3DAuxPlane(Coupling()[m]->SlaveIntElement(), sxi, currcell->Auxn(),
-            dsxigp, sprojalpha, currcell->GetDerivAuxn(), lingp);
+            dsxigp, sprojalpha, currcell->get_deriv_auxn(), lingp);
 
         // compute GP slave coordinate derivatives (parent element)
         if (Quad())
@@ -1822,7 +1822,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
               dynamic_cast<MORTAR::IntElement*>(&(Coupling()[m]->SlaveIntElement()));
           if (ie == nullptr) FOUR_C_THROW("wtf");
           integrator.DerivXiGP3DAuxPlane(SlaveElement(), psxi, currcell->Auxn(), dpsxigp,
-              psprojalpha, currcell->GetDerivAuxn(), lingp);
+              psprojalpha, currcell->get_deriv_auxn(), lingp);
           // ie->MapToParent(dsxigp,dpsxigp); // old way of doing it via affine map... wrong (popp
           // 05/2016)
         }
@@ -1974,7 +1974,7 @@ void CONTACT::Coupling3dManager::find_feasible_master_elements(
         new MORTAR::Coupling3d(idiscret_, dim_, false, imortar_, SlaveElement(), MasterElement(m)));
 
     // Building the master element normals and check the angles.
-    if (coup->RoughCheckOrient())
+    if (coup->rough_check_orient())
     {
       feasible_ma_eles[fcount] = &MasterElement(m);
       ++fcount;

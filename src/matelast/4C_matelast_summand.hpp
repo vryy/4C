@@ -129,7 +129,7 @@ namespace MAT
        *
        * @param params Container for additional information
        */
-      virtual void PostSetup(Teuchos::ParameterList& params){};
+      virtual void post_setup(Teuchos::ParameterList& params){};
 
       //! Dummy routine for setup update of summand
       virtual void Update() { return; };

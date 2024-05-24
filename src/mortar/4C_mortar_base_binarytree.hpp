@@ -234,7 +234,7 @@ namespace MORTAR
     \brief Evaluate search tree
 
     */
-    void EvaluateSearch() override = 0;
+    void evaluate_search() override = 0;
 
     /*!
     \brief Initialize the base binary tree
@@ -246,7 +246,7 @@ namespace MORTAR
     \brief Calculate minimal element length / inflation factor "enlarge"
 
     */
-    virtual void SetEnlarge() = 0;
+    virtual void set_enlarge() = 0;
     //@}
 
    protected:

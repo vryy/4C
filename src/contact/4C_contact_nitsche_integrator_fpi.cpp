@@ -77,17 +77,17 @@ void CONTACT::IntegratorNitscheFpi::IntegrateGP_3D(MORTAR::Element& sele, MORTAR
   // Contact
   double n[3];
   sele.compute_unit_normal_at_xi(sxi, n);
-  std::vector<CORE::GEN::Pairedvector<int, double>> dn(3, sele.NumNode() * 3);
+  std::vector<CORE::GEN::Pairedvector<int, double>> dn(3, sele.num_node() * 3);
   dynamic_cast<CONTACT::Element&>(sele).DerivUnitNormalAtXi(sxi, dn);
 
-  GPTSForces<3>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt, gap,
-      deriv_gap, n, dn, sxi, mxi);
+  gpts_forces<3>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt,
+      gap, deriv_gap, n, dn, sxi, mxi);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::IntegratorNitscheFpi::GPTSForces(MORTAR::Element& sele, MORTAR::Element& mele,
+void CONTACT::IntegratorNitscheFpi::gpts_forces(MORTAR::Element& sele, MORTAR::Element& mele,
     const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseMatrix& sderiv,
     const std::vector<CORE::GEN::Pairedvector<int, double>>& dsxi,
     const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& mderiv,
@@ -125,7 +125,7 @@ void CONTACT::IntegratorNitscheFpi::GPTSForces(MORTAR::Element& sele, MORTAR::El
 #ifdef WRITE_GMSH
   {
     CORE::LINALG::Matrix<3, 1> sgp_x;
-    for (int i = 0; i < sele.NumNode(); ++i)
+    for (int i = 0; i < sele.num_node(); ++i)
       for (int d = 0; d < dim; ++d)
         sgp_x(d) += sval(i) * dynamic_cast<CONTACT::Node*>(sele.Nodes()[i])->xspatial()[d];
     xf_c_comm_->Gmsh_Write(sgp_x, gp_on_this_proc, 7);
@@ -154,7 +154,7 @@ void CONTACT::IntegratorNitscheFpi::GPTSForces(MORTAR::Element& sele, MORTAR::El
 #ifdef WRITE_GMSH
   {
     CORE::LINALG::Matrix<3, 1> sgp_x;
-    for (int i = 0; i < sele.NumNode(); ++i)
+    for (int i = 0; i < sele.num_node(); ++i)
       for (int d = 0; d < dim; ++d)
         sgp_x(d) += sval(i) * dynamic_cast<CONTACT::Node*>(sele.Nodes()[i])->xspatial()[d];
     xf_c_comm_->Gmsh_Write(sgp_x, snn_pengap, 4);
@@ -181,7 +181,7 @@ void CONTACT::IntegratorNitscheFpi::GPTSForces(MORTAR::Element& sele, MORTAR::El
 #ifdef WRITE_GMSH
     {
       CORE::LINALG::Matrix<3, 1> sgp_x;
-      for (int i = 0; i < sele.NumNode(); ++i)
+      for (int i = 0; i < sele.num_node(); ++i)
         for (int d = 0; d < dim; ++d)
           sgp_x(d) += sval(i) * dynamic_cast<CONTACT::Node*>(sele.Nodes()[i])->xspatial()[d];
       xf_c_comm_->Gmsh_Write(sgp_x, ffac, 8);
@@ -193,7 +193,7 @@ void CONTACT::IntegratorNitscheFpi::GPTSForces(MORTAR::Element& sele, MORTAR::El
 #ifdef WRITE_GMSH
     {
       CORE::LINALG::Matrix<3, 1> sgp_x;
-      for (int i = 0; i < sele.NumNode(); ++i)
+      for (int i = 0; i < sele.num_node(); ++i)
         for (int d = 0; d < dim; ++d)
           sgp_x(d) += sval(i) * dynamic_cast<CONTACT::Node*>(sele.Nodes()[i])->xspatial()[d];
       xf_c_comm_->Gmsh_Write(sgp_x, gap, 9);
@@ -210,7 +210,7 @@ void CONTACT::IntegratorNitscheFpi::GPTSForces(MORTAR::Element& sele, MORTAR::El
 #ifdef WRITE_GMSH
     {
       CORE::LINALG::Matrix<3, 1> sgp_x;
-      for (int i = 0; i < sele.NumNode(); ++i)
+      for (int i = 0; i < sele.num_node(); ++i)
         for (int d = 0; d < dim; ++d)
           sgp_x(d) += sval(i) * dynamic_cast<CONTACT::Node*>(sele.Nodes()[i])->xspatial()[d];
       xf_c_comm_->Gmsh_Write(sgp_x, normal_contact_transition, 0);
@@ -232,7 +232,7 @@ void CONTACT::IntegratorNitscheFpi::GPTSForces(MORTAR::Element& sele, MORTAR::El
 
   double cauchy_nn_weighted_average = 0.;
   CORE::GEN::Pairedvector<int, double> cauchy_nn_weighted_average_deriv_d(
-      sele.NumNode() * 3 * 12 + sele.MoData().ParentDisp().size() +
+      sele.num_node() * 3 * 12 + sele.MoData().ParentDisp().size() +
       mele.MoData().ParentDisp().size());
   CORE::GEN::Pairedvector<int, double> cauchy_nn_weighted_average_deriv_p(
       sele.MoData().ParentPFPres().size() + mele.MoData().ParentPFPres().size());
@@ -258,7 +258,7 @@ void CONTACT::IntegratorNitscheFpi::GPTSForces(MORTAR::Element& sele, MORTAR::El
 #ifdef WRITE_GMSH
   {
     CORE::LINALG::Matrix<3, 1> sgp_x;
-    for (int i = 0; i < sele.NumNode(); ++i)
+    for (int i = 0; i < sele.num_node(); ++i)
       for (int d = 0; d < dim; ++d)
         sgp_x(d) += sval(i) * dynamic_cast<CONTACT::Node*>(sele.Nodes()[i])->xspatial()[d];
 

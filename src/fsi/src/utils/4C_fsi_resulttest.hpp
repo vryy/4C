@@ -64,9 +64,9 @@ namespace FSI
     //! \brief fsi version of nodal value tests
     //!
     //! Possible position flags are "lambdax", "lambday", "lambdaz"
-    void TestNode(INPUT::LineDefinition& res,  ///< the line definition from input file
-        int& nerr,                             ///< number of tests with errors
-        int& test_count                        ///< number of tests performed
+    void test_node(INPUT::LineDefinition& res,  ///< the line definition from input file
+        int& nerr,                              ///< number of tests with errors
+        int& test_count                         ///< number of tests performed
         ) override;
 
     //! \brief fsi version of element value tests

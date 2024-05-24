@@ -48,14 +48,14 @@ namespace ELCH
     void TimeLoop() override;
 
     /// read restart data
-    void ReadRestart(int step) override;
+    void read_restart(int step) override;
 
     /// Add tests to global problem and start tests
     void TestResults();
 
    protected:
     /// start a new time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     /// solve Navier-Stokes and ALE for current time step
     void SolveFluidAle();

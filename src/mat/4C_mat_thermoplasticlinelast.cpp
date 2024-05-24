@@ -920,7 +920,8 @@ void MAT::ThermoPlasticLinElast::RelDevStress(
  | computes isotropic elasticity tensor in matrix notion     dano 08/11 |
  | for 3d                                                               |
  *----------------------------------------------------------------------*/
-void MAT::ThermoPlasticLinElast::SetupCmat(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat)
+void MAT::ThermoPlasticLinElast::setup_cmat(
+    CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat)
 {
   // get material parameters
   // Young's modulus (modulus of elasticity)
@@ -956,7 +957,7 @@ void MAT::ThermoPlasticLinElast::SetupCmat(CORE::LINALG::Matrix<NUM_STRESS_3D, N
   cmat(4, 4) = mfac * 0.5 * (1.0 - 2.0 * nu);
   cmat(5, 5) = mfac * 0.5 * (1.0 - 2.0 * nu);
 
-}  // SetupCmat()
+}  // setup_cmat()
 
 
 /*----------------------------------------------------------------------*
@@ -1021,7 +1022,7 @@ void MAT::ThermoPlasticLinElast::setup_cmat_elasto_plastic(
   // ------------------------------------------------------- elastic term
   // C_ep = C_e
   // add standard isotropic elasticity tensor C_e first
-  SetupCmat(cmat);
+  setup_cmat(cmat);
 
   // ------------------------------------------------------ plastic terms
 
@@ -1308,7 +1309,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(
     const CORE::LINALG::Matrix<1, 1>& Ntemp,  // shapefcts . temperatures
     CORE::LINALG::Matrix<6, 1>& ctemp, CORE::LINALG::Matrix<6, 1>& stresstemp)
 {
-  SetupCthermo(ctemp);
+  setup_cthermo(ctemp);
 
   // calculate the temperature difference
   CORE::LINALG::Matrix<1, 1> init(false);
@@ -1340,9 +1341,9 @@ void MAT::ThermoPlasticLinElast::Evaluate(
  | computes temperature dependent isotropic                  dano 05/10 |
  | elasticity tensor in matrix notion for 3d, second(!) order tensor    |
  *----------------------------------------------------------------------*/
-void MAT::ThermoPlasticLinElast::SetupCthermo(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& ctemp)
+void MAT::ThermoPlasticLinElast::setup_cthermo(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& ctemp)
 {
-  double m = STModulus();
+  double m = st_modulus();
 
   // isotropic elasticity tensor C_temp in Voigt matrix notation C_temp = m I
   //
@@ -1363,13 +1364,13 @@ void MAT::ThermoPlasticLinElast::SetupCthermo(CORE::LINALG::Matrix<NUM_STRESS_3D
   for (int i = 0; i < 3; ++i) ctemp(i, 0) = m;  // non-zero entries only in main directions
   // remaining terms zero
 
-}  // SetupCthermo()
+}  // setup_cthermo()
 
 
 /*----------------------------------------------------------------------*
  | calculates stress-temperature modulus                     dano 08/11 |
  *----------------------------------------------------------------------*/
-double MAT::ThermoPlasticLinElast::STModulus()
+double MAT::ThermoPlasticLinElast::st_modulus()
 {
   // initialise the parameters for the lame constants
   const double ym = params_->youngs_;
@@ -1404,7 +1405,7 @@ double MAT::ThermoPlasticLinElast::STModulus()
 
   return stmodulus;
 
-}  // STModulus()
+}  // st_modulus()
 
 
 /*----------------------------------------------------------------------*

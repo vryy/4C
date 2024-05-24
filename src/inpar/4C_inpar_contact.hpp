@@ -217,7 +217,7 @@ namespace INPAR
       partitioning  ///< partitioning approach
     };
 
-    enum class FDCheck : char
+    enum class FdCheck : char
     {
       off,         ///< switch off
       global,      ///< global finite difference check

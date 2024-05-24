@@ -48,7 +48,7 @@ namespace ADAPTER
     virtual void InitSaveState() = 0;
 
     // restart
-    virtual void ReadRestart(int step, bool CoupledTo3D = false) = 0;
+    virtual void read_restart(int step, bool CoupledTo3D = false) = 0;
 
     // time integration
     virtual void Integrate(
@@ -79,15 +79,15 @@ namespace ADAPTER
     virtual void LoadState() = 0;
 
     // prepare the loop
-    virtual void PrepareTimeLoop() = 0;
+    virtual void prepare_time_loop() = 0;
 
     // prepare step
-    virtual void PrepareTimeStep() = 0;
+    virtual void prepare_time_step() = 0;
 
     // solve
     virtual void Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams) = 0;
 
-    virtual void AssembleMatAndRHS() = 0;
+    virtual void assemble_mat_and_rhs() = 0;
 
     virtual void PrepareLinearSolve() = 0;
 

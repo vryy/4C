@@ -33,7 +33,7 @@ namespace SSI
   {
     class SSISlaveSideConverter;
   }
-  class SSIMono;
+  class SsiMono;
 
   /*!
   We have three options how the global system matrix and the sub matrices are arranged:
@@ -162,7 +162,7 @@ namespace SSI
     }
 
     //! position of structure block in system matrix
-    int PositionStructure() const { return position_structure_; };
+    int position_structure() const { return position_structure_; };
 
    private:
     //! position of scatra blocks in system matrix

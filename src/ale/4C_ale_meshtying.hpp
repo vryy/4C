@@ -137,7 +137,7 @@ namespace ALE
         Teuchos::RCP<Epetra_Vector> residual, Teuchos::RCP<Epetra_Vector>& dispnp);
 
     //! Split vector and save parts in a std::vector<Teuchos::RCP<Epetra_Vector> >
-    void SplitVector(Teuchos::RCP<Epetra_Vector> vector,         ///> vector to split
+    void split_vector(Teuchos::RCP<Epetra_Vector> vector,        ///> vector to split
         std::vector<Teuchos::RCP<Epetra_Vector>>& splitvector);  ///> container for the split vector
 
    protected:

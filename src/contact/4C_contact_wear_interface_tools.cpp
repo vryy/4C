@@ -1440,11 +1440,11 @@ void WEAR::WearInterface::FDCheckSlipDeriv(CORE::LINALG::SparseMatrix& linslipLM
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
-  double frbound = InterfaceParams().get<double>("FRBOUND");
-  double frcoeff = InterfaceParams().get<double>("FRCOEFF");
-  double ct = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
-  double cn = InterfaceParams().get<double>("SEMI_SMOOTH_CN");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(interface_params(), "FRICTION");
+  double frbound = interface_params().get<double>("FRBOUND");
+  double frcoeff = interface_params().get<double>("FRCOEFF");
+  double ct = interface_params().get<double>("SEMI_SMOOTH_CT");
+  double cn = interface_params().get<double>("SEMI_SMOOTH_CN");
 
   // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
@@ -1520,7 +1520,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(CORE::LINALG::SparseMatrix& linslipLM
       }  //  loop over master nodes
 
       // gp-wise slip !!!!!!!
-      if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+      if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         jumptxi = cnode->FriData().jump_var()[0];
         jumpteta = 0.0;
@@ -1650,7 +1650,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(CORE::LINALG::SparseMatrix& linslipLM
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+        if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
@@ -1886,7 +1886,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(CORE::LINALG::SparseMatrix& linslipLM
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+        if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
@@ -2125,7 +2125,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(CORE::LINALG::SparseMatrix& linslipLM
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+        if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
@@ -2353,7 +2353,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(CORE::LINALG::SparseMatrix& linslipLM
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+        if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
@@ -3399,7 +3399,7 @@ void WEAR::WearInterface::fd_check_mortar_e_master_deriv()
  *----------------------------------------------------------------------*/
 void WEAR::WearInterface::FDCheckWearDerivLm()
 {
-  double wcoeff = InterfaceParams().get<double>("WEARCOEFF");
+  double wcoeff = interface_params().get<double>("WEARCOEFF");
 
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
@@ -3550,7 +3550,7 @@ void WEAR::WearInterface::FDCheckWearDerivLm()
  *----------------------------------------------------------------------*/
 void WEAR::WearInterface::FDCheckWearDeriv()
 {
-  double wcoeff = InterfaceParams().get<double>("WEARCOEFF");
+  double wcoeff = interface_params().get<double>("WEARCOEFF");
 
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);

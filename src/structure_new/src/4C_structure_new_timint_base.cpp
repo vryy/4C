@@ -86,7 +86,7 @@ void STR::TIMINT::Base::Init(const Teuchos::RCP<STR::TIMINT::BaseDataIO> dataio,
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::Setup()
 {
-  CheckInit();
+  check_init();
 
   // ---------------------------------------------------------------------------
   // Create the Dirichlet Boundary Condition handler
@@ -107,7 +107,7 @@ void STR::TIMINT::Base::Setup()
   int_ptr_->Init(
       DataSDynPtr(), DataGlobalStatePtr(), DataIOPtr(), dbc_ptr_, Teuchos::rcp(this, false));
   int_ptr_->Setup();
-  int_ptr_->PostSetup();
+  int_ptr_->post_setup();
   // Initialize and Setup the input/output writer for every Newton iteration
   dataio_->init_setup_every_iteration_writer(this, DataSDyn().GetNoxParams());
 
@@ -134,9 +134,9 @@ void STR::TIMINT::Base::Reset()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::ResetStep()
+void STR::TIMINT::Base::reset_step()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   int_ptr_->ResetStepState();
 }
@@ -145,7 +145,7 @@ void STR::TIMINT::Base::ResetStep()
  *----------------------------------------------------------------------------*/
 bool STR::TIMINT::Base::NotFinished() const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // check for early stopping
   const bool early_stop = int_ptr_->EarlyStopping();
@@ -172,16 +172,16 @@ void STR::TIMINT::Base::SetRestart(int stepn, double timen, Teuchos::RCP<Epetra_
     Teuchos::RCP<Epetra_Vector> veln, Teuchos::RCP<Epetra_Vector> accn,
     Teuchos::RCP<std::vector<char>> elementdata, Teuchos::RCP<std::vector<char>> nodedata)
 {
-  CheckInitSetup();
+  check_init_setup();
 
-  FOUR_C_THROW("SetRestartState() is deprecated, use the ReadRestart() routine instead!");
+  FOUR_C_THROW("SetRestartState() is deprecated, use the read_restart() routine instead!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 const Epetra_Map& STR::TIMINT::Base::GetMassDomainMap() const
 {
-  CheckInitSetup();
+  check_init_setup();
   return dataglobalstate_->GetMassMatrix()->DomainMap();
 }
 
@@ -189,7 +189,7 @@ const Epetra_Map& STR::TIMINT::Base::GetMassDomainMap() const
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const CORE::LINALG::MapExtractor> STR::TIMINT::Base::GetDBCMapExtractor()
 {
-  CheckInitSetup();
+  check_init_setup();
   return dbc_ptr_->GetDBCMapExtractor();
 }
 
@@ -197,7 +197,7 @@ Teuchos::RCP<const CORE::LINALG::MapExtractor> STR::TIMINT::Base::GetDBCMapExtra
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const CORE::LINALG::MapExtractor> STR::TIMINT::Base::GetDBCMapExtractor() const
 {
-  CheckInitSetup();
+  check_init_setup();
   return dbc_ptr_->GetDBCMapExtractor();
 }
 
@@ -205,7 +205,7 @@ Teuchos::RCP<const CORE::LINALG::MapExtractor> STR::TIMINT::Base::GetDBCMapExtra
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<DRT::UTILS::LocsysManager> STR::TIMINT::Base::LocsysManager()
 {
-  CheckInitSetup();
+  check_init_setup();
   return dbc_ptr_->LocSysManagerPtr();
 }
 
@@ -228,7 +228,7 @@ STR::MODELEVALUATOR::Generic& STR::TIMINT::Base::ModelEvaluator(INPAR::STR::Mode
  *----------------------------------------------------------------------------*/
 double STR::TIMINT::Base::TimIntParam() const
 {
-  CheckInitSetup();
+  check_init_setup();
   return int_ptr_->GetIntParam();
 }
 
@@ -236,7 +236,7 @@ double STR::TIMINT::Base::TimIntParam() const
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::ResizeMStepTimAda()
 {
-  CheckInitSetup();
+  check_init_setup();
   // resize time and stepsize fields
   const double& timen = dataglobalstate_->GetTimeN();
   dataglobalstate_->GetMultiTime()->Resize(-1, 0, timen);
@@ -255,21 +255,21 @@ void STR::TIMINT::Base::ResizeMStepTimAda()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::Update()
 {
-  CheckInitSetup();
+  check_init_setup();
   int_ptr_->PreUpdate();
   int_ptr_->update_structural_energy();
   int_ptr_->UpdateStepState();
   UpdateStepTime();
   set_number_of_nonlinear_iterations();
   int_ptr_->UpdateStepElement();
-  int_ptr_->PostUpdate();
+  int_ptr_->post_update();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::UpdateStepTime()
 {
-  CheckInitSetup();
+  check_init_setup();
   double& timenp = dataglobalstate_->GetTimeNp();
   int& stepnp = dataglobalstate_->GetStepNp();
   int& stepn = dataglobalstate_->GetStepN();
@@ -387,7 +387,7 @@ void STR::TIMINT::Base::initialize_energy_file_stream_and_write_headers()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::UTILS::ResultTest> STR::TIMINT::Base::CreateFieldTest()
 {
-  CheckInitSetup();
+  check_init_setup();
   Teuchos::RCP<STR::ResultTest> resulttest = Teuchos::rcp(new STR::ResultTest());
   resulttest->Init(GetDataGlobalState(), Integrator().EvalData());
   resulttest->Setup();
@@ -402,7 +402,7 @@ void STR::TIMINT::Base::GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<doub
     Teuchos::RCP<Epetra_Vector> accnp, Teuchos::RCP<std::vector<char>> elementdata,
     Teuchos::RCP<std::vector<char>> nodedata)
 {
-  CheckInitSetup();
+  check_init_setup();
   // at some point we have to create a copy
   *step = dataglobalstate_->GetStepN();
   *time = dataglobalstate_->GetTimeN();
@@ -419,9 +419,9 @@ void STR::TIMINT::Base::GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<doub
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::PrepareOutput(bool force_prepare_timestep)
+void STR::TIMINT::Base::prepare_output(bool force_prepare_timestep)
 {
-  CheckInitSetup();
+  check_init_setup();
   // --- stress, strain and optional quantity calculation ---------------------
   if ((dataio_->is_write_results_enabled() && force_prepare_timestep) ||
       dataio_->write_results_for_this_step(dataglobalstate_->GetStepNp()))
@@ -473,7 +473,7 @@ void STR::TIMINT::Base::PrepareOutput(bool force_prepare_timestep)
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::Output(bool forced_writerestart)
 {
-  CheckInitSetup();
+  check_init_setup();
   OutputStep(forced_writerestart);
   // write Gmsh output
   write_gmsh_struc_output_step();
@@ -484,12 +484,12 @@ void STR::TIMINT::Base::Output(bool forced_writerestart)
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
 {
-  CheckInitSetup();
+  check_init_setup();
   // special treatment is necessary when restart is forced
   if (forced_writerestart)
   {
     // reset possible history data on element level
-    ResetStep();
+    reset_step();
     // restart has already been written or simulation has just started
     if (dataio_->should_write_restart_for_step(dataglobalstate_->GetStepN()) or
         dataglobalstate_->GetStepN() == GLOBAL::Problem::Instance()->Restart())
@@ -512,7 +512,7 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   // write restart step
   if (forced_writerestart || dataio_->should_write_restart_for_step(dataglobalstate_->GetStepN()))
   {
-    OutputRestart(datawritten);
+    output_restart(datawritten);
     dataio_->set_last_written_results(dataglobalstate_->GetStepN());
   }
 
@@ -520,8 +520,8 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   if (dataio_->IsWriteState() and
       dataio_->write_results_for_this_step(dataglobalstate_->GetStepN()) and (not datawritten))
   {
-    NewIOStep(datawritten);
-    OutputState();
+    new_io_step(datawritten);
+    output_state();
     dataio_->set_last_written_results(dataglobalstate_->GetStepN());
   }
 
@@ -529,7 +529,7 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   if (dataio_->write_runtime_vtk_results_for_this_step(dataglobalstate_->GetStepN()) or
       dataio_->write_runtime_vtp_results_for_this_step(dataglobalstate_->GetStepN()))
   {
-    RuntimeOutputState();
+    runtime_output_state();
   }
 
   // write reaction forces
@@ -541,23 +541,23 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   // output stress, strain and optional quantity
   if (dataio_->should_write_stress_strain_for_this_step(dataglobalstate_->GetStepN()))
   {
-    NewIOStep(datawritten);
-    OutputStressStrain();
+    new_io_step(datawritten);
+    output_stress_strain();
     output_optional_quantity();
   }
 
   if (dataio_->write_results_for_this_step(dataglobalstate_->GetStepN()) and
       dataio_->is_write_current_ele_volume())
   {
-    NewIOStep(datawritten);
+    new_io_step(datawritten);
     IO::DiscretizationWriter& iowriter = *(dataio_->GetOutputPtr());
-    OutputElementVolume(iowriter);
+    output_element_volume(iowriter);
   }
 
   // output energy
   if (dataio_->should_write_energy_for_this_step(dataglobalstate_->GetStepN()))
   {
-    OutputEnergy();
+    output_energy();
   }
 
   //  OutputVolumeMass();
@@ -572,7 +572,7 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::NewIOStep(bool& datawritten)
+void STR::TIMINT::Base::new_io_step(bool& datawritten)
 {
   if (not datawritten)
   {
@@ -585,12 +585,12 @@ void STR::TIMINT::Base::NewIOStep(bool& datawritten)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::OutputState()
+void STR::TIMINT::Base::output_state()
 {
-  CheckInitSetup();
+  check_init_setup();
   IO::DiscretizationWriter& iowriter = *(dataio_->GetOutputPtr());
 
-  OutputState(iowriter, dataio_->IsFirstOutputOfRun());
+  output_state(iowriter, dataio_->IsFirstOutputOfRun());
 
   dataio_->SetFirstOutputOfRun(false);
 }
@@ -599,15 +599,15 @@ void STR::TIMINT::Base::OutputState()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::OutputDebugState(IO::DiscretizationWriter& iowriter, bool write_owner) const
 {
-  OutputState(iowriter, write_owner);
+  output_state(iowriter, write_owner);
 
   // write element volumes as additional debugging information, if activated
-  if (dataio_->is_write_current_ele_volume()) OutputElementVolume(iowriter);
+  if (dataio_->is_write_current_ele_volume()) output_element_volume(iowriter);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::OutputState(IO::DiscretizationWriter& iowriter, bool write_owner) const
+void STR::TIMINT::Base::output_state(IO::DiscretizationWriter& iowriter, bool write_owner) const
 {
   // owner of elements is just written once because it does not change during
   // simulation (so far)
@@ -619,9 +619,9 @@ void STR::TIMINT::Base::OutputState(IO::DiscretizationWriter& iowriter, bool wri
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::RuntimeOutputState()
+void STR::TIMINT::Base::runtime_output_state()
 {
-  CheckInitSetup();
+  check_init_setup();
   int_ptr_->runtime_output_step_state();
 }
 
@@ -629,16 +629,16 @@ void STR::TIMINT::Base::RuntimeOutputState()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::output_reaction_forces()
 {
-  CheckInitSetup();
+  check_init_setup();
   IO::DiscretizationWriter& iowriter = *(dataio_->GetOutputPtr());
   int_ptr_->MonitorDbc(iowriter);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::OutputElementVolume(IO::DiscretizationWriter& iowriter) const
+void STR::TIMINT::Base::output_element_volume(IO::DiscretizationWriter& iowriter) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   STR::MODELEVALUATOR::Data& evaldata = int_ptr_->EvalData();
 
@@ -650,9 +650,9 @@ void STR::TIMINT::Base::OutputElementVolume(IO::DiscretizationWriter& iowriter) 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::OutputStressStrain()
+void STR::TIMINT::Base::output_stress_strain()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   STR::MODELEVALUATOR::Data& evaldata = int_ptr_->EvalData();
   Teuchos::RCP<IO::DiscretizationWriter> output_ptr = dataio_->GetOutputPtr();
@@ -757,9 +757,9 @@ void STR::TIMINT::Base::OutputStressStrain()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::OutputEnergy() const
+void STR::TIMINT::Base::output_energy() const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (dataglobalstate_->GetMyRank() == 0)
   {
@@ -789,7 +789,7 @@ void STR::TIMINT::Base::OutputEnergy() const
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::output_optional_quantity()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   STR::MODELEVALUATOR::Data& evaldata = int_ptr_->EvalData();
   Teuchos::RCP<IO::DiscretizationWriter> output_ptr = dataio_->GetOutputPtr();
@@ -817,15 +817,15 @@ void STR::TIMINT::Base::output_optional_quantity()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::OutputRestart(bool& datawritten)
+void STR::TIMINT::Base::output_restart(bool& datawritten)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   Teuchos::RCP<IO::DiscretizationWriter> output_ptr = dataio_->GetOutputPtr();
   // write restart output, please
   if (dataglobalstate_->GetStepN() != 0)
     output_ptr->WriteMesh(dataglobalstate_->GetStepN(), dataglobalstate_->GetTimeN());
-  NewIOStep(datawritten);
+  new_io_step(datawritten);
 
   output_ptr->WriteElementData(dataio_->IsFirstOutputOfRun());
   output_ptr->WriteNodeData(dataio_->IsFirstOutputOfRun());
@@ -882,7 +882,7 @@ void STR::TIMINT::Base::add_restart_to_output_state()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::write_gmsh_struc_output_step()
 {
-  CheckInitSetup();
+  check_init_setup();
   if (!dataio_->IsGmsh()) return;
 
   const std::string filename = IO::GMSH::GetFileName("struct", DiscWriter()->Output()->FileName(),
@@ -899,9 +899,9 @@ void STR::TIMINT::Base::write_gmsh_struc_output_step()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::ReadRestart(const int stepn)
+void STR::TIMINT::Base::read_restart(const int stepn)
 {
-  CheckInit();
+  check_init();
   // that restarting flag
   isrestarting_ = true;
 
@@ -941,9 +941,9 @@ void STR::TIMINT::Base::ReadRestart(const int stepn)
   dataglobalstate_->GetMultiAcc()->UpdateSteps(*accnp);
 
   // (3) read specific time integrator (forces, etc.) and model evaluator data
-  int_ptr_->ReadRestart(ioreader);
-  int_ptr_->PostSetup();  // compute here the equilibrium system to account for initial
-                          // displacement/velocity.
+  int_ptr_->read_restart(ioreader);
+  int_ptr_->post_setup();  // compute here the equilibrium system to account for initial
+                           // displacement/velocity.
 
   // short screen output
   if (dataglobalstate_->GetMyRank() == 0)
@@ -957,7 +957,7 @@ void STR::TIMINT::Base::ReadRestart(const int stepn)
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Discretization> STR::TIMINT::Base::Discretization()
 {
-  CheckInit();
+  check_init();
   return dataglobalstate_->GetDiscret();
 }
 
@@ -965,7 +965,7 @@ Teuchos::RCP<DRT::Discretization> STR::TIMINT::Base::Discretization()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::SetActionType(const DRT::ELEMENTS::ActionType& action)
 {
-  CheckInitSetup();
+  check_init_setup();
   int_ptr_->EvalData().SetActionType(action);
 }
 
@@ -978,7 +978,7 @@ int STR::TIMINT::Base::GroupId() const
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::PostUpdate() { int_ptr_->PostUpdate(); }
+void STR::TIMINT::Base::post_update() { int_ptr_->post_update(); }
 
 void STR::TIMINT::Base::PostTimeLoop() { int_ptr_->PostTimeLoop(); }
 

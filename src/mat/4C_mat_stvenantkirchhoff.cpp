@@ -111,7 +111,7 @@ void MAT::StVenantKirchhoff::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
 // computes isotropic elasticity tensor in matrix notion for 3d
  *----------------------------------------------------------------------*/
-void MAT::StVenantKirchhoff::SetupCmat(CORE::LINALG::Matrix<6, 6>& cmat)
+void MAT::StVenantKirchhoff::setup_cmat(CORE::LINALG::Matrix<6, 6>& cmat)
 {
   // get material parameters
   const double Emod = params_->youngs_;      // Young's modulus (modulus of elasticity)
@@ -165,7 +165,7 @@ void MAT::StVenantKirchhoff::Evaluate(const CORE::LINALG::SerialDenseVector* gls
   CORE::LINALG::Matrix<6, 6> cmat(cmat_e->values(), true);
   CORE::LINALG::Matrix<6, 1> stress(stress_e->values(), true);
 
-  SetupCmat(cmat);
+  setup_cmat(cmat);
   // evaluate stresses
   stress.MultiplyNN(cmat, glstrain);  // sigma = C . epsilon
 }
@@ -179,7 +179,7 @@ void MAT::StVenantKirchhoff::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
 {
-  SetupCmat(*cmat);
+  setup_cmat(*cmat);
   // evaluate stresses
   stress->MultiplyNN(*cmat, *glstrain);  // sigma = C . epsilon
 }
@@ -192,7 +192,7 @@ void MAT::StVenantKirchhoff::StrainEnergy(
     const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
 {
   CORE::LINALG::Matrix<6, 6> cmat(true);
-  SetupCmat(cmat);
+  setup_cmat(cmat);
 
   CORE::LINALG::Matrix<6, 1> stress(true);
   stress.MultiplyNN(cmat, glstrain);

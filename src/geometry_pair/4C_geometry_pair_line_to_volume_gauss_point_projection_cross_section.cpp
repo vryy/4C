@@ -55,7 +55,7 @@ GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scalar_ty
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scalar_type, line,
-    volume>::PreEvaluate(const ElementData<line, scalar_type>& element_data_line,
+    volume>::pre_evaluate(const ElementData<line, scalar_type>& element_data_line,
     const ElementData<volume, scalar_type>& element_data_volume,
     std::vector<LineSegment<scalar_type>>& segments,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>*
@@ -169,7 +169,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
         "actual value is %d!",
         segments.size());
 
-  // Check if one point projected in PreEvaluate.
+  // Check if one point projected in pre_evaluate.
   if (segments.size() == 1 && segments[0].get_number_of_projection_points() > 0)
   {
     // Check if all points of this line projected.

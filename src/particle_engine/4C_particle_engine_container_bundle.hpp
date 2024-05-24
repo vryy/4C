@@ -158,7 +158,7 @@ namespace PARTICLEENGINE
         FOUR_C_THROW("container for particle type '%s' not stored!", EnumToTypeName(type).c_str());
 #endif
 
-      ((containers_[type])[Owned])->SetState(val, state);
+      ((containers_[type])[Owned])->set_state(val, state);
     };
 
     /*!
@@ -225,7 +225,7 @@ namespace PARTICLEENGINE
      */
     inline void set_state_all_containers(std::vector<double> val, ParticleState state) const
     {
-      for (const auto& type : storedtypes_) ((containers_[type])[Owned])->SetState(val, state);
+      for (const auto& type : storedtypes_) ((containers_[type])[Owned])->set_state(val, state);
     };
 
     /*!

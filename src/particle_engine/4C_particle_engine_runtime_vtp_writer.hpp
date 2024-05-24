@@ -83,7 +83,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] reader discretization reader
      */
-    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
+    void read_restart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
     /*!
      * \brief set positions and states of particles

@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* Calculate vector norm */
-double STR::CalculateVectorNorm(const enum INPAR::STR::VectorNorm norm,
+double STR::calculate_vector_norm(const enum INPAR::STR::VectorNorm norm,
     const Teuchos::RCP<Epetra_Vector> vect, const int numneglect)
 {
   // L1 norm

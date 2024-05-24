@@ -92,9 +92,9 @@ namespace FLD
       void WriteRestart(IO::DiscretizationWriter& output);
 
       /*!
-      \brief Wrapper for FluidCouplingWrapper::ReadRestart
+      \brief Wrapper for FluidCouplingWrapper::read_restart
       */
-      void ReadRestart(IO::DiscretizationReader& reader);
+      void read_restart(IO::DiscretizationReader& reader);
 
 
       virtual void Integrate(bool flag, Teuchos::RCP<Teuchos::ParameterList>&) = 0;
@@ -215,7 +215,7 @@ namespace FLD
       /*!
       \brief read flowrates_ and flowratespos_
       */
-      void ReadRestart(IO::DiscretizationReader& reader, int condnum);
+      void read_restart(IO::DiscretizationReader& reader, int condnum);
 
 
       /*!

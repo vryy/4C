@@ -107,12 +107,13 @@ void LUBRICATION::TimIntImpl::Init()
   // get a vector layout from the discretization to construct matching
   // vectors and matrices: local <-> global dof numbering
   // -------------------------------------------------------------------
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // -------------------------------------------------------------------
   // create empty system matrix (27 adjacent nodes as 'good' guess)
   // -------------------------------------------------------------------
-  sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(discret_->DofRowMap()), 27, false, true));
+  sysmat_ =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(discret_->dof_row_map()), 27, false, true));
 
   // -------------------------------------------------------------------
   // create vectors containing problem variables
@@ -201,7 +202,7 @@ void LUBRICATION::TimIntImpl::set_element_general_parameters() const
 /*----------------------------------------------------------------------*
  | prepare time loop                                        wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::PrepareTimeLoop()
+void LUBRICATION::TimIntImpl::prepare_time_loop()
 {
   // provide information about initial field (do not do for restarts!)
   if (step_ == 0)
@@ -214,13 +215,13 @@ void LUBRICATION::TimIntImpl::PrepareTimeLoop()
   }
 
   return;
-}  // LUBRICATION::TimIntImpl::PrepareTimeLoop
+}  // LUBRICATION::TimIntImpl::prepare_time_loop
 
 
 /*----------------------------------------------------------------------*
  | setup the variables to do a new time step(predictor)  (public) wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::PrepareTimeStep()
+void LUBRICATION::TimIntImpl::prepare_time_step()
 {
   // time measurement: prepare time step
   TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION:    + prepare time step");
@@ -253,7 +254,7 @@ void LUBRICATION::TimIntImpl::PrepareTimeStep()
   ApplyNeumannBC(neumann_loads_);
 
   return;
-}  // TimIntImpl::PrepareTimeStep
+}  // TimIntImpl::prepare_time_step
 
 
 /*------------------------------------------------------------------------------*
@@ -275,7 +276,8 @@ void LUBRICATION::TimIntImpl::set_height_field_pure_lub(const int nds)
   eleparams.set("total time", time_);
 
   // initialize height vectors
-  Teuchos::RCP<Epetra_Vector> height = CORE::LINALG::CreateVector(*discret_->DofRowMap(nds), true);
+  Teuchos::RCP<Epetra_Vector> height =
+      CORE::LINALG::CreateVector(*discret_->dof_row_map(nds), true);
 
   int err(0);
   const int heightfuncno = params_->get<int>("HFUNCNO");
@@ -305,7 +307,7 @@ void LUBRICATION::TimIntImpl::set_height_field_pure_lub(const int nds)
     }
   }
   // provide lubrication discretization with height
-  discret_->SetState(nds, "height", height);
+  discret_->set_state(nds, "height", height);
 
 }  // LUBRICATION::TimIntImpl::set_height_field_pure_lub
 
@@ -319,7 +321,7 @@ void LUBRICATION::TimIntImpl::set_average_velocity_field_pure_lub(const int nds)
   eleparams.set("total time", time_);
 
   // initialize velocity vectors
-  Teuchos::RCP<Epetra_Vector> vel = CORE::LINALG::CreateVector(*discret_->DofRowMap(nds), true);
+  Teuchos::RCP<Epetra_Vector> vel = CORE::LINALG::CreateVector(*discret_->dof_row_map(nds), true);
 
   int err(0);
   const int velfuncno = params_->get<int>("VELFUNCNO");
@@ -348,7 +350,7 @@ void LUBRICATION::TimIntImpl::set_average_velocity_field_pure_lub(const int nds)
     }
   }
   // provide lubrication discretization with velocity
-  discret_->SetState(nds, "av_tang_vel", vel);
+  discret_->set_state(nds, "av_tang_vel", vel);
 
 }  // LUBRICATION::TimIntImpl::set_average_velocity_field_pure_lub
 /*----------------------------------------------------------------------*
@@ -360,14 +362,14 @@ void LUBRICATION::TimIntImpl::TimeLoop()
   TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION:  + time loop");
 
   // prepare time loop
-  PrepareTimeLoop();
+  prepare_time_loop();
 
   while ((step_ < stepmax_) and ((time_ + 1e-12) < maxtime_))
   {
     // -------------------------------------------------------------------
     // prepare time step
     // -------------------------------------------------------------------
-    PrepareTimeStep();
+    prepare_time_step();
 
     // -------------------------------------------------------------------
     //                  set the auxiliary dofs
@@ -379,7 +381,7 @@ void LUBRICATION::TimIntImpl::TimeLoop()
     }
     else
     {
-      SetHeightField(1, Teuchos::null);
+      set_height_field(1, Teuchos::null);
       SetHeightDotField(1, Teuchos::null);
       set_relative_velocity_field(1, Teuchos::null);
       set_average_velocity_field(1, Teuchos::null);
@@ -442,7 +444,7 @@ void LUBRICATION::TimIntImpl::ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector
     nds_disp_ = nds;
 
     // provide lubrication discretization with displacement field
-    discret_->SetState(nds_disp_, "dispnp", dispnp);
+    discret_->set_state(nds_disp_, "dispnp", dispnp);
   }  // if (isale_)
 
   return;
@@ -452,12 +454,12 @@ void LUBRICATION::TimIntImpl::ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector
 /*----------------------------------------------------------------------*
  |  print information about current time step to screen     wirtz 11/15 |
  *----------------------------------------------------------------------*/
-inline void LUBRICATION::TimIntImpl::PrintTimeStepInfo()
+inline void LUBRICATION::TimIntImpl::print_time_step_info()
 {
   if (myrank_ == 0)
     printf("TIME: %11.4E/%11.4E  DT = %11.4E  Stationary  STEP = %4d/%4d \n", time_, maxtime_, dta_,
         step_, stepmax_);
-}  // LUBRICATION::TimIntImpl::PrintTimeStepInfo
+}  // LUBRICATION::TimIntImpl::print_time_step_info
 
 
 /*----------------------------------------------------------------------*
@@ -478,7 +480,7 @@ void LUBRICATION::TimIntImpl::Output(const int num)
     if (step_ == upres_) output_->WriteElementData(true);
 
     // write state vectors
-    OutputState();
+    output_state();
 
     // write output to Gmsh postprocessing files
     if (outputgmsh_) OutputToGmsh(step_, time_);
@@ -577,7 +579,7 @@ void LUBRICATION::TimIntImpl::ApplyNeumannBC(
 
   // evaluate Neumann boundary conditions at time t_{n+alpha_F} (generalized alpha) or time t_{n+1}
   // (otherwise)
-  discret_->EvaluateNeumann(condparams, *neumann_loads);
+  discret_->evaluate_neumann(condparams, *neumann_loads);
   discret_->ClearState();
 
   return;
@@ -589,12 +591,12 @@ void LUBRICATION::TimIntImpl::ApplyNeumannBC(
 void LUBRICATION::TimIntImpl::add_cavitation_penalty()
 {
   const double penalty_param = params_->get<double>("PENALTY_CAVITATION");
-  for (int i = 0; i < DofRowMap()->NumMyElements(); ++i)
+  for (int i = 0; i < dof_row_map()->NumMyElements(); ++i)
   {
     const double pressure = Prenp()->operator[](i);
     if (pressure >= 0.) continue;
 
-    const int gid = DofRowMap()->GID(i);
+    const int gid = dof_row_map()->GID(i);
     sysmat_->Assemble(-penalty_param, gid, gid);
     residual_->operator[](i) += penalty_param * pressure;
   }
@@ -605,7 +607,7 @@ void LUBRICATION::TimIntImpl::add_cavitation_penalty()
  | contains the assembly process for matrix and rhs
   for elements                                              wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::AssembleMatAndRHS()
+void LUBRICATION::TimIntImpl::assemble_mat_and_rhs()
 {
   // time measurement: element calls
   TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION:       + element calls");
@@ -657,7 +659,7 @@ void LUBRICATION::TimIntImpl::AssembleMatAndRHS()
   dtele_ = Teuchos::Time::wallTime() - tcpuele;
 
   return;
-}  // TimIntImpl::AssembleMatAndRHS
+}  // TimIntImpl::assemble_mat_and_rhs
 
 
 /*----------------------------------------------------------------------*
@@ -669,7 +671,7 @@ void LUBRICATION::TimIntImpl::NonlinearSolve()
   TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION:   + nonlin. iteration/lin. solve");
 
   // out to screen
-  PrintTimeStepInfo();
+  print_time_step_info();
 
   // print header of convergence table to screen
   print_convergence_header();
@@ -694,7 +696,7 @@ void LUBRICATION::TimIntImpl::NonlinearSolve()
     iternum_++;
 
     // call elements to calculate system matrix and rhs and assemble
-    AssembleMatAndRHS();
+    assemble_mat_and_rhs();
 
     // Apply Dirichlet boundary conditions to system of equations
     // residual values are supposed to be zero at Dirichlet boundaries
@@ -844,10 +846,10 @@ bool LUBRICATION::TimIntImpl::AbortNonlinIter(const int itnum, const int itemax,
 /*----------------------------------------------------------------------*
  | Set the nodal film height at time n+1                    Seitz 12/17 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::SetHeightField(const int nds, Teuchos::RCP<const Epetra_Vector> gap)
+void LUBRICATION::TimIntImpl::set_height_field(const int nds, Teuchos::RCP<const Epetra_Vector> gap)
 {
   if (gap == Teuchos::null) FOUR_C_THROW("Gap vector is empty.");
-  discret_->SetState(nds, "height", gap);
+  discret_->set_state(nds, "height", gap);
 
   return;
 }
@@ -860,7 +862,7 @@ void LUBRICATION::TimIntImpl::SetHeightDotField(
     const int nds, Teuchos::RCP<const Epetra_Vector> heightdot)
 {
   if (heightdot == Teuchos::null) FOUR_C_THROW("hdot vector is empty.");
-  discret_->SetState(nds, "heightdot", heightdot);
+  discret_->set_state(nds, "heightdot", heightdot);
 
   return;
 }
@@ -873,7 +875,7 @@ void LUBRICATION::TimIntImpl::set_relative_velocity_field(
 {
   if (nds >= discret_->NumDofSets()) FOUR_C_THROW("Too few dofsets on lubrication discretization!");
   if (rel_vel == Teuchos::null) FOUR_C_THROW("no velocity provided.");
-  discret_->SetState(nds, "rel_tang_vel", rel_vel);
+  discret_->set_state(nds, "rel_tang_vel", rel_vel);
 }
 
 /*----------------------------------------------------------------------*
@@ -885,7 +887,7 @@ void LUBRICATION::TimIntImpl::set_average_velocity_field(
   if (nds >= discret_->NumDofSets()) FOUR_C_THROW("Too few dofsets on lubrication discretization!");
   if (av_vel == Teuchos::null) FOUR_C_THROW("no velocity provided");
 
-  discret_->SetState(nds, "av_tang_vel", av_vel);
+  discret_->set_state(nds, "av_tang_vel", av_vel);
 }
 
 /*----------------------------------------------------------------------*
@@ -986,7 +988,7 @@ inline void LUBRICATION::TimIntImpl::print_convergence_finish_line()
 /*----------------------------------------------------------------------*
  |  write current state to BINIO                            wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::OutputState()
+void LUBRICATION::TimIntImpl::output_state()
 {
   // solution
   output_->WriteVector("prenp", prenp_);
@@ -1013,7 +1015,7 @@ void LUBRICATION::TimIntImpl::OutputState()
   }
 
   return;
-}  // TimIntImpl::OutputState
+}  // TimIntImpl::output_state
 
 
 /*----------------------------------------------------------------------*
@@ -1064,7 +1066,7 @@ void LUBRICATION::TimIntImpl::evaluate_error_compared_to_analytical_sol()
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("prenp", prenp_);
+  discret_->set_state("prenp", prenp_);
 
   // get (squared) error values
   Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors =
@@ -1155,7 +1157,7 @@ void LUBRICATION::TimIntImpl::OutputMeanPressures(const int num)
   {
     // set pressure values needed by elements
     discret_->ClearState();
-    discret_->SetState("prenp", prenp_);
+    discret_->set_state("prenp", prenp_);
     // set action for elements
     Teuchos::ParameterList eleparams;
     eleparams.set<int>("action", LUBRICATION::calc_mean_pressures);
@@ -1233,7 +1235,7 @@ void LUBRICATION::TimIntImpl::Evaluate()
     CORE::LINALG::apply_dirichlet_to_system(*prenp_, *residual_, *zeros_, *inf_gap_toggle_lub_);
 
   // call elements to calculate system matrix and rhs and assemble
-  AssembleMatAndRHS();
+  assemble_mat_and_rhs();
 
   // Apply Dirichlet boundary conditions to system of equations
   // residual values are supposed to be zero at Dirichlet boundaries

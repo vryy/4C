@@ -46,20 +46,20 @@ namespace FSI
     void Update() override;
 
     /// start a new time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     /// output routine accounting for Lagrange multiplier at the interface
     void Output() override;
 
     /// read restart data (requires distinguation between fluid discretizations)
-    void ReadRestart(int step) override;
+    void read_restart(int step) override;
 
    private:
     /// access type-cast pointer to problem-specific fluid-wrapper
-    const Teuchos::RCP<ADAPTER::FluidFluidFSI>& FluidField() { return fluid_; }
+    const Teuchos::RCP<ADAPTER::FluidFluidFSI>& fluid_field() { return fluid_; }
 
     /// access type-cast pointer to problem-specific ALE-wrapper
-    const Teuchos::RCP<ADAPTER::AleXFFsiWrapper>& AleField() { return ale_; }
+    const Teuchos::RCP<ADAPTER::AleXFFsiWrapper>& ale_field() { return ale_; }
 
     /// setup of extractor for merged Dirichlet maps
     void setup_dbc_map_extractor() override;

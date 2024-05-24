@@ -55,7 +55,7 @@ void CORE::GEO::checkGeoType(const DRT::Element* element,
       {
         int nodeId = eleNodeNumbering[i][0];
         const double nodalcoord = xyze_element(k, nodeId);
-        for (int j = 1; j < surfaceP->NumNode(); j++)
+        for (int j = 1; j < surfaceP->num_node(); j++)
         {
           nodeId = eleNodeNumbering[i][j];
           if (fabs(nodalcoord - xyze_element(k, nodeId)) > TOL7)
@@ -78,7 +78,7 @@ void CORE::GEO::checkGeoType(const DRT::Element* element,
     for (int k = 0; k < dimCoord; k++)
     {
       const double nodalcoord = xyze_element(k, 0);
-      for (int j = 1; j < element->NumNode(); j++)
+      for (int j = 1; j < element->num_node(); j++)
       {
         if (fabs(nodalcoord - xyze_element(k, j)) > TOL7)
         {

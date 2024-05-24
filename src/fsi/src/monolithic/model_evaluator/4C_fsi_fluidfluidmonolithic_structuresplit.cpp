@@ -34,14 +34,14 @@ FSI::FluidFluidMonolithicStructureSplit::FluidFluidMonolithicStructureSplit(
 {
   // cast to problem-specific fluid-wrapper
   fluid_ =
-      Teuchos::rcp_dynamic_cast<ADAPTER::FluidFluidFSI>(MonolithicStructureSplit::FluidField());
+      Teuchos::rcp_dynamic_cast<ADAPTER::FluidFluidFSI>(MonolithicStructureSplit::fluid_field());
 
   // cast to problem-specific ALE-wrapper
-  ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleXFFsiWrapper>(MonolithicStructureSplit::AleField());
+  ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleXFFsiWrapper>(MonolithicStructureSplit::ale_field());
 
   // XFFSI_Full_Newton is an invalid choice together with NOX,
   // because DOF-maps can change from one iteration step to the other (XFEM cut)
-  if (FluidField()->monolithic_xffsi_approach() == INPAR::XFEM::XFFSI_Full_Newton)
+  if (fluid_field()->monolithic_xffsi_approach() == INPAR::XFEM::XFFSI_Full_Newton)
     FOUR_C_THROW("NOX-based XFFSI Approach does not work with XFFSI_Full_Newton!");
 }
 
@@ -50,12 +50,12 @@ FSI::FluidFluidMonolithicStructureSplit::FluidFluidMonolithicStructureSplit(
 void FSI::FluidFluidMonolithicStructureSplit::Update()
 {
   // time to relax the ALE-mesh?
-  if (FluidField()->IsAleRelaxationStep(Step()))
+  if (fluid_field()->IsAleRelaxationStep(Step()))
   {
     if (Comm().MyPID() == 0) IO::cout << "Relaxing Ale" << IO::endl;
 
-    AleField()->Solve();
-    FluidField()->apply_mesh_displacement(AleToFluid(AleField()->Dispnp()));
+    ale_field()->Solve();
+    fluid_field()->apply_mesh_displacement(AleToFluid(ale_field()->Dispnp()));
   }
 
   // update fields
@@ -64,15 +64,15 @@ void FSI::FluidFluidMonolithicStructureSplit::Update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidFluidMonolithicStructureSplit::PrepareTimeStep()
+void FSI::FluidFluidMonolithicStructureSplit::prepare_time_step()
 {
   // prepare time step on subsequent field & increment
-  FSI::MonolithicStructureSplit::PrepareTimeStep();
+  FSI::MonolithicStructureSplit::prepare_time_step();
 
   // when this is the first call or we haven't relaxed the ALE-mesh
   // previously, the DOF-maps have not
   // changed since system setup
-  if (Step() == 0 || !FluidField()->IsAleRelaxationStep(Step() - 1)) return;
+  if (Step() == 0 || !fluid_field()->IsAleRelaxationStep(Step() - 1)) return;
 
   // REMARK:
   // as the new xfem-cut may lead to a change in the fluid dof-map,
@@ -94,11 +94,11 @@ void FSI::FluidFluidMonolithicStructureSplit::setup_dbc_map_extractor()
   // structure DBC
   dbcmaps.push_back(StructureField()->GetDBCMapExtractor()->CondMap());
   // fluid DBC (including background & embedded discretization)
-  dbcmaps.push_back(FluidField()->GetDBCMapExtractor()->CondMap());
+  dbcmaps.push_back(fluid_field()->GetDBCMapExtractor()->CondMap());
   // ALE-DBC-maps, free of FSI DOF
   std::vector<Teuchos::RCP<const Epetra_Map>> aleintersectionmaps;
-  aleintersectionmaps.push_back(AleField()->GetDBCMapExtractor()->CondMap());
-  aleintersectionmaps.push_back(AleField()->Interface()->OtherMap());
+  aleintersectionmaps.push_back(ale_field()->GetDBCMapExtractor()->CondMap());
+  aleintersectionmaps.push_back(ale_field()->Interface()->OtherMap());
   Teuchos::RCP<Epetra_Map> aleintersectionmap =
       CORE::LINALG::MultiMapExtractor::IntersectMaps(aleintersectionmaps);
   dbcmaps.push_back(aleintersectionmap);
@@ -106,7 +106,7 @@ void FSI::FluidFluidMonolithicStructureSplit::setup_dbc_map_extractor()
   Teuchos::RCP<const Epetra_Map> dbcmap = CORE::LINALG::MultiMapExtractor::MergeMaps(dbcmaps);
 
   // finally, create the global FSI Dirichlet map extractor
-  dbcmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(*DofRowMap(), dbcmap, true));
+  dbcmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(*dof_row_map(), dbcmap, true));
   if (dbcmaps_ == Teuchos::null)
   {
     FOUR_C_THROW("Creation of Dirichlet map extractor failed.");

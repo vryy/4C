@@ -546,7 +546,7 @@ bool CORE::GEO::getDistanceToSurface(const DRT::Element* surfaceElement,
   {
     CORE::LINALG::SerialDenseMatrix eleCoordMatrix =
         CORE::FE::getEleNodeNumbering_nodes_paramspace(surfaceElement->Shape());
-    for (int i = 0; i < surfaceElement->NumNode(); i++)
+    for (int i = 0; i < surfaceElement->num_node(); i++)
     {
       // use nodes as starting values
       for (int j = 0; j < 2; j++) elecoord(j) = eleCoordMatrix(j, i);

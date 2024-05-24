@@ -93,7 +93,7 @@ namespace NOX
 
      private:
       //! Print error message and throw error
-      void throwError(const std::string& functionName, const std::string& errorMsg);
+      void throw_error(const std::string& functionName, const std::string& errorMsg);
 
      private:
       //! Printing Utils

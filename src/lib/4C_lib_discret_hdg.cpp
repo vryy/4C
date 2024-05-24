@@ -34,7 +34,7 @@ DRT::DiscretizationHDG::DiscretizationHDG(const std::string name, Teuchos::RCP<E
 /*----------------------------------------------------------------------*
  |  Finalize construction (public)                     kronbichler 12/13|
  *----------------------------------------------------------------------*/
-int DRT::DiscretizationHDG::FillComplete(
+int DRT::DiscretizationHDG::fill_complete(
     bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
 {
   // call FillComleteFaces of base class with create_faces set to true
@@ -47,8 +47,8 @@ int DRT::DiscretizationHDG::FillComplete(
   for (std::map<int, Teuchos::RCP<DRT::FaceElement>>::const_iterator f = faces_.begin();
        f != faces_.end(); ++f)
   {
-    std::vector<int> ids(f->second->NumNode());
-    for (int i = 0; i < f->second->NumNode(); ++i) ids[i] = f->second->NodeIds()[i];
+    std::vector<int> ids(f->second->num_node());
+    for (int i = 0; i < f->second->num_node(); ++i) ids[i] = f->second->NodeIds()[i];
     nodeIds[f->first] = ids;
     trafoMap[f->first] = f->second->GetLocalTrafoMap();
   }
@@ -93,7 +93,7 @@ int DRT::DiscretizationHDG::FillComplete(
         CORE::FE::getEleNodeNumberingFaces(f->second->ParentMasterElement()->Shape());
 
     bool exchangeMasterAndSlave = false;
-    for (int i = 0; i < f->second->NumNode(); ++i)
+    for (int i = 0; i < f->second->num_node(); ++i)
     {
       // TODO (MK): check that this is enough also on periodic B.C. where the
       // node ids are different in any case...
@@ -340,7 +340,7 @@ void DRT::UTILS::DbcHDG::read_dirichlet_condition(const DRT::DiscretizationFaces
         {
           std::vector<int> predof = discret.Dof(0, discret.lRowElement(0));
           const int gid = predof[0];
-          const int lid = discret.DofRowMap(0)->LID(gid);
+          const int lid = discret.dof_row_map(0)->LID(gid);
 
           // set toggle vector
           info.toggle[lid] = 1;
@@ -352,7 +352,7 @@ void DRT::UTILS::DbcHDG::read_dirichlet_condition(const DRT::DiscretizationFaces
 
       // do only faces where all nodes are present in the node list
       bool faceRelevant = true;
-      int nummynodes = discret.lRowFace(i)->NumNode();
+      int nummynodes = discret.lRowFace(i)->num_node();
       const int* mynodes = discret.lRowFace(i)->NodeIds();
       for (int j = 0; j < nummynodes; ++j)
         if (!cond.ContainsNode(mynodes[j]))
@@ -505,7 +505,7 @@ void DRT::UTILS::DbcHDG::do_dirichlet_condition(const DRT::DiscretizationFaces& 
         {
           std::vector<int> predof = discret.Dof(0, discret.lRowElement(0));
           const int gid = predof[0];
-          const int lid = discret.DofRowMap(0)->LID(gid);
+          const int lid = discret.dof_row_map(0)->LID(gid);
 
           // amend vector of DOF-IDs which are Dirichlet BCs
           if (systemvectors[0] != Teuchos::null) (*systemvectors[0])[lid] = 0.0;
@@ -516,7 +516,7 @@ void DRT::UTILS::DbcHDG::do_dirichlet_condition(const DRT::DiscretizationFaces& 
           pressureDone = true;
         }
       }
-      int nummynodes = discret.lRowFace(i)->NumNode();
+      int nummynodes = discret.lRowFace(i)->num_node();
       const int* mynodes = discret.lRowFace(i)->NodeIds();
 
       // do only faces where all nodes are present in the node list

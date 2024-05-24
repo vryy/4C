@@ -75,11 +75,11 @@ void FS3I::PartFS3I::Init()
   // such that structure dof < fluid dof < ale dofs
   // (ordering required at certain non-intuitive points)
   //---------------------------------------------------------------------
-  problem->GetDis("structure")->FillComplete();
-  problem->GetDis("fluid")->FillComplete();
-  problem->GetDis("ale")->FillComplete();
-  problem->GetDis("scatra1")->FillComplete();
-  problem->GetDis("scatra2")->FillComplete();
+  problem->GetDis("structure")->fill_complete();
+  problem->GetDis("fluid")->fill_complete();
+  problem->GetDis("ale")->fill_complete();
+  problem->GetDis("scatra1")->fill_complete();
+  problem->GetDis("scatra2")->fill_complete();
 
   //---------------------------------------------------------------------
   // access discretizations for structure, fluid, ale as well as fluid-
@@ -98,7 +98,7 @@ void FS3I::PartFS3I::Init()
   if (aledis->NumGlobalNodes() == 0)
   {
     DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis, aledis);
-    aledis->FillComplete();
+    aledis->fill_complete();
     // setup material in every ALE element
     Teuchos::ParameterList params;
     params.set<std::string>("action", "setup_material");
@@ -133,7 +133,7 @@ void FS3I::PartFS3I::Init()
 
     // fill fluid-based scatra discretization by cloning fluid discretization
     DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis, fluidscatradis);
-    fluidscatradis->FillComplete();
+    fluidscatradis->fill_complete();
     // set implementation type of cloned scatra elements to advanced reactions
     for (int i = 0; i < fluidscatradis->NumMyColElements(); ++i)
     {
@@ -186,7 +186,7 @@ void FS3I::PartFS3I::Init()
 
     // fill structure-based scatra discretization by cloning structure discretization
     DRT::UTILS::CloneDiscretization<SSI::ScatraStructureCloneStrategy>(structdis, structscatradis);
-    structscatradis->FillComplete();
+    structscatradis->fill_complete();
 
     volume_coupling_objects_.push_back(Teuchos::null);
 
@@ -227,10 +227,10 @@ void FS3I::PartFS3I::Init()
   if (not(volume_coupling_objects_.size() == 2))
     FOUR_C_THROW("Unexpected size of volmortar object vector!");
 
-  fluiddis->FillComplete(true, false, false);
-  structdis->FillComplete(true, false, false);
-  fluidscatradis->FillComplete(true, false, false);
-  structscatradis->FillComplete(true, false, false);
+  fluiddis->fill_complete(true, false, false);
+  structdis->fill_complete(true, false, false);
+  fluidscatradis->fill_complete(true, false, false);
+  structscatradis->fill_complete(true, false, false);
 
   // Note: in the scatra fields we have now the following dof-sets:
   // structure dofset 0: structure dofset
@@ -341,10 +341,10 @@ Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> FS3I::PartFS3I::create_vol_mortar_ob
   DRT::UTILS::DiscretizationCreatorBase creator;
   creator.CopyConditions(*slavedis, *slavedis, conditions_to_copy);
 
-  // first call FillComplete for single discretizations.
+  // first call fill_complete for single discretizations.
   // This way the physical dofs are numbered successively
-  masterdis->FillComplete();
-  slavedis->FillComplete();
+  masterdis->fill_complete();
+  slavedis->fill_complete();
 
   // build auxiliary dofsets, i.e. pseudo dofs on each discretization
   const int ndofpernode_scatra = slavedis->NumDof(0, slavedis->lRowNode(0));
@@ -361,13 +361,13 @@ Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> FS3I::PartFS3I::create_vol_mortar_ob
   if (slavedis->AddDofSet(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in scatra field");
 
   // call assign_degrees_of_freedom also for auxiliary dofsets
-  // note: the order of FillComplete() calls determines the gid numbering!
+  // note: the order of fill_complete() calls determines the gid numbering!
   // 1. structure dofs
   // 2. scatra dofs
   // 3. structure auxiliary dofs
   // 4. scatra auxiliary dofs
-  masterdis->FillComplete(true, false, false);
-  slavedis->FillComplete(true, false, false);
+  masterdis->fill_complete(true, false, false);
+  slavedis->fill_complete(true, false, false);
 
 
   // Scheme: non matching meshes --> volumetric mortar coupling...
@@ -403,7 +403,7 @@ Teuchos::ParameterList& FS3I::PartFS3I::manipulate_fsi_time_params(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I::ReadRestart()
+void FS3I::PartFS3I::read_restart()
 {
   // read restart information, set vectors and variables
   // (Note that dofmaps might have changed in a redistribution call!)
@@ -417,30 +417,30 @@ void FS3I::PartFS3I::ReadRestart()
 
     if (not restartfrompartfsi)  // standard restart
     {
-      fsi_->ReadRestart(restart);
+      fsi_->read_restart(restart);
 
       for (unsigned i = 0; i < scatravec_.size(); ++i)
       {
         Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
-        currscatra->ScaTraField()->ReadRestart(restart);
+        currscatra->ScaTraField()->read_restart(restart);
       }
     }
     else  // we do not want to read the scatras values and the lagrange multiplyer, since we start
           // from a partitioned FSI
     {
-      fsi_->ReadRestart(restart);
+      fsi_->read_restart(restart);
 
       // we need to set time and step in scatra to have it matching with the fsi ones
       for (unsigned i = 0; i < scatravec_.size(); ++i)
       {
         Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
         currscatra->ScaTraField()->SetTimeStep(
-            fsi_->FluidField()->Time(), fsi_->FluidField()->Step());
+            fsi_->fluid_field()->Time(), fsi_->fluid_field()->Step());
       }
     }
 
-    time_ = fsi_->FluidField()->Time();
-    step_ = fsi_->FluidField()->Step();
+    time_ = fsi_->fluid_field()->Time();
+    step_ = fsi_->fluid_field()->Step();
   }
 }
 
@@ -467,7 +467,7 @@ void FS3I::PartFS3I::SetupSystem()
     CORE::Conditions::MultiConditionSelector mcs;
     mcs.AddSelector(Teuchos::rcp(
         new CORE::Conditions::NDimConditionSelector(*currdis, "ScaTraCoupling", 0, numscal)));
-    mcs.SetupExtractor(*currdis, *currdis->DofRowMap(), *mapex);
+    mcs.SetupExtractor(*currdis, *currdis->dof_row_map(), *mapex);
     scatrafieldexvec_.push_back(mapex);
   }
 
@@ -515,7 +515,7 @@ void FS3I::PartFS3I::SetupSystem()
           Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(scatraglobalex_->Map(i)), 27, false, true));
       scatracoupmat_.push_back(scatracoupmat);
 
-      const Epetra_Map* dofrowmap = scatravec_[i]->ScaTraField()->Discretization()->DofRowMap();
+      const Epetra_Map* dofrowmap = scatravec_[i]->ScaTraField()->Discretization()->dof_row_map();
       Teuchos::RCP<Epetra_Vector> zeros = CORE::LINALG::CreateVector(*dofrowmap, true);
       scatrazeros_.push_back(zeros);
     }
@@ -608,8 +608,8 @@ void FS3I::PartFS3I::SetupSystem()
 /*----------------------------------------------------------------------*/
 void FS3I::PartFS3I::TestResults(const Epetra_Comm& comm)
 {
-  GLOBAL::Problem::Instance()->AddFieldTest(fsi_->FluidField()->CreateFieldTest());
-  GLOBAL::Problem::Instance()->AddFieldTest(fsi_->AleField()->CreateFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(fsi_->fluid_field()->CreateFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(fsi_->ale_field()->CreateFieldTest());
   GLOBAL::Problem::Instance()->AddFieldTest(fsi_->StructureField()->CreateFieldTest());
 
   for (unsigned i = 0; i < scatravec_.size(); ++i)
@@ -634,8 +634,8 @@ void FS3I::PartFS3I::SetFSISolution()
     scatravec_[i]->ScaTraField()->clear_external_concentrations();
   }
 
-  SetMeshDisp();
-  SetVelocityFields();
+  set_mesh_disp();
+  set_velocity_fields();
   set_wall_shear_stresses();
   set_membrane_concentration();
 }
@@ -644,18 +644,18 @@ void FS3I::PartFS3I::SetFSISolution()
 /*----------------------------------------------------------------------*/
 void FS3I::PartFS3I::set_struct_scatra_solution() const
 {
-  fsi_->StructureField()->Discretization()->SetState(
+  fsi_->StructureField()->Discretization()->set_state(
       1, "scalarfield", structure_scalar_to_structure(scatravec_[1]->ScaTraField()->Phinp()));
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I::SetMeshDisp() const
+void FS3I::PartFS3I::set_mesh_disp() const
 {
   // fluid field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra = scatravec_[0];
-  fluidscatra->ScaTraField()->ApplyMeshMovement(FluidToFluidScalar(fsi_->FluidField()->Dispnp()));
+  fluidscatra->ScaTraField()->ApplyMeshMovement(FluidToFluidScalar(fsi_->fluid_field()->Dispnp()));
 
   // structure field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra = scatravec_[1];
@@ -666,7 +666,7 @@ void FS3I::PartFS3I::SetMeshDisp() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I::SetVelocityFields() const
+void FS3I::PartFS3I::set_velocity_fields() const
 {
   std::vector<Teuchos::RCP<const Epetra_Vector>> convel;
   std::vector<Teuchos::RCP<const Epetra_Vector>> vel;
@@ -688,22 +688,22 @@ void FS3I::PartFS3I::ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector>>& 
 {
   // extract fluid velocities
 
-  switch (fsi_->FluidField()->TimIntScheme())
+  switch (fsi_->fluid_field()->TimIntScheme())
   {
     case INPAR::FLUID::timeint_afgenalpha:
     {
       Teuchos::RCP<Epetra_Vector> fluidconvel =
-          Teuchos::rcp(new Epetra_Vector(*(fsi_->FluidField()->Velaf())));
+          Teuchos::rcp(new Epetra_Vector(*(fsi_->fluid_field()->Velaf())));
       vel.push_back(fluidconvel);
       // now subtract the grid velocity
-      fluidconvel->Update(-1.0, *(fsi_->FluidField()->GridVel()), 1.0);
+      fluidconvel->Update(-1.0, *(fsi_->fluid_field()->GridVel()), 1.0);
       convel.push_back(fluidconvel);
     }
     break;
     case INPAR::FLUID::timeint_one_step_theta:
     {
-      convel.push_back(fsi_->FluidField()->ConvectiveVel());
-      vel.push_back(fsi_->FluidField()->Velnp());
+      convel.push_back(fsi_->fluid_field()->ConvectiveVel());
+      vel.push_back(fsi_->fluid_field()->Velnp());
     }
     break;
     default:
@@ -744,7 +744,7 @@ void FS3I::PartFS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>& 
   // ############ Fluid Field ###############
 
   Teuchos::RCP<ADAPTER::FluidFSI> fluid =
-      Teuchos::rcp_dynamic_cast<ADAPTER::FluidFSI>(fsi_->FluidField());
+      Teuchos::rcp_dynamic_cast<ADAPTER::FluidFSI>(fsi_->fluid_field());
   if (fluid == Teuchos::null) FOUR_C_THROW("Dynamic cast to ADAPTER::FluidFSI failed!");
 
   Teuchos::RCP<Epetra_Vector> WallShearStress = fluid->calculate_wall_shear_stresses();
@@ -759,7 +759,7 @@ void FS3I::PartFS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>& 
   // ############ Structure Field ###############
 
   // extract FSI-Interface from fluid field
-  WallShearStress = fsi_->FluidField()->Interface()->ExtractFSICondVector(WallShearStress);
+  WallShearStress = fsi_->fluid_field()->Interface()->ExtractFSICondVector(WallShearStress);
 
   // replace global fluid interface dofs through structure interface dofs
   WallShearStress = fsi_->FluidToStruct(WallShearStress);

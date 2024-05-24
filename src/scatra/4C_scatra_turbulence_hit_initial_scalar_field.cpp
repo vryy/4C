@@ -134,7 +134,7 @@ namespace SCATRA
 
         int length = sblock.size();
 
-        exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
+        exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
         rblock.clear();
 
@@ -440,7 +440,7 @@ namespace SCATRA
       const int pos = loc[2] + nummodes_ * (loc[1] + nummodes_ * loc[0]);
 
       // get local dof id corresponding to the global id
-      int lid = discret_->DofRowMap()->LID(dofs[0]);
+      int lid = discret_->dof_row_map()->LID(dofs[0]);
       // set value
       int err = phinp_->ReplaceMyValues(1, &((*phi)[pos]), &lid);
 

@@ -19,11 +19,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::LAGRANGE::Strategy::Strategy(
-    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
-    const Epetra_Map* NodeRowMap, const Teuchos::ParameterList& params,
-    const plain_interface_set& interfaces, int dim, const Teuchos::RCP<const Epetra_Comm>& comm,
-    int maxdof)
-    : CONTACT::AUG::Strategy(data_ptr, DofRowMap, NodeRowMap, params, interfaces, dim, comm, maxdof)
+    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
+    const Teuchos::ParameterList& params, const plain_interface_set& interfaces, int dim,
+    const Teuchos::RCP<const Epetra_Comm>& comm, int maxdof)
+    : CONTACT::AUG::Strategy(
+          data_ptr, dof_row_map, NodeRowMap, params, interfaces, dim, comm, maxdof)
 {
   // cast to steepest ascent interfaces
   for (plain_interface_set::const_iterator cit = interfaces.begin(); cit != interfaces.end(); ++cit)

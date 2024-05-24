@@ -147,7 +147,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::Evaluate(DRT::Element* el
 
   shapes_->Evaluate(*ele);
 
-  ReadGlobalVectors(ele, discretization, la);
+  read_global_vectors(ele, discretization, la);
   GetMaterialParams(ele);
 
   elevec1.putScalar(0.0);
@@ -206,7 +206,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
     case SCATRA::Action::update_interior_variables:
     {
       shapes_->Evaluate(*ele);
-      ReadGlobalVectors(ele, discretization, la);
+      read_global_vectors(ele, discretization, la);
 
       return update_interior_variables(hdgele, params, elevec1_epetra);
       break;
@@ -215,7 +215,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
     case SCATRA::Action::interpolate_hdg_to_node:
     {
       shapes_->Evaluate(*ele);
-      ReadGlobalVectors(ele, discretization, la);
+      read_global_vectors(ele, discretization, la);
       return NodeBasedValues(ele, discretization, elevec1_epetra);
       break;
     }
@@ -235,7 +235,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
       {
         shapes_->Evaluate(*ele);
         ElementInit(ele);
-        ReadGlobalVectors(ele, discretization, la);
+        read_global_vectors(ele, discretization, la);
         prepare_material_params(ele);
         local_solver_->ComputeMatrices(ele);
         local_solver_->CondenseLocalPart(hdgele);
@@ -296,14 +296,14 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
     case SCATRA::Action::calc_padaptivity:
     {
       shapes_->Evaluate(*ele);
-      ReadGlobalVectors(ele, discretization, la);
+      read_global_vectors(ele, discretization, la);
       return CalcPAdaptivity(ele, discretization, params);
       break;
     }
     case SCATRA::Action::calc_error:
     {
       shapes_->Evaluate(*ele);
-      ReadGlobalVectors(ele, discretization, la);
+      read_global_vectors(ele, discretization, la);
       return CalcError(ele, params, elevec1_epetra);
       break;
     }
@@ -455,10 +455,10 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectDirichField(DRT::E
 
 
 /*----------------------------------------------------------------------*
- * ReadGlobalVectors                                     hoermann 09/15 |
+ * read_global_vectors                                     hoermann 09/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ReadGlobalVectors(
+void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::read_global_vectors(
     DRT::Element* ele, DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
   DRT::ELEMENTS::ScaTraHDG* hdgele =
@@ -493,7 +493,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ReadGlobalVectors(
   }
 
   return;
-}  // ReadGlobalVectors
+}  // read_global_vectors
 
 
 /*----------------------------------------------------------------------*

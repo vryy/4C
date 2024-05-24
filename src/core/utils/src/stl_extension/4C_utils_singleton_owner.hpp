@@ -34,10 +34,10 @@ namespace CORE::UTILS
    * Manages (creates, destructs, or returns) the singleton instance of any type.
    *
    * @tparam T  Type of the singleton
-   * @tparam CreationArgs A template parameter pack which contains the types of all arguments that
+   * @tparam creation_args_ A template parameter pack which contains the types of all arguments that
    *   are necessary to create the owned singleton object.
    */
-  template <typename T, typename... CreationArgs>
+  template <typename T, typename... creation_args_>
   class SingletonOwner
   {
    public:
@@ -48,7 +48,7 @@ namespace CORE::UTILS
      * argument deduction.
      *
      * @param [in] creator  Function (object) that can create the singleton instance and return a
-     * unique_ptr to it. The function's signature must be `std::unique_ptr<T>(CreationArgs...)`.
+     * unique_ptr to it. The function's signature must be `std::unique_ptr<T>(creation_args_...)`.
      */
     template <typename Fn, typename E = std::enable_if_t<!std::is_same_v<Fn, SingletonOwner>, Fn>>
     SingletonOwner(Fn&& creator);
@@ -76,14 +76,14 @@ namespace CORE::UTILS
      * to be passed as well. Unfortunately, this is necessary regardless of the @p action flag.
      *
      */
-    T* Instance(SingletonAction action, CreationArgs... args);
+    T* Instance(SingletonAction action, creation_args_... args);
 
    private:
     //! singleton instance
     std::unique_ptr<T> instance_;
 
     //! Function that creates a singleton object
-    std::function<std::unique_ptr<T>(CreationArgs...)> creator_;
+    std::function<std::unique_ptr<T>(creation_args_...)> creator_;
   };
 
   /**
@@ -96,10 +96,10 @@ namespace CORE::UTILS
    *
    * @tparam Key The type used to access the different instances.
    * @tparam T The type of the singleton.
-   * @tparam CreationArgs A template parameter pack which contains the types of all arguments that
+   * @tparam creation_args_ A template parameter pack which contains the types of all arguments that
    *   are necessary to create the owned singleton object.
    */
-  template <typename Key, typename T, typename... CreationArgs>
+  template <typename Key, typename T, typename... creation_args_>
   class SingletonMap
   {
    public:
@@ -110,7 +110,7 @@ namespace CORE::UTILS
      * argument deduction.
      *
      * @param [in] creator  Function (object) that can create the singleton instance and return a
-     * unique_ptr to it. The function's signature must be `std::unique_ptr<T>(CreationArgs...)`.
+     * unique_ptr to it. The function's signature must be `std::unique_ptr<T>(creation_args_...)`.
      */
     template <typename Fn, typename E = std::enable_if_t<!std::is_same_v<Fn, SingletonMap>, Fn>>
     SingletonMap(Fn&& creator);
@@ -125,14 +125,14 @@ namespace CORE::UTILS
      * disname);
      * @endoce
      */
-    SingletonOwner<T, CreationArgs...>& operator[](const Key& key);
+    SingletonOwner<T, creation_args_...>& operator[](const Key& key);
 
    private:
     //! Function that creates a singleton object
-    std::function<std::unique_ptr<T>(CreationArgs...)> creator_;
+    std::function<std::unique_ptr<T>(creation_args_...)> creator_;
 
     //! All SingletonOwner objects that are stored internally.
-    std::map<Key, SingletonOwner<T, CreationArgs...>> map_;
+    std::map<Key, SingletonOwner<T, creation_args_...>> map_;
   };
 
 
@@ -151,7 +151,7 @@ namespace CORE::UTILS
    * @endcode
    *
    * @param creator Function (object) that can create the singleton instance and return a
-   *   unique_ptr to it. The function's signature must be `std::unique_ptr<T>(CreationArgs...)`
+   *   unique_ptr to it. The function's signature must be `std::unique_ptr<T>(creation_args_...)`
    * @return A SingletonOwner object that should probably be stored as a static variable.
    */
   template <typename Fn>
@@ -179,7 +179,7 @@ namespace CORE::UTILS
    * @endcode
    *
    * @param creator Function (object) that can create the singleton instance and return a
-   *   unique_ptr to it. The function's signature must be `std::unique_ptr<T>(CreationArgs...)`
+   *   unique_ptr to it. The function's signature must be `std::unique_ptr<T>(creation_args_...)`
    * @return A SingletonMap object that should probably be stored as a static variable.
    */
   template <typename KeyType, typename Fn>
@@ -190,16 +190,16 @@ namespace CORE::UTILS
   // --- template and inline functions --- //
 
 
-  template <typename T, typename... CreationArgs>
+  template <typename T, typename... creation_args_>
   template <typename Fn, typename E>
-  SingletonOwner<T, CreationArgs...>::SingletonOwner(Fn&& creator)
+  SingletonOwner<T, creation_args_...>::SingletonOwner(Fn&& creator)
       : creator_(std::forward<Fn>(creator))
   {
   }
 
 
-  template <typename T, typename... CreationArgs>
-  T* SingletonOwner<T, CreationArgs...>::Instance(SingletonAction action, CreationArgs... args)
+  template <typename T, typename... creation_args_>
+  T* SingletonOwner<T, creation_args_...>::Instance(SingletonAction action, creation_args_... args)
   {
     if (action == SingletonAction::create and !instance_)
     {
@@ -213,16 +213,16 @@ namespace CORE::UTILS
   }
 
 
-  template <typename Key, typename T, typename... CreationArgs>
+  template <typename Key, typename T, typename... creation_args_>
   template <typename Fn, typename E>
-  SingletonMap<Key, T, CreationArgs...>::SingletonMap(Fn&& creator)
+  SingletonMap<Key, T, creation_args_...>::SingletonMap(Fn&& creator)
       : creator_(std::forward<Fn>(creator))
   {
   }
 
 
-  template <typename Key, typename T, typename... CreationArgs>
-  SingletonOwner<T, CreationArgs...>& SingletonMap<Key, T, CreationArgs...>::operator[](
+  template <typename Key, typename T, typename... creation_args_>
+  SingletonOwner<T, creation_args_...>& SingletonMap<Key, T, creation_args_...>::operator[](
       const Key& key)
   {
     auto it = map_.find(key);

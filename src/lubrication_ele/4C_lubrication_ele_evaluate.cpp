@@ -71,7 +71,7 @@ int DRT::ELEMENTS::Lubrication::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  dummy                                                   wirtz 10/15 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Lubrication::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Lubrication::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -85,7 +85,7 @@ int DRT::ELEMENTS::Lubrication::EvaluateNeumann(Teuchos::ParameterList& params,
 /*---------------------------------------------------------------------*
 |  Call the element to set all basic parameter             wirtz 10/15 |
 *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::LubricationType::PreEvaluate(DRT::Discretization& dis,
+void DRT::ELEMENTS::LubricationType::pre_evaluate(DRT::Discretization& dis,
     Teuchos::ParameterList& p, Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,

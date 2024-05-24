@@ -40,7 +40,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::
   // the length of the GIDs.
   mortar_manager_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidMortarManager>(
       new BEAMINTERACTION::BeamToSolidMortarManager(
-          discret, beam_to_solid_params, discret->DofRowMap()->MaxAllGID() + 1));
+          discret, beam_to_solid_params, discret->dof_row_map()->MaxAllGID() + 1));
 
   // Setup the mortar manager.
   mortar_manager_->Setup();
@@ -51,7 +51,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::
 /**
  *
  */
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::EvaluateForceStiff(
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::evaluate_force_stiff(
     Teuchos::RCP<DRT::Discretization> discret,
     const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
     Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<CORE::LINALG::SparseMatrix> fe_sysmat)
@@ -65,10 +65,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::Eva
 }
 
 
-double BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::GetEnergy(
+double BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::get_energy(
     const Teuchos::RCP<const Epetra_Vector>& disp) const
 {
-  return mortar_manager_->GetEnergy();
+  return mortar_manager_->get_energy();
 }
 
 FOUR_C_NAMESPACE_CLOSE

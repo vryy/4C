@@ -585,13 +585,13 @@ void CONTACT::FriNode::initialize_data_container()
   // get maximum size of lin vectors
   linsize_ = 0;
   for (int i = 0; i < NumElement(); ++i)
-    for (int j = 0; j < Elements()[i]->NumNode(); ++j)
+    for (int j = 0; j < Elements()[i]->num_node(); ++j)
       linsize_ += Elements()[i]->NumDofPerNode(*(Elements()[i]->Nodes()[j]));
 
   // get maximum size of lin vectors
   dentries_ = 0;
   for (int i = 0; i < NumElement(); ++i)
-    for (int j = 0; j < Elements()[i]->NumNode(); ++j)
+    for (int j = 0; j < Elements()[i]->num_node(); ++j)
       dentries_ += Elements()[i]->NumDofPerNode(*(Elements()[i]->Nodes()[j]));
 
   // only initialize if not yet done

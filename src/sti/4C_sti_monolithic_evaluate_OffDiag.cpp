@@ -315,7 +315,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_scatra_thermo_inter
       meshtying_strategy_sca_tra()->set_condition_specific_sca_tra_parameters(
           *kinetics_slave_cond.second);
       // evaluate the condition
-      ScaTraField()->Discretization()->EvaluateCondition(condparams, strategyscatrathermos2i,
+      ScaTraField()->Discretization()->evaluate_condition(condparams, strategyscatrathermos2i,
           "S2IKinetics", kinetics_slave_cond.second->parameters().Get<int>("ConditionID"));
     }
   }
@@ -494,7 +494,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_off_diag_block_ther
       meshtying_strategy_thermo()->set_condition_specific_sca_tra_parameters(
           *kinetics_slave_cond.second);
       // evaluate the condition
-      ThermoField()->Discretization()->EvaluateCondition(condparams, strategythermoscatras2i,
+      ThermoField()->Discretization()->evaluate_condition(condparams, strategythermoscatras2i,
           "S2IKinetics", kinetics_slave_cond.second->parameters().Get<int>("ConditionID"));
     }
   }
@@ -662,7 +662,7 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::
       // collect condition specific data and store to scatra boundary parameter class
       meshtying_strategy_sca_tra()->set_condition_specific_sca_tra_parameters(*condition);
       // evaluate mortar integration cells
-      meshtying_strategy_sca_tra()->EvaluateMortarCells(
+      meshtying_strategy_sca_tra()->evaluate_mortar_cells(
           meshtying_strategy_sca_tra()->mortar_discretization(
               condition->parameters().Get<int>("ConditionID")),
           condparams, strategyscatrathermos2i);
@@ -808,7 +808,7 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::
       // collect condition specific data and store to scatra boundary parameter class
       meshtying_strategy_thermo()->set_condition_specific_sca_tra_parameters(*condition);
       // evaluate mortar integration cells
-      meshtying_strategy_thermo()->EvaluateMortarCells(
+      meshtying_strategy_thermo()->evaluate_mortar_cells(
           meshtying_strategy_thermo()->mortar_discretization(
               condition->parameters().Get<int>("ConditionID")),
           condparams, strategythermoscatras2i);

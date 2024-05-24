@@ -134,7 +134,7 @@ bool CORE::GEO::CUT::VolumeIntegration::compute_gaussian_points(int numeach)
   {
     bool area = false;
     std::vector<std::vector<double>> InPlane;
-    area = IsContainArea(minn, maxx, zmin, InPlane, zcoord, ycoord, 0.01, numeach);
+    area = is_contain_area(minn, maxx, zmin, InPlane, zcoord, ycoord, 0.01, numeach);
     if (area)
     {
       gaus_pts_.insert(gaus_pts_.end(), InPlane.begin(), InPlane.end());
@@ -149,7 +149,7 @@ bool CORE::GEO::CUT::VolumeIntegration::compute_gaussian_points(int numeach)
   {
     bool area = false;
     std::vector<std::vector<double>> InPlane;
-    area = IsContainArea(minn, maxx, zmax, InPlane, zcoord, ycoord, 0.01, numeach);
+    area = is_contain_area(minn, maxx, zmax, InPlane, zcoord, ycoord, 0.01, numeach);
     if (area)
     {
       gaus_pts_.insert(gaus_pts_.end(), InPlane.begin(), InPlane.end());
@@ -169,7 +169,7 @@ bool CORE::GEO::CUT::VolumeIntegration::compute_gaussian_points(int numeach)
     {
       bool area = false;
       std::vector<std::vector<double>> InPlane;
-      area = IsContainArea(minn, maxx, zmin, InPlane, zcoord, ycoord, 0.001, numeach);
+      area = is_contain_area(minn, maxx, zmin, InPlane, zcoord, ycoord, 0.001, numeach);
       if (area)
       {
         gaus_pts_.insert(gaus_pts_.end(), InPlane.begin(), InPlane.end());
@@ -182,7 +182,7 @@ bool CORE::GEO::CUT::VolumeIntegration::compute_gaussian_points(int numeach)
     {
       bool area = false;
       std::vector<std::vector<double>> InPlane;
-      area = IsContainArea(minn, maxx, zmax, InPlane, zcoord, ycoord, 0.001, numeach);
+      area = is_contain_area(minn, maxx, zmax, InPlane, zcoord, ycoord, 0.001, numeach);
       if (area)
       {
         gaus_pts_.insert(gaus_pts_.end(), InPlane.begin(), InPlane.end());
@@ -211,7 +211,7 @@ bool CORE::GEO::CUT::VolumeIntegration::compute_gaussian_points(int numeach)
     {
       bool area = false;
       std::vector<std::vector<double>> InPlane;
-      area = IsContainArea(minn, maxx, zplane[i], InPlane, zcoord, ycoord, 0.01, numeach);
+      area = is_contain_area(minn, maxx, zplane[i], InPlane, zcoord, ycoord, 0.01, numeach);
       if (area)
       {
         gaus_pts_.insert(gaus_pts_.end(), InPlane.begin(), InPlane.end());
@@ -231,7 +231,7 @@ bool CORE::GEO::CUT::VolumeIntegration::compute_gaussian_points(int numeach)
           dzzm += 0.5 * dzzm;
           bool innerarea = false;
           double zz = zplane[i] - dzzm;
-          innerarea = IsContainArea(minn, maxx, zz, InPlane, zcoord, ycoord, 0.01, numeach);
+          innerarea = is_contain_area(minn, maxx, zz, InPlane, zcoord, ycoord, 0.01, numeach);
           if (innerarea)
           {
             gaus_pts_.insert(gaus_pts_.end(), InPlane.begin(), InPlane.end());
@@ -289,7 +289,7 @@ void CORE::GEO::CUT::VolumeIntegration::get_zcoordinates(
               check whether the generated ray intersect any of the facets
               if so generate gauss points along the ray
 *------------------------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *maxi,
+bool CORE::GEO::CUT::VolumeIntegration::is_intersect(double *pt, double *mini, double *maxi,
     std::vector<std::vector<double>> &linePts, std::vector<std::vector<double>> zcoord,
     std::vector<std::vector<double>> ycoord, double toler, int numeach)
 {
@@ -362,21 +362,21 @@ bool CORE::GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, do
     }
     else if (fabs(inter2[0] - inter1[0]) < 0.1 * (maxi[0] - mini[0]))
     {
-      OnLine(inter1, inter2, linePts, 2);
+      on_line(inter1, inter2, linePts, 2);
       intersect = true;
     }
     else if (fabs(inter2[0] - inter1[0]) < 0.2 * (maxi[0] - mini[0]))
     {
-      OnLine(inter1, inter2, linePts, 3);
+      on_line(inter1, inter2, linePts, 3);
       intersect = true;
     }
     else if (fabs(inter2[0] - inter1[0]) < 0.3 * (maxi[0] - mini[0]))
     {
-      OnLine(inter1, inter2, linePts, 4);
+      on_line(inter1, inter2, linePts, 4);
       intersect = true;
     }
     else
-      OnLine(inter1, inter2, linePts, numeach);
+      on_line(inter1, inter2, linePts, numeach);
     return intersect;
   }
   else
@@ -435,7 +435,7 @@ bool CORE::GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, do
         if (interPoints.size() == 2)  // if intersection is on the triangulated line, results only
                                       // in two face intersections
         {
-          OnLine(inter1, inter2, linePts, numeach);
+          on_line(inter1, inter2, linePts, numeach);
           intersect = true;
           break;
         }
@@ -450,12 +450,12 @@ bool CORE::GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, do
         }
         else if ((inter2[0] - inter1[0]) < 0.05 * (maxi[0] - mini[0]))
         {
-          OnLine(inter1, inter2, linePts, 2 /*numeach/3+1*/);
+          on_line(inter1, inter2, linePts, 2 /*numeach/3+1*/);
           intersect = true;
         }
         else
         {
-          OnLine(inter1, inter2, linePts, numeach / 2 + 1);
+          on_line(inter1, inter2, linePts, numeach / 2 + 1);
           intersect = true;
         }
       }
@@ -593,8 +593,8 @@ int CORE::GEO::CUT::VolumeIntegration::pnpoly(const std::vector<std::vector<doub
         Check whether the particular z-plane of the volumecell contains significant area so as to
  distribute the Gauss points in that plane
  *--------------------------------------------------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::VolumeIntegration::IsContainArea(double minn[3], double maxx[3], double &zmin,
-    std::vector<std::vector<double>> &pts, std::vector<std::vector<double>> zcoord,
+bool CORE::GEO::CUT::VolumeIntegration::is_contain_area(double minn[3], double maxx[3],
+    double &zmin, std::vector<std::vector<double>> &pts, std::vector<std::vector<double>> zcoord,
     std::vector<std::vector<double>> ycoord, double toler, int numeach)
 {
   bool isArea = true;
@@ -609,7 +609,7 @@ bool CORE::GEO::CUT::VolumeIntegration::IsContainArea(double minn[3], double max
     ymin += toler * dx1[1];
     bool intersec = false;
     std::array<double, 3> a = {xmin, ymin, zmin};
-    intersec = IsIntersect(a.data(), minn, maxx, linePts, zcoord, ycoord, toler, numeach);
+    intersec = is_intersect(a.data(), minn, maxx, linePts, zcoord, ycoord, toler, numeach);
 
     // the area of the solid volume in this particular z-plane is almost negligible
     // if the area of volumecell is less than 1% of bounding box
@@ -633,7 +633,7 @@ bool CORE::GEO::CUT::VolumeIntegration::IsContainArea(double minn[3], double max
 
     bool intersec = false;
     std::array<double, 3> a = {xmin, ymax, zmin};
-    intersec = IsIntersect(a.data(), minn, maxx, linePts, zcoord, ycoord, toler, numeach);
+    intersec = is_intersect(a.data(), minn, maxx, linePts, zcoord, ycoord, toler, numeach);
     if ((ymax - ymin) < toler * dx1[1])
     {
       isArea = false;
@@ -657,7 +657,7 @@ bool CORE::GEO::CUT::VolumeIntegration::IsContainArea(double minn[3], double max
     std::array<double, 3> a = {xmin, yplane[i], zmin};
     bool intersec = false;
     std::vector<std::vector<double>> linePts;
-    intersec = IsIntersect(a.data(), minn, maxx, linePts, zcoord, ycoord, toler, numeach);
+    intersec = is_intersect(a.data(), minn, maxx, linePts, zcoord, ycoord, toler, numeach);
     if (intersec)
     {
       pts.insert(pts.end(), linePts.begin(), linePts.end());
@@ -675,7 +675,7 @@ bool CORE::GEO::CUT::VolumeIntegration::IsContainArea(double minn[3], double max
         std::array<double, 3> a = {xmin, yplane[i] - dyym, zmin};
         bool innerintersec = false;
         std::vector<std::vector<double>> linePts;
-        innerintersec = IsIntersect(a.data(), minn, maxx, linePts, zcoord, ycoord, toler, numeach);
+        innerintersec = is_intersect(a.data(), minn, maxx, linePts, zcoord, ycoord, toler, numeach);
 
         if (innerintersec)
         {
@@ -694,7 +694,7 @@ bool CORE::GEO::CUT::VolumeIntegration::IsContainArea(double minn[3], double max
         Generates equally spaced "num" number of points on the line whose end points are specified
 by inter1 and inter2
 *-------------------------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::VolumeIntegration::OnLine(std::vector<double> inter1,
+void CORE::GEO::CUT::VolumeIntegration::on_line(std::vector<double> inter1,
     std::vector<double> inter2, std::vector<std::vector<double>> &linePts, int num)
 {
   std::vector<double> left, right;
@@ -837,7 +837,7 @@ CORE::LINALG::SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_weigh
 }
 
 // Writes the Geometry of volumecell and location of Gauss points in GMSH format output file
-void CORE::GEO::CUT::VolumeIntegration::GaussPointGmsh()
+void CORE::GEO::CUT::VolumeIntegration::gauss_point_gmsh()
 {
   volcell_->dump_gmsh_gauss_points_mom_fit(gaus_pts_);
 }

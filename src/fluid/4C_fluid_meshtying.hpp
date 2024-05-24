@@ -89,7 +89,7 @@ namespace FLD
     );
 
     //! Old routine handling Dirichlet conditions on the master side of the internal interface
-    /// During PrepareTimeStep() DC are projected from the master to the slave
+    /// During prepare_time_step() DC are projected from the master to the slave
     void project_master_to_slave_for_overlapping_bc(
         Teuchos::RCP<Epetra_Vector>& velnp,   ///> solution vector n+1
         Teuchos::RCP<const Epetra_Map> bmaps  ///> map of boundary condition
@@ -216,14 +216,14 @@ namespace FLD
 
     //! split sparse global system matrix into 3x3 block sparse matrix associated with interior,
     //! master, and slave dofs
-    void SplitMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator>
-                         matrix,  //!< original sparse global system matrix before split
+    void split_matrix(Teuchos::RCP<CORE::LINALG::SparseOperator>
+                          matrix,  //!< original sparse global system matrix before split
         Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>&
             splitmatrix  //!< resulting block sparse matrix after split
     );
 
     //! Split vector and save parts in a std::vector<Teuchos::RCP<Epetra_Vector> >
-    void SplitVector(Teuchos::RCP<Epetra_Vector> vector,         ///> vector to split
+    void split_vector(Teuchos::RCP<Epetra_Vector> vector,        ///> vector to split
         std::vector<Teuchos::RCP<Epetra_Vector>>& splitvector);  ///> container for the split vector
 
     //! Split vector and save parts in a std::vector<Teuchos::RCP<Epetra_Vector> >

@@ -207,7 +207,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Init(int id,
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Setup(const int matnum)
 {
-  CheckInit();
+  check_init();
 
   // call setup of base class first
   BeamLinkPinJointed::Setup(matnum);
@@ -264,7 +264,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Setup(const int matnum)
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Pack(CORE::COMM::PackBuffer& data) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -313,10 +313,10 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Unpack(const std::vector<ch
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::EvaluateForce(
+bool BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::evaluate_force(
     CORE::LINALG::SerialDenseVector& forcevec1, CORE::LINALG::SerialDenseVector& forcevec2)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   CORE::LINALG::Matrix<6, 1, double> disp_totlag_centerline;
   std::vector<CORE::LINALG::Matrix<4, 1, double>> Qnode;
@@ -341,11 +341,11 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::EvaluateForce(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::EvaluateStiff(
+bool BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::evaluate_stiff(
     CORE::LINALG::SerialDenseMatrix& stiffmat11, CORE::LINALG::SerialDenseMatrix& stiffmat12,
     CORE::LINALG::SerialDenseMatrix& stiffmat21, CORE::LINALG::SerialDenseMatrix& stiffmat22)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   CORE::LINALG::Matrix<6, 1, double> disp_totlag_centerline;
   std::vector<CORE::LINALG::Matrix<4, 1, double>> Qnode;
@@ -383,12 +383,12 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::EvaluateStiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::EvaluateForceStiff(
+bool BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::evaluate_force_stiff(
     CORE::LINALG::SerialDenseVector& forcevec1, CORE::LINALG::SerialDenseVector& forcevec2,
     CORE::LINALG::SerialDenseMatrix& stiffmat11, CORE::LINALG::SerialDenseMatrix& stiffmat12,
     CORE::LINALG::SerialDenseMatrix& stiffmat21, CORE::LINALG::SerialDenseMatrix& stiffmat22)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   CORE::LINALG::Matrix<6, 1, double> disp_totlag_centerline;
   std::vector<CORE::LINALG::Matrix<4, 1, double>> Qnode;
@@ -432,7 +432,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::ResetState(
     std::vector<CORE::LINALG::Matrix<3, 1>>& bspotpos,
     std::vector<CORE::LINALG::Matrix<3, 3>>& bspottriad)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   BeamLinkPinJointed::ResetState(bspotpos, bspottriad);
 

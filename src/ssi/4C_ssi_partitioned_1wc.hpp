@@ -47,10 +47,10 @@ namespace SSI
 
    protected:
     //! prepare time step for single fields
-    void PrepareTimeStep(bool printheader = true) override = 0;
+    void prepare_time_step(bool printheader = true) override = 0;
 
     //! perform one time step of structure field
-    void DoStructStep() override;
+    void do_struct_step() override;
 
     //! perform one time step of scatra field
     void DoScatraStep() override;
@@ -88,7 +88,7 @@ namespace SSI
     void Timeloop() override;
 
     //! prepare time step for single fields
-    void PrepareTimeStep(bool printheader = true) override;
+    void prepare_time_step(bool printheader = true) override;
   };
 
   class SSIPart1WCScatraToSolid : public SSIPart1WC
@@ -120,7 +120,7 @@ namespace SSI
     void Timeloop() override;
 
     //! prepare time step for single fields
-    void PrepareTimeStep(bool printheader = true) override;
+    void prepare_time_step(bool printheader = true) override;
 
     //! return, if time loop has finished
     bool Finished() const;

@@ -136,7 +136,7 @@ namespace CONTACT
     \brief read restart
 
     */
-    void ReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
+    void read_restart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<Epetra_Vector> zero);
     /*!
     \brief recover lagr. mult. for contact/meshtying and slave displ for mesht.
@@ -148,7 +148,7 @@ namespace CONTACT
     \brief set state vector
 
     */
-    void SetState(Teuchos::RCP<Epetra_Vector> zeros);
+    void set_state(Teuchos::RCP<Epetra_Vector> zeros);
 
     /*!
     \brief store dirichlet status

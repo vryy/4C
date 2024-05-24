@@ -57,27 +57,27 @@ namespace CONTACT
           const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dincr);
 
      private:
-      Teuchos::RCP<CORE::LINALG::Solver> CreateLinearSolver(const int lin_sol_id,
+      Teuchos::RCP<CORE::LINALG::Solver> create_linear_solver(const int lin_sol_id,
           const Epetra_Comm& comm, enum CORE::LINEAR_SOLVER::SolverType& solver_type) const;
 
-      void LinSolve(
+      void lin_solve(
           CORE::LINALG::SparseOperator& mat, Epetra_MultiVector& rhs, Epetra_MultiVector& sol);
 
-      inline void CheckInit() const
+      inline void check_init() const
       {
         if (not isinit_) FOUR_C_THROW("Call Init() first!");
       }
 
-      inline void CheckInitSetup() const
+      inline void check_init_setup() const
       {
-        CheckInit();
+        check_init();
         if (not issetup_) FOUR_C_THROW("Call Setup() first!");
       }
 
       Teuchos::RCP<Epetra_Vector> get_structure_gradient(
           const CONTACT::ParamsInterface& cparams) const;
 
-      void CreateBMatrix();
+      void create_b_matrix();
 
       void assemble_gradient_b_matrix_contribution(
           const Epetra_Vector& dincr, const Epetra_Vector& str_grad, Epetra_Vector& lmincr) const;

@@ -320,7 +320,7 @@ void MAT::Growth::Update()
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::Growth::ResetStep()
+void MAT::Growth::reset_step()
 {
   const int numgp = theta_->size();
 
@@ -329,7 +329,7 @@ void MAT::Growth::ResetStep()
     theta_->at(i) = thetaold_->at(i);
   }
 
-  matelastic_->ResetStep();
+  matelastic_->reset_step();
 }
 
 void MAT::Growth::StoreHistory(int timestep) { histdata_[timestep] = *thetaold_; }

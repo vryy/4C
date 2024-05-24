@@ -74,7 +74,7 @@ int DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::Evaluate(Teuchos::ParameterList&
     case Base::calc_struct_multidofsetcoupling:
     {
       // in some cases we need to write/change some data before evaluating
-      PreEvaluate(params, discretization, la);
+      pre_evaluate(params, discretization, la);
 
       MyEvaluate(params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra,
           elevec2_epetra, elevec3_epetra);
@@ -104,7 +104,7 @@ int DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::Evaluate(Teuchos::ParameterList&
     default:
     {
       // in some cases we need to write/change some data before evaluating
-      PreEvaluate(params, discretization, la);
+      pre_evaluate(params, discretization, la);
 
       CORE::LINALG::SerialDenseMatrix elemat1_sub;
       CORE::LINALG::SerialDenseMatrix elemat2_sub;
@@ -190,10 +190,10 @@ int DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::Evaluate(Teuchos::ParameterList&
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::PreEvaluate(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::pre_evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
-  Base::PreEvaluate(params, discretization, la);
+  Base::pre_evaluate(params, discretization, la);
 
   if (discretization.HasState(0, "displacement") and (not is_init_porosity_))
   {

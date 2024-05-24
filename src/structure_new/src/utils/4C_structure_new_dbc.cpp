@@ -62,7 +62,7 @@ void STR::Dbc::Init(const Teuchos::RCP<DRT::Discretization>& discret_ptr,
  *----------------------------------------------------------------------------*/
 void STR::Dbc::Setup()
 {
-  CheckInit();
+  check_init();
   // ---------------------------------------------------------------------------
   // Create Dirichlet Boundary Condition map
   // ---------------------------------------------------------------------------
@@ -122,20 +122,20 @@ void STR::Dbc::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::CheckInit() const { FOUR_C_ASSERT(IsInit(), "Call Init() first!"); }
+void STR::Dbc::check_init() const { FOUR_C_ASSERT(is_init(), "Call Init() first!"); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::CheckInitSetup() const
+void STR::Dbc::check_init_setup() const
 {
-  FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Discretization> STR::Dbc::DiscretPtr()
 {
-  CheckInit();
+  check_init();
   return discret_ptr_;
 }
 
@@ -143,7 +143,7 @@ Teuchos::RCP<DRT::Discretization> STR::Dbc::DiscretPtr()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const DRT::Discretization> STR::Dbc::DiscretPtr() const
 {
-  CheckInit();
+  check_init();
   return Teuchos::rcp_dynamic_cast<const DRT::Discretization>(discret_ptr_, true);
 }
 
@@ -153,7 +153,7 @@ void STR::Dbc::UpdateLocSysManager()
 {
   if (!IsLocSys()) return;
 
-  DiscretPtr()->SetState("dispnp", GState().GetDisNp());
+  DiscretPtr()->set_state("dispnp", GState().GetDisNp());
   locsysman_ptr_->Update(GState().GetTimeNp(), {});
   DiscretPtr()->ClearState();
 }
@@ -182,7 +182,7 @@ Teuchos::RCP<Epetra_Vector> STR::Dbc::get_dirichlet_increment()
 void STR::Dbc::ApplyDirichletBC(const double& time, Teuchos::RCP<Epetra_Vector> dis,
     Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> acc, bool recreatemap) const
 {
-  CheckInitSetup();
+  check_init_setup();
   // We have to rotate forward ...
   // ---------------------------------------------------------------------------
   if (!dis.is_null()) RotateGlobalToLocal(dis, true);
@@ -218,7 +218,7 @@ void STR::Dbc::ApplyDirichletBC(const double& time, Teuchos::RCP<Epetra_Vector> 
 void STR::Dbc::apply_dirichlet_to_local_system(
     Teuchos::RCP<CORE::LINALG::SparseOperator> A, Teuchos::RCP<Epetra_Vector>& b) const
 {
-  CheckInitSetup();
+  check_init_setup();
   apply_dirichlet_to_local_rhs(b);
   apply_dirichlet_to_local_jacobian(A);
 
@@ -229,7 +229,7 @@ void STR::Dbc::apply_dirichlet_to_local_system(
  *----------------------------------------------------------------------------*/
 void STR::Dbc::apply_dirichlet_to_vector(Teuchos::RCP<Epetra_Vector>& vec) const
 {
-  CheckInitSetup();
+  check_init_setup();
   // rotate the coordinate system if desired
   RotateGlobalToLocal(vec);
   // apply the dbc
@@ -242,7 +242,7 @@ void STR::Dbc::apply_dirichlet_to_vector(Teuchos::RCP<Epetra_Vector>& vec) const
  *----------------------------------------------------------------------------*/
 void STR::Dbc::apply_dirichlet_to_local_rhs(Teuchos::RCP<Epetra_Vector>& b) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // rotate the coordinate system: global --> local
   RotateGlobalToLocal(b);
@@ -258,7 +258,7 @@ void STR::Dbc::apply_dirichlet_to_local_rhs(Teuchos::RCP<Epetra_Vector>& b) cons
  *----------------------------------------------------------------------------*/
 void STR::Dbc::ApplyDirichletToRhs(Teuchos::RCP<Epetra_Vector>& b) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   apply_dirichlet_to_local_rhs(b);
 
@@ -272,7 +272,7 @@ void STR::Dbc::ApplyDirichletToRhs(Teuchos::RCP<Epetra_Vector>& b) const
  *----------------------------------------------------------------------------*/
 void STR::Dbc::apply_dirichlet_to_local_jacobian(Teuchos::RCP<CORE::LINALG::SparseOperator> A) const
 {
-  CheckInitSetup();
+  check_init_setup();
   // don't do it twice...
   /* Note: If the DBCs are applied twice this can lead to an error and strange
    * behavior during the usage of locsys. Furthermore, the consideration of
@@ -304,7 +304,7 @@ void STR::Dbc::apply_dirichlet_to_local_jacobian(Teuchos::RCP<CORE::LINALG::Spar
  *----------------------------------------------------------------------------*/
 bool STR::Dbc::RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector>& v) const
 {
-  CheckInitSetup();
+  check_init_setup();
   return RotateGlobalToLocal(v, false);
 }
 
@@ -312,7 +312,7 @@ bool STR::Dbc::RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector>& v) const
  *----------------------------------------------------------------------------*/
 bool STR::Dbc::RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector>& v, bool offset) const
 {
-  CheckInitSetup();
+  check_init_setup();
   if (not IsLocSys()) return false;
 
   if (GState().MaxBlockNumber() > 1)
@@ -334,7 +334,7 @@ bool STR::Dbc::RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector>& v, bool of
  *----------------------------------------------------------------------------*/
 bool STR::Dbc::RotateGlobalToLocal(const Teuchos::RCP<CORE::LINALG::SparseOperator>& A) const
 {
-  CheckInitSetup();
+  check_init_setup();
   if (not IsLocSys()) return false;
 
   Teuchos::RCP<std::vector<CORE::LINALG::SparseMatrix*>> mats =
@@ -352,7 +352,7 @@ bool STR::Dbc::RotateGlobalToLocal(const Teuchos::RCP<CORE::LINALG::SparseOperat
  *----------------------------------------------------------------------------*/
 bool STR::Dbc::RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector>& v) const
 {
-  CheckInitSetup();
+  check_init_setup();
   return RotateLocalToGlobal(v, false);
 }
 
@@ -360,7 +360,7 @@ bool STR::Dbc::RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector>& v) const
  *----------------------------------------------------------------------------*/
 bool STR::Dbc::RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector>& v, bool offset) const
 {
-  CheckInitSetup();
+  check_init_setup();
   if (not IsLocSys()) return false;
 
   if (GState().MaxBlockNumber() > 1)
@@ -383,7 +383,7 @@ bool STR::Dbc::RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector>& v, bool of
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const CORE::LINALG::SparseMatrix> STR::Dbc::GetLocSysTrafo() const
 {
-  CheckInitSetup();
+  check_init_setup();
   if (not IsLocSys()) return Teuchos::null;
 
   return locsysman_ptr_->Trafo();
@@ -393,7 +393,7 @@ Teuchos::RCP<const CORE::LINALG::SparseMatrix> STR::Dbc::GetLocSysTrafo() const
  *----------------------------------------------------------------------------*/
 void STR::Dbc::ExtractFreact(Teuchos::RCP<Epetra_Vector>& b) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   CORE::LINALG::ExtractMyVector(*b, Freact());
   Freact().Scale(-1.0);
@@ -410,7 +410,7 @@ void STR::Dbc::ExtractFreact(Teuchos::RCP<Epetra_Vector>& b) const
 void STR::Dbc::insert_vector_in_non_dbc_dofs(
     Teuchos::RCP<const Epetra_Vector> source_ptr, Teuchos::RCP<Epetra_Vector> target_ptr) const
 {
-  CheckInitSetup();
+  check_init_setup();
   dbcmap_ptr_->InsertOtherVector(dbcmap_ptr_->ExtractOtherVector(source_ptr), target_ptr);
 }
 
@@ -418,7 +418,7 @@ void STR::Dbc::insert_vector_in_non_dbc_dofs(
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const CORE::LINALG::MapExtractor> STR::Dbc::GetDBCMapExtractor() const
 {
-  CheckInitSetup();
+  check_init_setup();
   return dbcmap_ptr_;
 }
 
@@ -426,7 +426,7 @@ Teuchos::RCP<const CORE::LINALG::MapExtractor> STR::Dbc::GetDBCMapExtractor() co
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<DRT::UTILS::LocsysManager> STR::Dbc::LocSysManagerPtr()
 {
-  CheckInitSetup();
+  check_init_setup();
   return locsysman_ptr_;
 }
 
@@ -434,7 +434,7 @@ Teuchos::RCP<DRT::UTILS::LocsysManager> STR::Dbc::LocSysManagerPtr()
  *----------------------------------------------------------------------------*/
 const Epetra_Vector& STR::Dbc::GetZeros() const
 {
-  CheckInitSetup();
+  check_init_setup();
   return *zeros_ptr_;
 }
 
@@ -442,7 +442,7 @@ const Epetra_Vector& STR::Dbc::GetZeros() const
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> STR::Dbc::GetZerosPtr() const
 {
-  CheckInitSetup();
+  check_init_setup();
   return zeros_ptr_;
 }
 
@@ -470,7 +470,7 @@ void STR::Dbc::AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd)
   condmaps.push_back(maptoadd);
   condmaps.push_back(dbcmap_ptr_->CondMap());
   Teuchos::RCP<Epetra_Map> condmerged = CORE::LINALG::MultiMapExtractor::MergeMaps(condmaps);
-  *dbcmap_ptr_ = CORE::LINALG::MapExtractor(*(discret_ptr_->DofRowMap()), condmerged);
+  *dbcmap_ptr_ = CORE::LINALG::MapExtractor(*(discret_ptr_->dof_row_map()), condmerged);
   return;
 }
 
@@ -482,7 +482,7 @@ void STR::Dbc::RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoremove
   othermaps.push_back(maptoremove);
   othermaps.push_back(dbcmap_ptr_->OtherMap());
   Teuchos::RCP<Epetra_Map> othermerged = CORE::LINALG::MultiMapExtractor::MergeMaps(othermaps);
-  *dbcmap_ptr_ = CORE::LINALG::MapExtractor(*(discret_ptr_->DofRowMap()), othermerged, false);
+  *dbcmap_ptr_ = CORE::LINALG::MapExtractor(*(discret_ptr_->dof_row_map()), othermerged, false);
   return;
 }
 

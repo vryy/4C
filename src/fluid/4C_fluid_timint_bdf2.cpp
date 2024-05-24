@@ -59,7 +59,7 @@ void FLD::TimIntBDF2::Init()
 /*----------------------------------------------------------------------*
 | Print information about current time step to screen          bk 11/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntBDF2::PrintTimeStepInfo()
+void FLD::TimIntBDF2::print_time_step_info()
 {
   if (myrank_ == 0)
   {
@@ -111,7 +111,7 @@ void FLD::TimIntBDF2::set_old_part_of_righthandside()
 *-----------------------------------------------------------------------*/
 void FLD::TimIntBDF2::SetStateTimInt()
 {
-  discret_->SetState("velaf", velnp_);
+  discret_->set_state("velaf", velnp_);
 
   return;
 }
@@ -170,7 +170,7 @@ void FLD::TimIntBDF2::Sep_Multiply()
 void FLD::TimIntBDF2::OutputofFilteredVel(
     Teuchos::RCP<Epetra_Vector> outvec, Teuchos::RCP<Epetra_Vector> fsoutvec)
 {
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
   Teuchos::RCP<Epetra_Vector> row_finescaleveltmp;
   row_finescaleveltmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap, true));
 

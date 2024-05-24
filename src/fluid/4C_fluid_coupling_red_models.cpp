@@ -639,7 +639,7 @@ void FLD::UTILS::FluidCouplingWrapperBase::WriteRestart(IO::DiscretizationWriter
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidCouplingWrapperBase::ReadRestart(IO::DiscretizationReader& reader)
+void FLD::UTILS::FluidCouplingWrapperBase::read_restart(IO::DiscretizationReader& reader)
 {
   std::map<std::string, double>::iterator it;
   //! map of coupling variables returned by the 3-D model at time step n+1
@@ -682,7 +682,7 @@ void FLD::UTILS::FluidCouplingWrapperBase::ReadRestart(IO::DiscretizationReader&
   std::map<const int, Teuchos::RCP<class FluidCouplingBc>>::iterator mapiter;
 
   for (mapiter = coup_map3_d_.begin(); mapiter != coup_map3_d_.end(); mapiter++)
-    mapiter->second->FluidCouplingBc::ReadRestart(reader, mapiter->first);
+    mapiter->second->FluidCouplingBc::read_restart(reader, mapiter->first);
 
   return;
 }
@@ -728,7 +728,7 @@ FLD::UTILS::FluidCouplingBc::FluidCouplingBc(Teuchos::RCP<DRT::Discretization> d
   // vectors and matrices
   //                 local <-> global dof numbering
   // ---------------------------------------------------------------------
-  const Epetra_Map* dofrowmap = discret_3_d_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_3_d_->dof_row_map();
   couplingbc_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   flowrate_ = 0.0;
@@ -825,7 +825,7 @@ void FLD::UTILS::FluidCouplingBc::WriteRestart(IO::DiscretizationWriter& output,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidCouplingBc::ReadRestart(IO::DiscretizationReader& reader, int condnum)
+void FLD::UTILS::FluidCouplingBc::read_restart(IO::DiscretizationReader& reader, int condnum)
 {
   std::stringstream stream1, stream2, stream3;
 
@@ -866,7 +866,7 @@ double FLD::UTILS::FluidCouplingBc::Area(double& density, double& viscosity, int
 
   const std::string condstring("Art_3D_redD_CouplingCond");
 
-  discret_3_d_->EvaluateCondition(eleparams, condstring, condid);
+  discret_3_d_->evaluate_condition(eleparams, condstring, condid);
 
   double actarea = eleparams.get<double>("area");
   density = eleparams.get<double>("density");
@@ -940,12 +940,12 @@ double FLD::UTILS::FluidCouplingBc::FlowRateCalculation(double time, double dta,
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
   //                 local <-> global dof numbering
-  const Epetra_Map* dofrowmap = discret_3_d_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_3_d_->dof_row_map();
 
   // create vector (+ initialization with zeros)
   Teuchos::RCP<Epetra_Vector> flowrates = CORE::LINALG::CreateVector(*dofrowmap, true);
   const std::string condstring("Art_3D_redD_CouplingCond");
-  discret_3_d_->EvaluateCondition(eleparams, flowrates, condstring, condid);
+  discret_3_d_->evaluate_condition(eleparams, flowrates, condstring, condid);
 
   double local_flowrate = 0.0;
   for (int i = 0; i < dofrowmap->NumMyElements(); i++)
@@ -995,12 +995,12 @@ double FLD::UTILS::FluidCouplingBc::PressureCalculation(double time, double dta,
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
   //                 local <-> global dof numbering
-  const Epetra_Map* dofrowmap = discret_3_d_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_3_d_->dof_row_map();
 
   // get elemental flowrates ...
   Teuchos::RCP<Epetra_Vector> myStoredPressures = Teuchos::rcp(new Epetra_Vector(*dofrowmap, 100));
   const std::string condstring("Art_3D_redD_CouplingCond");
-  discret_3_d_->EvaluateCondition(eleparams, myStoredPressures, condstring, condid);
+  discret_3_d_->evaluate_condition(eleparams, myStoredPressures, condstring, condid);
 
   // ... as well as actual total flowrate on this proc
   double actpressure = eleparams.get<double>("pressure boundary integral");
@@ -1058,7 +1058,7 @@ void FLD::UTILS::FluidCouplingBc::OutflowBoundary(
 
   couplingbc_->PutScalar(0.0);
   const std::string condstring("Art_3D_redD_CouplingCond");
-  discret_3_d_->EvaluateCondition(eleparams, couplingbc_, condstring, condid);
+  discret_3_d_->evaluate_condition(eleparams, couplingbc_, condstring, condid);
 
   //  discret_3D_->ClearState();
 
@@ -1207,7 +1207,7 @@ void FLD::UTILS::FluidCouplingBc::EvaluateDirichlet(
         //        std::cout<<"("<<dof<<")+>["<<dof_gid<<"]\t";
         if (condmap.MyGID(dof_gid))
         {
-          int lid = discret_3_d_->DofRowMap()->LID(dof_gid);
+          int lid = discret_3_d_->dof_row_map()->LID(dof_gid);
 
           double val = (*velnp)[lid] * velocity_;
           //        std::cout<<"Vel["<<gid<<"]: "<<(*velnp) [lid]<<std::endl;

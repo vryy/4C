@@ -76,7 +76,7 @@ namespace DRT
           ) override;
 
       //! material mixfrac
-      void MatMixFrac(
+      void mat_mix_frac(
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
@@ -86,7 +86,7 @@ namespace DRT
       );
 
       //! material Sutherland
-      void MatSutherland(
+      void mat_sutherland(
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
@@ -96,7 +96,7 @@ namespace DRT
       );
 
       //! material temperature-dependent water
-      void MatTempDepWater(
+      void mat_temp_dep_water(
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
@@ -106,7 +106,7 @@ namespace DRT
       );
 
       //! material Arrhenius PV
-      void MatArrheniusPV(
+      void mat_arrhenius_pv(
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
@@ -116,7 +116,7 @@ namespace DRT
       );
 
       //! material Arrhenius Spec
-      void MatArrheniusSpec(
+      void mat_arrhenius_spec(
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
@@ -126,7 +126,7 @@ namespace DRT
       );
 
       //! material Arrhenius Temp
-      void MatArrheniusTemp(
+      void mat_arrhenius_temp(
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
@@ -136,7 +136,7 @@ namespace DRT
       );
 
       //! material Ferech PV
-      void MatFerechPV(
+      void mat_ferech_pv(
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
@@ -156,7 +156,7 @@ namespace DRT
       );
 
       //! material Yoghurt
-      void MatYoghurt(
+      void mat_yoghurt(
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
@@ -176,7 +176,7 @@ namespace DRT
           ) override;
 
       //! calculation of convective element matrix: add conservative contributions
-      void CalcMatConvAddCons(
+      void calc_mat_conv_add_cons(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor

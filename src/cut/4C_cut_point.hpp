@@ -77,7 +77,7 @@ namespace CORE::GEO
       static Point* NewPoint(Mesh& mesh, const double* x, double t, Edge* cut_edge, Side* cut_side,
           double tolerance = 0.0);
 
-      static Point* InsertCut(Edge* cut_edge, Side* cut_side, Node* n);
+      static Point* insert_cut(Edge* cut_edge, Side* cut_side, Node* n);
 
       /// constructor
       Point(unsigned pid, double tolerance);
@@ -97,10 +97,10 @@ namespace CORE::GEO
       void AddEdge(Edge* e);
 
       /*! \brief Add this side to the list of sides that are cut by this point */
-      void AddSide(Side* s);
+      void add_side(Side* s);
 
       /*! \brief Add this element to the list of elements that are cut by this point */
-      void AddElement(Element* e)
+      void add_element(Element* e)
       {
         if (e != nullptr)
         {
@@ -309,7 +309,7 @@ namespace CORE::GEO
 
 #if CUT_CREATION_INFO
       // Add merged pair. If the coord = nullptr, it means it was inserted without actual
-      // computation of the coordinate, solely on topology e.g. in the InsertCut
+      // computation of the coordinate, solely on topology e.g. in the insert_cut
       void AddMergedPair(const std::pair<Side*, Edge*>& inter, CORE::LINALG::Matrix<3, 1>* coord);
 
       const std::map<std::pair<Side*, Edge*>, std::pair<CORE::LINALG::Matrix<3, 1>, bool>>&
@@ -464,7 +464,7 @@ namespace CORE::GEO
         }
         if (cut_side != nullptr)
         {
-          AddSide(cut_side);
+          add_side(cut_side);
         }
 
         if ((cut_side != nullptr) && (cut_edge != nullptr)) this->AddPair(cut_side, cut_edge);
@@ -491,8 +491,8 @@ namespace CORE::GEO
       PointFactory(){};
 
       // non-member function to create a concrete point of desired dimension
-      Teuchos::RCP<CORE::GEO::CUT::Point> CreatePoint(unsigned pid, const double* x, Edge* cut_edge,
-          Side* cut_side, double tolerance, int probdim) const
+      Teuchos::RCP<CORE::GEO::CUT::Point> create_point(unsigned pid, const double* x,
+          Edge* cut_edge, Side* cut_side, double tolerance, int probdim) const
       {
         Teuchos::RCP<CORE::GEO::CUT::Point> point = Teuchos::null;
 
@@ -513,7 +513,7 @@ namespace CORE::GEO
     };  // class PointFactory
 
     // non-member function to create a concrete point of desired dimension
-    Teuchos::RCP<CORE::GEO::CUT::Point> CreatePoint(
+    Teuchos::RCP<CORE::GEO::CUT::Point> create_point(
         unsigned pid, const double* x, Edge* cut_edge, Side* cut_side, double tolerance);
 
     inline int EntityId(const Point& p) { return p.Pid(); }

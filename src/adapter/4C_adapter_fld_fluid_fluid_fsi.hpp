@@ -58,7 +58,7 @@ namespace ADAPTER
     void Init() override;
 
     /// prepare time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     /// save results of current time step, do XFEM cut and refresh the
     /// merged fluid map extractor
@@ -83,7 +83,7 @@ namespace ADAPTER
     //@{
 
     // get merged xfluid-fluid dof row map
-    Teuchos::RCP<const Epetra_Map> DofRowMap() override;
+    Teuchos::RCP<const Epetra_Map> dof_row_map() override;
 
     /// communication object at the interface
     Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const override

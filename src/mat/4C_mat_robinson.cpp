@@ -423,7 +423,7 @@ void MAT::Robinson::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   // ---------------------------------------------- elasticity tensor
   // cmat = kee = pd(sig)/pd(eps)
   // pass the current temperature to calculate the current youngs modulus
-  SetupCmat(scalartemp, *cmat);
+  setup_cmat(scalartemp, *cmat);
 
   // ------------------------------------ tangents of stress equation
   // declare single terms of elasto-plastic tangent Cmat_ep
@@ -535,7 +535,7 @@ void MAT::Robinson::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
  | computes isotropic elasticity tensor in matrix notion     dano 11/11 |
  | for 3d                                                               |
  *----------------------------------------------------------------------*/
-void MAT::Robinson::SetupCmat(
+void MAT::Robinson::setup_cmat(
     double tempnp, CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& cmat)
 {
   // get material parameters
@@ -572,7 +572,7 @@ void MAT::Robinson::SetupCmat(
   cmat(4, 4) = mfac * 0.5 * (1.0 - 2.0 * nu);
   cmat(5, 5) = mfac * 0.5 * (1.0 - 2.0 * nu);
 
-}  // SetupCmat()
+}  // setup_cmat()
 
 
 /*----------------------------------------------------------------------*
@@ -797,7 +797,7 @@ void MAT::Robinson::calc_be_viscous_strain_rate(const double dt,  // (i) time st
     // kse = (pd eta) / (pd strain)
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> kse(true);
     // pass the current temperature to calculate the current youngs modulus
-    SetupCmat(tempnp, kse);
+    setup_cmat(tempnp, kse);
     // Matrix vector product: cid2 = kse(i,j)*id2(j)
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> cid2(false);
     cid2.Multiply(kse, id2);
@@ -830,7 +830,7 @@ void MAT::Robinson::calc_be_viscous_strain_rate(const double dt,  // (i) time st
     // derivative ksv = (pd eta) / (pd strain_p)
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> ksv(true);
     // pass the current temperature to calculate the current youngs modulus
-    SetupCmat(tempnp, ksv);
+    setup_cmat(tempnp, ksv);
 
     // Matrix vector product: cid2 = kse(i,j)*id2(j)
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> cid2(false);

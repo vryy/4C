@@ -193,26 +193,26 @@ namespace CORE::ADAPTER
     \brief Create auxiliary dofsets for multiphysics if necessary
 
     */
-    void CreateAuxDofsets(Teuchos::RCP<DRT::Discretization> dis1,
+    void create_aux_dofsets(Teuchos::RCP<DRT::Discretization> dis1,
         Teuchos::RCP<DRT::Discretization> dis2, std::vector<int>* coupleddof12,
         std::vector<int>* coupleddof21);
 
     /// check setup call
-    const bool& IsSetup() const { return issetup_; };
+    const bool& is_setup() const { return issetup_; };
 
     /// check setup call
-    const bool& IsInit() const { return isinit_; };
+    const bool& is_init() const { return isinit_; };
 
     /// check init and setup call
-    void CheckSetup() const
+    void check_setup() const
     {
-      if (not IsSetup()) FOUR_C_THROW("ERROR: Call Setup() first!");
+      if (not is_setup()) FOUR_C_THROW("ERROR: Call Setup() first!");
     }
 
     /// check init and setup call
-    void CheckInit() const
+    void check_init() const
     {
-      if (not IsInit()) FOUR_C_THROW("ERROR: Call Init() first!");
+      if (not is_init()) FOUR_C_THROW("ERROR: Call Init() first!");
     }
 
    private:

@@ -59,7 +59,7 @@ void DRT::ELEMENTS::SoPyramid5::sop5_read_restart_multi()
     if (GLOBAL::Problem::Instance()->GetDis("structure")->Comm().MyPID() == Owner())
       eleowner = true;
 
-    for (int gp = 0; gp < NUMGPT_SOP5; ++gp) micro->ReadRestart(gp, eleID, eleowner);
+    for (int gp = 0; gp < NUMGPT_SOP5; ++gp) micro->read_restart(gp, eleID, eleowner);
   }
 
   return;

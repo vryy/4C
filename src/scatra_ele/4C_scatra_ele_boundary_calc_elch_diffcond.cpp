@@ -78,7 +78,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluate
     case SCATRA::BoundaryAction::calc_elch_boundary_kinetics:
     {
       // access material of parent element
-      Teuchos::RCP<CORE::MAT::Material> material = ele->ParentElement()->Material();
+      Teuchos::RCP<CORE::MAT::Material> material = ele->parent_element()->Material();
 
       // extract porosity from material and store in diffusion manager
       if (material->MaterialType() == CORE::Materials::m_elchmat)
@@ -127,13 +127,13 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluate
  | evaluate Neumann boundary condition                       fang 02/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::EvaluateNeumann(
+int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluate_neumann(
     DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     CORE::Conditions::Condition& condition, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseVector& elevec1, const double scalar)
 {
   // get material of parent element
-  Teuchos::RCP<CORE::MAT::Material> mat = ele->ParentElement()->Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = ele->parent_element()->Material();
 
   if (mat->MaterialType() == CORE::Materials::m_elchmat)
   {
@@ -158,7 +158,8 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluate
     FOUR_C_THROW("Invalid material!");
 
   // call base class routine
-  my::EvaluateNeumann(ele, params, discretization, condition, la, elevec1, dmedc_->GetPhasePoro(0));
+  my::evaluate_neumann(
+      ele, params, discretization, condition, la, elevec1, dmedc_->GetPhasePoro(0));
 
   // add boundary flux contributions to potential equation
   if (myelch::elchparams_->boundary_flux_coupling())

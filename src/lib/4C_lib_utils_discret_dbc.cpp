@@ -55,7 +55,7 @@ void DRT::UTILS::Dbc::operator()(const DRT::Discretization& discret,
     const Teuchos::RCP<Epetra_Vector>& systemvectordd, const Teuchos::RCP<Epetra_IntVector>& toggle,
     const Teuchos::RCP<CORE::LINALG::MapExtractor>& dbcmapextractor) const
 {
-  if (!discret.Filled()) FOUR_C_THROW("FillComplete() was not called");
+  if (!discret.Filled()) FOUR_C_THROW("fill_complete() was not called");
   if (!discret.HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // get the current time
@@ -576,9 +576,9 @@ void DRT::UTILS::Dbc::build_dbc_map_extractor(const DRT::Discretization& discret
     myglobalelements = dbcgidsv.data();
   }
   Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements,
-      discret.DofRowMap()->IndexBase(), discret.DofRowMap()->Comm()));
+      discret.dof_row_map()->IndexBase(), discret.dof_row_map()->Comm()));
   // build the map extractor of Dirichlet-conditioned and free DOFs
-  dbcmapextractor->Setup(*(discret.DofRowMap()), dbcmap);
+  dbcmapextractor->Setup(*(discret.dof_row_map()), dbcmap);
 }
 
 FOUR_C_NAMESPACE_CLOSE

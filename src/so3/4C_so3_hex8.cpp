@@ -234,7 +234,7 @@ void DRT::ELEMENTS::SoHex8::Pack(CORE::COMM::PackBuffer& data) const
   // analyticalmaterialtangent_
   AddtoPack(data, analyticalmaterialtangent_);
   // eas data
-  PackEasData(data);
+  pack_eas_data(data);
   // line search
   AddtoPack(data, old_step_length_);
   // Pack prestress type
@@ -279,7 +279,7 @@ void DRT::ELEMENTS::SoHex8::Unpack(const std::vector<char>& data)
   // analyticalmaterialtangent_
   analyticalmaterialtangent_ = ExtractInt(position, data);
   // eas data
-  UnpackEasData(position, data);
+  unpack_eas_data(position, data);
   // line search
   ExtractfromPack(position, data, old_step_length_);
   // Extract prestress

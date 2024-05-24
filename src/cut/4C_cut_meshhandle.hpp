@@ -55,21 +55,21 @@ namespace CORE::GEO
 
       /// create a new side (sidehandle) of the cutter discretization and return the sidehandle,
       /// non-tri3 sides will be subdivided into tri3 subsides depending on the options
-      SideHandle* CreateSide(int sid, const std::vector<int>& nids, CORE::FE::CellType distype,
+      SideHandle* create_side(int sid, const std::vector<int>& nids, CORE::FE::CellType distype,
           CORE::GEO::CUT::Options& options);
 
       /// create a new element (elementhandle) of the background discretization and return the
       /// elementhandle, quadratic elements will create linear shadow elements
-      ElementHandle* CreateElement(
+      ElementHandle* create_element(
           int eid, const std::vector<int>& nids, CORE::FE::CellType distype);
 
       /// create a new data structure for face oriented stabilization; the sides of the linear
       /// element are included into a sidehandle
-      void CreateElementSides(Element& element);
+      void create_element_sides(Element& element);
 
       /// create a new data structure for face oriented stabilization; the sides of the quadratic
       /// element are included into a sidehandle
-      void CreateElementSides(const std::vector<int>& nids, CORE::FE::CellType distype);
+      void create_element_sides(const std::vector<int>& nids, CORE::FE::CellType distype);
 
       /*========================================================================*/
       //! @name Get-routines for nodes, cutter sides, elements and element sides
@@ -79,13 +79,13 @@ namespace CORE::GEO
       Node* GetNode(int nid) const;
 
       /// get the side (handle) based on side id of the cut mesh
-      SideHandle* GetSide(int sid) const;
+      SideHandle* get_side(int sid) const;
 
       /// get the mesh's element based on element id
       ElementHandle* GetElement(int eid) const;
 
       /// get the element' side of the mesh's element based on node ids
-      SideHandle* GetSide(std::vector<int>& nodeids) const;
+      SideHandle* get_side(std::vector<int>& nodeids) const;
 
       /// Remove this side from the Sidehandle (Used by the SelfCut)
       void RemoveSubSide(CORE::GEO::CUT::Side* side);

@@ -93,7 +93,7 @@ void CORE::GEO::CUT::OUTPUT::GmshVolumeCellsOnly(const plain_volumecell_set& vce
     std::ostringstream sectionname;
     sectionname << "VolumeCell_" << count++;
     OUTPUT::GmshNewSection(file, sectionname.str(), false);
-    OUTPUT::GmshVolumecellDump(file, *its, "sides", true, false, (*its)->ParentElement());
+    OUTPUT::GmshVolumecellDump(file, *its, "sides", true, false, (*its)->parent_element());
     OUTPUT::GmshEndSection(file);
   }
   file.close();
@@ -1289,11 +1289,11 @@ void CORE::GEO::CUT::OUTPUT::GmshElementCutTest(
     file << ""
          << "\n";
     if (not haslevelsetside)
-      file << "  intersection.AddElement( " << aele->Id()
+      file << "  intersection.add_element( " << aele->Id()
            << ", nids, hex8_xyze, CORE::FE::CellType::hex8);"
            << "\n";
     else
-      file << "  intersection.AddElement( " << aele->Id()
+      file << "  intersection.add_element( " << aele->Id()
            << ", nids, hex8_xyze, CORE::FE::CellType::hex8, &lsvs[0], false );"
            << "\n";
     file << "  }"
@@ -1347,7 +1347,7 @@ void CORE::GEO::CUT::OUTPUT::GmshElementCutTest(
     file << "    CORE::GEO::CUT::VolumeCell * vc = &**i;"
          << "\n";
     file << "    "
-            "vc->moment_fit_gauss_weights(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_"
+            "vc->moment_fit_gauss_weights(vc->parent_element(),mesh,true,INPAR::CUT::BCellGaussPts_"
             "Tessellation);"
          << "\n";
     file << "    momFitVol.push_back(vc->Volume());"
@@ -1368,7 +1368,7 @@ void CORE::GEO::CUT::OUTPUT::GmshElementCutTest(
     file << "     CORE::GEO::CUT::VolumeCell * vc = &**i;"
          << "\n";
     file << "     "
-            "vc->direct_divergence_gauss_rule(vc->ParentElement(),mesh,true,INPAR::CUT::"
+            "vc->direct_divergence_gauss_rule(vc->parent_element(),mesh,true,INPAR::CUT::"
             "BCellGaussPts_"
             "Tessellation);"
          << "\n";

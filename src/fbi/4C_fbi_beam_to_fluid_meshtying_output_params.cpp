@@ -25,7 +25,7 @@ FBI::BeamToFluidMeshtyingVtkOutputParams::BeamToFluidMeshtyingVtkOutputParams()
 /*----------------------------------------------------------------------------------------------------*/
 void FBI::BeamToFluidMeshtyingVtkOutputParams::Setup()
 {
-  CheckInit();
+  check_init();
 
   // Teuchos parameter lists from input file.
   const Teuchos::ParameterList& beam_to_fluid_meshtying_visualization_output_paramslist =

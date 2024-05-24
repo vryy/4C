@@ -200,7 +200,7 @@ void DRT::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,      ///< locatio
     // calculate the deformation gradient consistent to the modified strains
     // but only if the material needs a deformation gradient (e.g. plasticity)
     CORE::LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> defgrd;
-    if (Teuchos::rcp_static_cast<MAT::So3Material>(Material())->NeedsDefgrd() ||
+    if (Teuchos::rcp_static_cast<MAT::So3Material>(Material())->needs_defgrd() ||
         iostrain == INPAR::STR::strain_ea || iostress == INPAR::STR::stress_cauchy)
     {
       // compute the deformation gradient - shell-style
@@ -435,7 +435,7 @@ int DRT::ELEMENTS::SoSh18Type::Initialize(DRT::Discretization& dis)
     if (!actele) FOUR_C_THROW("cast to So_hex18* failed");
     if (actele->InitJacobianMapping() == 1) actele->FlipT();
   }
-  dis.FillComplete(false, false, false);
+  dis.fill_complete(false, false, false);
 
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {

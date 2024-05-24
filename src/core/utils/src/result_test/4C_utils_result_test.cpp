@@ -27,7 +27,7 @@ void CORE::UTILS::ResultTest::TestElement(INPUT::LineDefinition& res, int& nerr,
   FOUR_C_THROW("no element test available");
 }
 
-void CORE::UTILS::ResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void CORE::UTILS::ResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   FOUR_C_THROW("no node test available");
 }
@@ -161,7 +161,7 @@ void CORE::UTILS::ResultTestManager::TestAll(const Epetra_Comm& comm)
         if (result.HaveNamed("ELEMENT"))
           fieldtest->TestElement(result, nerr, test_count);
         else if (result.HaveNamed("NODE"))
-          fieldtest->TestNode(result, nerr, test_count);
+          fieldtest->test_node(result, nerr, test_count);
         else
           fieldtest->TestSpecial(result, nerr, test_count, uneval_test_count);
       }

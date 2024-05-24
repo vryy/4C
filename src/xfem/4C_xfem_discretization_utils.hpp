@@ -118,7 +118,7 @@ namespace XFEM
 
       /*! split the discretization by removing the given elements and nodes in
        *  the source discretization and adding them to the target discretization */
-      void SplitDiscretization(Teuchos::RCP<DRT::Discretization> sourcedis,
+      void split_discretization(Teuchos::RCP<DRT::Discretization> sourcedis,
           Teuchos::RCP<DRT::Discretization> targetdis, const std::map<int, DRT::Node*>& sourcenodes,
           const std::map<int, DRT::Node*>& sourcegnodes,
           const std::map<int, Teuchos::RCP<DRT::Element>>& sourceelements,
@@ -147,7 +147,7 @@ namespace XFEM
        *         partial discretizations, respectively
        *
        *  \author  hiermeier \date 10/16 */
-      Teuchos::RCP<CORE::Conditions::Condition> SplitCondition(
+      Teuchos::RCP<CORE::Conditions::Condition> split_condition(
           const CORE::Conditions::Condition* src_cond, const std::vector<int>& nodecolvec,
           const Epetra_Comm& comm) const;
     };  // class XFEMDiscretizationBuilder

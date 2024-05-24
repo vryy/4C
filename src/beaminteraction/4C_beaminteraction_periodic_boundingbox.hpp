@@ -213,35 +213,35 @@ namespace CORE::GEO
 
      protected:
       //! returns init state
-      inline bool IsInit() const { return isinit_; };
+      inline bool is_init() const { return isinit_; };
 
       //! returns setup state
-      inline bool IsSetup() const { return issetup_; };
+      inline bool is_setup() const { return issetup_; };
 
       //! Check the init state
-      inline void ThrowIfNotInit() const
+      inline void throw_if_not_init() const
       {
-        if (not IsInit()) FOUR_C_THROW("Call Init() first!");
+        if (not is_init()) FOUR_C_THROW("Call Init() first!");
       }
 
       //! Check the init and setup state
       inline void throw_if_not_init_or_setup() const
       {
-        if (not IsInit() or not IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
+        if (not is_init() or not is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
       }
 
      private:
       /*!
       \brief shift node (if outside) back in box if periodic boundary conditions
       */
-      bool Shift1D(int dim, double& d, double const& X = 0.0) const;
+      bool shift1_d(int dim, double& d, double const& X = 0.0) const;
 
       /*!
       \brief shift node out of box if it was shifted in previously
       */
-      bool UnShift1D(int dim, double& d, double const& ref, double const& X = 0.0) const;
+      bool un_shift1_d(int dim, double& d, double const& ref, double const& X = 0.0) const;
 
-      bool InBetween(double smin, double smax, double omin, double omax) const;
+      bool in_between(double smin, double smax, double omin, double omax) const;
 
       //! @name private function dealing with mapping of positions in case of a deforming bounding
       //! box

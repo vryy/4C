@@ -54,7 +54,7 @@ namespace CORE::GEO
       /*========================================================================*/
 
       /// add this background element if it falls within the bounding box of cut mesh
-      ElementHandle* AddElement(int eid, const std::vector<int>& nids,
+      ElementHandle* add_element(int eid, const std::vector<int>& nids,
           const CORE::LINALG::SerialDenseMatrix& xyz, CORE::FE::CellType distype,
           const double* lsv = nullptr);
 

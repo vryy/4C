@@ -68,11 +68,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
 
   // access material of parent element
   Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::null;
-  if (ele->ParentElement()->Material()->MaterialType() ==
+  if (ele->parent_element()->Material()->MaterialType() ==
       CORE::Materials::MaterialType::m_electrode)
   {
     matelectrode =
-        Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material());
+        Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->parent_element()->Material());
   }
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
@@ -129,7 +129,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
 
     evaluate_s2_i_coupling_at_integration_point<distype>(matelectrode, my::ephinp_, emasterphinp,
         eslavetempnp, emastertempnp, pseudo_contact_fac, my::funct_, my::funct_, my::funct_,
-        my::funct_, my::scatraparamsboundary_, timefacfac, timefacrhsfac, detF, GetFRT(),
+        my::funct_, my::scatraparamsboundary_, timefacfac, timefacrhsfac, detF, get_frt(),
         my::numdofpernode_, eslavematrix, emastermatrix, dummymatrix, dummymatrix, eslaveresidual,
         dummyvector);
   }  // loop over integration points
@@ -575,11 +575,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::evalua
     CORE::LINALG::SerialDenseMatrix& eslavematrix)
 {
   Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::null;
-  if (ele->ParentElement()->Material()->MaterialType() ==
+  if (ele->parent_element()->Material()->MaterialType() ==
       CORE::Materials::MaterialType::m_electrode)
   {
     matelectrode =
-        Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material());
+        Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->parent_element()->Material());
   }
 
   // get condition specific parameters
@@ -950,7 +950,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::GetV
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::GetFRT() const
+double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::get_frt() const
 {
   // fetch factor F/RT from electrochemistry parameter list in isothermal case
   return myelch::elchparams_->FRT();
@@ -1151,11 +1151,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::CalcS2
 
   // access material of parent element
   Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::null;
-  if (ele->ParentElement()->Material()->MaterialType() ==
+  if (ele->parent_element()->Material()->MaterialType() ==
       CORE::Materials::MaterialType::m_electrode)
   {
     matelectrode =
-        Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material());
+        Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->parent_element()->Material());
   }
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
@@ -1203,7 +1203,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::CalcS2
       frt = faraday / (etempint * gasconstant);
     }
     else
-      frt = GetFRT();
+      frt = get_frt();
 
     const double detF = my::calculate_det_f_of_parent_element(ele, intpoints.Point(gpid));
 

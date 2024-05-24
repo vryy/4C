@@ -47,7 +47,7 @@ namespace FS3I
     void DoScatraStep();
 
     //! routine for preparing time step
-    virtual void PrepareTimeStep();
+    virtual void prepare_time_step();
 
     //! check convergence of monolithic ScaTra problem
     virtual bool scatra_convergence_check(int itnum);

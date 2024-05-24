@@ -147,7 +147,7 @@ void PostVtiWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<E
   const Epetra_BlockMap& vecmap = data->Map();
 
   // TODO: wic, once the vtu pressure writer is fixed, apply the same solution here.
-  const int offset = (fillzeros) ? 0 : vecmap.MinAllGID() - dis->DofRowMap(0)->MinAllGID();
+  const int offset = (fillzeros) ? 0 : vecmap.MinAllGID() - dis->dof_row_map(0)->MinAllGID();
 
   Teuchos::RCP<Epetra_Vector> ghostedData;
   if (colmap->SameAs(vecmap))
@@ -176,7 +176,7 @@ void PostVtiWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<E
   {
     const DRT::Element* ele = dis->lColElement(e);
 
-    for (int n = 0; n < ele->NumNode(); ++n)
+    for (int n = 0; n < ele->num_node(); ++n)
     {
       nodedofs.clear();
 
@@ -264,7 +264,7 @@ void PostVtiWriter::write_nodal_result_step(std::ofstream& file,
   {
     const DRT::Element* ele = dis->lColElement(e);
 
-    for (int n = 0; n < ele->NumNode(); ++n)
+    for (int n = 0; n < ele->num_node(); ++n)
     {
       const int gid = ele->Nodes()[n]->Id();
       const int inpos = ncomponents * idmapping_.find(gid)->second;
@@ -458,7 +458,7 @@ void PostVtiWriter::WriterPrepTimestep()
     const DRT::Element* ele = dis->lColElement(e);
     double mincoord[] = {std::numeric_limits<double>::max(), std::numeric_limits<double>::max(),
         std::numeric_limits<double>::max()};
-    for (int n = 0; n < ele->NumNode(); ++n)
+    for (int n = 0; n < ele->num_node(); ++n)
     {
       const auto& coord = ele->Nodes()[n]->X();
       mincoord[0] = std::min(mincoord[0], coord[0]);

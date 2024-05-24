@@ -137,10 +137,10 @@ namespace INPUT
 
    private:
     /// parse the value and add the key,value pair to the list
-    void AddEntry(const std::string& key, const std::string& value, Teuchos::ParameterList& list);
+    void add_entry(const std::string& key, const std::string& value, Teuchos::ParameterList& list);
 
     /// actual read dat file, store and broadcast general sections
-    void ReadDat();
+    void read_dat();
 
     /// input file name
     std::string filename_;

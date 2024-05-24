@@ -45,7 +45,7 @@ namespace STR
 
        private:
         //! set the full newton parameters in the nox parameter list
-        void SetFullNewtonParams();
+        void set_full_newton_params();
 
       };  // class FullNewton
     }     // namespace SOLVER

@@ -43,7 +43,7 @@ namespace PARTICLEINTERACTION
     virtual void Setup(const double& k_normal);
 
     //! set current step size
-    virtual void SetCurrentStepSize(const double currentstepsize) final;
+    virtual void set_current_step_size(const double currentstepsize) final;
 
     //! calculate effective radius
     virtual void effective_radius_particle(

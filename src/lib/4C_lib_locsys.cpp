@@ -94,7 +94,7 @@ void DRT::UTILS::LocsysManager::Update(
   if (time >= 0.0 and !locsysfunct_) return;
 
   // get dof row map of discretization
-  const Epetra_Map* dofrowmap = discret_.DofRowMap();
+  const Epetra_Map* dofrowmap = discret_.dof_row_map();
 
   // get node row layout of discretization
   const Epetra_Map* noderowmap = discret_.NodeRowMap();
@@ -405,7 +405,7 @@ void DRT::UTILS::LocsysManager::Update(
     myglobalentries = locsysdofs.data();
   }
   locsysdofmap_ = Teuchos::rcp(new Epetra_Map(
-      -1, nummyentries, myglobalentries, discret_.DofRowMap()->IndexBase(), discret_.Comm()));
+      -1, nummyentries, myglobalentries, discret_.dof_row_map()->IndexBase(), discret_.Comm()));
   if (locsysdofmap_ == Teuchos::null) FOUR_C_THROW("Creation failed.");
 
   // The matrix subtrafo_ is used in order to apply the Dirichlet Conditions in a more efficient
@@ -573,8 +573,8 @@ void DRT::UTILS::LocsysManager::calc_rotation_vector_for_normal_system(
   if (time < 0.0)
   {
     Teuchos::RCP<Epetra_Vector> zeroVector =
-        CORE::LINALG::CreateVector(*Discret().DofRowMap(), true);
-    discret_.SetState("dispnp", zeroVector);
+        CORE::LINALG::CreateVector(*Discret().dof_row_map(), true);
+    discret_.set_state("dispnp", zeroVector);
   }
 
   // Calculate (non-normalized) mass-consistent node normals for a given locsys condition

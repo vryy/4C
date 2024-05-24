@@ -93,7 +93,7 @@ void PARTICLEINTERACTION::SPHDensityBase::Setup(
   }
 }
 
-void PARTICLEINTERACTION::SPHDensityBase::SetCurrentStepSize(const double currentstepsize)
+void PARTICLEINTERACTION::SPHDensityBase::set_current_step_size(const double currentstepsize)
 {
   dt_ = currentstepsize;
 }
@@ -608,7 +608,7 @@ void PARTICLEINTERACTION::SPHDensityBase::continuity_equation_particle_wall_cont
     DRT::Element* ele = particlewallpair.ele_;
 
     // number of nodes of wall element
-    const int numnodes = ele->NumNode();
+    const int numnodes = ele->num_node();
 
     // shape functions and location vector of wall element
     CORE::LINALG::SerialDenseVector funct(numnodes);
@@ -881,7 +881,7 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::ComputeDensity() const
   SumColorfield();
 
   // correct density of interior/surface particles
-  CorrectDensity();
+  correct_density();
 
   // refresh density of ghosted particles
   particleengineinterface_->refresh_particles_of_specific_states_and_types(densitytorefresh_);
@@ -926,7 +926,7 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::init_density_correction_hand
   densitycorrection_->Init();
 }
 
-void PARTICLEINTERACTION::SPHDensityPredictCorrect::CorrectDensity() const
+void PARTICLEINTERACTION::SPHDensityPredictCorrect::correct_density() const
 {
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)

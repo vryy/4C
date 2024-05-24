@@ -27,10 +27,10 @@ void CONTACT::NitscheStrategyFsi::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector>
   CONTACT::NitscheStrategy::ApplyForceStiffCmt(dis, kt, f, step, iter, predictor);
 }
 
-void CONTACT::NitscheStrategyFsi::SetState(
+void CONTACT::NitscheStrategyFsi::set_state(
     const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
 {
-  CONTACT::NitscheStrategy::SetState(statename, vec);
+  CONTACT::NitscheStrategy::set_state(statename, vec);
   if (statename == MORTAR::state_new_displacement)
   {
     DoContactSearch();

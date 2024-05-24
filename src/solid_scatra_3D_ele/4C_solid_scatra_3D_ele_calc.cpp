@@ -505,8 +505,8 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::MaterialPost
   InterpolateFibersToGaussPointsAndAddToParameterList<celltype>(
       stiffness_matrix_integration_, ele, params);
 
-  // Call PostSetup of material
-  solid_material.PostSetup(params, ele.Id());
+  // Call post_setup of material
+  solid_material.post_setup(params, ele.Id());
 }
 
 template <CORE::FE::CellType celltype, typename SolidFormulation>
@@ -539,7 +539,7 @@ template <CORE::FE::CellType celltype, typename SolidFormulation>
 void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::reset_to_last_converged(
     const DRT::Element& ele, MAT::So3Material& solid_material)
 {
-  solid_material.ResetStep();
+  solid_material.reset_step();
 }
 
 template <CORE::FE::CellType... celltypes>

@@ -422,8 +422,8 @@ std::vector<double> FSI::UTILS::SlideAleUtils::Centerdisp(
       CORE::LINALG::CreateVector(*structdis->DofColMap(), true);
   CORE::LINALG::Export(*idispstep, *idispstepcol);
 
-  structdis->SetState("displacementtotal", idisptotalcol);
-  structdis->SetState("displacementincr", idispstepcol);
+  structdis->set_state("displacementtotal", idisptotalcol);
+  structdis->set_state("displacementincr", idispstepcol);
 
   // define stuff needed by the elements
   Teuchos::ParameterList params;
@@ -502,7 +502,7 @@ std::map<int, CORE::LINALG::Matrix<3, 1>> FSI::UTILS::SlideAleUtils::CurrentStru
       const int* n = tmpele->NodeIds();
 
       // fill currentpositions
-      for (int j = 0; j < tmpele->NumNode(); j++)
+      for (int j = 0; j < tmpele->num_node(); j++)
       {
         const int gid = n[j];
         const DRT::Node* node = interfacedis.gNode(gid);
@@ -735,13 +735,13 @@ void FSI::UTILS::SlideAleUtils::RedundantElements(
         {
           structreduelements_[i][tmpele->Id()] =
               Teuchos::rcp(new DRT::ELEMENTS::StructuralSurface(tmpele->Id(), tmpele->Owner(),
-                  tmpele->NumNode(), tmpele->NodeIds(), tmpele->Nodes(), &(*tmpele), 0));
+                  tmpele->num_node(), tmpele->NodeIds(), tmpele->Nodes(), &(*tmpele), 0));
         }
         else if (dim == 2)
         {
           structreduelements_[i][tmpele->Id()] =
               Teuchos::rcp(new DRT::ELEMENTS::StructuralLine(tmpele->Id(), tmpele->Owner(),
-                  tmpele->NumNode(), tmpele->NodeIds(), tmpele->Nodes(), &(*tmpele), 0));
+                  tmpele->num_node(), tmpele->NodeIds(), tmpele->Nodes(), &(*tmpele), 0));
         }
       }
     }
@@ -755,13 +755,13 @@ void FSI::UTILS::SlideAleUtils::RedundantElements(
         {
           ifluidslidstructeles_[i][tmpele->Id()] =
               Teuchos::rcp(new DRT::ELEMENTS::StructuralSurface(tmpele->Id(), tmpele->Owner(),
-                  tmpele->NumNode(), tmpele->NodeIds(), tmpele->Nodes(), &(*tmpele), 0));
+                  tmpele->num_node(), tmpele->NodeIds(), tmpele->Nodes(), &(*tmpele), 0));
         }
         else if (dim == 2)
         {
           ifluidslidstructeles_[i][tmpele->Id()] =
               Teuchos::rcp(new DRT::ELEMENTS::StructuralLine(tmpele->Id(), tmpele->Owner(),
-                  tmpele->NumNode(), tmpele->NodeIds(), tmpele->Nodes(), &(*tmpele), 0));
+                  tmpele->num_node(), tmpele->NodeIds(), tmpele->Nodes(), &(*tmpele), 0));
         }
       }
     }
@@ -787,8 +787,8 @@ void FSI::UTILS::SlideAleUtils::Rotation(DRT::Discretization& mtrdis,  ///< flui
       CORE::LINALG::CreateVector(*mtrdis.DofColMap(), false);
   CORE::LINALG::Export(*idispale, *idispnpcol);
 
-  mtrdis.SetState("displacementnp", idispnpcol);
-  mtrdis.SetState("displacementincr", idispstepcol);
+  mtrdis.set_state("displacementnp", idispnpcol);
+  mtrdis.set_state("displacementincr", idispstepcol);
 
   std::map<int, std::map<int, Teuchos::RCP<DRT::Element>>>::iterator melit;
   for (int i = 0; i <= maxid_; ++i)
@@ -878,14 +878,14 @@ void FSI::UTILS::SlideAleUtils::Rotation(DRT::Discretization& mtrdis,  ///< flui
   return;
 }
 
-void FSI::UTILS::SlideAleUtils::OutputRestart(IO::DiscretizationWriter& output)
+void FSI::UTILS::SlideAleUtils::output_restart(IO::DiscretizationWriter& output)
 {
   output.WriteVector("projhist", iprojhist_);
 
   return;
 }
 
-void FSI::UTILS::SlideAleUtils::ReadRestart(IO::DiscretizationReader& reader)
+void FSI::UTILS::SlideAleUtils::read_restart(IO::DiscretizationReader& reader)
 {
   reader.ReadVector(iprojhist_, "projhist");
 }

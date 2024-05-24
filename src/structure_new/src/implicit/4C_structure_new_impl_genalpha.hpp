@@ -46,10 +46,10 @@ namespace STR
       void Setup() override;
 
       //! (derived)
-      void PostSetup() override;
+      void post_setup() override;
 
       //! Reset state variables [derived]
-      void SetState(const Epetra_Vector& x) override;
+      void set_state(const Epetra_Vector& x) override;
 
       //! Apply the rhs only [derived]
       bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) override;
@@ -62,7 +62,7 @@ namespace STR
           const Epetra_Vector& x, Epetra_Vector& f, CORE::LINALG::SparseOperator& jac) override;
 
       //! [derived]
-      bool AssembleForce(Epetra_Vector& f,
+      bool assemble_force(Epetra_Vector& f,
           const std::vector<INPAR::STR::ModelType>* without_these_models = nullptr) const override;
 
       bool AssembleJac(CORE::LINALG::SparseOperator& jac,
@@ -73,7 +73,7 @@ namespace STR
           IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! [derived]
-      void ReadRestart(IO::DiscretizationReader& ioreader) override;
+      void read_restart(IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
       double CalcRefNormForce(const enum ::NOX::Abstract::Vector::NormType& type) const override;
@@ -96,8 +96,8 @@ namespace STR
       /*! \brief things that should be done after updating [derived]
        *
        *  We use in the GenAlpha case to update constant contributions (during one time step)
-       *  of the SetState routine.*/
-      void PostUpdate() override;
+       *  of the set_state routine.*/
+      void post_update() override;
 
       //!@}
 
@@ -291,7 +291,7 @@ namespace STR
        * in the const_vel_acc_update_ptr_ multi-vector pointer. The 1st entry represents the
        * velocity, and the 2nd the acceleration.
        *
-       *  See the SetState() routine for the iterative update of the current state. */
+       *  See the set_state() routine for the iterative update of the current state. */
       void update_constant_state_contributions() override;
 
       /// set the time integration coefficients

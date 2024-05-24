@@ -34,7 +34,7 @@ STR::PREDICT::ConstDisVelAccPress::ConstDisVelAccPress()
  *----------------------------------------------------------------------------*/
 void STR::PREDICT::ConstDisVelAccPress::Setup()
 {
-  CheckInit();
+  check_init();
 
   // fallback predictor
   tangdis_ptr_ = STR::PREDICT::BuildPredictor(INPAR::STR::pred_tangdis);
@@ -50,7 +50,7 @@ void STR::PREDICT::ConstDisVelAccPress::Setup()
  *----------------------------------------------------------------------------*/
 void STR::PREDICT::ConstDisVelAccPress::Compute(::NOX::Abstract::Group& grp)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   Teuchos::RCP<Epetra_Vector>& disnp_ptr = GlobalState().GetDisNp();
   Teuchos::RCP<Epetra_Vector>& velnp_ptr = GlobalState().GetVelNp();

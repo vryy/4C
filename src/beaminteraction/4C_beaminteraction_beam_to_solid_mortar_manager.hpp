@@ -187,13 +187,13 @@ namespace BEAMINTERACTION
      * \brief Calculate the internal mortar penalty energy.
      * @return Global mortar energy.
      */
-    double GetEnergy() const;
+    double get_energy() const;
 
    protected:
     /**
      * \brief Throw an error if setup was not called on the object prior to this function call.
      */
-    inline void CheckSetup() const
+    inline void check_setup() const
     {
       if (!is_setup_) FOUR_C_THROW("Setup not called on BeamToSolidMortarManager!");
     }

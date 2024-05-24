@@ -198,7 +198,7 @@ namespace DRT
       //  evaluate the residual of Spaldings law of the wall
       //                                           (private) gammi 11/09
       //-----------------------------------------------------------------
-      double SpaldingResidual(
+      double spalding_residual(
           const double y, const double visc, const double tau_B, const double normu)
       {
         // get dimensionless velocity

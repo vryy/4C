@@ -74,7 +74,7 @@ MAT::ElchMat::ElchMat(MAT::PAR::ElchMat* params) : params_(params)
   // setup of material map
   if (params_->local_)
   {
-    SetupMatMap();
+    setup_mat_map();
   }
   // else: material rcps live inside MAT::PAR::MatList
 }
@@ -82,7 +82,7 @@ MAT::ElchMat::ElchMat(MAT::PAR::ElchMat* params) : params_(params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElchMat::SetupMatMap()
+void MAT::ElchMat::setup_mat_map()
 {
   // safety first
   mat_.clear();

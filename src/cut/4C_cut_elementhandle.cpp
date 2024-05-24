@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 // integation-cells to the local coordinates of background element
 /*----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::ElementHandle::CreateProjected(
+Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::ElementHandle::create_projected(
     const std::vector<CORE::GEO::CUT::Point*>& cpoints, Teuchos::RCP<CORE::FE::GaussPoints> gp_ic)
 {
   const unsigned nen = CORE::FE::num_nodes<distype>;
@@ -79,7 +79,7 @@ void CORE::GEO::CUT::ElementHandle::volume_cell_gauss_points(
     Teuchos::RCP<CORE::FE::GaussPointsComposite> gpc =
         Teuchos::rcp(new CORE::FE::GaussPointsComposite(0));
 
-    switch (vc->ParentElement()->get_element_integration_type())
+    switch (vc->parent_element()->get_element_integration_type())
     {
       case INPAR::CUT::EleIntType_Tessellation:
       {
@@ -99,7 +99,7 @@ void CORE::GEO::CUT::ElementHandle::volume_cell_gauss_points(
       default:
       {
         FOUR_C_THROW("non supported element integration type for given volume-cell %i",
-            vc->ParentElement()->get_element_integration_type());
+            vc->parent_element()->get_element_integration_type());
         exit(EXIT_FAILURE);
       }
     }
@@ -153,42 +153,42 @@ void CORE::GEO::CUT::ElementHandle::append_volume_cell_gauss_points_tessellation
       case CORE::FE::CellType::tri3:
       {
         Teuchos::RCP<CORE::FE::GaussPoints> gp =
-            CreateProjected<CORE::FE::CellType::tri3>(cpoints, gp_ic);
+            create_projected<CORE::FE::CellType::tri3>(cpoints, gp_ic);
         gpc->Append(gp);
         break;
       }
       case CORE::FE::CellType::quad4:
       {
         Teuchos::RCP<CORE::FE::GaussPoints> gp =
-            CreateProjected<CORE::FE::CellType::quad4>(cpoints, gp_ic);
+            create_projected<CORE::FE::CellType::quad4>(cpoints, gp_ic);
         gpc->Append(gp);
         break;
       }
       case CORE::FE::CellType::hex8:
       {
         Teuchos::RCP<CORE::FE::GaussPoints> gp =
-            CreateProjected<CORE::FE::CellType::hex8>(cpoints, gp_ic);
+            create_projected<CORE::FE::CellType::hex8>(cpoints, gp_ic);
         gpc->Append(gp);
         break;
       }
       case CORE::FE::CellType::tet4:
       {
         Teuchos::RCP<CORE::FE::GaussPoints> gp =
-            CreateProjected<CORE::FE::CellType::tet4>(cpoints, gp_ic);
+            create_projected<CORE::FE::CellType::tet4>(cpoints, gp_ic);
         gpc->Append(gp);
         break;
       }
       case CORE::FE::CellType::wedge6:
       {
         Teuchos::RCP<CORE::FE::GaussPoints> gp =
-            CreateProjected<CORE::FE::CellType::wedge6>(cpoints, gp_ic);
+            create_projected<CORE::FE::CellType::wedge6>(cpoints, gp_ic);
         gpc->Append(gp);
         break;
       }
       case CORE::FE::CellType::pyramid5:
       {
         Teuchos::RCP<CORE::FE::GaussPoints> gp =
-            CreateProjected<CORE::FE::CellType::pyramid5>(cpoints, gp_ic);
+            create_projected<CORE::FE::CellType::pyramid5>(cpoints, gp_ic);
         gpc->Append(gp);
         break;
       }
@@ -210,7 +210,7 @@ void CORE::GEO::CUT::ElementHandle::append_volume_cell_gauss_points_moment_fitti
   //-------------------
 
   //---------------------------------------------
-  const std::vector<CORE::GEO::CUT::Point*>& cpoints = vc->ParentElement()->Points();
+  const std::vector<CORE::GEO::CUT::Point*>& cpoints = vc->parent_element()->Points();
   Teuchos::RCP<CORE::FE::GaussPoints> gp_ic = vc->GetGaussRule();
 
 
@@ -229,14 +229,14 @@ void CORE::GEO::CUT::ElementHandle::append_volume_cell_gauss_points_moment_fitti
     case CORE::FE::CellType::hex27:
     {
       Teuchos::RCP<CORE::FE::GaussPoints> gp =
-          CreateProjected<CORE::FE::CellType::hex8>(cpoints, gp_ic);
+          create_projected<CORE::FE::CellType::hex8>(cpoints, gp_ic);
       gpc->Append(gp);
       break;
     }
     case CORE::FE::CellType::tet10:
     {
       Teuchos::RCP<CORE::FE::GaussPoints> gp =
-          CreateProjected<CORE::FE::CellType::tet4>(cpoints, gp_ic);
+          create_projected<CORE::FE::CellType::tet4>(cpoints, gp_ic);
       gpc->Append(gp);
       break;
     }
@@ -300,28 +300,28 @@ Teuchos::RCP<CORE::FE::GaussPointsComposite> CORE::GEO::CUT::ElementHandle::gaus
           case CORE::FE::CellType::hex8:
           {
             Teuchos::RCP<CORE::FE::GaussPoints> gp =
-                CreateProjected<CORE::FE::CellType::hex8>(cpoints, gp_ic);
+                create_projected<CORE::FE::CellType::hex8>(cpoints, gp_ic);
             gpc->Append(gp);
             break;
           }
           case CORE::FE::CellType::tet4:
           {
             Teuchos::RCP<CORE::FE::GaussPoints> gp =
-                CreateProjected<CORE::FE::CellType::tet4>(cpoints, gp_ic);
+                create_projected<CORE::FE::CellType::tet4>(cpoints, gp_ic);
             gpc->Append(gp);
             break;
           }
           case CORE::FE::CellType::wedge6:
           {
             Teuchos::RCP<CORE::FE::GaussPoints> gp =
-                CreateProjected<CORE::FE::CellType::wedge6>(cpoints, gp_ic);
+                create_projected<CORE::FE::CellType::wedge6>(cpoints, gp_ic);
             gpc->Append(gp);
             break;
           }
           case CORE::FE::CellType::pyramid5:
           {
             Teuchos::RCP<CORE::FE::GaussPoints> gp =
-                CreateProjected<CORE::FE::CellType::pyramid5>(cpoints, gp_ic);
+                create_projected<CORE::FE::CellType::pyramid5>(cpoints, gp_ic);
             gpc->Append(gp);
             break;
           }
@@ -1542,7 +1542,7 @@ void CORE::GEO::CUT::Hex20ElementHandle::LocalCoordinates(
     const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst)
 {
   Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-      CORE::GEO::CUT::PositionFactory::BuildPosition<3, CORE::FE::CellType::hex20>(nodes_, xyz);
+      CORE::GEO::CUT::PositionFactory::build_position<3, CORE::FE::CellType::hex20>(nodes_, xyz);
 
   bool success = pos->Compute(1e-10);
   if (not success)
@@ -1569,7 +1569,7 @@ void CORE::GEO::CUT::Hex27ElementHandle::LocalCoordinates(
     const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst)
 {
   Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-      CORE::GEO::CUT::PositionFactory::BuildPosition<3, CORE::FE::CellType::hex27>(nodes_, xyz);
+      CORE::GEO::CUT::PositionFactory::build_position<3, CORE::FE::CellType::hex27>(nodes_, xyz);
 
   bool success = pos->Compute();
   if (not success)
@@ -1586,7 +1586,7 @@ void CORE::GEO::CUT::Tet10ElementHandle::LocalCoordinates(
     const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst)
 {
   Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-      CORE::GEO::CUT::PositionFactory::BuildPosition<3, CORE::FE::CellType::tet10>(nodes_, xyz);
+      CORE::GEO::CUT::PositionFactory::build_position<3, CORE::FE::CellType::tet10>(nodes_, xyz);
 
   bool success = pos->Compute();
   if (not success)
@@ -1602,7 +1602,7 @@ void CORE::GEO::CUT::Wedge15ElementHandle::LocalCoordinates(
     const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst)
 {
   Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-      CORE::GEO::CUT::PositionFactory::BuildPosition<3, CORE::FE::CellType::wedge15>(nodes_, xyz);
+      CORE::GEO::CUT::PositionFactory::build_position<3, CORE::FE::CellType::wedge15>(nodes_, xyz);
 
   bool success = pos->Compute();
   if (not success)

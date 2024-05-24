@@ -86,12 +86,12 @@ void ADAPTER::FBIConstraintenforcer::Setup(Teuchos::RCP<ADAPTER::FSIStructureWra
   else
   {
     fluidmatrix = Teuchos::rcp(
-        new CORE::LINALG::SparseMatrix(*(fluid_->Discretization()->DofRowMap()), 30, true, true,
+        new CORE::LINALG::SparseMatrix(*(fluid_->Discretization()->dof_row_map()), 30, true, true,
             CORE::LINALG::SparseMatrix::FE_MATRIX));  // todo Is there a better estimator?
   }
 
-  bridge_->Setup(structure_->Discretization()->DofRowMap(), fluid_->Discretization()->DofRowMap(),
-      fluidmatrix, meshtying);
+  bridge_->Setup(structure_->Discretization()->dof_row_map(),
+      fluid_->Discretization()->dof_row_map(), fluidmatrix, meshtying);
   if (structure_->Discretization()->Comm().NumProc() > 1)
   {
     geometrycoupler_->ExtendBeamGhosting(*(structure->Discretization()));
@@ -297,7 +297,7 @@ void ADAPTER::FBIConstraintenforcer::extract_current_element_dofs(
   // grid, not for ALE
   fluid_dofvec.clear();
   const DRT::Node* const* fluidnodes = elements[1]->Nodes();
-  for (int lid = 0; lid < elements[1]->NumNode(); ++lid)
+  for (int lid = 0; lid < elements[1]->num_node(); ++lid)
   {
     for (int dim = 0; dim < 3; dim++)
     {

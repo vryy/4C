@@ -60,9 +60,9 @@ namespace ADAPTER
     /// initialize algorithm
     void Init() override;
 
-    Teuchos::RCP<const Epetra_Map> DofRowMap() override;
+    Teuchos::RCP<const Epetra_Map> dof_row_map() override;
 
-    Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) override;
+    Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) override;
 
     /// Velocity-displacement conversion at the fsi interface
     double TimeScaling() const override;
@@ -171,7 +171,7 @@ namespace ADAPTER
      *
      *  \author mayr.mt \date 12/2013
      */
-    void TimeStepAuxiliar() override;
+    void time_step_auxiliar() override;
 
     /*! \brief Indicate norms of temporal discretization error
      *
@@ -269,9 +269,9 @@ namespace ADAPTER
      *
      *  \author mayr.mt \date 10/2013
      */
-    void ExplicitEuler(const Epetra_Vector& veln,  ///< velocity at \f$t_n\f$
-        const Epetra_Vector& accn,                 ///< acceleration at \f$t_n\f$
-        Epetra_Vector& velnp                       ///< velocity at \f$t_{n+1}\f$
+    void explicit_euler(const Epetra_Vector& veln,  ///< velocity at \f$t_n\f$
+        const Epetra_Vector& accn,                  ///< acceleration at \f$t_n\f$
+        Epetra_Vector& velnp                        ///< velocity at \f$t_{n+1}\f$
     ) const;
 
     /*! \brief Do a single Adams-Bashforth 2 step as auxiliary time integrator
@@ -304,14 +304,14 @@ namespace ADAPTER
      *
      *  \author mayr.mt \date 11/2013
      */
-    void AdamsBashforth2(const Epetra_Vector& veln,  ///< velocity at \f$t_n\f$
-        const Epetra_Vector& accn,                   ///< acceleration at \f$t_n\f$
-        const Epetra_Vector& accnm,                  ///< acceleration at \f$t_{n-1}\f$
-        Epetra_Vector& velnp                         ///< velocity at \f$t_{n+1}\f$
+    void adams_bashforth2(const Epetra_Vector& veln,  ///< velocity at \f$t_n\f$
+        const Epetra_Vector& accn,                    ///< acceleration at \f$t_n\f$
+        const Epetra_Vector& accnm,                   ///< acceleration at \f$t_{n-1}\f$
+        Epetra_Vector& velnp                          ///< velocity at \f$t_{n+1}\f$
     ) const;
 
     //! Compute length-scaled L2-norm of a vector
-    virtual double CalculateErrorNorm(const Epetra_Vector& vec,  ///< vector to compute norm of
+    virtual double calculate_error_norm(const Epetra_Vector& vec,  ///< vector to compute norm of
         const int numneglect = 0  ///< number of DOFs that have to be neglected for length scaling
     ) const;
 

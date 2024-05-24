@@ -325,7 +325,7 @@ namespace DRT
       /// \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
       ///
       /// \return 0 if successful, negative otherwise
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -350,7 +350,7 @@ namespace DRT
       //@{
 
       /// Compute stiffness and mass matrix
-      void ForceStiffMass(const std::vector<int>& lm,             ///< location matrix
+      void force_stiff_mass(const std::vector<int>& lm,           ///< location matrix
           const CORE::LINALG::Matrix<NUMDISP_, 1>& disp,          ///< current displacements
           const CORE::LINALG::Matrix<NUMPRES_, 1>& pres,          ///< current pressures
           const CORE::LINALG::Matrix<NUMDISP_, 1>& dispi,         ///< last residual displacements
@@ -399,7 +399,7 @@ namespace DRT
       );
 
       /// Recover deformation gradient incoperating assumed natural GL strain
-      static void AssDefGrad(double& detdefgrad,  ///< determinat of deformation gradient
+      static void ass_def_grad(double& detdefgrad,  ///< determinat of deformation gradient
           CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>&
               defgrad,  ///< deformation gradient \f$[\boldsymbol{F}]\f$
           CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>&
@@ -427,7 +427,7 @@ namespace DRT
       /// Retrieve shear modulus
       ///
       /// Shear modulus is needed for stabilisation
-      double ShearMod() const;
+      double shear_mod() const;
 
       /// Extrapolate Gauss-point values (e.g. stresses) to nodes and store results in elevectors
       void sosh8p8_expol(
@@ -445,14 +445,14 @@ namespace DRT
       );
 
       /// determine metric coefficients in parametric/natural/local co-ordinate system
-      static void LocalMetrics(const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& jac,
+      static void local_metrics(const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& jac,
           CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& metr);
 
       /// EXPERIMENTAL: setup of constant ANS data, second set of points
       ///
       /// \sa #sosh8_anssetup()
-      void AnsSetup2(const CORE::LINALG::Matrix<NUMNOD_, NUMDIM_>&
-                         xrefe,  ///< material/reference element coords
+      void ans_setup2(const CORE::LINALG::Matrix<NUMNOD_, NUMDIM_>&
+                          xrefe,  ///< material/reference element coords
           const CORE::LINALG::Matrix<NUMNOD_, NUMDIM_>& xcurr,  ///< spatial/current element coords
           std::vector<CORE::LINALG::Matrix<NUMDIM_, NUMNOD_>>**
               deriv_sp,  ///< derivs eval. at all sampling points
@@ -466,8 +466,8 @@ namespace DRT
       /// EXPERIMENTAL: setup of constant ANS data, third set of points
       ///
       /// \sa #sosh8_anssetup()
-      void AnsSetup3(const CORE::LINALG::Matrix<NUMNOD_, NUMDIM_>&
-                         xrefe,  ///< material/reference element coords
+      void ans_setup3(const CORE::LINALG::Matrix<NUMNOD_, NUMDIM_>&
+                          xrefe,  ///< material/reference element coords
           const CORE::LINALG::Matrix<NUMNOD_, NUMDIM_>& xcurr,  ///< spatial/current element coords
           std::vector<CORE::LINALG::Matrix<NUMDIM_, NUMNOD_>>**
               deriv_sp,  ///< derivs eval. at all sampling points
@@ -482,7 +482,7 @@ namespace DRT
       //@{
 
       /// set-up of EAS data
-      void EasInit();
+      void eas_init();
 
       /// retrieve EAS parameters and incremental update of them
       template <int NUMEAS_T>
@@ -520,7 +520,7 @@ namespace DRT
 
       /// add EAS strain contribution
       template <int NUMEAS_T>
-      static void EasAddStrain(
+      static void eas_add_strain(
           CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain,  ///< Green-Lagrange strain vector
           const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>&
               M,  ///< EAS shape functions in material configuration
@@ -562,7 +562,7 @@ namespace DRT
 
       /// static condensation
       template <int NUMEAS_T>
-      static void EasCondensation(
+      static void eas_condensation(
           CORE::LINALG::Matrix<NUMDISP_, 1>* force,               ///< element internal force vector
           CORE::LINALG::Matrix<NUMDISP_, NUMDISP_>* stiffmatrix,  ///< element stiffness matrix
           CORE::LINALG::Matrix<NUMDISP_, NUMPRES_>* gradmatrix,   ///< element gradient matrix
@@ -784,7 +784,7 @@ namespace DRT
       ///        gradient", Quart. Appl. Math., 42(2):113-117, 1984.
       /// [2] G.A. Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
       ///        esp. Section 2.6
-      static void StretchTensor(double* detut,         ///< determinant of material stretch tensor
+      static void stretch_tensor(double* detut,        ///< determinant of material stretch tensor
           CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>* ut,  ///< material stretch tensor
           CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>* invut,    ///< inverse material stretch tensor
           const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& ct  ///< right Cauchy-Green tensor
@@ -832,7 +832,7 @@ namespace DRT
       ///   \ldots & p^k & \ldots
       ///   \end{array}\right]
       ///\f]
-      static void ExtractDispAndPres(
+      static void extract_disp_and_pres(
           std::vector<double>& mystat,                ///< 32x1 element displacement-pressure vector
           CORE::LINALG::Matrix<NUMDISP_, 1>& mydisp,  ///< 24x1 element displacement vector
           CORE::LINALG::Matrix<NUMPRES_, 1>& mypres   ///< 8x1 element pressure vector
@@ -840,8 +840,9 @@ namespace DRT
 
       /// Build 32x32 element matrix
       ///
-      /// Following the pattern given at #ExtractDispAndPres()
-      static void BuildElementMatrix(CORE::LINALG::Matrix<NUMDOF_, NUMDOF_>* mat,  ///< 32x32 matrix
+      /// Following the pattern given at #extract_disp_and_pres()
+      static void build_element_matrix(
+          CORE::LINALG::Matrix<NUMDOF_, NUMDOF_>* mat,  ///< 32x32 matrix
           const CORE::LINALG::Matrix<NUMDISP_, NUMDISP_>*
               matdd,  ///< 24x24 sub-matrix, if nullptr then 0s are inserted
           const CORE::LINALG::Matrix<NUMDISP_, NUMPRES_>*
@@ -854,8 +855,8 @@ namespace DRT
 
       /// Build 32x1 element vector
       ///
-      /// Following the pattern given at #ExtractDispAndPres()
-      static void BuildElementVector(CORE::LINALG::Matrix<NUMDOF_, 1>* vct,  ///< 32x1 vector
+      /// Following the pattern given at #extract_disp_and_pres()
+      static void build_element_vector(CORE::LINALG::Matrix<NUMDOF_, 1>* vct,  ///< 32x1 vector
           const CORE::LINALG::Matrix<NUMDISP_, 1>*
               vctd,  ///< 24x1 sub-vector, if nullptr then 0s are inserted
           const CORE::LINALG::Matrix<NUMPRES_, 1>*
@@ -863,8 +864,9 @@ namespace DRT
       );
 
       /// Assemble global volume
-      static void AssembleVolume(Teuchos::ParameterList& params,  ///< parameter list for in 'n' out
-          const double& elevol                                    ///< current element volume
+      static void assemble_volume(
+          Teuchos::ParameterList& params,  ///< parameter list for in 'n' out
+          const double& elevol             ///< current element volume
       );
 
       //@}
@@ -881,7 +883,7 @@ namespace DRT
       /// of the GPLT file is going to produce nice graphs of
       /// internal force/incompressibility conditions and tangents
       /// with respect to the element displacements and pressures thereof.
-      static void GnuplotOut(Teuchos::ParameterList& params,  ///< parameter list for in 'n' out
+      static void gnuplot_out(Teuchos::ParameterList& params,  ///< parameter list for in 'n' out
           std::vector<double>&
               state,  ///< current state vector, i.e. displacements and pressure DOFs
           CORE::LINALG::Matrix<NUMDOF_, 1>&

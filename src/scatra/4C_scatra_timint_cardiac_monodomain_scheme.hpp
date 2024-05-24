@@ -44,7 +44,8 @@ namespace SCATRA
     void Update() override;
 
     //! read restart data
-    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
+    void read_restart(
+        const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
    protected:
     void WriteRestart() const override;
@@ -78,7 +79,8 @@ namespace SCATRA
     void Update() override;
 
     //! read restart data
-    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
+    void read_restart(
+        const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
    protected:
     void WriteRestart() const override;
@@ -109,7 +111,8 @@ namespace SCATRA
     void Update() override;
 
     //! read restart data
-    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
+    void read_restart(
+        const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
     /// add parameters specific for time-integration scheme
     void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override;

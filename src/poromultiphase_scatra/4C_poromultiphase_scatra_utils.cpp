@@ -159,7 +159,7 @@ std::map<int, std::set<int>> POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAn
   // fill scatra discretization by cloning structure discretization
   DRT::UTILS::CloneDiscretization<POROELASTSCATRA::UTILS::PoroScatraCloneStrategy>(
       structdis, scatradis);
-  scatradis->FillComplete();
+  scatradis->fill_complete();
 
   // the problem is two way coupled, thus each discretization must know the other discretization
 
@@ -181,9 +181,9 @@ std::map<int, std::set<int>> POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAn
   ndsporofluid_scatra = fluiddis->AddDofSet(scatradofset);
   if (ndsporofluid_scatra != 3) FOUR_C_THROW("unexpected dof sets in fluid field");
 
-  structdis->FillComplete(true, false, false);
-  fluiddis->FillComplete(true, false, false);
-  scatradis->FillComplete(true, false, false);
+  structdis->fill_complete(true, false, false);
+  fluiddis->fill_complete(true, false, false);
+  scatradis->fill_complete(true, false, false);
 
   if (artery_coupl)
   {
@@ -194,7 +194,7 @@ std::map<int, std::set<int>> POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAn
 
     // fill artery scatra discretization by cloning artery discretization
     DRT::UTILS::CloneDiscretization<ART::ArteryScatraCloneStrategy>(artdis, artscatradis);
-    artscatradis->FillComplete();
+    artscatradis->fill_complete();
 
     Teuchos::RCP<CORE::Dofsets::DofSetInterface> arterydofset = artdis->GetDofSetProxy();
     Teuchos::RCP<CORE::Dofsets::DofSetInterface> artscatradofset = artscatradis->GetDofSetProxy();
@@ -219,7 +219,7 @@ std::map<int, std::set<int>> POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAn
     if (artdis->AddDofSet(artscatradofset) != 2)
       FOUR_C_THROW("unexpected dof sets in artery field");
 
-    artscatradis->FillComplete(true, false, false);
+    artscatradis->fill_complete(true, false, false);
   }
 
   return nearbyelepairs;
@@ -252,7 +252,7 @@ void POROMULTIPHASESCATRA::UTILS::assign_material_pointers(const std::string& st
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double POROMULTIPHASESCATRA::UTILS::CalculateVectorNorm(
+double POROMULTIPHASESCATRA::UTILS::calculate_vector_norm(
     const enum INPAR::POROMULTIPHASESCATRA::VectorNorm norm,
     const Teuchos::RCP<const Epetra_Vector> vect)
 {
@@ -300,7 +300,7 @@ double POROMULTIPHASESCATRA::UTILS::CalculateVectorNorm(
     FOUR_C_THROW("Cannot handle vector norm");
     return 0;
   }
-}  // CalculateVectorNorm()
+}  // calculate_vector_norm()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

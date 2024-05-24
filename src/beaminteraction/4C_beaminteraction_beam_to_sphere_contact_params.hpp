@@ -36,21 +36,21 @@ namespace BEAMINTERACTION
     void Setup();
 
     //! returns the isinit_ flag
-    inline const bool& IsInit() const { return isinit_; };
+    inline const bool& is_init() const { return isinit_; };
 
     //! returns the issetup_ flag
-    inline const bool& IsSetup() const { return issetup_; };
+    inline const bool& is_setup() const { return issetup_; };
 
     //! Checks the init and setup status
-    inline void CheckInitSetup() const
+    inline void check_init_setup() const
     {
-      if (!IsInit() or !IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
+      if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
     }
 
     //! Checks the init status
-    inline void CheckInit() const
+    inline void check_init() const
     {
-      if (!IsInit()) FOUR_C_THROW("Init() has not been called, yet!");
+      if (!is_init()) FOUR_C_THROW("Init() has not been called, yet!");
     }
 
     inline double beam_to_sphere_penalty_param() const { return penalty_parameter_; }

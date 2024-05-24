@@ -156,14 +156,14 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMean
   // DOF-COL-MAP
   const Teuchos::RCP<Epetra_Vector> phinp_col =
       Teuchos::rcp(new Epetra_Vector(*discret->DofColMap()));
-  // export DofRowMap to DofColMap phinp
+  // export dof_row_map to DofColMap phinp
   CORE::LINALG::Export(*state, *phinp_col);
 
   // ---------------------------------------------------------------
 
   // before we can export to NodeColMap we need reconstruction with a NodeRowMap
   const Teuchos::RCP<Epetra_MultiVector> gradphirow =
-      Teuchos::rcp(new Epetra_MultiVector(*discret->DofRowMap(), nsd));
+      Teuchos::rcp(new Epetra_MultiVector(*discret->dof_row_map(), nsd));
   gradphirow->PutScalar(0.0);
 
   // map of pointers to nodes which must be reconstructed by this processor <local id, node>
@@ -180,7 +180,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMean
     const DRT::Element* actele = discret->lColElement(iele);
 
     // get number of nodes of this element (number of vertices)
-    const int numberOfNodes = actele->NumNode();
+    const int numberOfNodes = actele->num_node();
     // get vector of pointers of node (for this element)
     const DRT::Node* const* ele_vecOfPtsToNode = actele->Nodes();
 

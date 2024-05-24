@@ -123,7 +123,7 @@ namespace PARTICLEALGORITHM
      *
      * \param[in] restartstep restart step
      */
-    void ReadRestart(const int restartstep) override;
+    void read_restart(const int restartstep) override;
 
     /*!
      * \brief time loop for particle problem
@@ -139,7 +139,7 @@ namespace PARTICLEALGORITHM
      *
      * \param[in] print_header flag to control output of time step header
      */
-    void PrepareTimeStep(bool print_header = true);
+    void prepare_time_step(bool print_header = true);
 
     /*!
      * \brief pre evaluate time step
@@ -223,14 +223,14 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 05/2018
      */
-    void InitParticleEngine();
+    void init_particle_engine();
 
     /*!
      * \brief init particle wall handler
      *
      * \author Sebastian Fuchs \date 10/2018
      */
-    void InitParticleWall();
+    void init_particle_wall();
 
     /*!
      * \brief init rigid body handler
@@ -258,14 +258,14 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 05/2018
      */
-    void InitParticleGravity();
+    void init_particle_gravity();
 
     /*!
      * \brief init viscous damping handler
      *
      * \author Sebastian Fuchs \date 02/2019
      */
-    void InitViscousDamping();
+    void init_viscous_damping();
 
     /*!
      * \brief generate initial particles
@@ -307,7 +307,7 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 07/2018
      */
-    void SetupInitialStates();
+    void setup_initial_states();
 
     //! @}
 
@@ -324,7 +324,7 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 06/2018
      */
-    void UpdateConnectivity();
+    void update_connectivity();
 
     /*!
      * \brief check load transfer
@@ -404,14 +404,14 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 08/2018
      */
-    void SetCurrentTime();
+    void set_current_time();
 
     /*!
      * \brief set current step size
      *
      * \author Sebastian Fuchs \date 08/2018
      */
-    void SetCurrentStepSize();
+    void set_current_step_size();
 
     /*!
      * \brief set current write result flag
@@ -425,7 +425,7 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 08/2020
      */
-    void EvaluateTimeStep();
+    void evaluate_time_step();
 
     /*!
      * \brief set gravity acceleration

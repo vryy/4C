@@ -63,7 +63,7 @@ void PARTICLEWALL::WallHandlerBase::Init(
   init_wall_discretization();
 
   // init wall data state container
-  InitWallDataState();
+  init_wall_data_state();
 }
 
 void PARTICLEWALL::WallHandlerBase::Setup(
@@ -91,7 +91,7 @@ void PARTICLEWALL::WallHandlerBase::WriteRestart(const int step, const double ti
   walldiscretizationwriter->NewStep(step, time);
 }
 
-void PARTICLEWALL::WallHandlerBase::ReadRestart(const int restartstep) {}
+void PARTICLEWALL::WallHandlerBase::read_restart(const int restartstep) {}
 
 void PARTICLEWALL::WallHandlerBase::insert_particle_states_of_particle_types(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
@@ -172,7 +172,7 @@ void PARTICLEWALL::WallHandlerBase::check_wall_nodes_located_in_bounding_box() c
       for (int dim = 0; dim < 3; ++dim)
       {
         // local id of nodal dof in current spatial direction
-        const int lid = walldiscretization_->DofRowMap()->LID(lm[dim]);
+        const int lid = walldiscretization_->dof_row_map()->LID(lm[dim]);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
         // safety check
@@ -387,7 +387,7 @@ void PARTICLEWALL::WallHandlerBase::determine_col_wall_ele_nodal_pos(
 
   // get pointer to nodes of current column wall element
   DRT::Node** nodes = ele->Nodes();
-  const int numnodes = ele->NumNode();
+  const int numnodes = ele->num_node();
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   for (int i = 0; i < numnodes; ++i)
@@ -426,7 +426,7 @@ void PARTICLEWALL::WallHandlerBase::determine_col_wall_ele_nodal_pos(
   }
 }
 
-void PARTICLEWALL::WallHandlerBase::InitWallDataState()
+void PARTICLEWALL::WallHandlerBase::init_wall_data_state()
 {
   // create wall data state container
   walldatastate_ = std::make_shared<PARTICLEWALL::WallDataState>(params_);
@@ -543,7 +543,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::init_wall_discretization()
       GLOBAL::Problem::Instance()->GetDis("structure");
 
   // finalize structure discretization construction
-  if (not structurediscretization->Filled()) structurediscretization->FillComplete();
+  if (not structurediscretization->Filled()) structurediscretization->fill_complete();
 
   // get all particle wall conditions
   std::vector<CORE::Conditions::Condition*> conditions;
@@ -590,13 +590,13 @@ void PARTICLEWALL::WallHandlerDiscretCondition::init_wall_discretization()
           CORE::COMM::Factory("BELE3_3", "Polynomial", currele->Id(), currele->Owner());
 
       // set node ids to element
-      wallele->SetNodeIds(currele->NumNode(), currele->NodeIds());
+      wallele->SetNodeIds(currele->num_node(), currele->NodeIds());
 
       // create material for current wall element
       if (not(mat < 0)) wallele->SetMaterial(0, MAT::Factory(mat));
 
       // add wall element to discretization
-      walldiscretization_->AddElement(wallele);
+      walldiscretization_->add_element(wallele);
     }
   }
 
@@ -607,7 +607,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::init_wall_discretization()
   walldiscretization_->ReplaceDofSet(newdofset);
 
   // finalize wall discretization construction
-  walldiscretization_->FillComplete(true, false, false);
+  walldiscretization_->fill_complete(true, false, false);
 }
 
 void PARTICLEWALL::WallHandlerDiscretCondition::setup_wall_discretization() const
@@ -724,7 +724,7 @@ void PARTICLEWALL::WallHandlerBoundingBox::init_wall_discretization()
         if (not(mat < 0)) wallele->SetMaterial(0, MAT::Factory(mat));
 
         // add wall element to discretization
-        walldiscretization_->AddElement(wallele);
+        walldiscretization_->add_element(wallele);
 
         // add element id
         eleids.push_back(eleid++);
@@ -754,7 +754,7 @@ void PARTICLEWALL::WallHandlerBoundingBox::init_wall_discretization()
   walldiscretization_->export_column_elements(*elecolmap);
 
   // finalize wall discretization construction
-  walldiscretization_->FillComplete(true, false, false);
+  walldiscretization_->fill_complete(true, false, false);
 }
 
 void PARTICLEWALL::WallHandlerBoundingBox::setup_wall_discretization() const

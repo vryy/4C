@@ -55,61 +55,61 @@ namespace STR
       /// output interval regarding steps: write output every INTERVAL_STEPS steps
       int output_interval_in_steps() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return output_interval_steps_;
       };
 
       [[nodiscard]] int OutputStepOffset() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return output_step_offset_;
       }
 
       /// whether to write output in every iteration of the nonlinear solver
       bool output_every_iteration() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return output_every_iteration_;
       };
 
       /// whether to write special output for structure elements
       bool OutputStructure() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return output_structure_;
       };
 
       /// whether to write special output for structure elements
       bool OutputBeams() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return output_beams_;
       };
 
       /// get the data container for parameters regarding beams
       Teuchos::RCP<const DRT::ELEMENTS::StructureRuntimeOutputParams> GetStructureParams() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return params_runtime_output_structure_;
       };
 
       /// get the data container for parameters regarding beams
       Teuchos::RCP<const DRT::ELEMENTS::BeamRuntimeOutputParams> GetBeamParams() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return params_runtime_output_beams_;
       };
 
 
      private:
       /// get the init indicator status
-      const bool& IsInit() const { return isinit_; };
+      const bool& is_init() const { return isinit_; };
 
       /// get the setup indicator status
-      const bool& IsSetup() const { return issetup_; };
+      const bool& is_setup() const { return issetup_; };
 
       /// Check if Init() and Setup() have been called, yet.
-      void CheckInitSetup() const;
+      void check_init_setup() const;
 
 
      private:

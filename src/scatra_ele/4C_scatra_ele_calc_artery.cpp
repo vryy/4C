@@ -70,7 +70,7 @@ int DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::SetupCalc(
   my::SetupCalc(ele, discretization);
 
   // set the artery material in the variable manager
-  VarManager()->SetArteryMaterial(ele);
+  var_manager()->SetArteryMaterial(ele);
 
   return 0;
 }
@@ -121,7 +121,7 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::Materials(
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::set_internal_variables_for_mat_and_rhs()
 {
-  VarManager()->set_internal_variables_artery(my::funct_, my::derxy_, my::deriv_, my::xjm_,
+  var_manager()->set_internal_variables_artery(my::funct_, my::derxy_, my::deriv_, my::xjm_,
       my::ephinp_, my::ephin_, my::ehist_, earterypressurenp_);
 
   return;
@@ -233,8 +233,8 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::CalcMatConvODFluid(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodefluid,
     const double timefacfac, const double densnp, const CORE::LINALG::Matrix<nsd_, 1>& gradphi)
 {
-  const double prefac = timefacfac * VarManager()->Diam() * VarManager()->Diam() / 32.0 /
-                        VarManager()->Visc() * (-1.0);
+  const double prefac = timefacfac * var_manager()->Diam() * var_manager()->Diam() / 32.0 /
+                        var_manager()->Visc() * (-1.0);
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
     const int fvi = vi * my::numdofpernode_ + k;

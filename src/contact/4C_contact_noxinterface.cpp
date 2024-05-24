@@ -47,7 +47,7 @@ void CONTACT::NoxInterface::Init(const Teuchos::RCP<CONTACT::AbstractStrategy>& 
  *----------------------------------------------------------------------------*/
 void CONTACT::NoxInterface::Setup()
 {
-  CheckInit();
+  check_init();
 
   // set flag at the end
   issetup_ = true;

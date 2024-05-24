@@ -39,9 +39,9 @@ ADAPTER::FSIStructureWrapper::FSIStructureWrapper(Teuchos::RCP<Structure> struct
   interface_ = Teuchos::rcp(new STR::MapExtractor);
 
   if (GLOBAL::Problem::Instance()->GetProblemType() != GLOBAL::ProblemType::fpsi)
-    interface_->Setup(*Discretization(), *Discretization()->DofRowMap());
+    interface_->Setup(*Discretization(), *Discretization()->dof_row_map());
   else
-    interface_->Setup(*Discretization(), *Discretization()->DofRowMap(),
+    interface_->Setup(*Discretization(), *Discretization()->dof_row_map(),
         true);  // create overlapping maps for fpsi problem
 
   const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
@@ -56,7 +56,7 @@ ADAPTER::FSIStructureWrapper::FSIStructureWrapper(Teuchos::RCP<Structure> struct
 void ADAPTER::FSIStructureWrapper::RebuildInterface()
 {
   interface_ = Teuchos::rcp(new STR::MapExtractor);
-  interface_->Setup(*Discretization(), *Discretization()->DofRowMap());
+  interface_->Setup(*Discretization(), *Discretization()->dof_row_map());
 }
 
 /*----------------------------------------------------------------------*/
@@ -210,7 +210,7 @@ void ADAPTER::FSIStructureWrapper::apply_interface_forces(Teuchos::RCP<Epetra_Ve
 void ADAPTER::FSIStructureWrapper::apply_interface_forces_temporary_deprecated(
     Teuchos::RCP<Epetra_Vector> iforce)
 {
-  Teuchos::RCP<Epetra_Vector> fifc = CORE::LINALG::CreateVector(*DofRowMap(), true);
+  Teuchos::RCP<Epetra_Vector> fifc = CORE::LINALG::CreateVector(*dof_row_map(), true);
 
   interface_->AddFSICondVector(iforce, fifc);
 

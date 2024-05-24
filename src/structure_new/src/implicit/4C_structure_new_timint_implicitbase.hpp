@@ -59,7 +59,7 @@ namespace STR
       /// @name Access linear system of equation via adapter (implicit only!)
       /// @{
       /// initial guess of Newton's method
-      Teuchos::RCP<const Epetra_Vector> InitialGuess() override;
+      Teuchos::RCP<const Epetra_Vector> initial_guess() override;
 
       /// right-hand-side of Newton's method
       Teuchos::RCP<const Epetra_Vector> GetF() const override;

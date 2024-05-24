@@ -472,7 +472,7 @@ void MAT::MuscleGiantesio::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   CORE::UTILS::ValuesFunctAndFunctDerivs omegaaAndDerivs = {
       .val_funct = 0.0, .val_deriv_funct = 0.0, .val_deriv_deriv_funct = 0.0};
 
-  if (IsActive(currentTime))
+  if (is_active(currentTime))
   {
     omegaaAndDerivs = evaluate_activation_level_and_derivatives(lambdaM, dotLambdaM, currentTime);
     omegaa_old_ = omegaaAndDerivs.val_funct;  // update omegaaOld
@@ -499,7 +499,7 @@ void MAT::MuscleGiantesio::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   // --------------------------------------------------------------
   // active deformation gradient Fa
-  CORE::LINALG::Matrix<3, 3> Fa = ActDefGrad(omegaaAndDerivs.val_funct, M);
+  CORE::LINALG::Matrix<3, 3> Fa = act_def_grad(omegaaAndDerivs.val_funct, M);
 
   // first derivative of Fa w.r.t. omegaa
   CORE::LINALG::Matrix<3, 3> dFadomegaa = d_act_def_grad_d_act_level(omegaaAndDerivs.val_funct, M);
@@ -513,7 +513,7 @@ void MAT::MuscleGiantesio::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   // --------------------------------------------------------------
   // inverse of active deformation gradient Fa^{-1}
-  CORE::LINALG::Matrix<3, 3> invFa = InvActDefGrad(Fa);
+  CORE::LINALG::Matrix<3, 3> invFa = inv_act_def_grad(Fa);
 
   // first derivative of Fa^{-1} w.r.t. omegaa
   CORE::LINALG::Matrix<3, 3> dinvFadomegaa = d_inv_act_def_grad_d_act_level(Fa, dFadomegaa);
@@ -771,7 +771,7 @@ double MAT::MuscleGiantesio::evaluate_active_nominal_stress_integral(
   return intPa;
 }
 
-CORE::LINALG::Matrix<3, 3> MAT::MuscleGiantesio::ActDefGrad(
+CORE::LINALG::Matrix<3, 3> MAT::MuscleGiantesio::act_def_grad(
     const double omegaa, const CORE::LINALG::Matrix<3, 3>& M)
 {
   // active deformation gradient Fa
@@ -815,7 +815,8 @@ CORE::LINALG::Matrix<3, 3> MAT::MuscleGiantesio::dd_act_def_grad_dd_act_level(
   return ddFaddomegaa;
 }
 
-CORE::LINALG::Matrix<3, 3> MAT::MuscleGiantesio::InvActDefGrad(const CORE::LINALG::Matrix<3, 3>& Fa)
+CORE::LINALG::Matrix<3, 3> MAT::MuscleGiantesio::inv_act_def_grad(
+    const CORE::LINALG::Matrix<3, 3>& Fa)
 {
   // inverse of active deformation gradient Fa^{-1}
   CORE::LINALG::Matrix<3, 3> invFa(true);
@@ -826,7 +827,7 @@ CORE::LINALG::Matrix<3, 3> MAT::MuscleGiantesio::InvActDefGrad(const CORE::LINAL
 CORE::LINALG::Matrix<3, 3> MAT::MuscleGiantesio::d_inv_act_def_grad_d_act_level(
     const CORE::LINALG::Matrix<3, 3>& Fa, const CORE::LINALG::Matrix<3, 3>& dFadomegaa)
 {
-  CORE::LINALG::Matrix<3, 3> invFa = InvActDefGrad(Fa);
+  CORE::LINALG::Matrix<3, 3> invFa = inv_act_def_grad(Fa);
 
   // first derivative of Fa^{-1} w.r.t. omegaa
   // dinvFadomegaa_ij = - invFa_ik dFadomegaa_kl invFa_lj
@@ -836,7 +837,7 @@ CORE::LINALG::Matrix<3, 3> MAT::MuscleGiantesio::d_inv_act_def_grad_d_act_level(
   return dinvFadomegaa;
 }
 
-bool MAT::MuscleGiantesio::IsActive(const double& currentTime)
+bool MAT::MuscleGiantesio::is_active(const double& currentTime)
 {
   bool isActive = false;
 

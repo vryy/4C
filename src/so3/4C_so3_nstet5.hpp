@@ -62,7 +62,7 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void PreEvaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
+      void pre_evaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
           Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
           Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
           Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -112,11 +112,11 @@ namespace DRT
       //! map of location vectors for patch around a node
       std::map<int, std::vector<std::vector<std::vector<int>>>> lmlm_;
 
-      void InitElementsandMaps(std::map<int, DRT::ELEMENTS::NStet5*>& elecids,
+      void init_elementsand_maps(std::map<int, DRT::ELEMENTS::NStet5*>& elecids,
           std::map<int, DRT::Node*>& noderids, const int myrank, const int numproc,
           DRT::Discretization& dis);
 
-      void InitAdjacency(std::map<int, DRT::ELEMENTS::NStet5*>& elecids,
+      void init_adjacency(std::map<int, DRT::ELEMENTS::NStet5*>& elecids,
           std::map<int, DRT::Node*>& noderids,
           std::map<int, std::vector<DRT::ELEMENTS::NStet5*>>& adjele,
           std::map<int, std::map<int, DRT::Node*>>& adjnode, std::map<int, std::vector<int>>& adjlm,
@@ -127,7 +127,7 @@ namespace DRT
 
       void element_deformation_gradient(DRT::Discretization& dis);
 
-      void NodalIntegration(CORE::LINALG::SerialDenseMatrix* stiff,
+      void nodal_integration(CORE::LINALG::SerialDenseMatrix* stiff,
           CORE::LINALG::SerialDenseVector* force, std::map<int, DRT::Node*>& adjnode,
           std::vector<DRT::ELEMENTS::NStet5*>& adjele, std::map<int, std::vector<int>>& adjsubele,
           std::vector<int>& lm, std::vector<std::vector<std::vector<int>>>& lmlm,
@@ -136,30 +136,30 @@ namespace DRT
           const INPAR::STR::StrainType iostrain);
 
 
-      void SelectMaterial(const Teuchos::RCP<CORE::MAT::Material>& mat,
+      void select_material(const Teuchos::RCP<CORE::MAT::Material>& mat,
           CORE::LINALG::Matrix<6, 1>& stress, CORE::LINALG::Matrix<6, 6>& cmat, double& density,
           CORE::LINALG::Matrix<6, 1>& glstrain, CORE::LINALG::Matrix<3, 3>& defgrd, int gp,
           const int eleGID);
 
       // compute deviatoric stresses and tangent
-      static void DevStressTangent(CORE::LINALG::Matrix<6, 1>& Sdev,
+      static void dev_stress_tangent(CORE::LINALG::Matrix<6, 1>& Sdev,
           CORE::LINALG::Matrix<6, 6>& CCdev, CORE::LINALG::Matrix<6, 6>& CC,
           const CORE::LINALG::Matrix<6, 1>& S, const CORE::LINALG::Matrix<3, 3>& C);
 
-      void StrainOutput(const INPAR::STR::StrainType iostrain, std::vector<double>& nodalstrain,
+      void strain_output(const INPAR::STR::StrainType iostrain, std::vector<double>& nodalstrain,
           CORE::LINALG::Matrix<3, 3>& F, const double& detF, const double volweight,
           const double devweight);
 
-      void StrainOutput(const INPAR::STR::StrainType iostrain, std::vector<double>& nodalstrain,
+      void strain_output(const INPAR::STR::StrainType iostrain, std::vector<double>& nodalstrain,
           CORE::LINALG::Matrix<3, 3>& F, CORE::LINALG::Matrix<6, 1>& glstrain, const double weight);
 
-      void StressOutput(const INPAR::STR::StressType iostress, std::vector<double>& nodalstress,
+      void stress_output(const INPAR::STR::StressType iostress, std::vector<double>& nodalstress,
           CORE::LINALG::Matrix<6, 1>& stress, CORE::LINALG::Matrix<3, 3>& F, const double& detF);
 
 
       //! build deformation gradient
       template <typename T>
-      static CORE::LINALG::Matrix<3, 3, T> TBuildF(
+      static CORE::LINALG::Matrix<3, 3, T> t_build_f(
           const CORE::LINALG::Matrix<4, 3, T>& xdisp, const CORE::LINALG::Matrix<4, 3>& nxyz)
       {
         CORE::LINALG::Matrix<3, 3, T> F(true);
@@ -361,7 +361,7 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -512,7 +512,7 @@ namespace DRT
 
 
 
-      void SelectMaterial(CORE::LINALG::Matrix<6, 1>& stress, CORE::LINALG::Matrix<6, 6>& cmat,
+      void select_material(CORE::LINALG::Matrix<6, 1>& stress, CORE::LINALG::Matrix<6, 6>& cmat,
           double& density, CORE::LINALG::Matrix<6, 1>& glstrain, CORE::LINALG::Matrix<3, 3>& defgrd,
           int gp);
 

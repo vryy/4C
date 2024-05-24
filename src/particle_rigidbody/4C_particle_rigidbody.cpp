@@ -107,17 +107,17 @@ void PARTICLERIGIDBODY::RigidBodyHandler::WriteRestart() const
   binwriter->WriteCharVector("RigidBodyStateData", buffer);
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::ReadRestart(
+void PARTICLERIGIDBODY::RigidBodyHandler::read_restart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // read restart of unique global identifier handler
-  rigidbodyuniqueglobalidhandler_->ReadRestart(reader);
+  rigidbodyuniqueglobalidhandler_->read_restart(reader);
 
   // read restart of runtime vtp writer
-  rigidbodyvtpwriter_->ReadRestart(reader);
+  rigidbodyvtpwriter_->read_restart(reader);
 
   // read restart of affiliation pair handler
-  affiliationpairs_->ReadRestart(reader);
+  affiliationpairs_->read_restart(reader);
 
   // allocate rigid body states
   allocate_rigid_body_states();

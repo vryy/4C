@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ElemagType::PreEvaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
+void DRT::ELEMENTS::ElemagType::pre_evaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -50,7 +50,7 @@ int DRT::ELEMENTS::Elemag::Evaluate(Teuchos::ParameterList& params,
 
 /*---------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Elemag::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Elemag::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)

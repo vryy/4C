@@ -213,7 +213,7 @@ namespace DRT
     The method expects state to be either of dof row map or of
     dof column map.
     If the vector is supplied in DofColMap() a reference to it will be stored.
-    If the vector is NOT supplied in DofColMap(), but in DofRowMap(),
+    If the vector is NOT supplied in DofColMap(), but in dof_row_map(),
      a vector with column map is allocated and the supplied vector is exported to it.
     Everything is stored/referenced using Teuchos::RCP.
 
@@ -247,7 +247,7 @@ namespace DRT
 
    private:
     /// Store Initial Dofs
-    void StoreInitialDofs(const std::vector<int>& nds);
+    void store_initial_dofs(const std::vector<int>& nds);
 
     /*!
     ///Extend initialdofrowmap
@@ -257,7 +257,7 @@ namespace DRT
     \param uniquenumbering (in) : Assign unique number to additional dofsets
 
     */
-    Teuchos::RCP<Epetra_Map> ExtendMap(
+    Teuchos::RCP<Epetra_Map> extend_map(
         const Epetra_Map* srcmap, int numdofspernodedofset, int numdofsets, bool uniquenumbering);
 
     /// initial set of dofsets

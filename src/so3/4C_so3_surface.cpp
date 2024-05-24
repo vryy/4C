@@ -53,7 +53,7 @@ DRT::ELEMENTS::StructuralSurface::StructuralSurface(int id, int owner, int nnode
 
   numdofpernode_ = ParentMasterElement()->NumDofPerNode(*Nodes()[0]);
   // Safety check if all nodes have the same number of dofs!
-  for (int nlid = 1; nlid < NumNode(); ++nlid)
+  for (int nlid = 1; nlid < num_node(); ++nlid)
   {
     if (numdofpernode_ != ParentMasterElement()->NumDofPerNode(*Nodes()[nlid]))
       FOUR_C_THROW(
@@ -61,8 +61,8 @@ DRT::ELEMENTS::StructuralSurface::StructuralSurface(int id, int owner, int nnode
           numdofpernode_, ParentMasterElement()->NumDofPerNode(*Nodes()[nlid]));
   }
 
-  SetDistype();
-  SetGaussrule();
+  set_distype();
+  set_gaussrule();
   return;
 }
 
@@ -184,7 +184,7 @@ int DRT::ELEMENTS::StructuralSurface::NumLine() const
 /*------------------------------------------------------------------------*
  |  Set Discretization Type of the Surface Element              ager 12/16|
  *-----------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructuralSurface::SetDistype()
+void DRT::ELEMENTS::StructuralSurface::set_distype()
 {
   // if NURBS elements:
   if (ParentMasterElement()->Shape() == CORE::FE::CellType::nurbs8)
@@ -194,7 +194,7 @@ void DRT::ELEMENTS::StructuralSurface::SetDistype()
   // Lagrange elements:
   else
   {
-    switch (NumNode())
+    switch (num_node())
     {
       case 3:
         distype_ = CORE::FE::CellType::tri3;
@@ -231,7 +231,7 @@ void DRT::ELEMENTS::StructuralSurface::SetDistype()
 /*------------------------------------------------------------------------*
  |  Set Gaussrule dependent on shape of the structural surface  ager 12/16|
  *-----------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructuralSurface::SetGaussrule()
+void DRT::ELEMENTS::StructuralSurface::set_gaussrule()
 {
   // type of gaussian integration
   switch (Shape())

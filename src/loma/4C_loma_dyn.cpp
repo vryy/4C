@@ -50,8 +50,8 @@ void loma_dyn(int restart)
 
   // ensure that all dofs are assigned in the right order such that
   // dof numbers are created with fluid dof < scatra/elch dof
-  fluiddis->FillComplete();
-  scatradis->FillComplete();
+  fluiddis->fill_complete();
+  scatradis->fill_complete();
 
   // access problem-specific parameter list for LOMA
   const Teuchos::ParameterList& lomacontrol = problem->LOMAControlParams();
@@ -106,12 +106,12 @@ void loma_dyn(int restart)
       scatraonly->Setup();
 
       // read restart information
-      if (restart) (scatraonly->ScaTraField())->ReadRestart(restart);
+      if (restart) (scatraonly->ScaTraField())->read_restart(restart);
 
       // set initial velocity field
-      // note: The order ReadRestart() before SetVelocityField() is important here!!
+      // note: The order read_restart() before SetVelocityField() is important here!!
       // for time-dependent velocity fields, SetVelocityField() is additionally called in each
-      // PrepareTimeStep()-call
+      // prepare_time_step()-call
       (scatraonly->ScaTraField())->SetVelocityField();
 
       // enter time loop to solve problem with given convective velocity field
@@ -186,7 +186,7 @@ void loma_dyn(int restart)
             (restart == fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")))
           loma->ReadInflowRestart(restart);
         else
-          loma->ReadRestart(restart);
+          loma->read_restart(restart);
       }
 
       // enter LOMA algorithm
@@ -196,7 +196,7 @@ void loma_dyn(int restart)
       Teuchos::TimeMonitor::summarize();
 
       // perform result test if required
-      problem->AddFieldTest(loma->FluidField()->CreateFieldTest());
+      problem->AddFieldTest(loma->fluid_field()->CreateFieldTest());
       problem->AddFieldTest(loma->create_sca_tra_field_test());
       problem->TestAll(comm);
 

@@ -112,7 +112,7 @@ void STR::TimIntAB2::ResizeMStep()
 int STR::TimIntAB2::IntegrateStep()
 {
   // safety checks
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
   // things to be done before integrating
@@ -146,7 +146,7 @@ int STR::TimIntAB2::IntegrateStep()
 
   // build new external forces
   fextn_->PutScalar(0.0);
-  ApplyForceExternal(timen_, disn_, veln_, fextn_);
+  apply_force_external(timen_, disn_, veln_, fextn_);
 
   // TIMING
   // double dtcpu = timer_->wallTime();
@@ -160,7 +160,7 @@ int STR::TimIntAB2::IntegrateStep()
     Epetra_Vector disinc = Epetra_Vector(*disn_);
     disinc.Update(-1.0, *(*dis_)(0), 1.0);
     // internal force
-    ApplyForceInternal(timen_, dt, disn_, Teuchos::rcp(&disinc, false), veln_, fintn_);
+    apply_force_internal(timen_, dt, disn_, Teuchos::rcp(&disinc, false), veln_, fintn_);
   }
 
   // *********** time measurement ***********

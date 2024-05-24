@@ -16,13 +16,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-int DRT::ELEMENTS::Shell7pLine::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& dof_index_array, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   // set the interface ptr in the parent element
-  ParentElement()->set_params_interface_ptr(params);
+  parent_element()->set_params_interface_ptr(params);
 
   // we need the displacement at the previous step
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -38,8 +38,8 @@ int DRT::ELEMENTS::Shell7pLine::EvaluateNeumann(Teuchos::ParameterList& params,
   // time curve buisiness
   // find out whether we will use a time curve
   double time = -1.0;
-  if (ParentElement()->IsParamsInterface())
-    time = ParentElement()->StrParamsInterface().GetTotalTime();
+  if (parent_element()->IsParamsInterface())
+    time = parent_element()->StrParamsInterface().GetTotalTime();
   else
     time = params.get<double>("total time", -1.0);
 
@@ -58,7 +58,7 @@ int DRT::ELEMENTS::Shell7pLine::EvaluateNeumann(Teuchos::ParameterList& params,
   }
 
   // element geometry update - currently only material configuration
-  const int numnode = NumNode();
+  const int numnode = num_node();
   CORE::LINALG::SerialDenseMatrix x(numnode, num_dim_);
   material_configuration(x);
 
@@ -79,7 +79,7 @@ int DRT::ELEMENTS::Shell7pLine::EvaluateNeumann(Teuchos::ParameterList& params,
     // covariant basis vectors and metric of shell body
     // g1,g2,g3 stored in Jacobian matrix  = (g1,g2,g3)
     double dL;
-    LineIntegration(dL, x, derivatives);
+    line_integration(dL, x, derivatives);
     std::vector<double> a;
     // loop through the dofs of a node
     for (int i = 0; i < num_dim_; ++i)
@@ -122,7 +122,7 @@ int DRT::ELEMENTS::Shell7pLine::EvaluateNeumann(Teuchos::ParameterList& params,
 }
 
 
-void DRT::ELEMENTS::Shell7pLine::LineIntegration(double& dL,
+void DRT::ELEMENTS::Shell7pLine::line_integration(double& dL,
     const CORE::LINALG::SerialDenseMatrix& x, const CORE::LINALG::SerialDenseMatrix& derivatives)
 {
   // compute dXYZ / drs

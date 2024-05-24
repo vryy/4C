@@ -68,13 +68,13 @@ NOX::NLN::INNER::StatusTest::Factory::build_inner_status_tests(Teuchos::Paramete
   else if (test_type == "Stagnation" or test_type == "Divergence" or test_type == "MaxIters" or
            test_type == "FiniteValue")
   {
-    throwError("build_inner_status_tests()", "Not yet supported");
+    throw_error("build_inner_status_tests()", "Not yet supported");
   }
   else
   {
     std::ostringstream msg;
     msg << "The test type \"" << test_type << "\" is invalid!";
-    throwError("build_inner_status_tests()", msg.str());
+    throw_error("build_inner_status_tests()", msg.str());
   }
 
   this->CheckAndTagTest(p, status_test, tagged_tests);
@@ -311,7 +311,7 @@ bool NOX::NLN::INNER::StatusTest::Factory::CheckAndTagTest(const Teuchos::Parame
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Factory::throwError(
+void NOX::NLN::INNER::StatusTest::Factory::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   std::ostringstream msg;

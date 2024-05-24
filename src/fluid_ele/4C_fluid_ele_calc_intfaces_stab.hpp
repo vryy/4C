@@ -192,7 +192,7 @@ namespace DRT
       int Degree(const CORE::FE::CellType parent_ele_distype);
 
       //! reassemble matrix block from master-slave pairs to patch-node block for field (row, col)
-      void ReassembleMATBlock(const int row_block,     ///< row block
+      void reassemble_mat_block(const int row_block,   ///< row block
           const int col_block,                         ///< column block
           CORE::LINALG::SerialDenseMatrix& mat_block,  ///< matrix block
           CORE::LINALG::Matrix<numdofpernode_ * piel, numdofpernode_ * piel>&
@@ -210,7 +210,7 @@ namespace DRT
       );
 
       //! reassemble rhs block from master/slave rhs to patch-node block for field (row)
-      void ReassembleRHSBlock(const int row_block,     ///< row block
+      void reassemble_rhs_block(const int row_block,   ///< row block
           CORE::LINALG::SerialDenseVector& rhs_block,  ///< rhs block
           CORE::LINALG::Matrix<numdofpernode_ * piel, 1>&
               elevector_m,  ///< element vector master block
@@ -223,7 +223,7 @@ namespace DRT
       );
 
       //! fill element vectors with extracted data
-      void GetElementData(FluidIntFace* surfele,        ///< surface FluidIntFace element
+      void get_element_data(FluidIntFace* surfele,      ///< surface FluidIntFace element
           Fluid* master_ele,                            ///< master parent element
           Fluid* slave_ele,                             ///< slave  parent element
           Teuchos::RCP<CORE::MAT::Material>& material,  ///< material associated with the faces
@@ -266,12 +266,12 @@ namespace DRT
       );
 
       //! set the convective velocity
-      void SetConvectiveVelint(
+      void set_convective_velint(
           DRT::ELEMENTS::FluidEleParameterIntFace& fldintfacepara, const bool isale);
 
       //! Provide pressure and viscous u (EOS) ghost penalty stabilization for full! 2nd order
       //! derivatives
-      void GhostPenalty2ndFull(
+      void ghost_penalty2nd_full(
           const double& tau_timefacfac_u_2nd, const double& tau_timefacfac_p_2nd);
 
       //! Provide pressure and viscous u (EOS) ghost penalty stabilization for 2nd order normal
@@ -280,26 +280,26 @@ namespace DRT
           const double& tau_timefacfac_u_2nd, const double& tau_timefacfac_p_2nd);
 
       //! Provide pressure (EOS) stabilization assembly for fluid
-      void pressureEOS(
+      void pressure_eos(
           const double& tau_timefacfacpre,  ///< tau * (time factor pressure) x (integration factor)
           const double& tau_timefacfacrhs   ///< tau * (time factor rhs)      x (integration factor)
       );
 
       //! Provide divergence and streamline (EOS) stabilization assembly for fluid
-      void div_streamline_EOS(const CORE::LINALG::Matrix<nsd_, nsd_>&
+      void div_streamline_eos(const CORE::LINALG::Matrix<nsd_, nsd_>&
               vderxyaf_diff_scaled  ///< difference of velocity gradients * tau x (time factor rhs)
                                     ///< x (integration factor)
       );
 
       //! Provide divergence (EOS) stabilization assembly for fluid
-      void div_EOS(
+      void div_eos(
           const double& tau_timefacfac_div,  ///< tau_div * (time factor div) x (integration factor)
           const double& tau_timefacfac_rhs   ///< tau_div * (time factor rhs) x (integration factor)
       );
 
       //! Provide special condition to fix uncoupled pressure layers for pseudo 2D examples in
       //! combination with Krylov projection
-      void pressureKrylov2Dz(
+      void pressure_krylov2_dz(
           const double& tau_timefacfacpre,  ///< tau * (time factor pressure) x (integration factor)
           const double& tau_timefacfacrhs   ///< tau * (time factor rhs)      x (integration factor)
       );
@@ -508,7 +508,7 @@ namespace DRT
       //! compute surface diameter w.r.t to parent master element or parent slave element (flag
       //! master=true/false)
       template <int numnode>
-      void diameter2D(bool master,         ///< master or slave parent element
+      void diameter2_d(bool master,        ///< master or slave parent element
           std::vector<int>& connectivity,  ///< connectivity vector for parent element
           double& h_e                      ///< element length w.r.t parent element
       )
@@ -611,7 +611,7 @@ namespace DRT
       //! compute line diameter (length) w.r.t to parent master element or parent slave element
       //! (flag master=true/false)
       template <int numnode>
-      void diameter1D(bool master,         ///< master or slave parent element
+      void diameter1_d(bool master,        ///< master or slave parent element
           std::vector<int>& connectivity,  ///< connectivity vector for parent element
           double& h_e                      ///< element length w.r.t parent element
       )
@@ -765,7 +765,7 @@ namespace DRT
 
       //! find the surface at the opposite side, return the local side id of opposite side
       //! return -1 if not unique!
-      int FindOppositeSurface(CORE::FE::CellType ele_distype, const int surfacelocalid)
+      int find_opposite_surface(CORE::FE::CellType ele_distype, const int surfacelocalid)
       {
         if (ele_distype == CORE::FE::CellType::hex8 or ele_distype == CORE::FE::CellType::hex20 or
             ele_distype == CORE::FE::CellType::hex27)

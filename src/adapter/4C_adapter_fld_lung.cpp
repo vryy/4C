@@ -135,13 +135,13 @@ void ADAPTER::FluidLung::ListLungVolCons(std::set<int>& LungVolConIDs, int& MinL
 void ADAPTER::FluidLung::InitializeVolCon(
     Teuchos::RCP<Epetra_Vector> initflowrate, const int offsetID)
 {
-  if (!(Discretization()->Filled())) FOUR_C_THROW("FillComplete() was not called");
+  if (!(Discretization()->Filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!Discretization()->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // set ale displacements, fluid and grid velocities
   Discretization()->ClearState();
-  Discretization()->SetState("convectivevel", ConvectiveVel());
-  Discretization()->SetState("dispnp", Dispnp());
+  Discretization()->set_state("convectivevel", ConvectiveVel());
+  Discretization()->set_state("dispnp", Dispnp());
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
@@ -213,13 +213,13 @@ void ADAPTER::FluidLung::EvaluateVolCon(
     Teuchos::RCP<Epetra_Vector> FluidRHS, Teuchos::RCP<Epetra_Vector> CurrFlowRates,
     Teuchos::RCP<Epetra_Vector> lagrMultVecRed, const int offsetID, const double dttheta)
 {
-  if (!(Discretization()->Filled())) FOUR_C_THROW("FillComplete() was not called");
+  if (!(Discretization()->Filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!Discretization()->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // set ale displacements, fluid and grid velocities
   Discretization()->ClearState();
-  Discretization()->SetState("convectivevel", ConvectiveVel());
-  Discretization()->SetState("dispnp", Dispnp());
+  Discretization()->set_state("convectivevel", ConvectiveVel());
+  Discretization()->set_state("dispnp", Dispnp());
 
   // residual scaling for fluid matrices needed
   const double invresscale = 1.0 / ResidualScaling();
@@ -349,7 +349,7 @@ void ADAPTER::FluidLung::EvaluateVolCon(
   FluidConstrMatrix->Scale(invresscale);
   ConstrFluidMatrix->Scale(dttheta);
 
-  Teuchos::RCP<Epetra_Vector> zeros = CORE::LINALG::CreateVector(*DofRowMap(), true);
+  Teuchos::RCP<Epetra_Vector> zeros = CORE::LINALG::CreateVector(*dof_row_map(), true);
   outflowfsiinterface_->InsertCondVector(outflowfsiinterface_->ExtractCondVector(zeros), FluidRHS);
 }
 

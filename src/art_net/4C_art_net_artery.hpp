@@ -116,7 +116,7 @@ namespace DRT
       */
       int NumLine() const override
       {
-        if (NumNode() == 2)
+        if (num_node() == 2)
           return 1;
         else
         {
@@ -280,7 +280,7 @@ namespace DRT
       /*!
       \brief Evaluate a Neumann boundary condition
 
-      An element derived from this class uses the EvaluateNeumann method to receive commands
+      An element derived from this class uses the evaluate_neumann method to receive commands
       and parameters from some control routine in params and evaluates a Neumann boundary condition
       given in condition
 
@@ -296,7 +296,7 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -344,7 +344,7 @@ namespace DRT
 
 
       /// set number of gauss points to element shape default
-      CORE::FE::GaussRule1D getOptimalGaussrule(const CORE::FE::CellType& distype);
+      CORE::FE::GaussRule1D get_optimal_gaussrule(const CORE::FE::CellType& distype);
 
       /*!
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are

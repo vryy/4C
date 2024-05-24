@@ -39,7 +39,7 @@ namespace LUBRICATION
     void Update(const int num = 0) override;
 
     /// read restart data
-    void ReadRestart(int step) override;
+    void read_restart(int step) override;
 
     //! Update iteration incrementally
     //!

@@ -207,7 +207,7 @@ namespace MORTAR
     \brief evaluate D/M-matrix entries at GP
 
     */
-    void inline GP_DM(MORTAR::Element& sele, MORTAR::Element& mele,
+    void inline gp_dm(MORTAR::Element& sele, MORTAR::Element& mele,
         CORE::LINALG::Matrix<ns_, 1>& lmval, CORE::LINALG::Matrix<ns_, 1>& sval,
         CORE::LINALG::Matrix<nm_, 1>& mval, double& jac, double& wgt, int& nrow, int& ncol,
         int& ndof, bool& bound, const Epetra_Comm& comm);
@@ -216,7 +216,7 @@ namespace MORTAR
     \brief evaluate D/M-matrix entries at GP (3D and quadratic)
 
     */
-    void inline GP_3D_DM_Quad(MORTAR::Element& sele, MORTAR::Element& mele,
+    void inline gp_3_d_dm_quad(MORTAR::Element& sele, MORTAR::Element& mele,
         MORTAR::IntElement& sintele, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& lmintval, CORE::LINALG::Matrix<ns_, 1>& sval,
         CORE::LINALG::Matrix<nm_, 1>& mval, double& jac, double& wgt, int& nrow, int& nintrow,

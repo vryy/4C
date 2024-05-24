@@ -188,7 +188,7 @@ void CONTACT::AUG::ComboStrategy::RunPostEvaluate(CONTACT::ParamsInterface& cpar
   {
     case MORTAR::eval_force:
     {
-      RunPostEvalForce(cparams);
+      run_post_eval_force(cparams);
       break;
     }
     case MORTAR::eval_force_stiff:
@@ -403,11 +403,11 @@ void CONTACT::AUG::ComboStrategy::compute_contact_stresses() { Get().compute_con
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::PostSetup(bool redistributed, bool init)
+void CONTACT::AUG::ComboStrategy::post_setup(bool redistributed, bool init)
 {
   if (redistributed) no_dbc_.Redistribute(data_);
 
-  Get().PostSetup(redistributed, init);
+  Get().post_setup(redistributed, init);
 }
 
 /*----------------------------------------------------------------------------*
@@ -475,7 +475,7 @@ void CONTACT::AUG::ComboStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::RunPostEvalForce(CONTACT::ParamsInterface& cparams)
+void CONTACT::AUG::ComboStrategy::run_post_eval_force(CONTACT::ParamsInterface& cparams)
 {
   Get().AssembleContactRHS();
   Get().EvalStrContactRHS();
@@ -495,8 +495,8 @@ void CONTACT::AUG::ComboStrategy::EvalForceStiff(CONTACT::ParamsInterface& cpara
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::ComboStrategy::run_post_eval_force_stiff(CONTACT::ParamsInterface& cparams)
 {
-  SwitchUpdate(cparams);
-  RunPostEvalForce(cparams);
+  switch_update(cparams);
+  run_post_eval_force(cparams);
 
   Get().assemble_contact_stiff();
   Get().PostEvalForceStiff(cparams);
@@ -530,7 +530,7 @@ void CONTACT::AUG::ComboStrategy::run_post_eval_static_constraint_rhs(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::SwitchUpdate(CONTACT::ParamsInterface& cparams)
+void CONTACT::AUG::ComboStrategy::switch_update(CONTACT::ParamsInterface& cparams)
 {
   IO::cout(IO::debug) << std::string(40, '*') << "\n";
   IO::cout(IO::debug) << CONTACT_FUNC_NAME << IO::endl;
@@ -667,7 +667,7 @@ bool CONTACT::AUG::ComboStrategy::dyn_redistribute_contact(
 {
   const bool is_redistributed = Get().dyn_redistribute_contact(dis, vel, nlniter);
 
-  // This function must be called manually, since the internal PostSetup
+  // This function must be called manually, since the internal post_setup
   // call will not effect this wrapper class.
   if (is_redistributed) no_dbc_.Redistribute(data_);
 

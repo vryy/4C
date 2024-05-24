@@ -43,7 +43,7 @@ namespace PARTICLEINTERACTION
     virtual void Setup(const double& k_normal);
 
     //! set current step size
-    virtual void SetCurrentStepSize(const double currentstepsize) final;
+    virtual void set_current_step_size(const double currentstepsize) final;
 
     //! calculate tangential contact force
     virtual void tangential_contact_force(double* gap_tangential, bool& stick_tangential,

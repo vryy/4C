@@ -73,7 +73,7 @@ namespace NOX
 
          private:
           //! Throws formated error
-          void throwError(const std::string& functionName, const std::string& errorMsg) const;
+          void throw_error(const std::string& functionName, const std::string& errorMsg) const;
         };
 
         /*! \brief Nonmember helper function for the NOX::NLN::INNER::StatusTest::Factory.

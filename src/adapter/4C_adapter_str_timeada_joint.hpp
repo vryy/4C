@@ -84,7 +84,7 @@ namespace ADAPTER
 
     /*! \brief Update the auxiliar integrator
      */
-    void UpdateAuxiliar() override;
+    void update_auxiliar() override;
 
     /*! \brief Prepare repetition of current time step
      *
@@ -93,7 +93,7 @@ namespace ADAPTER
      *
      *  \author mayr.mt \date 12/2013
      */
-    void ResetStep() override;
+    void reset_step() override;
   };
 
 }  // namespace ADAPTER

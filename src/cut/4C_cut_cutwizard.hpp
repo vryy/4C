@@ -223,10 +223,10 @@ namespace CORE::GEO
     /*========================================================================*/
 
     //! Get this side (not from cut meshes) (faces of background elements) from the cut libraries
-    CORE::GEO::CUT::SideHandle* GetSide(std::vector<int>& nodeids);
+    CORE::GEO::CUT::SideHandle* get_side(std::vector<int>& nodeids);
 
     //! Get this side (not from cut meshes) from the cut libraries
-    CORE::GEO::CUT::SideHandle* GetSide(int sid);
+    CORE::GEO::CUT::SideHandle* get_side(int sid);
 
     //! Get this side from cut meshes from the cut libraries
     CORE::GEO::CUT::SideHandle* GetCutSide(int sid);
@@ -279,30 +279,30 @@ namespace CORE::GEO
     /*========================================================================*/
 
     //! add all cutting sides (mesh and level-set sides)
-    void AddCuttingSides();
+    void add_cutting_sides();
 
     //! add level-set cutting side
-    void AddLSCuttingSide();
+    void add_ls_cutting_side();
 
     //! add all cutting sides from the cut-discretization
-    void AddMeshCuttingSide();
+    void add_mesh_cutting_side();
 
     //! add elements from the background discretization
     void add_background_elements();
 
     //! Add all cutting side elements of given cutter discretization with given displacement field
     //! to the intersection class
-    void AddMeshCuttingSide(Teuchos::RCP<DRT::Discretization> cutterdis,
+    void add_mesh_cutting_side(Teuchos::RCP<DRT::Discretization> cutterdis,
         Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
         const int start_ele_gid = 0  ///< global start index for element id numbering
     );
 
     //! Add this cutting side element with given global coordinates to the intersection class
-    void AddMeshCuttingSide(int mi, DRT::Element* ele, const CORE::LINALG::SerialDenseMatrix& xyze,
-        const int start_ele_gid);
+    void add_mesh_cutting_side(int mi, DRT::Element* ele,
+        const CORE::LINALG::SerialDenseMatrix& xyze, const int start_ele_gid);
 
     //! Add this background mesh element to the intersection class
-    void AddElement(const DRT::Element* ele, const CORE::LINALG::SerialDenseMatrix& xyze,
+    void add_element(const DRT::Element* ele, const CORE::LINALG::SerialDenseMatrix& xyze,
         double* myphinp = nullptr, bool lsv_only_plus_domain = false);
 
     //@}
@@ -313,17 +313,17 @@ namespace CORE::GEO
     /*========================================================================*/
 
     //! perform the actual cut, the intersection
-    void Run_Cut(bool include_inner  //!< perform cut in the interior of the cutting mesh
+    void run_cut(bool include_inner  //!< perform cut in the interior of the cutting mesh
     );
 
     //! routine for finding node positions and computing volume-cell dofsets in a parallel way
-    void FindPositionDofSets(bool include_inner);
+    void find_position_dof_sets(bool include_inner);
 
     //! write statistics and output to screen and files
     void Output(bool include_inner);
 
     //! Check that cut is initialized correctly
-    bool SafetyChecks(bool is_prepare_cut_call);
+    bool safety_checks(bool is_prepare_cut_call);
 
     //@}
 
@@ -333,13 +333,13 @@ namespace CORE::GEO
 
     /*! Print the number of volumecells and boundarycells generated over the
      *  whole mesh during the cut */
-    void PrintCellStats();
+    void print_cell_stats();
 
     //! Write the DOF details of the nodes
-    void DumpGmshNumDOFSets(bool include_inner);
+    void dump_gmsh_num_dof_sets(bool include_inner);
 
     //! Write volumecell output in GMSH format throughout the domain
-    void DumpGmshVolumeCells(bool include_inner);
+    void dump_gmsh_volume_cells(bool include_inner);
 
     //! Write the integrationcells and boundarycells in GMSH format throughout the domain
     void dump_gmsh_integration_cells();

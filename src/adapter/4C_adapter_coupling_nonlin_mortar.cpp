@@ -271,7 +271,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarNodes(Teuchos::RCP<DRT::Discretizat
   //  if(slidingale==true)
   //  {
   //    nodeoffset = masterdis->NodeRowMap()->MaxAllGID()+1;
-  //    dofoffset = masterdis->DofRowMap()->MaxAllGID()+1;
+  //    dofoffset = masterdis->dof_row_map()->MaxAllGID()+1;
   //  }
   // ########## CHECK for a better implementation of this ###################
 
@@ -365,7 +365,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarElements(Teuchos::RCP<DRT::Discreti
   //  if(slidingale==true)
   //  {
   //    nodeoffset = masterdis->NodeRowMap()->MaxAllGID()+1;
-  //    dofoffset = masterdis->DofRowMap()->MaxAllGID()+1;
+  //    dofoffset = masterdis->dof_row_map()->MaxAllGID()+1;
   //  }
   // ########## CHECK for a better implementation of this ###################
 
@@ -393,7 +393,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarElements(Teuchos::RCP<DRT::Discreti
   {
     Teuchos::RCP<DRT::Element> ele = elemiter->second;
     Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(
-        ele->Id(), ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), false, isnurbs));
+        ele->Id(), ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), false, isnurbs));
 
     if (isnurbs)
     {
@@ -416,7 +416,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarElements(Teuchos::RCP<DRT::Discreti
       cele->NormalFac() = normalfac;
     }
 
-    interface->AddElement(cele);
+    interface->add_element(cele);
   }
 
   // feeding slave elements to the interface
@@ -430,7 +430,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarElements(Teuchos::RCP<DRT::Discreti
     if (true)  //(slidingale==false)
     {
       Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(
-          ele->Id(), ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), true, isnurbs));
+          ele->Id(), ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), true, isnurbs));
 
       if (isnurbs)
       {
@@ -453,20 +453,20 @@ void ADAPTER::CouplingNonLinMortar::AddMortarElements(Teuchos::RCP<DRT::Discreti
         cele->NormalFac() = normalfac;
       }
 
-      interface->AddElement(cele);
+      interface->add_element(cele);
     }
     else
     {
       std::vector<int> nidsoff;
-      for (int i = 0; i < ele->NumNode(); i++)
+      for (int i = 0; i < ele->num_node(); i++)
       {
-        nidsoff.push_back(ele->NodeIds()[ele->NumNode() - 1 - i] + nodeoffset);
+        nidsoff.push_back(ele->NodeIds()[ele->num_node() - 1 - i] + nodeoffset);
       }
 
-      Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(
-          ele->Id() + eleoffset, ele->Owner(), ele->Shape(), ele->NumNode(), nidsoff.data(), true));
+      Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(ele->Id() + eleoffset,
+          ele->Owner(), ele->Shape(), ele->num_node(), nidsoff.data(), true));
 
-      interface->AddElement(cele);
+      interface->add_element(cele);
     }
   }
 
@@ -517,8 +517,8 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
   /* Finalize the interface construction
    *
    * If this is the final parallel distribution, we need to assign degrees of freedom during
-   * during FillComplete(). If parallel redistribution is enabled, there will be another call to
-   * FillComplete(), so we skip this expensive operation here and do it later. DOFs have to be
+   * during fill_complete(). If parallel redistribution is enabled, there will be another call to
+   * fill_complete(), so we skip this expensive operation here and do it later. DOFs have to be
    * assigned only once!
    */
   {
@@ -526,7 +526,7 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
     if (parallelRedist == INPAR::MORTAR::ParallelRedist::redist_none || comm_->NumProc() == 1)
       isFinalDistribution = true;
 
-    interface->FillComplete(isFinalDistribution);
+    interface->fill_complete(isFinalDistribution);
   }
 
   // create binary search tree
@@ -550,7 +550,7 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
     interface->Redistribute();
 
     // call fill complete again
-    interface->FillComplete(true);
+    interface->fill_complete(true);
 
     // re create binary search tree
     interface->CreateSearchTree();
@@ -702,9 +702,9 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
     Teuchos::RCP<DRT::Element> ele = elemiter->second;
 
     Teuchos::RCP<CONTACT::Element> mrtrele = Teuchos::rcp(new CONTACT::Element(
-        ele->Id(), ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), false));
+        ele->Id(), ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), false));
 
-    interface->AddElement(mrtrele);
+    interface->add_element(mrtrele);
   }
 
   // SLAVE ELEMENTS
@@ -714,16 +714,16 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
     Teuchos::RCP<DRT::Element> ele = elemiter->second;
 
     Teuchos::RCP<CONTACT::Element> mrtrele = Teuchos::rcp(new CONTACT::Element(
-        ele->Id() + eleoffset, ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), true));
+        ele->Id() + eleoffset, ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), true));
 
-    interface->AddElement(mrtrele);
+    interface->add_element(mrtrele);
   }
 
   /* Finalize the interface construction
    *
    * If this is the final parallel distribution, we need to assign degrees of freedom during
-   * during FillComplete(). If parallel redistribution is enabled, there will be another call to
-   * FillComplete(), so we skip this expensive operation here and do it later. DOFs have to be
+   * during fill_complete(). If parallel redistribution is enabled, there will be another call to
+   * fill_complete(), so we skip this expensive operation here and do it later. DOFs have to be
    * assigned only once!
    */
   {
@@ -735,7 +735,7 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
         comm_->NumProc() == 1)
       isFinalDistribution = true;
 
-    interface->FillComplete(isFinalDistribution);
+    interface->fill_complete(isFinalDistribution);
   }
 
   // store old row maps (before parallel redistribution)
@@ -754,7 +754,7 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   Teuchos::RCP<Epetra_Vector> dispn = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // set displacement state in mortar interface
-  interface_->SetState(MORTAR::state_new_displacement, *dispn);
+  interface_->set_state(MORTAR::state_new_displacement, *dispn);
 
   // in the following two steps MORTAR does all the work
   interface_->Initialize();
@@ -779,14 +779,14 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
     const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<Epetra_Vector> veclm)
 {
   // safety check
-  CheckSetup();
+  check_setup();
 
   // init matrices
   InitMatrices();
 
   // set lagrange multiplier and displacement state
-  interface_->SetState(MORTAR::String2StateType(statename), *vec);
-  interface_->SetState(MORTAR::state_lagrange_multiplier, *veclm);
+  interface_->set_state(MORTAR::String2StateType(statename), *vec);
+  interface_->set_state(MORTAR::state_lagrange_multiplier, *veclm);
 
   // general interface init: data container etc...
   interface_->Initialize();
@@ -800,8 +800,8 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
     if (!ele) FOUR_C_THROW("ERROR: Cannot find ele with gid %", gid);
     CONTACT::Element* cele = dynamic_cast<CONTACT::Element*>(ele);
 
-    Teuchos::RCP<CONTACT::Integrator> integrator =
-        Teuchos::rcp(new CONTACT::Integrator(interface_->InterfaceParams(), cele->Shape(), *comm_));
+    Teuchos::RCP<CONTACT::Integrator> integrator = Teuchos::rcp(
+        new CONTACT::Integrator(interface_->interface_params(), cele->Shape(), *comm_));
 
     integrator->IntegrateD(*cele, *comm_, true);
   }
@@ -844,14 +844,14 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinDM(const std::string& statename,
     const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<Epetra_Vector> veclm)
 {
   // safety check
-  CheckSetup();
+  check_setup();
 
   // init matrices with redistributed maps
   InitMatrices();
 
   // set current lm and displ state
-  interface_->SetState(MORTAR::String2StateType(statename), *vec);
-  interface_->SetState(MORTAR::state_lagrange_multiplier, *veclm);
+  interface_->set_state(MORTAR::String2StateType(statename), *vec);
+  interface_->set_state(MORTAR::state_lagrange_multiplier, *veclm);
 
   // init internal data
   interface_->Initialize();
@@ -890,7 +890,7 @@ void ADAPTER::CouplingNonLinMortar::matrix_row_col_transform()
   CORE::ADAPTER::CouplingMortar::matrix_row_col_transform();
 
   // safety check
-  CheckSetup();
+  check_setup();
 
   // check for parallel redistribution
   bool parredist = false;
@@ -943,14 +943,14 @@ void ADAPTER::CouplingNonLinMortar::IntegrateAll(const std::string& statename,
     const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<Epetra_Vector> veclm)
 {
   // safety check
-  CheckSetup();
+  check_setup();
 
   // init matrices with redistributed maps
   InitMatrices();
 
   // set current lm and displ state
-  interface_->SetState(MORTAR::String2StateType(statename), *vec);
-  interface_->SetState(MORTAR::state_lagrange_multiplier, *veclm);
+  interface_->set_state(MORTAR::String2StateType(statename), *vec);
+  interface_->set_state(MORTAR::state_lagrange_multiplier, *veclm);
 
   // init internal data
   interface_->Initialize();
@@ -987,14 +987,14 @@ void ADAPTER::CouplingNonLinMortar::EvaluateSliding(const std::string& statename
     const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<Epetra_Vector> veclm)
 {
   // safety check
-  CheckSetup();
+  check_setup();
 
   // init matrices with redistributed maps
   InitMatrices();
 
   // set current lm and displ state
-  interface_->SetState(MORTAR::String2StateType(statename), *vec);
-  interface_->SetState(MORTAR::state_lagrange_multiplier, *veclm);
+  interface_->set_state(MORTAR::String2StateType(statename), *vec);
+  interface_->set_state(MORTAR::state_lagrange_multiplier, *veclm);
 
   // init internal data
   interface_->Initialize();
@@ -1037,11 +1037,11 @@ void ADAPTER::CouplingNonLinMortar::EvaluateSliding(const std::string& statename
 void ADAPTER::CouplingNonLinMortar::CreateP()
 {
   // safety check
-  CheckSetup();
+  check_setup();
 
   // check
   if (CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(
-          Interface()->InterfaceParams(), "LM_SHAPEFCN") != INPAR::MORTAR::shape_dual)
+          Interface()->interface_params(), "LM_SHAPEFCN") != INPAR::MORTAR::shape_dual)
     FOUR_C_THROW("ERROR: Creation of P operator only for dual shape functions!");
 
   /********************************************************************/

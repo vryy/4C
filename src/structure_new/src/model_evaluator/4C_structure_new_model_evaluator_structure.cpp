@@ -61,7 +61,7 @@ STR::MODELEVALUATOR::Structure::Structure()
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::Setup()
 {
-  FOUR_C_ASSERT(IsInit(), "Init() has not been called, yet!");
+  FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
 
   // get the global state content
   {
@@ -86,7 +86,7 @@ void STR::MODELEVALUATOR::Structure::Setup()
   }
   // setup new variables
   {
-    dis_incr_ptr_ = Teuchos::rcp(new Epetra_Vector(DisNp().Map(), true));
+    dis_incr_ptr_ = Teuchos::rcp(new Epetra_Vector(dis_np().Map(), true));
   }
 
   // setup output writers
@@ -129,23 +129,23 @@ void STR::MODELEVALUATOR::Structure::Setup()
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::Reset(const Epetra_Vector& x)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   /* --- reset external forces
    * Please note, that PutScalar is safer (but maybe slower) than
    * putScalar(0.0), because of possible NaN and inf values! */
-  FextNp().PutScalar(0.0);
+  fext_np().PutScalar(0.0);
 
   /* --- reset internal forces
    * Please note, that PutScalar is safer (but maybe slower) than
    * putScalar(0.0), because of possible NaN and inf values! */
-  FintNp().PutScalar(0.0);
+  fint_np().PutScalar(0.0);
 
   // reset stiffness matrix
   Stiff().Zero();
 
   // reset modified stiffness matrix
-  StiffPTC().Zero();
+  stiff_ptc().Zero();
 
 
   // set evaluation time back to zero
@@ -154,29 +154,29 @@ void STR::MODELEVALUATOR::Structure::Reset(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Structure::EvaluateForce()
+bool STR::MODELEVALUATOR::Structure::evaluate_force()
 {
-  CheckInitSetup();
+  check_init_setup();
   bool ok = true;
   // ---------------------------------------
   // (1) EXTERNAL FORCES
   // ---------------------------------------
-  ok = ApplyForceExternal();
+  ok = apply_force_external();
 
   // ---------------------------------------
   // (2) INTERNAL FORCES
   // ---------------------------------------
   // ordinary internal force
-  ok = (ok ? ApplyForceInternal() : false);
+  ok = (ok ? apply_force_internal() : false);
 
   return ok;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Structure::EvaluateStiff()
+bool STR::MODELEVALUATOR::Structure::evaluate_stiff()
 {
-  CheckInitSetup();
+  check_init_setup();
   bool ok = true;
 
   /* We use the same routines as for the ApplyForceStiff case, but we
@@ -207,9 +207,9 @@ bool STR::MODELEVALUATOR::Structure::EvaluateStiff()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Structure::EvaluateForceStiff()
+bool STR::MODELEVALUATOR::Structure::evaluate_force_stiff()
 {
-  CheckInitSetup();
+  check_init_setup();
   bool ok = true;
 
   // *********** time measurement ***********
@@ -236,10 +236,11 @@ bool STR::MODELEVALUATOR::Structure::EvaluateForceStiff()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Structure::AssembleForce(Epetra_Vector& f, const double& timefac_np) const
+bool STR::MODELEVALUATOR::Structure::assemble_force(
+    Epetra_Vector& f, const double& timefac_np) const
 {
-  CORE::LINALG::AssembleMyVector(1.0, f, -timefac_np, FextNp());
-  CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, FintNp());
+  CORE::LINALG::AssembleMyVector(1.0, f, -timefac_np, fext_np());
+  CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, fint_np());
 
   // add the scaled force contributions of the old time step
   // structural dofs of the right-hand-side vector at t_{n+timefac_n} (read-only)
@@ -254,7 +255,7 @@ bool STR::MODELEVALUATOR::Structure::AssembleForce(Epetra_Vector& f, const doubl
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Structure::AssembleJacobian(
+bool STR::MODELEVALUATOR::Structure::assemble_jacobian(
     CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
   int err = Stiff().Scale(timefac_np);
@@ -270,7 +271,7 @@ bool STR::MODELEVALUATOR::Structure::AssembleJacobian(
  *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Structure::initialize_inertia_and_damping()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // currently a fixed number of matrix and vector pointers are supported
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
@@ -284,19 +285,19 @@ bool STR::MODELEVALUATOR::Structure::initialize_inertia_and_damping()
   // set vector values needed by elements
   // --> initially zero !!!
   Discret().ClearState();
-  Discret().SetState(0, "residual displacement", zeros);
-  Discret().SetState(0, "displacement", zeros);
+  Discret().set_state(0, "residual displacement", zeros);
+  Discret().set_state(0, "displacement", zeros);
 
   // set action type and evaluation matrix and vector pointers
-  StaticContributions(eval_mat.data(), eval_vec.data());
+  static_contributions(eval_mat.data(), eval_vec.data());
   material_damping_contributions(eval_mat.data());
   inertial_contributions(eval_mat.data(), eval_vec.data());
 
   // evaluate
-  EvaluateInternal(eval_mat.data(), eval_vec.data());
+  evaluate_internal(eval_mat.data(), eval_vec.data());
 
   // complete stiffness and mass matrix
-  FillComplete();
+  fill_complete();
 
   // assemble the rayleigh damping matrix
   rayleigh_damping_matrix();
@@ -306,9 +307,9 @@ bool STR::MODELEVALUATOR::Structure::initialize_inertia_and_damping()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Structure::ApplyForceInternal()
+bool STR::MODELEVALUATOR::Structure::apply_force_internal()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // currently a fixed number of matrix and vector pointers are supported
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
@@ -318,17 +319,17 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceInternal()
 
   // set vector values needed by elements
   Discret().ClearState();
-  Discret().SetState(0, "residual displacement", dis_incr_ptr_);
-  Discret().SetState(0, "displacement", GState().GetDisNp());
-  Discret().SetState(0, "velocity", GState().GetVelNp());
+  Discret().set_state(0, "residual displacement", dis_incr_ptr_);
+  Discret().set_state(0, "displacement", GState().GetDisNp());
+  Discret().set_state(0, "velocity", GState().GetVelNp());
 
   // set action type and evaluation matrix and vector pointers
-  StaticContributions(eval_vec.data());
+  static_contributions(eval_vec.data());
   material_damping_contributions(eval_mat.data());
   inertial_contributions(eval_vec.data());
 
   // evaluate ...
-  EvaluateInternal(eval_mat.data(), eval_vec.data());
+  evaluate_internal(eval_mat.data(), eval_vec.data());
 
   // evaluate inertia and visco forces
   inertial_and_viscous_forces();
@@ -338,20 +339,20 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceInternal()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Structure::ApplyForceExternal()
+bool STR::MODELEVALUATOR::Structure::apply_force_external()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // Set to default value, because it is unnecessary for the
-  // EvaluateNeumann routine.
+  // evaluate_neumann routine.
   EvalData().SetActionType(DRT::ELEMENTS::none);
   // set vector values needed by elements
   Discret().ClearState();
-  Discret().SetState(0, "displacement", GState().GetDisN());
+  Discret().set_state(0, "displacement", GState().GetDisN());
   if (EvalData().GetDampingType() == INPAR::STR::damp_material)
-    Discret().SetState(0, "velocity", GState().GetVelN());
-  Discret().SetState(0, "displacement new", GState().GetDisNp());
-  EvaluateNeumann(GState().GetFextNp(), Teuchos::null);
+    Discret().set_state(0, "velocity", GState().GetVelN());
+  Discret().set_state(0, "displacement new", GState().GetDisNp());
+  evaluate_neumann(GState().GetFextNp(), Teuchos::null);
 
   return EvalErrorCheck();
 }
@@ -360,26 +361,26 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceExternal()
  *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Structure::apply_force_stiff_external()
 {
-  CheckInitSetup();
+  check_init_setup();
 
-  if (pre_apply_force_stiff_external(FextNp(), *stiff_ptr_)) return true;
+  if (pre_apply_force_stiff_external(fext_np(), *stiff_ptr_)) return true;
 
   // set vector values needed by elements
   Discret().ClearState();
-  Discret().SetState(0, "displacement", GState().GetDisN());
+  Discret().set_state(0, "displacement", GState().GetDisN());
 
   if (EvalData().GetDampingType() == INPAR::STR::damp_material)
-    Discret().SetState(0, "velocity", GState().GetVelN());
+    Discret().set_state(0, "velocity", GState().GetVelN());
 
   // get load vector
   if (!TimInt().GetDataSDyn().GetLoadLin())
-    EvaluateNeumann(GState().GetFextNp(), Teuchos::null);
+    evaluate_neumann(GState().GetFextNp(), Teuchos::null);
   else
   {
-    Discret().SetState(0, "displacement new", GState().GetDisNp());
+    Discret().set_state(0, "displacement new", GState().GetDisNp());
     /* Add the linearization of the external force to the stiffness
      * matrix. */
-    EvaluateNeumann(GState().GetFextNp(), Teuchos::rcpFromRef(*stiff_ptr_));
+    evaluate_neumann(GState().GetFextNp(), Teuchos::rcpFromRef(*stiff_ptr_));
   }
 
   return EvalErrorCheck();
@@ -390,7 +391,7 @@ bool STR::MODELEVALUATOR::Structure::apply_force_stiff_external()
 bool STR::MODELEVALUATOR::Structure::pre_apply_force_stiff_external(
     Epetra_Vector& fextnp, CORE::LINALG::SparseMatrix& stiff) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   const auto* impl_ptr = dynamic_cast<const STR::TIMINT::Implicit*>(&TimInt());
   if (impl_ptr) return impl_ptr->Predictor().pre_apply_force_external(fextnp);
@@ -402,7 +403,7 @@ bool STR::MODELEVALUATOR::Structure::pre_apply_force_stiff_external(
  *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Structure::apply_force_stiff_internal()
 {
-  CheckInitSetup();
+  check_init_setup();
   // currently a fixed number of matrix and vector pointers are supported
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
       Teuchos::null, Teuchos::null, Teuchos::null};
@@ -411,21 +412,21 @@ bool STR::MODELEVALUATOR::Structure::apply_force_stiff_internal()
 
   // set vector values needed by elements
   Discret().ClearState();
-  Discret().SetState(0, "residual displacement", dis_incr_ptr_);
-  Discret().SetState(0, "displacement", GState().GetDisNp());
-  Discret().SetState(0, "velocity", GState().GetVelNp());
+  Discret().set_state(0, "residual displacement", dis_incr_ptr_);
+  Discret().set_state(0, "displacement", GState().GetDisNp());
+  Discret().set_state(0, "velocity", GState().GetVelNp());
 
   // set action types and evaluate matrices/vectors
-  StaticContributions(eval_mat.data(), eval_vec.data());
+  static_contributions(eval_mat.data(), eval_vec.data());
   material_damping_contributions(eval_mat.data());
   if (masslin_type_ != INPAR::STR::ml_none)
     inertial_contributions(eval_mat.data(), eval_vec.data());
 
   // evaluate
-  EvaluateInternal(eval_mat.data(), eval_vec.data());
+  evaluate_internal(eval_mat.data(), eval_vec.data());
 
   // complete stiffness and mass matrix
-  FillComplete();
+  fill_complete();
 
   // evaluate inertial and viscous forces
   inertial_and_viscous_forces();
@@ -435,7 +436,7 @@ bool STR::MODELEVALUATOR::Structure::apply_force_stiff_internal()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::StaticContributions(
+void STR::MODELEVALUATOR::Structure::static_contributions(
     Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec)
 {
   // action for elements
@@ -448,7 +449,7 @@ void STR::MODELEVALUATOR::Structure::StaticContributions(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::StaticContributions(Teuchos::RCP<Epetra_Vector>* eval_vec)
+void STR::MODELEVALUATOR::Structure::static_contributions(Teuchos::RCP<Epetra_Vector>* eval_vec)
 {
   // action for elements
   EvalData().SetActionType(DRT::ELEMENTS::struct_calc_internalforce);
@@ -467,7 +468,7 @@ void STR::MODELEVALUATOR::Structure::material_damping_contributions(
   // (reset the action type to be independent of the calling order)
   EvalData().SetActionType(DRT::ELEMENTS::struct_calc_nlnstiff);
   // set the discretization state
-  Discret().SetState(0, "velocity", GState().GetVelNp());
+  Discret().set_state(0, "velocity", GState().GetVelNp());
   // reset damping matrix
   Damp().Zero();
   // add the stiffness matrix as well (also for the ApplyForce case!)
@@ -481,7 +482,7 @@ void STR::MODELEVALUATOR::Structure::material_damping_contributions(
 void STR::MODELEVALUATOR::Structure::inertial_contributions(
     Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (TimInt().GetDataSDynPtr()->NeglectInertia()) return;
 
@@ -492,57 +493,57 @@ void STR::MODELEVALUATOR::Structure::inertial_contributions(
     EvalData().SetActionType(DRT::ELEMENTS::struct_calc_nlnstiffmass);
 
   // set the discretization state
-  Discret().SetState(0, "velocity", GState().GetVelNp());
-  Discret().SetState(0, "acceleration", GState().GetAccNp());
+  Discret().set_state(0, "velocity", GState().GetVelNp());
+  Discret().set_state(0, "acceleration", GState().GetAccNp());
   // reset the mass matrix
   Mass().Zero();
   // set mass matrix
   eval_mat[1] = GState().GetMassMatrix();
   // set inertial vector if necessary
-  eval_vec[1] = GetInertialForce();
+  eval_vec[1] = get_inertial_force();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::inertial_contributions(Teuchos::RCP<Epetra_Vector>* eval_vec)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (masslin_type_ == INPAR::STR::ml_none or TimInt().GetDataSDynPtr()->NeglectInertia()) return;
 
   // overwrite element action
   EvalData().SetActionType(DRT::ELEMENTS::struct_calc_internalinertiaforce);
   // set the discretization state
-  Discret().SetState(0, "velocity", GState().GetVelNp());
-  Discret().SetState(0, "acceleration", GState().GetAccNp());
+  Discret().set_state(0, "velocity", GState().GetVelNp());
+  Discret().set_state(0, "acceleration", GState().GetAccNp());
 
   // set inertial vector if necessary
-  eval_vec[1] = GetInertialForce();
+  eval_vec[1] = get_inertial_force();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::inertial_and_viscous_forces()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (masslin_type_ == INPAR::STR::ml_none and !TimInt().GetDataSDynPtr()->NeglectInertia())
   {
     // calculate the inertial force at t_{n+1}
-    Mass().Multiply(false, *GState().GetAccNp(), FinertialNp());
+    Mass().Multiply(false, *GState().GetAccNp(), finertial_np());
   }
 
   // calculate the viscous/damping force at t_{n+1}
   if (EvalData().GetDampingType() != INPAR::STR::damp_none)
   {
     if (not Damp().Filled()) Damp().Complete();
-    Damp().Multiply(false, *GState().GetVelNp(), FviscoNp());
+    Damp().Multiply(false, *GState().GetVelNp(), fvisco_np());
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::FillComplete()
+void STR::MODELEVALUATOR::Structure::fill_complete()
 {
   if (not stiff_ptr_->Filled()) stiff_ptr_->Complete();
 
@@ -565,14 +566,14 @@ void STR::MODELEVALUATOR::Structure::rayleigh_damping_matrix()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> STR::MODELEVALUATOR::Structure::GetInertialForce()
+Teuchos::RCP<Epetra_Vector> STR::MODELEVALUATOR::Structure::get_inertial_force()
 {
   switch (masslin_type_)
   {
     case INPAR::STR::ml_rotations:
     case INPAR::STR::ml_standard:
     {
-      FinertialNp().PutScalar(0.0);
+      finertial_np().PutScalar(0.0);
       // set inertial force
       return GState().GetFinertialNp();
       break;
@@ -592,7 +593,7 @@ Teuchos::RCP<Epetra_Vector> STR::MODELEVALUATOR::Structure::GetInertialForce()
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::init_output_runtime_structure()
 {
-  CheckInit();
+  check_init();
   const auto discretization = Teuchos::rcp_dynamic_cast<const DRT::Discretization>(
       const_cast<STR::MODELEVALUATOR::Structure*>(this)->DiscretPtr(), true);
   vtu_writer_ptr_ = Teuchos::rcp(
@@ -629,7 +630,7 @@ void STR::MODELEVALUATOR::Structure::init_output_runtime_structure_gauss_point_d
   std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
       Teuchos::null, Teuchos::null};
 
-  EvaluateInternal(eval_mat.data(), eval_vec.data());
+  evaluate_internal(eval_mat.data(), eval_vec.data());
 
   EvalData().get_gauss_point_data_output_manager_ptr()->distribute_quantities(Discret().Comm());
 }
@@ -638,7 +639,7 @@ void STR::MODELEVALUATOR::Structure::init_output_runtime_structure_gauss_point_d
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::write_time_step_output_runtime_structure() const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // export displacement state to column format
   const auto& discret = dynamic_cast<const DRT::Discretization&>(Discret());
@@ -658,7 +659,7 @@ void STR::MODELEVALUATOR::Structure::write_time_step_output_runtime_structure() 
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::write_iteration_output_runtime_structure() const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // export displacement state to column format
   const auto& discret = dynamic_cast<const DRT::Discretization&>(Discret());
@@ -681,7 +682,7 @@ void STR::MODELEVALUATOR::Structure::write_output_runtime_structure(
     const Teuchos::RCP<Epetra_Vector>& velocity_state_vector, int timestep_number,
     double time) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // get the parameter container object
   const DRT::ELEMENTS::StructureRuntimeOutputParams& structure_output_params =
@@ -716,7 +717,7 @@ void STR::MODELEVALUATOR::Structure::write_output_runtime_structure(
   if (structure_output_params.OutputNodeGID()) vtu_writer_ptr_->AppendNodeGID("node_gid");
 
   // append stress if desired
-  if (structure_output_params.OutputStressStrain() and
+  if (structure_output_params.output_stress_strain() and
       GInOutput().GetStressOutputType() != INPAR::STR::stress_none)
   {
     std::string name_nodal = "";
@@ -743,7 +744,7 @@ void STR::MODELEVALUATOR::Structure::write_output_runtime_structure(
   }
 
   // append strain if desired.
-  if (structure_output_params.OutputStressStrain() and
+  if (structure_output_params.output_stress_strain() and
       GInOutput().GetStrainOutputType() != INPAR::STR::strain_none)
   {
     std::string name_nodal = "";
@@ -828,7 +829,7 @@ void STR::MODELEVALUATOR::Structure::write_output_runtime_structure(
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stress_strain()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (not(GInOutput().GetStressOutputType() == INPAR::STR::stress_none and
           GInOutput().GetStrainOutputType() == INPAR::STR::strain_none))
@@ -844,8 +845,8 @@ void STR::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stress
 
     // Set vector values needed by elements.
     Discret().ClearState();
-    Discret().SetState(0, "displacement", GState().GetDisNp());
-    Discret().SetState(0, "residual displacement", dis_incr_ptr_);
+    Discret().set_state(0, "displacement", GState().GetDisNp());
+    Discret().set_state(0, "residual displacement", dis_incr_ptr_);
 
     // GState().GetDisNp()->Print(std::cout);
 
@@ -964,7 +965,7 @@ void STR::MODELEVALUATOR::Structure::output_runtime_structure_gauss_point_data()
   if (structure_output_params.gauss_point_data_output() !=
       INPAR::STR::GaussPointDataOutputType::none)
   {
-    CheckInitSetup();
+    check_init_setup();
 
     EvalData().SetActionType(DRT::ELEMENTS::struct_gauss_point_data_output);
     EvalData().SetTotalTime(GState().GetTimeNp());
@@ -975,17 +976,17 @@ void STR::MODELEVALUATOR::Structure::output_runtime_structure_gauss_point_data()
         *discret->NodeColMap(), *discret->ElementRowMap());
 
     Discret().ClearState();
-    Discret().SetState(0, "displacement", GState().GetDisNp());
-    Discret().SetState(0, "residual displacement", dis_incr_ptr_);
+    Discret().set_state(0, "displacement", GState().GetDisNp());
+    Discret().set_state(0, "residual displacement", dis_incr_ptr_);
 
     std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
         Teuchos::null, Teuchos::null, Teuchos::null};
     std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
         Teuchos::null, Teuchos::null};
 
-    EvaluateInternal(eval_mat.data(), eval_vec.data());
+    evaluate_internal(eval_mat.data(), eval_vec.data());
 
-    EvalData().gauss_point_data_output_manager_ptr()->PostEvaluate();
+    EvalData().gauss_point_data_output_manager_ptr()->post_evaluate();
   }
 }
 
@@ -994,7 +995,7 @@ void STR::MODELEVALUATOR::Structure::output_runtime_structure_gauss_point_data()
 void STR::MODELEVALUATOR::Structure::init_output_runtime_beams()
 {
   beam_vtu_writer_ptr_ = Teuchos::rcp(
-      new BeamDiscretizationRuntimeOutputWriter(visualization_params_, DisNp().Comm()));
+      new BeamDiscretizationRuntimeOutputWriter(visualization_params_, dis_np().Comm()));
 
   // get the parameter container object
   const DRT::ELEMENTS::BeamRuntimeOutputParams& beam_output_params =
@@ -1020,7 +1021,7 @@ void STR::MODELEVALUATOR::Structure::init_output_runtime_beams()
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::write_time_step_output_runtime_beams() const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // export displacement state to column format
   const auto& discret = dynamic_cast<const DRT::Discretization&>(Discret());
@@ -1037,7 +1038,7 @@ void STR::MODELEVALUATOR::Structure::write_time_step_output_runtime_beams() cons
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::write_iteration_output_runtime_beams() const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // export displacement state to column format
   const auto& discret = dynamic_cast<const DRT::Discretization&>(Discret());
@@ -1056,7 +1057,7 @@ void STR::MODELEVALUATOR::Structure::write_output_runtime_beams(
     const Teuchos::RCP<Epetra_Vector>& displacement_state_vector, int timestep_number,
     double time) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // get the parameter container object
   const DRT::ELEMENTS::BeamRuntimeOutputParams& beam_output_params =
@@ -1131,7 +1132,7 @@ void STR::MODELEVALUATOR::Structure::write_output_runtime_beams(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::EvaluateInternal(
+void STR::MODELEVALUATOR::Structure::evaluate_internal(
     Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec)
 {
   PreEvaluateInternal();
@@ -1139,12 +1140,12 @@ void STR::MODELEVALUATOR::Structure::EvaluateInternal(
   Teuchos::ParameterList p;
   p.set<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface", EvalDataPtr());
 
-  EvaluateInternal(p, eval_mat, eval_vec);
+  evaluate_internal(p, eval_mat, eval_vec);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::EvaluateInternal(Teuchos::ParameterList& p,
+void STR::MODELEVALUATOR::Structure::evaluate_internal(Teuchos::ParameterList& p,
     Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec)
 {
   if (p.numParams() > 1)
@@ -1204,17 +1205,17 @@ void STR::MODELEVALUATOR::Structure::evaluate_internal_specified_elements(Teucho
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::EvaluateNeumann(const Teuchos::RCP<Epetra_Vector>& eval_vec,
+void STR::MODELEVALUATOR::Structure::evaluate_neumann(const Teuchos::RCP<Epetra_Vector>& eval_vec,
     const Teuchos::RCP<CORE::LINALG::SparseOperator>& eval_mat)
 {
   Teuchos::ParameterList p;
   p.set<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface", EvalDataPtr());
-  EvaluateNeumann(p, eval_vec, eval_mat);
+  evaluate_neumann(p, eval_vec, eval_mat);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::EvaluateNeumann(Teuchos::ParameterList& p,
+void STR::MODELEVALUATOR::Structure::evaluate_neumann(Teuchos::ParameterList& p,
     const Teuchos::RCP<Epetra_Vector>& eval_vec,
     const Teuchos::RCP<CORE::LINALG::SparseOperator>& eval_mat)
 {
@@ -1227,7 +1228,7 @@ void STR::MODELEVALUATOR::Structure::EvaluateNeumann(Teuchos::ParameterList& p,
   if (not p.INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>(
           "interface"))
     FOUR_C_THROW("The given parameter has the wrong type!");
-  Discret().EvaluateNeumann(p, eval_vec, eval_mat);
+  Discret().evaluate_neumann(p, eval_vec, eval_mat);
   Discret().ClearState();
 }
 
@@ -1247,9 +1248,9 @@ void STR::MODELEVALUATOR::Structure::WriteRestart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::ReadRestart(IO::DiscretizationReader& ioreader)
+void STR::MODELEVALUATOR::Structure::read_restart(IO::DiscretizationReader& ioreader)
 {
-  CheckInitSetup();
+  check_init_setup();
   // read structural force vector
   ioreader.ReadVector(GState().GetFstructureOld(), "fstructure_old");
   ioreader.ReadVector(GState().GetFintN(), "fint");
@@ -1273,7 +1274,7 @@ void STR::MODELEVALUATOR::Structure::Predict(const INPAR::STR::PredEnum& pred_ty
   std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
       Teuchos::null, Teuchos::null};
 
-  EvaluateInternal(eval_mat.data(), eval_vec.data());
+  evaluate_internal(eval_mat.data(), eval_vec.data());
 }
 
 /*----------------------------------------------------------------------------*
@@ -1281,7 +1282,7 @@ void STR::MODELEVALUATOR::Structure::Predict(const INPAR::STR::PredEnum& pred_ty
 void STR::MODELEVALUATOR::Structure::RunPreComputeX(
     const Epetra_Vector& xold, Epetra_Vector& dir_mutable, const NOX::NLN::Group& curr_grp)
 {
-  CheckInitSetup();
+  check_init_setup();
 }
 
 /*----------------------------------------------------------------------------*
@@ -1290,8 +1291,8 @@ void STR::MODELEVALUATOR::Structure::RunRecover()
 {
   // set vector values needed by elements
   Discret().ClearState();
-  Discret().SetState(0, "residual displacement", dis_incr_ptr_);
-  Discret().SetState(0, "displacement", GState().GetDisNp());
+  Discret().set_state(0, "residual displacement", dis_incr_ptr_);
+  Discret().set_state(0, "displacement", GState().GetDisNp());
   // set the element action
   EvalData().SetActionType(DRT::ELEMENTS::struct_calc_recover);
   // set the matrix and vector pointers to Teuchos::null
@@ -1300,7 +1301,7 @@ void STR::MODELEVALUATOR::Structure::RunRecover()
   std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
       Teuchos::null, Teuchos::null};
 
-  EvaluateInternal(eval_mat.data(), eval_vec.data());
+  evaluate_internal(eval_mat.data(), eval_vec.data());
 }
 
 /*----------------------------------------------------------------------------*
@@ -1308,7 +1309,7 @@ void STR::MODELEVALUATOR::Structure::RunRecover()
 void STR::MODELEVALUATOR::Structure::RunPostComputeX(
     const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
-  CheckInitSetup();
+  check_init_setup();
   Reset(xnew);
   /* set the class internal displacement increment vector. Check if it is
    * meaningful/necessary in some cases, like incremental strains etc. */
@@ -1320,7 +1321,7 @@ void STR::MODELEVALUATOR::Structure::RunPostComputeX(
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::RunPostIterate(const ::NOX::Solver::Generic& solver)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (vtu_writer_ptr_ != Teuchos::null and
       GInOutput().get_runtime_output_params()->output_every_iteration())
@@ -1340,11 +1341,11 @@ void STR::MODELEVALUATOR::Structure::RunPostIterate(const ::NOX::Solver::Generic
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::UpdateStepState(const double& timefac_n)
 {
-  CheckInitSetup();
+  check_init_setup();
   // update state
   // new displacements at t_{n+1} -> t_n
   //    D_{n} := D_{n+1}
-  GState().GetMultiDis()->UpdateSteps(DisNp());
+  GState().GetMultiDis()->UpdateSteps(dis_np());
 
   // new velocities at t_{n+1} -> t_{n}
   //    V_{n} := V_{n+1}
@@ -1355,19 +1356,19 @@ void STR::MODELEVALUATOR::Structure::UpdateStepState(const double& timefac_n)
   GState().GetMultiAcc()->UpdateSteps(*GState().GetAccNp());
 
   // store the old external force
-  GState().GetFextN()->Scale(1.0, FextNp());
+  GState().GetFextN()->Scale(1.0, fext_np());
 
   // store the old reaction force
   GState().GetFreactN()->Scale(1.0, *GState().GetFreactNp());
 
   // store the old internal force
-  GState().GetFintN()->Scale(1.0, FintNp());
+  GState().GetFintN()->Scale(1.0, fint_np());
 
   // new at t_{n+1} -> t_{n+timefac_n}
   //    F^{struct}_{n+timefac_n} := timefac_n * F^{struct}_{n+1}
   Teuchos::RCP<Epetra_Vector>& fstructold_ptr = GState().GetFstructureOld();
-  fstructold_ptr->Update(timefac_n, FintNp(), 1.0);
-  fstructold_ptr->Update(-timefac_n, FextNp(), 1.0);
+  fstructold_ptr->Update(timefac_n, fint_np(), 1.0);
+  fstructold_ptr->Update(-timefac_n, fext_np(), 1.0);
 
   // set the displacement increment back to zero
   dis_incr_ptr_->PutScalar(0.0);
@@ -1378,7 +1379,7 @@ void STR::MODELEVALUATOR::Structure::UpdateStepState(const double& timefac_n)
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::evaluate_jacobian_contributions_from_element_level_for_ptc()
 {
-  CheckInitSetup();
+  check_init_setup();
   // currently a fixed number of matrix and vector pointers are supported
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
       Teuchos::null, Teuchos::null, Teuchos::null};
@@ -1389,12 +1390,12 @@ void STR::MODELEVALUATOR::Structure::evaluate_jacobian_contributions_from_elemen
 
   // set vector values needed by elements
   Discret().ClearState();
-  Discret().SetState(0, "displacement", GState().GetDisNp());
+  Discret().set_state(0, "displacement", GState().GetDisNp());
 
   eval_mat[0] = Teuchos::rcpFromRef(*stiff_ptc_ptr_);
 
   // evaluate
-  EvaluateInternal(eval_mat.data(), eval_vec.data());
+  evaluate_internal(eval_mat.data(), eval_vec.data());
 }
 
 /*----------------------------------------------------------------------------*
@@ -1402,14 +1403,14 @@ void STR::MODELEVALUATOR::Structure::evaluate_jacobian_contributions_from_elemen
 void STR::MODELEVALUATOR::Structure::assemble_jacobian_contributions_from_element_level_for_ptc(
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& modjac, const double& timefac_n)
 {
-  GState().AssignModelBlock(*modjac, StiffPTC(), Type(), STR::MatBlockType::displ_displ);
+  GState().AssignModelBlock(*modjac, stiff_ptc(), Type(), STR::MatBlockType::displ_displ);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::UpdateStepElement()
 {
-  CheckInitSetup();
+  check_init_setup();
   // other parameters that might be needed by the elements
   EvalData().SetTotalTime(GState().GetTimeNp());
   EvalData().SetDeltaTime((*GState().GetDeltaTime())[0]);
@@ -1436,21 +1437,21 @@ void STR::MODELEVALUATOR::Structure::UpdateStepElement()
 
   // go to elements
   Discret().ClearState();
-  Discret().SetState("displacement", GState().GetDisN());
+  Discret().set_state("displacement", GState().GetDisN());
 
   // set dummy evaluation vectors and matrices
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
       Teuchos::null, Teuchos::null, Teuchos::null};
   std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
       Teuchos::null, Teuchos::null};
-  EvaluateInternal(eval_mat.data(), eval_vec.data());
+  evaluate_internal(eval_mat.data(), eval_vec.data());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::UpdateResidual()
 {
-  CheckInitSetup();
+  check_init_setup();
   dis_incr_ptr_->Update(-1.0, *GState().GetDisN(), 1.0, *GState().GetDisNp(), 0.0);
 }
 
@@ -1458,7 +1459,7 @@ void STR::MODELEVALUATOR::Structure::UpdateResidual()
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::determine_stress_strain()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (GInOutput().GetStressOutputType() == INPAR::STR::stress_none and
       GInOutput().get_coupling_stress_output_type() == INPAR::STR::stress_none and
@@ -1477,8 +1478,8 @@ void STR::MODELEVALUATOR::Structure::determine_stress_strain()
 
   // set vector values needed by elements
   Discret().ClearState();
-  Discret().SetState(0, "displacement", GState().GetDisNp());
-  Discret().SetState(0, "residual displacement", dis_incr_ptr_);
+  Discret().set_state(0, "displacement", GState().GetDisNp());
+  Discret().set_state(0, "residual displacement", dis_incr_ptr_);
 
   // set dummy evaluation vectors and matrices
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
@@ -1494,7 +1495,7 @@ void STR::MODELEVALUATOR::Structure::determine_stress_strain()
 void STR::MODELEVALUATOR::Structure::determine_strain_energy(
     const Epetra_Vector& disnp, const bool global)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // set required parameters in the evaluation data container
   EvalData().SetActionType(DRT::ELEMENTS::struct_calc_energy);
@@ -1503,8 +1504,8 @@ void STR::MODELEVALUATOR::Structure::determine_strain_energy(
 
   // set state vector values needed by elements
   Discret().ClearState();
-  Discret().SetState(0, "displacement", Teuchos::rcpFromRef(disnp));
-  Discret().SetState(0, "residual displacement", dis_incr_ptr_);
+  Discret().set_state(0, "displacement", Teuchos::rcpFromRef(disnp));
+  Discret().set_state(0, "residual displacement", dis_incr_ptr_);
 
   // set dummy evaluation vectors and matrices
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
@@ -1569,7 +1570,7 @@ void STR::MODELEVALUATOR::Structure::DetermineEnergy(
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::determine_optional_quantity()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   switch (GInOutput().get_opt_quantity_output_type())
   {
@@ -1595,8 +1596,8 @@ void STR::MODELEVALUATOR::Structure::determine_optional_quantity()
 
   // set vector values needed by elements
   Discret().ClearState();
-  Discret().SetState(0, "displacement", GState().GetDisNp());
-  Discret().SetState(0, "residual displacement", dis_incr_ptr_);
+  Discret().set_state(0, "displacement", GState().GetDisNp());
+  Discret().set_state(0, "residual displacement", dis_incr_ptr_);
 
   // set dummy evaluation vectors and matrices
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
@@ -1604,7 +1605,7 @@ void STR::MODELEVALUATOR::Structure::determine_optional_quantity()
   std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
       Teuchos::null, Teuchos::null};
 
-  EvaluateInternal(eval_mat.data(), eval_vec.data());
+  evaluate_internal(eval_mat.data(), eval_vec.data());
 }
 
 /*----------------------------------------------------------------------------*
@@ -1621,7 +1622,7 @@ bool STR::MODELEVALUATOR::Structure::determine_element_volumes(
   // set vector values needed by elements
   Discret().ClearState();
   Teuchos::RCP<const Epetra_Vector> disnp = GState().ExtractDisplEntries(x);
-  Discret().SetState(0, "displacement", disnp);
+  Discret().set_state(0, "displacement", disnp);
 
   auto& discret = dynamic_cast<DRT::Discretization&>(Discret());
 
@@ -1677,7 +1678,7 @@ bool STR::MODELEVALUATOR::Structure::determine_element_volumes(
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::OutputStepState(IO::DiscretizationWriter& iowriter) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // write output every iteration for debug purposes
   if (GInOutput().IsOutputEveryIter())
@@ -1710,7 +1711,7 @@ void STR::MODELEVALUATOR::Structure::OutputStepState(IO::DiscretizationWriter& i
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::runtime_pre_output_step_state()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (vtu_writer_ptr_ != Teuchos::null)
   {
@@ -1723,7 +1724,7 @@ void STR::MODELEVALUATOR::Structure::runtime_pre_output_step_state()
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::runtime_output_step_state() const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (vtu_writer_ptr_ != Teuchos::null) write_time_step_output_runtime_structure();
 
@@ -1735,7 +1736,7 @@ void STR::MODELEVALUATOR::Structure::runtime_output_step_state() const
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::ResetStepState()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // reset disp, vel, acc state vector
   GStatePtr()->GetDisNp()->Update(1.0, (*GStatePtr()->GetDisN()), 0.0);
@@ -1753,7 +1754,7 @@ void STR::MODELEVALUATOR::Structure::ResetStepState()
       Teuchos::null, Teuchos::null, Teuchos::null};
   std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
       Teuchos::null, Teuchos::null};
-  EvaluateInternal(eval_mat.data(), eval_vec.data());
+  evaluate_internal(eval_mat.data(), eval_vec.data());
 
   DiscretPtr()->ClearState();
 }
@@ -1762,15 +1763,15 @@ void STR::MODELEVALUATOR::Structure::ResetStepState()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Structure::get_block_dof_row_map_ptr() const
 {
-  CheckInitSetup();
-  return GState().DofRowMap();
+  check_init_setup();
+  return GState().dof_row_map();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Structure::get_current_solution_ptr() const
 {
-  CheckInit();
+  check_init();
   return GState().GetDisNp();
 }
 
@@ -1779,7 +1780,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Structure::get_current_so
 Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Structure::get_last_time_step_solution_ptr()
     const
 {
-  CheckInit();
+  check_init();
   return GState().GetDisN();
 }
 
@@ -1787,15 +1788,15 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Structure::get_last_time_
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::PostOutput()
 {
-  CheckInitSetup();
+  check_init_setup();
   // empty
 }  // PostOutput()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Epetra_Vector& STR::MODELEVALUATOR::Structure::FintNp()
+Epetra_Vector& STR::MODELEVALUATOR::Structure::fint_np()
 {
-  CheckInit();
+  check_init();
   FOUR_C_ASSERT(!GState().GetFintNp().is_null(), "nullptr!");
 
   return *GState().GetFintNp();
@@ -1803,9 +1804,9 @@ Epetra_Vector& STR::MODELEVALUATOR::Structure::FintNp()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& STR::MODELEVALUATOR::Structure::FintNp() const
+const Epetra_Vector& STR::MODELEVALUATOR::Structure::fint_np() const
 {
-  CheckInit();
+  check_init();
   FOUR_C_ASSERT(!GState().GetFintNp().is_null(), "nullptr!");
 
   return *GState().GetFintNp();
@@ -1813,9 +1814,9 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::FintNp() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& STR::MODELEVALUATOR::Structure::FintN() const
+const Epetra_Vector& STR::MODELEVALUATOR::Structure::fint_n() const
 {
-  CheckInit();
+  check_init();
   if (GState().GetFintN().is_null()) FOUR_C_THROW("NULL pointer!");
 
   return *GState().GetFintN();
@@ -1823,9 +1824,9 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::FintN() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Epetra_Vector& STR::MODELEVALUATOR::Structure::FextNp()
+Epetra_Vector& STR::MODELEVALUATOR::Structure::fext_np()
 {
-  CheckInit();
+  check_init();
   FOUR_C_ASSERT(!GState().GetFextNp().is_null(), "nullptr!");
 
   return *GState().GetFextNp();
@@ -1833,9 +1834,9 @@ Epetra_Vector& STR::MODELEVALUATOR::Structure::FextNp()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& STR::MODELEVALUATOR::Structure::FextNp() const
+const Epetra_Vector& STR::MODELEVALUATOR::Structure::fext_np() const
 {
-  CheckInit();
+  check_init();
   FOUR_C_ASSERT(!GState().GetFextNp().is_null(), "nullptr!");
 
   return *GState().GetFextNp();
@@ -1843,9 +1844,9 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::FextNp() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& STR::MODELEVALUATOR::Structure::FextN() const
+const Epetra_Vector& STR::MODELEVALUATOR::Structure::fext_n() const
 {
-  CheckInit();
+  check_init();
   if (GState().GetFextN().is_null()) FOUR_C_THROW("NULL pointer!");
 
   return *GState().GetFextN();
@@ -1853,9 +1854,9 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::FextN() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Epetra_Vector& STR::MODELEVALUATOR::Structure::FinertialNp()
+Epetra_Vector& STR::MODELEVALUATOR::Structure::finertial_np()
 {
-  CheckInit();
+  check_init();
   FOUR_C_ASSERT(!GState().GetFinertialNp().is_null(), "nullptr!");
 
   return *GState().GetFinertialNp();
@@ -1863,9 +1864,9 @@ Epetra_Vector& STR::MODELEVALUATOR::Structure::FinertialNp()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& STR::MODELEVALUATOR::Structure::FinertialNp() const
+const Epetra_Vector& STR::MODELEVALUATOR::Structure::finertial_np() const
 {
-  CheckInit();
+  check_init();
   FOUR_C_ASSERT(!GState().GetFinertialNp().is_null(), "nullptr!");
 
   return *GState().GetFinertialNp();
@@ -1873,9 +1874,9 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::FinertialNp() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Epetra_Vector& STR::MODELEVALUATOR::Structure::FviscoNp()
+Epetra_Vector& STR::MODELEVALUATOR::Structure::fvisco_np()
 {
-  CheckInit();
+  check_init();
   FOUR_C_ASSERT(!GState().GetFviscoNp().is_null(), "nullptr!");
 
   return *GState().GetFviscoNp();
@@ -1883,9 +1884,9 @@ Epetra_Vector& STR::MODELEVALUATOR::Structure::FviscoNp()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& STR::MODELEVALUATOR::Structure::FviscoNp() const
+const Epetra_Vector& STR::MODELEVALUATOR::Structure::fvisco_np() const
 {
-  CheckInit();
+  check_init();
   FOUR_C_ASSERT(!GState().GetFviscoNp().is_null(), "nullptr!");
 
   return *GState().GetFviscoNp();
@@ -1893,9 +1894,9 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::FviscoNp() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Epetra_Vector& STR::MODELEVALUATOR::Structure::DisNp()
+Epetra_Vector& STR::MODELEVALUATOR::Structure::dis_np()
 {
-  CheckInit();
+  check_init();
   FOUR_C_ASSERT(!GState().GetDisNp().is_null(), "nullptr!");
 
   return *GState().GetDisNp();
@@ -1903,9 +1904,9 @@ Epetra_Vector& STR::MODELEVALUATOR::Structure::DisNp()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& STR::MODELEVALUATOR::Structure::DisNp() const
+const Epetra_Vector& STR::MODELEVALUATOR::Structure::dis_np() const
 {
-  CheckInit();
+  check_init();
   FOUR_C_ASSERT(!GState().GetDisNp().is_null(), "nullptr!");
 
   return *GState().GetDisNp();
@@ -1915,7 +1916,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::DisNp() const
  *----------------------------------------------------------------------------*/
 CORE::LINALG::SparseMatrix& STR::MODELEVALUATOR::Structure::Stiff() const
 {
-  CheckInit();
+  check_init();
   FOUR_C_ASSERT(stiff_ptr_, "nullptr!");
 
   return *stiff_ptr_;
@@ -1923,9 +1924,9 @@ CORE::LINALG::SparseMatrix& STR::MODELEVALUATOR::Structure::Stiff() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::LINALG::SparseMatrix& STR::MODELEVALUATOR::Structure::StiffPTC() const
+CORE::LINALG::SparseMatrix& STR::MODELEVALUATOR::Structure::stiff_ptc() const
 {
-  CheckInit();
+  check_init();
   FOUR_C_ASSERT(stiff_ptc_ptr_ != Teuchos::null, "nullptr!");
 
   return *stiff_ptc_ptr_;
@@ -1935,7 +1936,7 @@ CORE::LINALG::SparseMatrix& STR::MODELEVALUATOR::Structure::StiffPTC() const
  *----------------------------------------------------------------------------*/
 CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Mass()
 {
-  CheckInit();
+  check_init();
   FOUR_C_ASSERT(!GState().GetMassMatrix().is_null(), "nullptr!");
 
   return *GState().GetMassMatrix();
@@ -1945,7 +1946,7 @@ CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Mass()
  *----------------------------------------------------------------------------*/
 const CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Mass() const
 {
-  CheckInit();
+  check_init();
   FOUR_C_ASSERT(!GState().GetMassMatrix().is_null(), "nullptr!");
 
   return *GState().GetMassMatrix();
@@ -1955,7 +1956,7 @@ const CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Mass() const
  *----------------------------------------------------------------------------*/
 CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Damp()
 {
-  CheckInit();
+  check_init();
   FOUR_C_ASSERT(!GState().GetDampMatrix().is_null(), "nullptr!");
 
   return *GState().GetDampMatrix();
@@ -1965,7 +1966,7 @@ CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Damp()
  *----------------------------------------------------------------------------*/
 const CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Damp() const
 {
-  CheckInit();
+  check_init();
   FOUR_C_ASSERT(!GState().GetDampMatrix().is_null(), "nullptr!");
 
   return *GState().GetDampMatrix();
@@ -2097,16 +2098,16 @@ void STR::MODELEVALUATOR::Structure::params_interface2_parameter_list(
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::CreateBackupState(const Epetra_Vector& dir)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // set all parameters in the evaluation data container
   EvalData().SetActionType(DRT::ELEMENTS::struct_create_backup);
 
   // set vector values needed by elements
   Discret().ClearState();
-  Discret().SetState(0, "displacement", GState().GetDisNp());
+  Discret().set_state(0, "displacement", GState().GetDisNp());
   Teuchos::RCP<const Epetra_Vector> dir_displ = GState().ExtractDisplEntries(dir);
-  Discret().SetState(0, "residual displacement", dir_displ);
+  Discret().set_state(0, "residual displacement", dir_displ);
 
   // set dummy evaluation vectors and matrices
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
@@ -2114,14 +2115,14 @@ void STR::MODELEVALUATOR::Structure::CreateBackupState(const Epetra_Vector& dir)
   std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
       Teuchos::null, Teuchos::null};
 
-  EvaluateInternal(eval_mat.data(), eval_vec.data());
+  evaluate_internal(eval_mat.data(), eval_vec.data());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::recover_from_backup_state()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // set all parameters in the evaluation data container
   EvalData().SetActionType(DRT::ELEMENTS::struct_recover_from_backup);
@@ -2135,7 +2136,7 @@ void STR::MODELEVALUATOR::Structure::recover_from_backup_state()
   std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
       Teuchos::null, Teuchos::null};
 
-  EvaluateInternal(eval_mat.data(), eval_vec.data());
+  evaluate_internal(eval_mat.data(), eval_vec.data());
 }
 
 FOUR_C_NAMESPACE_CLOSE

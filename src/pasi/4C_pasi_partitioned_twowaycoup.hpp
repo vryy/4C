@@ -68,7 +68,7 @@ namespace PASI
      *
      * \param[in] restartstep restart step
      */
-    void ReadRestart(int restartstep) override;
+    void read_restart(int restartstep) override;
 
     /*!
      * \brief partitioned two way coupled timeloop
@@ -168,7 +168,7 @@ namespace PASI
      *
      * \return flag indicating status of convergence check
      */
-    bool ConvergenceCheck(int itnum);
+    bool convergence_check(int itnum);
 
     /*!
      * \brief save particle states
@@ -326,7 +326,7 @@ namespace PASI
      *
      * \param[in] restartstep restart step
      */
-    void ReadRestart(int restartstep) override;
+    void read_restart(int restartstep) override;
 
    protected:
     /*!

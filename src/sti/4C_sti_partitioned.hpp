@@ -36,16 +36,16 @@ namespace STI
 
    private:
     //! convergence check for iterative staggered TSI solver
-    bool ExitOuterCoupling() const;
+    bool exit_outer_coupling() const;
 
     //! evaluate time step using outer coupling iteration
     void Solve() override;
 
     //! evaluate time step using one-way coupling iteration
-    void SolveOneWay() const;
+    void solve_one_way() const;
 
     //! evaluate time step using two-way coupling iteration
-    void SolveTwoWay();
+    void solve_two_way();
 
     //! type of coupling between scatra and thermo fields
     const INPAR::STI::CouplingType couplingtype_;

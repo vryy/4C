@@ -205,7 +205,7 @@ namespace MAT
 
    private:
     /// setup of material map
-    void SetupMatMap();
+    void setup_mat_map();
 
     /// clear everything
     void Clear();

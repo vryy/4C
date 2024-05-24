@@ -123,14 +123,14 @@ DRT::Element* DRT::ELEMENTS::RedAcinus::Clone() const
  *----------------------------------------------------------------------*/
 CORE::FE::CellType DRT::ELEMENTS::RedAcinus::Shape() const
 {
-  switch (NumNode())
+  switch (num_node())
   {
     case 2:
       return CORE::FE::CellType::line2;
     case 3:
       return CORE::FE::CellType::line3;
     default:
-      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", num_node());
       break;
   }
 }
@@ -215,8 +215,8 @@ std::vector<double> DRT::ELEMENTS::RedAcinus::element_center_refe_coords()
   //  // update element geometry
   DRT::Node** nodes = Nodes();
 
-  CORE::LINALG::SerialDenseMatrix mat(NumNode(), 3, false);
-  for (int i = 0; i < NumNode(); ++i)
+  CORE::LINALG::SerialDenseMatrix mat(num_node(), 3, false);
+  for (int i = 0; i < num_node(); ++i)
   {
     const auto& x = nodes[i]->X();
     mat(i, 0) = x[0];
@@ -228,11 +228,11 @@ std::vector<double> DRT::ELEMENTS::RedAcinus::element_center_refe_coords()
   for (int i = 0; i < 3; ++i)
   {
     double var = 0;
-    for (int j = 0; j < NumNode(); ++j)
+    for (int j = 0; j < num_node(); ++j)
     {
       var = var + mat(j, i);
     }
-    centercoords[i] = var / NumNode();
+    centercoords[i] = var / num_node();
   }
 
   return centercoords;

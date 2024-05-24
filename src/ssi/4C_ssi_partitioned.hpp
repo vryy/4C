@@ -61,11 +61,11 @@ namespace SSI
 
    protected:
     /// prepare time step of single fields
-    virtual void PrepareTimeStep(bool printheader = true) = 0;
+    virtual void prepare_time_step(bool printheader = true) = 0;
 
     /// do one time step (one way coupled) or one inner iteration loop step (two way coupled),
     /// depending on coupling algorithm
-    virtual void DoStructStep() = 0;
+    virtual void do_struct_step() = 0;
 
     /// do one time step (one way coupled) or one inner iteration loop step (two way coupled),
     /// depending on coupling algorithm
@@ -73,7 +73,7 @@ namespace SSI
 
    private:
     //! set up structural model evaluator for scalar-structure interaction
-    void SetupModelEvaluator() override;
+    void setup_model_evaluator() override;
   };
 
 }  // namespace SSI

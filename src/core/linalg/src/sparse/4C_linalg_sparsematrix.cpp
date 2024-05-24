@@ -163,7 +163,7 @@ CORE::LINALG::SparseMatrix::SparseMatrix(
   else
     FOUR_C_THROW("matrix type is not correct");
 
-  // sysmat_->FillComplete();
+  // sysmat_->fill_complete();
 
   for (int i = 0; i < length; ++i)
   {
@@ -768,7 +768,7 @@ void CORE::LINALG::SparseMatrix::FEAssemble(double val, int rgid, int cgid)
 
 
 /*----------------------------------------------------------------------*
- |  FillComplete a matrix  (public)                          mwgee 12/06|
+ |  fill_complete a matrix  (public)                          mwgee 12/06|
  *----------------------------------------------------------------------*/
 void CORE::LINALG::SparseMatrix::Complete(bool enforce_complete)
 {
@@ -777,7 +777,7 @@ void CORE::LINALG::SparseMatrix::Complete(bool enforce_complete)
   // for FE_Matrix we need to gather non-local entries, independent whether matrix is filled or not
   if (matrixtype_ == FE_MATRIX)
   {
-    // false indicates here that FillComplete() is not called within GlobalAssemble()
+    // false indicates here that fill_complete() is not called within GlobalAssemble()
     int err = (Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(sysmat_))->GlobalAssemble(false);
     if (err) FOUR_C_THROW("Epetra_FECrsMatrix::GlobalAssemble() returned err=%d", err);
   }
@@ -785,7 +785,7 @@ void CORE::LINALG::SparseMatrix::Complete(bool enforce_complete)
   if (sysmat_->Filled() and not enforce_complete) return;
 
   int err = sysmat_->FillComplete(true);
-  if (err) FOUR_C_THROW("Epetra_CrsMatrix::FillComplete(domain,range) returned err=%d", err);
+  if (err) FOUR_C_THROW("Epetra_CrsMatrix::fill_complete(domain,range) returned err=%d", err);
 
   // keep mask for further use
   if (savegraph_ and graph_ == Teuchos::null)
@@ -796,7 +796,7 @@ void CORE::LINALG::SparseMatrix::Complete(bool enforce_complete)
 
 
 /*----------------------------------------------------------------------*
- |  FillComplete a matrix  (public)                          mwgee 01/08|
+ |  fill_complete a matrix  (public)                          mwgee 01/08|
  *----------------------------------------------------------------------*/
 void CORE::LINALG::SparseMatrix::Complete(
     const Epetra_Map& domainmap, const Epetra_Map& rangemap, bool enforce_complete)
@@ -806,7 +806,7 @@ void CORE::LINALG::SparseMatrix::Complete(
   // for FE_Matrix we need to gather non-local entries, independent whether matrix is filled or not
   if (matrixtype_ == FE_MATRIX)
   {
-    // false indicates here that FillComplete() is not called within GlobalAssemble()
+    // false indicates here that fill_complete() is not called within GlobalAssemble()
     int err = (Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(sysmat_))
                   ->GlobalAssemble(domainmap, rangemap, false);
     if (err) FOUR_C_THROW("Epetra_FECrsMatrix::GlobalAssemble() returned err=%d", err);
@@ -820,7 +820,7 @@ void CORE::LINALG::SparseMatrix::Complete(
   else
     err = sysmat_->FillComplete(domainmap, rangemap, true);
 
-  if (err) FOUR_C_THROW("Epetra_CrsMatrix::FillComplete(domain,range) returned err=%d", err);
+  if (err) FOUR_C_THROW("Epetra_CrsMatrix::fill_complete(domain,range) returned err=%d", err);
 
   // keep mask for further use
   if (savegraph_ and graph_ == Teuchos::null)
@@ -1388,7 +1388,7 @@ const char* CORE::LINALG::SparseMatrix::Label() const { return "CORE::LINALG::Sp
  *----------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::SparseMatrix::Transpose()
 {
-  if (not Filled()) FOUR_C_THROW("FillComplete was not called on matrix");
+  if (not Filled()) FOUR_C_THROW("fill_complete was not called on matrix");
 
   EpetraExt::RowMatrix_Transpose trans;
   Teuchos::RCP<CORE::LINALG::SparseMatrix> matrix = Teuchos::null;
@@ -1728,10 +1728,10 @@ void CORE::LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase) const
 /*--------------------------------------------------------------------------*
  | split SparseMatrix into an MxN BlockSparseMatrixBase          fang 02/17 |
  *--------------------------------------------------------------------------*/
-void CORE::LINALG::SparseMatrix::SplitMxN(BlockSparseMatrixBase& ABlock) const
+void CORE::LINALG::SparseMatrix::split_mx_n(BlockSparseMatrixBase& ABlock) const
 {
   // timing
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SparseMatrix::SplitMxN");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SparseMatrix::split_mx_n");
 
   // extract number of row/column blocks
   const int M = ABlock.Rows();
@@ -1858,9 +1858,9 @@ std::ostream& CORE::LINALG::operator<<(std::ostream& os, const CORE::LINALG::Spa
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::Multiply(const CORE::LINALG::SparseMatrix& A,
     bool transA, const CORE::LINALG::SparseMatrix& B, bool transB, bool completeoutput)
 {
-  // make sure FillComplete was called on the matrices
-  if (!A.Filled()) FOUR_C_THROW("A has to be FillComplete");
-  if (!B.Filled()) FOUR_C_THROW("B has to be FillComplete");
+  // make sure fill_complete was called on the matrices
+  if (!A.Filled()) FOUR_C_THROW("A has to be fill_complete");
+  if (!B.Filled()) FOUR_C_THROW("B has to be fill_complete");
 
   // const int npr = A.EpetraMatrix()->MaxNumEntries()*B.EpetraMatrix()->MaxNumEntries();
   // a first guess for the bandwidth of C leading to much less memory consumption:
@@ -1887,9 +1887,9 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::Multiply(const CORE::LINA
     bool transA, const CORE::LINALG::SparseMatrix& B, bool transB, bool explicitdirichlet,
     bool savegraph, bool completeoutput)
 {
-  // make sure FillComplete was called on the matrices
-  if (!A.Filled()) FOUR_C_THROW("A has to be FillComplete");
-  if (!B.Filled()) FOUR_C_THROW("B has to be FillComplete");
+  // make sure fill_complete was called on the matrices
+  if (!A.Filled()) FOUR_C_THROW("A has to be fill_complete");
+  if (!B.Filled()) FOUR_C_THROW("B has to be fill_complete");
 
   // const int npr = A.EpetraMatrix()->MaxNumEntries()*B.EpetraMatrix()->MaxNumEntries();
   // a first guess for the bandwidth of C leading to much less memory consumption:

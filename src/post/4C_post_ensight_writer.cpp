@@ -441,7 +441,7 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
           case CORE::FE::CellType::pyramid5:
           {
             // standard case with direct support
-            const int numnp = actele->NumNode();
+            const int numnp = actele->num_node();
             for (int inode = 0; inode < numnp; ++inode)
             {
               if (myrank_ == 0)  // proc0 can write its elements immediately
@@ -454,7 +454,7 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
           case CORE::FE::CellType::hex20:
           {
             // standard case with direct support
-            const int numnp = actele->NumNode();
+            const int numnp = actele->num_node();
             for (int inode = 0; inode < numnp; ++inode)
             {
               if (myrank_ == 0)  // proc0 can write its elements immediately
@@ -526,7 +526,7 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
             else
             {
               // standard case with direct support
-              const int numnp = actele->NumNode();
+              const int numnp = actele->num_node();
               for (int inode = 0; inode < numnp; ++inode)
               {
                 if (myrank_ == 0)  // proc0 can write its elements immediately
@@ -628,7 +628,7 @@ void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
     // proc pid sends its values to proc 0
     if (myrank_ == pid)
     {
-      exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
+      exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
     }
 
     //--------------------------------------------------
@@ -837,7 +837,7 @@ EnsightWriter::EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
       // proc pid sends its values to proc 0
       if (myrank_ == pid)
       {
-        exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
+        exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
       }
 
       //--------------------------------------------------
@@ -1523,16 +1523,16 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file, PostResult& result,
   // numbering always starts with 0, so a potential offset needs to be
   // taken into account.
 
-  // find min. GID over all procs. 'epetradatamap->MinAllGID()' / 'dis->DofRowMap()->MinAllGID()'
+  // find min. GID over all procs. 'epetradatamap->MinAllGID()' / 'dis->dof_row_map()->MinAllGID()'
   // cannot be used, as it would return 0 for procs without elements
   const int num_my_epetradatamap = epetradatamap->NumMyElements();
-  const int num_my_dofrowmap = dis->DofRowMap()->NumMyElements();
+  const int num_my_dofrowmap = dis->dof_row_map()->NumMyElements();
 
   // get min. value on this proc or set to max. value of integers if this proc has no elements
   int min_gid_my_epetradatamap =
       num_my_epetradatamap > 0 ? epetradatamap->MinMyGID() : std::numeric_limits<int>::max();
   int min_gid_my_dofrowmap =
-      num_my_dofrowmap > 0 ? dis->DofRowMap()->MinMyGID() : std::numeric_limits<int>::max();
+      num_my_dofrowmap > 0 ? dis->dof_row_map()->MinMyGID() : std::numeric_limits<int>::max();
 
   // find min. GID over all procs
   int min_gid_glob_epetradatamap = std::numeric_limits<int>::max();

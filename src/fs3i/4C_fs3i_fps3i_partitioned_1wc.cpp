@@ -72,16 +72,16 @@ void FS3I::PartFpS3I1Wc::Setup()
 
   // add proxy of fluid degrees of freedom to scatra discretization
   if (scatravec_[0]->ScaTraField()->Discretization()->AddDofSet(
-          fpsi_->FluidField()->Discretization()->GetDofSetProxy()) != 1)
+          fpsi_->fluid_field()->Discretization()->GetDofSetProxy()) != 1)
     FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
 
   // check if scatra field has 2 discretizations, so that coupling is possible
   if (scatravec_[1]->ScaTraField()->Discretization()->AddDofSet(
-          fpsi_->PoroField()->StructureField()->Discretization()->GetDofSetProxy()) != 1)
+          fpsi_->poro_field()->StructureField()->Discretization()->GetDofSetProxy()) != 1)
     FOUR_C_THROW("unexpected dof sets in structure field");
   // check if scatra field has 3 discretizations, so that coupling is possible
   if (scatravec_[1]->ScaTraField()->Discretization()->AddDofSet(
-          fpsi_->PoroField()->FluidField()->Discretization()->GetDofSetProxy()) != 2)
+          fpsi_->poro_field()->fluid_field()->Discretization()->GetDofSetProxy()) != 2)
     FOUR_C_THROW("unexpected dof sets in structure field");
 
   // Note: in the scatra fields we have now the following dof-sets:
@@ -100,7 +100,7 @@ void FS3I::PartFpS3I1Wc::Setup()
  *----------------------------------------------------------------------*/
 void FS3I::PartFpS3I1Wc::Timeloop()
 {
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
   // write FPSI solution into scatra field
@@ -128,12 +128,12 @@ void FS3I::PartFpS3I1Wc::Timeloop()
  *----------------------------------------------------------------------*/
 void FS3I::PartFpS3I1Wc::DoFPSIStep()
 {
-  fpsi_->PrepareTimeStep();
+  fpsi_->prepare_time_step();
   fpsi_->SetupNewton();
   fpsi_->TimeStep();
 
   constexpr bool force_prepare = false;
-  fpsi_->PrepareOutput(force_prepare);
+  fpsi_->prepare_output(force_prepare);
   fpsi_->Update();
   fpsi_->Output();
 }
@@ -155,7 +155,7 @@ void FS3I::PartFpS3I1Wc::DoScatraStep()
   bool stopnonliniter = false;
   int itnum = 0;
 
-  PrepareTimeStep();
+  prepare_time_step();
 
   while (stopnonliniter == false)
   {
@@ -172,16 +172,16 @@ void FS3I::PartFpS3I1Wc::DoScatraStep()
 /*----------------------------------------------------------------------*
  |  Prepare time step                                     hemmler 07/14 |
  *----------------------------------------------------------------------*/
-void FS3I::PartFpS3I1Wc::PrepareTimeStep()
+void FS3I::PartFpS3I1Wc::prepare_time_step()
 {
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
   // prepare time step for both fluid- and poro-based scatra field
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField()->PrepareTimeStep();
+    scatra->ScaTraField()->prepare_time_step();
   }
 }
 

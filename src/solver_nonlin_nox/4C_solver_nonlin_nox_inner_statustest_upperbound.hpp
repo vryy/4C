@@ -62,7 +62,7 @@ namespace NOX
               const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp) const;
 
          private:
-          void throwError(const std::string& functionName, const std::string& errorMsg) const;
+          void throw_error(const std::string& functionName, const std::string& errorMsg) const;
 
          protected:
           //! Status

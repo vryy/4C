@@ -130,7 +130,7 @@ namespace SSI
     virtual void Setup();
 
     //! returns true if Setup() was called and is still valid
-    bool IsSetup() const { return issetup_; };
+    bool is_setup() const { return issetup_; };
 
     /*!
      * @brief checks whether simulation is restarted or not
@@ -172,7 +172,7 @@ namespace SSI
     virtual void TestResults(const Epetra_Comm& comm) const;
 
     /// read restart
-    void ReadRestart(int restart) override;
+    void read_restart(int restart) override;
 
     //! access to structural field
     const Teuchos::RCP<ADAPTER::SSIStructureWrapper>& StructureField() const { return structure_; }
@@ -254,13 +254,13 @@ namespace SSI
     //! check if \ref Setup() was called
     void CheckIsSetup() const
     {
-      if (not IsSetup()) FOUR_C_THROW("Setup() was not called.");
+      if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
     }
 
     //! check if \ref Init() was called
-    void CheckIsInit() const
+    void check_is_init() const
     {
-      if (not IsInit()) FOUR_C_THROW("Init(...) was not called.");
+      if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
     }
 
     //! copy modified time step from scatra to scatra manifold field
@@ -283,13 +283,13 @@ namespace SSI
     }
 
     //! set flag true after setup or false if setup became invalid
-    void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; }
+    void set_is_setup(bool trueorfalse) { issetup_ = trueorfalse; }
 
     //! set flag true after init or false if init became invalid
-    void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; }
+    void set_is_init(bool trueorfalse) { isinit_ = trueorfalse; }
 
     //! set up structural model evaluator for scalar-structure interaction
-    virtual void SetupModelEvaluator();
+    virtual void setup_model_evaluator();
 
     //! macro-micro scatra problem?
     bool MacroScale() const { return macro_scale_; }
@@ -318,7 +318,7 @@ namespace SSI
      * @param[in] scatra_disname    name of scalar transport discretization
      * @param[in] isAle             flag indicating if ALE is activated
      */
-    void InitTimeIntegrators(const Teuchos::ParameterList& globaltimeparams,
+    void init_time_integrators(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
         const std::string& struct_disname, const std::string& scatra_disname, const bool isAle);
 
@@ -332,7 +332,7 @@ namespace SSI
         const std::string& struct_disname) const;
 
     //! check whether scatra-structure interaction flags are set correctly
-    void CheckSSIFlags() const;
+    void check_ssi_flags() const;
 
     /*!
      * @brief SSI interface condition definition is checked
@@ -342,13 +342,13 @@ namespace SSI
     void check_ssi_interface_conditions(const std::string& struct_disname) const;
 
     //! returns true if Init(..) was called and is still valid
-    bool IsInit() const { return isinit_; }
+    bool is_init() const { return isinit_; }
 
     /// set structure mesh displacement on scatra field
-    void SetMeshDisp(Teuchos::RCP<const Epetra_Vector> disp);
+    void set_mesh_disp(Teuchos::RCP<const Epetra_Vector> disp);
 
     /// set structure velocity field on scatra field
-    void SetVelocityFields(Teuchos::RCP<const Epetra_Vector> vel);
+    void set_velocity_fields(Teuchos::RCP<const Epetra_Vector> vel);
 
     //! different time step size between scatra field and structure field
     const bool diff_time_step_size_;

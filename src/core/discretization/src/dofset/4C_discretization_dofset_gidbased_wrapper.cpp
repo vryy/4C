@@ -88,7 +88,7 @@ void CORE::Dofsets::DofSetGIDBasedWrapper::Disconnect(DofSetInterface* dofset)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::Dofsets::DofSetGIDBasedWrapper::CheckIsAssigned() const
+void CORE::Dofsets::DofSetGIDBasedWrapper::check_is_assigned() const
 {
   // checks in debug mode only
   FOUR_C_ASSERT(isassigned_,

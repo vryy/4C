@@ -382,7 +382,7 @@ namespace MAT
      * @param[in] params  parameter list as handed in from the element
      * @param[in] gp      current gauss point
      */
-    void PreEvaluate(Teuchos::ParameterList& params, int gp) const;
+    void pre_evaluate(Teuchos::ParameterList& params, int gp) const;
 
     /*!
      * @brief set the gauss point concentration to the respective parameter class of the inelastic

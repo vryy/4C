@@ -213,7 +213,7 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
     default:
       FOUR_C_THROW(
           "shape %d (%d nodes) not supported by internalfaces stabilization. Just switch on!",
-          surfele->Shape(), surfele->NumNode());
+          surfele->Shape(), surfele->num_node());
       break;
   }
 
@@ -598,7 +598,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   if (EOS_div)  // safety check
   {
     if (elemat_blocks.size() < nsd_ * nsd_ + 1)
-      FOUR_C_THROW("do not choose diagonal pattern for div_EOS stabilization!");
+      FOUR_C_THROW("do not choose diagonal pattern for div_eos stabilization!");
   }
   //---------------------------------------------------
 
@@ -828,7 +828,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   //--------------------------------------------------
 
   // set patch viscosity and density, fill element's vectors
-  GetElementData(intface, pele, nele, material, mypvelaf, mypvelnp, mypedispnp, mypegridv,
+  get_element_data(intface, pele, nele, material, mypvelaf, mypvelnp, mypedispnp, mypegridv,
       myedispnp, mynvelaf, mynvelnp, mynedispnp, mynegridv);
 
 
@@ -1084,7 +1084,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
     //-----------------------------------------------------
     // get the stabilization parameters
-    SetConvectiveVelint(fldintfacepara, pele->IsAle());
+    set_convective_velint(fldintfacepara, pele->IsAle());
 
     compute_stabilization_params(ghost_penalty_reconstruct, use2ndderiv,
         fldintfacepara.EOS_WhichTau(), EOS_conv_stream, EOS_conv_cross, EOS_div_vel_jump,
@@ -1115,14 +1115,14 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       nderiv_dyad_nderiv_tau_timefacfacpre_.Update(tau_timefacfac_pre, nderiv_dyad_nderiv_, 0.0);
 
       // assemble pressure (EOS) stabilization terms for fluid
-      pressureEOS(tau_timefacfac_pre, tau_timefacfac_rhs);
+      pressure_eos(tau_timefacfac_pre, tau_timefacfac_rhs);
 
       // assemble special pressure least-squares condition for pseudo 2D examples where pressure
       // level is determined via Krylov-projection
       if (fldintfacepara.presKrylov2Dz() and
           fldintfacepara.EOS_Pres() == INPAR::FLUID::EOS_PRES_std_eos)
       {
-        pressureKrylov2Dz(tau_timefacfac_pre, tau_timefacfac_rhs);
+        pressure_krylov2_dz(tau_timefacfac_pre, tau_timefacfac_rhs);
       }
     }
 
@@ -1142,7 +1142,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
       //-----------------------------------------------------
       // assemble velocity (EOS) stabilization terms for fluid
-      div_streamline_EOS(vderxyaf_diff_scaled);
+      div_streamline_eos(vderxyaf_diff_scaled);
     }
 
     //-----------------------------------------------------
@@ -1158,7 +1158,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       }
       else  // the full 2nd order derivatives (even the tangential contributions)
       {
-        GhostPenalty2ndFull(tau_timefacfac_u_2nd, tau_timefacfac_p_2nd);
+        ghost_penalty2nd_full(tau_timefacfac_u_2nd, tau_timefacfac_p_2nd);
       }
     }
 
@@ -1170,7 +1170,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
       //-----------------------------------------------------
       // assemble divergence (EOS) stabilization terms for fluid
-      div_EOS(tau_timefacfac_div, tau_timefacfac_rhs);
+      div_eos(tau_timefacfac_div, tau_timefacfac_rhs);
     }
   }  // end gaussloop
 
@@ -1188,10 +1188,10 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       // 2D: reassemble u-u, v-v and p-p block
       for (int ijdim = 0; ijdim < numblocks; ijdim++)
       {
-        ReassembleMATBlock(ijdim, ijdim, elemat_blocks[ijdim], elematrix_mm_, elematrix_ms_,
+        reassemble_mat_block(ijdim, ijdim, elemat_blocks[ijdim], elematrix_mm_, elematrix_ms_,
             elematrix_sm_, elematrix_ss_, lm_masterNodeToPatch, lm_slaveNodeToPatch);
 
-        ReassembleRHSBlock(ijdim, elevec_blocks[ijdim], elevector_m_, elevector_s_,
+        reassemble_rhs_block(ijdim, elevec_blocks[ijdim], elevector_m_, elevector_s_,
             lm_masterNodeToPatch, lm_slaveNodeToPatch);
       }
     }
@@ -1201,12 +1201,12 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       // 2D: reassemble uv  blocks
       for (int idim = 0; idim < nsd_; idim++)
       {
-        ReassembleRHSBlock(idim, elevec_blocks[idim], elevector_m_, elevector_s_,
+        reassemble_rhs_block(idim, elevec_blocks[idim], elevector_m_, elevector_s_,
             lm_masterNodeToPatch, lm_slaveNodeToPatch);
 
         for (int jdim = 0; jdim < nsd_; jdim++)
         {
-          ReassembleMATBlock(idim, jdim, elemat_blocks[idim * nsd_ + jdim], elematrix_mm_,
+          reassemble_mat_block(idim, jdim, elemat_blocks[idim * nsd_ + jdim], elematrix_mm_,
               elematrix_ms_, elematrix_sm_, elematrix_ss_, lm_masterNodeToPatch,
               lm_slaveNodeToPatch);
         }
@@ -1214,9 +1214,9 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
 
       // reassemble p-p block
-      ReassembleMATBlock(nsd_, nsd_, elemat_blocks[numblocks - 1], elematrix_mm_, elematrix_ms_,
+      reassemble_mat_block(nsd_, nsd_, elemat_blocks[numblocks - 1], elematrix_mm_, elematrix_ms_,
           elematrix_sm_, elematrix_ss_, lm_masterNodeToPatch, lm_slaveNodeToPatch);
-      ReassembleRHSBlock(nsd_, elevec_blocks[nsd_], elevector_m_, elevector_s_,
+      reassemble_rhs_block(nsd_, elevec_blocks[nsd_], elevector_m_, elevector_s_,
           lm_masterNodeToPatch, lm_slaveNodeToPatch);
     }
     else if (numblocks == 16 or numblocks == 9)
@@ -1225,13 +1225,13 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       // 2D: reassemble all uvp blocks
       for (int idim = 0; idim < numdofpernode_; idim++)
       {
-        ReassembleRHSBlock(idim, elevec_blocks[idim], elevector_m_, elevector_s_,
+        reassemble_rhs_block(idim, elevec_blocks[idim], elevector_m_, elevector_s_,
             lm_masterNodeToPatch, lm_slaveNodeToPatch);
 
         for (int jdim = 0; jdim < numdofpernode_; jdim++)
         {
-          ReassembleMATBlock(idim, jdim, elemat_blocks[idim * numdofpernode_ + jdim], elematrix_mm_,
-              elematrix_ms_, elematrix_sm_, elematrix_ss_, lm_masterNodeToPatch,
+          reassemble_mat_block(idim, jdim, elemat_blocks[idim * numdofpernode_ + jdim],
+              elematrix_mm_, elematrix_ms_, elematrix_sm_, elematrix_ss_, lm_masterNodeToPatch,
               lm_slaveNodeToPatch);
         }
       }
@@ -1249,7 +1249,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 //   reassemble matrix block from master-slave pairs to patch-node block for field (row, col)
 //------------------------------------------------------------------------------------------------
 template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
-void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::ReassembleMATBlock(
+void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::reassemble_mat_block(
     const int row_block,                         ///< row block
     const int col_block,                         ///< column block
     CORE::LINALG::SerialDenseMatrix& mat_block,  ///< matrix block
@@ -1323,7 +1323,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Reass
 //   reassemble rhs block from master/slave rhs to patch-node block for field (row)
 //-------------------------------------------------------------------------------------------------
 template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
-void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::ReassembleRHSBlock(
+void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::reassemble_rhs_block(
     const int row_block,                                          ///< row block
     CORE::LINALG::SerialDenseVector& rhs_block,                   ///< rhs block
     CORE::LINALG::Matrix<numdofpernode_ * piel, 1>& elevector_m,  ///< element vector master block
@@ -1357,7 +1357,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Reass
 //            get data for parent elements and surface element
 //-----------------------------------------------------------------
 template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
-void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::GetElementData(
+void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::get_element_data(
     FluidIntFace* surfele,                        ///< surface FluidIntFace element
     Fluid* master_ele,                            ///< master parent element
     Fluid* slave_ele,                             ///< slave  parent element
@@ -1373,7 +1373,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::GetEl
     std::vector<double>& myngridv                 ///< slave grid velocity (ALE)
 )
 {
-  TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: GetElementData");
+  TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: get_element_data");
 
   //--------------------------------------------------
   //                GET PARENT DATA
@@ -2200,7 +2200,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
  |  set the (relative) convective velocity at integration point schott 11/14 |
  *---------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
-void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::SetConvectiveVelint(
+void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::set_convective_velint(
     DRT::ELEMENTS::FluidEleParameterIntFace& fldintfacepara, const bool isale)
 {
   // get convective velocity at integration point
@@ -2453,10 +2453,10 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::ghost
 
 
 template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
-void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::GhostPenalty2ndFull(
+void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::ghost_penalty2nd_full(
     const double& tau_timefacfac_u_2nd, const double& tau_timefacfac_p_2nd)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: terms: GhostPenalty2ndFull");
+  TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: terms: ghost_penalty2nd_full");
 
   if (numderiv2_n != numderiv2_p)
     FOUR_C_THROW("different dimensions for parent and master element");
@@ -2551,12 +2551,12 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Ghost
 
 
 template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
-void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::pressureEOS(
+void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::pressure_eos(
     const double& tau_timefacfacpre,  ///< tau * (time factor pressure) x (integration factor)
     const double& tau_timefacfacrhs   ///< tau * (time factor rhs)      x (integration factor)
 )
 {
-  TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: terms: pressureEOS");
+  TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: terms: pressure_eos");
 
 
   // pressure part
@@ -2629,10 +2629,10 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::press
 
 
 template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
-void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::div_streamline_EOS(
+void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::div_streamline_eos(
     const CORE::LINALG::Matrix<nsd_, nsd_>& vderxyaf_diff_scaled)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: terms: div_streamline_EOS");
+  TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: terms: div_streamline_eos");
 
 
   // tau_div_streamline = tau_div + tau_u * | P  ( u )*n |   combined divergence and streamline
@@ -2751,12 +2751,12 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::div_s
 
 
 template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
-void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::div_EOS(
+void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::div_eos(
     const double& tau_timefacfac_div,  ///< (time factor div) x (integration factor)
     const double& tau_timefacfac_rhs   ///< (time factor rhs) x (integration factor)
 )
 {
-  TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: terms: div_EOS");
+  TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: terms: div_eos");
 
 
   // edge stabilization: divergence
@@ -2842,7 +2842,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::div_E
 
 
 template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
-void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::pressureKrylov2Dz(
+void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::pressure_krylov2_dz(
     const double& tau_timefacfacpre,  ///< tau * (time factor pressure) x (integration factor)
     const double& tau_timefacfacrhs   ///< tau * (time factor rhs)      x (integration factor)
 )
@@ -2988,19 +2988,19 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       switch (nnode_psurf)
       {
         case 3:  // tri3 surface
-          diameter2D<3>(true, m_connectivity_[p_surf], h_e);
+          diameter2_d<3>(true, m_connectivity_[p_surf], h_e);
           break;
         case 6:  // tri6 surface
-          diameter2D<6>(true, m_connectivity_[p_surf], h_e);
+          diameter2_d<6>(true, m_connectivity_[p_surf], h_e);
           break;
         case 4:  // quad4 surface
-          diameter2D<4>(true, m_connectivity_[p_surf], h_e);
+          diameter2_d<4>(true, m_connectivity_[p_surf], h_e);
           break;
         case 8:  // quad8 surface
-          diameter2D<8>(true, m_connectivity_[p_surf], h_e);
+          diameter2_d<8>(true, m_connectivity_[p_surf], h_e);
           break;
         case 9:  // quad9 surface
-          diameter2D<9>(true, m_connectivity_[p_surf], h_e);
+          diameter2_d<9>(true, m_connectivity_[p_surf], h_e);
           break;
         default:
           FOUR_C_THROW("unknown number of nodes for surface of parent element");
@@ -3023,19 +3023,19 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       switch (nnode_psurf)
       {
         case 3:  // tri3 surface
-          diameter2D<3>(false, s_connectivity_[p_surf], h_e);
+          diameter2_d<3>(false, s_connectivity_[p_surf], h_e);
           break;
         case 6:  // tri6 surface
-          diameter2D<6>(false, s_connectivity_[p_surf], h_e);
+          diameter2_d<6>(false, s_connectivity_[p_surf], h_e);
           break;
         case 4:  // quad4 surface
-          diameter2D<4>(false, s_connectivity_[p_surf], h_e);
+          diameter2_d<4>(false, s_connectivity_[p_surf], h_e);
           break;
         case 8:  // quad8 surface
-          diameter2D<8>(false, s_connectivity_[p_surf], h_e);
+          diameter2_d<8>(false, s_connectivity_[p_surf], h_e);
           break;
         case 9:  // quad9 surface
-          diameter2D<9>(false, s_connectivity_[p_surf], h_e);
+          diameter2_d<9>(false, s_connectivity_[p_surf], h_e);
           break;
         default:
           FOUR_C_THROW("unknown number of nodes for surface of parent element");
@@ -3061,10 +3061,10 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       switch (nnode_pline)
       {
         case 2:  // line2 face
-          diameter1D<2>(true, m_connectivity_[p_line], h_e);
+          diameter1_d<2>(true, m_connectivity_[p_line], h_e);
           break;
         case 3:  // line3 face
-          diameter1D<3>(true, m_connectivity_[p_line], h_e);
+          diameter1_d<3>(true, m_connectivity_[p_line], h_e);
           break;
         default:
           FOUR_C_THROW("unknown number of nodes for line of parent element");
@@ -3087,10 +3087,10 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       switch (nnode_pline)
       {
         case 2:  // line2 face
-          diameter1D<2>(false, s_connectivity_[p_line], h_e);
+          diameter1_d<2>(false, s_connectivity_[p_line], h_e);
           break;
         case 3:  // line3 face
-          diameter1D<3>(false, s_connectivity_[p_line], h_e);
+          diameter1_d<3>(false, s_connectivity_[p_line], h_e);
           break;
         default:
           FOUR_C_THROW("unknown number of nodes for line of parent element");
@@ -3136,8 +3136,8 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     // in case of hexahedral/quadrilateral elements, for tetrahedral/trilinear elements return value
     // is -1;
 
-    int opposite_side_id_master = FindOppositeSurface(pdistype, side_id_master);
-    int opposite_side_id_slave = FindOppositeSurface(ndistype, side_id_slave);
+    int opposite_side_id_master = find_opposite_surface(pdistype, side_id_master);
+    int opposite_side_id_slave = find_opposite_surface(ndistype, side_id_slave);
 
     //----------------------------------------------
     // loop surface of master element
@@ -3154,19 +3154,19 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       switch (nnode_psurf)
       {
         case 3:  // tri3 surface
-          diameter2D<3>(true, m_connectivity_[p_surf], h_e);
+          diameter2_d<3>(true, m_connectivity_[p_surf], h_e);
           break;
         case 6:  // tri6 surface
-          diameter2D<6>(true, m_connectivity_[p_surf], h_e);
+          diameter2_d<6>(true, m_connectivity_[p_surf], h_e);
           break;
         case 4:  // quad4 surface
-          diameter2D<4>(true, m_connectivity_[p_surf], h_e);
+          diameter2_d<4>(true, m_connectivity_[p_surf], h_e);
           break;
         case 8:  // quad8 surface
-          diameter2D<8>(true, m_connectivity_[p_surf], h_e);
+          diameter2_d<8>(true, m_connectivity_[p_surf], h_e);
           break;
         case 9:  // quad9 surface
-          diameter2D<9>(true, m_connectivity_[p_surf], h_e);
+          diameter2_d<9>(true, m_connectivity_[p_surf], h_e);
           break;
         default:
           FOUR_C_THROW("unknown number of nodes for surface of parent element");
@@ -3192,19 +3192,19 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       switch (nnode_psurf)
       {
         case 3:  // tri3 surface
-          diameter2D<3>(false, s_connectivity_[p_surf], h_e);
+          diameter2_d<3>(false, s_connectivity_[p_surf], h_e);
           break;
         case 6:  // tri6 surface
-          diameter2D<6>(false, s_connectivity_[p_surf], h_e);
+          diameter2_d<6>(false, s_connectivity_[p_surf], h_e);
           break;
         case 4:  // quad4 surface
-          diameter2D<4>(false, s_connectivity_[p_surf], h_e);
+          diameter2_d<4>(false, s_connectivity_[p_surf], h_e);
           break;
         case 8:  // quad8 surface
-          diameter2D<8>(false, s_connectivity_[p_surf], h_e);
+          diameter2_d<8>(false, s_connectivity_[p_surf], h_e);
           break;
         case 9:  // quad9 surface
-          diameter2D<9>(false, s_connectivity_[p_surf], h_e);
+          diameter2_d<9>(false, s_connectivity_[p_surf], h_e);
           break;
         default:
           FOUR_C_THROW("unknown number of nodes for surface of parent element");
@@ -3225,8 +3225,8 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     // in case of hexahedral/quadrilateral elements, for tetrahedral/trilinear elements return value
     // is -1;
 
-    int opposite_line_id_master = FindOppositeSurface(pdistype, side_id_master);
-    int opposite_line_id_slave = FindOppositeSurface(ndistype, side_id_slave);
+    int opposite_line_id_master = find_opposite_surface(pdistype, side_id_master);
+    int opposite_line_id_slave = find_opposite_surface(ndistype, side_id_slave);
 
     //----------------------------------------------
     // loop lines of master element
@@ -3243,10 +3243,10 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       switch (nnode_pline)
       {
         case 2:  // line2 face
-          diameter1D<2>(true, m_connectivity_[p_line], h_e);
+          diameter1_d<2>(true, m_connectivity_[p_line], h_e);
           break;
         case 3:  // line3 face
-          diameter1D<3>(true, m_connectivity_[p_line], h_e);
+          diameter1_d<3>(true, m_connectivity_[p_line], h_e);
           break;
         default:
           FOUR_C_THROW("unknown number of nodes for line of parent element");
@@ -3272,10 +3272,10 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       switch (nnode_pline)
       {
         case 2:  // line2 face
-          diameter1D<2>(false, s_connectivity_[p_line], h_e);
+          diameter1_d<2>(false, s_connectivity_[p_line], h_e);
           break;
         case 3:  // line3 face
-          diameter1D<3>(false, s_connectivity_[p_line], h_e);
+          diameter1_d<3>(false, s_connectivity_[p_line], h_e);
           break;
         default:
           FOUR_C_THROW("unknown number of nodes for line of parent element");
@@ -3315,19 +3315,19 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::com
     switch (nnode_psurf)
     {
       case 3:  // tri3 surface
-        diameter2D<3>(true, m_connectivity_[side_id_master], h_e);
+        diameter2_d<3>(true, m_connectivity_[side_id_master], h_e);
         break;
       case 6:  // tri6 surface
-        diameter2D<6>(true, m_connectivity_[side_id_master], h_e);
+        diameter2_d<6>(true, m_connectivity_[side_id_master], h_e);
         break;
       case 4:  // quad4 surface
-        diameter2D<4>(true, m_connectivity_[side_id_master], h_e);
+        diameter2_d<4>(true, m_connectivity_[side_id_master], h_e);
         break;
       case 8:  // quad8 surface
-        diameter2D<8>(true, m_connectivity_[side_id_master], h_e);
+        diameter2_d<8>(true, m_connectivity_[side_id_master], h_e);
         break;
       case 9:  // quad9 surface
-        diameter2D<9>(true, m_connectivity_[side_id_master], h_e);
+        diameter2_d<9>(true, m_connectivity_[side_id_master], h_e);
         break;
       default:
         FOUR_C_THROW("unknown number of nodes for surface of parent element");
@@ -3348,10 +3348,10 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::com
     switch (nnode_pline)
     {
       case 2:  // line2 face
-        diameter1D<2>(true, m_connectivity_[line_id_master], h_e);
+        diameter1_d<2>(true, m_connectivity_[line_id_master], h_e);
         break;
       case 3:  // line3 face
-        diameter1D<3>(true, m_connectivity_[line_id_master], h_e);
+        diameter1_d<3>(true, m_connectivity_[line_id_master], h_e);
         break;
       default:
         FOUR_C_THROW("unknown number of nodes for line of parent element");
@@ -3381,8 +3381,8 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   const int side_id_slave = intface->FaceSlaveNumber();
 
   // determine the opposite side to the internal face for master and slave parent element
-  int opposite_side_id_master = FindOppositeSurface(pdistype, side_id_master);
-  int opposite_side_id_slave = FindOppositeSurface(ndistype, side_id_slave);
+  int opposite_side_id_master = find_opposite_surface(pdistype, side_id_master);
+  int opposite_side_id_slave = find_opposite_surface(ndistype, side_id_slave);
 
   // find the connecting lines, set of line Ids
   std::set<int> p_lines_master;
@@ -3395,7 +3395,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
         "this type of element lenght is not reasonable for different types of neighboring "
         "elements");
 
-  int numnode_intface = intface->NumNode();
+  int numnode_intface = intface->num_node();
 
   if (nsd_ == 3)
   {
@@ -3469,7 +3469,7 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::compute_pa
 
   if (nsd_ == 3)
   {
-    switch (master->NumNode())
+    switch (master->num_node())
     {
       case 4:  // tet4 volume
         diameter<4>(true, h_k);
@@ -3497,7 +3497,7 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::compute_pa
     // reset the element length
     h_k = 0.0;
 
-    switch (slave->NumNode())
+    switch (slave->num_node())
     {
       case 4:  // tet4 volume
         diameter<4>(false, h_k);
@@ -3526,7 +3526,7 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::compute_pa
   }
   else if (nsd_ == 2)
   {
-    switch (master->NumNode())
+    switch (master->num_node())
     {
       case 4:  // quad4 surface
         diameter<4>(true, h_k);
@@ -3554,7 +3554,7 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::compute_pa
     // reset the element length
     h_k = 0.0;
 
-    switch (slave->NumNode())
+    switch (slave->num_node())
     {
       case 4:  // quad4 surface
         diameter<4>(false, h_k);

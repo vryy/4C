@@ -149,7 +149,7 @@ namespace FLD
     \brief Restart collection of statistics
 
     */
-    void ReadRestart(IO::DiscretizationReader& reader, int step);
+    void read_restart(IO::DiscretizationReader& reader, int step);
 
     /*!
     \brief Restart scatra-specific collection of statistics

@@ -76,7 +76,7 @@ namespace DRT
           bool inverting, bool calc_grad_phi) override;
 
       //! get diffusion manager
-      Teuchos::RCP<ScaTraEleDiffManagerElchDiffCondMultiScale> DiffManager() const
+      Teuchos::RCP<ScaTraEleDiffManagerElchDiffCondMultiScale> diff_manager() const
       {
         return Teuchos::rcp_static_cast<ScaTraEleDiffManagerElchDiffCondMultiScale>(
             my::diffmanager_);

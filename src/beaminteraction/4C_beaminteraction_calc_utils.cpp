@@ -831,7 +831,7 @@ namespace BEAMINTERACTION
       {
         element_posdofvec_absolutevalues = eledispvec;
         for (unsigned int dim = 0; dim < 3; ++dim)
-          for (int node = 0; node < ele->NumNode(); ++node)
+          for (int node = 0; node < ele->num_node(); ++node)
             element_posdofvec_absolutevalues[3 * node + dim] += ele->Nodes()[node]->X()[dim];
       }
     }
@@ -1208,7 +1208,7 @@ namespace BEAMINTERACTION
       if (dofmapvec != Teuchos::null)
       {
         if (old == Teuchos::null) old = dofmapvec;
-        dofmapvec = CORE::LINALG::CreateVector(*discret->DofRowMap(), true);
+        dofmapvec = CORE::LINALG::CreateVector(*discret->dof_row_map(), true);
         CORE::LINALG::Export(*old, *dofmapvec);
       }
     }

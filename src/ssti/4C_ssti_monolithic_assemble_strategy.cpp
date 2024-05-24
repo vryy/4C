@@ -125,12 +125,12 @@ void SSTI::AssembleStrategyBlockBlock::AssembleStructure(
   if (InterfaceMeshtying())
   {
     assemble_structure_meshtying(
-        systemmatrix_block->Matrix(PositionStructure(), PositionStructure()), structuredomain);
+        systemmatrix_block->Matrix(position_structure(), position_structure()), structuredomain);
   }
   else
   {
     auto& systemmatrix_block_struct_struct =
-        systemmatrix_block->Matrix(PositionStructure(), PositionStructure());
+        systemmatrix_block->Matrix(position_structure(), position_structure());
 
     systemmatrix_block_struct_struct.Add(*structuredomain, false, 1.0, 1.0);
   }
@@ -148,12 +148,12 @@ void SSTI::AssembleStrategyBlockSparse::AssembleStructure(
   if (InterfaceMeshtying())
   {
     assemble_structure_meshtying(
-        systemmatrix_block->Matrix(PositionStructure(), PositionStructure()), structuredomain);
+        systemmatrix_block->Matrix(position_structure(), position_structure()), structuredomain);
   }
   else
   {
     auto& systemmatrix_block_struct_struct =
-        systemmatrix_block->Matrix(PositionStructure(), PositionStructure());
+        systemmatrix_block->Matrix(position_structure(), position_structure());
 
     systemmatrix_block_struct_struct.Add(*structuredomain, false, 1.0, 1.0);
   }
@@ -327,20 +327,20 @@ void SSTI::AssembleStrategyBlockBlock::assemble_scatra_structure(
     if (InterfaceMeshtying())
     {
       assemble_xxx_structure_meshtying(
-          systemmatrix_block->Matrix(BlockPositionScaTra().at(iblock), PositionStructure()),
+          systemmatrix_block->Matrix(BlockPositionScaTra().at(iblock), position_structure()),
           scatrastructuredomain_block->Matrix(iblock, 0));
 
       auto scatrastructureinterface_block =
           CORE::LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(scatrastructureinterface);
 
       assemble_xxx_structure_meshtying(
-          systemmatrix_block->Matrix(BlockPositionScaTra().at(iblock), PositionStructure()),
+          systemmatrix_block->Matrix(BlockPositionScaTra().at(iblock), position_structure()),
           scatrastructureinterface_block->Matrix(iblock, 0));
     }
     else
     {
       auto& systemmatrix_block_iscatra_struct =
-          systemmatrix_block->Matrix(BlockPositionScaTra().at(iblock), PositionStructure());
+          systemmatrix_block->Matrix(BlockPositionScaTra().at(iblock), position_structure());
 
       systemmatrix_block_iscatra_struct.Add(scatrastructuredomain_subblock, false, 1.0, 1.0);
     }
@@ -363,20 +363,20 @@ void SSTI::AssembleStrategyBlockSparse::assemble_scatra_structure(
   if (InterfaceMeshtying())
   {
     assemble_xxx_structure_meshtying(
-        systemmatrix_block->Matrix(BlockPositionScaTra().at(0), PositionStructure()),
+        systemmatrix_block->Matrix(BlockPositionScaTra().at(0), position_structure()),
         *scatrastructuredomain_sparse);
 
     auto scatrastructureinterface_sparse =
         CORE::LINALG::CastToConstSparseMatrixAndCheckSuccess(scatrastructureinterface);
 
     assemble_xxx_structure_meshtying(
-        systemmatrix_block->Matrix(BlockPositionScaTra().at(0), PositionStructure()),
+        systemmatrix_block->Matrix(BlockPositionScaTra().at(0), position_structure()),
         *scatrastructureinterface_sparse);
   }
   else
   {
     auto& systemmatrix_block_scatra_struct =
-        systemmatrix_block->Matrix(BlockPositionScaTra().at(0), PositionStructure());
+        systemmatrix_block->Matrix(BlockPositionScaTra().at(0), position_structure());
 
     systemmatrix_block_scatra_struct.Add(*scatrastructuredomain_sparse, false, 1.0, 1.0);
   }
@@ -616,13 +616,13 @@ void SSTI::AssembleStrategyBlockBlock::assemble_structure_scatra(
     if (InterfaceMeshtying())
     {
       assemble_structure_xxx_meshtying(
-          systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra().at(iblock)),
+          systemmatrix_block->Matrix(position_structure(), BlockPositionScaTra().at(iblock)),
           structurescatradomain_subblock);
     }
     else
     {
       auto& systemmatrix_block_struct_iscatra =
-          systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra().at(iblock));
+          systemmatrix_block->Matrix(position_structure(), BlockPositionScaTra().at(iblock));
 
       systemmatrix_block_struct_iscatra.Add(structurescatradomain_subblock, false, 1.0, 1.0);
     }
@@ -643,13 +643,13 @@ void SSTI::AssembleStrategyBlockSparse::assemble_structure_scatra(
   if (InterfaceMeshtying())
   {
     assemble_structure_xxx_meshtying(
-        systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra().at(0)),
+        systemmatrix_block->Matrix(position_structure(), BlockPositionScaTra().at(0)),
         *structurescatradomain_sparse);
   }
   else
   {
     auto& systemmatrix_block_struct_scatra =
-        systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra().at(0));
+        systemmatrix_block->Matrix(position_structure(), BlockPositionScaTra().at(0));
 
     systemmatrix_block_struct_scatra.Add(*structurescatradomain_sparse, false, 1.0, 1.0);
   }
@@ -903,20 +903,20 @@ void SSTI::AssembleStrategyBlockBlock::assemble_thermo_structure(
     if (InterfaceMeshtying())
     {
       assemble_xxx_structure_meshtying(
-          systemmatrix_block->Matrix(BlockPositionThermo().at(iblock), PositionStructure()),
+          systemmatrix_block->Matrix(BlockPositionThermo().at(iblock), position_structure()),
           thermostructuredomain_subblock);
 
       auto thermostructureinterface_block =
           CORE::LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(thermostructureinterface);
 
       assemble_xxx_structure_meshtying(
-          systemmatrix_block->Matrix(BlockPositionThermo().at(iblock), PositionStructure()),
+          systemmatrix_block->Matrix(BlockPositionThermo().at(iblock), position_structure()),
           thermostructureinterface_block->Matrix(iblock, 0));
     }
     else
     {
       auto& systemmatrix_block_ithermo_struct =
-          systemmatrix_block->Matrix(BlockPositionThermo().at(iblock), PositionStructure());
+          systemmatrix_block->Matrix(BlockPositionThermo().at(iblock), position_structure());
 
       systemmatrix_block_ithermo_struct.Add(thermostructuredomain_subblock, false, 1.0, 1.0);
     }
@@ -938,20 +938,20 @@ void SSTI::AssembleStrategyBlockSparse::assemble_thermo_structure(
   if (InterfaceMeshtying())
   {
     assemble_xxx_structure_meshtying(
-        systemmatrix_block->Matrix(BlockPositionThermo().at(0), PositionStructure()),
+        systemmatrix_block->Matrix(BlockPositionThermo().at(0), position_structure()),
         *thermostructuredomain_sparse);
 
     auto thermostructureinterface_sparse =
         CORE::LINALG::CastToConstSparseMatrixAndCheckSuccess(thermostructureinterface);
 
     assemble_xxx_structure_meshtying(
-        systemmatrix_block->Matrix(BlockPositionThermo().at(0), PositionStructure()),
+        systemmatrix_block->Matrix(BlockPositionThermo().at(0), position_structure()),
         *thermostructureinterface_sparse);
   }
   else
   {
     auto& sytemmatrix_block_thermo_structure =
-        systemmatrix_block->Matrix(BlockPositionThermo().at(0), PositionStructure());
+        systemmatrix_block->Matrix(BlockPositionThermo().at(0), position_structure());
 
     sytemmatrix_block_thermo_structure.Add(*thermostructuredomain_sparse, false, 1.0, 1.0);
   }
@@ -1000,13 +1000,13 @@ void SSTI::AssembleStrategyBlockBlock::assemble_structure_thermo(
     if (InterfaceMeshtying())
     {
       assemble_structure_xxx_meshtying(
-          systemmatrix_block->Matrix(PositionStructure(), BlockPositionThermo().at(iblock)),
+          systemmatrix_block->Matrix(position_structure(), BlockPositionThermo().at(iblock)),
           structurethermodomain_subblock);
     }
     else
     {
       auto& systemmatrix_block_struct_ithermo =
-          systemmatrix_block->Matrix(PositionStructure(), BlockPositionThermo().at(iblock));
+          systemmatrix_block->Matrix(position_structure(), BlockPositionThermo().at(iblock));
 
       systemmatrix_block_struct_ithermo.Add(structurethermodomain_subblock, false, 1.0, 1.0);
     }
@@ -1027,13 +1027,13 @@ void SSTI::AssembleStrategyBlockSparse::assemble_structure_thermo(
   if (InterfaceMeshtying())
   {
     assemble_structure_xxx_meshtying(
-        systemmatrix_block->Matrix(PositionStructure(), BlockPositionThermo().at(0)),
+        systemmatrix_block->Matrix(position_structure(), BlockPositionThermo().at(0)),
         *structurethermodomain_sparse);
   }
   else
   {
     auto& systemmatrix_block_struct_thermo =
-        systemmatrix_block->Matrix(PositionStructure(), BlockPositionThermo().at(0));
+        systemmatrix_block->Matrix(position_structure(), BlockPositionThermo().at(0));
 
     systemmatrix_block_struct_thermo.Add(*structurethermodomain_sparse, false, 1.0, 1.0);
   }
@@ -1066,7 +1066,7 @@ void SSTI::AssembleStrategyBlockBlock::apply_meshtying_system_matrix(
     auto systemmatrix_block =
         CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
 
-    apply_meshtying_sys_mat(systemmatrix_block->Matrix(PositionStructure(), PositionStructure()));
+    apply_meshtying_sys_mat(systemmatrix_block->Matrix(position_structure(), position_structure()));
   }
 }
 
@@ -1081,7 +1081,7 @@ void SSTI::AssembleStrategyBlockSparse::apply_meshtying_system_matrix(
     auto systemmatrix_block =
         CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
 
-    apply_meshtying_sys_mat(systemmatrix_block->Matrix(PositionStructure(), PositionStructure()));
+    apply_meshtying_sys_mat(systemmatrix_block->Matrix(position_structure(), position_structure()));
   }
 }
 
@@ -1157,12 +1157,12 @@ void SSTI::AssembleStrategyBlock::apply_structural_dbc_system_matrix(
     for (int iblock = 0; iblock < systemmatrix_block->Cols(); ++iblock)
     {
       locsysmanager_structure->RotateGlobalToLocal(
-          Teuchos::rcp(&systemmatrix_block->Matrix(PositionStructure(), iblock), false));
-      systemmatrix_block->Matrix(PositionStructure(), iblock)
+          Teuchos::rcp(&systemmatrix_block->Matrix(position_structure(), iblock), false));
+      systemmatrix_block->Matrix(position_structure(), iblock)
           .apply_dirichlet_with_trafo(
-              *locsysmanager_structure->Trafo(), *dbcmap_structure, iblock == PositionStructure());
+              *locsysmanager_structure->Trafo(), *dbcmap_structure, iblock == position_structure());
       locsysmanager_structure->RotateLocalToGlobal(
-          Teuchos::rcp(&systemmatrix_block->Matrix(PositionStructure(), iblock), false));
+          Teuchos::rcp(&systemmatrix_block->Matrix(position_structure(), iblock), false));
     }
   }
 }
@@ -1179,7 +1179,7 @@ void SSTI::AssembleStrategySparse::apply_structural_dbc_system_matrix(
   const auto& dbcmap_structure = StructureField()->GetDBCMapExtractor()->CondMap();
 
   // structural dof row map
-  const auto& dofrowmap_structure = StructureField()->DofRowMap();
+  const auto& dofrowmap_structure = StructureField()->dof_row_map();
 
   if (locsysmanager_structure == Teuchos::null)
     systemmatrix->ApplyDirichlet(*dbcmap_structure);
@@ -1228,7 +1228,7 @@ void SSTI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> RHS,
     // make copy of structural right-hand side vector
     Epetra_Vector residual_structure(*RHSstructure);
 
-    auto rhs_structure_master = CORE::LINALG::CreateVector(*StructureField()->DofRowMap(), true);
+    auto rhs_structure_master = CORE::LINALG::CreateVector(*StructureField()->dof_row_map(), true);
 
     for (const auto& meshtying : ssti_structure_meshtying()->MeshTyingHandlers())
     {

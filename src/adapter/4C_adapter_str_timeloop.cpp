@@ -32,7 +32,7 @@ int ADAPTER::StructureTimeLoop::Integrate()
   {
     // call the predictor
     PrePredict();
-    PrepareTimeStep();
+    prepare_time_step();
 
     // integrate time step, i.e. do corrector steps
     // after this step we hold disn_, etc
@@ -46,7 +46,7 @@ int ADAPTER::StructureTimeLoop::Integrate()
       // note: this has to be done before the update since otherwise a potential
       // material history is overwritten
       constexpr bool force_prepare = false;
-      PrepareOutput(force_prepare);
+      prepare_output(force_prepare);
 
       // update displacements, velocities, accelerations
       // after this call we will have disn_==dis_, etc
@@ -54,7 +54,7 @@ int ADAPTER::StructureTimeLoop::Integrate()
       // update everything on the element level
       PreUpdate();
       Update();
-      PostUpdate();
+      post_update();
 
       // write output
       Output();

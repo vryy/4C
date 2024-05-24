@@ -63,26 +63,29 @@ void STR::TIMINT::NoxInterface::Init(
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::NoxInterface::Setup()
 {
-  CheckInit();
+  check_init();
 
   issetup_ = true;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::NoxInterface::CheckInit() const { FOUR_C_ASSERT(IsInit(), "Call Init() first!"); }
+void STR::TIMINT::NoxInterface::check_init() const
+{
+  FOUR_C_ASSERT(is_init(), "Call Init() first!");
+}
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::NoxInterface::CheckInitSetup() const
+void STR::TIMINT::NoxInterface::check_init_setup() const
 {
-  FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::Integrator& STR::TIMINT::NoxInterface::ImplInt()
 {
-  CheckInitSetup();
+  check_init_setup();
   return *int_ptr_;
 }
 
@@ -91,7 +94,7 @@ STR::Integrator& STR::TIMINT::NoxInterface::ImplInt()
 bool STR::TIMINT::NoxInterface::computeF(
     const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (not int_ptr_->ApplyForce(x, F)) return false;
 
@@ -107,7 +110,7 @@ bool STR::TIMINT::NoxInterface::computeF(
  *----------------------------------------------------------------------------*/
 bool STR::TIMINT::NoxInterface::computeJacobian(const Epetra_Vector& x, Epetra_Operator& jac)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   CORE::LINALG::SparseOperator* jac_ptr = dynamic_cast<CORE::LINALG::SparseOperator*>(&jac);
   FOUR_C_ASSERT(jac_ptr != nullptr, "Dynamic cast failed.");
@@ -127,7 +130,7 @@ bool STR::TIMINT::NoxInterface::computeJacobian(const Epetra_Vector& x, Epetra_O
 bool STR::TIMINT::NoxInterface::computeFandJacobian(
     const Epetra_Vector& x, Epetra_Vector& rhs, Epetra_Operator& jac)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   CORE::LINALG::SparseOperator* jac_ptr = dynamic_cast<CORE::LINALG::SparseOperator*>(&jac);
   FOUR_C_ASSERT(jac_ptr != nullptr, "Dynamic cast failed!");
@@ -153,7 +156,7 @@ bool STR::TIMINT::NoxInterface::compute_correction_system(const enum NOX::NLN::C
     const ::NOX::Abstract::Group& grp, const Epetra_Vector& x, Epetra_Vector& rhs,
     Epetra_Operator& jac)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   CORE::LINALG::SparseOperator* jac_ptr = dynamic_cast<CORE::LINALG::SparseOperator*>(&jac);
   FOUR_C_ASSERT(jac_ptr != nullptr, "Dynamic cast failed!");
@@ -177,7 +180,7 @@ bool STR::TIMINT::NoxInterface::compute_correction_system(const enum NOX::NLN::C
 bool STR::TIMINT::NoxInterface::computePreconditioner(
     const Epetra_Vector& x, Epetra_Operator& M, Teuchos::ParameterList* precParams)
 {
-  CheckInitSetup();
+  check_init_setup();
   // currently not supported
   return false;
 }
@@ -188,7 +191,7 @@ double STR::TIMINT::NoxInterface::GetPrimaryRHSNorms(const Epetra_Vector& F,
     const NOX::NLN::StatusTest::QuantityType& checkquantity,
     const ::NOX::Abstract::Vector::NormType& type, const bool& isscaled) const
 {
-  CheckInitSetup();
+  check_init_setup();
   double rhsnorm = -1.0;
 
   // convert the given quantity type to a model type
@@ -241,7 +244,7 @@ double STR::TIMINT::NoxInterface::get_primary_solution_update_rms(const Epetra_V
     const NOX::NLN::StatusTest::QuantityType& checkquantity,
     const bool& disable_implicit_weighting) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   double rms = -1.0;
 
@@ -308,7 +311,7 @@ double STR::TIMINT::NoxInterface::get_primary_solution_update_norms(const Epetra
     const Epetra_Vector& xold, const NOX::NLN::StatusTest::QuantityType& checkquantity,
     const ::NOX::Abstract::Vector::NormType& type, const bool& isscaled) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   double updatenorm = -1.0;
 
@@ -379,7 +382,7 @@ double STR::TIMINT::NoxInterface::get_previous_primary_solution_norms(const Epet
     const NOX::NLN::StatusTest::QuantityType& checkquantity,
     const ::NOX::Abstract::Vector::NormType& type, const bool& isscaled) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   double xoldnorm = -1.0;
 
@@ -456,7 +459,7 @@ double STR::TIMINT::NoxInterface::CalculateNorm(Teuchos::RCP<Epetra_Vector> quan
 double STR::TIMINT::NoxInterface::GetModelValue(const Epetra_Vector& x, const Epetra_Vector& F,
     const enum NOX::NLN::MeritFunction::MeritFctName merit_func_type) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   double omval = 0.0;
 
@@ -540,7 +543,7 @@ double STR::TIMINT::NoxInterface::get_linearized_energy_model_terms(
           find_constraint_models(group, constraint_models);
 
           // assemble the force and exclude all constraint models
-          int_ptr_->AssembleForce(str_gradient, &constraint_models);
+          int_ptr_->assemble_force(str_gradient, &constraint_models);
           str_gradient.Dot(dir, &lin_val);
 
           IO::cout(IO::debug) << "LinEnergy   D_{d} (Energy) = " << lin_val << IO::endl;
@@ -595,7 +598,7 @@ void STR::TIMINT::NoxInterface::find_constraint_models(
  *----------------------------------------------------------------------------*/
 double STR::TIMINT::NoxInterface::CalcRefNormForce()
 {
-  CheckInitSetup();
+  check_init_setup();
   const ::NOX::Epetra::Vector::NormType& nox_normtype = timint_ptr_->GetDataSDyn().GetNoxNormType();
   return int_ptr_->CalcRefNormForce(nox_normtype);
 }
@@ -605,9 +608,9 @@ double STR::TIMINT::NoxInterface::CalcRefNormForce()
 Teuchos::RCP<CORE::LINALG::SparseMatrix>
 STR::TIMINT::NoxInterface::calc_jacobian_contributions_from_element_level_for_ptc()
 {
-  CheckInitSetup();
+  check_init_setup();
   Teuchos::RCP<CORE::LINALG::SparseMatrix> scalingMatrixOpPtr =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gstate_ptr_->DofRowMap(), 81, true, true));
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gstate_ptr_->dof_row_map(), 81, true, true));
   int_ptr_->compute_jacobian_contributions_from_element_level_for_ptc(scalingMatrixOpPtr);
 
   return scalingMatrixOpPtr;
@@ -617,7 +620,7 @@ STR::TIMINT::NoxInterface::calc_jacobian_contributions_from_element_level_for_pt
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::NoxInterface::CreateBackupState(const Epetra_Vector& dir)
 {
-  CheckInitSetup();
+  check_init_setup();
   int_ptr_->CreateBackupState(dir);
 }
 
@@ -625,7 +628,7 @@ void STR::TIMINT::NoxInterface::CreateBackupState(const Epetra_Vector& dir)
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::NoxInterface::recover_from_backup_state()
 {
-  CheckInitSetup();
+  check_init_setup();
   int_ptr_->recover_from_backup_state();
 }
 
@@ -634,7 +637,7 @@ void STR::TIMINT::NoxInterface::recover_from_backup_state()
 bool STR::TIMINT::NoxInterface::compute_element_volumes(
     const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols) const
 {
-  CheckInitSetup();
+  check_init_setup();
   return int_ptr_->determine_element_volumes(x, ele_vols);
 }
 
@@ -643,7 +646,7 @@ bool STR::TIMINT::NoxInterface::compute_element_volumes(
 void STR::TIMINT::NoxInterface::getDofsFromElements(
     const std::vector<int>& my_ele_gids, std::set<int>& my_ele_dofs) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   Teuchos::RCP<const DRT::Discretization> discret_ptr = gstate_ptr_->GetDiscret();
 
@@ -652,7 +655,7 @@ void STR::TIMINT::NoxInterface::getDofsFromElements(
     DRT::Element* ele = discret_ptr->gElement(egid);
     DRT::Node** nodes = ele->Nodes();
 
-    for (int i = 0; i < ele->NumNode(); ++i)
+    for (int i = 0; i < ele->num_node(); ++i)
     {
       if (nodes[i]->Owner() != gstate_ptr_->GetComm().MyPID()) continue;
 

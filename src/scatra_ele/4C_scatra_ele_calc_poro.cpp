@@ -323,7 +323,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::MatScaTra(
     FOUR_C_THROW("no gauss point given for evaluation of scatra material. Check your input file.");
 
   // read the porosity from the diffusion manager
-  const double porosity = DiffManager()->GetPorosity(k);
+  const double porosity = diff_manager()->GetPorosity(k);
 
   const Teuchos::RCP<const MAT::ScatraMat>& actmat =
       Teuchos::rcp_dynamic_cast<const MAT::ScatraMat>(material);
@@ -440,7 +440,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorosity(
   }
 
   // save porosity in diffusion manager for later access
-  DiffManager()->SetPorosity(porosity);
+  diff_manager()->SetPorosity(porosity);
 
   return;
 }
@@ -482,7 +482,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::CalculateScalars(const DRT::Elem
         const double fac_funct_i = fac * my::funct_(i);
         for (int k = 0; k < my::numscal_; k++)
         {
-          const double porosity = DiffManager()->GetPorosity(k);
+          const double porosity = diff_manager()->GetPorosity(k);
           if (std::abs(my::ephinp_[k](i, 0)) > 1e-14)
             scalars[k] += fac_funct_i / (my::ephinp_[k](i, 0) * porosity);
           else
@@ -499,7 +499,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::CalculateScalars(const DRT::Elem
         const double fac_funct_i = fac * my::funct_(i);
         for (int k = 0; k < my::numscal_; k++)
         {
-          const double porosity = DiffManager()->GetPorosity(k);
+          const double porosity = diff_manager()->GetPorosity(k);
           scalars[k] += fac_funct_i * my::ephinp_[k](i, 0) * porosity;
         }
         // for domain volume

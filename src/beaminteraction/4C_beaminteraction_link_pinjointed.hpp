@@ -129,20 +129,20 @@ namespace BEAMINTERACTION
     /*!
     \brief Evaluate forces
     */
-    bool EvaluateForce(CORE::LINALG::SerialDenseVector& forcevec1,
+    bool evaluate_force(CORE::LINALG::SerialDenseVector& forcevec1,
         CORE::LINALG::SerialDenseVector& forcevec2) override = 0;
 
     /*!
     \brief Evaluate stiffness contribution
     */
-    bool EvaluateStiff(CORE::LINALG::SerialDenseMatrix& stiffmat11,
+    bool evaluate_stiff(CORE::LINALG::SerialDenseMatrix& stiffmat11,
         CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
         CORE::LINALG::SerialDenseMatrix& stiffmat22) override = 0;
 
     /*!
     \brief Evaluate forces and stiffness contribution
     */
-    bool EvaluateForceStiff(CORE::LINALG::SerialDenseVector& forcevec1,
+    bool evaluate_force_stiff(CORE::LINALG::SerialDenseVector& forcevec1,
         CORE::LINALG::SerialDenseVector& forcevec2, CORE::LINALG::SerialDenseMatrix& stiffmat11,
         CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
         CORE::LINALG::SerialDenseMatrix& stiffmat22) override = 0;

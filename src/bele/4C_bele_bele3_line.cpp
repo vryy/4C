@@ -32,7 +32,7 @@ DRT::ELEMENTS::Bele3Line::Bele3Line(int id, int owner, int nnode, const int* nod
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
   set_parent_master_element(parent, lline);
-  SetNumDofPerNode(parent->NumDofPerNode(*nodes[0]));
+  set_num_dof_per_node(parent->NumDofPerNode(*nodes[0]));
   return;
 }
 
@@ -61,14 +61,14 @@ DRT::Element* DRT::ELEMENTS::Bele3Line::Clone() const
  *----------------------------------------------------------------------*/
 CORE::FE::CellType DRT::ELEMENTS::Bele3Line::Shape() const
 {
-  switch (NumNode())
+  switch (num_node())
   {
     case 2:
       return CORE::FE::CellType::line2;
     case 3:
       return CORE::FE::CellType::line3;
     default:
-      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", num_node());
       break;
   }
 }

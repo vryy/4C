@@ -39,7 +39,7 @@ namespace ADAPTER
     /// actual time loop
     int Integrate() override;
 
-    /// wrapper for things that should be done before PrepareTimeStep is called
+    /// wrapper for things that should be done before prepare_time_step is called
     void PrePredict() override{};
 
     /// wrapper for things that should be done before solving the nonlinear iterations
@@ -49,7 +49,7 @@ namespace ADAPTER
     void PreUpdate() override{};
 
     /// wrapper for things that should be done after solving the update
-    void PostUpdate() override{};
+    void post_update() override{};
 
     /// wrapper for things that should be done after the output
     void PostOutput() override{};

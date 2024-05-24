@@ -148,7 +148,7 @@ namespace CORE::FE
     if (global == Teuchos::null) FOUR_C_THROW("received a TEUCHOS::null pointer");
     if (nsd > global->NumVectors())
       FOUR_C_THROW("Requested %d of %d available columns", nsd, global->NumVectors());
-    const int iel = ele->NumNode();  // number of nodes
+    const int iel = ele->num_node();  // number of nodes
     if (((int)localmatrix.numCols()) != iel)
       FOUR_C_THROW("local matrix has wrong number of columns");
     if (((int)localmatrix.numRows()) != nsd) FOUR_C_THROW("local matrix has wrong number of rows");
@@ -180,7 +180,7 @@ namespace CORE::FE
   template <class M>
   void ExtractMyNodeBasedValues(const DRT::Element* ele, M& local, const Epetra_MultiVector& global)
   {
-    const int numnode = ele->NumNode();
+    const int numnode = ele->num_node();
     const int numcol = global.NumVectors();
     if (((int)local.N()) != 1) FOUR_C_THROW("local matrix must have one column");
     if (((int)local.M()) != numnode * numcol) FOUR_C_THROW("local matrix has wrong number of rows");

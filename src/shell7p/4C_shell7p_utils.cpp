@@ -389,7 +389,7 @@ void STR::UTILS::SHELL::DIRECTOR::SetupDirectorForElement(
     const DRT::Element& ele, CORE::LINALG::SerialDenseMatrix& nodal_directors)
 {
   constexpr auto num_dim = DRT::ELEMENTS::SHELL::DETAIL::num_dim;
-  const int num_node = ele.NumNode();
+  const int num_node = ele.num_node();
   CORE::LINALG::SerialDenseMatrix xrefe(num_node, num_dim);
   for (int i = 0; i < num_node; ++i)
   {
@@ -512,7 +512,7 @@ void STR::UTILS::SHELL::DIRECTOR::ExportDirectorMapFromRowToColMap(const DRT::El
       if (tmpele->ElementType() != eletype) continue;
       if (auto* scatra_ele = dynamic_cast<DRT::ELEMENTS::Shell7pScatra*>(tmpele))
       {
-        for (int k = 0; k < scatra_ele->NumNode(); ++k)
+        for (int k = 0; k < scatra_ele->num_node(); ++k)
         {
           if (scatra_ele->Nodes()[k] == actnode)
           {
@@ -523,7 +523,7 @@ void STR::UTILS::SHELL::DIRECTOR::ExportDirectorMapFromRowToColMap(const DRT::El
       }
       else if (auto* shell_ele = dynamic_cast<DRT::ELEMENTS::Shell7p*>(tmpele))
       {
-        for (int k = 0; k < shell_ele->NumNode(); ++k)
+        for (int k = 0; k < shell_ele->num_node(); ++k)
         {
           if (shell_ele->Nodes()[k] == actnode)
           {
@@ -556,7 +556,7 @@ void STR::UTILS::SHELL::DIRECTOR::AverageDirectorsAtNodes(const DRT::ElementType
       if (tmpele->ElementType() != eletype) continue;
       if (auto* scatra_ele = dynamic_cast<DRT::ELEMENTS::Shell7pScatra*>(tmpele))
       {
-        for (int k = 0; k < scatra_ele->NumNode(); ++k)
+        for (int k = 0; k < scatra_ele->num_node(); ++k)
         {
           if (scatra_ele->Nodes()[k] == act_node)
           {
@@ -571,7 +571,7 @@ void STR::UTILS::SHELL::DIRECTOR::AverageDirectorsAtNodes(const DRT::ElementType
       }
       else if (auto* shell_ele = dynamic_cast<DRT::ELEMENTS::Shell7p*>(tmpele))
       {
-        for (int k = 0; k < shell_ele->NumNode(); ++k)
+        for (int k = 0; k < shell_ele->num_node(); ++k)
         {
           if (shell_ele->Nodes()[k] == act_node)
           {
@@ -616,7 +616,7 @@ void STR::UTILS::SHELL::DIRECTOR::SetupShellElementDirectors(
     {
       // create matrix nodal_directors for nodal basis vector in thickness direction in material
       // configuration
-      const int num_node = scatra_ele->NumNode();
+      const int num_node = scatra_ele->num_node();
       CORE::LINALG::SerialDenseMatrix nodal_directors(
           num_node, DRT::ELEMENTS::SHELL::DETAIL::num_dim);
       SetupDirectorForElement(*scatra_ele, nodal_directors);
@@ -626,7 +626,7 @@ void STR::UTILS::SHELL::DIRECTOR::SetupShellElementDirectors(
     {
       // create matrix nodal_directors for nodal basis vector in thickness direction in material
       // configuration
-      const int num_node = shell_ele->NumNode();
+      const int num_node = shell_ele->num_node();
       CORE::LINALG::SerialDenseMatrix nodal_directors(
           num_node, DRT::ELEMENTS::SHELL::DETAIL::num_dim);
       SetupDirectorForElement(*shell_ele, nodal_directors);

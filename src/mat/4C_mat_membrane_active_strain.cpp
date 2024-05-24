@@ -213,7 +213,7 @@ void MAT::MembraneActiveStrain::Unpack(const std::vector<char>& data)
 void MAT::MembraneActiveStrain::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   // setup fibervectors
-  SetupFiberVectors(numgp, linedef);
+  setup_fiber_vectors(numgp, linedef);
 
   // setup of passive material
   matpassive_ =
@@ -368,10 +368,10 @@ void MAT::MembraneActiveStrain::Update()
 /*----------------------------------------------------------------------*
  | Reset internal variables                        brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-void MAT::MembraneActiveStrain::ResetStep()
+void MAT::MembraneActiveStrain::reset_step()
 {
-  matpassive_->ResetStep();
-}  // MAT::MembraneActiveStrain::ResetStep
+  matpassive_->reset_step();
+}  // MAT::MembraneActiveStrain::reset_step
 
 /*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |
@@ -414,7 +414,7 @@ bool MAT::MembraneActiveStrain::VisData(
 /*----------------------------------------------------------------------*
  | setup fiber vectors                                                  |
  *----------------------------------------------------------------------*/
-void MAT::MembraneActiveStrain::SetupFiberVectors(int numgp, INPUT::LineDefinition* linedef)
+void MAT::MembraneActiveStrain::setup_fiber_vectors(int numgp, INPUT::LineDefinition* linedef)
 {
   CORE::LINALG::Matrix<3, 1> dir;
 
@@ -422,15 +422,15 @@ void MAT::MembraneActiveStrain::SetupFiberVectors(int numgp, INPUT::LineDefiniti
   if (linedef->HaveNamed("RAD") and linedef->HaveNamed("AXI") and linedef->HaveNamed("CIR"))
   {
     // Axial direction
-    ReadDir(linedef, "AXI", dir);
+    read_dir(linedef, "AXI", dir);
     fibervecs_.push_back(dir);
 
     // Circumferential direction
-    ReadDir(linedef, "CIR", dir);
+    read_dir(linedef, "CIR", dir);
     fibervecs_.push_back(dir);
 
     // Radial direction
-    ReadDir(linedef, "RAD", dir);
+    read_dir(linedef, "RAD", dir);
     fibervecs_.push_back(dir);
   }
   // FIBER nomenclature
@@ -442,7 +442,7 @@ void MAT::MembraneActiveStrain::SetupFiberVectors(int numgp, INPUT::LineDefiniti
       ss << i;
       std::string fibername = "FIBER" + ss.str();  // FIBER Name
                                                    // FiberN direction
-      ReadDir(linedef, fibername, dir);
+      read_dir(linedef, fibername, dir);
       fibervecs_.push_back(dir);
     }
 
@@ -473,12 +473,12 @@ void MAT::MembraneActiveStrain::SetupFiberVectors(int numgp, INPUT::LineDefiniti
         "assumption!");
   }
 
-}  // MAT::MembraneActiveStrain::SetupFiberVectors
+}  // MAT::MembraneActiveStrain::setup_fiber_vectors
 
 /*----------------------------------------------------------------------*
  * Function which reads in the fiber direction
  *----------------------------------------------------------------------*/
-void MAT::MembraneActiveStrain::ReadDir(
+void MAT::MembraneActiveStrain::read_dir(
     INPUT::LineDefinition* linedef, std::string specifier, CORE::LINALG::Matrix<3, 1>& dir)
 {
   std::vector<double> fiber;
@@ -495,7 +495,7 @@ void MAT::MembraneActiveStrain::ReadDir(
   for (int i = 0; i < 3; ++i) dir(i) = fiber[i] / fnorm;
 
   return;
-}  // MAT::MembraneActiveStrain::ReadDir
+}  // MAT::MembraneActiveStrain::read_dir
 
 void MAT::MembraneActiveStrain::setup_normal_direction()
 {
@@ -537,8 +537,8 @@ void MAT::MembraneActiveStrain::pullback4th_tensor_voigt(
     {
       int M;
       int N;
-      Tensor2x2Indices(p, &i, &j);
-      Tensor2x2Indices(q, &k, &l);
+      tensor2x2_indices(p, &i, &j);
+      tensor2x2_indices(q, &k, &l);
 
       for (int A = 0; A < 2; ++A)
       {
@@ -548,8 +548,8 @@ void MAT::MembraneActiveStrain::pullback4th_tensor_voigt(
           {
             for (int D = 0; D < 2; ++D)
             {
-              Voigt3Index(A, B, &M);
-              Voigt3Index(C, D, &N);
+              voigt3_index(A, B, &M);
+              voigt3_index(C, D, &N);
 
               cmat_reference(p, q) += defgrd_active_inv_red(i, A) * defgrd_active_inv_red(j, B) *
                                       defgrd_active_inv_red(k, C) * defgrd_active_inv_red(l, D) *
@@ -566,7 +566,7 @@ void MAT::MembraneActiveStrain::pullback4th_tensor_voigt(
 /*---------------------------------------------------------------------*
  | transform voigt to tensor notation                                  |
  *---------------------------------------------------------------------*/
-void MAT::MembraneActiveStrain::Tensor2x2Indices(int p, int* i, int* j)
+void MAT::MembraneActiveStrain::tensor2x2_indices(int p, int* i, int* j)
 {
   switch (p)
   {
@@ -583,12 +583,12 @@ void MAT::MembraneActiveStrain::Tensor2x2Indices(int p, int* i, int* j)
       *j = 1;
       break;
   }
-}  // MAT::MembraneActiveStrain::Voigt3Index
+}  // MAT::MembraneActiveStrain::voigt3_index
 
 /*---------------------------------------------------------------------*
  | transform tensor to voigt notation (public)                         |
  *---------------------------------------------------------------------*/
-void MAT::MembraneActiveStrain::Voigt3Index(int i, int j, int* p)
+void MAT::MembraneActiveStrain::voigt3_index(int i, int j, int* p)
 {
   if (i == 0 && j == 0)
     *p = 0;
@@ -596,6 +596,6 @@ void MAT::MembraneActiveStrain::Voigt3Index(int i, int j, int* p)
     *p = 1;
   else if ((i == 0 && j == 1) || (i == 1 && j == 0))
     *p = 2;
-}  // MAT::MembraneActiveStrain::Voigt3Index
+}  // MAT::MembraneActiveStrain::voigt3_index
 
 FOUR_C_NAMESPACE_CLOSE

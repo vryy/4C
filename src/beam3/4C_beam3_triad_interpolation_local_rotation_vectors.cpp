@@ -28,15 +28,15 @@ LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes,
     T>::TriadInterpolationLocalRotationVectors()
     : node_i_(0), node_j_(0)
 {
-  SetNodeIandJ();
+  set_node_iand_j();
 
-  distype_ = GetDisType();
+  distype_ = get_dis_type();
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, typename T>
-void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::SetNodeIandJ()
+void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::set_node_iand_j()
 {
   // first the nodes for the reference triad \Lambda_r of the element are chosen
   // according to eq. (6.2), Crisfield 1999;
@@ -53,8 +53,8 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::SetNod
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, typename T>
-CORE::FE::CellType LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::GetDisType()
-    const
+CORE::FE::CellType
+LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::get_dis_type() const
 {
   switch (numnodes)
   {
@@ -96,7 +96,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::Reset(
   qnode_ = nodal_quaternions;
 
   // compute reference triad Lambda_r according to (3.9), Jelenic 1999
-  CalcRefQuaternion(nodal_quaternions[node_i_], nodal_quaternions[node_j_], q_r_);
+  calc_ref_quaternion(nodal_quaternions[node_i_], nodal_quaternions[node_j_], q_r_);
 
 
   // rotation angles between nodal triads and reference triad according to (3.8), Jelenic 1999
@@ -105,7 +105,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::Reset(
   // compute nodal local rotation vectors according to (3.8), Jelenic 1999
   for (unsigned int inode = 0; inode < numnodes; ++inode)
   {
-    CalcPsi_li(nodal_quaternions[inode], q_r_, psi_li_[inode]);
+    calc_psi_li(nodal_quaternions[inode], q_r_, psi_li_[inode]);
   }
 }
 
@@ -164,7 +164,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes,
   CORE::LINALG::Matrix<3, 1, T> Psi_l(true);
   get_interpolated_local_rotation_vector_at_xi(Psi_l, xi);
 
-  Calc_Qgauss(Psi_l, q_r_, quaternion);
+  calc_qgauss(Psi_l, q_r_, quaternion);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -174,7 +174,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes,
     T>::get_interpolated_quaternion(CORE::LINALG::Matrix<4, 1, T>& quaternion,
     const CORE::LINALG::Matrix<3, 1, T>& Psi_l) const
 {
-  Calc_Qgauss(Psi_l, q_r_, quaternion);
+  calc_qgauss(Psi_l, q_r_, quaternion);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -189,7 +189,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes,
 
   CORE::FE::shape_function_1D(I_i, xi, distype_);
 
-  Calc_Psi_l(psi_li_, I_i, Psi_l);
+  calc_psi_l(psi_li_, I_i, Psi_l);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -199,7 +199,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes,
     T>::get_interpolated_local_rotation_vector(CORE::LINALG::Matrix<3, 1, T>& Psi_l,
     const CORE::LINALG::Matrix<1, numnodes, double>& I_i) const
 {
-  Calc_Psi_l(psi_li_, I_i, Psi_l);
+  calc_psi_l(psi_li_, I_i, Psi_l);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -215,7 +215,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes,
 
   CORE::FE::shape_function_1D_deriv1(I_i_xi, xi, distype_);
 
-  Calc_Psi_l_s(psi_li_, I_i_xi, jacobifac, Psi_l_s);
+  calc_psi_l_s(psi_li_, I_i_xi, jacobifac, Psi_l_s);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -225,7 +225,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes,
     T>::get_interpolated_local_rotation_vector_derivative(CORE::LINALG::Matrix<3, 1, T>& Psi_l_s,
     const CORE::LINALG::Matrix<1, numnodes, double>& I_i_xi, const double jacobifac) const
 {
-  Calc_Psi_l_s(psi_li_, I_i_xi, jacobifac, Psi_l_s);
+  calc_psi_l_s(psi_li_, I_i_xi, jacobifac, Psi_l_s);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -241,7 +241,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::
 
   // compute angle of relative rotation between node I and J
   CORE::LINALG::Matrix<3, 1, T> Phi_IJ(true);
-  CalcPhi_IJ(qnode_[node_i_], qnode_[node_j_], Phi_IJ);
+  calc_phi_ij(qnode_[node_i_], qnode_[node_j_], Phi_IJ);
 
   // values of individual shape functions at xi
   CORE::LINALG::Matrix<1, numnodes> I_i(true);
@@ -249,10 +249,10 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::
 
   // compute interpolated local relative rotation vector \Psi^l
   CORE::LINALG::Matrix<3, 1, T> Psi_l(true);
-  Calc_Psi_l(psi_li_, I_i, Psi_l);
+  calc_psi_l(psi_li_, I_i, Psi_l);
 
 
-  computeItilde(Psi_l, Itilde, Phi_IJ, Lambda_r, psi_li_, I_i);
+  compute_itilde(Psi_l, Itilde, Phi_IJ, Lambda_r, psi_li_, I_i);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -270,10 +270,10 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::
 
   // compute angle of relative rotation between node I and J
   CORE::LINALG::Matrix<3, 1, T> Phi_IJ(true);
-  CalcPhi_IJ(qnode_[node_i_], qnode_[node_j_], Phi_IJ);
+  calc_phi_ij(qnode_[node_i_], qnode_[node_j_], Phi_IJ);
 
 
-  computeItilde(Psi_l, Itilde, Phi_IJ, Lambda_r, psi_li_, I_i);
+  compute_itilde(Psi_l, Itilde, Phi_IJ, Lambda_r, psi_li_, I_i);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -309,16 +309,16 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::
 
   // compute angle of relative rotation between node I and J
   CORE::LINALG::Matrix<3, 1, T> Phi_IJ(true);
-  CalcPhi_IJ(qnode_[node_i_], qnode_[node_j_], Phi_IJ);
+  calc_phi_ij(qnode_[node_i_], qnode_[node_j_], Phi_IJ);
 
 
-  computeItildeprime(Psi_l, Psi_l_s, Itilde_prime, Phi_IJ, Lambda_r, psi_li_, I_i, I_i_s);
+  compute_itildeprime(Psi_l, Psi_l_s, Itilde_prime, Phi_IJ, Lambda_r, psi_li_, I_i, I_i_s);
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, typename T>
-void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::CalcRefQuaternion(
+void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::calc_ref_quaternion(
     const CORE::LINALG::Matrix<4, 1, T>& Q_nodeI, const CORE::LINALG::Matrix<4, 1, T>& Q_nodeJ,
     CORE::LINALG::Matrix<4, 1, T>& Q_r) const
 {
@@ -326,7 +326,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::CalcRe
   CORE::LINALG::Matrix<3, 1, T> Phi_IJ(true);
 
   // compute angle of relative rotation between node I and J
-  CalcPhi_IJ(Q_nodeI, Q_nodeJ, Phi_IJ);
+  calc_phi_ij(Q_nodeI, Q_nodeJ, Phi_IJ);
 
   CORE::LINALG::Matrix<3, 1, T> Phi_IJhalf(Phi_IJ);
   Phi_IJhalf.Scale(0.5);
@@ -341,7 +341,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::CalcRe
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, typename T>
-void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::CalcPhi_IJ(
+void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::calc_phi_ij(
     const CORE::LINALG::Matrix<4, 1, T>& Q_nodeI, const CORE::LINALG::Matrix<4, 1, T>& Q_nodeJ,
     CORE::LINALG::Matrix<3, 1, T>& Phi_IJ) const
 {
@@ -358,7 +358,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::CalcPh
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, typename T>
-void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::CalcPsi_li(
+void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::calc_psi_li(
     const CORE::LINALG::Matrix<4, 1, T>& Q_i, const CORE::LINALG::Matrix<4, 1, T>& Q_r,
     CORE::LINALG::Matrix<3, 1, T>& Psi_li) const
 {
@@ -374,7 +374,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::CalcPs
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, typename T>
-void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::Calc_Psi_l(
+void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::calc_psi_l(
     const std::vector<CORE::LINALG::Matrix<3, 1, T>>& Psi_li,
     const CORE::LINALG::Matrix<1, numnodes, double>& func,
     CORE::LINALG::Matrix<3, 1, T>& Psi_l) const
@@ -389,7 +389,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::Calc_P
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, typename T>
-void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::Calc_Psi_l_s(
+void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::calc_psi_l_s(
     const std::vector<CORE::LINALG::Matrix<3, 1, T>>& Psi_li,
     const CORE::LINALG::Matrix<1, numnodes, double>& deriv_xi, const double& jacobi,
     CORE::LINALG::Matrix<3, 1, T>& Psi_l_s) const
@@ -409,7 +409,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::Calc_P
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, typename T>
-void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::Calc_Lambda(
+void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::calc_lambda(
     const CORE::LINALG::Matrix<3, 1, T>& Psi_l, const CORE::LINALG::Matrix<4, 1, T>& Q_r,
     CORE::LINALG::Matrix<3, 3, T>& Lambda) const
 {
@@ -432,7 +432,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::Calc_L
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, typename T>
-void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::Calc_Qgauss(
+void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::calc_qgauss(
     const CORE::LINALG::Matrix<3, 1, T>& Psi_l, const CORE::LINALG::Matrix<4, 1, T>& Q_r,
     CORE::LINALG::Matrix<4, 1, T>& Qgauss) const
 {
@@ -451,7 +451,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::Calc_Q
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, typename T>
-void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::computeItilde(
+void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::compute_itilde(
     const CORE::LINALG::Matrix<3, 1, T>& Psil, std::vector<CORE::LINALG::Matrix<3, 3, T>>& Itilde,
     const CORE::LINALG::Matrix<3, 1, T>& phiIJ, const CORE::LINALG::Matrix<3, 3, T>& Lambdar,
     const std::vector<CORE::LINALG::Matrix<3, 1, T>>& Psili,
@@ -495,7 +495,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::comput
     // if node i is node I then add squared brackets term times v_I
     if (node == node_i_)
     {
-      Calc_vI(v_matrix, phiIJ);
+      calc_v_i(v_matrix, phiIJ);
       auxmatrix.Multiply(squaredbrackets, v_matrix);
       Itilde[node] += auxmatrix;
     }
@@ -503,7 +503,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::comput
     // if node i is node J then add squared brackets term times v_J
     if (node == node_j_)
     {
-      Calc_vJ(v_matrix, phiIJ);
+      calc_v_j(v_matrix, phiIJ);
       auxmatrix.Multiply(squaredbrackets, v_matrix);
       Itilde[node] += auxmatrix;
     }
@@ -517,7 +517,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::comput
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, typename T>
-void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::computeItildeprime(
+void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::compute_itildeprime(
     const CORE::LINALG::Matrix<3, 1, T>& Psil, const CORE::LINALG::Matrix<3, 1, T>& Psilprime,
     std::vector<CORE::LINALG::Matrix<3, 3, T>>& Itildeprime,
     const CORE::LINALG::Matrix<3, 1, T>& phiIJ, const CORE::LINALG::Matrix<3, 3, T>& Lambdar,
@@ -582,7 +582,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::comput
     // if node i is node I then add first squared brackets term times v_I
     if (node == node_i_)
     {
-      Calc_vI(v_matrix, phiIJ);
+      calc_v_i(v_matrix, phiIJ);
       auxmatrix.Multiply(squaredbrackets, v_matrix);
       Itildeprime[node] -= auxmatrix;
     }
@@ -590,7 +590,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::comput
     // if node i is node J then add first squared brackets term times v_J
     if (node == node_j_)
     {
-      Calc_vJ(v_matrix, phiIJ);
+      calc_v_j(v_matrix, phiIJ);
       auxmatrix.Multiply(squaredbrackets, v_matrix);
       Itildeprime[node] -= auxmatrix;
     }
@@ -604,7 +604,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::comput
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, typename T>
-void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::Calc_vI(
+void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::calc_v_i(
     CORE::LINALG::Matrix<3, 3, T>& vI, const CORE::LINALG::Matrix<3, 1, T>& phiIJ) const
 {
   // matrix v_I
@@ -626,7 +626,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::Calc_v
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, typename T>
-void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::Calc_vJ(
+void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::calc_v_j(
     CORE::LINALG::Matrix<3, 3, T>& vJ, const CORE::LINALG::Matrix<3, 1, T>& phiIJ) const
 {
   // matrix v_J

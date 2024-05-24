@@ -36,7 +36,7 @@ int ADAPTER::StructureTimIntAda::Integrate() { return sta_->Integrate(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimIntAda::PrepareOutput(bool force_prepare)
+void ADAPTER::StructureTimIntAda::prepare_output(bool force_prepare)
 {
   sta_->PrepareOutputPeriod(force_prepare);
 }

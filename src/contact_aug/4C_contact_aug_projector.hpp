@@ -34,17 +34,17 @@ namespace CONTACT
       ProjectorBase(){};
 
      private:
-      static ProjectorBase* Get2D(
+      static ProjectorBase* get2_d(
           CORE::FE::CellType ref_type, CORE::FE::CellType tar_type, const bool debug = false);
 
       template <CORE::FE::CellType ref_type>
-      static ProjectorBase* Get2D(CORE::FE::CellType tar_type, const bool debug = false);
+      static ProjectorBase* get2_d(CORE::FE::CellType tar_type, const bool debug = false);
 
-      static ProjectorBase* Get3D(
+      static ProjectorBase* get3_d(
           CORE::FE::CellType ref_type, CORE::FE::CellType tar_type, const bool debug = false);
 
       template <CORE::FE::CellType ref_type>
-      static ProjectorBase* Get3D(CORE::FE::CellType tar_type, const bool debug = false);
+      static ProjectorBase* get3_d(CORE::FE::CellType tar_type, const bool debug = false);
 
      public:
       /// access the singleton pointer of the projector object
@@ -121,7 +121,7 @@ namespace CONTACT
        *  \param[in] n_ref       : normal evaluated at the reference point
        *
        *  \author hiermeier \date 07/17 */
-      void LMatGP(CORE::LINALG::Matrix<probdim, probdim>& lmat,
+      void l_mat_gp(CORE::LINALG::Matrix<probdim, probdim>& lmat,
           CORE::LINALG::Matrix<TAR_DIM, TAR_NUMNODES>& tar_deriv1, MORTAR::Element& tar_ele,
           const CORE::LINALG::Matrix<probdim, TAR_NUMNODES>& tar_coords, const double* tar_xi,
           const CORE::LINALG::Matrix<probdim, 1>& n_ref) const;
@@ -137,10 +137,10 @@ namespace CONTACT
        *  \param tar_xi     (in) : current parametric coordinates of the target point
        *  \param alpha      (in) : current distance factor
        *
-       *  \return FALSE, if GetGlobalPosition failed. Otherwise TRUE.
+       *  \return FALSE, if get_global_position failed. Otherwise TRUE.
        *
        *  \author  hiermeier \date 07/17 */
-      bool RhsGP(CORE::LINALG::Matrix<probdim, 1>& rhs,
+      bool rhs_gp(CORE::LINALG::Matrix<probdim, 1>& rhs,
           const CORE::LINALG::Matrix<probdim, 1>& x_ref,
           const CORE::LINALG::Matrix<probdim, 1>& n_ref, MORTAR::Element& target_ele,
           const CORE::LINALG::Matrix<probdim, TAR_NUMNODES>& tar_coords, const double* tar_xi,
@@ -157,7 +157,7 @@ namespace CONTACT
        *
        *  \author  hiermeier \date 07/17 */
       template <CORE::FE::CellType type, unsigned numnodes = CORE::FE::num_nodes<type>>
-      bool GetGlobalPosition(MORTAR::Element& ele,
+      bool get_global_position(MORTAR::Element& ele,
           const CORE::LINALG::Matrix<probdim, numnodes>& coords, const double* xi,
           CORE::LINALG::Matrix<probdim, 1>& pos) const;
 

@@ -2302,7 +2302,7 @@ void MAT::Damage::RelStress(
  | computes isotropic elasticity tensor in matrix notion     dano 04/11 |
  | for 3d                                                               |
  *----------------------------------------------------------------------*/
-void MAT::Damage::SetupCmat(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat)
+void MAT::Damage::setup_cmat(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat)
 {
   // get material parameters
   // Young's modulus (modulus of elasticity)
@@ -2342,7 +2342,7 @@ void MAT::Damage::SetupCmat(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& 
   cmat(4, 4) = mfac * 0.5 * (1.0 - 2.0 * nu);
   cmat(5, 5) = mfac * 0.5 * (1.0 - 2.0 * nu);
 
-}  // SetupCmat()
+}  // setup_cmat()
 
 
 /*----------------------------------------------------------------------*
@@ -2410,7 +2410,7 @@ void MAT::Damage::setup_cmat_elasto_plastic(CORE::LINALG::Matrix<NUM_STRESS_3D, 
     // ------------------------------------------------------- elastic term
     // C_ep = C_e
     // add standard isotropic elasticity tensor C_e first
-    SetupCmat(cmat);
+    setup_cmat(cmat);
 
     // ------------------------------------------------------ plastic terms
 
@@ -2526,7 +2526,7 @@ void MAT::Damage::setup_cmat_elasto_plastic(CORE::LINALG::Matrix<NUM_STRESS_3D, 
     // add standard isotropic elasticity tensor C^e first
     if (heaviside == 0)
     {
-      SetupCmat(cmat);
+      setup_cmat(cmat);
       cmat.Scale(omega);
     }
     else  // (heaviside == 1)
@@ -2734,7 +2734,7 @@ void MAT::Damage::setup_cmat_elasto_plastic_full_lemaitre(
 
   // ------------------------------------------ elastic undamaged tangent
   // C^e = 2G . I_d + bulk_modulus . id2 \otimes id2
-  SetupCmat(cmat);
+  setup_cmat(cmat);
 
   if (heaviside == 0)
   {

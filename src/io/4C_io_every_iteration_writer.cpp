@@ -69,27 +69,28 @@ void IO::EveryIterationWriter::Setup()
   /* Remove the restart counter from the folder name. Note that the restart
    * counter stays a part of the final file name of the corresponding step. */
   const std::string filename_without_restart = RemoveRestartStepFromFileName(
-      ParentWriter().Output()->FileNameOnlyPrefix(), ParentWriter().Output()->RestartStep());
+      parent_writer().Output()->FileNameOnlyPrefix(), parent_writer().Output()->RestartStep());
 
   const std::string dir_name(filename_without_restart + "_every_iter");
 
-  std::string file_dir_path = ExtractPath(ParentWriter().Output()->FileName());
+  std::string file_dir_path = ExtractPath(parent_writer().Output()->FileName());
   file_dir_path += dir_name;
-  CreateDirectory(file_dir_path);
+  create_directory(file_dir_path);
 
   // modify the prefix and copy possible restart number
   std::string prefix;
-  prefix = dir_name + "/" + CreateRunDirectory(file_dir_path);
+  prefix = dir_name + "/" + create_run_directory(file_dir_path);
 
   Teuchos::RCP<IO::OutputControl> control_iteration = Teuchos::null;
-  control_iteration = Teuchos::rcp(new IO::OutputControl(*ParentWriter().Output(), prefix.c_str()));
+  control_iteration =
+      Teuchos::rcp(new IO::OutputControl(*parent_writer().Output(), prefix.c_str()));
 
   // adjust steps per file
-  AdjustStepsPerFile(*control_iteration);
+  adjust_steps_per_file(*control_iteration);
 
   // create new output writer object
   every_iter_writer_ = Teuchos::rcp(
-      new IO::DiscretizationWriter(ParentWriter(), control_iteration, IO::CopyType::shape));
+      new IO::DiscretizationWriter(parent_writer(), control_iteration, IO::CopyType::shape));
 
   // save base file name
   base_filename_ = every_iter_writer_->Output()->FileName();
@@ -99,7 +100,7 @@ void IO::EveryIterationWriter::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::string IO::EveryIterationWriter::CreateRunDirectory(const std::string& file_dir_path) const
+std::string IO::EveryIterationWriter::create_run_directory(const std::string& file_dir_path) const
 {
   if (run_number_ < 0) return "";
 
@@ -107,21 +108,21 @@ std::string IO::EveryIterationWriter::CreateRunDirectory(const std::string& file
   run_dir << "run_" << run_number_;
 
   std::string full_dir_path = file_dir_path + "/" + run_dir.str();
-  CreateDirectory(full_dir_path);
+  create_directory(full_dir_path);
 
   return run_dir.str() + "/";
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void IO::EveryIterationWriter::CreateDirectory(const std::string& dir_path) const
+void IO::EveryIterationWriter::create_directory(const std::string& dir_path) const
 {
-  IO::CreateDirectory(dir_path, myrank_);
+  IO::create_directory(dir_path, myrank_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void IO::CreateDirectory(const std::string& dir_path, const int myrank)
+void IO::create_directory(const std::string& dir_path, const int myrank)
 {
   if (myrank != 0) return;
 
@@ -180,14 +181,14 @@ std::string IO::RemoveRestartStepFromFileName(const std::string& filename, const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool IO::EveryIterationWriter::WriteThisStep() const
+bool IO::EveryIterationWriter::write_this_step() const
 {
   return (write_only_this_step_ < 0 or write_only_this_step_ == interface_->GetStepNp());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void IO::EveryIterationWriter::AdjustStepsPerFile(IO::OutputControl& control) const
+void IO::EveryIterationWriter::adjust_steps_per_file(IO::OutputControl& control) const
 {
   int new_file_steps = control.FileSteps() * MAX_NUMBER_LINE_SEARCH_ITERATIONS_;
   if (new_file_steps > std::numeric_limits<int>::max())
@@ -198,7 +199,7 @@ void IO::EveryIterationWriter::AdjustStepsPerFile(IO::OutputControl& control) co
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void IO::EveryIterationWriter::PrintPath2Screen(const std::string& path) const
+void IO::EveryIterationWriter::print_path2_screen(const std::string& path) const
 {
   IO::cout << "every iteration output path: \"" << path << "\"" << IO::endl;
 }
@@ -207,9 +208,9 @@ void IO::EveryIterationWriter::PrintPath2Screen(const std::string& path) const
  *----------------------------------------------------------------------------*/
 void IO::EveryIterationWriter::InitNewtonIteration()
 {
-  ThrowIfNotSetup(__LINE__);
+  throw_if_not_setup(__LINE__);
 
-  if (not WriteThisStep()) return;
+  if (not write_this_step()) return;
 
   const int curr_step = interface_->GetStepNp();
 
@@ -217,15 +218,15 @@ void IO::EveryIterationWriter::InitNewtonIteration()
   std::ostringstream result_name;
   result_name << base_filename_ << "_step_" << curr_step;
 
-  PrintPath2Screen(result_name.str());
+  print_path2_screen(result_name.str());
 
-  every_iter_writer_->NewResultFile(result_name.str());
+  every_iter_writer_->new_result_file(result_name.str());
   every_iter_writer_->WriteMesh(0, 0.0);
 
   every_iter_writer_->NewStep(0, 0.0);
 
   constexpr bool force_prepare = false;
-  interface_->PrepareOutput(force_prepare);
+  interface_->prepare_output(force_prepare);
   interface_->OutputDebugState(*every_iter_writer_, true);
 
   isnewton_initialized_ = true;
@@ -235,9 +236,9 @@ void IO::EveryIterationWriter::InitNewtonIteration()
  *----------------------------------------------------------------------------*/
 void IO::EveryIterationWriter::AddNewtonIteration(const int newton_iteration)
 {
-  ThrowIfNotSetup(__LINE__);
+  throw_if_not_setup(__LINE__);
 
-  if (not WriteThisStep()) return;
+  if (not write_this_step()) return;
 
   if (not isnewton_initialized_) FOUR_C_THROW("Call InitNewtonIteration() first!");
 
@@ -246,7 +247,7 @@ void IO::EveryIterationWriter::AddNewtonIteration(const int newton_iteration)
   every_iter_writer_->NewStep(counter, counter);
 
   constexpr bool force_prepare = false;
-  interface_->PrepareOutput(force_prepare);
+  interface_->prepare_output(force_prepare);
   interface_->OutputDebugState(*every_iter_writer_, write_owner_each_newton_iteration_);
 }
 
@@ -255,9 +256,9 @@ void IO::EveryIterationWriter::AddNewtonIteration(const int newton_iteration)
 void IO::EveryIterationWriter::add_line_search_iteration(
     const int newton_iteration, const int linesearch_iteration)
 {
-  ThrowIfNotSetup(__LINE__);
+  throw_if_not_setup(__LINE__);
 
-  if (not WriteThisStep()) return;
+  if (not write_this_step()) return;
 
   if (not isnewton_initialized_) FOUR_C_THROW("Call InitNewtonIteration() first!");
 
@@ -272,7 +273,7 @@ void IO::EveryIterationWriter::add_line_search_iteration(
   every_iter_writer_->NewStep(counter, counter);
 
   constexpr bool force_prepare = false;
-  interface_->PrepareOutput(force_prepare);
+  interface_->prepare_output(force_prepare);
   interface_->OutputDebugState(*every_iter_writer_, write_owner_each_newton_iteration_);
 }
 

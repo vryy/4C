@@ -63,7 +63,7 @@ FOUR_C_NAMESPACE_OPEN
 ADAPTER::FluidBaseAlgorithm::FluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn,
     const Teuchos::ParameterList& fdyn, const std::string& disname, bool isale, bool init)
 {
-  SetupFluid(prbdyn, fdyn, disname, isale, init);
+  setup_fluid(prbdyn, fdyn, disname, isale, init);
 }
 
 
@@ -72,18 +72,18 @@ ADAPTER::FluidBaseAlgorithm::FluidBaseAlgorithm(const Teuchos::ParameterList& pr
 ADAPTER::FluidBaseAlgorithm::FluidBaseAlgorithm(
     const Teuchos::ParameterList& prbdyn, const Teuchos::RCP<DRT::Discretization> discret)
 {
-  SetupInflowFluid(prbdyn, discret);
+  setup_inflow_fluid(prbdyn, discret);
   return;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdyn,
+void ADAPTER::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbdyn,
     const Teuchos::ParameterList& fdyn, const std::string& disname, bool isale, bool init)
 {
   Teuchos::RCP<Teuchos::Time> t =
-      Teuchos::TimeMonitor::getNewTimer("ADAPTER::FluidBaseAlgorithm::SetupFluid");
+      Teuchos::TimeMonitor::getNewTimer("ADAPTER::FluidBaseAlgorithm::setup_fluid");
   Teuchos::TimeMonitor monitor(*t);
 
   // -------------------------------------------------------------------
@@ -114,11 +114,11 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         (probtype == GLOBAL::ProblemType::fpsi_xfem and disname == "fluid") or
         probtype == GLOBAL::ProblemType::fluid_xfem_ls)
     {
-      actdis->FillComplete(false, false, false);
+      actdis->fill_complete(false, false, false);
     }
     else
     {
-      actdis->FillComplete();
+      actdis->fill_complete();
     }
   }
 
@@ -311,7 +311,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   }
 
   // create a second solver for SIMPLER preconditioner if chosen from input
-  CreateSecondSolver(solver, fdyn);
+  create_second_solver(solver, fdyn);
 
   // -------------------------------------------------------------------
   // set parameters in list
@@ -1243,11 +1243,11 @@ void ADAPTER::FluidBaseAlgorithm::set_initial_inflow_field(const Teuchos::Parame
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
+void ADAPTER::FluidBaseAlgorithm::setup_inflow_fluid(
     const Teuchos::ParameterList& prbdyn, const Teuchos::RCP<DRT::Discretization> discret)
 {
   Teuchos::RCP<Teuchos::Time> t =
-      Teuchos::TimeMonitor::getNewTimer("ADAPTER::FluidBaseAlgorithm::SetupFluid");
+      Teuchos::TimeMonitor::getNewTimer("ADAPTER::FluidBaseAlgorithm::setup_fluid");
   Teuchos::TimeMonitor monitor(*t);
 
   // -------------------------------------------------------------------
@@ -1267,7 +1267,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   // -------------------------------------------------------------------
   if (!discret->HaveDofs())
   {
-    FOUR_C_THROW("FillComplete shouldn't be necessary!");
+    FOUR_C_THROW("fill_complete shouldn't be necessary!");
   }
 
   // -------------------------------------------------------------------
@@ -1297,7 +1297,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   discret->compute_null_space_if_necessary(solver->Params(), true);
 
   // create a second solver for SIMPLER preconditioner if chosen from input
-  CreateSecondSolver(solver, fdyn);
+  create_second_solver(solver, fdyn);
 
   // -------------------------------------------------------------------
   // set parameters in list required for all schemes
@@ -1606,7 +1606,7 @@ void ADAPTER::FluidBaseAlgorithm::set_general_parameters(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidBaseAlgorithm::CreateSecondSolver(
+void ADAPTER::FluidBaseAlgorithm::create_second_solver(
     const Teuchos::RCP<CORE::LINALG::Solver> solver, const Teuchos::ParameterList& fdyn)
 {
   // The BLOCKMATRIX (yes,no) parameter only controls whether the fluid matrix is

@@ -264,7 +264,7 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -367,7 +367,7 @@ namespace DRT
       //@}
 
       //! calculate nonlinear B-operator
-      virtual void CalculateBop(CORE::LINALG::Matrix<numstr_, numdofperelement_>* bop,
+      virtual void calculate_bop(CORE::LINALG::Matrix<numstr_, numdofperelement_>* bop,
           const CORE::LINALG::Matrix<nsd_, nsd_>* defgrd,
           const CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ, const int gp);
 
@@ -381,7 +381,7 @@ namespace DRT
 
       // EAS element techonolgy *******************************************
       //! Initialize data for EAS (once)
-      virtual void EasInit();
+      virtual void eas_init();
 
       //! setup EAS for each evaluation
       virtual void EasSetup();

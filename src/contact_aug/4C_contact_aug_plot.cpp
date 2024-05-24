@@ -53,7 +53,7 @@ void CONTACT::AUG::Plot::Direction::ReadInput(const Teuchos::ParameterList& pp)
   {
     const std::string& input_filepath = pp.get<std::string>("INPUT_FILE_NAME");
     const std::string& dir_file = pp.get<std::string>("DIRECTION_FILE");
-    const std::string full_dir_file(GetFullFilePath(input_filepath, dir_file));
+    const std::string full_dir_file(get_full_file_path(input_filepath, dir_file));
     from_file_ = read_sparse_vector_from_matlab(full_dir_file);
   }
 
@@ -62,7 +62,7 @@ void CONTACT::AUG::Plot::Direction::ReadInput(const Teuchos::ParameterList& pp)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::string CONTACT::AUG::Plot::Direction::GetFullFilePath(
+std::string CONTACT::AUG::Plot::Direction::get_full_file_path(
     const std::string& input_file, const std::string& dir_file) const
 {
   std::string full_file_path(dir_file);
@@ -102,7 +102,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::Plot::Direction::read_sparse_vector_fr
         "serial mode. This is due to the used input format. -- hiermeier");
 
   std::string ext_dir_file(dir_file);
-  ExtendFileName(ext_dir_file, plot_.filepath_);
+  extend_file_name(ext_dir_file, plot_.filepath_);
 
   FILE* file_ptr = std::fopen(ext_dir_file.c_str(), "r");
   if (not file_ptr) FOUR_C_THROW("The file \"%s\" could not be opened!", ext_dir_file.c_str());
@@ -137,7 +137,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::Plot::Direction::read_sparse_vector_fr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::AUG::Plot::Direction::ExtendFileName(
+bool CONTACT::AUG::Plot::Direction::extend_file_name(
     std::string& file_name, const std::string& file_path) const
 {
   // check if the file name contains a full path or only a single file name
@@ -164,7 +164,7 @@ void CONTACT::AUG::Plot::Direction::split_into_slave_master_body(const Epetra_Ve
   if (slnodes.NumMyElements() > 0)
   {
     const DRT::Node* snode = plot_.discret_->gNode(slnodes.GID(0));
-    Teuchos::RCP<Epetra_Map> slbody_dofs = FindConnectedDofs(snode, *plot_.discret_);
+    Teuchos::RCP<Epetra_Map> slbody_dofs = find_connected_dofs(snode, *plot_.discret_);
 
     x_dir_ptr = Teuchos::rcp(new Epetra_Vector(*slbody_dofs, true));
     CORE::LINALG::ExtractMyVector(dir, *x_dir_ptr);
@@ -178,7 +178,7 @@ void CONTACT::AUG::Plot::Direction::split_into_slave_master_body(const Epetra_Ve
   if (manodes.NumMyElements() > 0)
   {
     const DRT::Node* mnode = plot_.discret_->gNode(manodes.GID(0));
-    Teuchos::RCP<Epetra_Map> mabody_dofs = FindConnectedDofs(mnode, *plot_.discret_);
+    Teuchos::RCP<Epetra_Map> mabody_dofs = find_connected_dofs(mnode, *plot_.discret_);
 
     y_dir_ptr = Teuchos::rcp(new Epetra_Vector(*mabody_dofs, true));
     CORE::LINALG::ExtractMyVector(dir, *y_dir_ptr);
@@ -199,7 +199,7 @@ void CONTACT::AUG::Plot::Direction::split_into_slave_master_body(const Epetra_Ve
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> CONTACT::AUG::Plot::Direction::FindConnectedDofs(
+Teuchos::RCP<Epetra_Map> CONTACT::AUG::Plot::Direction::find_connected_dofs(
     const DRT::Node* node, const DRT::Discretization& discret) const
 {
   std::set<int> done_element_ids;
@@ -224,7 +224,7 @@ Teuchos::RCP<Epetra_Map> CONTACT::AUG::Plot::Direction::FindConnectedDofs(
       if (echeck.second == false) continue;
 
       const DRT::Node* const* nodes = ele->Nodes();
-      for (int n = 0; n < ele->NumNode(); ++n)
+      for (int n = 0; n < ele->num_node(); ++n)
       {
         const DRT::Node* ele_node = nodes[n];
         if (ele_node->Owner() != mypid) continue;
@@ -421,7 +421,7 @@ void CONTACT::AUG::Plot::Init(
   reference_type_ =
       Teuchos::getIntegralValue<INPAR::CONTACT::PlotReferenceType>(plot_params, "REFERENCE_TYPE");
 
-  ReadRefPoints(plot_params);
+  read_ref_points(plot_params);
 
   format_ = Teuchos::getIntegralValue<INPAR::CONTACT::PlotFileFormat>(plot_params, "FILE_FORMAT");
 
@@ -454,10 +454,10 @@ void CONTACT::AUG::Plot::Setup()
       CORE::LINALG::SerialDenseMatrix(opt_.resolution_x_, opt_.resolution_y_));
 
   std::vector<double> x;
-  LinSpace(opt_.min_x_, opt_.max_x_, opt_.resolution_x_, x);
+  lin_space(opt_.min_x_, opt_.max_x_, opt_.resolution_x_, x);
 
   std::vector<double> y;
-  LinSpace(opt_.min_y_, opt_.max_y_, opt_.resolution_y_, y);
+  lin_space(opt_.min_y_, opt_.max_y_, opt_.resolution_y_, y);
 
   for (unsigned i = 0; i < opt_.resolution_x_; ++i)
     for (unsigned j = 0; j < opt_.resolution_y_; ++j)
@@ -470,19 +470,19 @@ void CONTACT::AUG::Plot::Setup()
   const std::string dir_name(IO::ExtractFileName(filepath_) + "_plot");
 
   filepath_ = path + dir_name;
-  IO::CreateDirectory(filepath_, strat_->Comm().MyPID());
+  IO::create_directory(filepath_, strat_->Comm().MyPID());
 
-  AddFileNameToPath();
+  add_file_name_to_path();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::ReadRefPoints(const Teuchos::ParameterList& plot_params)
+void CONTACT::AUG::Plot::read_ref_points(const Teuchos::ParameterList& plot_params)
 {
   ref_points_.resize(2, CORE::LINALG::Matrix<3, 1>(true));
 
-  ReadRefPoint(plot_params, "FIRST_REF_POINT", ref_points_[0].A());
-  ReadRefPoint(plot_params, "SECOND_REF_POINT", ref_points_[1].A());
+  read_ref_point(plot_params, "FIRST_REF_POINT", ref_points_[0].A());
+  read_ref_point(plot_params, "SECOND_REF_POINT", ref_points_[1].A());
 
   ref_points_[0].Print(std::cout);
   ref_points_[1].Print(std::cout);
@@ -490,7 +490,7 @@ void CONTACT::AUG::Plot::ReadRefPoints(const Teuchos::ParameterList& plot_params
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::ReadRefPoint(
+void CONTACT::AUG::Plot::read_ref_point(
     const Teuchos::ParameterList& plot_params, const std::string& param_name, double* coords) const
 {
   std::istringstream input_stream(Teuchos::getNumericStringParameter(plot_params, param_name));
@@ -507,7 +507,7 @@ void CONTACT::AUG::Plot::ReadRefPoint(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::AddFileNameToPath()
+void CONTACT::AUG::Plot::add_file_name_to_path()
 {
   filepath_ += "/" + INPAR::CONTACT::PlotFuncName2String(func_type_) +
                (func_type_ == INPAR::CONTACT::PlotFuncName::weighted_gap or
@@ -590,7 +590,7 @@ const CONTACT::AUG::Strategy& CONTACT::AUG::Plot::Strategy() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::LinSpace(
+void CONTACT::AUG::Plot::lin_space(
     const double a, const double b, const unsigned n, std::vector<double>& res) const
 {
   res.clear();
@@ -599,7 +599,7 @@ void CONTACT::AUG::Plot::LinSpace(
   {
     res.resize(n, a);
     if (a != b)
-      IO::cout << "WARNING: LinSpace(a,b,n,res) has been called with different "
+      IO::cout << "WARNING: lin_space(a,b,n,res) has been called with different "
                   "values for a and b, even though n is equal to 1! The result res is "
                   "set to a.\n";
 
@@ -668,7 +668,7 @@ void CONTACT::AUG::Plot::Do(const ::NOX::Solver::Generic& solver)
 void CONTACT::AUG::Plot::Execute(const ::NOX::Solver::Generic& solver)
 {
   // get the reference group
-  const NOX::NLN::CONSTRAINT::Group* ref_grp = GetReferenceGroup(solver);
+  const NOX::NLN::CONSTRAINT::Group* ref_grp = get_reference_group(solver);
 
   // copy the reference solution grp
   NOX::NLN::CONSTRAINT::Group plot_grp = *ref_grp;
@@ -681,22 +681,22 @@ void CONTACT::AUG::Plot::Execute(const ::NOX::Solver::Generic& solver)
   {
     case INPAR::CONTACT::PlotType::scalar:
     {
-      PlotScalar(*ref_grp, dir, plot_grp);
+      plot_scalar(*ref_grp, dir, plot_grp);
       break;
     }
     case INPAR::CONTACT::PlotType::line:
     {
-      PlotLine(*ref_grp, dir, plot_grp);
+      plot_line(*ref_grp, dir, plot_grp);
       break;
     }
     case INPAR::CONTACT::PlotType::surface:
     {
-      PlotSurface(*ref_grp, dir, plot_grp);
+      plot_surface(*ref_grp, dir, plot_grp);
       break;
     }
     case INPAR::CONTACT::PlotType::vector_field_2d:
     {
-      PlotVectorField2D(*ref_grp, dir, plot_grp);
+      plot_vector_field2_d(*ref_grp, dir, plot_grp);
       break;
     }
     default:
@@ -707,7 +707,7 @@ void CONTACT::AUG::Plot::Execute(const ::NOX::Solver::Generic& solver)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::GetSupportPoints(
+void CONTACT::AUG::Plot::get_support_points(
     enum INPAR::CONTACT::PlotSupportType stype, CORE::LINALG::SerialDenseMatrix& support_mat)
 {
   switch (stype)
@@ -816,30 +816,30 @@ void CONTACT::AUG::Plot::compute_angle_position()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::PlotScalar(const NOX::NLN::CONSTRAINT::Group& ref_grp,
+void CONTACT::AUG::Plot::plot_scalar(const NOX::NLN::CONSTRAINT::Group& ref_grp,
     const Epetra_Vector& dir, NOX::NLN::CONSTRAINT::Group& plot_grp)
 {
   IO::cout << "Start evaluation of the scalar data...\n";
 
   Epetra_Vector step(dir.Map(), true);
-  GetSupportPoints(x_type_, x_);
+  get_support_points(x_type_, x_);
 
-  ModifyStepLength(x_type_, x_(0, 0), dir, step);
+  modify_step_length(x_type_, x_(0, 0), dir, step);
   plot_grp.computeX(ref_grp, step, 1.0);
 
   plot_grp.computeF();
-  y_(0, 0) = GetValue(func_type_, plot_grp);
+  y_(0, 0) = get_value(func_type_, plot_grp);
 
-  WriteLineDataToFile();
+  write_line_data_to_file();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::PlotLine(const NOX::NLN::CONSTRAINT::Group& ref_grp,
+void CONTACT::AUG::Plot::plot_line(const NOX::NLN::CONSTRAINT::Group& ref_grp,
     const Epetra_Vector& dir, NOX::NLN::CONSTRAINT::Group& plot_grp)
 {
   IO::cout << "Start evaluation of the line data...\n";
-  GetSupportPoints(x_type_, x_);
+  get_support_points(x_type_, x_);
   y_.reshape(x_.numRows(), y_.numCols());
 
   double norm_step = -1.0;
@@ -848,7 +848,7 @@ void CONTACT::AUG::Plot::PlotLine(const NOX::NLN::CONSTRAINT::Group& ref_grp,
   for (int i = 0; i < x_.numRows(); ++i)
   {
     IO::cout << "alpha = " << x_(i, 0) << IO::endl;
-    ModifyStepLength(x_type_, x_(i, 0), dir, step);
+    modify_step_length(x_type_, x_(i, 0), dir, step);
 
     double curr_norm_step = 0.0;
     step.Norm2(&curr_norm_step);
@@ -859,20 +859,20 @@ void CONTACT::AUG::Plot::PlotLine(const NOX::NLN::CONSTRAINT::Group& ref_grp,
     }
 
     plot_grp.computeF();
-    y_(i, 0) = GetValue(func_type_, plot_grp, &x_(i, 0), &dir);
+    y_(i, 0) = get_value(func_type_, plot_grp, &x_(i, 0), &dir);
   }
 
-  WriteLineDataToFile();
+  write_line_data_to_file();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::PlotSurface(const NOX::NLN::CONSTRAINT::Group& ref_grp,
+void CONTACT::AUG::Plot::plot_surface(const NOX::NLN::CONSTRAINT::Group& ref_grp,
     const Epetra_Vector& dir, NOX::NLN::CONSTRAINT::Group& plot_grp)
 {
   IO::cout << "Start evaluation of the surface data...\n";
-  GetSupportPoints(x_type_, x_);
-  GetSupportPoints(y_type_, y_);
+  get_support_points(x_type_, x_);
+  get_support_points(y_type_, y_);
 
   Teuchos::RCP<Epetra_Vector> x_dir_ptr = Teuchos::null;
   Teuchos::RCP<Epetra_Vector> y_dir_ptr = Teuchos::null;
@@ -887,12 +887,12 @@ void CONTACT::AUG::Plot::PlotSurface(const NOX::NLN::CONSTRAINT::Group& ref_grp,
     {
       IO::cout << "( alpha, beta ) = ( " << x_(i, j) << ", " << y_(i, j) << " )\n";
 
-      ModifyStepLength(x_type_, x_(i, j), *x_dir_ptr, step);
-      ModifyStepLength(y_type_, y_(i, j), *y_dir_ptr, step);
+      modify_step_length(x_type_, x_(i, j), *x_dir_ptr, step);
+      modify_step_length(y_type_, y_(i, j), *y_dir_ptr, step);
       plot_grp.computeX(ref_grp, step, 1.0);
 
       plot_grp.computeF();
-      z_[0](i, j) = GetValue(func_type_, plot_grp);
+      z_[0](i, j) = get_value(func_type_, plot_grp);
     }
   }
 
@@ -901,13 +901,13 @@ void CONTACT::AUG::Plot::PlotSurface(const NOX::NLN::CONSTRAINT::Group& ref_grp,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::PlotVectorField2D(const NOX::NLN::CONSTRAINT::Group& ref_grp,
+void CONTACT::AUG::Plot::plot_vector_field2_d(const NOX::NLN::CONSTRAINT::Group& ref_grp,
     const Epetra_Vector& dir, NOX::NLN::CONSTRAINT::Group& plot_grp)
 {
   if (x_type_ != INPAR::CONTACT::PlotSupportType::step_length or
       y_type_ != INPAR::CONTACT::PlotSupportType::step_length)
     FOUR_C_THROW(
-        "PlotVectorField2D supports currently only the step_length"
+        "plot_vector_field2_d supports currently only the step_length"
         " PlotSupportType!");
 
   Teuchos::RCP<Epetra_Vector> x_dir_ptr = Teuchos::null;
@@ -929,14 +929,14 @@ void CONTACT::AUG::Plot::PlotVectorField2D(const NOX::NLN::CONSTRAINT::Group& re
     {
       IO::cout << "( alpha, beta ) = ( " << x_(i, j) << ", " << y_(i, j) << " )\n";
 
-      ModifyStepLength(x_type_, x_(i, j), *x_dir_ptr, step);
-      ModifyStepLength(y_type_, y_(i, j), *y_dir_ptr, step);
+      modify_step_length(x_type_, x_(i, j), *x_dir_ptr, step);
+      modify_step_length(y_type_, y_(i, j), *y_dir_ptr, step);
 
       plot_grp.computeX(ref_grp, step, 1.0);
 
       plot_grp.computeF();
 
-      GetVectorValues(func_type_, plot_grp, dirs, vec_vals);
+      get_vector_values(func_type_, plot_grp, dirs, vec_vals);
 
       z_[0](i, j) = vec_vals[0];
       z_[1](i, j) = vec_vals[1];
@@ -948,7 +948,7 @@ void CONTACT::AUG::Plot::PlotVectorField2D(const NOX::NLN::CONSTRAINT::Group& re
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::ModifyStepLength(const INPAR::CONTACT::PlotSupportType stype,
+void CONTACT::AUG::Plot::modify_step_length(const INPAR::CONTACT::PlotSupportType stype,
     const double alpha, const Epetra_Vector& full_x_dir, Epetra_Vector& mod_step) const
 {
   switch (stype)
@@ -970,7 +970,7 @@ void CONTACT::AUG::Plot::ModifyStepLength(const INPAR::CONTACT::PlotSupportType 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::WriteLineDataToFile() const
+void CONTACT::AUG::Plot::write_line_data_to_file() const
 {
   if (strat_->Comm().MyPID() != 0) return;
 
@@ -1116,7 +1116,7 @@ void CONTACT::AUG::Plot::write_surface_data_to_file() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const NOX::NLN::CONSTRAINT::Group* CONTACT::AUG::Plot::GetReferenceGroup(
+const NOX::NLN::CONSTRAINT::Group* CONTACT::AUG::Plot::get_reference_group(
     const ::NOX::Solver::Generic& solver) const
 {
   const NOX::NLN::CONSTRAINT::Group* ref_grp = nullptr;
@@ -1182,7 +1182,7 @@ void CONTACT::AUG::Plot::Direction::split_into_surface_directions(const Epetra_V
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Plot::GetValue(const enum INPAR::CONTACT::PlotFuncName functype,
+double CONTACT::AUG::Plot::get_value(const enum INPAR::CONTACT::PlotFuncName functype,
     NOX::NLN::CONSTRAINT::Group& plot_grp, const double* curr_xy, const Epetra_Vector* dir) const
 {
   // try to convert the function type into a merit function type
@@ -1213,7 +1213,7 @@ double CONTACT::AUG::Plot::GetValue(const enum INPAR::CONTACT::PlotFuncName func
         std::vector<double> grad_val;
         std::vector<const Epetra_Vector*> dir_vec(1, dir);
 
-        GetVectorValues(functype, plot_grp, dir_vec, grad_val);
+        get_vector_values(functype, plot_grp, dir_vec, grad_val);
 
         return grad_val[0];
       }
@@ -1268,7 +1268,7 @@ double CONTACT::AUG::Plot::get_nodal_error_at_position(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::GetVectorValues(const enum INPAR::CONTACT::PlotFuncName functype,
+void CONTACT::AUG::Plot::get_vector_values(const enum INPAR::CONTACT::PlotFuncName functype,
     NOX::NLN::CONSTRAINT::Group& plot_grp, const std::vector<const Epetra_Vector*>& dirs,
     std::vector<double>& vec_vals) const
 {

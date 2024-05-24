@@ -447,7 +447,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::Setup(
   {
     // Loop over the nodes of the face element.
     const DRT::Node* const* nodes = face_element_iterator.second->GetDrtFaceElement()->Nodes();
-    for (int i_node = 0; i_node < face_element_iterator.second->GetDrtFaceElement()->NumNode();
+    for (int i_node = 0; i_node < face_element_iterator.second->GetDrtFaceElement()->num_node();
          i_node++)
     {
       // Loop over the elements connected to that node and check if they are in this condition.
@@ -484,7 +484,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::Setup(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidConditionSurface::SetState(
+void BEAMINTERACTION::BeamToSolidConditionSurface::set_state(
     const Teuchos::RCP<const DRT::Discretization>& discret,
     const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
         beaminteraction_data_state)
@@ -507,7 +507,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::SetState(
     FOUR_C_THROW("Could not cast to GEOMETRYPAIR::LineToSurfaceEvaluationData.");
 
   // Setup the geometry data for the surface patch.
-  line_to_surface_evaluation_data->SetState(beaminteraction_data_state->GetDisColNp());
+  line_to_surface_evaluation_data->set_state(beaminteraction_data_state->GetDisColNp());
 }
 
 /**

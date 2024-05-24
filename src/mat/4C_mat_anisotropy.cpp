@@ -128,14 +128,14 @@ void MAT::Anisotropy::read_anisotropy_from_parameter_list(const Teuchos::Paramet
 
     for (const auto& fiber : fiberHolder.GetFibers())
     {
-      InsertFibers(fiber);
+      insert_fibers(fiber);
     }
   }
 
   on_gp_fibers_initialized();
 }
 
-void MAT::Anisotropy::InsertFibers(std::vector<CORE::LINALG::Matrix<3, 1>> fiber)
+void MAT::Anisotropy::insert_fibers(std::vector<CORE::LINALG::Matrix<3, 1>> fiber)
 {
   for (unsigned gp = 0; gp < numgp_; ++gp)
   {
@@ -241,7 +241,7 @@ const CORE::LINALG::Matrix<3, 1>& MAT::Anisotropy::GetGPFiber(unsigned int gp, u
 void MAT::Anisotropy::register_anisotropy_extension(BaseAnisotropyExtension& extension)
 {
   extensions_.emplace_back(Teuchos::rcpFromRef(extension));
-  extension.SetAnisotropy(*this);
+  extension.set_anisotropy(*this);
 }
 
 void MAT::Anisotropy::on_element_fibers_initialized()

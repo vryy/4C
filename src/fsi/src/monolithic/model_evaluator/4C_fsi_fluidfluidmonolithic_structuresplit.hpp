@@ -46,17 +46,17 @@ namespace FSI
     void Update() override;
 
     /// start a new time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
    private:
     /// setup of extractor for merged Dirichlet maps
     void setup_dbc_map_extractor() override;
 
     /// access type-cast pointer to problem-specific fluid-wrapper
-    const Teuchos::RCP<ADAPTER::FluidFluidFSI>& FluidField() { return fluid_; }
+    const Teuchos::RCP<ADAPTER::FluidFluidFSI>& fluid_field() { return fluid_; }
 
     /// access type-cast pointer to problem-specific ALE-wrapper
-    const Teuchos::RCP<ADAPTER::AleXFFsiWrapper>& AleField() { return ale_; }
+    const Teuchos::RCP<ADAPTER::AleXFFsiWrapper>& ale_field() { return ale_; }
 
     /// type-cast pointer to problem-specific fluid-wrapper
     Teuchos::RCP<ADAPTER::FluidFluidFSI> fluid_;

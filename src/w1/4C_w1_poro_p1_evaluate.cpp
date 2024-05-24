@@ -85,7 +85,7 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::Evaluate(Teuchos::ParameterList& params
     case ELEMENTS::struct_poro_calc_fluidcoupling:
     {
       // in some cases we need to write/change some data before evaluating
-      Base::PreEvaluate(params, discretization, la);
+      Base::pre_evaluate(params, discretization, la);
 
       MyEvaluate(params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra,
           elevec2_epetra, elevec3_epetra);
@@ -95,7 +95,7 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::Evaluate(Teuchos::ParameterList& params
     case ELEMENTS::struct_calc_energy:
     {
       // in some cases we need to write/change some data before evaluating
-      Base::PreEvaluate(params, discretization, la);
+      Base::pre_evaluate(params, discretization, la);
 
       // evaluate parent solid element
       Wall1::Evaluate(params, discretization, la[0].lm_, elemat1_epetra, elemat2_epetra,
@@ -106,7 +106,7 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::Evaluate(Teuchos::ParameterList& params
     default:
     {
       // in some cases we need to write/change some data before evaluating
-      Base::PreEvaluate(params, discretization, la);
+      Base::pre_evaluate(params, discretization, la);
 
       CORE::LINALG::SerialDenseMatrix elemat1_sub;
       CORE::LINALG::SerialDenseMatrix elemat2_sub;
@@ -877,7 +877,7 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::GaussPointLoopP1OD(Teuchos::ParameterL
 }
 
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::Wall1PoroP1<distype>::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Wall1PoroP1<distype>::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)

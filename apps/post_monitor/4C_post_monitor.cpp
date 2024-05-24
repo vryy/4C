@@ -101,11 +101,11 @@ void MonWriter::WriteMonFile(PostProblem& problem, std::string& infieldtype, int
   // get actual results of total problem
   PostResult result = PostResult(field);
 
-  // compute offset = datamap.MinAllGID() - field->discretization()->DofRowMap()->MinAllGID().
+  // compute offset = datamap.MinAllGID() - field->discretization()->dof_row_map()->MinAllGID().
   // Note that datamap can only be computed in WriteResult(...), which is pure virtual on
   // this level. Hence offset is split up into two parts!
   // First part:
-  const int offset1 = -field->discretization()->DofRowMap()->MinAllGID();
+  const int offset1 = -field->discretization()->dof_row_map()->MinAllGID();
 
   // global nodal dof numbers
   std::vector<int> gdof;
@@ -130,7 +130,7 @@ void MonWriter::WriteMonFile(PostProblem& problem, std::string& infieldtype, int
     }
 
     // write header
-    WriteHeader(outfile);
+    write_header(outfile);
     outfile << node << "\n";
     outfile << "# control information: nodal coordinates   ";
     outfile << "x = " << mynode->X()[0] << "    ";
@@ -269,11 +269,11 @@ void MonWriter::WriteMonStrFile(const std::string& filename, PostProblem& proble
   // global nodal dof numbers
   std::vector<int> gdof;
 
-  // compute offset = datamap.MinAllGID() - field->discretization()->DofRowMap()->MinAllGID().
+  // compute offset = datamap.MinAllGID() - field->discretization()->dof_row_map()->MinAllGID().
   // Note that datamap can only be compute in WriteResult(...), which is pure virtual on
   // this level. Hence offset is split up into two parts!
   // First part:
-  const int offset1 = -field->discretization()->DofRowMap()->MinAllGID();
+  const int offset1 = -field->discretization()->dof_row_map()->MinAllGID();
 
   if (nodeowner_)
   {
@@ -294,7 +294,7 @@ void MonWriter::WriteMonStrFile(const std::string& filename, PostProblem& proble
       gdof[i] += offset1;
     }
     // write header
-    WriteHeader(outfile);
+    write_header(outfile);
     outfile << node << "\n";
     outfile << "# control information: nodal coordinates   ";
     outfile << "x = " << mynode->X()[0] << "    ";
@@ -414,11 +414,11 @@ void MonWriter::WriteMonThrFile(const std::string& filename, PostProblem& proble
   // global nodal dof numbers
   std::vector<int> gdof;
 
-  // compute offset = datamap.MinAllGID() - field->discretization()->DofRowMap()->MinAllGID().
+  // compute offset = datamap.MinAllGID() - field->discretization()->dof_row_map()->MinAllGID().
   // Note that datamap can only be compute in WriteResult(...), which is pure virtual on
   // this level. Hence offset is split up into two parts!
   // First part:
-  const int offset1 = -field->discretization()->DofRowMap()->MinAllGID();
+  const int offset1 = -field->discretization()->dof_row_map()->MinAllGID();
 
   if (nodeowner_)
   {
@@ -440,7 +440,7 @@ void MonWriter::WriteMonThrFile(const std::string& filename, PostProblem& proble
     }
 
     // write header
-    WriteHeader(outfile);
+    write_header(outfile);
     outfile << node << "\n";
     outfile << "# control information: nodal coordinates   ";
     outfile << "x = " << mynode->X()[0] << "    ";
@@ -498,7 +498,7 @@ void FluidMonWriter::FieldError(int node)
 }
 
 /*----------------------------------------------------------------------*/
-void FluidMonWriter::WriteHeader(std::ofstream& outfile)
+void FluidMonWriter::write_header(std::ofstream& outfile)
 {
   outfile << "# fluid problem, writing nodal data of node ";
 }
@@ -562,7 +562,7 @@ void RedAirwayMonWriter::FieldError(int node)
 }
 
 /*----------------------------------------------------------------------*/
-void RedAirwayMonWriter::WriteHeader(std::ofstream& outfile)
+void RedAirwayMonWriter::write_header(std::ofstream& outfile)
 {
   outfile << "# red_airway problem, writing nodal data of node ";
 }
@@ -615,7 +615,7 @@ void StructMonWriter::FieldError(int node)
 }
 
 /*----------------------------------------------------------------------*/
-void StructMonWriter::WriteHeader(std::ofstream& outfile)
+void StructMonWriter::write_header(std::ofstream& outfile)
 {
   outfile << "# structure problem, writing nodal data of node ";
 }
@@ -911,7 +911,7 @@ void AleMonWriter::FieldError(int node)
 }
 
 /*----------------------------------------------------------------------*/
-void AleMonWriter::WriteHeader(std::ofstream& outfile)
+void AleMonWriter::write_header(std::ofstream& outfile)
 {
   outfile << "# ALE problem, writing nodal data of node ";
 }
@@ -969,7 +969,7 @@ PostField* FsiFluidMonWriter::GetFieldPtr(PostProblem& problem)
 }
 
 /*----------------------------------------------------------------------*/
-void FsiFluidMonWriter::WriteHeader(std::ofstream& outfile)
+void FsiFluidMonWriter::write_header(std::ofstream& outfile)
 {
   outfile << "# FSI problem, writing nodal data of fluid node ";
 }
@@ -1085,7 +1085,7 @@ PostField* FsiStructMonWriter::GetFieldPtr(PostProblem& problem)
 }
 
 /*----------------------------------------------------------------------*/
-void FsiStructMonWriter::WriteHeader(std::ofstream& outfile)
+void FsiStructMonWriter::write_header(std::ofstream& outfile)
 {
   outfile << "# FSI problem, writing nodal data of structure node ";
 }
@@ -1284,7 +1284,7 @@ PostField* FsiAleMonWriter::GetFieldPtr(PostProblem& problem)
 }
 
 /*----------------------------------------------------------------------*/
-void FsiAleMonWriter::WriteHeader(std::ofstream& outfile)
+void FsiAleMonWriter::write_header(std::ofstream& outfile)
 {
   outfile << "# FSI problem, writing nodal data of ALE node ";
 }
@@ -1306,7 +1306,7 @@ void ScatraMonWriter::FieldError(int node)
 }
 
 /*----------------------------------------------------------------------*/
-void ScatraMonWriter::WriteHeader(std::ofstream& outfile)
+void ScatraMonWriter::write_header(std::ofstream& outfile)
 {
   outfile << "# SCATRA problem, writing nodal data of node ";
 }
@@ -1379,7 +1379,7 @@ void ThermoMonWriter::FieldError(int node)
 }
 
 /*----------------------------------------------------------------------*/
-void ThermoMonWriter::WriteHeader(std::ofstream& outfile)
+void ThermoMonWriter::write_header(std::ofstream& outfile)
 {
   outfile << "# thermo problem, writing nodal data of node ";
 }
@@ -1542,9 +1542,9 @@ void ThermoMonWriter::WriteThrResult(std::ofstream& outfile, PostField*& field, 
   p.set("gpheatfluxmap", data);
   p.set("total time", -1.0);
 
-  Teuchos::RCP<Epetra_Vector> heatfluxx = Teuchos::rcp(new Epetra_Vector(*(dis->DofRowMap())));
-  Teuchos::RCP<Epetra_Vector> heatfluxy = Teuchos::rcp(new Epetra_Vector(*(dis->DofRowMap())));
-  Teuchos::RCP<Epetra_Vector> heatfluxz = Teuchos::rcp(new Epetra_Vector(*(dis->DofRowMap())));
+  Teuchos::RCP<Epetra_Vector> heatfluxx = Teuchos::rcp(new Epetra_Vector(*(dis->dof_row_map())));
+  Teuchos::RCP<Epetra_Vector> heatfluxy = Teuchos::rcp(new Epetra_Vector(*(dis->dof_row_map())));
+  Teuchos::RCP<Epetra_Vector> heatfluxz = Teuchos::rcp(new Epetra_Vector(*(dis->dof_row_map())));
   dis->Evaluate(p, Teuchos::null, Teuchos::null, heatfluxx, heatfluxy, heatfluxz);
 
   const unsigned numdofpernode = 1;
@@ -1609,7 +1609,7 @@ PostField* TsiStructMonWriter::GetFieldPtr(PostProblem& problem)
 }
 
 /*----------------------------------------------------------------------*/
-void TsiStructMonWriter::WriteHeader(std::ofstream& outfile)
+void TsiStructMonWriter::write_header(std::ofstream& outfile)
 {
   outfile << "# TSI problem, writing nodal data of structure node ";
 }
@@ -1628,7 +1628,7 @@ PostField* TsiThermoMonWriter::GetFieldPtr(PostProblem& problem)
 }
 
 /*----------------------------------------------------------------------*/
-void TsiThermoMonWriter::WriteHeader(std::ofstream& outfile)
+void TsiThermoMonWriter::write_header(std::ofstream& outfile)
 {
   outfile << "# TSI problem, writing nodal data of thermal node ";
 }
@@ -1649,7 +1649,7 @@ void PoroFluidMultiMonWriter::FieldError(int node)
 }
 
 /*----------------------------------------------------------------------*/
-void PoroFluidMultiMonWriter::WriteHeader(std::ofstream& outfile)
+void PoroFluidMultiMonWriter::write_header(std::ofstream& outfile)
 {
   outfile << "# porofluidmultiphase problem, writing nodal data of node ";
 }
@@ -1735,7 +1735,7 @@ PostField* PoroMultiElastScatraFluidMonWriter::GetFieldPtr(PostProblem& problem)
 }
 
 /*----------------------------------------------------------------------*/
-void PoroMultiElastScatraFluidMonWriter::WriteHeader(std::ofstream& outfile)
+void PoroMultiElastScatraFluidMonWriter::write_header(std::ofstream& outfile)
 {
   outfile << "# PoroMultiElast(Scatra) problem, writing nodal data of porofluid node ";
 }
@@ -1760,7 +1760,7 @@ PostField* PoroMultiElastScatraScatraMonWriter::GetFieldPtr(PostProblem& problem
 }
 
 /*----------------------------------------------------------------------*/
-void PoroMultiElastScatraScatraMonWriter::WriteHeader(std::ofstream& outfile)
+void PoroMultiElastScatraScatraMonWriter::write_header(std::ofstream& outfile)
 {
   outfile << "# PoroMultiElastScatra problem, writing nodal data of scatra node ";
 }
@@ -1778,7 +1778,7 @@ PostField* PoroMultiElastScatraArteryScatraMonWriter::GetFieldPtr(PostProblem& p
 }
 
 /*----------------------------------------------------------------------*/
-void PoroMultiElastScatraArteryScatraMonWriter::WriteHeader(std::ofstream& outfile)
+void PoroMultiElastScatraArteryScatraMonWriter::write_header(std::ofstream& outfile)
 {
   outfile << "# PoroMultiElastScatra problem, writing nodal data of artery_scatra node ";
 }

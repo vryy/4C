@@ -42,7 +42,7 @@ namespace CONTACT
     two meshtying boundary conditions. It extracts all meshtying boundary conditions
     and constructs one or multiple meshtying interfaces from them and stores them.
 
-    It calls MORTAR::Interface::FillComplete() on all meshtying interfaces which
+    It calls MORTAR::Interface::fill_complete() on all meshtying interfaces which
     makes the nodes and elements of a meshtying interfaces redundant on all
     processors that either own a node or an element on the interfaces in the
     input discretization.
@@ -80,7 +80,7 @@ namespace CONTACT
     \param[in] discret Underlying problem discretization
 
     */
-    bool ReadAndCheckInput(Teuchos::ParameterList& mtparams, const DRT::Discretization& discret);
+    bool read_and_check_input(Teuchos::ParameterList& mtparams, const DRT::Discretization& discret);
 
     /*!
     \brief Write restart information for meshtying
@@ -107,7 +107,7 @@ namespace CONTACT
     \param zero (in)  : global dof zero vector
 
     */
-    void ReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
+    void read_restart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<Epetra_Vector> zero) final;
 
     /*!

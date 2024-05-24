@@ -504,7 +504,7 @@ std::string CORE::GEO::CUT::DebugCustomMemoryManager::State2String()
   return std::string((state_ == normal) ? "Normal memory allocator" : "Memory pool allocation");
 }
 
-void CORE::GEO::CUT::DebugCustomMemoryManager::SetState(
+void CORE::GEO::CUT::DebugCustomMemoryManager::set_state(
     int newstate, std::unordered_map<size_t, int>& memory_allocations)
 {
   MemoryState prev_state = state_;

@@ -90,23 +90,23 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::Materials(
 )
 {
   if (material->MaterialType() == CORE::Materials::m_mixfrac)
-    MatMixFrac(material, k, densn, densnp, densam, visc);
+    mat_mix_frac(material, k, densn, densnp, densam, visc);
   else if (material->MaterialType() == CORE::Materials::m_sutherland)
-    MatSutherland(material, k, densn, densnp, densam, visc);
+    mat_sutherland(material, k, densn, densnp, densam, visc);
   else if (material->MaterialType() == CORE::Materials::m_tempdepwater)
-    MatTempDepWater(material, k, densn, densnp, densam, visc);
+    mat_temp_dep_water(material, k, densn, densnp, densam, visc);
   else if (material->MaterialType() == CORE::Materials::m_arrhenius_pv)
-    MatArrheniusPV(material, k, densn, densnp, densam, visc);
+    mat_arrhenius_pv(material, k, densn, densnp, densam, visc);
   else if (material->MaterialType() == CORE::Materials::m_arrhenius_spec)
-    MatArrheniusSpec(material, k, densn, densnp, densam, visc);
+    mat_arrhenius_spec(material, k, densn, densnp, densam, visc);
   else if (material->MaterialType() == CORE::Materials::m_arrhenius_temp)
-    MatArrheniusTemp(material, k, densn, densnp, densam, visc);
+    mat_arrhenius_temp(material, k, densn, densnp, densam, visc);
   else if (material->MaterialType() == CORE::Materials::m_ferech_pv)
-    MatArrheniusPV(material, k, densn, densnp, densam, visc);
+    mat_arrhenius_pv(material, k, densn, densnp, densam, visc);
   else if (material->MaterialType() == CORE::Materials::m_thermostvenant)
     mat_thermo_st_venant_kirchhoff(material, k, densn, densnp, densam, visc);
   else if (material->MaterialType() == CORE::Materials::m_yoghurt)
-    MatYoghurt(material, k, densn, densnp, densam, visc);
+    mat_yoghurt(material, k, densn, densnp, densam, visc);
   else
     FOUR_C_THROW("Material type is not supported");
 
@@ -118,7 +118,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::Materials(
  | material mixfrac                                            vg 12/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatMixFrac(
+void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::mat_mix_frac(
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -177,7 +177,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatMixFrac(
  | material Sutherland                                         vg 12/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatSutherland(
+void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::mat_sutherland(
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -238,7 +238,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatSutherland(
  | material temperature-dependent water                        vg 07/18 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatTempDepWater(
+void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::mat_temp_dep_water(
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -295,7 +295,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatTempDepWater(
  | material Arrhenius PV                                       vg 12/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusPV(
+void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::mat_arrhenius_pv(
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -370,7 +370,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusPV(
  | material Arrhenius Spec                                     vg 12/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusSpec(
+void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::mat_arrhenius_spec(
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -432,7 +432,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusSpec(
  | material Arrhenius Spec                                     vg 12/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusTemp(
+void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::mat_arrhenius_temp(
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -507,7 +507,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusTemp(
  | material Ferech PV                                          vg 12/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatFerechPV(
+void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::mat_ferech_pv(
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -613,7 +613,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::mat_thermo_st_venant_kirchhoff(
 
   // compute reaction coefficient
   // (divided by density due to later multiplication by density in CalMatAndRHS)
-  // const double reacoef = -vdiv_*actmat->STModulus()/(actmat->Capacity()*densnp);
+  // const double reacoef = -vdiv_*actmat->st_modulus()/(actmat->Capacity()*densnp);
   const double reacoef = 0.0;
 
   // set reaction flag to true, check whether reaction coefficient is positive
@@ -642,7 +642,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::mat_thermo_st_venant_kirchhoff(
  | material Yoghurt                                            vg 12/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatYoghurt(
+void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::mat_yoghurt(
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -731,7 +731,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetRhsInt(
  11/13 |
  *------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcMatConvAddCons(
+void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::calc_mat_conv_add_cons(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac,
     const CORE::LINALG::Matrix<nsd_, 1>& convelint, const CORE::LINALG::Matrix<nsd_, 1>& gradphi,
     const double vdiv, const double densnp, const double visc)

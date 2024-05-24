@@ -106,7 +106,7 @@ void DRT::ELEMENTS::BeamRuntimeOutputParams::Init(
  *-----------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::BeamRuntimeOutputParams::Setup()
 {
-  if (not IsInit()) FOUR_C_THROW("Init() has not been called, yet!");
+  if (not is_init()) FOUR_C_THROW("Init() has not been called, yet!");
 
   // Nothing to do here at the moment
 
@@ -115,9 +115,9 @@ void DRT::ELEMENTS::BeamRuntimeOutputParams::Setup()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::BeamRuntimeOutputParams::CheckInitSetup() const
+void DRT::ELEMENTS::BeamRuntimeOutputParams::check_init_setup() const
 {
-  if (not IsInit() or not IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
+  if (not is_init() or not is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

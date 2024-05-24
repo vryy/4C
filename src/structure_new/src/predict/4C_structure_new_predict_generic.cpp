@@ -59,7 +59,7 @@ void STR::PREDICT::Generic::Init(const enum INPAR::STR::PredEnum& type,
  *----------------------------------------------------------------------------*/
 void STR::PREDICT::Generic::PrePredict(::NOX::Abstract::Group& grp)
 {
-  CheckInitSetup();
+  check_init_setup();
   Print();
   dbc_ptr_->UpdateLocSysManager();
 }
@@ -68,7 +68,7 @@ void STR::PREDICT::Generic::PrePredict(::NOX::Abstract::Group& grp)
  *----------------------------------------------------------------------------*/
 void STR::PREDICT::Generic::Predict(::NOX::Abstract::Group& grp)
 {
-  CheckInitSetup();
+  check_init_setup();
   bool& ispredict = gstate_ptr_->IsPredict();
   ispredict = true;
 
@@ -88,7 +88,7 @@ void STR::PREDICT::Generic::Predict(::NOX::Abstract::Group& grp)
  *----------------------------------------------------------------------------*/
 void STR::PREDICT::Generic::PostPredict(::NOX::Abstract::Group& grp)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   Dbc().ApplyDirichletBC(GlobalState().GetTimeNp(), GlobalState().GetDisNp(),
       GlobalState().GetVelNp(), GlobalState().GetAccNp(), false);
@@ -111,26 +111,26 @@ void STR::PREDICT::Generic::PostPredict(::NOX::Abstract::Group& grp)
  *----------------------------------------------------------------------------*/
 std::string STR::PREDICT::Generic::Name() const
 {
-  CheckInit();
+  check_init();
   return INPAR::STR::PredEnumString(type_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::PREDICT::Generic::CheckInit() const { FOUR_C_ASSERT(IsInit(), "Call Init() first!"); }
+void STR::PREDICT::Generic::check_init() const { FOUR_C_ASSERT(is_init(), "Call Init() first!"); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::PREDICT::Generic::CheckInitSetup() const
+void STR::PREDICT::Generic::check_init_setup() const
 {
-  FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::IMPLICIT::Generic>& STR::PREDICT::Generic::ImplIntPtr()
 {
-  CheckInit();
+  check_init();
   return implint_ptr_;
 }
 
@@ -138,7 +138,7 @@ Teuchos::RCP<STR::IMPLICIT::Generic>& STR::PREDICT::Generic::ImplIntPtr()
  *----------------------------------------------------------------------------*/
 STR::IMPLICIT::Generic& STR::PREDICT::Generic::ImplInt()
 {
-  CheckInit();
+  check_init();
   return *implint_ptr_;
 }
 
@@ -146,7 +146,7 @@ STR::IMPLICIT::Generic& STR::PREDICT::Generic::ImplInt()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::Dbc>& STR::PREDICT::Generic::DbcPtr()
 {
-  CheckInit();
+  check_init();
   return dbc_ptr_;
 }
 
@@ -154,7 +154,7 @@ Teuchos::RCP<STR::Dbc>& STR::PREDICT::Generic::DbcPtr()
  *----------------------------------------------------------------------------*/
 STR::Dbc& STR::PREDICT::Generic::Dbc()
 {
-  CheckInit();
+  check_init();
   return *dbc_ptr_;
 }
 
@@ -162,7 +162,7 @@ STR::Dbc& STR::PREDICT::Generic::Dbc()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& STR::PREDICT::Generic::GlobalStatePtr()
 {
-  CheckInit();
+  check_init();
   return gstate_ptr_;
 }
 
@@ -170,7 +170,7 @@ Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& STR::PREDICT::Generic::GlobalSta
  *----------------------------------------------------------------------------*/
 STR::TIMINT::BaseDataGlobalState& STR::PREDICT::Generic::GlobalState()
 {
-  CheckInit();
+  check_init();
   return *gstate_ptr_;
 }
 
@@ -178,7 +178,7 @@ STR::TIMINT::BaseDataGlobalState& STR::PREDICT::Generic::GlobalState()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::TIMINT::BaseDataIO>& STR::PREDICT::Generic::IODataPtr()
 {
-  CheckInit();
+  check_init();
   return iodata_ptr_;
 }
 
@@ -186,7 +186,7 @@ Teuchos::RCP<STR::TIMINT::BaseDataIO>& STR::PREDICT::Generic::IODataPtr()
  *----------------------------------------------------------------------------*/
 STR::TIMINT::BaseDataIO& STR::PREDICT::Generic::IOData()
 {
-  CheckInit();
+  check_init();
   return *iodata_ptr_;
 }
 
@@ -194,7 +194,7 @@ STR::TIMINT::BaseDataIO& STR::PREDICT::Generic::IOData()
  *----------------------------------------------------------------------------*/
 const STR::TIMINT::BaseDataGlobalState& STR::PREDICT::Generic::GlobalState() const
 {
-  CheckInit();
+  check_init();
   return *gstate_ptr_;
 }
 
@@ -202,7 +202,7 @@ const STR::TIMINT::BaseDataGlobalState& STR::PREDICT::Generic::GlobalState() con
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Teuchos::ParameterList>& STR::PREDICT::Generic::NoxParamsPtr()
 {
-  CheckInit();
+  check_init();
   return noxparams_ptr_;
 }
 
@@ -210,7 +210,7 @@ Teuchos::RCP<Teuchos::ParameterList>& STR::PREDICT::Generic::NoxParamsPtr()
  *----------------------------------------------------------------------------*/
 Teuchos::ParameterList& STR::PREDICT::Generic::NoxParams()
 {
-  CheckInit();
+  check_init();
   return *noxparams_ptr_;
 }
 
@@ -218,7 +218,7 @@ Teuchos::ParameterList& STR::PREDICT::Generic::NoxParams()
  *----------------------------------------------------------------------------*/
 void STR::PREDICT::Generic::Print() const
 {
-  CheckInitSetup();
+  check_init_setup();
   if (gstate_ptr_->GetMyRank() == 0 and iodata_ptr_->get_print2_screen_every_n_step() and
       gstate_ptr_->GetStepN() % iodata_ptr_->get_print2_screen_every_n_step() == 0)
   {

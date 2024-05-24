@@ -55,7 +55,7 @@ void DRT::ELEMENTS::NStet5::nstet5_read_restart_multi()
     if (GLOBAL::Problem::Instance()->GetDis("structure")->Comm().MyPID() == Owner())
       eleowner = true;
 
-    micro->ReadRestart(gp, eleID, eleowner);
+    micro->read_restart(gp, eleID, eleowner);
   }
 
   return;

@@ -108,7 +108,7 @@ namespace ADAPTER
     //! @name Vector access
 
     /// initial guess of Newton's method
-    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> initial_guess() = 0;
 
     /// rhs of Newton's method
     virtual Teuchos::RCP<const Epetra_Vector> RHS() = 0;
@@ -184,10 +184,10 @@ namespace ADAPTER
     //! @name Misc
 
     /// dof map of vector of unknowns
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap() = 0;
+    virtual Teuchos::RCP<const Epetra_Map> dof_row_map() = 0;
 
     /// dof map of vector of unknowns for multiple dofsets
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) = 0;
+    virtual Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) = 0;
 
     /// direct access to system matrix
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() = 0;
@@ -272,7 +272,7 @@ namespace ADAPTER
     virtual void Integrate() = 0;
 
     /// start new time step
-    virtual void PrepareTimeStep() = 0;
+    virtual void prepare_time_step() = 0;
 
     /// increment the time and the step
     virtual void increment_time_and_step() = 0;
@@ -293,7 +293,7 @@ namespace ADAPTER
         ) = 0;
 
     /// convergence check
-    virtual bool ConvergenceCheck(int itnum, int itmax, const double velrestol,
+    virtual bool convergence_check(int itnum, int itmax, const double velrestol,
         const double velinctol, const double presrestol, const double presinctol) = 0;
 
     /// update at end of iteration step
@@ -322,7 +322,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<CORE::LINALG::MapExtractor> GetVelPressSplitter() = 0;
 
     /// read restart information for given time step
-    virtual void ReadRestart(int step) = 0;
+    virtual void read_restart(int step) = 0;
 
     /// set restart
     virtual void SetRestart(const int step, const double time,
@@ -351,7 +351,7 @@ namespace ADAPTER
      *
      *  \author mayr.mt \date 12/2013
      */
-    virtual void TimeStepAuxiliar() = 0;
+    virtual void time_step_auxiliar() = 0;
 
     /*! Indicate norms of local discretization error
      *
@@ -368,7 +368,7 @@ namespace ADAPTER
         ) = 0;
 
     /// set time step size
-    virtual void SetDt(const double dtold) = 0;
+    virtual void set_dt(const double dtold) = 0;
 
     /// set time and step
     virtual void SetTimeStep(const double time,  ///< time to set
@@ -387,7 +387,7 @@ namespace ADAPTER
     \author mayr.mt
     \date 08/2013
     */
-    virtual void ResetStep() = 0;
+    virtual void reset_step() = 0;
 
     /*!
     \brief Reset time and step in case that a time step has to be repeated
@@ -401,7 +401,7 @@ namespace ADAPTER
     \author mayr.mt
     \date 08/2013
      */
-    virtual void ResetTime(const double dtold) = 0;
+    virtual void reset_time(const double dtold) = 0;
 
     /// this procs element evaluate time
     virtual double EvalTime() const = 0;

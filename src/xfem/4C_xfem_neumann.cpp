@@ -29,28 +29,28 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate Neumann conditions (public)                    schott 08/11|
  *----------------------------------------------------------------------*/
-void XFEM::EvaluateNeumann(Teuchos::ParameterList& params,
+void XFEM::evaluate_neumann(Teuchos::ParameterList& params,
     Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Epetra_Vector> systemvector,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix)
 {
   if (systemmatrix == Teuchos::null)
-    EvaluateNeumann(params, discret, *systemvector);
+    evaluate_neumann(params, discret, *systemvector);
   else
-    EvaluateNeumann(params, discret, *systemvector, systemmatrix.get());
+    evaluate_neumann(params, discret, *systemvector, systemmatrix.get());
 }
 
 
 /*----------------------------------------------------------------------*
  |  evaluate Neumann conditions (public)                    schott 08/11|
  *----------------------------------------------------------------------*/
-void XFEM::EvaluateNeumann(Teuchos::ParameterList& params,
+void XFEM::evaluate_neumann(Teuchos::ParameterList& params,
     Teuchos::RCP<DRT::Discretization> discret, Epetra_Vector& systemvector,
     CORE::LINALG::SparseOperator* systemmatrix)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 5) EvaluateNeumann");
+  TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 5) evaluate_neumann");
 
 
-  if (!discret->Filled()) FOUR_C_THROW("FillComplete() was not called");
+  if (!discret->Filled()) FOUR_C_THROW("fill_complete() was not called");
   if (!discret->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   bool assemblemat = (systemmatrix != nullptr);
@@ -194,7 +194,7 @@ void XFEM::EvaluateNeumannStandard(
         elevector.size((int)lm.size());
         if (!assemblemat)
         {
-          curr->second->EvaluateNeumann(params, *discret, cond, lm, elevector);
+          curr->second->evaluate_neumann(params, *discret, cond, lm, elevector);
           CORE::LINALG::Assemble(systemvector, elevector, lm, lmowner);
         }
         else
@@ -204,7 +204,7 @@ void XFEM::EvaluateNeumannStandard(
             elematrix.shape(size, size);
           else
             elematrix.putScalar(0.0);
-          curr->second->EvaluateNeumann(params, *discret, cond, lm, elevector, &elematrix);
+          curr->second->evaluate_neumann(params, *discret, cond, lm, elevector, &elematrix);
           CORE::LINALG::Assemble(systemvector, elevector, lm, lmowner);
           systemmatrix->Assemble(curr->second->Id(), lmstride, elematrix, lm, lmowner);
         }

@@ -54,7 +54,7 @@ namespace IO
     unsigned int num_nodes = 0;
     for (const DRT::Element* ele : discretization_->MyRowElementRange())
     {
-      num_nodes += ele->NumNode();
+      num_nodes += ele->num_node();
     }
 
     // do not need to store connectivity indices here because we create a
@@ -155,7 +155,7 @@ namespace IO
     unsigned int num_nodes = 0;
     for (const DRT::Element* ele : discretization_->MyRowElementRange())
     {
-      num_nodes += ele->NumNode();
+      num_nodes += ele->num_node();
     }
 
     std::vector<double> point_result_data;
@@ -212,7 +212,7 @@ namespace IO
     unsigned int num_nodes = 0;
     for (const DRT::Element* ele : discretization_->MyRowElementRange())
     {
-      num_nodes += ele->NumNode();
+      num_nodes += ele->num_node();
     }
 
     std::vector<double> point_result_data;
@@ -227,7 +227,7 @@ namespace IO
       const std::vector<int>& numbering =
           DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
 
-      for (unsigned int inode = 0; inode < (unsigned int)ele->NumNode(); ++inode)
+      for (unsigned int inode = 0; inode < (unsigned int)ele->num_node(); ++inode)
       {
         const DRT::Node* node = ele->Nodes()[numbering[inode]];
 
@@ -244,7 +244,7 @@ namespace IO
         }
       }
 
-      pointcounter += ele->NumNode();
+      pointcounter += ele->num_node();
     }
 
     // sanity check
@@ -371,7 +371,7 @@ namespace IO
     int num_nodes = 0;
     for (const DRT::Element* ele : discretization_->MyRowElementRange())
     {
-      num_nodes += ele->NumNode();
+      num_nodes += ele->num_node();
     }
 
     // Setup the vector with the GIDs of the nodes.
@@ -387,7 +387,7 @@ namespace IO
       const std::vector<int>& numbering =
           DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
       const DRT::Node* const* nodes = ele->Nodes();
-      for (int inode = 0; inode < ele->NumNode(); ++inode)
+      for (int inode = 0; inode < ele->num_node(); ++inode)
         gid_of_nodes.push_back(nodes[numbering[inode]]->Id());
     }
 

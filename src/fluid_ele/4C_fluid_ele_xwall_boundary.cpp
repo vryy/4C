@@ -94,14 +94,14 @@ void DRT::ELEMENTS::FluidXWallBoundary::LocationVector(const Discretization& dis
       // the inner dofs of its parent element
       // note: using these actions, the element will get the parent location vector
       //       as input in the respective evaluate routines
-      ParentElement()->LocationVector(dis, la, doDirichlet);
+      parent_element()->LocationVector(dis, la, doDirichlet);
       break;
     case FLD::ba_none:
       FOUR_C_THROW("No action supplied");
       break;
     default:
       // standard case: element assembles into its own dofs only
-      const int numnode = NumNode();
+      const int numnode = num_node();
       const DRT::Node* const* nodes = Nodes();
 
       la.Clear();

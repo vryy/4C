@@ -178,7 +178,7 @@ std::ostream& operator<<(std::ostream& os, const DRT::Element& element)
 void DRT::Element::Print(std::ostream& os) const
 {
   os << std::setw(12) << Id() << " Owner " << std::setw(5) << Owner() << " ";
-  const int nnode = NumNode();
+  const int nnode = num_node();
   const int* nodeids = NodeIds();
   if (nnode > 0)
   {
@@ -337,7 +337,7 @@ void DRT::Element::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 bool DRT::Element::BuildNodalPointers(std::map<int, Teuchos::RCP<DRT::Node>>& nodes)
 {
-  int nnode = NumNode();
+  int nnode = num_node();
   const int* nodeids = NodeIds();
   node_.resize(nnode);
   for (int i = 0; i < nnode; ++i)
@@ -358,8 +358,8 @@ bool DRT::Element::BuildNodalPointers(std::map<int, Teuchos::RCP<DRT::Node>>& no
  *----------------------------------------------------------------------*/
 bool DRT::Element::BuildNodalPointers(DRT::Node** nodes)
 {
-  node_.resize(NumNode());
-  for (int i = 0; i < NumNode(); ++i) node_[i] = nodes[i];
+  node_.resize(num_node());
+  for (int i = 0; i < num_node(); ++i) node_[i] = nodes[i];
   return true;
 }
 
@@ -373,7 +373,7 @@ void DRT::Element::NodalConnectivity(
   // weight for this element
   double weight = EvaluationCost();
 
-  int numnode = NumNode();
+  int numnode = num_node();
   nodeweights.size(numnode);
   edgeweights.shape(numnode, numnode);
 
@@ -455,7 +455,7 @@ CORE::Conditions::Condition* DRT::Element::GetCondition(const std::string& name)
 void DRT::Element::LocationVector(const DRT::Discretization& dis, const std::vector<int>& nds,
     DRT::Element::LocationArray& la, bool doDirichlet) const
 {
-  const int numnode = NumNode();
+  const int numnode = num_node();
   const DRT::Node* const* nodes = Nodes();
 
   if (numnode != static_cast<int>(nds.size()))
@@ -573,7 +573,7 @@ void DRT::Element::LocationVector(const DRT::Discretization& dis, const std::vec
 void DRT::Element::LocationVector(
     const Discretization& dis, LocationArray& la, bool doDirichlet) const
 {
-  const int numnode = NumNode();
+  const int numnode = num_node();
   const DRT::Node* const* nodes = Nodes();
 
   la.Clear();
@@ -669,7 +669,7 @@ void DRT::Element::LocationVector(
           if (!dirich_vec.empty())
           {
             // do only faces where all nodes are present in the node list
-            const int nummynodes = face_[i]->NumNode();
+            const int nummynodes = face_[i]->num_node();
             const int* mynodes = face_[i]->NodeIds();
             // Check if the face belongs to any condition
             for (auto& iter : dirich_vec)
@@ -774,7 +774,7 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
 void DRT::Element::LocationVector(const Discretization& dis, std::vector<int>& lm,
     std::vector<int>& lmdirich, std::vector<int>& lmowner, std::vector<int>& lmstride) const
 {
-  const int numnode = NumNode();
+  const int numnode = num_node();
   const DRT::Node* const* nodes = Nodes();
 
   lm.clear();
@@ -874,7 +874,7 @@ void DRT::Element::LocationVector(const Discretization& dis, std::vector<int>& l
 void DRT::Element::LocationVector(const Discretization& dis, std::vector<int>& lm,
     std::vector<int>& lmowner, std::vector<int>& lmstride) const
 {
-  const int numnode = NumNode();
+  const int numnode = num_node();
   const DRT::Node* const* nodes = Nodes();
 
   lm.clear();
@@ -1009,7 +1009,7 @@ int DRT::Element::Degree() const { return CORE::FE::getDegree(Shape()); }
  *----------------------------------------------------------------------*/
 bool DRT::Element::HasOnlyGhostNodes(const int mypid) const
 {
-  const int numnode = NumNode();
+  const int numnode = num_node();
   const DRT::Node* const* nodes = Nodes();
 
   // check for 'purely ghosted' element, i.e. only ghost nodes
@@ -1066,7 +1066,7 @@ CORE::GEOMETRICSEARCH::BoundingVolume DRT::Element::GetBoundingVolume(
   CORE::LINALG::Matrix<3, 1, double> point;
 
   // The default bounding box is simply the bounding box of all element nodes.
-  for (unsigned int i_node = 0; i_node < (unsigned int)this->NumNode(); ++i_node)
+  for (unsigned int i_node = 0; i_node < (unsigned int)this->num_node(); ++i_node)
   {
     std::vector<int> nodedofs;
     nodedofs.clear();

@@ -53,9 +53,10 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
           CORE::LINALG::SerialDenseVector& elevec3) = 0;
 
-      virtual int EvaluateNeumann(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
+      virtual int evaluate_neumann(DRT::ELEMENTS::FluidBoundary* ele,
+          Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          CORE::Conditions::Condition& condition, std::vector<int>& lm,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseMatrix* elemat1) = 0;
     };
 

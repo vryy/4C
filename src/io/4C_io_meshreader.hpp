@@ -28,7 +28,7 @@ namespace IO
     \brief helper class to read a mesh
 
     This is an interface for handling node, element and domain readers
-    and to set up a discretization from a dat file which is FillComplete().
+    and to set up a discretization from a dat file which is fill_complete().
    */
   class MeshReader
   {
@@ -116,10 +116,10 @@ namespace IO
     \param[in/out] max_node_id Maximum node id in a given discretization. To be used as global
                                offset to start node numbering (based on already existing nodes)
     */
-    void ReadMeshFromDatFile(int& max_node_id);
+    void read_mesh_from_dat_file(int& max_node_id);
 
     /*!
-    \brief Rebalance discretizations built in ReadMeshFromDatFile()
+    \brief Rebalance discretizations built in read_mesh_from_dat_file()
     */
     void Rebalance();
 
@@ -132,7 +132,7 @@ namespace IO
     \param[in/out] max_node_id Maximum node id in a given discretization. To be used as global
                                offset to start node numbering (based on already existing nodes)
     */
-    void CreateInlineMesh(int& max_node_id);
+    void create_inline_mesh(int& max_node_id);
 
     /// my comm
     Teuchos::RCP<Epetra_Comm> comm_;

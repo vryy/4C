@@ -109,24 +109,24 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatAndRhs(
   //----------------------------------------------------------------
 
   if (not my::scatraparatimint_->IsStationary())
-    my::CalcMatMass(emat, k, fac, DiffManager()->GetPhasePoro(0));
+    my::CalcMatMass(emat, k, fac, diff_manager()->GetPhasePoro(0));
 
   //----------------------------------------------------------------
   // 2) element matrix: stationary terms of ion-transport equation
   //----------------------------------------------------------------
 
   // 2a)  element matrix: convective term
-  my::CalcMatConv(emat, k, timefacfac, DiffManager()->GetPhasePoro(0), VarManager()->SGConv());
+  my::CalcMatConv(emat, k, timefacfac, diff_manager()->GetPhasePoro(0), var_manager()->SGConv());
 
   // 2b)  element matrix: diffusion term
   //      i)  constant diffusion coefficient
-  my::CalcMatDiff(emat, k, timefacfac * DiffManager()->GetPhasePoroTort(0));
+  my::CalcMatDiff(emat, k, timefacfac * diff_manager()->GetPhasePoroTort(0));
 
   //      ii) concentration depending diffusion coefficient
   //          (additional term for Newman material)
   if (diffcondmat_ == INPAR::ELCH::diffcondmat_newman)
     myelectrode::CalcMatDiffCoeffLin(
-        emat, k, timefacfac, VarManager()->GradPhi(k), DiffManager()->GetPhasePoroTort(0));
+        emat, k, timefacfac, var_manager()->GradPhi(k), diff_manager()->GetPhasePoroTort(0));
 
   // 2c) element matrix: conservative part of convective term, needed for deforming bodies,
   //                     i.e., for scalar-structure interaction
@@ -134,8 +134,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatAndRhs(
   if (my::scatrapara_->IsConservative())
   {
     my::GetDivergence(velocity_divergence, my::evelnp_);
-    my::CalcMatConvAddCons(
-        emat, k, timefacfac * DiffManager()->GetPhasePoro(0), velocity_divergence, 1.0);
+    my::calc_mat_conv_add_cons(
+        emat, k, timefacfac * diff_manager()->GetPhasePoro(0), velocity_divergence, 1.0);
   }
 
   // 2d) electrical conduction term (transport equation)
@@ -157,26 +157,26 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatAndRhs(
   {
     //    i)  conduction term + ohmic overpotential
     //        (w_k, - t_k kappa nabla phi /(z_k F))
-    CalcMatCondOhm(emat, k, timefacfac, DiffManager()->InvFVal(k), VarManager()->GradPot());
+    CalcMatCondOhm(emat, k, timefacfac, diff_manager()->InvFVal(k), var_manager()->GradPot());
 
     //    ii) conduction term + concentration overpotential
     //        (w_k, - t_k RT/F kappa (thermfactor) f(t_k) nabla ln c_k /(z_k F))
     if (diffcondmat_ == INPAR::ELCH::diffcondmat_newman)
     {
-      CalcMatCondConc(emat, k, timefacfac, VarManager()->RTFFC() / DiffManager()->GetValence(k),
+      CalcMatCondConc(emat, k, timefacfac, var_manager()->RTFFC() / diff_manager()->GetValence(k),
           diffcondparams_->NewmanConstA(), diffcondparams_->NewmanConstB(),
-          VarManager()->GradPhi(k), VarManager()->ConIntInv());
+          var_manager()->GradPhi(k), var_manager()->ConIntInv());
     }
   }
   // equation for current is solved independently
   else
   {
     // current term (with current as a solution variable)
-    CalcMatCond(emat, k, timefacfac, DiffManager()->InvFVal(k), VarManager()->CurInt());
+    CalcMatCond(emat, k, timefacfac, diff_manager()->InvFVal(k), var_manager()->CurInt());
 
     // this coupling term cancels out for a 2 equation system
     if (diffcondmat_ == INPAR::ELCH::diffcondmat_ion)
-      CalcMatCondDiff(emat, k, timefacfac, DiffManager()->InvFVal(k), VarManager()->GradPhi());
+      CalcMatCondDiff(emat, k, timefacfac, diff_manager()->InvFVal(k), var_manager()->GradPhi());
   }  // end if(not diffcondparams_->CurSolVar())
 
   //---------------------------------------------------------------------
@@ -190,26 +190,26 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatAndRhs(
 
   if (my::scatraparatimint_->IsIncremental() and not my::scatraparatimint_->IsStationary())
     my::CalcRHSLinMass(
-        erhs, k, rhsfac, fac, DiffManager()->GetPhasePoro(0), DiffManager()->GetPhasePoro(0));
+        erhs, k, rhsfac, fac, diff_manager()->GetPhasePoro(0), diff_manager()->GetPhasePoro(0));
 
   // adaption of rhs with respect to time integration
-  my::ComputeRhsInt(rhsint, DiffManager()->GetPhasePoro(0), DiffManager()->GetPhasePoro(0),
-      VarManager()->Hist(k));
+  my::ComputeRhsInt(rhsint, diff_manager()->GetPhasePoro(0), diff_manager()->GetPhasePoro(0),
+      var_manager()->Hist(k));
 
   // add RHS and history contribution
   my::calc_rhs_hist_and_source(erhs, k, fac, rhsint);
 
   // convective term
-  my::CalcRHSConv(erhs, k, rhsfac * DiffManager()->GetPhasePoro(0));
+  my::CalcRHSConv(erhs, k, rhsfac * diff_manager()->GetPhasePoro(0));
 
   // diffusion term
-  my::CalcRHSDiff(erhs, k, rhsfac * DiffManager()->GetPhasePoroTort(0));
+  my::calc_rhs_diff(erhs, k, rhsfac * diff_manager()->GetPhasePoroTort(0));
 
   // conservative part of convective term, needed for deforming bodies, i.e., for scalar-structure
   // interaction
   if (my::scatrapara_->IsConservative())
     myelectrode::calc_rhs_conservative_part_of_convective_term(
-        erhs, k, rhsfac * DiffManager()->GetPhasePoro(0), velocity_divergence);
+        erhs, k, rhsfac * diff_manager()->GetPhasePoro(0), velocity_divergence);
 
   // electrical conduction term (transport equation)
   // equation for current is inserted in the mass transport equation
@@ -227,24 +227,24 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatAndRhs(
   //      i = - kappa nabla phi  + RT/F kappa (thermfactor) f(t_k) nabla ln c_k
   if (not diffcondparams_->CurSolVar())
   {
-    CalcRhsCondOhm(erhs, k, rhsfac, DiffManager()->InvFVal(k), VarManager()->GradPot());
+    CalcRhsCondOhm(erhs, k, rhsfac, diff_manager()->InvFVal(k), var_manager()->GradPot());
 
     // if(diffcondmat_==INPAR::ELCH::diffcondmat_ion): all terms cancel out
     if (diffcondmat_ == INPAR::ELCH::diffcondmat_newman)
     {
-      CalcRhsCondConc(erhs, k, rhsfac, VarManager()->RTFFC() / DiffManager()->GetValence(k),
+      CalcRhsCondConc(erhs, k, rhsfac, var_manager()->RTFFC() / diff_manager()->GetValence(k),
           diffcondparams_->NewmanConstA(), diffcondparams_->NewmanConstB(),
-          VarManager()->GradPhi(k), VarManager()->ConIntInv());
+          var_manager()->GradPhi(k), var_manager()->ConIntInv());
     }
   }
 
   // equation for current is solved independently
   else
   {
-    CalcRhsCond(erhs, k, rhsfac, DiffManager()->InvFVal(k), VarManager()->CurInt());
+    CalcRhsCond(erhs, k, rhsfac, diff_manager()->InvFVal(k), var_manager()->CurInt());
 
     if (diffcondmat_ == INPAR::ELCH::diffcondmat_ion)
-      CalcRhsCondDiff(erhs, k, rhsfac, VarManager()->GradPhi());
+      CalcRhsCondDiff(erhs, k, rhsfac, var_manager()->GradPhi());
   }
 }
 
@@ -282,26 +282,28 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
     {
       //  i)  ohmic overpotential (implemented after the scalar loop)
       //      (w_k, - kappa nabla phi)
-      myelectrode::calc_mat_pot_equ_divi_ohm(emat, timefacfac, VarManager()->InvF(),
-          VarManager()->GradPot(), DiffManager()->GetPhasePoroTort(0));
+      myelectrode::calc_mat_pot_equ_divi_ohm(emat, timefacfac, var_manager()->InvF(),
+          var_manager()->GradPot(), diff_manager()->GetPhasePoroTort(0));
 
       //
-      myelectrode::calc_rhs_pot_equ_divi_ohm(erhs, rhsfac, VarManager()->InvF(),
-          VarManager()->GradPot(), DiffManager()->GetPhasePoroTort(0));
+      myelectrode::calc_rhs_pot_equ_divi_ohm(erhs, rhsfac, var_manager()->InvF(),
+          var_manager()->GradPot(), diff_manager()->GetPhasePoroTort(0));
 
       //  ii)  concentration overpotential
       //      (w_k, RT/F kappa (thermfactor) f(t_k) nabla ln c_k)
       for (int k = 0; k < my::numscal_; ++k)
       {
         //
-        calc_mat_pot_equ_divi_conc(emat, k, timefacfac, VarManager()->RTFFC(), VarManager()->RTF(),
-            VarManager()->InvF(), diffcondparams_->NewmanConstA(), diffcondparams_->NewmanConstB(),
-            VarManager()->GradPhi(k), VarManager()->ConIntInv(k));
+        calc_mat_pot_equ_divi_conc(emat, k, timefacfac, var_manager()->RTFFC(),
+            var_manager()->RTF(), var_manager()->InvF(), diffcondparams_->NewmanConstA(),
+            diffcondparams_->NewmanConstB(), var_manager()->GradPhi(k),
+            var_manager()->ConIntInv(k));
 
         //
-        calc_rhs_pot_equ_divi_conc(erhs, k, rhsfac, VarManager()->RTF(), DiffManager()->InvFVal(),
-            VarManager()->RTFFC(), diffcondparams_->NewmanConstA(), diffcondparams_->NewmanConstB(),
-            VarManager()->GradPhi(k), VarManager()->ConIntInv(k));
+        calc_rhs_pot_equ_divi_conc(erhs, k, rhsfac, var_manager()->RTF(), diff_manager()->InvFVal(),
+            var_manager()->RTFFC(), diffcondparams_->NewmanConstA(),
+            diffcondparams_->NewmanConstB(), var_manager()->GradPhi(k),
+            var_manager()->ConIntInv(k));
       }
     }
     // 3b)  ENC
@@ -313,7 +315,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
         myelch::CalcMatPotEquENC(emat, k, fac, my::scatraparatimint_->AlphaF());
 
         //
-        myelch::CalcRhsPotEquENC(erhs, k, fac, VarManager()->Phinp(k));
+        myelch::CalcRhsPotEquENC(erhs, k, fac, var_manager()->Phinp(k));
       }
     }
     else
@@ -332,26 +334,26 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
 
     // matrix terms
     // (xsi_i,Di)
-    CalcMatCurEquCur(emat, timefacfac, VarManager()->InvF());
+    CalcMatCurEquCur(emat, timefacfac, var_manager()->InvF());
 
     // (xsi, -D(kappa phi))
-    CalcMatCurEquOhm(emat, timefacfac, VarManager()->InvF(), VarManager()->GradPot());
+    CalcMatCurEquOhm(emat, timefacfac, var_manager()->InvF(), var_manager()->GradPot());
 
     // (xsi, -D(RT/F kappa (thermfactor) f(t_k) nabla ln c_k))
-    CalcMatCurEquConc(emat, timefacfac, VarManager()->RTF(), VarManager()->RTFFC(),
-        DiffManager()->InvFVal(), diffcondparams_->NewmanConstA(), diffcondparams_->NewmanConstB(),
-        VarManager()->GradPhi(), VarManager()->ConIntInv());
+    CalcMatCurEquConc(emat, timefacfac, var_manager()->RTF(), var_manager()->RTFFC(),
+        diff_manager()->InvFVal(), diffcondparams_->NewmanConstA(), diffcondparams_->NewmanConstB(),
+        var_manager()->GradPhi(), var_manager()->ConIntInv());
 
     // (xsi_i,Di)
-    CalcRhsCurEquCur(erhs, rhsfac, VarManager()->InvF(), VarManager()->CurInt());
+    CalcRhsCurEquCur(erhs, rhsfac, var_manager()->InvF(), var_manager()->CurInt());
 
     // (xsi, -D(kappa phi))
-    CalcRhsCurEquOhm(erhs, rhsfac, VarManager()->InvF(), VarManager()->GradPot());
+    CalcRhsCurEquOhm(erhs, rhsfac, var_manager()->InvF(), var_manager()->GradPot());
 
     // (xsi, -D(RT/F kappa (thermfactor) f(t_k) nabla ln c_k))
-    CalcRhsCurEquConc(erhs, rhsfac, VarManager()->RTF(), DiffManager()->InvFVal(),
-        VarManager()->RTFFC(), diffcondparams_->NewmanConstA(), diffcondparams_->NewmanConstB(),
-        VarManager()->GradPhi(), VarManager()->ConIntInv());
+    CalcRhsCurEquConc(erhs, rhsfac, var_manager()->RTF(), diff_manager()->InvFVal(),
+        var_manager()->RTFFC(), diffcondparams_->NewmanConstA(), diffcondparams_->NewmanConstB(),
+        var_manager()->GradPhi(), var_manager()->ConIntInv());
 
     //------------------------------------------------------------------------------------------
     // 3)   governing equation for the electric potential field and current (incl. rhs-terms)
@@ -359,9 +361,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
 
     if (myelch::elchparams_->EquPot() == INPAR::ELCH::equpot_divi)
     {
-      CalcMatPotEquDivi(emat, timefacfac, VarManager()->InvF());
+      CalcMatPotEquDivi(emat, timefacfac, var_manager()->InvF());
 
-      CalcRhsPotEquDivi(erhs, rhsfac, VarManager()->InvF(), VarManager()->CurInt());
+      CalcRhsPotEquDivi(erhs, rhsfac, var_manager()->InvF(), var_manager()->CurInt());
     }
     else if (myelch::elchparams_->EquPot() == INPAR::ELCH::equpot_enc)
     {
@@ -371,7 +373,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
         myelch::CalcMatPotEquENC(emat, k, fac, my::scatraparatimint_->AlphaF());
 
         //
-        myelch::CalcRhsPotEquENC(erhs, k, fac, VarManager()->Phinp(k));
+        myelch::CalcRhsPotEquENC(erhs, k, fac, var_manager()->Phinp(k));
       }
     }
     else
@@ -398,8 +400,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondOhm(
       // (grad w, t_k kappa/(F z_k) D(grad phi))
       //
       emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + my::numscal_) +=
-          timefacfac * DiffManager()->GetPhasePoroTort(0) * DiffManager()->GetTransNum(k) *
-          DiffManager()->GetCond() * invfval * laplawf;
+          timefacfac * diff_manager()->GetPhasePoroTort(0) * diff_manager()->GetTransNum(k) *
+          diff_manager()->GetCond() * invfval * laplawf;
 
       double laplawfrhs_gradpot(0.0);
       my::get_laplacian_weak_form_rhs(laplawfrhs_gradpot, gradpot, vi);
@@ -411,8 +413,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondOhm(
         // (grad w, t_k D(kappa(c))/(F z_k) grad phi)
         //
         emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + iscal) +=
-            timefacfac * DiffManager()->GetPhasePoroTort(0) * DiffManager()->GetTransNum(k) *
-            invfval * DiffManager()->GetConcDerivCond(iscal) * my::funct_(ui) * laplawfrhs_gradpot;
+            timefacfac * diff_manager()->GetPhasePoroTort(0) * diff_manager()->GetTransNum(k) *
+            invfval * diff_manager()->GetConcDerivCond(iscal) * my::funct_(ui) * laplawfrhs_gradpot;
 
         // linearization of the transference number in the conduction term depending on the
         // potential
@@ -420,9 +422,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondOhm(
         // (grad w, D(t_k(c)) kappa/(F z_k) grad phi)
         //
         emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + iscal) +=
-            timefacfac * DiffManager()->GetPhasePoroTort(0) *
-            (DiffManager()->GetDerivTransNum(k, iscal)) * my::funct_(ui) * invfval *
-            DiffManager()->GetCond() * laplawfrhs_gradpot;
+            timefacfac * diff_manager()->GetPhasePoroTort(0) *
+            (diff_manager()->GetDerivTransNum(k, iscal)) * my::funct_(ui) * invfval *
+            diff_manager()->GetCond() * laplawfrhs_gradpot;
       }
     }
   }
@@ -462,9 +464,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondConc
       // (grad w, RT/(z_k F^2) kappa thermfac f(t_+) D(grad ln c_k))
       //
       emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + k) +=
-          timefacfac * DiffManager()->GetPhasePoroTort(0) * rtffcval *
-          DiffManager()->GetTransNum(k) * DiffManager()->GetCond() * DiffManager()->GetThermFac() *
-          (newman_const_a + (newman_const_b * DiffManager()->GetTransNum(k))) * conintinv[k] *
+          timefacfac * diff_manager()->GetPhasePoroTort(0) * rtffcval *
+          diff_manager()->GetTransNum(k) * diff_manager()->GetCond() *
+          diff_manager()->GetThermFac() *
+          (newman_const_a + (newman_const_b * diff_manager()->GetTransNum(k))) * conintinv[k] *
           laplawf;
 
       // linearization of conduction term depending on the concentration is implemented
@@ -475,38 +478,39 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondConc
 
       // Linearization wrt ln c
       emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + k) +=
-          -timefacfac * DiffManager()->GetPhasePoroTort(0) * rtffcval *
-          DiffManager()->GetTransNum(k) * DiffManager()->GetCond() * DiffManager()->GetThermFac() *
-          (newman_const_a + (newman_const_b * DiffManager()->GetTransNum(k))) * conintinv[k] *
+          -timefacfac * diff_manager()->GetPhasePoroTort(0) * rtffcval *
+          diff_manager()->GetTransNum(k) * diff_manager()->GetCond() *
+          diff_manager()->GetThermFac() *
+          (newman_const_a + (newman_const_b * diff_manager()->GetTransNum(k))) * conintinv[k] *
           conintinv[k] * laplawfrhs_gradc * my::funct_(ui);
 
       // Linearization wrt kappa
       emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + k) +=
-          timefacfac * DiffManager()->GetPhasePoroTort(0) * rtffcval *
-          DiffManager()->GetTransNum(k) * DiffManager()->GetThermFac() *
-          (newman_const_a + (newman_const_b * DiffManager()->GetTransNum(k))) * conintinv[k] *
-          laplawfrhs_gradc * DiffManager()->GetConcDerivCond(k) * my::funct_(ui);
+          timefacfac * diff_manager()->GetPhasePoroTort(0) * rtffcval *
+          diff_manager()->GetTransNum(k) * diff_manager()->GetThermFac() *
+          (newman_const_a + (newman_const_b * diff_manager()->GetTransNum(k))) * conintinv[k] *
+          laplawfrhs_gradc * diff_manager()->GetConcDerivCond(k) * my::funct_(ui);
 
       // Linearization wrt transference number 1
       emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + k) +=
-          timefacfac * DiffManager()->GetPhasePoroTort(0) * rtffcval * DiffManager()->GetCond() *
-          conintinv[k] * laplawfrhs_gradc * DiffManager()->GetThermFac() *
-          (newman_const_a + newman_const_b * DiffManager()->GetTransNum(k)) *
-          DiffManager()->GetDerivTransNum(k, k) * my::funct_(ui);
+          timefacfac * diff_manager()->GetPhasePoroTort(0) * rtffcval * diff_manager()->GetCond() *
+          conintinv[k] * laplawfrhs_gradc * diff_manager()->GetThermFac() *
+          (newman_const_a + newman_const_b * diff_manager()->GetTransNum(k)) *
+          diff_manager()->GetDerivTransNum(k, k) * my::funct_(ui);
 
       // Linearization wrt transference number 2
       emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + k) +=
-          timefacfac * DiffManager()->GetPhasePoroTort(0) * rtffcval * DiffManager()->GetCond() *
-          DiffManager()->GetThermFac() * conintinv[k] * laplawfrhs_gradc *
-          DiffManager()->GetTransNum(k) * newman_const_b * DiffManager()->GetDerivTransNum(k, k) *
+          timefacfac * diff_manager()->GetPhasePoroTort(0) * rtffcval * diff_manager()->GetCond() *
+          diff_manager()->GetThermFac() * conintinv[k] * laplawfrhs_gradc *
+          diff_manager()->GetTransNum(k) * newman_const_b * diff_manager()->GetDerivTransNum(k, k) *
           my::funct_(ui);
 
       // Linearization wrt thermodynamic factor
       emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + k) +=
-          timefacfac * DiffManager()->GetPhasePoroTort(0) * rtffcval *
-          DiffManager()->GetTransNum(k) * DiffManager()->GetCond() *
-          (newman_const_a + (newman_const_b * DiffManager()->GetTransNum(k))) * conintinv[k] *
-          laplawfrhs_gradc * DiffManager()->GetDerivThermFac(k) * my::funct_(ui);
+          timefacfac * diff_manager()->GetPhasePoroTort(0) * rtffcval *
+          diff_manager()->GetTransNum(k) * diff_manager()->GetCond() *
+          (newman_const_a + (newman_const_b * diff_manager()->GetTransNum(k))) * conintinv[k] *
+          laplawfrhs_gradc * diff_manager()->GetDerivThermFac(k) * my::funct_(ui);
     }  // for ui
   }    // for vi
 }
@@ -532,7 +536,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCond(
         //
         // (grad w, t_k/(F z_k) Di)
         //
-        emat(fvi, fui) += -timefacfac * my::derxy_(idim, vi) * DiffManager()->GetTransNum(k) *
+        emat(fvi, fui) += -timefacfac * my::derxy_(idim, vi) * diff_manager()->GetTransNum(k) *
                           invfval * my::funct_(ui);
 
         // linearization of transference number in conduction term depending on current flow
@@ -542,7 +546,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCond(
         for (int iscal = 0; iscal < my::numscal_; ++iscal)
         {
           emat(fvi, ui * my::numdofpernode_ + iscal) +=
-              -timefacfac * my::derxy_(idim, vi) * (DiffManager()->GetDerivTransNum(k, iscal)) *
+              -timefacfac * my::derxy_(idim, vi) * (diff_manager()->GetDerivTransNum(k, iscal)) *
               my::funct_(ui) * invfval * curint(idim);
         }
       }
@@ -572,9 +576,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondDiff
         // (grad w, t_k/z_k*sum_i(D_i grad Dc))
         //
         emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + iscal) +=
-            -timefacfac * DiffManager()->GetPhasePoroTort(0) * DiffManager()->GetTransNum(k) /
-            DiffManager()->GetValence(k) * DiffManager()->GetValence(iscal) *
-            DiffManager()->GetIsotropicDiff(iscal) * laplawf;
+            -timefacfac * diff_manager()->GetPhasePoroTort(0) * diff_manager()->GetTransNum(k) /
+            diff_manager()->GetValence(k) * diff_manager()->GetValence(iscal) *
+            diff_manager()->GetIsotropicDiff(iscal) * laplawf;
       }
 
       // linearization of transference number in the coupling term (transport equation)
@@ -589,14 +593,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondDiff
           double laplawfrhs_gradphi = 0.0;
           my::get_laplacian_weak_form_rhs(laplawfrhs_gradphi, gradphi[iscal2], vi);
 
-          term_vi += DiffManager()->GetValence(iscal2) * DiffManager()->GetIsotropicDiff(iscal2) *
+          term_vi += diff_manager()->GetValence(iscal2) * diff_manager()->GetIsotropicDiff(iscal2) *
                      laplawfrhs_gradphi;
         }
 
         emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + iscal) +=
-            -timefacfac * DiffManager()->GetPhasePoroTort(0) *
-            (DiffManager()->GetDerivTransNum(k, iscal)) * my::funct_(ui) /
-            DiffManager()->GetValence(k) * term_vi;
+            -timefacfac * diff_manager()->GetPhasePoroTort(0) *
+            (diff_manager()->GetDerivTransNum(k, iscal)) * my::funct_(ui) /
+            diff_manager()->GetValence(k) * term_vi;
       }  // for(iscal)
     }    // end for ui
   }      // end for vi
@@ -624,9 +628,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_mat_pot_eq
         // (grad w, RT/F^2 kappa (thermfactor) f(t_k) 1/c_k D nabla c_k)
         //
         emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + k) +=
-            timefacfac * DiffManager()->GetPhasePoroTort(0) * rtffc * DiffManager()->GetCond() *
-            DiffManager()->GetThermFac() *
-            (newman_const_a + (newman_const_b * DiffManager()->GetTransNum(k))) * conintinv *
+            timefacfac * diff_manager()->GetPhasePoroTort(0) * rtffc * diff_manager()->GetCond() *
+            diff_manager()->GetThermFac() *
+            (newman_const_a + (newman_const_b * diff_manager()->GetTransNum(k))) * conintinv *
             laplawf;
 
         // linearization of conduction term depending on the concentration is implemented
@@ -637,45 +641,46 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_mat_pot_eq
 
         // Linearization wrt ln c
         emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + k) +=
-            -timefacfac * DiffManager()->GetPhasePoroTort(0) * rtffc * DiffManager()->GetCond() *
-            DiffManager()->GetThermFac() *
-            (newman_const_a + (newman_const_b * DiffManager()->GetTransNum(k))) * conintinv *
+            -timefacfac * diff_manager()->GetPhasePoroTort(0) * rtffc * diff_manager()->GetCond() *
+            diff_manager()->GetThermFac() *
+            (newman_const_a + (newman_const_b * diff_manager()->GetTransNum(k))) * conintinv *
             conintinv * laplawfrhs_gradphi * my::funct_(ui);
 
         // Linearization wrt kappa
         emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + k) +=
-            timefacfac * DiffManager()->GetPhasePoroTort(0) * rtffc * DiffManager()->GetThermFac() *
-            (newman_const_a + (newman_const_b * DiffManager()->GetTransNum(k))) * conintinv *
-            laplawfrhs_gradphi * DiffManager()->GetConcDerivCond(k) * my::funct_(ui);
+            timefacfac * diff_manager()->GetPhasePoroTort(0) * rtffc *
+            diff_manager()->GetThermFac() *
+            (newman_const_a + (newman_const_b * diff_manager()->GetTransNum(k))) * conintinv *
+            laplawfrhs_gradphi * diff_manager()->GetConcDerivCond(k) * my::funct_(ui);
 
         // Linearization wrt transference number
         emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + k) +=
-            timefacfac * DiffManager()->GetPhasePoroTort(0) * rtffc * DiffManager()->GetCond() *
-            DiffManager()->GetThermFac() * conintinv * laplawfrhs_gradphi * newman_const_b *
-            DiffManager()->GetDerivTransNum(k, k) * my::funct_(ui);
+            timefacfac * diff_manager()->GetPhasePoroTort(0) * rtffc * diff_manager()->GetCond() *
+            diff_manager()->GetThermFac() * conintinv * laplawfrhs_gradphi * newman_const_b *
+            diff_manager()->GetDerivTransNum(k, k) * my::funct_(ui);
 
         // Linearization wrt thermodynamic factor
         emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + k) +=
-            timefacfac * DiffManager()->GetPhasePoroTort(0) * rtffc * DiffManager()->GetCond() *
-            (newman_const_a + (newman_const_b * DiffManager()->GetTransNum(k))) * conintinv *
-            laplawfrhs_gradphi * DiffManager()->GetDerivThermFac(k) * my::funct_(ui);
+            timefacfac * diff_manager()->GetPhasePoroTort(0) * rtffc * diff_manager()->GetCond() *
+            (newman_const_a + (newman_const_b * diff_manager()->GetTransNum(k))) * conintinv *
+            laplawfrhs_gradphi * diff_manager()->GetDerivThermFac(k) * my::funct_(ui);
       }
       else if (diffcondmat_ == INPAR::ELCH::diffcondmat_ion)
       {
         if (diffcondparams_->DiffusionCoeffBased())
         {
           emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + k) +=
-              timefacfac * DiffManager()->GetPhasePoroTort(0) * DiffManager()->GetValence(k) *
-              DiffManager()->GetIsotropicDiff(k) * laplawf;
+              timefacfac * diff_manager()->GetPhasePoroTort(0) * diff_manager()->GetValence(k) *
+              diff_manager()->GetIsotropicDiff(k) * laplawf;
         }
         else
         {
           // Attention:
           // Full linearization of transference number, conductivity, ... is still missing
           emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + k) +=
-              timefacfac * DiffManager()->GetPhasePoroTort(0) * rtf * invf /
-              DiffManager()->GetValence(k) * DiffManager()->GetCond() *
-              DiffManager()->GetTransNum(k) * conintinv * laplawf;
+              timefacfac * diff_manager()->GetPhasePoroTort(0) * rtf * invf /
+              diff_manager()->GetValence(k) * diff_manager()->GetCond() *
+              diff_manager()->GetTransNum(k) * conintinv * laplawf;
         }
       }
       else
@@ -762,8 +767,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCurEquOh
         const int fvi = vi * my::numdofpernode_ + (my::numscal_ + 1) + idim;
         const int fui = ui * my::numdofpernode_ + my::numscal_;
 
-        emat(fvi, fui) += timefacfac * invf * DiffManager()->GetPhasePoroTort(0) * my::funct_(vi) *
-                          DiffManager()->GetCond() * my::derxy_(idim, ui);
+        emat(fvi, fui) += timefacfac * invf * diff_manager()->GetPhasePoroTort(0) * my::funct_(vi) *
+                          diff_manager()->GetCond() * my::derxy_(idim, ui);
 
         // linearization of conductivity in the ohmic resistance term (current equation)
         //
@@ -772,8 +777,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCurEquOh
         for (int k = 0; k < my::numscal_; ++k)
         {
           emat(fvi, ui * my::numdofpernode_ + k) +=
-              timefacfac * invf * DiffManager()->GetPhasePoroTort(0) * my::funct_(vi) *
-              DiffManager()->GetConcDerivCond(k) * my::funct_(ui) * gradpot(idim);
+              timefacfac * invf * diff_manager()->GetPhasePoroTort(0) * my::funct_(vi) *
+              diff_manager()->GetConcDerivCond(k) * my::funct_(ui) * gradpot(idim);
         }
       }
     }
@@ -803,19 +808,19 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCurEquCo
           {
             emat(
                 vi * my::numdofpernode_ + (my::numscal_ + 1) + idim, ui * my::numdofpernode_ + k) +=
-                timefacfac * rtffc * DiffManager()->GetPhasePoroTort(0) * my::funct_(vi) *
-                DiffManager()->GetCond() *
-                (newman_const_a + (newman_const_b * DiffManager()->GetTransNum(k))) * conintinv[k] *
-                my::derxy_(idim, ui);
+                timefacfac * rtffc * diff_manager()->GetPhasePoroTort(0) * my::funct_(vi) *
+                diff_manager()->GetCond() *
+                (newman_const_a + (newman_const_b * diff_manager()->GetTransNum(k))) *
+                conintinv[k] * my::derxy_(idim, ui);
           }
           else if (diffcondmat_ == INPAR::ELCH::diffcondmat_ion)
           {
             if (diffcondparams_->DiffusionCoeffBased())
             {
               emat(vi * my::numdofpernode_ + (my::numscal_ + 1) + idim,
-                  ui * my::numdofpernode_ + k) += timefacfac * DiffManager()->GetPhasePoroTort(0) *
-                                                  my::funct_(vi) * DiffManager()->GetValence(k) *
-                                                  DiffManager()->GetIsotropicDiff(k) *
+                  ui * my::numdofpernode_ + k) += timefacfac * diff_manager()->GetPhasePoroTort(0) *
+                                                  my::funct_(vi) * diff_manager()->GetValence(k) *
+                                                  diff_manager()->GetIsotropicDiff(k) *
                                                   my::derxy_(idim, ui);
             }
             else
@@ -823,27 +828,27 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCurEquCo
               // linearization wrt nabla c_k
               emat(vi * my::numdofpernode_ + (my::numscal_ + 1) + idim,
                   ui * my::numdofpernode_ + k) +=
-                  timefacfac * DiffManager()->GetPhasePoroTort(0) * invfval[k] * rtf *
-                  my::funct_(vi) * DiffManager()->GetCond() * DiffManager()->GetTransNum(k) *
+                  timefacfac * diff_manager()->GetPhasePoroTort(0) * invfval[k] * rtf *
+                  my::funct_(vi) * diff_manager()->GetCond() * diff_manager()->GetTransNum(k) *
                   conintinv[k] * my::derxy_(idim, ui);
 
               // linearization wrt 1/c_k
               emat(vi * my::numdofpernode_ + (my::numscal_ + 1) + idim,
                   ui * my::numdofpernode_ + k) +=
-                  -timefacfac * DiffManager()->GetPhasePoroTort(0) * rtf * invfval[k] *
-                  DiffManager()->GetCond() * DiffManager()->GetTransNum(k) * conintinv[k] *
+                  -timefacfac * diff_manager()->GetPhasePoroTort(0) * rtf * invfval[k] *
+                  diff_manager()->GetCond() * diff_manager()->GetTransNum(k) * conintinv[k] *
                   conintinv[k] * my::funct_(vi) * (gradphi[k])(idim)*my::funct_(ui);
 
               // linearization wrt kappa
               double term_vi = 0.0;
               for (int iscal = 0; iscal < my::numscal_; ++iscal)
               {
-                term_vi += invfval[iscal] * DiffManager()->GetTransNum(iscal) * conintinv[iscal] *
+                term_vi += invfval[iscal] * diff_manager()->GetTransNum(iscal) * conintinv[iscal] *
                            my::funct_(vi) * (gradphi[iscal])(idim)*my::funct_(ui);
               }
               emat(vi * my::numdofpernode_ + (my::numscal_ + 1) + idim,
-                  ui * my::numdofpernode_ + k) += timefacfac * DiffManager()->GetPhasePoroTort(0) *
-                                                  DiffManager()->GetConcDerivCond(k) * rtf *
+                  ui * my::numdofpernode_ + k) += timefacfac * diff_manager()->GetPhasePoroTort(0) *
+                                                  diff_manager()->GetConcDerivCond(k) * rtf *
                                                   term_vi;
 
               // linearization wrt transference number
@@ -851,8 +856,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCurEquCo
               {
                 emat(vi * my::numdofpernode_ + (my::numscal_ + 1) + idim,
                     ui * my::numdofpernode_ + iscal) +=
-                    timefacfac * DiffManager()->GetPhasePoroTort(0) * rtf * invfval[k] *
-                    DiffManager()->GetCond() * (DiffManager()->GetDerivTransNum(k, iscal)) *
+                    timefacfac * diff_manager()->GetPhasePoroTort(0) * rtf * invfval[k] *
+                    diff_manager()->GetCond() * (diff_manager()->GetDerivTransNum(k, iscal)) *
                     conintinv[k] * my::funct_(vi) * (gradphi[k])(idim)*my::funct_(ui);
               }
             }
@@ -877,9 +882,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCondOhm(
     // diffusive term
     double laplawfrhs_gradpot = 0.0;
     my::get_laplacian_weak_form_rhs(laplawfrhs_gradpot, gradpot, vi);
-    erhs[vi * my::numdofpernode_ + k] -= rhsfac * DiffManager()->GetPhasePoroTort(0) *
-                                         DiffManager()->GetTransNum(k) * DiffManager()->GetCond() *
-                                         invfval * laplawfrhs_gradpot;
+    erhs[vi * my::numdofpernode_ + k] -= rhsfac * diff_manager()->GetPhasePoroTort(0) *
+                                         diff_manager()->GetTransNum(k) *
+                                         diff_manager()->GetCond() * invfval * laplawfrhs_gradpot;
   }
 }
 
@@ -904,9 +909,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCondConc
       //
       // (grad w, sum(D_i grad Dc))
       erhs[vi * my::numdofpernode_ + k] -=
-          rhsfac * DiffManager()->GetPhasePoroTort(0) * rtffcval * DiffManager()->GetTransNum(k) *
-          DiffManager()->GetCond() * DiffManager()->GetThermFac() *
-          (newman_const_a + (newman_const_b * DiffManager()->GetTransNum(iscal))) *
+          rhsfac * diff_manager()->GetPhasePoroTort(0) * rtffcval * diff_manager()->GetTransNum(k) *
+          diff_manager()->GetCond() * diff_manager()->GetThermFac() *
+          (newman_const_a + (newman_const_b * diff_manager()->GetTransNum(iscal))) *
           conintinv[iscal] * laplawfrhs_gradphi;
     }
   }
@@ -925,7 +930,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCond(
     my::get_laplacian_weak_form_rhs(laplawfrhs_cur, curint, vi);
 
     erhs[vi * my::numdofpernode_ + k] -=
-        -rhsfac * DiffManager()->GetTransNum(k) * invfval * laplawfrhs_cur;
+        -rhsfac * diff_manager()->GetTransNum(k) * invfval * laplawfrhs_cur;
   }
 }
 
@@ -947,9 +952,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCondDiff
 
       // formulation a:  plain ionic diffusion coefficients: sum (z_i D_i nabla c_i)
       erhs[vi * my::numdofpernode_ + k] -=
-          -rhsfac * DiffManager()->GetPhasePoroTort(0) * DiffManager()->GetTransNum(k) *
-          DiffManager()->GetValence(iscal) / DiffManager()->GetValence(k) *
-          DiffManager()->GetIsotropicDiff(iscal) * laplawfrhs_gradphi;
+          -rhsfac * diff_manager()->GetPhasePoroTort(0) * diff_manager()->GetTransNum(k) *
+          diff_manager()->GetValence(iscal) / diff_manager()->GetValence(k) *
+          diff_manager()->GetIsotropicDiff(iscal) * laplawfrhs_gradphi;
     }
   }
 }
@@ -974,14 +979,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_rhs_pot_eq
       if (diffcondparams_->DiffusionCoeffBased())
       {
         erhs[vi * my::numdofpernode_ + my::numscal_] -=
-            rhsfac * DiffManager()->GetPhasePoroTort(0) * DiffManager()->GetValence(k) *
-            DiffManager()->GetIsotropicDiff(k) * laplawf2;
+            rhsfac * diff_manager()->GetPhasePoroTort(0) * diff_manager()->GetValence(k) *
+            diff_manager()->GetIsotropicDiff(k) * laplawf2;
       }
       else
       {
         erhs[vi * my::numdofpernode_ + my::numscal_] -=
-            rhsfac * DiffManager()->GetPhasePoroTort(0) * rtf * invfval[k] *
-            DiffManager()->GetCond() * DiffManager()->GetTransNum(k) * conintinv * laplawf2;
+            rhsfac * diff_manager()->GetPhasePoroTort(0) * rtf * invfval[k] *
+            diff_manager()->GetCond() * diff_manager()->GetTransNum(k) * conintinv * laplawf2;
       }
     }
     // thermodynamic factor only implemented for Newman
@@ -992,9 +997,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_rhs_pot_eq
       my::get_laplacian_weak_form_rhs(laplawf2, gradphi, vi);  // compute once, reuse below!
 
       erhs[vi * my::numdofpernode_ + my::numscal_] -=
-          rhsfac * DiffManager()->GetPhasePoroTort(0) * rtffc * DiffManager()->GetCond() *
-          DiffManager()->GetThermFac() *
-          (newman_const_a + (newman_const_b * DiffManager()->GetTransNum(k))) * conintinv *
+          rhsfac * diff_manager()->GetPhasePoroTort(0) * rtffc * diff_manager()->GetCond() *
+          diff_manager()->GetThermFac() *
+          (newman_const_a + (newman_const_b * diff_manager()->GetTransNum(k))) * conintinv *
           laplawf2;
     }
     else
@@ -1049,8 +1054,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCurEquOh
     {
       // (v, kappa grad phi)
       erhs[vi * my::numdofpernode_ + (my::numscal_ + 1) + idim] -=
-          rhsfac * invf * DiffManager()->GetPhasePoroTort(0) * my::funct_(vi) *
-          DiffManager()->GetCond() * gradpot(idim);
+          rhsfac * invf * diff_manager()->GetPhasePoroTort(0) * my::funct_(vi) *
+          diff_manager()->GetCond() * gradpot(idim);
     }
   }
 }
@@ -1073,9 +1078,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCurEquCo
         if (diffcondmat_ == INPAR::ELCH::diffcondmat_newman)
         {
           erhs[vi * my::numdofpernode_ + (my::numscal_ + 1) + idim] -=
-              rhsfac * DiffManager()->GetPhasePoroTort(0) * my::funct_(vi) * rtffc *
-              DiffManager()->GetCond() *
-              (newman_const_a + (newman_const_b * DiffManager()->GetTransNum(k))) * conintinv[k] *
+              rhsfac * diff_manager()->GetPhasePoroTort(0) * my::funct_(vi) * rtffc *
+              diff_manager()->GetCond() *
+              (newman_const_a + (newman_const_b * diff_manager()->GetTransNum(k))) * conintinv[k] *
               gradphi[k](idim);
         }
         else if (diffcondmat_ == INPAR::ELCH::diffcondmat_ion)
@@ -1083,15 +1088,15 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCurEquCo
           if (diffcondparams_->DiffusionCoeffBased())
           {
             erhs[vi * my::numdofpernode_ + (my::numscal_ + 1) + idim] -=
-                rhsfac * DiffManager()->GetPhasePoroTort(0) * my::funct_(vi) *
-                DiffManager()->GetValence(k) * DiffManager()->GetIsotropicDiff(k) *
+                rhsfac * diff_manager()->GetPhasePoroTort(0) * my::funct_(vi) *
+                diff_manager()->GetValence(k) * diff_manager()->GetIsotropicDiff(k) *
                 gradphi[k](idim);
           }
           else
           {
             erhs[vi * my::numdofpernode_ + (my::numscal_ + 1) + idim] -=
-                rhsfac * DiffManager()->GetPhasePoroTort(0) * my::funct_(vi) * rtf *
-                DiffManager()->GetCond() * invfval[k] * DiffManager()->GetTransNum(k) *
+                rhsfac * diff_manager()->GetPhasePoroTort(0) * my::funct_(vi) * rtf *
+                diff_manager()->GetCond() * invfval[k] * diff_manager()->GetTransNum(k) *
                 conintinv[k] * gradphi[k](idim);
           }
         }
@@ -1131,16 +1136,16 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::correction_for_
 
         // scaling of div i results in a matrix with better condition number
         val = erhs[fvi];
-        erhs[vi * my::numdofpernode_ + my::numscal_] += DiffManager()->GetValence(k) * (-val);
+        erhs[vi * my::numdofpernode_ + my::numscal_] += diff_manager()->GetValence(k) * (-val);
         // corresponding linearization
         for (unsigned ui = 0; ui < nen_; ++ui)
         {
           val = emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + k);
           emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + k) +=
-              DiffManager()->GetValence(k) * (-val);
+              diff_manager()->GetValence(k) * (-val);
           val = emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + my::numscal_);
           emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + my::numscal_) +=
-              DiffManager()->GetValence(k) * (-val);
+              diff_manager()->GetValence(k) * (-val);
         }
       }
 
@@ -1164,17 +1169,17 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::correction_for_
 
           // scaling of div i results in a matrix with better condition number
           val = erhs[fvi];
-          erhs[vi * my::numdofpernode_ + l] += 1.0 / DiffManager()->GetValence(l) * (-val);
+          erhs[vi * my::numdofpernode_ + l] += 1.0 / diff_manager()->GetValence(l) * (-val);
           // corresponding linearization
           for (unsigned ui = 0; ui < nen_; ++ui)
           {
             val = emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + l);
             emat(vi * my::numdofpernode_ + l, ui * my::numdofpernode_ + l) +=
-                1.0 / DiffManager()->GetValence(l) * (-val);
+                1.0 / diff_manager()->GetValence(l) * (-val);
             val = emat(
                 vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + my::numscal_);
             emat(vi * my::numdofpernode_ + l, ui * my::numdofpernode_ + my::numscal_) +=
-                1.0 / DiffManager()->GetValence(l) * (-val);
+                1.0 / diff_manager()->GetValence(l) * (-val);
           }
         }
       }
@@ -1195,9 +1200,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::GetMaterialPara
   // evaluate electrolyte material
   if (material->MaterialType() == CORE::Materials::m_elchmat)
   {
-    Utils()->MatElchMat(material, VarManager()->Phinp(), VarManager()->Temperature(),
-        myelch::elchparams_->EquPot(), myelch::elchparams_->Faraday() * VarManager()->FRT(),
-        DiffManager(), diffcondmat_);
+    Utils()->MatElchMat(material, var_manager()->Phinp(), var_manager()->Temperature(),
+        myelch::elchparams_->EquPot(), myelch::elchparams_->Faraday() * var_manager()->FRT(),
+        diff_manager(), diffcondmat_);
   }
   else
     FOUR_C_THROW("Invalid material type!");

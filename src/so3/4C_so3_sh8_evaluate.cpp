@@ -43,7 +43,8 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
-  // Check whether the solid material PostSetup() routine has already been called and call it if not
+  // Check whether the solid material post_setup() routine has already been called and call it if
+  // not
   ensure_material_post_setup(params);
 
   // get parameter interface
@@ -340,7 +341,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     break;
 
     case ELEMENTS::struct_calc_eleload:
-      FOUR_C_THROW("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
+      FOUR_C_THROW("this method is not supposed to evaluate a load, use evaluate_neumann(...)");
       break;
 
     case ELEMENTS::struct_calc_fsiload:
@@ -401,7 +402,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
         oldfeas->putScalar(0.0);
       }
       // Reset of history (if needed)
-      SolidMaterial()->ResetStep();
+      SolidMaterial()->reset_step();
     }
     break;
 
@@ -1629,7 +1630,7 @@ void DRT::ELEMENTS::SoSh8::sosh8_get_deformationgradient(const unsigned gp,
 
   // calculate deformation gradient consistent with modified GL strain tensor
   if ((eastype_ != soh8_easnone || anstype_ == ansnone) &&
-      (Teuchos::rcp_static_cast<MAT::So3Material>(Material())->NeedsDefgrd()))
+      (Teuchos::rcp_static_cast<MAT::So3Material>(Material())->needs_defgrd()))
     calc_consistent_defgrd(defgrd, glstrain, defgrd);
 }
 
@@ -2183,7 +2184,7 @@ int DRT::ELEMENTS::SoSh8Type::Initialize(DRT::Discretization& dis)
 
   // fill complete again to reconstruct element-node pointers,
   // but without element init, etc.
-  dis.FillComplete(false, false, false);
+  dis.fill_complete(false, false, false);
 
   // loop again to init Jacobian for Sosh8's
   for (int i = 0; i < dis.NumMyColElements(); ++i)

@@ -60,9 +60,9 @@ int UTILS::Cardiovascular0DDofSet::assign_degrees_of_freedom(
   // perfectly fine.
   //
   // However if you rely on non-overlapping dof sets, you have to
-  // FillComplete() your discretizations in the order of their creation. This
+  // fill_complete() your discretizations in the order of their creation. This
   // is guaranteed for all discretizations read from the input file since the
-  // input reader calls FillComplete(). If you create your own discretizations
+  // input reader calls fill_complete(). If you create your own discretizations
   // try to understand what you do.
 
   // Get highest GID used so far and add one

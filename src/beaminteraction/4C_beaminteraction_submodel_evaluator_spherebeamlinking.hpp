@@ -50,7 +50,7 @@ namespace BEAMINTERACTION
       void Setup() override;
 
       //! derived
-      void PostSetup() override;
+      void post_setup() override;
 
       //! Returns the type of the current model evaluator
       INPAR::BEAMINTERACTION::SubModelType Type() const override
@@ -62,13 +62,13 @@ namespace BEAMINTERACTION
       void Reset() override;
 
       //! derived
-      bool EvaluateForce() override;
+      bool evaluate_force() override;
 
       //! derived
-      bool EvaluateStiff() override;
+      bool evaluate_stiff() override;
 
       //! derived
-      bool EvaluateForceStiff() override;
+      bool evaluate_force_stiff() override;
 
       //! derived
       void UpdateStepState(const double& timefac_n) override;
@@ -83,7 +83,7 @@ namespace BEAMINTERACTION
       void post_update_step_element() override;
 
       //! derived
-      std::map<STR::EnergyType, double> GetEnergy() const override;
+      std::map<STR::EnergyType, double> get_energy() const override;
 
       //! derived
       void OutputStepState(IO::DiscretizationWriter& iowriter) const override;
@@ -102,7 +102,7 @@ namespace BEAMINTERACTION
       void PreReadRestart() override;
 
       //! derived
-      void ReadRestart(
+      void read_restart(
           IO::DiscretizationReader& ia_reader, IO::DiscretizationReader& bin_reader) override;
 
       //! derived
@@ -132,10 +132,10 @@ namespace BEAMINTERACTION
       //! @{
 
       //! init output in VTP format
-      void InitOutputRuntime();
+      void init_output_runtime();
 
       //! writes output for discretization structure in VTP format
-      void WriteOutputRuntime() const;
+      void write_output_runtime() const;
 
       /// get neighboring eles in discret
       virtual void find_and_store_neighboring_elements(
@@ -151,7 +151,7 @@ namespace BEAMINTERACTION
           std::map<int, std::vector<std::pair<int, int>>> const& newlinks);
 
       /// update linker length to mimic contractive cells
-      virtual void UpdateLinkerLength();
+      virtual void update_linker_length();
 
       /// check if bond needs to be dissolved
       virtual void unbind_sphere_beam_bonds(int& num_dissolved);

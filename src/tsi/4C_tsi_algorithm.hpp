@@ -94,7 +94,7 @@ namespace TSI
     virtual void Solve() = 0;
 
     //! read restart data
-    void ReadRestart(int step  //!< step number where the calculation is continued
+    void read_restart(int step  //!< step number where the calculation is continued
         ) override = 0;
 
     //! access to structural field
@@ -107,10 +107,10 @@ namespace TSI
     //! @name Time loop building blocks
 
     //! start a new time step
-    void PrepareTimeStep() override = 0;
+    void prepare_time_step() override = 0;
 
     //! calculate stresses, strains, energies
-    virtual void PrepareOutput() = 0;
+    virtual void prepare_output() = 0;
 
     //! take current results for converged and save for next time step
     void Update() override;

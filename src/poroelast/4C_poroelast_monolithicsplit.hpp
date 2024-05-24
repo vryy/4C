@@ -34,13 +34,13 @@ namespace POROELAST
     void SetupSystem() override = 0;
 
     //! setup composed right hand side from field solvers (depends on which field is splitted)
-    void SetupRHS(bool firstcall = false) override = 0;
+    void setup_rhs(bool firstcall = false) override = 0;
 
     //! setup composed system matrix from field solvers (depends on which field is splitted)
-    void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) override = 0;
+    void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) override = 0;
 
     //! start a new time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time
     //! step (i.e. condensed forces onto the structure) needed for rhs in next time step

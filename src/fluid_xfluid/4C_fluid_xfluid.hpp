@@ -129,7 +129,7 @@ namespace FLD
     void check_initialized_dof_set_coupling_map();
 
     /// print information about current time step to screen
-    void PrintTimeStepInfo() override;
+    void print_time_step_info() override;
 
     void Integrate() override { TimeLoop(); }
 
@@ -137,7 +137,7 @@ namespace FLD
     void TimeLoop() override;
 
     /// setup the variables to do a new time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     /// set theta for specific time integration scheme
     void SetTheta() override;
@@ -155,7 +155,7 @@ namespace FLD
     void LiftDrag() const override;
 
     /// solve linearised fluid
-    void LinearSolve();
+    void linear_solve();
 
     /// create vectors for KrylovSpaceProjection
     void init_krylov_space_projection() override;
@@ -212,7 +212,7 @@ namespace FLD
 
     //! @name access methods for composite algorithms
     /// monolithic FSI needs to access the linear fluid problem
-    Teuchos::RCP<const Epetra_Vector> InitialGuess() override { return state_->incvel_; }
+    Teuchos::RCP<const Epetra_Vector> initial_guess() override { return state_->incvel_; }
     Teuchos::RCP<Epetra_Vector> Residual() override { return state_->residual_; }
     /// implement adapter fluid
     Teuchos::RCP<const Epetra_Vector> RHS() override { return Residual(); }
@@ -249,7 +249,7 @@ namespace FLD
     // @}
 
 
-    Teuchos::RCP<const Epetra_Map> DofRowMap() override
+    Teuchos::RCP<const Epetra_Map> dof_row_map() override
     {
       //      return state_->xfluiddofrowmap_; // no ownership, //TODO: otherwise we have to create
       //      a new system all the time! return Teuchos::rcpFromRef(*state_->xfluiddofrowmap_); //
@@ -319,7 +319,7 @@ namespace FLD
     Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
 
     /// read restart data for fluid discretization
-    void ReadRestart(int step) override;
+    void read_restart(int step) override;
 
 
     // -------------------------------------------------------------------
@@ -385,7 +385,7 @@ namespace FLD
         Teuchos::RCP<Epetra_Vector> dispnp_col);
 
     /// call the loop over elements to assemble volume and interface integrals
-    virtual void AssembleMatAndRHS(int itnum  ///< iteration number
+    virtual void assemble_mat_and_rhs(int itnum  ///< iteration number
     );
 
     /// evaluate and assemble volume integral based terms
@@ -413,7 +413,7 @@ namespace FLD
     \brief convergence check
 
     */
-    bool ConvergenceCheck(int itnum, int itemax, const double velrestol, const double velinctol,
+    bool convergence_check(int itnum, int itemax, const double velrestol, const double velinctol,
         const double presrestol, const double presinctol) override;
 
     /// Update velocity and pressure by increment
@@ -640,7 +640,7 @@ namespace FLD
       \brief call elements to calculate system matrix/rhs and assemble
 
     */
-    void AssembleMatAndRHS() override;
+    void assemble_mat_and_rhs() override;
 
     /*!
       \brief update acceleration for generalized-alpha time integration

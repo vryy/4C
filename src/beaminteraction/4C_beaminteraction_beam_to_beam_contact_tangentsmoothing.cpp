@@ -39,7 +39,7 @@ Teuchos::RCP<BEAMINTERACTION::B3CNeighbor> BEAMINTERACTION::B3TANGENTSMOOTHING::
   int connecting_node_right = 0;
 
   // number of nodes element1
-  int numnode = element1->NumNode();
+  int numnode = element1->num_node();
 
   // n_right is the local node-ID of the elements right node (at xi = 1) whereas the elements left
   // node (at xi = -1) allways has the local ID 1

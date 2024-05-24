@@ -1986,7 +1986,7 @@ void check13nodedConvex(
 
 /*---------------------------------------------------------------------------------------*
  *     7 noded facet with 3 continuous concave points is split into 5 Tri cells          *
- *     call SplitGeneralFacet first, and moves to EarClipping                            *
+ *     call split_general_facet first, and moves to EarClipping                            *
  *---------------------------------------------------------------------------------------*/
 void check7nodedconti3concave(
     CORE::GEO::CUT::Mesh& mesh, CORE::GEO::CUT::Element* e, CORE::GEO::CUT::Side* s)

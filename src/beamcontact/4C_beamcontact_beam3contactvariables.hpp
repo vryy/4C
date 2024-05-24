@@ -89,7 +89,7 @@ namespace CONTACT
     /*!
     \brief Get jacobi factor
     */
-    TYPE GetJacobi() { return jacobi_; };
+    TYPE get_jacobi() { return jacobi_; };
 
     /*!
     \brief Set gap
@@ -164,7 +164,7 @@ namespace CONTACT
     /*!
     \brief Get penalty energy
     */
-    TYPE GetEnergy() { return energy_; };
+    TYPE get_energy() { return energy_; };
 
     /*!
     \brief Set length integrated penalty energy

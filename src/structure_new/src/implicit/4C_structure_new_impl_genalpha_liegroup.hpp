@@ -97,17 +97,17 @@ namespace STR
       void Setup() override;
 
       //! [derived]
-      void PostSetup() override;
+      void post_setup() override;
 
       //! Reset state variables [derived]
-      void SetState(const Epetra_Vector& x) override;
+      void set_state(const Epetra_Vector& x) override;
 
       //! [derived]
       void WriteRestart(
           IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! [derived]
-      void ReadRestart(IO::DiscretizationReader& ioreader) override;
+      void read_restart(IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
       double GetIntParam() const override;
@@ -178,7 +178,7 @@ namespace STR
        * in the const_vel_acc_update_ptr_ multi-vector pointer. The 1st entry represents the
        * velocity, and the 2nd the acceleration.
        *
-       *  See the SetState() routine for the iterative update of the current state.
+       *  See the set_state() routine for the iterative update of the current state.
        *
        *  \f$ A_{mod,n} \f$ is updated in the method UpdateStepState() according to
        *  \f[

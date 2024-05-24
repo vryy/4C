@@ -337,8 +337,8 @@ bool XFEM::XfluidTimeintBase::Neighbors(
 {
   bool is_neighbor = false;
 
-  const int numnode1 = ele1->NumNode();
-  const int numnode2 = ele2->NumNode();
+  const int numnode1 = ele1->num_node();
+  const int numnode2 = ele2->num_node();
 
   const int* nodeids1 = ele1->NodeIds();
   const int* nodeids2 = ele2->NodeIds();
@@ -472,14 +472,14 @@ void XFEM::XfluidTimeintBase::callXToXiCoords(const DRT::Element* ele,  /// poin
     bool& pointInDomain              /// lies point in element ?
 ) const
 {
-  CORE::LINALG::SerialDenseMatrix xyz(3, ele->NumNode(), true);
+  CORE::LINALG::SerialDenseMatrix xyz(3, ele->num_node(), true);
   CORE::GEO::fillInitialPositionArray(ele, xyz);
 
   // add ale displacements to initial position
   if (state != "reference" && dispnp_ != Teuchos::null &&
       dispn_ != Teuchos::null)  // add no displacements in case of state == "reference" or //is ale?
   {
-    int nen = ele->NumNode();
+    int nen = ele->num_node();
     int numdof = ele->NumDofPerNode(*(ele->Nodes()[0]));
 
     std::vector<int> nds(nen, 0);
@@ -561,7 +561,7 @@ void XFEM::XfluidTimeintBase::XToXiCoords(
   CORE::LINALG::Matrix<nsd, numnode> xyze(xyz);
 
   Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-      CORE::GEO::CUT::PositionFactory::BuildPosition<3, DISTYPE>(xyze, x);
+      CORE::GEO::CUT::PositionFactory::build_position<3, DISTYPE>(xyze, x);
   pos->Compute();
   pos->LocalCoordinates(xi);  // local coordinates
 
@@ -603,7 +603,7 @@ void XFEM::XfluidTimeintBase::evalShapeAndDeriv(DRT::Element* element,  /// poin
     // add ale displacements to initial position for state np
     if (dispnp_ != Teuchos::null)  // is ale?
     {
-      int nen = element->NumNode();
+      int nen = element->num_node();
       int numdof = element->NumDofPerNode(*(element->Nodes()[0]));
 
       std::vector<int> nds(nen, 0);
@@ -773,7 +773,7 @@ void XFEM::XfluidTimeintBase::clearState(TimeIntData::State state  /// state of 
 /*------------------------------------------------------------------------------------------------*
  * basic function sending data to dest and receiving data from source                schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XfluidTimeintBase::sendData(
+void XFEM::XfluidTimeintBase::send_data(
     CORE::COMM::PackBuffer& dataSend, int& dest, int& source, std::vector<char>& dataRecv) const
 {
   std::vector<int> lengthSend(1, 0);
@@ -791,7 +791,7 @@ void XFEM::XfluidTimeintBase::sendData(
   // send length of the data to be received ...
   MPI_Request req_length_data;
   int length_tag = 0;
-  exporter.ISend(myrank_, dest, lengthSend.data(), size_one, length_tag, req_length_data);
+  exporter.i_send(myrank_, dest, lengthSend.data(), size_one, length_tag, req_length_data);
   // ... and receive length
   std::vector<int> lengthRecv(1, 0);
   exporter.Receive(source, length_tag, lengthRecv, size_one);
@@ -800,7 +800,7 @@ void XFEM::XfluidTimeintBase::sendData(
   // send actual data ...
   int data_tag = 4;
   MPI_Request req_data;
-  exporter.ISend(myrank_, dest, dataSend().data(), lengthSend[0], data_tag, req_data);
+  exporter.i_send(myrank_, dest, dataSend().data(), lengthSend[0], data_tag, req_data);
 
   // ... and receive data
   dataRecv.clear();
@@ -812,7 +812,7 @@ void XFEM::XfluidTimeintBase::sendData(
   std::cout << "--- receiving " << lengthRecv[0] << " bytes: to proc " << myrank_ << " from proc "
             << source << std::endl;
 #endif
-}  // end sendData
+}  // end send_data
 
 
 
@@ -1296,7 +1296,7 @@ void XFEM::XfluidStd::ProjectAndTrackback(TimeIntData& data)
 
       // get the side
       DRT::Element* side = boundarydis_->gElement(sid);
-      int numnode = side->NumNode();
+      int numnode = side->num_node();
       const int* side_nodes = side->NodeIds();
 
       // get the nodes
@@ -1319,7 +1319,7 @@ void XFEM::XfluidStd::ProjectAndTrackback(TimeIntData& data)
     {
       // get the side
       DRT::Element* side = boundarydis_->lColElement(i);
-      int numnode = side->NumNode();
+      int numnode = side->num_node();
       const int* side_nodes = side->NodeIds();
 
       sides.insert(side->Id());
@@ -1448,7 +1448,7 @@ void XFEM::XfluidStd::ProjectAndTrackback(TimeIntData& data)
     if (side == nullptr) FOUR_C_THROW("side with id %d not found ", proj_sid);
 
     // side geometry at initial state t^0
-    const int numnodes = side->NumNode();
+    const int numnodes = side->num_node();
     DRT::Node** nodes = side->Nodes();
     CORE::LINALG::SerialDenseMatrix side_xyze(3, numnodes);
     for (int i = 0; i < numnodes; ++i)
@@ -1495,7 +1495,7 @@ void XFEM::XfluidStd::ProjectAndTrackback(TimeIntData& data)
 
         std::set<int> neighbor_sides;
 
-        for (int i = 0; i < side_1->NumNode(); i++)
+        for (int i = 0; i < side_1->num_node(); i++)
         {
           DRT::Element** surr_sides = nodes[i]->Elements();
           for (int s = 0; s < nodes[i]->NumElement(); s++)
@@ -1516,7 +1516,7 @@ void XFEM::XfluidStd::ProjectAndTrackback(TimeIntData& data)
           {
             DRT::Node** line_nodes = (*line_it)->Nodes();
             std::vector<int> line_nids;
-            for (int i = 0; i < (*line_it)->NumNode(); ++i)
+            for (int i = 0; i < (*line_it)->num_node(); ++i)
             {
               line_nids.push_back(line_nodes[i]->Id());
             }
@@ -1562,7 +1562,7 @@ void XFEM::XfluidStd::ProjectAndTrackback(TimeIntData& data)
       DRT::Element* side_1 = boundarydis_->gElement(sid_1);
 
       // side geometry at initial state t^0
-      const int numnodes_1 = side_1->NumNode();
+      const int numnodes_1 = side_1->num_node();
       DRT::Node** nodes_1 = side_1->Nodes();
       CORE::LINALG::SerialDenseMatrix side_xyze_1(3, numnodes_1);
       for (int i = 0; i < numnodes_1; ++i)
@@ -1583,7 +1583,7 @@ void XFEM::XfluidStd::ProjectAndTrackback(TimeIntData& data)
       {
         side_2 = boundarydis_->gElement(sid_2);
         // side geometry at initial state t^0
-        const int numnodes_2 = side_2->NumNode();
+        const int numnodes_2 = side_2->num_node();
         DRT::Node** nodes_2 = side_2->Nodes();
         side_xyze_2.shape(3, numnodes_2);
         for (int i = 0; i < numnodes_2; ++i)
@@ -1635,7 +1635,7 @@ void XFEM::XfluidStd::ProjectAndTrackback(TimeIntData& data)
     {
       // side geometry at initial state t^0
       DRT::Element* side = node_sides[s];
-      const int numnodes = side->NumNode();
+      const int numnodes = side->num_node();
       DRT::Node** nodes = side->Nodes();
       CORE::LINALG::SerialDenseMatrix side_xyze(3, numnodes);
       for (int i = 0; i < numnodes; ++i)
@@ -1749,7 +1749,7 @@ bool XFEM::XfluidStd::find_nearest_surf_point(
 
     // get the side
     DRT::Element* side = boundarydis_->gElement(sid);
-    int numnode = side->NumNode();
+    int numnode = side->num_node();
     const int* side_nodes = side->NodeIds();
 
     // get the nodes
@@ -1936,10 +1936,10 @@ void XFEM::XfluidStd::compute_start_point_line(DRT::Element* side1,  ///< pointe
   CORE::LINALG::Matrix<3, 1> proj_x_n_dummy1(true);
 
 
-  for (int i = 0; i < side1->NumNode(); i++)
+  for (int i = 0; i < side1->num_node(); i++)
     xi_1_avg.Update(1.0, CORE::FE::GetNodeCoordinates(i, side1->Shape()), 1.0);
 
-  xi_1_avg.Scale(1.0 / side1->NumNode());
+  xi_1_avg.Scale(1.0 / side1->num_node());
 
   xi_side1(0, 0) = xi_1_avg(0, 0);
   xi_side1(1, 0) = xi_1_avg(1, 0);
@@ -1950,10 +1950,10 @@ void XFEM::XfluidStd::compute_start_point_line(DRT::Element* side1,  ///< pointe
 
   if (side2 != nullptr)  // in case we have side2, use averaged normal
   {
-    for (int i = 0; i < side2->NumNode(); i++)
+    for (int i = 0; i < side2->num_node(); i++)
       xi_2_avg.Update(1.0, CORE::FE::GetNodeCoordinates(i, side2->Shape()), 1.0);
 
-    xi_2_avg.Scale(1.0 / side2->NumNode());
+    xi_2_avg.Scale(1.0 / side2->num_node());
 
     xi_side2(0, 0) = xi_2_avg(0, 0);
     xi_side2(1, 0) = xi_2_avg(1, 0);
@@ -1996,14 +1996,14 @@ void XFEM::XfluidStd::compute_start_point_avg(
     CORE::LINALG::Matrix<3, 1> local_node_coord(true);
 
     // get the side-center
-    for (int i = 0; i < side->NumNode(); i++)
+    for (int i = 0; i < side->num_node(); i++)
     {
       local_node_coord = CORE::FE::GetNodeCoordinates(i, side->Shape());
       side_center(0) += local_node_coord(0);
       side_center(1) += local_node_coord(1);
     }
 
-    side_center.Scale(1.0 / side->NumNode());
+    side_center.Scale(1.0 / side->num_node());
 
     // get the normal at the side center
     CORE::LINALG::Matrix<3, 1> proj_x_n_dummy1(true);
@@ -2177,7 +2177,7 @@ void XFEM::XfluidStd::call_get_projxn_line(
   // line geometry at initial state t^0
 
   // line geometry
-  const int numnodes = line->NumNode();
+  const int numnodes = line->num_node();
   DRT::Node** nodes = line->Nodes();
   CORE::LINALG::SerialDenseMatrix line_xyze(3, numnodes);
   for (int i = 0; i < numnodes; ++i)
@@ -2328,7 +2328,7 @@ void XFEM::XfluidStd::CallProjectOnSide(DRT::Element* side,  ///< pointer to str
 
 
   // side geometry at initial state t^0
-  const int numnodes = side->NumNode();
+  const int numnodes = side->num_node();
   DRT::Node** nodes = side->Nodes();
   CORE::LINALG::SerialDenseMatrix side_xyze(3, numnodes);
   for (int i = 0; i < numnodes; ++i)
@@ -2493,7 +2493,7 @@ void XFEM::XfluidStd::CallProjectOnLine(DRT::Element* side,  ///< pointer to str
   // line geometry at initial state t^0
 
   // line geometry
-  const int numnodes = line->NumNode();
+  const int numnodes = line->num_node();
   DRT::Node** nodes = line->Nodes();
   CORE::LINALG::SerialDenseMatrix line_xyze(3, numnodes);
   for (int i = 0; i < numnodes; ++i)
@@ -3252,7 +3252,7 @@ void XFEM::XfluidStd::exportStartData()
   }
 
   std::vector<char> dataRecv;
-  sendData(dataSend, dest, source, dataRecv);
+  send_data(dataSend, dest, source, dataRecv);
 
   // pointer to current position of group of cells in global std::string (counts bytes)
   std::vector<char>::size_type posinData = 0;
@@ -3375,7 +3375,7 @@ void XFEM::XfluidStd::exportFinalData()
     dataVec[dest].clear();
 
     std::vector<char> dataRecv;
-    sendData(dataSend, dest, source, dataRecv);
+    send_data(dataSend, dest, source, dataRecv);
 
     // pointer to current position of group of cells in global std::string (counts bytes)
     std::vector<char>::size_type posinData = 0;

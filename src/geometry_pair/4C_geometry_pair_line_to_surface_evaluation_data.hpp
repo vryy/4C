@@ -60,7 +60,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Calculate the averaged nodal normals.
      */
-    void SetState(const Teuchos::RCP<const Epetra_Vector>& displacement_col_np);
+    void set_state(const Teuchos::RCP<const Epetra_Vector>& displacement_col_np);
 
     /**
      * \brief Get a reference to the face element map.

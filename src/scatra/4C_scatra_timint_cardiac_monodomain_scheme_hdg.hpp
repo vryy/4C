@@ -41,7 +41,7 @@ namespace SCATRA
     void Update() override;
 
     //! write current state to BINIO
-    void OutputState() override;
+    void output_state() override;
 
    protected:
     void element_material_time_update() override;
@@ -59,7 +59,8 @@ namespace SCATRA
     void ProjectMaterial() override;
 
     //! read restart
-    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
+    void read_restart(
+        const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
    private:
     //! activation time

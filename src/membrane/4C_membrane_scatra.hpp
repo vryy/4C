@@ -170,7 +170,7 @@ namespace DRT
       \param discretization : pointer to discretization for de-assembly
       \param la (in)        : location array for de-assembly
       */
-      void PreEvaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      void pre_evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           DRT::Element::LocationArray& la);
 
       /*!

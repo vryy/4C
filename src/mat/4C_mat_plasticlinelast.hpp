@@ -192,7 +192,7 @@ namespace MAT
     );
 
     //! computes isotropic elasticity tensor in matrix notion for 3d
-    void SetupCmat(
+    void setup_cmat(
         CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat  //!< elastic material tangent
     );
 
@@ -250,7 +250,7 @@ namespace MAT
     bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
     //! finite difference check for debugging purposes
-    void FDCheck(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& stress,  //!< updated stress sigma_n+1
+    void fd_check(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& stress,  //!< updated stress sigma_n+1
         CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
             cmatFD,  //!< material tangent calculated with FD of stresses
         CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& beta,          //!< updated back stresses

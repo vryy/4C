@@ -147,7 +147,7 @@ namespace DRT
             CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2);
 
         /// Compute the error with respect to an analytical field.
-        void ComputeError(DRT::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
+        void compute_error(DRT::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
             CORE::LINALG::SerialDenseVector& elevec1);
 
         /// Projection of a given field on the interior variables for testing purposes.
@@ -163,7 +163,7 @@ namespace DRT
             CORE::LINALG::SerialDenseVector& elevec1);
 
         /// Function evaluation routine
-        void EvaluateAll(const int start_func, const double t,
+        void evaluate_all(const int start_func, const double t,
             const CORE::LINALG::Matrix<nsd_, 1>& xyz, CORE::LINALG::SerialDenseVector& v) const;
 
         // convention: we sort the entries in the matrices the following way:
@@ -218,17 +218,17 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec, double dt, bool errormaps, bool updateonly);
 
       /// Reads from global vectors.
-      void ReadGlobalVectors(
+      void read_global_vectors(
           DRT::Element* ele, DRT::Discretization& discretization, const std::vector<int>& lm);
 
       /// Writes internal fields from elements to global vectors.
-      void FillRestartVectors(DRT::Element* ele, DRT::Discretization& discretization);
+      void fill_restart_vectors(DRT::Element* ele, DRT::Discretization& discretization);
 
       /// Reads internal field from global vectors to element vectors.
       void element_init_from_restart(DRT::Element* ele, DRT::Discretization& discretization);
 
       /// Calculate error maps with local postprocessing.
-      double EstimateError(DRT::ELEMENTS::Elemag& ele, CORE::LINALG::SerialDenseVector& p);
+      double estimate_error(DRT::ELEMENTS::Elemag& ele, CORE::LINALG::SerialDenseVector& p);
 
       /// Local data object for element.
       Teuchos::RCP<CORE::FE::ShapeValues<distype>> shapes_;

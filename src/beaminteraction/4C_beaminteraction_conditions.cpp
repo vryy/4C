@@ -244,14 +244,14 @@ void BEAMINTERACTION::BeamInteractionConditions::BuildIdSets(
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditions::SetState(
+void BEAMINTERACTION::BeamInteractionConditions::set_state(
     const Teuchos::RCP<const DRT::Discretization>& discret,
     const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
         beaminteraction_data_state)
 {
   for (auto const& map_pair : condition_map_)
     for (auto const& condition : map_pair.second)
-      condition->SetState(discret, beaminteraction_data_state);
+      condition->set_state(discret, beaminteraction_data_state);
 }
 
 /**
@@ -325,7 +325,7 @@ void BEAMINTERACTION::ConditionToElementIds(
   element_ids.reserve(condition->Geometry().size());
   for (const auto& item : condition->Geometry())
   {
-    int n_nodes = item.second->NumNode();
+    int n_nodes = item.second->num_node();
 
     // Create the node sets and store the node IDs from the condition element in it.
     std::set<int> nodes_condition;
@@ -340,7 +340,7 @@ void BEAMINTERACTION::ConditionToElementIds(
     for (int i_element = 0; i_element < item.second->Nodes()[local_node_id]->NumElement();
          i_element++)
     {
-      if (elements[i_element]->NumNode() != n_nodes) continue;
+      if (elements[i_element]->num_node() != n_nodes) continue;
 
       // Fill up the node ID map.
       nodes_element.clear();

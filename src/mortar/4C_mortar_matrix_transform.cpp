@@ -42,15 +42,15 @@ void MORTAR::MatrixRowColTransformer::Init(const plain_block_map_pairs& redistri
 {
   issetup_ = false;
 
-  SetSlaveMapPairs(redistributed_row, redistributed_column);
-  SetMasterMapPairs(unredistributed_row, unredistributed_column);
+  set_slave_map_pairs(redistributed_row, redistributed_column);
+  set_master_map_pairs(unredistributed_row, unredistributed_column);
 
   isinit_ = true;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void MORTAR::MatrixRowColTransformer::SetSlaveMapPairs(
+void MORTAR::MatrixRowColTransformer::set_slave_map_pairs(
     const plain_block_map_pairs& redistributed_row,
     const plain_block_map_pairs& redistributed_column)
 {
@@ -65,7 +65,7 @@ void MORTAR::MatrixRowColTransformer::SetSlaveMapPairs(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void MORTAR::MatrixRowColTransformer::SetMasterMapPairs(
+void MORTAR::MatrixRowColTransformer::set_master_map_pairs(
     const plain_block_map_pairs& unredistributed_row,
     const plain_block_map_pairs& unredistributed_column)
 {
@@ -82,7 +82,7 @@ void MORTAR::MatrixRowColTransformer::SetMasterMapPairs(
  *----------------------------------------------------------------------------*/
 void MORTAR::MatrixRowColTransformer::Setup()
 {
-  ThrowIfNotInit();
+  throw_if_not_init();
 
 
   for (plain_block_map_pairs::const_iterator cit = slave_row_.begin(); cit != slave_row_.end();
@@ -131,7 +131,7 @@ void MORTAR::MatrixRowColTransformer::redistributed_to_unredistributed(
       dst_mat.EpetraMatrix()->Import(*src_mat.EpetraMatrix(), *slave_to_master_[bt], Insert);
 
   // reset the distributor of the exporter after use
-  ResetExporter(slave_to_master_[bt]);
+  reset_exporter(slave_to_master_[bt]);
 
   if (err) FOUR_C_THROW("Import failed with err=%d", err);
 }
@@ -165,14 +165,14 @@ void MORTAR::MatrixRowColTransformer::unredistributed_to_redistributed(
       dst_mat.EpetraMatrix()->Import(*src_mat.EpetraMatrix(), *master_to_slave_[bt], Insert);
 
   // reset the distributor of the exporter after use
-  ResetExporter(master_to_slave_[bt]);
+  reset_exporter(master_to_slave_[bt]);
 
   if (err) FOUR_C_THROW("Import failed with err=%d", err);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void MORTAR::MatrixRowColTransformer::ResetExporter(Teuchos::RCP<Epetra_Export>& exporter) const
+void MORTAR::MatrixRowColTransformer::reset_exporter(Teuchos::RCP<Epetra_Export>& exporter) const
 {
   exporter = Teuchos::rcp(new Epetra_Export(*exporter));
 }

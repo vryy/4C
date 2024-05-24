@@ -91,7 +91,7 @@ namespace ADAPTER
   field. There are different ways to use this adapter.
 
   In all cases you need to tell the structural algorithm about your time
-  step. Therefore PrepareTimeStep(), Update() and Output() must be called at
+  step. Therefore prepare_time_step(), Update() and Output() must be called at
   the appropriate position in the FSI algorithm.
 
   <h3>Dirichlet-Neumann coupled FSI</h3>
@@ -113,7 +113,7 @@ namespace ADAPTER
   <h3>Monolithic FSI</h3>
 
   Monolithic FSI is based on Evaluate() of elements. This results in a new
-  RHS() and a new SysMat(). Together with the InitialGuess() these form the
+  RHS() and a new SysMat(). Together with the initial_guess() these form the
   building blocks for a block based Newton's method.
 
   \warning Further cleanup is still needed.
@@ -154,7 +154,7 @@ namespace ADAPTER
     //@{
 
     /// initial guess of Newton's method
-    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> initial_guess() = 0;
 
     /// rhs of Newton's method
     Teuchos::RCP<const Epetra_Vector> RHS() override = 0;
@@ -187,10 +187,10 @@ namespace ADAPTER
     //! @name Misc
 
     /// dof map of vector of unknowns
-    Teuchos::RCP<const Epetra_Map> DofRowMap() override = 0;
+    Teuchos::RCP<const Epetra_Map> dof_row_map() override = 0;
 
     /// DOF map of vector of unknowns for multiple dofsets
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) = 0;
+    virtual Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) = 0;
 
     /// DOF map view of vector of unknowns
     virtual const Epetra_Map* DofRowMapView() = 0;
@@ -309,13 +309,13 @@ namespace ADAPTER
     [[nodiscard]] virtual bool NotFinished() const = 0;
 
     /// start new time step
-    void PrepareTimeStep() override = 0;
+    void prepare_time_step() override = 0;
 
     /// set time step size
-    virtual void SetDt(const double dtnew) = 0;
+    virtual void set_dt(const double dtnew) = 0;
 
     //! Sets the current time \f$t_{n}\f$
-    virtual void SetTime(const double time) = 0;
+    virtual void set_time(const double time) = 0;
 
     //! Sets the current step \f$n\f$
     virtual void SetStep(int step) = 0;
@@ -369,7 +369,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() = 0;
 
     /// prepare output (i.e. calculate stresses, strains, energies)
-    void PrepareOutput(bool force_prepare_timestep) override = 0;
+    void prepare_output(bool force_prepare_timestep) override = 0;
 
     // Get restart data
     virtual void GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
@@ -384,7 +384,7 @@ namespace ADAPTER
     virtual void PrintStep() = 0;
 
     /// read restart information for given time step
-    void ReadRestart(const int step) override = 0;
+    void read_restart(const int step) override = 0;
 
     /*!
     \brief Reset time step
@@ -396,7 +396,7 @@ namespace ADAPTER
     \author mayr.mt
     \date 08/2013
     */
-    virtual void ResetStep() = 0;
+    virtual void reset_step() = 0;
 
     /// set restart information for parameter continuation
     virtual void SetRestart(int step, double time, Teuchos::RCP<Epetra_Vector> disn,
@@ -404,9 +404,9 @@ namespace ADAPTER
         Teuchos::RCP<std::vector<char>> elementdata, Teuchos::RCP<std::vector<char>> nodedata) = 0;
 
     /// set the state of the nox group and the global state data container (implicit only)
-    virtual void SetState(const Teuchos::RCP<Epetra_Vector>& x) = 0;
+    virtual void set_state(const Teuchos::RCP<Epetra_Vector>& x) = 0;
 
-    /// wrapper for things that should be done before PrepareTimeStep is called
+    /// wrapper for things that should be done before prepare_time_step is called
     virtual void PrePredict() = 0;
 
     /// wrapper for things that should be done before solving the nonlinear iterations
@@ -416,7 +416,7 @@ namespace ADAPTER
     virtual void PreUpdate() = 0;
 
     /// wrapper for things that should be done after solving the update
-    virtual void PostUpdate() = 0;
+    virtual void post_update() = 0;
 
     /// wrapper for things that should be done after the output
     virtual void PostOutput() = 0;
@@ -545,11 +545,11 @@ namespace ADAPTER
 
    private:
     /// Create structure algorithm
-    void CreateStructure(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& sdyn,
+    void create_structure(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& sdyn,
         Teuchos::RCP<DRT::Discretization> actdis);
 
     /// setup structure algorithm of STR::TimIntImpl type
-    void CreateTimInt(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& sdyn,
+    void create_tim_int(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& sdyn,
         Teuchos::RCP<DRT::Discretization> actdis);
 
     /*! \brief Create linear solver for contact/meshtying problems
@@ -557,7 +557,7 @@ namespace ADAPTER
      * Per default the CONTACT SOLVER block from the input file is used for generating the solver
      * object. The idea is, that this linear solver object is used whenever there is contact between
      * (two) structures. Otherwise the standard structural solver block is used (generated by
-     * <tt>CreateLinearSolver</tt>. So we can use highly optimized solvers for symmetric pure
+     * <tt>create_linear_solver</tt>. So we can use highly optimized solvers for symmetric pure
      * structural problems, but choose a different solver for the hard nonsymmetric contact case. We
      * automatically switch from the contact solver (in case of contact) to the structure solver
      * (pure structural problem, no contact) and back again.
@@ -570,7 +570,7 @@ namespace ADAPTER
      * saddle-point system.
      *
      * \note Condensed meshtying problems use the standard structural solver block
-     * (generated by CreateLinearSolver()). We assume that in contrary to contact problems,
+     * (generated by create_linear_solver()). We assume that in contrary to contact problems,
      * the domain configuration is not changing for meshtying over the time.
      *
      * \param actdis Discretization with all structural elements
@@ -578,7 +578,7 @@ namespace ADAPTER
      *
      * \return Contact solver object
      *
-     * \sa CreateLinearSolver()
+     * \sa create_linear_solver()
      */
     Teuchos::RCP<CORE::LINALG::Solver> create_contact_meshtying_solver(
         Teuchos::RCP<DRT::Discretization>& actdis, const Teuchos::ParameterList& sdyn);
@@ -601,7 +601,7 @@ namespace ADAPTER
      *
      * \sa create_contact_meshtying_solver()
      */
-    Teuchos::RCP<CORE::LINALG::Solver> CreateLinearSolver(
+    Teuchos::RCP<CORE::LINALG::Solver> create_linear_solver(
         Teuchos::RCP<DRT::Discretization>& actdis, const Teuchos::ParameterList& sdyn);
 
     /// structural field solver

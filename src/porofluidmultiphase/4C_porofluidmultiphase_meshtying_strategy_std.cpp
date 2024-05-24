@@ -29,12 +29,12 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyStd::MeshtyingStrategyStd(
 /*----------------------------------------------------------------------*
  | prepare time loop                                   kremheller 04/18 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::PrepareTimeLoop() { return; }
+void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::prepare_time_loop() { return; }
 
 /*----------------------------------------------------------------------*
  | setup the variables to do a new time step  (public) kremheller 04/18 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::PrepareTimeStep() { return; }
+void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::prepare_time_step() { return; }
 
 /*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
@@ -54,7 +54,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::initialize_linear_solver(
 /*--------------------------------------------------------------------------*
  | solve linear system of equations                        kremheller 04/18 |
  *--------------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::LinearSolve(
+void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::linear_solve(
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat,
     Teuchos::RCP<Epetra_Vector> increment, Teuchos::RCP<Epetra_Vector> residual,
     CORE::LINALG::SolverParams& solver_params)
@@ -77,9 +77,9 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::CalculateNorms(std::vector<doubl
   incprenorm.resize(1);
   prenorm.resize(1);
 
-  preresnorm[0] = UTILS::CalculateVectorNorm(vectornormfres_, porofluidmultitimint_->RHS());
-  incprenorm[0] = UTILS::CalculateVectorNorm(vectornorminc_, increment);
-  prenorm[0] = UTILS::CalculateVectorNorm(vectornorminc_, porofluidmultitimint_->Phinp());
+  preresnorm[0] = UTILS::calculate_vector_norm(vectornormfres_, porofluidmultitimint_->RHS());
+  incprenorm[0] = UTILS::calculate_vector_norm(vectornorminc_, increment);
+  prenorm[0] = UTILS::calculate_vector_norm(vectornorminc_, porofluidmultitimint_->Phinp());
 
   return;
 }
@@ -92,7 +92,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::CreateFieldTest() { return; }
 /*----------------------------------------------------------------------*
  |  read restart data                                  kremheller 04/18 |
  -----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::ReadRestart(const int step) { return; }
+void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::read_restart(const int step) { return; }
 
 /*----------------------------------------------------------------------*
  | output of solution vector to BINIO                  kremheller 04/18 |

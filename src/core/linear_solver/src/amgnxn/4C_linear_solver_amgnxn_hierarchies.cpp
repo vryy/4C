@@ -155,7 +155,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::Hierarchies::Setup()
     int offsetFineLevel = a_->GetMatrix(block, block)->RowMap().MinAllGID();
     Teuchos::RCP<Epetra_Operator> A_eop = a_->GetMatrix(block, block)->EpetraOperator();
     h_block_[block] =
-        BuildMueLuHierarchy(muelu_params_[block], num_pdes_[block], null_spaces_dim_[block],
+        build_mue_lu_hierarchy(muelu_params_[block], num_pdes_[block], null_spaces_dim_[block],
             null_spaces_data_[block], A_eop, block, num_blocks_, offsets, offsetFineLevel);
   }
 
@@ -318,12 +318,12 @@ void CORE::LINEAR_SOLVER::AMGNXN::Hierarchies::Setup()
 /*------------------------------------------------------------------------------*/
 
 Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
-CORE::LINEAR_SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy(
+CORE::LINEAR_SOLVER::AMGNXN::Hierarchies::build_mue_lu_hierarchy(
     Teuchos::ParameterList paramListFromXml, int numdf, int dimns,
     Teuchos::RCP<std::vector<double>> nsdata, Teuchos::RCP<Epetra_Operator> A_eop, int block,
     int NumBlocks, std::vector<int>& offsets, int offsetFineLevel)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::Hierarchies::build_mue_lu_hierarchy");
 
   using MueLuUtils = MueLu::Utilities<double, int, int, Node>;
 
@@ -383,7 +383,7 @@ CORE::LINEAR_SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy(
       std::string offsets_str("{");
       for (int i = 0; i < (int)offsets.size(); i++)
       {
-        offsets_str = offsets_str + ConvertInt(offsets[i]);
+        offsets_str = offsets_str + convert_int(offsets[i]);
         if (i < (int)offsets.size() - 1) offsets_str = offsets_str + ", ";
       }
       offsets_str = offsets_str + "}";
@@ -462,7 +462,7 @@ CORE::LINEAR_SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy(
   double elaptime = timer.totalElapsedTime(true);
   if (verbosity_ == "on" and A_eop->Comm().MyPID() == 0)
     std::cout
-        << "       Calling CORE::LINALG::SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy takes "
+        << "       Calling CORE::LINALG::SOLVER::AMGNXN::Hierarchies::build_mue_lu_hierarchy takes "
         << std::setw(16) << std::setprecision(6) << elaptime << " s" << std::endl;
   return H;
 }
@@ -713,12 +713,12 @@ void CORE::LINEAR_SOLVER::AMGNXN::MonolithicHierarchy::Setup()
   {
     if (level < num_levels_ - 1)
     {
-      spre_[level] = BuildSmoother(level);
-      spos_[level] = spre_[level];  // BuildSmoother(level);
+      spre_[level] = build_smoother(level);
+      spos_[level] = spre_[level];  // build_smoother(level);
     }
     else
     {
-      spre_[level] = BuildSmoother(level);
+      spre_[level] = build_smoother(level);
     }
   }
 
@@ -755,9 +755,9 @@ CORE::LINEAR_SOLVER::AMGNXN::MonolithicHierarchy::GetHierarchies()
 /*------------------------------------------------------------------------------*/
 
 Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::GenericSmoother>
-CORE::LINEAR_SOLVER::AMGNXN::MonolithicHierarchy::BuildSmoother(int level)
+CORE::LINEAR_SOLVER::AMGNXN::MonolithicHierarchy::build_smoother(int level)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::MonolithicHierarchy::BuildSmoother");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::MonolithicHierarchy::build_smoother");
 
   std::string smother_name;
   if (level < num_levels_ - 1)

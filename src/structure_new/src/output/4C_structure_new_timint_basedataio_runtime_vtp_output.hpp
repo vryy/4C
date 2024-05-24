@@ -48,54 +48,54 @@ namespace STR
       /// whether to write owner at visualization point
       bool OutputOwner() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return output_owner_;
       };
 
       /// whether to write orientation at visualization point
       bool output_orientation_and_length() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return output_orientationandlength_;
       };
 
       /// whether to write number of bonds at visualization point
       bool OutputNumberOfBonds() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return output_numberofbonds_;
       };
 
       /// whether to write number of bonds at visualization point
       bool OutputLinkingForce() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return output_linkingforce_;
       };
       /*    /// whether to write displacements
           bool output_displacement_state() const
           {
-            CheckInitSetup();
+            check_init_setup();
             return output_displacement_state_;
           };*/
 
       /*    /// get the data container for parameters regarding beams
           Teuchos::RCP<const DRT::ELEMENTS::BeamRuntimeOutputParams> GetBeamParams() const
           {
-            CheckInitSetup();
+            check_init_setup();
             return params_runtime_output_beams_;
           };*/
 
 
      private:
       /// get the init indicator status
-      const bool& IsInit() const { return isinit_; };
+      const bool& is_init() const { return isinit_; };
 
       /// get the setup indicator status
-      const bool& IsSetup() const { return issetup_; };
+      const bool& is_setup() const { return issetup_; };
 
       /// Check if Init() and Setup() have been called, yet.
-      void CheckInitSetup() const;
+      void check_init_setup() const;
 
 
      private:

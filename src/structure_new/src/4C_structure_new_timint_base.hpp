@@ -81,9 +81,9 @@ namespace STR
        *  This function is supposed to reset all variables which are directly related
        *  to the current new step n+1. To be more precise all variables ending with "Np"
        *  have to be reset. */
-      void ResetStep() override;
+      void reset_step() override;
 
-      /// wrapper for things that should be done before PrepareTimeStep is called
+      /// wrapper for things that should be done before prepare_time_step is called
       void PrePredict() override {}
 
       /// wrapper for things that should be done before solving the nonlinear iterations
@@ -103,29 +103,29 @@ namespace STR
       /// Access to pointer to DoF row map of the discretization (structure only)
       const Epetra_Map* DofRowMapView() override
       {
-        CheckInit();
+        check_init();
         return dataglobalstate_->DofRowMapView();
       }
 
       /// DoF map of structural vector of unknowns
-      Teuchos::RCP<const Epetra_Map> DofRowMap() override
+      Teuchos::RCP<const Epetra_Map> dof_row_map() override
       {
-        CheckInit();
-        return dataglobalstate_->DofRowMap();
+        check_init();
+        return dataglobalstate_->dof_row_map();
       }
 
       //! DoF map of vector of unknowns
       //! Alternative method capable of multiple DoF sets
-      Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) override
+      Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) override
       {
-        CheckInit();
-        return dataglobalstate_->DofRowMap(nds);
+        check_init();
+        return dataglobalstate_->dof_row_map(nds);
       }
 
       /// Access linear structural solver
       Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override
       {
-        CheckInit();
+        check_init();
         return datasdyn_->GetLinSolvers()[INPAR::STR::model_structure];
       }
 
@@ -163,7 +163,7 @@ namespace STR
       virtual void UpdateStepTime();
 
       /// wrapper for things that should be done after solving the update
-      void PostUpdate() override;
+      void post_update() override;
       /// @}
 
       /// @name Access global state from outside via adapter (needed for coupled problems)
@@ -171,7 +171,7 @@ namespace STR
       /// unknown displacements at \f$t_{n+1}\f$
       [[nodiscard]] Teuchos::RCP<const Epetra_Vector> DispNp() const override
       {
-        CheckInit();
+        check_init();
         return dataglobalstate_->GetDisNp();
       }
 
@@ -186,11 +186,11 @@ namespace STR
        * This will be checked:
        * See \ref CheckStateInSyncWithNOXGroup
        *
-       * See also \ref ADAPTER::StructureNew::SetState
+       * See also \ref ADAPTER::StructureNew::set_state
        */
       Teuchos::RCP<Epetra_Vector> WriteAccessDispNp() override
       {
-        CheckInit();
+        check_init();
         set_state_in_sync_with_nox_group(false);
         return dataglobalstate_->GetDisNp();
       }
@@ -198,63 +198,63 @@ namespace STR
       /// known displacements at \f$t_{n}\f$
       [[nodiscard]] Teuchos::RCP<const Epetra_Vector> DispN() const override
       {
-        CheckInit();
+        check_init();
         return dataglobalstate_->GetDisN();
       }
 
       /// write access to displacements at \f$t^{n}\f$
       Teuchos::RCP<Epetra_Vector> WriteAccessDispN() override
       {
-        CheckInit();
+        check_init();
         return dataglobalstate_->GetDisN();
       }
 
       /// unknown velocities at \f$t_{n+1}\f$
       [[nodiscard]] Teuchos::RCP<const Epetra_Vector> VelNp() const override
       {
-        CheckInit();
+        check_init();
         return dataglobalstate_->GetVelNp();
       }
 
       /// write access to velocities at \f$t^{n+1}\f$
       Teuchos::RCP<Epetra_Vector> WriteAccessVelNp() override
       {
-        CheckInit();
+        check_init();
         return dataglobalstate_->GetVelNp();
       }
 
       /// unknown velocities at \f$t_{n}\f$
       [[nodiscard]] Teuchos::RCP<const Epetra_Vector> VelN() const override
       {
-        CheckInit();
+        check_init();
         return dataglobalstate_->GetVelN();
       }
 
       /// write access to velocities at \f$t^{n}\f$
       Teuchos::RCP<Epetra_Vector> WriteAccessVelN() override
       {
-        CheckInit();
+        check_init();
         return dataglobalstate_->GetVelN();
       }
 
       /// known velocities at \f$t_{n-1}\f$
       [[nodiscard]] Teuchos::RCP<const Epetra_Vector> VelNm() const override
       {
-        CheckInit();
+        check_init();
         return dataglobalstate_->GetVelNm();
       }
 
       /// unknown accelerations at \f$t_{n+1}\f$
       [[nodiscard]] Teuchos::RCP<const Epetra_Vector> AccNp() const override
       {
-        CheckInit();
+        check_init();
         return dataglobalstate_->GetAccNp();
       }
 
       //! known accelerations at \f$t_{n}\f$
       [[nodiscard]] Teuchos::RCP<const Epetra_Vector> AccN() const override
       {
-        CheckInit();
+        check_init();
         return dataglobalstate_->GetAccN();
       }
       ///@}
@@ -264,14 +264,14 @@ namespace STR
       /// are there any algebraic constraints?
       bool HaveConstraint() override
       {
-        CheckInitSetup();
+        check_init_setup();
         return datasdyn_->HaveModelType(INPAR::STR::model_lag_pen_constraint);
       }
 
       /// do we need a semi-smooth Newton-type plasticity algorithm
       virtual bool have_semi_smooth_plasticity()
       {
-        CheckInitSetup();
+        check_init_setup();
         return datasdyn_->HaveEleTech(INPAR::STR::EleTech::plasticity);
       }
 
@@ -315,56 +315,56 @@ namespace STR
       /// Return current time \f$t_{n}\f$ (derived)
       [[nodiscard]] double GetTimeN() const override
       {
-        CheckInit();
+        check_init();
         return dataglobalstate_->GetTimeN();
       }
 
       /// Sets the current time \f$t_{n}\f$ (derived)
       void SetTimeN(const double time_n) override
       {
-        CheckInit();
+        check_init();
         dataglobalstate_->GetTimeN() = time_n;
       }
 
       /// Return target time \f$t_{n+1}\f$ (derived)
       [[nodiscard]] double GetTimeNp() const override
       {
-        CheckInit();
+        check_init();
         return dataglobalstate_->GetTimeNp();
       }
 
       /// Sets the target time \f$t_{n+1}\f$ of this time step (derived)
       void SetTimeNp(const double time_np) override
       {
-        CheckInit();
+        check_init();
         dataglobalstate_->GetTimeNp() = time_np;
       }
 
       /// Get upper limit of time range of interest (derived)
       [[nodiscard]] double GetTimeEnd() const override
       {
-        CheckInit();
+        check_init();
         return datasdyn_->GetTimeMax();
       }
 
       /// Get upper limit of time range of interest (derived)
       void SetTimeEnd(double timemax) override
       {
-        CheckInit();
+        check_init();
         datasdyn_->GetTimeMax() = timemax;
       }
 
       /// Get time step size \f$\Delta t_n\f$
       [[nodiscard]] double GetDeltaTime() const override
       {
-        CheckInit();
+        check_init();
         return (*dataglobalstate_->GetDeltaTime())[0];
       }
 
       /// Set time step size \f$\Delta t_n\f$
       void SetDeltaTime(const double dt) override
       {
-        CheckInit();
+        check_init();
         (*dataglobalstate_->GetDeltaTime())[0] = dt;
       }
 
@@ -374,98 +374,98 @@ namespace STR
       /// Return current step number \f$n\f$
       [[nodiscard]] int GetStepN() const override
       {
-        CheckInit();
+        check_init();
         return dataglobalstate_->GetStepN();
       }
 
       /// Sets the current step \f$n\f$
       void SetStepN(int step_n) override
       {
-        CheckInit();
+        check_init();
         dataglobalstate_->GetStepN() = step_n;
       }
 
       /// Return current step number $n+1$
       [[nodiscard]] int GetStepNp() const override
       {
-        CheckInit();
+        check_init();
         return dataglobalstate_->GetStepNp();
       }
 
       /// Sets the current step number \f$n+1\f$
       void SetStepNp(int step_np) override
       {
-        CheckInitSetup();
+        check_init_setup();
         dataglobalstate_->GetStepNp() = step_np;
       }
 
       //! Get number of time steps
       [[nodiscard]] int GetStepEnd() const override
       {
-        CheckInit();
+        check_init();
         return datasdyn_->GetStepMax();
       }
 
       /// Sets number of time steps
       void SetStepEnd(int step_end) override
       {
-        CheckInitSetup();
+        check_init_setup();
         datasdyn_->GetStepMax() = step_end;
       }
 
       //! Get divcont type
       [[nodiscard]] virtual enum INPAR::STR::DivContAct GetDivergenceAction() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return datasdyn_->GetDivergenceAction();
       }
 
       //! Get number of times you want to halve your timestep in case nonlinear solver diverges
       [[nodiscard]] virtual int get_max_div_con_refine_level() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return datasdyn_->get_max_div_con_refine_level();
       }
 
       //! Get random factor for time step adaption
       [[nodiscard]] virtual double get_random_time_step_factor() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return datasdyn_->get_random_time_step_factor();
       }
 
       //! Set random factor for time step adaption
       virtual double set_random_time_step_factor(double rand_tsfac)
       {
-        CheckInitSetup();
+        check_init_setup();
         return datasdyn_->get_random_time_step_factor() = rand_tsfac;
       }
 
       //! Get current refinement level for time step adaption
       [[nodiscard]] virtual int get_div_con_refine_level() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return datasdyn_->get_div_con_refine_level();
       }
 
       //! Set refinement level for time step adaption
       virtual int set_div_con_refine_level(int divconrefinementlevel)
       {
-        CheckInitSetup();
+        check_init_setup();
         return datasdyn_->get_div_con_refine_level() = divconrefinementlevel;
       }
 
       //! Get step of current refinement level for time step adaption
       [[nodiscard]] virtual int get_div_con_num_fine_step() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return datasdyn_->get_div_con_num_fine_step();
       }
 
       //! Set step of current refinement level for time step adaption
       virtual int set_div_con_num_fine_step(int divconnumfinestep)
       {
-        CheckInitSetup();
+        check_init_setup();
         return datasdyn_->get_div_con_num_fine_step() = divconnumfinestep;
       }
 
@@ -487,7 +487,7 @@ namespace STR
       /// FixMe write access to material displacements (strutcure with ale) at \f$t^{n+1}\f$
       Teuchos::RCP<Epetra_Vector> write_access_disp_mat_np() override
       {
-        CheckInitSetup();
+        check_init_setup();
         FOUR_C_THROW("Not yet supported!");
         return Teuchos::null;
       }
@@ -511,7 +511,7 @@ namespace STR
 
       /// Calculate all output quantities depending on the constitutive model
       /// (and, hence, on a potential material history)
-      void PrepareOutput(bool force_prepare_timestep) override;
+      void prepare_output(bool force_prepare_timestep) override;
 
       /// output results (implicit and explicit)
       virtual void Output() { Output(false); }
@@ -546,7 +546,7 @@ namespace STR
        *
        * \param stepn (in): restart step at \f${n}\f$
        */
-      void ReadRestart(const int stepn) override;
+      void read_restart(const int stepn) override;
 
       /// Set restart values (deprecated)
       void SetRestart(int stepn,                        //!< restart step at \f${n}\f$
@@ -592,105 +592,105 @@ namespace STR
       /// Get TimIntBase data for global state quantities (read access)
       [[nodiscard]] Teuchos::RCP<const BaseDataGlobalState> get_data_global_state_ptr() const
       {
-        CheckInit();
+        check_init();
         return dataglobalstate_;
       }
 
       /// Get TimIntBase data for global state quantities (read & write access)
       Teuchos::RCP<BaseDataGlobalState>& get_data_global_state_ptr()
       {
-        CheckInit();
+        check_init();
         return dataglobalstate_;
       }
 
       [[nodiscard]] const BaseDataGlobalState& GetDataGlobalState() const
       {
-        CheckInit();
+        check_init();
         return *dataglobalstate_;
       }
 
       /// Get TimIntBase data for io quantities (read access)
       [[nodiscard]] Teuchos::RCP<const BaseDataIO> GetDataIOPtr() const
       {
-        CheckInit();
+        check_init();
         return dataio_;
       }
 
       [[nodiscard]] const BaseDataIO& GetDataIO() const
       {
-        CheckInit();
+        check_init();
         return *dataio_;
       }
 
       /// Get TimIntBase data or struct dynamics quantitites (read access)
       [[nodiscard]] Teuchos::RCP<const BaseDataSDyn> GetDataSDynPtr() const
       {
-        CheckInit();
+        check_init();
         return datasdyn_;
       }
 
       [[nodiscard]] const BaseDataSDyn& GetDataSDyn() const
       {
-        CheckInit();
+        check_init();
         return *datasdyn_;
       }
 
       /// return a reference to the Dirichlet Boundary Condition handler (read access)
       [[nodiscard]] const STR::Dbc& GetDBC() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return *dbc_ptr_;
       }
 
       /// return a reference to the Dirichlet Boundary Condition handler (write access)
       STR::Dbc& GetDBC()
       {
-        CheckInitSetup();
+        check_init_setup();
         return *dbc_ptr_;
       }
 
       /// return a pointer to the Dirichlet Boundary Condition handler (read access)
       [[nodiscard]] Teuchos::RCP<const STR::Dbc> GetDBCPtr() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return dbc_ptr_;
       }
 
       /// return the integrator (read-only)
       [[nodiscard]] const STR::Integrator& Integrator() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return *int_ptr_;
       }
 
       /// Get the global state
       const BaseDataGlobalState& DataGlobalState() const
       {
-        CheckInit();
+        check_init();
         return *dataglobalstate_;
       }
 
       /// Get internal TimIntBase data for structural dynamics quantities (read and write access)
       BaseDataSDyn& DataSDyn()
       {
-        CheckInit();
+        check_init();
         return *datasdyn_;
       }
 
       /// return a pointer to the Dirichlet Boundary Condition handler (read and write access)
       const Teuchos::RCP<STR::Dbc>& DBCPtr()
       {
-        CheckInitSetup();
+        check_init_setup();
         return dbc_ptr_;
       }
 
       [[nodiscard]] bool has_final_state_been_written() const override;
 
       /// get the indicator state
-      [[nodiscard]] inline const bool& IsInit() const { return isinit_; }
+      [[nodiscard]] inline const bool& is_init() const { return isinit_; }
 
       /// get the indicator state
-      [[nodiscard]] inline const bool& IsSetup() const { return issetup_; }
+      [[nodiscard]] inline const bool& is_setup() const { return issetup_; }
 
       //! @name Attribute access functions
       //@{
@@ -734,67 +734,67 @@ namespace STR
       ///@}
      protected:
       /// Check if Init() and Setup() have been called, yet.
-      inline void CheckInitSetup() const
+      inline void check_init_setup() const
       {
-        FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+        FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
       }
 
       /// Check if Init() has been called
-      inline void CheckInit() const { FOUR_C_ASSERT(IsInit(), "Call Init() first!"); }
+      inline void check_init() const { FOUR_C_ASSERT(is_init(), "Call Init() first!"); }
 
       /// Get the global state
       BaseDataGlobalState& DataGlobalState()
       {
-        CheckInit();
+        check_init();
         return *dataglobalstate_;
       }
 
       /// Get the pointer to global state
       const Teuchos::RCP<BaseDataGlobalState>& DataGlobalStatePtr() const
       {
-        CheckInit();
+        check_init();
         return dataglobalstate_;
       }
 
       /// Get internal TimIntBase data for io quantities (read and write access)
       BaseDataIO& DataIO()
       {
-        CheckInit();
+        check_init();
         return *dataio_;
       }
 
       /// return a pointer to the input/output data container (read and write access)
       const Teuchos::RCP<BaseDataIO>& DataIOPtr()
       {
-        CheckInit();
+        check_init();
         return dataio_;
       }
 
       /// return a pointer to the structural dynamic data container (read and write access)
       const Teuchos::RCP<BaseDataSDyn>& DataSDynPtr()
       {
-        CheckInit();
+        check_init();
         return datasdyn_;
       }
 
       /// return a reference to the Dirichlet Boundary Condition handler (read and write access)
       STR::Dbc& DBC()
       {
-        CheckInitSetup();
+        check_init_setup();
         return *dbc_ptr_;
       }
 
       /// return a reference to the integrator (read and write access)
       STR::Integrator& Integrator()
       {
-        CheckInitSetup();
+        check_init_setup();
         return *int_ptr_;
       }
 
       /// return a pointer to the integrator (read and write access)
       const Teuchos::RCP<STR::Integrator>& IntegratorPtr()
       {
-        CheckInitSetup();
+        check_init_setup();
         return int_ptr_;
       }
 
@@ -816,37 +816,37 @@ namespace STR
        * \param[in,out] Indicator whether data has already been written in this time step (true) or
        *                not (false)
        */
-      void NewIOStep(bool& datawritten);
+      void new_io_step(bool& datawritten);
 
       /// output of the current state
-      void OutputState();
+      void output_state();
 
       /** \brief output of the current state */
-      void OutputState(IO::DiscretizationWriter& iowriter, bool write_owner) const;
+      void output_state(IO::DiscretizationWriter& iowriter, bool write_owner) const;
 
       /** \brief output of the debug state */
       void OutputDebugState(IO::DiscretizationWriter& iowriter, bool write_owner) const override;
 
       /// output during runtime
-      void RuntimeOutputState();
+      void runtime_output_state();
 
       /// output reaction forces
       void output_reaction_forces();
 
       /// output element volumes
-      void OutputElementVolume(IO::DiscretizationWriter& iowriter) const;
+      void output_element_volume(IO::DiscretizationWriter& iowriter) const;
 
       /// output stress and/or strain state
-      void OutputStressStrain();
+      void output_stress_strain();
 
       /// output energy
-      void OutputEnergy() const;
+      void output_energy() const;
 
       /// output optional quantity
       void output_optional_quantity();
 
       /// write restart information
-      void OutputRestart(bool& datawritten);
+      void output_restart(bool& datawritten);
 
       /// add restart information to output state
       void add_restart_to_output_state();
@@ -900,7 +900,7 @@ namespace STR
               " state has been requested but the manipulated state has\n"
               "not been communicated to NOX.\n"
               "Manipulations made in the state vector will have no effect.\n"
-              "Call SetState(x) to synchronize the states stored in the global\n"
+              "Call set_state(x) to synchronize the states stored in the global\n"
               "state object and in the NOX group!");
         }
       }

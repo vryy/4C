@@ -47,7 +47,7 @@ namespace CORE::LINALG
 namespace SSI
 {
   class SSIBase;
-  class SSIMono;
+  class SsiMono;
   enum class Subproblem;
 
   namespace UTILS
@@ -148,7 +148,7 @@ namespace SSI
        * @param[in] col_map  column map the block matrix is based on
        * @return pointer to block matrix
        */
-      static Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SetupBlockMatrix(
+      static Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> setup_block_matrix(
           Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> row_map,
           Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> col_map);
 
@@ -158,7 +158,7 @@ namespace SSI
        * @param[in] row_map  row map the sparse matrix is based on
        * @return pointer to sparse matrix
        */
-      static Teuchos::RCP<CORE::LINALG::SparseMatrix> SetupSparseMatrix(
+      static Teuchos::RCP<CORE::LINALG::SparseMatrix> setup_sparse_matrix(
           const Teuchos::RCP<const Epetra_Map> row_map);
 
      private:
@@ -276,7 +276,7 @@ namespace SSI
     {
      public:
       //! constructor
-      explicit SSIMaps(const SSI::SSIMono& ssi_mono_algorithm);
+      explicit SSIMaps(const SSI::SsiMono& ssi_mono_algorithm);
 
       //! get vector containing positions within system matrix for specific subproblem
       std::vector<int> GetBlockPositions(Subproblem subproblem) const;
@@ -322,7 +322,7 @@ namespace SSI
 
      private:
       //! create and check the block maps of all sub problems
-      void create_and_check_block_maps_sub_problems(const SSIMono& ssi_mono_algorithm);
+      void create_and_check_block_maps_sub_problems(const SsiMono& ssi_mono_algorithm);
 
       //! block maps of all sub problems organized in std map
       std::map<Subproblem, Teuchos::RCP<const CORE::LINALG::MultiMapExtractor>>
@@ -467,14 +467,14 @@ namespace SSI
       //! Group nodes that are at the geometrically same position
       //! \param coupling_pairs           [in] vector of pairs of matching nodes
       //! \param grouped_matching_nodes   [out] vector of vector of nodes at same position
-      void GroupMatchingNodes(const std::vector<std::pair<int, int>>& coupling_pairs,
+      void group_matching_nodes(const std::vector<std::pair<int, int>>& coupling_pairs,
           std::vector<std::vector<int>>& grouped_matching_nodes) const;
 
       //! Check if matching_nodes has this gid.
       //! \param gid             [in] gid to be checked
       //! \param matching_nodes  [in] grouped node gids
       //! \return                index in matching_nodes (outer vector) where gid is, otherwise -1
-      int HasGID(int gid, const std::vector<std::vector<int>>& matching_nodes) const;
+      int has_gid(int gid, const std::vector<std::vector<int>>& matching_nodes) const;
 
       //! Check if subset of matching_nodes has this gid.
       //! \param gid             [in] gid to be checked
@@ -483,7 +483,7 @@ namespace SSI
       //! \param matching_nodes  [in] grouped node gids
       //! \return                index in matching_nodes (outer vector) between start and end where
       //!                        gid is, otherwise -1
-      int HasGIDPartial(
+      int has_gid_partial(
           int gid, int start, int end, const std::vector<std::vector<int>>& matching_nodes) const;
 
       //! Construct mesh tying handlers based on conditions with name conditionname_coupling

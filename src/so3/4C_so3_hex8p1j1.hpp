@@ -224,9 +224,9 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3) override;
 
       //! Compute internal force, its stiffness and mass matrix
-      void ForceStiffMass(const std::vector<int>& lm,  ///< location matrix
-          const std::vector<double>& disp,             ///< current displacements
-          const std::vector<double>& residual,         ///< current residual displ
+      void force_stiff_mass(const std::vector<int>& lm,  ///< location matrix
+          const std::vector<double>& disp,               ///< current displacements
+          const std::vector<double>& residual,           ///< current residual displ
           CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>*
               stiffmatrix,                                             ///< element stiffness matrix
           CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* massmatrix,  ///< element mass matrix
@@ -275,7 +275,7 @@ namespace DRT
       std::string get_element_type_string() const { return "SOLIDH8P1J1"; }
 
       /** recover elementwise stored stuff */
-      void soh8P1J1_recover(const std::vector<double>& residual);
+      void soh8_p1_j1_recover(const std::vector<double>& residual);
 
       // don't want = operator
       SoHex8P1J1& operator=(const SoHex8P1J1& old);

@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
  | pre-evaluate the element (public)                         dano 08/12 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::PreEvaluate(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::pre_evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
   // if the coupling variables are required before Evaluate() is called the 1st
@@ -62,7 +62,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::PreEvaluate(Teuchos::ParameterL
   }  // initial temperature dependence
 
   return;
-}  // PreEvaluate()
+}  // pre_evaluate()
 
 
 /*----------------------------------------------------------------------*
@@ -119,7 +119,7 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Evaluate(Teuchos::ParameterList&
       // in some cases we need to write/change some data before evaluating
       // here you can pass, e.g. for Robinson's material the current temperature
       // T_n+1 needed to calculate e.g. the young's modulus E(T_n+1)
-      PreEvaluate(params, discretization, la);
+      pre_evaluate(params, discretization, la);
 
       // call the purely structural methods
       so3_ele::Evaluate(params, discretization,
@@ -859,7 +859,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::lin_fint_tsi(
 
     // calculate the linear B-operator
     CORE::LINALG::Matrix<numstr_, numdofperelement_> boplin;
-    CalculateBoplin(&boplin, &N_XYZ);
+    calculate_boplin(&boplin, &N_XYZ);
 
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1019,7 +1019,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::lin_kdT_tsi(DRT::Element::Locat
 
     // calculate the linear B-operator B_L = N_XYZ
     CORE::LINALG::Matrix<numstr_, numdofperelement_> boplin;
-    CalculateBoplin(&boplin, &N_XYZ);
+    calculate_boplin(&boplin, &N_XYZ);
 
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1193,11 +1193,11 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi(
 
     // calculate linear B-operator
     CORE::LINALG::Matrix<numstr_, numdofperelement_> boplin(false);
-    CalculateBoplin(&boplin, &N_XYZ);
+    calculate_boplin(&boplin, &N_XYZ);
 
     // calculate nonlinear B-operator
     CORE::LINALG::Matrix<numstr_, numdofperelement_> bop(false);
-    CalculateBop(&bop, &defgrd, &N_XYZ);
+    calculate_bop(&bop, &defgrd, &N_XYZ);
 
     // temperature
     // described as a matrix (for stress calculation): NT = N_T . T
@@ -1449,7 +1449,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Locat
 
     // calculate nonlinear B-operator
     CORE::LINALG::Matrix<numstr_, numdofperelement_> bop(false);
-    CalculateBop(&bop, &defgrd, &N_XYZ);
+    calculate_bop(&bop, &defgrd, &N_XYZ);
 
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1490,7 +1490,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Locat
       Teuchos::RCP<MAT::ThermoPlasticHyperElast> thermoplhyperelast =
           Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(Material(), true);
       // get thermal material tangent
-      thermoplhyperelast->SetupCthermo(ctemp, params);
+      thermoplhyperelast->setup_cthermo(ctemp, params);
     }  // m_thermoplhyperelast
 
     // get thermal material tangent
@@ -1687,11 +1687,11 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
 
       // calculate linear B-operator (WITHOUT F-bar modification)
       CORE::LINALG::Matrix<numstr_, numdofperelement_> boplin(false);
-      CalculateBoplin(&boplin, &N_XYZ);
+      calculate_boplin(&boplin, &N_XYZ);
 
       // calculate nonlinear B-operator (WITHOUT F-bar modification)
       CORE::LINALG::Matrix<numstr_, numdofperelement_> bop(false);
-      CalculateBop(&bop, &defgrd, &N_XYZ);
+      calculate_bop(&bop, &defgrd, &N_XYZ);
 
       // ----------------------------------------- initialise temperature
       // described as a matrix (for stress calculation): Ntemp = N_T . T
@@ -2005,7 +2005,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element::
 
       // calculate nonlinear B-operator
       CORE::LINALG::Matrix<numstr_, numdofperelement_> bop(false);
-      CalculateBop(&bop, &defgrd, &N_XYZ);
+      calculate_bop(&bop, &defgrd, &N_XYZ);
 
       // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccc
       // get the thermal material tangent
@@ -2174,7 +2174,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Ctemp(
     {
       Teuchos::RCP<MAT::ThermoPlasticLinElast> thrpllinelast =
           Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticLinElast>(Material(), true);
-      return thrpllinelast->SetupCthermo(*ctemp);
+      return thrpllinelast->setup_cthermo(*ctemp);
       break;
     }
     // visco-plastic Robinson's material
@@ -2190,7 +2190,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Ctemp(
     {
       Teuchos::RCP<MAT::ThermoPlasticHyperElast> thermoplhyperelast =
           Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(Material(), true);
-      thermoplhyperelast->SetupCthermo(*ctemp, params);
+      thermoplhyperelast->setup_cthermo(*ctemp, params);
       return;
       break;
     }
@@ -2206,7 +2206,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Ctemp(
  | calculate the nonlinear B-operator                        dano 11/12 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::CalculateBop(
+void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::calculate_bop(
     CORE::LINALG::Matrix<numstr_, numdofperelement_>* bop, CORE::LINALG::Matrix<nsd_, nsd_>* defgrd,
     CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ)
 {
@@ -2269,7 +2269,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::CalculateBop(
           (*defgrd)(2, 2) * (*N_XYZ)(0, i) + (*defgrd)(2, 0) * (*N_XYZ)(2, i);
     }
   }
-}  // CalculateBop()
+}  // calculate_bop()
 
 
 /*----------------------------------------------------------------------*
@@ -2320,7 +2320,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::CalculateBopVec(
  | calculate the linear B-operator                           dano 11/12 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::CalculateBoplin(
+void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::calculate_boplin(
     CORE::LINALG::Matrix<numstr_, numdofperelement_>* boplin,
     CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ)
 {
@@ -2359,7 +2359,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::CalculateBoplin(
       (*boplin)(5, numdofpernode_ * i + 2) = (*N_XYZ)(0, i);
     }
   }
-}  // CalculateBoplin()
+}  // calculate_boplin()
 
 
 /*----------------------------------------------------------------------*

@@ -36,7 +36,8 @@ int DRT::ELEMENTS::SoPyramid5::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
-  // Check whether the solid material PostSetup() routine has already been called and call it if not
+  // Check whether the solid material post_setup() routine has already been called and call it if
+  // not
   ensure_material_post_setup(params);
 
   CORE::LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5> elemat1(elemat1_epetra.values(), true);
@@ -327,7 +328,7 @@ int DRT::ELEMENTS::SoPyramid5::Evaluate(Teuchos::ParameterList& params,
     break;
 
     case calc_struct_eleload:
-      FOUR_C_THROW("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
+      FOUR_C_THROW("this method is not supposed to evaluate a load, use evaluate_neumann(...)");
       break;
 
     case calc_struct_fsiload:
@@ -344,7 +345,7 @@ int DRT::ELEMENTS::SoPyramid5::Evaluate(Teuchos::ParameterList& params,
     case calc_struct_reset_istep:
     {
       // Reset of history (if needed)
-      SolidMaterial()->ResetStep();
+      SolidMaterial()->reset_step();
     }
     break;
 
@@ -459,7 +460,7 @@ int DRT::ELEMENTS::SoPyramid5::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)              |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::SoPyramid5::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::SoPyramid5::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -580,7 +581,7 @@ int DRT::ELEMENTS::SoPyramid5::EvaluateNeumann(Teuchos::ParameterList& params,
   } /* ==================================================== end of Loop over GP */
 
   return 0;
-}  // DRT::ELEMENTS::So_pyramid5::EvaluateNeumann
+}  // DRT::ELEMENTS::So_pyramid5::evaluate_neumann
 
 
 /*----------------------------------------------------------------------*
@@ -609,11 +610,11 @@ void DRT::ELEMENTS::SoPyramid5::InitJacobianMapping()
       FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT");
 
     if (PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
-      if (!(prestress_->IsInit()))
+      if (!(prestress_->is_init()))
         prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
   }
 
-  if (PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
+  if (PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->is_init() = true;
 
   return;
 }

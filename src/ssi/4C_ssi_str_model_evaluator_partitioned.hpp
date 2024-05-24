@@ -49,9 +49,9 @@ namespace STR
         return INPAR::STR::model_partitioned_coupling;
       }
 
-      bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
+      bool assemble_force(Epetra_Vector& f, const double& timefac_np) const override;
 
-      bool AssembleJacobian(
+      bool assemble_jacobian(
           CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
 
       void determine_stress_strain() override{};

@@ -61,13 +61,13 @@ void FLD::TimIntPoro::set_element_turbulence_parameters()
   FluidImplicitTimeInt::set_element_turbulence_parameters();
 }
 
-void FLD::TimIntPoro::AssembleMatAndRHS()
+void FLD::TimIntPoro::assemble_mat_and_rhs()
 {
-  FluidImplicitTimeInt::AssembleMatAndRHS();
+  FluidImplicitTimeInt::assemble_mat_and_rhs();
   PoroIntUpdate();
 }
 
-void FLD::TimIntPoro::ReadRestart(int step)
+void FLD::TimIntPoro::read_restart(int step)
 {
   IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
   reader.ReadVector(gridv_, "gridv");
@@ -108,7 +108,7 @@ void FLD::TimIntPoro::set_initial_porosity_field(
   {
     case INPAR::POROELAST::initfield_field_by_function:
     {
-      const Epetra_Map* dofrowmap = discret_->DofRowMap();
+      const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
       // loop all nodes on the processor
       for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
@@ -154,7 +154,7 @@ void FLD::TimIntPoro::update_iter_incrementally(
   {
     // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
     // values.
-    Teuchos::RCP<Epetra_Vector> aux = CORE::LINALG::CreateVector(*(discret_->DofRowMap(0)), true);
+    Teuchos::RCP<Epetra_Vector> aux = CORE::LINALG::CreateVector(*(discret_->dof_row_map(0)), true);
 
     // only one step theta
     // new end-point accelerations
@@ -189,10 +189,10 @@ void FLD::TimIntPoro::set_custom_ele_params_assemble_mat_and_rhs(Teuchos::Parame
   eleparams.set<int>("Physical Type", physicaltype_);
 
   // just for poroelasticity
-  discret_->SetState("dispn", dispn_);
-  discret_->SetState("accnp", accnp_);
-  discret_->SetState("accn", accn_);
-  discret_->SetState("gridvn", gridvn_);
+  discret_->set_state("dispn", dispn_);
+  discret_->set_state("accnp", accnp_);
+  discret_->set_state("accn", accn_);
+  discret_->set_state("gridvn", gridvn_);
 
   eleparams.set("total time", time_);
   eleparams.set("delta time", dta_);
@@ -217,11 +217,11 @@ void FLD::TimIntPoro::PoroIntUpdate()
     eleparams.set<int>("Physical Type", physicaltype_);
 
     discret_->ClearState();
-    discret_->SetState("dispnp", dispnp_);
-    discret_->SetState("gridv", gridv_);
-    discret_->SetState("velnp", velnp_);
-    discret_->SetState("scaaf", scaaf_);
-    discret_->EvaluateCondition(
+    discret_->set_state("dispnp", dispnp_);
+    discret_->set_state("gridv", gridv_);
+    discret_->set_state("velnp", velnp_);
+    discret_->set_state("scaaf", scaaf_);
+    discret_->evaluate_condition(
         eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null, condname);
     discret_->ClearState();
   }
@@ -239,10 +239,10 @@ void FLD::TimIntPoro::PoroIntUpdate()
     eleparams.set<int>("Physical Type", physicaltype_);
 
     discret_->ClearState();
-    discret_->SetState("dispnp", dispnp_);
-    discret_->SetState("gridv", gridv_);
-    discret_->SetState("velnp", velnp_);
-    discret_->EvaluateCondition(
+    discret_->set_state("dispnp", dispnp_);
+    discret_->set_state("gridv", gridv_);
+    discret_->set_state("velnp", velnp_);
+    discret_->evaluate_condition(
         eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null, condname);
     discret_->ClearState();
   }

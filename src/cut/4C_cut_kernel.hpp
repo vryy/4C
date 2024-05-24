@@ -852,7 +852,7 @@ namespace CORE::GEO::CUT::KERNEL
           }
         }
 
-        if (not this->LinearSolve(iter))
+        if (not this->linear_solve(iter))
         {
           return false;
         }
@@ -879,7 +879,7 @@ namespace CORE::GEO::CUT::KERNEL
 
     enum NewtonStatus TestConverged(int iter) { return unconverged; }
 
-    bool LinearSolve(int iter) { return true; }
+    bool linear_solve(int iter) { return true; }
 
     bool Update(int iter) { return true; }
 
@@ -936,10 +936,10 @@ namespace CORE::GEO::CUT::KERNEL
       return status;
     }
 
-    bool LinearSolve(int iter)
+    bool linear_solve(int iter)
     {
-      bool res = Strategy::LinearSolve(iter);
-      std::cout << "LinearSolve( iter = " << std::setw(2) << iter
+      bool res = Strategy::linear_solve(iter);
+      std::cout << "linear_solve( iter = " << std::setw(2) << iter
                 << " )   = " << (res ? "SUCCESS" : "FAILED") << "\n"
                 << std::flush;
       return res;
@@ -1141,8 +1141,8 @@ namespace CORE::GEO::CUT::KERNEL
      * \f]
      *
      * For the special case that the element dimension is smaller than the
-     * problem dimension (i.e. manifold), see the ComputeDistance classes. */
-    bool LinearSolve(int iter)
+     * problem dimension (i.e. manifold), see the compute_distance classes. */
+    bool linear_solve(int iter)
     {
       floatType det = 0.0;
       // ToDo check if it is possible to switch completely to the manifold case,
@@ -1196,7 +1196,7 @@ namespace CORE::GEO::CUT::KERNEL
     floatType GetLocalTolerance(const floatType& real_tolerance)
     {
       FOUR_C_THROW(
-          "Not impelemented! Have a look at  GetLocalTolerance for ComputeDistance strategy to "
+          "Not impelemented! Have a look at  GetLocalTolerance for compute_distance strategy to "
           "find out the idea of implementation!");
       return real_tolerance;
     }
@@ -1433,7 +1433,7 @@ namespace CORE::GEO::CUT::KERNEL
         report_position_allocated();
         report_distance_allocated();
         report_total_allocated();
-        CORE::GEO::CUT::MemorySingleton::getInstance().SetState(1, memory_allocations_);
+        CORE::GEO::CUT::MemorySingleton::getInstance().set_state(1, memory_allocations_);
         custom_allocator_run_ = true;
       }
       if (first_run_) std::cout << "In cut position statistics is" << std::endl;
@@ -1493,15 +1493,15 @@ namespace CORE::GEO::CUT::KERNEL
           cond_infinity_ = true;
         }
 
-        err = ComputeError(xyze, px, this->LocalCoordinates(), CLN_REFERENCE_PREC) * cond_number;
+        err = compute_error(xyze, px, this->LocalCoordinates(), CLN_REFERENCE_PREC) * cond_number;
         // get location taking error into account
         //  NOTE: Here one might need to get tolerance in the local coordinates, similarly as
         //  done
-        // in the ComputeDistance and ComputeIntersection
+        // in the compute_distance and ComputeIntersection
         //  location_ = GetPreciseLocation<elementType>( clnxsi_, err );
 
 #if DEBUG_MEMORY_ALLOCATION
-        UpdateMemoryUsage(prec, iter);
+        update_memory_usage(prec, iter);
 #endif
 
         prec += CLN_INCREMENT_STEP;
@@ -1545,7 +1545,7 @@ namespace CORE::GEO::CUT::KERNEL
     // Evaluate difference between inital global coordinates passed to ComputePosition and
     // and global coordinates based on loc coordinates calculated in the ComputePosition,
     // using conversion to very high reference precision
-    CORE::CLN::ClnWrapper ComputeError(
+    CORE::CLN::ClnWrapper compute_error(
         const CORE::LINALG::Matrix<probDim, CORE::FE::num_nodes<elementType>>& ref_shape_xyz,
         const CORE::LINALG::Matrix<probDim, 1>& glob_init,
         const CORE::LINALG::Matrix<dim, 1, CORE::CLN::ClnWrapper>& loc_calc, int prec)
@@ -1585,7 +1585,7 @@ namespace CORE::GEO::CUT::KERNEL
     // Update global maximum number of allocations ( number of containers of particular byte
     // size) if allocations on this precisions were more. Also set what was the most frequent
     // size of allocation for the current iteration
-    void UpdateMemoryUsage(int prec, int iter)
+    void update_memory_usage(int prec, int iter)
     {
 #if DEBUG_MEMORY_ALLOCATION
       if (first_run_)
@@ -1752,7 +1752,7 @@ namespace CORE::GEO::CUT::KERNEL
     {
       if (dim != probDim)
         FOUR_C_THROW(
-            "You called the wrong object! Use the ComputeDistance class "
+            "You called the wrong object! Use the compute_distance class "
             "for the embedded case.");
     }
   };  // class ComputePosition
@@ -1781,7 +1781,7 @@ namespace CORE::GEO::CUT::KERNEL
     }
   };  // class DebugComputePosition
 
-  // Static storage class of ComputeDistance data members to inherit from
+  // Static storage class of compute_distance data members to inherit from
   template <bool debug, unsigned probDim, CORE::FE::CellType sideType,
       unsigned dimSide = CORE::FE::dim<sideType>,
       unsigned numNodesSide = CORE::FE::num_nodes<sideType>, typename floatType = double>
@@ -1827,7 +1827,7 @@ namespace CORE::GEO::CUT::KERNEL
     static CORE::LINALG::Matrix<probDim, 2, floatType> nvec_;  // proper normal vector
   };
 
-  // Static storage class of ComputeDistance data members to inherit from
+  // Static storage class of compute_distance data members to inherit from
   template <bool debug, unsigned probDim, CORE::FE::CellType sideType,
       unsigned dimSide = CORE::FE::dim<sideType>,
       unsigned numNodesSide = CORE::FE::num_nodes<sideType>, typename floatType = double>
@@ -1889,7 +1889,7 @@ namespace CORE::GEO::CUT::KERNEL
 
       if (debug)
       {
-        std::cout << "\n=== ComputeDistance ===\n";
+        std::cout << "\n=== compute_distance ===\n";
         std::cout << "Side       = " << CORE::FE::CellTypeToString(sideType) << "\n";
         std::cout << "xyze_side_ = " << *xyze_side_;
         std::cout << "px_        = " << *px_;
@@ -1992,7 +1992,7 @@ namespace CORE::GEO::CUT::KERNEL
 
       // build the linear system of equations
 
-      DistanceSystem(*xyze_side_, *px_, distance_, A_, B_, C_, N_, b_);
+      distance_system(*xyze_side_, *px_, distance_, A_, B_, C_, N_, b_);
     }
     /// compute the rhs value ( w/o distance contributions )
     void DistanceRHS(const CORE::LINALG::Matrix<probDim, numNodesSide, floatType>& xyze_side,
@@ -2045,7 +2045,7 @@ namespace CORE::GEO::CUT::KERNEL
      *  \f[
      *      A \; \Delta \xi = b
      *  \f] */
-    bool LinearSolve(int iter)
+    bool linear_solve(int iter)
     {
       dx_ = 0.0;
       if (zeroarea_) return false;
@@ -2082,7 +2082,7 @@ namespace CORE::GEO::CUT::KERNEL
       tol_ = b_.Norm2();
 #ifdef DEBUG_CUTKERNEL_OUTPUT
       std::stringstream str;
-      str << "ComputeDistance: Newton scheme did not converge:\n"
+      str << "compute_distance: Newton scheme did not converge:\n"
           << std::setprecision(16) << (*xyze_side_) << (*px_) << xsi_;
 
       std::string filename = OUTPUT::GenerateGmshOutputFilename(".NewtonFailed_distance.pos");
@@ -2180,7 +2180,7 @@ namespace CORE::GEO::CUT::KERNEL
       normal_plane_undefined
     };
 
-    enum NormalPlane DetectNormalPlane(const CORE::LINALG::Matrix<probDim, 1, floatType>& n) const
+    enum NormalPlane detect_normal_plane(const CORE::LINALG::Matrix<probDim, 1, floatType>& n) const
     {
       if (probDim < 3) FOUR_C_THROW("This function makes only sense for the 3-D case!");
 
@@ -2211,7 +2211,7 @@ namespace CORE::GEO::CUT::KERNEL
      *
      *  \author hiermeier
      *  \date 08/16    */
-    bool DistanceSystem(const CORE::LINALG::Matrix<probDim, numNodesSide, floatType>& xyze_side,
+    bool distance_system(const CORE::LINALG::Matrix<probDim, numNodesSide, floatType>& xyze_side,
         const CORE::LINALG::Matrix<probDim, 1, floatType>& px, floatType* distance,
         CORE::LINALG::Matrix<probDim, probDim, floatType>& A,
         CORE::LINALG::Matrix<probDim, probDim, floatType>& B,
@@ -2291,7 +2291,7 @@ namespace CORE::GEO::CUT::KERNEL
         // update stored normal vector
 
         // linearization of the 1-st unscaled normal vector
-        switch (DetectNormalPlane(n1))
+        switch (detect_normal_plane(n1))
         {
           case normal_in_xy_plane:
           {
@@ -2450,7 +2450,7 @@ namespace CORE::GEO::CUT::KERNEL
    *
    *  inheritance diagram:
    *
-   *  ComputeDistance --> ComputeDistanceAdaptivePrecision --> NewtonSolve
+   *  compute_distance --> ComputeDistanceAdaptivePrecision --> NewtonSolve
    *                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    *  --> ComputeDistanceStrategy --> EmptyNewtonStrategy  */
   template <class Strategy, unsigned probDim, CORE::FE::CellType sideType,
@@ -2506,7 +2506,7 @@ namespace CORE::GEO::CUT::KERNEL
         report_distance_allocated();
         report_total_allocated();
         // start setting up the memory container
-        CORE::GEO::CUT::MemorySingleton::getInstance().SetState(1, memory_allocations_);
+        CORE::GEO::CUT::MemorySingleton::getInstance().set_state(1, memory_allocations_);
 #else
         CORE::GEO::CUT::MemorySingleton::getInstance().SwitchState();
 #endif
@@ -2587,11 +2587,11 @@ namespace CORE::GEO::CUT::KERNEL
         // but just continue increase in the precision
         zero_area = this->ZeroArea();
         if (not zero_area)
-          err = ComputeError(xyze_side, px, this->LocalCoordinates(), this->GetNormalVector(),
+          err = compute_error(xyze_side, px, this->LocalCoordinates(), this->GetNormalVector(),
                     this->SignedDistance(), CLN_REFERENCE_PREC) *
                 cond_number;
 #if DEBUG_MEMORY_ALLOCATION
-        UpdateMemoryUsage(prec, iter);
+        update_memory_usage(prec, iter);
 #endif
         prec += CLN_INCREMENT_STEP;
         iter++;
@@ -2613,7 +2613,7 @@ namespace CORE::GEO::CUT::KERNEL
 
       get_topology_information();
       // NOTE: Might be not needed later
-      FixCornerCase();
+      fix_corner_case();
       // converting all the values back
       CORE::CLN::ConvClnDouble(clnxsi_, xsi_);
 
@@ -2662,10 +2662,10 @@ namespace CORE::GEO::CUT::KERNEL
     bool IsConditionInfinity() { return cond_infinity_; }
 
    private:
-    // Evaluate difference between inital global coordinates passed to ComputeDistance and
+    // Evaluate difference between inital global coordinates passed to compute_distance and
     // and global coordinates based on loc coordinates and distance  calculated in the
-    // ComputeDistance, using conversion to very high reference precision
-    CORE::CLN::ClnWrapper ComputeError(
+    // compute_distance, using conversion to very high reference precision
+    CORE::CLN::ClnWrapper compute_error(
         const CORE::LINALG::Matrix<probDim,
             CORE::FE::num_nodes<sideType>>& refshape_xyze,  // referenape
         const CORE::LINALG::Matrix<probDim, 1>& p,          // global position of the point
@@ -2739,7 +2739,7 @@ namespace CORE::GEO::CUT::KERNEL
       this->GetLocalTolerance(SIDE_DETECTION_TOLERANCE, scaled_tolerance_side_touched_edges);
       CORE::LINALG::Matrix<dimSide, 1, CORE::CLN::ClnWrapper> zero_tolerance_side;
       bool is_inside = WithinLimits<sideType>(clnxsi_, zero_tolerance_side);
-      PointOnSurfacePlane point_on_surface = GetLocation(SIDE_DETECTION_TOLERANCE);
+      PointOnSurfacePlane point_on_surface = get_location(SIDE_DETECTION_TOLERANCE);
 
       location_ = PointOnSurfaceLoc(is_inside, point_on_surface == on);
       touched_edges_ids_.clear();
@@ -2755,7 +2755,7 @@ namespace CORE::GEO::CUT::KERNEL
     /// try to fix the case that is close to the corner and outside - in that case point
     /// is close to corner and outside might be touching two edges but difference between it
     /// and corner point > tolerance - hence this must be corrected
-    void FixCornerCase()
+    void fix_corner_case()
     {
       if (touched_edges_ids_.size() >= 2)
       {
@@ -2804,7 +2804,7 @@ namespace CORE::GEO::CUT::KERNEL
     // Update global maximum number of allocations ( number of containers of particular byte
     // size) if allocations on this precisions were more. Also set what was the most frequent
     // size of allocation for the current iteration
-    void UpdateMemoryUsage(int prec, int iter)
+    void update_memory_usage(int prec, int iter)
     {
 #if DEBUG_MEMORY_ALLOCATION
 
@@ -2847,7 +2847,7 @@ namespace CORE::GEO::CUT::KERNEL
     }
 
     // Get location of the point with respect to the plain ( above/on/below )
-    PointOnSurfacePlane GetLocation(const CORE::CLN::ClnWrapper& err)
+    PointOnSurfacePlane get_location(const CORE::CLN::ClnWrapper& err)
     {
       switch (probDim - dimSide)
       {
@@ -2928,7 +2928,7 @@ namespace CORE::GEO::CUT::KERNEL
    *
    *  inheritance diagram:
    *
-   *  ComputeDistance --> GenericComputeDistance --> NewtonSolve
+   *  compute_distance --> GenericComputeDistance --> NewtonSolve
    *                      ^^^^^^^^^^^^^^^^^^^^^^
    *  --> ComputeDistanceStrategy --> EmptyNewtonStrategy  */
   template <class Strategy, unsigned probDim, CORE::FE::CellType sideType, bool computeCln = false,
@@ -2982,7 +2982,7 @@ namespace CORE::GEO::CUT::KERNEL
             this->ZeroArea() or (not conv) or (cond_infinity_) or (!got_topology_info);
         // otherwise computation will run into error for the
         // case of zero area
-        if (!major_fail) result_fail = ComputeError(xyze_side, px) > DOUBLE_LIMIT_ERROR;
+        if (!major_fail) result_fail = compute_error(xyze_side, px) > DOUBLE_LIMIT_ERROR;
 
         if (major_fail or result_fail)
         {
@@ -3107,7 +3107,7 @@ namespace CORE::GEO::CUT::KERNEL
       zero_tolerance_side = 0.0;
       // find location
       bool is_inside = WithinLimits<sideType>(xsi, zero_tolerance_side);
-      PointOnSurfacePlane point_on_surface = GetLocation(distance_tolerance);
+      PointOnSurfacePlane point_on_surface = get_location(distance_tolerance);
       location_ = PointOnSurfaceLoc(is_inside, point_on_surface == on);
       // clear previous and get edges nearby
       touched_edges_ids_.clear();
@@ -3123,10 +3123,10 @@ namespace CORE::GEO::CUT::KERNEL
 
     void WritetoGmsh(std::ofstream& file) { Strategy::WritetoGmsh(file); }
 
-    // Evaluate difference between inital global coordinates passed to ComputeDistance and
+    // Evaluate difference between inital global coordinates passed to compute_distance and
     // and global coordinates based on loc coordinates and distance  calculated in the
-    // ComputeDistance
-    double ComputeError(
+    // compute_distance
+    double compute_error(
         const CORE::LINALG::Matrix<probDim, CORE::FE::num_nodes<sideType>>& xyze_side,
         const CORE::LINALG::Matrix<probDim, 1>& px)
     {
@@ -3170,7 +3170,7 @@ namespace CORE::GEO::CUT::KERNEL
     };
 
     // Get location of the point with respect to the plain ( above/on/below )
-    PointOnSurfacePlane GetLocation(const double& err)
+    PointOnSurfacePlane get_location(const double& err)
     {
       switch (probDim - dimSide)
       {
@@ -3241,7 +3241,7 @@ namespace CORE::GEO::CUT::KERNEL
    *
    *  inheritance diagram:
    *
-   *  ComputeDistance --> GenericComputeDistance --> NewtonSolve
+   *  compute_distance --> GenericComputeDistance --> NewtonSolve
    *  ^^^^^^^^^^^^^^^
    *  --> ComputeDistanceStrategy --> EmptyNewtonStrategy  */
   template <unsigned probDim, CORE::FE::CellType sideType, bool computeCln = false,
@@ -3260,7 +3260,7 @@ namespace CORE::GEO::CUT::KERNEL
               sideType, computeCln>(xsi, checklimits)
     {
     }
-  };  // class ComputeDistance
+  };  // class compute_distance
 
   /*--------------------------------------------------------------------------*/
   template <unsigned probDim, CORE::FE::CellType sideType,
@@ -3497,7 +3497,7 @@ namespace CORE::GEO::CUT::KERNEL
       {
         IntersectionRHS(xsi_edge, xsi_side, *xyze_edge_, *xyze_side_, c_);
       }
-      IntersectionSystem(xsi_edge, xsi_side, *xyze_edge_, *xyze_side_, c_, A_, B_, b_);
+      intersection_system(xsi_edge, xsi_side, *xyze_edge_, *xyze_side_, c_, A_, B_, b_);
     }
 
     /// compute the right-hand-side
@@ -3544,7 +3544,7 @@ namespace CORE::GEO::CUT::KERNEL
       return unconverged;
     }
 
-    bool LinearSolve(int iter)
+    bool linear_solve(int iter)
     {
       dx_ = 0.0;
       floatType det =
@@ -3552,7 +3552,7 @@ namespace CORE::GEO::CUT::KERNEL
 
       if (debug)
       {
-        std::cout << "--- LinearSolve\n";
+        std::cout << "--- linear_solve\n";
         std::cout << "  A_ = " << A_;
         std::cout << "  b_ = " << b_;
         std::cout << "  det = " << std::setprecision(15) << det << "\n";
@@ -3762,7 +3762,7 @@ namespace CORE::GEO::CUT::KERNEL
      *
      *  \author hiermeier
      *  \date 08/16 */
-    void IntersectionSystem(const CORE::LINALG::Matrix<dimEdge, 1, floatType>& xsi_edge,
+    void intersection_system(const CORE::LINALG::Matrix<dimEdge, 1, floatType>& xsi_edge,
         const CORE::LINALG::Matrix<dimSide, 1, floatType>& xsi_side,
         const CORE::LINALG::Matrix<probDim, numNodesEdge, floatType>& xyze_edge,
         const CORE::LINALG::Matrix<probDim, numNodesSide, floatType>& xyze_side,
@@ -3935,7 +3935,7 @@ namespace CORE::GEO::CUT::KERNEL
         report_position_allocated();
         report_distance_allocated();
         report_total_allocated();
-        CORE::GEO::CUT::MemorySingleton::getInstance().SetState(1, memory_allocations_);
+        CORE::GEO::CUT::MemorySingleton::getInstance().set_state(1, memory_allocations_);
 #else
         CORE::GEO::CUT::MemorySingleton::getInstance().SwitchState();
 #endif
@@ -3999,11 +3999,11 @@ namespace CORE::GEO::CUT::KERNEL
         }
 
         err = cond_number *
-              ComputeError(xyze_side, xyze_edge, this->LocalCoordinates(), CLN_REFERENCE_PREC);
+              compute_error(xyze_side, xyze_edge, this->LocalCoordinates(), CLN_REFERENCE_PREC);
 
         // compute scaled value of the error with respect to global coordinate
 #if DEBUG_MEMORY_ALLOCATION
-        UpdateMemoryUsage(prec, iter);
+        update_memory_usage(prec, iter);
 #endif
         prec += CLN_INCREMENT_STEP;
         iter++;
@@ -4032,7 +4032,7 @@ namespace CORE::GEO::CUT::KERNEL
 
       get_topology_information();
       // NOTE: Might be not needed later
-      FixCornerCase();
+      fix_corner_case();
 #ifdef CUSTOM_MEMORY_ALLOCATOR
       // We need it because on the first run, we try to do the try run with allocation of the
       // required non-reusable doubles, e.g. double->cln compile time constant and other global
@@ -4123,7 +4123,7 @@ namespace CORE::GEO::CUT::KERNEL
 
     // Evaluate difference between global coordinates in the intersection when computed based on
     // side and based on edge using conversion to very high reference precision
-    CORE::CLN::ClnWrapper ComputeError(
+    CORE::CLN::ClnWrapper compute_error(
         const CORE::LINALG::Matrix<probDim, CORE::FE::num_nodes<sideType>>& refside_xyz,
         const CORE::LINALG::Matrix<probDim, CORE::FE::num_nodes<edgeType>>& refedge_xyz,
         const CORE::LINALG::Matrix<dimEdge + dimSide, 1, CORE::CLN::ClnWrapper>& loc_calc, int prec)
@@ -4186,7 +4186,7 @@ namespace CORE::GEO::CUT::KERNEL
     /// Try to fix the case that is close to the corner and outside - in that case point
     /// is close to corner and outside might be touching two edges but difference between it
     /// and corner point > tolerance - hence this must be corrected
-    void FixCornerCase()
+    void fix_corner_case()
     {
       // if touches more than one edge
       if (touched_edges_ids_.size() >= 2)
@@ -4245,7 +4245,7 @@ namespace CORE::GEO::CUT::KERNEL
     // Update global maximum number of allocations ( number of containers of particular byte
     // size) if allocations on this precisions were more. Also set what was the most frequent
     // size of allocation for the current iteration
-    void UpdateMemoryUsage(int prec, int iter)
+    void update_memory_usage(int prec, int iter)
     {
 #if DEBUG_MEMORY_ALLOCATION
       // if first run need also to run until the end
@@ -4358,7 +4358,7 @@ namespace CORE::GEO::CUT::KERNEL
       {
 #if DOUBLE_PLUS_CLN_COMPUTE
         bool major_fail = (not conv) or (cond_infinity_) or (!got_topology_info);
-        bool result_fail = ComputeError(xyze_side, xyze_edge, xsi_) > DOUBLE_LIMIT_ERROR;
+        bool result_fail = compute_error(xyze_side, xyze_edge, xsi_) > DOUBLE_LIMIT_ERROR;
 
         if (major_fail or result_fail)
         {
@@ -4515,7 +4515,7 @@ namespace CORE::GEO::CUT::KERNEL
 
     // Evaluate difference between global coordinates in the intersection when computed based on
     // side and based on edge
-    double ComputeError(const CORE::LINALG::Matrix<probDim, numNodesSide>& side_xyz,
+    double compute_error(const CORE::LINALG::Matrix<probDim, numNodesSide>& side_xyz,
         const CORE::LINALG::Matrix<probDim, numNodesEdge>& edge_xyz,
         const CORE::LINALG::Matrix<dimEdge + dimSide, 1>& locxyz)
     {
@@ -4826,7 +4826,7 @@ template <class Strategy, unsigned probDim, CORE::FE::CellType elementType,
 size_t CORE::GEO::CUT::KERNEL::ComputePositionAdaptivePrecision<Strategy, probDim, elementType,
     numNodesElement, dim>::cln_sizes_[];
 
-// CORE::GEO::CUT::KERNEL::ComputeDistance
+// CORE::GEO::CUT::KERNEL::compute_distance
 
 template <class Strategy, unsigned probDim, CORE::FE::CellType sideType, unsigned dimSide,
     unsigned numNodesSide>

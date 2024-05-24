@@ -35,7 +35,7 @@ size_t IO::VisualizationData::get_point_coordinates_number_of_points() const
 /**
  *
  */
-void IO::VisualizationData::ClearData()
+void IO::VisualizationData::clear_data()
 {
   point_coordinates_.clear();
   cell_types_.clear();
@@ -43,9 +43,9 @@ void IO::VisualizationData::ClearData()
   cell_offsets_.clear();
   face_connectivity_.clear();
   face_offsets_.clear();
-  for (const auto& data_name : GetPointDataNames()) ClearData(point_data_, data_name);
-  for (const auto& data_name : GetCellDataNames()) ClearData(cell_data_, data_name);
-  for (const auto& data_name : GetFieldDataNames()) ClearData(field_data_, data_name);
+  for (const auto& data_name : GetPointDataNames()) clear_data(point_data_, data_name);
+  for (const auto& data_name : GetCellDataNames()) clear_data(cell_data_, data_name);
+  for (const auto& data_name : GetFieldDataNames()) clear_data(field_data_, data_name);
 }
 
 /**
@@ -53,7 +53,7 @@ void IO::VisualizationData::ClearData()
  */
 void IO::VisualizationData::ResetContainer()
 {
-  ClearData();
+  clear_data();
   point_data_.clear();
   cell_data_.clear();
   field_data_.clear();
@@ -102,9 +102,9 @@ void IO::VisualizationData::ConsistencyCheck() const
   const auto check_data_dimensions =
       [&](const auto& data, const std::string& data_name, const auto& n_items)
   {
-    const auto map_item = GetDataMapItem(data, data_name);
-    const auto size = GetDataVectorSize(get_data_vector_from_map_item(map_item));
-    const auto n_dim = GetDataDimension(map_item);
+    const auto map_item = get_data_map_item(data, data_name);
+    const auto size = get_data_vector_size(get_data_vector_from_map_item(map_item));
+    const auto n_dim = get_data_dimension(map_item);
     if (size % n_dim != 0)
       FOUR_C_THROW("The size of the data vector %s (%d) is not a multiple of the dimension (%d)!",
           data_name.c_str(), size, n_dim);
@@ -188,7 +188,7 @@ void IO::VisualizationData::complete_face_connectivity()
 /**
  *
  */
-std::string IO::VisualizationData::GetDataType(
+std::string IO::VisualizationData::get_data_type(
     const std::map<std::string, std::pair<visualization_vector_type_variant, uint8_t>>& data) const
 {
   if (&point_data_ == &data) return "point data";
@@ -199,7 +199,7 @@ std::string IO::VisualizationData::GetDataType(
 /**
  *
  */
-std::string IO::VisualizationData::GetDataType(
+std::string IO::VisualizationData::get_data_type(
     const std::map<std::string, visualization_vector_type_variant>& data) const
 {
   if (&field_data_ == &data) return "field data";

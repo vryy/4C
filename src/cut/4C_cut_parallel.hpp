@@ -92,17 +92,17 @@ namespace CORE::GEO
       /*!
       \brief set received node positions for node and distribute it to facets, vcs ...
        */
-      void setPositionForNode(const Node* n, const Point::PointPosition& pos);
+      void set_position_for_node(const Node* n, const Point::PointPosition& pos);
 
       /*!
       \brief Export dofset data for volumecells to neighbor proc and receive data from previous proc
        */
-      void exportDofSetData(bool include_inner);
+      void export_dof_set_data(bool include_inner);
 
       /*!
       \brief find the volumecell on myrank for which we received data stored in vc_data
        */
-      VolumeCell* findVolumeCell(
+      VolumeCell* find_volume_cell(
           MeshIntersection::DofSetData&
               vc_data,  ///< volumecell data which have to be identified on myrank
           double tol    ///< geometric tolerance to fit the points of volumecells on two different
@@ -117,40 +117,40 @@ namespace CORE::GEO
       /*!
       \brief Pack the point coordinates
        */
-      void packPoints(CORE::COMM::PackBuffer& dataSend,
+      void pack_points(CORE::COMM::PackBuffer& dataSend,
           std::vector<CORE::LINALG::Matrix<3, 1>>& points_coords) const;
 
       /*!
       \brief Unpack the point coordinates
        */
-      void unpackPoints(std::vector<char>::size_type& posinData,  //!< position in data
-          std::vector<char>& dataRecv,                            //!< received data
-          std::vector<CORE::LINALG::Matrix<3, 1>>& points_coords  //!< point coordinates
+      void unpack_points(std::vector<char>::size_type& posinData,  //!< position in data
+          std::vector<char>& dataRecv,                             //!< received data
+          std::vector<CORE::LINALG::Matrix<3, 1>>& points_coords   //!< point coordinates
       ) const;
 
       /*!
       \brief Basic function sending data to destination and receiving data from source
        */
-      void sendData(CORE::COMM::PackBuffer& dataSend,  //!< pack buffer
-          int& dest,                                   //!< destination proc
-          int& source,                                 //!< source proc
-          std::vector<char>& dataRecv                  //!< received data
+      void send_data(CORE::COMM::PackBuffer& dataSend,  //!< pack buffer
+          int& dest,                                    //!< destination proc
+          int& source,                                  //!< source proc
+          std::vector<char>& dataRecv                   //!< received data
       ) const;
 
       /*!
       \brief Print current dofset data
        */
-      void printDofSetData();
+      void print_dof_set_data();
 
       /*!
       \brief Get the index of nid in the vector of element's (eid) node Ids
        */
-      int getDofSetVecIndex(int nid,  //!< nid for which index has to be found
-          int eid                     //!< element id
+      int get_dof_set_vec_index(int nid,  //!< nid for which index has to be found
+          int eid                         //!< element id
       );
 
       //! replace nds (nodal dofset number) vectors for a volumecell set with set_index
-      void ReplaceNdsVectors(ElementHandle* e,                   //!< element handle
+      void replace_nds_vectors(ElementHandle* e,                 //!< element handle
           const std::vector<plain_volumecell_set>& ele_vc_sets,  //!< sets of volumecells
           std::vector<std::vector<int>>&
               nodaldofset_vc_sets,  //!< corresponding nodal dofsets for sets of volumecells

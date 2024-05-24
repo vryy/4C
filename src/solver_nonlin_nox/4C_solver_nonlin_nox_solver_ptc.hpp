@@ -90,7 +90,7 @@ namespace NOX
             std::ostringstream msg;
             msg << "Unknown conversion from STL_STRING to TSCType enum for " << name << "."
                 << std::endl;
-            throwError("String2TSCType", msg.str());
+            throw_error("String2TSCType", msg.str());
           }
           return type;
         };
@@ -126,7 +126,7 @@ namespace NOX
             std::ostringstream msg;
             msg << "Unknown conversion from STL_STRING to BuildOperatorType enum for " << name
                 << "." << std::endl;
-            throwError("String2BuildOpType", msg.str());
+            throw_error("String2BuildOpType", msg.str());
           }
 
           return type;
@@ -149,7 +149,7 @@ namespace NOX
             std::ostringstream msg;
             msg << "Unknown conversion from STL_STRING to ScaleOperatorType enum for " << name
                 << "." << std::endl;
-            throwError("String2ScaleOpType", msg.str());
+            throw_error("String2ScaleOpType", msg.str());
           }
 
           return type;
@@ -291,7 +291,7 @@ namespace NOX
 
        private:
         //! Throw class specific error
-        void throwError(const std::string& functionName, const std::string& errorMsg) const;
+        void throw_error(const std::string& functionName, const std::string& errorMsg) const;
 
        protected:
         //! Inner Stopping test

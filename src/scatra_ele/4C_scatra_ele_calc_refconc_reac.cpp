@@ -74,7 +74,7 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::set_advanced_reaction_ter
  |  calculation of convective element matrix: add conservative contributions     thon 02/16 |
  *------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcMatConvAddCons(
+void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::calc_mat_conv_add_cons(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac, const double vdiv,
     const double densnp)
 {
@@ -207,7 +207,7 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcMatDiff(
  |  standard Galerkin diffusive term on right hand side     ehrl 11/13 |
  *---------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcRHSDiff(
+void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::calc_rhs_diff(
     CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac)
 {
   /////////////////////////////////////////////////////////////////////

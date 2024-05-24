@@ -228,7 +228,7 @@ bool MIXTURE::GrowthRemodelMixtureRule::EvaluateOutputData(
 {
   if (name == OUTPUT_CURRENT_REFERENCE_DENSITY)
   {
-    for (int gp = 0; gp < NumGP(); ++gp)
+    for (int gp = 0; gp < num_gp(); ++gp)
     {
       data(gp, 0) =
           compute_current_reference_growth_scalar(gp) * params_->initial_reference_density_;

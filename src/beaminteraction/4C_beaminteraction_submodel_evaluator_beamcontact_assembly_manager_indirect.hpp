@@ -62,7 +62,7 @@ namespace BEAMINTERACTION
        * @param fe_sysvec (out) Global force vector.
        * @param fe_sysmat (out) Global stiffness matrix.
        */
-      void EvaluateForceStiff(Teuchos::RCP<DRT::Discretization> discret,
+      void evaluate_force_stiff(Teuchos::RCP<DRT::Discretization> discret,
           const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
           Teuchos::RCP<Epetra_FEVector> fe_sysvec,
           Teuchos::RCP<CORE::LINALG::SparseMatrix> fe_sysmat) override;
@@ -75,7 +75,7 @@ namespace BEAMINTERACTION
         return mortar_manager_;
       }
 
-      double GetEnergy(const Teuchos::RCP<const Epetra_Vector>& disp) const override;
+      double get_energy(const Teuchos::RCP<const Epetra_Vector>& disp) const override;
 
      private:
       //! Pointer to the mortar manager. This object stores the relevant mortar matrices.

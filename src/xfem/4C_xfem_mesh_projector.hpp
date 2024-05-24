@@ -74,10 +74,10 @@ namespace XFEM
    private:
     /// determine the search radius for the search tree
     template <CORE::FE::CellType distype>
-    void FindSearchRadius();
+    void find_search_radius();
 
     //! build a search tree for elements of source discretization
-    void SetupSearchTree();
+    void setup_search_tree();
 
     //! for every node search for a covering element from the source discretization
     void find_covering_elements_and_interpolate_values(
@@ -91,19 +91,20 @@ namespace XFEM
         const CORE::LINALG::Matrix<3, 1>& node_xyz, CORE::LINALG::Matrix<8, 1>& interpolatedvec);
 
     //! communicate nodes demanding reconstruction in a Round-Robin pattern
-    void CommunicateNodes(std::vector<CORE::LINALG::Matrix<3, 1>>& tar_nodepositions,
+    void communicate_nodes(std::vector<CORE::LINALG::Matrix<3, 1>>& tar_nodepositions,
         std::vector<CORE::LINALG::Matrix<8, 1>>& interpolated_vecs,
         std::vector<int>& projection_targetnodes, std::vector<int>& have_values);
 
     /// receive a block in the round robin communication pattern
-    void ReceiveBlock(
+    void receive_block(
         std::vector<char>& rblock, CORE::COMM::Exporter& exporter, MPI_Request& request);
 
     /// send a block in the round robin communication pattern
-    void SendBlock(std::vector<char>& sblock, CORE::COMM::Exporter& exporter, MPI_Request& request);
+    void send_block(
+        std::vector<char>& sblock, CORE::COMM::Exporter& exporter, MPI_Request& request);
 
     /// pack values in the round robin communication pattern
-    void PackValues(std::vector<CORE::LINALG::Matrix<3, 1>>& tar_nodepositions,
+    void pack_values(std::vector<CORE::LINALG::Matrix<3, 1>>& tar_nodepositions,
         std::vector<CORE::LINALG::Matrix<8, 1>>& interpolated_vecs,
         std::vector<int>& projection_targetnodes, std::vector<int>& have_values,
         std::vector<char>& sblock);

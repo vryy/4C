@@ -173,7 +173,7 @@ void FBI::FBIGeometryCoupler::ExtendBeamGhosting(DRT::Discretization& discretiza
   discretization.ExportColumnNodes(*newnodecolmap);
   discretization.export_column_elements(*newelecolmap);
 
-  discretization.FillComplete(true, false, false);
+  discretization.fill_complete(true, false, false);
 }
 
 /*----------------------------------------------------------------------*/
@@ -263,7 +263,7 @@ void FBI::FBIGeometryCoupler::PreparePairCreation(
       {
         DRT::Element* element = discretizations[1]->gElement(element_senddata[proc][ele]);
         if (!element) FOUR_C_THROW("Cannot find node with gid %", element_senddata[proc][ele]);
-        for (int node = 0; node < element->NumNode(); node++)
+        for (int node = 0; node < element->num_node(); node++)
         {
           node_senddata[proc].push_back((element->NodeIds())[node]);
         }

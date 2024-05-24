@@ -29,13 +29,13 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
   std::vector<int> ngp;
   linedef->ExtractIntVector("GP", ngp);
 
-  if ((NumNode() == 4) and ((ngp[0] < 2) or (ngp[1] < 2)))
+  if ((num_node() == 4) and ((ngp[0] < 2) or (ngp[1] < 2)))
     FOUR_C_THROW("Insufficient number of Gauss points");
-  else if ((NumNode() == 8) and ((ngp[0] < 3) or (ngp[1] < 3)))
+  else if ((num_node() == 8) and ((ngp[0] < 3) or (ngp[1] < 3)))
     FOUR_C_THROW("Insufficient number of Gauss points");
-  else if ((NumNode() == 9) and ((ngp[0] < 3) or (ngp[1] < 3)))
+  else if ((num_node() == 9) and ((ngp[0] < 3) or (ngp[1] < 3)))
     FOUR_C_THROW("Insufficient number of Gauss points");
-  else if ((NumNode() == 6) and (ngp[0] < 3))
+  else if ((num_node() == 6) and (ngp[0] < 3))
     FOUR_C_THROW("Insufficient number of Gauss points");
 
   gaussrule_ = getGaussrule(ngp.data());
@@ -83,13 +83,13 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
   {
     iseas_ = true;
 
-    if (NumNode() == 9)
+    if (num_node() == 9)
       FOUR_C_THROW("eas-technology not necessary with 9 nodes");
-    else if (NumNode() == 8)
+    else if (num_node() == 8)
       FOUR_C_THROW("eas-technology not necessary with 8 nodes");
-    else if (NumNode() == 3)
+    else if (num_node() == 3)
       FOUR_C_THROW("eas-technology not implemented for tri3 elements");
-    else if (NumNode() == 6)
+    else if (num_node() == 6)
       FOUR_C_THROW("eas-technology not implemented for tri6 elements");
     else
     {
@@ -103,9 +103,9 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
       // EAS matrix K_{alpha alpha}, also called Dtilde
       CORE::LINALG::SerialDenseMatrix invKaa(Wall1::neas_, Wall1::neas_);
       // EAS matrix K_{d alpha}
-      CORE::LINALG::SerialDenseMatrix Kda(2 * NumNode(), Wall1::neas_);
+      CORE::LINALG::SerialDenseMatrix Kda(2 * num_node(), Wall1::neas_);
       // EAS matrix K_{alpha d} // ONLY NEEDED FOR GENERALISED ENERGY-MOMENTUM METHOD
-      CORE::LINALG::SerialDenseMatrix Kad(Wall1::neas_, 2 * NumNode());
+      CORE::LINALG::SerialDenseMatrix Kad(Wall1::neas_, 2 * num_node());
       // EAS increment over last Newton step
       CORE::LINALG::SerialDenseMatrix eas_inc(Wall1::neas_, 1);
 

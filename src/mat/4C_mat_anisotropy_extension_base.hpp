@@ -104,7 +104,7 @@ namespace MAT
      *
      * \param anisotropy
      */
-    void SetAnisotropy(Anisotropy& anisotropy);
+    void set_anisotropy(Anisotropy& anisotropy);
 
     /// Reference to Anisotropy
     Teuchos::RCP<Anisotropy> anisotropy_;

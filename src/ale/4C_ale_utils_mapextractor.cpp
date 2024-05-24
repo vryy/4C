@@ -40,7 +40,7 @@ void ALE::UTILS::MapExtractor::Setup(const DRT::Discretization& dis, bool overla
       Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "FPSICoupling", 0, ndim)));
   mcs.AddSelector(
       Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "Mortar", 0, ndim)));
-  mcs.SetupExtractor(dis, *dis.DofRowMap(), *this);
+  mcs.SetupExtractor(dis, *dis.dof_row_map(), *this);
 }
 
 
@@ -90,7 +90,7 @@ void ALE::UTILS::FsiMapExtractor::Setup(const DRT::Discretization& dis)
   CORE::Conditions::MultiConditionSelector mcs;
   mcs.AddSelector(
       Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "FSICoupling", 0, ndim)));
-  mcs.SetupExtractor(dis, *dis.DofRowMap(), *this);
+  mcs.SetupExtractor(dis, *dis.dof_row_map(), *this);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -101,7 +101,7 @@ void ALE::UTILS::XFluidFluidMapExtractor::Setup(const DRT::Discretization& dis)
   CORE::Conditions::MultiConditionSelector mcs;
   mcs.AddSelector(Teuchos::rcp(
       new CORE::Conditions::NDimConditionSelector(dis, "FluidFluidCoupling", 0, ndim)));
-  mcs.SetupExtractor(dis, *dis.DofRowMap(), *this);
+  mcs.SetupExtractor(dis, *dis.dof_row_map(), *this);
 }
 
 FOUR_C_NAMESPACE_CLOSE

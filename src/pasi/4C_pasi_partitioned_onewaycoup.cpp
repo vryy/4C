@@ -54,14 +54,14 @@ void PASI::PasiPartOneWayCoup::Setup()
 void PASI::PasiPartOneWayCoup::Timeloop()
 {
   // safety checks
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
   // time loop
   while (NotFinished())
   {
     // prepare time step
-    PrepareTimeStep();
+    prepare_time_step();
 
     // pre evaluate time step
     PreEvaluateTimeStep();

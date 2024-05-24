@@ -67,7 +67,7 @@ void STR::MODELEVALUATOR::Meshtying::Init(
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Meshtying::Setup()
 {
-  CheckInit();
+  check_init();
 
   // create the meshtying factory
   MORTAR::STRATEGY::FactoryMT factory;
@@ -82,10 +82,10 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
   Teuchos::ParameterList cparams;
 
   // read and check contact input parameters
-  factory.ReadAndCheckInput(cparams);
+  factory.read_and_check_input(cparams);
 
-  // check for FillComplete of discretization
-  if (not Discret().Filled()) FOUR_C_THROW("Discretization is not FillComplete.");
+  // check for fill_complete of discretization
+  if (not Discret().Filled()) FOUR_C_THROW("Discretization is not fill_complete.");
 
   // ---------------------------------------------------------------------
   // build the meshtying interfaces
@@ -107,7 +107,7 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
   // final touches to the meshtying strategy
   // ---------------------------------------------------------------------
   strategy_ptr_->store_dirichlet_status(Int().GetDbc().GetDBCMapExtractor());
-  strategy_ptr_->SetState(MORTAR::state_new_displacement, Int().GetDbc().GetZeros());
+  strategy_ptr_->set_state(MORTAR::state_new_displacement, Int().GetDbc().GetZeros());
   strategy_ptr_->SaveReferenceState(Int().GetDbc().GetZerosPtr());
   strategy_ptr_->evaluate_reference_state();
   strategy_ptr_->Inttime_init();
@@ -131,7 +131,7 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
           dynamic_cast<MORTAR::StrategyBase&>(*strategy_ptr_).MeshInitialization();
       if (Xslavemod != Teuchos::null)
       {
-        mesh_relocation_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMap()));
+        mesh_relocation_ = Teuchos::rcp(new Epetra_Vector(*GState().dof_row_map()));
         for (int i = 0; i < strategy_ptr_->SlaveRowNodes()->NumMyElements(); ++i)
           for (int d = 0; d < strategy_ptr_->Dim(); ++d)
           {
@@ -158,7 +158,8 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Meshtying::AssembleForce(Epetra_Vector& f, const double& timefac_np) const
+bool STR::MODELEVALUATOR::Meshtying::assemble_force(
+    Epetra_Vector& f, const double& timefac_np) const
 {
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
   if (CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(Strategy().Params(), "ALGORITHM") ==
@@ -194,7 +195,7 @@ bool STR::MODELEVALUATOR::Meshtying::AssembleForce(Epetra_Vector& f, const doubl
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Meshtying::AssembleJacobian(
+bool STR::MODELEVALUATOR::Meshtying::assemble_jacobian(
     CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> block_ptr = Teuchos::null;
@@ -277,7 +278,7 @@ bool STR::MODELEVALUATOR::Meshtying::AssembleJacobian(
  *----------------------------------------------------------------------*/
 const Teuchos::RCP<CONTACT::MtAbstractStrategy>& STR::MODELEVALUATOR::Meshtying::StrategyPtr()
 {
-  CheckInitSetup();
+  check_init_setup();
   return strategy_ptr_;
 }
 
@@ -285,7 +286,7 @@ const Teuchos::RCP<CONTACT::MtAbstractStrategy>& STR::MODELEVALUATOR::Meshtying:
  *----------------------------------------------------------------------*/
 CONTACT::MtAbstractStrategy& STR::MODELEVALUATOR::Meshtying::Strategy()
 {
-  CheckInitSetup();
+  check_init_setup();
   return *strategy_ptr_;
 }
 
@@ -293,7 +294,7 @@ CONTACT::MtAbstractStrategy& STR::MODELEVALUATOR::Meshtying::Strategy()
  *----------------------------------------------------------------------*/
 const CONTACT::MtAbstractStrategy& STR::MODELEVALUATOR::Meshtying::Strategy() const
 {
-  CheckInitSetup();
+  check_init_setup();
   return *strategy_ptr_;
 }
 
@@ -302,9 +303,9 @@ const CONTACT::MtAbstractStrategy& STR::MODELEVALUATOR::Meshtying::Strategy() co
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Meshtying::get_block_dof_row_map_ptr() const
 {
-  CheckInitSetup();
+  check_init_setup();
   if (Strategy().LMDoFRowMapPtr(true) == Teuchos::null)
-    return GState().DofRowMap();
+    return GState().dof_row_map();
   else
   {
     enum INPAR::CONTACT::SystemType systype =
@@ -313,7 +314,7 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Meshtying::get_block_dof_row
     if (systype == INPAR::CONTACT::system_saddlepoint)
       return Strategy().LMDoFRowMapPtr(true);
     else
-      return GState().DofRowMap();
+      return GState().dof_row_map();
   }
 }
 
@@ -398,23 +399,23 @@ Teuchos::RCP<const CORE::LINALG::SparseMatrix> STR::MODELEVALUATOR::Meshtying::G
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Meshtying::EvaluateForce()
+bool STR::MODELEVALUATOR::Meshtying::evaluate_force()
 {
-  return Strategy().EvaluateForce(GState().GetDisNp());
+  return Strategy().evaluate_force(GState().GetDisNp());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Meshtying::EvaluateForceStiff()
+bool STR::MODELEVALUATOR::Meshtying::evaluate_force_stiff()
 {
-  return Strategy().EvaluateForceStiff(GState().GetDisNp());
+  return Strategy().evaluate_force_stiff(GState().GetDisNp());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Meshtying::EvaluateStiff()
+bool STR::MODELEVALUATOR::Meshtying::evaluate_stiff()
 {
-  return Strategy().EvaluateStiff(GState().GetDisNp());
+  return Strategy().evaluate_stiff(GState().GetDisNp());
 }
 
 /*----------------------------------------------------------------------------*
@@ -479,7 +480,7 @@ void STR::MODELEVALUATOR::Meshtying::apply_mesh_initialization(
 void STR::MODELEVALUATOR::Meshtying::RunPostComputeX(
     const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   Strategy().RunPostComputeX(xold, dir, xnew);
 }
@@ -488,7 +489,7 @@ void STR::MODELEVALUATOR::Meshtying::RunPostComputeX(
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Meshtying::remove_condensed_contributions_from_rhs(Epetra_Vector& rhs)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   Strategy().remove_condensed_contributions_from_rhs(rhs);
 }
@@ -502,19 +503,20 @@ void STR::MODELEVALUATOR::Meshtying::WriteRestart(
     iowriter.WriteVector("mesh_relocation", mesh_relocation_);
   else
   {
-    Teuchos::RCP<Epetra_Vector> tmp = Teuchos::rcp(new Epetra_Vector(*Discret().DofRowMap(), true));
+    Teuchos::RCP<Epetra_Vector> tmp =
+        Teuchos::rcp(new Epetra_Vector(*Discret().dof_row_map(), true));
     iowriter.WriteVector("mesh_relocation", tmp);
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Meshtying::ReadRestart(IO::DiscretizationReader& ioreader)
+void STR::MODELEVALUATOR::Meshtying::read_restart(IO::DiscretizationReader& ioreader)
 {
-  mesh_relocation_ = Teuchos::rcp(new Epetra_Vector(*Discret().DofRowMap(), true));
+  mesh_relocation_ = Teuchos::rcp(new Epetra_Vector(*Discret().dof_row_map(), true));
   ioreader.ReadVector(mesh_relocation_, "mesh_relocation");
 
-  strategy_ptr_->SetState(MORTAR::state_new_displacement, *mesh_relocation_);
+  strategy_ptr_->set_state(MORTAR::state_new_displacement, *mesh_relocation_);
   strategy_ptr_->MortarCoupling(mesh_relocation_);
 }
 

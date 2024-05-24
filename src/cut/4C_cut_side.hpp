@@ -433,12 +433,12 @@ namespace CORE::GEO
       /*!
        \brief Calculate the points at which the other side intersects with this considered side
        */
-      virtual bool FindCutPoints(Mesh& mesh, Element* element, Side& other);
+      virtual bool find_cut_points(Mesh& mesh, Element* element, Side& other);
 
       /*!
        \brief Draw cut lines between the cut points of this edge and "other"
        */
-      bool FindCutLines(Mesh& mesh, Element* element, Side& other);
+      bool find_cut_lines(Mesh& mesh, Element* element, Side& other);
 
       /*!
        \brief Get (not calculate) all the cut points between this side and "other"
@@ -1037,12 +1037,12 @@ namespace CORE::GEO
 
       virtual ~SideFactory() = default;
 
-      Side* CreateSide(CORE::FE::CellType sidetype, int sid, const std::vector<Node*>& nodes,
+      Side* create_side(CORE::FE::CellType sidetype, int sid, const std::vector<Node*>& nodes,
           const std::vector<Edge*>& edges) const;
 
      private:
       template <CORE::FE::CellType sidetype>
-      CORE::GEO::CUT::Side* CreateConcreteSide(int sid, const std::vector<Node*>& nodes,
+      CORE::GEO::CUT::Side* create_concrete_side(int sid, const std::vector<Node*>& nodes,
           const std::vector<Edge*>& edges, int probdim) const
       {
         Side* s = nullptr;

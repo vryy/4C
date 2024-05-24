@@ -57,17 +57,17 @@ THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
       freact_(Teuchos::null)
 {
   // create empty residual force vector
-  fres_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), false);
+  fres_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), false);
 
   // create empty reaction force vector of full length
-  freact_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), false);
+  freact_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), false);
 
   // iterative temperature increments IncT_{n+1}
   // also known as residual temperatures
-  tempi_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+  tempi_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
 
   // incremental temperature increments IncT_{n+1}
-  tempinc_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+  tempinc_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
 
   // setup mortar coupling
   if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::thermo)
@@ -197,7 +197,7 @@ void THR::TimIntImpl::Predict()
   dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
 
   // build residual force norm
-  normfres_ = THR::AUX::CalculateVectorNorm(iternorm_, fres_);
+  normfres_ = THR::AUX::calculate_vector_norm(iternorm_, fres_);
 
   // determine characteristic norms
   // we set the minimum of CalcRefNormForce() and #tolfres_, because
@@ -239,7 +239,7 @@ void THR::TimIntImpl::prepare_partition_step()
 
   // split norms
   // build residual force norm
-  normfres_ = THR::AUX::CalculateVectorNorm(iternorm_, fres_);
+  normfres_ = THR::AUX::calculate_vector_norm(iternorm_, fres_);
 
   // determine characteristic norms
   // we set the minumum of CalcRefNormForce() and #tolfres_, because
@@ -283,7 +283,7 @@ void THR::TimIntImpl::predict_tang_temp_consist_rate()
   tempi_->PutScalar(0.0);
 
   // for temperature increments on Dirichlet boundary
-  Teuchos::RCP<Epetra_Vector> dbcinc = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+  Teuchos::RCP<Epetra_Vector> dbcinc = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
 
   // copy last converged temperatures
   dbcinc->Update(1.0, *(*temp_)(0), 0.0);
@@ -303,7 +303,7 @@ void THR::TimIntImpl::predict_tang_temp_consist_rate()
   // add linear reaction forces to residual
   {
     // linear reactions
-    Teuchos::RCP<Epetra_Vector> freact = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+    Teuchos::RCP<Epetra_Vector> freact = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
     tang_->Multiply(false, *dbcinc, *freact);
 
     // add linear reaction forces due to prescribed Dirichlet BCs
@@ -336,7 +336,7 @@ void THR::TimIntImpl::predict_tang_temp_consist_rate()
   solver_->Reset();
 
   // build residual temperature norm
-  normtempi_ = THR::AUX::CalculateVectorNorm(iternorm_, tempi_);
+  normtempi_ = THR::AUX::calculate_vector_norm(iternorm_, tempi_);
 
   // set Dirichlet increments in temperature increments
   tempi_->Update(1.0, *dbcinc, 1.0);
@@ -371,7 +371,7 @@ void THR::TimIntImpl::predict_tang_temp_consist_rate()
 /*----------------------------------------------------------------------*
  | prepare time step                                        bborn 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::PrepareTimeStep()
+void THR::TimIntImpl::prepare_time_step()
 {
   // Note: MFSI requires a constant predictor. Otherwise the fields will get
   // out of sync.
@@ -504,7 +504,7 @@ INPAR::THR::ConvergenceStatus THR::TimIntImpl::NewtonFull()
 
 #ifdef THRASOUTPUT
     // finite difference check
-    FDCheck();
+    fd_check();
 #endif
 
     // apply Dirichlet BCs to system of equations
@@ -539,7 +539,7 @@ INPAR::THR::ConvergenceStatus THR::TimIntImpl::NewtonFull()
     blank_dirichlet_and_calc_norms();
 
     // print stuff
-    PrintNewtonIter();
+    print_newton_iter();
 
     // increment equilibrium loop index
     iter_ += 1;
@@ -569,9 +569,9 @@ void THR::TimIntImpl::blank_dirichlet_and_calc_norms()
   if (adaptermeshtying_ != Teuchos::null) adaptermeshtying_->MortarCondensation(tang_, fres_);
 
   // build residual force norm
-  normfres_ = THR::AUX::CalculateVectorNorm(iternorm_, fres_);
+  normfres_ = THR::AUX::calculate_vector_norm(iternorm_, fres_);
   // build residual temperature norm
-  normtempi_ = THR::AUX::CalculateVectorNorm(iternorm_, tempi_);
+  normtempi_ = THR::AUX::calculate_vector_norm(iternorm_, tempi_);
 }
 
 
@@ -626,10 +626,10 @@ void THR::TimIntImpl::HalveTimeStep()
   const double old_dt = Dt();
   const double new_dt = old_dt * 0.5;
   const int endstep = NumStep() + (NumStep() - Step()) + 1;
-  SetDt(new_dt);
+  set_dt(new_dt);
   SetTimen(TimeOld() + new_dt);
   SetNumStep(endstep);
-  ResetStep();
+  reset_step();
   // TODO limit the maximum number of refinement levels?
   // go down one refinement level
   divcontrefinelevel_++;
@@ -673,7 +673,7 @@ void THR::TimIntImpl::check_for_time_step_increase()
         // update total number of steps and next time step
         const int endstep = NumStep() - (NumStep() - Step()) / 2;
         SetNumStep(endstep);
-        SetDt(Dt() * 2.0);
+        set_dt(Dt() * 2.0);
       }
     }
   }
@@ -834,16 +834,16 @@ void THR::TimIntImpl::PrintPredictor()
  | print Newton-Raphson iteration to screen and error file  bborn 08/09 |
  | originally by lw 12/07, tk 01/08                                     |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::PrintNewtonIter()
+void THR::TimIntImpl::print_newton_iter()
 {
   // print to standard out
   if ((myrank_ == 0) and printscreen_ and printiter_ and (StepOld() % printscreen_ == 0))
   {
     if (iter_ == 1) print_newton_iter_header(stdout);
-    PrintNewtonIterText(stdout);
+    print_newton_iter_text(stdout);
   }
 
-}  // PrintNewtonIter()
+}  // print_newton_iter()
 
 
 /*----------------------------------------------------------------------*
@@ -912,7 +912,7 @@ void THR::TimIntImpl::print_newton_iter_header(FILE* ofile)
  | print Newton-Raphson iteration to screen                 bborn 08/09 |
  | originally by lw 12/07, tk 01/08                                     |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::PrintNewtonIterText(FILE* ofile)
+void THR::TimIntImpl::print_newton_iter_text(FILE* ofile)
 {
   // open outstringstream
   std::ostringstream oss;
@@ -970,17 +970,17 @@ void THR::TimIntImpl::PrintNewtonIterText(FILE* ofile)
 
   // nice to have met you
   return;
-}  // PrintNewtonIterText()
+}  // print_newton_iter_text()
 
 
 /*----------------------------------------------------------------------*
  | print statistics of converged NRI                        bborn 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::PrintNewtonConv()
+void THR::TimIntImpl::print_newton_conv()
 {
   // somebody did the door
   return;
-}  // PrintNewtonConv()
+}  // print_newton_conv()
 
 
 /*----------------------------------------------------------------------*
@@ -1024,7 +1024,7 @@ void THR::TimIntImpl::PrintStepText(FILE* ofile)
 /*----------------------------------------------------------------------*
  | finite difference check of thermal tangent                dano 09/13 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::FDCheck()
+void THR::TimIntImpl::fd_check()
 {
   // value of disturbance
   const double delta = 1.0e-8;
@@ -1033,17 +1033,17 @@ void THR::TimIntImpl::FDCheck()
   // ------------------------------------------ initialise matrices and vectors
 
   // initialise discurbed increment vector
-  Teuchos::RCP<Epetra_Vector> disturbtempi = CORE::LINALG::CreateVector(*DofRowMap(), true);
+  Teuchos::RCP<Epetra_Vector> disturbtempi = CORE::LINALG::CreateVector(*dof_row_map(), true);
   const int dofs = disturbtempi->GlobalLength();
   disturbtempi->PutScalar(0.0);
   disturbtempi->ReplaceGlobalValue(0, 0, delta);
 
   // initialise rhs
   Teuchos::RCP<Epetra_Vector> rhs_old =
-      Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(), true));
+      Teuchos::rcp(new Epetra_Vector(*discret_->dof_row_map(), true));
   rhs_old->Update(1.0, *fres_, 0.0);
   Teuchos::RCP<Epetra_Vector> rhs_copy =
-      Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(), true));
+      Teuchos::rcp(new Epetra_Vector(*discret_->dof_row_map(), true));
 
   // initialise approximation of tangent
   Teuchos::RCP<Epetra_CrsMatrix> tang_approx = CORE::LINALG::CreateMatrix((tang_->RowMap()), 81);
@@ -1108,7 +1108,7 @@ void THR::TimIntImpl::FDCheck()
   error_crs->FillComplete();
   sparse_crs->FillComplete();
 
-  // ------------------------------------- initialise values for actual FDCheck
+  // ------------------------------------- initialise values for actual fd_check
   bool success = true;
   double error_max = 0.0;
   for (int i = 0; i < dofs; ++i)
@@ -1185,10 +1185,10 @@ void THR::TimIntImpl::FDCheck()
           // --> set error_max to current error
           if (abs(error) > abs(error_max)) error_max = abs(error);
 
-          // ---------------------------------------- control values of FDCheck
+          // ---------------------------------------- control values of fd_check
           if ((abs(error) > 1e-6) and (abs(error_ij) > 1e-7))
           {
-            // FDCheck of tangent was NOT successful
+            // fd_check of tangent was NOT successful
             success = false;
 
             std::cout << "finite difference check failed!\n"
@@ -1199,10 +1199,10 @@ void THR::TimIntImpl::FDCheck()
           }  // control the error values
         }
       }
-    }  // FDCheck only for DOFs which have NO DBC
+    }  // fd_check only for DOFs which have NO DBC
   }    // loop over dofs of successful FD check
 
-  // --------------------------------------------------- FDCheck was successful
+  // --------------------------------------------------- fd_check was successful
   // i.e. tang and its approxiamation are equal w.r.t. given tolerance
   if (success == true)
   {
@@ -1212,11 +1212,11 @@ void THR::TimIntImpl::FDCheck()
     std::cout << "****************** finite difference check done ***************\n\n" << std::endl;
   }
   else
-    FOUR_C_THROW("FDCheck of thermal tangent failed!");
+    FOUR_C_THROW("fd_check of thermal tangent failed!");
 
   return;
 
-}  // FDCheck()
+}  // fd_check()
 
 
 /*----------------------------------------------------------------------*/

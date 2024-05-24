@@ -76,7 +76,7 @@ void electromagnetics_drt()
   }
 
   // call fill complete on discretization
-  if (not elemagdishdg->Filled() || not elemagdishdg->HaveDofs()) elemagdishdg->FillComplete();
+  if (not elemagdishdg->Filled() || not elemagdishdg->HaveDofs()) elemagdishdg->fill_complete();
   // Asking the discretization how many internal DOF the elements have and creating the additional
   // DofSet
   int eledofs = dynamic_cast<DRT::ELEMENTS::Elemag*>(elemagdishdg->lColElement(0))
@@ -86,7 +86,7 @@ void electromagnetics_drt()
   elemagdishdg->AddDofSet(dofsetaux);
 
   // call fill complete on discretization
-  elemagdishdg->FillComplete();
+  elemagdishdg->fill_complete();
 
   // create solver
   const int linsolvernumber_elemag = elemagparams.get<int>("LINEAR_SOLVER");
@@ -163,7 +163,7 @@ void electromagnetics_drt()
 
   // set initial field
   if (restart)
-    elemagalgo->ReadRestart(restart);
+    elemagalgo->read_restart(restart);
   else
   {
     INPAR::ELEMAG::InitialField init =
@@ -186,7 +186,7 @@ void electromagnetics_drt()
         {
           scatradis = Teuchos::rcp(new DRT::DiscretizationHDG((std::string) "scatra", newcomm));
 
-          scatradis->FillComplete();
+          scatradis->fill_complete();
 
           DRT::UTILS::CloneDiscretization<
               ELEMAG::UTILS::ScatraCloneStrategy<CORE::FE::ShapeFunctionType::hdg>>(
@@ -195,7 +195,7 @@ void electromagnetics_drt()
         else
         {
           scatradis = Teuchos::rcp(new DRT::Discretization((std::string) "scatra", newcomm));
-          scatradis->FillComplete();
+          scatradis->fill_complete();
 
           DRT::UTILS::CloneDiscretization<
               ELEMAG::UTILS::ScatraCloneStrategy<CORE::FE::ShapeFunctionType::polynomial>>(
@@ -203,7 +203,7 @@ void electromagnetics_drt()
         }
 
         // call fill complete on discretization
-        scatradis->FillComplete();
+        scatradis->fill_complete();
 
         Teuchos::RCP<IO::DiscretizationWriter> output_scatra = scatradis->Writer();
 
@@ -235,7 +235,7 @@ void electromagnetics_drt()
               FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
 
             // finalize discretization
-            scatradis->FillComplete(true, true, true);
+            scatradis->fill_complete(true, true, true);
 
             // create scatra output
             // access the problem-specific parameter list
@@ -365,7 +365,7 @@ void electromagnetics_drt()
   // Computing the error at the las time step (the conditional stateme nt is inside for now)
   if (CORE::UTILS::IntegralValue<bool>(elemagparams, "CALCERR"))
   {
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors = elemagalgo->ComputeError();
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors = elemagalgo->compute_error();
     elemagalgo->PrintErrors(errors);
   }
 

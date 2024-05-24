@@ -57,19 +57,19 @@ namespace STR
       void Reset(const Epetra_Vector& x) override;
 
       //! derived
-      bool EvaluateForce() override;
+      bool evaluate_force() override;
 
       //! derived
-      bool EvaluateStiff() override;
+      bool evaluate_stiff() override;
 
       //! derived
-      bool EvaluateForceStiff() override;
+      bool evaluate_force_stiff() override;
 
       //! derived
-      void PreEvaluate() override{};
+      void pre_evaluate() override{};
 
       //! derived
-      void PostEvaluate() override{};
+      void post_evaluate() override{};
 
       /*! \brief Initialize viscous and inertial matrices
        *
@@ -81,10 +81,10 @@ namespace STR
       bool initialize_inertia_and_damping();
 
       //! derived
-      bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
+      bool assemble_force(Epetra_Vector& f, const double& timefac_np) const override;
 
       //! derived
-      bool AssembleJacobian(
+      bool assemble_jacobian(
           CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
 
       //! derived
@@ -92,7 +92,7 @@ namespace STR
           IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! derived
-      void ReadRestart(IO::DiscretizationReader& ioreader) override;
+      void read_restart(IO::DiscretizationReader& ioreader) override;
 
       //! derived
       void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
@@ -187,15 +187,15 @@ namespace STR
       //! @}
 
      protected:
-      //! pre-operator for \ref EvaluateInternal
+      //! pre-operator for \ref evaluate_internal
       virtual void PreEvaluateInternal(){/* empty */};
 
      private:
       //! apply the internal force contributions
-      bool ApplyForceInternal();
+      bool apply_force_internal();
 
       //! apply the external force contributions
-      bool ApplyForceExternal();
+      bool apply_force_external();
 
       //! apply the internal force contributions and the evaluate the structural stiffness terms
       bool apply_force_stiff_internal();
@@ -215,23 +215,23 @@ namespace STR
       bool pre_apply_force_stiff_external(
           Epetra_Vector& fextnp, CORE::LINALG::SparseMatrix& stiff) const;
 
-      //! Set the ParamsInterface in the parameter list and call the other EvaluateNeumann routine
-      void EvaluateNeumann(const Teuchos::RCP<Epetra_Vector>& eval_vec,
+      //! Set the ParamsInterface in the parameter list and call the other evaluate_neumann routine
+      void evaluate_neumann(const Teuchos::RCP<Epetra_Vector>& eval_vec,
           const Teuchos::RCP<CORE::LINALG::SparseOperator>& eval_mat);
 
       /*! \brief Check if the given parameter list is valid and call the
-       *  EvaluateNeumann routine of the discretization
+       *  evaluate_neumann routine of the discretization
        *
        *  \param eval_vec (out) : external force vector
        *  \param eval_mat (out) : linearization of the external force (optional)
        *
        *  \date 08/15
        *  \author hiermeier */
-      void EvaluateNeumann(Teuchos::ParameterList& p, const Teuchos::RCP<Epetra_Vector>& eval_vec,
+      void evaluate_neumann(Teuchos::ParameterList& p, const Teuchos::RCP<Epetra_Vector>& eval_vec,
           const Teuchos::RCP<CORE::LINALG::SparseOperator>& eval_mat);
 
-      //! Set the ParamsInterface in the parameter list and call the other EvaluateInternal routine
-      void EvaluateInternal(Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
+      //! Set the ParamsInterface in the parameter list and call the other evaluate_internal routine
+      void evaluate_internal(Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
           Teuchos::RCP<Epetra_Vector>* eval_vec);
 
       /*! \brief Check if the given parameter list is valid and call the
@@ -242,7 +242,7 @@ namespace STR
        *
        *  \date 08/15
        *  \author hiermeier */
-      void EvaluateInternal(Teuchos::ParameterList& p,
+      void evaluate_internal(Teuchos::ParameterList& p,
           Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
           Teuchos::RCP<Epetra_Vector>* eval_vec);
 
@@ -272,7 +272,7 @@ namespace STR
        *
        *  \date 09/16
        *  \author hiermeier */
-      void StaticContributions(Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
+      void static_contributions(Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
           Teuchos::RCP<Epetra_Vector>* eval_vec);
 
       /*! \brief Add static structural internal force to the evaluate call (default)
@@ -284,7 +284,7 @@ namespace STR
        *
        *  \date 09/16
        *  \author hiermeier */
-      void StaticContributions(Teuchos::RCP<Epetra_Vector>* eval_vec);
+      void static_contributions(Teuchos::RCP<Epetra_Vector>* eval_vec);
 
       /*! \brief Add material damping matrix  to the evaluate call (optional)
        *
@@ -341,9 +341,9 @@ namespace STR
        *  \author hiermeier */
       void inertial_and_viscous_forces();
 
-      /*! Check the FillComplete status of the stiffness and mass matrix
+      /*! Check the fill_complete status of the stiffness and mass matrix
        *  and complete them, if necessary */
-      void FillComplete();
+      void fill_complete();
 
       /*! \biref Assemble the Rayleigh damping matrix
        *
@@ -362,7 +362,7 @@ namespace STR
        *
        *  \date 09/16
        *  \author hiermeier */
-      Teuchos::RCP<Epetra_Vector> GetInertialForce();
+      Teuchos::RCP<Epetra_Vector> get_inertial_force();
 
       /*! \brief writes output for discretization structure
        *
@@ -450,46 +450,46 @@ namespace STR
       //! @{
 
       //! global internal force at \f$t_{n+1}\f$
-      Epetra_Vector& FintNp();
+      Epetra_Vector& fint_np();
 
       //! global internal force at \f$t_{n+1}\f$ (read-only)
-      const Epetra_Vector& FintNp() const;
+      const Epetra_Vector& fint_np() const;
 
       //! global internal force at \f$t_{n}\f$ (read-only)
-      const Epetra_Vector& FintN() const;
+      const Epetra_Vector& fint_n() const;
 
       //! global external force at \f$t_{n+1}\f$
-      Epetra_Vector& FextNp();
+      Epetra_Vector& fext_np();
 
       //! global external force at \f$t_{n+1}\f$ (read-only)
-      const Epetra_Vector& FextNp() const;
+      const Epetra_Vector& fext_np() const;
 
       //! global external force at \f$t_{n}\f$ (read-only)
-      const Epetra_Vector& FextN() const;
+      const Epetra_Vector& fext_n() const;
 
       //! inertial force at \f$t_{n+1}\f$
-      Epetra_Vector& FinertialNp();
+      Epetra_Vector& finertial_np();
 
       //! inertial force at \f$t_{n+1}\f$ (read-only)
-      const Epetra_Vector& FinertialNp() const;
+      const Epetra_Vector& finertial_np() const;
 
       //! viscous force at \f$t_{n+1}\f$
-      Epetra_Vector& FviscoNp();
+      Epetra_Vector& fvisco_np();
 
       //! viscous force at \f$t_{n+1}\f$ (read-only)
-      const Epetra_Vector& FviscoNp() const;
+      const Epetra_Vector& fvisco_np() const;
 
       //! structural displacement at \f$t_{n+1}\f$
-      Epetra_Vector& DisNp();
+      Epetra_Vector& dis_np();
 
       //! structural displacement at \f$t_{n+1}\f$ (read-only)
-      const Epetra_Vector& DisNp() const;
+      const Epetra_Vector& dis_np() const;
 
       //! structural stiffness block
       CORE::LINALG::SparseMatrix& Stiff() const;
 
       //! modified stiffness block
-      CORE::LINALG::SparseMatrix& StiffPTC() const;
+      CORE::LINALG::SparseMatrix& stiff_ptc() const;
 
       //! structural mass matrix
       CORE::LINALG::SparseOperator& Mass();

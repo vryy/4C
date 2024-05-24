@@ -35,7 +35,7 @@ THR::ResultTest::ResultTest(TimInt& tintegrator) : CORE::UTILS::ResultTest("THER
 /*----------------------------------------------------------------------*
  |                                                           dano 08/09 |
  *----------------------------------------------------------------------*/
-void THR::ResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void THR::ResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
@@ -116,6 +116,6 @@ void THR::ResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_
       test_count++;
     }
   }
-}  // TestNode
+}  // test_node
 
 FOUR_C_NAMESPACE_CLOSE

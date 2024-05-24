@@ -209,7 +209,7 @@ double DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::compute_struct_chem_pot
   double pot = 0.0;
 
   structmat->ChemPotential(
-      glstrain, poro::DiffManager()->GetPorosity(0), pres, J, my::eid_, pot, gp);
+      glstrain, poro::diff_manager()->GetPorosity(0), pres, J, my::eid_, pot, gp);
 
   return pot;
 }

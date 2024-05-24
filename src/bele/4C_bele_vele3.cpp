@@ -106,7 +106,7 @@ DRT::Element* DRT::ELEMENTS::Vele3::Clone() const
  *----------------------------------------------------------------------*/
 CORE::FE::CellType DRT::ELEMENTS::Vele3::Shape() const
 {
-  switch (NumNode())
+  switch (num_node())
   {
     case 4:
       return CORE::FE::CellType::tet4;
@@ -125,7 +125,7 @@ CORE::FE::CellType DRT::ELEMENTS::Vele3::Shape() const
     case 27:
       return CORE::FE::CellType::hex27;
     default:
-      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", num_node());
   }
 }
 
@@ -198,7 +198,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3::Surfaces()
 /*----------------------------------------------------------------------*
  |  get optimal gauss rule (public)                          u.may 05/09|
  *----------------------------------------------------------------------*/
-CORE::FE::GaussRule3D DRT::ELEMENTS::Vele3::getOptimalGaussrule(
+CORE::FE::GaussRule3D DRT::ELEMENTS::Vele3::get_optimal_gaussrule(
     const CORE::FE::CellType& distype) const
 {
   CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::undefined;

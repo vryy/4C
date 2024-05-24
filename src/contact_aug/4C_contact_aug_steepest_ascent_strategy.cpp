@@ -30,12 +30,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::STEEPESTASCENT::Strategy::Strategy(
-    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
-    const Epetra_Map* NodeRowMap, const Teuchos::ParameterList& params,
-    const plain_interface_set& interfaces, int dim, const Teuchos::RCP<const Epetra_Comm>& comm,
-    int maxdof)
+    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
+    const Teuchos::ParameterList& params, const plain_interface_set& interfaces, int dim,
+    const Teuchos::RCP<const Epetra_Comm>& comm, int maxdof)
     : CONTACT::AUG::STEEPESTASCENT_SP::Strategy(
-          data_ptr, DofRowMap, NodeRowMap, params, interfaces, dim, comm, maxdof)
+          data_ptr, dof_row_map, NodeRowMap, params, interfaces, dim, comm, maxdof)
 {
   // cast to steepest ascent interfaces
   for (plain_interface_set::const_iterator cit = interfaces.begin(); cit != interfaces.end(); ++cit)
@@ -178,13 +178,13 @@ void CONTACT::AUG::STEEPESTASCENT::Strategy::run_post_apply_jacobian_inverse(
    * after the augmentation, since the used formulas expect a direction vector.
    *                                                         hiermeier, 12/17 */
   result.Scale(-1.0);
-  AugmentDirection(cparams, xold, result);
+  augment_direction(cparams, xold, result);
   result.Scale(-1.0);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::STEEPESTASCENT::Strategy::AugmentDirection(
+void CONTACT::AUG::STEEPESTASCENT::Strategy::augment_direction(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold, Epetra_Vector& dir_mutable)
 {
   // if there are no contact contributions, do a direct return

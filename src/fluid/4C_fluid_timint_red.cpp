@@ -55,7 +55,7 @@ void FLD::TimIntRedModels::Init()
   // create the volumetric-surface-flow condition
   if (alefluid_)
   {
-    discret_->SetState("dispnp", dispn_);
+    discret_->set_state("dispnp", dispn_);
   }
 
   vol_surf_flow_bc_ = Teuchos::rcp(new UTILS::FluidVolumetricSurfaceFlowWrapper(discret_, dta_));
@@ -83,10 +83,10 @@ void FLD::TimIntRedModels::Init()
           GLOBAL::Problem::Instance()->OutputControlFile(),
           GLOBAL::Problem::Instance()->spatial_approximation_type());
       discret_->ClearState();
-      discret_->SetState("velaf", zeros_);
+      discret_->set_state("velaf", zeros_);
       if (alefluid_)
       {
-        discret_->SetState("dispnp", dispnp_);
+        discret_->set_state("dispnp", dispnp_);
       }
       coupled3D_redDbc_art_ =
           Teuchos::rcp(new UTILS::FluidCouplingWrapper<ADAPTER::ArtNet>(discret_,
@@ -102,10 +102,10 @@ void FLD::TimIntRedModels::Init()
           GLOBAL::Problem::Instance()->OutputControlFile(),
           GLOBAL::Problem::Instance()->spatial_approximation_type());
       discret_->ClearState();
-      discret_->SetState("velaf", zeros_);
+      discret_->set_state("velaf", zeros_);
       if (alefluid_)
       {
-        discret_->SetState("dispnp", dispnp_);
+        discret_->set_state("dispnp", dispnp_);
       }
       coupled3D_redDbc_airways_ =
           Teuchos::rcp(new UTILS::FluidCouplingWrapper<AIRWAY::RedAirwayImplicitTimeInt>(discret_,
@@ -144,7 +144,7 @@ void FLD::TimIntRedModels::do_problem_specific_boundary_conditions()
 {
   if (alefluid_)
   {
-    discret_->SetState("dispnp", dispnp_);
+    discret_->set_state("dispnp", dispnp_);
   }
 
   // Check if one-dimensional artery network problem exist
@@ -164,18 +164,18 @@ void FLD::TimIntRedModels::do_problem_specific_boundary_conditions()
 }
 
 /*----------------------------------------------------------------------*
-| Update3DToReduced in AssembleMatAndRHS                       bk 11/13 |
+| Update3DToReduced in assemble_mat_and_rhs                       bk 11/13 |
 *----------------------------------------------------------------------*/
 void FLD::TimIntRedModels::update3_d_to_reduced_mat_and_rhs()
 {
   discret_->ClearState();
 
-  discret_->SetState("velaf", velnp_);
-  discret_->SetState("hist", hist_);
+  discret_->set_state("velaf", velnp_);
+  discret_->set_state("hist", hist_);
 
   if (alefluid_)
   {
-    discret_->SetState("dispnp", dispnp_);
+    discret_->set_state("dispnp", dispnp_);
   }
 
   // Check if one-dimensional artery network problem exist
@@ -218,7 +218,7 @@ void FLD::TimIntRedModels::update3_d_to_reduced_mat_and_rhs()
 void FLD::TimIntRedModels::set_custom_ele_params_assemble_mat_and_rhs(
     Teuchos::ParameterList& eleparams)
 {
-  // these are the only routines that have to be called in AssembleMatAndRHS
+  // these are the only routines that have to be called in assemble_mat_and_rhs
   // before Evaluate in the RedModels case
   update3_d_to_reduced_mat_and_rhs();
 }
@@ -265,23 +265,23 @@ void FLD::TimIntRedModels::OutputReducedD()
 /*----------------------------------------------------------------------*
  | read some additional data in restart                         bk 12/13|
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedModels::ReadRestart(int step)
+void FLD::TimIntRedModels::read_restart(int step)
 {
   IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
 
-  vol_surf_flow_bc_->ReadRestart(reader);
+  vol_surf_flow_bc_->read_restart(reader);
 
-  traction_vel_comp_adder_bc_->ReadRestart(reader);
+  traction_vel_comp_adder_bc_->read_restart(reader);
 
   // Read restart of one-dimensional arterial network
   if (ART_timeInt_ != Teuchos::null)
   {
-    coupled3D_redDbc_art_->ReadRestart(reader);
+    coupled3D_redDbc_art_->read_restart(reader);
   }
   // Check if zero-dimensional airway network problem exist
   if (airway_imp_timeInt_ != Teuchos::null)
   {
-    coupled3D_redDbc_airways_->ReadRestart(reader);
+    coupled3D_redDbc_airways_->read_restart(reader);
   }
 
   ReadRestartReducedD(step);
@@ -295,13 +295,13 @@ void FLD::TimIntRedModels::ReadRestartReducedD(int step)
   // Check if one-dimensional artery network problem exist
   if (ART_timeInt_ != Teuchos::null)
   {
-    ART_timeInt_->ReadRestart(step, true);
+    ART_timeInt_->read_restart(step, true);
   }
 
   // Check if one-dimensional artery network problem exist
   if (airway_imp_timeInt_ != Teuchos::null)
   {
-    airway_imp_timeInt_->ReadRestart(step, true);
+    airway_imp_timeInt_->read_restart(step, true);
   }
 }  // FLD::TimIntRedModels::ReadRestartReadRestart(int step)
 
@@ -436,15 +436,15 @@ void FLD::TimIntRedModels::CustomSolve(Teuchos::RCP<Epetra_Vector> relax)
 /*----------------------------------------------------------------------*
  | RedModels - prepare time step                            ismail 06/14|
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedModels::PrepareTimeStep()
+void FLD::TimIntRedModels::prepare_time_step()
 {
-  FluidImplicitTimeInt::PrepareTimeStep();
+  FluidImplicitTimeInt::prepare_time_step();
 
   discret_->ClearState();
-  discret_->SetState("velaf", velnp_);
-  discret_->SetState("hist", hist_);
+  discret_->set_state("velaf", velnp_);
+  discret_->set_state("hist", hist_);
 
-  if (alefluid_) discret_->SetState("dispnp", dispnp_);
+  if (alefluid_) discret_->set_state("dispnp", dispnp_);
 
   // Check if one-dimensional artery network problem exist
   if (ART_timeInt_ != Teuchos::null)
@@ -470,9 +470,9 @@ void FLD::TimIntRedModels::PrepareTimeStep()
 /*----------------------------------------------------------------------*
  | Apply Womersley bc to shapederivatives                       bk 12/13|
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedModels::AssembleMatAndRHS()
+void FLD::TimIntRedModels::assemble_mat_and_rhs()
 {
-  FluidImplicitTimeInt::AssembleMatAndRHS();
+  FluidImplicitTimeInt::assemble_mat_and_rhs();
 
   if (shapederivatives_ != Teuchos::null)
   {

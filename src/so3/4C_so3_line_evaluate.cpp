@@ -25,13 +25,13 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------*
  * Integrate a Line Neumann boundary condition (public)         gee 04/08|
  * ----------------------------------------------------------------------*/
-int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::StructuralLine::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   // set the interface ptr in the parent element
-  ParentElement()->set_params_interface_ptr(params);
+  parent_element()->set_params_interface_ptr(params);
   // get type of condition
   enum LoadType
   {
@@ -70,8 +70,8 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList& param
   */
   // find out whether we will use a time curve
   double time = -1.0;
-  if (ParentElement()->IsParamsInterface())
-    time = ParentElement()->ParamsInterfacePtr()->GetTotalTime();
+  if (parent_element()->IsParamsInterface())
+    time = parent_element()->ParamsInterfacePtr()->GetTotalTime();
   else
     time = params.get("total time", -1.0);
 
@@ -89,7 +89,7 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList& param
   }
 
   // element geometry update - currently only material configuration
-  const int numnode = NumNode();
+  const int numnode = num_node();
   CORE::LINALG::SerialDenseMatrix x(numnode, numdim);
   material_configuration(x);
 
@@ -112,7 +112,7 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList& param
       {  // uniform load on reference configuration
 
         double dL;
-        LineIntegration(dL, x, deriv);
+        line_integration(dL, x, deriv);
 
         // loop the dofs of a node
         for (int i = 0; i < numdim; ++i)
@@ -163,7 +163,7 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList& param
 /*----------------------------------------------------------------------*
  *  (private)                                                  gee 04/08|
  * ---------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructuralLine::LineIntegration(double& dL,
+void DRT::ELEMENTS::StructuralLine::line_integration(double& dL,
     const CORE::LINALG::SerialDenseMatrix& x, const CORE::LINALG::SerialDenseMatrix& deriv)
 {
   // compute dXYZ / drs

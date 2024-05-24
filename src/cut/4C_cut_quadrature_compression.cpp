@@ -46,7 +46,7 @@ bool CORE::GEO::CUT::QuadratureCompression::perform_compression_of_quadrature(
   Teuchos::RCP<CORE::LINALG::SerialDenseVector> rhs =
       Teuchos::rcp(new CORE::LINALG::SerialDenseVector);
 
-  FormMatrixSystem(gin, vander, rhs);
+  form_matrix_system(gin, vander, rhs);
 
   bool success = compress_leja_points(gin, vander, rhs, x);
 
@@ -59,7 +59,7 @@ bool CORE::GEO::CUT::QuadratureCompression::perform_compression_of_quadrature(
 /*---------------------------------------------------------------------------------------------------------------*
  * Compute the Vandermonde matrix and RHS of the matrix system sudhakar 08/15
  *---------------------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::QuadratureCompression::FormMatrixSystem(CORE::FE::GaussPointsComposite& gin,
+void CORE::GEO::CUT::QuadratureCompression::form_matrix_system(CORE::FE::GaussPointsComposite& gin,
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
     Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs)
 {
@@ -271,7 +271,7 @@ bool CORE::GEO::CUT::QuadratureCompression::compress_leja_points(
 
   std::vector<int> work(na, 0.0);
 
-  GetPivotalRows(work_temp, work);
+  get_pivotal_rows(work_temp, work);
 
   /*work_temp->print(std::cout);
   std::cout<<"work = ";
@@ -334,7 +334,7 @@ Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::QuadratureCompression::form_
   return cgp;
 }
 
-void CORE::GEO::CUT::QuadratureCompression::GetPivotalRows(
+void CORE::GEO::CUT::QuadratureCompression::get_pivotal_rows(
     Teuchos::RCP<CORE::LINALG::IntSerialDenseVector>& work_temp, std::vector<int>& work)
 {
   int na = (int)work.size();
@@ -345,7 +345,7 @@ void CORE::GEO::CUT::QuadratureCompression::GetPivotalRows(
   for (int i = 1; i < na; i++)
   {
     int val = (*work_temp)(i);
-    index = GetCorrectIndex(val, work, i - 1);
+    index = get_correct_index(val, work, i - 1);
     work[i] = index;
   }
 }
@@ -364,7 +364,7 @@ bool CORE::GEO::CUT::QuadratureCompression::is_this_value_already_in_dense_vecto
   return false;
 }
 
-int CORE::GEO::CUT::QuadratureCompression::GetCorrectIndex(
+int CORE::GEO::CUT::QuadratureCompression::get_correct_index(
     int& input, std::vector<int>& vec, int upper_range)
 {
   int index = 0;
@@ -526,7 +526,7 @@ void CORE::GEO::CUT::QuadratureCompression::compute_and_print_error(
   /*-------------------------------------------------------------------*/
 }
 
-void CORE::GEO::CUT::QuadratureCompression::Teuchos_GELS(
+void CORE::GEO::CUT::QuadratureCompression::teuchos_gels(
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
     Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
     Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol)
@@ -707,16 +707,16 @@ void CORE::GEO::CUT::QuadratureCompression::write_compressed_quadrature_gmsh(
 
   // Write Geometry
   std::stringstream str;
-  str << "compressedCells" << sideno << "_" << vc->ParentElement()->Id() << ".pos";
+  str << "compressedCells" << sideno << "_" << vc->parent_element()->Id() << ".pos";
   std::ofstream file(str.str().c_str());
   vc->DumpGmsh(file);
 
   std::stringstream strc;
-  strc << "compressedPts" << sideno << "_" << vc->ParentElement()->Id() << ".pos";
+  strc << "compressedPts" << sideno << "_" << vc->parent_element()->Id() << ".pos";
   std::ofstream filec(strc.str().c_str());
 
   std::stringstream stro;
-  stro << "originalPts" << sideno << "_" << vc->ParentElement()->Id() << ".pos";
+  stro << "originalPts" << sideno << "_" << vc->parent_element()->Id() << ".pos";
   std::ofstream fileo(stro.str().c_str());
 
   //-----------------------------------------------------------------------

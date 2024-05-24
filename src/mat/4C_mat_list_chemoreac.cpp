@@ -64,7 +64,7 @@ MAT::MatListChemoReac::MatListChemoReac(MAT::PAR::MatListChemoReac* params)
   // setup of material map
   if (paramsreachemo_->local_)
   {
-    SetupMatMap();
+    setup_mat_map();
   }
 }
 
@@ -72,14 +72,14 @@ MAT::MatListChemoReac::MatListChemoReac(MAT::PAR::MatListChemoReac* params)
 /*----------------------------------------------------------------------*
  | setup of material map                                     thon 06/15 |
  *----------------------------------------------------------------------*/
-void MAT::MatListChemoReac::SetupMatMap()
+void MAT::MatListChemoReac::setup_mat_map()
 {
   // We just have to add the chemotactic/reactive materials, since the rest is already done in
-  // MAT::MatList::SetupMatMap() called from the MatList constructor
+  // MAT::MatList::setup_mat_map() called from the MatList constructor
 
   // here's the recursive creation of materials
-  MAT::MatListReactions::SetupMatMap();
-  MAT::MatListChemotaxis::SetupMatMap();
+  MAT::MatListReactions::setup_mat_map();
+  MAT::MatListChemotaxis::setup_mat_map();
 
   return;
 }

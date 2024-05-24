@@ -177,7 +177,7 @@ namespace MAT
     void Update() override;
 
     /// Reset time step
-    void ResetStep() override;
+    void reset_step() override;
 
     double Density() const override
     {

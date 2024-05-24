@@ -25,9 +25,9 @@ CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get(const unsigned pro
   switch (probdim)
   {
     case 2:
-      return Get2D(ref_type, tar_type, debug);
+      return get2_d(ref_type, tar_type, debug);
     case 3:
-      return Get3D(ref_type, tar_type, debug);
+      return get3_d(ref_type, tar_type, debug);
     default:
       FOUR_C_THROW("Unsupported problem dimension! (probdim=%d)", probdim);
       exit(EXIT_FAILURE);
@@ -36,17 +36,17 @@ CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get(const unsigned pro
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get2D(
+CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::get2_d(
     CORE::FE::CellType ref_type, CORE::FE::CellType tar_type, const bool debug)
 {
   switch (ref_type)
   {
     case CORE::FE::CellType::line2:
-      return Get2D<CORE::FE::CellType::line2>(tar_type, debug);
+      return get2_d<CORE::FE::CellType::line2>(tar_type, debug);
     case CORE::FE::CellType::nurbs2:
-      return Get2D<CORE::FE::CellType::nurbs2>(tar_type, debug);
+      return get2_d<CORE::FE::CellType::nurbs2>(tar_type, debug);
     case CORE::FE::CellType::nurbs3:
-      return Get2D<CORE::FE::CellType::nurbs3>(tar_type, debug);
+      return get2_d<CORE::FE::CellType::nurbs3>(tar_type, debug);
     default:
       FOUR_C_THROW("Unsupported reference-type %s.", CORE::FE::CellTypeToString(ref_type).c_str());
       exit(EXIT_FAILURE);
@@ -56,7 +56,7 @@ CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get2D(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <CORE::FE::CellType ref_type>
-CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get2D(
+CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::get2_d(
     CORE::FE::CellType tar_type, const bool debug)
 {
   switch (tar_type)
@@ -80,19 +80,19 @@ CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get2D(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get3D(
+CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::get3_d(
     CORE::FE::CellType ref_type, CORE::FE::CellType tar_type, const bool debug)
 {
   switch (ref_type)
   {
     case CORE::FE::CellType::quad4:
-      return Get3D<CORE::FE::CellType::quad4>(tar_type, debug);
+      return get3_d<CORE::FE::CellType::quad4>(tar_type, debug);
     case CORE::FE::CellType::tri3:
-      return Get3D<CORE::FE::CellType::tri3>(tar_type, debug);
+      return get3_d<CORE::FE::CellType::tri3>(tar_type, debug);
     case CORE::FE::CellType::nurbs4:
-      return Get3D<CORE::FE::CellType::nurbs4>(tar_type, debug);
+      return get3_d<CORE::FE::CellType::nurbs4>(tar_type, debug);
     case CORE::FE::CellType::nurbs9:
-      return Get3D<CORE::FE::CellType::nurbs9>(tar_type, debug);
+      return get3_d<CORE::FE::CellType::nurbs9>(tar_type, debug);
     default:
       FOUR_C_THROW("Unsupported reference-type %s.", CORE::FE::CellTypeToString(ref_type).c_str());
       exit(EXIT_FAILURE);
@@ -102,7 +102,7 @@ CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get3D(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <CORE::FE::CellType ref_type>
-CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get3D(
+CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::get3_d(
     CORE::FE::CellType tar_type, const bool debug)
 {
   switch (tar_type)
@@ -204,7 +204,7 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
   CORE::FE::getLocalCenterPosition<TAR_DIM>(tar_type, txi_center);
   std::copy(txi_center.A(), txi_center.A() + TAR_DIM, txi.A());
 
-  RhsGP(rhs_, x_ref_, n_ref_, target_ele, tar_coords_, target_xi, alpha);
+  rhs_gp(rhs_, x_ref_, n_ref_, target_ele, tar_coords_, target_xi, alpha);
   DebugPolicy::writeVector(std::cout, probdim, rhs_.A(), "Rhs");
 
   const double ref_rhs_nrm2 = std::max(1.0, rhs_.Norm2());
@@ -214,7 +214,7 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
 
   for (; iter_ < MORTARMAXITER; ++iter_)
   {
-    LMatGP(lmat_, tar_deriv1_, target_ele, tar_coords_, target_xi, n_ref_);
+    l_mat_gp(lmat_, tar_deriv1_, target_ele, tar_coords_, target_xi, n_ref_);
 
     rhs_.Scale(-1.0);
     const double det = CORE::LINALG::gaussElimination<true, probdim>(lmat_, rhs_, dx_);
@@ -238,7 +238,7 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
     DebugPolicy::writeVector(std::cout, TAR_DIM, txi.A(), "txi");
 
     // new right-hand side
-    if (not RhsGP(rhs_, x_ref_, n_ref_, target_ele, tar_coords_, target_xi, alpha))
+    if (not rhs_gp(rhs_, x_ref_, n_ref_, target_ele, tar_coords_, target_xi, alpha))
     {
       DebugPolicy::writeVector(std::cout, probdim, rhs_.A(), "Rhs (failed)");
       //      std::cout << "ShapeFunction evaluation failed @ [" << txi(0,0) << ", " <<
@@ -279,14 +279,14 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
  *----------------------------------------------------------------------------*/
 template <class DebugPolicy, unsigned probdim, CORE::FE::CellType ref_type,
     CORE::FE::CellType tar_type>
-bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::RhsGP(
+bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::rhs_gp(
     CORE::LINALG::Matrix<probdim, 1>& rhs, const CORE::LINALG::Matrix<probdim, 1>& x_ref,
     const CORE::LINALG::Matrix<probdim, 1>& n_ref, MORTAR::Element& target_ele,
     const CORE::LINALG::Matrix<probdim, TAR_NUMNODES>& tar_coords, const double* tar_xi,
     const double& alpha) const
 {
   CORE::LINALG::Matrix<probdim, 1> x_tar(false);
-  const bool status = GetGlobalPosition<tar_type>(target_ele, tar_coords, tar_xi, x_tar);
+  const bool status = get_global_position<tar_type>(target_ele, tar_coords, tar_xi, x_tar);
 
   // evaluate right hand side
   for (unsigned i = 0; i < probdim; ++i)
@@ -300,7 +300,7 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::RhsGP(
 template <class DebugPolicy, unsigned probdim, CORE::FE::CellType ref_type,
     CORE::FE::CellType tar_type>
 template <CORE::FE::CellType type, unsigned numnodes>
-bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::GetGlobalPosition(
+bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::get_global_position(
     MORTAR::Element& ele, const CORE::LINALG::Matrix<probdim, numnodes>& coords, const double* xi,
     CORE::LINALG::Matrix<probdim, 1>& pos) const
 {
@@ -318,7 +318,7 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::GetGloba
  *----------------------------------------------------------------------------*/
 template <class DebugPolicy, unsigned probdim, CORE::FE::CellType ref_type,
     CORE::FE::CellType tar_type>
-void CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::LMatGP(
+void CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::l_mat_gp(
     CORE::LINALG::Matrix<probdim, probdim>& lmat,
     CORE::LINALG::Matrix<TAR_DIM, TAR_NUMNODES>& tar_deriv1, MORTAR::Element& tar_ele,
     const CORE::LINALG::Matrix<probdim, TAR_NUMNODES>& tar_coords, const double* tar_xi,
@@ -337,11 +337,13 @@ void CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::LMatGP(
 }
 
 
-template CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get2D<CORE::FE::CellType::line2>(
+template CONTACT::AUG::ProjectorBase*
+CONTACT::AUG::ProjectorBase::get2_d<CORE::FE::CellType::line2>(
     CORE::FE::CellType tar_type, const bool debug);
-template CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get3D<CORE::FE::CellType::quad4>(
+template CONTACT::AUG::ProjectorBase*
+CONTACT::AUG::ProjectorBase::get3_d<CORE::FE::CellType::quad4>(
     CORE::FE::CellType tar_type, const bool debug);
-template CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get3D<CORE::FE::CellType::tri3>(
+template CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::get3_d<CORE::FE::CellType::tri3>(
     CORE::FE::CellType tar_type, const bool debug);
 
 // standard discretization types

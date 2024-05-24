@@ -116,7 +116,7 @@ void MAT::ElastHyperEvaluateInvariantDerivatives(const CORE::LINALG::Matrix<3, 1
     ddPmodII.Clear();
 
     // Evaluate modified invariants
-    MAT::InvariantsModified(modinv, prinv);
+    MAT::invariants_modified(modinv, prinv);
 
     for (auto& p : potsum)
     {
@@ -124,11 +124,11 @@ void MAT::ElastHyperEvaluateInvariantDerivatives(const CORE::LINALG::Matrix<3, 1
     }
 
     // convert decoupled derivatives to principal derivatives
-    MAT::ConvertModToPrinc(prinv, dPmodI, ddPmodII, dPI, ddPII);
+    MAT::convert_mod_to_princ(prinv, dPmodI, ddPmodII, dPI, ddPII);
   }
 }
 
-void MAT::ConvertModToPrinc(const CORE::LINALG::Matrix<3, 1>& prinv,
+void MAT::convert_mod_to_princ(const CORE::LINALG::Matrix<3, 1>& prinv,
     const CORE::LINALG::Matrix<3, 1>& dPmodI, const CORE::LINALG::Matrix<6, 1>& ddPmodII,
     CORE::LINALG::Matrix<3, 1>& dPI, CORE::LINALG::Matrix<6, 1>& ddPII)
 {

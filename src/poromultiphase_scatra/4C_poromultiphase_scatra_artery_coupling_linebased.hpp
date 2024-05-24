@@ -145,14 +145,14 @@ namespace POROMULTIPHASESCATRA
     std::vector<double> get_ele_segment_lengths(const int artelegid) override;
 
     //! check for duplicate segment
-    bool IsDuplicateSegment(
+    bool is_duplicate_segment(
         const std::vector<Teuchos::RCP<
             POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>>& coupl_elepairs,
         const Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>
             possible_duplicate);
 
     //! check for identical segment
-    bool IsIdenticalSegment(
+    bool is_identical_segment(
         const std::vector<Teuchos::RCP<
             POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>>& coupl_elepairs,
         const int& ele1gid, const double& etaA, const double& etaB, int& elepairID);
@@ -161,7 +161,7 @@ namespace POROMULTIPHASESCATRA
     void SetVaryingDiamFlag() override;
 
     //! print output of mesh tying pairs
-    void OutputSummary() const;
+    void output_summary() const;
 
     //! print out the coupling method
     void print_out_coupling_method() const override;

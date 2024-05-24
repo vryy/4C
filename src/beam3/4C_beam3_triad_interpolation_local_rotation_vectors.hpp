@@ -190,46 +190,46 @@ namespace LARGEROTATIONS
      *
      *  \author grill
      *  \date 01/2017 */
-    void SetNodeIandJ();
+    void set_node_iand_j();
 
     //! get the interpolation scheme from the given number of nodes
-    CORE::FE::CellType GetDisType() const;
+    CORE::FE::CellType get_dis_type() const;
 
     //! compute quaternion corresponding to reference triad Lambda_r according to (3.9), Jelenic
     //! 1999
-    void CalcRefQuaternion(const CORE::LINALG::Matrix<4, 1, T>& Q_nodeI,
+    void calc_ref_quaternion(const CORE::LINALG::Matrix<4, 1, T>& Q_nodeI,
         const CORE::LINALG::Matrix<4, 1, T>& Q_nodeJ, CORE::LINALG::Matrix<4, 1, T>& Q_r) const;
 
     //! compute angle of relative rotation between node I and J according to (3.10), Jelenic 1999
-    void CalcPhi_IJ(const CORE::LINALG::Matrix<4, 1, T>& Q_nodeI,
+    void calc_phi_ij(const CORE::LINALG::Matrix<4, 1, T>& Q_nodeI,
         const CORE::LINALG::Matrix<4, 1, T>& Q_nodeJ, CORE::LINALG::Matrix<3, 1, T>& Phi_IJ) const;
 
     //! compute nodal local rotations according to (3.8), Jelenic 1999
-    void CalcPsi_li(const CORE::LINALG::Matrix<4, 1, T>& Q_i,
+    void calc_psi_li(const CORE::LINALG::Matrix<4, 1, T>& Q_i,
         const CORE::LINALG::Matrix<4, 1, T>& Q_r, CORE::LINALG::Matrix<3, 1, T>& Psi_li) const;
 
     //! compute interpolated local relative rotation \Psi^l according to (3.11), Jelenic 1999
-    void Calc_Psi_l(const std::vector<CORE::LINALG::Matrix<3, 1, T>>& Psi_li,
+    void calc_psi_l(const std::vector<CORE::LINALG::Matrix<3, 1, T>>& Psi_li,
         const CORE::LINALG::Matrix<1, numnodes, double>& func,
         CORE::LINALG::Matrix<3, 1, T>& Psi_l) const;
 
     //! compute derivative of interpolated local relative rotation \Psi^l with respect to reference
     //! arc-length parameter s according to (3.11), Jelenic 1999
-    void Calc_Psi_l_s(const std::vector<CORE::LINALG::Matrix<3, 1, T>>& Psi_li,
+    void calc_psi_l_s(const std::vector<CORE::LINALG::Matrix<3, 1, T>>& Psi_li,
         const CORE::LINALG::Matrix<1, numnodes, double>& deriv_xi, const double& jacobi,
         CORE::LINALG::Matrix<3, 1, T>& Psi_l_s) const;
 
     //! compute local triad \Lambda from Crisfield 1999, eq. (4.7)
-    void Calc_Lambda(const CORE::LINALG::Matrix<3, 1, T>& Psi_l,
+    void calc_lambda(const CORE::LINALG::Matrix<3, 1, T>& Psi_l,
         const CORE::LINALG::Matrix<4, 1, T>& Q_r, CORE::LINALG::Matrix<3, 3, T>& Lambda) const;
 
     //! compute quaternion equivalent to local triad \Lambda from Crisfield 1999, eq. (4.7)
-    void Calc_Qgauss(const CORE::LINALG::Matrix<3, 1, T>& Psi_l,
+    void calc_qgauss(const CORE::LINALG::Matrix<3, 1, T>& Psi_l,
         const CORE::LINALG::Matrix<4, 1, T>& Q_r, CORE::LINALG::Matrix<4, 1, T>& Qgauss) const;
 
     //! compute \tilde{I}^i in (3.18), page 152, Jelenic 1999, for all nodes i at a certain Gauss
     //! point
-    void computeItilde(const CORE::LINALG::Matrix<3, 1, T>& Psil,
+    void compute_itilde(const CORE::LINALG::Matrix<3, 1, T>& Psil,
         std::vector<CORE::LINALG::Matrix<3, 3, T>>& Itilde,
         const CORE::LINALG::Matrix<3, 1, T>& phiIJ, const CORE::LINALG::Matrix<3, 3, T>& Lambdar,
         const std::vector<CORE::LINALG::Matrix<3, 1, T>>& Psili,
@@ -237,7 +237,7 @@ namespace LARGEROTATIONS
 
     //! compute \tilde{I}^{i'} in (3.19), page 152, Jelenic 1999 for all nodes i at a certain Gauss
     //! point
-    void computeItildeprime(const CORE::LINALG::Matrix<3, 1, T>& Psil,
+    void compute_itildeprime(const CORE::LINALG::Matrix<3, 1, T>& Psil,
         const CORE::LINALG::Matrix<3, 1, T>& Psilprime,
         std::vector<CORE::LINALG::Matrix<3, 3, T>>& Itildeprime,
         const CORE::LINALG::Matrix<3, 1, T>& phiIJ, const CORE::LINALG::Matrix<3, 3, T>& Lambdar,
@@ -246,11 +246,11 @@ namespace LARGEROTATIONS
         const CORE::LINALG::Matrix<1, numnodes, double>& deriv_s) const;
 
     //! compute matrix v_I as outlined in the equations above (3.15) on page 152 of Jelenic 1999
-    void Calc_vI(
+    void calc_v_i(
         CORE::LINALG::Matrix<3, 3, T>& vI, const CORE::LINALG::Matrix<3, 1, T>& phiIJ) const;
 
     //! compute matrix v_J as outlined in the equations above (3.15) on page 152 of Jelenic 1999
-    void Calc_vJ(
+    void calc_v_j(
         CORE::LINALG::Matrix<3, 3, T>& vJ, const CORE::LINALG::Matrix<3, 1, T>& phiIJ) const;
 
     //@}

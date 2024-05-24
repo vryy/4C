@@ -51,18 +51,18 @@ STI::Partitioned::Partitioned(const Epetra_Comm& comm,  //! communicator
     {
       // initialize increment vectors
       ScaTraField()->PhinpInc() =
-          CORE::LINALG::CreateVector(*ScaTraField()->Discretization()->DofRowMap(), true);
+          CORE::LINALG::CreateVector(*ScaTraField()->Discretization()->dof_row_map(), true);
       ThermoField()->PhinpInc() =
-          CORE::LINALG::CreateVector(*ThermoField()->Discretization()->DofRowMap(), true);
+          CORE::LINALG::CreateVector(*ThermoField()->Discretization()->dof_row_map(), true);
 
       // initialize old increment vectors
       if (couplingtype_ == INPAR::STI::CouplingType::twoway_scatratothermo_aitken or
           couplingtype_ == INPAR::STI::CouplingType::twoway_scatratothermo_aitken_dofsplit)
         ScaTraField()->PhinpIncOld() =
-            CORE::LINALG::CreateVector(*ScaTraField()->Discretization()->DofRowMap(), true);
+            CORE::LINALG::CreateVector(*ScaTraField()->Discretization()->dof_row_map(), true);
       else if (couplingtype_ == INPAR::STI::CouplingType::twoway_thermotoscatra_aitken)
         ThermoField()->PhinpIncOld() =
-            CORE::LINALG::CreateVector(*ThermoField()->Discretization()->DofRowMap(), true);
+            CORE::LINALG::CreateVector(*ThermoField()->Discretization()->dof_row_map(), true);
 
       // initialize relaxation parameter
       if (couplingtype_ == INPAR::STI::CouplingType::twoway_scatratothermo)
@@ -95,7 +95,7 @@ STI::Partitioned::Partitioned(const Epetra_Comm& comm,  //! communicator
 /*--------------------------------------------------------------------*
  | convergence check for outer iteration loop              fang 09/17 |
  *--------------------------------------------------------------------*/
-bool STI::Partitioned::ExitOuterCoupling() const
+bool STI::Partitioned::exit_outer_coupling() const
 {
   // extract processor ID
   const int mypid = Comm().MyPID();
@@ -154,7 +154,7 @@ bool STI::Partitioned::ExitOuterCoupling() const
 
   // proceed with next outer iteration step
   return false;
-}  // STI::Partitioned::ExitOuterCoupling()
+}  // STI::Partitioned::exit_outer_coupling()
 
 
 /*--------------------------------------------------------------------------------*
@@ -167,7 +167,7 @@ void STI::Partitioned::Solve()
     case INPAR::STI::CouplingType::oneway_scatratothermo:
     case INPAR::STI::CouplingType::oneway_thermotoscatra:
     {
-      SolveOneWay();
+      solve_one_way();
       break;
     }
 
@@ -177,7 +177,7 @@ void STI::Partitioned::Solve()
     case INPAR::STI::CouplingType::twoway_thermotoscatra:
     case INPAR::STI::CouplingType::twoway_thermotoscatra_aitken:
     {
-      SolveTwoWay();
+      solve_two_way();
       break;
     }
 
@@ -195,7 +195,7 @@ void STI::Partitioned::Solve()
 /*--------------------------------------------------------------------------------*
  | evaluate time step using one-way coupling iteration                 fang 09/17 |
  *--------------------------------------------------------------------------------*/
-void STI::Partitioned::SolveOneWay() const
+void STI::Partitioned::solve_one_way() const
 {
   switch (couplingtype_)
   {
@@ -239,13 +239,13 @@ void STI::Partitioned::SolveOneWay() const
       break;
     }
   }
-}  // STI::Partitioned::SolveOneWay()
+}  // STI::Partitioned::solve_one_way()
 
 
 /*----------------------------------------------------------------------*
  | evaluate time step using two-way coupling iteration       fang 09/17 |
  *----------------------------------------------------------------------*/
-void STI::Partitioned::SolveTwoWay()
+void STI::Partitioned::solve_two_way()
 {
   // reset number of outer iterations
   iter_ = 0;
@@ -295,7 +295,7 @@ void STI::Partitioned::SolveTwoWay()
           FOUR_C_THROW("Update failed!");
 
         // convergence check
-        if (ExitOuterCoupling()) break;
+        if (exit_outer_coupling()) break;
 
         // perform static relaxation
         if (couplingtype_ == INPAR::STI::CouplingType::twoway_scatratothermo)
@@ -431,7 +431,7 @@ void STI::Partitioned::SolveTwoWay()
           FOUR_C_THROW("Update failed!");
 
         // convergence check
-        if (ExitOuterCoupling()) break;
+        if (exit_outer_coupling()) break;
 
         if (couplingtype_ == INPAR::STI::CouplingType::twoway_thermotoscatra_aitken)
         {
@@ -481,6 +481,6 @@ void STI::Partitioned::SolveTwoWay()
   }
 
   return;
-}  // STI::Partitioned::SolveTwoWay()
+}  // STI::Partitioned::solve_two_way()
 
 FOUR_C_NAMESPACE_CLOSE

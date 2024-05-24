@@ -48,11 +48,11 @@ namespace CORE::GEO
       Teuchos::RCP<CORE::FE::GaussPoints> get_compressed_quadrature() { return gout_; }
 
      private:
-      void FormMatrixSystem(CORE::FE::GaussPointsComposite& gin,
+      void form_matrix_system(CORE::FE::GaussPointsComposite& gin,
           Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
           Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs);
 
-      void Teuchos_GELS(Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
+      void teuchos_gels(Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
           Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
           Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol);
 
@@ -81,7 +81,7 @@ namespace CORE::GEO
           Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
           Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol, std::vector<int>& work, int& na);
 
-      void GetPivotalRows(
+      void get_pivotal_rows(
           Teuchos::RCP<CORE::LINALG::IntSerialDenseVector>& work_temp, std::vector<int>& work);
 
       bool is_this_value_already_in_dense_vector(
@@ -90,7 +90,7 @@ namespace CORE::GEO
       Teuchos::RCP<CORE::FE::GaussPoints> form_new_quadrature_rule(
           CORE::FE::GaussPointsComposite& gin, Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol,
           std::vector<int>& work, int& na);
-      int GetCorrectIndex(int& input, std::vector<int>& vec, int upper_range);
+      int get_correct_index(int& input, std::vector<int>& vec, int upper_range);
 
       void write_compressed_quadrature_gmsh(
           CORE::FE::GaussPointsComposite& gin, CORE::GEO::CUT::VolumeCell* vc);

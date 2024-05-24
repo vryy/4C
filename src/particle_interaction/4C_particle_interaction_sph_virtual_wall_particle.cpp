@@ -172,7 +172,7 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::init_states_at_wall_contact_po
     DRT::Element* ele = particlewallpair.ele_;
 
     // number of nodes of wall element
-    const int numnodes = ele->NumNode();
+    const int numnodes = ele->num_node();
 
     // shape functions and location vector of wall element
     CORE::LINALG::SerialDenseVector funct(numnodes);

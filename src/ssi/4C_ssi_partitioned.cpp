@@ -60,7 +60,7 @@ void SSI::SSIPart::Setup()
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::SSIPart::SetupModelEvaluator()
+void SSI::SSIPart::setup_model_evaluator()
 {
   // build and register ssi model evaluator
   Teuchos::RCP<STR::MODELEVALUATOR::Generic> ssi_model_ptr =

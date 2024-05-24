@@ -53,7 +53,7 @@ namespace DRT
           ) override;
 
       //! evaluate Neumann boundary condition
-      int EvaluateNeumann(DRT::FaceElement* ele, Teuchos::ParameterList& params,
+      int evaluate_neumann(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1,
           const double scalar) override;

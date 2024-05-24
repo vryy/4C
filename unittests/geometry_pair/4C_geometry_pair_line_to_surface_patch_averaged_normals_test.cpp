@@ -153,7 +153,7 @@ namespace
     auto displacement_vector = Teuchos::rcp(new Epetra_Vector(*gid_map));
     for (int i = 0; i < displacement_vector->GlobalLength(); i++)
       (*displacement_vector)[i] = i * 0.01;
-    face_element->SetState(displacement_vector, face_elements_map);
+    face_element->set_state(displacement_vector, face_elements_map);
     {
       // Check the values of the averaged normals.
       for (unsigned int i_dof = 0; i_dof < 3 * surface::n_nodes_; i_dof++)

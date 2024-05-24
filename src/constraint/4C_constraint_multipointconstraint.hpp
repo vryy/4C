@@ -66,7 +66,7 @@ namespace CONSTRAINTS
         ) = 0;
 
     //! Evaluate routine to call from outside. In here the right action is determined and the
-    //! #EvaluateConstraint routine is called
+    //! #evaluate_constraint routine is called
     virtual void Evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
@@ -96,7 +96,7 @@ namespace CONSTRAINTS
     std::map<int, Teuchos::RCP<DRT::Discretization>> constraintdis_;
 
     //! Evaluate constraint discretization and assemble the results
-    virtual void EvaluateConstraint(
+    virtual void evaluate_constraint(
         Teuchos::RCP<DRT::Discretization> disc,  ///< discretization to evaluate
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization

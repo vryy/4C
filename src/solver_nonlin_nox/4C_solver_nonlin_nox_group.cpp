@@ -104,7 +104,7 @@ void NOX::NLN::Group::computeX(
 {
   // Cast to appropriate type, then call the "native" computeX
   const NOX::NLN::Group* nlngrp = dynamic_cast<const NOX::NLN::Group*>(&grp);
-  if (nlngrp == nullptr) throwError("computeX", "dyn_cast to nox_nln_group failed!");
+  if (nlngrp == nullptr) throw_error("computeX", "dyn_cast to nox_nln_group failed!");
   const ::NOX::Epetra::Vector& epetrad = dynamic_cast<const ::NOX::Epetra::Vector&>(d);
 
   computeX(*nlngrp, epetrad, step);
@@ -208,10 +208,10 @@ void NOX::NLN::Group::setSkipUpdateX(bool skipUpdateX) { skipUpdateX_ = skipUpda
         Teuchos::rcp_dynamic_cast<NOX::NLN::LinearSystem>(sharedLinearSystem.getObject(this));
 
     if (nlnSharedLinearSystem.is_null())
-      throwError("computeFandJacobian", "Dynamic cast of the shared linear system failed!");
+      throw_error("computeFandJacobian", "Dynamic cast of the shared linear system failed!");
 
     status = nlnSharedLinearSystem->computeFandJacobian(xVector, RHSVector);
-    if (!status) throwError("computeFandJacobian", "evaluation failed!");
+    if (!status) throw_error("computeFandJacobian", "evaluation failed!");
 
     isValidRHS = true;
     isValidJacobian = true;
@@ -332,7 +332,7 @@ Teuchos::RCP<const NOX::NLN::Interface::Required> NOX::NLN::Group::get_nln_req_i
       Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Required>(userInterfacePtr);
 
   if (userInterfaceNlnPtr.is_null())
-    throwError("get_nln_req_interface_ptr",
+    throw_error("get_nln_req_interface_ptr",
         "Dynamic cast of the userInterfacePtr to NOX::NLN::Interface::Required failed!");
 
   return userInterfaceNlnPtr;
@@ -367,7 +367,7 @@ Teuchos::RCP<const std::vector<double>> NOX::NLN::Group::GetRHSNorms(
              " for the \"NormF\" Status Test could not be found! (enum="
           << chQ[i] << " | " << NOX::NLN::StatusTest::QuantityType2String(chQ[i]) << ")"
           << std::endl;
-      throwError("GetRHSNorms", msg.str());
+      throw_error("GetRHSNorms", msg.str());
     }
   }
 
@@ -400,7 +400,7 @@ Teuchos::RCP<std::vector<double>> NOX::NLN::Group::get_solution_update_rms(
              " for the \"NormWRMS\" Status Test could not be found! (enum="
           << chQ[i] << " | " << NOX::NLN::StatusTest::QuantityType2String(chQ[i]) << ")"
           << std::endl;
-      throwError("get_solution_update_rms", msg.str());
+      throw_error("get_solution_update_rms", msg.str());
     }
   }
 
@@ -469,7 +469,7 @@ Teuchos::RCP<std::vector<double>> NOX::NLN::Group::get_solution_update_norms(
              " for the \"NormIncr\" Status Test could not be found! (enum="
           << chQ[i] << " | " << NOX::NLN::StatusTest::QuantityType2String(chQ[i]) << ")"
           << std::endl;
-      throwError("get_solution_update_norms", msg.str());
+      throw_error("get_solution_update_norms", msg.str());
     }
   }
 
@@ -507,7 +507,7 @@ Teuchos::RCP<std::vector<double>> NOX::NLN::Group::get_previous_solution_norms(
              " for the \"NormUpdate\" Status Test could not be found! (enum="
           << chQ[i] << " | " << NOX::NLN::StatusTest::QuantityType2String(chQ[i]) << ")"
           << std::endl;
-      throwError("get_previous_solution_norms", msg.str());
+      throw_error("get_previous_solution_norms", msg.str());
     }
   }
 
@@ -557,7 +557,7 @@ void NOX::NLN::Group::reset_lin_sys_pre_post_operator(
       Teuchos::rcp_dynamic_cast<NOX::NLN::LinearSystem>(getLinearSystem());
 
   if (nlnLinsysPtr.is_null())
-    throwError("reset_lin_sys_pre_post_operator", "The linear system cast failed!");
+    throw_error("reset_lin_sys_pre_post_operator", "The linear system cast failed!");
 
   nlnLinsysPtr->reset_pre_post_operator(linearSolverParams);
 }
@@ -577,13 +577,13 @@ void NOX::NLN::Group::adjust_pseudo_time_step(double& delta, const double& stepS
     const ::NOX::Epetra::Vector& dir, const NOX::NLN::Solver::PseudoTransient& ptcsolver)
 {
   if (!isF() or !isJacobian())
-    throwError("AdjustPseudoTimeStep", "F and/or the jacobian are not evaluated!");
+    throw_error("AdjustPseudoTimeStep", "F and/or the jacobian are not evaluated!");
 
   Teuchos::RCP<NOX::NLN::LinearSystem> nlnSharedLinearSystem =
       Teuchos::rcp_dynamic_cast<NOX::NLN::LinearSystem>(sharedLinearSystem.getObject(this));
 
   if (nlnSharedLinearSystem.is_null())
-    throwError("AdjustPseudoTimeStep()", "Dynamic cast of the shared linear system failed!");
+    throw_error("AdjustPseudoTimeStep()", "Dynamic cast of the shared linear system failed!");
 
   nlnSharedLinearSystem->adjust_pseudo_time_step(delta, stepSize, dir, RHSVector, ptcsolver);
 }
@@ -627,7 +627,8 @@ bool NOX::NLN::Group::isJacobian() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Group::throwError(const std::string& functionName, const std::string& errorMsg) const
+void NOX::NLN::Group::throw_error(
+    const std::string& functionName, const std::string& errorMsg) const
 {
   std::ostringstream msg;
   msg << "ERROR - NOX::NLN::Group::" << functionName << " - " << errorMsg << std::endl;

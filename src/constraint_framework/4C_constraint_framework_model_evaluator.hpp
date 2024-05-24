@@ -58,25 +58,25 @@ namespace STR
 
       void Reset(const Epetra_Vector& x) override;
 
-      bool EvaluateForce() override;
+      bool evaluate_force() override;
 
-      bool EvaluateStiff() override;
+      bool evaluate_stiff() override;
 
-      bool EvaluateForceStiff() override;
+      bool evaluate_force_stiff() override;
 
-      void PreEvaluate() override;
+      void pre_evaluate() override;
 
-      void PostEvaluate() override {}
+      void post_evaluate() override {}
 
-      bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
+      bool assemble_force(Epetra_Vector& f, const double& timefac_np) const override;
 
-      bool AssembleJacobian(
+      bool assemble_jacobian(
           CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
 
       void WriteRestart(
           IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
-      void ReadRestart(IO::DiscretizationReader& ioreader) override;
+      void read_restart(IO::DiscretizationReader& ioreader) override;
 
       void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
           const NOX::NLN::Group& curr_grp) override
@@ -133,7 +133,7 @@ namespace STR
       //! @{
 
       //! Set Submodeltypes depending on input
-      void SetSubModelTypes();
+      void set_sub_model_types();
 
       //! build, init and setup submodel evaluator
       void create_sub_model_evaluators();

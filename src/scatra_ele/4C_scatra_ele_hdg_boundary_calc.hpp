@@ -47,7 +47,7 @@ namespace DRT
         This class does not provide a definition for this function, it
         must be defined in ScaTraHDGBoundaryImpl.
        */
-      virtual int EvaluateNeumann(DRT::ELEMENTS::ScaTraHDGBoundary* ele,
+      virtual int evaluate_neumann(DRT::ELEMENTS::ScaTraHDGBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra) = 0;
@@ -79,7 +79,7 @@ namespace DRT
       static constexpr int nsd_ = bdrynsd_ + 1;
 
       //! Evaluate a Neumann boundary condition
-      int EvaluateNeumann(DRT::ELEMENTS::ScaTraHDGBoundary* ele, Teuchos::ParameterList& params,
+      int evaluate_neumann(DRT::ELEMENTS::ScaTraHDGBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra) override;

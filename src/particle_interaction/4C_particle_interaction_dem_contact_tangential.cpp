@@ -36,7 +36,8 @@ void PARTICLEINTERACTION::DEMContactTangentialBase::Setup(const double& k_normal
   // nothing to do
 }
 
-void PARTICLEINTERACTION::DEMContactTangentialBase::SetCurrentStepSize(const double currentstepsize)
+void PARTICLEINTERACTION::DEMContactTangentialBase::set_current_step_size(
+    const double currentstepsize)
 {
   dt_ = currentstepsize;
 }

@@ -106,7 +106,7 @@ namespace DRT
         */
         int NumLine() const override
         {
-          if (NumNode() == 9 || NumNode() == 4)
+          if (num_node() == 9 || num_node() == 4)
           {
             return 4;
           }

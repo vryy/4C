@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 CORE::LINALG::SerialDenseMatrix CORE::GEO::InitialPositionArray(const DRT::Element* const ele)
 {
-  const int numnode = ele->NumNode();
+  const int numnode = ele->num_node();
   CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
   const DRT::Node* const* nodes = ele->Nodes();
   if (nodes == nullptr)
@@ -36,7 +36,7 @@ CORE::LINALG::SerialDenseMatrix CORE::GEO::InitialPositionArray(const DRT::Eleme
 void CORE::GEO::InitialPositionArray(
     CORE::LINALG::SerialDenseMatrix& xyze, const DRT::Element* const ele)
 {
-  const int numnode = ele->NumNode();
+  const int numnode = ele->num_node();
   xyze.shape(3, numnode);
   const DRT::Node* const* nodes = ele->Nodes();
   if (nodes == nullptr)
@@ -57,7 +57,7 @@ CORE::LINALG::SerialDenseMatrix CORE::GEO::getCurrentNodalPositions(
         currentcutterpositions  ///< current positions of all cutter nodes
 )
 {
-  const int numnode = ele->NumNode();
+  const int numnode = ele->num_node();
   CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
   const int* nodeids = ele->NodeIds();
   for (int inode = 0; inode < numnode; ++inode)
@@ -77,7 +77,7 @@ CORE::LINALG::SerialDenseMatrix CORE::GEO::getCurrentNodalPositions(
         currentpositions  ///< current positions of all cutter nodes
 )
 {
-  const int numnode = ele->NumNode();
+  const int numnode = ele->num_node();
   CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
   const int* nodeids = ele->NodeIds();
   for (int inode = 0; inode < numnode; ++inode)

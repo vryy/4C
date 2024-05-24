@@ -60,7 +60,7 @@ void FBI::FBIBinningGeometryCoupler::PartitionGeometry(
   binstrategy_->distribute_row_elements_to_bins_using_ele_aabb(
       discretizations[0], bintoelemap_, structure_displacement);
 
-  binstrategy_->BinDiscret()->FillComplete(false, false, false);
+  binstrategy_->BinDiscret()->fill_complete(false, false, false);
 
   std::set<int> colbins;
 
@@ -160,7 +160,7 @@ void FBI::FBIBinningGeometryCoupler::compute_current_positions(DRT::Discretizati
        element != beam_element_list.end(); element++)
   {
     DRT::Node** node_list = (*element)->Nodes();
-    unsigned int numnode = (*element)->NumNode();
+    unsigned int numnode = (*element)->num_node();
     for (unsigned int i = 0; i < numnode; i++)
     {
       const DRT::Node* node = node_list[i];
@@ -182,7 +182,7 @@ void FBI::FBIBinningGeometryCoupler::compute_current_positions(DRT::Discretizati
 void FBI::FBIBinningGeometryCoupler::SetBinning(Teuchos::RCP<BINSTRATEGY::BinningStrategy> binning)
 {
   binstrategy_ = binning;
-  binstrategy_->BinDiscret()->FillComplete(false, false, false);
+  binstrategy_->BinDiscret()->fill_complete(false, false, false);
   binrowmap_ = Teuchos::rcp(new Epetra_Map(*(binstrategy_->BinDiscret()->ElementRowMap())));
 };
 

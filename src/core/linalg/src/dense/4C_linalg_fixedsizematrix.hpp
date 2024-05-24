@@ -4828,21 +4828,21 @@ namespace CORE::LINALG
       \return integer error code. 0 if successful, negative
       otherwise. This is a LAPACK error code.
      */
-    int EquilibrateMatrix();
+    int equilibrate_matrix();
 
     /// Equilibrate right hand side vector
     /*
       \return integer error code. 0 if successful, negative
       otherwise. This is a LAPACK error code.
      */
-    int EquilibrateRHS();
+    int equilibrate_rhs();
 
     /// Unequilibrate vector of unknowns
     /*
       \return integer error code. 0 if successful, negative
       otherwise. This is a LAPACK error code.
      */
-    int UnequilibrateLHS();
+    int unequilibrate_lhs();
 
    public:
     /// Constructor
@@ -4984,7 +4984,7 @@ namespace CORE::LINALG
 #endif
     if (factored_) return 0;
     int errnum = 0;
-    if (equilibrate_) errnum = EquilibrateMatrix();
+    if (equilibrate_) errnum = equilibrate_matrix();
     if (errnum != 0) return errnum;
     if (pivot_vec_.empty()) pivot_vec_.resize(rows);
     lapack_.GETRF(rows, cols, matrix_->A(), rows, pivot_vec_.data(), &errnum);
@@ -5000,7 +5000,7 @@ namespace CORE::LINALG
     int errnum = 0;
     if (equilibrate_)
     {
-      errnum = EquilibrateRHS();
+      errnum = equilibrate_rhs();
     }
     if (errnum != 0) return errnum;
 #ifdef FOUR_C_DEBUG
@@ -5029,7 +5029,7 @@ namespace CORE::LINALG
       if (errnum != 0) return errnum;
       solved_ = true;
     }
-    if (equilibrate_) errnum = UnequilibrateLHS();
+    if (equilibrate_) errnum = unequilibrate_lhs();
     if (errnum != 0) return errnum;
     return 0;
   }
@@ -5050,7 +5050,7 @@ namespace CORE::LINALG
   }
 
   template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
-  int FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::EquilibrateMatrix()
+  int FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::equilibrate_matrix()
   {
     int errnum = 0;
     if (r_.empty()) errnum = compute_equilibrate_scaling();
@@ -5070,7 +5070,7 @@ namespace CORE::LINALG
   }
 
   template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
-  int FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::EquilibrateRHS()
+  int FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::equilibrate_rhs()
   {
     int errnum = 0;
     if (r_.empty()) errnum = compute_equilibrate_scaling();
@@ -5090,7 +5090,7 @@ namespace CORE::LINALG
   }
 
   template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
-  int FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::UnequilibrateLHS()
+  int FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::unequilibrate_lhs()
   {
     std::vector<double>& c = transpose_ ? r_ : c_;
     double* ptr = vec_x_->A();

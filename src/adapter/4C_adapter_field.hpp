@@ -71,7 +71,7 @@ namespace ADAPTER
     //@{
 
     /// dof map of vector of unknowns
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap() = 0;
+    virtual Teuchos::RCP<const Epetra_Map> dof_row_map() = 0;
 
     /// direct access to system matrix
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() = 0;
@@ -85,7 +85,7 @@ namespace ADAPTER
     //@{
 
     /// start new time step
-    virtual void PrepareTimeStep() = 0;
+    virtual void prepare_time_step() = 0;
 
     /// Update state with prescribed increment vector
     /*!
@@ -141,13 +141,13 @@ namespace ADAPTER
     virtual void Update() = 0;
 
     /// prepare output (i.e. calculate stresses, strains, energies)
-    virtual void PrepareOutput(bool force_prepare_timestep) = 0;
+    virtual void prepare_output(bool force_prepare_timestep) = 0;
 
     /// output results
     virtual void Output(bool forced_writerestart = false) = 0;
 
     /// read restart information for given time step
-    virtual void ReadRestart(const int step) = 0;
+    virtual void read_restart(const int step) = 0;
 
     //@}
   };

@@ -48,13 +48,13 @@ namespace MAT
     ~MicroMaterialGP();
 
     /// Read restart
-    void ReadRestart();
+    void read_restart();
 
     /// New result file
-    void NewResultFile(bool eleowner, std::string& newfilename);
+    void new_result_file(bool eleowner, std::string& newfilename);
 
     //! create path of new result file
-    std::string NewResultFilePath(const std::string& newprefix);
+    std::string new_result_file_path(const std::string& newprefix);
 
     /// Perform microscale simulation
     void perform_micro_simulation(CORE::LINALG::Matrix<3, 3>* defgrd,
@@ -63,12 +63,12 @@ namespace MAT
     void Update();
 
     /// Calculate stresses and strains on the micro-scale
-    void PrepareOutput();
+    void prepare_output();
 
     void Output();
 
     /// Create and initialize "empty" EAS history map
-    void EasInit();
+    void eas_init();
 
     /// Reset global time and step number (needed for multi-scale inverse
     /// analyses with multiple runs)

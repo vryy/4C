@@ -40,15 +40,15 @@ namespace FS3I
 
     void InitialCalculations();
 
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
-    void OuterLoop();
+    void outer_loop();
 
     // void SetFSIValuesInScaTra();
 
     void set_sca_tra_values_in_fsi();
 
-    bool ConvergenceCheck(int itnum);
+    bool convergence_check(int itnum);
 
     bool scatra_convergence_check(int itnum) override;
 

@@ -37,7 +37,7 @@ int DRT::DiscretizationFaces::FillCompleteFaces(bool assigndegreesoffreedom, boo
 
 {
   // call standard FillComlete of base class
-  DRT::Discretization::FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
+  DRT::Discretization::fill_complete(assigndegreesoffreedom, initelements, doboundaryconditions);
 
   if (createinternalfaces)
   {
@@ -987,7 +987,7 @@ void DRT::DiscretizationFaces::BuildFaceColMap()
  *----------------------------------------------------------------------*/
 const Epetra_Map* DRT::DiscretizationFaces::FaceRowMap() const
 {
-  FOUR_C_ASSERT(Filled(), "FillComplete() must be called before call to FaceRowMap()");
+  FOUR_C_ASSERT(Filled(), "fill_complete() must be called before call to FaceRowMap()");
   return facerowmap_.get();
 }
 
@@ -997,7 +997,7 @@ const Epetra_Map* DRT::DiscretizationFaces::FaceRowMap() const
  *----------------------------------------------------------------------*/
 const Epetra_Map* DRT::DiscretizationFaces::FaceColMap() const
 {
-  FOUR_C_ASSERT(Filled(), "FillComplete() must be called before call to FaceColMap()");
+  FOUR_C_ASSERT(Filled(), "fill_complete() must be called before call to FaceColMap()");
   return facecolmap_.get();
 }
 
@@ -1007,7 +1007,7 @@ const Epetra_Map* DRT::DiscretizationFaces::FaceColMap() const
  *----------------------------------------------------------------------*/
 int DRT::DiscretizationFaces::NumGlobalFaces() const
 {
-  FOUR_C_ASSERT(Filled(), "FillComplete() must be called before call to NumGlobalFaces()");
+  FOUR_C_ASSERT(Filled(), "fill_complete() must be called before call to NumGlobalFaces()");
   return FaceRowMap()->NumGlobalElements();
 }
 
@@ -1017,7 +1017,7 @@ int DRT::DiscretizationFaces::NumGlobalFaces() const
  *----------------------------------------------------------------------*/
 int DRT::DiscretizationFaces::NumMyRowFaces() const
 {
-  FOUR_C_ASSERT(Filled(), "FillComplete() must be called before call to NumMyRowFaces()");
+  FOUR_C_ASSERT(Filled(), "fill_complete() must be called before call to NumMyRowFaces()");
   return FaceRowMap()->NumMyElements();
 }
 

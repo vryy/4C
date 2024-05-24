@@ -45,21 +45,21 @@ namespace POROELAST
     void SetupSystem() override;
 
     //! setup composed right hand side from field solvers
-    void SetupRHS(bool firstcall = false) override;
+    void setup_rhs(bool firstcall = false) override;
 
     //! setup composed system matrix from field solvers
-    void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
+    void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
 
     //! take current results for converged and save for next time step
     void Update() override;
 
     //! read restart data
-    void ReadRestart(const int step) override;
+    void read_restart(const int step) override;
 
-    //! contains text to PrintNewtonIter
+    //! contains text to print_newton_iter
     void print_newton_iter_text_stream(std::ostringstream& oss) override;
 
-    //! contains header to PrintNewtonIter
+    //! contains header to print_newton_iter
     void print_newton_iter_header_stream(std::ostringstream& oss) override;
 
 
@@ -92,7 +92,7 @@ namespace POROELAST
     void setup_coupling_and_matrices() override;
 
     //! start a new time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     //! convergence check for Newton solver
     void build_convergence_norms() override;
@@ -100,7 +100,7 @@ namespace POROELAST
     //!@}
    private:
     //! build block vector from field vectors, e.g. rhs, increment vector
-    void SetupVector(Epetra_Vector& f,         //!< vector of length of all dofs
+    void setup_vector(Epetra_Vector& f,        //!< vector of length of all dofs
         Teuchos::RCP<const Epetra_Vector> sv,  //!< vector containing only structural dofs
         Teuchos::RCP<const Epetra_Vector> fv   //!< vector containing only fluid dofs
         ) override;

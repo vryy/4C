@@ -38,7 +38,8 @@ int DRT::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
-  // Check whether the solid material PostSetup() routine has already been called and call it if not
+  // Check whether the solid material post_setup() routine has already been called and call it if
+  // not
   ensure_material_post_setup(params);
 
   CORE::LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5> elemat1(elemat1_epetra.values(), true);
@@ -256,7 +257,7 @@ int DRT::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
     break;
 
     case calc_struct_eleload:
-      FOUR_C_THROW("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
+      FOUR_C_THROW("this method is not supposed to evaluate a load, use evaluate_neumann(...)");
       break;
 
     case calc_struct_fsiload:
@@ -273,7 +274,7 @@ int DRT::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
     case calc_struct_reset_istep:
     {
       // Reset of history (if needed)
-      SolidMaterial()->ResetStep();
+      SolidMaterial()->reset_step();
     }
     break;
 
@@ -519,13 +520,13 @@ void DRT::ELEMENTS::SoPyramid5fbar::InitJacobianMapping()
     if (detJ_[gp] <= 0.0) FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
 
     if (PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
-      if (!(prestress_->IsInit()))
+      if (!(prestress_->is_init()))
         prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
   }
 
   // init the centroid invJ
   if (PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
-    if (!(prestress_->IsInit()))
+    if (!(prestress_->is_init()))
     {
       CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_rst_0;
       CORE::FE::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.25, CORE::FE::CellType::pyramid5);
@@ -536,7 +537,7 @@ void DRT::ELEMENTS::SoPyramid5fbar::InitJacobianMapping()
     }
 
 
-  if (PRESTRESS::IsMulfActive(time_)) prestress_->IsInit() = true;
+  if (PRESTRESS::IsMulfActive(time_)) prestress_->is_init() = true;
 
   return;
 }
@@ -545,7 +546,7 @@ void DRT::ELEMENTS::SoPyramid5fbar::InitJacobianMapping()
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)               |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::SoPyramid5fbar::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::SoPyramid5fbar::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -640,7 +641,7 @@ int DRT::ELEMENTS::SoPyramid5fbar::EvaluateNeumann(Teuchos::ParameterList& param
   } /* ==================================================== end of Loop over GP */
 
   return 0;
-}  // DRT::ELEMENTS::So_pyramid5fbar::EvaluateNeumann
+}  // DRT::ELEMENTS::So_pyramid5fbar::evaluate_neumann
 
 
 /*----------------------------------------------------------------------*

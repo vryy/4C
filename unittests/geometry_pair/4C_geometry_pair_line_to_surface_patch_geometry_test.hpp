@@ -111,9 +111,9 @@ namespace
           node_ids[i_node] = connectivity_volumes[i_node + n_nodes_volume * i_el] - 1;
         new_element = Teuchos::rcp<DRT::Element>(new DRT::ELEMENTS::SoHex8(i_el, 0));
         new_element->SetNodeIds(n_nodes_volume, node_ids.data());
-        discret->AddElement(new_element);
+        discret->add_element(new_element);
       }
-      discret->FillComplete(true, true, false);
+      discret->fill_complete(true, true, false);
     }
 
     // Create the face elements.

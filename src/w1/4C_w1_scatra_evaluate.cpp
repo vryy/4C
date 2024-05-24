@@ -21,10 +21,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  preevaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1Scatra::PreEvaluate(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::Wall1Scatra::pre_evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
-  const int numnode = NumNode();
+  const int numnode = num_node();
 
   if (la.Size() > 1)
   {
@@ -159,7 +159,7 @@ int DRT::ELEMENTS::Wall1Scatra::Evaluate(Teuchos::ParameterList& params,
     {
       // in some cases we need to write/change some data before evaluating
 
-      PreEvaluate(params, discretization, la);
+      pre_evaluate(params, discretization, la);
 
       Wall1::Evaluate(params, discretization, la[0].lm_, elemat1_epetra, elemat2_epetra,
           elevec1_epetra, elevec2_epetra, elevec3_epetra);

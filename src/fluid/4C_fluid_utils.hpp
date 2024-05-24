@@ -348,11 +348,11 @@ namespace FLD
       Teuchos::RCP<Epetra_Vector> GetStressesWOAgg(Teuchos::RCP<const Epetra_Vector> trueresidual);
 
       /// return flag if StressManager has already been initialized
-      bool IsInit() { return isinit_; };
+      bool is_init() { return isinit_; };
 
      private:
       /// return stress vector
-      Teuchos::RCP<Epetra_Vector> CalcStresses(Teuchos::RCP<const Epetra_Vector> trueresidual);
+      Teuchos::RCP<Epetra_Vector> calc_stresses(Teuchos::RCP<const Epetra_Vector> trueresidual);
 
       /// integrate shape functions at nodes marked by condition
       Teuchos::RCP<Epetra_Vector> integrate_interface_shape(std::string condname);
@@ -361,17 +361,18 @@ namespace FLD
       Teuchos::RCP<Epetra_Vector> calc_wall_shear_stresses(Teuchos::RCP<Epetra_Vector> stresses);
 
       /// smooth stress/wss via ML-aggregation
-      Teuchos::RCP<Epetra_Vector> AggreagteStresses(Teuchos::RCP<Epetra_Vector> wss);
+      Teuchos::RCP<Epetra_Vector> aggreagte_stresses(Teuchos::RCP<Epetra_Vector> wss);
 
       /// time average stresses
-      Teuchos::RCP<Epetra_Vector> TimeAverageStresses(
+      Teuchos::RCP<Epetra_Vector> time_average_stresses(
           Teuchos::RCP<const Epetra_Vector> stresses, double dt);
 
       /// time average wss
-      Teuchos::RCP<Epetra_Vector> TimeAverageWss(Teuchos::RCP<const Epetra_Vector> wss, double dt);
+      Teuchos::RCP<Epetra_Vector> time_average_wss(
+          Teuchos::RCP<const Epetra_Vector> wss, double dt);
 
       /// Calculate Aggregation Matrix
-      void CalcSepEnr(Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat);
+      void calc_sep_enr(Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat);
 
       /// fluid discretization
       const Teuchos::RCP<DRT::Discretization> discret_;

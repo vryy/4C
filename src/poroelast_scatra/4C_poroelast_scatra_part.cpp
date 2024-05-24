@@ -24,7 +24,7 @@ POROELASTSCATRA::PoroScatraPart::PoroScatraPart(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : PoroScatraBase(comm, timeparams)
 {
-  PoroField()->SetupSolver();
+  poro_field()->SetupSolver();
 }
 
 FOUR_C_NAMESPACE_CLOSE

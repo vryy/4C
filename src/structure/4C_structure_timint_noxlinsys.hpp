@@ -154,7 +154,7 @@ namespace NOX
 
      protected:
       /// throw an error
-      virtual void throwError(const std::string& functionName, const std::string& errorMsg) const;
+      virtual void throw_error(const std::string& functionName, const std::string& errorMsg) const;
 
      protected:
       ::NOX::Utils utils_;

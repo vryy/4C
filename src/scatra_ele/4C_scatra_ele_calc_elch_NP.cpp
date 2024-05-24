@@ -75,8 +75,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
 {
   // Compute residual of Nernst-Planck equation in strong form and subgrid-scale part of
   // concentration c_k
-  const double residual = CalcRes(k, VarManager()->Phinp(k), VarManager()->Hist(k),
-      VarManager()->ConvPhi(k), VarManager()->FRT(), VarManager()->MigConv(), rhsint);
+  const double residual = calc_res(k, var_manager()->Phinp(k), var_manager()->Hist(k),
+      var_manager()->ConvPhi(k), var_manager()->FRT(), var_manager()->MigConv(), rhsint);
 
   //--------------------------------------------------------------------------
   // 1) element matrix: instationary terms arising from Nernst-Planck equation
@@ -97,20 +97,20 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   //------------------------------------------------------------------------
 
   // 2a) element matrix: standard Galerkin convective term due to fluid flow
-  my::CalcMatConv(emat, k, timefacfac, 1., VarManager()->SGConv());
+  my::CalcMatConv(emat, k, timefacfac, 1., var_manager()->SGConv());
 
   // 2b) element matrix: additional terms in conservative formulation if needed
   if (my::scatrapara_->IsConservative())
   {
     double vdiv(0.);
     my::GetDivergence(vdiv, my::evelnp_);
-    my::CalcMatConvAddCons(emat, k, timefacfac, vdiv, 1.);
+    my::calc_mat_conv_add_cons(emat, k, timefacfac, vdiv, 1.);
   }
 
   // 2c) element matrix: stabilization of convective term due to fluid flow and migration
-  CalcMatConvStab(emat, k, timefacfac, taufac, timetaufac, tauderpot, VarManager()->FRT(),
-      VarManager()->Conv(k), VarManager()->MigConv(), VarManager()->Phinp(k),
-      VarManager()->GradPhi(k), residual);
+  calc_mat_conv_stab(emat, k, timefacfac, taufac, timetaufac, tauderpot, var_manager()->FRT(),
+      var_manager()->Conv(k), var_manager()->MigConv(), var_manager()->Phinp(k),
+      var_manager()->GradPhi(k), residual);
 
   // 2d) element matrix: standard Galerkin diffusive term (constant diffusion coefficient)
   my::CalcMatDiff(emat, k, timefacfac);
@@ -121,8 +121,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
 
   // 2f) element matrix: standard Galerkin migration term (can be split up into convective and
   // reactive parts)
-  CalcMatMigr(
-      emat, k, timefacfac, VarManager()->FRT(), VarManager()->MigConv(), VarManager()->Phinp(k));
+  calc_mat_migr(
+      emat, k, timefacfac, var_manager()->FRT(), var_manager()->MigConv(), var_manager()->Phinp(k));
 
   // 2g) element matrix: stabilization of reactive term due to migration
   // not implemented, only SUPG stabilization of convective term due to fluid flow and migration
@@ -143,14 +143,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
     }
     case INPAR::ELCH::equpot_enc_pde:
     {
-      CalcMatPotEquENCPDE(emat, k, timefacfac, VarManager()->FRT(), VarManager()->MigConv(),
-          VarManager()->Phinp(k));
+      calc_mat_pot_equ_encpde(emat, k, timefacfac, var_manager()->FRT(), var_manager()->MigConv(),
+          var_manager()->Phinp(k));
       break;
     }
     case INPAR::ELCH::equpot_enc_pde_elim:
     {
-      calc_mat_pot_equ_encpde_elim(emat, k, timefacfac, VarManager()->FRT(),
-          VarManager()->MigConv(), VarManager()->Phinp(k));
+      calc_mat_pot_equ_encpde_elim(emat, k, timefacfac, var_manager()->FRT(),
+          var_manager()->MigConv(), var_manager()->Phinp(k));
       break;
     }
     case INPAR::ELCH::equpot_poisson:
@@ -182,7 +182,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
 
   // 4b) element rhs: standard Galerkin contributions from rhsint vector (contains body force vector
   // and history vector) need to adapt rhsint vector to time integration scheme first
-  my::ComputeRhsInt(rhsint, 1., 1., VarManager()->Hist(k));
+  my::ComputeRhsInt(rhsint, 1., 1., var_manager()->Hist(k));
   my::calc_rhs_hist_and_source(erhs, k, fac, rhsint);
 
   // 4c) element rhs: stabilization of mass term
@@ -197,14 +197,15 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   {
     double vdiv(0.);
     my::GetDivergence(vdiv, my::evelnp_);
-    CalcRhsConvAddCons(erhs, k, rhsfac, VarManager()->Phinp(k), vdiv);
+    calc_rhs_conv_add_cons(erhs, k, rhsfac, var_manager()->Phinp(k), vdiv);
   }
 
   // 4f) element rhs: stabilization of convective term due to fluid flow and migration
-  CalcRhsConvStab(erhs, k, rhstaufac, VarManager()->Conv(k), VarManager()->MigConv(), residual);
+  calc_rhs_conv_stab(
+      erhs, k, rhstaufac, var_manager()->Conv(k), var_manager()->MigConv(), residual);
 
   // 4g) element rhs: standard Galerkin diffusion term
-  my::CalcRHSDiff(erhs, k, rhsfac);
+  my::calc_rhs_diff(erhs, k, rhsfac);
 
   // 4h) element rhs: stabilization of diffusive term
   // not implemented, only SUPG stabilization of convective term due to fluid flow and migration
@@ -212,7 +213,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
 
   // 4i) element rhs: standard Galerkin migration term (can be split up into convective and reactive
   // parts)
-  CalcRhsMigr(erhs, k, rhsfac, VarManager()->MigConv(), VarManager()->Phinp(k));
+  calc_rhs_migr(erhs, k, rhsfac, var_manager()->MigConv(), var_manager()->Phinp(k));
 
   // 4j) element rhs: stabilization of reactive term due to migration
   // not implemented, only SUPG stabilization of convective term due to fluid flow and migration
@@ -229,25 +230,25 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   {
     case INPAR::ELCH::equpot_enc:
     {
-      myelch::CalcRhsPotEquENC(erhs, k, fac, VarManager()->Phinp(k));
+      myelch::CalcRhsPotEquENC(erhs, k, fac, var_manager()->Phinp(k));
       break;
     }
     case INPAR::ELCH::equpot_enc_pde:
     {
-      CalcRhsPotEquENCPDE(erhs, k, rhsfac, VarManager()->MigConv(), VarManager()->Phinp(k),
-          VarManager()->GradPhi(k));
+      calc_rhs_pot_equ_encpde(erhs, k, rhsfac, var_manager()->MigConv(), var_manager()->Phinp(k),
+          var_manager()->GradPhi(k));
       break;
     }
     case INPAR::ELCH::equpot_enc_pde_elim:
     {
-      calc_rhs_pot_equ_encpde_elim(erhs, k, rhsfac, VarManager()->MigConv(), VarManager()->Phinp(k),
-          VarManager()->GradPhi(k));
+      calc_rhs_pot_equ_encpde_elim(erhs, k, rhsfac, var_manager()->MigConv(),
+          var_manager()->Phinp(k), var_manager()->GradPhi(k));
       break;
     }
     case INPAR::ELCH::equpot_poisson:
     {
       calc_rhs_pot_equ_poisson(erhs, k, fac, myelch::elchparams_->Epsilon(),
-          myelch::elchparams_->Faraday(), VarManager()->Phinp(k), VarManager()->GradPot());
+          myelch::elchparams_->Faraday(), var_manager()->Phinp(k), var_manager()->GradPot());
       break;
     }
     case INPAR::ELCH::equpot_laplace:
@@ -324,7 +325,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_and_rhs_outside_scala
     }
     case INPAR::ELCH::equpot_laplace:
     {
-      calc_rhs_pot_equ_laplace(erhs, fac, VarManager()->GradPot());
+      calc_rhs_pot_equ_laplace(erhs, fac, var_manager()->GradPot());
       break;
     }
     default:
@@ -338,10 +339,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_and_rhs_outside_scala
 
 
 /*-----------------------------------------------------------------------------------------*
- | CalcRes: Residual of Nernst-Planck equation in strong form (private)         fang 06/14 |
+ | calc_res: Residual of Nernst-Planck equation in strong form (private)         fang 06/14 |
  *------------------------------------------------------ ----------------------------------*/
 template <CORE::FE::CellType distype>
-double DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRes(
+double DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_res(
     const int k,           //!< index of current scalar
     const double conint,   //!< concentration at GP
     const double hist,     //!< history value at GP
@@ -354,8 +355,8 @@ double DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRes(
 )
 {
   // Compute convective term including convective part of migration term
-  const double convmigphi = convphi + myelch::DiffManager()->GetIsotropicDiff(k) *
-                                          myelch::DiffManager()->GetValence(k) *
+  const double convmigphi = convphi + myelch::diff_manager()->GetIsotropicDiff(k) *
+                                          myelch::diff_manager()->GetValence(k) *
                                           (migconv.Dot(my::ephinp_[k]));
 
   // Compute diffusive term and reactive part of migration term (only significant for higher-order
@@ -368,9 +369,9 @@ double DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRes(
     CORE::LINALG::Matrix<nen_, 1> laplace(true);
     my::get_laplacian_strong_form(laplace);
 
-    diffphi = myelch::DiffManager()->GetIsotropicDiff(k) * laplace.Dot(my::ephinp_[k]);
-    reamigphi = -frt * myelch::DiffManager()->GetIsotropicDiff(k) *
-                myelch::DiffManager()->GetValence(k) * laplace.Dot(my::ephinp_[my::numscal_]) *
+    diffphi = myelch::diff_manager()->GetIsotropicDiff(k) * laplace.Dot(my::ephinp_[k]);
+    reamigphi = -frt * myelch::diff_manager()->GetIsotropicDiff(k) *
+                myelch::diff_manager()->GetValence(k) * laplace.Dot(my::ephinp_[my::numscal_]) *
                 conint;
   }
 
@@ -381,7 +382,7 @@ double DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRes(
   else
     return conint - hist +
            my::scatraparatimint_->TimeFac() * (convmigphi - diffphi + reamigphi - rhsint);
-}  // ScaTraEleCalcElchNP<distype>::CalcRes
+}  // ScaTraEleCalcElchNP<distype>::calc_res
 
 
 /*-------------------------------------------------------------------------------------------------------*
@@ -390,7 +391,7 @@ double DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRes(
  *------------------------------------------------------
  ------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatConvStab(
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_conv_stab(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
     const int k,                            //!< index of current scalar
     const double timefacfac,  //!< domain-integration factor times time-integration factor
@@ -418,13 +419,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatConvStab(
     // compute effective convective stabilization operator
     double conv_eff_vi = conv(vi);
     if (migrationstab_)
-      conv_eff_vi += myelch::DiffManager()->GetIsotropicDiff(k) *
-                     myelch::DiffManager()->GetValence(k) * migconv(vi);
+      conv_eff_vi += myelch::diff_manager()->GetIsotropicDiff(k) *
+                     myelch::diff_manager()->GetValence(k) * migconv(vi);
 
     // shortcuts
     const double timetaufac_conv_eff_vi = timetaufac * conv_eff_vi;
     const double timetaufac_conv_eff_vi_conint_k_frt_valence_k =
-        timetaufac_conv_eff_vi * conint * frt * myelch::DiffManager()->GetValence(k);
+        timetaufac_conv_eff_vi * conint * frt * myelch::diff_manager()->GetValence(k);
 
     for (unsigned ui = 0; ui < nen_; ++ui)
     {
@@ -439,14 +440,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatConvStab(
       // 2) convective term due to fluid flow and migration
       // 2a) linearization of residual w.r.t. concentration c_k
       matvalconc += timetaufac * conv_eff_vi *
-                    (conv(ui) + myelch::DiffManager()->GetIsotropicDiff(k) *
-                                    myelch::DiffManager()->GetValence(k) * migconv(ui));
+                    (conv(ui) + myelch::diff_manager()->GetIsotropicDiff(k) *
+                                    myelch::diff_manager()->GetValence(k) * migconv(ui));
 
       // 2b) linearization of residual w.r.t. electric potential Phi
       double laplawf(0.);
       my::get_laplacian_weak_form_rhs(laplawf, gradphi, ui);
-      matvalpot -= timetaufac * conv_eff_vi * myelch::DiffManager()->GetIsotropicDiff(k) *
-                   myelch::DiffManager()->GetValence(k) * frt * laplawf;
+      matvalpot -= timetaufac * conv_eff_vi * myelch::diff_manager()->GetIsotropicDiff(k) *
+                   myelch::diff_manager()->GetValence(k) * frt * laplawf;
 
       if (migrationstab_)
       {
@@ -456,11 +457,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatConvStab(
         // 2d) linearization of migration operator w.r.t. electric potential Phi
         double laplacewf(0.);
         my::get_laplacian_weak_form(laplacewf, ui, vi);
-        matvalpot -= timetaufac * residual * myelch::DiffManager()->GetIsotropicDiff(k) *
-                     myelch::DiffManager()->GetValence(k) * frt * laplacewf;
+        matvalpot -= timetaufac * residual * myelch::diff_manager()->GetIsotropicDiff(k) *
+                     myelch::diff_manager()->GetValence(k) * frt * laplacewf;
       }
 
-      if (not SCATRA::IsBinaryElectrolyte(myelch::DiffManager()->GetValence()))
+      if (not SCATRA::IsBinaryElectrolyte(myelch::diff_manager()->GetValence()))
       {
         // 2e) linearization of tau w.r.t. concentration c_k
         // not necessary, since tau not a function of c_k
@@ -475,20 +476,20 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatConvStab(
         // 3) diffusive term
         // 3a) linearization w.r.t. concentration c_k
         matvalconc -=
-            timetaufac_conv_eff_vi * myelch::DiffManager()->GetIsotropicDiff(k) * laplace(ui);
+            timetaufac_conv_eff_vi * myelch::diff_manager()->GetIsotropicDiff(k) * laplace(ui);
 
         // 3b) linearization w.r.t. electric potential Phi
         // not necessary, since diffusive term not a function of Phi
 
         // 4) reactive term due to migration
         // 4a) linearization w.r.t. concentration c_k
-        matvalconc -= timetaufac_conv_eff_vi * frt * myelch::DiffManager()->GetIsotropicDiff(k) *
-                      myelch::DiffManager()->GetValence(k) *
+        matvalconc -= timetaufac_conv_eff_vi * frt * myelch::diff_manager()->GetIsotropicDiff(k) *
+                      myelch::diff_manager()->GetValence(k) *
                       laplace.Dot(my::ephinp_[my::numscal_]) * my::funct_(ui);
 
         // 4b) linearization w.r.t. electric potential Phi
         matvalpot -= timetaufac_conv_eff_vi_conint_k_frt_valence_k *
-                     myelch::DiffManager()->GetIsotropicDiff(k) * laplace(ui);
+                     myelch::diff_manager()->GetIsotropicDiff(k) * laplace(ui);
       }
 
       // try to access the element matrix not too often, can be costly
@@ -506,7 +507,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatConvStab(
  |  CalcMat: Migration term (private)                         fang 05/14 |
  *-------------------------------------------------- --------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatMigr(
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_migr(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
     const int k,                            //!< index of current scalar
     const double timefacfac,  //!< domain-integration factor times time-integration factor
@@ -517,8 +518,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatMigr(
 )
 {
   const double timefacfac_diffus_valence_k = timefacfac *
-                                             myelch::DiffManager()->GetIsotropicDiff(k) *
-                                             myelch::DiffManager()->GetValence(k);
+                                             myelch::diff_manager()->GetIsotropicDiff(k) *
+                                             myelch::diff_manager()->GetValence(k);
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
     const double v = timefacfac_diffus_valence_k * migconv(vi);
@@ -535,20 +536,20 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatMigr(
       double laplawf(0.);
       my::get_laplacian_weak_form(laplawf, ui, vi);
       emat(fvi, ui * my::numdofpernode_ + my::numscal_) +=
-          frt * timefacfac * myelch::DiffManager()->GetIsotropicDiff(k) *
-          myelch::DiffManager()->GetValence(k) * conint * laplawf;
+          frt * timefacfac * myelch::diff_manager()->GetIsotropicDiff(k) *
+          myelch::diff_manager()->GetValence(k) * conint * laplawf;
     }
   }
 
   return;
-}  // ScaTraEleCalcElchNP<distype>::CalcMatMigr
+}  // ScaTraEleCalcElchNP<distype>::calc_mat_migr
 
 
 /*-----------------------------------------------------------------------*
  |  CalcMat: Electroneutrality in PDE form (private)          fang 05/14 |
  *-----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquENCPDE(
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_pot_equ_encpde(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
     const int k,                            //!< index of current scalar
     const double timefacfac,  //!< domain-integration factor times time-integration factor
@@ -563,8 +564,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquENCPDE(
 
     // Inclusion of time integration factor results in a matrix with better condition number
     const double timefacfac_diffus_valence_k_mig_vi =
-        timefacfac * myelch::DiffManager()->GetIsotropicDiff(k) *
-        myelch::DiffManager()->GetValence(k) * migconv(vi);
+        timefacfac * myelch::diff_manager()->GetIsotropicDiff(k) *
+        myelch::diff_manager()->GetValence(k) * migconv(vi);
 
     for (unsigned ui = 0; ui < nen_; ++ui)
     {
@@ -575,15 +576,15 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquENCPDE(
 
       // use 2nd order pde derived from electroneutrality condition (k=1,...,m)
       // a) derivative w.r.t. concentration c_k
-      emat(pvi, fui) -= myelch::DiffManager()->GetValence(k) *
+      emat(pvi, fui) -= myelch::diff_manager()->GetValence(k) *
                         (timefacfac_diffus_valence_k_mig_vi * my::funct_(ui));
-      emat(pvi, fui) += myelch::DiffManager()->GetValence(k) *
-                        (timefacfac * myelch::DiffManager()->GetIsotropicDiff(k) * laplawf);
+      emat(pvi, fui) += myelch::diff_manager()->GetValence(k) *
+                        (timefacfac * myelch::diff_manager()->GetIsotropicDiff(k) * laplawf);
       // b) derivative w.r.t. electric potential
       emat(pvi, ui * my::numdofpernode_ + my::numscal_) +=
-          myelch::DiffManager()->GetValence(k) *
-          (frt * timefacfac * myelch::DiffManager()->GetIsotropicDiff(k) *
-              myelch::DiffManager()->GetValence(k) * conint * laplawf);
+          myelch::diff_manager()->GetValence(k) *
+          (frt * timefacfac * myelch::diff_manager()->GetIsotropicDiff(k) *
+              myelch::diff_manager()->GetValence(k) * conint * laplawf);
     }  // for ui
   }    // for vi
 
@@ -610,11 +611,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_pot_equ_encpde_elim(
 
     // Inclusion of time integration factor results in a matrix with better condition number
     const double timefacfac_diffus_valence_k_mig_vi =
-        timefacfac * myelch::DiffManager()->GetIsotropicDiff(k) *
-        myelch::DiffManager()->GetValence(k) * migconv(vi);
+        timefacfac * myelch::diff_manager()->GetIsotropicDiff(k) *
+        myelch::diff_manager()->GetValence(k) * migconv(vi);
     const double timefacfac_diffus_valence_m_mig_vi =
-        timefacfac * myelch::DiffManager()->GetIsotropicDiff(my::numscal_) *
-        myelch::DiffManager()->GetValence(my::numscal_) * migconv(vi);
+        timefacfac * myelch::diff_manager()->GetIsotropicDiff(my::numscal_) *
+        myelch::diff_manager()->GetValence(my::numscal_) * migconv(vi);
 
     for (unsigned ui = 0; ui < nen_; ++ui)
     {
@@ -628,26 +629,26 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_pot_equ_encpde_elim(
       // use 2nd order pde derived from electroneutrality condition (k=1,...,m-1)
       // a) derivative w.r.t. concentration c_k
       matvalconc -= timefacfac_diffus_valence_k_mig_vi * my::funct_(ui);
-      matvalconc += timefacfac * myelch::DiffManager()->GetIsotropicDiff(k) * laplawf;
+      matvalconc += timefacfac * myelch::diff_manager()->GetIsotropicDiff(k) * laplawf;
       // b) derivative w.r.t. electric potential
-      matvalpot += frt * timefacfac * myelch::DiffManager()->GetIsotropicDiff(k) *
-                   myelch::DiffManager()->GetValence(k) * conint * laplawf;
+      matvalpot += frt * timefacfac * myelch::diff_manager()->GetIsotropicDiff(k) *
+                   myelch::diff_manager()->GetValence(k) * conint * laplawf;
 
       // care for eliminated species with index m
       // Note: diffus_ and valence_ vectors were extended in GetMaterialParams() so that they
       // also contain the properties of the eliminated species at index m (= my::numscal_))
       // a) derivative w.r.t. concentration c_k
       matvalconc += timefacfac_diffus_valence_m_mig_vi * my::funct_(ui);
-      matvalconc -= timefacfac * myelch::DiffManager()->GetIsotropicDiff(my::numscal_) * laplawf;
+      matvalconc -= timefacfac * myelch::diff_manager()->GetIsotropicDiff(my::numscal_) * laplawf;
       // b) derivative w.r.t. electric potential
-      matvalpot -= frt * timefacfac * myelch::DiffManager()->GetIsotropicDiff(my::numscal_) *
-                   myelch::DiffManager()->GetValence(my::numscal_) * conint * laplawf;
+      matvalpot -= frt * timefacfac * myelch::diff_manager()->GetIsotropicDiff(my::numscal_) *
+                   myelch::diff_manager()->GetValence(my::numscal_) * conint * laplawf;
 
       // try to access the element matrix not too often, can be costly
       const int fui = ui * my::numdofpernode_ + k;
-      emat(pvi, fui) += myelch::DiffManager()->GetValence(k) * matvalconc;
+      emat(pvi, fui) += myelch::diff_manager()->GetValence(k) * matvalconc;
       const int pui = ui * my::numdofpernode_ + my::numscal_;
-      emat(pvi, pui) += myelch::DiffManager()->GetValence(k) * matvalpot;
+      emat(pvi, pui) += myelch::diff_manager()->GetValence(k) * matvalpot;
     }  // for ui
   }    // for vi
 
@@ -671,7 +672,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_pot_equ_poisson(
   {
     const int pvi = vi * my::numdofpernode_ + my::numscal_;
     const double alphaF_valence_k_fac_funct_vi = my::scatraparatimint_->AlphaF() *
-                                                 myelch::DiffManager()->GetValence(k) * fac *
+                                                 myelch::diff_manager()->GetValence(k) * fac *
                                                  my::funct_(vi);
 
     for (unsigned ui = 0; ui < nen_; ++ui)
@@ -732,7 +733,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_pot_equ_laplace(
  |  CalcRhs: Additional contributions from conservative formulation (private)   fang 05/14 |
  *-----------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsConvAddCons(
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_rhs_conv_add_cons(
     CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
     const int k,                            //!< index of current scalar
     const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
@@ -753,7 +754,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsConvAddCons(
  *------------------------------------------------------
  ------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsConvStab(
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_rhs_conv_stab(
     CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
     const int k,                            //!< index of current scalar
     const double
@@ -772,19 +773,19 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsConvStab(
     erhs[fvi] -= rhstaufac * conv(vi) * residual;
 
     if (migrationstab_)
-      erhs[fvi] -= rhstaufac * myelch::DiffManager()->GetIsotropicDiff(k) *
-                   myelch::DiffManager()->GetValence(k) * migconv(vi) * residual;
+      erhs[fvi] -= rhstaufac * myelch::diff_manager()->GetIsotropicDiff(k) *
+                   myelch::diff_manager()->GetValence(k) * migconv(vi) * residual;
   }
 
   return;
-}  // ScaTraEleCalcElchNP<distype>::CalcRhsConvStab
+}  // ScaTraEleCalcElchNP<distype>::calc_rhs_conv_stab
 
 
 /*-------------------------------------------------------------------------------------*
  |  CalcRhs: Migration term (private)                                       fang 05/14 |
  *-------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsMigr(
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_rhs_migr(
     CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
     const int k,                            //!< index of current scalar
     const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
@@ -793,8 +794,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsMigr(
 )
 {
   const double rhsfac_con_diffus_valence_k = rhsfac * conint *
-                                             myelch::DiffManager()->GetIsotropicDiff(k) *
-                                             myelch::DiffManager()->GetValence(k);
+                                             myelch::diff_manager()->GetIsotropicDiff(k) *
+                                             myelch::diff_manager()->GetValence(k);
 
   for (unsigned vi = 0; vi < nen_; ++vi)
     erhs[vi * my::numdofpernode_ + k] += rhsfac_con_diffus_valence_k * migconv(vi);
@@ -807,7 +808,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsMigr(
  |  CalcRhs: Electroneutrality condition in PDE form (private)              fang 05/14 |
  *-------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquENCPDE(
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_rhs_pot_equ_encpde(
     CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
     const int k,                            //!< index of current scalar
     const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
@@ -824,10 +825,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquENCPDE(
     // use 2nd order pde derived from electroneutrality condition (k=1,...,m)
     // Inclusion of time integration factor results in a matrix with better condition number
     erhs[vi * my::numdofpernode_ + my::numscal_] +=
-        rhsfac * myelch::DiffManager()->GetValence(k) *
-        (myelch::DiffManager()->GetIsotropicDiff(k) * myelch::DiffManager()->GetValence(k) *
+        rhsfac * myelch::diff_manager()->GetValence(k) *
+        (myelch::diff_manager()->GetIsotropicDiff(k) * myelch::diff_manager()->GetValence(k) *
                 conint * migconv(vi) -
-            myelch::DiffManager()->GetIsotropicDiff(k) * laplawf);
+            myelch::diff_manager()->GetIsotropicDiff(k) * laplawf);
   }  // for vi
 
   return;
@@ -856,18 +857,18 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_rhs_pot_equ_encpde_elim(
 
     // use 2nd order pde derived from electroneutrality condition (k=0,...,m-1)
     // Inclusion of time integration factor results in a matrix with better condition number
-    erhs[pvi] += rhsfac * myelch::DiffManager()->GetValence(k) *
-                 (myelch::DiffManager()->GetIsotropicDiff(k) *
-                         myelch::DiffManager()->GetValence(k) * conint * migconv(vi) -
-                     myelch::DiffManager()->GetIsotropicDiff(k) * laplawf);
+    erhs[pvi] += rhsfac * myelch::diff_manager()->GetValence(k) *
+                 (myelch::diff_manager()->GetIsotropicDiff(k) *
+                         myelch::diff_manager()->GetValence(k) * conint * migconv(vi) -
+                     myelch::diff_manager()->GetIsotropicDiff(k) * laplawf);
 
     // care for eliminated species with index m
     // Note: diffus_ and valence_ vectors were extended in GetMaterialParams() so that they
     // also contain the properties of the eliminated species at index m (= my::numscal_))
-    erhs[pvi] -= rhsfac * myelch::DiffManager()->GetValence(k) *
-                 (myelch::DiffManager()->GetIsotropicDiff(my::numscal_) *
-                         myelch::DiffManager()->GetValence(my::numscal_) * conint * migconv(vi) -
-                     myelch::DiffManager()->GetIsotropicDiff(my::numscal_) * laplawf);
+    erhs[pvi] -= rhsfac * myelch::diff_manager()->GetValence(k) *
+                 (myelch::diff_manager()->GetIsotropicDiff(my::numscal_) *
+                         myelch::diff_manager()->GetValence(my::numscal_) * conint * migconv(vi) -
+                     myelch::diff_manager()->GetIsotropicDiff(my::numscal_) * laplawf);
   }  // for vi
 
   return;
@@ -905,7 +906,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_rhs_pot_equ_poisson(
     }
 
     // residuum of Poisson equation on the rhs
-    erhs[pvi] += myelch::DiffManager()->GetValence(k) * fac * my::funct_(vi) * conint;
+    erhs[pvi] += myelch::diff_manager()->GetValence(k) * fac * my::funct_(vi) * conint;
   }  // for vi
 
   return;
@@ -971,17 +972,17 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::correction_for_flux_across_dc(
           // due to diffusion and migration
           val = erhs[fvi];
           erhs[vi * my::numdofpernode_ + my::numscal_] +=
-              myelch::DiffManager()->GetValence(k) * (-val);
+              myelch::diff_manager()->GetValence(k) * (-val);
 
           // corresponding linearization
           for (unsigned ui = 0; ui < nen_; ++ui)
           {
             val = emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + k);
             emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + k) +=
-                myelch::DiffManager()->GetValence(k) * (-val);
+                myelch::diff_manager()->GetValence(k) * (-val);
             val = emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + my::numscal_);
             emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + my::numscal_) +=
-                myelch::DiffManager()->GetValence(k) * (-val);
+                myelch::diff_manager()->GetValence(k) * (-val);
           }
         }  // if mydctoggle
       }    // for k
@@ -1044,7 +1045,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::Materials(
 )
 {
   if (material->MaterialType() == CORE::Materials::m_ion)
-    myelch::utils_->MatIon(material, k, myelch::elchparams_->EquPot(), myelch::DiffManager());
+    myelch::utils_->MatIon(material, k, myelch::elchparams_->EquPot(), myelch::diff_manager());
   else
     FOUR_C_THROW("Material type is not supported");
 
@@ -1065,29 +1066,29 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::prepare_stabilization(
 )
 {
   // special stabilization parameters in case of binary electrolyte
-  if (SCATRA::IsBinaryElectrolyte(myelch::DiffManager()->GetValence()))
+  if (SCATRA::IsBinaryElectrolyte(myelch::diff_manager()->GetValence()))
   {
     // do not include migration operator in stabilization terms
     migrationstab_ = false;
 
     // use effective diffusion coefficient for binary electrolyte solutions
-    double resdiffus = SCATRA::CalResDiffCoeff(myelch::DiffManager()->GetValence(),
-        myelch::DiffManager()->GetIsotropicDiff(),
-        SCATRA::GetIndicesBinaryElectrolyte(myelch::DiffManager()->GetValence()));
+    double resdiffus = SCATRA::CalResDiffCoeff(myelch::diff_manager()->GetValence(),
+        myelch::diff_manager()->GetIsotropicDiff(),
+        SCATRA::GetIndicesBinaryElectrolyte(myelch::diff_manager()->GetValence()));
 
     // loop over transported scalars
     for (int k = 0; k < my::numscal_; ++k)
     {
       // calculate stabilization parameter tau for charged species
-      if (abs(myelch::DiffManager()->GetValence(k)) > 1.e-10)
+      if (abs(myelch::diff_manager()->GetValence(k)) > 1.e-10)
         my::CalcTau(tau[k], resdiffus,
             my::reamanager_->get_stabilization_coeff(k, my::scatravarmanager_->Phinp(k)), densnp[k],
-            VarManager()->ConVel(k), vol);
+            var_manager()->ConVel(k), vol);
       else
         // calculate stabilization parameter tau for uncharged species
-        my::CalcTau(tau[k], myelch::DiffManager()->GetIsotropicDiff(k),
+        my::CalcTau(tau[k], myelch::diff_manager()->GetIsotropicDiff(k),
             my::reamanager_->get_stabilization_coeff(k, my::scatravarmanager_->Phinp(k)), densnp[k],
-            VarManager()->ConVel(k), vol);
+            var_manager()->ConVel(k), vol);
     }
   }
 
@@ -1114,13 +1115,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::prepare_stabilization(
     for (int k = 0; k < my::numscal_; ++k)
     {
       // Compute effective velocity as sum of convective and migration velocities
-      CORE::LINALG::Matrix<nsd_, 1> veleff(VarManager()->ConVel(k));
+      CORE::LINALG::Matrix<nsd_, 1> veleff(var_manager()->ConVel(k));
       veleff.Update(
-          myelch::DiffManager()->GetValence(k) * myelch::DiffManager()->GetIsotropicDiff(k),
-          VarManager()->MigVelInt(), 1.);
+          myelch::diff_manager()->GetValence(k) * myelch::diff_manager()->GetIsotropicDiff(k),
+          var_manager()->MigVelInt(), 1.);
 
       // calculate stabilization parameter tau
-      my::CalcTau(tau[k], myelch::DiffManager()->GetIsotropicDiff(k),
+      my::CalcTau(tau[k], myelch::diff_manager()->GetIsotropicDiff(k),
           my::reamanager_->get_stabilization_coeff(k, my::scatravarmanager_->Phinp(k)), densnp[k],
           veleff, vol);
 
@@ -1131,8 +1132,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::prepare_stabilization(
         {
           // Calculate derivative of tau w.r.t. electric potential
           calc_tau_der_pot_taylor_hughes_zarins(tauderpot[k], tau[k], densnp[k],
-              VarManager()->FRT(),
-              myelch::DiffManager()->GetIsotropicDiff(k) * myelch::DiffManager()->GetValence(k),
+              var_manager()->FRT(),
+              myelch::diff_manager()->GetIsotropicDiff(k) * myelch::diff_manager()->GetValence(k),
               veleff);
           break;
         }

@@ -16,7 +16,7 @@ std::vector<double> CORE::FE::element_center_refe_coords(const DRT::Element& ele
 {
   // get nodes of element
   const DRT::Node* const* nodes = ele.Nodes();
-  const int numnodes = ele.NumNode();
+  const int numnodes = ele.num_node();
   const double invnumnodes = 1.0 / numnodes;
 
   // calculate mean of node coordinates

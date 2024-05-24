@@ -203,9 +203,9 @@ void CORE::GEO::CUT::BoundingBox::AddPoints(const std::vector<Node*>& nodes)
 bool CORE::GEO::CUT::BoundingBox::Within(double norm, const BoundingBox& b) const
 {
   if (empty_) return true;
-  return (InBetween(norm, minx(), maxx(), b.minx(), b.maxx()) and
-          InBetween(norm, miny(), maxy(), b.miny(), b.maxy()) and
-          InBetween(norm, minz(), maxz(), b.minz(), b.maxz()));
+  return (in_between(norm, minx(), maxx(), b.minx(), b.maxx()) and
+          in_between(norm, miny(), maxy(), b.miny(), b.maxy()) and
+          in_between(norm, minz(), maxz(), b.minz(), b.maxz()));
 }
 
 /*----------------------------------------------------------------------------*
@@ -213,9 +213,9 @@ bool CORE::GEO::CUT::BoundingBox::Within(double norm, const BoundingBox& b) cons
 bool CORE::GEO::CUT::BoundingBox::Within(double norm, const double* x) const
 {
   if (empty_) return true;
-  return (InBetween(norm, minx(), maxx(), x[0], x[0]) and
-          InBetween(norm, miny(), maxy(), x[1], x[1]) and
-          InBetween(norm, minz(), maxz(), x[2], x[2]));
+  return (in_between(norm, minx(), maxx(), x[0], x[0]) and
+          in_between(norm, miny(), maxy(), x[1], x[1]) and
+          in_between(norm, minz(), maxz(), x[2], x[2]));
 }
 
 /*----------------------------------------------------------------------------*
@@ -242,7 +242,7 @@ bool CORE::GEO::CUT::BoundingBox::Within(double norm, Element& element) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::BoundingBox::InBetween(const double& norm, const double& smin,
+bool CORE::GEO::CUT::BoundingBox::in_between(const double& norm, const double& smin,
     const double& smax, const double& omin, const double& omax) const
 {
   double tol = BOXOVERLAP * norm;
@@ -307,8 +307,8 @@ bool CORE::GEO::CUT::ConcreteBoundingBox<probdim>::Within(double norm, const dou
   if (probdim > 2) return BoundingBox::Within(norm, x);
 
   if (empty_) return true;
-  return (
-      InBetween(norm, minx(), maxx(), x[0], x[0]) and InBetween(norm, miny(), maxy(), x[1], x[1]));
+  return (in_between(norm, minx(), maxx(), x[0], x[0]) and
+          in_between(norm, miny(), maxy(), x[1], x[1]));
 }
 
 

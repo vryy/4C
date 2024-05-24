@@ -90,7 +90,7 @@ CORE::Conditions::MultiConditionSelector::MultiConditionSelector() : overlapping
 void CORE::Conditions::MultiConditionSelector::SetupExtractor(const DRT::Discretization& dis,
     const Epetra_Map& fullmap, CORE::LINALG::MultiMapExtractor& extractor)
 {
-  SetupCondDofSets(dis);
+  setup_cond_dof_sets(dis);
 
   // Find all non-conditioned dofs by subtracting all conditioned ones.
 
@@ -126,7 +126,7 @@ void CORE::Conditions::MultiConditionSelector::SetupExtractor(const DRT::Discret
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::Conditions::MultiConditionSelector::SetupCondDofSets(const DRT::Discretization& dis)
+void CORE::Conditions::MultiConditionSelector::setup_cond_dof_sets(const DRT::Discretization& dis)
 {
   // we get as many sets as we have selectors
   conddofset_.resize(selectors_.size());

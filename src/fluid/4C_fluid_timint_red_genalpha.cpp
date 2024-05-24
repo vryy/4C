@@ -49,11 +49,11 @@ void FLD::TimIntRedModelsGenAlpha::Init()
 /*----------------------------------------------------------------------*
  |  read restart data                                   rasthofer 12/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedModelsGenAlpha::ReadRestart(int step)
+void FLD::TimIntRedModelsGenAlpha::read_restart(int step)
 {
   // call of base classes
-  TimIntGenAlpha::ReadRestart(step);
-  TimIntRedModels::ReadRestart(step);
+  TimIntGenAlpha::read_restart(step);
+  TimIntRedModels::read_restart(step);
 
   return;
 }

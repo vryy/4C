@@ -191,7 +191,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Evaluate(DRT::ELEMENTS::Fluid* e
   CORE::LINALG::Matrix<(nsd_ + 1) * nen_, 1> elevec1(elevec1_epetra, true);
   // elemat2 and elevec2+3 are currently not in use
 
-  Base::PreEvaluate(params, ele, discretization);
+  Base::pre_evaluate(params, ele, discretization);
 
   // call inner evaluate (does not know about DRT element or discretization object)
   int result = Base::Evaluate(params, ebofoaf, elemat1, elevec1, evelaf, epreaf, evelnp, eveln,
@@ -278,7 +278,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::evaluate_pressure_equation(
 }
 
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* ele,
+int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::evaluate_od(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
     Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -410,10 +410,10 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(DRT::ELEMENTS::Fluid*
   CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
       ele, Base::xyze_);
 
-  Base::PreEvaluate(params, ele, discretization);
+  Base::pre_evaluate(params, ele, discretization);
 
   // call inner evaluate (does not know about DRT element or discretization object)
-  int result = EvaluateOD(params, ebofoaf, elemat1, elevec1, evelaf, epreaf, evelnp, eveln, eprenp,
+  int result = evaluate_od(params, ebofoaf, elemat1, elevec1, evelaf, epreaf, evelnp, eveln, eprenp,
       epren, emhist, echist, epressnp_timederiv, epressam_timederiv, epressn_timederiv, eaccam,
       edispnp, edispn, egridv, egridvn, escaaf, &eporositynp, mat, ele->IsAle(), intpoints);
 
@@ -421,7 +421,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(DRT::ELEMENTS::Fluid*
 }
 
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::evaluate_od(Teuchos::ParameterList& params,
     const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
     CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& elemat1,
     CORE::LINALG::Matrix<(nsd_ + 1) * nen_, 1>& elevec1,
@@ -448,7 +448,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(Teuchos::ParameterLis
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
   // ---------------------------------------------------------------------
-  SysmatOD(params, ebofoaf, evelaf, evelnp, eveln, epreaf, eprenp, epren, emhist, echist,
+  sysmat_od(params, ebofoaf, evelaf, evelnp, eveln, epreaf, eprenp, epren, emhist, echist,
       epressnp_timederiv, epressam_timederiv, epressn_timederiv, eaccam, edispnp, edispn, egridv,
       egridvn, escaaf, eporositynp, elemat1, elevec1, mat, isale, intpoints);
 
@@ -456,7 +456,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(Teuchos::ParameterLis
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::SysmatOD(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::sysmat_od(Teuchos::ParameterList& params,
     const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf, const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
     const CORE::LINALG::Matrix<nsd_, nen_>& evelnp, const CORE::LINALG::Matrix<nsd_, nen_>& eveln,
     const CORE::LINALG::Matrix<nen_, 1>& epreaf, const CORE::LINALG::Matrix<nen_, 1>& eprenp,

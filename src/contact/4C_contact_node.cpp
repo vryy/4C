@@ -123,12 +123,12 @@ CONTACT::AUG::NodeDataContainer::NodeDataContainer(
     Node& parentNode, const int slMaElementAreaRatio, const bool isTriangleOnMaster)
     : kappa_(1.0e12), w_gap_(1.0e12), aug_a_(1.0e12), parent_node_(parentNode)
 {
-  mentries_ = ApproximateMEntries(slMaElementAreaRatio, isTriangleOnMaster);
+  mentries_ = approximate_m_entries(slMaElementAreaRatio, isTriangleOnMaster);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CONTACT::AUG::NodeDataContainer::ApproximateMEntries(
+int CONTACT::AUG::NodeDataContainer::approximate_m_entries(
     const int slMaElementAreaRatio, const bool isTriangleOnMaster) const
 {
   // number of adjacent slave elements
@@ -735,7 +735,7 @@ void CONTACT::Node::initialize_data_container()
   {
     const int* snodeIds = Elements()[i]->NodeIds();
     const DRT::Node* const* nodes = Elements()[i]->Nodes();
-    for (int j = 0; j < Elements()[i]->NumNode(); ++j)
+    for (int j = 0; j < Elements()[i]->num_node(); ++j)
     {
       const int numdof = Elements()[i]->NumDofPerNode(*(nodes[j]));
 
@@ -948,7 +948,7 @@ void CONTACT::Node::build_averaged_edge_tangent()
   std::vector<int> dummy;
   for (int edges = 0; edges < (int)lineElementsS.size(); ++edges)
   {
-    for (int count = 0; count < lineElementsS[edges]->NumNode(); ++count)
+    for (int count = 0; count < lineElementsS[edges]->num_node(); ++count)
     {
       if (lineElementsS[edges]->Nodes()[count]->Id() == Id()) dummy.push_back(edges);
     }
@@ -1197,7 +1197,7 @@ void CONTACT::Node::BuildAveragedNormal()
     FOUR_C_THROW("Contact problems must be either 2D or 3D");
 
   // build linearization of averaged nodal normal and tangents
-  DerivAveragedNormal(elens, length, ltxi);
+  deriv_averaged_normal(elens, length, ltxi);
 
   return;
 }
@@ -1205,7 +1205,7 @@ void CONTACT::Node::BuildAveragedNormal()
 /*----------------------------------------------------------------------*
  |  Build directional deriv. of nodal normal + tangents       popp 09/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Node::DerivAveragedNormal(
+void CONTACT::Node::deriv_averaged_normal(
     CORE::LINALG::SerialDenseMatrix& elens, double length, double ltxi)
 {
   int nseg = NumElement();

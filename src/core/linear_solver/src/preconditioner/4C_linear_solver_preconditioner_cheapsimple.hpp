@@ -241,7 +241,7 @@ namespace CORE::LINEAR_SOLVER
     /*!
       \brief do one sweep of simple or simplec preconditioning without subsolves
     */
-    void CheapSimple(CORE::LINALG::ANA::Vector& vx, CORE::LINALG::ANA::Vector& px,
+    void cheap_simple(CORE::LINALG::ANA::Vector& vx, CORE::LINALG::ANA::Vector& px,
         CORE::LINALG::ANA::Vector& vb, CORE::LINALG::ANA::Vector& pb) const;
 
     Teuchos::ParameterList predict_solver_list_;  // list for primary solver

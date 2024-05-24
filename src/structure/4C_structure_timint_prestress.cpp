@@ -75,7 +75,7 @@ void STR::TimIntPrestress::UpdateStepElement()
       // action for elements
       p.set("action", "calc_struct_prestress_update");
       discret_->ClearState();
-      discret_->SetState(0, "residual displacement", zeros_);
+      discret_->set_state(0, "residual displacement", zeros_);
     }
     else
     {
@@ -90,7 +90,7 @@ void STR::TimIntPrestress::UpdateStepElement()
   p.set("delta time", (*dt_)[0]);
 
   // go to elements
-  discret_->SetState("displacement", (*dis_)(0));
+  discret_->set_state("displacement", (*dis_)(0));
   discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
 

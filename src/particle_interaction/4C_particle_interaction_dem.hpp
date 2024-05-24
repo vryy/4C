@@ -71,7 +71,7 @@ namespace PARTICLEINTERACTION
     void WriteRestart() const override;
 
     //! read restart of particle interaction handler
-    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader) override;
+    void read_restart(const std::shared_ptr<IO::DiscretizationReader> reader) override;
 
     //! insert interaction dependent states of all particle types
     void insert_particle_states_of_particle_types(
@@ -101,7 +101,7 @@ namespace PARTICLEINTERACTION
     void communicate_interaction_history() const override;
 
     //! set current step size
-    void SetCurrentStepSize(const double currentstepsize) override;
+    void set_current_step_size(const double currentstepsize) override;
 
    private:
     //! init neighbor pair handler
@@ -111,28 +111,28 @@ namespace PARTICLEINTERACTION
     void init_history_pair_handler();
 
     //! init contact handler
-    void InitContactHandler();
+    void init_contact_handler();
 
     //! init adhesion handler
-    void InitAdhesionHandler();
+    void init_adhesion_handler();
 
     //! setup particle interaction writer
     void setup_particle_interaction_writer();
 
     //! set initial radius
-    void SetInitialRadius();
+    void set_initial_radius();
 
     //! set initial mass
-    void SetInitialMass();
+    void set_initial_mass();
 
     //! set initial inertia
-    void SetInitialInertia();
+    void set_initial_inertia();
 
     //! clear force and moment states of particles
     void clear_force_and_moment_states() const;
 
     //! compute acceleration from force and moment
-    void ComputeAcceleration() const;
+    void compute_acceleration() const;
 
     //! evaluate particle energy
     void evaluate_particle_energy() const;

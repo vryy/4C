@@ -23,20 +23,20 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::ActiveSet::Update(const CONTACT::ParamsInterface& cparams)
 {
-  if (SkipUpdate()) return;
+  if (skip_update()) return;
 
-  const Status gstatus = UpdateStatus(cparams);
+  const Status gstatus = update_status(cparams);
 
-  UpdateMaps(cparams);
+  update_maps(cparams);
 
-  PostUpdate(cparams, gstatus);
+  post_update(cparams, gstatus);
 
   return;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::AUG::ActiveSet::SkipUpdate() const
+bool CONTACT::AUG::ActiveSet::skip_update() const
 {
   const DataContainer& data = strategy_.Data();
   const plain_interface_set& interfaces = strategy_.Interfaces();
@@ -79,7 +79,7 @@ bool CONTACT::AUG::ActiveSet::SkipUpdate() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ActiveSet::PostUpdate(
+void CONTACT::AUG::ActiveSet::post_update(
     const CONTACT::ParamsInterface& cparams, const enum Status gstatus)
 {
   DataContainer& data = strategy_.Data();
@@ -87,7 +87,7 @@ void CONTACT::AUG::ActiveSet::PostUpdate(
   // check the convergence of the active set
   data.is_active_set_converged() = data.GActiveNodeRowMap().SameAs(data.g_old_active_slave_nodes());
 
-  SanityCheck(cparams, gstatus);
+  sanity_check(cparams, gstatus);
 
   if (gstatus == Status::changed)
   {
@@ -131,7 +131,7 @@ void CONTACT::AUG::ActiveSet::PostUpdate(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::UpdateStatus(
+CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::update_status(
     const CONTACT::ParamsInterface& cparams) const
 {
   plain_interface_set& interfaces = strategy_.Interfaces();
@@ -197,7 +197,7 @@ CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::UpdateStatus(
     }
   }  // end loop over all interfaces
 
-  Status lstatus = UpdateInitialStatus(cparams, istatus);
+  Status lstatus = update_initial_status(cparams, istatus);
 
   // make local active set status global
   enum Status gstatus = Status::unevaluated;
@@ -213,7 +213,7 @@ CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::UpdateStatus(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::UpdateInitialStatus(
+CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::update_initial_status(
     const CONTACT::ParamsInterface& cparams, const std::vector<enum Status>& istatus) const
 {
   static std::vector<std::vector<std::pair<int, bool>>> init_active_list;
@@ -390,7 +390,7 @@ void CONTACT::AUG::ActiveSet::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ActiveSet::UpdateMaps(const CONTACT::ParamsInterface& cparams)
+void CONTACT::AUG::ActiveSet::update_maps(const CONTACT::ParamsInterface& cparams)
 {
   DataContainer& data = strategy_.Data();
   plain_interface_set& interfaces = strategy_.Interfaces();
@@ -435,7 +435,7 @@ void CONTACT::AUG::ActiveSet::UpdateMaps(const CONTACT::ParamsInterface& cparams
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ActiveSet::SanityCheck(
+void CONTACT::AUG::ActiveSet::sanity_check(
     const CONTACT::ParamsInterface& cparams, const enum Status gstatus) const
 {
   const DataContainer& data = strategy_.Data();
@@ -444,7 +444,7 @@ void CONTACT::AUG::ActiveSet::SanityCheck(
     FOUR_C_THROW(
         "The convergence state of the active set has not been correctly "
         "detected: %s",
-        Status2String(gstatus).c_str());
+        status2_string(gstatus).c_str());
 
   IO::cout << "old number of active nodes:     "
            << data.g_old_active_slave_nodes_ptr()->NumGlobalElements() << IO::endl;

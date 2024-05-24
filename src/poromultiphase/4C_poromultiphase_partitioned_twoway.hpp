@@ -39,10 +39,10 @@ namespace POROMULTIPHASE
     void SetupSystem() override;
 
     /// time step of coupled problem
-    void TimeStep() override { OuterLoop(); };
+    void TimeStep() override { outer_loop(); };
 
     /// read restart
-    void ReadRestart(int restart) override;
+    void read_restart(int restart) override;
 
     // update
     void UpdateAndOutput() override;
@@ -52,21 +52,21 @@ namespace POROMULTIPHASE
 
    private:
     //! perform iteration loop between fields
-    virtual void OuterLoop();
+    virtual void outer_loop();
 
     //! perform iteration step of structure field and set the new disp and vel states in the fluid
     //! field
-    virtual void DoStructStep();
+    virtual void do_struct_step();
 
     //! perform iteration step of scatra field and set the new phi state in the structure field
-    virtual void DoFluidStep();
+    virtual void do_fluid_step();
 
     //! update the current states in every iteration
     //! states are set to the last solutions obtained
-    virtual void IterUpdateStates();
+    virtual void iter_update_states();
 
     //! convergence check of outer loop
-    virtual bool ConvergenceCheck(int itnum);
+    virtual bool convergence_check(int itnum);
 
     //! perform relaxation
     void PerformRelaxation(Teuchos::RCP<const Epetra_Vector> phi, const int itnum) override;
@@ -75,7 +75,7 @@ namespace POROMULTIPHASE
     void set_relaxed_fluid_solution() override;
 
     /// perform aitken
-    void AitkenRelaxation(double& omega, const int itnum);
+    void aitken_relaxation(double& omega, const int itnum);
 
     //! pressure increment of the outer loop
     Teuchos::RCP<Epetra_Vector> phiincnp_;

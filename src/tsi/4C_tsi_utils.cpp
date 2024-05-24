@@ -126,7 +126,7 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
   // set degrees of freedom in the discretization
   if (!structdis->Filled() or !structdis->HaveDofs())
   {
-    structdis->FillComplete();
+    structdis->fill_complete();
     Epetra_Map nc = *(structdis->NodeColMap());
     Epetra_Map nr = *(structdis->NodeRowMap());
     structdis->Redistribute(nr, nc);
@@ -135,7 +135,7 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
   // access the thermo discretization
   Teuchos::RCP<DRT::Discretization> thermdis;
   thermdis = GLOBAL::Problem::Instance()->GetDis("thermo");
-  if (!thermdis->Filled()) thermdis->FillComplete();
+  if (!thermdis->Filled()) thermdis->fill_complete();
 
   // access the problem-specific parameter list
   const Teuchos::ParameterList& tsidyn = GLOBAL::Problem::Instance()->TSIDynamicParams();
@@ -154,7 +154,7 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
           "empty!");
 
     DRT::UTILS::CloneDiscretization<TSI::UTILS::ThermoStructureCloneStrategy>(structdis, thermdis);
-    thermdis->FillComplete();
+    thermdis->fill_complete();
 
     // connect degrees of freedom for periodic boundary conditions
     {
@@ -187,8 +187,8 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
     if (structdis->AddDofSet(thermodofset) != 1)
       FOUR_C_THROW("unexpected dof sets in structure field");
 
-    structdis->FillComplete(true, true, true);
-    thermdis->FillComplete(true, true, true);
+    structdis->fill_complete(true, true, true);
+    thermdis->fill_complete(true, true, true);
 
     TSI::UTILS::SetMaterialPointersMatchingGrid(structdis, thermdis);
   }
@@ -199,10 +199,10 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
           "MATCHINGGRID is set to 'yes' in TSI DYNAMIC section, but thermo discretization is not "
           "empty!");
 
-    // first call FillComplete for single discretizations.
+    // first call fill_complete for single discretizations.
     // This way the physical dofs are numbered successively
-    structdis->FillComplete();
-    thermdis->FillComplete();
+    structdis->fill_complete();
+    thermdis->fill_complete();
 
     // build auxiliary dofsets, i.e. pseudo dofs on each discretization
     const int ndofpernode_thermo = 1;
@@ -219,13 +219,13 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
     if (thermdis->AddDofSet(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in thermo field");
 
     // call assign_degrees_of_freedom also for auxiliary dofsets
-    // note: the order of FillComplete() calls determines the gid numbering!
+    // note: the order of fill_complete() calls determines the gid numbering!
     // 1. structure dofs
     // 2. thermo dofs
     // 3. structure auxiliary dofs
     // 4. thermo auxiliary dofs
-    structdis->FillComplete(true, false, false);
-    thermdis->FillComplete(true, false, false);
+    structdis->fill_complete(true, false, false);
+    thermdis->fill_complete(true, false, false);
   }
 
 }  // SetupTSI()

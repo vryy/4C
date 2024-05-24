@@ -15,9 +15,9 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureNOXCorrectionWrapper::PrepareTimeStep()
+void ADAPTER::StructureNOXCorrectionWrapper::prepare_time_step()
 {
-  StructureWrapper::PrepareTimeStep();
+  StructureWrapper::prepare_time_step();
   if (disstepinc_ != Teuchos::null) disstepinc_->PutScalar(0.);
 }
 

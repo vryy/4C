@@ -828,7 +828,7 @@ void CORE::GEO::CUT::COLOREDGRAPH::Graph::Fill(const std::vector<int>& split_tra
 void CORE::GEO::CUT::COLOREDGRAPH::CycleList::AddPoints(Graph& graph, Graph& used, Graph& cycle,
     plain_int_set& free, const std::vector<std::pair<Point*, Point*>>& all_lines)
 {
-  PushBack(cycle);
+  push_back(cycle);
 
   // while there are elements to loop over  ( while there are still "cutted-parts" of the element)
   while (free.size() > 0)
@@ -869,7 +869,7 @@ void CORE::GEO::CUT::COLOREDGRAPH::CycleList::AddPoints(Graph& graph, Graph& use
       {
         if (matching.size() == 1)
         {
-          PushBack(c1);
+          push_back(c1);
 
           // this is happens when after finding split trace, both division along it produces same
           // cycles
@@ -893,8 +893,8 @@ void CORE::GEO::CUT::COLOREDGRAPH::CycleList::AddPoints(Graph& graph, Graph& use
           }
         }
 
-        PushBack(c1);
-        PushBack(c2);
+        push_back(c1);
+        push_back(c2);
 
         cycles_.erase(*ilist);
         found = true;
@@ -908,7 +908,7 @@ void CORE::GEO::CUT::COLOREDGRAPH::CycleList::AddPoints(Graph& graph, Graph& use
   }
 }
 
-void CORE::GEO::CUT::COLOREDGRAPH::CycleList::PushBack(Graph& g)
+void CORE::GEO::CUT::COLOREDGRAPH::CycleList::push_back(Graph& g)
 {
   cycles_.push_back(Cycle(g.Split()));
   Cycle& c = cycles_.back();

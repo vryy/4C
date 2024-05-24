@@ -87,14 +87,14 @@ namespace CORE::Dofsets
     {
       if (not sourcedis_->HaveGlobalNode(node.Id())) return 0;
       DRT::Node* sourcenode = sourcedis_->gNode(node.Id());
-      CheckIsAssigned();
+      check_is_assigned();
       return sourcedofset_->NumDofPerNode(*sourcenode);
     };
 
     /// Get number of dofs for given node
     int NumDof(const DRT::Node* node) const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return 0;
       DRT::Node* sourcenode = sourcedis_->gNode(node->Id());
       return sourcedofset_->NumDof(sourcenode);
@@ -103,7 +103,7 @@ namespace CORE::Dofsets
     /// Get number of dofs for given element
     int NumDof(const DRT::Element* element) const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       if (element->IsFaceElement()) return sourcedofset_->NumDof(element);
       if (not sourcedis_->HaveGlobalElement(element->Id())) return 0;
       DRT::Element* sourceele = sourcedis_->gElement(element->Id());
@@ -113,7 +113,7 @@ namespace CORE::Dofsets
     /// Get the gid of a dof for given node
     int Dof(const DRT::Node* node, int dof) const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return -1;
       DRT::Node* sourcenode = sourcedis_->gNode(node->Id());
       return sourcedofset_->Dof(sourcenode, dof);
@@ -122,7 +122,7 @@ namespace CORE::Dofsets
     /// Get the gid of all dofs of a node
     std::vector<int> Dof(const DRT::Node* node) const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return std::vector<int>();
       DRT::Node* sourcenode = sourcedis_->gNode(node->Id());
       return sourcedofset_->Dof(sourcenode);
@@ -134,7 +134,7 @@ namespace CORE::Dofsets
         unsigned nodaldofset  ///< number of nodal dof set of the node (currently !=0 only for XFEM)
     ) const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return;
       DRT::Node* sourcenode = sourcedis_->gNode(node->Id());
       return sourcedofset_->Dof(dof, sourcenode, nodaldofset);
@@ -143,7 +143,7 @@ namespace CORE::Dofsets
     /// Get the gid of all dofs of a element
     std::vector<int> Dof(const DRT::Element* element) const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       if (element->IsFaceElement()) return sourcedofset_->Dof(element);
       if (not sourcedis_->HaveGlobalElement(element->Id())) return std::vector<int>();
       DRT::Element* sourceele = sourcedis_->gElement(element->Id());
@@ -153,7 +153,7 @@ namespace CORE::Dofsets
     /// Get the gid of all dofs of a node
     void Dof(const DRT::Node* node, std::vector<int>& lm) const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return;
       DRT::Node* sourcenode = sourcedis_->gNode(node->Id());
       return sourcedofset_->Dof(sourcenode, lm);
@@ -165,7 +165,7 @@ namespace CORE::Dofsets
         std::vector<int>& lm         ///< already allocated vector to be filled with dof positions
     ) const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return;
       DRT::Node* sourcenode = sourcedis_->gNode(node->Id());
       return sourcedofset_->Dof(sourcenode, startindex, lm);
@@ -178,7 +178,7 @@ namespace CORE::Dofsets
         std::vector<int>& lm    ///< already allocated vector to be filled with DOF positions
     ) const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return;
       DRT::Node* sourcenode = sourcedis_->gNode(node->Id());
       DRT::Element* sourceele = sourcedis_->gElement(element->Id());
@@ -188,7 +188,7 @@ namespace CORE::Dofsets
     /// Get the gid of a dof for given element
     int Dof(const DRT::Element* element, int dof) const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       if (element->IsFaceElement()) return sourcedofset_->Dof(element, dof);
       if (not sourcedis_->HaveGlobalElement(element->Id())) return -1;
       DRT::Element* sourceele = sourcedis_->gElement(element->Id());
@@ -199,7 +199,7 @@ namespace CORE::Dofsets
     /// Get the gid of all dofs of a element
     void Dof(const DRT::Element* element, std::vector<int>& lm) const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       if (element->IsFaceElement()) return sourcedofset_->Dof(element, lm);
       if (not sourcedis_->HaveGlobalElement(element->Id())) return;
       DRT::Element* sourceele = sourcedis_->gElement(element->Id());
@@ -218,35 +218,35 @@ namespace CORE::Dofsets
     /// Get Number of Global Elements of degree of freedom row map
     int NumGlobalElements() const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       return sourcedofset_->NumGlobalElements();
     };
 
     /// Get degree of freedom row map
-    const Epetra_Map* DofRowMap() const override
+    const Epetra_Map* dof_row_map() const override
     {
-      CheckIsAssigned();
-      return sourcedofset_->DofRowMap();
+      check_is_assigned();
+      return sourcedofset_->dof_row_map();
     };
 
     /// Get degree of freedom column map
     const Epetra_Map* DofColMap() const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       return sourcedofset_->DofColMap();
     };
 
     /// Get maximum GID of degree of freedom row map
     int MaxAllGID() const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       return sourcedofset_->MaxAllGID();
     };
 
     /// Get minimum GID of degree of freedom row map
     int MinAllGID() const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       return sourcedofset_->MinAllGID();
     };
 
@@ -254,14 +254,14 @@ namespace CORE::Dofsets
     /// #static_dofsets_
     int MaxGIDinList(const Epetra_Comm& comm) const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       return sourcedofset_->MaxGIDinList(comm);
     };
 
     /// are the dof maps already initialized?
     bool Initialized() const override
     {
-      CheckIsAssigned();
+      check_is_assigned();
       return sourcedofset_->Initialized();
     };
 
@@ -269,7 +269,7 @@ namespace CORE::Dofsets
 
    private:
     /// check if \ref assign_degrees_of_freedom was called on parent dofset
-    void CheckIsAssigned() const;
+    void check_is_assigned() const;
 
     //! source discretization
     Teuchos::RCP<DRT::Discretization> sourcedis_;

@@ -75,13 +75,13 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> StuctureToAle(Teuchos::RCP<Epetra_Vector> iv) const;
 
     /// structure to ale mapping
-    Teuchos::RCP<Epetra_Vector> StructureToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
+    Teuchos::RCP<Epetra_Vector> structure_to_ale(Teuchos::RCP<const Epetra_Vector> iv) const;
 
     /// ale to structure mapping
-    Teuchos::RCP<Epetra_Vector> AleToStructure(Teuchos::RCP<Epetra_Vector> iv) const;
+    Teuchos::RCP<Epetra_Vector> ale_to_structure(Teuchos::RCP<Epetra_Vector> iv) const;
 
     /// ale to structure
-    Teuchos::RCP<Epetra_Vector> AleToStructure(Teuchos::RCP<const Epetra_Vector> iv) const;
+    Teuchos::RCP<Epetra_Vector> ale_to_structure(Teuchos::RCP<const Epetra_Vector> iv) const;
 
     /// coupling of structure and ale at the interface
     Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> coupsa_;
@@ -144,12 +144,12 @@ namespace FSI
         Teuchos::RCP<Epetra_Vector> deltadisp, Teuchos::RCP<Epetra_Vector> idisp_fluid,
         Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
 
-    void InitDopNormals();
+    void init_dop_normals();
 
-    std::map<int, CORE::LINALG::Matrix<9, 2>> CalcBackgroundDops(
+    std::map<int, CORE::LINALG::Matrix<9, 2>> calc_background_dops(
         Teuchos::RCP<DRT::Discretization> searchdis);
 
-    CORE::LINALG::Matrix<9, 2> CalcDop(DRT::Element& ele);
+    CORE::LINALG::Matrix<9, 2> calc_dop(DRT::Element& ele);
 
     std::vector<int> Search(
         DRT::Element& ele, std::map<int, CORE::LINALG::Matrix<9, 2>>& currentKDOPs);

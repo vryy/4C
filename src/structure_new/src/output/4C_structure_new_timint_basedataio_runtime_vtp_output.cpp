@@ -52,7 +52,7 @@ void STR::TIMINT::ParamsRuntimeVtpOutput::Init(
  *-----------------------------------------------------------------------------------------------*/
 void STR::TIMINT::ParamsRuntimeVtpOutput::Setup()
 {
-  FOUR_C_ASSERT(IsInit(), "Init() has not been called, yet!");
+  FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
 
   // Nothing to do here at the moment
 
@@ -61,9 +61,9 @@ void STR::TIMINT::ParamsRuntimeVtpOutput::Setup()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void STR::TIMINT::ParamsRuntimeVtpOutput::CheckInitSetup() const
+void STR::TIMINT::ParamsRuntimeVtpOutput::check_init_setup() const
 {
-  FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -66,7 +66,7 @@ namespace CONTACT
      defined by the slave normal at the slave element center.
 
      */
-    bool AuxiliaryPlane() override;
+    bool auxiliary_plane() override;
 
     /*!
      \brief Integrate the integration cells (3D)
@@ -364,7 +364,7 @@ namespace CONTACT
        - option CONSISTENT_DUAL_BOUND is not set
        - standard shape functions are used
      */
-    virtual void ConsistDualShape();
+    virtual void consist_dual_shape();
 
     //@}
    private:
@@ -398,7 +398,7 @@ namespace CONTACT
   class Coupling3dQuadManager : public MORTAR::Coupling3dQuadManager, public Coupling3dManager
   {
     // resolve ambiguity of multiple inheritance
-    using CONTACT::Coupling3dManager::ConsistDualShape;
+    using CONTACT::Coupling3dManager::consist_dual_shape;
     using CONTACT::Coupling3dManager::Coupling;
     using MORTAR::Coupling3dQuadManager::Comm;
     using MORTAR::Coupling3dQuadManager::IntType;

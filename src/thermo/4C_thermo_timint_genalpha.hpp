@@ -112,7 +112,7 @@ namespace THR
     );
 
     //! Evaluate ordinary internal force
-    void ApplyForceInternal(const double time,    //!< evaluation time
+    void apply_force_internal(const double time,  //!< evaluation time
         const double dt,                          //!< step size
         const Teuchos::RCP<Epetra_Vector> temp,   //!< temperature state
         const Teuchos::RCP<Epetra_Vector> tempi,  //!< incremental temperatures

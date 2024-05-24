@@ -195,12 +195,12 @@ namespace ADAPTER
     virtual void matrix_row_col_transform();
 
     /// check setup call
-    const bool& IsSetup() const { return issetup_; };
+    const bool& is_setup() const { return issetup_; };
 
     /// check init and setup call
-    void CheckSetup() const override
+    void check_setup() const override
     {
-      if (!IsSetup()) FOUR_C_THROW("ERROR: Call Setup() first!");
+      if (!is_setup()) FOUR_C_THROW("ERROR: Call Setup() first!");
     }
 
    protected:

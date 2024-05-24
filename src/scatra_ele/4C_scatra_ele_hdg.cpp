@@ -568,7 +568,7 @@ DRT::Element* DRT::ELEMENTS::ScaTraHDGBoundary::Clone() const
  *----------------------------------------------------------------------*/
 CORE::FE::CellType DRT::ELEMENTS::ScaTraHDGBoundary::Shape() const
 {
-  return CORE::FE::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
+  return CORE::FE::getShapeOfBoundaryElement(num_node(), ParentMasterElement()->Shape());
 }
 
 
@@ -665,7 +665,7 @@ int DRT::ELEMENTS::ScaTraHDGBoundary::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a surface/line Neumann boundary condition  hoermann 09/15 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ScaTraHDGBoundary::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::ScaTraHDGBoundary::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -675,12 +675,12 @@ int DRT::ELEMENTS::ScaTraHDGBoundary::EvaluateNeumann(Teuchos::ParameterList& pa
   params.set<CORE::Conditions::Condition*>("condition", &condition);
 
   // build location array from location vector
-  //(this a little ugly. one could fix this by introducing a EvaluateNeumann() method
+  //(this a little ugly. one could fix this by introducing a evaluate_neumann() method
   // with LocationArray as input in the DRT::Element ...)
   LocationArray la(1);
   la[0].lm_ = lm;
 
-  DRT::ELEMENTS::ScaTraHDGBoundaryImplInterface::Impl(this)->EvaluateNeumann(
+  DRT::ELEMENTS::ScaTraHDGBoundaryImplInterface::Impl(this)->evaluate_neumann(
       this, params, discretization, la, *elemat1, elevec1);
 
   return 0;
@@ -783,7 +783,7 @@ DRT::Element* DRT::ELEMENTS::ScaTraHDGIntFace::Clone() const
 CORE::FE::CellType DRT::ELEMENTS::ScaTraHDGIntFace::Shape() const
 {
   // could be called for master parent or slave parent element, doesn't matter
-  return CORE::FE::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
+  return CORE::FE::getShapeOfBoundaryElement(num_node(), ParentMasterElement()->Shape());
 }
 
 /*----------------------------------------------------------------------*
@@ -830,7 +830,7 @@ void DRT::ELEMENTS::ScaTraHDGIntFace::PatchLocationVector(
   // *this ScaTraHDGIntFace element only once (no duplicates)
 
   //-----------------------------------------------------------------------
-  const int m_numnode = ParentMasterElement()->NumNode();
+  const int m_numnode = ParentMasterElement()->num_node();
   DRT::Node** m_nodes = ParentMasterElement()->Nodes();
 
   if (m_numnode != static_cast<int>(nds_master.size()))
@@ -839,7 +839,7 @@ void DRT::ELEMENTS::ScaTraHDGIntFace::PatchLocationVector(
   }
 
   //-----------------------------------------------------------------------
-  const int s_numnode = ParentSlaveElement()->NumNode();
+  const int s_numnode = ParentSlaveElement()->num_node();
   DRT::Node** s_nodes = ParentSlaveElement()->Nodes();
 
   if (s_numnode != static_cast<int>(nds_slave.size()))
@@ -848,7 +848,7 @@ void DRT::ELEMENTS::ScaTraHDGIntFace::PatchLocationVector(
   }
 
   //-----------------------------------------------------------------------
-  const int f_numnode = NumNode();
+  const int f_numnode = num_node();
   DRT::Node** f_nodes = Nodes();
 
   //-----------------------------------------------------------------------
@@ -1056,7 +1056,7 @@ int DRT::ELEMENTS::ScaTraHDGIntFace::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a surface/line Neumann boundary condition  hoermann 09/15 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ScaTraHDGIntFace::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::ScaTraHDGIntFace::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)

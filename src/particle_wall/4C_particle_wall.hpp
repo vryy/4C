@@ -125,7 +125,7 @@ namespace PARTICLEWALL
      *
      * \param[in] restartstep restart step
      */
-    virtual void ReadRestart(const int restartstep);
+    virtual void read_restart(const int restartstep);
 
     /*!
      * \brief insert wall handler dependent states of all particle types
@@ -245,7 +245,7 @@ namespace PARTICLEWALL
      *
      * \author Sebastian Fuchs \date 05/2019
      */
-    virtual void InitWallDataState() final;
+    virtual void init_wall_data_state() final;
 
     /*!
      * \brief create wall discretization runtime vtu writer

@@ -24,13 +24,13 @@ FOUR_C_NAMESPACE_OPEN
 bool DRT::ELEMENTS::Beam3r::ReadElement(
     const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
-  /* the triad field is discretized with Lagrange polynomials of order NumNode()-1;
+  /* the triad field is discretized with Lagrange polynomials of order num_node()-1;
    * the centerline is either discretized in the same way or with 3rd order Hermite polynomials;
    * we thus make a difference between nnodetriad and nnodecl;
    * assumptions: nnodecl<=nnodetriad
    * first nodes with local ID 0...nnodecl-1 are used for interpolation of centerline AND triad
    * field*/
-  const int nnodetriad = NumNode();
+  const int nnodetriad = num_node();
 
 
   // read number of material model and cross-section specs

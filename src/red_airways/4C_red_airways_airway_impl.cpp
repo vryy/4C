@@ -460,18 +460,18 @@ namespace
 
     // loop over all nodes
     // pext is the average pressure over the nodes
-    for (int i = 0; i < ele->NumNode(); i++)
+    for (int i = 0; i < ele->num_node(); i++)
     {
       double pextVal = 0.0;
       // get Pext at time step n
       GetCurveValAtCond<distype>(pextVal, ele->Nodes()[i], "RedAirwayPrescribedExternalPressure",
           "boundarycond", "ExternalPressure", time - dt);
-      pextn += pextVal / double(ele->NumNode());
+      pextn += pextVal / double(ele->num_node());
 
       // get Pext at time step n+1e
       GetCurveValAtCond<distype>(pextVal, ele->Nodes()[i], "RedAirwayPrescribedExternalPressure",
           "boundarycond", "ExternalPressure", time);
-      pextnp += pextVal / double(ele->NumNode());
+      pextnp += pextVal / double(ele->num_node());
     }
 
     // Routine to compute pextnp andd pextn from neighbourung acinus pressure
@@ -567,7 +567,8 @@ DRT::ELEMENTS::RedAirwayImplInterface* DRT::ELEMENTS::RedAirwayImplInterface::Im
       return airway;
     }
     default:
-      FOUR_C_THROW("shape %d (%d nodes) not supported", red_airway->Shape(), red_airway->NumNode());
+      FOUR_C_THROW(
+          "shape %d (%d nodes) not supported", red_airway->Shape(), red_airway->num_node());
       break;
   }
   return nullptr;
@@ -997,7 +998,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
   // ---------------------------------------------------------------------------------
   // Resolve the BCs
   // ---------------------------------------------------------------------------------
-  for (int i = 0; i < ele->NumNode(); i++)
+  for (int i = 0; i < ele->num_node(); i++)
   {
     if (ele->Nodes()[i]->Owner() == myrank)
     {
@@ -1587,7 +1588,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
   // ---------------------------------------------------------------------------------
   // Resolve the BCs
   // ---------------------------------------------------------------------------------
-  for (int i = 0; i < ele->NumNode(); i++)
+  for (int i = 0; i < ele->num_node(); i++)
   {
     if (ele->Nodes()[i]->Owner() == myrank)
     {

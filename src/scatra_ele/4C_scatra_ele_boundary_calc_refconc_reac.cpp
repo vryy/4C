@@ -63,17 +63,17 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::FacFor
     DRT::Discretization& discretization  ///< discretization
 )
 {
-  const DRT::Element* pele = bele->ParentElement();
+  const DRT::Element* pele = bele->parent_element();
 
   double J = 1.0;
   // only 3D cases:
   if (bele->Shape() == CORE::FE::CellType::tri3)
   {
     if (pele->Shape() == CORE::FE::CellType::tet4)
-      J = CalcJatIntPoint<CORE::FE::CellType::tri3, CORE::FE::CellType::tet4>(
+      J = calc_jat_int_point<CORE::FE::CellType::tri3, CORE::FE::CellType::tet4>(
           iquad, bele, pele, params, discretization);
     else if (pele->Shape() == CORE::FE::CellType::pyramid5)
-      J = CalcJatIntPoint<CORE::FE::CellType::tri3, CORE::FE::CellType::pyramid5>(
+      J = calc_jat_int_point<CORE::FE::CellType::tri3, CORE::FE::CellType::pyramid5>(
           iquad, bele, pele, params, discretization);
     else
       FOUR_C_THROW("Parent element not supported here!");
@@ -81,10 +81,10 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::FacFor
   else if (bele->Shape() == CORE::FE::CellType::quad4)
   {
     if (pele->Shape() == CORE::FE::CellType::hex8)
-      J = CalcJatIntPoint<CORE::FE::CellType::quad4, CORE::FE::CellType::hex8>(
+      J = calc_jat_int_point<CORE::FE::CellType::quad4, CORE::FE::CellType::hex8>(
           iquad, bele, pele, params, discretization);
     else if (pele->Shape() == CORE::FE::CellType::pyramid5)
-      J = CalcJatIntPoint<CORE::FE::CellType::quad4, CORE::FE::CellType::pyramid5>(
+      J = calc_jat_int_point<CORE::FE::CellType::quad4, CORE::FE::CellType::pyramid5>(
           iquad, bele, pele, params, discretization);
     else
       FOUR_C_THROW("Parent element not supported here!");
@@ -101,7 +101,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::FacFor
  *---------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
-double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::CalcJatIntPoint(
+double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::calc_jat_int_point(
     const int iquad,                     ///< current boundary integration point
     const DRT::FaceElement* bele,        ///< current boundary element
     const DRT::Element* pele,            ///< current parent element

@@ -69,7 +69,7 @@ namespace DRT
      * of surface/boundary elements. They can be of any 2d shape (quad4,quad9,tri3,...)
      *
      * The number of dof per node is set to 3 per default, so we can define displacement vectors by
-     * using FillComplete on the boundary discretization. Furthermore numdofpernode can be adapted
+     * using fill_complete on the boundary discretization. Furthermore numdofpernode can be adapted
      * if necessary.
      *
      */
@@ -101,9 +101,9 @@ namespace DRT
       CORE::FE::CellType Shape() const override;
       int NumLine() const override
       {
-        if (NumNode() == 9 || NumNode() == 8 || NumNode() == 4)
+        if (num_node() == 9 || num_node() == 8 || num_node() == 4)
           return 4;
-        else if (NumNode() == 3 || NumNode() == 6)
+        else if (num_node() == 3 || num_node() == 6)
           return 3;
         else
         {
@@ -139,7 +139,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec2,
           CORE::LINALG::SerialDenseVector& elevec3) override;
 
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -162,7 +162,7 @@ namespace DRT
 
         \param numdofpernode: number of degress of freedom for one node
        */
-      virtual void SetNumDofPerNode(int numdofpernode) { numdofpernode_ = numdofpernode; }
+      virtual void set_num_dof_per_node(int numdofpernode) { numdofpernode_ = numdofpernode; }
 
       int numdofpernode_;  ///< number of degrees of freedom
 
@@ -209,7 +209,7 @@ namespace DRT
       inline void spatial_configuration(
           CORE::LINALG::SerialDenseMatrix& x, const std::vector<double> disp) const
       {
-        const int numnode = NumNode();
+        const int numnode = num_node();
         for (int i = 0; i < numnode; ++i)
         {
           x(i, 0) = Nodes()[i]->X()[0] + disp[i * 3 + 0];
@@ -220,15 +220,15 @@ namespace DRT
       }
 
       //! Submethod to compute the enclosed volume for volume constraint boundary condition
-      double ComputeConstrVols(
+      double compute_constr_vols(
           const CORE::LINALG::SerialDenseMatrix& xc,  ///< current configuration
           const int numnode                           ///< num nodes
       );
 
       //! Submethod to compute constraint volume and its first and second derivatives w.r.t. the
       //! displacements
-      void ComputeVolDeriv(const CORE::LINALG::SerialDenseMatrix& x,  ///< spatial configuration
-          const int numnode,                                          ///< number of nodes
+      void compute_vol_deriv(const CORE::LINALG::SerialDenseMatrix& x,  ///< spatial configuration
+          const int numnode,                                            ///< number of nodes
           const int ndof,                                        ///< number of degrees of freedom
           double& V,                                             ///< volume
           Teuchos::RCP<CORE::LINALG::SerialDenseVector> Vdiff,   ///< first derivative
@@ -247,7 +247,7 @@ namespace DRT
       Bele3& operator=(const Bele3& old);
 
       //! set number of gauss points to element shape default
-      CORE::FE::GaussRule2D getOptimalGaussrule() const;
+      CORE::FE::GaussRule2D get_optimal_gaussrule() const;
 
     };  // class Bele3
 
@@ -357,7 +357,7 @@ namespace DRT
 
       //! @name Evaluate methods
 
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -370,7 +370,7 @@ namespace DRT
 
         \param numdofpernode: number of degress of freedom for one node
        */
-      virtual void SetNumDofPerNode(int numdofpernode) { numdofpernode_ = numdofpernode; }
+      virtual void set_num_dof_per_node(int numdofpernode) { numdofpernode_ = numdofpernode; }
 
       int numdofpernode_;  ///< number of degrees of freedom
 
@@ -390,7 +390,7 @@ namespace DRT
           const CORE::LINALG::SerialDenseMatrix deriv, const int iel);
 
       //! Get Rule for Gaussintegration according to DRT::UTIL
-      CORE::FE::GaussRule1D getOptimalGaussrule(const CORE::FE::CellType& distype);
+      CORE::FE::GaussRule1D get_optimal_gaussrule(const CORE::FE::CellType& distype);
 
       //! integrate shape functions over a line
       void integrate_shape_function(Teuchos::ParameterList& params,

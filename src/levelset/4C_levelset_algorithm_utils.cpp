@@ -39,7 +39,7 @@ void SCATRA::LevelSetAlgorithm::SetVelocityField(bool init)
   // note: This function is only called from the level-set dyn. This is ok, since
   //       we only want to initialize conveln_ at the beginning of the simulation.
   //       for the remainder, it is updated as usual. For the dependent velocity fields
-  //       the base class function is called in PrepareTimeStep().
+  //       the base class function is called in prepare_time_step().
 }
 
 
@@ -65,7 +65,7 @@ void SCATRA::LevelSetAlgorithm::SetVelocityField(Teuchos::RCP<const Epetra_Vecto
 
 
 /*----------------------------------------------------------------------*
- | add problem depended params for AssembleMatAndRHS    rasthofer 09/13 |
+ | add problem depended params for assemble_mat_and_rhs    rasthofer 09/13 |
  *----------------------------------------------------------------------*/
 void SCATRA::LevelSetAlgorithm::add_problem_specific_parameters_and_vectors(
     Teuchos::ParameterList& params)
@@ -80,9 +80,9 @@ void SCATRA::LevelSetAlgorithm::add_problem_specific_parameters_and_vectors(
     if (reinitaction_ == INPAR::SCATRA::reinitaction_sussman)
     {
       // set initial phi, i.e., solution of level-set equation
-      discret_->SetState("phizero", initialphireinit_);
+      discret_->set_state("phizero", initialphireinit_);
       // TODO: RM if not needed
-      discret_->SetState("phin", phin_);
+      discret_->set_state("phin", phin_);
 
 #ifndef USE_PHIN_FOR_VEL
       if (useprojectedreinitvel_ == INPAR::SCATRA::vel_reinit_node_based)
@@ -113,7 +113,7 @@ void SCATRA::LevelSetAlgorithm::add_problem_specific_parameters_and_vectors(
 /*----------------------------------------------------------------------*
  | capture interface                                    rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::CaptureInterface(
+void SCATRA::LevelSetAlgorithm::capture_interface(
     std::map<int, CORE::GEO::BoundaryIntCells>& interface, const bool writetofile)
 {
   double volminus = 0.0;
@@ -236,7 +236,7 @@ void SCATRA::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
         eleparams.set<int>("calcerrorflag", calcerr);
 
         // get initial field
-        const Epetra_Map* dofrowmap = discret_->DofRowMap();
+        const Epetra_Map* dofrowmap = discret_->dof_row_map();
         Teuchos::RCP<Epetra_Vector> phiref = Teuchos::rcp(new Epetra_Vector(*dofrowmap, true));
 
         // get function
@@ -267,8 +267,8 @@ void SCATRA::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
 
         // set vector values needed by elements
         discret_->ClearState();
-        discret_->SetState("phinp", phinp_);
-        discret_->SetState("phiref", phiref);
+        discret_->set_state("phinp", phinp_);
+        discret_->set_state("phiref", phiref);
 
         // get error and volume
         Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors =
@@ -451,8 +451,8 @@ void SCATRA::LevelSetAlgorithm::apply_contact_point_boundary_condition()
   }
 
   // update velocity vectors
-  discret_->SetState(NdsVel(), "convective velocity field", convel_new);
-  discret_->SetState(NdsVel(), "velocity field", convel_new);
+  discret_->set_state(NdsVel(), "convective velocity field", convel_new);
+  discret_->set_state(NdsVel(), "velocity field", convel_new);
 
   return;
 }
@@ -475,14 +475,14 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
       discret_->GetState(NdsVel(), "convective velocity field");
   if (convel_col == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
   Teuchos::RCP<Epetra_Vector> convel =
-      Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(NdsVel()), true));
+      Teuchos::rcp(new Epetra_Vector(*discret_->dof_row_map(NdsVel()), true));
   CORE::LINALG::Export(*convel_col, *convel);
 
   // temporary vector for convective velocity (based on dofrowmap of standard (non-XFEM) dofset)
   // remark: operations must not be performed on 'convel', because the vector is accessed by both
   //         master and slave nodes, if periodic bounday conditions are present
   Teuchos::RCP<Epetra_Vector> conveltmp =
-      Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(NdsVel()), true));
+      Teuchos::rcp(new Epetra_Vector(*discret_->dof_row_map(NdsVel()), true));
 
   const int numproc = discret_->Comm().NumProc();
   std::vector<int> allproc(numproc);
@@ -586,7 +586,7 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
         bool gotpositivephi = false;
         bool gotnegativephi = false;
 
-        for (int inode = 0; inode < ele->NumNode(); ++inode)
+        for (int inode = 0; inode < ele->num_node(); ++inode)
         {
           const int nodegid = nodeids[inode];
           DRT::Node* node = discret_->gNode(nodegid);
@@ -637,7 +637,7 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
       const int elelid = discret_->ElementColMap()->LID(*eleit);
       DRT::Element* ele = discret_->lColElement(elelid);
       DRT::Node** nodes = ele->Nodes();
-      for (int inode = 0; inode < ele->NumNode(); ++inode)
+      for (int inode = 0; inode < ele->num_node(); ++inode)
       {
         DRT::Node* node = nodes[inode];
 
@@ -898,8 +898,8 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
   }
 
   // update velocity vectors
-  discret_->SetState(NdsVel(), "convective velocity field", conveltmp);
-  discret_->SetState(NdsVel(), "velocity field", conveltmp);
+  discret_->set_state(NdsVel(), "convective velocity field", conveltmp);
+  discret_->set_state(NdsVel(), "velocity field", conveltmp);
 
 
   return;
@@ -913,7 +913,7 @@ void SCATRA::LevelSetAlgorithm::mass_center_using_smoothing()
 {
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("phinp", phinp_);
+  discret_->set_state("phinp", phinp_);
 
   // create the parameters for the error calculation
   Teuchos::ParameterList eleparams;
@@ -1003,7 +1003,7 @@ void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   // get a vector layout from the discretization to construct matching
   // vectors and matrices: local <-> global dof numbering
   // -------------------------------------------------------------------
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // initialize standard (stabilized) system matrix (and save its graph!)
   // in standard case, but do not save the graph if fine-scale subgrid

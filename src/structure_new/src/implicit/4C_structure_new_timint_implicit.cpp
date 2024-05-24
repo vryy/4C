@@ -36,7 +36,7 @@ FOUR_C_NAMESPACE_OPEN
 void STR::TIMINT::Implicit::Setup()
 {
   // safety check
-  CheckInit();
+  check_init();
 
   STR::TIMINT::Base::Setup();
 
@@ -82,9 +82,9 @@ void STR::TIMINT::Implicit::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Implicit::SetState(const Teuchos::RCP<Epetra_Vector>& x)
+void STR::TIMINT::Implicit::set_state(const Teuchos::RCP<Epetra_Vector>& x)
 {
-  IntegratorPtr()->SetState(*x);
+  IntegratorPtr()->set_state(*x);
   ::NOX::Epetra::Vector x_nox(x, ::NOX::Epetra::Vector::CreateView);
   NlnSolver().SolutionGroup().setX(x_nox);
   set_state_in_sync_with_nox_group(true);
@@ -94,15 +94,15 @@ void STR::TIMINT::Implicit::SetState(const Teuchos::RCP<Epetra_Vector>& x)
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Implicit::prepare_partition_step()
 {
-  CheckInitSetup();
+  check_init_setup();
   FOUR_C_THROW("Not yet implemented!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Implicit::PrepareTimeStep()
+void STR::TIMINT::Implicit::prepare_time_step()
 {
-  CheckInitSetup();
+  check_init_setup();
   // update end time \f$t_{n+1}\f$ of this time step to cope with time step size adaptivity
   /* ToDo Check if this is still necessary. I moved this part to the Update(const double endtime)
    * routine, such it becomes consistent with non-adaptive update routine! See the
@@ -119,7 +119,7 @@ void STR::TIMINT::Implicit::PrepareTimeStep()
  *----------------------------------------------------------------------------*/
 int STR::TIMINT::Implicit::Integrate()
 {
-  CheckInitSetup();
+  check_init_setup();
   FOUR_C_THROW(
       "The function is unused since the ADAPTER::StructureTimeLoop "
       "wrapper gives you all the flexibility you need.");
@@ -130,7 +130,7 @@ int STR::TIMINT::Implicit::Integrate()
  *----------------------------------------------------------------------------*/
 int STR::TIMINT::Implicit::IntegrateStep()
 {
-  CheckInitSetup();
+  check_init_setup();
   // do the predictor step
   ::NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
   Predictor().Predict(grp);
@@ -141,7 +141,7 @@ int STR::TIMINT::Implicit::IntegrateStep()
  *----------------------------------------------------------------------------*/
 INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::Solve()
 {
-  CheckInitSetup();
+  check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();
   // reset the non-linear solver
   NlnSolver().Reset();
@@ -157,7 +157,7 @@ void STR::TIMINT::Implicit::update_state_incrementally(Teuchos::RCP<const Epetra
 {
   if (disiterinc == Teuchos::null) return;
 
-  CheckInitSetup();
+  check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();
   ::NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
 
@@ -198,7 +198,7 @@ void STR::TIMINT::Implicit::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterin
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Implicit::Evaluate()
 {
-  CheckInitSetup();
+  check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();
   ::NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
 
@@ -219,7 +219,7 @@ void STR::TIMINT::Implicit::Evaluate()
  *----------------------------------------------------------------------------*/
 const ::NOX::Abstract::Group& STR::TIMINT::Implicit::GetSolutionGroup() const
 {
-  CheckInitSetup();
+  check_init_setup();
   return NlnSolver().GetSolutionGroup();
 }
 
@@ -227,7 +227,7 @@ const ::NOX::Abstract::Group& STR::TIMINT::Implicit::GetSolutionGroup() const
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<::NOX::Abstract::Group> STR::TIMINT::Implicit::SolutionGroupPtr()
 {
-  CheckInitSetup();
+  check_init_setup();
   return Teuchos::rcpFromRef(NlnSolver().SolutionGroup());
 }
 
@@ -236,7 +236,7 @@ Teuchos::RCP<::NOX::Abstract::Group> STR::TIMINT::Implicit::SolutionGroupPtr()
 INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
     INPAR::STR::ConvergenceStatus nonlinsoldiv)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (nonlinsoldiv == INPAR::STR::conv_success)
   {
@@ -280,7 +280,7 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
         IO::cout << "Nonlinear solver failed to converge repeat time step" << IO::endl;
 
       // reset step (e.g. quantities on element level or model specific stuff)
-      ResetStep();
+      reset_step();
 
       return INPAR::STR::conv_fail_repeat;
       break;
@@ -307,7 +307,7 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
       // reset timen_ because it is set in the constructor
       SetTimeNp(GetTimeN() + GetDeltaTime());
       // reset step (e.g. quantities on element level or model specific stuff)
-      ResetStep();
+      reset_step();
 
       Integrator().update_constant_state_contributions();
 
@@ -344,7 +344,7 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
             "Maximal divercont refinement level reached. Adapt your time basic time step size!");
 
       // reset step (e.g. quantities on element level or model specific stuff)
-      ResetStep();
+      reset_step();
 
       Integrator().update_constant_state_contributions();
 
@@ -388,7 +388,7 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
       // reset timen_ because it is set in the constructor
       SetTimeNp(GetTimeN() + GetDeltaTime());
       // reset step (e.g. quantities on element level or model specific stuff)
-      ResetStep();
+      reset_step();
 
       Integrator().update_constant_state_contributions();
 
@@ -438,7 +438,7 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
  *-----------------------------------------------------------------------------*/
 void STR::TIMINT::Implicit::check_for_time_step_increase(INPAR::STR::ConvergenceStatus& status)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   const int maxnumfinestep = 4;
 

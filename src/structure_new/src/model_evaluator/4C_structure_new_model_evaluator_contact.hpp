@@ -53,28 +53,28 @@ namespace STR
       void Reset(const Epetra_Vector& x) override;
 
       //! [derived]
-      bool EvaluateForce() override;
+      bool evaluate_force() override;
 
       //! [derived]
-      bool EvaluateStiff() override;
+      bool evaluate_stiff() override;
 
       //! [derived]
-      bool EvaluateForceStiff() override;
+      bool evaluate_force_stiff() override;
 
       //! [derived]
-      void PreEvaluate() override;
+      void pre_evaluate() override;
 
       //! [derived]
-      void PostEvaluate() override;
+      void post_evaluate() override;
 
       //! [derived]
       void remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) override;
 
       //! [derived]
-      bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
+      bool assemble_force(Epetra_Vector& f, const double& timefac_np) const override;
 
       //! Assemble the jacobian at \f$t_{n+1}\f$
-      bool AssembleJacobian(
+      bool assemble_jacobian(
           CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
 
       //! Perform a correction of adaptive parameters
@@ -85,7 +85,7 @@ namespace STR
           IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! [derived]
-      void ReadRestart(IO::DiscretizationReader& ioreader) override;
+      void read_restart(IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
       void Predict(const INPAR::STR::PredEnum& pred_type) override{};
@@ -146,10 +146,10 @@ namespace STR
       void PostOutput() override;
 
       //! [derived]
-      bool EvaluateCheapSOCRhs() override;
+      bool evaluate_cheap_soc_rhs() override;
 
       //! [derived]
-      bool AssembleCheapSOCRhs(Epetra_Vector& f, const double& timefac_np) const override;
+      bool assemble_cheap_soc_rhs(Epetra_Vector& f, const double& timefac_np) const override;
 
       //! @}
 
@@ -194,12 +194,12 @@ namespace STR
       virtual void CheckPseudo2D() const;
 
      private:
-      void PostSetup(Teuchos::ParameterList& cparams);
+      void post_setup(Teuchos::ParameterList& cparams);
 
       /// Set the correct time integration parameters within the contact strategy
       void set_time_integration_info(CONTACT::AbstractStrategy& strategy) const;
 
-      void PostUpdateStepState();
+      void post_update_step_state();
 
       void extend_lagrange_multiplier_domain(Teuchos::RCP<Epetra_Vector>& lm_vec) const;
 

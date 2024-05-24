@@ -43,7 +43,7 @@ namespace FLD
     \brief Print information about current time step to screen
 
     */
-    void PrintTimeStepInfo() override;
+    void print_time_step_info() override;
 
     /*!
     \brief Set theta_ to its value, dependent on integration method for GenAlpha and BDF2

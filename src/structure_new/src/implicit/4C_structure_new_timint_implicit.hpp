@@ -55,7 +55,7 @@ namespace STR
 
       /// set the state of the nox group and the global state data container
       /// see class \ref ADAPTER::StructureNew for a detailed documentation.
-      void SetState(const Teuchos::RCP<Epetra_Vector>& x) override;
+      void set_state(const Teuchos::RCP<Epetra_Vector>& x) override;
 
       /*! \brief nonlinear solve
        *
@@ -74,14 +74,14 @@ namespace STR
       void prepare_partition_step() override;
 
       //! Prepare time step
-      void PrepareTimeStep() override;
+      void prepare_time_step() override;
 
       //! @name Accessors
       //! @{
       //! return the predictor
       [[nodiscard]] const STR::PREDICT::Generic& Predictor() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return *predictor_ptr_;
       }
 
@@ -102,7 +102,7 @@ namespace STR
       //! returns pointer to generic implicit object
       Teuchos::RCP<STR::IMPLICIT::Generic> ImplIntPtr()
       {
-        CheckInitSetup();
+        check_init_setup();
         return implint_ptr_;
       };
 
@@ -142,37 +142,37 @@ namespace STR
 
       STR::IMPLICIT::Generic& ImplInt()
       {
-        CheckInitSetup();
+        check_init_setup();
         return *implint_ptr_;
       };
 
       STR::PREDICT::Generic& Predictor()
       {
-        CheckInitSetup();
+        check_init_setup();
         return *predictor_ptr_;
       };
 
       Teuchos::RCP<STR::PREDICT::Generic> PredictorPtr()
       {
-        CheckInitSetup();
+        check_init_setup();
         return predictor_ptr_;
       };
 
       [[nodiscard]] const STR::NLN::SOLVER::Generic& NlnSolver() const
       {
-        CheckInitSetup();
+        check_init_setup();
         return *nlnsolver_ptr_;
       };
 
       STR::NLN::SOLVER::Generic& NlnSolver()
       {
-        CheckInitSetup();
+        check_init_setup();
         return *nlnsolver_ptr_;
       };
 
       Teuchos::RCP<STR::NLN::SOLVER::Generic> NlnSolverPtr()
       {
-        CheckInitSetup();
+        check_init_setup();
         return nlnsolver_ptr_;
       };
 

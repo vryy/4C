@@ -74,7 +74,7 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::SPHVirtualWallParticle> virtualwallparticle);
 
     //! set current step size
-    virtual void SetCurrentStepSize(const double currentstepsize) final;
+    virtual void set_current_step_size(const double currentstepsize) final;
 
     //! insert density evaluation dependent states
     virtual void insert_particle_states_of_particle_types(
@@ -243,7 +243,7 @@ namespace PARTICLEINTERACTION
     void init_density_correction_handler();
 
     //! correct density of interior/surface particles
-    void CorrectDensity() const;
+    void correct_density() const;
 
     //! density correction handler
     std::unique_ptr<PARTICLEINTERACTION::SPHDensityCorrectionBase> densitycorrection_;

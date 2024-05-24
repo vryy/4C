@@ -91,7 +91,7 @@ namespace POROMULTIPHASESCATRA
      * @param[in] coupling_pair: the coupling pair which is checked
      * @return true if pair is not active, false otherwise
      */
-    static bool IsNotActive(
+    static bool is_not_active(
         const Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>
             coupling_pair);
   };

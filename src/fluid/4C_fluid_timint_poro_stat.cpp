@@ -34,11 +34,11 @@ void FLD::TimIntPoroStat::Init()
   TimIntPoro::Init();
 }
 
-void FLD::TimIntPoroStat::ReadRestart(int step)
+void FLD::TimIntPoroStat::read_restart(int step)
 {
   // call of base classes
-  TimIntStationary::ReadRestart(step);
-  TimIntPoro::ReadRestart(step);
+  TimIntStationary::read_restart(step);
+  TimIntPoro::read_restart(step);
 }
 
 FOUR_C_NAMESPACE_CLOSE

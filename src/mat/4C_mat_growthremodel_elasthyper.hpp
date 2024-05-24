@@ -225,7 +225,7 @@ namespace MAT
      * \param params Container for additional information
      * \param eleGID Global element id
      */
-    void PostSetup(Teuchos::ParameterList& params, int eleGID) override;
+    void post_setup(Teuchos::ParameterList& params, int eleGID) override;
 
     /// This material uses the extended update call
     bool UsesExtendedUpdate() override { return true; }
@@ -269,7 +269,7 @@ namespace MAT
     void setup_axi_cir_rad_structural_tensor(INPUT::LineDefinition* linedef);
 
     /// Setup prestretch (optional: setup element axi-, circ-, and rad-directions) for 3D elements
-    void SetupGR3D(CORE::LINALG::Matrix<3, 3> const* const defgrd,  ///< Deformation gradient
+    void setup_g_r3_d(CORE::LINALG::Matrix<3, 3> const* const defgrd,  ///< Deformation gradient
         Teuchos::ParameterList& params,  ///< Container for additional information
         const double dt,                 ///< Time step size
         const int gp,                    ///< Current Gauss-Point
@@ -277,9 +277,9 @@ namespace MAT
 
     /// Setup prestretch (optional: setup element axi-, circ-, and rad-directions) for 2D elements
     /// -> membrane
-    void SetupGR2D(Teuchos::ParameterList& params,  ///< Container for additional information
-        const double dt,                            ///< Time step size
-        const int gp);                              ///< Current Gauss-Point
+    void setup_g_r2_d(Teuchos::ParameterList& params,  ///< Container for additional information
+        const double dt,                               ///< Time step size
+        const int gp);                                 ///< Current Gauss-Point
 
     /// Calculates AXI, CIR and RAD structural tensors and sets new fiber directions in the case of
     /// a cylinder
@@ -290,16 +290,16 @@ namespace MAT
     void setup_aniso_growth_tensors();
 
     /// Read AXI CIR RAD direction
-    void ReadDir(INPUT::LineDefinition* linedef, const std::string& specifier,
+    void read_dir(INPUT::LineDefinition* linedef, const std::string& specifier,
         CORE::LINALG::Matrix<3, 1>& dir);
 
     /// Evaluate Prestretches
-    void EvaluatePrestretch(
+    void evaluate_prestretch(
         CORE::LINALG::Matrix<3, 3> const* const defgrd, int const gp, int const eleGID);
 
     /// Internal Newton to implicitly solve for current mass density and inelastic remodeling
     /// stretch of each fiber family
-    void SolveForRhoLambr(
+    void solve_for_rho_lambr(
         CORE::LINALG::SerialDenseMatrix& K_T,  ///< Tangent stiffness matrix of internal Newton
         CORE::LINALG::Matrix<3, 3>& FgM,       ///< Growth deformation gradient
         CORE::LINALG::Matrix<3, 3>& iFgM,      ///< Inverse growth deformation gradient
@@ -346,8 +346,8 @@ namespace MAT
         int const gp);  ///< Current Gauss-Point
 
     /// calculate modified invariants
-    void InvariantsModified(CORE::LINALG::Matrix<3, 1>& modinv,  ///< modified invariants
-        CORE::LINALG::Matrix<3, 1> const& prinv) const;          ///< principal invariants
+    void invariants_modified(CORE::LINALG::Matrix<3, 1>& modinv,  ///< modified invariants
+        CORE::LINALG::Matrix<3, 1> const& prinv) const;           ///< principal invariants
 
     /// calculates the derivatives of the hyperelastic laws with respect to the (modified)
     /// invariants
@@ -372,8 +372,8 @@ namespace MAT
     ///\f[
     ///  J = \sqrt{III_{\boldsymbol{C}}}
     ///\f]
-    void ConvertModToPrinc(CORE::LINALG::Matrix<3, 1> const&
-                               prinv,  ///< principal invariants of right Cauchy-Green tensor
+    void convert_mod_to_princ(CORE::LINALG::Matrix<3, 1> const&
+                                  prinv,  ///< principal invariants of right Cauchy-Green tensor
         CORE::LINALG::Matrix<3, 1> const&
             dPmodI,  ///< first derivative with respect to modified invariants
         CORE::LINALG::Matrix<6, 1> const&
@@ -393,8 +393,8 @@ namespace MAT
         const;  ///< Factors for elasticity tensor calculation
 
     /// Evaluate derivative of 2nd Piola Kirchhoff stress w.r.t. the inelastic deformation gradient
-    void EvaluatedSdiFg(CORE::LINALG::Matrix<6, 9>& dSdiFg,  ///< Output
-        CORE::LINALG::Matrix<3, 1> const& gamma,             ///< Factors for stress calculation
+    void evaluated_sdi_fg(CORE::LINALG::Matrix<6, 9>& dSdiFg,  ///< Output
+        CORE::LINALG::Matrix<3, 1> const& gamma,               ///< Factors for stress calculation
         CORE::LINALG::Matrix<8, 1> const& delta,   ///< Factors for elasticity tensor calculation
         CORE::LINALG::Matrix<3, 3> const& iFinM,   ///< Inverse inelastic deformation gradient
         CORE::LINALG::Matrix<3, 3> const& iCinCM,  ///< C_{in}^{-1} * C

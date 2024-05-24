@@ -60,7 +60,7 @@ DRT::ELEMENTS::FluidIntFaceImplInterface* DRT::ELEMENTS::FluidIntFaceImplInterfa
     }
     default:
       FOUR_C_THROW(
-          "Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
+          "Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->num_node());
       break;
   }
   return nullptr;
@@ -119,7 +119,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::assemble_internal_faces_using_nei
   // do not assemble if no stabilization terms activated for this face
   if (!stab_required) return;
 
-  if (!discretization.Filled()) FOUR_C_THROW("FillComplete() was not called");
+  if (!discretization.Filled()) FOUR_C_THROW("fill_complete() was not called");
   if (!discretization.HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   const bool assemblemat = systemmatrix != Teuchos::null;
@@ -142,9 +142,9 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::assemble_internal_faces_using_nei
 
   //----------------------- create patchlm -----------------
 
-  const int numnode_master = intface->ParentMasterElement()->NumNode();
-  const int numnode_slave = intface->ParentSlaveElement()->NumNode();
-  const int numnode_face = intface->NumNode();
+  const int numnode_master = intface->ParentMasterElement()->num_node();
+  const int numnode_slave = intface->ParentSlaveElement()->num_node();
+  const int numnode_face = intface->num_node();
 
   const int numnodeinpatch = numnode_master + numnode_slave - numnode_face;
 

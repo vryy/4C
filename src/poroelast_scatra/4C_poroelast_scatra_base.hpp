@@ -53,7 +53,7 @@ namespace POROELASTSCATRA
     virtual void Timeloop() = 0;
 
     //! prepare time step for single fields
-    virtual void PrepareTimeStep(bool printheader = true)
+    virtual void prepare_time_step(bool printheader = true)
     {
       FOUR_C_THROW("not implemented in base class. override in subclass.");
     };
@@ -62,7 +62,7 @@ namespace POROELASTSCATRA
     virtual void Solve() { FOUR_C_THROW("not implemented in base class. override in subclass."); };
 
     //! prepare output
-    virtual void PrepareOutput()
+    virtual void prepare_output()
     {
       FOUR_C_THROW("not implemented in base class. override in subclass.");
     };
@@ -80,7 +80,7 @@ namespace POROELASTSCATRA
     };
 
     //! read and set fields needed for restart
-    void ReadRestart(int restart) override = 0;
+    void read_restart(int restart) override = 0;
 
     //! setup for single fields
     virtual void SetupSystem();
@@ -98,10 +98,10 @@ namespace POROELASTSCATRA
     void SetScatraSolution();
 
     //! return pointer to porous medium problem
-    const Teuchos::RCP<POROELAST::PoroBase>& PoroField() { return poro_; };
+    const Teuchos::RCP<POROELAST::PoroBase>& poro_field() { return poro_; };
 
     //! return pointer to interstitial fluid
-    const Teuchos::RCP<ADAPTER::FluidPoro>& FluidField() { return poro_->FluidField(); };
+    const Teuchos::RCP<ADAPTER::FluidPoro>& fluid_field() { return poro_->fluid_field(); };
 
     //! return pointer to porous structure
     const Teuchos::RCP<ADAPTER::FPSIStructureWrapper>& StructureField()
@@ -120,11 +120,11 @@ namespace POROELASTSCATRA
 
    protected:
     //! setup up of dofsets for two way coupling
-    void ReplaceDofSets(Teuchos::RCP<DRT::Discretization> structdis,
+    void replace_dof_sets(Teuchos::RCP<DRT::Discretization> structdis,
         Teuchos::RCP<DRT::Discretization> fluiddis, Teuchos::RCP<DRT::Discretization> scatradis);
 
     //! setup up coupling objects if necessary
-    void SetupCoupling(Teuchos::RCP<DRT::Discretization> structdis,
+    void setup_coupling(Teuchos::RCP<DRT::Discretization> structdis,
         Teuchos::RCP<DRT::Discretization> fluiddis, Teuchos::RCP<DRT::Discretization> scatradis);
 
     //! Pointer to the porous media problem. (poroelastic)
@@ -144,9 +144,9 @@ namespace POROELASTSCATRA
 
    private:
     //! apply displacement fields to scatra
-    void SetMeshDisp();
+    void set_mesh_disp();
     //! apply velocity fields to scatra
-    void SetVelocityFields();
+    void set_velocity_fields();
   };
 }  // namespace POROELASTSCATRA
 

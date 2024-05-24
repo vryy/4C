@@ -240,7 +240,7 @@ namespace CORE::GEO
         CycleListIterator end() { return CycleListIterator(cycles_, cycles_.end()); }
 
        private:
-        void PushBack(Graph& g);
+        void push_back(Graph& g);
 
         std::list<Cycle> cycles_;
       };

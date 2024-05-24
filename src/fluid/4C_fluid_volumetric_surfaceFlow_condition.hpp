@@ -79,9 +79,9 @@ namespace FLD
       void Output(IO::DiscretizationWriter& output);
 
       /*!
-      \brief Wrapper for FluidVolumetricSurfaceFlowBc::ReadRestart
+      \brief Wrapper for FluidVolumetricSurfaceFlowBc::read_restart
       */
-      void ReadRestart(IO::DiscretizationReader& reader);
+      void read_restart(IO::DiscretizationReader& reader);
 
 
      private:
@@ -137,9 +137,9 @@ namespace FLD
       void Output(IO::DiscretizationWriter& output);
 
       /*!
-      \brief Wrapper for FluidVolumetricSurfaceFlowBc::ReadRestart
+      \brief Wrapper for FluidVolumetricSurfaceFlowBc::read_restart
       */
-      void ReadRestart(IO::DiscretizationReader& reader);
+      void read_restart(IO::DiscretizationReader& reader);
 
 
      private:
@@ -314,12 +314,12 @@ namespace FLD
       /*!
       \brief Read restart
       */
-      void ReadRestart(IO::DiscretizationReader& reader, std::string ds_condname, int condnum);
+      void read_restart(IO::DiscretizationReader& reader, std::string ds_condname, int condnum);
 
       /*!
       \brief Bessel function of orders 0 and 1
       */
-      std::complex<double> BesselJ01(std::complex<double> z, bool order);
+      std::complex<double> bessel_j01(std::complex<double> z, bool order);
 
       /*!
       \brief Interpolation function
@@ -331,7 +331,7 @@ namespace FLD
       \brief Return prebiasing flag
        */
 
-      std::string PrebiasingFlag() { return prebiasing_flag_; }
+      std::string prebiasing_flag() { return prebiasing_flag_; }
 
      private:
       //! ID of present condition

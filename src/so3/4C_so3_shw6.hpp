@@ -266,7 +266,7 @@ namespace DRT
           CORE::LINALG::Matrix<num_ans * num_sp, NUMDOF_WEG6>& B_ans_loc);  ///< modified B
 
       //! Transformation matrix parameter->material space
-      void soshw6_evaluateT(const CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>& jac,
+      void soshw6_evaluate_t(const CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>& jac,
           CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& TinvT);
 
       //! EAS technology, init
@@ -281,7 +281,7 @@ namespace DRT
           const CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6>& xrefe);  // material element coords
 
       //! Evaluate Cauchy stress (mapping with disp_based F per default)
-      void soshw6_Cauchy(CORE::LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D>* elestress,
+      void soshw6_cauchy(CORE::LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D>* elestress,
           const int gp, const CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>& defgrd,
           const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain,
           const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress);
@@ -292,7 +292,7 @@ namespace DRT
       //! recover condensed EAS variables
       void soshw6_recover(const std::vector<double>& residual);
 
-      void PackEasData(CORE::COMM::PackBuffer& data) const
+      void pack_eas_data(CORE::COMM::PackBuffer& data) const
       {
         AddtoPack(data, easdata_.alpha);
         AddtoPack(data, easdata_.alphao);
@@ -302,7 +302,7 @@ namespace DRT
         AddtoPack(data, easdata_.eas_inc);
       };
 
-      void UnpackEasData(std::vector<char>::size_type& position, const std::vector<char>& data)
+      void unpack_eas_data(std::vector<char>::size_type& position, const std::vector<char>& data)
       {
         ExtractfromPack(position, data, easdata_.alpha);
         ExtractfromPack(position, data, easdata_.alphao);

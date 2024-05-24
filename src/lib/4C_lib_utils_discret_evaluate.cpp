@@ -60,7 +60,7 @@ void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& 
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::UTILS::Evaluate");
 
-  if (!discret.Filled()) FOUR_C_THROW("FillComplete() was not called");
+  if (!discret.Filled()) FOUR_C_THROW("fill_complete() was not called");
   if (!discret.HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   int row = strategy.FirstDofSet();
@@ -71,10 +71,10 @@ void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& 
   // for most element types, just the base class dummy is called
   // that does nothing
   {
-    TEUCHOS_FUNC_TIME_MONITOR("DRT::UTILS::Evaluate PreEvaluate");
-    CORE::COMM::ParObjectFactory::Instance().PreEvaluate(discret, eparams, strategy.Systemmatrix1(),
-        strategy.Systemmatrix2(), strategy.Systemvector1(), strategy.Systemvector2(),
-        strategy.Systemvector3());
+    TEUCHOS_FUNC_TIME_MONITOR("DRT::UTILS::Evaluate pre_evaluate");
+    CORE::COMM::ParObjectFactory::Instance().pre_evaluate(discret, eparams,
+        strategy.Systemmatrix1(), strategy.Systemmatrix2(), strategy.Systemvector1(),
+        strategy.Systemvector2(), strategy.Systemvector3());
   }
 
   Element::LocationArray la(discret.NumDofSets());

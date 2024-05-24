@@ -60,9 +60,9 @@ void SSTI::SSTIAlgorithm::Init(const Epetra_Comm& comm,
   // get the global problem
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
-  problem->GetDis("structure")->FillComplete(true, true, true);
-  problem->GetDis("scatra")->FillComplete(true, true, true);
-  problem->GetDis("thermo")->FillComplete(true, true, true);
+  problem->GetDis("structure")->fill_complete(true, true, true);
+  problem->GetDis("scatra")->fill_complete(true, true, true);
+  problem->GetDis("thermo")->fill_complete(true, true, true);
 
   // clone scatra discretization from structure discretization first. Afterwards, clone thermo
   // discretization from scatra discretization
@@ -91,7 +91,7 @@ void SSTI::SSTIAlgorithm::Init(const Epetra_Comm& comm,
   scatra_->ScaTraField()->set_number_of_dof_set_velocity(1);
   scatra_->ScaTraField()->set_number_of_dof_set_thermo(2);
   thermo_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(sstitimeparams,
-      CloneThermoParams(scatraparams, thermoparams),
+      clone_thermo_params(scatraparams, thermoparams),
       problem->SolverParams(thermoparams.get<int>("LINEAR_SOLVER")), "thermo", true));
   thermo_->Init();
   thermo_->ScaTraField()->set_number_of_dof_set_displacement(1);
@@ -130,9 +130,9 @@ void SSTI::SSTIAlgorithm::Init(const Epetra_Comm& comm,
   // now we can finally fill our discretizations
   // reinitialization of the structural elements is
   // vital for parallelization here!
-  problem->GetDis("structure")->FillComplete(true, true, true);
-  problem->GetDis("scatra")->FillComplete(true, false, true);
-  problem->GetDis("thermo")->FillComplete(true, false, true);
+  problem->GetDis("structure")->fill_complete(true, true, true);
+  problem->GetDis("scatra")->fill_complete(true, false, true);
+  problem->GetDis("thermo")->fill_complete(true, false, true);
 
   isinit_ = true;
 }
@@ -145,7 +145,7 @@ void SSTI::SSTIAlgorithm::Setup()
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // check initialization
-  CheckIsInit();
+  check_is_init();
 
   // set up scatra and thermo problem
   scatra_->ScaTraField()->Setup();
@@ -153,8 +153,8 @@ void SSTI::SSTIAlgorithm::Setup()
 
   // pass initial scalar field to structural discretization to correctly compute initial
   // accelerations
-  problem->GetDis("structure")->SetState(1, "scalarfield", scatra_->ScaTraField()->Phinp());
-  problem->GetDis("structure")->SetState(2, "tempfield", thermo_->ScaTraField()->Phinp());
+  problem->GetDis("structure")->set_state(1, "scalarfield", scatra_->ScaTraField()->Phinp());
+  problem->GetDis("structure")->set_state(2, "tempfield", thermo_->ScaTraField()->Phinp());
 
   // set up structural base algorithm
   struct_adapterbase_ptr_->Setup();
@@ -167,11 +167,11 @@ void SSTI::SSTIAlgorithm::Setup()
     FOUR_C_THROW("No valid pointer to ADAPTER::SSIStructureWrapper !");
 
   // check maps from subproblems
-  if (scatra_->ScaTraField()->DofRowMap()->NumGlobalElements() == 0)
+  if (scatra_->ScaTraField()->dof_row_map()->NumGlobalElements() == 0)
     FOUR_C_THROW("Scalar transport discretization does not have any degrees of freedom!");
-  if (thermo_->ScaTraField()->DofRowMap()->NumGlobalElements() == 0)
+  if (thermo_->ScaTraField()->dof_row_map()->NumGlobalElements() == 0)
     FOUR_C_THROW("Scalar transport discretization does not have any degrees of freedom!");
-  if (structure_->DofRowMap()->NumGlobalElements() == 0)
+  if (structure_->dof_row_map()->NumGlobalElements() == 0)
     FOUR_C_THROW("Structure discretization does not have any degrees of freedom!");
 
   // set up materials
@@ -227,9 +227,9 @@ void SSTI::SSTIAlgorithm::clone_discretizations(const Epetra_Comm& comm)
   if (scatradis->NumGlobalNodes() == 0)
   {
     DRT::UTILS::CloneDiscretization<SSTI::SSTIScatraStructureCloneStrategy>(structdis, scatradis);
-    scatradis->FillComplete();
+    scatradis->fill_complete();
     DRT::UTILS::CloneDiscretization<SSTI::SSTIScatraThermoCloneStrategy>(scatradis, thermodis);
-    thermodis->FillComplete();
+    thermodis->fill_complete();
   }
   else
     FOUR_C_THROW("Only matching nodes in SSTI");
@@ -237,15 +237,15 @@ void SSTI::SSTIAlgorithm::clone_discretizations(const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSTI::SSTIAlgorithm::ReadRestart(int restart)
+void SSTI::SSTIAlgorithm::read_restart(int restart)
 {
-  StructureField()->ReadRestart(restart);
-  ScaTraField()->ReadRestart(restart);
-  ThermoField()->ReadRestart(restart);
+  StructureField()->read_restart(restart);
+  ScaTraField()->read_restart(restart);
+  ThermoField()->read_restart(restart);
 
   SetTimeStep(structure_->TimeOld(), restart);
 
-  // Material pointers to other field were deleted during ReadRestart(). They need to be reset.
+  // Material pointers to other field were deleted during read_restart(). They need to be reset.
   assign_material_pointers();
 }
 
@@ -270,7 +270,7 @@ void SSTI::SSTIAlgorithm::distribute_structure_solution()
   ThermoField()->ApplyMeshMovement(structure_->Dispnp());
 
   // convective velocity is set to zero
-  const auto convective_velocity = CORE::LINALG::CreateVector(*structure_->DofRowMap());
+  const auto convective_velocity = CORE::LINALG::CreateVector(*structure_->dof_row_map());
 
   ScaTraField()->SetVelocityField(
       convective_velocity, Teuchos::null, structure_->Velnp(), Teuchos::null);
@@ -282,19 +282,19 @@ void SSTI::SSTIAlgorithm::distribute_structure_solution()
 /*----------------------------------------------------------------------*/
 void SSTI::SSTIAlgorithm::distribute_scatra_solution()
 {
-  StructureField()->Discretization()->SetState(1, "scalarfield", scatra_->ScaTraField()->Phinp());
-  ThermoField()->Discretization()->SetState(2, "scatra", scatra_->ScaTraField()->Phinp());
+  StructureField()->Discretization()->set_state(1, "scalarfield", scatra_->ScaTraField()->Phinp());
+  ThermoField()->Discretization()->set_state(2, "scatra", scatra_->ScaTraField()->Phinp());
 
   if (interfacemeshtying_)
   {
     // pass master-side scatra degrees of freedom to thermo discretization
     const Teuchos::RCP<Epetra_Vector> imasterphinp =
-        CORE::LINALG::CreateVector(*ScaTraField()->Discretization()->DofRowMap(), true);
+        CORE::LINALG::CreateVector(*ScaTraField()->Discretization()->dof_row_map(), true);
     meshtying_strategy_scatra_->InterfaceMaps()->InsertVector(
         meshtying_strategy_scatra_->CouplingAdapter()->MasterToSlave(
             meshtying_strategy_scatra_->InterfaceMaps()->ExtractVector(*ScaTraField()->Phinp(), 2)),
         1, imasterphinp);
-    ThermoField()->Discretization()->SetState(2, "imasterscatra", imasterphinp);
+    ThermoField()->Discretization()->set_state(2, "imasterscatra", imasterphinp);
   }
 }
 
@@ -302,15 +302,15 @@ void SSTI::SSTIAlgorithm::distribute_scatra_solution()
 /*----------------------------------------------------------------------*/
 void SSTI::SSTIAlgorithm::distribute_thermo_solution()
 {
-  StructureField()->Discretization()->SetState(2, "tempfield", thermo_->ScaTraField()->Phinp());
+  StructureField()->Discretization()->set_state(2, "tempfield", thermo_->ScaTraField()->Phinp());
 
-  ScaTraField()->Discretization()->SetState(2, "thermo", thermo_->ScaTraField()->Phinp());
+  ScaTraField()->Discretization()->set_state(2, "thermo", thermo_->ScaTraField()->Phinp());
 
   if (interfacemeshtying_)
   {
     // extract master side temperatures and copy to slave side dof map
     const Teuchos::RCP<Epetra_Vector> imastertempnp =
-        CORE::LINALG::CreateVector(*ThermoField()->Discretization()->DofRowMap(), true);
+        CORE::LINALG::CreateVector(*ThermoField()->Discretization()->dof_row_map(), true);
     meshtying_strategy_thermo_->InterfaceMaps()->InsertVector(
         meshtying_strategy_thermo_->CouplingAdapter()->MasterToSlave(
             meshtying_strategy_thermo_->InterfaceMaps()->ExtractVector(*ThermoField()->Phinp(), 2)),
@@ -318,17 +318,17 @@ void SSTI::SSTIAlgorithm::distribute_thermo_solution()
 
     // extract slave side temperatures
     const Teuchos::RCP<Epetra_Vector> islavetempnp =
-        CORE::LINALG::CreateVector(*ThermoField()->Discretization()->DofRowMap(), true);
+        CORE::LINALG::CreateVector(*ThermoField()->Discretization()->dof_row_map(), true);
     meshtying_strategy_thermo_->InterfaceMaps()->InsertVector(
         meshtying_strategy_thermo_->InterfaceMaps()->ExtractVector(*ThermoField()->Phinp(), 1), 1,
         islavetempnp);
 
     // set master side temperature to thermo discretization
-    ThermoField()->Discretization()->SetState(3, "imastertemp", imastertempnp);
+    ThermoField()->Discretization()->set_state(3, "imastertemp", imastertempnp);
 
     // set master and slave side temperature to scatra discretization
-    ScaTraField()->Discretization()->SetState(2, "islavetemp", islavetempnp);
-    ScaTraField()->Discretization()->SetState(2, "imastertemp", imastertempnp);
+    ScaTraField()->Discretization()->set_state(2, "islavetemp", islavetempnp);
+    ScaTraField()->Discretization()->set_state(2, "imastertemp", imastertempnp);
   }
 }
 
@@ -351,20 +351,20 @@ void SSTI::SSTIAlgorithm::distribute_dt_from_sca_tra()
   const int newstep = Step();
 
   // change time step size of thermo according to ScaTra
-  ThermoField()->SetDt(newtimestep);
+  ThermoField()->set_dt(newtimestep);
   // change current time and time step number of thermo field according to ScaTra
   // The incremental reduction is is needed, because time and step are incremented in
-  // PrepareTimeStep() of thermo field
+  // prepare_time_step() of thermo field
   ThermoField()->SetTimeStep(newtime - newtimestep, newstep - 1);
 
   // change current time and time step number of structure according to ScaTra
-  StructureField()->SetDt(newtimestep);
+  StructureField()->set_dt(newtimestep);
   StructureField()->SetTimen(newtime);
-  StructureField()->PostUpdate();
+  StructureField()->post_update();
 
   // change current time and time step of this algorithm according to ScaTra
   SetTimeStep(newtime, newstep);
-  SetDt(newtimestep);
+  set_dt(newtimestep);
 }
 
 /*----------------------------------------------------------------------*/
@@ -416,14 +416,14 @@ Teuchos::RCP<SCATRA::ScaTraTimIntImpl> SSTI::SSTIAlgorithm::ThermoField() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSTI::SSTIAlgorithm::CheckIsInit()
+void SSTI::SSTIAlgorithm::check_is_init()
 {
   if (not isinit_) FOUR_C_THROW("Init(...) was not called.");
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::ParameterList SSTI::SSTIAlgorithm::CloneThermoParams(
+Teuchos::ParameterList SSTI::SSTIAlgorithm::clone_thermo_params(
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& thermoparams)
 {
   auto thermoparams_copy = Teuchos::ParameterList(scatraparams);

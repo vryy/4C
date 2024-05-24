@@ -50,7 +50,7 @@ namespace SCATRA
     MeshtyingStrategyStdElch(const MeshtyingStrategyStdElch& old);
 
     //! return pointer to elch time integrator after cast
-    SCATRA::ScaTraTimIntElch* ElchTimInt() const
+    SCATRA::ScaTraTimIntElch* elch_tim_int() const
     {
       return dynamic_cast<SCATRA::ScaTraTimIntElch*>(scatratimint_);
     };

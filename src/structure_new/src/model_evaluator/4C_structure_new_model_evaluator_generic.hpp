@@ -114,16 +114,16 @@ namespace STR
 
      protected:
       //! Returns true, if Init() has been called
-      inline const bool& IsInit() const { return isinit_; };
+      inline const bool& is_init() const { return isinit_; };
 
       //! Returns true, if Setup() has been called
-      inline const bool& IsSetup() const { return issetup_; };
+      inline const bool& is_setup() const { return issetup_; };
 
       //! Check if Init() and Setup() have been called
-      virtual void CheckInitSetup() const;
+      virtual void check_init_setup() const;
 
       //! Check if Init() has been called
-      virtual void CheckInit() const;
+      virtual void check_init() const;
 
      public:
       /*! \brief Returns the type of the current model evaluator
@@ -147,26 +147,26 @@ namespace STR
        *
        *  \date 07/2016
        *  \author hiermeier */
-      virtual bool EvaluateForce() = 0;
+      virtual bool evaluate_force() = 0;
 
       /*! \brief Evaluate the initial right hand side (overload if needed for specific model)
        *
        *  \date 07/2016
        *  \author hiermeier */
-      virtual bool evaluate_initial_force() { return EvaluateForce(); };
+      virtual bool evaluate_initial_force() { return evaluate_force(); };
 
       /*! \brief Evaluate the current tangential stiffness matrix at \f$t_{n+1}\f$
        *
        *  \date 07/2016
        *  \author hiermeier*/
-      virtual bool EvaluateStiff() = 0;
+      virtual bool evaluate_stiff() = 0;
 
       /*! \brief Evaluate the current right-hand-side vector and tangential stiffness matrix at
        * \f$t_{n+1}\f$
        *
        *  \date 07/2016
        *  \author hiermeier */
-      virtual bool EvaluateForceStiff() = 0;
+      virtual bool evaluate_force_stiff() = 0;
 
       /** \brief evaluate the right hand side for the cheap second order correction step
        *
@@ -174,27 +174,27 @@ namespace STR
        *  models.
        *
        *  \author hiermeier \date 12/17 */
-      virtual bool EvaluateCheapSOCRhs() { return true; };
+      virtual bool evaluate_cheap_soc_rhs() { return true; };
 
       /*! \brief Perform actions just before the Evaluate() call
        *
        * Called in the very beginning of each call to one of the
-       * STR::ModelEvaluator::Evaluate routines, such as EvaluateForce,
-       * EvaluateStiff, EvaluateForceStiff.
+       * STR::ModelEvaluator::Evaluate routines, such as evaluate_force,
+       * evaluate_stiff, evaluate_force_stiff.
        *
        * \author hiermeier \date 03/17
        */
-      virtual void PreEvaluate() = 0;
+      virtual void pre_evaluate() = 0;
 
       /*! \brief Perform actions right after the Evaluate() call
        *
        * Called at the end of each call to one of the
-       * STR::ModelEvaluator::Evaluate routines, i.e. EvaluateForce,
-       * EvaluateStiff, EvaluateForceStiff.
+       * STR::ModelEvaluator::Evaluate routines, i.e. evaluate_force,
+       * evaluate_stiff, evaluate_force_stiff.
        *
        * \author hiermeier \date 03/17
        */
-      virtual void PostEvaluate() = 0;
+      virtual void post_evaluate() = 0;
 
       /*! \brief Remove any condensed contributions from the structural rhs
        *
@@ -225,7 +225,7 @@ namespace STR
        * \date 07/2016
        * \author hiermeier
        */
-      virtual bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const = 0;
+      virtual bool assemble_force(Epetra_Vector& f, const double& timefac_np) const = 0;
 
       /*! \brief Assemble the jacobian
        *
@@ -235,10 +235,10 @@ namespace STR
        *
        * \return Boolean to indicate sucess (true) or error (false)
        */
-      virtual bool AssembleJacobian(
+      virtual bool assemble_jacobian(
           CORE::LINALG::SparseOperator& jac, const double& timefac_np) const = 0;
 
-      virtual bool AssembleCheapSOCRhs(Epetra_Vector& f, const double& timefac_np) const
+      virtual bool assemble_cheap_soc_rhs(Epetra_Vector& f, const double& timefac_np) const
       {
         return true;
       };
@@ -257,7 +257,7 @@ namespace STR
        *
        *  \date 07/2016
        *  \author hiermeier */
-      virtual void ReadRestart(IO::DiscretizationReader& ioreader) = 0;
+      virtual void read_restart(IO::DiscretizationReader& ioreader) = 0;
 
       /*! \brief Predict the values for DoFs that are defined in
        *         the respective model evaluators, e.g. condensed variables.*/
@@ -351,7 +351,7 @@ namespace STR
 
       /*! \brief calculate the stress/strain contributions of each model evaluator
        *
-       *  \remark This function is called from STR::TIMINT::Base::PrepareOutput() and calculates
+       *  \remark This function is called from STR::TIMINT::Base::prepare_output() and calculates
        *  missing quantities, which were not evaluated during the standard evaluate call and are
        *  only calculated once per load/time step. You can not do the calculations during the
        *  OutputStepState() routine, because of the const status of the named function!
@@ -363,7 +363,7 @@ namespace STR
 
       /*! \brief calculate energy contributions of each model evaluator
        *
-       *  \remark This function is called from STR::TIMINT::Base::PrepareOutput() and calculates
+       *  \remark This function is called from STR::TIMINT::Base::prepare_output() and calculates
        *  missing quantities, which were not evaluated during the standard evaluate call and are
        *  only calculated once per load/time step. You can not do the calculations during the
        *  OutputStepState() routine, because of the const status of the named function!
@@ -375,7 +375,7 @@ namespace STR
 
       /*! \brief calculate optional quantity contribution of each model evaluator
        *
-       *  \remark This function is called from STR::TIMINT::Base::PrepareOutput() and calculates
+       *  \remark This function is called from STR::TIMINT::Base::prepare_output() and calculates
        *  missing quantities, which were not evaluated during the standard evaluate call and are
        *  only calculated once per load/time step. You can not do the calculations during the
        *  OutputStepState() routine, because of the const status of the named function!

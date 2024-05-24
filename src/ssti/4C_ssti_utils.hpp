@@ -193,11 +193,11 @@ namespace SSTI
     //@}
 
    private:
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SetupBlockMatrix(
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> setup_block_matrix(
         Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> row_map,
         Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> col_map);
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SetupSparseMatrix(
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> setup_sparse_matrix(
         const Teuchos::RCP<const Epetra_Map> row_map);
 
     //! scalar transport matrix type

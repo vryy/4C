@@ -124,7 +124,7 @@ void STR::TimIntOneStepTheta::Setup()
   // external force vector F_{n+1} at new time
   fextn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
   // set initial external force vector
-  ApplyForceExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_);
+  apply_force_external((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_);
 
   // inertial force vector F_{int;n} at last time
   finert_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
@@ -375,7 +375,7 @@ void STR::TimIntOneStepTheta::evaluate_force_stiff_residual(Teuchos::ParameterLi
   }
   fres_->Update(1.0, *finertt_, 1.0);
 
-  // std::cout << STR::CalculateVectorNorm(vectornorm_l2, fextn_) << std::endl;
+  // std::cout << STR::calculate_vector_norm(vectornorm_l2, fextn_) << std::endl;
 
   // build tangent matrix : effective dynamic stiffness matrix
   //    K_{Teffdyn} = 1/(theta*dt^2) M
@@ -428,7 +428,7 @@ void STR::TimIntOneStepTheta::evaluate_force_residual()
 
   // build new external forces
   fextn_->PutScalar(0.0);
-  ApplyForceExternal(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_);
+  apply_force_external(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_);
 
   // additional external forces are added (e.g. interface forces)
   fextn_->Update(1.0, *fifc_, 1.0);
@@ -442,7 +442,7 @@ void STR::TimIntOneStepTheta::evaluate_force_residual()
   if (!HaveNonlinearMass())
   {
     // ordinary internal force and stiffness
-    ApplyForceInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_);
+    apply_force_internal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_);
   }
   else
   {
@@ -530,26 +530,26 @@ double STR::TimIntOneStepTheta::CalcRefNormForce()
 
   // norm of the internal forces
   double fintnorm = 0.0;
-  fintnorm = STR::CalculateVectorNorm(iternorm_, fintn_);
+  fintnorm = STR::calculate_vector_norm(iternorm_, fintn_);
 
   // norm of the external forces
   double fextnorm = 0.0;
-  fextnorm = STR::CalculateVectorNorm(iternorm_, fextn_);
+  fextnorm = STR::calculate_vector_norm(iternorm_, fextn_);
 
   // norm of the inertial forces
   double finertnorm = 0.0;
-  finertnorm = STR::CalculateVectorNorm(iternorm_, finertt_);
+  finertnorm = STR::calculate_vector_norm(iternorm_, finertt_);
 
   // norm of viscous forces
   double fviscnorm = 0.0;
   if (damping_ == INPAR::STR::damp_rayleigh)
   {
-    fviscnorm = STR::CalculateVectorNorm(iternorm_, fvisct_);
+    fviscnorm = STR::calculate_vector_norm(iternorm_, fvisct_);
   }
 
   // norm of reaction forces
   double freactnorm = 0.0;
-  freactnorm = STR::CalculateVectorNorm(iternorm_, freact_);
+  freactnorm = STR::calculate_vector_norm(iternorm_, freact_);
 
   // return char norm
   return std::max(
@@ -656,10 +656,10 @@ void STR::TimIntOneStepTheta::UpdateStepElement()
   p.set("action", "calc_struct_update_istep");
   // go to elements
   discret_->ClearState();
-  discret_->SetState("displacement", (*dis_)(0));
+  discret_->set_state("displacement", (*dis_)(0));
 
   // Set material displacement state for ale-wear formulation
-  if ((dismat_ != Teuchos::null)) discret_->SetState("material_displacement", (*dismat_)(0));
+  if ((dismat_ != Teuchos::null)) discret_->set_state("material_displacement", (*dismat_)(0));
 
   if (!HaveNonlinearMass())
   {
@@ -672,8 +672,8 @@ void STR::TimIntOneStepTheta::UpdateStepElement()
     // and accelerations at the end of time step (currently only necessary for Kirchhoff beams)
     // An corresponding update rule has to be implemented in the element, otherwise
     // displacements, velocities and accelerations remain unchange.
-    discret_->SetState("velocity", (*vel_)(0));
-    discret_->SetState("acceleration", (*acc_)(0));
+    discret_->set_state("velocity", (*vel_)(0));
+    discret_->set_state("acceleration", (*acc_)(0));
 
     Teuchos::RCP<Epetra_Vector> update_disp;
     update_disp = CORE::LINALG::CreateVector(*DofRowMapView(), true);

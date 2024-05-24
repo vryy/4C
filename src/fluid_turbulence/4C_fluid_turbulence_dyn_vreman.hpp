@@ -108,9 +108,9 @@ namespace FLD
     Teuchos::RCP<DRT::Discretization> scatradiscret_;
 
 
-    double DynVremanComputeCv();
+    double dyn_vreman_compute_cv();
 
-    void DynVremanComputeDt(Teuchos::ParameterList& extraparams);
+    void dyn_vreman_compute_dt(Teuchos::ParameterList& extraparams);
 
     //@}
 

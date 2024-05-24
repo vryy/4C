@@ -323,7 +323,7 @@ void BEAMINTERACTION::CrosslinkingParams::Init(STR::TIMINT::BaseDataGlobalState 
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::CrosslinkingParams::Setup()
 {
-  CheckInit();
+  check_init();
 
   // empty for now
 

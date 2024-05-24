@@ -228,7 +228,7 @@ int DRT::ELEMENTS::Beam3ebType::Initialize(DRT::Discretization& dis)
     // reference node position
     std::vector<double> xrefe;
 
-    const int numNnodes = currele->NumNode();
+    const int numNnodes = currele->num_node();
 
     // resize xrefe for the number of coordinates we need to store
     xrefe.resize(3 * numNnodes);
@@ -537,7 +537,7 @@ void DRT::ELEMENTS::Beam3eb::GetPosAtXi(
 
   // add reference positions and tangents => total Lagrangean state vector
   CORE::LINALG::Matrix<12, 1> disp_totlag(true);
-  UpdateDispTotlag<2, 6>(disp, disp_totlag);
+  update_disp_totlag<2, 6>(disp, disp_totlag);
 
   Beam3Base::GetPosAtXi<2, 2, double>(pos, xi, disp_totlag);
 }
@@ -555,7 +555,7 @@ void DRT::ELEMENTS::Beam3eb::GetTriadAtXi(
 
   // add reference positions and tangents => total Lagrangean state vector
   CORE::LINALG::Matrix<12, 1> disp_totlag(true);
-  UpdateDispTotlag<2, 6>(disp, disp_totlag);
+  update_disp_totlag<2, 6>(disp, disp_totlag);
 
   triad.Clear();
 

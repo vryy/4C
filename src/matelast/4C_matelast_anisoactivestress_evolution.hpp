@@ -153,13 +153,13 @@ namespace MAT
       void Setup(int numgp, INPUT::LineDefinition* linedef) override;
 
       /*!
-       * \brief PostSetup routine of the element
+       * \brief post_setup routine of the element
        *
        * Here potential nodal fibers were passed to the Anisotropy framework
        *
        * @param params Container that potentially contains nodal fibers
        */
-      void PostSetup(Teuchos::ParameterList& params) override;
+      void post_setup(Teuchos::ParameterList& params) override;
 
       /// Add anisotropic principal stresses
       void add_stress_aniso_principal(

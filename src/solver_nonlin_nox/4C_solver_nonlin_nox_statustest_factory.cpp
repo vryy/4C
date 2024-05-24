@@ -48,7 +48,7 @@ Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::build_ou
     test_type = Teuchos::get<std::string>(p, "Test Type");
   else
   {
-    throwError("build_outer_status_tests()", "The \"Test Type\" is a required parameter!");
+    throw_error("build_outer_status_tests()", "The \"Test Type\" is a required parameter!");
   }
 
   if (test_type == "Combo")
@@ -114,7 +114,7 @@ Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNor
       std::ostringstream msg;
       msg << "The \"Quantity Type\" is a required parameter \n"
           << "and the chosen option \"" << quantity_type_string << "\" is invalid!";
-      throwError("BuildNormFTest()", msg.str());
+      throw_error("BuildNormFTest()", msg.str());
     }
     else
       quantitytypes.push_back(qType);
@@ -134,7 +134,7 @@ Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNor
       else
       {
         std::string msg = "\"Tolerance Type\" must be either \"Absolute\" or \"Relative\"!";
-        throwError("BuildNormFTest()", msg);
+        throw_error("BuildNormFTest()", msg);
       }
     }
 
@@ -159,7 +159,7 @@ Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNor
     else
     {
       std::string msg = "\"Norm Type\" must be either \"Two Norm\", \"One Norm\", or \"Max Norm\"!";
-      throwError("BuildNormFTest()", msg);
+      throw_error("BuildNormFTest()", msg);
     }
 
     // ------------------------------------------
@@ -173,7 +173,7 @@ Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNor
     else
     {
       std::string msg = "\"Scale Type\" must be either \"Unscaled\" or \"Scaled\"!";
-      throwError("BuildNormFTest()", msg);
+      throw_error("BuildNormFTest()", msg);
     }
     // ------------------------------------------
     // increase iterator
@@ -239,7 +239,7 @@ Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNor
       std::ostringstream msg;
       msg << "The \"Quantity Type\" is a required parameter \n"
           << "and the chosen option \"" << quantity_type_string << "\" is invalid!";
-      throwError("BuildNormUpdateTest()", msg.str());
+      throw_error("BuildNormUpdateTest()", msg.str());
     }
     else
       quantitytypes.push_back(qType);
@@ -255,7 +255,7 @@ Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNor
     else
     {
       std::string msg = "\"Tolerance Type\" must be either \"Absolute\" or \"Relative\"!";
-      throwError("BuildNormUpdateTest()", msg);
+      throw_error("BuildNormUpdateTest()", msg);
     }
 
     // ------------------------------------------
@@ -279,7 +279,7 @@ Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNor
     else
     {
       std::string msg = "\"Norm Type\" must be either \"Two Norm\", \"One Norm\", or \"Max Norm\"!";
-      throwError("BuildNormUpdateTest()", msg);
+      throw_error("BuildNormUpdateTest()", msg);
     }
 
     // ------------------------------------------
@@ -293,7 +293,7 @@ Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNor
     else
     {
       std::string msg = "\"Scale Type\" must be either \"Unscaled\" or \"Scaled\"!";
-      throwError("BuildNormUpdateTest()", msg);
+      throw_error("BuildNormUpdateTest()", msg);
     }
     // ------------------------------------------
     // increase iterator
@@ -361,7 +361,7 @@ Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNor
       std::ostringstream msg;
       msg << "The \"Quantity Type\" is a required parameter \n"
           << "and the chosen option \"" << quantity_type_string << "\" is invalid!";
-      throwError("BuildNormWRMSTest()", msg.str());
+      throw_error("BuildNormWRMSTest()", msg.str());
     }
     else
       quantitytypes.push_back(qType);
@@ -403,7 +403,7 @@ Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNor
       std::string msg =
           "\"Disable Implicit Weighting\" must be either "
           "\"Yes\", \"yes\", \"No\" or \"no\"!";
-      throwError("BuildNormWRMSTest()", msg);
+      throw_error("BuildNormWRMSTest()", msg);
     }
 
     // ------------------------------------------
@@ -436,7 +436,7 @@ Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildAct
     std::ostringstream msg;
     msg << "The \"Quantity Type\" is a required parameter \n"
         << "and the chosen option \"" << quantity_type_string << "\" is invalid!";
-    throwError("BuildActiveSetTest()", msg.str());
+    throw_error("BuildActiveSetTest()", msg.str());
   }
 
   // ------------------------------------------
@@ -466,7 +466,7 @@ Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildCom
     combo_type = ::NOX::StatusTest::Combo::OR;
   else
   {
-    throwError("BuildComboTest()", "The \"Combo Type\" must be \"AND\" or \"OR\"!");
+    throw_error("BuildComboTest()", "The \"Combo Type\" must be \"AND\" or \"OR\"!");
   }
 
   Teuchos::RCP<NOX::NLN::StatusTest::Combo> combo_test =
@@ -510,7 +510,7 @@ bool NOX::NLN::StatusTest::Factory::CheckAndTagTest(const Teuchos::ParameterList
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::StatusTest::Factory::throwError(
+void NOX::NLN::StatusTest::Factory::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   std::ostringstream msg;

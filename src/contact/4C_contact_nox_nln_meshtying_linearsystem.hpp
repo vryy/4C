@@ -71,7 +71,7 @@ namespace NOX
 
        private:
         //! throws an error message
-        void throwError(const std::string& functionName, const std::string& errorMsg) const;
+        void throw_error(const std::string& functionName, const std::string& errorMsg) const;
 
        private:
         //! map of NOX::NLN::CONSTRAINT::Interface::Required objects

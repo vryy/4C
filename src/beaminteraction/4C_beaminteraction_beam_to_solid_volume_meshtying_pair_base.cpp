@@ -80,15 +80,15 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::CreateGeo
  *
  */
 template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::PreEvaluate()
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::pre_evaluate()
 {
-  // Call PreEvaluate on the geometry Pair.
+  // Call pre_evaluate on the geometry Pair.
   if (!meshtying_is_evaluated_)
   {
     GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
     GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
     this->get_coupling_reference_position(beam_coupling_ref, solid_coupling_ref);
-    CastGeometryPair()->PreEvaluate(
+    CastGeometryPair()->pre_evaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
   }
 }

@@ -49,7 +49,7 @@ void FSI::FluidXFEMAlgorithm::Timeloop()
 
     while (NotFinished())
     {
-      PrepareTimeStep();
+      prepare_time_step();
       Solve();
       Update();
       Output();
@@ -59,21 +59,21 @@ void FSI::FluidXFEMAlgorithm::Timeloop()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidXFEMAlgorithm::ReadRestart(int step)
+void FSI::FluidXFEMAlgorithm::read_restart(int step)
 {
-  time_ = MBFluidField()->ReadRestart(step);
+  time_ = MBFluidField()->read_restart(step);
   step_ = step;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidXFEMAlgorithm::PrepareTimeStep()
+void FSI::FluidXFEMAlgorithm::prepare_time_step()
 {
   step_ += 1;
   time_ += dt_;
 
 
-  MBFluidField()->PrepareTimeStep();
+  MBFluidField()->prepare_time_step();
 }
 
 

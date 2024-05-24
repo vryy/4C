@@ -150,7 +150,7 @@ void MAT::PlasticDruckerPrager::Update()
   std::fill(strainbarplcurr_.begin(), strainbarplcurr_.end(), 0.0);
 }
 
-void MAT::PlasticDruckerPrager::SetupCmat(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat)
+void MAT::PlasticDruckerPrager::setup_cmat(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat)
 {
   double young = params_->youngs_;
 
@@ -357,7 +357,7 @@ void MAT::PlasticDruckerPrager::EvaluateFAD(const CORE::LINALG::Matrix<3, 3>* de
   }
   else
   {
-    SetupCmat(*cmat);
+    setup_cmat(*cmat);
   }
 }
 

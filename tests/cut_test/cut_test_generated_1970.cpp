@@ -2988,7 +2988,7 @@ void test_generated_1970()
     hex8_xyze(2, 7) = 0.85;
     nids.push_back(2105);
 
-    intersection.AddElement(1970, nids, hex8_xyze, CORE::FE::CellType::hex8);
+    intersection.add_element(1970, nids, hex8_xyze, CORE::FE::CellType::hex8);
   }
 
 

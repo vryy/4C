@@ -34,14 +34,14 @@ FSI::FluidFluidMonolithicFluidSplit::FluidFluidMonolithicFluidSplit(
     : MonolithicFluidSplit(comm, timeparams)
 {
   // cast to problem-specific fluid-wrapper
-  fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::FluidFluidFSI>(MonolithicFluidSplit::FluidField());
+  fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::FluidFluidFSI>(MonolithicFluidSplit::fluid_field());
 
   // cast to problem-specific ALE-wrapper
-  ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleXFFsiWrapper>(MonolithicFluidSplit::AleField());
+  ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleXFFsiWrapper>(MonolithicFluidSplit::ale_field());
 
   // XFFSI_Full_Newton is an invalid choice together with NOX,
   // because DOF-maps can change from one iteration step to the other (XFEM cut)
-  if (FluidField()->monolithic_xffsi_approach() == INPAR::XFEM::XFFSI_Full_Newton)
+  if (fluid_field()->monolithic_xffsi_approach() == INPAR::XFEM::XFFSI_Full_Newton)
     FOUR_C_THROW("NOX-based XFFSI Approach does not work with XFFSI_Full_Newton!");
 }
 
@@ -50,12 +50,12 @@ FSI::FluidFluidMonolithicFluidSplit::FluidFluidMonolithicFluidSplit(
 void FSI::FluidFluidMonolithicFluidSplit::Update()
 {
   // time to relax the ALE-mesh?
-  if (FluidField()->IsAleRelaxationStep(Step()))
+  if (fluid_field()->IsAleRelaxationStep(Step()))
   {
     if (Comm().MyPID() == 0) IO::cout << "Relaxing Ale" << IO::endl;
 
-    AleField()->Solve();
-    FluidField()->apply_mesh_displacement(AleToFluid(AleField()->Dispnp()));
+    ale_field()->Solve();
+    fluid_field()->apply_mesh_displacement(AleToFluid(ale_field()->Dispnp()));
   }
 
   // update fields
@@ -64,15 +64,15 @@ void FSI::FluidFluidMonolithicFluidSplit::Update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidFluidMonolithicFluidSplit::PrepareTimeStep()
+void FSI::FluidFluidMonolithicFluidSplit::prepare_time_step()
 {
   // prepare time step on subsequent field & increment
-  FSI::MonolithicFluidSplit::PrepareTimeStep();
+  FSI::MonolithicFluidSplit::prepare_time_step();
 
   // when this is the first call or we haven't relaxed the ALE-mesh
   // previously, the DOF-maps have not
   // changed since system setup
-  if (Step() == 0 || !FluidField()->IsAleRelaxationStep(Step() - 1)) return;
+  if (Step() == 0 || !fluid_field()->IsAleRelaxationStep(Step() - 1)) return;
 
   // as the new xfem-cut may lead to a change in the fluid dof-map,
   // we have to refresh the block system matrix,
@@ -93,11 +93,11 @@ void FSI::FluidFluidMonolithicFluidSplit::setup_dbc_map_extractor()
   // structure DBC
   dbcmaps.push_back(StructureField()->GetDBCMapExtractor()->CondMap());
   // fluid DBC (including background & embedded discretization)
-  dbcmaps.push_back(FluidField()->GetDBCMapExtractor()->CondMap());
+  dbcmaps.push_back(fluid_field()->GetDBCMapExtractor()->CondMap());
   // ALE-DBC-maps, free of FSI DOF
   std::vector<Teuchos::RCP<const Epetra_Map>> aleintersectionmaps;
-  aleintersectionmaps.push_back(AleField()->GetDBCMapExtractor()->CondMap());
-  aleintersectionmaps.push_back(AleField()->Interface()->OtherMap());
+  aleintersectionmaps.push_back(ale_field()->GetDBCMapExtractor()->CondMap());
+  aleintersectionmaps.push_back(ale_field()->Interface()->OtherMap());
   Teuchos::RCP<Epetra_Map> aleintersectionmap =
       CORE::LINALG::MultiMapExtractor::IntersectMaps(aleintersectionmaps);
   dbcmaps.push_back(aleintersectionmap);
@@ -105,7 +105,7 @@ void FSI::FluidFluidMonolithicFluidSplit::setup_dbc_map_extractor()
   Teuchos::RCP<const Epetra_Map> dbcmap = CORE::LINALG::MultiMapExtractor::MergeMaps(dbcmaps);
 
   // finally, create the global FSI Dirichlet map extractor
-  dbcmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(*DofRowMap(), dbcmap, true));
+  dbcmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(*dof_row_map(), dbcmap, true));
   if (dbcmaps_ == Teuchos::null)
   {
     FOUR_C_THROW("Creation of Dirichlet map extractor failed.");
@@ -117,7 +117,7 @@ void FSI::FluidFluidMonolithicFluidSplit::setup_dbc_map_extractor()
 void FSI::FluidFluidMonolithicFluidSplit::Output()
 {
   StructureField()->Output();
-  FluidField()->Output();
+  fluid_field()->Output();
 
   // output Lagrange multiplier
   {
@@ -125,19 +125,19 @@ void FSI::FluidFluidMonolithicFluidSplit::Output()
     // for output, we want to insert lambda into a full vector, defined on the embedded fluid field
     // 1. insert into vector containing all fluid DOF
     Teuchos::RCP<Epetra_Vector> lambdafull =
-        FluidField()->Interface()->InsertFSICondVector(FSI::MonolithicFluidSplit::GetLambda());
+        fluid_field()->Interface()->InsertFSICondVector(FSI::MonolithicFluidSplit::GetLambda());
     // 2. extract the embedded fluid part
     Teuchos::RCP<Epetra_Vector> lambdaemb =
-        FluidField()->x_fluid_fluid_map_extractor()->ExtractFluidVector(lambdafull);
+        fluid_field()->x_fluid_fluid_map_extractor()->ExtractFluidVector(lambdafull);
 
     const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
     const int uprestart = fsidyn.get<int>("RESTARTEVRY");
     const int upres = fsidyn.get<int>("RESULTSEVRY");
-    if ((uprestart != 0 && FluidField()->Step() % uprestart == 0) ||
-        FluidField()->Step() % upres == 0)
-      FluidField()->DiscWriter()->WriteVector("fsilambda", lambdaemb);
+    if ((uprestart != 0 && fluid_field()->Step() % uprestart == 0) ||
+        fluid_field()->Step() % upres == 0)
+      fluid_field()->DiscWriter()->WriteVector("fsilambda", lambdaemb);
   }
-  AleField()->Output();
+  ale_field()->Output();
 
   if (StructureField()->get_constraint_manager()->HaveMonitor())
   {
@@ -148,27 +148,27 @@ void FSI::FluidFluidMonolithicFluidSplit::Output()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidFluidMonolithicFluidSplit::ReadRestart(int step)
+void FSI::FluidFluidMonolithicFluidSplit::read_restart(int step)
 {
   // Read Lagrange Multiplier (associated with embedded fluid)
   {
     Teuchos::RCP<Epetra_Vector> lambdaemb = Teuchos::rcp(
-        new Epetra_Vector(*(FluidField()->x_fluid_fluid_map_extractor()->FluidMap()), true));
+        new Epetra_Vector(*(fluid_field()->x_fluid_fluid_map_extractor()->FluidMap()), true));
     IO::DiscretizationReader reader = IO::DiscretizationReader(
-        FluidField()->Discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
+        fluid_field()->Discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
     reader.ReadVector(lambdaemb, "fsilambda");
     // Insert into vector containing the whole merged fluid DOF
     Teuchos::RCP<Epetra_Vector> lambdafull =
-        FluidField()->x_fluid_fluid_map_extractor()->InsertFluidVector(lambdaemb);
+        fluid_field()->x_fluid_fluid_map_extractor()->InsertFluidVector(lambdaemb);
     FSI::MonolithicFluidSplit::SetLambda(
-        FluidField()->Interface()->ExtractFSICondVector(lambdafull));
+        fluid_field()->Interface()->ExtractFSICondVector(lambdafull));
   }
 
-  StructureField()->ReadRestart(step);
-  FluidField()->ReadRestart(step);
-  AleField()->ReadRestart(step);
+  StructureField()->read_restart(step);
+  fluid_field()->read_restart(step);
+  ale_field()->read_restart(step);
 
-  SetTimeStep(FluidField()->Time(), FluidField()->Step());
+  SetTimeStep(fluid_field()->Time(), fluid_field()->Step());
 }
 
 FOUR_C_NAMESPACE_CLOSE

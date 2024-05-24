@@ -60,7 +60,7 @@ namespace CORE::LINALG
    *
    * Note: Call EquilibrateSystem() before Solve() and unequilibrate_increment() after Solve()
    * within specific problem. In case of linear problems, where the matrices do not change, it is
-   * possible to use EquilibrateMatrix() after assembly and EquilibrateRHS() before every Solve()
+   * possible to use equilibrate_matrix() after assembly and equilibrate_rhs() before every Solve()
    * call.
    */
   class Equilibration
@@ -76,7 +76,7 @@ namespace CORE::LINALG
      * @param[in,out] systemmatrix  system matrix
      * @param[in]     blockmaps     (block) map(s) of system matrix
      */
-    virtual void EquilibrateMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+    virtual void equilibrate_matrix(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmaps) const = 0;
 
     /*!
@@ -84,7 +84,7 @@ namespace CORE::LINALG
      *
      * @param[in,out] residual  residual vector
      */
-    virtual void EquilibrateRHS(Teuchos::RCP<Epetra_Vector> residual) const = 0;
+    virtual void equilibrate_rhs(Teuchos::RCP<Epetra_Vector> residual) const = 0;
 
     /*!
      * @brief equilibrate global system of equations if necessary
@@ -169,7 +169,7 @@ namespace CORE::LINALG
     //! return equilibration method
     EquilibrationMethod Method() const { return method_; }
 
-    void EquilibrateRHS(Teuchos::RCP<Epetra_Vector> residual) const override;
+    void equilibrate_rhs(Teuchos::RCP<Epetra_Vector> residual) const override;
 
     void unequilibrate_increment(Teuchos::RCP<Epetra_Vector> increment) const override;
 
@@ -184,7 +184,7 @@ namespace CORE::LINALG
   {
    public:
     EquilibrationSparse(EquilibrationMethod method, Teuchos::RCP<const Epetra_Map> dofrowmap);
-    void EquilibrateMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+    void equilibrate_matrix(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmaps) const override;
 
     /*!
@@ -192,7 +192,7 @@ namespace CORE::LINALG
      *
      * @param[in,out] systemmatrix  system matrix
      */
-    void EquilibrateMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix) const;
+    void equilibrate_matrix(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix) const;
   };
 
   /*----------------------------------------------------------------------*
@@ -202,7 +202,7 @@ namespace CORE::LINALG
   {
    public:
     EquilibrationBlock(EquilibrationMethod method, Teuchos::RCP<const Epetra_Map> dofrowmap);
-    void EquilibrateMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+    void equilibrate_matrix(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmaps) const override;
   };
 
@@ -214,10 +214,10 @@ namespace CORE::LINALG
    public:
     EquilibrationBlockSpecific(
         const std::vector<EquilibrationMethod>& method, Teuchos::RCP<const Epetra_Map> dofrowmap);
-    void EquilibrateMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+    void equilibrate_matrix(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmaps) const override;
 
-    void EquilibrateRHS(const Teuchos::RCP<Epetra_Vector> residual) const override;
+    void equilibrate_rhs(const Teuchos::RCP<Epetra_Vector> residual) const override;
 
     void unequilibrate_increment(Teuchos::RCP<Epetra_Vector> increment) const override;
 
@@ -232,12 +232,12 @@ namespace CORE::LINALG
   {
    public:
     EquilibrationNone(Teuchos::RCP<const Epetra_Map> dofrowmap) : Equilibration(dofrowmap) {}
-    void EquilibrateMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+    void equilibrate_matrix(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmaps) const override
     {
     }
 
-    void EquilibrateRHS(Teuchos::RCP<Epetra_Vector> residual) const override {}
+    void equilibrate_rhs(Teuchos::RCP<Epetra_Vector> residual) const override {}
 
     void unequilibrate_increment(Teuchos::RCP<Epetra_Vector> increment) const override {}
   };

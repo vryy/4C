@@ -137,7 +137,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::StructOp(
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::InitialGuess()
+Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::initial_guess()
 {
   if (get_kinematic_coupling())
   {
@@ -185,7 +185,7 @@ void FSI::DirichletNeumannVel::Output()
 {
   FSI::DirichletNeumann::Output();
   constraint_manager_->Output(Time(), Step());
-  visualization_output_writer_->WriteOutputRuntime(constraint_manager_, Step(), Time());
+  visualization_output_writer_->write_output_runtime(constraint_manager_, Step(), Time());
   StructureField()->Discretization()->Writer()->ClearMapCache();
   MBFluidField()->Discretization()->Writer()->ClearMapCache();
 }

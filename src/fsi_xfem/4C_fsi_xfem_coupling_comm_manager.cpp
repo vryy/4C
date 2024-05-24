@@ -210,15 +210,15 @@ void XFEM::CouplingCommManager::Setup(std::map<int, Teuchos::RCP<const DRT::Disc
   if (cond_name_ != "")  // Setup for Communication on Condition
   {
     setup_multi_map_extractors(dis);
-    SetupCouplings(dis);
+    setup_couplings(dis);
   }
   else  // Setup for Communication on full Discretization
   {
-    SetupFullCouplings(dis);         // First Couple full discretizations (from startdim to enddim)
+    setup_full_couplings(dis);       // First Couple full discretizations (from startdim to enddim)
     setup_full_map_extractors(dis);  // Setup Extractors between Couplingpart of discretization and
                                      // full discretization (e.g. pres <==> vel&pres)
   }
-  SetupFullExtractor(dis);
+  setup_full_extractor(dis);
   return;
 }
 
@@ -236,7 +236,7 @@ void XFEM::CouplingCommManager::setup_multi_map_extractors(
     mme_[dit->first] = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor());
     mcs->AddSelector(Teuchos::rcp(
         new CORE::Conditions::NDimConditionSelector(*dit->second, cond_name_, startdim_, enddim_)));
-    mcs->SetupExtractor(*dit->second, *dit->second->DofRowMap(), *mme_[dit->first]);
+    mcs->SetupExtractor(*dit->second, *dit->second->dof_row_map(), *mme_[dit->first]);
   }
 }
 
@@ -259,14 +259,14 @@ void XFEM::CouplingCommManager::setup_full_map_extractors(
     if (static_cast<std::size_t>(dit->first) < dis.size() - 1)
     {
       Teuchos::RCP<CORE::ADAPTER::Coupling> coup = GetCoupling(dit->first, dit->first + 1);
-      me->Setup(*dit->second->DofRowMap(), coup->MasterDofMap(),
-          CORE::LINALG::SplitMap(*dit->second->DofRowMap(), *coup->MasterDofMap()));
+      me->Setup(*dit->second->dof_row_map(), coup->MasterDofMap(),
+          CORE::LINALG::SplitMap(*dit->second->dof_row_map(), *coup->MasterDofMap()));
     }
     else
     {
       Teuchos::RCP<CORE::ADAPTER::Coupling> coup = GetCoupling(dit->first - 1, dit->first);
-      me->Setup(*dit->second->DofRowMap(), coup->SlaveDofMap(),
-          CORE::LINALG::SplitMap(*dit->second->DofRowMap(), *coup->SlaveDofMap()));
+      me->Setup(*dit->second->dof_row_map(), coup->SlaveDofMap(),
+          CORE::LINALG::SplitMap(*dit->second->dof_row_map(), *coup->SlaveDofMap()));
     }
     mme_[dit->first] = me;
   }
@@ -276,7 +276,7 @@ void XFEM::CouplingCommManager::setup_full_map_extractors(
 /*------------------------------------------------------------------------------------------------*
 | Setup Couplings between different discretizations with the same condition on in  -- ager 03/2016|
 *------------------------------------------------------------------------------------------------*/
-void XFEM::CouplingCommManager::SetupCouplings(
+void XFEM::CouplingCommManager::setup_couplings(
     std::map<int, Teuchos::RCP<const DRT::Discretization>> dis)
 {
   if (dis.size() < 2) return;
@@ -315,7 +315,7 @@ void XFEM::CouplingCommManager::SetupCouplings(
 /*------------------------------------------------------------------------------------------------*
 | Setup Couplings between different discretizations full coupling                  -- ager 07/2016|
 *------------------------------------------------------------------------------------------------*/
-void XFEM::CouplingCommManager::SetupFullCouplings(
+void XFEM::CouplingCommManager::setup_full_couplings(
     std::map<int, Teuchos::RCP<const DRT::Discretization>> dis)
 {
   if (dis.size() < 2) return;
@@ -335,7 +335,7 @@ void XFEM::CouplingCommManager::SetupFullCouplings(
       std::map<int, Teuchos::RCP<const DRT::Discretization>>::iterator betadis = dis.find(idx_b);
       if (betadis == dis.end()) FOUR_C_THROW("Couldn't find discretization for key %d", idx_b);
 
-      coup_[key]->SetupCoupling(*(*alphadis).second, *(*betadis).second,
+      coup_[key]->setup_coupling(*(*alphadis).second, *(*betadis).second,
           *(*alphadis).second->NodeRowMap(), *(*betadis).second->NodeRowMap(), enddim_ - startdim_,
           false);
     }
@@ -346,7 +346,7 @@ void XFEM::CouplingCommManager::SetupFullCouplings(
 /*------------------------------------------------------------------------------------------------*
 | Setup Full Extractor of all involved discretisations                                ager 03/2016|
 *------------------------------------------------------------------------------------------------*/
-void XFEM::CouplingCommManager::SetupFullExtractor(
+void XFEM::CouplingCommManager::setup_full_extractor(
     std::map<int, Teuchos::RCP<const DRT::Discretization>> dis)
 {
   if (dis.size() < 2) return;
@@ -355,7 +355,7 @@ void XFEM::CouplingCommManager::SetupFullExtractor(
   for (std::map<int, Teuchos::RCP<const DRT::Discretization>>::iterator dit = dis.begin();
        dit != dis.end(); ++dit)
   {
-    maps.push_back(Teuchos::rcp(new Epetra_Map(*(*dit).second->DofRowMap())));
+    maps.push_back(Teuchos::rcp(new Epetra_Map(*(*dit).second->dof_row_map())));
   }
 
   Teuchos::RCP<Epetra_Map> fullmap = CORE::LINALG::MultiMapExtractor::MergeMaps(maps);

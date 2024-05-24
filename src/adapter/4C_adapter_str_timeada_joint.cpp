@@ -35,7 +35,7 @@ FOUR_C_NAMESPACE_OPEN
 ADAPTER::StructureTimeAdaJoint::StructureTimeAdaJoint(Teuchos::RCP<Structure> structure)
     : StructureTimeAda(structure), sta_(Teuchos::null), sta_wrapper_(Teuchos::null)
 {
-  if (stm_->IsSetup()) SetupAuxiliar();
+  if (stm_->is_setup()) SetupAuxiliar();
 }
 
 /*----------------------------------------------------------------------*/
@@ -194,12 +194,12 @@ void ADAPTER::StructureTimeAdaJoint::integrate_step_auxiliar()
   locerrdisn_->Update(1.0, *(gstate.GetDisNp()), 0.0);
 
   // reset
-  sta_->ResetStep();
+  sta_->reset_step();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimeAdaJoint::UpdateAuxiliar()
+void ADAPTER::StructureTimeAdaJoint::update_auxiliar()
 {
   // copy the data from main integrator to the auxiliary one
   // for reference: the vector map of the global state vectors may need to be checked to ensure they
@@ -233,15 +233,15 @@ void ADAPTER::StructureTimeAdaJoint::UpdateAuxiliar()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimeAdaJoint::ResetStep()
+void ADAPTER::StructureTimeAdaJoint::reset_step()
 {
   // base reset
-  ADAPTER::StructureTimeAda::ResetStep();
+  ADAPTER::StructureTimeAda::reset_step();
   // set current step size
   sta_->SetDeltaTime(stepsize_);
   sta_->SetTimeNp(time_ + stepsize_);
   // reset the integrator
-  sta_->ResetStep();
+  sta_->reset_step();
 }
 
 FOUR_C_NAMESPACE_CLOSE

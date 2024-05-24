@@ -58,8 +58,8 @@ namespace SCATRA
 
      Evaluate terms of your weak formulation on elements marked with a given condition.
 
-    \note The implementation of EvaluateCondition in this class, calls
-          \ref DRT::Discretization::EvaluateCondition on the auxiliary
+    \note The implementation of evaluate_condition in this class, calls
+          \ref DRT::Discretization::evaluate_condition on the auxiliary
           discretization. Since, this discretization has the dofs of both,
           the volume-bound scalars and the surface bound scalars, every
           term involving one or both kinds of scalars can easily be evaluated.
@@ -75,7 +75,7 @@ namespace SCATRA
     \date 08/16
     \author rauch
     */
-    void EvaluateCondition(Teuchos::ParameterList& params,
+    void evaluate_condition(Teuchos::ParameterList& params,
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -85,7 +85,7 @@ namespace SCATRA
     /*!
     \brief Set state on an discretization hidden in any MeshtyingStrategy.
 
-     This method should encapsulate a standard SetState(...) of the discretizations
+     This method should encapsulate a standard set_state(...) of the discretizations
      you want to consider. See \ref HeterogeneousReactionStrategy for an example.
 
     \param nds (in): number of dofset
@@ -96,7 +96,7 @@ namespace SCATRA
     \date 12/16
     \author rauch
     */
-    void SetState(
+    void set_state(
         unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state) override;
 
    private:
@@ -118,29 +118,29 @@ namespace SCATRA
 
    protected:
     //! returns true if Setup() was called and is still valid
-    bool IsSetup() { return issetup_; };
+    bool is_setup() { return issetup_; };
 
     //! returns true if Init(..) was called and is still valid
-    bool IsInit() { return isinit_; };
+    bool is_init() { return isinit_; };
 
     //! check if \ref Setup() was called
     void CheckIsSetup()
     {
-      if (not IsSetup()) FOUR_C_THROW("Setup() was not called.");
+      if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
     };
 
     //! check if \ref Init() was called
-    void CheckIsInit()
+    void check_is_init()
     {
-      if (not IsInit()) FOUR_C_THROW("Init(...) was not called.");
+      if (not is_init()) FOUR_C_THROW("Init(...) was not called.");
     };
 
    public:
     //! set flag true after setup or false if setup became invalid
-    void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; };
+    void set_is_setup(bool trueorfalse) { issetup_ = trueorfalse; };
 
     //! set flag true after init or false if init became invalid
-    void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
+    void set_is_init(bool trueorfalse) { isinit_ = trueorfalse; };
 
   };  // class MeshtyingStrategyStd
 }  // namespace SCATRA

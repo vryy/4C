@@ -40,13 +40,13 @@ STR::MODELEVALUATOR::BeamInteractionOld::BeamInteractionOld()
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteractionOld::Setup()
 {
-  if (not IsInit()) FOUR_C_THROW("Init() has not been called, yet!");
+  if (not is_init()) FOUR_C_THROW("Init() has not been called, yet!");
 
   // setup the pointers for displacement and stiffness
   disnp_ptr_ = GState().GetDisNp();
   stiff_beaminteract_ptr_ =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
-  f_beaminteract_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMap(), true));
+  f_beaminteract_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*GState().dof_row_map(), true));
 
   // create beam contact manager
   Teuchos::RCP<DRT::Discretization> discret_ptr = DiscretPtr();
@@ -65,7 +65,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::Setup()
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteractionOld::Reset(const Epetra_Vector& x)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // update the structural displacement vector
   disnp_ptr_ = GState().GetDisNp();
@@ -77,9 +77,9 @@ void STR::MODELEVALUATOR::BeamInteractionOld::Reset(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BeamInteractionOld::EvaluateForce()
+bool STR::MODELEVALUATOR::BeamInteractionOld::evaluate_force()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // ToDo replace the parameter list by a beam interaction model data container
   Teuchos::ParameterList beamcontactparams;
@@ -95,9 +95,9 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::EvaluateForce()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BeamInteractionOld::EvaluateStiff()
+bool STR::MODELEVALUATOR::BeamInteractionOld::evaluate_stiff()
 {
-  CheckInitSetup();
+  check_init_setup();
 
 
   // ToDo replace the parameter list by a beam interaction model data container
@@ -114,9 +114,9 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::EvaluateStiff()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BeamInteractionOld::EvaluateForceStiff()
+bool STR::MODELEVALUATOR::BeamInteractionOld::evaluate_force_stiff()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // ToDo replace the parameter list by a beam interaction model data container
   Teuchos::ParameterList beamcontactparams;
@@ -141,7 +141,7 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::EvaluateForceStiff()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BeamInteractionOld::AssembleForce(
+bool STR::MODELEVALUATOR::BeamInteractionOld::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
   // Todo take care of the minus sign in front of timefac_np
@@ -151,7 +151,7 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::AssembleForce(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BeamInteractionOld::AssembleJacobian(
+bool STR::MODELEVALUATOR::BeamInteractionOld::assemble_jacobian(
     CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
@@ -177,9 +177,9 @@ void STR::MODELEVALUATOR::BeamInteractionOld::WriteRestart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::ReadRestart(IO::DiscretizationReader& ioreader)
+void STR::MODELEVALUATOR::BeamInteractionOld::read_restart(IO::DiscretizationReader& ioreader)
 {
-  beamcman_->ReadRestart(ioreader);  // ToDo
+  beamcman_->read_restart(ioreader);  // ToDo
   return;
 }
 
@@ -253,8 +253,8 @@ void STR::MODELEVALUATOR::BeamInteractionOld::ResetStepState() { return; }
 Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::BeamInteractionOld::get_block_dof_row_map_ptr()
     const
 {
-  CheckInitSetup();
-  return GState().DofRowMap();
+  check_init_setup();
+  return GState().dof_row_map();
 }
 
 /*----------------------------------------------------------------------*
@@ -279,7 +279,7 @@ STR::MODELEVALUATOR::BeamInteractionOld::get_last_time_step_solution_ptr() const
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteractionOld::PostOutput()
 {
-  CheckInitSetup();
+  check_init_setup();
   // empty
 
   return;

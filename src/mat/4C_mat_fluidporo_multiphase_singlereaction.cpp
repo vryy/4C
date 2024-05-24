@@ -27,7 +27,7 @@ MAT::PAR::FluidPoroSingleReaction::FluidPoroSingleReaction(
       totalnummultiphasedof_(matdata->Get<int>("TOTALNUMDOF")),
       numfluidphases_(totalnummultiphasedof_ - 2 * numvolfrac_),
       scale_(matdata->Get<std::vector<int>>("SCALE")),
-      coupling_(SetCouplingType(matdata)),
+      coupling_(set_coupling_type(matdata)),
       functID_(matdata->Get<int>("FUNCTID")),
       isinit_(false),
       scalarnames_(numscal_),
@@ -47,11 +47,11 @@ void MAT::PAR::FluidPoroSingleReaction::Initialize()
   switch (GLOBAL::Problem::Instance()->NDim())
   {
     case 1:
-      return InitializeInternal<1>();
+      return initialize_internal<1>();
     case 2:
-      return InitializeInternal<2>();
+      return initialize_internal<2>();
     case 3:
-      return InitializeInternal<3>();
+      return initialize_internal<3>();
     default:
       FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
   }
@@ -60,7 +60,7 @@ void MAT::PAR::FluidPoroSingleReaction::Initialize()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void MAT::PAR::FluidPoroSingleReaction::InitializeInternal()
+void MAT::PAR::FluidPoroSingleReaction::initialize_internal()
 {
   // safety check
   if (GLOBAL::Problem::Instance()
@@ -340,7 +340,7 @@ Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FluidPoroSingleReaction::CreateMater
  *  translate coupling type                             vuong 08/16      |
  *----------------------------------------------------------------------*/
 MAT::PAR::FluidPoroSingleReaction::PorofluidReactionCoupling
-MAT::PAR::FluidPoroSingleReaction::SetCouplingType(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+MAT::PAR::FluidPoroSingleReaction::set_coupling_type(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
 {
   if ((matdata->Get<std::string>("COUPLING")) == "scalar_by_function")
   {

@@ -34,8 +34,8 @@ namespace THR
   namespace AUX
   {
     //! Determine norm of force residual
-    double CalculateVectorNorm(const enum INPAR::THR::VectorNorm norm,  //!< norm to use
-        const Teuchos::RCP<Epetra_Vector> vect                          //!< the vector of interest
+    double calculate_vector_norm(const enum INPAR::THR::VectorNorm norm,  //!< norm to use
+        const Teuchos::RCP<Epetra_Vector> vect  //!< the vector of interest
     );
 
   }  // namespace AUX

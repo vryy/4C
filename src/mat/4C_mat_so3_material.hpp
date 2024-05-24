@@ -190,7 +190,7 @@ namespace MAT
      * @param[in] params Container for additional information passed from the element
      * @param[in] eleGID Global element ID
      */
-    virtual void PostSetup(Teuchos::ParameterList& params, const int eleGID) {}
+    virtual void post_setup(Teuchos::ParameterList& params, const int eleGID) {}
 
     /*!
      * @brief Update of GP data (e.g., history variables)
@@ -226,7 +226,7 @@ namespace MAT
     /*!
      * @brief Reset time step (for time adaptivity)
      */
-    virtual void ResetStep() {}
+    virtual void reset_step() {}
 
     /*!
      * @brief Store internal history variables to be eventually reset at some point
@@ -309,7 +309,7 @@ namespace MAT
     /*!
      * @brief Return whether the material requires the deformation gradient for its evaluation
      */
-    virtual bool NeedsDefgrd() { return false; }
+    virtual bool needs_defgrd() { return false; }
     //@}
   };
 }  // namespace MAT

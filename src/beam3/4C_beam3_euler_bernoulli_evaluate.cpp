@@ -238,7 +238,7 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
 
 /*-----------------------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -1133,7 +1133,7 @@ void DRT::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
     if (brownian_dyn_params_interface_ptr() != Teuchos::null)
       UnShiftNodePosition(disp, *brownian_dyn_params_interface().get_periodic_bounding_box());
 
-    UpdateDispTotlag<nnode, dofpn>(disp, disp_totlag);
+    update_disp_totlag<nnode, dofpn>(disp, disp_totlag);
 
 #ifndef INEXTENSIBLE
 #ifdef BEAM3EBAUTOMATICDIFF
@@ -1843,7 +1843,7 @@ void DRT::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
 /*-----------------------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------------------*/
 template <unsigned int nnode, unsigned int dofpn>
-void DRT::ELEMENTS::Beam3eb::UpdateDispTotlag(
+void DRT::ELEMENTS::Beam3eb::update_disp_totlag(
     const std::vector<double>& disp, CORE::LINALG::Matrix<dofpn * nnode, 1>& disp_totlag) const
 {
 #ifndef INEXTENSIBLE
@@ -2204,7 +2204,7 @@ void DRT::ELEMENTS::Beam3eb::calc_brownian_forces_and_stiff(Teuchos::ParameterLi
 
   // update current total position state of element
   CORE::LINALG::Matrix<nnode * vpernode * ndim, 1> disp_totlag(true);
-  UpdateDispTotlag<nnode, vpernode * ndim>(disp, disp_totlag);
+  update_disp_totlag<nnode, vpernode * ndim>(disp, disp_totlag);
 
   // export current velocity state of element to fixed size matrix
   const CORE::LINALG::Matrix<nnode * vpernode * ndim, 1> vel_fixedsize(vel.data());
@@ -2277,7 +2277,7 @@ template void DRT::ELEMENTS::Beam3eb::calc_brownian_forces_and_stiff<2, 2, 3>(
     Teuchos::ParameterList&, std::vector<double>&, std::vector<double>&,
     CORE::LINALG::SerialDenseMatrix*, CORE::LINALG::SerialDenseVector*);
 
-template void DRT::ELEMENTS::Beam3eb::UpdateDispTotlag<2, 6>(
+template void DRT::ELEMENTS::Beam3eb::update_disp_totlag<2, 6>(
     const std::vector<double>&, CORE::LINALG::Matrix<12, 1>&) const;
 
 FOUR_C_NAMESPACE_CLOSE

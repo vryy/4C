@@ -31,7 +31,7 @@ CORE::GEO::CUT::IMPL::SimplePointGraph1D::SimplePointGraph1D(Mesh &mesh, Element
   Cycle cycle;
   FillGraph(element, side, cycle, strategy);
 
-  GetGraph().FindCycles(element, side, cycle, location, strategy);
+  GetGraph().find_cycles(element, side, cycle, location, strategy);
 }
 
 /*----------------------------------------------------------------------------*
@@ -86,7 +86,7 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph1D::AddCutPointsToCycle(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IMPL::SimplePointGraph1D::Graph::FindCycles(
+void CORE::GEO::CUT::IMPL::SimplePointGraph1D::Graph::find_cycles(
     Element *element, Side *side, Cycle &cycle, Location location, Strategy strategy)
 {
   // each point defines a own main cycle in 1D
@@ -132,12 +132,12 @@ bool CORE::GEO::CUT::IMPL::SimplePointGraph2D::Graph::HasSinglePoints(Location l
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IMPL::SimplePointGraph2D::Graph::FindCycles(
+void CORE::GEO::CUT::IMPL::SimplePointGraph2D::Graph::find_cycles(
     Element *element, Side *side, Cycle &cycle, Location location, Strategy strategy)
 {
   if (location == element_side)
   {
-    CORE::GEO::CUT::IMPL::PointGraph::Graph::FindCycles(element, side, cycle, location, strategy);
+    CORE::GEO::CUT::IMPL::PointGraph::Graph::find_cycles(element, side, cycle, location, strategy);
 
     if (correct_rotation_direction_) correct_rotation_direction(element->Sides()[0], main_cycles_);
 
@@ -211,7 +211,7 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph2D::FindLineFacetCycles(
 
   graph_2d_->set_correct_rotation_direction(true);
 
-  FindCycles(parent_element, cycle);
+  find_cycles(parent_element, cycle);
 }
 
 /*----------------------------------------------------------------------------*
@@ -238,10 +238,10 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph2D::fill_graph_and_cycle_with_line_fa
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IMPL::SimplePointGraph2D::FindCycles(Element *element, Cycle &cycle)
+void CORE::GEO::CUT::IMPL::SimplePointGraph2D::find_cycles(Element *element, Cycle &cycle)
 {
   Side *side = element->Sides()[0];
-  GetGraph().FindCycles(element, side, cycle, PointGraph::element_side, PointGraph::all_lines);
+  GetGraph().find_cycles(element, side, cycle, PointGraph::element_side, PointGraph::all_lines);
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

@@ -43,7 +43,7 @@ namespace AIRWAY
     RedAirwayTissue(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
 
-    void ReadRestart(const int step) override;
+    void read_restart(const int step) override;
 
     void SetupRedAirways();
 

@@ -149,12 +149,12 @@ unsigned CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::Id() const
 void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::Update(
     CONTACT::ParamsInterface& cparams, std::ostream& os)
 {
-  PrintUpdateHead(os);
+  print_update_head(os);
 
   const bool is_predict = cparams.IsPredictor();
-  const bool check_pen = CheckPenetration(os);
+  const bool check_pen = check_penetration(os);
   bool is_asymptotic =
-      (not is_predict and check_pen and (CheckResidual(cparams, os) or CheckCnBound(os)));
+      (not is_predict and check_pen and (check_residual(cparams, os) or check_cn_bound(os)));
 
   // if the status is the same as before, do nothing
   if (is_asymptotic == is_asymptotic_) return;
@@ -202,14 +202,14 @@ void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::Update(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::CheckResidual(
+bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::check_residual(
     CONTACT::ParamsInterface& cparams, std::ostream& os)
 {
   Teuchos::RCP<Epetra_Vector> force_no_dbc_ptr = get_structural_force_without_dbc_dofs(cparams);
 
   Teuchos::RCP<Epetra_Vector> str_slmaforce = Teuchos::null;
   Teuchos::RCP<Epetra_Vector> constr_slmaforce = Teuchos::null;
-  GetActiveSlMaForces(*force_no_dbc_ptr, str_slmaforce, constr_slmaforce);
+  get_active_sl_ma_forces(*force_no_dbc_ptr, str_slmaforce, constr_slmaforce);
 
   const bool angle_check =
       check_angle_between_str_force_and_contact_force(*str_slmaforce, *constr_slmaforce, os);
@@ -296,7 +296,7 @@ bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::CheckCnBound(std::ostream& os) const
+bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::check_cn_bound(std::ostream& os) const
 {
   static const double cn_bound = 1.0e+15;
   double max_cn = 0.0;
@@ -316,7 +316,7 @@ bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::CheckCnBound(std::ostr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::GetActiveSlMaForces(
+void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::get_active_sl_ma_forces(
     const Epetra_Vector& str_force, Teuchos::RCP<Epetra_Vector>& str_slmaforce,
     Teuchos::RCP<Epetra_Vector>& constr_slmaforce) const
 {
@@ -398,7 +398,7 @@ CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::get_structural_force_withou
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::CheckPenetration(std::ostream& os)
+bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::check_penetration(std::ostream& os)
 {
   // get the overall largest penetration value
   double min_awgap = 0.0;
@@ -407,7 +407,7 @@ bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::CheckPenetration(std::
   combo_.data_.AWGap().MaxValue(&max_awgap);
 
   const double max_abs_awgap = std::max(std::abs(min_awgap), std::abs(max_awgap));
-  const double penbound = GetPenetrationBound();
+  const double penbound = get_penetration_bound();
 
 #ifdef DEBUG_COMBO_STRATEGY
   IO::cout << __LINE__ << " -- " << __PRETTY_FUNCTION__ << IO::endl;
@@ -434,7 +434,7 @@ bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::CheckPenetration(std::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::GetPenetrationBound() const
+double CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::get_penetration_bound() const
 {
   double penbound = 1.0e12;
   for (const Teuchos::RCP<CONTACT::Interface>& cit : combo_.Interfaces())
@@ -453,7 +453,7 @@ double CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::GetPenetrationBound(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::PrintUpdateHead(std::ostream& os) const
+void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::print_update_head(std::ostream& os) const
 {
   os << "--- ComboStrategy::PreAsymptoticSwitching::Update\n";
 }

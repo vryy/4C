@@ -75,7 +75,7 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
     //! set current time
-    void SetCurrentTime(const double currenttime);
+    void set_current_time(const double currenttime);
 
     //! insert surface tension evaluation dependent states
     void insert_particle_states_of_particle_types(
@@ -111,7 +111,7 @@ namespace PARTICLEINTERACTION
     void correct_triple_point_normal() const;
 
     //! compute curvature
-    void ComputeCurvature() const;
+    void compute_curvature() const;
 
     //! compute surface tension contribution
     void compute_surface_tension_contribution() const;

@@ -50,7 +50,7 @@ CORE::GEO::CUT::BoundarycellIntegration::generate_boundary_cell_integration_rule
 
     std::vector<std::vector<double>> moment_matbc(
         num_func_, std::vector<double>(bcellgaus_pts_.size()));
-    momentFittingMatrix(moment_matbc, bcellgaus_pts_);
+    moment_fitting_matrix(moment_matbc, bcellgaus_pts_);
 
 
     // if all the elements in a row of the moment fitting matrix are zero, then the row has to be
@@ -355,7 +355,7 @@ void CORE::GEO::CUT::BoundarycellIntegration::distribute_boundary_cell_gauss_poi
 /*--------------------------------------------------------------------------------------------*
                                    form the moment fitting matrix
 *---------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::BoundarycellIntegration::momentFittingMatrix(
+void CORE::GEO::CUT::BoundarycellIntegration::moment_fitting_matrix(
     std::vector<std::vector<double>>& mom, std::vector<std::vector<double>> gauspts)
 {
   for (int i = 0; i < num_func_; i++)

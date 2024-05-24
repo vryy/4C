@@ -32,7 +32,7 @@ FLD::TimIntAC::TimIntAC(const Teuchos::RCP<DRT::Discretization>& actdis,
 /*----------------------------------------------------------------------*
  | output of solution vector to binio                        Thon 12/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntAC::ReadRestart(int step)
+void FLD::TimIntAC::read_restart(int step)
 {
   const Teuchos::ParameterList& fs3idyn = GLOBAL::Problem::Instance()->FS3IDynamicParams();
   const bool restartfrompartfsi = CORE::UTILS::IntegralValue<int>(fs3idyn, "RESTART_FROM_PART_FSI");

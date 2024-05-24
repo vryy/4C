@@ -26,7 +26,7 @@ namespace SSI
 {
   // forward declarations
   class SSIBase;
-  class SSIMono;
+  class SsiMono;
 
   /*!
     \brief result testing functionality for scalar-structure interaction problems
@@ -59,10 +59,10 @@ namespace SSI
      * @param[in] quantity  name of quantity to be tested
      * @return special result
      */
-    double ResultSpecial(const std::string& quantity) const;
+    double result_special(const std::string& quantity) const;
 
     //! return time integrator for monolithic scalar-structure interaction
-    const SSI::SSIMono& SSIMono() const;
+    const SSI::SsiMono& ssi_mono() const;
 
     //! time integrator for scalar-structure interaction
     const Teuchos::RCP<const SSI::SSIBase> ssi_base_;

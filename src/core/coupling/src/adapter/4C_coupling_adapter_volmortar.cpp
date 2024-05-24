@@ -81,7 +81,7 @@ void CORE::ADAPTER::MortarVolCoupl::Init(int spatial_dimension,
     if (coupleddof12 == nullptr or coupleddof21 == nullptr)
       FOUR_C_THROW("ERROR: No coupling dofs for volmortar algorithm specified!");
 
-    CreateAuxDofsets(dis1, dis2, coupleddof12, coupleddof21);
+    create_aux_dofsets(dis1, dis2, coupleddof12, coupleddof21);
   }
 
   // set flag
@@ -94,7 +94,7 @@ void CORE::ADAPTER::MortarVolCoupl::Init(int spatial_dimension,
  *----------------------------------------------------------------------*/
 void CORE::ADAPTER::MortarVolCoupl::Setup(const Teuchos::ParameterList& params)
 {
-  CheckInit();
+  check_init();
 
   // create material strategy
   if (materialstrategy_.is_null())
@@ -139,7 +139,7 @@ void CORE::ADAPTER::MortarVolCoupl::Setup(const Teuchos::ParameterList& params)
  *----------------------------------------------------------------------*/
 void CORE::ADAPTER::MortarVolCoupl::Redistribute()
 {
-  CheckInit();
+  check_init();
 
   // create vector of discr.
   std::vector<Teuchos::RCP<DRT::Discretization>> dis;
@@ -155,14 +155,14 @@ void CORE::ADAPTER::MortarVolCoupl::Redistribute()
 /*----------------------------------------------------------------------*
  |  Create Auxiliary dofsets for multiphysics                farah 06/15|
  *----------------------------------------------------------------------*/
-void CORE::ADAPTER::MortarVolCoupl::CreateAuxDofsets(Teuchos::RCP<DRT::Discretization> dis1,
+void CORE::ADAPTER::MortarVolCoupl::create_aux_dofsets(Teuchos::RCP<DRT::Discretization> dis1,
     Teuchos::RCP<DRT::Discretization> dis2, std::vector<int>* coupleddof12,
     std::vector<int>* coupleddof21)
 {
-  // first call FillComplete for single discretizations.
+  // first call fill_complete for single discretizations.
   // This way the physical dofs are numbered successively
-  dis1->FillComplete();
-  dis2->FillComplete();
+  dis1->fill_complete();
+  dis2->fill_complete();
 
   // build auxiliary dofsets, i.e. pseudo dofs on each discretization
   // add proxy of velocity related degrees of freedom to scatra discretization
@@ -175,13 +175,13 @@ void CORE::ADAPTER::MortarVolCoupl::CreateAuxDofsets(Teuchos::RCP<DRT::Discretiz
   if (dis1->AddDofSet(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in structure field");
 
   // call assign_degrees_of_freedom also for auxiliary dofsets
-  // note: the order of FillComplete() calls determines the gid numbering!
+  // note: the order of fill_complete() calls determines the gid numbering!
   // 1. dofs 1
   // 2. dofs 2
   // 3. auxiliary dofs 1
   // 4. auxiliary dofs 2
-  dis1->FillComplete(true, false, false);
-  dis2->FillComplete(true, false, false);
+  dis1->fill_complete(true, false, false);
+  dis2->fill_complete(true, false, false);
 }
 
 /*----------------------------------------------------------------------*
@@ -209,8 +209,8 @@ Teuchos::RCP<const Epetra_Vector> CORE::ADAPTER::MortarVolCoupl::apply_vector_ma
     Teuchos::RCP<const Epetra_Vector> vec) const
 {
   // safety check
-  CheckSetup();
-  CheckInit();
+  check_setup();
+  check_init();
 
   Teuchos::RCP<Epetra_Vector> mapvec = CORE::LINALG::CreateVector(p12_->RowMap(), true);
   int err = p12_->Multiply(false, *vec, *mapvec);
@@ -226,8 +226,8 @@ Teuchos::RCP<const Epetra_Vector> CORE::ADAPTER::MortarVolCoupl::apply_vector_ma
     Teuchos::RCP<const Epetra_Vector> vec) const
 {
   // safety check
-  CheckSetup();
-  CheckInit();
+  check_setup();
+  check_init();
 
   Teuchos::RCP<Epetra_Vector> mapvec = CORE::LINALG::CreateVector(p21_->RowMap(), true);
   int err = p21_->Multiply(false, *vec, *mapvec);
@@ -243,8 +243,8 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::ADAPTER::MortarVolCoupl::apply_ma
     Teuchos::RCP<const CORE::LINALG::SparseMatrix> mat) const
 {
   // safety check
-  CheckSetup();
-  CheckInit();
+  check_setup();
+  check_init();
 
   return CORE::LINALG::MLMultiply(*mat, false, *p12_, false, false, false, true);
 }
@@ -256,8 +256,8 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::ADAPTER::MortarVolCoupl::apply_ma
     Teuchos::RCP<const CORE::LINALG::SparseMatrix> mat) const
 {
   // safety check
-  CheckSetup();
-  CheckInit();
+  check_setup();
+  check_init();
 
   return CORE::LINALG::MLMultiply(*mat, false, *p21_, false, false, false, true);
 }
@@ -268,8 +268,8 @@ Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::MortarVolCoupl::MasterToSlave(
     Teuchos::RCP<const Epetra_Vector> mv) const
 {
   // safety check
-  CheckSetup();
-  CheckInit();
+  check_setup();
+  check_init();
 
   // create vector
   Teuchos::RCP<Epetra_Vector> sv = CORE::LINALG::CreateVector(p21_->RowMap(), true);
@@ -292,8 +292,8 @@ void CORE::ADAPTER::MortarVolCoupl::MasterToSlave(
 #endif
 
   // safety check
-  CheckSetup();
-  CheckInit();
+  check_setup();
+  check_init();
 
   // slave vector with auxiliary dofmap
   Epetra_MultiVector sv_aux(p21_->RowMap(), sv->NumVectors());
@@ -318,8 +318,8 @@ Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::MortarVolCoupl::MasterToSlave(
     Teuchos::RCP<const Epetra_MultiVector> mv) const
 {
   // safety check
-  CheckSetup();
-  CheckInit();
+  check_setup();
+  check_init();
 
   // create vector
   Teuchos::RCP<Epetra_MultiVector> sv =
@@ -336,8 +336,8 @@ Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::MortarVolCoupl::SlaveToMaster(
     Teuchos::RCP<const Epetra_Vector> sv) const
 {
   // safety check
-  CheckSetup();
-  CheckInit();
+  check_setup();
+  check_init();
 
   // create vector
   Teuchos::RCP<Epetra_Vector> mv = CORE::LINALG::CreateVector(p12_->RowMap(), true);
@@ -354,8 +354,8 @@ Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::MortarVolCoupl::SlaveToMaster(
     Teuchos::RCP<const Epetra_MultiVector> sv) const
 {
   // safety check
-  CheckSetup();
-  CheckInit();
+  check_setup();
+  check_init();
 
   // create vector
   Teuchos::RCP<Epetra_MultiVector> mv =
@@ -380,8 +380,8 @@ void CORE::ADAPTER::MortarVolCoupl::SlaveToMaster(
 #endif
 
   // safety check
-  CheckSetup();
-  CheckInit();
+  check_setup();
+  check_init();
 
   // master vector with auxiliary dofmap
   Epetra_MultiVector mv_aux(p12_->RowMap(), mv->NumVectors());
@@ -404,8 +404,8 @@ void CORE::ADAPTER::MortarVolCoupl::SlaveToMaster(
 Teuchos::RCP<const Epetra_Map> CORE::ADAPTER::MortarVolCoupl::MasterDofMap() const
 {
   // safety check
-  CheckSetup();
-  CheckInit();
+  check_setup();
+  check_init();
 
   return Teuchos::rcpFromRef(p12_->RowMap());
 }
@@ -416,7 +416,7 @@ Teuchos::RCP<const Epetra_Map> CORE::ADAPTER::MortarVolCoupl::MasterDofMap() con
 Teuchos::RCP<const Epetra_Map> CORE::ADAPTER::MortarVolCoupl::SlaveDofMap() const
 {
   // safety check
-  CheckSetup();
+  check_setup();
 
   return Teuchos::rcpFromRef(p21_->RowMap());
 }

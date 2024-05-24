@@ -170,12 +170,12 @@ namespace CORE::LINALG
     \brief Adapt tolerance of iterative solver
 
     Reset the tolerance read from input file. Can only be used after a call to
-    AdaptTolerance.
+    adapt_tolerance.
 
     \note This method works with iterative solvers only - it does nothing for all other
           solvers configured.
 
-    \sa AdaptTolerance
+    \sa adapt_tolerance
     */
     void ResetTolerance();
 
@@ -288,11 +288,11 @@ namespace CORE::LINALG
                                currentnlnres
 
     */
-    void AdaptTolerance(
+    void adapt_tolerance(
         const double desirednlnres, const double currentnlnres, const double better);
 
     //! set tolerance to Belos solver
-    void SetTolerance(double tolerance);
+    void set_tolerance(double tolerance);
 
     //! a communicator
     const Epetra_Comm& comm_;

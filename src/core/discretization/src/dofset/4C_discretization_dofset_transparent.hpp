@@ -83,11 +83,11 @@ namespace CORE::Dofsets
     void set_source_dofs_available_on_this_proc(std::map<int, std::vector<int>>& gid_to_dofs);
 
     /// helper for parallel_transfer_degrees_of_freedom, an MPI send call
-    void SendBlock(int numproc, int myrank, std::vector<char>& sblock,
+    void send_block(int numproc, int myrank, std::vector<char>& sblock,
         CORE::COMM::Exporter& exporter, MPI_Request& request);
 
     /// helper for parallel_transfer_degrees_of_freedom, an MPI receive call
-    void ReceiveBlock(int numproc, int myrank, std::vector<char>& rblock,
+    void receive_block(int numproc, int myrank, std::vector<char>& rblock,
         CORE::COMM::Exporter& exporter, MPI_Request& request);
 
    protected:

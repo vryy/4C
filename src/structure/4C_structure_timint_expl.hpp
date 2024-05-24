@@ -203,10 +203,10 @@ namespace STR
     //! Write internal and external forces for restart
     void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) override = 0;
 
-    //! InitialGuess is not available for explicit time integrators
-    Teuchos::RCP<const Epetra_Vector> InitialGuess() override
+    //! initial_guess is not available for explicit time integrators
+    Teuchos::RCP<const Epetra_Vector> initial_guess() override
     {
-      FOUR_C_THROW("InitialGuess() is not available for explicit time integrators");
+      FOUR_C_THROW("initial_guess() is not available for explicit time integrators");
       return Teuchos::null;
     }
 
@@ -218,10 +218,10 @@ namespace STR
     }
 
     //! Prepare time step
-    void PrepareTimeStep() override
+    void prepare_time_step() override
     {
       // safety checks
-      CheckIsInit();
+      check_is_init();
       CheckIsSetup();
 
       // update end time \f$t_{n+1}\f$ of this time step to cope with time step size adaptivity
@@ -256,10 +256,10 @@ namespace STR
     }
 
     //! Apply external force
-    void ApplyForceExternal(const double time,  //!< evaluation time
-        const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
-        const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
-        Teuchos::RCP<Epetra_Vector>& fext       //!< external force
+    void apply_force_external(const double time,  //!< evaluation time
+        const Teuchos::RCP<Epetra_Vector> dis,    //!< displacement state
+        const Teuchos::RCP<Epetra_Vector> vel,    // velocity state
+        Teuchos::RCP<Epetra_Vector>& fext         //!< external force
     );
 
     /// has to be renamed either here or PrintStep()
@@ -278,7 +278,7 @@ namespace STR
       UpdateStepState();
       UpdateStepTime();
       UpdateStepElement();
-      PostUpdate();
+      post_update();
       return;
     }
 

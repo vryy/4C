@@ -41,7 +41,7 @@ namespace CONTACT
        public:
         /// constructor
         Strategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
-            const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
+            const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
             const Teuchos::ParameterList& params, const plain_interface_set& interfaces, int dim,
             const Teuchos::RCP<const Epetra_Comm>& comm, int maxdof);
 
@@ -79,7 +79,7 @@ namespace CONTACT
         void remove_condensed_contributions_from_rhs(Epetra_Vector& str_rhs) const override;
 
        private:
-        void AugmentDirection(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
+        void augment_direction(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
             Epetra_Vector& dir_mutable);
 
         Teuchos::RCP<Epetra_Vector> compute_active_lagrange_incr_in_normal_direction(

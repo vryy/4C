@@ -45,7 +45,7 @@ void sti_dyn(const int& restartstep  //! time step for restart
     FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
 
   // finalize scatra discretization
-  scatradis->FillComplete();
+  scatradis->fill_complete();
 
   // safety check
   if (scatradis->NumGlobalNodes() == 0)
@@ -63,8 +63,8 @@ void sti_dyn(const int& restartstep  //! time step for restart
     FOUR_C_THROW("Thermo discretization has illegal number of dofsets!");
 
   // equip thermo discretization with noderowmap for subsequent safety check
-  // final FillComplete() is called at the end of discretization cloning
-  thermodis->FillComplete(false, false, false);
+  // final fill_complete() is called at the end of discretization cloning
+  thermodis->fill_complete(false, false, false);
 
   // safety check
   if (thermodis->NumGlobalNodes() != 0)
@@ -75,15 +75,15 @@ void sti_dyn(const int& restartstep  //! time step for restart
   // clone thermo discretization from scatra discretization, using clone strategy for scatra-thermo
   // interaction
   DRT::UTILS::CloneDiscretization<STI::ScatraThermoCloneStrategy>(scatradis, thermodis);
-  thermodis->FillComplete(false, true, true);
+  thermodis->fill_complete(false, true, true);
 
   // add proxy of scalar transport degrees of freedom to thermo discretization and vice versa
   if (thermodis->AddDofSet(scatradis->GetDofSetProxy()) != 2)
     FOUR_C_THROW("Thermo discretization has illegal number of dofsets!");
   if (scatradis->AddDofSet(thermodis->GetDofSetProxy()) != 2)
     FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-  thermodis->FillComplete(true, false, false);
-  scatradis->FillComplete(true, false, false);
+  thermodis->fill_complete(true, false, false);
+  scatradis->fill_complete(true, false, false);
 
   // add material of scatra elements to thermo elements and vice versa
   for (int i = 0; i < scatradis->NumMyColElements(); ++i)
@@ -160,7 +160,7 @@ void sti_dyn(const int& restartstep  //! time step for restart
   }
 
   // read restart data if necessary
-  if (restartstep) sti_algorithm->ReadRestart(restartstep);
+  if (restartstep) sti_algorithm->read_restart(restartstep);
 
   // provide scatra and thermo fields with velocities
   sti_algorithm->ScaTraField()->SetVelocityField();

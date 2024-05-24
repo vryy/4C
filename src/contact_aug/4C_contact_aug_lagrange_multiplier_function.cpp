@@ -62,13 +62,13 @@ void CONTACT::AUG::LagrangeMultiplierFunction::Init(
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::LagrangeMultiplierFunction::Setup()
 {
-  CheckInit();
+  check_init();
 
   const Teuchos::ParameterList& p_lm_func =
       strategy_->Params().sublist("AUGMENTED").sublist("LAGRANGE_MULTIPLIER_FUNCTION");
 
-  lin_solver_ =
-      CreateLinearSolver(p_lm_func.get<int>("LINEAR_SOLVER"), strategy_->Comm(), lin_solver_type_);
+  lin_solver_ = create_linear_solver(
+      p_lm_func.get<int>("LINEAR_SOLVER"), strategy_->Comm(), lin_solver_type_);
 
   Redistribute();
 
@@ -85,7 +85,7 @@ void CONTACT::AUG::LagrangeMultiplierFunction::Redistribute()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::Solver> CONTACT::AUG::LagrangeMultiplierFunction::CreateLinearSolver(
+Teuchos::RCP<CORE::LINALG::Solver> CONTACT::AUG::LagrangeMultiplierFunction::create_linear_solver(
     const int lin_sol_id, const Epetra_Comm& comm,
     enum CORE::LINEAR_SOLVER::SolverType& solver_type) const
 {
@@ -108,7 +108,7 @@ Teuchos::RCP<CORE::LINALG::Solver> CONTACT::AUG::LagrangeMultiplierFunction::Cre
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::LagrangeMultiplierFunction::LinSolve(
+void CONTACT::AUG::LagrangeMultiplierFunction::lin_solve(
     CORE::LINALG::SparseOperator& mat, Epetra_MultiVector& rhs, Epetra_MultiVector& sol)
 {
   if (rhs.NumVectors() > 1 or sol.NumVectors() > 1)
@@ -120,7 +120,7 @@ void CONTACT::AUG::LagrangeMultiplierFunction::LinSolve(
   int err = lin_solver_->Solve(
       mat.EpetraOperator(), Teuchos::rcpFromRef(sol), Teuchos::rcpFromRef(rhs), solver_params);
 
-  if (err) FOUR_C_THROW("LinSolve failed with err = %d", err);
+  if (err) FOUR_C_THROW("lin_solve failed with err = %d", err);
 }
 
 /*----------------------------------------------------------------------------*
@@ -130,13 +130,13 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::Compute(
 {
   TEUCHOS_FUNC_TIME_MONITOR(CONTACT_FUNC_NAME);
 
-  CheckInitSetup();
+  check_init_setup();
 
   Teuchos::RCP<Epetra_Vector> lmn_vec = Teuchos::rcp(new Epetra_Vector(data_->GActiveNDofRowMap()));
 
   Teuchos::RCP<Epetra_Vector> str_gradient = get_structure_gradient(cparams);
 
-  CreateBMatrix();
+  create_b_matrix();
 
   Epetra_Vector str_gradient_exp(*data_->GSlMaDofRowMapPtr(), true);
   CORE::LINALG::Export(*str_gradient, str_gradient_exp);
@@ -147,7 +147,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::Compute(
   Teuchos::RCP<CORE::LINALG::SparseMatrix> bbmat =
       CORE::LINALG::MLMultiply(*bmat_, true, *bmat_, false, false, false, true);
 
-  LinSolve(*bbmat, rhs, *lmn_vec);
+  lin_solve(*bbmat, rhs, *lmn_vec);
 
   return lmn_vec;
 }
@@ -171,7 +171,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::get_struct
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::LagrangeMultiplierFunction::CreateBMatrix()
+void CONTACT::AUG::LagrangeMultiplierFunction::create_b_matrix()
 {
   bmat_->Reset();
 
@@ -219,7 +219,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::FirstOrder
   err = tmp_vec_exp->Import(*tmp_vec, exporter, Insert);
   if (err) FOUR_C_THROW("Import failed with err = %d", err);
 
-  CreateBMatrix();
+  create_b_matrix();
 
   bmat_->Multiply(true, *tmp_vec_exp, rhs);
 
@@ -243,7 +243,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::FirstOrder
   Teuchos::RCP<CORE::LINALG::SparseMatrix> bbmat =
       CORE::LINALG::MLMultiply(*bmat_, true, *bmat_, false, false, false, true);
 
-  LinSolve(*bbmat, rhs, *lmincr);
+  lin_solve(*bbmat, rhs, *lmincr);
 
   return lmincr;
 }

@@ -21,13 +21,13 @@ FOUR_C_NAMESPACE_OPEN
  |  Integrate a Line Neumann boundary condition (public)   fbraeu 06/16 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::MembraneLine<distype>::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::MembraneLine<distype>::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   // set params interface pointer in the parent element
-  ParentElement()->set_params_interface_ptr(params);
+  parent_element()->set_params_interface_ptr(params);
 
   // get type of condition
   enum LoadType
@@ -55,8 +55,8 @@ int DRT::ELEMENTS::MembraneLine<distype>::EvaluateNeumann(Teuchos::ParameterList
   */
   // find out whether we will use a time curve
   double time = -1.0;
-  if (ParentElement()->IsParamsInterface())
-    time = ParentElement()->ParamsInterfacePtr()->GetTotalTime();
+  if (parent_element()->IsParamsInterface())
+    time = parent_element()->ParamsInterfacePtr()->GetTotalTime();
   else
     time = params.get("total time", -1.0);
 

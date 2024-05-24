@@ -41,13 +41,13 @@ void DRT::ELEMENTS::Wall1::w1_eassetup(CORE::LINALG::SerialDenseMatrix& boplin0,
 {
   // derivatives at origin
   CORE::LINALG::SerialDenseMatrix deriv0;
-  deriv0.shape(2, NumNode());
+  deriv0.shape(2, num_node());
 
   CORE::FE::shape_function_2D_deriv1(deriv0, 0.0, 0.0, distype);
 
   // compute jacobian matrix at origin
   xjm0.putScalar(0.0);
-  for (int k = 0; k < NumNode(); k++)
+  for (int k = 0; k < num_node(); k++)
   {
     xjm0(0, 0) += deriv0(0, k) * xrefe(0, k);  // X,r += (X,r)^k
     xjm0(0, 1) += deriv0(0, k) * xrefe(1, k);  // Y,r += (Y,r)^k
@@ -80,7 +80,7 @@ void DRT::ELEMENTS::Wall1::w1_eassetup(CORE::LINALG::SerialDenseMatrix& boplin0,
        | Nk,Y    0   |
        |  0     Nk,X |
   */
-  for (inode0 = 0; inode0 < NumNode(); inode0++)
+  for (inode0 = 0; inode0 < num_node(); inode0++)
   {
     dnode0 = inode0 * 2;
 
@@ -105,7 +105,7 @@ void DRT::ELEMENTS::Wall1::w1_eassetup(CORE::LINALG::SerialDenseMatrix& boplin0,
   F0[1] = 1;
   F0[2] = 0;
   F0[3] = 0;
-  for (int inode = 0; inode < NumNode(); inode++)
+  for (int inode = 0; inode < num_node(); inode++)
   {
     F0[0] += boplin0(0, 2 * inode) * (xcure(0, inode) - xrefe(0, inode));
     F0[1] += boplin0(1, 2 * inode + 1) * (xcure(1, inode) - xrefe(1, inode));
@@ -265,7 +265,7 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(CORE::LINALG::SerialDenseMatrix& 
   // declaration of matrix WO without eas-parameter alpha
 
   CORE::LINALG::SerialDenseMatrix W0wa;
-  W0wa.shape(4, 2 * NumNode());
+  W0wa.shape(4, 2 * num_node());
 
 
   for (int i = 0; i < Wall1::neas_; i++)  // loop over eas-parameter
@@ -303,7 +303,7 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(CORE::LINALG::SerialDenseMatrix& 
 
     // fill Z-operator
 
-    for (int indof = 0; indof < NumNode(); indof = indof + 2)
+    for (int indof = 0; indof < num_node(); indof = indof + 2)
     {
       Z(indof, i) = W0wa(0, indof);
       Z(indof + 1, i) = W0wa(1, indof + 1);
@@ -385,9 +385,9 @@ void DRT::ELEMENTS::Wall1::w1_kdd(const CORE::LINALG::SerialDenseMatrix& boplin,
   C_red(2, 2) = C(2, 2);
 
   // BplusW = B+W0
-  CORE::LINALG::SerialDenseMatrix BplusW(4, 2 * NumNode(), false);
+  CORE::LINALG::SerialDenseMatrix BplusW(4, 2 * num_node(), false);
   for (int i = 0; i < 4; i++)
-    for (int j = 0; j < 2 * NumNode(); j++) BplusW(i, j) = boplin(i, j) + W0(i, j);
+    for (int j = 0; j < 2 * num_node(); j++) BplusW(i, j) = boplin(i, j) + W0(i, j);
 
   // Temp (4x3) = F*C
   CORE::LINALG::SerialDenseMatrix Temp(4, 3, true);
@@ -398,11 +398,11 @@ void DRT::ELEMENTS::Wall1::w1_kdd(const CORE::LINALG::SerialDenseMatrix& boplin,
   CORE::LINALG::multiplyNT(FCF, Temp, F_tot);
 
   // Temp1 (4x8) = FCF^T * (B+W0)
-  CORE::LINALG::SerialDenseMatrix Temp1(4, 2 * NumNode(), true);
+  CORE::LINALG::SerialDenseMatrix Temp1(4, 2 * num_node(), true);
   CORE::LINALG::multiply(Temp1, FCF, BplusW);
 
   // Temp3 (4x8) = S*(B+W0)
-  CORE::LINALG::SerialDenseMatrix Temp3(4, 2 * NumNode(), true);
+  CORE::LINALG::SerialDenseMatrix Temp3(4, 2 * num_node(), true);
   CORE::LINALG::multiply(Temp3, stress, BplusW);
 
   // Kdd = (B+W0)^T*FCF^T*(B+W0) + (B+W0)^T*S*(B+W0)
@@ -423,9 +423,9 @@ void DRT::ELEMENTS::Wall1::w1_kda(const CORE::LINALG::SerialDenseMatrix& FCF,
     const CORE::LINALG::SerialDenseMatrix& p_stress, const double fac)
 {
   // BplusW = B+W0
-  CORE::LINALG::SerialDenseMatrix BplusW(4, 2 * NumNode(), false);
+  CORE::LINALG::SerialDenseMatrix BplusW(4, 2 * num_node(), false);
   for (int i = 0; i < 4; i++)
-    for (int j = 0; j < 2 * NumNode(); j++) BplusW(i, j) = boplin(i, j) + W0(i, j);
+    for (int j = 0; j < 2 * num_node(); j++) BplusW(i, j) = boplin(i, j) + W0(i, j);
 
   // Temp1 = FCF^T*G
   CORE::LINALG::SerialDenseMatrix Temp1(4, Wall1::neas_, true);
@@ -439,7 +439,7 @@ void DRT::ELEMENTS::Wall1::w1_kda(const CORE::LINALG::SerialDenseMatrix& FCF,
   CORE::LINALG::multiplyTN(1.0, Kda, fac, BplusW, Temp1);
   CORE::LINALG::multiplyTN(1.0, Kda, fac, BplusW, Temp3);
   // Temp5 = fac * P*Z
-  for (int i = 0; i < NumNode(); i++)
+  for (int i = 0; i < num_node(); i++)
   {
     for (int ieas = 0; ieas < Wall1::neas_; ieas++)
     {
@@ -487,15 +487,15 @@ void DRT::ELEMENTS::Wall1::w1_fint_eas(const CORE::LINALG::SerialDenseMatrix& W0
 
 {
   // BplusW = B+W0
-  CORE::LINALG::SerialDenseMatrix BplusW(4, 2 * NumNode(), false);
+  CORE::LINALG::SerialDenseMatrix BplusW(4, 2 * num_node(), false);
   for (int i = 0; i < 4; i++)
-    for (int j = 0; j < 2 * NumNode(); j++) BplusW(i, j) = boplin(i, j) + W0(i, j);
+    for (int j = 0; j < 2 * num_node(); j++) BplusW(i, j) = boplin(i, j) + W0(i, j);
 
   // Temp1 (8x1) = (BL+W0)^T*p_stress
-  CORE::LINALG::SerialDenseMatrix Temp1(2 * NumNode(), 1, true);
+  CORE::LINALG::SerialDenseMatrix Temp1(2 * num_node(), 1, true);
   CORE::LINALG::multiplyTN(Temp1, BplusW, p_stress);
 
-  for (int i = 0; i < 2 * NumNode(); i++) intforce(i) += fac * Temp1(i, 0);
+  for (int i = 0; i < 2 * num_node(); i++) intforce(i) += fac * Temp1(i, 0);
 
   // Temp2 = G^T*p_stress
   CORE::LINALG::SerialDenseMatrix Temp2(Wall1::neas_, 1, true);

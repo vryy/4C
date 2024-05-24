@@ -42,7 +42,7 @@ namespace DRT
      private:
       //! define ArteryEle instances dependent on problem
       template <CORE::FE::CellType distype>
-      static ArteryEleInterface* DefineProblemType(
+      static ArteryEleInterface* define_problem_type(
           INPAR::ARTDYN::ImplType problem, const std::string& disname);
 
 

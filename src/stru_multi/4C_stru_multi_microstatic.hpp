@@ -85,7 +85,7 @@ namespace STRUMULTI
     \brief Read restart
 
     */
-    void ReadRestart(int step, Teuchos::RCP<Epetra_Vector> dis,
+    void read_restart(int step, Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> lastalpha,
         std::string name);
 
@@ -123,7 +123,7 @@ namespace STRUMULTI
     \brief Calculate stresses and strains
 
     */
-    void PrepareOutput();
+    void prepare_output();
 
     /*!
     \brief Write output and (possibly) restart
@@ -149,7 +149,7 @@ namespace STRUMULTI
     \brief Set old state given from micromaterialgp
 
     */
-    void SetState(Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> disn,
+    void set_state(Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> disn,
         Teuchos::RCP<std::vector<char>> stress, Teuchos::RCP<std::vector<char>> strain,
         Teuchos::RCP<std::vector<char>> plstrain,
         Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> lastalpha,
@@ -162,7 +162,7 @@ namespace STRUMULTI
     \brief Set time and step
 
     */
-    void SetTime(
+    void set_time(
         const double time, const double timen, const double dt, const int step, const int stepn);
 
     /*!

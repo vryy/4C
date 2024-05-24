@@ -91,10 +91,10 @@ namespace CORE::GEO
       /*========================================================================*/
 
       /// creates a new element, dependent on distype
-      Element* CreateElement(int eid, const std::vector<int>& nids, CORE::FE::CellType distype);
+      Element* create_element(int eid, const std::vector<int>& nids, CORE::FE::CellType distype);
 
       /// creates a new side, dependent on distype
-      Side* CreateSide(int sid, const std::vector<int>& nids, CORE::FE::CellType distype);
+      Side* create_side(int sid, const std::vector<int>& nids, CORE::FE::CellType distype);
 
       /*========================================================================*/
       //! @name Create-routines for elements
@@ -269,7 +269,7 @@ namespace CORE::GEO
       void RectifyCutNumerics();
 
       /// finds intersections between sides and edges
-      void FindCutPoints();
+      void find_cut_points();
 
       /*========================================================================*/
       //! @name Basic routines to create lines, facets and volumecells
@@ -354,7 +354,7 @@ namespace CORE::GEO
       /*========================================================================*/
 
       /// ???
-      void PrintCellStats();
+      void print_cell_stats();
 
       /// print all facets
       void PrintFacets();
@@ -371,7 +371,7 @@ namespace CORE::GEO
       \brief Output information about the volume cell.
       If the cut has a level set side. Also write output for level set values and gradients.
        */
-      void DumpGmshVolumeCells(std::string name, bool include_inner);
+      void dump_gmsh_volume_cells(std::string name, bool include_inner);
 
       /// ?
       void dump_gmsh_integration_cells(std::string name);
@@ -381,7 +381,7 @@ namespace CORE::GEO
       void dump_gmsh_boundary_cells(std::ofstream& file, Point::PointPosition pos);
 
       /// ?
-      void DumpGmshVolumeCells(std::string name);
+      void dump_gmsh_volume_cells(std::string name);
 
       /// DebugDump to call before runtime error!!!
       void DebugDump(CORE::GEO::CUT::Element* ele, std::string file = "", int line = -1);
@@ -417,16 +417,16 @@ namespace CORE::GEO
       Node* GetNode(const plain_int_set& nids, const double* xyz, double lsv = 0.0);
 
       /// get the edge with begin node and end node
-      Edge* GetEdge(Node* begin, Node* end);
+      Edge* get_edge(Node* begin, Node* end);
 
       /// get the side that contains the nodes with the following node ids
-      Side* GetSide(std::vector<int>& nids) const;
+      Side* get_side(std::vector<int>& nids) const;
 
       /// ???
-      Side* GetSide(int sid, const std::vector<int>& nids, const CellTopologyData* top_data);
+      Side* get_side(int sid, const std::vector<int>& nids, const CellTopologyData* top_data);
 
       /// ???
-      Side* GetSide(int sid, const std::vector<Node*>& nodes, const CellTopologyData* top_data);
+      Side* get_side(int sid, const std::vector<Node*>& nodes, const CellTopologyData* top_data);
 
       /// Returns the element with given id
       Element* GetElement(int eid);
@@ -535,7 +535,7 @@ namespace CORE::GEO
       void GetNode(int nid, Node* node) { nodes_[nid] = Teuchos::rcp(node); }
 
       /// Creates a new edge in the cutmesh
-      void GetEdge(plain_int_set eid, const Teuchos::RCP<Edge>& edge) { edges_[eid] = edge; }
+      void get_edge(plain_int_set eid, const Teuchos::RCP<Edge>& edge) { edges_[eid] = edge; }
 
       /// Erases a side of the cutmesh
       void EraseSide(plain_int_set sid) { sides_.erase(sid); }
@@ -566,15 +566,15 @@ namespace CORE::GEO
       /*========================================================================*/
 
       /// ?
-      Edge* GetEdge(const plain_int_set& nids, const std::vector<Node*>& nodes,
+      Edge* get_edge(const plain_int_set& nids, const std::vector<Node*>& nodes,
           const CellTopologyData& edge_topology);
 
       /// ?
-      Side* GetSide(int sid, const plain_int_set& nids, const std::vector<Node*>& nodes,
+      Side* get_side(int sid, const plain_int_set& nids, const std::vector<Node*>& nodes,
           const std::vector<Edge*>& edges, const CellTopologyData& side_topology);
 
       /// Create new line between the two given cut points that are in given two cut sides
-      CORE::GEO::CUT::Line* NewLineInternal(
+      CORE::GEO::CUT::Line* new_line_internal(
           Point* p1, Point* p2, Side* cut_side1, Side* cut_side2, Element* cut_element);
 
 

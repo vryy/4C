@@ -106,12 +106,12 @@ void PARTICLEINTERACTION::SPHTemperature::Setup(
   if (heatlossevaporation_) heatlossevaporation_->Setup(particleengineinterface, particlematerial);
 }
 
-void PARTICLEINTERACTION::SPHTemperature::SetCurrentTime(const double currenttime)
+void PARTICLEINTERACTION::SPHTemperature::set_current_time(const double currenttime)
 {
   time_ = currenttime;
 }
 
-void PARTICLEINTERACTION::SPHTemperature::SetCurrentStepSize(const double currentstepsize)
+void PARTICLEINTERACTION::SPHTemperature::set_current_step_size(const double currentstepsize)
 {
   dt_ = currentstepsize;
 }
@@ -139,7 +139,7 @@ void PARTICLEINTERACTION::SPHTemperature::insert_particle_states_of_particle_typ
     particlestates.insert(PARTICLEENGINE::TemperatureDot);
 
     // state for temperature gradient evaluation
-    if (temperaturegradient_) particlestates.insert(PARTICLEENGINE::TemperatureGradient);
+    if (temperaturegradient_) particlestates.insert(PARTICLEENGINE::temperature_gradient);
   }
 }
 
@@ -148,7 +148,7 @@ void PARTICLEINTERACTION::SPHTemperature::ComputeTemperature() const
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHTemperature::ComputeTemperature");
 
   // evaluate energy equation
-  EnergyEquation();
+  energy_equation();
 
   // evaluate heat source
   if (heatsource_) heatsource_->EvaluateHeatSource(time_);
@@ -171,7 +171,7 @@ void PARTICLEINTERACTION::SPHTemperature::ComputeTemperature() const
   particleengineinterface_->refresh_particles_of_specific_states_and_types(temptorefresh_);
 
   // evaluate temperature gradient
-  if (temperaturegradient_) TemperatureGradient();
+  if (temperaturegradient_) temperature_gradient();
 }
 
 void PARTICLEINTERACTION::SPHTemperature::init_heat_source_handler()
@@ -221,7 +221,7 @@ void PARTICLEINTERACTION::SPHTemperature::init_heat_loss_evaporation_handler()
   if (heatlossevaporation_) heatlossevaporation_->Init();
 }
 
-void PARTICLEINTERACTION::SPHTemperature::EnergyEquation() const
+void PARTICLEINTERACTION::SPHTemperature::energy_equation() const
 {
   // iterate over integrated thermo particle types
   for (const auto& type_i : intthermotypes_)
@@ -303,9 +303,9 @@ void PARTICLEINTERACTION::SPHTemperature::EnergyEquation() const
   }
 }
 
-void PARTICLEINTERACTION::SPHTemperature::TemperatureGradient() const
+void PARTICLEINTERACTION::SPHTemperature::temperature_gradient() const
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHTemperature::TemperatureGradient");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHTemperature::temperature_gradient");
 
   // iterate over integrated thermo particle types
   for (const auto& type_i : intthermotypes_)
@@ -315,7 +315,7 @@ void PARTICLEINTERACTION::SPHTemperature::TemperatureGradient() const
         particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // clear temperature gradient state
-    container_i->ClearState(PARTICLEENGINE::TemperatureGradient);
+    container_i->ClearState(PARTICLEENGINE::temperature_gradient);
   }
 
   // iterate over particle pairs
@@ -354,7 +354,7 @@ void PARTICLEINTERACTION::SPHTemperature::TemperatureGradient() const
 
     const double* temp_i = container_i->GetPtrToState(PARTICLEENGINE::Temperature, particle_i);
     double* tempgrad_i =
-        container_i->CondGetPtrToState(PARTICLEENGINE::TemperatureGradient, particle_i);
+        container_i->CondGetPtrToState(PARTICLEENGINE::temperature_gradient, particle_i);
 
     const double* mass_j = container_j->GetPtrToState(PARTICLEENGINE::Mass, particle_j);
 
@@ -364,7 +364,7 @@ void PARTICLEINTERACTION::SPHTemperature::TemperatureGradient() const
 
     const double* temp_j = container_j->GetPtrToState(PARTICLEENGINE::Temperature, particle_j);
     double* tempgrad_j =
-        container_j->CondGetPtrToState(PARTICLEENGINE::TemperatureGradient, particle_j);
+        container_j->CondGetPtrToState(PARTICLEENGINE::temperature_gradient, particle_j);
 
     const double temp_ji = temp_j[0] - temp_i[0];
 

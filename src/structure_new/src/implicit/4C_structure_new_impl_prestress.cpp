@@ -58,7 +58,7 @@ STR::IMPLICIT::PreStress::PreStress() : absolute_displacement_norm_(1e9)
 void STR::IMPLICIT::PreStress::WriteRestart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   const auto zeros = Teuchos::rcp(new Epetra_Vector(*GlobalState().DofRowMapView(), true));
 
@@ -71,7 +71,7 @@ void STR::IMPLICIT::PreStress::WriteRestart(
 
 void STR::IMPLICIT::PreStress::UpdateStepState()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // Compute norm of the displacements
   GlobalState().GetDisNp()->NormInf(&absolute_displacement_norm_);
@@ -86,7 +86,7 @@ void STR::IMPLICIT::PreStress::UpdateStepState()
 
 void STR::IMPLICIT::PreStress::UpdateStepElement()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (!is_material_iterative_prestress_converged())
   {
@@ -95,7 +95,7 @@ void STR::IMPLICIT::PreStress::UpdateStepElement()
   }
 }
 
-void STR::IMPLICIT::PreStress::PostUpdate()
+void STR::IMPLICIT::PreStress::post_update()
 {
   // Check for prestressing
   if (IsMulfActive(GlobalState().GetTimeN()))
@@ -130,7 +130,7 @@ bool STR::IMPLICIT::PreStress::is_material_iterative_prestress_converged() const
 
 bool STR::IMPLICIT::PreStress::EarlyStopping() const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (is_material_iterative_prestress_converged())
   {

@@ -74,13 +74,13 @@ namespace CONTACT
      defined by the slave normal at the slave element center.
 
      */
-    virtual bool AuxiliaryPlane();
+    virtual bool auxiliary_plane();
 
     /*!
      \brief Build auxiliary line from slave line (3D)
 
      */
-    virtual bool AuxiliaryLine();
+    virtual bool auxiliary_line();
 
     /*!
      \brief Return center of auxiliary plane
@@ -98,7 +98,7 @@ namespace CONTACT
      \brief Return normal of auxiliary plane
 
      */
-    virtual double* AuxnSurf() { return auxn_surf_; }
+    virtual double* auxn_surf() { return auxn_surf_; }
 
     /*!
      \brief Get communicator
@@ -129,33 +129,33 @@ namespace CONTACT
      \brief Get interface contact parameter list
 
      */
-    virtual Teuchos::ParameterList& InterfaceParams() { return imortar_; };
+    virtual Teuchos::ParameterList& interface_params() { return imortar_; };
 
     /*!
      \brief create intersections
 
      */
-    virtual void LineClipping();
+    virtual void line_clipping();
 
     /*!
      \brief create intersections
 
      */
-    virtual bool LineToLineClipping(MORTAR::Vertex& edgeVertex1, MORTAR::Vertex& edgeVertex0,
+    virtual bool line_to_line_clipping(MORTAR::Vertex& edgeVertex1, MORTAR::Vertex& edgeVertex0,
         MORTAR::Vertex& lineVertex1, MORTAR::Vertex& lineVertex0);
 
     /*!
      \brief check if all vertices are along a line
 
      */
-    virtual bool CheckLineOnLine(MORTAR::Vertex& edgeVertex1, MORTAR::Vertex& edgeVertex0,
+    virtual bool check_line_on_line(MORTAR::Vertex& edgeVertex1, MORTAR::Vertex& edgeVertex0,
         MORTAR::Vertex& lineVertex1, MORTAR::Vertex& lineVertex0);
 
     /*!
      \brief perform linearization
 
      */
-    virtual void LinearizeVertices(
+    virtual void linearize_vertices(
         std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linvertex);
 
     /*!
@@ -172,25 +172,25 @@ namespace CONTACT
      \brief Get coupling slave element
 
      */
-    virtual Element& ParentElement() const { return p_ele_; }
+    virtual Element& parent_element() const { return p_ele_; }
 
     /*!
      \brief Get coupling slave element
 
      */
-    virtual Teuchos::RCP<MORTAR::Element>& LineElement() const { return l_ele_; }
+    virtual Teuchos::RCP<MORTAR::Element>& line_element() const { return l_ele_; }
 
     /*!
      \brief Get coupling master elements
 
      */
-    virtual std::vector<Element*> SurfaceElements() const { return surf_eles_; }
+    virtual std::vector<Element*> surface_elements() const { return surf_eles_; }
 
     /*!
      \brief Get coupling master elements
 
      */
-    virtual Element& SurfaceElement() const
+    virtual Element& surface_element() const
     {
       if (curr_ele_ < 0 or curr_ele_ > ((int)surf_eles_.size() - 1))
         FOUR_C_THROW("currEle invalid!");
@@ -208,7 +208,7 @@ namespace CONTACT
      \brief Get current master element in loop
 
      */
-    virtual int& CurrEle() { return curr_ele_; }
+    virtual int& curr_ele() { return curr_ele_; }
 
     /*!
      \brief Return length of Auxn() before normalization
@@ -220,43 +220,43 @@ namespace CONTACT
      \brief Return vector of (projected) slave node vertex objects
 
      */
-    virtual std::vector<MORTAR::Vertex>& InterSections() { return intersections_; }
+    virtual std::vector<MORTAR::Vertex>& inter_sections() { return intersections_; }
 
     /*!
       \brief Return vector of (projected) slave node vertex objects
 
     */
-    virtual std::vector<MORTAR::Vertex>& TempInterSections() { return temp_intersections_; }
+    virtual std::vector<MORTAR::Vertex>& temp_inter_sections() { return temp_intersections_; }
 
     /*!
       \brief Return set which guarantee uniqueness of master lines
 
     */
-    virtual std::set<std::pair<int, int>>& DoneBefore() { return donebefore_; }
+    virtual std::set<std::pair<int, int>>& done_before() { return donebefore_; }
 
     /*!
      \brief Return vector of (projected) slave node vertex objects
 
      */
-    virtual std::vector<MORTAR::Vertex>& SlaveVertices() { return svertices_; }
+    virtual std::vector<MORTAR::Vertex>& slave_vertices() { return svertices_; }
 
     /*!
      \brief Return vector of projected master node vertex objects
 
      */
-    virtual std::vector<MORTAR::Vertex>& MasterVertices() { return mvertices_; }
+    virtual std::vector<MORTAR::Vertex>& master_vertices() { return mvertices_; }
 
     /*!
      \brief Return vector of integration line
 
      */
-    virtual Teuchos::RCP<MORTAR::IntCell>& IntLine() { return int_cell_; }
+    virtual Teuchos::RCP<MORTAR::IntCell>& int_line() { return int_cell_; }
 
     /*!
      \brief perform integration for line to segment contact
 
      */
-    virtual void IntegrateLine();
+    virtual void integrate_line();
 
     /*!
      \brief initialize internal variables
@@ -268,24 +268,30 @@ namespace CONTACT
      \brief calculate proper dual shape functions
 
      */
-    virtual void ConsistDualShape();
+    virtual void consist_dual_shape();
 
     /*!
      \brief check orientation of line and mele
 
      */
-    virtual bool CheckOrientation();
+    virtual bool check_orientation();
 
     /*!
      \brief Return the 'DerivAuxn' map (vector) of this coupling pair
 
      */
-    virtual std::vector<CORE::GEN::Pairedvector<int, double>>& GetDerivAuxn() { return derivauxn_; }
+    virtual std::vector<CORE::GEN::Pairedvector<int, double>>& get_deriv_auxn()
+    {
+      return derivauxn_;
+    }
     /*!
      \brief Return the 'DerivAuxc' map (vector) of this coupling pair
 
      */
-    virtual std::vector<CORE::GEN::Pairedvector<int, double>>& GetDerivAuxc() { return derivauxc_; }
+    virtual std::vector<CORE::GEN::Pairedvector<int, double>>& get_deriv_auxc()
+    {
+      return derivauxc_;
+    }
     //  /*!
     //   \brief Return the 'DerivAuxnLine' map (vector) of this coupling pair
     //
@@ -316,7 +322,7 @@ namespace CONTACT
      polygon (equal to any vertex). If so the HasProj status is set true!
 
      */
-    virtual bool HasProjStatus();
+    virtual bool has_proj_status();
 
     /*!
      \brief Projection of slave element onto aux. plane (3D)
@@ -325,7 +331,7 @@ namespace CONTACT
      onto the auxiliary plane derived before.
 
      */
-    virtual bool ProjectSlave();
+    virtual bool project_slave();
 
     /*!
      \brief Projection of master element onto aux. plane (3D)
@@ -334,7 +340,7 @@ namespace CONTACT
      onto the auxiliary plane derived from the slave CElement before.
 
      */
-    virtual bool ProjectMaster();
+    virtual bool project_master();
 
     /*!
      \brief Checks roughly whether the two elements are near (3D)
@@ -344,13 +350,13 @@ namespace CONTACT
      coupling is stopped for the pair.
 
      */
-    virtual bool CheckLength();
+    virtual bool check_length();
 
     /*!
     \brief Return integration type
 
     */
-    virtual LineToSurfaceCoupling3d::IntType& IType() { return int_type_; }
+    virtual LineToSurfaceCoupling3d::IntType& i_type() { return int_type_; }
 
    private:
     //! don't want = operator and cctor
@@ -449,8 +455,8 @@ namespace CONTACT
      \brief evaluate terms
 
      */
-    virtual void EvaluateTerms(double* sxi, double* mxi, CORE::GEN::Pairedvector<int, double>& dsxi,
-        CORE::GEN::Pairedvector<int, double>& dmxi);
+    virtual void evaluate_terms(double* sxi, double* mxi,
+        CORE::GEN::Pairedvector<int, double>& dsxi, CORE::GEN::Pairedvector<int, double>& dmxi);
 
     /*!
      \brief Get communicator
@@ -474,20 +480,20 @@ namespace CONTACT
      \brief Get interface contact parameter list
 
      */
-    virtual Teuchos::ParameterList& InterfaceParams() { return imortar_; };
+    virtual Teuchos::ParameterList& interface_params() { return imortar_; };
 
 
     /*!
      \brief Get coupling slave element
 
      */
-    virtual Teuchos::RCP<MORTAR::Element>& LineSlaveElement() const { return l_sele_; }
+    virtual Teuchos::RCP<MORTAR::Element>& line_slave_element() const { return l_sele_; }
 
     /*!
      \brief Get coupling master element
 
      */
-    virtual Teuchos::RCP<MORTAR::Element>& LineMasterElement() const { return l_mele_; }
+    virtual Teuchos::RCP<MORTAR::Element>& line_master_element() const { return l_mele_; }
 
    private:
     // don't want = operator and cctor

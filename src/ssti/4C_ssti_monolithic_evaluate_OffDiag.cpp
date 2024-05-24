@@ -167,7 +167,7 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_structure_the
 
   structure_->Discretization()->ClearState();
 
-  structure_->Discretization()->SetState("displacement", structure_->Dispnp());
+  structure_->Discretization()->set_state("displacement", structure_->Dispnp());
 
   // create strategy for assembly of structure-thermo matrix block
   CORE::FE::AssembleStrategy strategystructurescatra(
@@ -324,7 +324,7 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_thermo_structure_interface_s
       meshtying_strategy_thermo_->set_condition_specific_sca_tra_parameters(
           *kinetics_slave_cond.second);
       // evaluate the condition
-      thermo_->ScaTraField()->Discretization()->EvaluateCondition(
+      thermo_->ScaTraField()->Discretization()->evaluate_condition(
           condparams, strategyscatrastructures2i, "S2IKinetics", kinetics_slave_cond.first);
     }
   }

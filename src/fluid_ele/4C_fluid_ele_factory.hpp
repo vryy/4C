@@ -50,7 +50,7 @@ namespace DRT
      private:
       //! define FluidEle instances dependent on problem
       template <CORE::FE::CellType distype>
-      static FluidEleInterface* DefineProblemType(std::string problem);
+      static FluidEleInterface* define_problem_type(std::string problem);
 
       //! special define_problem_type_xfem for XFEM problems
       template <CORE::FE::CellType distype>

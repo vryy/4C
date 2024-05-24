@@ -83,7 +83,7 @@ namespace MAT
      * @param[in] gp_id        macro-scale Gauss point ID
      * @param[in] phinp_macro  macro-scale state variables
      */
-    void PrepareTimeStep(const int gp_id, const std::vector<double>& phinp_macro) const;
+    void prepare_time_step(const int gp_id, const std::vector<double>& phinp_macro) const;
 
     /*!
      * @brief evaluate multi-scale scalar transport material
@@ -133,7 +133,7 @@ namespace MAT
      *
      * @param[in] gp_id  macro-scale Gauss point ID
      */
-    void ReadRestart(const int gp_id) const;
+    void read_restart(const int gp_id) const;
 
     //! return name of micro-scale input file
     std::string MicroInputFileName() const { return Params()->MicroInputFileName(); }

@@ -137,7 +137,7 @@ namespace RTD
    * \param[in] level: header level
    * \param[in] line: The link target to be printed
    */
-  void WriteHeader(std::ostream& stream, unsigned level, const std::string& line);
+  void write_header(std::ostream& stream, unsigned level, const std::string& line);
 
   /*----------------------------------------------------------------------*/
   /*!

@@ -218,7 +218,7 @@ namespace CORE::UTILS
     //! Helper function to access the piece that contains time @p time. Returns the first
     //! FunctionVariable that contains the time @p t and does not check if other FunctionVariables
     //! also contain it.
-    FunctionVariable& FindPieceForTime(double t);
+    FunctionVariable& find_piece_for_time(double t);
 
     //! Store the pieces that make up the variable in different time intervals.
     std::vector<Teuchos::RCP<FunctionVariable>> pieces_;

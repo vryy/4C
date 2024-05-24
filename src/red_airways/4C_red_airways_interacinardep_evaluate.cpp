@@ -168,7 +168,7 @@ int DRT::ELEMENTS::RedInterAcinarDep::Evaluate(Teuchos::ParameterList& params,
 }  // end of DRT::ELEMENTS::RedInterAcinarDep::Evaluate
 
 
-int DRT::ELEMENTS::RedInterAcinarDep::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::RedInterAcinarDep::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -194,7 +194,7 @@ int DRT::ELEMENTS::RedInterAcinarDep::EvaluateDirichlet(Teuchos::ParameterList& 
  | Get optimal gaussrule for discretisation type                        |
  |                                                                      |
  *----------------------------------------------------------------------*/
-CORE::FE::GaussRule1D DRT::ELEMENTS::RedInterAcinarDep::getOptimalGaussrule(
+CORE::FE::GaussRule1D DRT::ELEMENTS::RedInterAcinarDep::get_optimal_gaussrule(
     const CORE::FE::CellType& distype)
 {
   CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::undefined;

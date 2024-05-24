@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
 |  Call the element to set all basic parameter                         |
 *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
+void DRT::ELEMENTS::TransportType::pre_evaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -237,7 +237,7 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
     {
       return ScaTraFactory::ProvideImpl(
           Shape(), impltype_, numdofpernode, numscal, discretization.Name())
-          ->EvaluateOD(
+          ->evaluate_od(
               this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }
@@ -319,7 +319,7 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
  |  integration of the volume Neumann (body forces) loads takes place   |
  |  in the element. We need it there for the stabilization terms!       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Transport::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Transport::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)

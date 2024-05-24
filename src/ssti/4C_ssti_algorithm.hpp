@@ -113,7 +113,7 @@ namespace SSTI
     bool InterfaceMeshtying() const { return interfacemeshtying_; };
 
     //! read restart
-    void ReadRestart(int restart) override;
+    void read_restart(int restart) override;
 
     //! timeloop of coupled problem
     virtual void Timeloop() = 0;
@@ -143,10 +143,10 @@ namespace SSTI
     //! exchange materials between discretizations
     void assign_material_pointers();
 
-    void CheckIsInit();
+    void check_is_init();
 
     //! clone thermo parameters from scatra parameters and adjust where needed
-    Teuchos::ParameterList CloneThermoParams(
+    Teuchos::ParameterList clone_thermo_params(
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& thermoparams);
 
     //! Pointers to subproblems

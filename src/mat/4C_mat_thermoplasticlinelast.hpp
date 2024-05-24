@@ -210,7 +210,7 @@ namespace MAT
     );
 
     //! computes isotropic elasticity tensor in matrix notion for 3d
-    void SetupCmat(
+    void setup_cmat(
         CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat  //!< elastic material tangent
     );
 
@@ -290,12 +290,12 @@ namespace MAT
 
     //! computes temperature dependent isotropic elasticity tensor in matrix
     //! notion for 3d
-    void SetupCthermo(
+    void setup_cthermo(
         CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& ctemp  //!< temperature dependent material tangent
     );
 
     //! calculates stress-temperature modulus
-    double STModulus();
+    double st_modulus();
 
     //! initial temperature
     double InitTemp() const { return params_->thetainit_; }

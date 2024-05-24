@@ -87,9 +87,9 @@ void NOX::NLN::Problem::Initialize(const Teuchos::RCP<::NOX::Epetra::Vector>& x,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::NLN::Problem::CreateLinearSystem() const
+Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::NLN::Problem::create_linear_system() const
 {
-  CheckInit();
+  check_init();
   if (not IsJac())
     FOUR_C_THROW(
         "You have to set a jacobian first, before you can create a "
@@ -109,7 +109,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::NLN::Problem::CreateLinearSystem(
 Teuchos::RCP<::NOX::Abstract::Group> NOX::NLN::Problem::CreateGroup(
     const Teuchos::RCP<::NOX::Epetra::LinearSystem>& linSys) const
 {
-  CheckInit();
+  check_init();
   Teuchos::RCP<::NOX::Abstract::Group> noxgrp = Teuchos::null;
 
   Teuchos::ParameterList& params = noxNlnGlobalData_->GetNlnParameterList();

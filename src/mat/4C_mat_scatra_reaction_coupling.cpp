@@ -96,7 +96,7 @@ double MAT::PAR::REACTIONCOUPLING::ReactionWithPhiScaling::calc_rea_body_force_t
 )
 {
   // modify the phinp vector if neccessary (e.g. for reference concentrations)
-  std::vector<double> phinp_mod(ModifyPhi(phinp, scale_phi));
+  std::vector<double> phinp_mod(modify_phi(phinp, scale_phi));
 
   // call the real evaluation
   return reaction_->calc_rea_body_force_term(
@@ -121,7 +121,7 @@ void MAT::PAR::REACTIONCOUPLING::ReactionWithPhiScaling::calc_rea_body_force_der
 )
 {
   // modify the phinp vector if necessary (e.g. for reference concentrations)
-  std::vector<double> phinp_mod(ModifyPhi(phinp, scale_phi));
+  std::vector<double> phinp_mod(modify_phi(phinp, scale_phi));
 
   // call the real evaluation
   reaction_->calc_rea_body_force_deriv(
@@ -147,7 +147,7 @@ void MAT::PAR::REACTIONCOUPLING::ReactionWithPhiScaling::calc_rea_body_force_der
 )
 {
   // modify the phinp vector if necessary (e.g. for reference concentrations)
-  // std::vector<double> phinp_mod(ModifyPhi(phinp,scale_phi));
+  // std::vector<double> phinp_mod(modify_phi(phinp,scale_phi));
   if (fabs(scale_phi - 1.0) > 1.0e-14)
   {
     FOUR_C_THROW("scale_phi is not equal to 1.0, you should make your own modify phi function");
@@ -163,7 +163,7 @@ void MAT::PAR::REACTIONCOUPLING::ReactionWithPhiScaling::calc_rea_body_force_der
 /*----------------------------------------------------------------------------------*
  |  Modify concentrations according to scaling                         vuong 09/16 |
  *----------------------------------------------------------------------------------*/
-std::vector<double> MAT::PAR::REACTIONCOUPLING::ReactionWithPhiScaling::ModifyPhi(
+std::vector<double> MAT::PAR::REACTIONCOUPLING::ReactionWithPhiScaling::modify_phi(
     const std::vector<double>& phinp, double scale_phi)
 {
   // copy the vector
@@ -208,7 +208,7 @@ double MAT::PAR::REACTIONCOUPLING::ReacStart::calc_rea_body_force_term(
 )
 {
   // modify the phinp vector for reaction start feature
-  std::vector<double> phinp_mod(ModifyPhi(phinp));
+  std::vector<double> phinp_mod(modify_phi(phinp));
 
   // call the real evaluation
   return reaction_->calc_rea_body_force_term(
@@ -232,7 +232,7 @@ void MAT::PAR::REACTIONCOUPLING::ReacStart::calc_rea_body_force_deriv(int k,  //
 )
 {
   // modify the phinp vector for reaction start feature
-  std::vector<double> phinp_mod(ModifyPhi(phinp));
+  std::vector<double> phinp_mod(modify_phi(phinp));
 
   // temporary vector of same size as derivs
   std::vector<double> myderivs(derivs.size(), 0.0);
@@ -254,7 +254,7 @@ void MAT::PAR::REACTIONCOUPLING::ReacStart::calc_rea_body_force_deriv(int k,  //
 /*----------------------------------------------------------------------------------*
  |  Modify concentrations according to reacstart vector                  vuong 09/16 |
  *----------------------------------------------------------------------------------*/
-std::vector<double> MAT::PAR::REACTIONCOUPLING::ReacStart::ModifyPhi(
+std::vector<double> MAT::PAR::REACTIONCOUPLING::ReacStart::modify_phi(
     const std::vector<double>& phinp)
 {
   // copy the vector
@@ -573,12 +573,12 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::Initialize(int numscal,  //!< numbe
   switch (GLOBAL::Problem::Instance()->NDim())
   {
     case 1:
-      return InitializeInternal<1>(numscal, couprole);
+      return initialize_internal<1>(numscal, couprole);
     case 2:
-      return InitializeInternal<2>(numscal, couprole);
+      return initialize_internal<2>(numscal, couprole);
 
     case 3:
-      return InitializeInternal<3>(numscal, couprole);
+      return initialize_internal<3>(numscal, couprole);
 
     default:
       FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
@@ -588,11 +588,12 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::Initialize(int numscal,  //!< numbe
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void MAT::PAR::REACTIONCOUPLING::ByFunction::InitializeInternal(int numscal,  //!< number of scalars
+void MAT::PAR::REACTIONCOUPLING::ByFunction::initialize_internal(
+    int numscal,                         //!< number of scalars
     const std::vector<double>& couprole  //!< coupling role vector
 )
 {
-  if (not IsInit())
+  if (not is_init())
   {
     variables_.reserve(numscal);
     for (int ii = 0; ii < numscal; ii++)

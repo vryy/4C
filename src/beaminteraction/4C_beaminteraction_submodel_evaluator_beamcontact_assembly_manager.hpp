@@ -52,7 +52,7 @@ namespace BEAMINTERACTION
   {
     /**
      * \brief This class assembles the contribution of beam contact pairs into the global force
-     * vector and stiffness matrix. The method EvaluateForceStiff has to be overloaded in the
+     * vector and stiffness matrix. The method evaluate_force_stiff has to be overloaded in the
      * derived classes to implement the correct assembly method.
      */
     class BeamContactAssemblyManager
@@ -75,7 +75,7 @@ namespace BEAMINTERACTION
        * @param fe_sysvec (out) Global force vector.
        * @param fe_sysmat (out) Global stiffness matrix.
        */
-      virtual void EvaluateForceStiff(Teuchos::RCP<DRT::Discretization> discret,
+      virtual void evaluate_force_stiff(Teuchos::RCP<DRT::Discretization> discret,
           const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
           Teuchos::RCP<Epetra_FEVector> fe_sysvec,
           Teuchos::RCP<CORE::LINALG::SparseMatrix> fe_sysmat)
@@ -83,7 +83,7 @@ namespace BEAMINTERACTION
         FOUR_C_THROW("Not implemented!");
       }
 
-      virtual double GetEnergy(const Teuchos::RCP<const Epetra_Vector>& disp) const { return 0.0; }
+      virtual double get_energy(const Teuchos::RCP<const Epetra_Vector>& disp) const { return 0.0; }
     };
 
   }  // namespace SUBMODELEVALUATOR

@@ -96,10 +96,10 @@ namespace LOMA
     void InitialCalculations();
 
     /// prepare time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     /// do (partitioned) outer iteration loop
-    void OuterLoop();
+    void outer_loop();
 
     /// do monolithic iteration loop
     void MonoLoop();
@@ -129,7 +129,7 @@ namespace LOMA
     void IterUpdate();
 
     /// convergence Check for present iteration step
-    bool ConvergenceCheck(int itnum);
+    bool convergence_check(int itnum);
 
     /// update for next time step
     void TimeUpdate();

@@ -50,7 +50,7 @@ void IO::HDFReader::Open(std::string basename, int num_output_procs, int new_pro
   int start;
   int end;
   num_output_proc_ = num_output_procs;
-  CalculateRange(new_proc_num, my_id, start, end);
+  calculate_range(new_proc_num, my_id, start, end);
   Close();
   for (int i = 0; i < num_output_proc_; ++i)
   {
@@ -92,9 +92,9 @@ Teuchos::RCP<std::vector<char>> IO::HDFReader::ReadElementData(
   }
   else
   {
-    CalculateRange(new_proc_num, my_id, start, end);
+    calculate_range(new_proc_num, my_id, start, end);
   }
-  return ReadCharData(path.str(), start, end);
+  return read_char_data(path.str(), start, end);
 }
 
 
@@ -116,7 +116,7 @@ Teuchos::RCP<std::vector<char>> IO::HDFReader::ReadCondition(
   const int end = 1;
 
   Teuchos::RCP<std::vector<char>> block;
-  block = ReadCharData(path.str(), start, end);
+  block = read_char_data(path.str(), start, end);
 
   return block;
 }
@@ -140,7 +140,7 @@ Teuchos::RCP<std::vector<char>> IO::HDFReader::ReadKnotvector(const int step) co
   const int end = 1;
 
   Teuchos::RCP<std::vector<char>> block;
-  block = ReadCharData(path.str(), start, end);
+  block = read_char_data(path.str(), start, end);
 
   return block;
 }
@@ -165,9 +165,9 @@ Teuchos::RCP<std::vector<char>> IO::HDFReader::ReadNodeData(
   }
   else
   {
-    CalculateRange(new_proc_num, my_id, start, end);
+    calculate_range(new_proc_num, my_id, start, end);
   }
-  Teuchos::RCP<std::vector<char>> d = ReadCharData(path.str(), start, end);
+  Teuchos::RCP<std::vector<char>> d = read_char_data(path.str(), start, end);
   return d;
 }
 
@@ -176,7 +176,7 @@ Teuchos::RCP<std::vector<char>> IO::HDFReader::ReadNodeData(
  * and returns all the data in one vector. The data is assumed to by
  * of type char (private)
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> IO::HDFReader::ReadCharData(
+Teuchos::RCP<std::vector<char>> IO::HDFReader::read_char_data(
     std::string path, int start, int end) const
 {
   if (end == -1) end = num_output_proc_;
@@ -235,7 +235,7 @@ Teuchos::RCP<std::vector<char>> IO::HDFReader::ReadCharData(
  * reads the dataset 'path' in all the files in the range [start,end)
  * and returns all the data in one std::vector<int> (private)
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<int>> IO::HDFReader::ReadIntData(
+Teuchos::RCP<std::vector<int>> IO::HDFReader::read_int_data(
     std::string path, int start, int end) const
 {
   if (end == -1) end = num_output_proc_;
@@ -291,7 +291,7 @@ Teuchos::RCP<std::vector<int>> IO::HDFReader::ReadIntData(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<double>> IO::HDFReader::ReadDoubleData(
+Teuchos::RCP<std::vector<double>> IO::HDFReader::read_double_data(
     std::string path, int start, int end, std::vector<int>& lengths) const
 {
   if (end == -1) end = num_output_proc_;
@@ -355,9 +355,9 @@ Teuchos::RCP<Epetra_MultiVector> IO::HDFReader::ReadResultData(
 
   if (files_.size() == 0) FOUR_C_THROW("Tried to read data without opening any file");
   int start, end;
-  CalculateRange(new_proc_num, my_id, start, end);
+  calculate_range(new_proc_num, my_id, start, end);
 
-  Teuchos::RCP<std::vector<int>> ids = ReadIntData(id_path, start, end);
+  Teuchos::RCP<std::vector<int>> ids = read_int_data(id_path, start, end);
   Epetra_Map map(-1, static_cast<int>(ids->size()), ids->data(), 0, Comm);
 
   Teuchos::RCP<Epetra_MultiVector> res;
@@ -367,7 +367,7 @@ Teuchos::RCP<Epetra_MultiVector> IO::HDFReader::ReadResultData(
     res = Teuchos::rcp(new Epetra_MultiVector(map, columns, false));
 
   std::vector<int> lengths;
-  Teuchos::RCP<std::vector<double>> values = ReadDoubleData(value_path, start, end, lengths);
+  Teuchos::RCP<std::vector<double>> values = read_double_data(value_path, start, end, lengths);
 
   if (static_cast<int>(values->size()) != res->MyLength() * res->NumVectors())
     FOUR_C_THROW("vector value size mismatch: %d != %d", values->size(),
@@ -404,14 +404,14 @@ Teuchos::RCP<std::vector<char>> IO::HDFReader::read_result_data_vec_char(std::st
 
   if (files_.size() == 0) FOUR_C_THROW("Tried to read data without opening any file");
   int start, end;
-  CalculateRange(new_proc_num, my_id, start, end);
+  calculate_range(new_proc_num, my_id, start, end);
 
-  Teuchos::RCP<std::vector<int>> ids = ReadIntData(id_path, start, end);
+  Teuchos::RCP<std::vector<int>> ids = read_int_data(id_path, start, end);
   // cout << "size of ids:" << (*ids).size() << endl;
   Epetra_Map map(-1, static_cast<int>(ids->size()), ids->data(), 0, Comm);
   elemap = Teuchos::rcp(new Epetra_Map(map));
 
-  Teuchos::RCP<std::vector<char>> res = ReadCharData(value_path, start, end);
+  Teuchos::RCP<std::vector<char>> res = read_char_data(value_path, start, end);
   return res;
 }
 
@@ -425,9 +425,9 @@ Teuchos::RCP<std::vector<char>> IO::HDFReader::ReadCharVector(
 
   if (files_.size() == 0) FOUR_C_THROW("Tried to read data without opening any file");
   int start, end;
-  CalculateRange(new_proc_num, my_id, start, end);
+  calculate_range(new_proc_num, my_id, start, end);
 
-  Teuchos::RCP<std::vector<char>> res = ReadCharData(value_path, start, end);
+  Teuchos::RCP<std::vector<char>> res = read_char_data(value_path, start, end);
   return res;
 }
 
@@ -451,7 +451,7 @@ void IO::HDFReader::Close()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::HDFReader::CalculateRange(int new_proc_num, int my_id, int& start, int& end) const
+void IO::HDFReader::calculate_range(int new_proc_num, int my_id, int& start, int& end) const
 {
   const int mod = num_output_proc_ % new_proc_num;
   if (my_id < mod)

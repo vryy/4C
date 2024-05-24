@@ -311,7 +311,7 @@ void STR::TIMINT::BaseDataSDyn::Init(const Teuchos::RCP<DRT::Discretization> dis
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::BaseDataSDyn::Setup()
 {
-  CheckInit();
+  check_init();
 
   std::set<enum INPAR::STR::ModelType>::const_iterator it;
   // setup model type specific data containers
@@ -345,7 +345,7 @@ void STR::TIMINT::BaseDataSDyn::Setup()
 double STR::TIMINT::BaseDataSDyn::GetResTolerance(
     const enum NOX::NLN::StatusTest::QuantityType& qtype) const
 {
-  CheckInitSetup();
+  check_init_setup();
   switch (qtype)
   {
     case NOX::NLN::StatusTest::quantity_structure:
@@ -388,7 +388,7 @@ double STR::TIMINT::BaseDataSDyn::GetResTolerance(
 double STR::TIMINT::BaseDataSDyn::GetIncrTolerance(
     const enum NOX::NLN::StatusTest::QuantityType& qtype) const
 {
-  CheckInitSetup();
+  check_init_setup();
   switch (qtype)
   {
     case NOX::NLN::StatusTest::quantity_structure:
@@ -431,7 +431,7 @@ double STR::TIMINT::BaseDataSDyn::GetIncrTolerance(
 enum INPAR::STR::ConvNorm STR::TIMINT::BaseDataSDyn::GetResToleranceType(
     const enum NOX::NLN::StatusTest::QuantityType& qtype) const
 {
-  CheckInitSetup();
+  check_init_setup();
   switch (qtype)
   {
     case NOX::NLN::StatusTest::quantity_structure:
@@ -474,7 +474,7 @@ enum INPAR::STR::ConvNorm STR::TIMINT::BaseDataSDyn::GetResToleranceType(
 enum INPAR::STR::ConvNorm STR::TIMINT::BaseDataSDyn::get_incr_tolerance_type(
     const enum NOX::NLN::StatusTest::QuantityType& qtype) const
 {
-  CheckInitSetup();
+  check_init_setup();
   switch (qtype)
   {
     case NOX::NLN::StatusTest::quantity_structure:
@@ -527,7 +527,7 @@ enum INPAR::STR::BinaryOp STR::TIMINT::BaseDataSDyn::GetResComboType(
     const enum NOX::NLN::StatusTest::QuantityType& qtype_1,
     const enum NOX::NLN::StatusTest::QuantityType& qtype_2) const
 {
-  CheckInitSetup();
+  check_init_setup();
   // combination: STRUCTURE <--> PRESSURE
   if ((qtype_1 == NOX::NLN::StatusTest::quantity_structure and
           qtype_2 == NOX::NLN::StatusTest::quantity_pressure) or
@@ -603,7 +603,7 @@ enum INPAR::STR::BinaryOp STR::TIMINT::BaseDataSDyn::GetIncrComboType(
     const enum NOX::NLN::StatusTest::QuantityType& qtype_1,
     const enum NOX::NLN::StatusTest::QuantityType& qtype_2) const
 {
-  CheckInitSetup();
+  check_init_setup();
   // combination: STRUCTURE <--> PRESSURE
   if ((qtype_1 == NOX::NLN::StatusTest::quantity_structure and
           qtype_2 == NOX::NLN::StatusTest::quantity_pressure) or
@@ -670,7 +670,7 @@ enum INPAR::STR::BinaryOp STR::TIMINT::BaseDataSDyn::GetResIncrComboType(
     const enum NOX::NLN::StatusTest::QuantityType& qtype_res,
     const enum NOX::NLN::StatusTest::QuantityType& qtype_incr) const
 {
-  CheckInitSetup();
+  check_init_setup();
   // combination: STRUCTURE (force/res) <--> STRUCTURE (displ/incr)
   if ((qtype_res == NOX::NLN::StatusTest::quantity_structure and
           qtype_incr == NOX::NLN::StatusTest::quantity_structure))
@@ -690,7 +690,7 @@ enum INPAR::STR::BinaryOp STR::TIMINT::BaseDataSDyn::GetResIncrComboType(
  *----------------------------------------------------------------------------*/
 bool STR::TIMINT::BaseDataSDyn::HaveModelType(const INPAR::STR::ModelType& modeltype) const
 {
-  CheckInitSetup();
+  check_init_setup();
   return (GetModelTypes().find(modeltype) != GetModelTypes().end());
 }
 
@@ -698,7 +698,7 @@ bool STR::TIMINT::BaseDataSDyn::HaveModelType(const INPAR::STR::ModelType& model
  *----------------------------------------------------------------------------*/
 bool STR::TIMINT::BaseDataSDyn::HaveEleTech(const INPAR::STR::EleTech& eletech) const
 {
-  CheckInitSetup();
+  check_init_setup();
   return (get_element_technologies().find(eletech) != get_element_technologies().end());
 }
 
@@ -720,7 +720,7 @@ STR::TIMINT::GenAlphaDataSDyn::GenAlphaDataSDyn()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::GenAlphaDataSDyn::Setup()
 {
-  CheckInit();
+  check_init();
 
   // call base class setup
   STR::TIMINT::BaseDataSDyn::Setup();
@@ -747,7 +747,7 @@ STR::TIMINT::OneStepThetaDataSDyn::OneStepThetaDataSDyn() : theta_(-1.0)
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::OneStepThetaDataSDyn::Setup()
 {
-  CheckInit();
+  check_init();
 
   // call base class setup
   STR::TIMINT::BaseDataSDyn::Setup();
@@ -768,7 +768,7 @@ STR::TIMINT::ExplEulerDataSDyn::ExplEulerDataSDyn() : modexpleuler_(true)
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::ExplEulerDataSDyn::Setup()
 {
-  CheckInit();
+  check_init();
 
   // call base class setup
   STR::TIMINT::BaseDataSDyn::Setup();

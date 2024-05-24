@@ -161,7 +161,7 @@ void FLD::TimIntStationary::solve_stationary_problem()
 *-----------------------------------------------------------------------*/
 void FLD::TimIntStationary::SetStateTimInt()
 {
-  discret_->SetState("velaf", velnp_);
+  discret_->set_state("velaf", velnp_);
   return;
 }
 

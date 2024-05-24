@@ -76,9 +76,9 @@ FLD::TimInt::TimInt(const Teuchos::RCP<DRT::Discretization>& discret,
   }
 }
 
-Teuchos::RCP<const Epetra_Map> FLD::TimInt::DofRowMap(unsigned nds)
+Teuchos::RCP<const Epetra_Map> FLD::TimInt::dof_row_map(unsigned nds)
 {
-  return Teuchos::rcp(Discretization()->DofRowMap(nds), false);
+  return Teuchos::rcp(Discretization()->dof_row_map(nds), false);
 }
 
 

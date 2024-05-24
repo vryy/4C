@@ -46,11 +46,11 @@ void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::Init()
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::Setup()
 {
-  ThrowErrorIfNotInit();
+  throw_error_if_not_init();
 
   // Teuchos parameter list for beam contact
   const Teuchos::ParameterList& beam_contact_visualization_output_paramslist =
-      GLOBAL::Problem::Instance()->BeamContactParams().sublist("RUNTIME VTK OUTPUT");
+      GLOBAL::Problem::Instance()->beam_contact_params().sublist("RUNTIME VTK OUTPUT");
 
   /****************************************************************************/
   // get and check required parameters
@@ -78,14 +78,14 @@ void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::Setup()
 void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::
     throw_error_if_not_init_and_setup() const
 {
-  if (!IsInit() or !IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
+  if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::ThrowErrorIfNotInit() const
+void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::throw_error_if_not_init() const
 {
-  if (!IsInit()) FOUR_C_THROW("Init() has not been called, yet!");
+  if (!is_init()) FOUR_C_THROW("Init() has not been called, yet!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

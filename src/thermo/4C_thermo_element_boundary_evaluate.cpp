@@ -39,7 +39,7 @@ int DRT::ELEMENTS::ThermoBoundary::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  | integrate a Surface/Line Neumann boundary condition       dano 09/09 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ThermoBoundary::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::ThermoBoundary::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -50,7 +50,7 @@ int DRT::ELEMENTS::ThermoBoundary::EvaluateNeumann(Teuchos::ParameterList& param
   // If this element has special features/ methods that do not fit in the
   // generalized implementation class, you have to do a switch here in order to
   // call element-specific routines
-  return DRT::ELEMENTS::TemperBoundaryImplInterface::Impl(this)->EvaluateNeumann(
+  return DRT::ELEMENTS::TemperBoundaryImplInterface::Impl(this)->evaluate_neumann(
       this, params, discretization, condition, lm, elevec1);
 }
 

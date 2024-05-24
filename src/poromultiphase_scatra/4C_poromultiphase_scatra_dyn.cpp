@@ -86,10 +86,10 @@ void poromultiphasescatra_dyn(int restart)
       ndsporo_solidpressure, ndsporofluid_scatra, &nearbyelepairs);
 
   // read the restart information, set vectors and variables
-  if (restart) algo->ReadRestart(restart);
+  if (restart) algo->read_restart(restart);
 
   // assign materials
-  // note: to be done after potential restart, as in ReadRestart()
+  // note: to be done after potential restart, as in read_restart()
   //       the secondary material is destroyed
   POROMULTIPHASESCATRA::UTILS::assign_material_pointers(
       struct_disname, fluid_disname, scatra_disname, artery_coupl);

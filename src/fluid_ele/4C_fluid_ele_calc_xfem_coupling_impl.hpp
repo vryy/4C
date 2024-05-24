@@ -642,7 +642,7 @@ namespace DRT
         );
 
         //!  evaluate Nitsche's penalty term
-        void NIT_Stab_Penalty(const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct
+        void nit_stab_penalty(const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct
             const double& timefacfac,              ///< time integration factor
             const std::pair<bool, double>& m_row,  ///< scaling for master row
             const std::pair<bool, double>& s_row,  ///< scaling for slave row
@@ -731,7 +731,7 @@ namespace DRT
 
         /// get global master row/col-index of element coupling matrix for a given node index and
         /// dof-index
-        static unsigned mIndex(unsigned inod, unsigned idof)
+        static unsigned m_index(unsigned inod, unsigned idof)
         {
           //          if (idof >= master_numdof_)
           //            FOUR_C_THROW("Coupling master element has only %d dof!", master_numdof_);
@@ -742,7 +742,7 @@ namespace DRT
 
         /// get global slave row/col-index of element coupling matrix for a given node index and
         /// dof-index
-        static unsigned sIndex(unsigned inod, unsigned idof)
+        static unsigned s_index(unsigned inod, unsigned idof)
         {
           //          if (idof >= slave_numdof)
           //            FOUR_C_THROW("Coupling slave element has only %d dof!", slave_numdof);
@@ -753,18 +753,18 @@ namespace DRT
 
         //! @name get global master row/col-index of element coupling matrix for a given node index
         //@{
-        static unsigned mVelx(unsigned inod) { return inod * master_numdof_ + Velx; }
-        static unsigned mVely(unsigned inod) { return inod * master_numdof_ + Vely; }
-        static unsigned mVelz(unsigned inod) { return inod * master_numdof_ + Velz; }
-        static unsigned mPres(unsigned inod) { return inod * master_numdof_ + Pres; }
+        static unsigned m_velx(unsigned inod) { return inod * master_numdof_ + Velx; }
+        static unsigned m_vely(unsigned inod) { return inod * master_numdof_ + Vely; }
+        static unsigned m_velz(unsigned inod) { return inod * master_numdof_ + Velz; }
+        static unsigned m_pres(unsigned inod) { return inod * master_numdof_ + Pres; }
         //@}
 
         /// @name get global slave row/col-index of element coupling matrix for a given node index
         //@{
-        static unsigned sVelx(unsigned inod) { return inod * slave_numdof + Velx; }
-        static unsigned sVely(unsigned inod) { return inod * slave_numdof + Vely; }
-        static unsigned sVelz(unsigned inod) { return inod * slave_numdof + Velz; }
-        static unsigned sPres(unsigned inod) { return inod * slave_numdof + Pres; }
+        static unsigned s_velx(unsigned inod) { return inod * slave_numdof + Velx; }
+        static unsigned s_vely(unsigned inod) { return inod * slave_numdof + Vely; }
+        static unsigned s_velz(unsigned inod) { return inod * slave_numdof + Velz; }
+        static unsigned s_pres(unsigned inod) { return inod * slave_numdof + Pres; }
         //@}
 
         /// specific XFEM based fluid parameters
@@ -840,7 +840,7 @@ namespace DRT
         CORE::LINALG::Matrix<nsd_, 1> velint_diff_tangential_;
 
         // Only exists in NIT_Stab_Penalty_MasterTerms and
-        //               NIT_Stab_Penalty
+        //               nit_stab_penalty
         //   i.e. probably should define, normal and tangential components
         CORE::LINALG::Matrix<nsd_, 1> velint_diff_timefacfac_stabfac_;
 
@@ -1011,7 +1011,7 @@ namespace DRT
         //@}
 
         /// get stress dof-index
-        static unsigned stressIndex(unsigned xi, unsigned xj)
+        static unsigned stress_index(unsigned xi, unsigned xj)
         {
           if (xi > 2 || xj > 2)
             FOUR_C_THROW("Invalid index combination (%d,%d) for stress tensor!", xi, xj);
@@ -1021,7 +1021,7 @@ namespace DRT
 
         /// get global master row/col-index of element coupling matrix for a given node index and
         /// dof-index
-        static unsigned mIndex(unsigned inod, unsigned idof)
+        static unsigned m_index(unsigned inod, unsigned idof)
         {
           //          if (idof >= master_numdof_)
           //            FOUR_C_THROW("Coupling master element has only %d dof!", master_numdof_);
@@ -1032,7 +1032,7 @@ namespace DRT
 
         /// get global slave row/col-index of element coupling matrix for a given node index and
         /// dof-index
-        static unsigned sIndex(unsigned inod, unsigned idof)
+        static unsigned s_index(unsigned inod, unsigned idof)
         {
           //          if (idof >= slave_numdof)
           //            FOUR_C_THROW("Coupling slave element has only %d dof!", slave_numdof);

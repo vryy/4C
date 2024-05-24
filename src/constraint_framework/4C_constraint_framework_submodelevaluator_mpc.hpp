@@ -47,7 +47,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     /*!
       \brief Perform basic checks of the input conditions and parameters
     */
-    void CheckInput();
+    void check_input();
 
     /*!
      * \brief Reset the constraint stiffness matrix and delete node pairs
@@ -88,11 +88,11 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     //! @name Private evaluation methods
 
     //! find the opposite edge node pairs of the periodic rve
-    void BuildPeriodicMPCs(std::map<std::string, const std::vector<int>*>& rveBoundaryNodeIdMap_,
+    void build_periodic_mp_cs(std::map<std::string, const std::vector<int>*>& rveBoundaryNodeIdMap_,
         std::map<std::string, int>& rveCornerNodeIdMap_);
 
     //! add linear mpcs to the mpcList
-    int BuildLinearMPCs();
+    int build_linear_mp_cs();
 
     //! find a node that is member of edge1 and edge2
     int find_periodic_rve_corner_nodes(

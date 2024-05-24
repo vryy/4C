@@ -67,7 +67,7 @@ namespace IMMERSED
     void setup_structural_discretization();
 
     /// read restart data
-    void ReadRestart(int step) override;
+    void read_restart(int step) override;
 
    protected:
     /*!
@@ -94,7 +94,7 @@ namespace IMMERSED
     Teuchos::RCP<Epetra_Vector> StructOp(
         Teuchos::RCP<Epetra_Vector> struct_bdry_traction, const FillType fillFlag) override;
     /// initial guess
-    Teuchos::RCP<Epetra_Vector> InitialGuess() override;
+    Teuchos::RCP<Epetra_Vector> initial_guess() override;
 
     /// get immersed nodes and determine their dofs
     void build_immersed_dirich_map(Teuchos::RCP<DRT::Discretization> dis,
@@ -159,7 +159,7 @@ namespace IMMERSED
     on entry. if artificial_velocity_isvalid_=true the current artificial velocity stored in
     fluid_artificial_velocity_ is returned. This is important when restart is requested since then
     the we need to perform the projection in the first restart step. This is done in \ref
-    InitialGuess(). In case of no restart, we can just return the velocity since it had recently
+    initial_guess(). In case of no restart, we can just return the velocity since it had recently
     been projected after the last structural solve. This work would be done twice, else.
     */
     virtual Teuchos::RCP<Epetra_Vector> calc_artificial_velocity();

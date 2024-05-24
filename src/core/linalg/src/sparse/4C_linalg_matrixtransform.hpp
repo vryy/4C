@@ -105,31 +105,31 @@ namespace CORE::LINALG
     /*!
       Internal method.
      */
-    void SetupGidMap(const Epetra_Map& rowmap, const Epetra_Map& colmap,
+    void setup_gid_map(const Epetra_Map& rowmap, const Epetra_Map& colmap,
         const CORE::ADAPTER::CouplingConverter* converter, const Epetra_Comm& comm);
 
     /// copy values from source to destination matrix
     /*!
       Internal method.
      */
-    void InternalAdd(Teuchos::RCP<Epetra_CrsMatrix> esrc, const Epetra_Map& logical_range_map,
+    void internal_add(Teuchos::RCP<Epetra_CrsMatrix> esrc, const Epetra_Map& logical_range_map,
         const Epetra_Map& logical_domain_map, const Epetra_Map& matching_dst_rows,
         Teuchos::RCP<Epetra_CrsMatrix> edst, bool exactmatch, double scale);
 
     /// fast method that adds into filled matrices
     /*!
-      Internal method called by InternalAdd.
+      Internal method called by internal_add.
      */
-    void AddIntoFilled(Teuchos::RCP<Epetra_CrsMatrix> esrc, const Epetra_Map& logical_range_map,
+    void add_into_filled(Teuchos::RCP<Epetra_CrsMatrix> esrc, const Epetra_Map& logical_range_map,
         const Epetra_Map& logical_domain_map, const Epetra_Vector& selector,
         const Epetra_Map& matching_dst_rows, Teuchos::RCP<Epetra_CrsMatrix> edst, bool exactmatch,
         double scale);
 
     /// slow method that adds into unfilled matrices
     /*!
-      Internal method called by InternalAdd.
+      Internal method called by internal_add.
      */
-    void AddIntoUnfilled(Teuchos::RCP<Epetra_CrsMatrix> esrc, const Epetra_Map& logical_range_map,
+    void add_into_unfilled(Teuchos::RCP<Epetra_CrsMatrix> esrc, const Epetra_Map& logical_range_map,
         const Epetra_Map& logical_domain_map, const Epetra_Vector& selector,
         const Epetra_Map& matching_dst_rows, Teuchos::RCP<Epetra_CrsMatrix> edst, bool exactmatch,
         double scale);

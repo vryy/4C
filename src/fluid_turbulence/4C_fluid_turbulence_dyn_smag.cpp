@@ -182,7 +182,7 @@ void FLD::DynSmagFilter::apply_filter_for_dynamic_computation_of_cs(
 
 
   // compute Cs, use averaging or clipping
-  DynSmagComputeCs();
+  dyn_smag_compute_cs();
 
   // output of mean dynamic Samgorinsky parameters
   // reset to zero
@@ -240,7 +240,7 @@ void FLD::DynSmagFilter::apply_filter_for_dynamic_computation_of_prt(
   // required for calculation of mean Prt in turbulent channel flow
   int numele_layer = 0;
   // compute Cs, use averaging or clipping
-  DynSmagComputePrt(extraparams, numele_layer);
+  dyn_smag_compute_prt(extraparams, numele_layer);
 
   Teuchos::ParameterList* extramodelparams = &(extraparams.sublist("TURBULENCE MODEL"));
   Teuchos::ParameterList* modelparams = &(params_.sublist("TURBULENCE MODEL"));
@@ -288,7 +288,7 @@ void FLD::DynSmagFilter::apply_filter_for_dynamic_computation_of_prt(
  | averaging                                                  (private) |
  |                                                      rasthofer 02/11 |
  *----------------------------------------------------------------------*/
-void FLD::DynSmagFilter::DynSmagComputeCs()
+void FLD::DynSmagFilter::dyn_smag_compute_cs()
 {
   TEUCHOS_FUNC_TIME_MONITOR("ComputeCs");
 
@@ -680,7 +680,7 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
 
 
   return;
-}  // end FLD::DynSmagFilter::DynSmagComputeCs
+}  // end FLD::DynSmagFilter::dyn_smag_compute_cs
 
 
 /*----------------------------------------------------------------------*
@@ -688,7 +688,8 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
  | averaging                                                  (private) |
  |                                                      rasthofer 09/12 |
  *----------------------------------------------------------------------*/
-void FLD::DynSmagFilter::DynSmagComputePrt(Teuchos::ParameterList& extraparams, int& numele_layer)
+void FLD::DynSmagFilter::dyn_smag_compute_prt(
+    Teuchos::ParameterList& extraparams, int& numele_layer)
 {
   TEUCHOS_FUNC_TIME_MONITOR("ComputePrt");
 
@@ -1018,6 +1019,6 @@ void FLD::DynSmagFilter::DynSmagComputePrt(Teuchos::ParameterList& extraparams, 
   }  // end if turbulent channel flow
 
   return;
-}  // end FLD::DynSmagFilter::DynSmagComputePrt
+}  // end FLD::DynSmagFilter::dyn_smag_compute_prt
 
 FOUR_C_NAMESPACE_CLOSE

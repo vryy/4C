@@ -68,7 +68,7 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList& params,
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate");
 
-  if (!Filled()) FOUR_C_THROW("FillComplete() was not called");
+  if (!Filled()) FOUR_C_THROW("fill_complete() was not called");
   if (!HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   int row = strategy.FirstDofSet();
@@ -78,7 +78,7 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList& params,
   // for each type of element
   // for most element types, just the base class dummy is called
   // that does nothing
-  CORE::COMM::ParObjectFactory::Instance().PreEvaluate(*this, params, strategy.Systemmatrix1(),
+  CORE::COMM::ParObjectFactory::Instance().pre_evaluate(*this, params, strategy.Systemmatrix1(),
       strategy.Systemmatrix2(), strategy.Systemvector1(), strategy.Systemvector2(),
       strategy.Systemvector3());
 
@@ -121,7 +121,7 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList& params,
 void DRT::Discretization::Evaluate(const std::function<void(DRT::Element&)>& element_action)
 {
   // test only for Filled()!Dof information is not required
-  if (!Filled()) FOUR_C_THROW("FillComplete() was not called");
+  if (!Filled()) FOUR_C_THROW("fill_complete() was not called");
 
   for (Element* actele : MyColElementRange())
   {
@@ -158,10 +158,10 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList& params)
 /*----------------------------------------------------------------------*
  |  evaluate Neumann conditions (public)                     mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
+void DRT::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
     Epetra_Vector& systemvector, CORE::LINALG::SparseOperator* systemmatrix)
 {
-  if (!Filled()) FOUR_C_THROW("FillComplete() was not called");
+  if (!Filled()) FOUR_C_THROW("fill_complete() was not called");
   if (!HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   bool assemblemat = (systemmatrix != nullptr);
@@ -249,7 +249,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
         elevector.size((int)lm.size());
         if (!assemblemat)
         {
-          ele->EvaluateNeumann(params, *this, *cond, lm, elevector);
+          ele->evaluate_neumann(params, *this, *cond, lm, elevector);
           CORE::LINALG::Assemble(systemvector, elevector, lm, lmowner);
         }
         else
@@ -259,7 +259,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
             elematrix.shape(size, size);
           else
             elematrix.putScalar(0.0);
-          ele->EvaluateNeumann(params, *this, *cond, lm, elevector, &elematrix);
+          ele->evaluate_neumann(params, *this, *cond, lm, elevector, &elematrix);
           CORE::LINALG::Assemble(systemvector, elevector, lm, lmowner);
           systemmatrix->Assemble(ele->Id(), lmstride, elematrix, lm, lmowner);
         }
@@ -317,12 +317,12 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
         else
           elematrix.putScalar(0.0);
         // evaluate linearized point moment conditions and assemble matrices
-        currele->EvaluateNeumann(params, *this, *cond, lm, elevector, &elematrix);
+        currele->evaluate_neumann(params, *this, *cond, lm, elevector, &elematrix);
         systemmatrix->Assemble(currele->Id(), lmstride, elematrix, lm, lmowner);
       }
       //-----if no stiffness matrix was given in-------
       else
-        currele->EvaluateNeumann(params, *this, *cond, lm, elevector);
+        currele->evaluate_neumann(params, *this, *cond, lm, elevector);
       CORE::LINALG::Assemble(systemvector, elevector, lm, lmowner);
     }
   }
@@ -345,7 +345,7 @@ void DRT::Discretization::EvaluateDirichlet(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate a condition (public)                               tk 02/08|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
+void DRT::Discretization::evaluate_condition(Teuchos::ParameterList& params,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -353,16 +353,16 @@ void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
 {
   CORE::FE::AssembleStrategy strategy(
       0, 0, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);
-  EvaluateCondition(params, strategy, condstring, condid);
-}  // end of DRT::Discretization::EvaluateCondition
+  evaluate_condition(params, strategy, condstring, condid);
+}  // end of DRT::Discretization::evaluate_condition
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
+void DRT::Discretization::evaluate_condition(Teuchos::ParameterList& params,
     CORE::FE::AssembleStrategy& strategy, const std::string& condstring, const int condid)
 {
-  if (!Filled()) FOUR_C_THROW("FillComplete() was not called");
+  if (!Filled()) FOUR_C_THROW("fill_complete() was not called");
   if (!HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   int row = strategy.FirstDofSet();
@@ -440,7 +440,7 @@ void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
            * sysmat.assemble(...,eid,...))*/
           int eid;
           if (auto* faceele = dynamic_cast<DRT::FaceElement*>(ele.get()))
-            eid = faceele->ParentElement()->Id();
+            eid = faceele->parent_element()->Id();
           else
             eid = ele->Id();
 
@@ -455,7 +455,7 @@ void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
       }
     }
   }
-}  // end of DRT::Discretization::EvaluateCondition
+}  // end of DRT::Discretization::evaluate_condition
 
 
 /*----------------------------------------------------------------------*
@@ -464,7 +464,7 @@ void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
 void DRT::Discretization::EvaluateScalars(
     Teuchos::ParameterList& params, Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars)
 {
-  if (!Filled()) FOUR_C_THROW("FillComplete() was not called");
+  if (!Filled()) FOUR_C_THROW("fill_complete() was not called");
   if (!HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // number of scalars
@@ -519,7 +519,7 @@ void DRT::Discretization::EvaluateScalars(Teuchos::ParameterList& params,  //! (
 )
 {
   // safety checks
-  if (!Filled()) FOUR_C_THROW("FillComplete() has not been called on discretization!");
+  if (!Filled()) FOUR_C_THROW("fill_complete() has not been called on discretization!");
   if (!HaveDofs())
     FOUR_C_THROW("assign_degrees_of_freedom() has not been called on discretization!");
 
@@ -598,7 +598,7 @@ void DRT::Discretization::EvaluateScalars(Teuchos::ParameterList& params,  //! (
 void DRT::Discretization::EvaluateScalars(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_MultiVector> scalars)
 {
-  if (!Filled()) FOUR_C_THROW("FillComplete() was not called");
+  if (!Filled()) FOUR_C_THROW("fill_complete() was not called");
   if (!HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   Epetra_MultiVector& sca = *(scalars.get());

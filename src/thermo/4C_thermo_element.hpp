@@ -328,7 +328,7 @@ namespace DRT
       //! \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
       //!
       //! \return 0 if successful, negative otherwise
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1) override;
@@ -429,17 +429,17 @@ namespace DRT
       int NumLine() const override
       {
         // get spatial dimension of boundary
-        const int nsd = CORE::FE::getDimension(ParentElement()->Shape()) - 1;
+        const int nsd = CORE::FE::getDimension(parent_element()->Shape()) - 1;
 
-        if ((NumNode() == 4) or (NumNode() == 8) or (NumNode() == 9))
+        if ((num_node() == 4) or (num_node() == 8) or (num_node() == 9))
           return 4;
-        else if (NumNode() == 6)
+        else if (num_node() == 6)
           return 3;
-        else if ((NumNode() == 3) and (nsd == 2))
+        else if ((num_node() == 3) and (nsd == 2))
           return 3;
-        else if ((NumNode() == 3) and (nsd == 1))
+        else if ((num_node() == 3) and (nsd == 1))
           return 1;
-        else if (NumNode() == 2)
+        else if (num_node() == 2)
           return 1;
         else
         {
@@ -452,7 +452,7 @@ namespace DRT
       int NumSurface() const override
       {
         // get spatial dimension of parent element
-        const int nsd = CORE::FE::getDimension(ParentElement()->Shape());
+        const int nsd = CORE::FE::getDimension(parent_element()->Shape());
 
         if (nsd == 3)
           return 1;
@@ -499,12 +499,12 @@ namespace DRT
       //! separately.
       int NumDofPerNode(const DRT::Node& node) const override
       {
-        return ParentElement()->NumDofPerNode(node);
+        return parent_element()->NumDofPerNode(node);
       }
 
       /*
       //! Return a pointer to the parent element of this boundary element
-      virtual DRT::ELEMENTS::Thermo* ParentElement()
+      virtual DRT::ELEMENTS::Thermo* parent_element()
       {
         return parent_;
       }
@@ -577,7 +577,7 @@ namespace DRT
       //! \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
       //!
       //! \return 0 if successful, negative otherwise
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1) override;

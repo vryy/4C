@@ -28,11 +28,11 @@ namespace CONTACT
    public:
     //! Shared data constructor
     NitscheStrategySsiElch(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
-        const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
+        const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params,
         std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
         const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof)
-        : NitscheStrategySsi(data_ptr, DofRowMap, NodeRowMap, params, std::move(interface), dim,
+        : NitscheStrategySsi(data_ptr, dof_row_map, NodeRowMap, params, std::move(interface), dim,
               comm, alphaf, maxdof)
     {
     }

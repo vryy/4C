@@ -84,7 +84,7 @@ void FLD::Vreman::apply_filter_for_dynamic_computation_of_cv(
   boxf_->GetAlpha2(col_filtered_alpha2_);
 
   // compute Cv
-  Cv_ = DynVremanComputeCv();
+  Cv_ = dyn_vreman_compute_cv();
 
   return;
 }
@@ -108,7 +108,7 @@ void FLD::Vreman::apply_filter_for_dynamic_computation_of_dt(
   boxfsc_->GetFilteredPhi2(col_filtered_phi2_);
   boxfsc_->get_filtered_phiexpression(col_filtered_phiexpression_);
   boxfsc_->get_filtered_vreman_alphaijsc(col_filtered_alphaijsc_);
-  DynVremanComputeDt(extraparams);
+  dyn_vreman_compute_dt(extraparams);
   return;
 }
 
@@ -118,7 +118,7 @@ void FLD::Vreman::apply_filter_for_dynamic_computation_of_dt(
  | compute Cv from filtered quantities.                       (private) |
  |                                                      krank     09/13 |
  *----------------------------------------------------------------------*/
-double FLD::Vreman::DynVremanComputeCv()
+double FLD::Vreman::dyn_vreman_compute_cv()
 {
   double Cv = 0.0;
   double cv_numerator_volumeav = 0.0;
@@ -173,9 +173,9 @@ double FLD::Vreman::DynVremanComputeCv()
 
 
   return Cv;
-}  // end FLD::Vreman::DynVremanComputeCv
+}  // end FLD::Vreman::dyn_vreman_compute_cv
 
-void FLD::Vreman::DynVremanComputeDt(Teuchos::ParameterList& extraparams)
+void FLD::Vreman::dyn_vreman_compute_dt(Teuchos::ParameterList& extraparams)
 {
   double Dt = 0.0;
   double dt_numerator_volumeav = 0.0;
@@ -217,6 +217,6 @@ void FLD::Vreman::DynVremanComputeDt(Teuchos::ParameterList& extraparams)
   modelparams_scatra->set<double>("Dt_vreman", Dt);
   params_.set<double>("Dt_vreman", Dt);
   return;
-}  // end FLD::Vreman::DynVremanComputeDt()
+}  // end FLD::Vreman::dyn_vreman_compute_dt()
 
 FOUR_C_NAMESPACE_CLOSE

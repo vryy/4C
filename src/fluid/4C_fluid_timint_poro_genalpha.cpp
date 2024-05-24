@@ -64,11 +64,11 @@ void FLD::TimIntPoroGenAlpha::gen_alpha_intermediate_values()
   velaf_->Update((alphaF_), *velnp_, (1.0 - alphaF_), *veln_, 0.0);
 }
 
-void FLD::TimIntPoroGenAlpha::ReadRestart(int step)
+void FLD::TimIntPoroGenAlpha::read_restart(int step)
 {
   // call of base classes
-  TimIntGenAlpha::ReadRestart(step);
-  TimIntPoro::ReadRestart(step);
+  TimIntGenAlpha::read_restart(step);
+  TimIntPoro::read_restart(step);
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -124,7 +124,7 @@ namespace FLD
     \brief Input of statistics data after restart
     */
 
-    void ReadRestart(IO::DiscretizationReader& reader);
+    void read_restart(IO::DiscretizationReader& reader);
 
     /*!
     \brief Write output file of statistics data to allow restart

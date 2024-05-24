@@ -75,7 +75,7 @@ namespace DRT
           std::vector<CORE::LINALG::SerialDenseVector*>& elevec);
 
       //! evaluate Neumann boundary condition
-      virtual int EvaluateNeumann(DRT::Element* ele, Teuchos::ParameterList& params,
+      virtual int evaluate_neumann(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1);
 

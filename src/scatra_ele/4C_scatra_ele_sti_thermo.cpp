@@ -154,7 +154,7 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcRHSSoret(
  | evaluate Soret material                                   fang 11/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::MatSoret(
+void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::mat_soret(
     const Teuchos::RCP<const CORE::MAT::Material> material  //!< Soret material
 )
 {

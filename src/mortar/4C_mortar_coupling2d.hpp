@@ -113,7 +113,7 @@ namespace MORTAR
      \brief Get interface contact parameter list
 
      */
-    virtual Teuchos::ParameterList& InterfaceParams() { return imortar_; };
+    virtual Teuchos::ParameterList& interface_params() { return imortar_; };
 
     /*!
      \brief Get projection status of the four end nodes
@@ -183,7 +183,7 @@ namespace MORTAR
      elements form an angle smaller than 90 degrees).
 
      */
-    virtual bool RoughCheckOrient();
+    virtual bool rough_check_orient();
 
    protected:
     /*!
@@ -310,7 +310,7 @@ namespace MORTAR
      \brief Calculate consistent dual shape functions in boundary elements
 
      */
-    virtual void ConsistDualShape();
+    virtual void consist_dual_shape();
 
    protected:
     // don't want = operator and cctor

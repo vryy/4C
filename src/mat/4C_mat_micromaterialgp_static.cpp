@@ -40,8 +40,8 @@ MAT::MicroMaterialGP::MicroMaterialGP(
 {
   GLOBAL::Problem* microproblem = GLOBAL::Problem::Instance(microdisnum_);
   Teuchos::RCP<DRT::Discretization> microdis = microproblem->GetDis("structure");
-  dis_ = CORE::LINALG::CreateVector(*microdis->DofRowMap(), true);
-  disn_ = CORE::LINALG::CreateVector(*microdis->DofRowMap(), true);
+  dis_ = CORE::LINALG::CreateVector(*microdis->dof_row_map(), true);
+  disn_ = CORE::LINALG::CreateVector(*microdis->dof_row_map(), true);
   lastalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
   oldalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
   oldfeas_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
@@ -77,10 +77,10 @@ MAT::MicroMaterialGP::MicroMaterialGP(
   density_ = (microstaticmap_[microdisnum_])->Density();
 
   // create and initialize "empty" EAS history map (if necessary)
-  EasInit();
+  eas_init();
 
   std::string newfilename;
-  NewResultFile(eleowner, newfilename);
+  new_result_file(eleowner, newfilename);
 
   // check whether we are using modified Newton as a nonlinear solver
   // on the macroscale or not
@@ -104,10 +104,10 @@ MAT::MicroMaterialGP::~MicroMaterialGP()
 
 /// Read restart
 
-void MAT::MicroMaterialGP::ReadRestart()
+void MAT::MicroMaterialGP::read_restart()
 {
   step_ = GLOBAL::Problem::Instance()->Restart();
-  microstaticmap_[microdisnum_]->ReadRestart(step_, dis_, lastalpha_, restartname_);
+  microstaticmap_[microdisnum_]->read_restart(step_, dis_, lastalpha_, restartname_);
 
   *oldalpha_ = *lastalpha_;
 
@@ -117,7 +117,7 @@ void MAT::MicroMaterialGP::ReadRestart()
 
 /// New resultfile
 
-void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename)
+void MAT::MicroMaterialGP::new_result_file(bool eleowner, std::string& newfilename)
 {
   // set up micro output
   //
@@ -136,10 +136,10 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
   if (microdis->Comm().MyPID() == 0)
   {
     // figure out prefix of micro-scale restart files
-    restartname_ = NewResultFilePath(microprefix);
+    restartname_ = new_result_file_path(microprefix);
 
     // figure out new prefix for micro-scale output files
-    newfilename = NewResultFilePath(micronewprefix);
+    newfilename = new_result_file_path(micronewprefix);
   }
 
   // restart file name and new output file name are sent to supporting procs
@@ -192,7 +192,7 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
   }
 }
 
-std::string MAT::MicroMaterialGP::NewResultFilePath(const std::string& newprefix)
+std::string MAT::MicroMaterialGP::new_result_file_path(const std::string& newprefix)
 {
   std::string newfilename;
 
@@ -225,7 +225,7 @@ std::string MAT::MicroMaterialGP::NewResultFilePath(const std::string& newprefix
 }
 
 
-void MAT::MicroMaterialGP::EasInit()
+void MAT::MicroMaterialGP::eas_init()
 {
   Teuchos::RCP<DRT::Discretization> discret =
       (GLOBAL::Problem::Instance(microdisnum_))->GetDis("structure");
@@ -281,11 +281,11 @@ void MAT::MicroMaterialGP::perform_micro_simulation(CORE::LINALG::Matrix<3, 3>* 
   Teuchos::RCP<STRUMULTI::MicroStatic> microstatic = microstaticmap_[microdisnum_];
 
   // set displacements and EAS data of last step
-  microstatic->SetState(dis_, disn_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_,
+  microstatic->set_state(dis_, disn_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_,
       old_kaainv_, old_kda_);
 
   // set current time, time step size and step number
-  microstatic->SetTime(time_, timen_, dt_, step_, stepn_);
+  microstatic->set_time(time_, timen_, dt_, step_, stepn_);
 
   microstatic->Predictor(defgrd);
   microstatic->FullNewton();
@@ -325,7 +325,7 @@ void MAT::MicroMaterialGP::Update()
 }
 
 
-void MAT::MicroMaterialGP::PrepareOutput()
+void MAT::MicroMaterialGP::prepare_output()
 {
   // select corresponding "time integration class" for this microstructure
   Teuchos::RCP<STRUMULTI::MicroStatic> microstatic = microstaticmap_[microdisnum_];
@@ -334,10 +334,10 @@ void MAT::MicroMaterialGP::PrepareOutput()
   strain_ = Teuchos::rcp(new std::vector<char>());
   plstrain_ = Teuchos::rcp(new std::vector<char>());
 
-  microstatic->SetState(dis_, disn_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_,
+  microstatic->set_state(dis_, disn_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_,
       old_kaainv_, old_kda_);
-  microstatic->SetTime(time_, timen_, dt_, step_, stepn_);
-  microstatic->PrepareOutput();
+  microstatic->set_time(time_, timen_, dt_, step_, stepn_);
+  microstatic->prepare_output();
 }
 
 
@@ -347,7 +347,7 @@ void MAT::MicroMaterialGP::Output()
   Teuchos::RCP<STRUMULTI::MicroStatic> microstatic = microstaticmap_[microdisnum_];
 
   // set displacements and EAS data of last step
-  microstatic->SetState(dis_, disn_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_,
+  microstatic->set_state(dis_, disn_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_,
       old_kaainv_, old_kda_);
   microstatic->Output(micro_output_, time_, step_, dt_);
 

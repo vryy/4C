@@ -48,7 +48,7 @@ void STI::STIResultTest::TestSpecial(
     res.ExtractString("QUANTITY", quantity);
 
     // get result to be tested
-    const double result = ResultSpecial(quantity);
+    const double result = result_special(quantity);
 
     // compare values
     const int err = CompareValues(result, "SPECIAL", res);
@@ -63,7 +63,7 @@ void STI::STIResultTest::TestSpecial(
 /*----------------------------------------------------------------------*
  | get special result to be tested                           fang 01/17 |
  *----------------------------------------------------------------------*/
-double STI::STIResultTest::ResultSpecial(
+double STI::STIResultTest::result_special(
     const std::string& quantity  //! name of quantity to be tested
 ) const
 {
@@ -75,7 +75,7 @@ double STI::STIResultTest::ResultSpecial(
 
   // number of iterations performed by linear solver during last Newton-Raphson iteration
   else if (quantity == "numiterlastlinearsolve")
-    result = (double)STIMonolithic().Solver().getNumIters();
+    result = (double)sti_monolithic().Solver().getNumIters();
 
   // catch unknown quantity strings
   else
@@ -85,13 +85,13 @@ double STI::STIResultTest::ResultSpecial(
         quantity.c_str());
 
   return result;
-}  // STI::STIResultTest::ResultSpecial
+}  // STI::STIResultTest::result_special
 
 
 /*------------------------------------------------------------------------------*
  | return time integrator for monolithic scatra-thermo interaction   fang 09/17 |
  *------------------------------------------------------------------------------*/
-const STI::Monolithic& STI::STIResultTest::STIMonolithic() const
+const STI::Monolithic& STI::STIResultTest::sti_monolithic() const
 {
   const STI::Monolithic* const sti_monolithic =
       dynamic_cast<const STI::Monolithic* const>(sti_algorithm_.get());

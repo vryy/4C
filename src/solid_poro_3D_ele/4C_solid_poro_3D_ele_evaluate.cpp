@@ -3,7 +3,7 @@
 \brief Evaluation routines for the solid-poro element
 
 This file contains the element-specific evaluation routines such as
-Evaluate(...), EvaluateNeumann(...), etc.
+Evaluate(...), evaluate_neumann(...), etc.
 
 \level 1
 */
@@ -232,7 +232,7 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
   }
 }
 
-int DRT::ELEMENTS::SolidPoro::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::SolidPoro::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)

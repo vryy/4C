@@ -191,28 +191,28 @@ namespace STR
     //! return time integration factor
     double TimIntParam() const override
     {
-      CheckIsInit();
+      check_is_init();
       return alphaf_;
     }
 
     //! return time integration factor-alpham
     virtual double TimIntParamAlpham() const
     {
-      CheckIsInit();
+      check_is_init();
       return alpham_;
     }
 
     //! return time integration factor-beta
     virtual double TimIntParamBeta() const
     {
-      CheckIsInit();
+      check_is_init();
       return beta_;
     }
 
     //! return time integration factor-gamma
     virtual double TimIntParamGamma() const
     {
-      CheckIsInit();
+      check_is_init();
       return gamma_;
     }
 

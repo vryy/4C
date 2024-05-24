@@ -52,13 +52,13 @@ namespace POROELASTSCATRA
       // structural one.
       if (fluiddis->NumGlobalNodes() == 0) FOUR_C_THROW("Fluid discretization is empty!");
 
-      if (!scatradis->Filled()) scatradis->FillComplete();
+      if (!scatradis->Filled()) scatradis->fill_complete();
 
       if (scatradis->NumGlobalNodes() == 0)
       {
         // fill scatra discretization by cloning structure discretization
         DRT::UTILS::CloneDiscretization<PoroScatraCloneStrategy>(structdis, scatradis);
-        scatradis->FillComplete();
+        scatradis->fill_complete();
 
         // assign materials. Order is important here!
         POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis, fluiddis);
@@ -85,9 +85,9 @@ namespace POROELASTSCATRA
         if (fluiddis->AddDofSet(scatradofset) != 2)
           FOUR_C_THROW("unexpected dof sets in fluid field");
 
-        structdis->FillComplete();
-        fluiddis->FillComplete();
-        scatradis->FillComplete();
+        structdis->fill_complete();
+        fluiddis->fill_complete();
+        scatradis->fill_complete();
       }
       else
       {
@@ -102,11 +102,11 @@ namespace POROELASTSCATRA
         // set material pointers
         POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis, fluiddis);
 
-        // first call FillComplete for single discretizations.
+        // first call fill_complete for single discretizations.
         // This way the physical dofs are numbered successively
-        structdis->FillComplete();
-        fluiddis->FillComplete();
-        scatradis->FillComplete();
+        structdis->fill_complete();
+        fluiddis->fill_complete();
+        scatradis->fill_complete();
 
         // build auxiliary dofsets, i.e. pseudo dofs on each discretization
         const int ndofpernode_fluid = fluiddis->NumDof(0, fluiddis->lRowNode(0));
@@ -134,14 +134,14 @@ namespace POROELASTSCATRA
           FOUR_C_THROW("unexpected dof sets in scatra field");
 
         // call assign_degrees_of_freedom also for auxiliary dofsets
-        // note: the order of FillComplete() calls determines the gid numbering!
+        // note: the order of fill_complete() calls determines the gid numbering!
         // 1. structure dofs
         // 2. fluiddis dofs
         // 3. scatradis dofs
         // 4. auxiliary dofs
-        structdis->FillComplete(true, false, false);
-        fluiddis->FillComplete(true, false, false);
-        scatradis->FillComplete(true, false, false);
+        structdis->fill_complete(true, false, false);
+        fluiddis->fill_complete(true, false, false);
+        scatradis->fill_complete(true, false, false);
       }
     }
   }  // namespace UTILS

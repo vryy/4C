@@ -179,9 +179,9 @@ void DRT::UTILS::DbcNurbs::do_dirichlet_condition(const DRT::Discretization& dis
       myglobalelements = dbcgidsv.data();
     }
     Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::rcp(new Epetra_Map(-1, nummyelements,
-        myglobalelements, discret.DofRowMap()->IndexBase(), discret.DofRowMap()->Comm()));
+        myglobalelements, discret.dof_row_map()->IndexBase(), discret.dof_row_map()->Comm()));
     // build the map extractor of Dirichlet-conditioned and free DOFs
-    *auxdbcmapextractor = CORE::LINALG::MapExtractor(*(discret.DofRowMap()), dbcmap);
+    *auxdbcmapextractor = CORE::LINALG::MapExtractor(*(discret.dof_row_map()), dbcmap);
   }
 
   // column map of all DOFs subjected to a least squares Dirichlet condition
@@ -199,7 +199,7 @@ void DRT::UTILS::DbcNurbs::do_dirichlet_condition(const DRT::Discretization& dis
       myglobalelements = dbcgidsv.data();
     }
     dbccolmap = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements,
-        nurbs_dis.DofColMap()->IndexBase(), discret.DofRowMap()->Comm()));
+        nurbs_dis.DofColMap()->IndexBase(), discret.dof_row_map()->Comm()));
   }
 
   // -------------------------------------------------------------------
@@ -277,7 +277,7 @@ void DRT::UTILS::DbcNurbs::do_dirichlet_condition(const DRT::Discretization& dis
   // -------------------------------------------------------------------
   {
     // call elements and assemble
-    if (!discret.Filled()) FOUR_C_THROW("FillComplete() was not called");
+    if (!discret.Filled()) FOUR_C_THROW("fill_complete() was not called");
     if (!discret.HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
     // see what we have for input
@@ -319,7 +319,7 @@ void DRT::UTILS::DbcNurbs::do_dirichlet_condition(const DRT::Discretization& dis
         double normalfac = 0.0;
         std::vector<CORE::LINALG::SerialDenseVector> pknots(probdim);
         zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(actele.get(),
-            faceele->FaceMasterNumber(), faceele->ParentElement()->Id(), discret, pknots, eleknots,
+            faceele->FaceMasterNumber(), faceele->parent_element()->Id(), discret, pknots, eleknots,
             weights, normalfac);
       }
       else

@@ -90,7 +90,7 @@ namespace CORE::GEO
       /*!
       \brief Check whether the vertices numbering of the facet is clockwise
       */
-      void IsClockwise(const std::vector<double> &eqn_plane,
+      void is_clockwise(const std::vector<double> &eqn_plane,
           const std::vector<std::vector<double>> &cornersLocal);
 
       /*
@@ -103,7 +103,7 @@ namespace CORE::GEO
       \brief Get normal of the considered facet in a particular coordinate direction defined by
       intType
       */
-      double getNormal(CORE::GEO::CUT::ProjectionDirection intType);
+      double get_normal(CORE::GEO::CUT::ProjectionDirection intType);
 
       /*!
       \brief Perform integration of base functions over boundarycells
@@ -128,13 +128,13 @@ namespace CORE::GEO
       /*!
       \brief Temporarily create Tri3 cell. This is not stored in Mesh
       */
-      void TemporaryTri3(
+      void temporary_tri3(
           const std::vector<Point *> &corners, std::list<Teuchos::RCP<BoundaryCell>> &divCells);
 
       /*!
       \brief Temporarily create Quad4 cell. This is not stored in Mesh
       */
-      void TemporaryQuad4(
+      void temporary_quad4(
           const std::vector<Point *> &corners, std::list<Teuchos::RCP<BoundaryCell>> &divCells);
 
       //! considered facet

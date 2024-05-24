@@ -33,10 +33,10 @@ void FLD::TimIntPoroOst::Init()
   TimIntPoro::Init();
 }
 
-void FLD::TimIntPoroOst::ReadRestart(int step)
+void FLD::TimIntPoroOst::read_restart(int step)
 {
   // call of base classes
-  TimIntOneStepTheta::ReadRestart(step);
-  TimIntPoro::ReadRestart(step);
+  TimIntOneStepTheta::read_restart(step);
+  TimIntPoro::read_restart(step);
 }
 FOUR_C_NAMESPACE_CLOSE

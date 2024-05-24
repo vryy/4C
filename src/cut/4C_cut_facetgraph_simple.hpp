@@ -33,7 +33,7 @@ namespace CORE::GEO
       void CreateVolumeCells(Mesh& mesh, Element* element, plain_volumecell_set& cells) override;
 
      private:
-      void SortFacets(const Element* element, std::map<double, Facet*>& sorted_facets) const;
+      void sort_facets(const Element* element, std::map<double, Facet*>& sorted_facets) const;
 
       void combine_facets_to_line_volumes(const std::map<double, Facet*>& sorted_facets,
           std::vector<plain_facet_set>& volumes) const;

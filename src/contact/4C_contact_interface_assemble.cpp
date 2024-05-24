@@ -59,7 +59,7 @@ void CONTACT::Interface::assemble_reg_normal_forces(
     bool& localisincontact, bool& localactivesetchange)
 {
   // penalty parameter
-  double pp = InterfaceParams().get<double>("PENALTYPARAM");
+  double pp = interface_params().get<double>("PENALTYPARAM");
 
   // loop over all slave row nodes on the current interface
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
@@ -193,12 +193,12 @@ void CONTACT::Interface::assemble_reg_normal_forces(
 void CONTACT::Interface::assemble_reg_tangent_forces_penalty()
 {
   // penalty parameter in tangential direction
-  double ppnor = InterfaceParams().get<double>("PENALTYPARAM");
-  double pptan = InterfaceParams().get<double>("PENALTYPARAMTAN");
-  double frcoeff = InterfaceParams().get<double>("FRCOEFF");
+  double ppnor = interface_params().get<double>("PENALTYPARAM");
+  double pptan = interface_params().get<double>("PENALTYPARAMTAN");
+  double frcoeff = interface_params().get<double>("FRCOEFF");
 
   INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(interface_params(), "FRICTION");
 
   // loop over all slave row nodes on the current interface
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
@@ -549,12 +549,12 @@ void CONTACT::Interface::assemble_reg_tangent_forces_penalty()
 void CONTACT::Interface::assemble_reg_tangent_forces_uzawa()
 {
   // penalty parameter in tangential direction
-  double ppnor = InterfaceParams().get<double>("PENALTYPARAM");
-  double pptan = InterfaceParams().get<double>("PENALTYPARAMTAN");
-  double frcoeff = InterfaceParams().get<double>("FRCOEFF");
+  double ppnor = interface_params().get<double>("PENALTYPARAM");
+  double pptan = interface_params().get<double>("PENALTYPARAMTAN");
+  double frcoeff = interface_params().get<double>("FRCOEFF");
 
   INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(interface_params(), "FRICTION");
 
   // loop over all slave row nodes on the current interface
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
@@ -1506,7 +1506,7 @@ void CONTACT::Interface::AssembleG(Epetra_Vector& gglobal)
       double gap = cnode->Data().Getg();
 
       // std::cout << "Node ID: " << cnode->Id() << " HasProj: " << cnode->HasProj()
-      //      << " IsActive: " << cnode->Active() << " Gap: " << gap << std::endl;
+      //      << " is_active: " << cnode->Active() << " Gap: " << gap << std::endl;
 
       // check if this inactive node has a feasible projection
       // else, it cannot be in contact and weighted gap should be positive
@@ -1739,11 +1739,11 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(interface_params(), "FRICTION");
   double frcoeff_in =
-      InterfaceParams().get<double>("FRCOEFF");  // the friction coefficient from the input
-  bool gp_slip = CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR");
-  bool frilessfirst = CORE::UTILS::IntegralValue<int>(InterfaceParams(), "FRLESS_FIRST");
+      interface_params().get<double>("FRCOEFF");  // the friction coefficient from the input
+  bool gp_slip = CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR");
+  bool frilessfirst = CORE::UTILS::IntegralValue<int>(interface_params(), "FRLESS_FIRST");
 
   double frcoeff = 0.;  // the friction coefficient actually used
   bool consistent = false;
@@ -1758,7 +1758,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
 #endif
 
   if (consistent &&
-      CORE::UTILS::IntegralValue<int>(InterfaceParams(), "REGULARIZED_NORMAL_CONTACT"))
+      CORE::UTILS::IntegralValue<int>(interface_params(), "REGULARIZED_NORMAL_CONTACT"))
     FOUR_C_THROW("no consistent stick for regularized contact");
 
   // loop over all stick nodes of the interface
@@ -2562,12 +2562,12 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
-  double frbound = InterfaceParams().get<double>("FRBOUND");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(interface_params(), "FRICTION");
+  double frbound = interface_params().get<double>("FRBOUND");
   double frcoeff_in =
-      InterfaceParams().get<double>("FRCOEFF");  // the friction coefficient from the input
-  bool gp_slip = CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR");
-  bool frilessfirst = CORE::UTILS::IntegralValue<int>(InterfaceParams(), "FRLESS_FIRST");
+      interface_params().get<double>("FRCOEFF");  // the friction coefficient from the input
+  bool gp_slip = CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR");
+  bool frilessfirst = CORE::UTILS::IntegralValue<int>(interface_params(), "FRLESS_FIRST");
 
   // the friction coefficient adapted by every node (eg depending on the local temperature)
   double frcoeff = 0.;
@@ -4243,14 +4243,14 @@ void CONTACT::Interface::assemble_normal_contact_regularization(
     CORE::LINALG::SparseMatrix& d_disp, CORE::LINALG::SparseMatrix& d_lm, Epetra_Vector& f)
 {
   const bool regularization =
-      CORE::UTILS::IntegralValue<int>(InterfaceParams(), "REGULARIZED_NORMAL_CONTACT");
+      CORE::UTILS::IntegralValue<int>(interface_params(), "REGULARIZED_NORMAL_CONTACT");
   if (!regularization) FOUR_C_THROW("you should not be here");
-  const double k = 1. / InterfaceParams().get<double>("REGULARIZATION_STIFFNESS");
-  const double gmax = InterfaceParams().get<double>("REGULARIZATION_THICKNESS");
+  const double k = 1. / interface_params().get<double>("REGULARIZATION_STIFFNESS");
+  const double gmax = interface_params().get<double>("REGULARIZATION_THICKNESS");
   const int dim = Dim();
   static const INPAR::CONTACT::ConstraintDirection constr_direction =
       CORE::UTILS::IntegralValue<INPAR::CONTACT::ConstraintDirection>(
-          InterfaceParams(), "CONSTRAINT_DIRECTIONS");
+          interface_params(), "CONSTRAINT_DIRECTIONS");
 
   for (int i = 0; i < ActiveNodes()->NumMyElements(); ++i)
   {
@@ -4322,12 +4322,12 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(interface_params(), "FRICTION");
   double frcoeff_in =
-      InterfaceParams().get<double>("FRCOEFF");  // the friction coefficient from the input
-  bool gp_slip = CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR");
+      interface_params().get<double>("FRCOEFF");  // the friction coefficient from the input
+  bool gp_slip = CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR");
   if (gp_slip) FOUR_C_THROW("not implemented");
-  bool frilessfirst = CORE::UTILS::IntegralValue<int>(InterfaceParams(), "FRLESS_FIRST");
+  bool frilessfirst = CORE::UTILS::IntegralValue<int>(interface_params(), "FRLESS_FIRST");
 
   // the friction coefficient adapted by every node (eg depending on the local temperature)
   double frcoeff = 0.;
@@ -4425,10 +4425,10 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
 
       // setup regularization
       static const bool regularization =
-          CORE::UTILS::IntegralValue<int>(InterfaceParams(), "REGULARIZED_NORMAL_CONTACT");
+          CORE::UTILS::IntegralValue<int>(interface_params(), "REGULARIZED_NORMAL_CONTACT");
       if (!regularization) FOUR_C_THROW("you should not be here");
-      static const double k = 1. / InterfaceParams().get<double>("REGULARIZATION_STIFFNESS");
-      static const double gmax = InterfaceParams().get<double>("REGULARIZATION_THICKNESS");
+      static const double k = 1. / interface_params().get<double>("REGULARIZATION_STIFFNESS");
+      static const double gmax = interface_params().get<double>("REGULARIZATION_THICKNESS");
       if (cnode->MoData().GetD().size() != 1)
         FOUR_C_THROW(
             "we need to have a D-value for active contact nodes\nAnd exactly one due to "

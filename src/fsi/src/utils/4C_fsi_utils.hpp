@@ -106,10 +106,10 @@ namespace FSI
       );
 
       /// write history vectors for restart
-      void OutputRestart(IO::DiscretizationWriter& output);
+      void output_restart(IO::DiscretizationWriter& output);
 
       /// read history values for restart
-      void ReadRestart(IO::DiscretizationReader& reader);
+      void read_restart(IO::DiscretizationReader& reader);
 
      protected:
       /// compute average interface displacement

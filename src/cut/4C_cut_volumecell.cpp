@@ -586,7 +586,7 @@ void CORE::GEO::CUT::VolumeCell::NewHex8Cell(Mesh& mesh, const std::vector<Point
     std::vector<Point*> tet4_points(4);
     for (int i = 0; i < 5; ++i)
     {
-      SetTetPoints(hex8totet4[i], points, tet4_points);
+      set_tet_points(hex8totet4[i], points, tet4_points);
       integrationcells_.insert(mesh.NewTet4Cell(position, tet4_points, this));
     }
   }
@@ -617,7 +617,7 @@ void CORE::GEO::CUT::VolumeCell::NewWedge6Cell(Mesh& mesh, const std::vector<Poi
     std::vector<Point*> tet4_points(4);
     for (int i = 0; i < 3; ++i)
     {
-      SetTetPoints(wedge6totet4[i], points, tet4_points);
+      set_tet_points(wedge6totet4[i], points, tet4_points);
       integrationcells_.insert(mesh.NewTet4Cell(position, tet4_points, this));
     }
   }
@@ -637,7 +637,7 @@ void CORE::GEO::CUT::VolumeCell::NewPyramid5Cell(Mesh& mesh, const std::vector<P
     std::vector<Point*> tet4_points(4);
     for (int i = 0; i < 2; ++i)
     {
-      SetTetPoints(pyramid5totet4[i], points, tet4_points);
+      set_tet_points(pyramid5totet4[i], points, tet4_points);
       integrationcells_.insert(mesh.NewTet4Cell(position, tet4_points, this));
     }
   }
@@ -804,9 +804,9 @@ void CORE::GEO::CUT::VolumeCell::DumpGmsh(std::ofstream& file)
     Facet* ref = *j;
 #ifndef OUTPUT_GLOBAL_DIVERGENCE_CELLS
     std::vector<std::vector<double>> corners;
-    ref->CornerPointsLocal(ParentElement(), corners);
+    ref->CornerPointsLocal(parent_element(), corners);
 #else
-    const std::vector<std::vector<double>> corners = ref->CornerPointsGlobal(ParentElement());
+    const std::vector<std::vector<double>> corners = ref->CornerPointsGlobal(parent_element());
 #endif
 
     for (unsigned i = 0; i < corners.size(); i++)
@@ -938,13 +938,13 @@ void CORE::GEO::CUT::VolumeCell::dump_gmsh_gauss_points_tessellation()
     {
       case CORE::FE::CellType::hex8:
       {
-        Teuchos::RCP<CORE::FE::GaussPoints> gp = CreateProjected<CORE::FE::CellType::hex8>(ic);
+        Teuchos::RCP<CORE::FE::GaussPoints> gp = create_projected<CORE::FE::CellType::hex8>(ic);
         gpc->Append(gp);
         break;
       }
       case CORE::FE::CellType::tet4:
       {
-        Teuchos::RCP<CORE::FE::GaussPoints> gp = CreateProjected<CORE::FE::CellType::tet4>(ic);
+        Teuchos::RCP<CORE::FE::GaussPoints> gp = create_projected<CORE::FE::CellType::tet4>(ic);
         gpc->Append(gp);
         break;
       }
@@ -990,13 +990,13 @@ void CORE::GEO::CUT::VolumeCell::integrate_specific_functions_tessellation()
     {
       case CORE::FE::CellType::hex8:
       {
-        Teuchos::RCP<CORE::FE::GaussPoints> gp = CreateProjected<CORE::FE::CellType::hex8>(ic);
+        Teuchos::RCP<CORE::FE::GaussPoints> gp = create_projected<CORE::FE::CellType::hex8>(ic);
         gpc->Append(gp);
         break;
       }
       case CORE::FE::CellType::tet4:
       {
-        Teuchos::RCP<CORE::FE::GaussPoints> gp = CreateProjected<CORE::FE::CellType::tet4>(ic);
+        Teuchos::RCP<CORE::FE::GaussPoints> gp = create_projected<CORE::FE::CellType::tet4>(ic);
         gpc->Append(gp);
         break;
       }
@@ -1027,7 +1027,7 @@ void CORE::GEO::CUT::VolumeCell::integrate_specific_functions_tessellation()
 }
 
 template <CORE::FE::CellType distype>
-Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::VolumeCell::CreateProjected(
+Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::VolumeCell::create_projected(
     CORE::GEO::CUT::IntegrationCell* ic)
 {
   const unsigned nen = CORE::FE::num_nodes<distype>;
@@ -1046,7 +1046,7 @@ Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::VolumeCell::CreateProjected(
     std::copy(xi.A(), xi.A() + 3, &xie(0, i));
   }
 
-  Teuchos::RCP<CORE::FE::GaussPoints> gp = CORE::FE::GaussIntegration::CreateProjected<distype>(
+  Teuchos::RCP<CORE::FE::GaussPoints> gp = CORE::FE::GaussIntegration::create_projected<distype>(
       xie, ic->CubatureDegree(element_->Shape()));
   return gp;
 }
@@ -1054,7 +1054,7 @@ Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::VolumeCell::CreateProjected(
 /*------------------------------------------------------------------------------------------------------*
     convert the Gaussian points and weights into appropriate Gauss rule as per 4C implementation
 *-------------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::VolumeCell::GaussPointsFitting()
+Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::VolumeCell::gauss_points_fitting()
 {
   Teuchos::RCP<CORE::FE::CollectedGaussPoints> cgp =
       Teuchos::rcp(new CORE::FE::CollectedGaussPoints(0));
@@ -1125,7 +1125,7 @@ void CORE::GEO::CUT::VolumeCell::generate_boundary_cells(Mesh& mesh,
     if (cornersTemp.size() != 0)
     {
       eqnfac = KERNEL::EqnPlaneOfPolygon(corners);
-      rever = ToReverse(posi, eqnpar, eqnfac);
+      rever = to_reverse(posi, eqnpar, eqnfac);
     }
 
     // For Marked sides the boundary-cells on outside vc's need to be the same as for inside.
@@ -1258,7 +1258,7 @@ void CORE::GEO::CUT::VolumeCell::generate_boundary_cells_level_set_side(Mesh& me
   //  Otherwise, create quad4/tri3 boundary cell.
   bool istriangulated = (fac->IsTriangulated() or fac->IsFacetSplit());
   bool notsimpleshape =
-      !(fac->CornerPoints().size() == 4 and (fac->IsPlanar(mesh, fac->CornerPoints())));
+      !(fac->CornerPoints().size() == 4 and (fac->is_planar(mesh, fac->CornerPoints())));
 
   // UNCOMMENT THIS FOR ONLY TRIANGLES ON SURFACE!
   // DO FULL TRIANGULATION OF BC-SURFACE
@@ -1278,7 +1278,7 @@ void CORE::GEO::CUT::VolumeCell::generate_boundary_cells_level_set_side(Mesh& me
   //---------------------------------------
 
   //  if( (fac->IsTriangulated() or fac->IsFacetSplit()) and (fac->CornerPoints().size() == 4 and
-  //  !(fac->IsPlanar(mesh, fac->CornerPoints())))  )
+  //  !(fac->is_planar(mesh, fac->CornerPoints())))  )
   if (istriangulated and notsimpleshape)
   {
     std::vector<std::vector<Point*>> facet_triang;
@@ -1402,7 +1402,7 @@ void CORE::GEO::CUT::VolumeCell::generate_boundary_cells_level_set_side(Mesh& me
     This is to check whether the corner points of the cut side facet is aligned to give outward
 normal
 *---------------------------------------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::VolumeCell::ToReverse(const CORE::GEO::CUT::Point::PointPosition posi,
+bool CORE::GEO::CUT::VolumeCell::to_reverse(const CORE::GEO::CUT::Point::PointPosition posi,
     const std::vector<double>& parEqn, const std::vector<double>& facetEqn)
 {
   bool rever = false;
@@ -1516,7 +1516,7 @@ void CORE::GEO::CUT::VolumeCell::moment_fit_gauss_weights(
   weights_ = vc_inte.compute_weights();           // obtain the integration weight at all points
   gausPts_ = vc_inte.get_gauss_point_location();  // get the coordinates of all the Gauss points
 
-  gp_ = GaussPointsFitting();  // convert the weight and the location to Gauss rule
+  gp_ = gauss_points_fitting();  // convert the weight and the location to Gauss rule
 
   // generate boundary cells -- when using tessellation this is automatically done
   generate_boundary_cells(mesh, Position(), elem, BaseNos, BCellgausstype);
@@ -1721,7 +1721,7 @@ bool CORE::GEO::CUT::VolumeCell::set_position_cut_side_based()
       // STEP 1: Get centroid of the parent element
       //-----
       CORE::LINALG::Matrix<3, 1> elecen;
-      ParentElement()->ElementCenter(elecen);
+      parent_element()->ElementCenter(elecen);
 
       //-----
       // STEP 2: Get geometric center point of the facet

@@ -127,7 +127,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Get interaction free energy / potential
     */
-    double GetEnergy() const override { return interaction_potential_; }
+    double get_energy() const override { return interaction_potential_; }
 
     /** \brief print this beam potential-based element pair to screen
      *
@@ -491,7 +491,7 @@ namespace BEAMINTERACTION
     \brief Calculate shape function values for given parameter values
     Todo call more general utils method
     */
-    void GetShapeFunctions(
+    void get_shape_functions(
         std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues, double>>& N1_i,
         std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues, double>>& N2_i,
         std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues, double>>& N1_i_xi,

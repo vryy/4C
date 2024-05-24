@@ -41,7 +41,7 @@ BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::BeamToSphere
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Setup()
 {
-  CheckInit();
+  check_init();
 
   // call setup of base class first
   BeamContactPair::Setup();
@@ -99,7 +99,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Setup()
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::PreEvaluate()
+void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::pre_evaluate()
 {
   // do nothing
   return;
@@ -182,13 +182,13 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
     //**********************************************************************
 
     // call function to fill variables for shape functions and their derivatives
-    GetShapeFunctions(N1_i, N1_i_xi, N1_i_xixi, xicontact_);
+    get_shape_functions(N1_i, N1_i_xi, N1_i_xixi, xicontact_);
 
     // call function to fill variables with coords and derivs of the contact point
     compute_coords_and_derivs(x1, x2, dx1, ddx1, N1_i, N1_i_xi, N1_i_xixi);
 
     // call function to compute scaled normal and gap in possible contact point
-    ComputeNormal(normal, gap, norm, x1, x2);
+    compute_normal(normal, gap, norm, x1, x2);
 
     // call function to evaluate contact status
     check_and_set_contact_status();
@@ -200,7 +200,7 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
     // call function to evaluate contact forces
     if (forcevec1 != nullptr and forcevec2 != nullptr)
     {
-      EvaluateFcContact(*forcevec1, *forcevec2,
+      evaluate_fc_contact(*forcevec1, *forcevec2,
           Params()->beam_to_sphere_contact_params()->beam_to_sphere_penalty_param(), gap, normal,
           N1_i, contactflag_);
     }
@@ -264,13 +264,13 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
         //**********************************************************************
 
         // call function to fill variables for shape functions and their derivatives
-        GetShapeFunctions(N1_i, N1_i_xi, N1_i_xixi, XiContact);
+        get_shape_functions(N1_i, N1_i_xi, N1_i_xixi, XiContact);
 
         // call function to fill variables with coords and derivs of the contact point
         compute_coords_and_derivs(x1, x2, dx1, ddx1, N1_i, N1_i_xi, N1_i_xixi);
 
         // call function to compute scaled normal and gap in possible contact point
-        ComputeNormal(normal, gap, norm, x1, x2);
+        compute_normal(normal, gap, norm, x1, x2);
 
         // evaluate nodal contact status
         if (gap_ < 0)
@@ -287,7 +287,7 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
         // call function to evaluate contact forces
         if (forcevec1 != nullptr and forcevec2 != nullptr)
         {
-          EvaluateFcContact(*forcevec1, *forcevec2,
+          evaluate_fc_contact(*forcevec1, *forcevec2,
               Params()->beam_to_sphere_contact_params()->beam_to_sphere_penalty_param(), gap,
               normal, N1_i, nodalcontactflag_[inode]);
         }
@@ -346,7 +346,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::closest
     N1_i_xixi.Clear();
 
     // update shape functions and their derivatives
-    GetShapeFunctions(N1_i, N1_i_xi, N1_i_xixi, eta);
+    get_shape_functions(N1_i, N1_i_xi, N1_i_xixi, eta);
 
     // update coordinates and derivatives of contact points
     compute_coords_and_derivs(x1, x2, dx1, ddx1, N1_i, N1_i_xi, N1_i_xixi);
@@ -477,7 +477,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::EvaluateFcContact(
+void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluate_fc_contact(
     CORE::LINALG::SerialDenseVector& forcevec1, CORE::LINALG::SerialDenseVector& forcevec2,
     const double& pp, const TYPE& gap, const CORE::LINALG::Matrix<3, 1, TYPE>& normal,
     const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i, const bool contactactive)
@@ -592,21 +592,21 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluat
     // linearization of contact point
     // (not needed in case of check for nodal points in contact)
     if (linxi)
-      ComputeLinXi(delta_xi, x1, x2, dx1, ddx1, N1_i, N1_i_xi);
+      compute_lin_xi(delta_xi, x1, x2, dx1, ddx1, N1_i, N1_i_xi);
     else
     {
       delta_xi.Clear();
     }
 
     // evaluation of distance
-    ComputeDistance(distance, normdist, normal, norm);
+    compute_distance(distance, normdist, normal, norm);
 
     // linearization of gap function which is equal to delta d
-    ComputeLinGap(
+    compute_lin_gap(
         delta_gap, delta_xi, x1, x2, dx1, N1_i, normdist, normal, norm, gap, delta_x1_minus_x2);
 
     // linearization of normal vector
-    ComputeLinNormal(delta_n, delta_xi, normal, norm, dx1, N1_i);
+    compute_lin_normal(delta_n, delta_xi, normal, norm, dx1, N1_i);
 
     //********************************************************************
     // evaluate contact stiffness
@@ -806,7 +806,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluat
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::ComputeNormal(
+void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_normal(
     CORE::LINALG::Matrix<3, 1, TYPE>& normal, TYPE& gap, TYPE& norm,
     const CORE::LINALG::Matrix<3, 1, TYPE>& x1, const CORE::LINALG::Matrix<3, 1, TYPE>& x2)
 {
@@ -825,7 +825,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Compute
   }
 
   // evaluate scalar gap function
-  ComputeGap(gap, norm);
+  compute_gap(gap, norm);
 
   return;
 }
@@ -833,7 +833,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Compute
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::ComputeGap(
+void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_gap(
     TYPE& gap, const TYPE& norm)
 {
   // compute gap to be returned
@@ -896,7 +896,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::GetShapeFunctions(
+void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::get_shape_functions(
     CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i,
     CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xi,
     CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xixi, const TYPE& eta)
@@ -933,7 +933,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::GetShap
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::ComputeLinXi(
+void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_lin_xi(
     CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3, 1, TYPE>& delta_xi,
     const CORE::LINALG::Matrix<3, 1, TYPE>& x1, const CORE::LINALG::Matrix<3, 1, TYPE>& x2,
     const CORE::LINALG::Matrix<3, 1, TYPE>& dx1, const CORE::LINALG::Matrix<3, 1, TYPE>& ddx1,
@@ -981,7 +981,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Compute
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::ComputeDistance(
+void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_distance(
     CORE::LINALG::Matrix<3, 1, TYPE>& distance, TYPE& normdist,
     const CORE::LINALG::Matrix<3, 1, TYPE>& normal, const TYPE& norm)
 {
@@ -997,7 +997,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Compute
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::ComputeLinGap(
+void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_lin_gap(
     CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3, 1, TYPE>& delta_gap,
     CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3, 1, TYPE>& delta_xi,
     const CORE::LINALG::Matrix<3, 1, TYPE>& x1, const CORE::LINALG::Matrix<3, 1, TYPE>& x2,
@@ -1051,7 +1051,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Compute
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::ComputeLinNormal(
+void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_lin_normal(
     CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3, TYPE>& delta_normal,
     const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3, 1, TYPE>& delta_xi,
     const CORE::LINALG::Matrix<3, 1, TYPE>& normal, const TYPE& norm_delta_x,
@@ -1155,7 +1155,7 @@ template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
     numnodalvalues>::print_summary_one_line_per_active_segment_pair(std::ostream& out) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (GetContactFlag())
   {

@@ -71,7 +71,7 @@ namespace MORTAR
                 {
                   CORE::LINALG::SerialDenseVector auxval(n);
                   CORE::LINALG::SerialDenseMatrix auxderiv(n, 1);
-                  ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
+                  ele.EvaluateShape(xi, auxval, auxderiv, ele.num_node());
 
                   for (int i = 0; i < n; ++i) val(i) = auxval(i);
 
@@ -95,7 +95,7 @@ namespace MORTAR
                 {
                   CORE::LINALG::SerialDenseVector auxval(n);
                   CORE::LINALG::SerialDenseMatrix auxderiv(n, 2);
-                  ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
+                  ele.EvaluateShape(xi, auxval, auxderiv, ele.num_node());
 
                   for (int i = 0; i < n; ++i) val(i) = auxval(i);
 
@@ -147,7 +147,7 @@ namespace MORTAR
                 {
                   CORE::LINALG::SerialDenseVector auxval(n);
                   CORE::LINALG::SerialDenseMatrix auxderiv(n, 1);
-                  ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
+                  ele.EvaluateShape(xi, auxval, auxderiv, ele.num_node());
 
                   for (int i = 0; i < n; ++i) deriv1(0, i) = auxderiv(i, 0);
 
@@ -172,7 +172,7 @@ namespace MORTAR
                 {
                   CORE::LINALG::SerialDenseVector auxval(n);
                   CORE::LINALG::SerialDenseMatrix auxderiv(n, 2);
-                  ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
+                  ele.EvaluateShape(xi, auxval, auxderiv, ele.num_node());
 
                   for (int i = 0; i < n; ++i) deriv1(0, i) = auxderiv(i, 0);
 
@@ -222,7 +222,7 @@ namespace MORTAR
                 {
                   CORE::LINALG::SerialDenseVector auxval(n);
                   CORE::LINALG::SerialDenseMatrix auxderiv(n, 1);
-                  ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
+                  ele.EvaluateShape(xi, auxval, auxderiv, ele.num_node());
 
                   for (int i = 0; i < n; ++i) deriv2(0, i) = auxderiv(i, 0);
 
@@ -247,7 +247,7 @@ namespace MORTAR
                 {
                   CORE::LINALG::SerialDenseVector auxval(n);
                   CORE::LINALG::SerialDenseMatrix auxderiv(n, 2);
-                  ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
+                  ele.EvaluateShape(xi, auxval, auxderiv, ele.num_node());
 
                   for (int i = 0; i < n; ++i) deriv2(1, i) = auxderiv(i, 1);
 

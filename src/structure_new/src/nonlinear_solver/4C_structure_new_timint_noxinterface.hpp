@@ -160,16 +160,16 @@ namespace STR
 
      protected:
       //! Returns the init state
-      inline const bool& IsInit() const { return isinit_; };
+      inline const bool& is_init() const { return isinit_; };
 
       //! Returns the setup state
-      inline const bool& IsSetup() const { return issetup_; };
+      inline const bool& is_setup() const { return issetup_; };
 
       //! check if init has been called
-      void CheckInit() const;
+      void check_init() const;
 
       //! check if init and setup have been called
-      void CheckInitSetup() const;
+      void check_init_setup() const;
 
       double get_linearized_energy_model_terms(const ::NOX::Abstract::Group* group,
           const Epetra_Vector& dir, const enum NOX::NLN::MeritFunction::LinOrder linorder,

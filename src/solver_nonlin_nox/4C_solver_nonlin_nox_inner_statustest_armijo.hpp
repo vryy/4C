@@ -63,7 +63,7 @@ namespace NOX
               const NOX::NLN::LineSearch::Generic& linesearch, const ::NOX::Abstract::Group& grp);
 
          private:
-          void throwError(const std::string& functionName, const std::string& errorMsg) const;
+          void throw_error(const std::string& functionName, const std::string& errorMsg) const;
 
          protected:
           //! Status

@@ -517,7 +517,7 @@ namespace MAT
 
      private:
       /// Add contribution to elasticity tensor
-      void AddStressCmat(CORE::LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy-Green tensor
+      void add_stress_cmat(CORE::LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy-Green tensor
           CORE::LINALG::Matrix<3, 3> const&
               iFgM,                   ///< Inverse inelastic deformation gradient (used in G&R)
           FiberData const& fiberdat,  ///< Type of remodel fiber
@@ -532,7 +532,7 @@ namespace MAT
 
       /// First derivative w.r.t. to the right Cauchy-Green tensor (automatic differentiation)
       template <class FUNC, typename T, typename ForceAnalytical>
-      void DerivdC(CORE::LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
+      void derivd_c(CORE::LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
           CORE::LINALG::Matrix<3, 3, T> const&
               iFinM,  ///< Inverse inelastic deformation gradient (used in G&R)
           CORE::LINALG::Matrix<3, 3, T> const&
@@ -544,7 +544,7 @@ namespace MAT
 
       /// First derivative w.r.t. to the right Cauchy-Green tensor (analytical differentiation)
       template <class FUNC, typename T>
-      void DerivdC(CORE::LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
+      void derivd_c(CORE::LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
           CORE::LINALG::Matrix<3, 3, T> const&
               iFinM,  ///< Inverse inelastic deformation gradient (used in G&R)
           CORE::LINALG::Matrix<3, 3, T> const&
@@ -556,7 +556,7 @@ namespace MAT
 
       /// Second derivative w.r.t. to the right Cauchy-Green tensor (automatic differentiation)
       template <class FUNC, typename T, typename ForceAnalytical>
-      void DerivdCdC(CORE::LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
+      void derivd_cd_c(CORE::LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
           CORE::LINALG::Matrix<3, 3, T> const&
               iFinM,  ///< Inverse inelastic deformation gradient (used in G&R)
           CORE::LINALG::Matrix<3, 3, T> const&
@@ -568,7 +568,7 @@ namespace MAT
 
       /// Second derivative w.r.t. to the right Cauchy-Green tensor (analytical differentiation)
       template <class FUNC, typename T>
-      void DerivdCdC(CORE::LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
+      void derivd_cd_c(CORE::LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
           CORE::LINALG::Matrix<3, 3, T> const&
               iFinM,  ///< Inverse inelastic deformation gradient (used in G&R)
           CORE::LINALG::Matrix<3, 3, T> const&
@@ -594,7 +594,7 @@ namespace MAT
       /// Evaluate derivative of local Cauchy stress in current fiber direction w.r.t. the elastic
       /// right Cauchy Green tensor (analytical differentiation)
       template <typename T>
-      void EvaluatedsigdCe(CORE::LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
+      void evaluatedsigd_ce(CORE::LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
           CORE::LINALG::Matrix<3, 3, T> const&
               iFgM,  ///< Inverse growth deformation gradient (used in G&R)
           CORE::LINALG::Matrix<3, 3, T> const&
@@ -611,7 +611,7 @@ namespace MAT
       /// direction w.r.t. the elastic right Cauchy Green tensor w.r.t. the right Cauchy Green
       /// tensor (automatic differentiation)
       template <typename ForceAnalytical>
-      void EvaluatedsigdCedC(CORE::LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy-Green tensor
+      void evaluatedsigd_ced_c(CORE::LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy-Green tensor
           CORE::LINALG::Matrix<3, 3> const&
               iFgM,  ///< Inverse growth deformation gradient (used in G&R)
           CORE::LINALG::Matrix<3, 3> const&
@@ -626,7 +626,7 @@ namespace MAT
       /// Evaluate derivative of the derivative of the local Cauchy stress in current fiber
       /// direction w.r.t. the elastic right Cauchy Green tensor w.r.t. the right Cauchy Green
       /// tensor (analytical differentiation)
-      void EvaluatedsigdCedC(CORE::LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy-Green tensor
+      void evaluatedsigd_ced_c(CORE::LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy-Green tensor
           CORE::LINALG::Matrix<3, 3> const&
               iFgM,  ///< Inverse growth deformation gradient (used in G&R)
           CORE::LINALG::Matrix<3, 3> const&
@@ -642,7 +642,7 @@ namespace MAT
       /// Derivative of local Cauchy stress w.r.t. to the right Cauchy-Green tensor (automatic
       /// differentiation)
       template <typename T, typename ForceAnalytical>
-      void EvaluatedsigdC(CORE::LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
+      void evaluatedsigd_c(CORE::LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
           CORE::LINALG::Matrix<3, 3, T> const&
               iFinM,  ///< Inverse inelastic deformation gradient (used in G&R)
           CORE::LINALG::Matrix<3, 3, T> const&
@@ -657,7 +657,7 @@ namespace MAT
       /// Derivative of local Cauchy stress w.r.t. to the right Cauchy-Green tensor (analytical
       /// differentiation)
       template <typename T>
-      void EvaluatedsigdC(CORE::LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
+      void evaluatedsigd_c(CORE::LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
           CORE::LINALG::Matrix<3, 3, T> const&
               iFinM,  ///< Inverse inelastic deformation gradient (used in G&R)
           CORE::LINALG::Matrix<3, 3, T> const&

@@ -178,7 +178,7 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -193,7 +193,7 @@ namespace DRT
       CORE::FE::GaussRule1D gaussrule_;
 
       //! line integration
-      void LineIntegration(double& dL, const CORE::LINALG::SerialDenseMatrix& x,
+      void line_integration(double& dL, const CORE::LINALG::SerialDenseMatrix& x,
           const CORE::LINALG::SerialDenseMatrix& deriv);
 
       /*!
@@ -203,7 +203,7 @@ namespace DRT
       */
       inline void material_configuration(CORE::LINALG::SerialDenseMatrix& x) const
       {
-        const int numnode = NumNode();
+        const int numnode = num_node();
         for (int i = 0; i < numnode; ++i)
         {
           x(i, 0) = Nodes()[i]->X()[0];

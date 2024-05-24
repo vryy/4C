@@ -100,14 +100,14 @@ void DRT::ELEMENTS::NURBS::Ale3Nurbs::Print(std::ostream& os) const
 /*----------------------------------------------------------------------------*/
 CORE::FE::CellType DRT::ELEMENTS::NURBS::Ale3Nurbs::Shape() const
 {
-  switch (NumNode())
+  switch (num_node())
   {
     case 8:
       return CORE::FE::CellType::nurbs8;
     case 27:
       return CORE::FE::CellType::nurbs27;
     default:
-      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", num_node());
       break;
   }
 }

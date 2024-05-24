@@ -174,17 +174,17 @@ namespace NOX
 
          private:
           /// initialize the (filter) points
-          void InitPoints(const Interface::Required& interface,
+          void init_points(const Interface::Required& interface,
               const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp);
 
           /// evaluate and set new trial point
-          void SetTrialPoint(
+          void set_trial_point(
               const ::NOX::MeritFunction::Generic& merit_func, const ::NOX::Abstract::Group& grp);
 
           /// reset the internal state at the beginning of a new Newton iteration
           void Reset();
 
-          enum NOX::NLN::INNER::StatusTest::FilterStatusType AcceptabilityCheck(
+          enum NOX::NLN::INNER::StatusTest::FilterStatusType acceptability_check(
               const Point& trial_fp);
 
           /** \brief Perform a pre-selection to avoid the unnecessary point-by-point
@@ -199,7 +199,7 @@ namespace NOX
               const Point& trial_fp, const unsigned non_dominated_index);
 
           /// set-up all model terms
-          void SetupModelTerms(const ::NOX::Abstract::Vector& dir,
+          void setup_model_terms(const ::NOX::Abstract::Vector& dir,
               const ::NOX::Abstract::Group& grp, const Interface::Required& interface);
 
           /// execute the sufficient reduction check
@@ -207,11 +207,11 @@ namespace NOX
               const Point& trial_fp) const;
 
           /// Is the step still larger than the minimal step length estimate?
-          NOX::NLN::INNER::StatusTest::StatusType IsAdmissibleStep(
+          NOX::NLN::INNER::StatusTest::StatusType is_admissible_step(
               const ::NOX::Solver::Generic& solver, const double& step) const;
 
           /// access the active set status
-          enum ::NOX::StatusTest::StatusType GetActiveSetStatus(
+          enum ::NOX::StatusTest::StatusType get_active_set_status(
               const ::NOX::Solver::Generic& solver) const;
 
           /// get the specified constraint tolerance
@@ -223,7 +223,7 @@ namespace NOX
            *  filter criterion in respect to the previous filter point is fulfilled.
            *
            *  \author hiermeier \date 04/17 */
-          void AugmentFilter();
+          void augment_filter();
 
           /** \brief Compute the minimal step length estimates based on the different models
            *
@@ -264,14 +264,14 @@ namespace NOX
           double minimal_step_length_estimate_of_f_type_condition() const;
 
           /// evaluate the objective model based on the given step length
-          double GetObjModel(const double step) const;
+          double get_obj_model(const double step) const;
 
           /** \brief Translate the filter acceptability status
            *
            *  The following completes the sentence "The filter ...".
            *
            *  \author hiermeier \date 08/17  */
-          inline std::string FilterStatus2String(enum FilterStatusType filter_status) const
+          inline std::string filter_status2_string(enum FilterStatusType filter_status) const
           {
             switch (filter_status)
             {
@@ -287,20 +287,20 @@ namespace NOX
           }
 
           /// executed in the end of the check status test
-          StatusType PostCheckStatus(const NOX::NLN::LineSearch::Generic& linesearch,
+          StatusType post_check_status(const NOX::NLN::LineSearch::Generic& linesearch,
               const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
               ::NOX::StatusTest::CheckType checkType);
 
           /// actual test
-          void ExecuteCheckStatus(const NOX::NLN::LineSearch::Generic& linesearch,
+          void execute_check_status(const NOX::NLN::LineSearch::Generic& linesearch,
               const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
               ::NOX::StatusTest::CheckType checkType);
 
           /// recover from a back up state if the SOC fails
-          void RecoverFromBackup(::NOX::Abstract::Group& grp) const;
+          void recover_from_backup(::NOX::Abstract::Group& grp) const;
 
           /// throw an error if all strategies fail and the step is too short
-          void ThrowIfStepTooShort(const NOX::NLN::LineSearch::Generic& linesearch,
+          void throw_if_step_too_short(const NOX::NLN::LineSearch::Generic& linesearch,
               const ::NOX::Solver::Generic& solver) const;
 
          protected:
@@ -331,7 +331,7 @@ namespace NOX
              *
              *  If the L2-norm of the recovered rhs differs more than machine
              *  precision from the backup state rhs, an error will be thrown. */
-            void checkRecoveredState(const ::NOX::Abstract::Vector& f) const;
+            void check_recovered_state(const ::NOX::Abstract::Vector& f) const;
 
            private:
             Teuchos::RCP<::NOX::Epetra::Vector> xvector_ = Teuchos::null;
@@ -398,7 +398,7 @@ namespace NOX
 
            private:
             /// compute the SOC system
-            void computeSystem(NOX::NLN::Group& grp, const ::NOX::Solver::Generic& solver) const;
+            void compute_system(NOX::NLN::Group& grp, const ::NOX::Solver::Generic& solver) const;
 
             /// solve the SOC system
             void solve(const NOX::NLN::LineSearch::Generic& linesearch,
@@ -410,10 +410,10 @@ namespace NOX
                 ::NOX::StatusTest::CheckType checkType);
 
             /// Which SOC system shall be used?
-            CorrectionType whichType(const ::NOX::Solver::Generic& solver) const;
+            CorrectionType which_type(const ::NOX::Solver::Generic& solver) const;
 
             /// Use an automatic type choice (recommended).
-            CorrectionType automaticTypeChoice(const ::NOX::Solver::Generic& solver) const;
+            CorrectionType automatic_type_choice(const ::NOX::Solver::Generic& solver) const;
 
             /// print infos about the SOC step
             void print(std::ostream& os) const;
@@ -576,7 +576,7 @@ namespace NOX
 
             static void set_initial_scaled_max_theta_value(const int id, const double& val);
 
-            static void scaleMaxThetaValues(const double& fac);
+            static void scale_max_theta_values(const double& fac);
 
             /// constructor
             Point()

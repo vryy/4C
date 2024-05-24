@@ -140,7 +140,7 @@ void XFEM::MeshCoupling::create_cutter_dis_from_condition(std::string suffix)
 
   // create node and element distribution with elements and nodes ghosted on all processors
   CORE::REBALANCE::GhostDiscretizationOnAllProcs(cutter_dis_);
-  cutter_dis_->FillComplete();
+  cutter_dis_->fill_complete();
 }
 
 /*--------------------------------------------------------------------------*
@@ -199,7 +199,7 @@ void XFEM::MeshCoupling::InitStateVectors()
 {
   // move state vectors to extra container class!
 
-  const Epetra_Map* cutterdofrowmap = cutter_dis_->DofRowMap();
+  const Epetra_Map* cutterdofrowmap = cutter_dis_->dof_row_map();
 
   ivelnp_ = CORE::LINALG::CreateVector(*cutterdofrowmap, true);
   iveln_ = CORE::LINALG::CreateVector(*cutterdofrowmap, true);
@@ -216,14 +216,14 @@ void XFEM::MeshCoupling::ClearState() { cutter_dis_->ClearState(); }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCoupling::SetState()
+void XFEM::MeshCoupling::set_state()
 {
   // set general vector values of cutterdis needed by background element evaluate routine
   ClearState();
 
-  cutter_dis_->SetState("ivelnp", ivelnp_);
-  cutter_dis_->SetState("iveln", iveln_);
-  cutter_dis_->SetState("idispnp", idispnp_);
+  cutter_dis_->set_state("ivelnp", ivelnp_);
+  cutter_dis_->set_state("iveln", iveln_);
+  cutter_dis_->set_state("idispnp", idispnp_);
 }
 
 /*--------------------------------------------------------------------------*
@@ -233,9 +233,9 @@ void XFEM::MeshCoupling::set_state_displacement()
   // set general vector values of cutterdis needed by background element evaluate routine
   ClearState();
 
-  cutter_dis_->SetState("idispnp", idispnp_);
-  cutter_dis_->SetState("idispn", idispn_);
-  cutter_dis_->SetState("idispnpi", idispnpi_);
+  cutter_dis_->set_state("idispnp", idispnp_);
+  cutter_dis_->set_state("idispn", idispn_);
+  cutter_dis_->set_state("idispnpi", idispnpi_);
 }
 
 /*--------------------------------------------------------------------------*
@@ -389,7 +389,7 @@ void XFEM::MeshVolCoupling::redistribute_embedded_discretization()
       if (cond_eles[ie]->Owner() == mypid) adj_eles_row.insert(cond_eles[ie]->Id());
 
       const int* node_ids = cond_eles[ie]->NodeIds();
-      for (int in = 0; in < cond_eles[ie]->NumNode(); ++in)
+      for (int in = 0; in < cond_eles[ie]->num_node(); ++in)
       {
         if (cond_dis_->gNode(node_ids[in])->Owner() == mypid)
           adj_ele_nodes_row.insert(node_ids[in]);
@@ -432,7 +432,7 @@ void XFEM::MeshVolCoupling::redistribute_embedded_discretization()
     cond_dis_->ExportColumnNodes(*full_nodecolmap);
     cond_dis_->export_column_elements(*full_elecolmap);
 
-    cond_dis_->FillComplete(true, true, true);
+    cond_dis_->fill_complete(true, true, true);
   }
 
   // STEP 3: reconnect all parentelement pointers in the cutter_dis_ faceelements
@@ -528,7 +528,7 @@ void XFEM::MeshVolCoupling::create_auxiliary_discretization()
     DRT::Element* actele = cond_dis_->lColElement(i);
 
     // get the node ids of this element
-    const int numnode = actele->NumNode();
+    const int numnode = actele->num_node();
     const int* nodeids = actele->NodeIds();
 
     bool found = false;
@@ -561,7 +561,7 @@ void XFEM::MeshVolCoupling::create_auxiliary_discretization()
     if (cond_dis_->ElementRowMap()->MyGID(actele->Id()))
     {
       Teuchos::RCP<DRT::Element> bndele = Teuchos::rcp(actele->Clone());
-      aux_coup_dis_->AddElement(bndele);
+      aux_coup_dis_->add_element(bndele);
     }
   }  // end loop over column elements
 
@@ -598,7 +598,7 @@ void XFEM::MeshVolCoupling::create_auxiliary_discretization()
         Teuchos::rcp(new CORE::Dofsets::TransparentIndependentDofSet(cond_dis_, true));
     aux_coup_dis_->ReplaceDofSet(newdofset,
         false);  // do not call this with true (no replacement in static dofsets intended)
-    aux_coup_dis_->FillComplete(true, true, true);
+    aux_coup_dis_->fill_complete(true, true, true);
   }
 }
 
@@ -652,7 +652,7 @@ bool XFEM::MeshCouplingBC::HasMovingInterface()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingBC::EvaluateCondition(Teuchos::RCP<Epetra_Vector> ivec,
+void XFEM::MeshCouplingBC::evaluate_condition(Teuchos::RCP<Epetra_Vector> ivec,
     const std::string& condname, const double time, const double dt)
 {
   // loop all nodes on the processor
@@ -918,7 +918,7 @@ void XFEM::MeshCouplingBC::set_interface_displacement()
 
   std::string condname = "XFEMSurfDisplacement";
 
-  EvaluateCondition(idispnp_, condname, time_);
+  evaluate_condition(idispnp_, condname, time_);
 }
 
 /*----------------------------------------------------------------------*
@@ -928,7 +928,7 @@ void XFEM::MeshCouplingBC::set_interface_velocity()
 {
   if (myrank_ == 0) IO::cout << "\t set interface velocity, time " << time_ << IO::endl;
 
-  EvaluateCondition(ivelnp_, cond_name_, time_, dt_);
+  evaluate_condition(ivelnp_, cond_name_, time_, dt_);
 }
 
 
@@ -1221,8 +1221,8 @@ void XFEM::MeshCouplingNavierSlip::set_interface_velocity()
 {
   if (myrank_ == 0) IO::cout << "\t set interface velocity, time " << time_ << IO::endl;
 
-  //  EvaluateCondition( ivelnp_, cond_name_, time_, dt_);
-  EvaluateCondition(ivelnp_, "XFEMRobinDirichletSurf", time_, dt_);
+  //  evaluate_condition( ivelnp_, cond_name_, time_, dt_);
+  evaluate_condition(ivelnp_, "XFEMRobinDirichletSurf", time_, dt_);
 }
 
 
@@ -1357,7 +1357,7 @@ void XFEM::MeshCouplingNavierSlip::PrepareSolve()
   //  // set the initial interface velocity and possible initialization function
   //  set_interface_velocity();
   if (myrank_ == 0) IO::cout << "\t set interface velocity, time " << time_ << IO::endl;
-  EvaluateCondition(ivelnp_, "XFEMRobinDirichletSurf", time_, dt_);
+  evaluate_condition(ivelnp_, "XFEMRobinDirichletSurf", time_, dt_);
 }
 
 void XFEM::MeshCouplingNavierSlip::GetSlipCoefficient(
@@ -1605,7 +1605,7 @@ void XFEM::MeshCouplingFSI::InitStateVectors()
 {
   XFEM::MeshCoupling::InitStateVectors();
 
-  const Epetra_Map* cutterdofrowmap = cutter_dis_->DofRowMap();
+  const Epetra_Map* cutterdofrowmap = cutter_dis_->dof_row_map();
   const Epetra_Map* cutterdofcolmap = cutter_dis_->DofColMap();
 
   itrueresidual_ = CORE::LINALG::CreateVector(*cutterdofrowmap, true);
@@ -1640,9 +1640,9 @@ void XFEM::MeshCouplingFSI::zero_state_vectors_fsi()
 // -------------------------------------------------------------------
 // Read Restart data for cutter discretization
 // -------------------------------------------------------------------
-void XFEM::MeshCouplingFSI::ReadRestart(const int step)
+void XFEM::MeshCouplingFSI::read_restart(const int step)
 {
-  if (myrank_) IO::cout << "ReadRestart for boundary discretization " << IO::endl;
+  if (myrank_) IO::cout << "read_restart for boundary discretization " << IO::endl;
 
   //-------- boundary discretization
   IO::DiscretizationReader boundaryreader(
@@ -1665,15 +1665,15 @@ void XFEM::MeshCouplingFSI::ReadRestart(const int step)
   boundaryreader.ReadVector(idispnp_, "idispnp_res");
   boundaryreader.ReadVector(idispnpi_, "idispnpi_res");
 
-  if (not(cutter_dis_->DofRowMap())->SameAs(ivelnp_->Map()))
+  if (not(cutter_dis_->dof_row_map())->SameAs(ivelnp_->Map()))
     FOUR_C_THROW("Global dof numbering in maps does not match");
-  if (not(cutter_dis_->DofRowMap())->SameAs(iveln_->Map()))
+  if (not(cutter_dis_->dof_row_map())->SameAs(iveln_->Map()))
     FOUR_C_THROW("Global dof numbering in maps does not match");
-  if (not(cutter_dis_->DofRowMap())->SameAs(idispnp_->Map()))
+  if (not(cutter_dis_->dof_row_map())->SameAs(idispnp_->Map()))
     FOUR_C_THROW("Global dof numbering in maps does not match");
-  if (not(cutter_dis_->DofRowMap())->SameAs(idispn_->Map()))
+  if (not(cutter_dis_->dof_row_map())->SameAs(idispn_->Map()))
     FOUR_C_THROW("Global dof numbering in maps does not match");
-  if (not(cutter_dis_->DofRowMap())->SameAs(idispnpi_->Map()))
+  if (not(cutter_dis_->dof_row_map())->SameAs(idispnpi_->Map()))
     FOUR_C_THROW("Global dof numbering in maps does not match");
 }
 
@@ -1753,7 +1753,7 @@ void XFEM::MeshCouplingFSI::gmsh_output_discretization(std::ostream& gmshfilecon
 
   // write dis with zero solid displacements here!
   Teuchos::RCP<Epetra_Vector> solid_dispnp =
-      CORE::LINALG::CreateVector(*cond_dis_->DofRowMap(), true);
+      CORE::LINALG::CreateVector(*cond_dis_->dof_row_map(), true);
 
   XFEM::UTILS::ExtractNodeVectors(cond_dis_, currsolidpositions, solid_dispnp);
 
@@ -2421,7 +2421,7 @@ void XFEM::MeshCouplingFSI::estimate_nitsche_trace_max_eigenvalue(DRT::Element* 
       coupl_dis_->gElement(solidfaceele->ParentElementId()), solidfaceele->FaceParentNumber());
 
   DRT::Element::LocationArray la(1);
-  solidfaceele->ParentElement()->LocationVector(*coupl_dis_, la, false);
+  solidfaceele->parent_element()->LocationVector(*coupl_dis_, la, false);
 
   // extract eledisp here
   // parent and boundary displacement at n+1
@@ -2633,11 +2633,11 @@ void XFEM::MeshCouplingFluidFluid::estimate_nitsche_trace_max_eigenvalue(DRT::El
 // -------------------------------------------------------------------
 // Read Restart data for cutter discretization
 // -------------------------------------------------------------------
-void XFEM::MeshCouplingFluidFluid::ReadRestart(const int step)
+void XFEM::MeshCouplingFluidFluid::read_restart(const int step)
 {
   // copy from FSI!
 
-  if (myrank_) IO::cout << "ReadRestart for boundary discretization " << IO::endl;
+  if (myrank_) IO::cout << "read_restart for boundary discretization " << IO::endl;
 
   //-------- boundary discretization
   IO::DiscretizationReader boundaryreader(
@@ -2660,15 +2660,15 @@ void XFEM::MeshCouplingFluidFluid::ReadRestart(const int step)
   boundaryreader.ReadVector(idispnp_, "idispnp_res");
   boundaryreader.ReadVector(idispnpi_, "idispnpi_res");
 
-  if (not(cutter_dis_->DofRowMap())->SameAs(ivelnp_->Map()))
+  if (not(cutter_dis_->dof_row_map())->SameAs(ivelnp_->Map()))
     FOUR_C_THROW("Global dof numbering in maps does not match");
-  if (not(cutter_dis_->DofRowMap())->SameAs(iveln_->Map()))
+  if (not(cutter_dis_->dof_row_map())->SameAs(iveln_->Map()))
     FOUR_C_THROW("Global dof numbering in maps does not match");
-  if (not(cutter_dis_->DofRowMap())->SameAs(idispnp_->Map()))
+  if (not(cutter_dis_->dof_row_map())->SameAs(idispnp_->Map()))
     FOUR_C_THROW("Global dof numbering in maps does not match");
-  if (not(cutter_dis_->DofRowMap())->SameAs(idispn_->Map()))
+  if (not(cutter_dis_->dof_row_map())->SameAs(idispn_->Map()))
     FOUR_C_THROW("Global dof numbering in maps does not match");
-  if (not(cutter_dis_->DofRowMap())->SameAs(idispnpi_->Map()))
+  if (not(cutter_dis_->dof_row_map())->SameAs(idispnpi_->Map()))
     FOUR_C_THROW("Global dof numbering in maps does not match");
 }
 

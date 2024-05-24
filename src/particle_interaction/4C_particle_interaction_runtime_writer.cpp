@@ -39,7 +39,7 @@ void PARTICLEINTERACTION::InteractionWriter::Setup()
   // nothing to do
 }
 
-void PARTICLEINTERACTION::InteractionWriter::ReadRestart(
+void PARTICLEINTERACTION::InteractionWriter::read_restart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // get restart time

@@ -122,19 +122,19 @@ namespace IO
     /// overwrites result files
     void OverwriteResultFile(const CORE::FE::ShapeFunctionType& spatial_approx);
     /// creates new result files
-    void NewResultFile(int numb_run, const CORE::FE::ShapeFunctionType& spatial_approx);
+    void new_result_file(int numb_run, const CORE::FE::ShapeFunctionType& spatial_approx);
     /// creates new result files for the mlmc
-    void NewResultFile(const std::string& name_appendix, int numb_run,
+    void new_result_file(const std::string& name_appendix, int numb_run,
         const CORE::FE::ShapeFunctionType& spatial_approx);
 
     /// creates new result files
-    void NewResultFile(std::string name, const CORE::FE::ShapeFunctionType& spatial_approx);
+    void new_result_file(std::string name, const CORE::FE::ShapeFunctionType& spatial_approx);
 
     /// return my processor ID
     inline int MyRank() const { return myrank_; };
 
    private:
-    void WriteHeader(
+    void write_header(
         const std::string& control_file_name, const CORE::FE::ShapeFunctionType& spatial_approx);
 
     void insert_restart_back_reference(int restart, const std::string& outputname);

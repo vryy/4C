@@ -47,7 +47,7 @@ FSI::FSIResultTest::FSIResultTest(
       if (fsiobject == Teuchos::null) FOUR_C_THROW("Cast to FSI::MonolithicFluidSplit failed.");
 
       // Lagrange multipliers live on the slave field
-      slavedisc_ = fsiobject->FluidField()->Discretization();
+      slavedisc_ = fsiobject->fluid_field()->Discretization();
       fsilambda_ = fsiobject->lambda_;
 
       break;
@@ -75,7 +75,7 @@ FSI::FSIResultTest::FSIResultTest(
         FOUR_C_THROW("Cast to FSI::MortarMonolithicFluidSplit failed.");
 
       // Lagrange multipliers live on the slave field
-      slavedisc_ = fsiobject->FluidField()->Discretization();
+      slavedisc_ = fsiobject->fluid_field()->Discretization();
       fsilambda_ = fsiobject->lambda_;
 
       break;
@@ -89,9 +89,9 @@ FSI::FSIResultTest::FSIResultTest(
         FOUR_C_THROW("Cast to FSI::MortarMonolithicFluidSplitSaddlePoint failed.");
 
       // Lagrange multipliers live on the slave field
-      slavedisc_ = fsiobject->FluidField()->Discretization();
+      slavedisc_ = fsiobject->fluid_field()->Discretization();
       auto copy = Teuchos::rcp(new Epetra_Vector(*fsiobject->lag_mult_));
-      copy->ReplaceMap(*fsiobject->FluidField()->Interface()->FSICondMap());
+      copy->ReplaceMap(*fsiobject->fluid_field()->Interface()->FSICondMap());
       fsilambda_ = copy;
 
       break;
@@ -119,7 +119,7 @@ FSI::FSIResultTest::FSIResultTest(
         FOUR_C_THROW("Cast to FSI::SlidingMonolithicFluidSplit failed.");
 
       // Lagrange multipliers live on the slave field
-      slavedisc_ = fsiobject->FluidField()->Discretization();
+      slavedisc_ = fsiobject->fluid_field()->Discretization();
       fsilambda_ = fsiobject->lambda_;
 
       break;
@@ -176,7 +176,7 @@ FSI::FSIResultTest::FSIResultTest(
     case fsi_iter_fluidfluid_monolithicfluidsplit_nonox:
     {
       // Lagrange multiplier lives on the slave field (fluid in this case!)
-      slavedisc_ = fsi->FluidField()->Discretization();
+      slavedisc_ = fsi->fluid_field()->Discretization();
 
       const Teuchos::RCP<FSI::FluidFluidMonolithicFluidSplitNoNOX>& fsiobject =
           Teuchos::rcp_dynamic_cast<FSI::FluidFluidMonolithicFluidSplitNoNOX>(fsi);
@@ -202,7 +202,7 @@ FSI::FSIResultTest::FSIResultTest(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FSIResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void FSI::FSIResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   int node;
   res.ExtractInt("NODE", node);

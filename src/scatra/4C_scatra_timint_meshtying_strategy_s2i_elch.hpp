@@ -60,7 +60,7 @@ namespace SCATRA
     MeshtyingStrategyS2IElch(const MeshtyingStrategyS2IElch& old);
 
     //! return pointer to elch time integrator after cast
-    SCATRA::ScaTraTimIntElch* ElchTimInt() const
+    SCATRA::ScaTraTimIntElch* elch_tim_int() const
     {
       return dynamic_cast<SCATRA::ScaTraTimIntElch*>(scatratimint_);
     };
@@ -132,13 +132,13 @@ namespace SCATRA
 
    private:
     //! evaluate and assemble interface linearizations and residuals
-    void EvaluateCondition(const DRT::Discretization& idiscret,  //!< interface discretization
-        MORTAR::IntCell& cell,                                   //!< mortar integration cell
-        MORTAR::Element& slaveelement,                           //!< slave-side mortar element
-        MORTAR::Element& masterelement,                          //!< master-side mortar element
-        DRT::Element::LocationArray& la_slave,                   //!< slave-side location array
-        DRT::Element::LocationArray& la_master,                  //!< master-side location array
-        const Teuchos::ParameterList& params,                    //!< parameter list
+    void evaluate_condition(const DRT::Discretization& idiscret,  //!< interface discretization
+        MORTAR::IntCell& cell,                                    //!< mortar integration cell
+        MORTAR::Element& slaveelement,                            //!< slave-side mortar element
+        MORTAR::Element& masterelement,                           //!< master-side mortar element
+        DRT::Element::LocationArray& la_slave,                    //!< slave-side location array
+        DRT::Element::LocationArray& la_master,                   //!< master-side location array
+        const Teuchos::ParameterList& params,                     //!< parameter list
         CORE::LINALG::SerialDenseMatrix&
             k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
         CORE::LINALG::SerialDenseMatrix&
@@ -176,7 +176,7 @@ namespace SCATRA
         ) override;
 
     //! evaluate factor F/RT
-    virtual double GetFRT() const;
+    virtual double get_frt() const;
   };  // class MortarCellCalcElch
 
 
@@ -230,13 +230,13 @@ namespace SCATRA
     );
 
     //! evaluate and assemble off-diagonal interface linearizations
-    void EvaluateConditionOD(const DRT::Discretization& idiscret,  //!< interface discretization
-        MORTAR::IntCell& cell,                                     //!< mortar integration cell
-        MORTAR::Element& slaveelement,                             //!< slave-side mortar element
-        MORTAR::Element& masterelement,                            //!< master-side mortar element
-        DRT::Element::LocationArray& la_slave,                     //!< slave-side location array
-        DRT::Element::LocationArray& la_master,                    //!< master-side location array
-        const Teuchos::ParameterList& params,                      //!< parameter list
+    void evaluate_condition_od(const DRT::Discretization& idiscret,  //!< interface discretization
+        MORTAR::IntCell& cell,                                       //!< mortar integration cell
+        MORTAR::Element& slaveelement,                               //!< slave-side mortar element
+        MORTAR::Element& masterelement,                              //!< master-side mortar element
+        DRT::Element::LocationArray& la_slave,                       //!< slave-side location array
+        DRT::Element::LocationArray& la_master,                      //!< master-side location array
+        const Teuchos::ParameterList& params,                        //!< parameter list
         CORE::LINALG::SerialDenseMatrix&
             k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
         CORE::LINALG::SerialDenseMatrix&
@@ -250,7 +250,7 @@ namespace SCATRA
         ) override;
 
     //! evaluate factor F/RT
-    double GetFRT() const override;
+    double get_frt() const override;
 
     //! nodal, slave-side temperature variables associated with time t_{n+1} or t_{n+alpha_f}
     CORE::LINALG::Matrix<nen_slave_, 1> etempnp_slave_;
@@ -305,26 +305,26 @@ namespace SCATRA
     );
 
     //! evaluate and assemble interface linearizations and residuals
-    void EvaluateCondition(const DRT::Discretization& idiscret,  //!< interface discretization
-        MORTAR::IntCell& cell,                                   //!< mortar integration cell
-        MORTAR::Element& slaveelement,                           //!< slave-side mortar element
-        MORTAR::Element& masterelement,                          //!< master-side mortar element
-        DRT::Element::LocationArray& la_slave,                   //!< slave-side location array
-        DRT::Element::LocationArray& la_master,                  //!< master-side location array
-        const Teuchos::ParameterList& params,                    //!< parameter list
+    void evaluate_condition(const DRT::Discretization& idiscret,  //!< interface discretization
+        MORTAR::IntCell& cell,                                    //!< mortar integration cell
+        MORTAR::Element& slaveelement,                            //!< slave-side mortar element
+        MORTAR::Element& masterelement,                           //!< master-side mortar element
+        DRT::Element::LocationArray& la_slave,                    //!< slave-side location array
+        DRT::Element::LocationArray& la_master,                   //!< master-side location array
+        const Teuchos::ParameterList& params,                     //!< parameter list
         CORE::LINALG::SerialDenseMatrix&
             k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
         CORE::LINALG::SerialDenseVector& r_s  //!< slave-side residual vector
     );
 
     //! evaluate and assemble off-diagonal interface linearizations
-    void EvaluateConditionOD(const DRT::Discretization& idiscret,  //!< interface discretization
-        MORTAR::IntCell& cell,                                     //!< mortar integration cell
-        MORTAR::Element& slaveelement,                             //!< slave-side mortar element
-        MORTAR::Element& masterelement,                            //!< master-side mortar element
-        DRT::Element::LocationArray& la_slave,                     //!< slave-side location array
-        DRT::Element::LocationArray& la_master,                    //!< master-side location array
-        const Teuchos::ParameterList& params,                      //!< parameter list
+    void evaluate_condition_od(const DRT::Discretization& idiscret,  //!< interface discretization
+        MORTAR::IntCell& cell,                                       //!< mortar integration cell
+        MORTAR::Element& slaveelement,                               //!< slave-side mortar element
+        MORTAR::Element& masterelement,                              //!< master-side mortar element
+        DRT::Element::LocationArray& la_slave,                       //!< slave-side location array
+        DRT::Element::LocationArray& la_master,                      //!< master-side location array
+        const Teuchos::ParameterList& params,                        //!< parameter list
         CORE::LINALG::SerialDenseMatrix&
             k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
         CORE::LINALG::SerialDenseMatrix&

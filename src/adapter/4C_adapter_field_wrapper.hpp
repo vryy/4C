@@ -57,7 +57,7 @@ namespace ADAPTER
     //@{
 
     /// dof map of vector of unknowns
-    Teuchos::RCP<const Epetra_Map> DofRowMap() override { return field_->DofRowMap(); }
+    Teuchos::RCP<const Epetra_Map> dof_row_map() override { return field_->dof_row_map(); }
 
     /// direct access to system matrix
     Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override
@@ -78,7 +78,7 @@ namespace ADAPTER
     //@{
 
     /// start new time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     /// update state with given increment vector
     void update_state_incrementally(
@@ -96,7 +96,10 @@ namespace ADAPTER
     void Update() override { field_->Update(); }
 
     /// prepare output (i.e. calculate stresses, strains, energies)
-    void PrepareOutput(bool force_prepare) override { return field_->PrepareOutput(force_prepare); }
+    void prepare_output(bool force_prepare) override
+    {
+      return field_->prepare_output(force_prepare);
+    }
 
     /// output results
     void Output(bool forced_writerestart = false) override
@@ -105,7 +108,7 @@ namespace ADAPTER
     }
 
     /// read restart information for given time step
-    void ReadRestart(const int step) override { return field_->ReadRestart(step); }
+    void read_restart(const int step) override { return field_->read_restart(step); }
 
     //@}
 
@@ -115,10 +118,10 @@ namespace ADAPTER
 
    private:
     /// Reset Step Increment
-    virtual void ResetStepinc();
+    virtual void reset_stepinc();
 
     /// Get Iteration Increment from Step Increment
-    virtual void GetIterinc(Teuchos::RCP<const Epetra_Vector>& stepinc);
+    virtual void get_iterinc(Teuchos::RCP<const Epetra_Vector>& stepinc);
 
     const bool nox_correction_;  ///< if (true) adapter gets stepincrements!
 

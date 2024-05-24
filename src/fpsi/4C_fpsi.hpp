@@ -37,7 +37,7 @@ namespace FPSI
     virtual void TestResults(const Epetra_Comm& comm) = 0;
 
     /// read restart
-    void ReadRestart(int restartstep) override = 0;
+    void read_restart(int restartstep) override = 0;
 
     /// redistribute FPSI interface if running on parallel
     void redistribute_interface();

@@ -148,7 +148,7 @@ namespace CONTACT
           std::set<const DRT::Element*>& dbc_slave_eles);
 
      private:
-      static void DetectDbcSlaveNodes(std::map<const DRT::Node*, int>& dbc_slave_node_map,
+      static void detect_dbc_slave_nodes(std::map<const DRT::Node*, int>& dbc_slave_node_map,
           const DRT::Discretization& str_discret,
           const std::vector<const CORE::Conditions::Condition*>& sl_conds);
 

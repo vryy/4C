@@ -29,7 +29,7 @@ namespace ADAPTER
       fluid_->Init();
       return;
     }
-    Teuchos::RCP<const Epetra_Vector> InitialGuess() override { return fluid_->InitialGuess(); }
+    Teuchos::RCP<const Epetra_Vector> initial_guess() override { return fluid_->initial_guess(); }
     Teuchos::RCP<const Epetra_Vector> RHS() override { return fluid_->RHS(); }
     Teuchos::RCP<const Epetra_Vector> TrueResidual() override { return fluid_->TrueResidual(); }
     Teuchos::RCP<const Epetra_Vector> Velnp() override { return fluid_->Velnp(); }
@@ -77,10 +77,10 @@ namespace ADAPTER
       FOUR_C_THROW("not implemented");
       return Teuchos::null;
     };
-    Teuchos::RCP<const Epetra_Map> DofRowMap() override { return fluid_->DofRowMap(); }
-    Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) override
+    Teuchos::RCP<const Epetra_Map> dof_row_map() override { return fluid_->dof_row_map(); }
+    Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) override
     {
-      return fluid_->DofRowMap(nds);
+      return fluid_->dof_row_map(nds);
     };
     Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override
     {
@@ -174,7 +174,7 @@ namespace ADAPTER
     //    virtual void TimeLoop()
     //    { return fluid_->TimeLoop(); }
     void Integrate() override { return fluid_->Integrate(); }
-    void PrepareTimeStep() override { return fluid_->PrepareTimeStep(); }
+    void prepare_time_step() override { return fluid_->prepare_time_step(); }
     void increment_time_and_step() override
     {
       FOUR_C_THROW("not implemented!");
@@ -185,7 +185,7 @@ namespace ADAPTER
     {
       return fluid_->Evaluate(stepinc);
     }
-    bool ConvergenceCheck(int itnum, int itmax, const double velrestol, const double velinctol,
+    bool convergence_check(int itnum, int itmax, const double velrestol, const double velinctol,
         const double presrestol, const double presinctol) override
     {
       FOUR_C_THROW("not implemented!");
@@ -212,7 +212,7 @@ namespace ADAPTER
     {
       return fluid_->GetVelPressSplitter();
     }
-    void ReadRestart(int step) override { return fluid_->ReadRestart(step); }
+    void read_restart(int step) override { return fluid_->read_restart(step); }
     void SetRestart(const int step, const double time, Teuchos::RCP<const Epetra_Vector> readvelnp,
         Teuchos::RCP<const Epetra_Vector> readveln, Teuchos::RCP<const Epetra_Vector> readvelnm,
         Teuchos::RCP<const Epetra_Vector> readaccnp,
@@ -244,7 +244,7 @@ namespace ADAPTER
      *
      *  \author mayr.mt \date 12/2013
      */
-    void TimeStepAuxiliar() override{};
+    void time_step_auxiliar() override{};
 
     /*! Indicate norms of temporal discretization error
      *
@@ -264,13 +264,13 @@ namespace ADAPTER
     };
 
     //! Set fluid time step size that was computed outside
-    void SetDt(const double dtnew) override { fluid_->SetDt(dtnew); }
+    void set_dt(const double dtnew) override { fluid_->set_dt(dtnew); }
 
     //! Reset last time step
-    void ResetStep() override { fluid_->ResetStep(); }
+    void reset_step() override { fluid_->reset_step(); }
 
     //! Reset time and step number of last time step, needed for time step size adaptivity an FSI
-    void ResetTime(const double dtold) override { fluid_->ResetTime(dtold); }
+    void reset_time(const double dtold) override { fluid_->reset_time(dtold); }
 
     //! Set time and step
     void SetTimeStep(const double time, const int step) override

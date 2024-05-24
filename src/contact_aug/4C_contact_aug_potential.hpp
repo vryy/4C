@@ -120,22 +120,22 @@ namespace CONTACT
 
      private:
       /// reset all internal isvalid flags
-      void ResetIsValid();
+      void reset_is_valid();
 
       /// compute all terms for the active linear models
-      void ComputeLinActive(const Epetra_Vector& dincrSlMa, const Epetra_Vector& znincr_active);
+      void compute_lin_active(const Epetra_Vector& dincrSlMa, const Epetra_Vector& znincr_active);
 
       /// compute all terms for the inactive linear models
-      void ComputeLinInactive(const Epetra_Vector& znincr_inactive);
+      void compute_lin_inactive(const Epetra_Vector& znincr_inactive);
 
       /// @name Lagrangian potential (contact part)
       /// @{
 
       /// return the Lagrangian constraint part belonging to \c pot_set
-      double GetLagrangian(enum POTENTIAL::SetType pot_set) const;
+      double get_lagrangian(enum POTENTIAL::SetType pot_set) const;
 
       /// return contributions for the linear Lagrangian model
-      double GetLagrangianLin(
+      double get_lagrangian_lin(
           enum POTENTIAL::LinTerm lin_term, enum POTENTIAL::SetType pot_set) const;
 
       /// return active contributions for the linear Lagrangian model
@@ -184,12 +184,12 @@ namespace CONTACT
 
       /** Split the given global direction vector into its distinct parts and
        *  return these parts */
-      void SetDirection(const Epetra_Vector& direction, Epetra_Vector& dincrSlMa,
+      void set_direction(const Epetra_Vector& direction, Epetra_Vector& dincrSlMa,
           Epetra_Vector& znincr_active, Epetra_Vector& znincr_inactive);
 
       /** apply necessary time integration scaling in dynamic simulations to
        *  current contributions, i.e. \f$t_{n+1}\f$ */
-      double TimeIntScaleNp(const double static_part) const;
+      double time_int_scale_np(const double static_part) const;
 
       /// return the time integration coefficient corresponding to \f$t_{n}\f$
       double get_time_integration_factor() const;

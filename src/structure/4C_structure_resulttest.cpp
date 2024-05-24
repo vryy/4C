@@ -38,7 +38,7 @@ StruResultTest::StruResultTest(STR::TimInt& tintegrator)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void StruResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void StruResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // this implementation does not allow testing of stresses !
 

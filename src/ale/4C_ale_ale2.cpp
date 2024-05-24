@@ -127,7 +127,7 @@ DRT::Element* DRT::ELEMENTS::Ale2::Clone() const
 /*----------------------------------------------------------------------------*/
 CORE::FE::CellType DRT::ELEMENTS::Ale2::Shape() const
 {
-  switch (NumNode())
+  switch (num_node())
   {
     case 3:
       return CORE::FE::CellType::tri3;
@@ -140,7 +140,7 @@ CORE::FE::CellType DRT::ELEMENTS::Ale2::Shape() const
     case 9:
       return CORE::FE::CellType::quad9;
     default:
-      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", num_node());
       break;
   }
 }
@@ -202,7 +202,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Ale2::Surfaces()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-CORE::FE::GaussRule2D DRT::ELEMENTS::Ale2::getOptimalGaussrule(const CORE::FE::CellType& distype)
+CORE::FE::GaussRule2D DRT::ELEMENTS::Ale2::get_optimal_gaussrule(const CORE::FE::CellType& distype)
 {
   CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::undefined;
   switch (distype)

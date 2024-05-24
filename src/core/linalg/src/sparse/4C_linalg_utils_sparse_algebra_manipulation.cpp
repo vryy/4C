@@ -538,7 +538,7 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::ExtractMyOverlappingSubMap(
 /*----------------------------------------------------------------------*
  | split a vector into 2 pieces with given submaps            popp 02/08|
  *----------------------------------------------------------------------*/
-bool CORE::LINALG::SplitVector(const Epetra_Map& xmap, const Epetra_Vector& x,
+bool CORE::LINALG::split_vector(const Epetra_Map& xmap, const Epetra_Vector& x,
     Teuchos::RCP<Epetra_Map>& x1map, Teuchos::RCP<Epetra_Vector>& x1,
     Teuchos::RCP<Epetra_Map>& x2map, Teuchos::RCP<Epetra_Vector>& x2)
 {
@@ -555,7 +555,7 @@ bool CORE::LINALG::SplitVector(const Epetra_Map& xmap, const Epetra_Vector& x,
 /*----------------------------------------------------------------------*
  | split a vector into 2 pieces with given submaps           farah 02/16|
  *----------------------------------------------------------------------*/
-bool CORE::LINALG::SplitVector(const Epetra_Map& xmap, const Epetra_Vector& x,
+bool CORE::LINALG::split_vector(const Epetra_Map& xmap, const Epetra_Vector& x,
     Teuchos::RCP<const Epetra_Map>& x1map, Teuchos::RCP<Epetra_Vector>& x1,
     Teuchos::RCP<const Epetra_Map>& x2map, Teuchos::RCP<Epetra_Vector>& x2)
 {

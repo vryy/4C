@@ -176,7 +176,7 @@ namespace MAT
      *
      * @param params Container for additional information
      */
-    void PostSetup(Teuchos::ParameterList& params, const int eleGID) override;
+    void post_setup(Teuchos::ParameterList& params, const int eleGID) override;
 
     /*!
      * \brief Update of the material

@@ -93,7 +93,7 @@ DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParentI
       FOUR_C_THROW(
           "Element shape %d (%d nodes) not activated for boundary conditions requiring "
           "parent-element evaluations. Just do it.",
-          ele->Shape(), ele->NumNode());
+          ele->Shape(), ele->num_node());
       break;
   }
   return nullptr;
@@ -142,7 +142,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
     // 2D:
     case CORE::FE::CellType::line2:
     {
-      if (surfele->ParentElement()->Shape() == CORE::FE::CellType::quad4)
+      if (surfele->parent_element()->Shape() == CORE::FE::CellType::quad4)
       {
         FlowDepPressureBC<CORE::FE::CellType::line2, CORE::FE::CellType::quad4>(
             surfele, params, discretization, lm, elemat, elevec);
@@ -154,7 +154,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
     // 3D:
     case CORE::FE::CellType::tri3:
     {
-      if (surfele->ParentElement()->Shape() == CORE::FE::CellType::tet4)
+      if (surfele->parent_element()->Shape() == CORE::FE::CellType::tet4)
       {
         FlowDepPressureBC<CORE::FE::CellType::tri3, CORE::FE::CellType::tet4>(
             surfele, params, discretization, lm, elemat, elevec);
@@ -166,7 +166,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
     // 3D:
     case CORE::FE::CellType::quad4:
     {
-      if (surfele->ParentElement()->Shape() == CORE::FE::CellType::hex8)
+      if (surfele->parent_element()->Shape() == CORE::FE::CellType::hex8)
       {
         FlowDepPressureBC<CORE::FE::CellType::quad4, CORE::FE::CellType::hex8>(
             surfele, params, discretization, lm, elemat, elevec);
@@ -178,7 +178,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
     // 3D:
     case CORE::FE::CellType::quad8:
     {
-      if (surfele->ParentElement()->Shape() == CORE::FE::CellType::hex20)
+      if (surfele->parent_element()->Shape() == CORE::FE::CellType::hex20)
       {
         FlowDepPressureBC<CORE::FE::CellType::quad8, CORE::FE::CellType::hex20>(
             surfele, params, discretization, lm, elemat, elevec);
@@ -190,7 +190,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
     // 3D:
     case CORE::FE::CellType::quad9:
     {
-      if (surfele->ParentElement()->Shape() == CORE::FE::CellType::hex27)
+      if (surfele->parent_element()->Shape() == CORE::FE::CellType::hex27)
       {
         FlowDepPressureBC<CORE::FE::CellType::quad9, CORE::FE::CellType::hex27>(
             surfele, params, discretization, lm, elemat, elevec);
@@ -220,7 +220,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
     // 2D:
     case CORE::FE::CellType::line2:
     {
-      if (surfele->ParentElement()->Shape() == CORE::FE::CellType::quad4)
+      if (surfele->parent_element()->Shape() == CORE::FE::CellType::quad4)
       {
         SlipSuppBC<CORE::FE::CellType::line2, CORE::FE::CellType::quad4>(
             surfele, params, discretization, lm, elemat, elevec);
@@ -232,7 +232,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
     // 3D:
     case CORE::FE::CellType::quad4:
     {
-      if (surfele->ParentElement()->Shape() == CORE::FE::CellType::hex8)
+      if (surfele->parent_element()->Shape() == CORE::FE::CellType::hex8)
       {
         SlipSuppBC<CORE::FE::CellType::quad4, CORE::FE::CellType::hex8>(
             surfele, params, discretization, lm, elemat, elevec);
@@ -262,7 +262,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
     // 2D:
     case CORE::FE::CellType::line2:
     {
-      if (surfele->ParentElement()->Shape() == CORE::FE::CellType::quad4)
+      if (surfele->parent_element()->Shape() == CORE::FE::CellType::quad4)
       {
         NavierSlipBC<CORE::FE::CellType::line2, CORE::FE::CellType::quad4>(
             surfele, params, discretization, lm, elemat, elevec);
@@ -274,7 +274,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
     // 3D:
     case CORE::FE::CellType::quad4:
     {
-      if (surfele->ParentElement()->Shape() == CORE::FE::CellType::hex8)
+      if (surfele->parent_element()->Shape() == CORE::FE::CellType::hex8)
       {
         NavierSlipBC<CORE::FE::CellType::quad4, CORE::FE::CellType::hex8>(
             surfele, params, discretization, lm, elemat, elevec);
@@ -304,7 +304,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
     // 2D:
     case CORE::FE::CellType::line2:
     {
-      if (surfele->ParentElement()->Shape() == CORE::FE::CellType::quad4)
+      if (surfele->parent_element()->Shape() == CORE::FE::CellType::quad4)
       {
         EvaluateWeakDBC<CORE::FE::CellType::line2, CORE::FE::CellType::quad4>(
             surfele, params, discretization, lm, elemat, elevec);
@@ -316,7 +316,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
     // 3D:
     case CORE::FE::CellType::tri3:
     {
-      if (surfele->ParentElement()->Shape() == CORE::FE::CellType::tet4)
+      if (surfele->parent_element()->Shape() == CORE::FE::CellType::tet4)
       {
         EvaluateWeakDBC<CORE::FE::CellType::tri3, CORE::FE::CellType::tet4>(
             surfele, params, discretization, lm, elemat, elevec);
@@ -328,7 +328,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
     // 3D:
     case CORE::FE::CellType::quad4:
     {
-      if (surfele->ParentElement()->Shape() == CORE::FE::CellType::hex8)
+      if (surfele->parent_element()->Shape() == CORE::FE::CellType::hex8)
       {
         EvaluateWeakDBC<CORE::FE::CellType::quad4, CORE::FE::CellType::hex8>(
             surfele, params, discretization, lm, elemat, elevec);
@@ -340,7 +340,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
     // 3D:
     case CORE::FE::CellType::quad8:
     {
-      if (surfele->ParentElement()->Shape() == CORE::FE::CellType::hex20)
+      if (surfele->parent_element()->Shape() == CORE::FE::CellType::hex20)
       {
         EvaluateWeakDBC<CORE::FE::CellType::quad8, CORE::FE::CellType::hex20>(
             surfele, params, discretization, lm, elemat, elevec);
@@ -352,7 +352,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
     // 3D:
     case CORE::FE::CellType::quad9:
     {
-      if (surfele->ParentElement()->Shape() == CORE::FE::CellType::hex27)
+      if (surfele->parent_element()->Shape() == CORE::FE::CellType::hex27)
       {
         EvaluateWeakDBC<CORE::FE::CellType::quad9, CORE::FE::CellType::hex27>(
             surfele, params, discretization, lm, elemat, elevec);
@@ -383,7 +383,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eig
     // 2D:
     case CORE::FE::CellType::line2:
     {
-      if (surfele->ParentElement()->Shape() == CORE::FE::CellType::quad4)
+      if (surfele->parent_element()->Shape() == CORE::FE::CellType::quad4)
       {
         estimate_nitsche_trace_max_eigenvalue<CORE::FE::CellType::line2, CORE::FE::CellType::quad4>(
             surfele, params, discretization, lm, elemat1, elemat2);
@@ -395,7 +395,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eig
     // 3D:
     case CORE::FE::CellType::tri3:
     {
-      if (surfele->ParentElement()->Shape() == CORE::FE::CellType::tet4)
+      if (surfele->parent_element()->Shape() == CORE::FE::CellType::tet4)
       {
         estimate_nitsche_trace_max_eigenvalue<CORE::FE::CellType::tri3, CORE::FE::CellType::tet4>(
             surfele, params, discretization, lm, elemat1, elemat2);
@@ -406,7 +406,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eig
     }
     case CORE::FE::CellType::tri6:
     {
-      if (surfele->ParentElement()->Shape() == CORE::FE::CellType::tet10)
+      if (surfele->parent_element()->Shape() == CORE::FE::CellType::tet10)
       {
         estimate_nitsche_trace_max_eigenvalue<CORE::FE::CellType::tri6, CORE::FE::CellType::tet10>(
             surfele, params, discretization, lm, elemat1, elemat2);
@@ -417,7 +417,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eig
     }
     case CORE::FE::CellType::quad4:
     {
-      if (surfele->ParentElement()->Shape() == CORE::FE::CellType::hex8)
+      if (surfele->parent_element()->Shape() == CORE::FE::CellType::hex8)
       {
         estimate_nitsche_trace_max_eigenvalue<CORE::FE::CellType::quad4, CORE::FE::CellType::hex8>(
             surfele, params, discretization, lm, elemat1, elemat2);
@@ -428,7 +428,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eig
     }
     case CORE::FE::CellType::quad8:
     {
-      if (surfele->ParentElement()->Shape() == CORE::FE::CellType::hex20)
+      if (surfele->parent_element()->Shape() == CORE::FE::CellType::hex20)
       {
         estimate_nitsche_trace_max_eigenvalue<CORE::FE::CellType::quad8, CORE::FE::CellType::hex20>(
             surfele, params, discretization, lm, elemat1, elemat2);
@@ -439,7 +439,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eig
     }
     case CORE::FE::CellType::quad9:
     {
-      if (surfele->ParentElement()->Shape() == CORE::FE::CellType::hex27)
+      if (surfele->parent_element()->Shape() == CORE::FE::CellType::hex27)
       {
         estimate_nitsche_trace_max_eigenvalue<CORE::FE::CellType::quad9, CORE::FE::CellType::hex27>(
             surfele, params, discretization, lm, elemat1, elemat2);
@@ -470,7 +470,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
     // 2D:
     case CORE::FE::CellType::line2:
     {
-      if (surfele->ParentElement()->Shape() == CORE::FE::CellType::quad4)
+      if (surfele->parent_element()->Shape() == CORE::FE::CellType::quad4)
       {
         MixHybDirichlet<CORE::FE::CellType::line2, CORE::FE::CellType::quad4>(
             surfele, params, discretization, lm, elemat, elevec);
@@ -482,7 +482,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
     // 3D:
     case CORE::FE::CellType::quad4:
     {
-      if (surfele->ParentElement()->Shape() == CORE::FE::CellType::hex8)
+      if (surfele->parent_element()->Shape() == CORE::FE::CellType::hex8)
       {
         MixHybDirichlet<CORE::FE::CellType::quad4, CORE::FE::CellType::hex8>(
             surfele, params, discretization, lm, elemat, elevec);
@@ -599,7 +599,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
     //---------------------------------------------------------------------
     // get parent element data
     //---------------------------------------------------------------------
-    DRT::Element* parent = surfele->ParentElement();
+    DRT::Element* parent = surfele->parent_element();
 
     // parent element id
     int pid = parent->Id();
@@ -703,7 +703,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
     // parent and boundary displacement at n+1
     std::vector<double> mypedispnp((plm).size());
     std::vector<double> mybedispnp((blm).size());
-    if (surfele->ParentElement()->IsAle())
+    if (surfele->parent_element()->IsAle())
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
@@ -1258,7 +1258,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
   //---------------------------------------------------------------------
   // get parent element data
   //---------------------------------------------------------------------
-  DRT::Element* parent = surfele->ParentElement();
+  DRT::Element* parent = surfele->parent_element();
 
   // parent element id
   int pid = parent->Id();
@@ -1367,7 +1367,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
   // parent and boundary displacement at n+1
   std::vector<double> mypedispnp((plm).size());
   std::vector<double> mybedispnp((blm).size());
-  if (surfele->ParentElement()->IsAle())
+  if (surfele->parent_element()->IsAle())
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
     if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
@@ -1589,7 +1589,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
   //---------------------------------------------------------------------
   // get parent element data
   //---------------------------------------------------------------------
-  DRT::Element* parent = surfele->ParentElement();
+  DRT::Element* parent = surfele->parent_element();
 
   // parent element id
   int pid = parent->Id();
@@ -1690,7 +1690,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
   // parent and boundary displacement at n+1
   std::vector<double> mypedispnp((plm).size());
   std::vector<double> mybedispnp((blm).size());
-  if (surfele->ParentElement()->IsAle())
+  if (surfele->parent_element()->IsAle())
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
     if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
@@ -1931,7 +1931,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   //---------------------------------------------------------------------
   // get parent element data
   //---------------------------------------------------------------------
-  DRT::Element* parent = surfele->ParentElement();
+  DRT::Element* parent = surfele->parent_element();
 
   // parent element id
   int pid = parent->Id();
@@ -2053,7 +2053,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   // parent and boundary displacement at n+1
   std::vector<double> mypedispnp((plm).size());
   std::vector<double> mybedispnp((blm).size());
-  if (surfele->ParentElement()->IsAle())
+  if (surfele->parent_element()->IsAle())
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
     if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
@@ -2387,7 +2387,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
       const double y = h / Cb;
 
       // iterate until the residual of the Spalding equation is 0
-      double res = SpaldingResidual(y, visc_, tau_B, normu);
+      double res = spalding_residual(y, visc_, tau_B, normu);
 
       int count = 0;
       while (res * res > 1e-6)
@@ -2408,7 +2408,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
         tau_B -= inc;
 
         // get residual of Spaldings equation (law of the wall)
-        res = SpaldingResidual(y, visc_, tau_B, normu);
+        res = spalding_residual(y, visc_, tau_B, normu);
 
         ++count;
         if (count > 100)
@@ -3739,7 +3739,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eig
   //---------------------------------------------------------------------
   // get parent element data
   //---------------------------------------------------------------------
-  DRT::Element* parent = surfele->ParentElement();
+  DRT::Element* parent = surfele->parent_element();
 
   // parent element id
   int pid = parent->Id();
@@ -3818,7 +3818,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eig
   //---------------------------------------------------------------------
   // extract parent and boundary values from global distributed vectors
   //---------------------------------------------------------------------
-  DRT::ELEMENTS::Fluid* fele = dynamic_cast<DRT::ELEMENTS::Fluid*>(surfele->ParentElement());
+  DRT::ELEMENTS::Fluid* fele = dynamic_cast<DRT::ELEMENTS::Fluid*>(surfele->parent_element());
   if (fele)
     if (fele->IsAle())
     {
@@ -4260,10 +4260,10 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eig
   //---------------------------------------------------------------
   // save matrix in matlab-format
   // std::ostringstream sa;
-  // sa << "sparsematrixA" << surfele->ParentElement()->Id() << ".mtl";
+  // sa << "sparsematrixA" << surfele->parent_element()->Id() << ".mtl";
   // std::string fname1(sa.str());
   // std::ostringstream sb;
-  // sb << "sparsematrixB" << surfele->ParentElement()->Id() << ".mtl";
+  // sb << "sparsematrixB" << surfele->parent_element()->Id() << ".mtl";
   // std::string fname2(sb.str());
   // CORE::LINALG::PrintSerialDenseMatrixInMatlabFormat(fname2,(elemat_epetra2));
   // CORE::LINALG::PrintSerialDenseMatrixInMatlabFormat(fname1,(elemat_epetra1));
@@ -4299,7 +4299,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
 {
   //--------------------------------------------------
   // get my parent element
-  DRT::Element* parent = surfele->ParentElement();
+  DRT::Element* parent = surfele->parent_element();
 
   // evaluate material at integration point
   const double rateofstrain = 0.0;
@@ -5396,7 +5396,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
             {
               // If |u_tau| approaches zero, subtract only 99,99% of inc from utau.
               // This heuristics prevents a zero utau, which is problematic
-              // within SpaldingResidual(), where a division takes place.
+              // within spalding_residual(), where a division takes place.
               // Seems to be required only for the first time step of a simulation.
               // gjb 12/12
               utau += 0.001 * inc;

@@ -89,7 +89,7 @@ void PostVtuWriter::WriteGeo()
   // the number of processors involved
   int nelements = dis->NumMyRowElements();
   int nnodes = 0;
-  for (int e = 0; e < nelements; ++e) nnodes += dis->lRowElement(e)->NumNode();
+  for (int e = 0; e < nelements; ++e) nnodes += dis->lRowElement(e)->num_node();
 
   // do not need to store connectivity indices here because we create a
   // contiguous array by the order in which we fill the coordinates (otherwise
@@ -124,9 +124,9 @@ void PostVtuWriter::WriteGeo()
       const std::vector<int>& numbering =
           DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
       const DRT::Node* const* nodes = ele->Nodes();
-      for (int n = 0; n < ele->NumNode(); ++n)
+      for (int n = 0; n < ele->num_node(); ++n)
         for (int d = 0; d < 3; ++d) coordinates.push_back(nodes[numbering[n]]->X()[d]);
-      outNodeId += ele->NumNode();
+      outNodeId += ele->num_node();
       celloffset.push_back(outNodeId);
     }
   }
@@ -251,7 +251,7 @@ void PostVtuWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<E
   const Epetra_BlockMap& vecmap = data->Map();
   const Epetra_Map* colmap = dis->DofColMap(0);
 
-  int offset = vecmap.MinAllGID() - dis->DofRowMap()->MinAllGID();
+  int offset = vecmap.MinAllGID() - dis->dof_row_map()->MinAllGID();
   if (fillzeros) offset = 0;
 
   Teuchos::RCP<Epetra_Vector> ghostedData;
@@ -280,7 +280,7 @@ void PostVtuWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<E
 
   // count number of nodes and number of elements for each processor
   int nnodes = 0;
-  for (int e = 0; e < dis->NumMyRowElements(); ++e) nnodes += dis->lRowElement(e)->NumNode();
+  for (int e = 0; e < dis->NumMyRowElements(); ++e) nnodes += dis->lRowElement(e)->num_node();
 
   std::vector<double> solution;
   solution.reserve(ncomponents * nnodes);
@@ -307,7 +307,7 @@ void PostVtuWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<E
       const std::vector<int>& numbering =
           DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
 
-      for (int n = 0; n < ele->NumNode(); ++n)
+      for (int n = 0; n < ele->num_node(); ++n)
       {
         nodedofs.clear();
 
@@ -389,7 +389,7 @@ void PostVtuWriter::write_nodal_result_step(std::ofstream& file,
 
   // count number of nodes and number of elements for each processor
   int nnodes = 0;
-  for (int e = 0; e < dis->NumMyRowElements(); ++e) nnodes += dis->lRowElement(e)->NumNode();
+  for (int e = 0; e < dis->NumMyRowElements(); ++e) nnodes += dis->lRowElement(e)->num_node();
 
   std::vector<double> solution;
   solution.reserve(ncomponents * nnodes);
@@ -406,7 +406,7 @@ void PostVtuWriter::write_nodal_result_step(std::ofstream& file,
     {
       const std::vector<int>& numbering =
           DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
-      for (int n = 0; n < ele->NumNode(); ++n)
+      for (int n = 0; n < ele->num_node(); ++n)
       {
         for (int idf = 0; idf < numdf; ++idf)
         {
@@ -614,7 +614,7 @@ void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_
 
   if (zero_ele) return;
 
-  for (int n = 0; n < ele->NumNode(); ++n)
+  for (int n = 0; n < ele->num_node(); ++n)
   {
     CORE::LINALG::Matrix<NUMNODES, 1> funct;
     CORE::LINALG::Matrix<DIM, NUMNODES> deriv;  // dummy
@@ -630,7 +630,7 @@ void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_
 
     for (unsigned d = 0; d < 3; ++d) coordinates.push_back(X[d]);
   }
-  outNodeId += ele->NumNode();
+  outNodeId += ele->num_node();
   celloffset.push_back(outNodeId);
 }
 
@@ -836,7 +836,7 @@ void PostVtuWriter::write_dof_result_step_beam_ele(const DRT::ELEMENTS::Beam3Bas
   std::vector<int> nodedofs;
   std::vector<double> elementdofvals;
 
-  for (int n = 0; n < beamele->NumNode(); ++n)
+  for (int n = 0; n < beamele->num_node(); ++n)
   {
     nodedofs.clear();
 

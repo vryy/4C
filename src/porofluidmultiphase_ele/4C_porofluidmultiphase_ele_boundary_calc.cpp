@@ -161,7 +161,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateAction(D
       if (condition == nullptr) FOUR_C_THROW("Cannot access Neumann boundary condition!");
 
       // evaluate neumann loads
-      EvaluateNeumann(ele, params, discretization, *condition, la, *elevec[0]);
+      evaluate_neumann(ele, params, discretization, *condition, la, *elevec[0]);
 
       break;
     }
@@ -174,7 +174,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateAction(D
  | evaluate Neumann boundary condition                        vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateNeumann(DRT::Element* ele,
+int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_neumann(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     CORE::Conditions::Condition& condition, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseVector& elevec1)

@@ -97,7 +97,7 @@ NOX::NLN::CONSTRAINT::Group::get_constraint_interface_ptr(
     std::ostringstream msg;
     msg << "The given NOX::NLN::SolutionType \"" << NOX::NLN::SolutionType2String(soltype)
         << "\" could not be found!";
-    throwError("get_constraint_interface_ptr", msg.str());
+    throw_error("get_constraint_interface_ptr", msg.str());
   }
   else if (it != user_constraint_interfaces_.end())
     constrptr = it->second;
@@ -241,7 +241,7 @@ Teuchos::RCP<std::vector<double>> NOX::NLN::CONSTRAINT::Group::get_solution_upda
              " for the \"NormIncr\" Status Test could not be found! (enum="
           << chQ[i] << " | " << NOX::NLN::StatusTest::QuantityType2String(chQ[i]) << ")"
           << std::endl;
-      throwError("get_solution_update_norms", msg.str());
+      throw_error("get_solution_update_norms", msg.str());
     }
   }
 
@@ -288,7 +288,7 @@ Teuchos::RCP<std::vector<double>> NOX::NLN::CONSTRAINT::Group::get_previous_solu
              " for the \"NormUpdate\" Status Test could not be found! (enum="
           << chQ[i] << " | " << NOX::NLN::StatusTest::QuantityType2String(chQ[i]) << ")"
           << std::endl;
-      throwError("get_previous_solution_norms", msg.str());
+      throw_error("get_previous_solution_norms", msg.str());
     }
   }
 
@@ -331,7 +331,7 @@ Teuchos::RCP<std::vector<double>> NOX::NLN::CONSTRAINT::Group::get_solution_upda
              " for the \"NormWRMS\" Status Test could not be found! (enum="
           << chQ[i] << " | " << NOX::NLN::StatusTest::QuantityType2String(chQ[i]) << ")"
           << std::endl;
-      throwError("get_solution_update_rms", msg.str());
+      throw_error("get_solution_update_rms", msg.str());
     }
   }
 
@@ -370,7 +370,7 @@ enum ::NOX::StatusTest::StatusType NOX::NLN::CONSTRAINT::Group::GetActiveSetInfo
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::CONSTRAINT::Group::throwError(
+void NOX::NLN::CONSTRAINT::Group::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   if (utils.isPrintType(::NOX::Utils::Error))

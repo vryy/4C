@@ -57,9 +57,9 @@ Teuchos::RCP<CORE::UTILS::ResultTest> ADAPTER::PoroFluidMultiphaseWrapper::Creat
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> ADAPTER::PoroFluidMultiphaseWrapper::DofRowMap(unsigned nds) const
+Teuchos::RCP<const Epetra_Map> ADAPTER::PoroFluidMultiphaseWrapper::dof_row_map(unsigned nds) const
 {
-  return porofluid_->DofRowMap(nds);
+  return porofluid_->dof_row_map(nds);
 }
 
 /*----------------------------------------------------------------------*/
@@ -85,9 +85,9 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::PoroFluidMultiphaseWrapper::Discretiz
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::PoroFluidMultiphaseWrapper::ReadRestart(int restart)
+void ADAPTER::PoroFluidMultiphaseWrapper::read_restart(int restart)
 {
-  return porofluid_->ReadRestart(restart);
+  return porofluid_->read_restart(restart);
 }
 
 /*----------------------------------------------------------------------*/
@@ -108,10 +108,10 @@ void ADAPTER::PoroFluidMultiphaseWrapper::SetVelocityField(Teuchos::RCP<const Ep
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::PoroFluidMultiphaseWrapper::SetState(
+void ADAPTER::PoroFluidMultiphaseWrapper::set_state(
     unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state)
 {
-  porofluid_->SetState(nds, name, state);
+  porofluid_->set_state(nds, name, state);
 }
 
 
@@ -120,7 +120,7 @@ void ADAPTER::PoroFluidMultiphaseWrapper::SetState(
 void ADAPTER::PoroFluidMultiphaseWrapper::SetScatraSolution(
     unsigned nds, Teuchos::RCP<const Epetra_Vector> scalars)
 {
-  SetState(nds, "scalars", scalars);
+  set_state(nds, "scalars", scalars);
 }
 
 
@@ -187,7 +187,7 @@ void ADAPTER::PoroFluidMultiphaseWrapper::TimeLoop() { porofluid_->TimeLoop(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::PoroFluidMultiphaseWrapper::PrepareTimeStep() { porofluid_->PrepareTimeStep(); }
+void ADAPTER::PoroFluidMultiphaseWrapper::prepare_time_step() { porofluid_->prepare_time_step(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -210,7 +210,7 @@ void ADAPTER::PoroFluidMultiphaseWrapper::Solve() { porofluid_->Solve(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::PoroFluidMultiphaseWrapper::PrepareTimeLoop() { porofluid_->PrepareTimeLoop(); }
+void ADAPTER::PoroFluidMultiphaseWrapper::prepare_time_loop() { porofluid_->prepare_time_loop(); }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const CORE::LINALG::MapExtractor>

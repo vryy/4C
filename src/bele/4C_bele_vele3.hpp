@@ -69,7 +69,7 @@ namespace DRT
      * of volume elements. They can be of any 3d shape
      *
      * The number of dof per node is set to 3, so we can define displacement vectors by
-     * using FillComplete on the discretization.
+     * using fill_complete on the discretization.
      *
      */
 
@@ -119,9 +119,9 @@ namespace DRT
       */
       int NumLine() const override
       {
-        if (NumNode() == 8 || NumNode() == 20 || NumNode() == 27)
+        if (num_node() == 8 || num_node() == 20 || num_node() == 27)
           return 12;
-        else if (NumNode() == 4 || NumNode() == 10)
+        else if (num_node() == 4 || num_node() == 10)
           return 6;
         else
         {
@@ -135,11 +135,11 @@ namespace DRT
       */
       int NumSurface() const override
       {
-        if (NumNode() == 8 || NumNode() == 20 || NumNode() == 27)
+        if (num_node() == 8 || num_node() == 20 || num_node() == 27)
           return 6;
-        else if (NumNode() == 4 || NumNode() == 10)
+        else if (num_node() == 4 || num_node() == 10)
           return 4;
-        else if (NumNode() == 6 || NumNode() == 15 || NumNode() == 5)
+        else if (num_node() == 6 || num_node() == 15 || num_node() == 5)
           return 5;
         else
         {
@@ -234,7 +234,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3) override;
 
 
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -286,7 +286,7 @@ namespace DRT
       Vele3& operator=(const Vele3& old);
 
       //! set number of gauss points to element shape default
-      CORE::FE::GaussRule3D getOptimalGaussrule(const CORE::FE::CellType& distype) const;
+      CORE::FE::GaussRule3D get_optimal_gaussrule(const CORE::FE::CellType& distype) const;
 
     };  // class Bele3
 
@@ -346,9 +346,9 @@ namespace DRT
       CORE::FE::CellType Shape() const override;
       int NumLine() const override
       {
-        if (NumNode() == 9 || NumNode() == 8 || NumNode() == 4)
+        if (num_node() == 9 || num_node() == 8 || num_node() == 4)
           return 4;
-        else if (NumNode() == 3 || NumNode() == 6)
+        else if (num_node() == 3 || num_node() == 6)
           return 3;
         else
         {
@@ -389,7 +389,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3) override;
 
 
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -431,7 +431,7 @@ namespace DRT
       Vele3Surface& operator=(const Vele3Surface& old);
 
       //! set number of gauss points to element shape default
-      CORE::FE::GaussRule2D getOptimalGaussrule(const CORE::FE::CellType& distype) const;
+      CORE::FE::GaussRule2D get_optimal_gaussrule(const CORE::FE::CellType& distype) const;
 
     };  // class Vele3Surface
 
@@ -541,7 +541,7 @@ namespace DRT
 
 
       //! @name Evaluate methods
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -559,7 +559,7 @@ namespace DRT
       Vele3Line& operator=(const Vele3Line& old);
 
       //! Get Rule for Gaussintegration according to DRT::UTIL
-      CORE::FE::GaussRule1D getOptimalGaussrule(const CORE::FE::CellType& distype);
+      CORE::FE::GaussRule1D get_optimal_gaussrule(const CORE::FE::CellType& distype);
 
     };  // class Vele3Line
 

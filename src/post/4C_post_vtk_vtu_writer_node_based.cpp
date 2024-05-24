@@ -124,11 +124,11 @@ void PostVtuWriterNode::WriteGeo()
       const std::vector<int>& numbering =
           DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
       const DRT::Node* const* nodes = ele->Nodes();
-      for (int n = 0; n < ele->NumNode(); ++n)
+      for (int n = 0; n < ele->num_node(); ++n)
       {
         connectivity.push_back(nodes[numbering[n]]->LID());
       }
-      outNodeId += ele->NumNode();
+      outNodeId += ele->num_node();
       celloffset.push_back(outNodeId);
     }
   }
@@ -265,7 +265,7 @@ void PostVtuWriterNode::WriteDofResultStep(std::ofstream& file,
   const Epetra_BlockMap& vecmap = data->Map();
   const Epetra_Map* colmap = dis->DofColMap(0);
 
-  int offset = vecmap.MinAllGID() - dis->DofRowMap()->MinAllGID();
+  int offset = vecmap.MinAllGID() - dis->dof_row_map()->MinAllGID();
   if (fillzeros) offset = 0;
 
   Teuchos::RCP<Epetra_Vector> ghostedData;

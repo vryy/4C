@@ -44,8 +44,8 @@ namespace BEAMINTERACTION
   {
     /**
      * \brief This class assembles the contribution of beam contact pairs into the global force
-     * vector and stiffness matrix for partitioned algorithms. The method EvaluateForceStiff has to
-     * be overloaded in the derived classes to implement the correct assembly method.
+     * vector and stiffness matrix for partitioned algorithms. The method evaluate_force_stiff has
+     * to be overloaded in the derived classes to implement the correct assembly method.
      */
     class PartitionedBeamInteractionAssemblyManager
     {
@@ -73,7 +73,7 @@ namespace BEAMINTERACTION
        * \params[inout] cfb  Global stiffness matrix coupling beam to fluid DOFs
        * \params[inout] cbf  Global stiffness matrix coupling fluid to beam DOFs
        */
-      virtual void EvaluateForceStiff(const DRT::Discretization& discretization1,
+      virtual void evaluate_force_stiff(const DRT::Discretization& discretization1,
           const DRT::Discretization& discretization2, Teuchos::RCP<Epetra_FEVector>& ff,
           Teuchos::RCP<Epetra_FEVector>& fb, Teuchos::RCP<CORE::LINALG::SparseOperator> cff,
           Teuchos::RCP<CORE::LINALG::SparseMatrix>& cbb,

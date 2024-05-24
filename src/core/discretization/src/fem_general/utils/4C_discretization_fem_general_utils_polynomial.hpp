@@ -554,7 +554,7 @@ namespace CORE::FE
 
     LagrangeBasisTet(const unsigned int degree) : legendre_(degree)
     {
-      FillFeketePoints(degree);
+      fill_fekete_points(degree);
       compute_vandermonde_matrices(degree);
     }
 
@@ -602,7 +602,7 @@ namespace CORE::FE
     void FillUnitNodePoints(CORE::LINALG::SerialDenseMatrix &matrix) const override;
 
    private:
-    void FillFeketePoints(const unsigned int degree);
+    void fill_fekete_points(const unsigned int degree);
     void compute_vandermonde_matrices(const unsigned int degree);
 
     CORE::LINALG::SerialDenseMatrix vandermonde_;

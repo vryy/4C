@@ -81,7 +81,7 @@ namespace STR
     //!                             "stress_yz"
     //!
     //! \note The type of stress that is used for testing has to be specified in IO->STRUCT_STRESS
-    void TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_node(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
     /*! \brief test special quantity not associated with a particular element or node
      *
@@ -96,19 +96,19 @@ namespace STR
 
    protected:
     /// get the indicator state
-    inline const bool& IsInit() const { return isinit_; };
+    inline const bool& is_init() const { return isinit_; };
 
     /// get the indicator state
-    inline const bool& IsSetup() const { return issetup_; };
+    inline const bool& is_setup() const { return issetup_; };
 
     /// Check if Init() and Setup() have been called
-    inline void CheckInitSetup() const
+    inline void check_init_setup() const
     {
-      FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+      FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
     }
 
     /// Check if Init() has been called
-    inline void CheckInit() const { FOUR_C_ASSERT(IsInit(), "Call Init() first!"); }
+    inline void check_init() const { FOUR_C_ASSERT(is_init(), "Call Init() first!"); }
 
    private:
     /** \brief Get the result of the special structural quantity
@@ -124,7 +124,7 @@ namespace STR
      *  \return  The value for the subsequent comparison.
      *
      *  \author hiermeier \date 11/17 */
-    std::optional<double> GetSpecialResult(
+    std::optional<double> get_special_result(
         const std::string& quantity, Status& special_status) const;
 
     /** \brief Get the last number of linear iterations
@@ -181,7 +181,7 @@ namespace STR
      *  \return     The requested energy
      *
      *  \author kremheller \date 11/19 */
-    std::optional<double> GetEnergy(const std::string& quantity, Status& special_status) const;
+    std::optional<double> get_energy(const std::string& quantity, Status& special_status) const;
 
    protected:
     //! flag which indicates if the Init() routine has already been called

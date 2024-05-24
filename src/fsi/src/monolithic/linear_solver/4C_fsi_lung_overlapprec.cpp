@@ -395,10 +395,10 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> FSI::LungSchurComplement::CalculateSchu
     const CORE::LINALG::SparseMatrix& A, const CORE::LINALG::SparseMatrix& B,
     const CORE::LINALG::SparseMatrix& C)
 {
-  // make sure FillComplete was called on the matrices
-  if (!A.Filled()) FOUR_C_THROW("A has to be FillComplete");
-  if (!B.Filled()) FOUR_C_THROW("B has to be FillComplete");
-  if (!C.Filled()) FOUR_C_THROW("C has to be FillComplete");
+  // make sure fill_complete was called on the matrices
+  if (!A.Filled()) FOUR_C_THROW("A has to be fill_complete");
+  if (!B.Filled()) FOUR_C_THROW("B has to be fill_complete");
+  if (!C.Filled()) FOUR_C_THROW("C has to be fill_complete");
 
   temp_ = CORE::LINALG::MLMultiply(A, B, true);
   res_ = CORE::LINALG::MLMultiply(*temp_, C, true);

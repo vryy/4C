@@ -36,17 +36,17 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------------*/
 void MORTAR::STRATEGY::FactoryMT::Setup()
 {
-  CheckInit();
+  check_init();
   MORTAR::STRATEGY::Factory::Setup();
 
-  SetIsSetup();
+  set_is_setup();
 
   return;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& params) const
+void MORTAR::STRATEGY::FactoryMT::read_and_check_input(Teuchos::ParameterList& params) const
 {
   // read parameter lists from GLOBAL::Problem
   const Teuchos::ParameterList& mortar = GLOBAL::Problem::Instance()->mortar_coupling_params();
@@ -337,7 +337,7 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
   // maximum dof number in discretization
   // later we want to create NEW Lagrange multiplier degrees of
   // freedom, which of course must not overlap with displacement dofs
-  int maxdof = Discret().DofRowMap()->MaxAllGID();
+  int maxdof = Discret().dof_row_map()->MaxAllGID();
 
   for (int i = 0; i < (int)contactconditions.size(); ++i)
   {
@@ -542,7 +542,7 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
       {
         Teuchos::RCP<DRT::Element> ele = fool->second;
         Teuchos::RCP<MORTAR::Element> mtele = Teuchos::rcp(new MORTAR::Element(ele->Id() + ggsize,
-            ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), isslave[j], nurbs));
+            ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), isslave[j], nurbs));
         //------------------------------------------------------------------
         // get knotvector, normal factor and zero-size information for nurbs
         if (nurbs)
@@ -557,7 +557,7 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
     }
 
     //-------------------- finalize the meshtying interface construction
-    interface->FillComplete(true, maxdof);
+    interface->fill_complete(true, maxdof);
 
   }  // for (int i=0; i<(int)contactconditions.size(); ++i)
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
@@ -574,7 +574,7 @@ Teuchos::RCP<CONTACT::MtAbstractStrategy> MORTAR::STRATEGY::FactoryMT::BuildStra
   Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr = Teuchos::null;
 
   return BuildStrategy(stype, params, poroslave, poromaster, dof_offset, interfaces,
-      Discret().DofRowMap(), Discret().NodeRowMap(), Dim(), CommPtr(), data_ptr);
+      Discret().dof_row_map(), Discret().NodeRowMap(), Dim(), CommPtr(), data_ptr);
 }
 
 /*----------------------------------------------------------------------------*

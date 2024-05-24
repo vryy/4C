@@ -51,7 +51,7 @@ void CONSTRAINTS::MPConstraint::SetConstrState(const std::string& state,  ///< n
           CORE::LINALG::CreateVector(*(discrit->second)->DofColMap(), false);
       CORE::LINALG::Export(*V, *tmp);
       (discrit->second)->ClearState();
-      (discrit->second)->SetState(state, tmp);
+      (discrit->second)->set_state(state, tmp);
     }
   }
 }

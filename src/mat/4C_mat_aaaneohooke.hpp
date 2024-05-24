@@ -138,8 +138,8 @@ namespace MAT
     double Density() const override { return params_->GetParameter(params_->density, -1); }
 
     /// shear modulus
-    // double ShearMod() const { return 0.5*params_->GetYoungs(-1)/(1.0+params_->GetNue()); }
-    double ShearMod() const
+    // double shear_mod() const { return 0.5*params_->GetYoungs(-1)/(1.0+params_->GetNue()); }
+    double shear_mod() const
     {
       return 0.5 * params_->GetParameter(params_->young, -1) /
              (1.0 + params_->GetParameter(params_->nue, -1));

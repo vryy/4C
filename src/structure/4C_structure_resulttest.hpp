@@ -47,7 +47,7 @@ class StruResultTest : public CORE::UTILS::ResultTest
   - velocitites "velx", "vely", "velz",
   - accelerations "accx", "accy", "accz"
   */
-  void TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count) final;
+  void test_node(INPUT::LineDefinition& res, int& nerr, int& test_count) final;
 
   /*!
   \brief Test special quantities of structure discretization / time integration

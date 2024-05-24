@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::PreEvaluate(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::pre_evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
   if (la.Size() > 1)
@@ -30,7 +30,7 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::PreEvaluate(Teuchos::ParameterL
 
     if (la[1].Size() != numnod_ * numscal)
       FOUR_C_THROW(
-          "So3_Scatra: PreEvaluate: Location vector length for concentrations does not match!");
+          "So3_Scatra: pre_evaluate: Location vector length for concentrations does not match!");
 
     if (discretization.HasState(1, "scalarfield"))  // if concentrations were set
     {
@@ -198,9 +198,9 @@ int DRT::ELEMENTS::So3Scatra<so3_ele, distype>::Evaluate(Teuchos::ParameterList&
   else if (action == "calc_struct_stiffscalar")
     act = So3Scatra::calc_struct_stiffscalar;
 
-  // at the moment all cases need the PreEvaluate routine, since we always need the concentration
+  // at the moment all cases need the pre_evaluate routine, since we always need the concentration
   // value at the gp
-  PreEvaluate(params, discretization, la);
+  pre_evaluate(params, discretization, la);
 
   // what action shall be performed
   switch (act)
@@ -216,7 +216,7 @@ int DRT::ELEMENTS::So3Scatra<so3_ele, distype>::Evaluate(Teuchos::ParameterList&
       CORE::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
 
       // calculate the stiffness matrix
-      nln_kdS_ssi(la, mydisp, elemat1_epetra, params);
+      nln_kd_s_ssi(la, mydisp, elemat1_epetra, params);
 
       break;
     }
@@ -270,7 +270,7 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::get_cauchy_n_dir_and_derivative
  | for monolithic SSI, contribution to k_dS (private)                   |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::LocationArray& la,
+void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::nln_kd_s_ssi(DRT::Element::LocationArray& la,
     std::vector<double>& disp,                         // current displacement
     CORE::LINALG::SerialDenseMatrix& stiffmatrix_kdS,  // (numdim_*numnod_ ; numnod_)
     Teuchos::ParameterList& params)
@@ -356,7 +356,7 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::Locat
 
     // calculate nonlinear B-operator
     CORE::LINALG::Matrix<numstr_, numdofperelement_> bop(true);
-    CalculateBop(&bop, &defgrad, &N_XYZ);
+    calculate_bop(&bop, &defgrad, &N_XYZ);
 
     /*==== call material law ======================================================*/
     // init derivative of second Piola-Kirchhoff stresses w.r.t. concentrations dSdc
@@ -390,14 +390,14 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::Locat
       }
     }
   }  // gauss point loop
-}  // nln_kdS_ssi
+}  // nln_kd_s_ssi
 
 
 /*----------------------------------------------------------------------*
  | calculate the nonlinear B-operator (private)           schmidt 10/17 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::CalculateBop(
+void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::calculate_bop(
     CORE::LINALG::Matrix<numstr_, numdofperelement_>* bop,  //!< (o): nonlinear B-operator
     const CORE::LINALG::Matrix<numdim_, numdim_>* defgrad,  //!< (i): deformation gradient
     const CORE::LINALG::Matrix<numdim_, numnod_>* N_XYZ)
@@ -462,7 +462,7 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::CalculateBop(
           (*defgrad)(2, 2) * (*N_XYZ)(0, i) + (*defgrad)(2, 0) * (*N_XYZ)(2, i);
     }
   }
-}  // CalculateBop
+}  // calculate_bop
 
 
 /*----------------------------------------------------------------------*

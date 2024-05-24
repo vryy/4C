@@ -75,7 +75,7 @@ void fs3i_dyn()
 
   // read the restart information, set vectors and variables ---
   // be careful, dofmaps might be changed here in a Redistribute call
-  fs3i->ReadRestart();
+  fs3i->read_restart();
 
   // if running FPS3I in parallel one needs to redistribute the interface after restarting
   fs3i->redistribute_interface();

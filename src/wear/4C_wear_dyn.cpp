@@ -53,12 +53,12 @@ void wear_dyn_drt(int restart)
   Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
   structdis = GLOBAL::Problem::Instance()->GetDis("structure");
   // set degrees of freedom in the discretization
-  if (!structdis->Filled() or !structdis->HaveDofs()) structdis->FillComplete();
+  if (!structdis->Filled() or !structdis->HaveDofs()) structdis->fill_complete();
 
   // access the ale discretization
   Teuchos::RCP<DRT::Discretization> aledis = Teuchos::null;
   aledis = GLOBAL::Problem::Instance()->GetDis("ale");
-  if (!aledis->Filled()) aledis->FillComplete();
+  if (!aledis->Filled()) aledis->fill_complete();
 
   // we use the structure discretization as layout for the ale discretization
   if (structdis->NumGlobalNodes() == 0) FOUR_C_THROW("Structure discretization is empty!");
@@ -67,7 +67,7 @@ void wear_dyn_drt(int restart)
   if (aledis->NumGlobalNodes() == 0)
   {
     DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(structdis, aledis);
-    aledis->FillComplete();
+    aledis->fill_complete();
     // setup material in every ALE element
     Teuchos::ParameterList params;
     params.set<std::string>("action", "setup_material");
@@ -108,7 +108,7 @@ void wear_dyn_drt(int restart)
   }
 
   // read restart before joining the time loop
-  if (restart != 0) stru_ale->ReadRestart(restart);
+  if (restart != 0) stru_ale->read_restart(restart);
 
   // solve the whole problem
   stru_ale->TimeLoop();

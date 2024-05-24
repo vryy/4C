@@ -97,19 +97,19 @@ namespace NTS
      \brief Interpolate for 2D problems
 
      */
-    void Interpolate2D(MORTAR::Node& snode, std::vector<MORTAR::Element*> meles);
+    void interpolate2_d(MORTAR::Node& snode, std::vector<MORTAR::Element*> meles);
 
     /*!
      \brief Interpolate for 3D problems
 
      */
-    bool Interpolate3D(MORTAR::Node& snode, std::vector<MORTAR::Element*> meles);
+    bool interpolate3_d(MORTAR::Node& snode, std::vector<MORTAR::Element*> meles);
 
     /*!
      \brief lin 2D projection
 
      */
-    void DerivXiGP2D(MORTAR::Element& sele, MORTAR::Element& mele, double& sxigp, double& mxigp,
+    void deriv_xi_g_p2_d(MORTAR::Element& sele, MORTAR::Element& mele, double& sxigp, double& mxigp,
         const CORE::GEN::Pairedvector<int, double>& derivsxi,
         CORE::GEN::Pairedvector<int, double>& derivmxi, int& linsize);
 
@@ -117,7 +117,7 @@ namespace NTS
      \brief node-wise D/M calculation
 
      */
-    void nwDM2D(CONTACT::Node& mynode, MORTAR::Element& sele, MORTAR::Element& mele,
+    void nw_d_m2_d(CONTACT::Node& mynode, MORTAR::Element& sele, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
         CORE::GEN::Pairedvector<int, double>& dmxi);
 
@@ -125,15 +125,15 @@ namespace NTS
      \brief node-wise D/M calculation for 3D problems
 
      */
-    void nwDM3D(CONTACT::Node& mynode, MORTAR::Element& mele, CORE::LINALG::SerialDenseVector& mval,
-        CORE::LINALG::SerialDenseMatrix& mderiv,
+    void nw_d_m3_d(CONTACT::Node& mynode, MORTAR::Element& mele,
+        CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
         std::vector<CORE::GEN::Pairedvector<int, double>>& dmxi);
 
     /*!
      \brief node-wise gap calculation
 
      */
-    void nwGap2D(CONTACT::Node& mynode, MORTAR::Element& sele, MORTAR::Element& mele,
+    void nw_gap2_d(CONTACT::Node& mynode, MORTAR::Element& sele, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
         CORE::GEN::Pairedvector<int, double>& dmxi, double* gpn);
 
@@ -141,7 +141,7 @@ namespace NTS
      \brief node-wise master temperature calculation for 3D problems
 
      */
-    void nwMasterTemp(CONTACT::Node& mynode, MORTAR::Element& mele,
+    void nw_master_temp(CONTACT::Node& mynode, MORTAR::Element& mele,
         const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& mderiv,
         const std::vector<CORE::GEN::Pairedvector<int, double>>& dmxi);
 
@@ -149,7 +149,7 @@ namespace NTS
      \brief node-wise slip calculation
 
      */
-    void nwSlip2D(CONTACT::Node& mynode, MORTAR::Element& mele,
+    void nw_slip2_d(CONTACT::Node& mynode, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
         CORE::LINALG::SerialDenseMatrix& scoord, CORE::LINALG::SerialDenseMatrix& mcoord,
         Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> scoordold,
@@ -160,7 +160,7 @@ namespace NTS
      \brief node-wise wear calculation (internal state var.)
 
      */
-    void nwWear2D(CONTACT::Node& mynode, MORTAR::Element& mele,
+    void nw_wear2_d(CONTACT::Node& mynode, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
         CORE::LINALG::SerialDenseMatrix& scoord, CORE::LINALG::SerialDenseMatrix& mcoord,
         Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> scoordold,
@@ -174,7 +174,7 @@ namespace NTS
      \brief node-wise wear calculation (primary variable)
 
      */
-    void nwTE2D(CONTACT::Node& mynode, double& area, double& jumpval,
+    void nw_t_e2_d(CONTACT::Node& mynode, double& area, double& jumpval,
         CORE::GEN::Pairedvector<int, double>& dslipmatrix);
 
     Teuchos::ParameterList& iparams_;  //< containing contact input parameters
@@ -247,13 +247,13 @@ namespace NTS
      \brief Interpolate for 2D problems
 
      */
-    virtual void Interpolate2D(MORTAR::Node& snode, std::vector<MORTAR::Element*> meles);
+    virtual void interpolate2_d(MORTAR::Node& snode, std::vector<MORTAR::Element*> meles);
 
     /*!
      \brief Interpolate for 3D problems
 
      */
-    virtual void Interpolate3D(MORTAR::Node& snode, std::vector<MORTAR::Element*> meles);
+    virtual void interpolate3_d(MORTAR::Node& snode, std::vector<MORTAR::Element*> meles);
   };
 
 }  // namespace NTS

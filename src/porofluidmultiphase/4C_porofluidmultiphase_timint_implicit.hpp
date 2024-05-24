@@ -99,10 +99,10 @@ namespace POROFLUIDMULTIPHASE
     virtual void add_time_integration_specific_vectors() = 0;
 
     //! prepare time loop
-    void PrepareTimeLoop() override;
+    void prepare_time_loop() override;
 
     //! setup the variables to do a new time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     //! initialization procedure prior to evaluation of first time step
     virtual void prepare_first_time_step();
@@ -111,13 +111,13 @@ namespace POROFLUIDMULTIPHASE
     virtual void calc_initial_time_derivative();
 
     //! read restart data
-    void ReadRestart(int step) override;
+    void read_restart(int step) override;
 
     /// create result test for porous fluid field
     Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
 
     //! finite difference check for system matrix
-    void FDCheck();
+    void fd_check();
 
     /*--- calculate and update -----------------------------------------------*/
 
@@ -146,7 +146,7 @@ namespace POROFLUIDMULTIPHASE
         ) override;
 
     //! set state on discretization
-    void SetState(
+    void set_state(
         unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state) override;
 
     //! calculate error compared to analytical solution
@@ -155,7 +155,7 @@ namespace POROFLUIDMULTIPHASE
     /*--- query and output ---------------------------------------------------*/
 
     //! print information about current time step to screen
-    virtual void PrintTimeStepInfo();
+    virtual void print_time_step_info();
 
     //! iterative update of phinp
     void UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc  //!< increment vector for phi
@@ -189,7 +189,7 @@ namespace POROFLUIDMULTIPHASE
     Teuchos::RCP<DRT::Discretization> Discretization() const override { return discret_; }
 
     //! access dof row map
-    Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) const override;
+    Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) const override;
 
     //! access dof row map
     Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const override;
@@ -204,7 +204,7 @@ namespace POROFLUIDMULTIPHASE
     virtual void PrintHeader();
 
     //! write additional data required for restart
-    virtual void OutputRestart() = 0;
+    virtual void output_restart() = 0;
 
     /*========================================================================*/
     //! @name Time, time-step and related methods
@@ -356,7 +356,7 @@ namespace POROFLUIDMULTIPHASE
     );
 
     //! call elements to calculate system matrix and rhs and assemble
-    virtual void AssembleMatAndRHS();
+    virtual void assemble_mat_and_rhs();
 
     //! call elements to find the valid volume frac pressures and species
     virtual void evaluate_valid_volume_frac_press_and_spec();
@@ -389,7 +389,7 @@ namespace POROFLUIDMULTIPHASE
     );
 
     //! linear solve
-    virtual void LinearSolve(bool isadapttol, double actresidual, double adaptolbetter);
+    virtual void linear_solve(bool isadapttol, double actresidual, double adaptolbetter);
 
     //! reconstruct pressures and saturation from current solution
     void reconstruct_pressures_and_saturations() override;
@@ -415,7 +415,7 @@ namespace POROFLUIDMULTIPHASE
     bool DoOutput() { return ((step_ % upres_ == 0) or (step_ % uprestart_ == 0)); };
 
     //! write state vectors prenp to BINIO
-    virtual void OutputState();
+    virtual void output_state();
 
     //! print header of convergence table to screen
     virtual void print_convergence_header();
@@ -525,7 +525,7 @@ namespace POROFLUIDMULTIPHASE
     enum INPAR::POROFLUIDMULTIPHASE::DivContAct divcontype_;
 
     //! flag for finite difference check
-    const INPAR::POROFLUIDMULTIPHASE::FDCheck fdcheck_;
+    const INPAR::POROFLUIDMULTIPHASE::FdCheck fdcheck_;
 
     //! perturbation magnitude for finite difference check
     const double fdcheckeps_;

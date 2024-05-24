@@ -110,7 +110,7 @@ namespace MAT
     [[nodiscard]] double Density() const override { return params_->density_; }
 
     /// shear modulus
-    [[nodiscard]] double ShearMod() const
+    [[nodiscard]] double shear_mod() const
     {
       return 0.5 * params_->youngs_ / (1.0 + params_->poissonratio_);
     }
@@ -134,7 +134,7 @@ namespace MAT
         const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID) override;
 
     // computes isotropic elasticity tensor in matrix notion for 3d
-    void SetupCmat(CORE::LINALG::Matrix<6, 6>& cmat);
+    void setup_cmat(CORE::LINALG::Matrix<6, 6>& cmat);
     //@}
 
     //! general setup of constitutive tensor based on Young's and poisson's ratio

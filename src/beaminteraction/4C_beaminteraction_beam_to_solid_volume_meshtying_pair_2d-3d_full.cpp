@@ -32,12 +32,12 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::PreEvaluate()
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::pre_evaluate()
 {
-  // Call PreEvaluate on the geometry Pair.
+  // Call pre_evaluate on the geometry Pair.
   if (!this->meshtying_is_evaluated_)
   {
-    this->CastGeometryPair()->PreEvaluate(this->ele1posref_, this->ele2posref_,
+    this->CastGeometryPair()->pre_evaluate(this->ele1posref_, this->ele2posref_,
         this->line_to_3D_segments_, &triad_interpolation_scheme_ref_);
   }
 }

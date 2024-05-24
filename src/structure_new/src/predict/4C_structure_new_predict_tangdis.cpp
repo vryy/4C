@@ -42,7 +42,7 @@ STR::PREDICT::TangDis::TangDis()
  *----------------------------------------------------------------------------*/
 void STR::PREDICT::TangDis::Setup()
 {
-  CheckInit();
+  check_init();
   // ---------------------------------------------------------------------------
   // set the new pre/post operator for the nox nln group in the parameter list
   // ---------------------------------------------------------------------------
@@ -63,7 +63,7 @@ void STR::PREDICT::TangDis::Setup()
  *----------------------------------------------------------------------------*/
 void STR::PREDICT::TangDis::Compute(::NOX::Abstract::Group& grp)
 {
-  CheckInitSetup();
+  check_init_setup();
   NOX::NLN::Group* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
   FOUR_C_ASSERT(grp_ptr != nullptr, "Dynamic cast failed!");
   grp_ptr->reset_pre_post_operator(NoxParams().sublist("Group Options"));
@@ -159,7 +159,7 @@ const bool& STR::PREDICT::TangDis::is_apply_linear_reaction_forces() const
  *----------------------------------------------------------------------------*/
 bool STR::PREDICT::TangDis::pre_apply_force_external(Epetra_Vector& fextnp) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (GetType() != INPAR::STR::pred_tangdis_constfext) return false;
 

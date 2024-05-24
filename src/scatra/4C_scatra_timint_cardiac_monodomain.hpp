@@ -46,7 +46,7 @@ namespace SCATRA
     //! time update of time-dependent materials
     virtual void element_material_time_update();
 
-    void OutputState() override;
+    void output_state() override;
 
     //! Set ep-specific parameters
     void set_element_specific_sca_tra_parameters(Teuchos::ParameterList& eleparams) const override;

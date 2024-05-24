@@ -70,14 +70,14 @@ bool MORTAR::Coupling3d::EvaluateCoupling()
   // rough check of orientation of element centers
   // if slave and master element center normals form an
   // angle > 90 degrees the pair will not be considered further
-  bool orient = RoughCheckOrient();
+  bool orient = rough_check_orient();
   if (!orient) return false;
 
   // project slave element nodes onto auxiliary plane
-  ProjectSlave();
+  project_slave();
 
   // project master element nodes onto auxiliary plane
-  ProjectMaster();
+  project_master();
 
   // tolerance for polygon clipping
   const double sminedge = SlaveIntElement().MinEdgeSize();
@@ -85,7 +85,7 @@ bool MORTAR::Coupling3d::EvaluateCoupling()
   tol = MORTARCLIPTOL * std::min(sminedge, mminedge);
 
   // do polygon clipping
-  bool clip = polygon_clipping_convex_hull(SlaveVertices(), MasterVertices(), Clip(), tol);
+  bool clip = polygon_clipping_convex_hull(slave_vertices(), master_vertices(), Clip(), tol);
   int clipsize = (int)(Clip().size());
 
   // within polygon clipping we may have performed a second rough check
@@ -99,10 +99,10 @@ bool MORTAR::Coupling3d::EvaluateCoupling()
   if (clipsize < 3) return false;
 
   // proceed only if clipping polygon has non-zero area
-  if (PolygonArea() < MORTARINTLIM * SlaveElementArea()) return false;
+  if (polygon_area() < MORTARINTLIM * SlaveElementArea()) return false;
 
   // check / set  projection status of slave nodes
-  HasProjStatus();
+  has_proj_status();
 
   // do triangulation (+linearization) of clip polygon
   Triangulation(projpar, tol);
@@ -152,12 +152,12 @@ bool MORTAR::Coupling3d::RoughCheckCenters()
 /*----------------------------------------------------------------------*
  |  Rough check if elements are near (with master nodes)      popp 11/09|
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling3d::RoughCheckNodes()
+bool MORTAR::Coupling3d::rough_check_nodes()
 {
   // project master nodes onto auxiliary plane
-  int nnodes = MasterIntElement().NumNode();
+  int nnodes = MasterIntElement().num_node();
   DRT::Node** mynodes = MasterIntElement().Nodes();
-  if (!mynodes) FOUR_C_THROW("RoughCheckNodes: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("rough_check_nodes: Null pointer!");
 
   // prepare check
   bool near = false;
@@ -168,7 +168,7 @@ bool MORTAR::Coupling3d::RoughCheckNodes()
   for (int i = 0; i < nnodes; ++i)
   {
     Node* mycnode = dynamic_cast<Node*>(mynodes[i]);
-    if (!mycnode) FOUR_C_THROW("RoughCheckNodes: Null pointer!");
+    if (!mycnode) FOUR_C_THROW("rough_check_nodes: Null pointer!");
 
     // first build difference of point and element center
     // and then dot product with unit normal at center
@@ -188,10 +188,10 @@ bool MORTAR::Coupling3d::RoughCheckNodes()
 /*----------------------------------------------------------------------*
  |  Rough check if elements are near (with normals)           popp 11/10|
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling3d::RoughCheckOrient()
+bool MORTAR::Coupling3d::rough_check_orient()
 {
   // compute auxiliary plane for 3D coupling
-  AuxiliaryPlane();
+  auxiliary_plane();
 
   // we first need the master element center:
   // for quad4, quad8, quad9 elements: xi = eta = 0.0
@@ -211,7 +211,7 @@ bool MORTAR::Coupling3d::RoughCheckOrient()
     loccenter[1] = 0.0;
   }
   else
-    FOUR_C_THROW("RoughCheckOrient called for unknown element type");
+    FOUR_C_THROW("rough_check_orient called for unknown element type");
 
   // compute the unit normal vector at the master element center
   double nmc[3] = {0.0, 0.0, 0.0};
@@ -229,7 +229,7 @@ bool MORTAR::Coupling3d::RoughCheckOrient()
 /*----------------------------------------------------------------------*
  |  Build auxiliary plane from slave element (public)         popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling3d::AuxiliaryPlane()
+bool MORTAR::Coupling3d::auxiliary_plane()
 {
   // we first need the element center:
   // for quad4, quad8, quad9 elements: xi = eta = 0.0
@@ -249,7 +249,7 @@ bool MORTAR::Coupling3d::AuxiliaryPlane()
     loccenter[1] = 0.0;
   }
   else
-    FOUR_C_THROW("AuxiliaryPlane called for unknown element type");
+    FOUR_C_THROW("auxiliary_plane called for unknown element type");
 
   // compute element center via shape fct. interpolation
   SlaveIntElement().LocalToGlobal(loccenter, Auxc(), 0);
@@ -259,15 +259,15 @@ bool MORTAR::Coupling3d::AuxiliaryPlane()
 
 
   // calculate auxplane with cpp normal!
-  //  CORE::LINALG::SerialDenseVector val(SlaveIntElement().NumNode());
-  //  CORE::LINALG::SerialDenseMatrix deriv(SlaveIntElement().NumNode(),2,true);
-  //  SlaveIntElement().EvaluateShape(loccenter, val, deriv, SlaveIntElement().NumNode(),false);
+  //  CORE::LINALG::SerialDenseVector val(SlaveIntElement().num_node());
+  //  CORE::LINALG::SerialDenseMatrix deriv(SlaveIntElement().num_node(),2,true);
+  //  SlaveIntElement().EvaluateShape(loccenter, val, deriv, SlaveIntElement().num_node(),false);
   //  Auxn()[0] = 0.0;
   //  Auxn()[1] = 0.0;
   //  Auxn()[2] = 0.0;
   //
   //  // interpolate between nodal normals
-  //  for(int i=0;i<SlaveIntElement().NumNode();++i)
+  //  for(int i=0;i<SlaveIntElement().num_node();++i)
   //  {
   //    Node* snode = dynamic_cast<Node*>(SlaveIntElement().Nodes()[i]);
   //    Auxn()[0] += val[i]*snode->MoData().n()[0];
@@ -295,12 +295,12 @@ bool MORTAR::Coupling3d::AuxiliaryPlane()
 /*----------------------------------------------------------------------*
  |  Project slave element onto auxiliary plane (public)       popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling3d::ProjectSlave()
+bool MORTAR::Coupling3d::project_slave()
 {
   // project slave nodes onto auxiliary plane
-  int nnodes = SlaveIntElement().NumNode();
+  int nnodes = SlaveIntElement().num_node();
   DRT::Node** mynodes = SlaveIntElement().Nodes();
-  if (!mynodes) FOUR_C_THROW("ProjectSlave: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("project_slave: Null pointer!");
 
   // initialize storage for slave coords + their ids
   std::vector<double> vertices(3);
@@ -309,7 +309,7 @@ bool MORTAR::Coupling3d::ProjectSlave()
   for (int i = 0; i < nnodes; ++i)
   {
     Node* mycnode = dynamic_cast<Node*>(mynodes[i]);
-    if (!mycnode) FOUR_C_THROW("ProjectSlave: Null pointer!");
+    if (!mycnode) FOUR_C_THROW("project_slave: Null pointer!");
 
     // first build difference of point and element center
     // and then dot product with unit normal at center
@@ -324,7 +324,7 @@ bool MORTAR::Coupling3d::ProjectSlave()
     snodeids[0] = mycnode->Id();
 
     // store into vertex data structure
-    SlaveVertices().push_back(
+    slave_vertices().push_back(
         Vertex(vertices, Vertex::slave, snodeids, nullptr, nullptr, false, false, nullptr, -1.0));
 
     // std::cout << "->RealNode(S) " << mycnode->Id() << ": " << mycnode->xspatial()[0] << " " <<
@@ -340,12 +340,12 @@ bool MORTAR::Coupling3d::ProjectSlave()
 /*----------------------------------------------------------------------*
  |  Project master element onto auxiliary plane (public)      popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling3d::ProjectMaster()
+bool MORTAR::Coupling3d::project_master()
 {
   // project master nodes onto auxiliary plane
-  int nnodes = MasterIntElement().NumNode();
+  int nnodes = MasterIntElement().num_node();
   DRT::Node** mynodes = MasterIntElement().Nodes();
-  if (!mynodes) FOUR_C_THROW("ProjectMaster: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("project_master: Null pointer!");
 
   // initialize storage for master coords + their ids
   std::vector<double> vertices(3);
@@ -354,7 +354,7 @@ bool MORTAR::Coupling3d::ProjectMaster()
   for (int i = 0; i < nnodes; ++i)
   {
     Node* mycnode = dynamic_cast<Node*>(mynodes[i]);
-    if (!mycnode) FOUR_C_THROW("ProjectMaster: Null pointer!");
+    if (!mycnode) FOUR_C_THROW("project_master: Null pointer!");
 
     // first build difference of point and element center
     // and then dot product with unit normal at center
@@ -369,7 +369,7 @@ bool MORTAR::Coupling3d::ProjectMaster()
     mnodeids[0] = mycnode->Id();
 
     // store into vertex data structure
-    MasterVertices().push_back(Vertex(
+    master_vertices().push_back(Vertex(
         vertices, Vertex::projmaster, mnodeids, nullptr, nullptr, false, false, nullptr, -1.0));
 
     // std::cout << "->RealNode(M) " << mycnode->Id() << ": " << mycnode->xspatial()[0] << " " <<
@@ -385,11 +385,11 @@ bool MORTAR::Coupling3d::ProjectMaster()
 /*----------------------------------------------------------------------*
  |  Clipping of two polygons                                  popp 11/08|
  *----------------------------------------------------------------------*/
-void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector<Vertex>& poly2,
+void MORTAR::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vector<Vertex>& poly2,
     std::vector<Vertex>& respoly, double& tol)
 {
   //**********************************************************************
-  FOUR_C_THROW("PolygonClipping outdated, use polygon_clipping_convex_hull instead!");
+  FOUR_C_THROW("polygon_clipping outdated, use polygon_clipping_convex_hull instead!");
   //**********************************************************************
 
   // choose output
@@ -872,7 +872,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
   //**********************
   // do clipping
   //**********************
-  if ((int)respoly.size() != 0) FOUR_C_THROW("PolygonClipping: Respoly!=0 at beginning...");
+  if ((int)respoly.size() != 0) FOUR_C_THROW("polygon_clipping: Respoly!=0 at beginning...");
 
   //**********************************************************************
   // STEP5: Find result polygon for no intersection case
@@ -1657,7 +1657,7 @@ bool MORTAR::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
       // FOUR_C_THROW, if not, simply continue with the next pair!
       int sid = SlaveElement().Id();
       int mid = MasterElement().Id();
-      bool nearcheck = RoughCheckNodes();
+      bool nearcheck = rough_check_nodes();
       if (nearcheck)
       {
         return false;
@@ -1695,12 +1695,12 @@ bool MORTAR::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
                         << std::endl;
 
         // get slave and master nodes
-        int nsnodes = SlaveIntElement().NumNode();
+        int nsnodes = SlaveIntElement().num_node();
         DRT::Node** mysnodes = SlaveIntElement().Nodes();
         if (!mysnodes) FOUR_C_THROW("Null pointer!");
         std::vector<Node*> mycsnodes(nsnodes);
         for (int i = 0; i < nsnodes; ++i) mycsnodes[i] = dynamic_cast<Node*>(mysnodes[i]);
-        int nmnodes = MasterIntElement().NumNode();
+        int nmnodes = MasterIntElement().num_node();
         DRT::Node** mymnodes = MasterIntElement().Nodes();
         if (!mymnodes) FOUR_C_THROW("Null pointer!");
         std::vector<Node*> mycmnodes(nmnodes);
@@ -2604,7 +2604,7 @@ bool MORTAR::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
 /*----------------------------------------------------------------------*
  |  Compute and return area of clipping polygon (3D)          popp 11/08|
  *----------------------------------------------------------------------*/
-double MORTAR::Coupling3d::PolygonArea()
+double MORTAR::Coupling3d::polygon_area()
 {
   // initialize and check for trivial case
   double area = 0.0;
@@ -2656,18 +2656,18 @@ double MORTAR::Coupling3d::SlaveElementArea()
 /*----------------------------------------------------------------------*
  |  Check /set projection status of slave nodes (3D)          popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling3d::HasProjStatus()
+bool MORTAR::Coupling3d::has_proj_status()
 {
   // check all nodes
-  int nnodes = SlaveIntElement().NumNode();
+  int nnodes = SlaveIntElement().num_node();
   DRT::Node** mynodes = SlaveIntElement().Nodes();
-  if (!mynodes) FOUR_C_THROW("HasProjStatus: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("has_proj_status: Null pointer!");
 
   // loop over all slave nodes
   for (int i = 0; i < nnodes; ++i)
   {
     Node* mycnode = dynamic_cast<Node*>(mynodes[i]);
-    if (!mycnode) FOUR_C_THROW("HasProjStatus: Null pointer!");
+    if (!mycnode) FOUR_C_THROW("has_proj_status: Null pointer!");
 
     // loop over all vertices of clip polygon
     for (int j = 0; j < (int)(Clip().size()); ++j)
@@ -2694,8 +2694,8 @@ bool MORTAR::Coupling3d::HasProjStatus()
 bool MORTAR::Coupling3d::Triangulation(std::map<int, double>& projpar, double tol)
 {
   // number of nodes
-  const int nsrows = SlaveElement().NumNode();
-  const int nmrows = MasterElement().NumNode();
+  const int nsrows = SlaveElement().num_node();
+  const int nmrows = MasterElement().num_node();
 
   // preparations
   int clipsize = (int)(Clip().size());
@@ -2719,14 +2719,14 @@ bool MORTAR::Coupling3d::Triangulation(std::map<int, double>& projpar, double to
     case INPAR::MORTAR::triangulation_delaunay:
       if (!delaunay_triangulation(linvertex, tol))
         // (3) Backup triangulation of clip polygon (CENTER-based (old))
-        CenterTriangulation(linvertex, tol);
+        center_triangulation(linvertex, tol);
       break;
 
     //**********************************************************************
     // (3) Backup triangulation of clip polygon (CENTER-based (old))
     //**********************************************************************
     case INPAR::MORTAR::triangulation_center:
-      CenterTriangulation(linvertex, tol);
+      center_triangulation(linvertex, tol);
       break;
 
     default:
@@ -2762,7 +2762,7 @@ bool MORTAR::Coupling3d::delaunay_triangulation(
 
     // create IntCell object and push back
     Cells().push_back(Teuchos::rcp(new IntCell(0, 3, coords, Auxn(), CORE::FE::CellType::tri3,
-        linvertex[0], linvertex[1], linvertex[2], GetDerivAuxn())));
+        linvertex[0], linvertex[1], linvertex[2], get_deriv_auxn())));
 
     // get out of here
     return true;
@@ -3203,7 +3203,7 @@ bool MORTAR::Coupling3d::delaunay_triangulation(
 
     // create IntCell object and push back
     Cells().push_back(Teuchos::rcp(new IntCell(t, 3, coords, Auxn(), CORE::FE::CellType::tri3,
-        linvertex[idx0], linvertex[idx1], linvertex[idx2], GetDerivAuxn())));
+        linvertex[idx0], linvertex[idx1], linvertex[idx2], get_deriv_auxn())));
   }
 
   // double check number of triangles
@@ -3226,14 +3226,14 @@ bool MORTAR::Coupling3d::delaunay_triangulation(
 /*----------------------------------------------------------------------*
  |  Triangulation of clip polygon (3D) - CENTER               popp 08/11|
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling3d::CenterTriangulation(
+bool MORTAR::Coupling3d::center_triangulation(
     std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linvertex, double tol)
 {
   // preparations
   Cells().resize(0);
   int clipsize = (int)(Clip().size());
   std::vector<CORE::GEN::Pairedvector<int, double>> lincenter(
-      3, (MasterElement().NumNode() + SlaveElement().NumNode()) * 3);
+      3, (MasterElement().num_node() + SlaveElement().num_node()) * 3);
 
   //**********************************************************************
   // (1) Trivial clipping polygon -> IntCells
@@ -3249,7 +3249,7 @@ bool MORTAR::Coupling3d::CenterTriangulation(
 
     // create IntCell object and push back
     Cells().push_back(Teuchos::rcp(new IntCell(0, 3, coords, Auxn(), CORE::FE::CellType::tri3,
-        linvertex[0], linvertex[1], linvertex[2], GetDerivAuxn())));
+        linvertex[0], linvertex[1], linvertex[2], get_deriv_auxn())));
 
     // get out of here
     return true;
@@ -3340,7 +3340,7 @@ bool MORTAR::Coupling3d::CenterTriangulation(
 
     // create IntCell object and push back
     Cells().push_back(Teuchos::rcp(new IntCell(num, 3, coords, Auxn(), CORE::FE::CellType::tri3,
-        lincenter, linvertex[num], linvertex[numplus1], GetDerivAuxn())));
+        lincenter, linvertex[num], linvertex[numplus1], get_deriv_auxn())));
   }
 
   // triangulation successful
@@ -3375,7 +3375,7 @@ bool MORTAR::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterfa
     // set segmentation status of all slave nodes
     // (hassegment_ of a slave node is true if ANY segment/cell
     // is integrated that contributes to this slave node)
-    int nnodes = SlaveIntElement().NumNode();
+    int nnodes = SlaveIntElement().num_node();
     DRT::Node** mynodes = SlaveIntElement().Nodes();
     if (!mynodes) FOUR_C_THROW("Null pointer!");
     for (int k = 0; k < nnodes; ++k)
@@ -3401,7 +3401,7 @@ bool MORTAR::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterfa
     if (!Quad())
     {
       // call integrator
-      MORTAR::Integrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
+      MORTAR::Integrator::Impl(SlaveElement(), MasterElement(), interface_params())
           ->integrate_cell3_d_aux_plane(
               SlaveElement(), MasterElement(), Cells()[i], Auxn(), Comm());
     }
@@ -3417,7 +3417,7 @@ bool MORTAR::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterfa
       MORTAR::IntElement& sintref = dynamic_cast<MORTAR::IntElement&>(SlaveIntElement());
       MORTAR::IntElement& mintref = dynamic_cast<MORTAR::IntElement&>(MasterIntElement());
 
-      MORTAR::Integrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
+      MORTAR::Integrator::Impl(SlaveElement(), MasterElement(), interface_params())
           ->integrate_cell3_d_aux_plane_quad(
               SlaveElement(), MasterElement(), sintref, mintref, Cells()[i], Auxn());
     }
@@ -3437,7 +3437,7 @@ bool MORTAR::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterfa
       MORTAR::IntElement& sintref = dynamic_cast<MORTAR::IntElement&>(SlaveIntElement());
       MORTAR::IntElement& mintref = dynamic_cast<MORTAR::IntElement&>(MasterIntElement());
 
-      MORTAR::Integrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
+      MORTAR::Integrator::Impl(SlaveElement(), MasterElement(), interface_params())
           ->integrate_cell3_d_aux_plane_quad(
               SlaveElement(), MasterElement(), sintref, mintref, Cells()[i], Auxn());
     }
@@ -3771,7 +3771,7 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(
     nodes[3] = ele.Nodes()[3];
 
     auxele.push_back(Teuchos::rcp(new IntElement(0, ele.Id(), ele.Owner(), &ele, ele.Shape(),
-        ele.NumNode(), ele.NodeIds(), nodes, ele.IsSlave(), false)));
+        ele.num_node(), ele.NodeIds(), nodes, ele.IsSlave(), false)));
   }
 
   // ************************************************************ tri3 ***
@@ -3784,7 +3784,7 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(
     nodes[2] = ele.Nodes()[2];
 
     auxele.push_back(Teuchos::rcp(new IntElement(0, ele.Id(), ele.Owner(), &ele, ele.Shape(),
-        ele.NumNode(), ele.NodeIds(), nodes, ele.IsSlave(), false)));
+        ele.num_node(), ele.NodeIds(), nodes, ele.IsSlave(), false)));
   }
 
   // ************************************************************ nurbs9 ***
@@ -3852,7 +3852,7 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(
       std::vector<double> xspatial(dim_, 0.0);
       ele.EvaluateShape(xi, sval, sderiv, 9, true);
       for (int dim = 0; dim < dim_; ++dim)
-        for (int n = 0; n < ele.NumNode(); ++n)
+        for (int n = 0; n < ele.num_node(); ++n)
           xspatial[dim] += sval(n) * dynamic_cast<MORTAR::Node*>(ele.Nodes()[n])->xspatial()[dim];
       pseudo_nodes.push_back(MORTAR::Node(-1, xspatial, ele.Owner(), empty_dofs, ele.IsSlave()));
     }
@@ -3981,7 +3981,7 @@ void MORTAR::Coupling3dManager::IntegrateCoupling(
 
     // special treatment of boundary elements
     // calculate consistent dual shape functions for this element
-    ConsistDualShape();
+    consist_dual_shape();
 
     // integrate cells
     for (int m = 0; m < (int)MasterElements().size(); ++m)
@@ -4037,7 +4037,7 @@ void MORTAR::Coupling3dManager::IntegrateCoupling(
             }
 
             // consistent dual shape functions
-            ConsistDualShape();
+            consist_dual_shape();
 
             // integrate cells
             for (int m = 0; m < (int)MasterElements().size(); ++m)
@@ -4118,7 +4118,7 @@ void MORTAR::Coupling3dQuadManager::IntegrateCoupling(
       }    // for saux
     }      // for m
 
-    ConsistDualShape();
+    consist_dual_shape();
 
     // do integration
     for (int i = 0; i < (int)Coupling().size(); ++i) Coupling()[i]->IntegrateCells(mparams_ptr);
@@ -4195,7 +4195,7 @@ void MORTAR::Coupling3dQuadManager::IntegrateCoupling(
 /*----------------------------------------------------------------------*
  |  Calculate dual shape functions                           seitz 07/13|
  *----------------------------------------------------------------------*/
-void MORTAR::Coupling3dManager::ConsistDualShape()
+void MORTAR::Coupling3dManager::consist_dual_shape()
 {
   // For standard shape functions no modification is necessary
   // A switch erlier in the process improves computational efficiency
@@ -4283,7 +4283,7 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
   }
 
   // get number of nodes of present slave element
-  int nnodes = SlaveElement().NumNode();
+  int nnodes = SlaveElement().num_node();
 
   // initialize Jacobian determinant
   double detg = 0.0;

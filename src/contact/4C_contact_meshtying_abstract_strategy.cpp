@@ -34,11 +34,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | ctor (public)                                             popp 05/09 |
  *----------------------------------------------------------------------*/
-CONTACT::MtAbstractStrategy::MtAbstractStrategy(const Epetra_Map* DofRowMap,
+CONTACT::MtAbstractStrategy::MtAbstractStrategy(const Epetra_Map* dof_row_map,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<Teuchos::RCP<MORTAR::Interface>> interface, const int spatialDim,
     const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
-    : MORTAR::StrategyBase(Teuchos::rcp(new MORTAR::StratDataContainer()), DofRowMap, NodeRowMap,
+    : MORTAR::StrategyBase(Teuchos::rcp(new MORTAR::StratDataContainer()), dof_row_map, NodeRowMap,
           params, spatialDim, comm, alphaf, maxdof),
       interface_(interface),
       dualquadslavetrafo_(false)
@@ -98,7 +98,7 @@ void CONTACT::MtAbstractStrategy::redistribute_meshtying()
       interface_[i]->Redistribute();
 
       // call fill complete again
-      interface_[i]->FillComplete(true, maxdof_);
+      interface_[i]->fill_complete(true, maxdof_);
 
       // print parallel distribution again
       if (Comm().MyPID() == 0)
@@ -249,7 +249,7 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
     for (int i = 0; i < (int)interface_.size(); ++i)
       interface_[i]->AssembleTrafo(*trafo_, *invtrafo_, donebefore);
 
-    // FillComplete() transformation matrices
+    // fill_complete() transformation matrices
     trafo_->Complete();
     invtrafo_->Complete();
   }
@@ -265,7 +265,7 @@ void CONTACT::MtAbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector>
     const int iter, bool predictor)
 {
   // set displacement state
-  SetState(MORTAR::state_new_displacement, *dis);
+  set_state(MORTAR::state_new_displacement, *dis);
 
   // apply meshtying forces and stiffness
   Evaluate(kt, f, dis);
@@ -279,7 +279,7 @@ void CONTACT::MtAbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::SetState(
+void CONTACT::MtAbstractStrategy::set_state(
     const enum MORTAR::StateType& statetype, const Epetra_Vector& vec)
 {
   switch (statetype)
@@ -288,7 +288,7 @@ void CONTACT::MtAbstractStrategy::SetState(
     case MORTAR::state_old_displacement:
     {
       // set state on interfaces
-      for (int i = 0; i < (int)interface_.size(); ++i) interface_[i]->SetState(statetype, vec);
+      for (int i = 0; i < (int)interface_.size(); ++i) interface_[i]->set_state(statetype, vec);
       break;
     }
     default:
@@ -336,7 +336,7 @@ void CONTACT::MtAbstractStrategy::MortarCoupling(const Teuchos::RCP<const Epetra
   // assemble D- and M-matrix on all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i) interface_[i]->AssembleDM(*dmatrix_, *mmatrix_);
 
-  // FillComplete() global Mortar matrices
+  // fill_complete() global Mortar matrices
   dmatrix_->Complete();
   mmatrix_->Complete(*gmdofrowmap_, *gsdofrowmap_);
 
@@ -765,7 +765,7 @@ void CONTACT::MtAbstractStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
   // old displacements in nodes
   // (this is needed for calculating the auxiliary positions in
   // binarytree contact search)
-  SetState(MORTAR::state_old_displacement, *dis);
+  set_state(MORTAR::state_old_displacement, *dis);
 
   return;
 }
@@ -781,7 +781,7 @@ void CONTACT::MtAbstractStrategy::DoReadRestart(
   bool restartwithmeshtying = CORE::UTILS::IntegralValue<int>(Params(), "RESTART_WITH_MESHTYING");
 
   // set displacement state
-  SetState(MORTAR::state_new_displacement, *dis);
+  set_state(MORTAR::state_new_displacement, *dis);
 
   // read restart information on Lagrange multipliers
   z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));

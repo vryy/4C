@@ -26,7 +26,7 @@ void fluid_freesurf_drt();
  *
  *               structure dof < fluid dof < ale dof
  *
- *  We establish this ordering by calling FillComplete() on the three
+ *  We establish this ordering by calling fill_complete() on the three
  *  discretizations in the order (1) structure (2) fluid (3) ALE.
  */
 void fsi_ale_drt();

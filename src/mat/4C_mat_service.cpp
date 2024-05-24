@@ -714,7 +714,7 @@ void MAT::AddDerivInvABInvBProduct(double const& fac, const CORE::LINALG::Matrix
       fac * (0.5 * (invA(0) * invABinvA(2) + invA(2) * invABinvA(0)) + invA(5) * invABinvA(5));
 }
 
-void MAT::InvariantsModified(
+void MAT::invariants_modified(
     CORE::LINALG::Matrix<3, 1>& modinv, const CORE::LINALG::Matrix<3, 1>& prinv)
 {
   // 1st invariant, trace

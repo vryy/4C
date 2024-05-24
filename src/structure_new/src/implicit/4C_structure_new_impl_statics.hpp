@@ -35,10 +35,10 @@ namespace STR
       void Setup() override;
 
       //! (derived)
-      void PostSetup() override;
+      void post_setup() override;
 
       //! Reset state variables (derived)
-      void SetState(const Epetra_Vector& x) override;
+      void set_state(const Epetra_Vector& x) override;
 
       //! Apply the rhs only (derived)
       bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) override;
@@ -51,7 +51,7 @@ namespace STR
           const Epetra_Vector& x, Epetra_Vector& f, CORE::LINALG::SparseOperator& jac) override;
 
       //! (derived)
-      bool AssembleForce(Epetra_Vector& f,
+      bool assemble_force(Epetra_Vector& f,
           const std::vector<INPAR::STR::ModelType>* without_these_models = nullptr) const override;
 
       //! (derived)
@@ -59,7 +59,7 @@ namespace STR
           IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! (derived)
-      void ReadRestart(IO::DiscretizationReader& ioreader) override;
+      void read_restart(IO::DiscretizationReader& ioreader) override;
 
       //! (derived)
       double CalcRefNormForce(const enum ::NOX::Abstract::Vector::NormType& type) const override;

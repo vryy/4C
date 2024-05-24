@@ -141,7 +141,7 @@ void test_generated_511737()
     hex8_xyze(2, 7) = -0.57052631578947510249;
     nids.push_back(510915);
 
-    intersection.AddElement(500037, nids, hex8_xyze, CORE::FE::CellType::hex8);
+    intersection.add_element(500037, nids, hex8_xyze, CORE::FE::CellType::hex8);
   }
 
   {
@@ -181,7 +181,7 @@ void test_generated_511737()
     hex8_xyze(2, 7) = -0.59026315789473871032;
     nids.push_back(522704);
 
-    intersection.AddElement(513659, nids, hex8_xyze, CORE::FE::CellType::hex8);
+    intersection.add_element(513659, nids, hex8_xyze, CORE::FE::CellType::hex8);
   }
 
   {
@@ -221,7 +221,7 @@ void test_generated_511737()
     hex8_xyze(2, 7) = -0.59026315789473871032;
     nids.push_back(522674);
 
-    intersection.AddElement(511708, nids, hex8_xyze, CORE::FE::CellType::hex8);
+    intersection.add_element(511708, nids, hex8_xyze, CORE::FE::CellType::hex8);
   }
 
   {
@@ -261,7 +261,7 @@ void test_generated_511737()
     hex8_xyze(2, 7) = -0.59026315789473871032;
     nids.push_back(522702);
 
-    intersection.AddElement(511736, nids, hex8_xyze, CORE::FE::CellType::hex8);
+    intersection.add_element(511736, nids, hex8_xyze, CORE::FE::CellType::hex8);
   }
 
   {
@@ -301,7 +301,7 @@ void test_generated_511737()
     hex8_xyze(2, 7) = -0.59026315789473871032;
     nids.push_back(522703);
 
-    intersection.AddElement(511737, nids, hex8_xyze, CORE::FE::CellType::hex8);
+    intersection.add_element(511737, nids, hex8_xyze, CORE::FE::CellType::hex8);
   }
 
   {
@@ -341,7 +341,7 @@ void test_generated_511737()
     hex8_xyze(2, 7) = -0.59026315789473871032;
     nids.push_back(522732);
 
-    intersection.AddElement(511766, nids, hex8_xyze, CORE::FE::CellType::hex8);
+    intersection.add_element(511766, nids, hex8_xyze, CORE::FE::CellType::hex8);
   }
 
   intersection.CutTest_Cut(

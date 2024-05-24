@@ -50,10 +50,10 @@ namespace POROFLUIDMULTIPHASE
     virtual ~MeshtyingStrategyBase() = default;
 
     //! prepare time loop
-    virtual void PrepareTimeLoop() = 0;
+    virtual void prepare_time_loop() = 0;
 
     //! prepare time step
-    virtual void PrepareTimeStep() = 0;
+    virtual void prepare_time_step() = 0;
 
     //! update
     virtual void Update() = 0;
@@ -65,7 +65,7 @@ namespace POROFLUIDMULTIPHASE
     virtual void initialize_linear_solver(Teuchos::RCP<CORE::LINALG::Solver> solver) = 0;
 
     //! solve linear system of equations
-    virtual void LinearSolve(Teuchos::RCP<CORE::LINALG::Solver> solver,
+    virtual void linear_solve(Teuchos::RCP<CORE::LINALG::Solver> solver,
         Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector> increment,
         Teuchos::RCP<Epetra_Vector> residual, CORE::LINALG::SolverParams& solver_params) = 0;
 
@@ -77,7 +77,7 @@ namespace POROFLUIDMULTIPHASE
     virtual void CreateFieldTest() = 0;
 
     //! restart
-    virtual void ReadRestart(const int step) = 0;
+    virtual void read_restart(const int step) = 0;
 
     //! evaluate mesh tying
     virtual void Evaluate() = 0;

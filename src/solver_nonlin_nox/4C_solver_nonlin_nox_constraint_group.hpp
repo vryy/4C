@@ -135,7 +135,7 @@ namespace NOX
 
        private:
         //! throw Nox error
-        void throwError(const std::string& functionName, const std::string& errorMsg) const;
+        void throw_error(const std::string& functionName, const std::string& errorMsg) const;
 
        private:
         // constraint interface map

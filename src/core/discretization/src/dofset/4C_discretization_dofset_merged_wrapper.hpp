@@ -72,7 +72,7 @@ namespace CORE::Dofsets
     //@}
 
     /// Get degree of freedom row map
-    const Epetra_Map* DofRowMap() const override;
+    const Epetra_Map* dof_row_map() const override;
 
     /// Get degree of freedom column map
     const Epetra_Map* DofColMap() const override;
@@ -82,8 +82,8 @@ namespace CORE::Dofsets
     /// Get number of dofs for given node
     int NumDof(const DRT::Node* node) const override
     {
-      const DRT::Node* masternode = GetMasterNode(node->LID());
-      const DRT::Node* slavenode = GetSlaveNode(node->LID());
+      const DRT::Node* masternode = get_master_node(node->LID());
+      const DRT::Node* slavenode = get_slave_node(node->LID());
       return sourcedofset_->NumDof(slavenode) + sourcedofset_->NumDof(masternode);
     }
 
@@ -98,8 +98,8 @@ namespace CORE::Dofsets
         const DRT::Node& node  ///< node, for which you want to know the number of dofs
     ) const override
     {
-      const DRT::Node* masternode = GetMasterNode(node.LID());
-      const DRT::Node* slavenode = GetSlaveNode(node.LID());
+      const DRT::Node* masternode = get_master_node(node.LID());
+      const DRT::Node* slavenode = get_slave_node(node.LID());
       return sourcedofset_->NumDofPerNode(*masternode) + sourcedofset_->NumDofPerNode(*slavenode);
     };
 
@@ -111,9 +111,9 @@ namespace CORE::Dofsets
      'ssi_3D_tet4_tet4_tri3.dat')  */
     std::vector<int> Dof(const DRT::Node* node) const override
     {
-      const DRT::Node* slavenode = GetSlaveNode(node->LID());
+      const DRT::Node* slavenode = get_slave_node(node->LID());
       std::vector<int> slavedof = sourcedofset_->Dof(slavenode);
-      const DRT::Node* masternode = GetMasterNode(node->LID());
+      const DRT::Node* masternode = get_master_node(node->LID());
       std::vector<int> masterdof = sourcedofset_->Dof(masternode);
 
       std::vector<int> dof;
@@ -130,8 +130,8 @@ namespace CORE::Dofsets
         unsigned nodaldofset  ///< number of nodal dof set of the node (currently !=0 only for XFEM)
     ) const override
     {
-      const DRT::Node* masternode = GetMasterNode(node->LID());
-      const DRT::Node* slavenode = GetSlaveNode(node->LID());
+      const DRT::Node* masternode = get_master_node(node->LID());
+      const DRT::Node* slavenode = get_slave_node(node->LID());
       std::vector<int> slavedof;
       sourcedofset_->Dof(slavedof, slavenode, nodaldofset);
       std::vector<int> masterdof;
@@ -151,13 +151,13 @@ namespace CORE::Dofsets
     /// Get the gid of a dof for given node
     int Dof(const DRT::Node* node, int dof) const override
     {
-      const DRT::Node* slavenode = GetSlaveNode(node->LID());
+      const DRT::Node* slavenode = get_slave_node(node->LID());
       const int numslavedofs = sourcedofset_->NumDof(slavenode);
       if (dof < numslavedofs)
         return sourcedofset_->Dof(slavenode, dof);
       else
       {
-        const DRT::Node* masternode = GetMasterNode(node->LID());
+        const DRT::Node* masternode = get_master_node(node->LID());
         return sourcedofset_->Dof(masternode, dof - numslavedofs);
       }
     }
@@ -171,8 +171,8 @@ namespace CORE::Dofsets
     /// Get the gid of all dofs of a node
     void Dof(const DRT::Node* node, std::vector<int>& lm) const override
     {
-      const DRT::Node* masternode = GetMasterNode(node->LID());
-      const DRT::Node* slavenode = GetSlaveNode(node->LID());
+      const DRT::Node* masternode = get_master_node(node->LID());
+      const DRT::Node* slavenode = get_slave_node(node->LID());
       sourcedofset_->Dof(slavenode, lm);
       sourcedofset_->Dof(masternode, lm);
 
@@ -185,11 +185,11 @@ namespace CORE::Dofsets
         std::vector<int>& lm         ///< already allocated vector to be filled with dof positions
     ) const override
     {
-      const DRT::Node* slavenode = GetSlaveNode(node->LID());
+      const DRT::Node* slavenode = get_slave_node(node->LID());
       const int numslavedofs = sourcedofset_->NumDof(slavenode);
       sourcedofset_->Dof(slavenode, startindex, lm);
 
-      const DRT::Node* masternode = GetMasterNode(node->LID());
+      const DRT::Node* masternode = get_master_node(node->LID());
       sourcedofset_->Dof(masternode, startindex + numslavedofs, lm);
     }
 
@@ -206,10 +206,10 @@ namespace CORE::Dofsets
         std::vector<int>& lm    ///< already allocated vector to be filled with DOF positions
     ) const override
     {
-      const DRT::Node* slavenode = GetSlaveNode(node->LID());
+      const DRT::Node* slavenode = get_slave_node(node->LID());
       sourcedofset_->Dof(element, slavenode, lm);
 
-      const DRT::Node* masternode = GetMasterNode(node->LID());
+      const DRT::Node* masternode = get_master_node(node->LID());
       sourcedofset_->Dof(element, masternode, lm);
     }
 
@@ -234,7 +234,7 @@ namespace CORE::Dofsets
 
    private:
     //! get the master node to a corresponding slave node (given by LID)
-    const DRT::Node* GetMasterNode(int slaveLid) const
+    const DRT::Node* get_master_node(int slaveLid) const
     {
       FOUR_C_ASSERT(
           slaveLid < master_nodegids_col_layout_->MyLength(), "Slave node Lid out of range!");
@@ -245,7 +245,7 @@ namespace CORE::Dofsets
     }
 
     //! get the slave node to a corresponding master node (given by LID)
-    const DRT::Node* GetSlaveNode(int masterLid) const
+    const DRT::Node* get_slave_node(int masterLid) const
     {
       FOUR_C_ASSERT(
           masterLid < slave_nodegids_col_layout_->MyLength(), "Master node Lid out of range!");

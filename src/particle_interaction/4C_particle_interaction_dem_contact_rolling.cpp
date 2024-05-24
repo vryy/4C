@@ -45,7 +45,7 @@ void PARTICLEINTERACTION::DEMContactRollingBase::Setup(const double& k_normal)
   // nothing to do
 }
 
-void PARTICLEINTERACTION::DEMContactRollingBase::SetCurrentStepSize(const double currentstepsize)
+void PARTICLEINTERACTION::DEMContactRollingBase::set_current_step_size(const double currentstepsize)
 {
   dt_ = currentstepsize;
 }

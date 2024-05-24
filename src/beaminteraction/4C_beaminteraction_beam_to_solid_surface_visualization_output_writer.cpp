@@ -65,7 +65,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::Setup(
     Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
         output_params_ptr)
 {
-  CheckInit();
+  check_init();
 
   // Set beam to solid surface interactions output parameters.
   output_params_ptr_ = output_params_ptr;
@@ -177,10 +177,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::Setup(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::WriteOutputRuntime(
+void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::write_output_runtime(
     const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // Get the time step and time for the output file. If output is desired at every iteration, the
   // values are padded. The runtime output is written when the time step is already set to the next
@@ -196,7 +196,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::WriteOutputRu
 void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::write_output_runtime_iteration(
     const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_iteration) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (output_params_ptr_->get_output_every_iteration())
   {
@@ -386,7 +386,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
 /**
  * \brief Checks the init and setup status.
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::CheckInitSetup() const
+void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::check_init_setup() const
 {
   if (!isinit_ or !issetup_) FOUR_C_THROW("Call Init() and Setup() first!");
 }
@@ -394,7 +394,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::CheckInitSetu
 /**
  * \brief Checks the init status.
  */
-void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::CheckInit() const
+void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::check_init() const
 {
   if (!isinit_) FOUR_C_THROW("Init() has not been called, yet!");
 }

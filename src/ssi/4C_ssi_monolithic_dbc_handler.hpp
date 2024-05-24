@@ -43,7 +43,7 @@ namespace SCATRA
 
 namespace SSI
 {
-  class SSIMono;
+  class SsiMono;
 
   namespace UTILS
   {
@@ -171,7 +171,7 @@ namespace SSI
         Teuchos::RCP<const DRT::UTILS::LocsysManager> locsysmanager_structure) override;
 
     //! position of structure block in system matrix
-    int PositionStructure() const { return position_structure_; };
+    int position_structure() const { return position_structure_; };
 
     //! position of structure block in system matrix
     const int position_structure_;

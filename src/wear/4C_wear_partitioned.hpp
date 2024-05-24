@@ -72,7 +72,7 @@ namespace WEAR
     void Output() override;
 
     /// read restart data
-    void ReadRestart(int step  ///< step number where the calculation is continued
+    void read_restart(int step  ///< step number where the calculation is continued
         ) override;
 
     /// general time loop
@@ -86,16 +86,17 @@ namespace WEAR
 
    private:
     // do ale step
-    void AleStep(Teuchos::RCP<Epetra_Vector> idisale_global);
+    void ale_step(Teuchos::RCP<Epetra_Vector> idisale_global);
 
     // transform from ale to structure dofs
-    virtual Teuchos::RCP<Epetra_Vector> AleToStructure(Teuchos::RCP<Epetra_Vector> vec) const;
+    virtual Teuchos::RCP<Epetra_Vector> ale_to_structure(Teuchos::RCP<Epetra_Vector> vec) const;
 
     // transform from ale to structure dofs
-    virtual Teuchos::RCP<Epetra_Vector> AleToStructure(Teuchos::RCP<const Epetra_Vector> vec) const;
+    virtual Teuchos::RCP<Epetra_Vector> ale_to_structure(
+        Teuchos::RCP<const Epetra_Vector> vec) const;
 
     /// Application of mesh displacements (frictional contact) to material conf
-    void UpdateMatConf();
+    void update_mat_conf();
 
     /*!
     \brief parameter space mapping between configurations
@@ -108,65 +109,66 @@ namespace WEAR
     adjacent to considered node \param spatialtomaterial (in)  : true if considered node already has
     correct spatial coordinate and corresponding material coordinate is to be determined
      */
-    void AdvectionMap(double* Xtarget,  // out
-        double* Xsource,                // in
-        DRT::Element** ElementPtr,      // in
-        int numelements,                // in
-        bool spatialtomaterial);        // in
+    void advection_map(double* Xtarget,  // out
+        double* Xsource,                 // in
+        DRT::Element** ElementPtr,       // in
+        int numelements,                 // in
+        bool spatialtomaterial);         // in
 
     // check convergence
-    bool ConvergenceCheck(int iter);
+    bool convergence_check(int iter);
 
     // Dof Coupling
-    void DispCoupling(Teuchos::RCP<Epetra_Vector>& disinterface);
+    void disp_coupling(Teuchos::RCP<Epetra_Vector>& disinterface);
 
     /// Interface displacements (frictional contact)
-    void InterfaceDisp(
+    void interface_disp(
         Teuchos::RCP<Epetra_Vector>& disinterface_s, Teuchos::RCP<Epetra_Vector>& disinterface_m);
 
     // Merge wear from slave and master surface to one wear vector
-    void MergeWear(Teuchos::RCP<Epetra_Vector>& disinterface_s,
+    void merge_wear(Teuchos::RCP<Epetra_Vector>& disinterface_s,
         Teuchos::RCP<Epetra_Vector>& disinterface_m, Teuchos::RCP<Epetra_Vector>& disinterface_g);
 
     // ale parameter list
-    virtual Teuchos::ParameterList& ParamsAle() { return alepara_; };
+    virtual Teuchos::ParameterList& params_ale() { return alepara_; };
 
     // prepare time step for ale and structure
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     // redistribute material interfaces according to current interfaces
     void redistribute_mat_interfaces();
 
     // transform from ale to structure dofs
-    virtual Teuchos::RCP<Epetra_Vector> StructureToAle(Teuchos::RCP<Epetra_Vector> vec) const;
+    virtual Teuchos::RCP<Epetra_Vector> structure_to_ale(Teuchos::RCP<Epetra_Vector> vec) const;
 
     // transform from ale to structure dofs
-    virtual Teuchos::RCP<Epetra_Vector> StructureToAle(Teuchos::RCP<const Epetra_Vector> vec) const;
+    virtual Teuchos::RCP<Epetra_Vector> structure_to_ale(
+        Teuchos::RCP<const Epetra_Vector> vec) const;
 
     // time loop for staggered coupling
-    void TimeLoopStagg(bool alestep);
+    void time_loop_stagg(bool alestep);
 
     // time loop for iterative stagered coupling
-    void TimeLoopIterStagg();
+    void time_loop_iter_stagg();
 
     // update spatial displacements due to mat. displ
-    void UpdateSpatConf();
+    void update_spat_conf();
 
     /// pull-back operation for wear from current to material conf.
-    void WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterface_s);
+    void wear_pull_back_slave(Teuchos::RCP<Epetra_Vector>& disinterface_s);
 
     /// pull-back operation for wear from current to material conf.
-    void WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinterface_m);
+    void wear_pull_back_master(Teuchos::RCP<Epetra_Vector>& disinterface_m);
 
     /// wear in sp conf.
-    void WearSpatialMaster(Teuchos::RCP<Epetra_Vector>& disinterface_m);
+    void wear_spatial_master(Teuchos::RCP<Epetra_Vector>& disinterface_m);
 
     /// wear in sp conf. with mortar map
     void wear_spatial_master_map(
         Teuchos::RCP<Epetra_Vector>& disinterface_s, Teuchos::RCP<Epetra_Vector>& disinterface_m);
 
     /// wear in sp conf.
-    void WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterface_s);
+    void wear_spatial_slave(Teuchos::RCP<Epetra_Vector>& disinterface_s);
 
     Teuchos::RCP<Epetra_Vector> wearnp_i_;   // wear in timestep n+1 and nonlin iter i
     Teuchos::RCP<Epetra_Vector> wearnp_ip_;  // wear in timestep n+1 and nonlin iter i+1

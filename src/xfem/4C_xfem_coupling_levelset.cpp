@@ -163,7 +163,7 @@ void XFEM::LevelSetCoupling::InitStateVectors()
 void XFEM::LevelSetCoupling::InitStateVectors_Bg()
 {
   // background-dis (fluid) related state vectors
-  const Epetra_Map* bg_dofrowmap = bg_dis_->DofRowMap(bg_nds_phi_);
+  const Epetra_Map* bg_dofrowmap = bg_dis_->dof_row_map(bg_nds_phi_);
 
   phinp_ = CORE::LINALG::CreateVector(*bg_dofrowmap, true);
 }
@@ -177,7 +177,7 @@ void XFEM::LevelSetCoupling::init_state_vectors_cutter()
 {
   // cutter-dis related state vectors
   const Epetra_Map* cutter_dofrowmap =
-      cutter_dis_->DofRowMap(cutter_nds_phi_);  // used for level set field and its derivatives
+      cutter_dis_->dof_row_map(cutter_nds_phi_);  // used for level set field and its derivatives
   const Epetra_Map* cutter_dofcolmap =
       cutter_dis_->DofColMap(cutter_nds_phi_);  // used for level set field and its derivatives
 
@@ -345,7 +345,7 @@ void XFEM::LevelSetCoupling::GmshOutput(const std::string& filename_base, const 
 // -------------------------------------------------------------------
 // Read Restart data for cutter discretization
 // -------------------------------------------------------------------
-void XFEM::LevelSetCoupling::ReadRestart(const int step, const int lsc_idx)
+void XFEM::LevelSetCoupling::read_restart(const int step, const int lsc_idx)
 {
   //  FOUR_C_THROW("Not tested Level Set restart from file. Should most likely work though if this
   //  FOUR_C_THROW is removed.");
@@ -360,7 +360,7 @@ void XFEM::LevelSetCoupling::ReadRestart(const int step, const int lsc_idx)
   {
     IO::cout << "            RESTART IS PERFORMED FROM FUNCTION IN INPUT FILE!                  "
              << IO::endl;
-    IO::cout << "ReadRestart for Level Set Cut in Xfluid (time=" << time << " ; step=" << step
+    IO::cout << "read_restart for Level Set Cut in Xfluid (time=" << time << " ; step=" << step
              << ")" << IO::endl;
   }
 
@@ -399,7 +399,7 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
 
     // get value
     if (func_no < 0)
-      value = FunctImplementation(func_no, lnode->X().data(), time);
+      value = funct_implementation(func_no, lnode->X().data(), time);
     else if (func_no >= 1)
     {
       value = GLOBAL::Problem::Instance()
@@ -497,8 +497,8 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
 
       // The following bugfix needs to be check carefully
       {
-        // Convert NodeRowMap from compute_nodal_l2_projection to DofRowMap while assuming identical
-        // ordering
+        // Convert NodeRowMap from compute_nodal_l2_projection to dof_row_map while assuming
+        // identical ordering
         for (int ivec = 0; ivec < gradphinp_smoothed_rownode->NumVectors(); ivec++)
         {
           Epetra_Vector* itemp = (*gradphinp_smoothed_rownode)(ivec);
@@ -507,7 +507,7 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
             gradphinp_smoothed_node_->ReplaceMyValue(jlength, ivec, itemp->operator[](jlength));
           }
         }
-        // Bring DofRowMap to DofColMap layout (Attention: name is node but lives on dof)
+        // Bring dof_row_map to DofColMap layout (Attention: name is node but lives on dof)
         CORE::LINALG::Export(*gradphinp_smoothed_node_, *gradphinp_smoothed_node_col_);
       }
 
@@ -606,7 +606,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::LevelSetCoupling::get_level_set_field_as_node_
 /*----------------------------------------------------------------------*
  | set interface level set field at current time           schott 02/15 |
  *----------------------------------------------------------------------*/
-double XFEM::LevelSetCoupling::FunctImplementation(
+double XFEM::LevelSetCoupling::funct_implementation(
     const int func_no, const double* coords, const double t)
 {
   //  FOUR_C_THROW("you try to evaluate an implemented function for level-set field! Which one?");

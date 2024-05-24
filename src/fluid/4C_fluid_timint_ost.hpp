@@ -42,7 +42,7 @@ namespace FLD
     \brief Print information about current time step to screen (reimplementation)
 
     */
-    void PrintTimeStepInfo() override;
+    void print_time_step_info() override;
 
     /*!
     \brief Set the part of the righthandside belonging to the last
@@ -162,7 +162,7 @@ namespace FLD
     \brief read restart data
 
     */
-    void ReadRestart(int step) override;
+    void read_restart(int step) override;
 
     /*!
     \ Update of external forces
@@ -171,7 +171,7 @@ namespace FLD
     void time_update_external_forces() override;
 
     /*!
-    \brief treat turbulence models in AssembleMatAndRHS
+    \brief treat turbulence models in assemble_mat_and_rhs
 
     */
     void treat_turbulence_models(Teuchos::ParameterList& eleparams) override;

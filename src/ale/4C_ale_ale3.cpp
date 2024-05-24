@@ -135,7 +135,7 @@ DRT::Element* DRT::ELEMENTS::Ale3::Clone() const
 /*----------------------------------------------------------------------------*/
 CORE::FE::CellType DRT::ELEMENTS::Ale3::Shape() const
 {
-  switch (NumNode())
+  switch (num_node())
   {
     case 4:
       return CORE::FE::CellType::tet4;
@@ -152,7 +152,7 @@ CORE::FE::CellType DRT::ELEMENTS::Ale3::Shape() const
     case 27:
       return CORE::FE::CellType::hex27;
     default:
-      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", num_node());
       break;
   }
 }

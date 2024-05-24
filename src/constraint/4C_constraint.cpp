@@ -33,7 +33,7 @@ CONSTRAINTS::Constraint::Constraint(Teuchos::RCP<DRT::Discretization> discr,
   actdisc_->GetCondition(conditionname, constrcond_);
   if (constrcond_.size())
   {
-    constrtype_ = GetConstrType(conditionname);
+    constrtype_ = get_constr_type(conditionname);
     for (auto& i : constrcond_)
     {
       int condID = (i->parameters().Get<int>("ConditionID"));
@@ -76,7 +76,7 @@ CONSTRAINTS::Constraint::Constraint(
 
   if (constrcond_.size())
   {
-    constrtype_ = GetConstrType(conditionname);
+    constrtype_ = get_constr_type(conditionname);
 
     for (auto& i : constrcond_)
     {
@@ -103,7 +103,8 @@ CONSTRAINTS::Constraint::Constraint(
 /*-----------------------------------------------------------------------*
 |(private)                                                       tk 07/08|
 *-----------------------------------------------------------------------*/
-CONSTRAINTS::Constraint::ConstrType CONSTRAINTS::Constraint::GetConstrType(const std::string& name)
+CONSTRAINTS::Constraint::ConstrType CONSTRAINTS::Constraint::get_constr_type(
+    const std::string& name)
 {
   if (name == "VolumeConstraint_3D" or name == "VolumeConstraint_3D_Pen")
     return volconstr3d;
@@ -199,7 +200,7 @@ void CONSTRAINTS::Constraint::Evaluate(Teuchos::ParameterList& params,
     default:
       FOUR_C_THROW("Wrong constraint type to evaluate systemvector!");
   }
-  EvaluateConstraint(
+  evaluate_constraint(
       params, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);
   return;
 }
@@ -209,13 +210,13 @@ void CONSTRAINTS::Constraint::Evaluate(Teuchos::ParameterList& params,
  |Evaluate method, calling element evaluates of a condition and          |
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::Constraint::EvaluateConstraint(Teuchos::ParameterList& params,
+void CONSTRAINTS::Constraint::evaluate_constraint(Teuchos::ParameterList& params,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  if (!(actdisc_->Filled())) FOUR_C_THROW("FillComplete() was not called");
+  if (!(actdisc_->Filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!actdisc_->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
   // get the current time
   const double time = params.get("total time", -1.0);
@@ -246,10 +247,10 @@ void CONSTRAINTS::Constraint::EvaluateConstraint(Teuchos::ParameterList& params,
       {
         const std::string action = params.get<std::string>("action");
         Teuchos::RCP<Epetra_Vector> displast = params.get<Teuchos::RCP<Epetra_Vector>>("old disp");
-        actdisc_->SetState("displacement", displast);
+        actdisc_->set_state("displacement", displast);
         Initialize(params, systemvector2);
         Teuchos::RCP<Epetra_Vector> disp = params.get<Teuchos::RCP<Epetra_Vector>>("new disp");
-        actdisc_->SetState("displacement", disp);
+        actdisc_->set_state("displacement", disp);
         params.set("action", action);
       }
 
@@ -350,14 +351,14 @@ void CONSTRAINTS::Constraint::EvaluateConstraint(Teuchos::ParameterList& params,
     }
   }
   return;
-}  // end of EvaluateCondition
+}  // end of evaluate_condition
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
 void CONSTRAINTS::Constraint::initialize_constraint(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector)
 {
-  if (!(actdisc_->Filled())) FOUR_C_THROW("FillComplete() was not called");
+  if (!(actdisc_->Filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!actdisc_->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
   // get the current time
   const double time = params.get("total time", -1.0);

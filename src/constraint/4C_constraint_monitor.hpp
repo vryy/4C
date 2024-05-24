@@ -63,12 +63,12 @@ namespace CONSTRAINTS
     bool HaveMonitor() { return montype_ != none; };
 
     /// Set state of the underlying discretization
-    void SetState(const std::string& state,  ///< name of state to set
-        Teuchos::RCP<Epetra_Vector> V        ///< values to set
+    void set_state(const std::string& state,  ///< name of state to set
+        Teuchos::RCP<Epetra_Vector> V         ///< values to set
     );
 
     //! Evaluate routine to call from outside. In here the right action is determined and the
-    //! #EvaluateMonitor routine is called
+    //! #evaluate_monitor routine is called
     void Evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
@@ -97,12 +97,12 @@ namespace CONSTRAINTS
     Monitor(const Monitor& old);
 
     //! Return the MoniType based on the condition name
-    MoniType GetMoniType(const std::string& Name  ///< condition name
+    MoniType get_moni_type(const std::string& Name  ///< condition name
     );
 
 
     //! Evaluate monitor values and assemble the results
-    void EvaluateMonitor(
+    void evaluate_monitor(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
         Teuchos::RCP<Epetra_Vector> systemvector  ///< distributed vector that may be filled by

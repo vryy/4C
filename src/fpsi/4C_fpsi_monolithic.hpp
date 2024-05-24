@@ -72,24 +72,24 @@ namespace FPSI
 
 
     //! read restart data
-    void ReadRestart(int step) override;
+    void read_restart(int step) override;
 
     //! start a new time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     //! take current results for converged and save for next time step
     void Update() override;
 
     //! calculate stresses, strains, energies
-    virtual void PrepareOutput(bool force_prepare);
+    virtual void prepare_output(bool force_prepare);
 
     //! Output routine accounting for Lagrange multiplier at the interface
     void Output() override;
 
     //! @name access sub-fields
-    const Teuchos::RCP<POROELAST::Monolithic>& PoroField() { return poroelast_subproblem_; };
-    const Teuchos::RCP<ADAPTER::FluidFPSI>& FluidField() { return fluid_subproblem_; };
-    const Teuchos::RCP<ADAPTER::AleFpsiWrapper>& AleField() { return ale_; };
+    const Teuchos::RCP<POROELAST::Monolithic>& poro_field() { return poroelast_subproblem_; };
+    const Teuchos::RCP<ADAPTER::FluidFPSI>& fluid_field() { return fluid_subproblem_; };
+    const Teuchos::RCP<ADAPTER::AleFpsiWrapper>& ale_field() { return ale_; };
 
     //@}
 
@@ -202,12 +202,12 @@ namespace FPSI
     void TestResults(const Epetra_Comm& comm) override;
 
     //! build RHS vector from sub fields
-    virtual void SetupRHS(bool firstcall = false) = 0;
+    virtual void setup_rhs(bool firstcall = false) = 0;
 
     //! build system matrix form sub fields + coupling
-    virtual void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) = 0;
+    virtual void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) = 0;
     //! build system matrix form sub fields + coupling
-    virtual void SetupSystemMatrix() { SetupSystemMatrix(*SystemMatrix()); }
+    virtual void setup_system_matrix() { setup_system_matrix(*SystemMatrix()); }
 
     //! access system matrix
     virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const = 0;
@@ -239,34 +239,34 @@ namespace FPSI
     void FPSIFDCheck();
 
     //! solve linear system
-    void LinearSolve();
+    void linear_solve();
 
     //! solve using line search method
     void LineSearch(Teuchos::RCP<CORE::LINALG::SparseMatrix>& sparse);
 
     //! create linear solver (setup of parameter lists, etc...)
-    void CreateLinearSolver();
+    void create_linear_solver();
 
     //! build convergence norms after solve
     void build_convergence_norms();
 
     //! print header and results of newton iteration to screen
-    void PrintNewtonIter();
+    void print_newton_iter();
 
     //! print header of newton iteration
     void print_newton_iter_header(FILE* ofile);
 
     //! print results of newton iteration
-    void PrintNewtonIterText(FILE* ofile);
+    void print_newton_iter_text(FILE* ofile);
 
     //! perform convergence check
     bool Converged();
 
     //! full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> DofRowMap() const { return blockrowdofmap_.FullMap(); }
+    Teuchos::RCP<const Epetra_Map> dof_row_map() const { return blockrowdofmap_.FullMap(); }
 
     //! map of all dofs on Dirichlet-Boundary
-    virtual Teuchos::RCP<Epetra_Map> CombinedDBCMap();
+    virtual Teuchos::RCP<Epetra_Map> combined_dbc_map();
 
     //! extractor to communicate between full monolithic map and block maps
     const CORE::LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
@@ -305,7 +305,7 @@ namespace FPSI
     double linesearch_counter;
     double solveradaptolbetter_;
 
-    bool active_FD_check_;  // indicates if evaluate() is called from FDCheck (firstiter should not
+    bool active_FD_check_;  // indicates if evaluate() is called from fd_check (firstiter should not
                             // be added anymore!!!)
 
     /// extract the three field vectors from a given composed vector
@@ -316,7 +316,7 @@ namespace FPSI
      \param ax (o) ale displacements
      \param firstiter_ (i) firstiteration? - how to evaluate FSI-velocities
      */
-    virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+    virtual void extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& pfx,
         Teuchos::RCP<const Epetra_Vector>& fx, Teuchos::RCP<const Epetra_Vector>& ax,
         bool firstiter_) = 0;

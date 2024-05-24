@@ -109,7 +109,7 @@ namespace DRT
       void set_internal_variables_for_mat_and_rhs() override;
 
       //! get internal variable manager for thermodynamic diffusion-conduction formulation
-      Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCondSTIThermo<nsd_, nen_>> VarManager()
+      Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCondSTIThermo<nsd_, nen_>> var_manager()
       {
         return Teuchos::rcp_static_cast<
             ScaTraEleInternalVariableManagerElchDiffCondSTIThermo<nsd_, nen_>>(

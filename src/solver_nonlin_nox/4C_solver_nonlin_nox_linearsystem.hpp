@@ -243,7 +243,7 @@ namespace NOX
       /// access the jacobian
       inline CORE::LINALG::SparseOperator& Jacobian() const
       {
-        if (jac_ptr_.is_null()) throwError("JacPtr", "JacPtr is nullptr!");
+        if (jac_ptr_.is_null()) throw_error("JacPtr", "JacPtr is nullptr!");
 
         return *jac_ptr_;
       }
@@ -251,7 +251,7 @@ namespace NOX
       /// access the jacobian (read-only)
       inline const Teuchos::RCP<CORE::LINALG::SparseOperator>& JacobianPtr() const
       {
-        if (jac_ptr_.is_null()) throwError("JacPtr", "JacPtr is nullptr!");
+        if (jac_ptr_.is_null()) throw_error("JacPtr", "JacPtr is nullptr!");
 
         return jac_ptr_;
       }
@@ -317,7 +317,7 @@ namespace NOX
 
      private:
       //! throws an error
-      void throwError(const std::string& functionName, const std::string& errorMsg) const;
+      void throw_error(const std::string& functionName, const std::string& errorMsg) const;
 
      protected:
       //! Printing Utilities object

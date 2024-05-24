@@ -71,7 +71,7 @@ namespace XFEM
     void Output(IO::DiscretizationWriter& writer) override { return; }
 
     //! Read Restart -- nothing to do here
-    void ReadRestart(IO::DiscretizationReader& reader) override { return; }
+    void read_restart(IO::DiscretizationReader& reader) override { return; }
 
    private:
     //! Ale Object

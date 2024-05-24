@@ -203,8 +203,8 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryD
         << std::endl;
   }
 
-  artdis->FillComplete();
-  if (!contdis->Filled()) contdis->FillComplete();
+  artdis->fill_complete();
+  if (!contdis->Filled()) contdis->fill_complete();
 
   // create the fully overlapping search discretization
   Teuchos::RCP<DRT::Discretization> artsearchdis =
@@ -267,7 +267,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryD
   artdis->ExportColumnNodes(*extendednodecolmap);
 
   // fill and inform user
-  artdis->FillComplete();
+  artdis->fill_complete();
   CORE::REBALANCE::UTILS::print_parallel_distribution(*artdis);
 
   // user output
@@ -297,7 +297,7 @@ POROFLUIDMULTIPHASE::UTILS::CreateFullyOverlappingArteryDiscretization(
 
   // ghost on all procs.
   CORE::REBALANCE::GhostDiscretizationOnAllProcs(artsearchdis);
-  artsearchdis->FillComplete(false, false, doboundaryconditions);
+  artsearchdis->fill_complete(false, false, doboundaryconditions);
 
   return artsearchdis;
 }
@@ -370,7 +370,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
       {
         elecolset.insert(artelegid);
         const int* nodeids = artele->NodeIds();
-        for (int inode = 0; inode < artele->NumNode(); ++inode) nodecolset.insert(nodeids[inode]);
+        for (int inode = 0; inode < artele->num_node(); ++inode) nodecolset.insert(nodeids[inode]);
       }
     }
 
@@ -456,7 +456,7 @@ double POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(
 {
   double maxdist = 0.0;
 
-  for (int inode = 0; inode < ele->NumNode() - 1; inode++)
+  for (int inode = 0; inode < ele->num_node() - 1; inode++)
   {
     // get first node and its position
     int node0_gid = ele->NodeIds()[inode];
@@ -468,7 +468,7 @@ double POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(
     pos0(2) = node0->X()[2];
 
     // loop over second node to numnode to compare distances with first node
-    for (int jnode = inode + 1; jnode < ele->NumNode(); jnode++)
+    for (int jnode = inode + 1; jnode < ele->num_node(); jnode++)
     {
       int node1_gid = ele->NodeIds()[jnode];
       DRT::Node* node1 = dis->gNode(node1_gid);
@@ -491,7 +491,7 @@ double POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(
 /*----------------------------------------------------------------------*
  | calculate vector norm                             kremheller 12/17   |
  *----------------------------------------------------------------------*/
-double POROFLUIDMULTIPHASE::UTILS::CalculateVectorNorm(
+double POROFLUIDMULTIPHASE::UTILS::calculate_vector_norm(
     const enum INPAR::POROFLUIDMULTIPHASE::VectorNorm norm,
     const Teuchos::RCP<const Epetra_Vector> vect)
 {
@@ -539,7 +539,7 @@ double POROFLUIDMULTIPHASE::UTILS::CalculateVectorNorm(
     FOUR_C_THROW("Cannot handle vector norm");
     return 0;
   }
-}  // CalculateVectorNorm()
+}  // calculate_vector_norm()
 
 /*----------------------------------------------------------------------*
  |                                                    kremheller 03/17  |

@@ -44,7 +44,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
     CORE::LINALG::SerialDenseVector& elevec3)
 {
-  // Check whether the solid material PostSetup() routine has already been called and call it if not
+  // Check whether the solid material post_setup() routine has already been called and call it if
+  // not
   ensure_material_post_setup(params);
 
   set_params_interface_ptr(params);
@@ -414,7 +415,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       double density = actmat->Density();
 
       // some definitions
-      const int numnode = NumNode();
+      const int numnode = num_node();
       const int numdf = 2;
 
       CORE::LINALG::SerialDenseMatrix xjm;
@@ -600,14 +601,14 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
           DRT::UTILS::GetMinimalJacDeterminantAtNodes<CORE::FE::CellType::quad4>(xcurr);
 
       if (min_detj < 0.0)
-        ErrorHandling(min_detj, params, __LINE__, STR::ELEMENTS::ele_error_determinant_analysis);
+        error_handling(min_detj, params, __LINE__, STR::ELEMENTS::ele_error_determinant_analysis);
 
       break;
     }
     //==================================================================================
     case ELEMENTS::struct_calc_eleload:
     {
-      FOUR_C_THROW("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
+      FOUR_C_THROW("this method is not supposed to evaluate a load, use evaluate_neumann(...)");
       break;
     }
     //==================================================================================
@@ -641,7 +642,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a Surface Neumann boundary condition (public)  mgit 05/07|
  *----------------------------------------------------------------------*/
 
-int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Wall1::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -664,7 +665,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
     FOUR_C_THROW("Fewer functions or curves defined than the element has dofs.");
 
   // no. of nodes on this surface
-  const int iel = NumNode();
+  const int iel = num_node();
 
   // do the isogeometric extras --- get knots and weights
   std::vector<CORE::LINALG::SerialDenseVector> myknots(numdim_);
@@ -830,7 +831,7 @@ void DRT::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm, const std::vec
       if (!oldKaainv or !oldKda or !oldfeas) FOUR_C_THROW("Missing EAS history-data");
 
       // we need the (residual) displacement at the previous step
-      const int numnode = NumNode();
+      const int numnode = num_node();
       CORE::LINALG::SerialDenseVector res_d(2 * numnode);
       for (int i = 0; i < (2 * numnode); ++i)
       {
@@ -886,7 +887,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
     Teuchos::ParameterList& params,  ///< algorithmic parameters e.g. time
     const INPAR::STR::StressType iostress, const INPAR::STR::StrainType iostrain)
 {
-  const int numnode = NumNode();
+  const int numnode = num_node();
   const int numdf = 2;
   const int nd = numnode * numdf;
 
@@ -1265,7 +1266,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
 
 
       CORE::LINALG::SerialDenseMatrix KdaKaa(
-          2 * NumNode(), Wall1::neas_);  // temporary Kda.Kaa^{-1}
+          2 * num_node(), Wall1::neas_);  // temporary Kda.Kaa^{-1}
       CORE::LINALG::multiply(1.0, KdaKaa, 1.0, Kda, Kaa);
 
 
@@ -1279,7 +1280,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
       for (int i = 0; i < Wall1::neas_; ++i)
         for (int j = 0; j < Wall1::neas_; ++j) (*oldKaainv)(i, j) = Kaa(i, j);
 
-      for (int i = 0; i < (2 * NumNode()); ++i)
+      for (int i = 0; i < (2 * num_node()); ++i)
         for (int j = 0; j < Wall1::neas_; ++j)
         {
           (*oldKda)(i, j) = Kda(i, j);
@@ -1304,7 +1305,7 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
     Teuchos::ParameterList& params, const INPAR::STR::StressType iostress,
     const INPAR::STR::StrainType iostrain)
 {
-  const int numnode = NumNode();
+  const int numnode = num_node();
   const int numdf = 2;
   const int nd = numnode * numdf;
 
@@ -1845,7 +1846,7 @@ void DRT::ELEMENTS::Wall1::Energy(Teuchos::ParameterList& params, const std::vec
 {
   // constants
   // element porperties
-  const int numnode = NumNode();
+  const int numnode = num_node();
   const int edof = numnode * Wall1::noddof_;
   const CORE::FE::CellType distype = Shape();
   // Gaussian points

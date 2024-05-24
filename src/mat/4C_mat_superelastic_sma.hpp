@@ -219,7 +219,7 @@ namespace MAT
     bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
     /// Return whether the material requires the deformation gradient for its evaluation
-    bool NeedsDefgrd() override { return true; };
+    bool needs_defgrd() override { return true; };
 
     //@}
 

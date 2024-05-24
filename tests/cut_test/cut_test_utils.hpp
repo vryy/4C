@@ -64,13 +64,14 @@ class SimpleWrapper
   void AssumeVolumeCells(unsigned num);
 
  private:
-  void CreateElement(CORE::FE::CellType distype, const CORE::LINALG::SerialDenseMatrix& xyze);
+  void create_element(CORE::FE::CellType distype, const CORE::LINALG::SerialDenseMatrix& xyze);
 
-  void CreateElementSides(CORE::FE::CellType distype, const CORE::LINALG::SerialDenseMatrix& xyze);
+  void create_element_sides(
+      CORE::FE::CellType distype, const CORE::LINALG::SerialDenseMatrix& xyze);
 
-  void CreateSide(CORE::FE::CellType distype, const CORE::LINALG::SerialDenseMatrix& xyze);
+  void create_side(CORE::FE::CellType distype, const CORE::LINALG::SerialDenseMatrix& xyze);
 
-  int GetId(const CORE::LINALG::Matrix<3, 1>& x, std::vector<CORE::LINALG::Matrix<3, 1>>& points);
+  int get_id(const CORE::LINALG::Matrix<3, 1>& x, std::vector<CORE::LINALG::Matrix<3, 1>>& points);
 
   SimpleWrapper(const SimpleWrapper&);
   SimpleWrapper& operator=(const SimpleWrapper&);

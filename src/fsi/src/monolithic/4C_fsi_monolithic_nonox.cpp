@@ -41,14 +41,14 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
   // use taylored fluid- and ALE-wrappers
-  fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::FluidFluidFSI>(MonolithicBase::FluidField());
-  ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleXFFsiWrapper>(MonolithicBase::AleField());
+  fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::FluidFluidFSI>(MonolithicBase::fluid_field());
+  ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleXFFsiWrapper>(MonolithicBase::ale_field());
 
   // enable debugging
   if (CORE::UTILS::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") == 1)
   {
     sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(StructureField()->Discretization()));
-    // fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(FluidField()->Discretization()));
+    // fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(fluid_field()->Discretization()));
   }
 
   std::string s = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
@@ -92,20 +92,20 @@ void FSI::MonolithicNoNOX::SetupSystem()
   // structure to fluid
 
   coupsf.setup_condition_coupling(*StructureField()->Discretization(),
-      StructureField()->Interface()->FSICondMap(), *FluidField()->Discretization(),
-      FluidField()->Interface()->FSICondMap(), "FSICoupling", ndim);
+      StructureField()->Interface()->FSICondMap(), *fluid_field()->Discretization(),
+      fluid_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
   // structure to ale
 
   coupsa.setup_condition_coupling(*StructureField()->Discretization(),
-      StructureField()->Interface()->FSICondMap(), *AleField()->Discretization(),
-      AleField()->Interface()->FSICondMap(), "FSICoupling", ndim);
+      StructureField()->Interface()->FSICondMap(), *ale_field()->Discretization(),
+      ale_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
   // fluid to ale at the interface
 
-  icoupfa.setup_condition_coupling(*FluidField()->Discretization(),
-      FluidField()->Interface()->FSICondMap(), *AleField()->Discretization(),
-      AleField()->Interface()->FSICondMap(), "FSICoupling", ndim);
+  icoupfa.setup_condition_coupling(*fluid_field()->Discretization(),
+      fluid_field()->Interface()->FSICondMap(), *ale_field()->Discretization(),
+      ale_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
   // In the following we assume that both couplings find the same dof
   // map at the structural side. This enables us to use just one
@@ -118,13 +118,13 @@ void FSI::MonolithicNoNOX::SetupSystem()
     FOUR_C_THROW("No nodes in matching FSI interface. Empty FSI coupling condition?");
 
   // the fluid-ale coupling always matches
-  const Epetra_Map* fluidnodemap = FluidField()->Discretization()->NodeRowMap();
-  const Epetra_Map* alenodemap = AleField()->Discretization()->NodeRowMap();
+  const Epetra_Map* fluidnodemap = fluid_field()->Discretization()->NodeRowMap();
+  const Epetra_Map* alenodemap = ale_field()->Discretization()->NodeRowMap();
 
-  coupfa.SetupCoupling(*FluidField()->Discretization(), *AleField()->Discretization(),
+  coupfa.setup_coupling(*fluid_field()->Discretization(), *ale_field()->Discretization(),
       *fluidnodemap, *alenodemap, ndim);
 
-  FluidField()->SetMeshMap(coupfa.MasterDofMap());
+  fluid_field()->SetMeshMap(coupfa.MasterDofMap());
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -132,10 +132,10 @@ void FSI::MonolithicNoNOX::Timeloop()
 {
   while (NotFinished())
   {
-    PrepareTimeStep();
+    prepare_time_step();
     Newton();
     constexpr bool force_prepare = false;
-    PrepareOutput(force_prepare);
+    prepare_output(force_prepare);
     Update();
     Output();
   }
@@ -148,18 +148,18 @@ void FSI::MonolithicNoNOX::Newton()
   // initialise equilibrium loop
   iter_ = 1;
 
-  x_sum_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
+  x_sum_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
   x_sum_->PutScalar(0.0);
 
   // incremental solution vector with length of all FSI dofs
-  iterinc_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
+  iterinc_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
   iterinc_->PutScalar(0.0);
 
-  zeros_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
+  zeros_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
   zeros_->PutScalar(0.0);
 
   // residual vector with length of all FSI dofs
-  rhs_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
+  rhs_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
   rhs_->PutScalar(0.0);
 
   firstcall_ = true;
@@ -176,7 +176,7 @@ void FSI::MonolithicNoNOX::Newton()
     // create the linear system
     // J(x_i) \Delta x_i = - R(x_i)
     // create the systemmatrix
-    SetupSystemMatrix();
+    setup_system_matrix();
 
     // check whether we have a sanely filled tangent matrix
     if (not systemmatrix_->Filled())
@@ -184,9 +184,9 @@ void FSI::MonolithicNoNOX::Newton()
       FOUR_C_THROW("Effective tangent matrix must be filled here");
     }
 
-    SetupRHS(*rhs_, firstcall_);
+    setup_rhs(*rhs_, firstcall_);
 
-    LinearSolve();
+    linear_solve();
 
     // reset solver tolerance
     solver_->ResetTolerance();
@@ -196,7 +196,7 @@ void FSI::MonolithicNoNOX::Newton()
     build_convergence_norms();
 
     // print stuff
-    PrintNewtonIter();
+    print_newton_iter();
 
     // increment equilibrium loop index
     iter_ += 1;
@@ -289,18 +289,18 @@ bool FSI::MonolithicNoNOX::Converged()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicNoNOX::LinearSolve()
+void FSI::MonolithicNoNOX::linear_solve()
 {
   // merge blockmatrix to SparseMatrix and solve
   Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
 
   // apply Dirichlet BCs to system of equations
   if (firstcall_)
-    InitialGuess(iterinc_);
+    initial_guess(iterinc_);
   else
     iterinc_->PutScalar(0.0);
 
-  CORE::LINALG::apply_dirichlet_to_system(*sparse, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
+  CORE::LINALG::apply_dirichlet_to_system(*sparse, *iterinc_, *rhs_, *zeros_, *combined_dbc_map());
 
 #ifndef moresolvers
   const Teuchos::ParameterList& fdyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
@@ -347,7 +347,7 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> step_incre
 
     x_sum_->Update(1.0, *step_increment, 1.0);
 
-    ExtractFieldVectors(x_sum_, sx, fx, ax);
+    extract_field_vectors(x_sum_, sx, fx, ax);
 
     if (sdbg_ != Teuchos::null)
     {
@@ -368,22 +368,22 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> step_incre
     // displacement of the last time step. So we need to build the
     // sum of all increments and give it to ALE.
 
-    AleField()->Evaluate(ax);
+    ale_field()->Evaluate(ax);
   }
 
   // transfer the current ale mesh positions to the fluid field
-  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(AleField()->Dispnp());
-  FluidField()->apply_mesh_displacement(fluiddisp);
+  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(ale_field()->Dispnp());
+  fluid_field()->apply_mesh_displacement(fluiddisp);
 
   {
-    FluidField()->Evaluate(fx);
+    fluid_field()->Evaluate(fx);
   }
 
   if (has_fluid_dof_map_changed(fluidincrementmap)) handle_fluid_dof_map_change_in_newton();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicNoNOX::SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
+void FSI::MonolithicNoNOX::set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
   Teuchos::RCP<Epetra_Map> fullmap = CORE::LINALG::MultiMapExtractor::MergeMaps(maps);
   blockrowdofmap_.Setup(*fullmap, maps);
@@ -452,14 +452,14 @@ void FSI::MonolithicNoNOX::set_default_parameters(
 /*----------------------------------------------------------------------*/
 /*  print Newton-Raphson iteration to screen and error file             */
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicNoNOX::PrintNewtonIter()
+void FSI::MonolithicNoNOX::print_newton_iter()
 {
   // print to standard out
   // replace myrank_ here general by Comm().MyPID()
   if (Comm().MyPID() == 0)
   {
     if (iter_ == 1) print_newton_iter_header();
-    PrintNewtonIterText();
+    print_newton_iter_text();
   }
 }
 /*----------------------------------------------------------------------*/
@@ -541,7 +541,7 @@ void FSI::MonolithicNoNOX::print_newton_iter_header()
 /*---------------------------------------------------------------------*/
 /*  print Newton-Raphson iteration to screen                           */
 /*---------------------------------------------------------------------*/
-void FSI::MonolithicNoNOX::PrintNewtonIterText()
+void FSI::MonolithicNoNOX::print_newton_iter_text()
 {
   // enter converged state etc
   IO::cout << " " << iter_ << "/" << itermax_;
@@ -602,30 +602,30 @@ void FSI::MonolithicNoNOX::Update()
     if (Comm().MyPID() == 0) IO::cout << "Relaxing ALE!" << IO::endl;
     // Set the ALE FSI-DOFs to Dirichlet and solve ALE system again
     // to obtain the true ALE displacement
-    AleField()->Solve();
+    ale_field()->Solve();
     // Now apply the ALE-displacement to the (embedded) fluid and update the
     // grid velocity
-    FluidField()->apply_mesh_displacement(AleToFluid(AleField()->Dispnp()));
+    fluid_field()->apply_mesh_displacement(AleToFluid(ale_field()->Dispnp()));
   }
 
   // update subsequent fields
   StructureField()->Update();
-  FluidField()->Update();
-  AleField()->Update();
+  fluid_field()->Update();
+  ale_field()->Update();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicNoNOX::PrepareTimeStep()
+void FSI::MonolithicNoNOX::prepare_time_step()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicNoNOX::PrepareTimeStep");
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicNoNOX::prepare_time_step");
 
   increment_time_and_step();
   PrintHeader();
 
-  StructureField()->PrepareTimeStep();
-  FluidField()->PrepareTimeStep();
-  AleField()->PrepareTimeStep();
+  StructureField()->prepare_time_step();
+  fluid_field()->prepare_time_step();
+  ale_field()->prepare_time_step();
 
   // no ALE-relaxation or still at the first step? leave!
   if (fluid_->monolithic_xffsi_approach() == INPAR::XFEM::XFFSI_Full_Newton || Step() == 0 ||

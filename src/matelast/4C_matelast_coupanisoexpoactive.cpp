@@ -63,7 +63,7 @@ void MAT::ELASTIC::CoupAnisoExpoActive::UnpackSummand(
   ExtractfromPack(position, data, lambdaact_);
   anisotropy_extension_.UnpackAnisotropy(data, position);
 
-  d_p_iact_ = EvaluatedPsiActive();
+  d_p_iact_ = evaluated_psi_active();
 }
 
 void MAT::ELASTIC::CoupAnisoExpoActive::Setup(int numgp, INPUT::LineDefinition* linedef)
@@ -72,7 +72,7 @@ void MAT::ELASTIC::CoupAnisoExpoActive::Setup(int numgp, INPUT::LineDefinition* 
   // whole simulation)
   lambdaact_ = 1.0;
 
-  d_p_iact_ = EvaluatedPsiActive();
+  d_p_iact_ = evaluated_psi_active();
 }
 
 void MAT::ELASTIC::CoupAnisoExpoActive::AddStrainEnergy(double& psi,
@@ -275,7 +275,7 @@ void MAT::ELASTIC::CoupAnisoExpoActive::SetFiberVecs(const double newgamma,
   anisotropy_extension_.SetFiberVecs(newgamma, locsys, defgrd);
 }
 
-double MAT::ELASTIC::CoupAnisoExpoActive::EvaluatedPsiActive() const
+double MAT::ELASTIC::CoupAnisoExpoActive::evaluated_psi_active() const
 {
   return params_->s_ / params_->dens_ *
          (1.0 - std::pow(params_->lambdamax_ - lambdaact_, 2.0) /

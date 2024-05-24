@@ -34,7 +34,7 @@ STR::IMPLICIT::Generic::Generic() : ispredictor_state_(false)
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::Generic::Setup()
 {
-  CheckInit();
+  check_init();
   // call base class first
   STR::Integrator::Setup();
   // ---------------------------------------------------------------------------
@@ -122,7 +122,7 @@ bool STR::IMPLICIT::Generic::apply_correction_system(const enum NOX::NLN::Correc
     const std::vector<INPAR::STR::ModelType>& constraint_models, const Epetra_Vector& x,
     Epetra_Vector& f, CORE::LINALG::SparseOperator& jac)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   ResetEvalParams();
 
@@ -206,7 +206,7 @@ void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPostComputeX(const NOX::NLN::Gro
 void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPostIterate(const ::NOX::Solver::Generic& solver)
 {
   double step = 0.0;
-  const bool isdefaultstep = getStep(step, solver);
+  const bool isdefaultstep = get_step(step, solver);
   const int num_corrs = get_number_of_modified_newton_corrections(solver);
 
   impl_.ModelEval().RunPostIterate(solver, step, isdefaultstep, num_corrs);
@@ -217,7 +217,7 @@ void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPostIterate(const ::NOX::Solver:
 void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPreSolve(const ::NOX::Solver::Generic& solver)
 {
   double step = 0.0;
-  const bool isdefaultstep = getStep(step, solver);
+  const bool isdefaultstep = get_step(step, solver);
 
   impl_.ModelEval().RunPreSolve(solver, step, isdefaultstep);
 }
@@ -276,7 +276,7 @@ const Epetra_Vector& NOX::NLN::PrePostOp::IMPLICIT::Generic::convert2_epetra_vec
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::PrePostOp::IMPLICIT::Generic::getStep(
+bool NOX::NLN::PrePostOp::IMPLICIT::Generic::get_step(
     double& step, const ::NOX::Solver::Generic& solver) const
 {
   // try to cast the given solver object

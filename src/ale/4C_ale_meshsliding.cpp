@@ -119,7 +119,7 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
 
   // container for split residual vector
   std::vector<Teuchos::RCP<Epetra_Vector>> splitres(3);
-  SplitVector(residual, splitres);
+  split_vector(residual, splitres);
 
   /**********************************************************************/
   /* Evaluate mortar matrices                                           */
@@ -135,7 +135,7 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
   Teuchos::RCP<CORE::LINALG::SparseMatrix> Aco_ss;
   Teuchos::RCP<CORE::LINALG::SparseMatrix> N_m;
   Teuchos::RCP<CORE::LINALG::SparseMatrix> N_s;
-  GetMortarMatrices(Aco_mm, Aco_ms, Aco_sm, Aco_ss, N_m, N_s);
+  get_mortar_matrices(Aco_mm, Aco_ms, Aco_sm, Aco_ss, N_m, N_s);
   Teuchos::RCP<CORE::LINALG::SparseMatrix> P = GetMortarMatrixP();
   Teuchos::RCP<CORE::LINALG::SparseMatrix> T = adaptermeshsliding_->TMatrix();
   Teuchos::RCP<CORE::LINALG::SparseMatrix> H = adaptermeshsliding_->HMatrix();
@@ -297,7 +297,7 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
 /*  Get functions for the mortar matrices    wirtz 02/16 */
 /*                                                       */
 /*-------------------------------------------------------*/
-void ALE::Meshsliding::GetMortarMatrices(Teuchos::RCP<CORE::LINALG::SparseMatrix>& Aco_mm,
+void ALE::Meshsliding::get_mortar_matrices(Teuchos::RCP<CORE::LINALG::SparseMatrix>& Aco_mm,
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& Aco_ms,
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& Aco_sm,
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& Aco_ss, Teuchos::RCP<CORE::LINALG::SparseMatrix>& N_m,
@@ -307,16 +307,16 @@ void ALE::Meshsliding::GetMortarMatrices(Teuchos::RCP<CORE::LINALG::SparseMatrix
   Teuchos::RCP<CORE::LINALG::SparseMatrix> DLin = adaptermeshsliding_->DLinMatrix();
   Teuchos::RCP<CORE::LINALG::SparseMatrix> N = adaptermeshsliding_->NMatrix();
 
-  SplitMortarMatrix(MLin, Aco_mm, Aco_ms, gmdofrowmap_);
-  SplitMortarMatrix(DLin, Aco_sm, Aco_ss, gsdofrowmap_);
-  SplitMortarMatrix(N, N_m, N_s, gsdofrowmap_);
+  split_mortar_matrix(MLin, Aco_mm, Aco_ms, gmdofrowmap_);
+  split_mortar_matrix(DLin, Aco_sm, Aco_ss, gsdofrowmap_);
+  split_mortar_matrix(N, N_m, N_s, gsdofrowmap_);
 }
 
 /*-------------------------------------------------------*/
 /*  Split the mortar matrix into its slave and its       */
 /*  master part                              wirtz 02/16 */
 /*-------------------------------------------------------*/
-void ALE::Meshsliding::SplitMortarMatrix(Teuchos::RCP<CORE::LINALG::SparseMatrix>& MortarMatrix,
+void ALE::Meshsliding::split_mortar_matrix(Teuchos::RCP<CORE::LINALG::SparseMatrix>& MortarMatrix,
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& MasterMatrix,
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& SlaveMatrix,
     Teuchos::RCP<const Epetra_Map>& dofrowmapconst)
@@ -355,7 +355,7 @@ void ALE::Meshsliding::Recover(Teuchos::RCP<Epetra_Vector>& inc)
 
   // split displacement increment
   std::vector<Teuchos::RCP<Epetra_Vector>> splitinc(3);
-  SplitVector(inc, splitinc);
+  split_vector(inc, splitinc);
 
   Teuchos::RCP<Epetra_Vector> lm_temp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_, true));
   Teuchos::RCP<Epetra_Vector> mod = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_, true));

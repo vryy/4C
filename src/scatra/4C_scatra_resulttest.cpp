@@ -29,7 +29,7 @@ SCATRA::ScaTraResultTest::ScaTraResultTest(Teuchos::RCP<ScaTraTimIntImpl> scatra
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScaTraResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void SCATRA::ScaTraResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
@@ -211,7 +211,7 @@ double SCATRA::ScaTraResultTest::ResultNode(
           "Couldn't extract state vector of discrete scatra-scatra interface layer thicknesses!");
 
     // extract result
-    result = (*s2igrowthvec)[scatratimint_->Discretization()->DofRowMap(2)->LID(
+    result = (*s2igrowthvec)[scatratimint_->Discretization()->dof_row_map(2)->LID(
         scatratimint_->Discretization()->Dof(2, node, 0))];
   }
 
@@ -238,7 +238,7 @@ void SCATRA::ScaTraResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr
     res.ExtractString("QUANTITY", quantity);
 
     // get result to be tested on all processors
-    const double result = ResultSpecial(quantity);
+    const double result = result_special(quantity);
 
     // compare values on first processor
     if (scatratimint_->Discretization()->Comm().MyPID() == 0)
@@ -256,7 +256,7 @@ void SCATRA::ScaTraResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr
 /*----------------------------------------------------------------------*
  | get special result to be tested                           fang 03/15 |
  *----------------------------------------------------------------------*/
-double SCATRA::ScaTraResultTest::ResultSpecial(
+double SCATRA::ScaTraResultTest::result_special(
     const std::string quantity  //! name of quantity to be tested
 ) const
 {
@@ -415,7 +415,7 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
 
     // extract number of degrees of freedom owned by specified processor at specified scatra-scatra
     // coupling interface
-    result = strategy->mortar_discretization(interface_num).DofRowMap()->NumMyElements();
+    result = strategy->mortar_discretization(interface_num).dof_row_map()->NumMyElements();
     scatratimint_->Discretization()->Comm().Broadcast(&result, 1, proc_num);
   }
 
@@ -472,6 +472,6 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
     FOUR_C_THROW("Quantity '%s' not supported in result test!", quantity.c_str());
 
   return result;
-}  // SCATRA::ScaTraResultTest::ResultSpecial
+}  // SCATRA::ScaTraResultTest::result_special
 
 FOUR_C_NAMESPACE_CLOSE

@@ -93,16 +93,16 @@ namespace DRT
       /*!
           general function to compute the error (analytical solution) for particular problem type
        */
-      virtual int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      virtual int compute_error(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<CORE::MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec);
 
-      int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int compute_error(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<CORE::MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec,
           const CORE::FE::GaussIntegration&) override
       {
-        return ComputeError(ele, params, mat, discretization, lm, elevec);
+        return compute_error(ele, params, mat, discretization, lm, elevec);
       }
 
       /// Update local solution
@@ -430,14 +430,14 @@ namespace DRT
       };
 
       /// reads from global vectors
-      void ReadGlobalVectors(
+      void read_global_vectors(
           const DRT::Element& ele, DRT::Discretization& discretization, const std::vector<int>& lm);
 
       /// reads ale vectors
-      void ReadAleVectors(const DRT::Element& ele, DRT::Discretization& discretization);
+      void read_ale_vectors(const DRT::Element& ele, DRT::Discretization& discretization);
 
       /// evaluate mixed variable, density and momentum
-      void EvaluateAll(const int funcnum, const CORE::LINALG::Matrix<nsd_, 1>& xyz, const double t,
+      void evaluate_all(const int funcnum, const CORE::LINALG::Matrix<nsd_, 1>& xyz, const double t,
           CORE::LINALG::Matrix<msd_, 1>& L, double& r, CORE::LINALG::Matrix<nsd_, 1>& w) const;
 
       /// evaluate density and momentum

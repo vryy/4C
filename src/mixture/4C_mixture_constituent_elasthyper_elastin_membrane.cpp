@@ -236,10 +236,10 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::Update(
   for (auto& summand : potsum_membrane_) summand->Update();
 }
 
-void MIXTURE::MixtureConstituentElastHyperElastinMembrane::PreEvaluate(
+void MIXTURE::MixtureConstituentElastHyperElastinMembrane::pre_evaluate(
     MixtureRule& mixtureRule, Teuchos::ParameterList& params, int gp, int eleGID)
 {
-  MIXTURE::MixtureConstituentElastHyperBase::PreEvaluate(mixtureRule, params, gp, eleGID);
+  MIXTURE::MixtureConstituentElastHyperBase::pre_evaluate(mixtureRule, params, gp, eleGID);
 
   // Evaluate mue frac
   std::shared_ptr<ElastinMembranePrestressStrategy> strategy =

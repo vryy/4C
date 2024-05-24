@@ -127,7 +127,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       DRT::Element* actele = parentdiscret_->lColElement(i);
 
       // get the node ids of this element
-      const int numnode = actele->NumNode();
+      const int numnode = actele->num_node();
       const int* nodeids = actele->NodeIds();
 
       bool found = false;
@@ -187,7 +187,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       DRT::Element* actele = parentdiscret_->lRowElement(i);
 
       // get the node ids of this element
-      const int numnode = actele->NumNode();
+      const int numnode = actele->num_node();
       const int* nodeids = actele->NodeIds();
 
       bool found = false;
@@ -217,7 +217,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       {
         Teuchos::RCP<DRT::Element> sepcondele = Teuchos::rcp(actele->Clone());
 
-        childdiscret_->AddElement(sepcondele);
+        childdiscret_->add_element(sepcondele);
       }
     }
 
@@ -429,10 +429,10 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
         GLOBAL::Problem::Instance()->OutputControlFile(),
         GLOBAL::Problem::Instance()->spatial_approximation_type())));
 
-    // call FillComplete() to assign the dof
+    // call fill_complete() to assign the dof
     // remark: equal Redistribute(*newrownodemap,*newcolnodemap,true,true,true) as
-    //         it also calls FillComplete() at the end
-    childdiscret_->FillComplete(true, true, true);
+    //         it also calls fill_complete() at the end
+    childdiscret_->fill_complete(true, true, true);
 
     if (childdiscret_->Comm().MyPID() == 0)
     {
@@ -459,7 +459,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       my_n_nodes[myrank] = childdiscret_->NodeRowMap()->NumMyElements();
       my_n_elements[myrank] = childdiscret_->NumMyColElements();
       my_n_ghostele[myrank] = childdiscret_->NumMyColElements() - childdiscret_->NumMyRowElements();
-      my_n_dof[myrank] = childdiscret_->DofRowMap()->NumMyElements();
+      my_n_dof[myrank] = childdiscret_->dof_row_map()->NumMyElements();
 
       childdiscret_->Comm().SumAll(my_n_nodes.data(), n_nodes.data(), numproc);
       childdiscret_->Comm().SumAll(my_n_elements.data(), n_elements.data(), numproc);
@@ -494,7 +494,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
         DRT::Element* actele = childdiscret_->lColElement(i);
 
         // get the node ids of this element
-        const int numnode = actele->NumNode();
+        const int numnode = actele->num_node();
         const int* nodeids = actele->NodeIds();
 
         // loop nodeids, check if a separation condition is active
@@ -519,23 +519,23 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
 
       {
         std::set<int> testset;
-        for (int rr = 0; rr < childdiscret_->DofRowMap()->NumMyElements(); ++rr)
+        for (int rr = 0; rr < childdiscret_->dof_row_map()->NumMyElements(); ++rr)
         {
-          int id = childdiscret_->DofRowMap()->MyGlobalElements()[rr];
+          int id = childdiscret_->dof_row_map()->MyGlobalElements()[rr];
 
           std::set<int>::iterator curr = testset.find(id);
           if (curr != testset.end())
           {
-            FOUR_C_THROW("DofRowMap of child dis is not unique on this proc");
+            FOUR_C_THROW("dof_row_map of child dis is not unique on this proc");
           }
           testset.insert(id);
         }
 
-        if (!childdiscret_->DofRowMap()->UniqueGIDs())
+        if (!childdiscret_->dof_row_map()->UniqueGIDs())
         {
-          std::cout << *childdiscret_->DofRowMap();
+          std::cout << *childdiscret_->dof_row_map();
 
-          FOUR_C_THROW("DofRowMap  of child dis is not unique (global)");
+          FOUR_C_THROW("dof_row_map  of child dis is not unique (global)");
         }
       }
     }

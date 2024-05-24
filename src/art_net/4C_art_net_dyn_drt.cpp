@@ -63,7 +63,7 @@ Teuchos::RCP<ADAPTER::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
   // -------------------------------------------------------------------
-  if (!actdis->Filled()) actdis->FillComplete();
+  if (!actdis->Filled()) actdis->fill_complete();
 
   // -------------------------------------------------------------------
   // If discretization is empty, then return empty time integration
@@ -109,7 +109,7 @@ Teuchos::RCP<ADAPTER::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
     Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis(scatra_disname);
     // fill scatra discretization by cloning artery discretization
     DRT::UTILS::CloneDiscretization<ART::ArteryScatraCloneStrategy>(actdis, scatradis);
-    scatradis->FillComplete();
+    scatradis->fill_complete();
 
     // the problem is one way coupled, scatra needs only artery
 
@@ -120,7 +120,7 @@ Teuchos::RCP<ADAPTER::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
     if (scatradis->AddDofSet(arterydofset) != 1)
       FOUR_C_THROW("unexpected dof sets in scatra field");
 
-    scatradis->FillComplete(true, false, false);
+    scatradis->fill_complete(true, false, false);
   }
   else
   {
@@ -164,7 +164,7 @@ Teuchos::RCP<ADAPTER::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
   if (restart && !CoupledTo3D)
   {
     // read the restart information, set vectors and variables
-    artnettimint->ReadRestart(restart);
+    artnettimint->read_restart(restart);
   }
   else
   {
@@ -172,7 +172,7 @@ Teuchos::RCP<ADAPTER::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
   }
 
   // assign materials
-  // note: to be done after potential restart, as in ReadRestart()
+  // note: to be done after potential restart, as in read_restart()
   //       the secondary material is destroyed
   if (artdyn.get<std::string>("SOLVESCATRA") == "yes")
     ART::UTILS::assign_material_pointers(artery_disname, scatra_disname);

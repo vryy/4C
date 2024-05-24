@@ -73,7 +73,7 @@ void CORE::GEO::CUT::Point::AddEdgeIntersection(Edge* first, Edge* second, Side*
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Point* CORE::GEO::CUT::Point::InsertCut(Edge* cut_edge, Side* cut_side, Node* n)
+CORE::GEO::CUT::Point* CORE::GEO::CUT::Point::insert_cut(Edge* cut_edge, Side* cut_side, Node* n)
 {
   Point* p = n->point();
   const plain_edge_set& edges = n->Edges();
@@ -83,7 +83,7 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::Point::InsertCut(Edge* cut_edge, Side* cu
     p->AddEdge(e);
   }
   if (cut_edge != nullptr) p->AddEdge(cut_edge);
-  if (cut_side != nullptr) p->AddSide(cut_side);
+  if (cut_side != nullptr) p->add_side(cut_side);
 
   if ((cut_side != nullptr) && (cut_edge != nullptr)) p->AddPair(cut_side, cut_edge);
   p->Position(Point::oncutsurface);
@@ -123,13 +123,13 @@ void CORE::GEO::CUT::Point::AddEdge(Edge* cut_edge)
   for (plain_side_set::const_iterator i = edge_sides.begin(); i != edge_sides.end(); ++i)
   {
     Side* s = *i;
-    AddSide(s);
+    add_side(s);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Point::AddSide(Side* s)
+void CORE::GEO::CUT::Point::add_side(Side* s)
 {
   cut_sides_.insert(s);
 
@@ -140,7 +140,7 @@ void CORE::GEO::CUT::Point::AddSide(Side* s)
   for (plain_element_set::const_iterator i = elements.begin(); i != elements.end(); ++i)
   {
     Element* e = *i;
-    AddElement(e);
+    add_element(e);
   }
 }
 
@@ -587,12 +587,12 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Point::CutSide(Side* side, Point* other)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::GEO::CUT::Point> CORE::GEO::CUT::CreatePoint(
+Teuchos::RCP<CORE::GEO::CUT::Point> CORE::GEO::CUT::create_point(
     unsigned pid, const double* x, Edge* cut_edge, Side* cut_side, double tolerance)
 {
   const PointFactory factory;
   const int probdim = GLOBAL::Problem::Instance()->NDim();
-  return factory.CreatePoint(pid, x, cut_edge, cut_side, tolerance, probdim);
+  return factory.create_point(pid, x, cut_edge, cut_side, tolerance, probdim);
 }
 
 /*----------------------------------------------------------------------------*

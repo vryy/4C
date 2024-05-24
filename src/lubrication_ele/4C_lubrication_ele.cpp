@@ -311,7 +311,7 @@ DRT::Element* DRT::ELEMENTS::LubricationBoundary::Clone() const
  *----------------------------------------------------------------------*/
 CORE::FE::CellType DRT::ELEMENTS::LubricationBoundary::Shape() const
 {
-  return CORE::FE::getShapeOfBoundaryElement(NumNode(), ParentElement()->Shape());
+  return CORE::FE::getShapeOfBoundaryElement(num_node(), parent_element()->Shape());
 }
 
 /*----------------------------------------------------------------------*

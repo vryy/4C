@@ -76,30 +76,30 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Init()
   fill_function_and_scale_vectors();
 
   // initialize phinp for continuous dis
-  phinp_cont_ = Teuchos::rcp(new Epetra_Vector(*contdis_->DofRowMap(), true));
+  phinp_cont_ = Teuchos::rcp(new Epetra_Vector(*contdis_->dof_row_map(), true));
   // initialize phin for continuous dis
-  phin_cont_ = Teuchos::rcp(new Epetra_Vector(*contdis_->DofRowMap(), true));
+  phin_cont_ = Teuchos::rcp(new Epetra_Vector(*contdis_->dof_row_map(), true));
   // initialize phinp for artery dis
-  phinp_art_ = Teuchos::rcp(new Epetra_Vector(*arterydis_->DofRowMap(), true));
+  phinp_art_ = Teuchos::rcp(new Epetra_Vector(*arterydis_->dof_row_map(), true));
 
   // initialize phinp for continuous dis
-  zeros_cont_ = Teuchos::rcp(new Epetra_Vector(*contdis_->DofRowMap(), true));
+  zeros_cont_ = Teuchos::rcp(new Epetra_Vector(*contdis_->dof_row_map(), true));
   // initialize phinp for artery dis
-  zeros_art_ = Teuchos::rcp(new Epetra_Vector(*arterydis_->DofRowMap(), true));
+  zeros_art_ = Teuchos::rcp(new Epetra_Vector(*arterydis_->dof_row_map(), true));
 
   // -------------------------------------------------------------------
   // create empty D and M matrices (27 adjacent nodes as 'good' guess)
   // -------------------------------------------------------------------
   d_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *(arterydis_->DofRowMap()), 27, false, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
+      *(arterydis_->dof_row_map()), 27, false, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
   m_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *(arterydis_->DofRowMap()), 27, false, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
-  kappa_inv_ = Teuchos::rcp(new Epetra_FEVector(*arterydis_->DofRowMap(), true));
+      *(arterydis_->dof_row_map()), 27, false, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
+  kappa_inv_ = Teuchos::rcp(new Epetra_FEVector(*arterydis_->dof_row_map(), true));
 
   // full map of continous and artery dofs
   std::vector<Teuchos::RCP<const Epetra_Map>> maps;
-  maps.push_back(Teuchos::rcp(new Epetra_Map(*contdis_->DofRowMap())));
-  maps.push_back(Teuchos::rcp(new Epetra_Map(*arterydis_->DofRowMap())));
+  maps.push_back(Teuchos::rcp(new Epetra_Map(*contdis_->dof_row_map())));
+  maps.push_back(Teuchos::rcp(new Epetra_Map(*arterydis_->dof_row_map())));
 
   fullmap_ = CORE::LINALG::MultiMapExtractor::MergeMaps(maps);
   /// dof row map of coupled problem splitted in (field) blocks
@@ -180,7 +180,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Evaluate(
   if (!porofluidmanagersset_)
   {
     // set the right-hand side time factors (we assume constant time step size here)
-    SetTimeFacRhs();
+    set_time_fac_rhs();
     for (unsigned i = 0; i < coupl_elepairs_.size(); i++)
       coupl_elepairs_[i]->setup_fluid_managers_and_materials(
           contdis_->Name(), timefacrhs_art_, timefacrhs_cont_);
@@ -320,7 +320,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::create_cou
     const DRT::Node* const* artnodes = ele_ptrs[0]->Nodes();
 
     // loop over nodes of artery element
-    for (int i = 0; i < ele_ptrs[0]->NumNode(); i++)
+    for (int i = 0; i < ele_ptrs[0]->num_node(); i++)
     {
       // loop over prescribed couplings nodes from input
       for (unsigned int j = 0; j < couplingnodes_ntp_.size(); j++)
@@ -449,9 +449,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::evaluate_c
   // set states
   if (contdis_->Name() == "porofluid")
   {
-    contdis_->SetState("phinp_fluid", phinp_cont_);
-    contdis_->SetState("phin_fluid", phin_cont_);
-    arterydis_->SetState("one_d_artery_pressure", phinp_art_);
+    contdis_->set_state("phinp_fluid", phinp_cont_);
+    contdis_->set_state("phin_fluid", phin_cont_);
+    arterydis_->set_state("one_d_artery_pressure", phinp_art_);
     if (not evaluate_in_ref_config_ && not contdis_->HasState(1, "velocity field"))
       FOUR_C_THROW(
           "evaluation in current configuration wanted but solid phase velocity not available!");
@@ -459,8 +459,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::evaluate_c
   }
   else if (contdis_->Name() == "scatra")
   {
-    contdis_->SetState("phinp", phinp_cont_);
-    arterydis_->SetState("one_d_artery_phinp", phinp_art_);
+    contdis_->set_state("phinp", phinp_cont_);
+    arterydis_->set_state("one_d_artery_phinp", phinp_art_);
   }
   else
     FOUR_C_THROW(
@@ -487,7 +487,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::evaluate_c
     // in case of MP, assemble D, M and Kappa
     if (coupling_method_ == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp and
         num_coupled_dofs_ > 0)
-      FEAssembleDMKappa(
+      fe_assemble_dm_kappa(
           coupl_elepairs_[i]->Ele1GID(), coupl_elepairs_[i]->Ele2GID(), D_ele, M_ele, Kappa_ele);
   }
 
@@ -551,7 +551,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::FEAssembleDMKappa(
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::fe_assemble_dm_kappa(
     const int& ele1gid, const int& ele2gid, const CORE::LINALG::SerialDenseMatrix& D_ele,
     const CORE::LINALG::SerialDenseMatrix& M_ele, const CORE::LINALG::SerialDenseVector& Kappa_ele)
 {
@@ -580,11 +580,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
         Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // invert
-  InvertKappa();
+  invert_kappa();
 
   // complete
   d_->Complete();
-  m_->Complete(*contdis_->DofRowMap(), *arterydis_->DofRowMap());
+  m_->Complete(*contdis_->dof_row_map(), *arterydis_->dof_row_map());
 
   // get kappa matrix
   Teuchos::RCP<CORE::LINALG::SparseMatrix> kappaInvMat =
@@ -616,9 +616,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
 
   // add vector
   Teuchos::RCP<Epetra_Vector> art_contribution =
-      Teuchos::rcp(new Epetra_Vector(*arterydis_->DofRowMap()));
+      Teuchos::rcp(new Epetra_Vector(*arterydis_->dof_row_map()));
   Teuchos::RCP<Epetra_Vector> cont_contribution =
-      Teuchos::rcp(new Epetra_Vector(*contdis_->DofRowMap()));
+      Teuchos::rcp(new Epetra_Vector(*contdis_->dof_row_map()));
 
   // Note: all terms are negative since rhs
   // pp*D^T*kappa^{-1}*D*phi_np^art
@@ -640,16 +640,16 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::InvertKappa()
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::invert_kappa()
 {
   // global assemble
   if (kappa_inv_->GlobalAssemble(Add, false) != 0)
     FOUR_C_THROW("GlobalAssemble of kappaInv_ failed");
 
   // invert (pay attention to protruding elements)
-  for (int i = 0; i < arterydis_->DofRowMap()->NumMyElements(); ++i)
+  for (int i = 0; i < arterydis_->dof_row_map()->NumMyElements(); ++i)
   {
-    const int artdofgid = arterydis_->DofRowMap()->GID(i);
+    const int artdofgid = arterydis_->dof_row_map()->GID(i);
     const double kappaVal = (*kappa_inv_)[0][kappa_inv_->Map().LID(artdofgid)];
     if (fabs(kappaVal) > KAPPAINVTOL)
       kappa_inv_->ReplaceGlobalValue(artdofgid, 0, 1.0 / kappaVal);
@@ -754,7 +754,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::create_new_arte
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetupVector(
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::setup_vector(
     Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<const Epetra_Vector> vec_cont,
     Teuchos::RCP<const Epetra_Vector> vec_art)
 {
@@ -788,7 +788,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::ArteryDofRowMap
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map>
-POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::DofRowMap() const
+POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::dof_row_map() const
 {
   return fullmap_;
 }
@@ -867,7 +867,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetTimeFacRhs()
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::set_time_fac_rhs()
 {
   // set the right hand side factor
   if (contdis_->Name() == "porofluid")

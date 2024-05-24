@@ -86,7 +86,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtyp
 
   std::stringstream name;
   name << filename_ << ".control";
-  WriteHeader(name.str(), type_of_spatial_approx);
+  write_header(name.str(), type_of_spatial_approx);
 
   insert_restart_back_reference(restart_step, outputname);
 }
@@ -169,7 +169,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtyp
     std::stringstream name;
     name << filename_ << ".control";
 
-    WriteHeader(name.str(), type_of_spatial_approx);
+    write_header(name.str(), type_of_spatial_approx);
 
     insert_restart_back_reference(restart_step, restartname);
   }
@@ -224,13 +224,13 @@ void IO::OutputControl::OverwriteResultFile(const CORE::FE::ShapeFunctionType& s
   std::stringstream name;
   name << filename_ << ".control";
 
-  WriteHeader(name.str(), spatial_approx);
+  write_header(name.str(), spatial_approx);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::OutputControl::NewResultFile(
+void IO::OutputControl::new_result_file(
     int numb_run, const CORE::FE::ShapeFunctionType& spatial_approx)
 {
   if (filename_.rfind("_run_") != std::string::npos)
@@ -246,35 +246,35 @@ void IO::OutputControl::NewResultFile(
   name << ".control";
 
 
-  WriteHeader(name.str(), spatial_approx);
+  write_header(name.str(), spatial_approx);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::OutputControl::NewResultFile(const std::string& name_appendix, int numb_run,
+void IO::OutputControl::new_result_file(const std::string& name_appendix, int numb_run,
     const CORE::FE::ShapeFunctionType& spatial_approx)
 {
   std::stringstream name;
   name << name_appendix;
   name << "_run_" << numb_run;
 
-  NewResultFile(name.str(), spatial_approx);
+  new_result_file(name.str(), spatial_approx);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::OutputControl::NewResultFile(
+void IO::OutputControl::new_result_file(
     std::string name, const CORE::FE::ShapeFunctionType& spatial_approx)
 {
   filename_ = name;
   name += ".control";
 
-  WriteHeader(name, spatial_approx);
+  write_header(name, spatial_approx);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void IO::OutputControl::WriteHeader(
+void IO::OutputControl::write_header(
     const std::string& control_file_name, const CORE::FE::ShapeFunctionType& spatial_approx)
 {
   if (myrank_ == 0)

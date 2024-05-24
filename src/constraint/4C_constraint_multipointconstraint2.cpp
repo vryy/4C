@@ -44,7 +44,7 @@ CONSTRAINTS::MPConstraint2::MPConstraint2(Teuchos::RCP<DRT::Discretization> disc
         Teuchos::rcp(new CORE::Dofsets::TransparentDofSet(actdisc_));
     (constraintdis_.find(0)->second)->ReplaceDofSet(newdofset);
     newdofset = Teuchos::null;
-    (constraintdis_.find(0)->second)->FillComplete();
+    (constraintdis_.find(0)->second)->fill_complete();
   }
 }
 
@@ -135,7 +135,7 @@ void CONSTRAINTS::MPConstraint2::Evaluate(Teuchos::ParameterList& params,
     default:
       FOUR_C_THROW("Constraint/monitor is not an multi point constraint!");
   }
-  EvaluateConstraint(constraintdis_.find(0)->second, params, systemmatrix1, systemmatrix2,
+  evaluate_constraint(constraintdis_.find(0)->second, params, systemmatrix1, systemmatrix2,
       systemvector1, systemvector2, systemvector3);
 }
 
@@ -156,7 +156,7 @@ CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
 
   if (!actdisc->Filled())
   {
-    actdisc->FillComplete();
+    actdisc->fill_complete();
   }
 
   const int myrank = newdis->Comm().MyPID();
@@ -202,7 +202,7 @@ CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
       constraintele->SetNodeIds(ngid.size(), ngid.data());
 
       // add constraint element
-      newdis->AddElement(constraintele);
+      newdis->add_element(constraintele);
     }
     // now care about the parallel distribution and ghosting.
     // So far every processor only knows about his nodes
@@ -256,13 +256,13 @@ void CONSTRAINTS::MPConstraint2::reorder_constraint_nodes(
  |Evaluate method, calling element evaluates of a condition and          |
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint2::EvaluateConstraint(Teuchos::RCP<DRT::Discretization> disc,
+void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<DRT::Discretization> disc,
     Teuchos::ParameterList& params, Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  if (!(disc->Filled())) FOUR_C_THROW("FillComplete() was not called");
+  if (!(disc->Filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!(disc->HaveDofs())) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // see what we have for input
@@ -385,6 +385,6 @@ void CONSTRAINTS::MPConstraint2::EvaluateConstraint(Teuchos::RCP<DRT::Discretiza
       timefact->ReplaceGlobalValues(1, &curvefac, &gindex);
     }
   }
-}  // end of EvaluateCondition
+}  // end of evaluate_condition
 
 FOUR_C_NAMESPACE_CLOSE

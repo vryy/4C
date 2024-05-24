@@ -36,7 +36,7 @@ void DRT::ELEMENTS::AssembleGaussPointValues(
 void DRT::ELEMENTS::AssembleNodalElementCount(
     Epetra_IntVector& global_count, const DRT::Element& ele)
 {
-  for (int n = 0; n < ele.NumNode(); ++n)
+  for (int n = 0; n < ele.num_node(); ++n)
   {
     const int lid = global_count.Map().LID(ele.NodeIds()[n]);
 

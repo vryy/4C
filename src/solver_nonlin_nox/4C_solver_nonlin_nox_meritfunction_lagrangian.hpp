@@ -107,10 +107,10 @@ namespace NOX
         std::map<std::string, MeritFctName> get_supported_type_list() const;
 
         /// Set the Lagrangian merit function type
-        void SetType(const std::string& identifier);
+        void set_type(const std::string& identifier);
 
         //! Throws NOX error
-        void throwError(const std::string& functionName, const std::string& errorMsg) const;
+        void throw_error(const std::string& functionName, const std::string& errorMsg) const;
 
        private:
         //! Printing utilities.

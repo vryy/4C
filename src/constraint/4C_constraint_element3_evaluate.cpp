@@ -51,7 +51,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
-      const int numnod = NumNode();
+      const int numnod = num_node();
 
       if (numnod == 4)
       {
@@ -60,13 +60,13 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
         spatial_configuration(xscurr, mydisp);
         CORE::LINALG::Matrix<numdim, 1> elementnormal;
 
-        ComputeNormal(xscurr, elementnormal);
+        compute_normal(xscurr, elementnormal);
         if (abs(elementnormal.Norm2()) < 1E-6)
         {
           FOUR_C_THROW("Bad plane, points almost on a line!");
         }
 
-        elevec3[0] = ComputeNormalDist(xscurr, elementnormal);
+        elevec3[0] = compute_normal_dist(xscurr, elementnormal);
       }
       else if (numnod == 2)
       {
@@ -93,7 +93,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
-      const int numnod = NumNode();
+      const int numnod = num_node();
 
       if (numnod == 4)
       {
@@ -104,15 +104,15 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
         spatial_configuration(xscurr, mydisp);
 
         CORE::LINALG::Matrix<numdim, 1> elementnormal;
-        ComputeNormal(xscurr, elementnormal);
+        compute_normal(xscurr, elementnormal);
         if (abs(elementnormal.Norm2()) < 1E-6)
         {
           FOUR_C_THROW("Bad plane, points almost on a line!");
         }
-        double normaldistance = ComputeNormalDist(xscurr, elementnormal);
+        double normaldistance = compute_normal_dist(xscurr, elementnormal);
 
-        ComputeFirstDeriv(xscurr, elevec1, elementnormal);
-        ComputeSecondDeriv(xscurr, elemat1, elementnormal);
+        compute_first_deriv(xscurr, elevec1, elementnormal);
+        compute_second_deriv(xscurr, elemat1, elementnormal);
 
         // update corresponding column in "constraint" matrix
         elevec2 = elevec1;
@@ -153,7 +153,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------*
  * Evaluate Neumann (->FOUR_C_THROW) */
-int DRT::ELEMENTS::ConstraintElement3::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::ConstraintElement3::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -164,7 +164,7 @@ int DRT::ELEMENTS::ConstraintElement3::EvaluateNeumann(Teuchos::ParameterList& p
 
 /*----------------------------------------------------------------------*
  * compute 3d normal */
-void DRT::ELEMENTS::ConstraintElement3::ComputeNormal(
+void DRT::ELEMENTS::ConstraintElement3::compute_normal(
     const CORE::LINALG::Matrix<4, 3>& xc, CORE::LINALG::Matrix<3, 1>& elenorm)
 {
   elenorm(0, 0) = -(xc(0, 2) * xc(1, 1)) + xc(0, 1) * xc(1, 2) + xc(0, 2) * xc(2, 1) -
@@ -178,7 +178,7 @@ void DRT::ELEMENTS::ConstraintElement3::ComputeNormal(
 
 /*----------------------------------------------------------------------*
  * normal distance between fourth point and plane */
-double DRT::ELEMENTS::ConstraintElement3::ComputeNormalDist(
+double DRT::ELEMENTS::ConstraintElement3::compute_normal_dist(
     const CORE::LINALG::Matrix<4, 3>& xc, const CORE::LINALG::Matrix<3, 1>& normal)
 {
   return (-(normal(0, 0) * (xc(0, 0) - xc(3, 0))) + normal(1, 0) * (-xc(0, 1) + xc(3, 1)) -
@@ -188,7 +188,7 @@ double DRT::ELEMENTS::ConstraintElement3::ComputeNormalDist(
 
 /*----------------------------------------------------------------------*
  * first derivatives */
-void DRT::ELEMENTS::ConstraintElement3::ComputeFirstDeriv(const CORE::LINALG::Matrix<4, 3>& xc,
+void DRT::ELEMENTS::ConstraintElement3::compute_first_deriv(const CORE::LINALG::Matrix<4, 3>& xc,
     CORE::LINALG::SerialDenseVector& elevector, const CORE::LINALG::Matrix<3, 1>& normal)
 {
   double normsquare = pow(normal.Norm2(), 2);
@@ -290,7 +290,7 @@ void DRT::ELEMENTS::ConstraintElement3::ComputeFirstDeriv(const CORE::LINALG::Ma
 
 /*----------------------------------------------------------------------*
  * second derivatives */
-void DRT::ELEMENTS::ConstraintElement3::ComputeSecondDeriv(const CORE::LINALG::Matrix<4, 3>& xc,
+void DRT::ELEMENTS::ConstraintElement3::compute_second_deriv(const CORE::LINALG::Matrix<4, 3>& xc,
     CORE::LINALG::SerialDenseMatrix& elematrix, const CORE::LINALG::Matrix<3, 1>& normal)
 {
   double normsquare = pow(normal.Norm2(), 2);

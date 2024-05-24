@@ -135,7 +135,7 @@ int STR::TimIntExplEuler::IntegrateStep()
 
   // build new external forces
   fextn_->PutScalar(0.0);
-  ApplyForceExternal(timen_, disn_, veln_, fextn_);
+  apply_force_external(timen_, disn_, veln_, fextn_);
 
   // additional external forces are added (e.g. interface forces)
   fextn_->Update(1.0, *fifc_, 1.0);
@@ -152,7 +152,7 @@ int STR::TimIntExplEuler::IntegrateStep()
     Epetra_Vector disinc = Epetra_Vector(*disn_);
     disinc.Update(-1.0, *(*dis_)(0), 1.0);
     // internal force
-    ApplyForceInternal(timen_, dt, disn_, Teuchos::rcp(&disinc, false), veln_, fintn_);
+    apply_force_internal(timen_, dt, disn_, Teuchos::rcp(&disinc, false), veln_, fintn_);
   }
 
   // *********** time measurement ***********

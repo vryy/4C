@@ -40,7 +40,7 @@ SCATRA::HeterogeneousReactionStrategy::HeterogeneousReactionStrategy(
  *------------------------------------------------------------------------*/
 void SCATRA::HeterogeneousReactionStrategy::EvaluateMeshtying()
 {
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
   // create parameter list
@@ -51,21 +51,21 @@ void SCATRA::HeterogeneousReactionStrategy::EvaluateMeshtying()
       "action", SCATRA::Action::calc_heteroreac_mat_and_rhs, condparams);
 
   // set global state vectors according to time-integration scheme
-  discret_->SetState("phinp", scatratimint_->Phiafnp());
-  discret_->SetState("hist", scatratimint_->Hist());
+  discret_->set_state("phinp", scatratimint_->Phiafnp());
+  discret_->set_state("hist", scatratimint_->Hist());
 
   // provide scatra discretization with convective velocity
-  discret_->SetState(scatratimint_->NdsVel(), "convective velocity field",
+  discret_->set_state(scatratimint_->NdsVel(), "convective velocity field",
       scatratimint_->Discretization()->GetState(
           scatratimint_->NdsVel(), "convective velocity field"));
 
   // provide scatra discretization with velocity
-  discret_->SetState(scatratimint_->NdsVel(), "velocity field",
+  discret_->set_state(scatratimint_->NdsVel(), "velocity field",
       scatratimint_->Discretization()->GetState(scatratimint_->NdsVel(), "velocity field"));
 
   if (scatratimint_->IsALE())
   {
-    discret_->SetState(scatratimint_->NdsDisp(), "dispnp",
+    discret_->set_state(scatratimint_->NdsDisp(), "dispnp",
         scatratimint_->Discretization()->GetState(scatratimint_->NdsDisp(), "dispnp"));
   }
 
@@ -76,7 +76,7 @@ void SCATRA::HeterogeneousReactionStrategy::EvaluateMeshtying()
   // states are set at the beginning of this method.
   // However, in this case we are not able to set states externally
   // before this method is called.
-  // See the call hierarchy of HeterogeneousReactionStrategy::SetState()
+  // See the call hierarchy of HeterogeneousReactionStrategy::set_state()
   // to check in which algorithms states are set on discret_ .
   discret_->ClearState();
   return;
@@ -100,7 +100,7 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
   discret_ = Teuchos::rcp(new DRT::Discretization(scatratimint_->Discretization()->Name(), com));
 
   // call complete without assigning degrees of freedom
-  discret_->FillComplete(false, true, false);
+  discret_->fill_complete(false, true, false);
 
   Teuchos::RCP<DRT::Discretization> scatradis = scatratimint_->Discretization();
 
@@ -151,14 +151,14 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
     }
 
     // done. Rebuild all maps and boundary condition geometries
-    discret_->FillComplete(true, true, true);
+    discret_->fill_complete(true, true, true);
 
     if (com->MyPID() == 0 and com->NumProc() > 1)
       std::cout << "parallel distribution of auxiliary discr. with standard ghosting" << std::endl;
     CORE::REBALANCE::UTILS::print_parallel_distribution(*discret_);
   }
 
-  SetIsSetup(true);
+  set_is_setup(true);
   return;
 }
 
@@ -168,12 +168,12 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
  *----------------------------------------------------------------------*/
 void SCATRA::HeterogeneousReactionStrategy::InitMeshtying()
 {
-  SetIsSetup(false);
+  set_is_setup(false);
 
   // call Init() of base class
   SCATRA::MeshtyingStrategyStd::InitMeshtying();
 
-  SetIsInit(true);
+  set_is_init(true);
   return;
 }
 
@@ -181,19 +181,19 @@ void SCATRA::HeterogeneousReactionStrategy::InitMeshtying()
 /*----------------------------------------------------------------------*
  | Evaluate conditioned elements                            rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::HeterogeneousReactionStrategy::EvaluateCondition(Teuchos::ParameterList& params,
+void SCATRA::HeterogeneousReactionStrategy::evaluate_condition(Teuchos::ParameterList& params,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring, const int condid)
 {
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
-  // Call EvaluateCondition on auxiliary discretization.
+  // Call evaluate_condition on auxiliary discretization.
   // This condition has all dofs, both from the volume-
   // bound scalars and from the surface-bound scalars.
-  discret_->EvaluateCondition(params, systemmatrix1, systemmatrix2, systemvector1, systemvector2,
+  discret_->evaluate_condition(params, systemmatrix1, systemmatrix2, systemvector1, systemvector2,
       systemvector3, condstring, condid);
 
   return;
@@ -203,10 +203,10 @@ void SCATRA::HeterogeneousReactionStrategy::EvaluateCondition(Teuchos::Parameter
 /*----------------------------------------------------------------------*
  | Set state on auxiliary discretization                    rauch 12/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::HeterogeneousReactionStrategy::SetState(
+void SCATRA::HeterogeneousReactionStrategy::set_state(
     unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state)
 {
-  discret_->SetState(nds, name, state);
+  discret_->set_state(nds, name, state);
   return;
 }
 
@@ -236,7 +236,7 @@ void SCATRA::HeterogeneousReactionStrategy::heterogeneous_reaction_sanity_check(
     DRT::Node** nodes = ele->Nodes();
     if (ele->Shape() == CORE::FE::CellType::quad4 or ele->Shape() == CORE::FE::CellType::tri3)
     {
-      for (int node = 0; node < ele->NumNode(); node++)
+      for (int node = 0; node < ele->num_node(); node++)
       {
         const int node_gid = nodes[node]->Id();
 

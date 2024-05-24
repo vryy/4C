@@ -94,10 +94,10 @@ int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
         std::vector<double> mydisp(lm.size());
         CORE::FE::ExtractMyValues(*disp, mydisp, lm);
         const int numdim = 3;
-        CORE::LINALG::SerialDenseMatrix xscurr(NumNode(), numdim);  // material coord. of element
+        CORE::LINALG::SerialDenseMatrix xscurr(num_node(), numdim);  // material coord. of element
         spatial_configuration(xscurr, mydisp);
         // call submethod for volume evaluation and store rseult in third systemvector
-        double volumeele = ComputeConstrVols(xscurr, NumNode());
+        double volumeele = compute_constr_vols(xscurr, num_node());
         elevec3[0] = volumeele;
       }
     }
@@ -110,7 +110,7 @@ int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       const int numdim = 3;
-      CORE::LINALG::SerialDenseMatrix xscurr(NumNode(), numdim);  // material coord. of element
+      CORE::LINALG::SerialDenseMatrix xscurr(num_node(), numdim);  // material coord. of element
       spatial_configuration(xscurr, mydisp);
       double volumeele;
       // first partial derivatives
@@ -130,23 +130,26 @@ int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
         // call submethod to compute volume and its derivatives w.r.t. to current displ.
         if (*projtype == "yz")
         {
-          ComputeVolDeriv(xscurr, NumNode(), numdim * NumNode(), volumeele, Vdiff1, Vdiff2, 0, 0);
+          compute_vol_deriv(
+              xscurr, num_node(), numdim * num_node(), volumeele, Vdiff1, Vdiff2, 0, 0);
         }
         else if (*projtype == "xz")
         {
-          ComputeVolDeriv(xscurr, NumNode(), numdim * NumNode(), volumeele, Vdiff1, Vdiff2, 1, 1);
+          compute_vol_deriv(
+              xscurr, num_node(), numdim * num_node(), volumeele, Vdiff1, Vdiff2, 1, 1);
         }
         else if (*projtype == "xy")
         {
-          ComputeVolDeriv(xscurr, NumNode(), numdim * NumNode(), volumeele, Vdiff1, Vdiff2, 2, 2);
+          compute_vol_deriv(
+              xscurr, num_node(), numdim * num_node(), volumeele, Vdiff1, Vdiff2, 2, 2);
         }
         else
         {
-          ComputeVolDeriv(xscurr, NumNode(), numdim * NumNode(), volumeele, Vdiff1, Vdiff2);
+          compute_vol_deriv(xscurr, num_node(), numdim * num_node(), volumeele, Vdiff1, Vdiff2);
         }
       }
       else
-        ComputeVolDeriv(xscurr, NumNode(), numdim * NumNode(), volumeele, Vdiff1, Vdiff2);
+        compute_vol_deriv(xscurr, num_node(), numdim * num_node(), volumeele, Vdiff1, Vdiff2);
 
       // update rhs vector and corresponding column in "constraint" matrix
       elevec1 = *Vdiff1;
@@ -166,7 +169,7 @@ int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
  |                                                                      |
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Bele3::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Bele3::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -178,7 +181,7 @@ int DRT::ELEMENTS::Bele3::EvaluateNeumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  * Compute Volume enclosed by surface.                          tk 10/07*
  * ---------------------------------------------------------------------*/
-double DRT::ELEMENTS::Bele3::ComputeConstrVols(
+double DRT::ELEMENTS::Bele3::compute_constr_vols(
     const CORE::LINALG::SerialDenseMatrix& xc, const int numnode)
 {
   double V = 0.0;
@@ -203,7 +206,7 @@ double DRT::ELEMENTS::Bele3::ComputeConstrVols(
     int indb = (indc + 2) % 3;
 
     // get gaussrule
-    const CORE::FE::IntegrationPoints2D intpoints(getOptimalGaussrule());
+    const CORE::FE::IntegrationPoints2D intpoints(get_optimal_gaussrule());
     int ngp = intpoints.nquad;
 
     // allocate vector for shape functions and matrix for derivatives
@@ -242,7 +245,7 @@ double DRT::ELEMENTS::Bele3::ComputeConstrVols(
  * Compute volume and its first and second derivatives          tk 02/09*
  * with respect to the displacements                                    *
  * ---------------------------------------------------------------------*/
-void DRT::ELEMENTS::Bele3::ComputeVolDeriv(const CORE::LINALG::SerialDenseMatrix& xc,
+void DRT::ELEMENTS::Bele3::compute_vol_deriv(const CORE::LINALG::SerialDenseMatrix& xc,
     const int numnode, const int ndof, double& V,
     Teuchos::RCP<CORE::LINALG::SerialDenseVector> Vdiff1,
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> Vdiff2, const int minindex, const int maxindex)
@@ -276,7 +279,7 @@ void DRT::ELEMENTS::Bele3::ComputeVolDeriv(const CORE::LINALG::SerialDenseMatrix
     int indb = (indc + 2) % 3;
 
     // get gaussrule
-    const CORE::FE::IntegrationPoints2D intpoints(getOptimalGaussrule());
+    const CORE::FE::IntegrationPoints2D intpoints(get_optimal_gaussrule());
     int ngp = intpoints.nquad;
 
     // allocate vector for shape functions and matrix for derivatives

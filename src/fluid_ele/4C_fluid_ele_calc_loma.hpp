@@ -46,7 +46,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag = false) override;
 
       /// Evaluate the element at specified gauss points for porous flow
-      virtual int EvaluateOD(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+      virtual int evaluate_od(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -66,7 +66,7 @@ namespace DRT
           Specific evaluate function without any knowledge about DRT objects. This
           way the element evaluation is independent of the specific mesh storage.
        */
-      int EvaluateOD(Teuchos::ParameterList& params,
+      int evaluate_od(Teuchos::ParameterList& params,
           const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
           const CORE::LINALG::Matrix<nsd_, nen_>& eprescpgaf,
           CORE::LINALG::Matrix<(nsd_ + 1) * nen_, nen_>& elemat1,
@@ -109,7 +109,7 @@ namespace DRT
           \param intpoints        (i) Gaussian integration points
 
        */
-      void SysmatOD(const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
+      void sysmat_od(const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
           const CORE::LINALG::Matrix<nsd_, nen_>& eprescpgaf,
           const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
           const CORE::LINALG::Matrix<nsd_, nen_>& eveln,

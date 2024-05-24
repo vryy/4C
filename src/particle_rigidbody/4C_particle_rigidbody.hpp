@@ -109,7 +109,7 @@ namespace PARTICLERIGIDBODY
      *
      * \param[in] reader discretization reader
      */
-    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
+    void read_restart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
     /*!
      * \brief insert rigid body handler dependent states of all particle types

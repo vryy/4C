@@ -397,7 +397,7 @@ void MORTAR::BinaryTree::Init()
   init_internal_variables();
 
   // calculate minimal element length
-  SetEnlarge();
+  set_enlarge();
 
   //**********************************************************************
   // initialize binary tree root nodes
@@ -492,9 +492,9 @@ void MORTAR::BinaryTree::Init()
     {
       std::cout << "\n" << Comm().MyPID() << " Print tree with direct print function" << std::endl;
       std::cout <<"\n" <<Comm().MyPID()<< " Slave Tree:";
-      PrintTree(sroot_);
+      print_tree(sroot_);
       std::cout <<"\n" <<Comm().MyPID()<< " Master Tree:";
-      PrintTree(mroot_);
+      print_tree(mroot_);
     }
     Comm().Barrier();
   }
@@ -506,9 +506,9 @@ void MORTAR::BinaryTree::Init()
     {
       std::cout << "\n" << Comm().MyPID() << " Print tree with print function of slave and master
   treemap" << std::endl; std::cout <<"\n" <<Comm().MyPID()<< " Slave Tree:";
-      PrintTreeOfMap(streenodesmap_);
+      print_tree_of_map(streenodesmap_);
       std::cout <<"\n" <<Comm().MyPID()<< " Master Tree:";
-      PrintTreeOfMap(mtreenodesmap_);
+      print_tree_of_map(mtreenodesmap_);
     }
     Comm().Barrier();
   }
@@ -535,7 +535,7 @@ void MORTAR::BinaryTree::init_internal_variables()
 /*----------------------------------------------------------------------*
  | clear found search elements from last eval.               farah 01/16|
  *----------------------------------------------------------------------*/
-void MORTAR::BinaryTree::InitSearchElements()
+void MORTAR::BinaryTree::init_search_elements()
 {
   // loop over all elements to reset candidates / search lists
   // (use standard slave column map)
@@ -554,26 +554,26 @@ void MORTAR::BinaryTree::InitSearchElements()
 /*----------------------------------------------------------------------*
  | evaluate search to get sele to mele info (public)         farah 01/16|
  *----------------------------------------------------------------------*/
-void MORTAR::BinaryTree::EvaluateSearch()
+void MORTAR::BinaryTree::evaluate_search()
 {
-  // We have to explicitly call the updating routine, i.e. UpdateTreeTopDown() or
-  // UpdateTreeBottomUp() before calling the search routine EvaluateSearch(...). For very large
+  // We have to explicitly call the updating routine, i.e. update_tree_top_down() or
+  // update_tree_bottom_up() before calling the search routine evaluate_search(...). For very large
   // mesh tying problems, the BottomUp version is faster and therefore preferable.
 
   // init search elements
-  InitSearchElements();
+  init_search_elements();
 
   // calculate minimal element length
-  SetEnlarge();
+  set_enlarge();
 
   // update binary tree according to update type
   switch (updatetype_)
   {
     case INPAR::MORTAR::binarytree_top_down:
-      UpdateTreeTopDown();
+      update_tree_top_down();
       break;
     case INPAR::MORTAR::binarytree_bottom_up:
-      UpdateTreeBottomUp();
+      update_tree_bottom_up();
       break;
     default:
       FOUR_C_THROW("MORTAR::BinaryTreeUpdateType has to be bottom up or top down!");
@@ -581,13 +581,13 @@ void MORTAR::BinaryTree::EvaluateSearch()
   }
 
 #ifdef MORTARGMSHCTN
-  for (int i = 0; i < (int)(binarytree_->CouplingMap().size()); i++)
-    binarytree_->CouplingMap()[i].clear();
-  binarytree_->CouplingMap().clear();
-  binarytree_->CouplingMap().resize(2);
+  for (int i = 0; i < (int)(binarytree_->coupling_map().size()); i++)
+    binarytree_->coupling_map()[i].clear();
+  binarytree_->coupling_map().clear();
+  binarytree_->coupling_map().resize(2);
 #endif
   // evaluate search algorithm
-  EvaluateSearch(sroot_, mroot_);
+  evaluate_search(sroot_, mroot_);
 
   return;
 }
@@ -601,7 +601,7 @@ const Epetra_Comm& MORTAR::BinaryTree::Comm() const { return Discret().Comm(); }
 /*----------------------------------------------------------------------*
  | Find min. length of master and slave elements (public)     popp 10/08|
  *----------------------------------------------------------------------*/
-void MORTAR::BinaryTree::SetEnlarge()
+void MORTAR::BinaryTree::set_enlarge()
 {
   double lmin = 1.0e12;
 
@@ -638,7 +638,7 @@ void MORTAR::BinaryTree::SetEnlarge()
 /*----------------------------------------------------------------------*
  | Print tree (public)                                        popp 10/08|
  *----------------------------------------------------------------------*/
-void MORTAR::BinaryTree::PrintTree(Teuchos::RCP<BinaryTreeNode> treenode)
+void MORTAR::BinaryTree::print_tree(Teuchos::RCP<BinaryTreeNode> treenode)
 {
   // if treenode has no elements (NOSLAVE_ELEMENTS,NOMASTER_ELEMENTS)
   if (treenode->Type() == NOSLAVE_ELEMENTS || treenode->Type() == NOMASTER_ELEMENTS)
@@ -653,8 +653,8 @@ void MORTAR::BinaryTree::PrintTree(Teuchos::RCP<BinaryTreeNode> treenode)
   // while treenode is inner node
   if (treenode->Type() == SLAVE_INNER || treenode->Type() == MASTER_INNER)
   {
-    PrintTree(treenode->Leftchild());
-    PrintTree(treenode->Rightchild());
+    print_tree(treenode->Leftchild());
+    print_tree(treenode->Rightchild());
   }
 
   return;
@@ -663,7 +663,7 @@ void MORTAR::BinaryTree::PrintTree(Teuchos::RCP<BinaryTreeNode> treenode)
 /*----------------------------------------------------------------------*
  | Print tree with treenodesmap_ (public)                     popp 10/08|
  *----------------------------------------------------------------------*/
-void MORTAR::BinaryTree::PrintTreeOfMap(
+void MORTAR::BinaryTree::print_tree_of_map(
     std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& treenodesmap)
 {
   // print tree, elements listet in brackets (), belong to one treenode!
@@ -724,7 +724,7 @@ void MORTAR::BinaryTree::evaluate_update_tree_bottom_up(
 /*----------------------------------------------------------------------*
  | Search for contact (public)                                popp 10/08|
  *----------------------------------------------------------------------*/
-void MORTAR::BinaryTree::EvaluateSearch(
+void MORTAR::BinaryTree::evaluate_search(
     Teuchos::RCP<BinaryTreeNode> streenode, Teuchos::RCP<BinaryTreeNode> mtreenode)
 {
   // tree needs to be updated before running contact search!
@@ -759,24 +759,24 @@ void MORTAR::BinaryTree::EvaluateSearch(
     // slave and master tree nodes are inner nodes
     if (streenode->Type() == SLAVE_INNER && mtreenode->Type() == MASTER_INNER)
     {
-      EvaluateSearch(streenode->Leftchild(), mtreenode->Leftchild());
-      EvaluateSearch(streenode->Leftchild(), mtreenode->Rightchild());
-      EvaluateSearch(streenode->Rightchild(), mtreenode->Leftchild());
-      EvaluateSearch(streenode->Rightchild(), mtreenode->Rightchild());
+      evaluate_search(streenode->Leftchild(), mtreenode->Leftchild());
+      evaluate_search(streenode->Leftchild(), mtreenode->Rightchild());
+      evaluate_search(streenode->Rightchild(), mtreenode->Leftchild());
+      evaluate_search(streenode->Rightchild(), mtreenode->Rightchild());
     }
 
     // slave tree node is inner, master tree node is leaf
     if (streenode->Type() == SLAVE_INNER && mtreenode->Type() == MASTER_LEAF)
     {
-      EvaluateSearch(streenode->Leftchild(), mtreenode);
-      EvaluateSearch(streenode->Rightchild(), mtreenode);
+      evaluate_search(streenode->Leftchild(), mtreenode);
+      evaluate_search(streenode->Rightchild(), mtreenode);
     }
 
     // slave tree node is leaf,  master tree node is inner
     if (streenode->Type() == SLAVE_LEAF && mtreenode->Type() == MASTER_INNER)
     {
-      EvaluateSearch(streenode, mtreenode->Leftchild());
-      EvaluateSearch(streenode, mtreenode->Rightchild());
+      evaluate_search(streenode, mtreenode->Leftchild());
+      evaluate_search(streenode, mtreenode->Rightchild());
     }
 
     // both tree nodes are leaf --> feasible pair

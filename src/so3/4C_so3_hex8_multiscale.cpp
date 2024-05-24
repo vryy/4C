@@ -129,7 +129,7 @@ void DRT::ELEMENTS::SoHex8::soh8_read_restart_multi()
     if (GLOBAL::Problem::Instance()->GetDis("structure")->Comm().MyPID() == Owner())
       eleowner = true;
 
-    for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp) micro->ReadRestart(gp, eleID, eleowner);
+    for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp) micro->read_restart(gp, eleID, eleowner);
   }
 
   return;

@@ -143,7 +143,7 @@ namespace FLD
     \brief Print information about current time step to screen
 
     */
-    virtual void PrintTimeStepInfo()
+    virtual void print_time_step_info()
     {
       FOUR_C_THROW("you are in the base class");
       return;
@@ -241,7 +241,7 @@ namespace FLD
     }
 
     /*!
-    \brief treat turbulence models in AssembleMatAndRHS
+    \brief treat turbulence models in assemble_mat_and_rhs
 
     */
     virtual void treat_turbulence_models(Teuchos::ParameterList& eleparams);
@@ -365,7 +365,7 @@ namespace FLD
     virtual void ExplicitPredictor();
 
     /// setup the variables to do a new time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     /*!
     \brief (multiple) corrector
@@ -404,7 +404,7 @@ namespace FLD
    \brief convergence check
 
     */
-    bool ConvergenceCheck(int itnum, int itmax, const double velrestol, const double velinctol,
+    bool convergence_check(int itnum, int itmax, const double velrestol, const double velinctol,
         const double presrestol, const double presinctol) override;
 
     /*!
@@ -447,7 +447,7 @@ namespace FLD
     virtual double DtPrevious() const { return dtp_; }
 
     //! set time step size
-    void SetDt(const double dtnew) override;
+    void set_dt(const double dtnew) override;
 
     //! set time and step
     void SetTimeStep(const double time,  ///< time to set
@@ -463,7 +463,7 @@ namespace FLD
     \author mayr.mt
     \date 08/2013
     */
-    void ResetStep() override
+    void reset_step() override
     {
       accnp_->Update(1.0, *accn_, 0.0);
       velnp_->Update(1.0, *veln_, 0.0);
@@ -483,7 +483,7 @@ namespace FLD
      *
      *  \author mayr.mt \date 08/2013
      */
-    void ResetTime(const double dtold) override { SetTimeStep(Time() - dtold, Step() - 1); }
+    void reset_time(const double dtold) override { SetTimeStep(Time() - dtold, Step() - 1); }
 
     //! Give order of accuracy
     virtual int method_order_of_accuracy() const
@@ -598,7 +598,7 @@ namespace FLD
     \brief read restart data
 
     */
-    void ReadRestart(int step) override;
+    void read_restart(int step) override;
 
     /*!
     \brief get restart data in case of turbulent inflow computation
@@ -612,7 +612,7 @@ namespace FLD
     //! @name access methods for composite algorithms
     /// monolithic FSI needs to access the linear fluid problem
 
-    Teuchos::RCP<const Epetra_Vector> InitialGuess() override { return incvel_; }
+    Teuchos::RCP<const Epetra_Vector> initial_guess() override { return incvel_; }
 
     /// return implemented residual (is not an actual force in Newton [N])
     virtual Teuchos::RCP<Epetra_Vector> Residual() { return residual_; }
@@ -727,7 +727,7 @@ namespace FLD
     //! Create mesh displacement at time level t_{n+1}
     virtual Teuchos::RCP<Epetra_Vector> CreateDispnp()
     {
-      const Epetra_Map* aledofrowmap = discret_->DofRowMap(ndsale_);
+      const Epetra_Map* aledofrowmap = discret_->dof_row_map(ndsale_);
       dispnp_ = CORE::LINALG::CreateVector(*aledofrowmap, true);
       return dispnp_;
     }
@@ -738,7 +738,7 @@ namespace FLD
     //! Create mesh displacement at time level t_{n}
     virtual Teuchos::RCP<Epetra_Vector> CreateDispn()
     {
-      const Epetra_Map* aledofrowmap = discret_->DofRowMap(ndsale_);
+      const Epetra_Map* aledofrowmap = discret_->dof_row_map(ndsale_);
       dispn_ = CORE::LINALG::CreateVector(*aledofrowmap, true);
       return dispn_;
     }
@@ -1005,10 +1005,11 @@ namespace FLD
     \brief call elements to calculate system matrix/rhs and assemble
 
     */
-    virtual void AssembleMatAndRHS();
+    virtual void assemble_mat_and_rhs();
 
     /*!
-    \brief call elements to calculate system matrix/rhs and assemble, called from AssembleMatAndRHS
+    \brief call elements to calculate system matrix/rhs and assemble, called from
+    assemble_mat_and_rhs
 
     */
     virtual void EvaluateMatAndRHS(Teuchos::ParameterList& eleparams);
@@ -1403,7 +1404,7 @@ namespace FLD
            CsgsD is adapted accordingly by using the mean value of the near-wall  correction.
 
     */
-    virtual void RecomputeMeanCsgsB();
+    virtual void recompute_mean_csgs_b();
 
 
     /*! \brief Prepares the locsys manager by calculating the node normals
@@ -1426,7 +1427,7 @@ namespace FLD
     virtual void write_output_kinetic_energy();
 
     ///< Evaluate mass matrix
-    virtual void EvaluateMassMatrix();
+    virtual void evaluate_mass_matrix();
 
     /// mass matrix (not involved in standard Evaluate() since it is invluded in #sysmat_)
     Teuchos::RCP<CORE::LINALG::SparseOperator> massmat_;

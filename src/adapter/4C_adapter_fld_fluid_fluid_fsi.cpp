@@ -64,7 +64,7 @@ void ADAPTER::FluidFluidFSI::Init()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidFluidFSI::PrepareTimeStep()
+void ADAPTER::FluidFluidFSI::prepare_time_step()
 {
   if (Interface()->FSICondRelevant() &&
       (monolithic_approach_ == INPAR::XFEM::XFFSI_FixedALE_Partitioned ||
@@ -76,14 +76,14 @@ void ADAPTER::FluidFluidFSI::PrepareTimeStep()
   {
     xfluidfluid_->SetInterfaceFree();
   }
-  xfluidfluid_->PrepareTimeStep();
+  xfluidfluid_->prepare_time_step();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> ADAPTER::FluidFluidFSI::DofRowMap()
+Teuchos::RCP<const Epetra_Map> ADAPTER::FluidFluidFSI::dof_row_map()
 {
-  return xfluidfluid_->DofRowMap();
+  return xfluidfluid_->dof_row_map();
 }
 
 /*----------------------------------------------------------------------*/

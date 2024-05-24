@@ -265,11 +265,11 @@ namespace DRT
       /*!
           general function to compute the error (analytical solution) for particular problem type
        */
-      virtual int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      virtual int compute_error(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<CORE::MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec);
 
-      int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int compute_error(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<CORE::MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
           const CORE::FE::GaussIntegration& intpoints2) override;
@@ -664,7 +664,7 @@ namespace DRT
           CORE::LINALG::Matrix<nsd_, nen_>& edispnp);
 
       //! set the (relative) convective velocity at integration point for various physical types
-      void SetConvectiveVelint(const bool isale);
+      void set_convective_velint(const bool isale);
 
       //! set the (relative) convective velocity at integration point for various physical types
       void set_convective_velint_n(const bool isale);
@@ -702,7 +702,7 @@ namespace DRT
           double& viscn, double& gamma);
 
       //! return constant mk for stabilization parameters
-      virtual double GetMK();
+      virtual double get_mk();
 
       //! calculate stabilization parameter
       void CalcStabParameter(const double vol);  ///< volume

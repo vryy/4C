@@ -493,10 +493,10 @@ void MORTAR::IntElement::NodeLinearization(
     case CORE::FE::CellType::tri6:
     {
       // resize the linearizations
-      nodelin.resize(NumNode(), std::vector<CORE::GEN::Pairedvector<int, double>>(3, 1));
+      nodelin.resize(num_node(), std::vector<CORE::GEN::Pairedvector<int, double>>(3, 1));
 
       // loop over all intEle nodes
-      for (int in = 0; in < NumNode(); ++in)
+      for (int in = 0; in < num_node(); ++in)
       {
         MORTAR::Node* mrtrnode = dynamic_cast<MORTAR::Node*>(Nodes()[in]);
         for (int dim = 0; dim < 3; ++dim) nodelin[in][dim][mrtrnode->Dofs()[dim]] += 1.;
@@ -506,8 +506,8 @@ void MORTAR::IntElement::NodeLinearization(
     case CORE::FE::CellType::nurbs9:
     {
       // resize the linearizations
-      nodelin.resize(NumNode(),
-          std::vector<CORE::GEN::Pairedvector<int, double>>(3, 3 * (parele_->NumNode())));
+      nodelin.resize(num_node(),
+          std::vector<CORE::GEN::Pairedvector<int, double>>(3, 3 * (parele_->num_node())));
 
       // parameter space coords of pseudo nodes
       double pseudo_nodes_param_coords[4][2];
@@ -536,7 +536,7 @@ void MORTAR::IntElement::NodeLinearization(
       }
 
       // loop over all pseudo-nodes
-      for (int pn = 0; pn < NumNode(); ++pn)
+      for (int pn = 0; pn < num_node(); ++pn)
       {
         double xi[2] = {pseudo_nodes_param_coords[pn][0], pseudo_nodes_param_coords[pn][1]};
 
@@ -546,7 +546,7 @@ void MORTAR::IntElement::NodeLinearization(
         parele_->EvaluateShape(xi, sval, sderiv, 9, true);
 
         // loop over all parent element control points
-        for (int cp = 0; cp < parele_->NumNode(); ++cp)
+        for (int cp = 0; cp < parele_->num_node(); ++cp)
         {
           MORTAR::Node* mrtrcp = dynamic_cast<MORTAR::Node*>(parele_->Nodes()[cp]);
 
@@ -598,7 +598,7 @@ MORTAR::IntCell::IntCell(int id, int nvertices, CORE::LINALG::Matrix<3, 3>& coor
   }
   else if (shape == CORE::FE::CellType::line2)
   {
-    // compute length of IntLine
+    // compute length of int_line
     std::array<double, 3> v = {0.0, 0.0, 0.0};
     v[0] = Coords()(0, 0) - Coords()(0, 1);
     v[1] = Coords()(1, 0) - Coords()(1, 1);
@@ -764,7 +764,7 @@ void MORTAR::IntCell::DerivJacobian(CORE::GEN::Pairedvector<int, double>& derivj
   // 1d line element
   if (Shape() == CORE::FE::CellType::line2)
   {
-    // compute length of IntLine
+    // compute length of int_line
     std::array<double, 3> v = {0.0, 0.0, 0.0};
     v[0] = Coords()(0, 0) - Coords()(0, 1);
     v[1] = Coords()(1, 0) - Coords()(1, 1);

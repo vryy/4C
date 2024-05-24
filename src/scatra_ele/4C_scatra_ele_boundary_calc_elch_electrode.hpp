@@ -271,7 +271,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& scalars) override;
 
       //! evaluate factor F/RT
-      virtual double GetFRT() const;
+      virtual double get_frt() const;
     };  // class ScaTraEleBoundaryCalcElchElectrode
   }     // namespace ELEMENTS
 }  // namespace DRT

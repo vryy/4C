@@ -38,7 +38,7 @@ STR::IMPLICIT::Statics::Statics()
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::Statics::Setup()
 {
-  CheckInit();
+  check_init();
 
   // Call the Setup() of the abstract base class first.
   Generic::Setup();
@@ -52,17 +52,17 @@ void STR::IMPLICIT::Statics::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Statics::PostSetup()
+void STR::IMPLICIT::Statics::post_setup()
 {
-  CheckInitSetup();
+  check_init_setup();
   // DO NOTHING
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Statics::SetState(const Epetra_Vector& x)
+void STR::IMPLICIT::Statics::set_state(const Epetra_Vector& x)
 {
-  CheckInitSetup();
+  check_init_setup();
   if (IsPredictorState()) return;
 
   Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().ExtractDisplEntries(x);
@@ -73,7 +73,7 @@ void STR::IMPLICIT::Statics::SetState(const Epetra_Vector& x)
  *----------------------------------------------------------------------------*/
 bool STR::IMPLICIT::Statics::ApplyForce(const Epetra_Vector& x, Epetra_Vector& f)
 {
-  CheckInitSetup();
+  check_init_setup();
   ResetEvalParams();
   return ModelEval().ApplyForce(x, f, 1.0);
 }
@@ -82,7 +82,7 @@ bool STR::IMPLICIT::Statics::ApplyForce(const Epetra_Vector& x, Epetra_Vector& f
  *----------------------------------------------------------------------------*/
 bool STR::IMPLICIT::Statics::ApplyStiff(const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac)
 {
-  CheckInitSetup();
+  check_init_setup();
   ResetEvalParams();
   bool ok = ModelEval().ApplyStiff(x, jac, 1.0);
   jac.Complete();
@@ -94,7 +94,7 @@ bool STR::IMPLICIT::Statics::ApplyStiff(const Epetra_Vector& x, CORE::LINALG::Sp
 bool STR::IMPLICIT::Statics::ApplyForceStiff(
     const Epetra_Vector& x, Epetra_Vector& f, CORE::LINALG::SparseOperator& jac)
 {
-  CheckInitSetup();
+  check_init_setup();
   ResetEvalParams();
   bool ok = ModelEval().ApplyForceStiff(x, f, jac, 1.0);
   jac.Complete();
@@ -103,11 +103,11 @@ bool STR::IMPLICIT::Statics::ApplyForceStiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::Statics::AssembleForce(
+bool STR::IMPLICIT::Statics::assemble_force(
     Epetra_Vector& f, const std::vector<INPAR::STR::ModelType>* without_these_models) const
 {
-  CheckInitSetup();
-  return ModelEval().AssembleForce(1.0, f, without_these_models);
+  check_init_setup();
+  return ModelEval().assemble_force(1.0, f, without_these_models);
 }
 
 /*----------------------------------------------------------------------------*
@@ -115,7 +115,7 @@ bool STR::IMPLICIT::Statics::AssembleForce(
 void STR::IMPLICIT::Statics::WriteRestart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // create empty dynamic forces
   auto finertialn = CORE::LINALG::CreateVector(*GlobalState().DofRowMapView(), true);
@@ -130,10 +130,10 @@ void STR::IMPLICIT::Statics::WriteRestart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Statics::ReadRestart(IO::DiscretizationReader& ioreader)
+void STR::IMPLICIT::Statics::read_restart(IO::DiscretizationReader& ioreader)
 {
-  CheckInitSetup();
-  ModelEval().ReadRestart(ioreader);
+  check_init_setup();
+  ModelEval().read_restart(ioreader);
 }
 
 /*----------------------------------------------------------------------------*
@@ -141,7 +141,7 @@ void STR::IMPLICIT::Statics::ReadRestart(IO::DiscretizationReader& ioreader)
 double STR::IMPLICIT::Statics::CalcRefNormForce(
     const enum ::NOX::Abstract::Vector::NormType& type) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   const Teuchos::RCP<Epetra_Vector> fintnp =
       Teuchos::rcp_const_cast<Epetra_Vector>(GlobalState().GetFintNp());
@@ -179,7 +179,7 @@ double STR::IMPLICIT::Statics::GetIntParam() const { return 0.0; }
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::Statics::PreUpdate()
 {
-  CheckInitSetup();
+  check_init_setup();
   const STR::TIMINT::Implicit* impl_ptr = dynamic_cast<const STR::TIMINT::Implicit*>(&TimInt());
   if (impl_ptr == nullptr) return;
 
@@ -223,7 +223,7 @@ void STR::IMPLICIT::Statics::PreUpdate()
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::Statics::UpdateStepState()
 {
-  CheckInitSetup();
+  check_init_setup();
   // update model specific variables
   ModelEval().UpdateStepState(0.0);
 }
@@ -232,7 +232,7 @@ void STR::IMPLICIT::Statics::UpdateStepState()
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::Statics::UpdateStepElement()
 {
-  CheckInitSetup();
+  check_init_setup();
   ModelEval().UpdateStepElement();
 }
 
@@ -241,7 +241,7 @@ void STR::IMPLICIT::Statics::UpdateStepElement()
 void STR::IMPLICIT::Statics::predict_const_dis_consist_vel_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
-  CheckInitSetup();
+  check_init_setup();
   // constant predictor : displacement in domain
   disnp.Update(1.0, *GlobalState().GetDisN(), 0.0);
   // new end-point velocities, these stay zero in static calculation
@@ -255,7 +255,7 @@ void STR::IMPLICIT::Statics::predict_const_dis_consist_vel_acc(
 bool STR::IMPLICIT::Statics::predict_const_vel_consist_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
-  CheckInitSetup();
+  check_init_setup();
   // If there is not enough history information, return a fail status.
   if (GlobalState().GetStepN() == 0) return false;
 
@@ -279,7 +279,7 @@ bool STR::IMPLICIT::Statics::predict_const_vel_consist_acc(
 bool STR::IMPLICIT::Statics::PredictConstAcc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
-  CheckInitSetup();
+  check_init_setup();
   // If there is not enough history information try a different predictor with
   // less requirements.
   if (GlobalState().GetStepN() < 2) return predict_const_vel_consist_acc(disnp, velnp, accnp);
@@ -316,7 +316,7 @@ double STR::IMPLICIT::Statics::GetModelValue(const Epetra_Vector& x)
   Teuchos::RCP<const Epetra_Vector> disnp_ptr = GlobalState().ExtractDisplEntries(x);
   const Epetra_Vector& disnp = *disnp_ptr;
 
-  SetState(disnp);
+  set_state(disnp);
 
   EvalData().clear_values_for_all_energy_types();
   STR::MODELEVALUATOR::Structure& str_model =

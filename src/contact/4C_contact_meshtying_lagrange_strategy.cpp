@@ -34,11 +34,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | ctor (public)                                              popp 05/09|
  *----------------------------------------------------------------------*/
-CONTACT::MtLagrangeStrategy::MtLagrangeStrategy(const Epetra_Map* DofRowMap,
+CONTACT::MtLagrangeStrategy::MtLagrangeStrategy(const Epetra_Map* dof_row_map,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<Teuchos::RCP<MORTAR::Interface>> interface, const int spatialDim,
     const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
-    : MtAbstractStrategy(DofRowMap, NodeRowMap, params, interface, spatialDim, comm, alphaf, maxdof)
+    : MtAbstractStrategy(
+          dof_row_map, NodeRowMap, params, interface, spatialDim, comm, alphaf, maxdof)
 {
   // empty constructor body
   return;
@@ -452,14 +453,14 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(
     Teuchos::RCP<Epetra_Vector> fsm;
 
     // do the vector splitting smn -> sm+n
-    CORE::LINALG::SplitVector(*ProblemDofs(), *feff, gsmdofrowmap_, fsm, gndofrowmap_, fn);
+    CORE::LINALG::split_vector(*ProblemDofs(), *feff, gsmdofrowmap_, fsm, gndofrowmap_, fn);
 
     // we want to split fsm into 2 groups s,m
     fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
     fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
 
     // do the vector splitting sm -> s+m
-    CORE::LINALG::SplitVector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
+    CORE::LINALG::split_vector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
 
     // store some stuff for static condensation of LM
     fs_ = fs;
@@ -648,7 +649,7 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(
       kteffnew->Add(*kssmod, false, 1.0, 1.0);
     }
 
-    // FillComplete kteffnew (square)
+    // fill_complete kteffnew (square)
     kteffnew->Complete();
 
     // add n subvector to feffnew
@@ -989,7 +990,7 @@ void CONTACT::MtLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool CONTACT::MtLagrangeStrategy::EvaluateForce(const Teuchos::RCP<const Epetra_Vector> dis)
+bool CONTACT::MtLagrangeStrategy::evaluate_force(const Teuchos::RCP<const Epetra_Vector> dis)
 {
   if (f_.is_null()) f_ = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
   f_->PutScalar(0.);
@@ -1015,7 +1016,7 @@ bool CONTACT::MtLagrangeStrategy::EvaluateForce(const Teuchos::RCP<const Epetra_
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool CONTACT::MtLagrangeStrategy::EvaluateStiff(const Teuchos::RCP<const Epetra_Vector> dis)
+bool CONTACT::MtLagrangeStrategy::evaluate_stiff(const Teuchos::RCP<const Epetra_Vector> dis)
 {
   if (!dm_matrix_.is_null() && !dm_matrix_t_.is_null() && !lm_diag_matrix_.is_null()) return true;
 
@@ -1067,10 +1068,10 @@ bool CONTACT::MtLagrangeStrategy::EvaluateStiff(const Teuchos::RCP<const Epetra_
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool CONTACT::MtLagrangeStrategy::EvaluateForceStiff(const Teuchos::RCP<const Epetra_Vector> dis)
+bool CONTACT::MtLagrangeStrategy::evaluate_force_stiff(const Teuchos::RCP<const Epetra_Vector> dis)
 {
-  bool successForce = EvaluateForce(dis);
-  bool successStiff = EvaluateStiff(dis);
+  bool successForce = evaluate_force(dis);
+  bool successStiff = evaluate_stiff(dis);
 
   return (successForce && successStiff);
 }

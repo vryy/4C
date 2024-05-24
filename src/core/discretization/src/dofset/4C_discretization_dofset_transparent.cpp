@@ -49,11 +49,11 @@ int CORE::Dofsets::TransparentDofSet::assign_degrees_of_freedom(
 void CORE::Dofsets::TransparentDofSet::transfer_degrees_of_freedom(
     const DRT::Discretization& sourcedis, const DRT::Discretization& newdis, const int start)
 {
-  if (!sourcedis.DofRowMap()->UniqueGIDs()) FOUR_C_THROW("DofRowMap is not unique");
+  if (!sourcedis.dof_row_map()->UniqueGIDs()) FOUR_C_THROW("dof_row_map is not unique");
   if (!sourcedis.NodeRowMap()->UniqueGIDs()) FOUR_C_THROW("NodeRowMap is not unique");
   if (!sourcedis.ElementRowMap()->UniqueGIDs()) FOUR_C_THROW("ElementRowMap is not unique");
 
-  if (!newdis.DofRowMap()->UniqueGIDs()) FOUR_C_THROW("DofRowMap is not unique");
+  if (!newdis.dof_row_map()->UniqueGIDs()) FOUR_C_THROW("dof_row_map is not unique");
   if (!newdis.NodeRowMap()->UniqueGIDs()) FOUR_C_THROW("NodeRowMap is not unique");
   if (!newdis.ElementRowMap()->UniqueGIDs()) FOUR_C_THROW("ElementRowMap is not unique");
 
@@ -132,11 +132,11 @@ void CORE::Dofsets::TransparentDofSet::transfer_degrees_of_freedom(
 void CORE::Dofsets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
     const DRT::Discretization& sourcedis, const DRT::Discretization& newdis, const int start)
 {
-  if (!sourcedis.DofRowMap()->UniqueGIDs()) FOUR_C_THROW("DofRowMap is not unique");
+  if (!sourcedis.dof_row_map()->UniqueGIDs()) FOUR_C_THROW("dof_row_map is not unique");
   if (!sourcedis.NodeRowMap()->UniqueGIDs()) FOUR_C_THROW("NodeRowMap is not unique");
   if (!sourcedis.ElementRowMap()->UniqueGIDs()) FOUR_C_THROW("ElementRowMap is not unique");
 
-  if (!newdis.DofRowMap()->UniqueGIDs()) FOUR_C_THROW("DofRowMap is not unique");
+  if (!newdis.dof_row_map()->UniqueGIDs()) FOUR_C_THROW("dof_row_map is not unique");
   if (!newdis.NodeRowMap()->UniqueGIDs()) FOUR_C_THROW("NodeRowMap is not unique");
   if (!newdis.ElementRowMap()->UniqueGIDs()) FOUR_C_THROW("ElementRowMap is not unique");
 
@@ -185,7 +185,7 @@ void CORE::Dofsets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
       // in the first step, we cannot receive anything
       if (np > 0)
       {
-        ReceiveBlock(numproc, myrank, rblock, exporter, request);
+        receive_block(numproc, myrank, rblock, exporter, request);
 
         // Unpack info from the receive block from the last proc
         unpack_local_source_dofs(gid_to_dofs, rblock);
@@ -206,7 +206,7 @@ void CORE::Dofsets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
         gid_to_dofs.clear();
         swap(sblock, data());
 
-        SendBlock(numproc, myrank, sblock, exporter, request);
+        send_block(numproc, myrank, sblock, exporter, request);
       }
     }
   }
@@ -462,7 +462,7 @@ void CORE::Dofsets::TransparentDofSet::unpack_local_source_dofs(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CORE::Dofsets::TransparentDofSet::ReceiveBlock(int numproc, int myrank,
+void CORE::Dofsets::TransparentDofSet::receive_block(int numproc, int myrank,
     std::vector<char>& rblock, CORE::COMM::Exporter& exporter, MPI_Request& request)
 {
   // necessary variables
@@ -492,7 +492,7 @@ void CORE::Dofsets::TransparentDofSet::ReceiveBlock(int numproc, int myrank,
   exporter.Comm().Barrier();
 
   return;
-}  // ReceiveBlock
+}  // receive_block
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -504,21 +504,21 @@ void CORE::Dofsets::TransparentDofSet::ReceiveBlock(int numproc, int myrank,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CORE::Dofsets::TransparentDofSet::SendBlock(int numproc, int myrank, std::vector<char>& sblock,
-    CORE::COMM::Exporter& exporter, MPI_Request& request)
+void CORE::Dofsets::TransparentDofSet::send_block(int numproc, int myrank,
+    std::vector<char>& sblock, CORE::COMM::Exporter& exporter, MPI_Request& request)
 {
   // Send block to next proc.
   int tag = myrank;
   int frompid = myrank;
   int topid = (myrank + 1) % numproc;
 
-  exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
+  exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
 
   // for safety
   exporter.Comm().Barrier();
 
   return;
-}  // SendBlock
+}  // send_block
 
 FOUR_C_NAMESPACE_CLOSE

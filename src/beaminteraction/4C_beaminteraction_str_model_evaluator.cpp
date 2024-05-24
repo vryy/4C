@@ -76,7 +76,7 @@ STR::MODELEVALUATOR::BeamInteraction::BeamInteraction()
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteraction::Setup()
 {
-  CheckInit();
+  check_init();
 
   // -------------------------------------------------------------------------
   // setup variables
@@ -87,8 +87,8 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   stiff_beaminteraction_ =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
   // force and displacement at last redistribution
-  force_beaminteraction_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMap(), true));
-  dis_at_last_redistr_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMap(), true));
+  force_beaminteraction_ = Teuchos::rcp(new Epetra_Vector(*GState().dof_row_map(), true));
+  dis_at_last_redistr_ = Teuchos::rcp(new Epetra_Vector(*GState().dof_row_map(), true));
   // get myrank
   myrank_ = DiscretPtr()->Comm().MyPID();
 
@@ -100,7 +100,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   Logo();
 
   // set submodel types
-  SetSubModelTypes();
+  set_sub_model_types();
 
   // -------------------------------------------------------------------------
   // clone problem discretization, the idea is simple: we redistribute only
@@ -173,13 +173,13 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   init_and_setup_sub_model_evaluators();
 
   // distribute problem according to bin distribution to procs ( in case of restart
-  // partitioning is done during ReadRestart() )
-  if (not GLOBAL::Problem::Instance()->Restart()) PartitionProblem();
+  // partitioning is done during read_restart() )
+  if (not GLOBAL::Problem::Instance()->Restart()) partition_problem();
 
   // some actions need a partitioned system followed by a renewal of the partition
-  if (not GLOBAL::Problem::Instance()->Restart() and post_partition_problem()) PartitionProblem();
+  if (not GLOBAL::Problem::Instance()->Restart() and post_partition_problem()) partition_problem();
 
-  PostSetup();
+  post_setup();
 
   // some screen output
   CORE::REBALANCE::UTILS::print_parallel_distribution(*ia_discret_);
@@ -190,14 +190,14 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::PostSetup()
+void STR::MODELEVALUATOR::BeamInteraction::post_setup()
 {
-  CheckInit();
+  check_init();
 
   // post setup submodel loop
   Vector::iterator sme_iter;
   for (Vector::iterator sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->PostSetup();
+    (*sme_iter)->post_setup();
 
   if (beaminteraction_params_ptr_->get_repartition_strategy() ==
       INPAR::BEAMINTERACTION::repstr_adaptive)
@@ -223,9 +223,9 @@ void STR::MODELEVALUATOR::BeamInteraction::PostSetup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::SetSubModelTypes()
+void STR::MODELEVALUATOR::BeamInteraction::set_sub_model_types()
 {
-  CheckInit();
+  check_init();
 
   submodeltypes_ = Teuchos::rcp(new std::set<enum INPAR::BEAMINTERACTION::SubModelType>());
 
@@ -301,14 +301,14 @@ void STR::MODELEVALUATOR::BeamInteraction::SetSubModelTypes()
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteraction::init_and_setup_sub_model_evaluators()
 {
-  CheckInit();
+  check_init();
 
   // model map
   me_map_ptr_ = BEAMINTERACTION::SUBMODELEVALUATOR::build_model_evaluators(*submodeltypes_);
   std::vector<enum INPAR::BEAMINTERACTION::SubModelType> sorted_submodeltypes(0);
 
   // build and sort submodel vector
-  me_vec_ptr_ = TransformToVector(*me_map_ptr_, sorted_submodeltypes);
+  me_vec_ptr_ = transform_to_vector(*me_map_ptr_, sorted_submodeltypes);
 
   Vector::iterator sme_iter;
   for (sme_iter = (*me_vec_ptr_).begin(); sme_iter != (*me_vec_ptr_).end(); ++sme_iter)
@@ -330,7 +330,7 @@ void STR::MODELEVALUATOR::BeamInteraction::init_and_setup_sub_model_evaluators()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Vector>
-STR::MODELEVALUATOR::BeamInteraction::TransformToVector(
+STR::MODELEVALUATOR::BeamInteraction::transform_to_vector(
     STR::MODELEVALUATOR::BeamInteraction::Map submodel_map,
     std::vector<INPAR::BEAMINTERACTION::SubModelType>& sorted_submodel_types) const
 {
@@ -364,15 +364,15 @@ STR::MODELEVALUATOR::BeamInteraction::TransformToVector(
 bool STR::MODELEVALUATOR::BeamInteraction::HaveSubModelType(
     INPAR::BEAMINTERACTION::SubModelType const& submodeltype) const
 {
-  CheckInit();
+  check_init();
   return (submodeltypes_->find(submodeltype) != submodeltypes_->end());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::PartitionProblem()
+void STR::MODELEVALUATOR::BeamInteraction::partition_problem()
 {
-  CheckInit();
+  check_init();
 
   // store structure discretization in vector
   std::vector<Teuchos::RCP<DRT::Discretization>> discret_vec(1, ia_discret_);
@@ -429,17 +429,17 @@ void STR::MODELEVALUATOR::BeamInteraction::PartitionProblem()
       ia_discret_, ia_state_ptr_->GetBinToRowEleMap(), iadiscolnp);
 
   // build row elements to bin map
-  BuildRowEleToBinMap();
+  build_row_ele_to_bin_map();
 
   // extend ghosting
-  ExtendGhosting();
+  extend_ghosting();
 
   // assign Elements to bins
   binstrategy_->remove_all_eles_from_bins();
   binstrategy_->AssignElesToBins(ia_discret_, ia_state_ptr_->get_extended_bin_to_row_ele_map());
 
   // update maps of state vectors and matrices
-  UpdateMaps();
+  update_maps();
 
   // reset transformation
   update_coupling_adapter_and_matrix_transformation();
@@ -449,7 +449,7 @@ void STR::MODELEVALUATOR::BeamInteraction::PartitionProblem()
  *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::BeamInteraction::post_partition_problem()
 {
-  CheckInit();
+  check_init();
 
   bool repartition = false;
 
@@ -462,13 +462,13 @@ bool STR::MODELEVALUATOR::BeamInteraction::post_partition_problem()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::ExtendGhosting()
+void STR::MODELEVALUATOR::BeamInteraction::extend_ghosting()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::BeamInteraction::ExtendGhosting");
+  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::BeamInteraction::extend_ghosting");
 
   ia_state_ptr_->get_extended_bin_to_row_ele_map().clear();
 
-  CheckInit();
+  check_init();
 
   std::set<int> colbins;
 
@@ -525,7 +525,7 @@ void STR::MODELEVALUATOR::BeamInteraction::ExtendGhosting()
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteraction::Reset(const Epetra_Vector& x)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // todo: somewhat illegal as of const correctness
   TimInt().GetDataSDynPtr()->get_periodic_bounding_box()->ApplyDirichlet(GState().GetTimeN());
@@ -575,13 +575,13 @@ void STR::MODELEVALUATOR::BeamInteraction::Reset(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BeamInteraction::EvaluateForce()
+bool STR::MODELEVALUATOR::BeamInteraction::evaluate_force()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   Vector::iterator sme_iter;
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->EvaluateForce();
+    (*sme_iter)->evaluate_force();
 
   // do communication
   if (ia_state_ptr_->GetForceNp()->GlobalAssemble(Add, false) != 0)
@@ -591,26 +591,26 @@ bool STR::MODELEVALUATOR::BeamInteraction::EvaluateForce()
     FOUR_C_THROW("update went wrong");
 
   // transformation from ia_discret to problem discret
-  TransformForce();
+  transform_force();
 
   return true;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BeamInteraction::EvaluateStiff()
+bool STR::MODELEVALUATOR::BeamInteraction::evaluate_stiff()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   ia_state_ptr_->GetStiff()->UnComplete();
 
   Vector::iterator sme_iter;
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->EvaluateStiff();
+    (*sme_iter)->evaluate_stiff();
 
   if (not ia_state_ptr_->GetStiff()->Filled()) ia_state_ptr_->GetStiff()->Complete();
 
-  TransformStiff();
+  transform_stiff();
 
   if (not stiff_beaminteraction_->Filled()) stiff_beaminteraction_->Complete();
 
@@ -619,15 +619,15 @@ bool STR::MODELEVALUATOR::BeamInteraction::EvaluateStiff()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BeamInteraction::EvaluateForceStiff()
+bool STR::MODELEVALUATOR::BeamInteraction::evaluate_force_stiff()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   ia_state_ptr_->GetStiff()->UnComplete();
 
   Vector::iterator sme_iter;
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->EvaluateForceStiff();
+    (*sme_iter)->evaluate_force_stiff();
 
   // do communication
   if (ia_state_ptr_->GetForceNp()->GlobalAssemble(Add, false) != 0)
@@ -638,7 +638,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::EvaluateForceStiff()
     FOUR_C_THROW("update went wrong");
   if (not ia_state_ptr_->GetStiff()->Filled()) ia_state_ptr_->GetStiff()->Complete();
 
-  TransformForceStiff();
+  transform_force_stiff();
 
   if (not stiff_beaminteraction_->Filled()) stiff_beaminteraction_->Complete();
 
@@ -647,10 +647,10 @@ bool STR::MODELEVALUATOR::BeamInteraction::EvaluateForceStiff()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BeamInteraction::AssembleForce(
+bool STR::MODELEVALUATOR::BeamInteraction::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *force_beaminteraction_);
 
@@ -659,10 +659,10 @@ bool STR::MODELEVALUATOR::BeamInteraction::AssembleForce(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BeamInteraction::AssembleJacobian(
+bool STR::MODELEVALUATOR::BeamInteraction::assemble_jacobian(
     CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
   jac_dd_ptr->Add(*stiff_beaminteraction_, false, timefac_np, 1.0);
@@ -679,7 +679,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::AssembleJacobian(
 void STR::MODELEVALUATOR::BeamInteraction::WriteRestart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   int const stepn = GState().GetStepN();
   double const timen = GState().GetTimeN();
@@ -708,9 +708,9 @@ void STR::MODELEVALUATOR::BeamInteraction::WriteRestart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::ReadRestart(IO::DiscretizationReader& ioreader)
+void STR::MODELEVALUATOR::BeamInteraction::read_restart(IO::DiscretizationReader& ioreader)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   int const stepn = GState().GetStepN();
   auto input_control_file = GLOBAL::Problem::Instance()->InputControlFile();
@@ -722,7 +722,7 @@ void STR::MODELEVALUATOR::BeamInteraction::ReadRestart(IO::DiscretizationReader&
 
   // read interaction discretization
   IO::DiscretizationReader ia_reader(ia_discret_, input_control_file, stepn);
-  // includes FillComplete()
+  // includes fill_complete()
   ia_reader.ReadHistoryData(stepn);
 
   // rebuild bin discret correctly in case crosslinker were present
@@ -730,18 +730,18 @@ void STR::MODELEVALUATOR::BeamInteraction::ReadRestart(IO::DiscretizationReader&
   // read correct nodes
   IO::DiscretizationReader bin_reader(bindis_, input_control_file, stepn);
   bin_reader.ReadNodesOnly(stepn);
-  bindis_->FillComplete(false, false, false);
+  bindis_->fill_complete(false, false, false);
 
   // need to read step next (as it was written next, do safety check)
   if (stepn != ia_reader.ReadInt("step") or stepn != bin_reader.ReadInt("step"))
     FOUR_C_THROW("Restart step not consistent with read restart step. ");
 
   // rebuild binning
-  PartitionProblem();
+  partition_problem();
 
   // sub model loop
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->ReadRestart(ia_reader, bin_reader);
+    (*sme_iter)->read_restart(ia_reader, bin_reader);
 
   // post sub model loop
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
@@ -773,7 +773,7 @@ void STR::MODELEVALUATOR::BeamInteraction::RunPostComputeX(
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteraction::RunPostIterate(const ::NOX::Solver::Generic& solver)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // submodel loop
   Vector::iterator sme_iter;
@@ -785,7 +785,7 @@ void STR::MODELEVALUATOR::BeamInteraction::RunPostIterate(const ::NOX::Solver::G
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteraction::UpdateStepState(const double& timefac_n)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // add the old time factor scaled contributions to the residual
   Teuchos::RCP<Epetra_Vector>& fstructold_ptr = GState().GetFstructureOld();
@@ -802,7 +802,7 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepState(const double& timefac
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   Vector::iterator sme_iter;
 
@@ -827,10 +827,10 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
     binstrategy_->transfer_nodes_and_elements(
         ia_discret_, ia_state_ptr_->GetDisColNp(), ia_state_ptr_->GetBinToRowEleMap());
 
-    BuildRowEleToBinMap();
+    build_row_ele_to_bin_map();
 
     // extend ghosting
-    ExtendGhosting();
+    extend_ghosting();
 
     // assign Elements to bins
     binstrategy_->remove_all_eles_from_bins();
@@ -848,7 +848,7 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
   }
   else if (binning_redist)
   {
-    ExtendGhosting();
+    extend_ghosting();
     binstrategy_->remove_all_eles_from_bins();
     binstrategy_->AssignElesToBins(ia_discret_, ia_state_ptr_->get_extended_bin_to_row_ele_map());
 
@@ -861,7 +861,7 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
   }
 
   // update maps of state vectors and matrices
-  UpdateMaps();
+  update_maps();
 
   // update coupling adapter, this should be done every time step as
   // interacting elements and therefore system matrix can change every time step
@@ -885,7 +885,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::check_if_beam_discret_redistribution_
     return true;
 
   Teuchos::RCP<Epetra_Vector> dis_increment =
-      Teuchos::rcp(new Epetra_Vector(*GState().DofRowMap(), true));
+      Teuchos::rcp(new Epetra_Vector(*GState().dof_row_map(), true));
   int doflid[3];
   for (int i = 0; i < discret_ptr_->NumMyRowNodes(); ++i)
   {
@@ -942,13 +942,13 @@ void STR::MODELEVALUATOR::BeamInteraction::determine_stress_strain()
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteraction::DetermineEnergy()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   std::map<STR::EnergyType, double> energy_this_submodel;
 
   for (auto& submodel : (*me_vec_ptr_))
   {
-    energy_this_submodel = submodel->GetEnergy();
+    energy_this_submodel = submodel->get_energy();
 
     for (auto const& energy_type : energy_this_submodel)
       EvalData().add_contribution_to_energy_type(energy_type.second, energy_type.first);
@@ -966,7 +966,7 @@ void STR::MODELEVALUATOR::BeamInteraction::determine_optional_quantity()
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteraction::OutputStepState(IO::DiscretizationWriter& iowriter) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   Vector::iterator sme_iter;
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
@@ -980,7 +980,7 @@ void STR::MODELEVALUATOR::BeamInteraction::OutputStepState(IO::DiscretizationWri
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteraction::runtime_output_step_state() const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   Vector::iterator sme_iter;
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
@@ -995,8 +995,8 @@ void STR::MODELEVALUATOR::BeamInteraction::runtime_output_step_state() const
 Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::BeamInteraction::get_block_dof_row_map_ptr()
     const
 {
-  CheckInitSetup();
-  return GState().DofRowMap();
+  check_init_setup();
+  return GState().dof_row_map();
 }
 
 /*----------------------------------------------------------------------------*
@@ -1037,7 +1037,7 @@ void STR::MODELEVALUATOR::BeamInteraction::ResetStepState()
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteraction::update_coupling_adapter_and_matrix_transformation()
 {
-  CheckInit();
+  check_init();
 
   TEUCHOS_FUNC_TIME_MONITOR(
       "STR::MODELEVALUATOR::BeamInteraction::update_coupling_adapter_and_matrix_transformation");
@@ -1045,14 +1045,14 @@ void STR::MODELEVALUATOR::BeamInteraction::update_coupling_adapter_and_matrix_tr
   // reset transformation member variables (eg. exporter) by rebuilding
   // and provide new maps for coupling adapter
   siatransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform);
-  coupsia_->SetupCoupling(*ia_discret_, *discret_ptr_);
+  coupsia_->setup_coupling(*ia_discret_, *discret_ptr_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::BuildRowEleToBinMap()
+void STR::MODELEVALUATOR::BeamInteraction::build_row_ele_to_bin_map()
 {
-  CheckInit();
+  check_init();
 
   // delete old map
   ia_state_ptr_->GetRowEleToBinMap().clear();
@@ -1075,9 +1075,9 @@ void STR::MODELEVALUATOR::BeamInteraction::BuildRowEleToBinMap()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::UpdateMaps()
+void STR::MODELEVALUATOR::BeamInteraction::update_maps()
 {
-  CheckInit();
+  check_init();
 
   // todo: performance improvement by using the same exporter object every time
   // and not doing the safety checks in Linalg::Export.
@@ -1104,23 +1104,24 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateMaps()
   }
 
   // force
-  ia_force_beaminteraction_ = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofRowMap(), true));
-  ia_state_ptr_->GetForceNp() = Teuchos::rcp(new Epetra_FEVector(*ia_discret_->DofRowMap(), true));
+  ia_force_beaminteraction_ = Teuchos::rcp(new Epetra_Vector(*ia_discret_->dof_row_map(), true));
+  ia_state_ptr_->GetForceNp() =
+      Teuchos::rcp(new Epetra_FEVector(*ia_discret_->dof_row_map(), true));
 
   // stiff
   ia_state_ptr_->GetStiff() = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *ia_discret_->DofRowMap(), 81, true, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
+      *ia_discret_->dof_row_map(), 81, true, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
 
   BEAMINTERACTION::UTILS::SetupEleTypeMapExtractor(ia_discret_, eletypeextractor_);
 }
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::TransformForce()
+void STR::MODELEVALUATOR::BeamInteraction::transform_force()
 {
-  CheckInit();
+  check_init();
 
-  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::BeamInteraction::TransformForce");
+  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::BeamInteraction::transform_force");
 
   // transform force vector to problem discret layout/distribution
   force_beaminteraction_ = coupsia_->MasterToSlave(ia_force_beaminteraction_);
@@ -1128,11 +1129,11 @@ void STR::MODELEVALUATOR::BeamInteraction::TransformForce()
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::TransformStiff()
+void STR::MODELEVALUATOR::BeamInteraction::transform_stiff()
 {
-  CheckInit();
+  check_init();
 
-  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::BeamInteraction::TransformStiff");
+  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::BeamInteraction::transform_stiff");
 
   stiff_beaminteraction_->UnComplete();
   // transform stiffness matrix to problem discret layout/distribution
@@ -1142,12 +1143,12 @@ void STR::MODELEVALUATOR::BeamInteraction::TransformStiff()
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::TransformForceStiff()
+void STR::MODELEVALUATOR::BeamInteraction::transform_force_stiff()
 {
-  CheckInit();
+  check_init();
 
-  TransformForce();
-  TransformStiff();
+  transform_force();
+  transform_stiff();
 }
 
 /*-----------------------------------------------------------------------------*
@@ -1183,7 +1184,7 @@ void STR::MODELEVALUATOR::BeamInteraction::print_binning_info_to_screen() const
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteraction::Logo() const
 {
-  CheckInit();
+  check_init();
 
   if (myrank_ == 0)
   {

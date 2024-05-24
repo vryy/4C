@@ -129,7 +129,7 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
       for (int i = 0; i < idiscret_->NumMyRowElements(); ++i)
       {
         MORTAR::Element* element = dynamic_cast<MORTAR::Element*>(idiscret_->lRowElement(i));
-        int nnodes = element->NumNode();
+        int nnodes = element->num_node();
         CORE::LINALG::SerialDenseMatrix coord(3, nnodes);
         element->GetNodalCoords(coord);
         double color = (double)element->Owner();
@@ -897,7 +897,7 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
     filenamectn << iter;
   }
 
-  int lcontactmapsize = (int)(binarytree_->CouplingMap()[0].size());
+  int lcontactmapsize = (int)(binarytree_->coupling_map()[0].size());
   int gcontactmapsize;
 
   Comm().MaxAll(&lcontactmapsize, &gcontactmapsize, 1);
@@ -922,11 +922,11 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
     {
       if (Comm().MyPID() == i)
       {
-        if ((int)(binarytree_->CouplingMap()[0]).size() !=
-            (int)(binarytree_->CouplingMap()[1]).size())
-          FOUR_C_THROW("Binarytree CouplingMap does not have right size!");
+        if ((int)(binarytree_->coupling_map()[0]).size() !=
+            (int)(binarytree_->coupling_map()[1]).size())
+          FOUR_C_THROW("Binarytree coupling_map does not have right size!");
 
-        for (int j = 0; j < (int)((binarytree_->CouplingMap()[0]).size()); j++)
+        for (int j = 0; j < (int)((binarytree_->coupling_map()[0]).size()); j++)
         {
           std::ostringstream currentfilename;
           std::ostringstream gmshfile;
@@ -940,7 +940,7 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
             gmshfile << "View \" Step " << step << " Iter " << iter << " CS  \" {" << std::endl;
             fprintf(fp, gmshfile.str().c_str());
             fclose(fp);
-            (binarytree_->CouplingMap()[0][j])->PrintDopsForGmsh(currentfilename.str().c_str());
+            (binarytree_->coupling_map()[0][j])->PrintDopsForGmsh(currentfilename.str().c_str());
           }
           else
           {
@@ -950,7 +950,7 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
                      << "View \" Step " << step << " Iter " << iter << " CS  \" {" << std::endl;
             fprintf(fp, gmshfile.str().c_str());
             fclose(fp);
-            (binarytree_->CouplingMap()[0][j])->PrintDopsForGmsh(currentfilename.str().c_str());
+            (binarytree_->coupling_map()[0][j])->PrintDopsForGmsh(currentfilename.str().c_str());
           }
 
           // create new sheet for master
@@ -959,7 +959,7 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
                       << "View \" Step " << step << " Iter " << iter << " CM  \" {" << std::endl;
           fprintf(fp, newgmshfile.str().c_str());
           fclose(fp);
-          (binarytree_->CouplingMap()[1][j])->PrintDopsForGmsh(currentfilename.str().c_str());
+          (binarytree_->coupling_map()[1][j])->PrintDopsForGmsh(currentfilename.str().c_str());
         }
       }
       Comm().Barrier();
@@ -4894,7 +4894,7 @@ void CONTACT::Interface::FDCheckStickDeriv(
       }  //  loop over master nodes
 
       // gp-wise slip !!!!!!!
-      if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+      if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         jumptxi = cnode->FriData().jump_var()[0];
         jumpteta = 0.0;
@@ -5016,7 +5016,7 @@ void CONTACT::Interface::FDCheckStickDeriv(
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+        if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
@@ -5230,7 +5230,7 @@ void CONTACT::Interface::FDCheckStickDeriv(
         }  //  loop over master nodes
         // gp-wise slip !!!!!!!
 
-        if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+        if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
@@ -5361,11 +5361,11 @@ void CONTACT::Interface::FDCheckSlipDeriv(
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
-  double frbound = InterfaceParams().get<double>("FRBOUND");
-  double frcoeff = InterfaceParams().get<double>("FRCOEFF");
-  double ct = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
-  double cn = InterfaceParams().get<double>("SEMI_SMOOTH_CN");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(interface_params(), "FRICTION");
+  double frbound = interface_params().get<double>("FRBOUND");
+  double frcoeff = interface_params().get<double>("FRCOEFF");
+  double ct = interface_params().get<double>("SEMI_SMOOTH_CT");
+  double cn = interface_params().get<double>("SEMI_SMOOTH_CN");
 
   // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
@@ -5441,7 +5441,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
       }  //  loop over master nodes
 
       // gp-wise slip !!!!!!!
-      if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+      if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         jumptxi = cnode->FriData().jump_var()[0];
         jumpteta = 0.0;
@@ -5571,7 +5571,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+        if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
@@ -5807,7 +5807,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+        if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
@@ -6046,7 +6046,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+        if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
@@ -6483,9 +6483,9 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
   if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // information from interface contact parameter list
-  double frcoeff = InterfaceParams().get<double>("FRCOEFF");
-  double ppnor = InterfaceParams().get<double>("PENALTYPARAM");
-  double pptan = InterfaceParams().get<double>("PENALTYPARAMTAN");
+  double frcoeff = interface_params().get<double>("FRCOEFF");
+  double ppnor = interface_params().get<double>("PENALTYPARAM");
+  double pptan = interface_params().get<double>("PENALTYPARAMTAN");
 
   // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
@@ -6566,9 +6566,9 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
     CORE::LINALG::multiply(lmuzawatan, tanplane, lmuzawa);
 
     if ((CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-             InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_penalty) ||
+             interface_params(), "STRATEGY") == INPAR::CONTACT::solution_penalty) ||
         (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-             InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_multiscale))
+             interface_params(), "STRATEGY") == INPAR::CONTACT::solution_multiscale))
     {
       for (int j = 0; j < dim; j++)
       {
@@ -6723,9 +6723,9 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
       CORE::LINALG::multiply(lmuzawatan, tanplane, lmuzawa);
 
       if ((CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-               InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_penalty) ||
+               interface_params(), "STRATEGY") == INPAR::CONTACT::solution_penalty) ||
           (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-               InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_multiscale))
+               interface_params(), "STRATEGY") == INPAR::CONTACT::solution_multiscale))
       {
         for (int j = 0; j < dim; j++)
         {
@@ -6941,9 +6941,9 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
       CORE::LINALG::multiply(lmuzawatan, tanplane, lmuzawa);
 
       if ((CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-               InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_penalty) ||
+               interface_params(), "STRATEGY") == INPAR::CONTACT::solution_penalty) ||
           (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-               InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_multiscale))
+               interface_params(), "STRATEGY") == INPAR::CONTACT::solution_multiscale))
       {
         for (int j = 0; j < dim; j++)
         {

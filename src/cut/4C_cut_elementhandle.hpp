@@ -240,7 +240,7 @@ namespace CORE::GEO
        integation-cells to the local coordinates of background element
        */
       template <CORE::FE::CellType distype>
-      Teuchos::RCP<CORE::FE::GaussPoints> CreateProjected(
+      Teuchos::RCP<CORE::FE::GaussPoints> create_projected(
           const std::vector<CORE::GEO::CUT::Point*>& cpoints,
           Teuchos::RCP<CORE::FE::GaussPoints> gp_ic);
 

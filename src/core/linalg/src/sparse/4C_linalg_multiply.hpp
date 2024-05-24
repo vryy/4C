@@ -66,7 +66,7 @@ namespace CORE::LINALG
 
   \param Aorig (in)       : Matrix A for C=A*B
   \param Borig (in)       : Matrix B for C=A*B
-  \param complete (in): flag indicating whether C shall be called FillComplete.
+  \param complete (in): flag indicating whether C shall be called fill_complete.
                         There intentionally is NO default value for this here.
   */
   Teuchos::RCP<SparseMatrix> MLMultiply(const Epetra_CrsMatrix& Aorig,

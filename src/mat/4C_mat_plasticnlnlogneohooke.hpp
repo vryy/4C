@@ -218,7 +218,7 @@ namespace MAT
         const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const override;
 
     /// Return whether the material requires the deformation gradient for its evaluation
-    bool NeedsDefgrd() override { return true; };
+    bool needs_defgrd() override { return true; };
 
     //@}
 

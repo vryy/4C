@@ -62,7 +62,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
     case CORE::FE::CellType::hex8:
     {
       if (ndim == 3)
-        return DefineProblemType<CORE::FE::CellType::hex8, 3>(
+        return define_problem_type<CORE::FE::CellType::hex8, 3>(
             problem, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension for HEX8 transport element!");
@@ -71,7 +71,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
     case CORE::FE::CellType::hex27:
     {
       if (ndim == 3)
-        return DefineProblemType<CORE::FE::CellType::hex27, 3>(
+        return define_problem_type<CORE::FE::CellType::hex27, 3>(
             problem, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension for HEX27 transport element!");
@@ -80,7 +80,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
     case CORE::FE::CellType::tet4:
     {
       if (ndim == 3)
-        return DefineProblemType<CORE::FE::CellType::tet4, 3>(
+        return define_problem_type<CORE::FE::CellType::tet4, 3>(
             problem, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension for TET4 transport element!");
@@ -89,7 +89,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
     case CORE::FE::CellType::tet10:
     {
       if (ndim == 3)
-        return DefineProblemType<CORE::FE::CellType::tet10, 3>(
+        return define_problem_type<CORE::FE::CellType::tet10, 3>(
             problem, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension for TET10 transport element!");
@@ -99,7 +99,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
     {
       if (ndim == 3)
       {
-        return DefineProblemType<CORE::FE::CellType::pyramid5, 3>(
+        return define_problem_type<CORE::FE::CellType::pyramid5, 3>(
             problem, numdofpernode, numscal, disname);
       }
       else
@@ -109,10 +109,10 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
     case CORE::FE::CellType::quad4:
     {
       if (ndim == 2)
-        return DefineProblemType<CORE::FE::CellType::quad4, 2>(
+        return define_problem_type<CORE::FE::CellType::quad4, 2>(
             problem, numdofpernode, numscal, disname);
       else if (ndim == 3)
-        return DefineProblemType<CORE::FE::CellType::quad4, 3>(
+        return define_problem_type<CORE::FE::CellType::quad4, 3>(
             problem, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension for quad4 transport element!");
@@ -121,7 +121,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
     case CORE::FE::CellType::quad9:
     {
       if (ndim == 2)
-        return DefineProblemType<CORE::FE::CellType::quad9, 2>(
+        return define_problem_type<CORE::FE::CellType::quad9, 2>(
             problem, numdofpernode, numscal, disname);
       else
       {
@@ -134,7 +134,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
     case CORE::FE::CellType::nurbs9:
     {
       if (ndim == 2)
-        return DefineProblemType<CORE::FE::CellType::nurbs9, 2>(
+        return define_problem_type<CORE::FE::CellType::nurbs9, 2>(
             problem, numdofpernode, numscal, disname);
       else
       {
@@ -148,10 +148,10 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
     case CORE::FE::CellType::tri3:
     {
       if (ndim == 2)
-        return DefineProblemType<CORE::FE::CellType::tri3, 2>(
+        return define_problem_type<CORE::FE::CellType::tri3, 2>(
             problem, numdofpernode, numscal, disname);
       else if (ndim == 3)
-        return DefineProblemType<CORE::FE::CellType::tri3, 3>(
+        return define_problem_type<CORE::FE::CellType::tri3, 3>(
             problem, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension for tri3 transport element!");
@@ -160,7 +160,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
     case CORE::FE::CellType::tri6:
     {
       if (ndim == 2)
-        return DefineProblemType<CORE::FE::CellType::tri6, 2>(
+        return define_problem_type<CORE::FE::CellType::tri6, 2>(
             problem, numdofpernode, numscal, disname);
       else
       {
@@ -173,13 +173,13 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
     case CORE::FE::CellType::line2:
     {
       if (ndim == 1)
-        return DefineProblemType<CORE::FE::CellType::line2, 1>(
+        return define_problem_type<CORE::FE::CellType::line2, 1>(
             problem, numdofpernode, numscal, disname);
       else if (ndim == 2)
-        return DefineProblemType<CORE::FE::CellType::line2, 2>(
+        return define_problem_type<CORE::FE::CellType::line2, 2>(
             problem, numdofpernode, numscal, disname);
       else if (ndim == 3)
-        return DefineProblemType<CORE::FE::CellType::line2, 3>(
+        return define_problem_type<CORE::FE::CellType::line2, 3>(
             problem, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension for LINE2 transport element!");
@@ -194,7 +194,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
             ndim);
       }
       else
-        return DefineProblemType<CORE::FE::CellType::line3, 1>(
+        return define_problem_type<CORE::FE::CellType::line3, 1>(
             problem, numdofpernode, numscal, disname);
       break;
     }
@@ -294,7 +294,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemType(
+DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::define_problem_type(
     INPAR::SCATRA::ImplType problem, const int numdofpernode, const int numscal,
     const std::string& disname)
 {

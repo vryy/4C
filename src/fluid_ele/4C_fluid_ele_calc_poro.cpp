@@ -90,7 +90,7 @@ DRT::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro()
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcPoro<distype>::PreEvaluate(
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::pre_evaluate(
     Teuchos::ParameterList& params, DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization)
 {
   // do nothing
@@ -116,7 +116,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateService(DRT::ELEMENTS::Flu
     }
     case FLD::calc_fluid_error:
     {
-      return ComputeError(ele, params, mat, discretization, lm, elevec1);
+      return compute_error(ele, params, mat, discretization, lm, elevec1);
       break;
     }
     default:
@@ -154,7 +154,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele
   }
   else
   {  // evaluate off diagonal block (coupling block)
-    return EvaluateOD(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
+    return evaluate_od(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
         elevec1_epetra, elevec2_epetra, elevec3_epetra, Base::intpoints_);
   }
 }
@@ -306,7 +306,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele
   CORE::LINALG::Matrix<(nsd_ + 1) * nen_, 1> elevec1(elevec1_epetra, true);
   // elevec2 and elevec3 are currently not in use
 
-  PreEvaluate(params, ele, discretization);
+  pre_evaluate(params, ele, discretization);
 
   // call inner evaluate (does not know about DRT element or discretization object)
   int result = Evaluate(params, ebofoaf, elemat1, elevec1, evelaf, epreaf, evelnp, eveln, eprenp,
@@ -318,7 +318,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele
 }
 
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* ele,
+int DRT::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_od(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
     Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -463,12 +463,12 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* e
   CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
       ele, Base::xyze_);
 
-  PreEvaluate(params, ele, discretization);
+  pre_evaluate(params, ele, discretization);
 
   // call inner evaluate (does not know about DRT element or discretization object)
-  return EvaluateOD(params, ebofoaf, elemat1, elevec1, evelaf, epreaf, evelnp, eveln, eprenp, epren,
-      epressnp_timederiv, epressam_timederiv, epressn_timederiv, eaccam, edispnp, edispn, egridv,
-      egridvn, escaaf, emhist, echist, nullptr, mat, ele->IsAle(), intpoints);
+  return evaluate_od(params, ebofoaf, elemat1, elevec1, evelaf, epreaf, evelnp, eveln, eprenp,
+      epren, epressnp_timederiv, epressam_timederiv, epressn_timederiv, eaccam, edispnp, edispn,
+      egridv, egridvn, escaaf, emhist, echist, nullptr, mat, ele->IsAle(), intpoints);
 }
 
 template <CORE::FE::CellType distype>
@@ -509,7 +509,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(Teuchos::ParameterList& p
 }
 
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_od(Teuchos::ParameterList& params,
     const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
     CORE::LINALG::Matrix<(nsd_ + 1) * nen_, nsd_ * nen_>& elemat1,
     CORE::LINALG::Matrix<(nsd_ + 1) * nen_, 1>& elevec1,
@@ -540,7 +540,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(Teuchos::ParameterList&
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
   // ---------------------------------------------------------------------
-  SysmatOD(params, ebofoaf, evelaf, evelnp, eveln, epreaf, eprenp, epren, eaccam,
+  sysmat_od(params, ebofoaf, evelaf, evelnp, eveln, epreaf, eprenp, epren, eaccam,
       epressnp_timederiv, epressam_timederiv, epressn_timederiv, edispnp, edispn, egridv, egridvn,
       escaaf, emhist, echist, eporositynp, elemat1, elevec1, mat, isale, intpoints);
 
@@ -705,7 +705,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(Teuchos::ParameterList& pa
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::sysmat_od(Teuchos::ParameterList& params,
     const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf, const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
     const CORE::LINALG::Matrix<nsd_, nen_>& evelnp, const CORE::LINALG::Matrix<nsd_, nen_>& eveln,
     const CORE::LINALG::Matrix<nen_, 1>& epreaf, const CORE::LINALG::Matrix<nen_, 1>& eprenp,
@@ -6226,7 +6226,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeDefGradient(
 }
 
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(DRT::ELEMENTS::Fluid* ele,
+int DRT::ELEMENTS::FluidEleCalcPoro<distype>::compute_error(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1)
@@ -6235,11 +6235,11 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(DRT::ELEMENTS::Fluid*
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
   // degree 5
   const CORE::FE::GaussIntegration intpoints(distype, 5);
-  return ComputeError(ele, params, mat, discretization, lm, elevec1, intpoints);
+  return compute_error(ele, params, mat, discretization, lm, elevec1, intpoints);
 }
 
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(DRT::ELEMENTS::Fluid* ele,
+int DRT::ELEMENTS::FluidEleCalcPoro<distype>::compute_error(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, const CORE::FE::GaussIntegration& intpoints)
@@ -6785,13 +6785,13 @@ double DRT::ELEMENTS::FluidEleCalcPoro<distype>::compute_effective_stiffness()
     {
       Teuchos::RCP<MAT::StVenantKirchhoff> stvmat =
           Teuchos::rcp_dynamic_cast<MAT::StVenantKirchhoff>(curmat);
-      effective_stiffness = stvmat->ShearMod();
+      effective_stiffness = stvmat->shear_mod();
       break;
     }
     case CORE::Materials::m_elasthyper:
     {
       Teuchos::RCP<MAT::ElastHyper> ehmat = Teuchos::rcp_dynamic_cast<MAT::ElastHyper>(curmat);
-      effective_stiffness = ehmat->ShearMod();
+      effective_stiffness = ehmat->shear_mod();
       break;
     }
     default:
@@ -6805,7 +6805,7 @@ double DRT::ELEMENTS::FluidEleCalcPoro<distype>::compute_effective_stiffness()
   if (effective_stiffness < 1e-14)
   {
     FOUR_C_THROW(
-        "Effective stiffness is very small (%f). ShearMod() method not implemented in material?",
+        "Effective stiffness is very small (%f). shear_mod() method not implemented in material?",
         effective_stiffness);
   }
 

@@ -199,7 +199,7 @@ int MAT::ElastHyper::MatID(const unsigned index) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::ElastHyper::ShearMod() const
+double MAT::ElastHyper::shear_mod() const
 {
   // principal coefficients
   bool haveshearmod = false;
@@ -268,14 +268,14 @@ void MAT::ElastHyper::Setup(int numgp, INPUT::LineDefinition* linedef)
   }
 }
 
-void MAT::ElastHyper::PostSetup(Teuchos::ParameterList& params, const int eleGID)
+void MAT::ElastHyper::post_setup(Teuchos::ParameterList& params, const int eleGID)
 {
   anisotropy_.read_anisotropy_from_parameter_list(params);
 
-  // Forward PostSetup call to all summands
+  // Forward post_setup call to all summands
   for (auto& p : potsum_)
   {
-    p->PostSetup(params);
+    p->post_setup(params);
   }
 }
 
@@ -331,7 +331,7 @@ void MAT::ElastHyper::StrainEnergy(
 
   EvaluateRightCauchyGreenStrainLikeVoigt(glstrain, C_strain);
   CORE::LINALG::VOIGT::Strains::InvariantsPrincipal(prinv, C_strain);
-  InvariantsModified(modinv, prinv);
+  invariants_modified(modinv, prinv);
 
   // loop map of associated potential summands
   for (const auto& p : potsum_)

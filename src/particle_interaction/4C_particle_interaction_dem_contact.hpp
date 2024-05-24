@@ -81,7 +81,7 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::DEMHistoryPairs> historypairs);
 
     //! set current step size
-    void SetCurrentStepSize(const double currentstepsize);
+    void set_current_step_size(const double currentstepsize);
 
     //! insert contact evaluation dependent states
     void insert_particle_states_of_particle_types(

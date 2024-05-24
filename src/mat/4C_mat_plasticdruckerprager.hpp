@@ -142,7 +142,7 @@ namespace MAT
     void Stress(const T p, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1, T>& devstress,
         CORE::LINALG::Matrix<NUM_STRESS_3D, 1, T>& stress);
 
-    void SetupCmat(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat);
+    void setup_cmat(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat);
     /**
      * \brief setup the elastoplasticity tensor in matrix notation for 3d return to cone
      *

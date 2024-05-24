@@ -47,41 +47,41 @@ namespace BEAMINTERACTION
     void Setup();
 
     //! returns the isinit_ flag
-    inline const bool& IsInit() const { return isinit_; };
+    inline const bool& is_init() const { return isinit_; };
 
     //! returns the issetup_ flag
-    inline const bool& IsSetup() const { return issetup_; };
+    inline const bool& is_setup() const { return issetup_; };
 
     //! Checks the init and setup status
-    inline void CheckInitSetup() const
+    inline void check_init_setup() const
     {
-      if (!IsInit() or !IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
+      if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
     }
 
     //! Checks the init status
-    inline void CheckInit() const
+    inline void check_init() const
     {
-      if (!IsInit()) FOUR_C_THROW("Init() has not been called, yet!");
+      if (!is_init()) FOUR_C_THROW("Init() has not been called, yet!");
     }
 
     /// number of crosslinkers per type
     std::vector<int> const& num_crosslinker_per_type() const
     {
-      CheckInitSetup();
+      check_init_setup();
       return numcrosslinkerpertype_;
     };
 
     /// number of crosslinkers per type
     int num_init_crosslinker_per_crosslinker_mat_id(int matid) const
     {
-      CheckInitSetup();
+      check_init_setup();
       return maxnum_init_crosslinker_pertype_.at(matid);
     };
 
     /// number of crosslinkers per type
     int total_num_init_crosslinker() const
     {
-      CheckInitSetup();
+      check_init_setup();
       int sum = 0;
       for (auto const& iter : maxnum_init_crosslinker_pertype_) sum += iter.second;
       return sum;
@@ -90,49 +90,49 @@ namespace BEAMINTERACTION
     /// material number for crosslinker types
     std::vector<int> const& mat_crosslinker_per_type() const
     {
-      CheckInitSetup();
+      check_init_setup();
       return matcrosslinkerpertype_;
     };
 
     /// get all active crosslinker types
     std::vector<INPAR::BEAMINTERACTION::CrosslinkerType> const& LinkerTypes() const
     {
-      CheckInitSetup();
+      check_init_setup();
       return linkertypes_;
     };
 
     /// number of different crosslinker types in simulation volume
     int number_of_crosslinker_types() const
     {
-      CheckInitSetup();
+      check_init_setup();
       return static_cast<int>(numcrosslinkerpertype_.size());
     };
 
     /// ~ 1e-3 / 2.27 according to cyron2011 eq 52 ff, viscosity of surrounding fluid
     double const& Viscosity() const
     {
-      CheckInitSetup();
+      check_init_setup();
       return viscosity_;
     };
 
     /// thermal energy
     double const& KT() const
     {
-      CheckInitSetup();
+      check_init_setup();
       return kt_;
     };
 
     /// time step for stochastic events concerning crosslinking
     double const& DeltaTime() const
     {
-      CheckInitSetup();
+      check_init_setup();
       return deltatime_;
     };
 
     /// time step for stochastic events concerning crosslinking
     CORE::LINALG::Matrix<3, 2> const& linker_initialization_box() const
     {
-      CheckInitSetup();
+      check_init_setup();
       return init_box_;
     };
 
@@ -140,21 +140,21 @@ namespace BEAMINTERACTION
     int max_number_of_bonds_per_filament_bspot(
         INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
     {
-      CheckInitSetup();
+      check_init_setup();
       return max_num_bonds_per_filament_bspot_.at(linkertype);
     };
 
     // distance between two binding spots on a filament
     double filament_bspot_interval_global(INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
     {
-      CheckInitSetup();
+      check_init_setup();
       return filamentbspotintervalglobal_.at(linkertype);
     };
 
     // distance between two binding spots on a filament
     double filament_bspot_interval_local(INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
     {
-      CheckInitSetup();
+      check_init_setup();
       return filamentbspotintervallocal_.at(linkertype);
     };
 
@@ -162,7 +162,7 @@ namespace BEAMINTERACTION
     std::pair<double, double> const& filament_bspot_range_local(
         INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
     {
-      CheckInitSetup();
+      check_init_setup();
       return filamentbspotrangelocal_.at(linkertype);
     };
 
@@ -170,7 +170,7 @@ namespace BEAMINTERACTION
     std::pair<double, double> const& filament_bspot_range_global(
         INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
     {
-      CheckInitSetup();
+      check_init_setup();
       return filamentbspotrangeglobal_.at(linkertype);
     };
 

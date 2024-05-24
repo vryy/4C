@@ -98,7 +98,7 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
     // ask base algorithm for the ale time integrator
     Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(
         new ADAPTER::AleBaseAlgorithm(fsidynparams, GLOBAL::Problem::Instance()->GetDis("ale")));
-    ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleFpsiWrapper>(ale->AleField());
+    ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleFpsiWrapper>(ale->ale_field());
     if (ale_ == Teuchos::null)
       FOUR_C_THROW("Cast from ADAPTER::Ale to ADAPTER::AleFpsiWrapper failed");
   }
@@ -113,9 +113,9 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
   // do not init in ale case!!! (will be done in MonolithicAFSI_XFEM::Setup System())
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid =
       Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams, fdyn, "fluid", ale, false));
-  fluid_ = Teuchos::rcp_dynamic_cast<FLD::XFluid>(fluid->FluidField());
+  fluid_ = Teuchos::rcp_dynamic_cast<FLD::XFluid>(fluid->fluid_field());
   if (fluid_ == Teuchos::null)
-    FOUR_C_THROW("Cast of Fluid to XFluid failed! - Everything fine in SetupFluid()?");
+    FOUR_C_THROW("Cast of Fluid to XFluid failed! - Everything fine in setup_fluid()?");
   fluid_->Init(false);
 
   // Do setup of the fields here
@@ -142,8 +142,8 @@ void FSI::AlgorithmXFEM::Update()
   FOUR_C_THROW("currently unused");
 
   StructurePoro()->Update();
-  FluidField()->Update();
-  if (HaveAle()) AleField()->Update();
+  fluid_field()->Update();
+  if (HaveAle()) ale_field()->Update();
 
   return;
 }
@@ -153,9 +153,9 @@ void FSI::AlgorithmXFEM::Update()
 /*----------------------------------------------------------------------*
  | calculate stresses, strains, energies                   schott 08/14 |
  *----------------------------------------------------------------------*/
-void FSI::AlgorithmXFEM::PrepareOutput(bool force_prepare)
+void FSI::AlgorithmXFEM::prepare_output(bool force_prepare)
 {
-  StructurePoro()->PrepareOutput(force_prepare);
+  StructurePoro()->prepare_output(force_prepare);
 }
 
 FOUR_C_NAMESPACE_CLOSE

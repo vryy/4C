@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
  |  pre-evaluate the element (public)                      sfuchs 05/18 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::MembraneScatra<distype>::PreEvaluate(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::MembraneScatra<distype>::pre_evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
   if (la.Size() > 1)
@@ -110,7 +110,7 @@ int DRT::ELEMENTS::MembraneScatra<distype>::Evaluate(Teuchos::ParameterList& par
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // in some cases we need to write/change some data before evaluating
-  PreEvaluate(params, discretization, la);
+  pre_evaluate(params, discretization, la);
 
   Membrane<distype>::Evaluate(params, discretization, la[0].lm_, elemat1_epetra, elemat2_epetra,
       elevec1_epetra, elevec2_epetra, elevec3_epetra);

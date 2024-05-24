@@ -34,7 +34,7 @@ namespace CONTACT
     Creates the strategy base object and initializes all global variables.
 
     \param[in] data_ptr Data container object
-    \param[in] DofRowMap Dof row map of underlying problem
+    \param[in] dof_row_map Dof row map of underlying problem
     \param[in] NodeRowMap Node row map of underlying problem
     \param[in] params List of contact/parameters
     \param[in] interface All contact interface objects
@@ -44,7 +44,7 @@ namespace CONTACT
     \param[in] maxdof Highest DOF number in global problem
     */
     LagrangeStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
-        const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
+        const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
         std::vector<Teuchos::RCP<CONTACT::Interface>> interface, const int spatialDim,
         Teuchos::RCP<const Epetra_Comm> comm, const double alphaf, const int maxdof);
 
@@ -234,15 +234,15 @@ namespace CONTACT
 
     In terms of data structures and parallel layout, the Lagrange multiplier DOFs have the same
     parallel layout as their slave side displacement DOFs counterparts, but distinct global IDs
-    (GIDs). For evaluation of mortar matrices, the salve side DofRowMap #gsdofrowmap_ is used.
+    (GIDs). For evaluation of mortar matrices, the salve side dof_row_map #gsdofrowmap_ is used.
     However, for assembling the saddle-point system, the constraint equations need their own unique
     map, #glmdofrowmap_. To also account for the possibility of a parallel redistribution of the
     Mortar interface discretizations, the assembly is performed in two steps:
 
     1. Transform maps related to constraint DOFs of matrix blocks \f$K_{dz}\f$, \f$K_{zd}\f$, and
-       \f$K_{zz}\f$ to the Lagrange multiplier DofRowMap #glmdofrowmap_.
+       \f$K_{zz}\f$ to the Lagrange multiplier dof_row_map #glmdofrowmap_.
     2. If parallel redistribution is active, do another transformation to go from the redistributed
-       constraint DofRowMap #glmdofrowmap_ to the original distribution #pglmdofrowmap_.
+       constraint dof_row_map #glmdofrowmap_ to the original distribution #pglmdofrowmap_.
 
     \param[in] kdd Displacement dof stiffness (upper left block)
     \param[in] fd  Displacement dof r.h.s. (upper block)
@@ -308,12 +308,12 @@ namespace CONTACT
      *         set force evaluation flag
      *
      */
-    void PreEvaluate(CONTACT::ParamsInterface& cparams) override;
+    void pre_evaluate(CONTACT::ParamsInterface& cparams) override;
 
     /*! \brief Run in the end of the Evaluate() routine to reset
      *         force evaluation flag
      */
-    void PostEvaluate(CONTACT::ParamsInterface& cparams) override;
+    void post_evaluate(CONTACT::ParamsInterface& cparams) override;
 
     /*! \brief This is a postprocessing functionality for nonsmooth contact
      */

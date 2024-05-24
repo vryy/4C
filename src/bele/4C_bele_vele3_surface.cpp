@@ -59,7 +59,7 @@ DRT::Element* DRT::ELEMENTS::Vele3Surface::Clone() const
  *----------------------------------------------------------------------*/
 CORE::FE::CellType DRT::ELEMENTS::Vele3Surface::Shape() const
 {
-  switch (NumNode())
+  switch (num_node())
   {
     case 3:
       return CORE::FE::CellType::tri3;
@@ -72,7 +72,7 @@ CORE::FE::CellType DRT::ELEMENTS::Vele3Surface::Shape() const
     case 9:
       return CORE::FE::CellType::quad9;
     default:
-      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", num_node());
   }
 }
 
@@ -126,7 +126,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3Surface::Surfaces()
 /*----------------------------------------------------------------------*
  |  get optimal gauss rule                                   gammi 04/07|
  *----------------------------------------------------------------------*/
-CORE::FE::GaussRule2D DRT::ELEMENTS::Vele3Surface::getOptimalGaussrule(
+CORE::FE::GaussRule2D DRT::ELEMENTS::Vele3Surface::get_optimal_gaussrule(
     const CORE::FE::CellType& distype) const
 {
   CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::undefined;

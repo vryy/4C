@@ -48,7 +48,7 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   discret_ = GLOBAL::Problem::Instance(microdisnum_)->GetDis("structure");
 
   // set degrees of freedom in the discretization
-  if (!discret_->Filled()) discret_->FillComplete();
+  if (!discret_->Filled()) discret_->fill_complete();
 
   // -------------------------------------------------------------------
   // set some pointers and variables
@@ -137,8 +137,8 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
   // -------------------------------------------------------------------
-  if (!discret_->Filled()) discret_->FillComplete();
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  if (!discret_->Filled()) discret_->fill_complete();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
   myrank_ = discret_->Comm().MyPID();
 
   // -------------------------------------------------------------------
@@ -204,8 +204,8 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
     p.set("delta time", dt_);
     // set vector values needed by elements
     discret_->ClearState();
-    discret_->SetState("residual displacement", zeros_);
-    discret_->SetState("displacement", dis_);
+    discret_->set_state("residual displacement", zeros_);
+    discret_->set_state("displacement", dis_);
 
     discret_->Evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
     discret_->ClearState();
@@ -234,7 +234,7 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
     // action for elements
     p.set("action", "calc_init_vol");
     p.set("V0", 0.0);
-    discret_->EvaluateCondition(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null,
+    discret_->evaluate_condition(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null,
         Teuchos::null, "MicroBoundary");
     V0_ = p.get<double>("V0", -1.0);
     if (V0_ == -1.0) FOUR_C_THROW("Calculation of initial volume failed");
@@ -320,8 +320,8 @@ void STRUMULTI::MicroStatic::PredictConstDis(CORE::LINALG::Matrix<3, 3>* defgrd)
     // set vector values needed by elements
     discret_->ClearState();
     disi_->PutScalar(0.0);
-    discret_->SetState("residual displacement", disi_);
-    discret_->SetState("displacement", disn_);
+    discret_->set_state("residual displacement", disi_);
+    discret_->set_state("displacement", disn_);
     fintn_->PutScalar(0.0);  // initialise internal force vector
 
     discret_->Evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
@@ -349,7 +349,7 @@ void STRUMULTI::MicroStatic::PredictConstDis(CORE::LINALG::Matrix<3, 3>* defgrd)
   fresn_->Multiply(1.0, *invtoggle_, fresncopy, 0.0);
 
   // store norm of residual
-  normfres_ = STR::CalculateVectorNorm(iternorm_, fresn_);
+  normfres_ = STR::calculate_vector_norm(iternorm_, fresn_);
 
   return;
 }  // STRUMULTI::MicroStatic::Predictor()
@@ -361,7 +361,7 @@ void STRUMULTI::MicroStatic::PredictConstDis(CORE::LINALG::Matrix<3, 3>* defgrd)
 void STRUMULTI::MicroStatic::PredictTangDis(CORE::LINALG::Matrix<3, 3>* defgrd)
 {
   // for displacement increments on Dirichlet boundary
-  Teuchos::RCP<Epetra_Vector> dbcinc = CORE::LINALG::CreateVector(*(discret_->DofRowMap()), true);
+  Teuchos::RCP<Epetra_Vector> dbcinc = CORE::LINALG::CreateVector(*(discret_->dof_row_map()), true);
 
   // copy last converged displacements
   dbcinc->Update(1.0, *disn_, 0.0);
@@ -401,8 +401,8 @@ void STRUMULTI::MicroStatic::PredictTangDis(CORE::LINALG::Matrix<3, 3>* defgrd)
     // set vector values needed by elements
     discret_->ClearState();
     disi_->PutScalar(0.0);
-    discret_->SetState("residual displacement", disi_);
-    discret_->SetState("displacement", disn_);
+    discret_->set_state("residual displacement", disi_);
+    discret_->set_state("displacement", disn_);
     fintn_->PutScalar(0.0);  // initialise internal force vector
 
     discret_->Evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
@@ -418,7 +418,8 @@ void STRUMULTI::MicroStatic::PredictTangDis(CORE::LINALG::Matrix<3, 3>* defgrd)
   // add linear reaction forces to residual
   {
     // linear reactions
-    Teuchos::RCP<Epetra_Vector> freact = CORE::LINALG::CreateVector(*(discret_->DofRowMap()), true);
+    Teuchos::RCP<Epetra_Vector> freact =
+        CORE::LINALG::CreateVector(*(discret_->dof_row_map()), true);
     stiff_->Multiply(false, *dbcinc, *freact);
 
     // add linear reaction forces due to prescribed Dirichlet BCs
@@ -446,7 +447,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(CORE::LINALG::Matrix<3, 3>* defgrd)
   solver_->Reset();
 
   // store norm of displacement increments
-  normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
+  normdisi_ = STR::calculate_vector_norm(iternorm_, disi_);
 
   //---------------------------------- update mid configuration values
   // set Dirichlet increments in displacement increments
@@ -486,8 +487,8 @@ void STRUMULTI::MicroStatic::PredictTangDis(CORE::LINALG::Matrix<3, 3>* defgrd)
     // set vector values needed by elements
     discret_->ClearState();
     disi_->PutScalar(0.0);
-    discret_->SetState("residual displacement", disi_);
-    discret_->SetState("displacement", disn_);
+    discret_->set_state("residual displacement", disi_);
+    discret_->set_state("displacement", disn_);
     fintn_->PutScalar(0.0);  // initialise internal force vector
 
     discret_->Evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
@@ -509,7 +510,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(CORE::LINALG::Matrix<3, 3>* defgrd)
   fresn_->Multiply(1.0, *invtoggle_, fresncopy, 0.0);
 
   // store norm of residual
-  normfres_ = STR::CalculateVectorNorm(iternorm_, fresn_);
+  normfres_ = STR::calculate_vector_norm(iternorm_, fresn_);
 
   return;
 }
@@ -577,8 +578,8 @@ void STRUMULTI::MicroStatic::FullNewton()
       // everything on the microscale "lives" at the pseudo generalized midpoint
       // -> we solve our quasi-static problem there and only update data to the "end"
       // of the time step after having finished a macroscopic dt
-      discret_->SetState("residual displacement", disi_);
-      discret_->SetState("displacement", disn_);
+      discret_->set_state("residual displacement", disi_);
+      discret_->set_state("displacement", disn_);
       fintn_->PutScalar(0.0);  // initialise internal force vector
 
       discret_->Evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
@@ -603,9 +604,9 @@ void STRUMULTI::MicroStatic::FullNewton()
     fresn_->Multiply(1.0, *invtoggle_, fresncopy, 0.0);
 
     //---------------------------------------------- build residual norm
-    normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
+    normdisi_ = STR::calculate_vector_norm(iternorm_, disi_);
 
-    normfres_ = STR::CalculateVectorNorm(iternorm_, fresn_);
+    normfres_ = STR::calculate_vector_norm(iternorm_, fresn_);
 
     //--------------------------------- increment equilibrium loop index
     ++numiter_;
@@ -625,7 +626,7 @@ void STRUMULTI::MicroStatic::FullNewton()
 /*----------------------------------------------------------------------*
  |  "prepare" output (public)                                   ly 09/11|
  *----------------------------------------------------------------------*/
-void STRUMULTI::MicroStatic::PrepareOutput()
+void STRUMULTI::MicroStatic::prepare_output()
 {
   if (resevrystrs_ and !(stepn_ % resevrystrs_) and iostress_ != INPAR::STR::stress_none)
   {
@@ -644,8 +645,8 @@ void STRUMULTI::MicroStatic::PrepareOutput()
     p.set<int>("ioplstrain", ioplstrain_);
     // set vector values needed by elements
     discret_->ClearState();
-    discret_->SetState("residual displacement", zeros_);
-    discret_->SetState("displacement", disn_);
+    discret_->set_state("residual displacement", zeros_);
+    discret_->set_state("displacement", disn_);
     discret_->Evaluate(
         p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     discret_->ClearState();
@@ -768,7 +769,7 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> outpu
 /*----------------------------------------------------------------------*
  |  read restart (public)                                       lw 03/08|
  *----------------------------------------------------------------------*/
-void STRUMULTI::MicroStatic::ReadRestart(int step, Teuchos::RCP<Epetra_Vector> dis,
+void STRUMULTI::MicroStatic::read_restart(int step, Teuchos::RCP<Epetra_Vector> dis,
     Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> lastalpha,
     std::string name)
 {
@@ -849,7 +850,7 @@ void STRUMULTI::MicroStatic::EvaluateMicroBC(
   }
 }
 
-void STRUMULTI::MicroStatic::SetState(Teuchos::RCP<Epetra_Vector> dis,
+void STRUMULTI::MicroStatic::set_state(Teuchos::RCP<Epetra_Vector> dis,
     Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<std::vector<char>> stress,
     Teuchos::RCP<std::vector<char>> strain, Teuchos::RCP<std::vector<char>> plstrain,
     Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> lastalpha,
@@ -873,7 +874,7 @@ void STRUMULTI::MicroStatic::SetState(Teuchos::RCP<Epetra_Vector> dis,
   oldKda_ = oldKda;
 }
 
-void STRUMULTI::MicroStatic::SetTime(
+void STRUMULTI::MicroStatic::set_time(
     const double time, const double timen, const double dt, const int step, const int stepn)
 {
   time_ = time;
@@ -1009,7 +1010,7 @@ void STRUMULTI::MicroStatic::static_homogenization(CORE::LINALG::Matrix<6, 1>* s
     // strains based on a minimization of averaged incremental energy.
     // Computer Methods in Applied Mechanics and Engineering 192: 559-591, 2003.
 
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    const Epetra_Map* dofrowmap = discret_->dof_row_map();
     Epetra_MultiVector cmatpf(D_->Map(), 9);
 
     // make a copy

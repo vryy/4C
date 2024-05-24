@@ -53,7 +53,7 @@ namespace POROFLUIDMULTIPHASE
     /*!
       Possible position flags is only "pre"
      */
-    void TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_node(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
     /// our version of element value tests
     void TestElement(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
@@ -73,7 +73,7 @@ namespace POROFLUIDMULTIPHASE
     ) const;
 
     //! get special result to be tested
-    virtual double ResultSpecial(const std::string quantity  //! name of quantity to be tested
+    virtual double result_special(const std::string quantity  //! name of quantity to be tested
     ) const;
 
    private:

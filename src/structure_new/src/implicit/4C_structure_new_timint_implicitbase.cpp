@@ -44,7 +44,7 @@ Teuchos::RCP<const Epetra_Vector> STR::TIMINT::ImplicitBase::GetF() const
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> STR::TIMINT::ImplicitBase::Freact()
 {
-  CheckInitSetup();
+  check_init_setup();
   return DataGlobalState().GetFreactNp();
 }
 
@@ -52,7 +52,7 @@ Teuchos::RCP<Epetra_Vector> STR::TIMINT::ImplicitBase::Freact()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::ImplicitBase::SystemMatrix()
 {
-  CheckInitSetup();
+  check_init_setup();
   return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(DataGlobalState().GetJacobian());
 }
 
@@ -61,7 +61,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::ImplicitBase::SystemMatrix
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> STR::TIMINT::ImplicitBase::BlockSystemMatrix()
 {
-  CheckInitSetup();
+  check_init_setup();
   return Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(
       DataGlobalState().GetJacobian());
 }
@@ -93,9 +93,9 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::ImplicitBase::GetSTCMat()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::TIMINT::ImplicitBase::InitialGuess()
+Teuchos::RCP<const Epetra_Vector> STR::TIMINT::ImplicitBase::initial_guess()
 {
-  CheckInitSetup();
+  check_init_setup();
   FOUR_C_THROW("Not yet implemented!");
   return Teuchos::null;
 }
@@ -104,20 +104,20 @@ Teuchos::RCP<const Epetra_Vector> STR::TIMINT::ImplicitBase::InitialGuess()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::ImplicitBase::Update(double endtime)
 {
-  CheckInitSetup();
+  check_init_setup();
   PreUpdate();
   Integrator().UpdateStepState();
   SetTimeNp(endtime);
   UpdateStepTime();
   Integrator().UpdateStepElement();
-  PostUpdate();
+  post_update();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::ImplicitBase::PrintStep()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   if (DataGlobalState().GetMyRank() != 0 or GroupId() != 0) return;
 

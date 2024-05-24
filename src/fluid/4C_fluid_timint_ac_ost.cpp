@@ -31,11 +31,11 @@ FLD::TimIntACOst::TimIntACOst(const Teuchos::RCP<DRT::Discretization>& actdis,
 /*----------------------------------------------------------------------*
  |  read restart data                                        Thon 12/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntACOst::ReadRestart(int step)
+void FLD::TimIntACOst::read_restart(int step)
 {
   // call of base classes
-  TimIntOneStepTheta::ReadRestart(step);
-  TimIntAC::ReadRestart(step);
+  TimIntOneStepTheta::read_restart(step);
+  TimIntAC::read_restart(step);
 
   return;
 }

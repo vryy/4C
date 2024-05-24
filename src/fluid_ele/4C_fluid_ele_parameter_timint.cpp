@@ -131,7 +131,7 @@ void DRT::ELEMENTS::FluidEleParameterTimInt::set_element_time_parameter(
     // BDF2:              timefac = 2/3 * dt
     // generalized-alpha: timefac = (alpha_F/alpha_M) * gamma * dt
     // (For BDF2 and generalized-alpha, theta was already computed
-    //  accordingly in FLD::FluidImplicitTimeInt::PrepareTimeStep().)
+    //  accordingly in FLD::FluidImplicitTimeInt::prepare_time_step().)
 
     //-----------------------------------------------------------------------
     //       |          timefac         |  timefacpre     |    timefacrhs   |

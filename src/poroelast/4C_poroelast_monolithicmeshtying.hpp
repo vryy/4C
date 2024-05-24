@@ -69,10 +69,10 @@ namespace POROELAST
     //! setup solver with additional residual tolerances for meshtying
     bool SetupSolver() override;
 
-    //! contains header to PrintNewtonIter with meshtying solver tolerance
+    //! contains header to print_newton_iter with meshtying solver tolerance
     void print_newton_iter_header_stream(std::ostringstream& oss) override;
 
-    //! contains text to PrintNewtonIter with meshtying residuals
+    //! contains text to print_newton_iter with meshtying residuals
     void print_newton_iter_text_stream(std::ostringstream& oss) override;
 
    private:

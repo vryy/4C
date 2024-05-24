@@ -147,14 +147,14 @@ namespace IO
     Teuchos::RCP<std::vector<double>> ReadDoubleVector(std::string path) const
     {
       std::vector<int> length;
-      Teuchos::RCP<std::vector<double>> values = ReadDoubleData(path, 0, 1, length);
+      Teuchos::RCP<std::vector<double>> values = read_double_data(path, 0, 1, length);
       return values;
     };
 
     Teuchos::RCP<std::vector<int>> ReadIntVector(std::string path) const
     {
       std::vector<int> length;
-      Teuchos::RCP<std::vector<int>> values = ReadIntData(path, 0, 1);
+      Teuchos::RCP<std::vector<int>> values = read_int_data(path, 0, 1);
       return values;
     };
 
@@ -164,21 +164,21 @@ namespace IO
       Here we finally loop all the files the local processor has to read.
       returns all the data in one vector. The data is assumed to by of type char.
      */
-    Teuchos::RCP<std::vector<char>> ReadCharData(std::string path, int start, int end) const;
+    Teuchos::RCP<std::vector<char>> read_char_data(std::string path, int start, int end) const;
 
     /// reads the dataset 'path' in all the files in the range [start,end)
     /*!
       Here we finally loop all the files the local processor has to read.
       returns all the data in one vector<int>
     */
-    Teuchos::RCP<std::vector<int>> ReadIntData(std::string path, int start, int end) const;
+    Teuchos::RCP<std::vector<int>> read_int_data(std::string path, int start, int end) const;
 
     /// reads the dataset 'path' in all the files in the range [start,end)
     /*!
       Here we finally loop all the files the local processor has to
       read.
     */
-    Teuchos::RCP<std::vector<double>> ReadDoubleData(
+    Teuchos::RCP<std::vector<double>> read_double_data(
         std::string path, int start, int end, std::vector<int>& lengths) const;
 
     //! Figure out which subset of files this process needs to read
@@ -197,7 +197,7 @@ namespace IO
       \param start       (out): first file I have to read
       \param end         (out): first file I do not read
      */
-    void CalculateRange(int new_proc_num, int my_id, int& start, int& end) const;
+    void calculate_range(int new_proc_num, int my_id, int& start, int& end) const;
 
     //! the names of the files opened here
     std::vector<std::string> filenames_;

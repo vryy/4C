@@ -61,7 +61,7 @@ CORE::LINALG::KrylovProjector::KrylovProjector(
    -------------------------------------------------------------------- */
 Teuchos::RCP<Epetra_MultiVector> CORE::LINALG::KrylovProjector::GetNonConstKernel()
 {
-  // since c_ will be changed, need to call FillComplete() to recompute invwTc_
+  // since c_ will be changed, need to call fill_complete() to recompute invwTc_
   complete_ = false;
 
   // projector matrices will change
@@ -81,7 +81,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::LINALG::KrylovProjector::GetNonConstWeigh
         "For weight type 'pointvalues' weight vector equals kernel vector and can thus only be "
         "changed implicitely by changing the kernel.");
 
-  // since w_ will be changed, need to call FillComplete() to recompute invwTc_
+  // since w_ will be changed, need to call fill_complete() to recompute invwTc_
   complete_ = false;
 
   // projector matrices will change
@@ -115,7 +115,7 @@ void CORE::LINALG::KrylovProjector::SetCW(
 /* --------------------------------------------------------------------
             Compute (w_^T c_)^(-1) and set complete flag
    -------------------------------------------------------------------- */
-void CORE::LINALG::KrylovProjector::FillComplete()
+void CORE::LINALG::KrylovProjector::fill_complete()
 {
   if (c_ == Teuchos::null)
   {
@@ -186,7 +186,7 @@ void CORE::LINALG::KrylovProjector::FillComplete()
 
   return;
 }
-// CORE::LINALG::KrylovProjector::FillComplete
+// CORE::LINALG::KrylovProjector::fill_complete
 
 /* --------------------------------------------------------------------
                     Create projector P(^T) (for direct solvers)
@@ -202,11 +202,11 @@ CORE::LINALG::SparseMatrix CORE::LINALG::KrylovProjector::GetP()
    */
   if (!complete_)
     FOUR_C_THROW(
-        "Krylov space projector is not complete. Call FillComplete() after changing c_ or w_.");
+        "Krylov space projector is not complete. Call fill_complete() after changing c_ or w_.");
 
   if (p_ == Teuchos::null)
   {
-    CreateProjector(p_, w_, c_, invw_tc_);
+    create_projector(p_, w_, c_, invw_tc_);
   }
 
   return *p_;
@@ -224,7 +224,7 @@ CORE::LINALG::SparseMatrix CORE::LINALG::KrylovProjector::GetPT()
    */
   if (!complete_)
     FOUR_C_THROW(
-        "Krylov space projector is not complete. Call FillComplete() after changing c_ or w_.");
+        "Krylov space projector is not complete. Call fill_complete() after changing c_ or w_.");
 
   if (pt_ == Teuchos::null)
   {
@@ -238,7 +238,7 @@ CORE::LINALG::SparseMatrix CORE::LINALG::KrylovProjector::GetPT()
     {
       Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> invwTcT =
           Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(*invw_tc_, Teuchos::TRANS));
-      CreateProjector(pt_, c_, w_, invwTcT);
+      create_projector(pt_, c_, w_, invwTcT);
     }
   }
 
@@ -260,9 +260,9 @@ int CORE::LINALG::KrylovProjector::ApplyP(Epetra_MultiVector& Y) const
 
   if (!complete_)
     FOUR_C_THROW(
-        "Krylov space projector is not complete. Call FillComplete() after changing c_ or w_.");
+        "Krylov space projector is not complete. Call fill_complete() after changing c_ or w_.");
 
-  return ApplyProjector(Y, w_, c_, invw_tc_);
+  return apply_projector(Y, w_, c_, invw_tc_);
 }
 
 int CORE::LINALG::KrylovProjector::ApplyPT(Epetra_MultiVector& Y) const
@@ -277,11 +277,11 @@ int CORE::LINALG::KrylovProjector::ApplyPT(Epetra_MultiVector& Y) const
 
   if (!complete_)
     FOUR_C_THROW(
-        "Krylov space projector is not complete. Call FillComplete() after changing c_ or w_.");
+        "Krylov space projector is not complete. Call fill_complete() after changing c_ or w_.");
 
   Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> invwTcT =
       Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(*invw_tc_, Teuchos::TRANS));
-  return ApplyProjector(Y, c_, w_, invwTcT);
+  return apply_projector(Y, c_, w_, invwTcT);
 }
 
 /* --------------------------------------------------------------------
@@ -302,7 +302,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::KrylovProjector::Project(
 
   if (!complete_)
     FOUR_C_THROW(
-        "Krylov space projector is not complete. Call FillComplete() after changing c_ or w_.");
+        "Krylov space projector is not complete. Call fill_complete() after changing c_ or w_.");
 
   // auxiliary preliminary products
 
@@ -353,7 +353,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::KrylovProjector::Project(
 /* --------------------------------------------------------------------
                     Create projector (for direct solvers)
    -------------------------------------------------------------------- */
-void CORE::LINALG::KrylovProjector::CreateProjector(Teuchos::RCP<CORE::LINALG::SparseMatrix>& P,
+void CORE::LINALG::KrylovProjector::create_projector(Teuchos::RCP<CORE::LINALG::SparseMatrix>& P,
     const Teuchos::RCP<Epetra_MultiVector>& v1, const Teuchos::RCP<Epetra_MultiVector>& v2,
     const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& inv_v1Tv2)
 {
@@ -406,11 +406,11 @@ void CORE::LINALG::KrylovProjector::CreateProjector(Teuchos::RCP<CORE::LINALG::S
 /* --------------------------------------------------------------------
                   Apply projector P(T) (for iterative solvers)
    -------------------------------------------------------------------- */
-int CORE::LINALG::KrylovProjector::ApplyProjector(Epetra_MultiVector& Y,
+int CORE::LINALG::KrylovProjector::apply_projector(Epetra_MultiVector& Y,
     const Teuchos::RCP<Epetra_MultiVector>& v1, const Teuchos::RCP<Epetra_MultiVector>& v2,
     const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& inv_v1Tv2) const
 {
-  if (!complete_) FOUR_C_THROW("Krylov space projector is not complete. Call FillComplete().");
+  if (!complete_) FOUR_C_THROW("Krylov space projector is not complete. Call fill_complete().");
 
   int ierr = 0;
 
@@ -453,7 +453,7 @@ int CORE::LINALG::KrylovProjector::ApplyProjector(Epetra_MultiVector& Y,
   }
 
   return (ierr);
-}  // CORE::LINALG::KrylovProjector::ApplyProjector
+}  // CORE::LINALG::KrylovProjector::apply_projector
 
 
 

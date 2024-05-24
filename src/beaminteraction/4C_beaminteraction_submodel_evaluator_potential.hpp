@@ -44,7 +44,7 @@ namespace BEAMINTERACTION
       void Setup() override;
 
       //! derived
-      void PostSetup() override;
+      void post_setup() override;
 
       //! Returns the type of the current submodel evaluator
       INPAR::BEAMINTERACTION::SubModelType Type() const override
@@ -59,13 +59,13 @@ namespace BEAMINTERACTION
       void Reset() override;
 
       //! derived
-      bool EvaluateForce() override;
+      bool evaluate_force() override;
 
       //! derived
-      bool EvaluateStiff() override;
+      bool evaluate_stiff() override;
 
       //! derived
-      bool EvaluateForceStiff() override;
+      bool evaluate_force_stiff() override;
 
       //! derived
       void UpdateStepState(const double& timefac_n) override;
@@ -80,7 +80,7 @@ namespace BEAMINTERACTION
       void post_update_step_element() override;
 
       //! derived
-      std::map<STR::EnergyType, double> GetEnergy() const override;
+      std::map<STR::EnergyType, double> get_energy() const override;
 
       //! derived
       void OutputStepState(IO::DiscretizationWriter& iowriter) const override;
@@ -99,7 +99,7 @@ namespace BEAMINTERACTION
       void PreReadRestart() override;
 
       //! derived
-      void ReadRestart(
+      void read_restart(
           IO::DiscretizationReader& ia_reader, IO::DiscretizationReader& bin_reader) override;
 
       //! derived
@@ -136,21 +136,21 @@ namespace BEAMINTERACTION
       //! @}
 
      private:
-      inline BEAMINTERACTION::BeamPotentialParams const& BeamPotentialParams() const
+      inline BEAMINTERACTION::BeamPotentialParams const& beam_potential_params() const
       {
-        CheckInit();
+        check_init();
         return *beam_potential_params_ptr_;
       }
 
-      inline BEAMINTERACTION::BeamPotentialParams& BeamPotentialParams()
+      inline BEAMINTERACTION::BeamPotentialParams& beam_potential_params()
       {
-        CheckInit();
+        check_init();
         return *beam_potential_params_ptr_;
       }
 
       inline Teuchos::RCP<BEAMINTERACTION::BeamPotentialParams> beam_potential_params_ptr() const
       {
-        CheckInit();
+        check_init();
         return beam_potential_params_ptr_;
       }
 

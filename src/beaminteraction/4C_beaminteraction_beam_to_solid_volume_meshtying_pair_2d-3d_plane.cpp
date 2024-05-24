@@ -29,15 +29,15 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::PreEvaluate()
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::pre_evaluate()
 {
-  // Call PreEvaluate on the geometry Pair.
+  // Call pre_evaluate on the geometry Pair.
   if (!this->meshtying_is_evaluated_)
   {
     GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
     GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
     this->get_coupling_reference_position(beam_coupling_ref, solid_coupling_ref);
-    this->CastGeometryPair()->PreEvaluate(
+    this->CastGeometryPair()->pre_evaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
   }
 }

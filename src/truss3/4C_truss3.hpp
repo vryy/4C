@@ -124,7 +124,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec2,
           CORE::LINALG::SerialDenseVector& elevec3) override;
 
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -264,7 +264,7 @@ namespace DRT
       };
 
       //! lump mass matrix
-      void LumpMass(CORE::LINALG::SerialDenseMatrix* emass);
+      void lump_mass(CORE::LINALG::SerialDenseMatrix* emass);
 
       //! calculation of nonlinear stiffness and mass matrix switching between total lagrange
       //! and enginerring strains
@@ -273,7 +273,7 @@ namespace DRT
       //! \param[out] stiffmatrix  elemental sitffness matrix
       //! \param[out] massmatrix   elemental mass matrix
       //! \param[out] force        elemental force vector
-      void NlnStiffMass(const std::map<std::string, std::vector<double>>& ele_state,
+      void nln_stiff_mass(const std::map<std::string, std::vector<double>>& ele_state,
           CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
           CORE::LINALG::SerialDenseVector* force);
 
@@ -287,7 +287,7 @@ namespace DRT
       //! \param[out] DummyStiffMatrix    elemental sitffness matrix
       //! \param[out] massmatrix          elemental mass matrix
       //! \param[out] DummyForce          elemental force vector
-      void NlnStiffMassEngStr(const std::map<std::string, std::vector<double>>& ele_state,
+      void nln_stiff_mass_eng_str(const std::map<std::string, std::vector<double>>& ele_state,
           CORE::LINALG::SerialDenseMatrix& DummyStiffMatrix,
           CORE::LINALG::SerialDenseMatrix* massmatrix, CORE::LINALG::SerialDenseVector& DummyForce);
 
@@ -297,7 +297,7 @@ namespace DRT
       //! \param[out] DummyStiffMatrix   elemental sitffness matrix
       //! \param[out] massmatrix         elemental mass matrix
       //! \param[out] DummyForce         elemental force vector
-      void NlnStiffMassTotLag(const std::map<std::string, std::vector<double>>& ele_state,
+      void nln_stiff_mass_tot_lag(const std::map<std::string, std::vector<double>>& ele_state,
           CORE::LINALG::SerialDenseMatrix& DummyStiffMatrix,
           CORE::LINALG::SerialDenseMatrix* massmatrix, CORE::LINALG::SerialDenseVector& DummyForce);
 

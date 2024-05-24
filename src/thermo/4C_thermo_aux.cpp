@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | Calculate vector norm                                    bborn 08/09 |
  *----------------------------------------------------------------------*/
-double THR::AUX::CalculateVectorNorm(
+double THR::AUX::calculate_vector_norm(
     const enum INPAR::THR::VectorNorm norm, const Teuchos::RCP<Epetra_Vector> vect)
 {
   // L1 norm
@@ -52,7 +52,7 @@ double THR::AUX::CalculateVectorNorm(
     FOUR_C_THROW("Cannot handle vector norm");
     return 0;
   }
-}  // CalculateVectorNorm()
+}  // calculate_vector_norm()
 
 
 /*----------------------------------------------------------------------*/

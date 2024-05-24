@@ -140,7 +140,7 @@ void FLD::Boxfilter::ApplyFilter(const Teuchos::RCP<const Epetra_Vector> velocit
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle)
 {
   // perform filtering depending on the LES model
-  ApplyBoxFilter(velocity, scalar, thermpress, dirichtoggle);
+  apply_box_filter(velocity, scalar, thermpress, dirichtoggle);
 
   return;
 }
@@ -158,7 +158,7 @@ void FLD::Boxfilter::ApplyFilterScatra(const Teuchos::RCP<const Epetra_Vector> s
  | perform box filtering                                      (private) |
  |                                                            rasthofer |
  *----------------------------------------------------------------------*/
-void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velocity,
+void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> velocity,
     const Teuchos::RCP<const Epetra_Vector> scalar, const double thermpress,
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle)
 {
@@ -175,8 +175,8 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
 
   // set state vector to pass distributed vector to the element
   discret_->ClearState();
-  discret_->SetState("u and p (trial)", velocity);
-  discret_->SetState("T (trial)", scalar);
+  discret_->set_state("u and p (trial)", velocity);
+  discret_->set_state("T (trial)", scalar);
 
   // dummies
   CORE::LINALG::SerialDenseMatrix emat1;
@@ -324,7 +324,7 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
 
     // loop all nodes of this element, add values to the global vectors
     DRT::Node** elenodes = ele->Nodes();
-    for (int nn = 0; nn < ele->NumNode(); ++nn)
+    for (int nn = 0; nn < ele->num_node(); ++nn)
     {
       DRT::Node* node = (elenodes[nn]);
 
@@ -589,7 +589,7 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
 
   {
     // get a rowmap for the dofs
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
     // loop all nodes on the processor
     for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
@@ -865,7 +865,7 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
         // get global id of the dof
         int gid = dofs[d];
         // get local dof id corresponding to the global id
-        int lid = discret_->DofRowMap()->LID(gid);
+        int lid = discret_->dof_row_map()->LID(gid);
         // filtered velocity and all scale velocity
         double filteredvel = (*((*filtered_vel_)(d)))[nid];
         double vel = (*velocity)[lid];
@@ -946,7 +946,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
 
   // set state vector to pass distributed vector to the element
   scatradiscret_->ClearState();
-  scatradiscret_->SetState("scalar", scalar);
+  scatradiscret_->set_state("scalar", scalar);
 
   // dummies
   CORE::LINALG::SerialDenseMatrix emat1;
@@ -1064,7 +1064,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
     if (phiexpression_) phiexpression_hat = filterparams.get<double>("phiexpression_hat");
     // loop all nodes of this element, add values to the global vectors
     DRT::Node** elenodes = ele->Nodes();
-    for (int nn = 0; nn < ele->NumNode(); ++nn)
+    for (int nn = 0; nn < ele->num_node(); ++nn)
     {
       DRT::Node* node = (elenodes[nn]);
 
@@ -1286,7 +1286,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
   // replace values at dirichlet nodes
   {
     // get a rowmap for the dofs
-    const Epetra_Map* dofrowmap = scatradiscret_->DofRowMap();
+    const Epetra_Map* dofrowmap = scatradiscret_->dof_row_map();
 
     // as we want to identify nodes at walls,
     // we have to be sure that fluid and scatra are still matching
@@ -1429,7 +1429,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
               }  // end loop jdim
             }
 
-            // alternative: see comment in ApplyBoxFilter() for velocity field
+            // alternative: see comment in apply_box_filter() for velocity field
             // double drtval = ((*((*filtered_dens_rateofstrain_temp_)(idim)))[lnodeid])/thisvol;
             // err +=
             // ((*filtered_dens_rateofstrain_temp_)(idim))->ReplaceMyValues(1,&drtval,&lnodeid);

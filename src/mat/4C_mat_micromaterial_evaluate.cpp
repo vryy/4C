@@ -207,7 +207,7 @@ void MAT::MicroMaterial::Update()
 
 
 // prepare output for all procs
-void MAT::MicroMaterial::PrepareOutput()
+void MAT::MicroMaterial::prepare_output()
 {
   // get sub communicator including the supporting procs
   Teuchos::RCP<Epetra_Comm> subcomm = GLOBAL::Problem::Instance(0)->GetCommunicators()->SubComm();
@@ -223,7 +223,7 @@ void MAT::MicroMaterial::PrepareOutput()
   for (it = matgp_.begin(); it != matgp_.end(); ++it)
   {
     Teuchos::RCP<MicroMaterialGP> actmicromatgp = (*it).second;
-    actmicromatgp->PrepareOutput();
+    actmicromatgp->prepare_output();
   }
 }
 
@@ -251,7 +251,7 @@ void MAT::MicroMaterial::Output()
 
 
 // read restart for master procs
-void MAT::MicroMaterial::ReadRestart(const int gp, const int eleID, const bool eleowner)
+void MAT::MicroMaterial::read_restart(const int gp, const int eleID, const bool eleowner)
 {
   int microdisnum = MicroDisNum();
   double V0 = InitVol();
@@ -287,12 +287,12 @@ void MAT::MicroMaterial::ReadRestart(const int gp, const int eleID, const bool e
   }
 
   Teuchos::RCP<MicroMaterialGP> actmicromatgp = matgp_[gp];
-  actmicromatgp->ReadRestart();
+  actmicromatgp->read_restart();
 }
 
 
 // read restart for supporting procs
-void MAT::MicroMaterial::ReadRestart(
+void MAT::MicroMaterial::read_restart(
     const int gp, const int eleID, const bool eleowner, int microdisnum, double V0)
 {
   if (matgp_.find(gp) == matgp_.end())
@@ -301,7 +301,7 @@ void MAT::MicroMaterial::ReadRestart(
   }
 
   Teuchos::RCP<MicroMaterialGP> actmicromatgp = matgp_[gp];
-  actmicromatgp->ReadRestart();
+  actmicromatgp->read_restart();
 }
 
 FOUR_C_NAMESPACE_CLOSE

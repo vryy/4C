@@ -182,19 +182,19 @@ namespace FSI
 
 
     /// read restart data
-    void ReadRestart(int step) override;
+    void read_restart(int step) override;
 
     /// access to Fluid field
-    const Teuchos::RCP<ADAPTER::Fluid>& FluidField() { return fluid_; }
+    const Teuchos::RCP<ADAPTER::Fluid>& fluid_field() { return fluid_; }
 
     /// access to ale field
-    const Teuchos::RCP<ADAPTER::AleFluidWrapper>& AleField() { return ale_; }
+    const Teuchos::RCP<ADAPTER::AleFluidWrapper>& ale_field() { return ale_; }
 
    protected:
     //! @name Time loop building blocks
 
     /// start a new time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     /// take current results for converged and save for next time step
     void Update() override;
@@ -278,10 +278,10 @@ namespace FSI
     //! @name Apply current field state to system
 
     /// setup composed right hand side from field solvers
-    virtual void SetupRHS(Epetra_Vector& f, bool firstcall = false) = 0;
+    virtual void setup_rhs(Epetra_Vector& f, bool firstcall = false) = 0;
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix() = 0;
+    virtual void setup_system_matrix() = 0;
 
     //@}
 
@@ -291,22 +291,22 @@ namespace FSI
     );
 
     /// Extract initial guess from fields
-    virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig) = 0;
+    virtual void initial_guess(Teuchos::RCP<Epetra_Vector> ig) = 0;
 
     /// apply infnorm scaling to linear block system
-    virtual void ScaleSystem(Epetra_Vector& b) {}
+    virtual void scale_system(Epetra_Vector& b) {}
 
     /// undo infnorm scaling from scaled solution
-    virtual void UnscaleSolution(Epetra_Vector& x, Epetra_Vector& b) {}
+    virtual void unscale_solution(Epetra_Vector& x, Epetra_Vector& b) {}
 
    protected:
     /// setup solver for global block system
-    virtual Teuchos::RCP<::NOX::Epetra::LinearSystem> CreateLinearSystem(
+    virtual Teuchos::RCP<::NOX::Epetra::LinearSystem> create_linear_system(
         Teuchos::ParameterList& nlParams, ::NOX::Epetra::Vector& noxSoln,
         Teuchos::RCP<::NOX::Utils> utils) = 0;
 
     /// setup of NOX convergence tests
-    virtual Teuchos::RCP<::NOX::StatusTest::Combo> CreateStatusTest(
+    virtual Teuchos::RCP<::NOX::StatusTest::Combo> create_status_test(
         Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp) = 0;
 
     /// extract the two field vectors from a given composed vector
@@ -318,7 +318,7 @@ namespace FSI
       \param fx (o) fluid velocities and pressure
       \param ax (o) ale displacements
      */
-    virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+    virtual void extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& fx, Teuchos::RCP<const Epetra_Vector>& ax) = 0;
 
     //! @name Access methods for subclasses
@@ -327,7 +327,7 @@ namespace FSI
     Teuchos::RCP<::NOX::Utils> Utils() const { return utils_; }
 
     /// full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> DofRowMap() const { return blockrowdofmap_.FullMap(); }
+    Teuchos::RCP<const Epetra_Map> dof_row_map() const { return blockrowdofmap_.FullMap(); }
 
     /// set full monolithic dof row map
     /*!
@@ -335,7 +335,7 @@ namespace FSI
       defines the number of blocks, their maps and the block order. The block
       maps must be row maps by themselves and must not contain identical GIDs.
      */
-    void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
+    void set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
 
     /// extractor to communicate between full monolithic map and block maps
     const CORE::LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
@@ -397,10 +397,10 @@ namespace FSI
     //! @name Apply current field state to system
 
     /// setup composed system matrix from field solvers
-    void SetupSystemMatrix() override { SetupSystemMatrix(*SystemMatrix()); }
+    void setup_system_matrix() override { setup_system_matrix(*SystemMatrix()); }
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) = 0;
+    virtual void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) = 0;
 
     //@}
 
@@ -408,21 +408,21 @@ namespace FSI
     virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const = 0;
 
     /// apply infnorm scaling to linear block system
-    void ScaleSystem(Epetra_Vector& b) override { ScaleSystem(*SystemMatrix(), b); }
+    void scale_system(Epetra_Vector& b) override { scale_system(*SystemMatrix(), b); }
 
     /// undo infnorm scaling from scaled solution
-    void UnscaleSolution(Epetra_Vector& x, Epetra_Vector& b) override
+    void unscale_solution(Epetra_Vector& x, Epetra_Vector& b) override
     {
-      UnscaleSolution(*SystemMatrix(), x, b);
+      unscale_solution(*SystemMatrix(), x, b);
     }
 
     //! @name Methods for infnorm-scaling of the system
 
     /// apply infnorm scaling to linear block system
-    virtual void ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) {}
+    virtual void scale_system(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) {}
 
     /// undo infnorm scaling from scaled solution
-    virtual void UnscaleSolution(
+    virtual void unscale_solution(
         CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
     {
     }
@@ -431,7 +431,7 @@ namespace FSI
 
    protected:
     /// start a new time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
    private:
     /*! \brief Counter of iterations to reuse the block matrix preconditioner
@@ -462,15 +462,15 @@ namespace FSI
     //! @name Apply current field state to system
 
     /// setup composed right hand side from field solvers
-    void SetupRHS(Epetra_Vector& f, bool firstcall = false) override;
+    void setup_rhs(Epetra_Vector& f, bool firstcall = false) override;
 
     /// setup composed system matrix from field solvers
-    void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
+    void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
 
     //@}
 
     /// Extract initial guess from fields
-    void InitialGuess(Teuchos::RCP<Epetra_Vector> ig) override;
+    void initial_guess(Teuchos::RCP<Epetra_Vector> ig) override;
 
     /// the composed system matrix
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const override
@@ -479,19 +479,19 @@ namespace FSI
     }
 
     /// apply infnorm scaling to linear block system
-    void ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) override;
+    void scale_system(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) override;
 
     /// undo infnorm scaling from scaled solution
-    void UnscaleSolution(
+    void unscale_solution(
         CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b) override;
 
    protected:
     /// setup solver for global block system
-    Teuchos::RCP<::NOX::Epetra::LinearSystem> CreateLinearSystem(Teuchos::ParameterList& nlParams,
+    Teuchos::RCP<::NOX::Epetra::LinearSystem> create_linear_system(Teuchos::ParameterList& nlParams,
         ::NOX::Epetra::Vector& noxSoln, Teuchos::RCP<::NOX::Utils> utils) override;
 
     /// setup of NOX convergence tests
-    Teuchos::RCP<::NOX::StatusTest::Combo> CreateStatusTest(
+    Teuchos::RCP<::NOX::StatusTest::Combo> create_status_test(
         Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp) override;
 
     /// extract the two field vectors from a given composed vector
@@ -503,13 +503,13 @@ namespace FSI
       \param fx (o) fluid velocities and pressure
       \param ax (o) ale displacements
      */
-    void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+    void extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& fx, Teuchos::RCP<const Epetra_Vector>& ax) override;
 
 
    private:
     /// build block vector from field vectors
-    void SetupVector(Epetra_Vector& f, Teuchos::RCP<const Epetra_Vector> fv,
+    void setup_vector(Epetra_Vector& f, Teuchos::RCP<const Epetra_Vector> fv,
         Teuchos::RCP<const Epetra_Vector> av);
 
     /// block system matrix

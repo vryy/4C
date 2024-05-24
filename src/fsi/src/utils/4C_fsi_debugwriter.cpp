@@ -31,11 +31,11 @@ FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<DRT::Discretization> dis) : it
   dis_ = discreator->create_matching_discretization_from_condition(
       *dis, "FSICoupling", "boundary", "BELE3_3", conditions_to_copy);
 
-  dis_->FillComplete(true, true, true);
+  dis_->fill_complete(true, true, true);
 
   coup_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
   const int ndim = GLOBAL::Problem::Instance()->NDim();
-  coup_->SetupCoupling(*dis, *dis_, *CORE::Conditions::ConditionNodeRowMap(*dis, "FSICoupling"),
+  coup_->setup_coupling(*dis, *dis_, *CORE::Conditions::ConditionNodeRowMap(*dis, "FSICoupling"),
       *dis_->NodeRowMap(), ndim);
 }
 
@@ -143,9 +143,9 @@ FSI::UTILS::MonolithicDebugWriter::MonolithicDebugWriter(Monolithic& algorithm)
   struct_writer_ = Teuchos::rcp(
       new SimpleDebugWriter(algorithm_.StructureField()->Discretization(), "structure"));
   fluid_writer_ =
-      Teuchos::rcp(new SimpleDebugWriter(algorithm_.FluidField()->Discretization(), "fluid"));
+      Teuchos::rcp(new SimpleDebugWriter(algorithm_.fluid_field()->Discretization(), "fluid"));
   ale_writer_ = Teuchos::rcp(
-      new SimpleDebugWriter(algorithm_.AleField()->write_access_discretization(), "ale"));
+      new SimpleDebugWriter(algorithm_.ale_field()->write_access_discretization(), "ale"));
 }
 
 
@@ -179,7 +179,7 @@ void FSI::UTILS::MonolithicDebugWriter::WriteVector(
   Teuchos::RCP<const Epetra_Vector> fx;
   Teuchos::RCP<const Epetra_Vector> ax;
 
-  algorithm_.ExtractFieldVectors(v, sx, fx, ax);
+  algorithm_.extract_field_vectors(v, sx, fx, ax);
 
   Epetra_Vector s(*sx);
   Epetra_Vector f(*fx);

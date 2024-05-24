@@ -119,7 +119,7 @@ namespace MORTAR
       if (!xi) FOUR_C_THROW("EvaluateShape called with xi=nullptr");
 
       //! ns_: number of element nodes
-      int nnode = ele.NumNode();
+      int nnode = ele.num_node();
 
       // get node number and node pointers
       DRT::Node** mynodes = ele.Nodes();
@@ -270,7 +270,7 @@ namespace MORTAR
 
       // one-noded elements are directly processed here, shape independent evaluation possible
       // valid for 1- and 2-dimensional interfaces
-      if (ele.NumNode() == 1)
+      if (ele.num_node() == 1)
       {
         mortar_shape_function_2D(val, -1.0, -1.0, MORTAR::Element::p0);
         return;
@@ -448,7 +448,7 @@ namespace MORTAR
 
       // check for boundary nodes
       bool bound = false;
-      for (int i = 0; i < ele.NumNode(); ++i)
+      for (int i = 0; i < ele.num_node(); ++i)
       {
         Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
         if (!mymrtrnode) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
@@ -859,7 +859,7 @@ namespace MORTAR
         {
           // establish fundamental data
           double detg = 0.0;
-          int nnodes = ele.NumNode();
+          int nnodes = ele.num_node();
 
           // empty shape function vals + derivs
           CORE::LINALG::SerialDenseVector valquad(nnodes);
@@ -929,7 +929,7 @@ namespace MORTAR
         {
           // establish fundamental data
           double detg = 0.0;
-          int nnodes = ele.NumNode();
+          int nnodes = ele.num_node();
 
           // empty shape function vals + derivs
           CORE::LINALG::SerialDenseVector valquad(nnodes);
@@ -1906,11 +1906,11 @@ namespace MORTAR
         //*********************************************
         case CORE::FE::CellType::nurbs2:
         {
-          CORE::LINALG::SerialDenseVector weights(ele.NumNode());
-          for (int inode = 0; inode < ele.NumNode(); ++inode)
+          CORE::LINALG::SerialDenseVector weights(ele.num_node());
+          for (int inode = 0; inode < ele.num_node(); ++inode)
             weights(inode) = dynamic_cast<MORTAR::Node*>(ele.Nodes()[inode])->NurbsW();
 
-          CORE::LINALG::SerialDenseMatrix auxderiv(1, ele.NumNode());
+          CORE::LINALG::SerialDenseMatrix auxderiv(1, ele.num_node());
           CORE::FE::NURBS::nurbs_get_1D_funct_deriv(
               funct, auxderiv, xi0, ele.Knots()[0], weights, CORE::FE::CellType::nurbs2);
           break;
@@ -1920,11 +1920,11 @@ namespace MORTAR
         //*********************************************
         case CORE::FE::CellType::nurbs3:
         {
-          CORE::LINALG::SerialDenseVector weights(ele.NumNode());
-          for (int inode = 0; inode < ele.NumNode(); ++inode)
+          CORE::LINALG::SerialDenseVector weights(ele.num_node());
+          for (int inode = 0; inode < ele.num_node(); ++inode)
             weights(inode) = dynamic_cast<MORTAR::Node*>(ele.Nodes()[inode])->NurbsW();
 
-          CORE::LINALG::SerialDenseMatrix auxderiv(1, ele.NumNode());
+          CORE::LINALG::SerialDenseMatrix auxderiv(1, ele.num_node());
           CORE::FE::NURBS::nurbs_get_1D_funct_deriv(
               funct, auxderiv, xi0, ele.Knots()[0], weights, CORE::FE::CellType::nurbs3);
           break;
@@ -1966,15 +1966,15 @@ namespace MORTAR
         //*********************************************
         case CORE::FE::CellType::nurbs9:
         {
-          CORE::LINALG::SerialDenseVector weights(ele.NumNode());
-          for (int inode = 0; inode < ele.NumNode(); ++inode)
+          CORE::LINALG::SerialDenseVector weights(ele.num_node());
+          for (int inode = 0; inode < ele.num_node(); ++inode)
             weights(inode) = dynamic_cast<MORTAR::Node*>(ele.Nodes()[inode])->NurbsW();
 
           CORE::LINALG::SerialDenseVector uv(2);
           uv(0) = xi0;
           uv(1) = xi1;
 
-          CORE::LINALG::SerialDenseMatrix auxderiv(2, ele.NumNode());
+          CORE::LINALG::SerialDenseMatrix auxderiv(2, ele.num_node());
           CORE::FE::NURBS::nurbs_get_2D_funct_deriv(
               funct, auxderiv, uv, ele.Knots(), weights, CORE::FE::CellType::nurbs9);
           break;

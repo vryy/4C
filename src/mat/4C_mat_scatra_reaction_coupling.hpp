@@ -55,7 +55,7 @@ namespace MAT
             ) = 0;
 
         /// check for initialization
-        virtual bool IsInit() const = 0;
+        virtual bool is_init() const = 0;
 
         /// helper for calculating advanced reaction terms
         virtual double calc_rea_body_force_term(int k,  //!< current scalar id
@@ -140,7 +140,7 @@ namespace MAT
             ) override;
 
         /// check for initialization
-        bool IsInit() const override { return reaction_->IsInit(); };
+        bool is_init() const override { return reaction_->is_init(); };
 
         /// helper for calculating advanced reaction terms
         double calc_rea_body_force_term(int k,  //!< current scalar id
@@ -173,7 +173,7 @@ namespace MAT
 
        private:
         /// helper for reaction start feature
-        virtual std::vector<double> ModifyPhi(const std::vector<double>& phinp);
+        virtual std::vector<double> modify_phi(const std::vector<double>& phinp);
 
         /// actual reaction
         Teuchos::RCP<ReactionInterface> reaction_;
@@ -202,7 +202,7 @@ namespace MAT
         };
 
         /// check for initialization
-        bool IsInit() const override { return reaction_->IsInit(); };
+        bool is_init() const override { return reaction_->is_init(); };
 
         /// helper for calculating advanced reaction terms
         double calc_rea_body_force_term(int k,  //!< current scalar id
@@ -260,7 +260,7 @@ namespace MAT
         Teuchos::RCP<ReactionInterface> reaction_;
 
         /// helper for scaling
-        virtual std::vector<double> ModifyPhi(const std::vector<double>& phinp, double scale_phi);
+        virtual std::vector<double> modify_phi(const std::vector<double>& phinp, double scale_phi);
       };
 
       /*----------------------------------------------------------------------*
@@ -283,7 +283,7 @@ namespace MAT
         };
 
         /// check for initialization
-        bool IsInit() const override { return isinit_; };
+        bool is_init() const override { return isinit_; };
 
         /// helper for calculating advanced reaction terms
         double calc_rea_body_force_term(int k,  //!< current scalar id
@@ -300,7 +300,7 @@ namespace MAT
             ) override
         {
           // check
-          FOUR_C_ASSERT(IsInit(), "Reaction class has not been initialized!");
+          FOUR_C_ASSERT(is_init(), "Reaction class has not been initialized!");
 
           // call the real evaluation (scale_phi should have been applied in wrapper class)
           return calc_rea_body_force_term(k, numscal, phinp, constants, couprole, scale_reac);
@@ -322,7 +322,7 @@ namespace MAT
             ) override
         {
           // check
-          FOUR_C_ASSERT(IsInit(), "Reaction class has not been initialized!");
+          FOUR_C_ASSERT(is_init(), "Reaction class has not been initialized!");
 
           // call the real evaluation (scale_phi should have been applied in wrapper class)
           calc_rea_body_force_deriv(k, numscal, derivs, phinp, constants, couprole, scale_reac);
@@ -561,7 +561,7 @@ namespace MAT
             ) override
         {
           // check
-          FOUR_C_ASSERT(IsInit(), "Reaction class has not been initialized!");
+          FOUR_C_ASSERT(is_init(), "Reaction class has not been initialized!");
 
           // call the real evaluation (scale_phi should have been applied in wrapper class)
           calc_rea_body_force_deriv_add_variables(
@@ -666,7 +666,7 @@ namespace MAT
 
         //! templated internal Initialize implementation
         template <int dim>
-        void InitializeInternal(int numscal,     //!< number of scalars
+        void initialize_internal(int numscal,    //!< number of scalars
             const std::vector<double>& couprole  //!< coupling role vector
         );
 

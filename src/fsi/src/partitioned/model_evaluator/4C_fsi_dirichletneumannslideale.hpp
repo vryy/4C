@@ -104,7 +104,7 @@ namespace FSI
         Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag) final;
 
     /// predictor
-    Teuchos::RCP<Epetra_Vector> InitialGuess() override;
+    Teuchos::RCP<Epetra_Vector> initial_guess() override;
 
    private:
     //! Sliding Ale helper class

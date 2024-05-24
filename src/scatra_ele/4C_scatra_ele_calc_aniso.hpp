@@ -76,7 +76,7 @@ namespace DRT
       );
 
       //! get diffusion manager for anisotropic diffusivity
-      Teuchos::RCP<ScaTraEleDiffManagerAniso<nsd_>> DiffManager()
+      Teuchos::RCP<ScaTraEleDiffManagerAniso<nsd_>> diff_manager()
       {
         return Teuchos::rcp_static_cast<ScaTraEleDiffManagerAniso<nsd_>>(my::diffmanager_);
       };
@@ -133,8 +133,8 @@ namespace DRT
           ) override;
 
       //! standard Galerkin diffusive term on right hand side
-      void CalcRHSDiff(CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                                         //!< index of current scalar
+      void calc_rhs_diff(CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+          const int k,                                           //!< index of current scalar
           const double rhsfac  //!< time-integration factor for rhs times domain-integration factor
           ) override;
     };

@@ -380,7 +380,7 @@ void CONTACT::UTILS::WriteConservationDataToFile(const int mypid, const int inte
                              "_conservation");
 
   std::string full_filepath(path + dir_name);
-  IO::CreateDirectory(full_filepath, mypid);
+  IO::create_directory(full_filepath, mypid);
   full_filepath += "/" + prefix + "_" + "conservation.data";
 
   bool is_done = false;
@@ -471,7 +471,7 @@ void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes_and_elements(
     }
   }
 
-  DetectDbcSlaveNodes(dbc_slave_node_map, str_discret, sl_conds);
+  detect_dbc_slave_nodes(dbc_slave_node_map, str_discret, sl_conds);
 
   for (auto& dbc_slave_node_pair : dbc_slave_node_map)
     dbc_slave_nodes.insert(dbc_slave_node_pair.first);
@@ -481,7 +481,7 @@ void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes_and_elements(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::UTILS::DbcHandler::DetectDbcSlaveNodes(
+void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes(
     std::map<const DRT::Node*, int>& dbc_slave_node_map, const DRT::Discretization& str_discret,
     const std::vector<const CORE::Conditions::Condition*>& sl_conds)
 {
@@ -556,7 +556,7 @@ void CONTACT::UTILS::DbcHandler::detect_dbc_slave_elements(
       const DRT::Element* ele = iele_pair.second.get();
 
       const int* ele_nids = ele->NodeIds();
-      for (int i = 0; i < ele->NumNode(); ++i)
+      for (int i = 0; i < ele->num_node(); ++i)
       {
         const int ele_nid = ele_nids[i];
 

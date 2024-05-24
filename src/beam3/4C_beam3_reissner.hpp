@@ -198,7 +198,7 @@ namespace DRT
        *  \date 05/16 */
       inline int NumCenterlineNodes() const override
       {
-        return centerline_hermite_ ? 2 : this->NumNode();
+        return centerline_hermite_ ? 2 : this->num_node();
       }
 
       /** \brief find out whether given node is used for centerline interpolation
@@ -293,7 +293,7 @@ namespace DRT
       {
         const unsigned int vpernode = this->hermite_centerline_interpolation() ? 2 : 1;
         const unsigned int nnodecl = this->NumCenterlineNodes();
-        const unsigned int nnodetriad = this->NumNode();
+        const unsigned int nnodetriad = this->num_node();
 
         // safety check
         if ((unsigned int)stiffmat.numRows() != 3 * vpernode * nnodecl + 3 * nnodetriad or
@@ -339,7 +339,7 @@ namespace DRT
       \brief Get jacobiGP_ factor of first Gauss point for under-integration (constant over element
       length for linear Lagrange interpolation)
       */
-      const double& GetJacobi() const { return jacobi_gp_elastf_[0]; }
+      const double& get_jacobi() const { return jacobi_gp_elastf_[0]; }
 
       /** \brief get Jacobi factor ds/dxi(xi) at xi \in [-1;1]
        *
@@ -519,7 +519,7 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
@@ -788,7 +788,7 @@ namespace DRT
 
       //! compute material curvature at certain Gauss point according to Crisfield 1999, eq. (4.9)
       template <typename T>
-      void computeK(const CORE::LINALG::Matrix<3, 1, T>& Psi_l,
+      void compute_k(const CORE::LINALG::Matrix<3, 1, T>& Psi_l,
           const CORE::LINALG::Matrix<3, 1, T>& Psi_l_s,
           const CORE::LINALG::Matrix<3, 1, double>& Kref, CORE::LINALG::Matrix<3, 1, T>& K) const
       {
@@ -812,7 +812,7 @@ namespace DRT
       //! compute convected strain at certain Gauss point with according to Crisfield 1999, eq.
       //! (3.4)
       template <typename T>
-      void computeGamma(const CORE::LINALG::Matrix<3, 1, T>& r_s,
+      void compute_gamma(const CORE::LINALG::Matrix<3, 1, T>& r_s,
           const CORE::LINALG::Matrix<3, 3, T>& Lambda,
           const CORE::LINALG::Matrix<3, 1, double>& Gammaref,
           CORE::LINALG::Matrix<3, 1, T>& Gamma) const

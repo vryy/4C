@@ -50,11 +50,11 @@ CORE::Dofsets::DofSetMergedWrapper::~DofSetMergedWrapper()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Map* CORE::Dofsets::DofSetMergedWrapper::DofRowMap() const
+const Epetra_Map* CORE::Dofsets::DofSetMergedWrapper::dof_row_map() const
 {
   // the merged dofset does not add new dofs. So we can just return the
   // originial dof map here.
-  return sourcedofset_->DofRowMap();
+  return sourcedofset_->dof_row_map();
 }
 
 /*----------------------------------------------------------------------*

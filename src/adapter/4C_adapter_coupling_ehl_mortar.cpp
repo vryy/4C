@@ -101,8 +101,8 @@ void ADAPTER::CouplingEhlMortar::Setup(Teuchos::RCP<DRT::Discretization> masterd
     case INPAR::CONTACT::friction_none:
       break;
     case INPAR::CONTACT::friction_coulomb:
-      interface_->InterfaceParams().set<double>("FRCOEFF", fr_coeff);
-      interface_->InterfaceParams().set<double>("FRBOUND", -1.);
+      interface_->interface_params().set<double>("FRCOEFF", fr_coeff);
+      interface_->interface_params().set<double>("FRBOUND", -1.);
       break;
     default:
       FOUR_C_THROW("don't know what to do with this friction type");
@@ -117,13 +117,13 @@ void ADAPTER::CouplingEhlMortar::Setup(Teuchos::RCP<DRT::Discretization> masterd
 void ADAPTER::CouplingEhlMortar::Integrate(Teuchos::RCP<const Epetra_Vector> disp, const double dt)
 {
   // safety check
-  CheckSetup();
+  check_setup();
 
   // return if this state has already been evaluated
   if (AlreadyEvaluated(disp)) return;
 
   // set current displ state
-  interface_->SetState(MORTAR::state_new_displacement, *disp);
+  interface_->set_state(MORTAR::state_new_displacement, *disp);
 
   // init internal data
   interface_->Initialize();
@@ -163,7 +163,7 @@ void ADAPTER::CouplingEhlMortar::CondenseContact(
   const double alphaf_ = 0.;  // statics!
   const INPAR::CONTACT::ConstraintDirection& constr_direction_ =
       CORE::UTILS::IntegralValue<INPAR::CONTACT::ConstraintDirection>(
-          Interface()->InterfaceParams(), "CONSTRAINT_DIRECTIONS");
+          Interface()->interface_params(), "CONSTRAINT_DIRECTIONS");
 
   // return if this state has already been evaluated
   if (not AlreadyEvaluated(disp)) Integrate(disp, dt);
@@ -1127,7 +1127,7 @@ void ADAPTER::CouplingEhlMortar::WriteRestart(IO::DiscretizationWriter& output)
   output.WriteVector("slip_toggle", slip_toggle);
 }
 
-void ADAPTER::CouplingEhlMortar::ReadRestart(IO::DiscretizationReader& reader)
+void ADAPTER::CouplingEhlMortar::read_restart(IO::DiscretizationReader& reader)
 {
   if (!contact_regularization_) return;
 

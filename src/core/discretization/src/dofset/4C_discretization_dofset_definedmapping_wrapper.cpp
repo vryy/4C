@@ -209,7 +209,7 @@ void CORE::Dofsets::DofSetDefinedMappingWrapper::Disconnect(DofSetInterface* dof
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const DRT::Node* CORE::Dofsets::DofSetDefinedMappingWrapper::GetSourceNode(int targetLid) const
+const DRT::Node* CORE::Dofsets::DofSetDefinedMappingWrapper::get_source_node(int targetLid) const
 {
   // check
   FOUR_C_ASSERT(targetLid <= targetlidtosourcegidmapping_->MyLength(), "Target Lid out of range!");

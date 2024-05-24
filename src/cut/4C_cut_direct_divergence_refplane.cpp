@@ -42,7 +42,7 @@ std::vector<double> CORE::GEO::CUT::DirectDivergenceGlobalRefplane::GetReference
     //---
     // First estimate -- Compute reference plane based on the facets of the volumecell information
     //---
-    comp_ref_plane = FacetBasedRef(RefPlaneEqn, points, tol);
+    comp_ref_plane = facet_based_ref(RefPlaneEqn, points, tol);
     if (comp_ref_plane)
     {
       return RefPlaneEqn;
@@ -52,7 +52,7 @@ std::vector<double> CORE::GEO::CUT::DirectDivergenceGlobalRefplane::GetReference
     //---
     // Second estimate -- Compute reference plane based on the diagonal information
     //---
-    comp_ref_plane = DiagonalBasedRef(RefPlaneEqn, points, tol);
+    comp_ref_plane = diagonal_based_ref(RefPlaneEqn, points, tol);
     if (comp_ref_plane)
     {
       return RefPlaneEqn;
@@ -62,7 +62,7 @@ std::vector<double> CORE::GEO::CUT::DirectDivergenceGlobalRefplane::GetReference
     //---
     // Third estimate -- Compute reference plane based on Side information
     //---
-    comp_ref_plane = SideBasedRef(RefPlaneEqn, points, tol);
+    comp_ref_plane = side_based_ref(RefPlaneEqn, points, tol);
     if (comp_ref_plane)
     {
       return RefPlaneEqn;
@@ -122,7 +122,7 @@ std::vector<double> CORE::GEO::CUT::DirectDivergenceGlobalRefplane::GetReference
  *considers all 6 diagonals of background Hex element, and choose the one that has maximum normal
  *component in x-direction
  *-------------------------------------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::DiagonalBasedRef(
+bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::diagonal_based_ref(
     std::vector<double>& RefPlaneEqn, std::vector<Point*> points, double tol)
 {
   if (options_.direct_divergence_refplane() != INPAR::CUT::DirDiv_refplane_all &&
@@ -192,7 +192,7 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::DiagonalBasedRef(
  *02/16 Sort all the sides based on n_x (the one has more n_x gets on the top) Iterate through all
  *the sides to get the correct reference plane
  *-------------------------------------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::FacetBasedRef(
+bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::facet_based_ref(
     std::vector<double>& RefPlaneEqn, std::vector<Point*> points, double tol)
 {
   if (options_.direct_divergence_refplane() != INPAR::CUT::DirDiv_refplane_all &&
@@ -262,7 +262,7 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::FacetBasedRef(
  *the sides based on n_x (the one has more n_x gets on the top) Iterate through all the sides to get
  *the correct reference plane
  *-------------------------------------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::SideBasedRef(
+bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::side_based_ref(
     std::vector<double>& RefPlaneEqn, std::vector<Point*> points, double tol)
 {
   if (options_.direct_divergence_refplane() != INPAR::CUT::DirDiv_refplane_all &&

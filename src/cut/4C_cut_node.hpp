@@ -180,10 +180,10 @@ namespace CORE::GEO
       }
 
       /// register a side adjacent to this node
-      void Register(Side* side) { point_->AddSide(side); }
+      void Register(Side* side) { point_->add_side(side); }
 
       /// register an element adjacent to this node
-      void Register(Element* element) { point_->AddElement(element); }
+      void Register(Element* element) { point_->add_element(element); }
 
       /// register cuts
       void RegisterCuts();
@@ -309,13 +309,13 @@ namespace CORE::GEO
 
      private:
       /// build sets of connected volumecells in a 1-ring around the node
-      void BuildDOFCellSets(Point* p, const std::vector<plain_volumecell_set>& cell_sets,
+      void build_dof_cell_sets(Point* p, const std::vector<plain_volumecell_set>& cell_sets,
           const plain_volumecell_set& cells,
           const std::vector<plain_volumecell_set>& nodal_cell_sets, plain_volumecell_set& done,
           bool isnodalcellset = false);
 
       /// build sets of connected volumecells in a 1-ring around the node (old unused version)
-      void BuildDOFCellSets(Point* p, const plain_volumecell_set& cells,
+      void build_dof_cell_sets(Point* p, const plain_volumecell_set& cells,
           const plain_volumecell_set& nodal_cells, plain_volumecell_set& done);
 
 

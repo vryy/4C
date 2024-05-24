@@ -39,7 +39,7 @@ bool CONTACT::Integrator::AssembleG(
   if (!snodes) FOUR_C_THROW("AssembleG: Null pointer for snodes!");
 
   // loop over all slave nodes
-  for (int slave = 0; slave < sele.NumNode(); ++slave)
+  for (int slave = 0; slave < sele.num_node(); ++slave)
   {
     CONTACT::Node* snode = dynamic_cast<CONTACT::Node*>(snodes[slave]);
 
@@ -77,7 +77,7 @@ bool CONTACT::Integrator::AssembleG(
   if (!snodes) FOUR_C_THROW("AssembleG: Null pointer for sintnodes!");
 
   // loop over all slave nodes
-  for (int slave = 0; slave < sintele.NumNode(); ++slave)
+  for (int slave = 0; slave < sintele.num_node(); ++slave)
   {
     CONTACT::Node* snode = dynamic_cast<CONTACT::Node*>(snodes[slave]);
 

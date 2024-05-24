@@ -142,7 +142,7 @@ void DRT::ELEMENTS::SoShw6::Pack(CORE::COMM::PackBuffer& data) const
   // neas_
   AddtoPack(data, neas_);
   // easdata_
-  PackEasData(data);
+  pack_eas_data(data);
   // reordering
   AddtoPack(data, optimal_parameterspace_map_);
   AddtoPack(data, nodes_rearranged_);
@@ -170,7 +170,7 @@ void DRT::ELEMENTS::SoShw6::Unpack(const std::vector<char>& data)
   // neas_
   ExtractfromPack(position, data, neas_);
   // easdata_
-  UnpackEasData(position, data);
+  unpack_eas_data(position, data);
   // reordering
   optimal_parameterspace_map_ = ExtractInt(position, data);
   nodes_rearranged_ = ExtractInt(position, data);

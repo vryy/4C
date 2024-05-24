@@ -52,7 +52,7 @@ namespace FLD
     \brief Print information about current time step to screen (reimplementation)
 
     */
-    void PrintTimeStepInfo() override;
+    void print_time_step_info() override;
 
     /*!
     \brief Set theta_ to its value, dependent on integration method for GenAlpha and BDF2
@@ -169,7 +169,7 @@ namespace FLD
         ) override;
 
     /*!
-    \brief treat turbulence models in AssembleMatAndRHS
+    \brief treat turbulence models in assemble_mat_and_rhs
 
     */
     void treat_turbulence_models(Teuchos::ParameterList& eleparams) override;

@@ -31,7 +31,7 @@ POROFLUIDMULTIPHASE::ResultTest::ResultTest(TimIntImpl& porotimint)
 /*----------------------------------------------------------------------*
  | test node                                                vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::ResultTest::TestNode(
+void POROFLUIDMULTIPHASE::ResultTest::test_node(
     INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
@@ -264,7 +264,7 @@ void POROFLUIDMULTIPHASE::ResultTest::TestSpecial(
     res.ExtractString("QUANTITY", quantity);
 
     // get result to be tested
-    const double result = ResultSpecial(quantity);
+    const double result = result_special(quantity);
 
     // compare values
     const int err = CompareValues(result, "SPECIAL", res);
@@ -279,7 +279,7 @@ void POROFLUIDMULTIPHASE::ResultTest::TestSpecial(
 /*----------------------------------------------------------------------*
  | get special result to be tested                          vuong 08/16 |
  *----------------------------------------------------------------------*/
-double POROFLUIDMULTIPHASE::ResultTest::ResultSpecial(
+double POROFLUIDMULTIPHASE::ResultTest::result_special(
     const std::string quantity  //! name of quantity to be tested
 ) const
 {
@@ -318,6 +318,6 @@ double POROFLUIDMULTIPHASE::ResultTest::ResultSpecial(
     FOUR_C_THROW("Quantity '%s' not supported in result test!", quantity.c_str());
 
   return result;
-}  // POROFLUIDMULTIPHASE::ResultTest::ResultSpecial
+}  // POROFLUIDMULTIPHASE::ResultTest::result_special
 
 FOUR_C_NAMESPACE_CLOSE

@@ -145,7 +145,7 @@ void MAT::ELASTIC::IsoVolAAAGasser::AddStrainEnergy(double& psi,
     const CORE::LINALG::Matrix<3, 1>& prinv, const CORE::LINALG::Matrix<3, 1>& modinv,
     const CORE::LINALG::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {
-  if (params_->IsInit())
+  if (params_->is_init())
   {
     double my_cele = params_->GetParameter(params_->cele, eleGID);
     double nue_myele = params_->GetParameter(params_->nue, eleGID);
@@ -181,7 +181,7 @@ void MAT::ELASTIC::IsoVolAAAGasser::add_derivatives_modified(CORE::LINALG::Matri
   //      GLOBAL::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(
   //          eleGID);
 
-  if (params_->IsInit())
+  if (params_->is_init())
   {
     double nue_myele = params_->GetParameter(params_->nue, eleGID);
     double beta_myele = params_->GetParameter(params_->beta, eleGID);

@@ -62,7 +62,7 @@ namespace GEOMETRYPAIR
      * @param segments (out) Vector with the segments of this line to volume pair.
      * @param line_triad_interpolation (in) Triad interpolation along the line.
      */
-    void PreEvaluate(const ElementData<line, scalar_type>& element_data_line,
+    void pre_evaluate(const ElementData<line, scalar_type>& element_data_line,
         const ElementData<volume, scalar_type>& element_data_volume,
         std::vector<LineSegment<scalar_type>>& segments,
         const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>*
@@ -70,7 +70,7 @@ namespace GEOMETRYPAIR
 
     /**
      * \brief The only purpose of this method is to check that all points on this line element
-     * projected valid (not necessarily in this pair) in PreEvaluate.
+     * projected valid (not necessarily in this pair) in pre_evaluate.
      * @param element_data_line (in) Degrees of freedom for the line.
      * @param element_data_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.

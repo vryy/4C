@@ -47,12 +47,12 @@ void ADAPTER::StructureConstrMerged::Setup()
     FOUR_C_THROW("Failed to create the underlying structural adapter");
 
   // build merged dof row map
-  dofrowmap_ = CORE::LINALG::MergeMap(*(structure_->DofRowMap()),
+  dofrowmap_ = CORE::LINALG::MergeMap(*(structure_->dof_row_map()),
       *(structure_->get_constraint_manager()->GetConstraintMap()), false);
 
   // set up interface between merged and single maps
   conmerger_ = Teuchos::rcp(new CORE::LINALG::MapExtractor);
-  conmerger_->Setup(*dofrowmap_, structure_->DofRowMap(),
+  conmerger_->Setup(*dofrowmap_, structure_->dof_row_map(),
       structure_->get_constraint_manager()->GetConstraintMap());
 
   // setup fsi-Interface
@@ -65,12 +65,12 @@ void ADAPTER::StructureConstrMerged::Setup()
 
 /*----------------------------------------------------------------------*/
 /* */
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::InitialGuess()
+Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::initial_guess()
 {
   if (not issetup_) FOUR_C_THROW("Call Setup() first!");
 
   // get initial guesses from structure and constraintmanager
-  Teuchos::RCP<const Epetra_Vector> strucGuess = structure_->InitialGuess();
+  Teuchos::RCP<const Epetra_Vector> strucGuess = structure_->initial_guess();
   Teuchos::RCP<const Epetra_Vector> lagrGuess = Teuchos::rcp(
       new Epetra_Vector(*(structure_->get_constraint_manager()->GetConstraintMap()), true));
 
@@ -170,7 +170,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::Accn() const
 
 /*----------------------------------------------------------------------*/
 /* non-overlapping DOF map */
-Teuchos::RCP<const Epetra_Map> ADAPTER::StructureConstrMerged::DofRowMap() { return dofrowmap_; }
+Teuchos::RCP<const Epetra_Map> ADAPTER::StructureConstrMerged::dof_row_map() { return dofrowmap_; }
 
 
 /*----------------------------------------------------------------------*/
@@ -246,7 +246,7 @@ void ADAPTER::StructureConstrMerged::apply_interface_forces_temporary_deprecated
     Teuchos::RCP<Epetra_Vector> iforce)
 {
   // create vector with displacement and constraint DOFs
-  Teuchos::RCP<Epetra_Vector> fifc = CORE::LINALG::CreateVector(*DofRowMap(), true);
+  Teuchos::RCP<Epetra_Vector> fifc = CORE::LINALG::CreateVector(*dof_row_map(), true);
 
   // insert interface forces
   interface_->AddFSICondVector(iforce, fifc);

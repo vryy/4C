@@ -29,7 +29,7 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<CORE::MAT::PAR::Mate
       stoich_(matdata->Get<std::vector<int>>("STOICH")),
       reaccoeff_(matdata->Get<double>("REACCOEFF")),
       distrfunctreaccoeffid_(matdata->Get<int>("DISTRFUNCT")),
-      coupling_(SetCouplingType(matdata)),
+      coupling_(set_coupling_type(matdata)),
       couprole_(matdata->Get<std::vector<double>>("ROLE")),
       reacstart_(matdata->Get<std::vector<double>>("REACSTART")),
       isdistrfunctreaccoeff_(distrfunctreaccoeffid_ != 0),
@@ -211,7 +211,7 @@ MAT::ScatraReactionMatType MAT::ScatraReactionMatType::instance_;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::PAR::ReactionCoupling MAT::PAR::ScatraReactionMat::SetCouplingType(
+MAT::PAR::ReactionCoupling MAT::PAR::ScatraReactionMat::set_coupling_type(
     Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
 {
   if ((matdata->Get<std::string>("COUPLING")) == "simple_multiplicative")

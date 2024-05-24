@@ -35,7 +35,8 @@ int DRT::ELEMENTS::SoShw6::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
-  // Check whether the solid material PostSetup() routine has already been called and call it if not
+  // Check whether the solid material post_setup() routine has already been called and call it if
+  // not
   ensure_material_post_setup(params);
 
   // get parameter interface
@@ -201,7 +202,7 @@ int DRT::ELEMENTS::SoShw6::Evaluate(Teuchos::ParameterList& params,
     break;
 
     case calc_struct_eleload:
-      FOUR_C_THROW("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
+      FOUR_C_THROW("this method is not supposed to evaluate a load, use evaluate_neumann(...)");
       break;
 
     case calc_struct_fsiload:
@@ -233,7 +234,7 @@ int DRT::ELEMENTS::SoShw6::Evaluate(Teuchos::ParameterList& params,
         CORE::LINALG::DENSEFUNCTIONS::update<double, soshw6_easpoisthick, 1>(*alpha, *alphao);
       }
       // Reset of history (if needed)
-      SolidMaterial()->ResetStep();
+      SolidMaterial()->reset_step();
     }
     break;
 
@@ -490,7 +491,7 @@ void DRT::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locati
     // transformation from local (parameter) element space to global(material) space
     // with famous 'T'-matrix already used for EAS but now evaluated at each gp
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> TinvT;
-    soshw6_evaluateT(jac, TinvT);
+    soshw6_evaluate_t(jac, TinvT);
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_WEG6> bop;
     bop.Multiply(TinvT, bop_loc);
 
@@ -646,7 +647,7 @@ void DRT::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locati
       case INPAR::STR::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
-        soshw6_Cauchy(elestress, gp, defgrd, glstrain, stress);
+        soshw6_cauchy(elestress, gp, defgrd, glstrain, stress);
       }
       break;
       case INPAR::STR::stress_none:
@@ -917,7 +918,7 @@ void DRT::ELEMENTS::SoShw6::soshw6_anssetup(
 /*----------------------------------------------------------------------*
  |  evaluate 'T'-transformation matrix )                       maf 05/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoShw6::soshw6_evaluateT(
+void DRT::ELEMENTS::SoShw6::soshw6_evaluate_t(
     const CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>& jac,
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& TinvT)
 {
@@ -1030,7 +1031,7 @@ void DRT::ELEMENTS::SoShw6::soshw6_eassetup(
   detJ0 = jac0.Determinant();
 
   // get T-matrix at element origin
-  soshw6_evaluateT(jac0, T0invT);
+  soshw6_evaluate_t(jac0, T0invT);
 
   // build EAS interpolation matrix M, evaluated at the GPs of soshw6
   static std::vector<CORE::LINALG::SerialDenseMatrix> M(NUMGPT_WEG6);
@@ -1080,7 +1081,7 @@ void DRT::ELEMENTS::SoShw6::soshw6_eassetup(
 /*----------------------------------------------------------------------*
  |  return Cauchy stress at gp                                 maf 06/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoShw6::soshw6_Cauchy(
+void DRT::ELEMENTS::SoShw6::soshw6_cauchy(
     CORE::LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D>* elestress, const int gp,
     const CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>& defgrd,
     const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain,
@@ -1266,7 +1267,7 @@ int DRT::ELEMENTS::SoShw6Type::Initialize(DRT::Discretization& dis)
   }
   // fill complete again to reconstruct element-node pointers,
   // but without element init, etc.
-  dis.FillComplete(false, false, false);
+  dis.fill_complete(false, false, false);
 
   // loop again to init Jacobian for Sosh8's
   for (int i = 0; i < dis.NumMyColElements(); ++i)

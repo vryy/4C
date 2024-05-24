@@ -72,7 +72,7 @@ DRT::ELEMENTS::ScaTraHDGBoundaryImplInterface* DRT::ELEMENTS::ScaTraHDGBoundaryI
     }
     default:
       FOUR_C_THROW(
-          "Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
+          "Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->num_node());
       break;
   }
   return nullptr;
@@ -110,7 +110,7 @@ DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::ScaTraHDGBoundaryImpl()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::EvaluateNeumann(
+int DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::evaluate_neumann(
     DRT::ELEMENTS::ScaTraHDGBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -124,16 +124,16 @@ int DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::EvaluateNeumann(
 
   const int* nodeids = ele->NodeIds();
 
-  DRT::Element* parent = ele->ParentElement();
+  DRT::Element* parent = ele->parent_element();
   Teuchos::RCP<DRT::FaceElement>* faces = parent->Faces();
   bool same = false;
   for (int i = 0; i < parent->NumFace(); ++i)
   {
     const int* nodeidsfaces = faces[i]->NodeIds();
 
-    if (faces[i]->NumNode() != ele->NumNode()) break;
+    if (faces[i]->num_node() != ele->num_node()) break;
 
-    for (int j = 0; j < ele->NumNode(); ++j)
+    for (int j = 0; j < ele->num_node(); ++j)
     {
       if (nodeidsfaces[j] == nodeids[j])
         same = true;
@@ -147,12 +147,12 @@ int DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::EvaluateNeumann(
     {
       // i is the number we were searching for!!!!
       params.set<int>("face", i);
-      ele->ParentElement()->Evaluate(params, discretization, la, elemat1_epetra, dummy_mat2,
+      ele->parent_element()->Evaluate(params, discretization, la, elemat1_epetra, dummy_mat2,
           elevec1_epetra, dummy_vec2, dummy_vec3);
       // break;
     }
   }
-  if (same == false && (faces[0]->NumNode() != ele->NumNode()))
+  if (same == false && (faces[0]->num_node() != ele->num_node()))
     FOUR_C_THROW("Neumann boundary condition implemented only for surface elements");
 
   return 0;

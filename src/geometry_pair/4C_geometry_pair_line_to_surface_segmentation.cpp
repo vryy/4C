@@ -49,7 +49,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceSegmentation<scalar_type, line, surf
     const ElementData<surface, scalar_type>& element_data_surface,
     std::vector<LineSegment<scalar_type>>& segments) const
 {
-  // Call the PreEvaluate method of the general Gauss point projection class.
+  // Call the pre_evaluate method of the general Gauss point projection class.
   LineTo3DSegmentation<GeometryPairLineToSurfaceSegmentation<scalar_type, line, surface>>::Evaluate(
       this, element_data_line, element_data_surface, segments);
 }

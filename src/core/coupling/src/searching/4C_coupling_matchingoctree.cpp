@@ -35,14 +35,14 @@ CORE::COUPLING::MatchingOctree::MatchingOctree()
 int CORE::COUPLING::MatchingOctree::Init(const DRT::Discretization& actdis,
     const std::vector<int>& masternodeids, const int maxnodeperleaf, const double tol)
 {
-  SetIsSetup(false);
+  set_is_setup(false);
 
   discret_ = &actdis;
   masterentityids_ = &masternodeids;
   maxtreenodesperleaf_ = maxnodeperleaf;
   tol_ = tol;
 
-  SetIsInit(true);
+  set_is_init(true);
   return 0;
 }  // MatchingOctree::Init
 
@@ -50,7 +50,7 @@ int CORE::COUPLING::MatchingOctree::Init(const DRT::Discretization& actdis,
 /*----------------------------------------------------------------------*/
 int CORE::COUPLING::MatchingOctree::Setup()
 {
-  CheckIsInit();
+  check_is_init();
 
   const unsigned int nummygids = masterentityids_->size();
 
@@ -110,7 +110,7 @@ int CORE::COUPLING::MatchingOctree::Setup()
     octreeroot_ = CreateOctreeElement(masternodesonthisproc, initialboundingbox, initlayer);
   }
 
-  SetIsSetup(true);
+  set_is_setup(true);
   return 0;
 }  // MatchingOctree::Setup
 
@@ -161,7 +161,7 @@ void CORE::COUPLING::MatchingOctree::create_global_entity_matching(
     const std::vector<int>& slavenodeids, const std::vector<int>& dofsforpbcplane,
     const double rotangle, std::map<int, std::vector<int>>& midtosid)
 {
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
   int myrank = discret_->Comm().MyPID();
@@ -233,7 +233,7 @@ void CORE::COUPLING::MatchingOctree::create_global_entity_matching(
 
       int length = static_cast<int>(sblockofnodes.size());
 
-      exporter.ISend(frompid, topid, sblockofnodes.data(), length, tag, request);
+      exporter.i_send(frompid, topid, sblockofnodes.data(), length, tag, request);
 
       // make sure that you do not think you received something if
       // you didn't
@@ -416,7 +416,7 @@ void CORE::COUPLING::MatchingOctree::create_global_entity_matching(
 void CORE::COUPLING::MatchingOctree::FindMatch(const DRT::Discretization& slavedis,
     const std::vector<int>& slavenodeids, std::map<int, std::pair<int, double>>& coupling)
 {
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
   int numprocs = discret_->Comm().NumProc();
@@ -487,7 +487,7 @@ void CORE::COUPLING::MatchingOctree::FindMatch(const DRT::Discretization& slaved
 
       int length = static_cast<int>(sblockofnodes.size());
 
-      exporter.ISend(frompid, topid, sblockofnodes.data(), length, tag, request);
+      exporter.i_send(frompid, topid, sblockofnodes.data(), length, tag, request);
 
       // make sure that you do not think you received something if
       // you didn't
@@ -588,7 +588,7 @@ void CORE::COUPLING::MatchingOctree::fill_slave_to_master_gid_mapping(
     const DRT::Discretization& slavedis, const std::vector<int>& slavenodeids,
     std::map<int, std::vector<double>>& coupling)
 {
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
   int numprocs = discret_->Comm().NumProc();
@@ -643,7 +643,7 @@ void CORE::COUPLING::MatchingOctree::fill_slave_to_master_gid_mapping(
 
       int length = static_cast<int>(sblockofnodes.size());
 
-      exporter.ISend(frompid, topid, sblockofnodes.data(), length, tag, request);
+      exporter.i_send(frompid, topid, sblockofnodes.data(), length, tag, request);
 
       // make sure that you do not think you received something if
       // you didn't
@@ -854,7 +854,7 @@ void CORE::COUPLING::ElementMatchingOctree::CalcPointCoordinate(
 {
   DRT::Element* actele = dis->gElement(id);
 
-  const int numnode = actele->NumNode();
+  const int numnode = actele->num_node();
   const int dim = 3;
 
   for (int idim = 0; idim < dim; idim++) coord[idim] = 0.0;
@@ -874,7 +874,7 @@ void CORE::COUPLING::ElementMatchingOctree::CalcPointCoordinate(
   DRT::Node** nodes = actele->Nodes();
   if (nodes == nullptr) FOUR_C_THROW("could not get pointer to nodes");
 
-  const int numnode = actele->NumNode();
+  const int numnode = actele->num_node();
   const int dim = 3;
 
   for (int idim = 0; idim < dim; idim++) coord[idim] = 0.0;
@@ -908,9 +908,9 @@ void CORE::COUPLING::ElementMatchingOctree::PackEntity(
   DRT::Element* actele = dis->gElement(id);
   DRT::Node** nodes = actele->Nodes();
   // Add node to list of nodes which will be sent to the next proc
-  CORE::COMM::ParObject::AddtoPack(data, actele->NumNode());
+  CORE::COMM::ParObject::AddtoPack(data, actele->num_node());
   CORE::COMM::ParObject::AddtoPack(data, actele);
-  for (int node = 0; node < actele->NumNode(); node++)
+  for (int node = 0; node < actele->num_node(); node++)
     CORE::COMM::ParObject::AddtoPack(data, nodes[node]);
 }  // ElementMatchingOctree::PackEntity
 
@@ -1013,7 +1013,7 @@ void CORE::COUPLING::OctreeElementElement::CalcPointCoordinate(
 {
   DRT::Element* actele = dis->gElement(id);
 
-  const int numnode = actele->NumNode();
+  const int numnode = actele->num_node();
   const int dim = 3;
 
   for (int idim = 0; idim < dim; idim++) coord[idim] = 0.0;
@@ -1058,7 +1058,7 @@ int CORE::COUPLING::OctreeElement::Init(const DRT::Discretization& actdis,
     std::vector<int>& nodeidstoadd, const CORE::LINALG::SerialDenseMatrix& boundingboxtoadd,
     const int layer, const int maxnodeperleaf, const double tol)
 {
-  SetIsSetup(false);
+  set_is_setup(false);
 
   discret_ = &actdis;
   boundingbox_ = boundingboxtoadd;
@@ -1067,7 +1067,7 @@ int CORE::COUPLING::OctreeElement::Init(const DRT::Discretization& actdis,
   maxtreenodesperleaf_ = maxnodeperleaf;
   tol_ = tol;
 
-  SetIsInit(true);
+  set_is_init(true);
   return 0;
 }  // OctreeElement::Init
 
@@ -1075,7 +1075,7 @@ int CORE::COUPLING::OctreeElement::Init(const DRT::Discretization& actdis,
 /*----------------------------------------------------------------------*/
 int CORE::COUPLING::OctreeElement::Setup()
 {
-  CheckIsInit();
+  check_is_init();
 
   if (layer_ > 200)
   {
@@ -1241,7 +1241,7 @@ int CORE::COUPLING::OctreeElement::Setup()
     }
   }
 
-  SetIsSetup(true);
+  set_is_setup(true);
   return 0;
 }  // OctreeElement::Setup
 
@@ -1250,7 +1250,7 @@ int CORE::COUPLING::OctreeElement::Setup()
 void CORE::COUPLING::OctreeElement::search_closest_node_in_leaf(const std::vector<double>& x,
     int& idofclosestpoint, double& distofclosestpoint, const double& elesize, bool searchsecond)
 {
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
   double thisdist;
@@ -1299,7 +1299,7 @@ void CORE::COUPLING::OctreeElement::search_closest_node_in_leaf(const std::vecto
 /*----------------------------------------------------------------------*/
 bool CORE::COUPLING::OctreeElement::is_point_in_bounding_box(const std::vector<double>& x)
 {
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
   bool nodeinboundingbox = true;
@@ -1321,7 +1321,7 @@ bool CORE::COUPLING::OctreeElement::is_point_in_bounding_box(const std::vector<d
 Teuchos::RCP<CORE::COUPLING::OctreeElement>
 CORE::COUPLING::OctreeElement::return_child_containing_point(const std::vector<double>& x)
 {
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
   Teuchos::RCP<OctreeElement> nextelement;

@@ -74,7 +74,8 @@ int DRT::ELEMENTS::SoTet4::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
-  // Check whether the solid material PostSetup() routine has already been called and call it if not
+  // Check whether the solid material post_setup() routine has already been called and call it if
+  // not
   ensure_material_post_setup(params);
 
   set_params_interface_ptr(params);
@@ -492,7 +493,7 @@ int DRT::ELEMENTS::SoTet4::Evaluate(Teuchos::ParameterList& params,
 
     //==================================================================================
     case calc_struct_eleload:
-      FOUR_C_THROW("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
+      FOUR_C_THROW("this method is not supposed to evaluate a load, use evaluate_neumann(...)");
       break;
 
     //==================================================================================
@@ -575,7 +576,7 @@ int DRT::ELEMENTS::SoTet4::Evaluate(Teuchos::ParameterList& params,
     case calc_struct_reset_istep:
     {
       // Reset of history (if needed)
-      SolidMaterial()->ResetStep();
+      SolidMaterial()->reset_step();
     }
     break;
 
@@ -711,7 +712,7 @@ int DRT::ELEMENTS::SoTet4::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)     maf 04/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::SoTet4::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::SoTet4::evaluate_neumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
@@ -839,7 +840,7 @@ int DRT::ELEMENTS::SoTet4::EvaluateNeumann(Teuchos::ParameterList& params,
   } /* ==================================================== end of Loop over GP */
 
   return 0;
-}  // DRT::ELEMENTS::So_tet4::EvaluateNeumann
+}  // DRT::ELEMENTS::So_tet4::evaluate_neumann
 
 
 /*----------------------------------------------------------------------*
@@ -915,12 +916,12 @@ void DRT::ELEMENTS::SoTet4::InitJacobianMapping()
 
     if (PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
     {
-      if (!(prestress_->IsInit())) prestress_->MatrixtoStorage(gp, nxyz_, prestress_->JHistory());
+      if (!(prestress_->is_init())) prestress_->MatrixtoStorage(gp, nxyz_, prestress_->JHistory());
     }
 
   }  // for (int gp=0; gp<NUMGPT_SOTET4; ++gp)
 
-  if (PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->IsInit() = true;
+  if (PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->is_init() = true;
 }
 
 

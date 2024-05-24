@@ -92,7 +92,7 @@ DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(
     }
     default:
       FOUR_C_THROW("Element shape %s (%d nodes) not activated. Just do it.",
-          CORE::FE::CellTypeToString(ele->Shape()).c_str(), ele->NumNode());
+          CORE::FE::CellTypeToString(ele->Shape()).c_str(), ele->num_node());
       break;
   }
   return nullptr;
@@ -147,7 +147,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     CORE::LINALG::SerialDenseVector& elevec3_epetra   // capacity vector
 )
 {
-  PrepareNurbsEval(ele, discretization);
+  prepare_nurbs_eval(ele, discretization);
 
   const auto action = CORE::UTILS::GetAsEnum<THR::Action>(params, "action");
 
@@ -192,7 +192,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   if (la.Size() > 1)
   {
     // ------------------------------------------------ structural material
-    Teuchos::RCP<CORE::MAT::Material> structmat = GetSTRMaterial(ele);
+    Teuchos::RCP<CORE::MAT::Material> structmat = get_str_material(ele);
 
     // call ThermoStVenantKirchhoff material and get the temperature dependent
     // tangent ctemp
@@ -258,7 +258,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         case INPAR::THR::dyna_expleuler:
         case INPAR::THR::dyna_onesteptheta:
         {
-          CalculateLumpMatrix(&ecapa);
+          calculate_lump_matrix(&ecapa);
 
           break;
         }
@@ -309,12 +309,12 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
 
 
 #ifdef TSISLMFDCHECK
-    FDCheckCapalin(ele, time, mydisp, myvel, &ecapa, &ecapalin, params);
+    fd_check_capalin(ele, time, mydisp, myvel, &ecapa, &ecapalin, params);
 #endif
 
     if (params.get<bool>("lump capa matrix", false))
     {
-      CalculateLumpMatrix(&ecapa);
+      calculate_lump_matrix(&ecapa);
     }
 
     // explicitly insert capacity matrix into corresponding Epetra matrix if existing
@@ -442,7 +442,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
           std::vector<double> mydisp(((la[0].lm_).size()) * nsd_, 0.0);
           std::vector<double> myvel(((la[0].lm_).size()) * nsd_, 0.0);
 
-          ExtractDispVel(discretization, la, mydisp, myvel);
+          extract_disp_vel(discretization, la, mydisp, myvel);
 
           nonlinear_heatflux_tempgrad(ele, mydisp, myvel, &eheatflux, &etempgrad, params);
         }
@@ -602,7 +602,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         elemat1_epetra.values(), true);
 
     // if it's a TSI problem and there are the current displacements/velocities
-    EvaluateCoupledTang(ele, discretization, la, &etangcoupl, params);
+    evaluate_coupled_tang(ele, discretization, la, &etangcoupl, params);
 
   }  // action == "calc_thermo_coupltang"
   //============================================================================
@@ -611,7 +611,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> evector(
         elevec1_epetra.values(), true);  // view only!
 
-    ComputeError(ele, evector, params);
+    compute_error(ele, evector, params);
   }
   //============================================================================
   else
@@ -628,13 +628,13 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
 }
 
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(const DRT::Element* ele,
+int DRT::ELEMENTS::TemperImpl<distype>::evaluate_neumann(const DRT::Element* ele,
     const Teuchos::ParameterList& params, const DRT::Discretization& discretization,
     const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseMatrix* elemat1_epetra)
 {
   // prepare nurbs
-  PrepareNurbsEval(ele, discretization);
+  prepare_nurbs_eval(ele, discretization);
 
   // check length
   if (lm.size() != nen_ * numdofpernode_) FOUR_C_THROW("Location vector length does not match!");
@@ -662,7 +662,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(const DRT::Element* ele,
     // difference between geometrically (non)linear TSI
 
     // we prescribe a scalar value on the volume, constant for (non)linear analysis
-    EvaluateFext(ele, time, efext);
+    evaluate_fext(ele, time, efext);
   }
   else
   {
@@ -695,7 +695,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::evaluate_tang_capa_fint(const Element* 
   // if it's a TSI problem with displacementcoupling_ --> go on here!
   if (la.Size() > 1)
   {
-    ExtractDispVel(discretization, la, mydisp, myvel);
+    extract_disp_vel(discretization, la, mydisp, myvel);
   }  // la.Size>1
 
   // geometrically linear TSI problem
@@ -733,7 +733,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::evaluate_tang_capa_fint(const Element* 
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::EvaluateCoupledTang(const DRT::Element* ele,
+void DRT::ELEMENTS::TemperImpl<distype>::evaluate_coupled_tang(const DRT::Element* ele,
     const DRT::Discretization& discretization, const DRT::Element::LocationArray& la,
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * nsd_ * numdofpernode_>* etangcoupl,
     Teuchos::ParameterList& params)
@@ -746,7 +746,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvaluateCoupledTang(const DRT::Element*
     std::vector<double> mydisp(((la[0].lm_).size()) * nsd_, 0.0);
     std::vector<double> myvel(((la[0].lm_).size()) * nsd_, 0.0);
 
-    ExtractDispVel(discretization, la, mydisp, myvel);
+    extract_disp_vel(discretization, la, mydisp, myvel);
 
     // if there is a strucutural vector available go on here
     // --> calculate coupling stiffness term in case of monolithic TSI
@@ -754,7 +754,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvaluateCoupledTang(const DRT::Element*
     // geometrically linear TSI problem
     if (kintype == INPAR::STR::KinemType::linear)
     {
-      LinearCoupledTang(ele, mydisp, myvel, etangcoupl, params);
+      linear_coupled_tang(ele, mydisp, myvel, etangcoupl, params);
 
       // calculate Dmech_d
       if (plasticmat_) linear_dissipation_coupled_tang(ele, etangcoupl, params);
@@ -774,7 +774,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvaluateCoupledTang(const DRT::Element*
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::EvaluateFext(
+void DRT::ELEMENTS::TemperImpl<distype>::evaluate_fext(
     const DRT::Element* ele,                               // the element whose matrix is calculated
     const double time,                                     // current time
     CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>& efext  // external force
@@ -958,7 +958,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::linear_disp_contribution(const DRT::Ele
 #endif  // CALCSTABILOFREACTTERM
 
   // ------------------------------------------------ structural material
-  Teuchos::RCP<CORE::MAT::Material> structmat = GetSTRMaterial(ele);
+  Teuchos::RCP<CORE::MAT::Material> structmat = get_str_material(ele);
 
   if (structmat->MaterialType() == CORE::Materials::m_thermostvenant)
   {
@@ -992,7 +992,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::linear_disp_contribution(const DRT::Ele
 
     // calculate the linear B-operator
     CORE::LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_> boplin(false);
-    CalculateBoplin(&boplin, &derxy_);
+    calculate_boplin(&boplin, &derxy_);
 
     // now build the strain rates / velocities
     CORE::LINALG::Matrix<6, 1> strainvel(false);
@@ -1027,7 +1027,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::linear_disp_contribution(const DRT::Ele
       Teuchos::RCP<MAT::ThermoPlasticLinElast> thrpllinelast =
           Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticLinElast>(structmat, true);
       // get the temperature-dependent material tangent
-      thrpllinelast->SetupCthermo(ctemp);
+      thrpllinelast->setup_cthermo(ctemp);
 
       // thermoELASTIC heating term f_Td = T . (m . I) : strain',
       // thermoPLASTICITY:               = T . (m . I) : strain_e'
@@ -1126,7 +1126,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::linear_disp_contribution(const DRT::Ele
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::LinearCoupledTang(
+void DRT::ELEMENTS::TemperImpl<distype>::linear_coupled_tang(
     const DRT::Element* ele,          // the element whose matrix is calculated
     const std::vector<double>& disp,  // current displacements
     const std::vector<double>& vel,   // current velocities
@@ -1157,7 +1157,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearCoupledTang(
   // get constant initial temperature from the material
 
   // ------------------------------------------------ structural material
-  Teuchos::RCP<CORE::MAT::Material> structmat = GetSTRMaterial(ele);
+  Teuchos::RCP<CORE::MAT::Material> structmat = get_str_material(ele);
 
   // --------------------------------------------------- time integration
   // check the time integrator and add correct time factor
@@ -1226,7 +1226,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearCoupledTang(
 
     // calculate the linear B-operator
     CORE::LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_> boplin(false);
-    CalculateBoplin(&boplin, &derxy_);
+    calculate_boplin(&boplin, &derxy_);
 
     // non-symmetric stiffness matrix
     // current element temperatures
@@ -1247,7 +1247,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearCoupledTang(
           Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticLinElast>(structmat, true);
 
       // get the temperature-dependent material tangent
-      thrpllinelast->SetupCthermo(ctemp);
+      thrpllinelast->setup_cthermo(ctemp);
     }  // m_thermopllinelast
 
     // N_temp^T . N_temp . temp
@@ -1264,7 +1264,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearCoupledTang(
       std::cout << "Coupl Cond\n" << std::endl;
       std::cout << "ele Id= " << ele->Id() << std::endl;
       std::cout << "boplin \n" << boplin << std::endl;
-      std::cout << "etemp_ Ende LinearCoupledTang\n" << etempn_ << std::endl;
+      std::cout << "etemp_ Ende linear_coupled_tang\n" << etempn_ << std::endl;
       std::cout << "ctemp_\n" << ctemp << std::endl;
       std::cout << "NNTC\n" << NNTC << std::endl;
     }
@@ -1282,7 +1282,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearCoupledTang(
 
   }  //-------------------------------------- end loop over Gauss Points
 
-}  // LinearCoupledTang()
+}  // linear_coupled_tang()
 
 
 template <CORE::FE::CellType distype>
@@ -1322,7 +1322,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::nonlinear_thermo_disp_contribution(
   const double stepsize = params.get<double>("delta time");
 
   // ------------------------------------------------ structural material
-  Teuchos::RCP<CORE::MAT::Material> structmat = GetSTRMaterial(ele);
+  Teuchos::RCP<CORE::MAT::Material> structmat = get_str_material(ele);
 
   CORE::LINALG::Matrix<nen_, 1> Ndctemp_dTCrateNT(true);
 
@@ -1441,7 +1441,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::nonlinear_thermo_disp_contribution(
 
       // --------------------(non-dissipative) thermoelastic heating term
       // H_e := N_T^T . N_T . T . (-C_T) : 1/2 C'
-      thermoplhyperelast->SetupCthermo(ctemp, params);
+      thermoplhyperelast->setup_cthermo(ctemp, params);
 
       // --------------------(non-dissipative) thermoplastic heating term
       // H_p := - N^T_T . N_T . T . dkappa/dT . sqrt(2/3) . Dgamma/Dt
@@ -1692,7 +1692,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::nonlinear_coupled_tang(
   CORE::LINALG::Matrix<6, 1> ctemp(true);
 
   // ------------------------------------------------ structural material
-  Teuchos::RCP<CORE::MAT::Material> structmat = GetSTRMaterial(ele);
+  Teuchos::RCP<CORE::MAT::Material> structmat = get_str_material(ele);
 
   // build the deformation gradient w.r.t. material configuration
   CORE::LINALG::Matrix<nsd_, nsd_> defgrd(false);
@@ -1753,10 +1753,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::nonlinear_coupled_tang(
     invdefgrd.Invert(defgrd);
     // build the linear B-operator
     CORE::LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_> boplin(false);
-    CalculateBoplin(&boplin, &derxy_);
+    calculate_boplin(&boplin, &derxy_);
     // build the nonlinear B-operator
     CORE::LINALG::Matrix<6, nen_ * nsd_ * numdofpernode_> bop(false);
-    CalculateBop(&bop, &defgrd, &derxy_);
+    calculate_bop(&bop, &defgrd, &derxy_);
 
     // ------- derivatives of right Cauchy-Green deformation tensor C
 
@@ -1783,7 +1783,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::nonlinear_coupled_tang(
 
     // with B' = (F')^T . B_L: calculate rate of B
     CORE::LINALG::Matrix<6, nen_ * nsd_> boprate(false);  // (6x24)
-    CalculateBop(&boprate, &defgrdrate, &derxy_);
+    calculate_bop(&boprate, &defgrdrate, &derxy_);
 
     // -------------------------------- calculate linearisation of C^{-1}
 
@@ -1834,7 +1834,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::nonlinear_coupled_tang(
       J = defgrd.Determinant();
 
       // H_e := - N_T^T . N_T . T . C_T : 1/2 C'
-      thermoplhyperelast->SetupCthermo(ctemp, params);
+      thermoplhyperelast->setup_cthermo(ctemp, params);
     }
     // N_T^T . N_T . T . ctemp
     CORE::LINALG::Matrix<nen_, 6> NNTC(false);  // (8x1)(1x6)
@@ -1933,7 +1933,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::nonlinear_coupled_tang(
 
       // m_0 . (1 - 1/J^2) . C^{-1} . dJ/dd + m_0 . (J + 1/J) . dC^{-1}/dd
       //                     (6x1)    (1x24)                     (6x24)
-      const double m_0 = thermoplhyperelast->STModulus();
+      const double m_0 = thermoplhyperelast->st_modulus();
       double fac_He_dJ = m_0 * (1.0 - 1.0 / (J * J));
       double fac_He_dCinv = m_0 * (J + 1.0 / J);
 
@@ -2002,7 +2002,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::linear_dissipation_fint(
   CORE::LINALG::Matrix<6, 1> ctemp(true);
 
   // ------------------------------------------------ structural material
-  Teuchos::RCP<CORE::MAT::Material> structmat = GetSTRMaterial(ele);
+  Teuchos::RCP<CORE::MAT::Material> structmat = get_str_material(ele);
 
   if (structmat->MaterialType() != CORE::Materials::m_thermopllinelast)
   {
@@ -2033,7 +2033,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::linear_dissipation_fint(
 
     // build the linear B-operator
     CORE::LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_> boplin(false);
-    CalculateBoplin(&boplin, &derxy_);
+    calculate_boplin(&boplin, &derxy_);
 
     // ------------------------------------------------------------ dissipation
 
@@ -2098,7 +2098,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::linear_dissipation_coupled_tang(
 #endif  // THRASOUTPUT
 
   // ------------------------------------------------ structural material
-  Teuchos::RCP<CORE::MAT::Material> structmat = GetSTRMaterial(ele);
+  Teuchos::RCP<CORE::MAT::Material> structmat = get_str_material(ele);
   if (structmat->MaterialType() != CORE::Materials::m_thermopllinelast)
   {
     FOUR_C_THROW("So far dissipation only available for ThermoPlasticLinElast material!");
@@ -2164,7 +2164,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::linear_dissipation_coupled_tang(
 
     // calculate the linear B-operator
     CORE::LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_> boplin(false);
-    CalculateBoplin(&boplin, &derxy_);
+    calculate_boplin(&boplin, &derxy_);
 
     // --------------------------- calculate linearisation of dissipation
 
@@ -2273,7 +2273,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::nonlinear_dissipation_fint_tang(
   CORE::LINALG::Matrix<6, 1> ctemp(true);
 
   // ------------------------------------------------------ structural material
-  Teuchos::RCP<CORE::MAT::Material> structmat = GetSTRMaterial(ele);
+  Teuchos::RCP<CORE::MAT::Material> structmat = get_str_material(ele);
 
   if (structmat->MaterialType() != CORE::Materials::m_thermoplhyperelast)
   {
@@ -2381,7 +2381,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::nonlinear_dissipation_coupled_tang(
   CORE::LINALG::Matrix<nsd_, nsd_> invdefgrd(false);
 
   // ------------------------------------------------ structural material
-  Teuchos::RCP<CORE::MAT::Material> structmat = GetSTRMaterial(ele);
+  Teuchos::RCP<CORE::MAT::Material> structmat = get_str_material(ele);
   Teuchos::RCP<MAT::ThermoPlasticHyperElast> thermoplhyperelast =
       Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(structmat, true);
   // true: error if cast fails
@@ -2444,7 +2444,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::nonlinear_dissipation_coupled_tang(
 
     // calculate the nonlinear B-operator
     CORE::LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_> bop(false);
-    CalculateBop(&bop, &defgrd, &derxy_);
+    calculate_bop(&bop, &defgrd, &derxy_);
 
     // ----------------------------------------------- linearisation of Dmech_d
     // k_Td += - timefac . N_T^T . 1/Dt . mechdiss_kTd . dE/dd
@@ -2631,7 +2631,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::nonlinear_heatflux_tempgrad(
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::ExtractDispVel(const DRT::Discretization& discretization,
+void DRT::ELEMENTS::TemperImpl<distype>::extract_disp_vel(const DRT::Discretization& discretization,
     const DRT::Element::LocationArray& la, std::vector<double>& mydisp,
     std::vector<double>& myvel) const
 {
@@ -2652,7 +2652,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::ExtractDispVel(const DRT::Discretizatio
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::CalculateLumpMatrix(
+void DRT::ELEMENTS::TemperImpl<distype>::calculate_lump_matrix(
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa) const
 {
   // lump capacity matrix
@@ -2872,7 +2872,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::initial_and_current_nodal_position_velo
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::PrepareNurbsEval(
+void DRT::ELEMENTS::TemperImpl<distype>::prepare_nurbs_eval(
     const DRT::Element* ele,                   // the element whose matrix is calculated
     const DRT::Discretization& discretization  // current discretisation
 )
@@ -3006,7 +3006,7 @@ double DRT::ELEMENTS::TemperImpl<distype>::calculate_char_ele_length() const
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::CalculateBoplin(
+void DRT::ELEMENTS::TemperImpl<distype>::calculate_boplin(
     CORE::LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_>* boplin,
     const CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ) const
 {
@@ -3049,7 +3049,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateBoplin(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::CalculateBop(
+void DRT::ELEMENTS::TemperImpl<distype>::calculate_bop(
     CORE::LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_>* bop,
     const CORE::LINALG::Matrix<nsd_, nsd_>* defgrd,
     const CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ) const
@@ -3206,7 +3206,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::calculate_cauchy_greens(
 }
 
 template <CORE::FE::CellType distype>
-Teuchos::RCP<CORE::MAT::Material> DRT::ELEMENTS::TemperImpl<distype>::GetSTRMaterial(
+Teuchos::RCP<CORE::MAT::Material> DRT::ELEMENTS::TemperImpl<distype>::get_str_material(
     const DRT::Element* ele  // the element whose matrix is calculated
 ) const
 {
@@ -3222,7 +3222,7 @@ Teuchos::RCP<CORE::MAT::Material> DRT::ELEMENTS::TemperImpl<distype>::GetSTRMate
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
+void DRT::ELEMENTS::TemperImpl<distype>::compute_error(
     const DRT::Element* ele,  // the element whose matrix is calculated
     CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>& elevec1,
     Teuchos::ParameterList& params  // parameter list
@@ -3401,10 +3401,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::fd_check_coupl_nln_fint_cond_capa(
         relerror = error_ij / etang_old(i, j);
       if (abs(relerror) > abs(error_max)) error_max = abs(relerror);
 
-      // ---------------------------------------- control values of FDCheck
+      // ---------------------------------------- control values of fd_check
       if ((abs(relerror) > tol) and (abs(error_ij) > tol))
       {
-        // FDCheck of tangent was NOT successful
+        // fd_check of tangent was NOT successful
         checkPassed = false;
 
         std::cout << "finite difference check failed!\n"
@@ -3426,12 +3426,12 @@ void DRT::ELEMENTS::TemperImpl<distype>::fd_check_coupl_nln_fint_cond_capa(
     std::cout << "****************** finite difference check done ***************\n\n" << std::endl;
   }
   else
-    FOUR_C_THROW("FDCheck of thermal tangent failed!");
+    FOUR_C_THROW("fd_check of thermal tangent failed!");
 }
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::FDCheckCapalin(
+void DRT::ELEMENTS::TemperImpl<distype>::fd_check_capalin(
     const DRT::Element* ele,          //!< the element whose matrix is calculated
     const double time,                //!< current time
     const std::vector<double>& disp,  //!< current displacements
@@ -3582,10 +3582,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::FDCheckCapalin(
       if (avg > tol) relerror = error_ij / avg;
       if (abs(relerror) > abs(error_max)) error_max = abs(relerror);
 
-      // ---------------------------------------- control values of FDCheck
+      // ---------------------------------------- control values of fd_check
       if (abs(relerror) > tol)
       {
-        // FDCheck of tangent was NOT successful
+        // fd_check of tangent was NOT successful
         checkPassed = false;
 
         std::cout << "finite difference check failed!\n"
@@ -3614,7 +3614,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::FDCheckCapalin(
     std::cout << "****************** finite difference check done ***************\n\n" << std::endl;
   }
   else
-    FOUR_C_THROW("FDCheck of thermal capacity tangent failed!");
+    FOUR_C_THROW("fd_check of thermal capacity tangent failed!");
 }
 
 

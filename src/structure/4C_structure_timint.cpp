@@ -180,7 +180,7 @@ void STR::TimInt::Init(const Teuchos::ParameterList& timeparams,
     Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver)
 {
   // invalidate setup
-  SetIsSetup(false);
+  set_is_setup(false);
 
   // welcome user
   if ((printlogo_) and (myrank_ == 0))
@@ -216,7 +216,7 @@ void STR::TimInt::Init(const Teuchos::ParameterList& timeparams,
   // stay with us
 
   // we have successfully initialized this class
-  SetIsInit(true);
+  set_is_init(true);
 }
 
 /*----------------------------------------------------------------------------------------------*
@@ -225,7 +225,7 @@ void STR::TimInt::Init(const Teuchos::ParameterList& timeparams,
 void STR::TimInt::Setup()
 {
   // we have to call Init() before
-  CheckIsInit();
+  check_is_init();
 
   create_all_solution_vectors();
 
@@ -329,7 +329,7 @@ void STR::TimInt::Setup()
 
 
   // we have successfully set up this class
-  SetIsSetup(true);
+  set_is_setup(true);
 }
 
 /*----------------------------------------------------------------------------------------------*
@@ -431,7 +431,7 @@ void STR::TimInt::SetInitialFields()
 void STR::TimInt::PrepareBeamContact(const Teuchos::ParameterList& sdynparams)
 {
   // some parameters
-  const Teuchos::ParameterList& beamcontact = GLOBAL::Problem::Instance()->BeamContactParams();
+  const Teuchos::ParameterList& beamcontact = GLOBAL::Problem::Instance()->beam_contact_params();
   INPAR::BEAMCONTACT::Strategy strategy =
       CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::Strategy>(beamcontact, "BEAMS_STRATEGY");
 
@@ -512,7 +512,7 @@ void STR::TimInt::prepare_contact_meshtying(const Teuchos::ParameterList& sdynpa
       *discret_, mortarconditions, contactconditions, time_integration_factor));
 
   cmtbridge_->store_dirichlet_status(dbcmaps_);
-  cmtbridge_->SetState(zeros_);
+  cmtbridge_->set_state(zeros_);
 
   // contact and constraints together not yet implemented
   if (conman_->HaveConstraint())
@@ -1016,16 +1016,16 @@ void STR::TimInt::determine_mass_damp_consist_accel()
 
   /* get external force (no linearization since we assume Rayleigh damping
    * to be independent of follower loads) */
-  ApplyForceExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext);
+  apply_force_external((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext);
 
   // get initial internal force and stiffness and mass
   {
     // compute new inner radius
     discret_->ClearState();
-    discret_->SetState(0, "displacement", (*dis_)(0));
+    discret_->set_state(0, "displacement", (*dis_)(0));
 
     // for structure ale
-    if (dismat_ != Teuchos::null) discret_->SetState(0, "material_displacement", (*dismat_)(0));
+    if (dismat_ != Teuchos::null) discret_->set_state(0, "material_displacement", (*dismat_)(0));
 
     // create the parameters for the discretization
     Teuchos::ParameterList p;
@@ -1047,20 +1047,20 @@ void STR::TimInt::determine_mass_damp_consist_accel()
 
     // set vector values needed by elements
     discret_->ClearState();
-    // extended SetState(0,...) in case of multiple dofsets (e.g. TSI)
-    discret_->SetState(0, "residual displacement", zeros_);
-    discret_->SetState(0, "displacement", (*dis_)(0));
-    discret_->SetState(0, "velocity", (*vel_)(0));
+    // extended set_state(0,...) in case of multiple dofsets (e.g. TSI)
+    discret_->set_state(0, "residual displacement", zeros_);
+    discret_->set_state(0, "displacement", (*dis_)(0));
+    discret_->set_state(0, "velocity", (*vel_)(0));
 
     // The acceleration is only used as a dummy here and should not be applied inside an element,
     // since this is not the consistent initial acceleration vector which will be determined later
     // on
-    discret_->SetState(0, "acceleration", acc_aux);
+    discret_->set_state(0, "acceleration", acc_aux);
 
-    if (damping_ == INPAR::STR::damp_material) discret_->SetState(0, "velocity", (*vel_)(0));
+    if (damping_ == INPAR::STR::damp_material) discret_->set_state(0, "velocity", (*vel_)(0));
 
     // for structure ale
-    if (dismat_ != Teuchos::null) discret_->SetState(0, "material_displacement", (*dismat_)(0));
+    if (dismat_ != Teuchos::null) discret_->set_state(0, "material_displacement", (*dismat_)(0));
 
     discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, fintn_str_);
     discret_->ClearState();
@@ -1109,7 +1109,7 @@ void STR::TimInt::determine_mass_damp_consist_accel()
     {
       pwindk.set("scale_timint", 1.0);
       pwindk.set("time_step_size", (*dt_)[0]);
-      cardvasc0dman_->EvaluateForceStiff((*time_)[0], (*dis_)(0), fint, stiff_, pwindk);
+      cardvasc0dman_->evaluate_force_stiff((*time_)[0], (*dis_)(0), fint, stiff_, pwindk);
     }
 
     // Contribution to rhs due to internal and external forces
@@ -1314,7 +1314,7 @@ void STR::TimInt::update_step_contact_vum()
       double R4 = beta * (alpham - 1) / pow(gamma, 2);
 
       // maps
-      const Epetra_Map* dofmap = discret_->DofRowMap();
+      const Epetra_Map* dofmap = discret_->dof_row_map();
       Teuchos::RCP<Epetra_Map> activenodemap = cmtbridge_->GetStrategy().ActiveRowNodes();
       Teuchos::RCP<Epetra_Map> slavenodemap = cmtbridge_->GetStrategy().SlaveRowNodes();
       Teuchos::RCP<Epetra_Map> notredistslavedofmap =
@@ -1667,7 +1667,7 @@ void STR::TimInt::update_step_contact_vum()
 
 /*----------------------------------------------------------------------*/
 /* Reset configuration after time step */
-void STR::TimInt::ResetStep()
+void STR::TimInt::reset_step()
 {
   // reset state vectors
   disn_->Update(1.0, (*dis_)[0], 0.0);
@@ -1688,12 +1688,12 @@ void STR::TimInt::ResetStep()
 
   // reset 0D cardiovascular model if we have monolithic 0D cardiovascular-structure coupling (mhv
   // 02/2015)
-  if (cardvasc0dman_->have_cardiovascular0_d()) cardvasc0dman_->ResetStep();
+  if (cardvasc0dman_->have_cardiovascular0_d()) cardvasc0dman_->reset_step();
 }
 
 /*----------------------------------------------------------------------*/
 /* Read and set restart values */
-void STR::TimInt::ReadRestart(const int step)
+void STR::TimInt::read_restart(const int step)
 {
   IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
   if (step != reader.ReadInt("step")) FOUR_C_THROW("Time step on file not equal to given step");
@@ -1805,7 +1805,7 @@ void STR::TimInt::read_restart_constraint()
     double uzawatemp = reader.ReadDouble("uzawaparameter");
     consolv_->SetUzawaParameter(uzawatemp);
 
-    conman_->ReadRestart(reader, (*time_)[0]);
+    conman_->read_restart(reader, (*time_)[0]);
   }
 }
 
@@ -1817,7 +1817,7 @@ void STR::TimInt::read_restart_cardiovascular0_d()
   {
     IO::DiscretizationReader reader(
         discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
-    cardvasc0dman_->ReadRestart(reader, (*time_)[0]);
+    cardvasc0dman_->read_restart(reader, (*time_)[0]);
   }
 }
 
@@ -1829,7 +1829,7 @@ void STR::TimInt::read_restart_spring_dashpot()
   {
     IO::DiscretizationReader reader(
         discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
-    springman_->ReadRestart(reader, (*time_)[0]);
+    springman_->read_restart(reader, (*time_)[0]);
   }
 }
 
@@ -1847,7 +1847,7 @@ void STR::TimInt::read_restart_contact_meshtying()
   //**********************************************************************
   IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
 
-  if (have_contact_meshtying()) cmtbridge_->ReadRestart(reader, (*dis_)(0), zeros_);
+  if (have_contact_meshtying()) cmtbridge_->read_restart(reader, (*dis_)(0), zeros_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -1858,7 +1858,7 @@ void STR::TimInt::read_restart_beam_contact()
   {
     IO::DiscretizationReader reader(
         discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
-    beamcman_->ReadRestart(reader);
+    beamcman_->read_restart(reader);
   }
 }
 
@@ -1888,7 +1888,7 @@ void STR::TimInt::read_restart_multi_scale()
 
 /*----------------------------------------------------------------------*/
 /* Calculate all output quantities that depend on a potential material history */
-void STR::TimInt::PrepareOutput(bool force_prepare_timestep)
+void STR::TimInt::prepare_output(bool force_prepare_timestep)
 {
   determine_stress_strain();
   DetermineEnergy();
@@ -1924,7 +1924,7 @@ void STR::TimInt::OutputEveryIter(bool nw, bool ls)
     output_->Output()->SetFileSteps(newFileSteps);
 
     std::string resultname = output_->Output()->FileName() + "_EveryIter";
-    output_->NewResultFile(resultname, oei_filecounter_);
+    output_->new_result_file(resultname, oei_filecounter_);
     output_->WriteMesh(0, 0.0);
   }
 
@@ -1943,7 +1943,7 @@ void STR::TimInt::OutputEveryIter(bool nw, bool ls)
   output_->WriteMesh(outputcounter_, (double)outputcounter_);  //(*time_)[0]
 
   //  output_->OverwriteResultFile();
-  OutputState(datawritten);
+  output_state(datawritten);
 }
 
 /*----------------------------------------------------------------------*/
@@ -1962,7 +1962,7 @@ void STR::TimInt::OutputStep(const bool forced_writerestart)
   if (forced_writerestart)
   {
     // reset possible history data on element level
-    ResetStep();
+    reset_step();
     // restart has already been written or simulation has just started
     if ((writerestartevery_ and (step_ % writerestartevery_ == 0)) or
         step_ == GLOBAL::Problem::Instance()->Restart())
@@ -1986,7 +1986,7 @@ void STR::TimInt::OutputStep(const bool forced_writerestart)
       forced_writerestart or
       GLOBAL::Problem::Instance()->RestartManager()->Restart(step_, discret_->Comm()))
   {
-    OutputRestart(datawritten);
+    output_restart(datawritten);
     lastwrittenresultsstep_ = step_;
   }
 
@@ -1994,7 +1994,7 @@ void STR::TimInt::OutputStep(const bool forced_writerestart)
   if (writestate_ and writeresultsevery_ and (step_ % writeresultsevery_ == 0) and
       (not datawritten))
   {
-    OutputState(datawritten);
+    output_state(datawritten);
     lastwrittenresultsstep_ = step_;
   }
 
@@ -2006,13 +2006,13 @@ void STR::TimInt::OutputStep(const bool forced_writerestart)
           (writeplstrain_ != INPAR::STR::strain_none)) and
       (step_ % writeresultsevery_ == 0))
   {
-    OutputStressStrain(datawritten);
+    output_stress_strain(datawritten);
   }
 
   // output energy
   if (writeenergyevery_ and (step_ % writeenergyevery_ == 0))
   {
-    OutputEnergy();
+    output_energy();
   }
 
   // output optional quantity
@@ -2091,7 +2091,7 @@ void STR::TimInt::GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<double> ti
 /*----------------------------------------------------------------------*/
 /* write restart
  * originally by mwgee 03/07 */
-void STR::TimInt::OutputRestart(bool& datawritten)
+void STR::TimInt::output_restart(bool& datawritten)
 {
   // Yes, we are going to write...
   datawritten = true;
@@ -2156,7 +2156,7 @@ void STR::TimInt::OutputRestart(bool& datawritten)
   }
 
   // springdashpot output
-  if (springman_->HaveSpringDashpot()) springman_->OutputRestart(output_, discret_, disn_);
+  if (springman_->HaveSpringDashpot()) springman_->output_restart(output_, discret_, disn_);
 
   // info dedicated to user's eyes staring at standard out
   if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
@@ -2169,7 +2169,7 @@ void STR::TimInt::OutputRestart(bool& datawritten)
 /*----------------------------------------------------------------------*/
 /* output displacements, velocities and accelerations
  * originally by mwgee 03/07 */
-void STR::TimInt::OutputState(bool& datawritten)
+void STR::TimInt::output_state(bool& datawritten)
 {
   // Yes, we are going to write...
   datawritten = true;
@@ -2233,7 +2233,7 @@ void STR::TimInt::OutputState(bool& datawritten)
 }
 
 /*----------------------------------------------------------------------*/
-/* add restart information to OutputState */
+/* add restart information to output_state */
 void STR::TimInt::add_restart_to_output_state()
 {
   // add velocity and acceleration if necessary
@@ -2264,7 +2264,7 @@ void STR::TimInt::add_restart_to_output_state()
   }
 
   // springdashpot output
-  if (springman_->HaveSpringDashpot()) springman_->OutputRestart(output_, discret_, disn_);
+  if (springman_->HaveSpringDashpot()) springman_->output_restart(output_, discret_, disn_);
 
   // contact/meshtying
   if (have_contact_meshtying()) cmtbridge_->WriteRestart(output_, true);
@@ -2331,11 +2331,11 @@ void STR::TimInt::determine_stress_strain()
 
     // set vector values needed by elements
     discret_->ClearState();
-    // extended SetState(0,...) in case of multiple dofsets (e.g. TSI)
-    discret_->SetState(0, "residual displacement", zeros_);
-    discret_->SetState(0, "displacement", disn_);
+    // extended set_state(0,...) in case of multiple dofsets (e.g. TSI)
+    discret_->set_state(0, "residual displacement", zeros_);
+    discret_->set_state(0, "displacement", disn_);
 
-    if ((dismatn_ != Teuchos::null)) discret_->SetState(0, "material_displacement", dismatn_);
+    if ((dismatn_ != Teuchos::null)) discret_->set_state(0, "material_displacement", dismatn_);
 
     Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix = Teuchos::null;
     Teuchos::RCP<Epetra_Vector> system_vector = Teuchos::null;
@@ -2359,7 +2359,7 @@ void STR::TimInt::DetermineEnergy()
 
       // set vector values needed by elements
       discret_->ClearState();
-      discret_->SetState("displacement", disn_);
+      discret_->set_state("displacement", disn_);
       // get energies
       Teuchos::RCP<CORE::LINALG::SerialDenseVector> energies =
           Teuchos::rcp(new CORE::LINALG::SerialDenseVector(1));
@@ -2415,11 +2415,11 @@ void STR::TimInt::determine_optional_quantity()
 
     // set vector values needed by elements
     discret_->ClearState();
-    // extended SetState(0,...) in case of multiple dofsets (e.g. TSI)
-    discret_->SetState(0, "residual displacement", zeros_);
-    discret_->SetState(0, "displacement", disn_);
+    // extended set_state(0,...) in case of multiple dofsets (e.g. TSI)
+    discret_->set_state(0, "residual displacement", zeros_);
+    discret_->set_state(0, "displacement", disn_);
 
-    if ((dismatn_ != Teuchos::null)) discret_->SetState(0, "material_displacement", dismatn_);
+    if ((dismatn_ != Teuchos::null)) discret_->set_state(0, "material_displacement", dismatn_);
 
     discret_->Evaluate(
         p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -2429,7 +2429,7 @@ void STR::TimInt::determine_optional_quantity()
 
 /*----------------------------------------------------------------------*/
 /* stress calculation and output */
-void STR::TimInt::OutputStressStrain(bool& datawritten)
+void STR::TimInt::output_stress_strain(bool& datawritten)
 {
   // Make new step
   if (not datawritten)
@@ -2532,7 +2532,7 @@ void STR::TimInt::OutputStressStrain(bool& datawritten)
 
 /*----------------------------------------------------------------------*/
 /* output system energies */
-void STR::TimInt::OutputEnergy()
+void STR::TimInt::output_energy()
 {
   // total energy
   double totergy = kinergy_ + intergy_ - extergy_;
@@ -2595,7 +2595,7 @@ void STR::TimInt::OutputContact()
     int dim = cmtbridge_->GetStrategy().Dim();
 
     // global linear momentum (M*v)
-    Teuchos::RCP<Epetra_Vector> mv = CORE::LINALG::CreateVector(*(discret_->DofRowMap()), true);
+    Teuchos::RCP<Epetra_Vector> mv = CORE::LINALG::CreateVector(*(discret_->dof_row_map()), true);
     mass_->Multiply(false, (*vel_)[0], *mv);
 
     // linear / angular momentum
@@ -2658,7 +2658,7 @@ void STR::TimInt::OutputContact()
     Teuchos::ParameterList p;
     p.set("action", "calc_struct_energy");
     discret_->ClearState();
-    discret_->SetState("displacement", (*dis_)(0));
+    discret_->set_state("displacement", (*dis_)(0));
     Teuchos::RCP<CORE::LINALG::SerialDenseVector> energies =
         Teuchos::rcp(new CORE::LINALG::SerialDenseVector(1));
     energies->putScalar(0.0);
@@ -2764,8 +2764,8 @@ void STR::TimInt::OutputVolumeMass()
   Teuchos::ParameterList p;
   p.set("action", "calc_struct_mass_volume");
   discret_->ClearState();
-  discret_->SetState("displacement", (*dis_)(0));
-  if ((dismatn_ != Teuchos::null)) discret_->SetState(0, "material_displacement", dismatn_);
+  discret_->set_state("displacement", (*dis_)(0));
+  if ((dismatn_ != Teuchos::null)) discret_->set_state(0, "material_displacement", dismatn_);
   discret_->EvaluateScalars(p, norms);
   discret_->ClearState();
 
@@ -2817,7 +2817,7 @@ void STR::TimInt::PrepareOutputMicro()
     if (mat->MaterialType() == CORE::Materials::m_struct_multiscale)
     {
       MAT::MicroMaterial* micro = static_cast<MAT::MicroMaterial*>(mat.get());
-      micro->PrepareOutput();
+      micro->prepare_output();
     }
   }
 }
@@ -2842,9 +2842,9 @@ void STR::TimInt::output_nodal_positions()
   // Teuchos::RCP<Epetra_Vector> mynoderowmap = Teuchos::rcp(new
   // Epetra_Vector(discret_->NodeRowMap())); Teuchos::RCP<Epetra_Vector> noderowmap_ =
   // Teuchos::rcp(new Epetra_Vector(discret_->NodeRowMap())); DofRowMapView()  = Teuchos::rcp(new
-  // discret_->DofRowMap());
+  // discret_->dof_row_map());
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
 
   for (int lid = 0; lid < noderowmap->NumGlobalPoints(); lid++)
@@ -2895,7 +2895,7 @@ void STR::TimInt::output_nodal_positions()
 
 /*----------------------------------------------------------------------*/
 /* evaluate external forces at t_{n+1} */
-void STR::TimInt::ApplyForceExternal(const double time, const Teuchos::RCP<Epetra_Vector> dis,
+void STR::TimInt::apply_force_external(const double time, const Teuchos::RCP<Epetra_Vector> dis,
     const Teuchos::RCP<Epetra_Vector> disn, const Teuchos::RCP<Epetra_Vector> vel,
     Teuchos::RCP<Epetra_Vector>& fext)
 {
@@ -2905,12 +2905,12 @@ void STR::TimInt::ApplyForceExternal(const double time, const Teuchos::RCP<Epetr
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState(0, "displacement", dis);
-  discret_->SetState(0, "displacement new", disn);
+  discret_->set_state(0, "displacement", dis);
+  discret_->set_state(0, "displacement new", disn);
 
-  if (damping_ == INPAR::STR::damp_material) discret_->SetState(0, "velocity", vel);
+  if (damping_ == INPAR::STR::damp_material) discret_->set_state(0, "velocity", vel);
 
-  discret_->EvaluateNeumann(p, *fext);
+  discret_->evaluate_neumann(p, *fext);
 }
 
 /*----------------------------------------------------------------------*/
@@ -2982,7 +2982,7 @@ void STR::TimInt::nonlinear_mass_sanity_check(Teuchos::RCP<const Epetra_Vector> 
 
 /*----------------------------------------------------------------------*/
 /* evaluate ordinary internal force */
-void STR::TimInt::ApplyForceInternal(const double time, const double dt,
+void STR::TimInt::apply_force_internal(const double time, const double dt,
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> disi,
     Teuchos::RCP<const Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> fint)
 {
@@ -2999,10 +2999,10 @@ void STR::TimInt::ApplyForceInternal(const double time, const double dt,
   if (pressure_ != Teuchos::null) p.set("volume", 0.0);
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("residual displacement", disi);  // these are incremental
-  discret_->SetState("displacement", dis);
+  discret_->set_state("residual displacement", disi);  // these are incremental
+  discret_->set_state("displacement", dis);
 
-  if (damping_ == INPAR::STR::damp_material) discret_->SetState("velocity", vel);
+  if (damping_ == INPAR::STR::damp_material) discret_->set_state("velocity", vel);
   // fintn_->PutScalar(0.0);  // initialise internal force vector
   discret_->Evaluate(p, Teuchos::null, Teuchos::null, fint, Teuchos::null, Teuchos::null);
 
@@ -3037,7 +3037,7 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(
       IO::cout << "Nonlinear solver failed to converge repeat time step" << IO::endl;
 
       // reset step (e.g. quantities on element level)
-      ResetStep();
+      reset_step();
 
       return INPAR::STR::conv_success;
     }
@@ -3057,7 +3057,7 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(
       // reset timen_ because it is set in the constructor
       timen_ = (*time_)[0] + (*dt_)[0];
       // reset step (e.g. quantities on element level)
-      ResetStep();
+      reset_step();
 
       return INPAR::STR::conv_success;
     }
@@ -3091,7 +3091,7 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(
       if (stepmax_ > maxstepmax) FOUR_C_THROW("Upper level for stepmax_ reached!");
 
       // reset step (e.g. quantities on element level)
-      ResetStep();
+      reset_step();
 
       return INPAR::STR::conv_success;
     }
@@ -3125,7 +3125,7 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(
       // reset timen_ because it is set in the constructor
       timen_ = (*time_)[0] + (*dt_)[0];
       // reset step (e.g. quantities on element level)
-      ResetStep();
+      reset_step();
 
       return INPAR::STR::conv_success;
     }
@@ -3211,7 +3211,7 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(
             "converge. :-(");
 
       // reset step (e.g. quantities on element level)
-      ResetStep();
+      reset_step();
 
       return INPAR::STR::conv_success;
     }
@@ -3301,24 +3301,24 @@ Teuchos::RCP<CORE::UTILS::ResultTest> STR::TimInt::CreateFieldTest()
 
 /*----------------------------------------------------------------------*/
 /* dof map of vector of unknowns                                        */
-Teuchos::RCP<const Epetra_Map> STR::TimInt::DofRowMap()
+Teuchos::RCP<const Epetra_Map> STR::TimInt::dof_row_map()
 {
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
   return Teuchos::rcp(new Epetra_Map(*dofrowmap));
 }
 
 /*----------------------------------------------------------------------*/
 /* dof map of vector of unknowns                                        */
 /* new method for multiple dofsets                                      */
-Teuchos::RCP<const Epetra_Map> STR::TimInt::DofRowMap(unsigned nds)
+Teuchos::RCP<const Epetra_Map> STR::TimInt::dof_row_map(unsigned nds)
 {
-  const Epetra_Map* dofrowmap = discret_->DofRowMap(nds);
+  const Epetra_Map* dofrowmap = discret_->dof_row_map(nds);
   return Teuchos::rcp(new Epetra_Map(*dofrowmap));
 }
 
 /*----------------------------------------------------------------------*/
 /* view of dof map of vector of unknowns                                */
-const Epetra_Map* STR::TimInt::DofRowMapView() { return discret_->DofRowMap(); }
+const Epetra_Map* STR::TimInt::DofRowMapView() { return discret_->dof_row_map(); }
 
 /*----------------------------------------------------------------------*/
 /* reset everything (needed for biofilm simulations)                    */
@@ -3358,7 +3358,7 @@ void STR::TimInt::SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp)
 void STR::TimInt::ResizeMStepTimAda()
 {
   // safety checks
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
   // resize time and stepsize fields
@@ -3380,7 +3380,7 @@ void STR::TimInt::AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd)
   condmaps.push_back(maptoadd);
   condmaps.push_back(GetDBCMapExtractor()->CondMap());
   Teuchos::RCP<Epetra_Map> condmerged = CORE::LINALG::MultiMapExtractor::MergeMaps(condmaps);
-  *dbcmaps_ = CORE::LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
+  *dbcmaps_ = CORE::LINALG::MapExtractor(*(discret_->dof_row_map()), condmerged);
 }
 
 /*----------------------------------------------------------------------*/
@@ -3391,7 +3391,7 @@ void STR::TimInt::RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptorem
   othermaps.push_back(maptoremove);
   othermaps.push_back(GetDBCMapExtractor()->OtherMap());
   Teuchos::RCP<Epetra_Map> othermerged = CORE::LINALG::MultiMapExtractor::MergeMaps(othermaps);
-  *dbcmaps_ = CORE::LINALG::MapExtractor(*(discret_->DofRowMap()), othermerged, false);
+  *dbcmaps_ = CORE::LINALG::MapExtractor(*(discret_->dof_row_map()), othermerged, false);
 }
 
 FOUR_C_NAMESPACE_CLOSE

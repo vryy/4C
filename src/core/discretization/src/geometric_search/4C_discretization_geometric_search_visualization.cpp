@@ -40,7 +40,7 @@ namespace CORE::GEOMETRICSEARCH
         "ArborX."
         "To use it, enable ArborX during the configure process.");
 #else
-    ClearData();
+    clear_data();
 
     auto& visualization_data = get_visualization_data();
 

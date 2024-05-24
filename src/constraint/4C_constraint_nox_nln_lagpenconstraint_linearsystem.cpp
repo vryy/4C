@@ -79,7 +79,7 @@ CORE::LINALG::SolverParams NOX::NLN::LAGPENCONSTRAINT::LinearSystem::SetSolverOp
     // dynamic cast of the required/rhs interface
     Teuchos::RCP<NOX::NLN::Interface::Required> iNlnReq =
         Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Required>(reqInterfacePtr_);
-    if (iNlnReq.is_null()) throwError("setSolverOptions", "required interface cast failed");
+    if (iNlnReq.is_null()) throw_error("setSolverOptions", "required interface cast failed");
 
     double worst = iNlnReq->CalcRefNormForce();
     // This value has to be specified in the PrePostOperator object of
@@ -100,7 +100,7 @@ NOX::NLN::SolutionType NOX::NLN::LAGPENCONSTRAINT::LinearSystem::GetActiveLinSol
 {
   // check input
   if (solvers.size() > 2)
-    throwError("GetCurrentLinSolver",
+    throw_error("GetCurrentLinSolver",
         "There have to be exactly two CORE::LINALG::Solvers (structure + contact)!");
   // ---------------------------------------------------------------------
   // Solving a saddle point system
@@ -139,7 +139,7 @@ NOX::NLN::SolutionType NOX::NLN::LAGPENCONSTRAINT::LinearSystem::GetActiveLinSol
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LAGPENCONSTRAINT::LinearSystem::throwError(
+void NOX::NLN::LAGPENCONSTRAINT::LinearSystem::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   if (utils_.isPrintType(::NOX::Utils::Error))

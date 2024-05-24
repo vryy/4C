@@ -73,18 +73,19 @@ void ART::ArtNetImplStationary::Init(const Teuchos::ParameterList& globaltimepar
   TimInt::Init(globaltimeparams, arteryparams, scatra_disname);
 
   // ensure that degrees of freedom in the discretization have been set
-  if ((not discret_->Filled()) or (not discret_->HaveDofs())) discret_->FillComplete();
+  if ((not discret_->Filled()) or (not discret_->HaveDofs())) discret_->fill_complete();
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices: local <-> global dof numbering
   // -------------------------------------------------------------------
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // -------------------------------------------------------------------
   // create empty system matrix (6 adjacent nodes as 'good' guess)
   // -------------------------------------------------------------------
-  sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(discret_->DofRowMap()), 3, false, true));
+  sysmat_ =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(discret_->dof_row_map()), 3, false, true));
 
   // right hand side vector
   rhs_ = CORE::LINALG::CreateVector(*dofrowmap, true);
@@ -171,13 +172,13 @@ void ART::ArtNetImplStationary::Solve(Teuchos::RCP<Teuchos::ParameterList> Coupl
     FOUR_C_THROW("this type of coupling is only available for implicit time integration");
 
   // call elements to calculate system matrix and rhs and assemble
-  AssembleMatAndRHS();
+  assemble_mat_and_rhs();
 
   // Prepare Linear Solve (Apply DBC)
   PrepareLinearSolve();
 
   // solve linear system of equations
-  LinearSolve();
+  linear_solve();
 }
 
 
@@ -207,8 +208,8 @@ void ART::ArtNetImplStationary::SolveScatra()
     FOUR_C_THROW("this type of coupling is only available for explicit time integration");
 
   // provide scatra discretization with fluid primary variable field
-  scatra_->ScaTraField()->Discretization()->SetState(1, "one_d_artery_pressure", pressurenp_);
-  scatra_->ScaTraField()->PrepareTimeStep();
+  scatra_->ScaTraField()->Discretization()->set_state(1, "one_d_artery_pressure", pressurenp_);
+  scatra_->ScaTraField()->prepare_time_step();
 
   // -------------------------------------------------------------------
   //                  solve nonlinear / linear equation
@@ -240,7 +241,7 @@ void ART::ArtNetImplStationary::PrepareLinearSolve()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::ArtNetImplStationary::AssembleMatAndRHS()
+void ART::ArtNetImplStationary::assemble_mat_and_rhs()
 {
   dtele_ = 0.0;
 
@@ -262,7 +263,7 @@ void ART::ArtNetImplStationary::AssembleMatAndRHS()
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState(0, "pressurenp", pressurenp_);
+  discret_->set_state(0, "pressurenp", pressurenp_);
 
   // call standard loop over all elements
   discret_->Evaluate(eleparams, sysmat_, rhs_);
@@ -278,7 +279,7 @@ void ART::ArtNetImplStationary::AssembleMatAndRHS()
   double mydtele = Teuchos::Time::wallTime() - tcpuele;
   discret_->Comm().MaxAll(&mydtele, &dtele_, 1);
 
-}  // ArtNetExplicitTimeInt::AssembleMatAndRHS
+}  // ArtNetExplicitTimeInt::assemble_mat_and_rhs
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -290,7 +291,7 @@ void ART::ArtNetImplStationary::AssembleMatAndRHS()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::ArtNetImplStationary::LinearSolve()
+void ART::ArtNetImplStationary::linear_solve()
 {
   // time measurement: solver
   TEUCHOS_FUNC_TIME_MONITOR("      + solver");
@@ -311,7 +312,7 @@ void ART::ArtNetImplStationary::LinearSolve()
   double mydtsolve = Teuchos::Time::wallTime() - tcpusolve;
   discret_->Comm().MaxAll(&mydtsolve, &dtsolve_, 1);
 
-}  // ArtNetImplStationary::LinearSolve
+}  // ArtNetImplStationary::linear_solve
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -322,10 +323,10 @@ void ART::ArtNetImplStationary::LinearSolve()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::ArtNetImplStationary::PrepareTimeStep()
+void ART::ArtNetImplStationary::prepare_time_step()
 {
   // call base class
-  ART::TimInt::PrepareTimeStep();
+  ART::TimInt::prepare_time_step();
 
   // Apply DBC
   ApplyDirichletBC();
@@ -388,7 +389,7 @@ void ART::ArtNetImplStationary::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>
   condparams.set("total time", time_);
 
   // evaluate Neumann boundary conditions
-  discret_->EvaluateNeumann(condparams, *neumann_loads);
+  discret_->evaluate_neumann(condparams, *neumann_loads);
   discret_->ClearState();
 
   return;
@@ -436,10 +437,10 @@ void ART::ArtNetImplStationary::TimeUpdate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::ArtNetImplStationary::PrepareTimeLoop()
+void ART::ArtNetImplStationary::prepare_time_loop()
 {
   // call base class
-  ART::TimInt::PrepareTimeLoop();
+  ART::TimInt::prepare_time_loop();
 
   // provide information about initial field (do not do for restarts!)
   if (step_ == 0)
@@ -542,7 +543,7 @@ void ART::ArtNetImplStationary::OutputFlow()
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState(0, "pressurenp", pressurenp_);
+  discret_->set_state(0, "pressurenp", pressurenp_);
 
   // enough to loop over row nodes since element-based quantity
   for (int i = 0; i < discret_->NumMyRowElements(); ++i)
@@ -602,12 +603,12 @@ Teuchos::RCP<CORE::UTILS::ResultTest> ART::ArtNetImplStationary::CreateFieldTest
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | ReadRestart (public)                                 kremheller 03/18|
+ | read_restart (public)                                 kremheller 03/18|
  -----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::ArtNetImplStationary::ReadRestart(int step, bool coupledTo3D)
+void ART::ArtNetImplStationary::read_restart(int step, bool coupledTo3D)
 {
   coupledTo3D_ = coupledTo3D;
   IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
@@ -646,7 +647,7 @@ void ART::ArtNetImplStationary::ReadRestart(int step, bool coupledTo3D)
 
   if (solvescatra_)
     // read restart data for scatra field
-    scatra_->ScaTraField()->ReadRestart(step);
+    scatra_->ScaTraField()->read_restart(step);
 }
 
 /*----------------------------------------------------------------------*
@@ -664,7 +665,7 @@ void ART::ArtNetImplStationary::SetInitialField(
     }
     case INPAR::ARTDYN::initfield_field_by_function:
     {
-      const Epetra_Map* dofrowmap = discret_->DofRowMap();
+      const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
       // loop all nodes on the processor
       for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)

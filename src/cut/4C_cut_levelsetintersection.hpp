@@ -89,7 +89,7 @@ namespace CORE::GEO
        *
        * Which implies that the level set function of the element has values which
        * are positive and negative. */
-      CORE::GEO::CUT::ElementHandle* AddElement(int eid, const std::vector<int>& nids,
+      CORE::GEO::CUT::ElementHandle* add_element(int eid, const std::vector<int>& nids,
           const CORE::LINALG::SerialDenseMatrix& xyz, CORE::FE::CellType distype, const double* lsv,
           const bool lsv_only_plus_domain = false, const bool& check_lsv = false);
 

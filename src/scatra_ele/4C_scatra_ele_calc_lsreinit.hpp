@@ -129,8 +129,8 @@ namespace DRT
           ) override;
 
       //! standard Galerkin diffusive term on right hand side
-      void CalcRHSDiff(CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                                         //!< index of current scalar
+      void calc_rhs_diff(CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+          const int k,                                           //!< index of current scalar
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const CORE::LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient at Gauss point
       );
@@ -140,7 +140,7 @@ namespace DRT
       /*========================================================================*/
 
       //! sign function
-      void SignFunction(double& sign_phi,                    //!< sign of phi
+      void sign_function(double& sign_phi,                   //!< sign of phi
           const double charelelength,                        //!< characteristic element length
           const double phizero,                              //!< initial phi
           const CORE::LINALG::Matrix<nsd_, 1>& gradphizero,  //!< gradient of initial phi
@@ -149,9 +149,9 @@ namespace DRT
       );
 
       //! derivative of sign function
-      void DerivSignFunction(double& deriv_sign,  //!< sign of phi
-          const double charelelength,             //!< characteristic element length
-          const double phizero                    //!< initial phi
+      void deriv_sign_function(double& deriv_sign,  //!< sign of phi
+          const double charelelength,               //!< characteristic element length
+          const double phizero                      //!< initial phi
       );
 
       //! calculation of characteristic element length, i.e., interface thickness
@@ -168,16 +168,16 @@ namespace DRT
       );
 
       //! calculate system matrix and rhs for correction step
-      void SysmatCorrection(const double penalty,  ///!< element penalty parameter
-          CORE::LINALG::SerialDenseMatrix& emat,   ///!< element matrix to calculate
-          CORE::LINALG::SerialDenseVector& erhs    ///!< element rhs to calculate
+      void sysmat_correction(const double penalty,  ///!< element penalty parameter
+          CORE::LINALG::SerialDenseMatrix& emat,    ///!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs     ///!< element rhs to calculate
       );
 
       //! calculation of penalty term on rhs
-      void CalcRHSPenalty(CORE::LINALG::SerialDenseVector& erhs,  //!< rhs vector
-          const double fac,                                       //!< domain integration factor
-          const double penalty,                                   //!< penalty parameter
-          const double deriv_sign,                                //!< derivative of sign function
+      void calc_rhs_penalty(CORE::LINALG::SerialDenseVector& erhs,  //!< rhs vector
+          const double fac,                                         //!< domain integration factor
+          const double penalty,                                     //!< penalty parameter
+          const double deriv_sign,                                  //!< derivative of sign function
           const double norm_gradphizero  //!< norm of gradient of initial phi
       );
 
@@ -190,9 +190,10 @@ namespace DRT
 
       //! calculation of interface penalty term for elliptic reinitialization (gauss loop)
       template <CORE::FE::CellType celldistype>
-      void CalcPenaltyTerm(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
-          CORE::LINALG::SerialDenseVector& erhs,                   //!< element vector to calculate
-          const CORE::GEO::BoundaryIntCell& cell                   //!< interface cell
+      void calc_penalty_term(
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to calculate
+          const CORE::GEO::BoundaryIntCell& cell  //!< interface cell
       );
 
 
@@ -204,7 +205,7 @@ namespace DRT
        *  \param cell (in)  : interface boundary integration cell
        *
        *  \author hiermeier \date 11/16 */
-      void CalcPenaltyTerm_0D(CORE::LINALG::SerialDenseMatrix* emat,
+      void calc_penalty_term_0_d(CORE::LINALG::SerialDenseMatrix* emat,
           CORE::LINALG::SerialDenseVector* erhs, const CORE::GEO::BoundaryIntCell& cell);
 
       /*========================================================================*/
@@ -212,19 +213,19 @@ namespace DRT
       /*========================================================================*/
 
       //! calculate system matrix and rhs for velocity projection
-      void SysmatNodalVel(const int dir,          ///< current spatial direction
+      void sysmat_nodal_vel(const int dir,        ///< current spatial direction
           CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix to calculate
           CORE::LINALG::SerialDenseVector& erhs   ///< element rhs to calculate
       );
 
       //! get diffusion manager for reinitialization
-      Teuchos::RCP<ScaTraEleDiffManagerLsReinit<nsd_>> DiffManager()
+      Teuchos::RCP<ScaTraEleDiffManagerLsReinit<nsd_>> diff_manager()
       {
         return Teuchos::rcp_static_cast<ScaTraEleDiffManagerLsReinit<nsd_>>(my::diffmanager_);
       };
 
       //! get internal variable manager for reinitialization
-      Teuchos::RCP<ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>> VarManager()
+      Teuchos::RCP<ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>> var_manager()
       {
         return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>>(
             my::scatravarmanager_);

@@ -275,13 +275,13 @@ void NOX::FSI::LinearSystem::setJacobianOperatorForSolve(
 void NOX::FSI::LinearSystem::setPrecOperatorForSolve(
     const Teuchos::RCP<const Epetra_Operator>& solvePrecOp)
 {
-  throwError("setPrecOperatorForSolve", "no preconditioner supported");
+  throw_error("setPrecOperatorForSolve", "no preconditioner supported");
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::FSI::LinearSystem::throwError(
+void NOX::FSI::LinearSystem::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   if (utils_.isPrintType(::NOX::Utils::Error))

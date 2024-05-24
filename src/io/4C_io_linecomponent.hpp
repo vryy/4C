@@ -343,8 +343,8 @@ namespace INPUT
         Teuchos::RCP<std::stringstream> condline, IO::InputParameterContainer& container) override;
 
    private:
-    void PrintYesNo(std::ostream& stream,  ///< stream to add output
-        const bool value                   ///< the Boolean value to transcribe
+    void print_yes_no(std::ostream& stream,  ///< stream to add output
+        const bool value                     ///< the Boolean value to transcribe
     ) const;
 
     /// string constant which is identified with 'true'

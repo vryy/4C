@@ -92,16 +92,16 @@ namespace DRT
       /*!
           general function to compute the error (analytical solution) for particular problem type
        */
-      virtual int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      virtual int compute_error(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<CORE::MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec);
 
-      int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int compute_error(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<CORE::MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec,
           const CORE::FE::GaussIntegration&) override
       {
-        return ComputeError(ele, params, mat, discretization, lm, elevec);
+        return compute_error(ele, params, mat, discretization, lm, elevec);
       }
 
       /// projection of function field
@@ -407,7 +407,7 @@ namespace DRT
       };
 
       /// reads from global vectors
-      void ReadGlobalVectors(const DRT::Element& ele, DRT::Discretization& discretization,
+      void read_global_vectors(const DRT::Element& ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, const bool updateLocally);
 
       // writes the updated solution vector to the secondary vector stored in the discretization
@@ -415,10 +415,10 @@ namespace DRT
           const CORE::LINALG::SerialDenseVector& updateG,
           const CORE::LINALG::SerialDenseVector& updateUp);
 
-      void EvaluateVelocity(const int startfunc, const INPAR::FLUID::InitialField initfield,
+      void evaluate_velocity(const int startfunc, const INPAR::FLUID::InitialField initfield,
           const CORE::LINALG::Matrix<nsd_, 1>& xyz, CORE::LINALG::Matrix<nsd_, 1>& u) const;
 
-      void EvaluateAll(const int startfunc, const INPAR::FLUID::InitialField initfield,
+      void evaluate_all(const int startfunc, const INPAR::FLUID::InitialField initfield,
           const CORE::LINALG::Matrix<nsd_, 1>& xyz, CORE::LINALG::Matrix<nsd_, 1>& u,
           CORE::LINALG::Matrix<nsd_, nsd_>& grad, double& p) const;
 

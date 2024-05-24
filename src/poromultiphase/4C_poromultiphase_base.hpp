@@ -48,7 +48,7 @@ namespace POROMULTIPHASE
         const std::map<int, std::set<int>>* nearbyelepairs) override = 0;
 
     /// read restart
-    void ReadRestart(int restart) override;
+    void read_restart(int restart) override;
 
     /// test results (if necessary)
     void CreateFieldTest() override;
@@ -57,7 +57,7 @@ namespace POROMULTIPHASE
     void SetupSystem() override = 0;
 
     /// prepare timeloop of coupled problem
-    void PrepareTimeLoop() override;
+    void prepare_time_loop() override;
 
     /// timeloop of coupled problem
     void Timeloop() override;
@@ -66,7 +66,7 @@ namespace POROMULTIPHASE
     void TimeStep() override = 0;
 
     /// prepare time step of coupled problem
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     //! update fields after convergence
     void UpdateAndOutput() override;
@@ -87,7 +87,7 @@ namespace POROMULTIPHASE
     const Teuchos::RCP<ADAPTER::Structure>& StructureField() override { return structure_; }
 
     //! access to fluid field
-    const Teuchos::RCP<ADAPTER::PoroFluidMultiphaseWrapper>& FluidField() override
+    const Teuchos::RCP<ADAPTER::PoroFluidMultiphaseWrapper>& fluid_field() override
     {
       return fluid_;
     }
@@ -135,9 +135,9 @@ namespace POROMULTIPHASE
     Teuchos::RCP<const Epetra_Vector> SolidPressure() const override;
 
     //! unique map of all dofs that should be constrained with DBC
-    Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const override
+    Teuchos::RCP<const Epetra_Map> combined_dbc_map() const override
     {
-      FOUR_C_THROW("CombinedDBCMap() only available for monolithic schemes!");
+      FOUR_C_THROW("combined_dbc_map() only available for monolithic schemes!");
       return Teuchos::null;
     };
 
@@ -203,10 +203,10 @@ namespace POROMULTIPHASE
 
    private:
     /// set structure mesh displacement on fluid field
-    void SetMeshDisp(Teuchos::RCP<const Epetra_Vector> disp);
+    void set_mesh_disp(Teuchos::RCP<const Epetra_Vector> disp);
 
     /// set structure velocity field on fluid field
-    void SetVelocityFields(Teuchos::RCP<const Epetra_Vector> vel);
+    void set_velocity_fields(Teuchos::RCP<const Epetra_Vector> vel);
 
     /// underlying structure of the PoroMultiPhase problem
     Teuchos::RCP<ADAPTER::Structure> structure_;

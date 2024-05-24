@@ -213,7 +213,7 @@ namespace CONTACT
       /** \brief function wrapper: Redistribute and setup augmented Lagrangian members
        *
        *  \author hiermeier \date 03/17 */
-      void PostSetup(bool redistributed, bool init) override;
+      void post_setup(bool redistributed, bool init) override;
 
       /** \brief function wrapper: Compute force terms
        *
@@ -280,10 +280,10 @@ namespace CONTACT
       const CONTACT::AUG::Strategy& Get() const;
 
       /// update the strategy switching conditions
-      void SwitchUpdate(CONTACT::ParamsInterface& cparams);
+      void switch_update(CONTACT::ParamsInterface& cparams);
 
       /// run after EvalForce
-      void RunPostEvalForce(CONTACT::ParamsInterface& cparams);
+      void run_post_eval_force(CONTACT::ParamsInterface& cparams);
 
       /// run after EvalForceStiff
       void run_post_eval_force_stiff(CONTACT::ParamsInterface& cparams);
@@ -505,7 +505,7 @@ namespace CONTACT
       void Update(CONTACT::ParamsInterface& cparams, std::ostream& os) override;
 
       /// check the current penetration (first rough test)
-      bool CheckPenetration(std::ostream& os);
+      bool check_penetration(std::ostream& os);
 
       /** \brief perform checks based on the structure/contact force residual
        *
@@ -518,10 +518,10 @@ namespace CONTACT
        *  predefined relative bound.
        *
        *  \author hiermeier */
-      bool CheckResidual(CONTACT::ParamsInterface& cparams, std::ostream& os);
+      bool check_residual(CONTACT::ParamsInterface& cparams, std::ostream& os);
 
       /// get the penetration bound based on the element edge length
-      double GetPenetrationBound() const;
+      double get_penetration_bound() const;
 
       /// return the structural force without DBC DOFs
       Teuchos::RCP<Epetra_Vector> get_structural_force_without_dbc_dofs(
@@ -538,10 +538,10 @@ namespace CONTACT
           const Epetra_Vector& constr_slmaforce, std::ostream& os) const;
 
       /// check cn-bound (fall-back strategy, which is usually not activated)
-      bool CheckCnBound(std::ostream& os) const;
+      bool check_cn_bound(std::ostream& os) const;
 
       /// return SlMa forces over all active interfaces
-      void GetActiveSlMaForces(const Epetra_Vector& str_force,
+      void get_active_sl_ma_forces(const Epetra_Vector& str_force,
           Teuchos::RCP<Epetra_Vector>& str_slmaforce,
           Teuchos::RCP<Epetra_Vector>& constr_slmaforce) const;
 
@@ -551,7 +551,7 @@ namespace CONTACT
           Teuchos::RCP<Epetra_Map>& gMaActiveForceMap) const;
 
       /// print header
-      void PrintUpdateHead(std::ostream& os) const;
+      void print_update_head(std::ostream& os) const;
 
      private:
       /*----------------------------------------------------------------------*/

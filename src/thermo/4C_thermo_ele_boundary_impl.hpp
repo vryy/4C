@@ -61,7 +61,7 @@ namespace DRT
       //!
       //! This class does not provide a definition for this function, it
       //! must be defined in TemperBoundaryImpl.
-      virtual int EvaluateNeumann(const DRT::Element* ele, Teuchos::ParameterList& params,
+      virtual int evaluate_neumann(const DRT::Element* ele, Teuchos::ParameterList& params,
           const DRT::Discretization& discretization, const CORE::Conditions::Condition& condition,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra) = 0;
 
@@ -130,13 +130,13 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       //! Evaluate a Neumann boundary condition
-      int EvaluateNeumann(const DRT::Element* ele, Teuchos::ParameterList& params,
+      int evaluate_neumann(const DRT::Element* ele, Teuchos::ParameterList& params,
           const DRT::Discretization& discretization, const CORE::Conditions::Condition& condition,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra) override;
 
      private:
       //! prepare the evaluation of NURBS shape functions
-      virtual void PrepareNurbsEval(
+      virtual void prepare_nurbs_eval(
           const DRT::Element* ele,                   //!< the element whose matrix is calculated
           const DRT::Discretization& discretization  //!< current discretisation
       );
@@ -156,7 +156,7 @@ namespace DRT
       );
 
       //! Compute a constant normal vector for a boundary element
-      void GetConstNormal(
+      void get_const_normal(
           CORE::LINALG::Matrix<nsd_ + 1, 1>& normal,        //!< the constant normal vector
           const CORE::LINALG::Matrix<nsd_ + 1, nen_>& xyze  //!< element node coordinates
       ) const;
@@ -164,7 +164,7 @@ namespace DRT
       // evaluate a Neumann boundary condition
       // this method evaluates normal and detA at gaussian point
       // deriv (in)  : derivatives of shape functions
-      void SurfaceIntegration(double& detA,  //!< area at GP
+      void surface_integration(double& detA,  //!< area at GP
           CORE::LINALG::Matrix<nsd_ + 1, 1>&
               normal,  //!< (o) normal at gaussian point, length is detA!
           const CORE::LINALG::Matrix<nen_, nsd_ + 1>& xcurr  //!< (i)current coordinates of nodes

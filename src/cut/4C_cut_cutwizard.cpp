@@ -190,7 +190,7 @@ void CORE::GEO::CutWizard::set_marked_condition_sides(
   {
     DRT::Element* cutter_dis_ele = cutter_dis->lRowElement(lid);
 
-    const int numnode = cutter_dis_ele->NumNode();
+    const int numnode = cutter_dis_ele->num_node();
     const int* nodeids = cutter_dis_ele->NodeIds();
     std::vector<int> node_ids_of_cutterele(nodeids, nodeids + numnode);
 
@@ -200,7 +200,7 @@ void CORE::GEO::CutWizard::set_marked_condition_sides(
     // Get sidehandle to corresponding background surface discretization
     // -- if it exists!!!
     CORE::GEO::CUT::SideHandle* cut_sidehandle =
-        intersection_->GetMeshHandle().GetSide(node_ids_of_cutterele);
+        intersection_->GetMeshHandle().get_side(node_ids_of_cutterele);
 
     if (cut_sidehandle != nullptr)
     {
@@ -232,7 +232,7 @@ void CORE::GEO::CutWizard::Cut(
 )
 {
   // safety checks if the cut is initialized correctly
-  if (!SafetyChecks(false)) return;
+  if (!safety_checks(false)) return;
 
   TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CutWizard::Cut");
 
@@ -249,7 +249,7 @@ void CORE::GEO::CutWizard::Cut(
   //--------------------------------------
   // perform the actual cut, the intersection
   //--------------------------------------
-  Run_Cut(include_inner);
+  run_cut(include_inner);
 
 
   const double t_end = Teuchos::Time::wallTime() - t_start;
@@ -270,7 +270,7 @@ void CORE::GEO::CutWizard::Cut(
 void CORE::GEO::CutWizard::Prepare()
 {
   // safety checks if the cut is initialized correctly
-  if (!SafetyChecks(true)) return;
+  if (!safety_checks(true)) return;
 
   TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 1/6 --- Cut_Initialize");
 
@@ -295,7 +295,7 @@ void CORE::GEO::CutWizard::Prepare()
 
 
   // 1. Add CutSides (possible sides of the cutter-discretization and a possible level-set side)
-  AddCuttingSides();
+  add_cutting_sides();
 
   // 2. Add background elements dependent on bounding box created by the CutSides in 1.
   add_background_elements();
@@ -319,19 +319,19 @@ void CORE::GEO::CutWizard::Prepare()
 /*-------------------------------------------------------------*
  * add all cutting sides (mesh and level-set sides)
  *--------------------------------------------------------------*/
-void CORE::GEO::CutWizard::AddCuttingSides()
+void CORE::GEO::CutWizard::add_cutting_sides()
 {
   // add all mesh cutting sides
-  if (do_mesh_intersection_) AddMeshCuttingSide();
+  if (do_mesh_intersection_) add_mesh_cutting_side();
 
   // add a new level-set side
-  if (do_levelset_intersection_) AddLSCuttingSide();
+  if (do_levelset_intersection_) add_ls_cutting_side();
 }
 
 /*-------------------------------------------------------------*
  * add level-set cutting side
  *--------------------------------------------------------------*/
-void CORE::GEO::CutWizard::AddLSCuttingSide()
+void CORE::GEO::CutWizard::add_ls_cutting_side()
 {
   // add a new level-set side
   intersection_->AddLevelSetSide(level_set_sid_);
@@ -341,7 +341,7 @@ void CORE::GEO::CutWizard::AddLSCuttingSide()
 /*-------------------------------------------------------------*
  * add all mesh-cutting sides of all cutting discretizations
  *--------------------------------------------------------------*/
-void CORE::GEO::CutWizard::AddMeshCuttingSide()
+void CORE::GEO::CutWizard::add_mesh_cutting_side()
 {
   // loop all mesh coupling objects
   for (std::map<int, Teuchos::RCP<CutterMesh>>::iterator it = cutter_meshes_.begin();
@@ -349,7 +349,7 @@ void CORE::GEO::CutWizard::AddMeshCuttingSide()
   {
     Teuchos::RCP<CutterMesh> cutter_mesh = it->second;
 
-    AddMeshCuttingSide(
+    add_mesh_cutting_side(
         cutter_mesh->cutterdis_, cutter_mesh->cutter_disp_col_, cutter_mesh->start_ele_gid_);
   }
 }
@@ -359,7 +359,7 @@ void CORE::GEO::CutWizard::AddMeshCuttingSide()
 /*-------------------------------------------------------------*
  * add all cutting sides from the cut-discretization
  *--------------------------------------------------------------*/
-void CORE::GEO::CutWizard::AddMeshCuttingSide(
+void CORE::GEO::CutWizard::add_mesh_cutting_side(
     Teuchos::RCP<DRT::Discretization> cutterdis, Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
     const int start_ele_gid  ///< mesh coupling index
 )
@@ -377,7 +377,7 @@ void CORE::GEO::CutWizard::AddMeshCuttingSide(
   {
     DRT::Element* element = cutterdis->lColElement(lid);
 
-    const int numnode = element->NumNode();
+    const int numnode = element->num_node();
     DRT::Node** nodes = element->Nodes();
 
     CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
@@ -423,17 +423,17 @@ void CORE::GEO::CutWizard::AddMeshCuttingSide(
     }
 
     // add the side of the cutter-discretization
-    AddMeshCuttingSide(0, element, xyze, start_ele_gid);
+    add_mesh_cutting_side(0, element, xyze, start_ele_gid);
   }
 }
 
 /*-------------------------------------------------------------*
  * prepare the cut, add background elements and cutting sides
  *--------------------------------------------------------------*/
-void CORE::GEO::CutWizard::AddMeshCuttingSide(
+void CORE::GEO::CutWizard::add_mesh_cutting_side(
     int mi, DRT::Element* ele, const CORE::LINALG::SerialDenseMatrix& xyze, const int start_ele_gid)
 {
-  const int numnode = ele->NumNode();
+  const int numnode = ele->num_node();
   const int* nodeids = ele->NodeIds();
 
   std::vector<int> nids(nodeids, nodeids + numnode);
@@ -441,7 +441,7 @@ void CORE::GEO::CutWizard::AddMeshCuttingSide(
   const int eid = ele->Id();            // id of cutting side based on the cutter discretization
   const int sid = eid + start_ele_gid;  // id of cutting side within the cut library
 
-  intersection_->AddMeshCuttingSide(sid, nids, xyze, ele->Shape(), mi);
+  intersection_->add_mesh_cutting_side(sid, nids, xyze, ele->Shape(), mi);
 }
 
 /*-------------------------------------------------------------*
@@ -469,11 +469,11 @@ void CORE::GEO::CutWizard::add_background_elements()
       myphinp.clear();
 
       CORE::FE::ExtractMyNodeBasedValues(element, myphinp, back_mesh_->BackLevelSetCol());
-      AddElement(element, xyze, myphinp.data(), lsv_only_plus_domain_);
+      add_element(element, xyze, myphinp.data(), lsv_only_plus_domain_);
     }
     else
     {
-      AddElement(element, xyze, nullptr);
+      add_element(element, xyze, nullptr);
     }
   }
 }
@@ -486,7 +486,7 @@ void CORE::GEO::CutWizard::get_physical_nodal_coordinates(
   std::vector<int> lm;
   std::vector<double> mydisp;
 
-  const int numnode = element->NumNode();
+  const int numnode = element->num_node();
   const DRT::Node* const* nodes = element->Nodes();
 
   xyze.shape(3, numnode);
@@ -539,22 +539,22 @@ void CORE::GEO::CutWizard::get_physical_nodal_coordinates(
 /*-------------------------------------------------------------*
  * Add this background mesh element to the intersection class
  *--------------------------------------------------------------*/
-void CORE::GEO::CutWizard::AddElement(const DRT::Element* ele,
+void CORE::GEO::CutWizard::add_element(const DRT::Element* ele,
     const CORE::LINALG::SerialDenseMatrix& xyze, double* myphinp, bool lsv_only_plus_domain)
 {
-  const int numnode = ele->NumNode();
+  const int numnode = ele->num_node();
   const int* nodeids = ele->NodeIds();
 
   std::vector<int> nids(nodeids, nodeids + numnode);
 
   // If include_inner == false then add elements with negative level set values to discretization.
-  intersection_->AddElement(ele->Id(), nids, xyze, ele->Shape(), myphinp, lsv_only_plus_domain);
+  intersection_->add_element(ele->Id(), nids, xyze, ele->Shape(), myphinp, lsv_only_plus_domain);
 }
 
 /*------------------------------------------------------------------------------------------------*
  * perform the actual cut, the intersection
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CutWizard::Run_Cut(
+void CORE::GEO::CutWizard::run_cut(
     bool include_inner  //!< perform cut in the interior of the cutting mesh
 )
 {
@@ -615,7 +615,7 @@ void CORE::GEO::CutWizard::Run_Cut(
   {
     const double t_start = Teuchos::Time::wallTime();
 
-    FindPositionDofSets(include_inner);
+    find_position_dof_sets(include_inner);
 
     // just for time measurement
     comm_.Barrier();
@@ -647,7 +647,7 @@ void CORE::GEO::CutWizard::Run_Cut(
 /*------------------------------------------------------------------------------------------------*
  * routine for finding node positions and computing vc dofsets in a parallel way
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CutWizard::FindPositionDofSets(bool include_inner)
+void CORE::GEO::CutWizard::find_position_dof_sets(bool include_inner)
 {
   comm_.Barrier();
 
@@ -710,7 +710,7 @@ void CORE::GEO::CutWizard::FindPositionDofSets(bool include_inner)
 }
 
 
-bool CORE::GEO::CutWizard::SafetyChecks(bool is_prepare_cut_call)
+bool CORE::GEO::CutWizard::safety_checks(bool is_prepare_cut_call)
 {
   if (!is_set_options_)
     FOUR_C_THROW("You have to call SetOptions() before you can use the CutWizard");
@@ -738,16 +738,16 @@ bool CORE::GEO::CutWizard::SafetyChecks(bool is_prepare_cut_call)
  *------------------------------------------------------------------------------------------------*/
 void CORE::GEO::CutWizard::Output(bool include_inner)
 {
-  if (gmsh_output_) DumpGmshNumDOFSets(include_inner);
+  if (gmsh_output_) dump_gmsh_num_dof_sets(include_inner);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  PrintCellStats();
+  print_cell_stats();
 #endif
 
   if (gmsh_output_)
   {
     dump_gmsh_integration_cells();
-    DumpGmshVolumeCells(include_inner);
+    dump_gmsh_volume_cells(include_inner);
   }
 }
 
@@ -755,31 +755,31 @@ void CORE::GEO::CutWizard::Output(bool include_inner)
 /*------------------------------------------------------------------------------------------------*
  * Print the number of volumecells and boundarycells generated over the whole mesh during the cut *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CutWizard::PrintCellStats() { intersection_->PrintCellStats(); }
+void CORE::GEO::CutWizard::print_cell_stats() { intersection_->print_cell_stats(); }
 
 
 /*------------------------------------------------------------------------------------------------*
  * Write the DOF details of the nodes                                                             *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CutWizard::DumpGmshNumDOFSets(bool include_inner)
+void CORE::GEO::CutWizard::dump_gmsh_num_dof_sets(bool include_inner)
 {
   std::string filename = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
   std::stringstream str;
   str << filename;
 
-  intersection_->DumpGmshNumDOFSets(str.str(), include_inner, back_mesh_->Get());
+  intersection_->dump_gmsh_num_dof_sets(str.str(), include_inner, back_mesh_->Get());
 }
 
 
 /*------------------------------------------------------------------------------------------------*
  * Write volumecell output in GMSH format throughout the domain                                   *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CutWizard::DumpGmshVolumeCells(bool include_inner)
+void CORE::GEO::CutWizard::dump_gmsh_volume_cells(bool include_inner)
 {
   std::string name = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
   std::stringstream str;
   str << name << ".CUT_volumecells." << myrank_ << ".pos";
-  intersection_->DumpGmshVolumeCells(str.str(), include_inner);
+  intersection_->dump_gmsh_volume_cells(str.str(), include_inner);
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -798,14 +798,14 @@ void CORE::GEO::CutWizard::dump_gmsh_integration_cells()
 //! @name Getters
 /*========================================================================*/
 
-CORE::GEO::CUT::SideHandle* CORE::GEO::CutWizard::GetSide(std::vector<int>& nodeids)
+CORE::GEO::CUT::SideHandle* CORE::GEO::CutWizard::get_side(std::vector<int>& nodeids)
 {
-  return intersection_->GetSide(nodeids);
+  return intersection_->get_side(nodeids);
 }
 
-CORE::GEO::CUT::SideHandle* CORE::GEO::CutWizard::GetSide(int sid)
+CORE::GEO::CUT::SideHandle* CORE::GEO::CutWizard::get_side(int sid)
 {
-  return intersection_->GetSide(sid);
+  return intersection_->get_side(sid);
 }
 
 CORE::GEO::CUT::SideHandle* CORE::GEO::CutWizard::GetCutSide(int sid)
@@ -855,7 +855,7 @@ void CORE::GEO::CutWizard::update_boundary_cell_coords(Teuchos::RCP<DRT::Discret
   {
     DRT::Element* element = cutterdis->lColElement(lid);
 
-    const int numnode = element->NumNode();
+    const int numnode = element->num_node();
     DRT::Node** nodes = element->Nodes();
 
     CORE::LINALG::SerialDenseMatrix xyze(3, numnode);

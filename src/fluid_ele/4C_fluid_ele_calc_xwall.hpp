@@ -132,54 +132,54 @@ namespace DRT
       );
 
       //! prepare special Gauss rule for quadrature
-      virtual void PrepareGaussRule();
+      virtual void prepare_gauss_rule();
 
       //! get properties of xwall element
-      virtual void GetEleProperties(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<CORE::MAT::Material>& mat);
+      virtual void get_ele_properties(DRT::ELEMENTS::Fluid* ele,
+          DRT::Discretization& discretization, const std::vector<int>& lm,
+          Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat);
 
       //! brief get enrichment function
-      virtual double SpaldingsLaw(double dist, double utau);
+      virtual double spaldings_law(double dist, double utau);
 
       //! calculate derivative of enrichment wrt y+
-      virtual double DerSpaldingsLaw(double dist, double utau, double psi);
+      virtual double der_spaldings_law(double dist, double utau, double psi);
 
       //! calculate second derivative of enrichment wrt y+
-      virtual double Der2SpaldingsLaw(double dist, double utau, double psi, double derpsi);
+      virtual double der2_spaldings_law(double dist, double utau, double psi, double derpsi);
 
       //! evaluate enrichment (1)
-      virtual void EvalEnrichment();
+      virtual void eval_enrichment();
 
       //! evaluate enrichment (2)
-      virtual double EnrichmentShapeDer(
+      virtual double enrichment_shape_der(
           CORE::LINALG::Matrix<nsd_, 1>& derpsigp, CORE::LINALG::Matrix<numderiv2_, 1>& der2psigp);
 
       //! go increment of tauw for projection matrix
-      virtual void XWallTauWIncForward();
+      virtual void x_wall_tau_w_inc_forward();
 
       //! go increment of tauw backwards for projection matrix
-      virtual void XWallTauWIncBack();
+      virtual void x_wall_tau_w_inc_back();
 
       /*! \brief Calculate wall shear stress via gradient for xwall
        *
        *  \author bk \date 06/2014
        */
 
-      virtual int TauWViaGradient(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      virtual int tau_w_via_gradient(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseVector& elevec2);
 
       //! Get MK
-      double GetMK() override;
+      double get_mk() override;
 
       /*! \brief Calculate statilization parameter mk entry routine
        *
        *  \author bk \date 06/2014
        */
 
-      virtual int CalcMK(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      virtual int calc_mk(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseVector& elevec2);
@@ -188,13 +188,13 @@ namespace DRT
        *
        *  \author bk \date 06/2014
        */
-      virtual double CalcMK();
+      virtual double calc_mk();
 
       /*! \brief Calculate Projection on updated shape functions (matrix and rhs)
        *
        *  \author bk \date 06/2014
        */
-      virtual int XWallProjection(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      virtual int x_wall_projection(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2);

@@ -85,7 +85,7 @@ void XFEM::MeshCouplingFPI::InitStateVectors()
 {
   XFEM::MeshCoupling::InitStateVectors();
 
-  const Epetra_Map* cutterdofrowmap = cutter_dis_->DofRowMap();
+  const Epetra_Map* cutterdofrowmap = cutter_dis_->dof_row_map();
   const Epetra_Map* cutterdofcolmap = cutter_dis_->DofColMap();
 
   itrueresidual_ = CORE::LINALG::CreateVector(*cutterdofrowmap, true);
@@ -276,7 +276,7 @@ void XFEM::MeshCouplingFPI::update_configuration_map_gp(double& kappa_m,  //< fl
     double J = 0;
     double porosity = CalcPorosity(bele, rst_slave, J);
 
-    double trperm = CalctrPermeability(bele, porosity, J);
+    double trperm = calctr_permeability(bele, porosity, J);
 
 
     static double sliplength = trperm / (bj_coeff_);
@@ -432,7 +432,7 @@ void XFEM::MeshCouplingFPI::update_configuration_map_gp_contact(
   double J = 0;
   double porosity = CalcPorosity(bele, rst_slave, J);
 
-  double trperm = CalctrPermeability(bele, porosity, J);
+  double trperm = calctr_permeability(bele, porosity, J);
 
   double sliplength = trperm / (bj_coeff_);
 
@@ -587,9 +587,9 @@ void XFEM::MeshCouplingFPI::zero_state_vectors_fpi()
 // -------------------------------------------------------------------
 // Read Restart data for cutter discretization
 // -------------------------------------------------------------------
-void XFEM::MeshCouplingFPI::ReadRestart(const int step)
+void XFEM::MeshCouplingFPI::read_restart(const int step)
 {
-  if (myrank_) IO::cout << "ReadRestart for boundary discretization " << IO::endl;
+  if (myrank_) IO::cout << "read_restart for boundary discretization " << IO::endl;
 
   //-------- boundary discretization
   IO::DiscretizationReader boundaryreader(
@@ -612,15 +612,15 @@ void XFEM::MeshCouplingFPI::ReadRestart(const int step)
   boundaryreader.ReadVector(idispnp_, "idispnp_res");
   boundaryreader.ReadVector(idispnpi_, "idispnpi_res");
 
-  if (not(cutter_dis_->DofRowMap())->SameAs(ivelnp_->Map()))
+  if (not(cutter_dis_->dof_row_map())->SameAs(ivelnp_->Map()))
     FOUR_C_THROW("Global dof numbering in maps does not match");
-  if (not(cutter_dis_->DofRowMap())->SameAs(iveln_->Map()))
+  if (not(cutter_dis_->dof_row_map())->SameAs(iveln_->Map()))
     FOUR_C_THROW("Global dof numbering in maps does not match");
-  if (not(cutter_dis_->DofRowMap())->SameAs(idispnp_->Map()))
+  if (not(cutter_dis_->dof_row_map())->SameAs(idispnp_->Map()))
     FOUR_C_THROW("Global dof numbering in maps does not match");
-  if (not(cutter_dis_->DofRowMap())->SameAs(idispn_->Map()))
+  if (not(cutter_dis_->dof_row_map())->SameAs(idispn_->Map()))
     FOUR_C_THROW("Global dof numbering in maps does not match");
-  if (not(cutter_dis_->DofRowMap())->SameAs(idispnpi_->Map()))
+  if (not(cutter_dis_->dof_row_map())->SameAs(idispnpi_->Map()))
     FOUR_C_THROW("Global dof numbering in maps does not match");
 }
 
@@ -688,7 +688,7 @@ void XFEM::MeshCouplingFPI::gmsh_output_discretization(std::ostream& gmshfilecon
 
   // write dis with zero solid displacements here!
   Teuchos::RCP<Epetra_Vector> solid_dispnp =
-      CORE::LINALG::CreateVector(*cond_dis_->DofRowMap(), true);
+      CORE::LINALG::CreateVector(*cond_dis_->dof_row_map(), true);
 
   XFEM::UTILS::ExtractNodeVectors(cond_dis_, currsolidpositions, solid_dispnp);
 
@@ -888,12 +888,12 @@ void XFEM::MeshCouplingFPI::LiftDrag(const int step, const double time) const
 // Caluculate the normalized trace of permeability matrix
 //        for J,porosity pair on this FaceElement               ager 12/17
 // ------------------------------------------------------------------------
-double XFEM::MeshCouplingFPI::CalctrPermeability(DRT::Element* ele, double& porosity, double& J)
+double XFEM::MeshCouplingFPI::calctr_permeability(DRT::Element* ele, double& porosity, double& J)
 {
   // Calculate normalized trace of permeability matrix
   DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(ele);
   if (!fele) FOUR_C_THROW("Cast to Faceele failed!");
-  DRT::Element* coupl_ele = fele->ParentElement();
+  DRT::Element* coupl_ele = fele->parent_element();
   if (coupl_ele == nullptr) FOUR_C_THROW("No coupl_ele!");
   Teuchos::RCP<MAT::FluidPoro> poromat;
   // access second material in structure element
@@ -918,7 +918,7 @@ double XFEM::MeshCouplingFPI::CalcPorosity(
   DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(ele);
   if (!fele) FOUR_C_THROW("Cast to Faceele failed!");
 
-  DRT::Element* coupl_ele = fele->ParentElement();
+  DRT::Element* coupl_ele = fele->parent_element();
   if (coupl_ele == nullptr) FOUR_C_THROW("No coupl_ele!");
 
   double pres = 0.0;
@@ -954,7 +954,7 @@ double XFEM::MeshCouplingFPI::compute_jacobianand_pressure(
   DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(ele);
   if (!fele) FOUR_C_THROW("Cast to Faceele failed!");
 
-  DRT::Element* coupl_ele = fele->ParentElement();
+  DRT::Element* coupl_ele = fele->parent_element();
 
   if (fele->Shape() == CORE::FE::CellType::quad4)
   {

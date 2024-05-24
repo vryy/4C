@@ -227,21 +227,21 @@ namespace MAT
 
    private:
     //! computes isotropic elasticity tensor in matrix notion for 3d
-    void SetupCmat(CORE::LINALG::Matrix<6, 6>& cmat);
+    void setup_cmat(CORE::LINALG::Matrix<6, 6>& cmat);
 
     //! computes temperature dependent isotropic elasticity tensor in matrix
     //! notion for 3d
-    void SetupCthermo(CORE::LINALG::Matrix<6, 1>& ctemp);
+    void setup_cthermo(CORE::LINALG::Matrix<6, 1>& ctemp);
 
     //! calculates stress-temperature modulus
-    double STModulus() const;
+    double st_modulus() const;
 
     //! calculates stress-temperature modulus
-    double GetSTModulus_T() const;
+    double get_st_modulus_t() const;
 
     //! calculates derivative of Cmat with respect to current temperatures
     //! only in case of temperature-dependent material parameters
-    void GetCmatAtTempnp_T(CORE::LINALG::Matrix<6, 6>& derivcmat);
+    void get_cmat_at_tempnp_t(CORE::LINALG::Matrix<6, 6>& derivcmat);
 
     //! calculates derivative of Cmat with respect to current temperatures
     //! only in case of temperature-dependent material parameters

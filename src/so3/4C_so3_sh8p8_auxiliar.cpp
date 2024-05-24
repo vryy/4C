@@ -58,7 +58,7 @@ void DRT::ELEMENTS::SoSh8p8::axial_metrics_at_origin(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::LocalMetrics(
+void DRT::ELEMENTS::SoSh8p8::local_metrics(
     const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& jac, CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& metr)
 {
   // metrics of r-, s- and t-axis in reference space
@@ -82,7 +82,7 @@ void DRT::ELEMENTS::SoSh8p8::LocalMetrics(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::AnsSetup2(
+void DRT::ELEMENTS::SoSh8p8::ans_setup2(
     const CORE::LINALG::Matrix<NUMNOD_, NUMDIM_>& xrefe,  // material element coords
     const CORE::LINALG::Matrix<NUMNOD_, NUMDIM_>& xcurr,  // current element coords
     std::vector<CORE::LINALG::Matrix<NUMDIM_, NUMNOD_>>**
@@ -221,7 +221,7 @@ void DRT::ELEMENTS::SoSh8p8::AnsSetup2(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::AnsSetup3(
+void DRT::ELEMENTS::SoSh8p8::ans_setup3(
     const CORE::LINALG::Matrix<NUMNOD_, NUMDIM_>& xrefe,  // material element coords
     const CORE::LINALG::Matrix<NUMNOD_, NUMDIM_>& xcurr,  // current element coords
     std::vector<CORE::LINALG::Matrix<NUMDIM_, NUMNOD_>>**
@@ -828,10 +828,11 @@ void DRT::ELEMENTS::SoSh8p8::matrix2_tensor_to_left_right_product_matrix6x6_voig
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::StretchTensor(double* detut,  // determinant of material stretch tensor
-    CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>* ut,            // material stretch tensor
-    CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>* invut,         // inverse material stretch tensor
-    const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& ct       // right Cauchy-Green tensor
+void DRT::ELEMENTS::SoSh8p8::stretch_tensor(
+    double* detut,                                    // determinant of material stretch tensor
+    CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>* ut,       // material stretch tensor
+    CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>* invut,    // inverse material stretch tensor
+    const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& ct  // right Cauchy-Green tensor
 )
 {
   if ((ut == nullptr) and (invut == nullptr))
@@ -1091,7 +1092,7 @@ int DRT::ELEMENTS::SoSh8p8::sym_spectral_decomp_jac_iter(CORE::LINALG::Matrix<NU
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::ExtractDispAndPres(std::vector<double>& mystat,
+void DRT::ELEMENTS::SoSh8p8::extract_disp_and_pres(std::vector<double>& mystat,
     CORE::LINALG::Matrix<NUMDISP_, 1>& mydisp, CORE::LINALG::Matrix<NUMPRES_, 1>& mypres)
 {
   for (int inod = 0; inod < NUMNOD_; ++inod)
@@ -1105,7 +1106,7 @@ void DRT::ELEMENTS::SoSh8p8::ExtractDispAndPres(std::vector<double>& mystat,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::BuildElementMatrix(CORE::LINALG::Matrix<NUMDOF_, NUMDOF_>* mat,
+void DRT::ELEMENTS::SoSh8p8::build_element_matrix(CORE::LINALG::Matrix<NUMDOF_, NUMDOF_>* mat,
     const CORE::LINALG::Matrix<NUMDISP_, NUMDISP_>* matdd,
     const CORE::LINALG::Matrix<NUMDISP_, NUMPRES_>* matdp,
     const CORE::LINALG::Matrix<NUMPRES_, NUMDISP_>* matpd,
@@ -1224,7 +1225,7 @@ void DRT::ELEMENTS::SoSh8p8::BuildElementMatrix(CORE::LINALG::Matrix<NUMDOF_, NU
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::BuildElementVector(CORE::LINALG::Matrix<NUMDOF_, 1>* vct,
+void DRT::ELEMENTS::SoSh8p8::build_element_vector(CORE::LINALG::Matrix<NUMDOF_, 1>* vct,
     const CORE::LINALG::Matrix<NUMDISP_, 1>* vctd, const CORE::LINALG::Matrix<NUMPRES_, 1>* vctp)
 {
   const int* d2dp = &(DISPTODISPPRES_[0]);
@@ -1259,7 +1260,7 @@ void DRT::ELEMENTS::SoSh8p8::BuildElementVector(CORE::LINALG::Matrix<NUMDOF_, 1>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::AssembleVolume(
+void DRT::ELEMENTS::SoSh8p8::assemble_volume(
     Teuchos::ParameterList& params,  ///< parameter list for in 'n' out
     const double& elevol             ///< current element volume
 )
@@ -1272,7 +1273,7 @@ void DRT::ELEMENTS::SoSh8p8::AssembleVolume(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /* DEBUG ONLY */
-void DRT::ELEMENTS::SoSh8p8::GnuplotOut(
+void DRT::ELEMENTS::SoSh8p8::gnuplot_out(
     Teuchos::ParameterList& params,  ///< parameter list for in 'n' out
     std::vector<double>& state,      ///< current state vector, i.e. displacements and pressure DOFs
     CORE::LINALG::Matrix<NUMDOF_, 1>&

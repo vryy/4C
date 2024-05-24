@@ -104,7 +104,7 @@ void SCATRA::LEVELSET::Intersection::GetZeroLevelSet(const Epetra_Vector& phi,
     // check if this element is cut, according to its level-set values
     // -> add it to 'levelset'
     // note: cut is performed in physical space
-    if (!levelset.AddElement(1, nids, xyze, ele->Shape(), phi_nodes.data(), false, check_lsv_))
+    if (!levelset.add_element(1, nids, xyze, ele->Shape(), phi_nodes.data(), false, check_lsv_))
       continue;
 
     // ------------------------------------------------------------------------
@@ -333,7 +333,7 @@ void SCATRA::LEVELSET::Intersection::PrepareCut(const DRT::Element* ele,
   }
 
   // we assume one dof per node here
-  phi_nodes.resize(ele->NumNode(), 0.0);
+  phi_nodes.resize(ele->num_node(), 0.0);
   std::vector<int> lm;
   std::vector<int> lmowner;
   std::vector<int> lmstride;
@@ -464,7 +464,7 @@ void SCATRA::LEVELSET::Intersection::ExportInterface(
     // send length of the data to be received ...
     MPI_Request req_length_data;
     int length_tag = 0;
-    exporter.ISend(myrank, dest, lengthSend.data(), size_one, length_tag, req_length_data);
+    exporter.i_send(myrank, dest, lengthSend.data(), size_one, length_tag, req_length_data);
     // ... and receive length
     std::vector<int> lengthRecv(1, 0);
     exporter.Receive(source, length_tag, lengthRecv, size_one);
@@ -473,7 +473,7 @@ void SCATRA::LEVELSET::Intersection::ExportInterface(
     // send actual data ...
     int data_tag = 4;
     MPI_Request req_data;
-    exporter.ISend(myrank, dest, dataSend.data(), lengthSend[0], data_tag, req_data);
+    exporter.i_send(myrank, dest, dataSend.data(), lengthSend[0], data_tag, req_data);
     // ... and receive data
     std::vector<char> dataRecv(lengthRecv[0]);
     exporter.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);

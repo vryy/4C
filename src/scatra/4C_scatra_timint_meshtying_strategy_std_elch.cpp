@@ -32,12 +32,12 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::Ini
 {
   Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix;
 
-  if (CORE::UTILS::IntegralValue<int>(*(ElchTimInt()->ElchParameterList()), "BLOCKPRECOND"))
+  if (CORE::UTILS::IntegralValue<int>(*(elch_tim_int()->ElchParameterList()), "BLOCKPRECOND"))
   {
     // safety checks
-    if (ElchTimInt()->EquPot() == INPAR::ELCH::equpot_undefined)
+    if (elch_tim_int()->EquPot() == INPAR::ELCH::equpot_undefined)
       FOUR_C_THROW("Type of closing equation for electric potential not correctly set!");
-    if (ElchTimInt()->EquPot() != INPAR::ELCH::equpot_enc)
+    if (elch_tim_int()->EquPot() != INPAR::ELCH::equpot_enc)
       FOUR_C_THROW("Special ELCH assemble strategy for block-matrix will not assemble A_11 block!");
     if (scatratimint_->NumScal() < 1)
       FOUR_C_THROW("Number of transported scalars not correctly set!");
@@ -64,7 +64,7 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::Ini
       case CORE::LINALG::MatrixType::sparse:
       {
         systemmatrix = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-            *scatratimint_->Discretization()->DofRowMap(), 27, false, true));
+            *scatratimint_->Discretization()->dof_row_map(), 27, false, true));
         break;
       }
 
@@ -95,7 +95,7 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::Ini
  *------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyStdElch::init_conv_check_strategy()
 {
-  if (ElchTimInt()->MacroScale())
+  if (elch_tim_int()->MacroScale())
   {
     convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdMacroScaleElch(
         scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));

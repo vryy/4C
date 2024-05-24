@@ -101,10 +101,10 @@ void STR::TimIntExpl::Setup()
 
 /*----------------------------------------------------------------------*/
 /* evaluate external forces at t_{n+1} */
-void STR::TimIntExpl::ApplyForceExternal(const double time,  //!< evaluation time
-    const Teuchos::RCP<Epetra_Vector> dis,                   //!< displacement state
-    const Teuchos::RCP<Epetra_Vector> vel,                   //!< velocity state
-    Teuchos::RCP<Epetra_Vector>& fext                        //!< external force
+void STR::TimIntExpl::apply_force_external(const double time,  //!< evaluation time
+    const Teuchos::RCP<Epetra_Vector> dis,                     //!< displacement state
+    const Teuchos::RCP<Epetra_Vector> vel,                     //!< velocity state
+    Teuchos::RCP<Epetra_Vector>& fext                          //!< external force
 )
 {
   Teuchos::ParameterList p;
@@ -113,12 +113,12 @@ void STR::TimIntExpl::ApplyForceExternal(const double time,  //!< evaluation tim
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState(0, "displacement", dis);
-  discret_->SetState(0, "displacement new", dis);
+  discret_->set_state(0, "displacement", dis);
+  discret_->set_state(0, "displacement new", dis);
 
-  if (damping_ == INPAR::STR::damp_material) discret_->SetState(0, "velocity", vel);
+  if (damping_ == INPAR::STR::damp_material) discret_->set_state(0, "velocity", vel);
   // get load vector
-  discret_->EvaluateNeumann(p, *fext);
+  discret_->evaluate_neumann(p, *fext);
 
   // go away
   return;

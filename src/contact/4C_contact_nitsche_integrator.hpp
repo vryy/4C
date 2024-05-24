@@ -148,7 +148,7 @@ namespace CONTACT
      * @param[in] mxi         master side Gauss point coordinates
      */
     template <int dim>
-    void GPTSForces(MORTAR::Element& sele, MORTAR::Element& mele,
+    void gpts_forces(MORTAR::Element& sele, MORTAR::Element& mele,
         const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseMatrix& sderiv,
         const std::vector<CORE::GEN::Pairedvector<int, double>>& dsxi,
         const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& mderiv,
@@ -220,7 +220,7 @@ namespace CONTACT
 
     //! templated version of MapGPtoParent
     template <CORE::FE::CellType parentdistype, int dim>
-    void inline SoEleGP(MORTAR::Element& sele, double wgt, const double* gpcoord,
+    void inline so_ele_gp(MORTAR::Element& sele, double wgt, const double* gpcoord,
         CORE::LINALG::Matrix<dim, 1>& pxsi, CORE::LINALG::Matrix<dim, dim>& derivtrafo);
 
     //! actually not the velocity but the displacement increment
@@ -280,7 +280,7 @@ namespace CONTACT
     // --- template and inline functions --- //
 
     template <CORE::FE::CellType parentdistype, int dim>
-    void inline SoEleGP(MORTAR::Element& sele, const double wgt, const double* gpcoord,
+    void inline so_ele_gp(MORTAR::Element& sele, const double wgt, const double* gpcoord,
         CORE::LINALG::Matrix<dim, 1>& pxsi, CORE::LINALG::Matrix<dim, dim>& derivtrafo)
     {
       CORE::FE::CollectedGaussPoints intpoints =
@@ -292,7 +292,7 @@ namespace CONTACT
       derivtrafo.Clear();
 
       CORE::FE::BoundaryGPToParentGP<dim>(pqxg, derivtrafo, intpoints,
-          sele.ParentElement()->Shape(), sele.Shape(), sele.FaceParentNumber());
+          sele.parent_element()->Shape(), sele.Shape(), sele.FaceParentNumber());
 
       // coordinates of the current integration point in parent coordinate system
       for (int idim = 0; idim < dim; idim++) pxsi(idim) = pqxg(0, idim);

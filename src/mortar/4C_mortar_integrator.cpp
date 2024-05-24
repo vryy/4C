@@ -715,9 +715,9 @@ void MORTAR::IntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(MORTAR::Ele
   if (ndim_ != 2) FOUR_C_THROW("2D integration method called for non-2D problem");
 
   // number of nodes (slave, master)
-  int nrow = sele.NumNode();
+  int nrow = sele.num_node();
   int ndof = dynamic_cast<MORTAR::Node*>(sele.Nodes()[0])->NumDof();
-  int nodemaster = meles[0]->NumNode();
+  int nodemaster = meles[0]->num_node();
 
   // create empty vectors for shape fct. evaluation
   static CORE::LINALG::Matrix<ns_, 1> sval;
@@ -806,7 +806,7 @@ void MORTAR::IntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(MORTAR::Ele
 
         // compute segment D/M matrix ****************************************
         double jac = dsxideta * dxdsxi;
-        GP_DM(sele, *meles[nummaster], lmval, sval, mval, jac, wgt, nrow, nodemaster, ndof, bound,
+        gp_dm(sele, *meles[nummaster], lmval, sval, mval, jac, wgt, nrow, nodemaster, ndof, bound,
             comm);
 
       }  // end - if Pojection on MasterElement
@@ -855,8 +855,8 @@ void MORTAR::IntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(MORTAR::Elem
     FOUR_C_THROW("IntegrateAndDerivSegment called with infeasible master limits!");
 
   // number of nodes (slave, master)
-  int nrow = sele.NumNode();
-  int ncol = mele.NumNode();
+  int nrow = sele.num_node();
+  int ncol = mele.num_node();
   int ndof = dynamic_cast<MORTAR::Node*>(sele.Nodes()[0])->NumDof();
 
   // create empty vectors for shape fct. evaluation
@@ -969,7 +969,7 @@ void MORTAR::IntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(MORTAR::Elem
 
     // compute segment D/M matrix ****************************************
     double jac = dsxideta * dxdsxi;
-    GP_DM(sele, mele, lmval, sval, mval, jac, wgt, nrow, ncol, ndof, bound, comm);
+    gp_dm(sele, mele, lmval, sval, mval, jac, wgt, nrow, ncol, ndof, bound, comm);
   }
 
   return;
@@ -979,7 +979,7 @@ void MORTAR::IntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(MORTAR::Elem
  |  Compute entries for D and M matrix at GP                 farah 12/13|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void inline MORTAR::IntegratorCalc<distypeS, distypeM>::GP_DM(MORTAR::Element& sele,
+void inline MORTAR::IntegratorCalc<distypeS, distypeM>::gp_dm(MORTAR::Element& sele,
     MORTAR::Element& mele, CORE::LINALG::Matrix<ns_, 1>& lmval, CORE::LINALG::Matrix<ns_, 1>& sval,
     CORE::LINALG::Matrix<nm_, 1>& mval, double& jac, double& wgt, int& nrow, int& ncol, int& ndof,
     bool& bound, const Epetra_Comm& comm)
@@ -1111,7 +1111,7 @@ void inline MORTAR::IntegratorCalc<distypeS, distypeM>::GP_DM(MORTAR::Element& s
  |  Compute entries for D and M matrix at GP (3D Quad)       farah 12/13|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void inline MORTAR::IntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(MORTAR::Element& sele,
+void inline MORTAR::IntegratorCalc<distypeS, distypeM>::gp_3_d_dm_quad(MORTAR::Element& sele,
     MORTAR::Element& mele, MORTAR::IntElement& sintele, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseVector& lmintval, CORE::LINALG::Matrix<ns_, 1>& sval,
     CORE::LINALG::Matrix<nm_, 1>& mval, double& jac, double& wgt, int& nrow, int& nintrow,
@@ -1272,9 +1272,9 @@ MORTAR::IntegratorCalc<distypeS, distypeM>::IntegrateMmod2D(MORTAR::Element& sel
     FOUR_C_THROW("IntegrateMmod2D called with infeasible master limits!");
 
   // create empty mmodseg object and wrap it with Teuchos::RCP
-  int nrow = sele.NumNode();
+  int nrow = sele.num_node();
   int nrowdof = ndim_;
-  int ncol = mele.NumNode();
+  int ncol = mele.num_node();
   int ncoldof = ndim_;
   Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> mmodseg =
       Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(nrow * nrowdof, ncol * ncoldof));
@@ -1402,8 +1402,8 @@ void MORTAR::IntegratorCalc<distypeS, distypeM>::IntegrateEleBased3D(MORTAR::Ele
   }
 
   int msize = meles.size();
-  int nrow = sele.NumNode();
-  int nmnode = meles[0]->NumNode();
+  int nrow = sele.num_node();
+  int nmnode = meles[0]->num_node();
   int ndof = dynamic_cast<MORTAR::Node*>(sele.Nodes()[0])->NumDof();
 
   // create empty vectors for shape fct. evaluation
@@ -1485,7 +1485,7 @@ void MORTAR::IntegratorCalc<distypeS, distypeM>::IntegrateEleBased3D(MORTAR::Ele
 
         // compute cell D/M matrix *******************************************
         bool bound = false;
-        GP_DM(sele, *meles[nummaster], lmval, sval, mval, jacslave, wgt, nrow, nmnode, ndof, bound,
+        gp_dm(sele, *meles[nummaster], lmval, sval, mval, jacslave, wgt, nrow, nmnode, ndof, bound,
             comm);
       }  // is_on_mele==true
     }    // loop over meles
@@ -1532,8 +1532,8 @@ void MORTAR::IntegratorCalc<distypeS, distypeM>::integrate_cell3_d_aux_plane(MOR
     FOUR_C_THROW("integrate_deriv_cell3_d_aux_plane called without integration cell");
 
   // number of nodes (slave, master)
-  int nrow = sele.NumNode();
-  int ncol = mele.NumNode();
+  int nrow = sele.num_node();
+  int ncol = mele.num_node();
   int ndof = dynamic_cast<MORTAR::Node*>(sele.Nodes()[0])->NumDof();
 
   // create empty vectors for shape fct. evaluation
@@ -1674,7 +1674,7 @@ void MORTAR::IntegratorCalc<distypeS, distypeM>::integrate_cell3_d_aux_plane(MOR
     double jac = cell->Jacobian();
 
     // compute cell D/M matrix *******************************************
-    GP_DM(sele, mele, lmval, sval, mval, jac, wgt, nrow, ncol, ndof, bound, comm);
+    gp_dm(sele, mele, lmval, sval, mval, jac, wgt, nrow, ncol, ndof, bound, comm);
   }
 
   return;
@@ -1723,9 +1723,9 @@ void MORTAR::IntegratorCalc<distypeS, distypeM>::integrate_cell3_d_aux_plane_qua
     FOUR_C_THROW("integrate_deriv_cell3_d_aux_plane_quad called without integration cell");
 
   // number of nodes (slave, master)
-  int nrow = sele.NumNode();
-  int ncol = mele.NumNode();
-  int nintrow = sintele.NumNode();
+  int nrow = sele.num_node();
+  int ncol = mele.num_node();
+  int nintrow = sintele.num_node();
   int ndof = dynamic_cast<MORTAR::Node*>(sele.Nodes()[0])->NumDof();
 
   // create empty vectors for shape fct. evaluation
@@ -1938,7 +1938,7 @@ void MORTAR::IntegratorCalc<distypeS, distypeM>::integrate_cell3_d_aux_plane_qua
     double jac = cell->Jacobian();
 
     // compute cell D/M matrix *******************************************
-    GP_3D_DM_Quad(sele, mele, sintele, lmval, lmintval, sval, mval, jac, wgt, nrow, nintrow, ncol,
+    gp_3_d_dm_quad(sele, mele, sintele, lmval, lmintval, sval, mval, jac, wgt, nrow, nintrow, ncol,
         ndof, bound);
   }
   //**********************************************************************

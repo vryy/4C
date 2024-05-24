@@ -157,7 +157,7 @@ namespace MAT
     double Density() const override;
 
     /// Calculate stresses and strains on the micro-scale
-    void PrepareOutput();
+    void prepare_output();
 
     /// Write output on micro-scale
     void Output();
@@ -166,11 +166,11 @@ namespace MAT
     void Update() override;
 
     /// Read restart of micro scale on a processor with macro scale
-    void ReadRestart(const int gp, const int eleID, const bool eleowner);
+    void read_restart(const int gp, const int eleID, const bool eleowner);
 
     /// restart micro material on a processor which only knows about the micro scale (supporting
     /// proc)
-    void ReadRestart(
+    void read_restart(
         const int gp, const int eleID, const bool eleowner, int microdisnum, double V0);
 
     /// @name Access parameters

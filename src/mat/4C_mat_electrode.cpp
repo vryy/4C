@@ -22,7 +22,7 @@ MAT::PAR::Electrode::Electrode(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : ElchSingleMat(matdata),
       cmax_(matdata->Get<double>("C_MAX")),
       chimax_(matdata->Get<double>("CHI_MAX")),
-      ocpmodel_(StringToOCPModel(matdata->Get<std::string>("OCP_MODEL"))),
+      ocpmodel_(string_to_ocp_model(matdata->Get<std::string>("OCP_MODEL"))),
       ocpparanum_(matdata->Get<int>("OCP_PARA_NUM")),
       ocppara_(matdata->Get<std::vector<double>>("OCP_PARA")),
       X_(0, 0.0),
@@ -202,7 +202,8 @@ Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Electrode::CreateMaterial()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::PAR::OCPModels MAT::PAR::Electrode::StringToOCPModel(const std::string& ocpmodelstring) const
+MAT::PAR::OCPModels MAT::PAR::Electrode::string_to_ocp_model(
+    const std::string& ocpmodelstring) const
 {
   OCPModels ocpmodelenum(ocp_undefined);
 

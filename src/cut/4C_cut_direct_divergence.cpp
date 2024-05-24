@@ -52,7 +52,7 @@ Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::DirectDivergence::VCIntegrat
   const double totalVolume = (fvolume(0, 1) - fvolume(0, 0)) * (fvolume(1, 1) - fvolume(1, 0)) *
                              (fvolume(2, 1) - fvolume(2, 0));
 
-  ListFacets(facetIterator, RefPlaneEqn, IteratorRefFacet, is_ref_);
+  list_facets(facetIterator, RefPlaneEqn, IteratorRefFacet, is_ref_);
 
   if (is_ref_) ref_facet_ = *IteratorRefFacet;
 
@@ -116,11 +116,11 @@ Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::DirectDivergence::VCIntegrat
 as possible, the reference facet is set on a cut side to reduce the no of Gauss pts Reference facet
 is selected so that all internal points are inside the volumecell
 *--------------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::DirectDivergence::ListFacets(
+void CORE::GEO::CUT::DirectDivergence::list_facets(
     std::vector<plain_facet_set::const_iterator>& facetIterator, std::vector<double>& RefPlaneEqn,
     plain_facet_set::const_iterator& IteratorRefFacet, bool& IsRefFacet)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::DirectDivergence::ListFacets" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::DirectDivergence::list_facets" );
 
   const plain_facet_set& facete = volcell_->Facets();
 
@@ -137,7 +137,7 @@ void CORE::GEO::CUT::DirectDivergence::ListFacets(
   {
     Facet* fe = *i;
     const std::vector<Point*>& corn = fe->CornerPoints();
-    bool isPlanar = fe->IsPlanar(mesh_, corn);  // triangulates non-planar facets.
+    bool isPlanar = fe->is_planar(mesh_, corn);  // triangulates non-planar facets.
 
     if (isPlanar == false)  // and !(fe->belongs_to_level_set_side()) )
     {
@@ -174,7 +174,7 @@ void CORE::GEO::CUT::DirectDivergence::ListFacets(
     // consider only facet whose x-direction normal componenet is non-zero
     if (fabs(RefPlaneTemp[0]) > TOL_EQN_PLANE)  // This could give issues with non-planar facets?
     {
-      TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT::DirectDivergence::ListFacets-tmp1");
+      TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT::DirectDivergence::list_facets-tmp1");
 
 #ifdef LOCAL
       if (warpFac.size() > 0)  // if there are warped facets that are not yet processed
@@ -268,7 +268,7 @@ void CORE::GEO::CUT::DirectDivergence::ListFacets(
   //   considered facet are in the same plane, so delete this facet
   if (RefOnCutSide)
   {
-    // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::DirectDivergence::ListFacets-tmp2" );
+    // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::DirectDivergence::list_facets-tmp2" );
 
     for (unsigned i = 0; i < facetIterator.size(); i++)
     {
@@ -597,7 +597,7 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
       isNeg = true;
       volcell_->SetVolume(0.0);
       std::cout << "----WARNING:::negligible volumecell parent id = "
-                << volcell_->ParentElement()->Id() << "---------------" << std::endl;
+                << volcell_->parent_element()->Id() << "---------------" << std::endl;
       std::cout << "volume in local coordinates = " << TotalInteg
                 << "\t volume in global coordinates = " << volGlobal << std::endl;
 

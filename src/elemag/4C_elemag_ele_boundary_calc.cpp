@@ -71,7 +71,7 @@ DRT::ELEMENTS::ElemagBoundaryImplInterface* DRT::ELEMENTS::ElemagBoundaryImplInt
     }
     default:
       FOUR_C_THROW(
-          "Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
+          "Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->num_node());
       break;
   }
 }
@@ -111,7 +111,7 @@ DRT::ELEMENTS::ElemagBoundaryImpl<distype>::ElemagBoundaryImpl()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::ElemagBoundary* ele,
+int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::evaluate_neumann(DRT::ELEMENTS::ElemagBoundary* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     CORE::Conditions::Condition& condition, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -144,16 +144,16 @@ int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ElemagBo
     {
       const int* nodeids = ele->NodeIds();
 
-      DRT::Element* parent = ele->ParentElement();
+      DRT::Element* parent = ele->parent_element();
       Teuchos::RCP<DRT::FaceElement>* faces = parent->Faces();
       bool same = false;
       for (int i = 0; i < parent->NumFace(); ++i)
       {
         const int* nodeidsfaces = faces[i]->NodeIds();
 
-        if (faces[i]->NumNode() != ele->NumNode()) break;
+        if (faces[i]->num_node() != ele->num_node()) break;
 
-        for (int j = 0; j < ele->NumNode(); ++j)
+        for (int j = 0; j < ele->num_node(); ++j)
         {
           if (nodeidsfaces[j] == nodeids[j])
             same = true;
@@ -167,17 +167,17 @@ int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ElemagBo
         {
           // i is the number we were searching for!!!!
           params.set<int>("face", i);
-          ele->ParentElement()->Evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra,
-              elevec1_epetra, elevec2_epetra, elevec3_epetra);
+          ele->parent_element()->Evaluate(params, discretization, lm, elemat1_epetra,
+              elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
           // break;
         }
       }
-      if (same == false && (faces[0]->NumNode() != ele->NumNode()))
+      if (same == false && (faces[0]->num_node() != ele->num_node()))
       {
         // in this case we have a three dimensional problem and the absorbing boundary condition on
         // a line and not on a surface. hence, we have to evaluate the abc term only at a part of
         // the face. here, we want to figure, which part!
-        int elenode = ele->NumNode();
+        int elenode = ele->num_node();
         int face = -1;
         if (elenode != 2)
           FOUR_C_THROW(
@@ -188,7 +188,7 @@ int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ElemagBo
           const int* nodeidsfaces = faces[i]->NodeIds();
 
           int count = 0;
-          for (int j = 0; j < faces[i]->NumNode(); ++j)
+          for (int j = 0; j < faces[i]->num_node(); ++j)
           {
             for (int n = 0; n < elenode; ++n)
             {
@@ -203,13 +203,13 @@ int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ElemagBo
 
             const int* nodeidsface = faces[face]->NodeIds();
             Teuchos::RCP<std::vector<int>> indices = Teuchos::rcp(new std::vector<int>(elenode));
-            for (int j = 0; j < faces[face]->NumNode(); ++j)
+            for (int j = 0; j < faces[face]->num_node(); ++j)
             {
               for (int n = 0; n < elenode; ++n)
                 if (nodeids[n] == nodeidsface[j]) (*indices)[n] = j;
             }
             params.set<Teuchos::RCP<std::vector<int>>>("nodeindices", indices);
-            ele->ParentElement()->Evaluate(params, discretization, lm, elemat1_epetra,
+            ele->parent_element()->Evaluate(params, discretization, lm, elemat1_epetra,
                 elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
           }
         }
@@ -228,16 +228,16 @@ int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ElemagBo
     {
       const int* nodeids = ele->NodeIds();
 
-      DRT::Element* parent = ele->ParentElement();
+      DRT::Element* parent = ele->parent_element();
       Teuchos::RCP<DRT::FaceElement>* faces = parent->Faces();
       bool same = false;
       for (int i = 0; i < parent->NumFace(); ++i)
       {
         const int* nodeidsfaces = faces[i]->NodeIds();
 
-        if (faces[i]->NumNode() != ele->NumNode()) break;
+        if (faces[i]->num_node() != ele->num_node()) break;
         /*
-        for(int j=0; j<ele->NumNode(); ++j)
+        for(int j=0; j<ele->num_node(); ++j)
         {
           if(nodeidsfaces[j]==nodeids[j])
             same = true;
@@ -249,22 +249,22 @@ int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ElemagBo
         }
         */
         int count = 0;
-        for (int j = 0; j < ele->NumNode(); ++j)
+        for (int j = 0; j < ele->num_node(); ++j)
         {
-          for (int k = 0; k < ele->NumNode(); ++k)
+          for (int k = 0; k < ele->num_node(); ++k)
           {
             if (nodeidsfaces[j] == nodeids[k]) count++;
           }
         }
-        if (count == ele->NumNode()) same = true;
+        if (count == ele->num_node()) same = true;
 
 
         if (same == true)
         {
           // i is the number we were searching for!!!!
           params.set<int>("face", i);
-          ele->ParentElement()->Evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra,
-              elevec1_epetra, elevec2_epetra, elevec3_epetra);
+          ele->parent_element()->Evaluate(params, discretization, lm, elemat1_epetra,
+              elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
           break;
         }
       }

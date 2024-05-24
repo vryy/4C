@@ -71,7 +71,7 @@ namespace XFEM
     /// Get cut wizard
     CORE::GEO::CutWizard& CutWizard()
     {
-      CheckInit();
+      check_init();
       if (wizard_.is_null()) FOUR_C_THROW("The CutWizard was not initialized! (Teuchos::null)");
       return *wizard_;
     }
@@ -79,7 +79,7 @@ namespace XFEM
     /// Get condition manager
     XFEM::ConditionManager& ConditionManager()
     {
-      CheckInit();
+      check_init();
       if (condition_manager_.is_null())
         FOUR_C_THROW("The condition_manager was not initialized! (Teuchos::null)");
       return *condition_manager_;
@@ -88,7 +88,7 @@ namespace XFEM
     /// Get dofset of the cut discretization
     XFEM::XFEMDofSet& XDofSet()
     {
-      CheckInit();
+      check_init();
       if (xdofset_.is_null()) FOUR_C_THROW("The xDoF set was not initialized! (Teuchos::null)");
       return *xdofset_;
     }
@@ -130,13 +130,13 @@ namespace XFEM
 
    protected:
     //! check the initialization indicator
-    inline void CheckInit() const
+    inline void check_init() const
     {
       if (not isinit_) FOUR_C_THROW("Call XFEM::XFieldState::Init() first!");
     }
 
     //! check the initialization and setup indicators
-    inline void CheckInitSetup() const
+    inline void check_init_setup() const
     {
       if (not issetup_ or not isinit_) FOUR_C_THROW("Call Init() and Setup() first!");
     }

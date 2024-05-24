@@ -35,12 +35,12 @@ FOUR_C_NAMESPACE_OPEN
  | ctor (public)                                             seitz 08/15|
  *----------------------------------------------------------------------*/
 CONTACT::LagrangeStrategyTsi::LagrangeStrategyTsi(
-    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
-    const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
+    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
     Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof)
     : LagrangeStrategy(
-          data_ptr, DofRowMap, NodeRowMap, params, interface, dim, comm, alphaf, maxdof),
+          data_ptr, dof_row_map, NodeRowMap, params, interface, dim, comm, alphaf, maxdof),
       tsi_alpha_(1.)
 {
   return;
@@ -49,7 +49,7 @@ CONTACT::LagrangeStrategyTsi::LagrangeStrategyTsi(
 /*------------------------------------------------------------------------*
  | Assign general thermo contact state                         seitz 08/15|
  *------------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategyTsi::SetState(
+void CONTACT::LagrangeStrategyTsi::set_state(
     const enum MORTAR::StateType& statetype, const Epetra_Vector& vec)
 {
   switch (statetype)
@@ -100,7 +100,7 @@ void CONTACT::LagrangeStrategyTsi::SetState(
     }
     default:
     {
-      CONTACT::AbstractStrategy::SetState(statetype, vec);
+      CONTACT::AbstractStrategy::set_state(statetype, vec);
       break;
     }
   }
@@ -117,13 +117,13 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   if (thr_s_dofs_ == Teuchos::null) thr_s_dofs_ = coupST->MasterToSlaveMap(gsdofrowmap_);
 
   // set the new displacements
-  SetState(MORTAR::state_new_displacement, *dis);
+  set_state(MORTAR::state_new_displacement, *dis);
 
   for (unsigned i = 0; i < interface_.size(); ++i) interface_[i]->Initialize();
 
   // set new temperatures
   Teuchos::RCP<Epetra_Vector> temp2 = coupST()->SlaveToMaster(temp);
-  SetState(MORTAR::state_temperature, *temp2);
+  set_state(MORTAR::state_temperature, *temp2);
 
   // error checks
   if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM") !=

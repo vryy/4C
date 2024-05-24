@@ -85,7 +85,7 @@ CORE::LINALG::SolverParams NOX::NLN::CONTACT::LinearSystem::SetSolverOptions(
     // dynamic cast of the required/rhs interface
     Teuchos::RCP<NOX::NLN::Interface::Required> iNlnReq =
         Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Required>(reqInterfacePtr_);
-    if (iNlnReq.is_null()) throwError("setSolverOptions", "required interface cast failed");
+    if (iNlnReq.is_null()) throw_error("setSolverOptions", "required interface cast failed");
 
     double worst = iNlnReq->CalcRefNormForce();
     // This value has to be specified in the PrePostOperator object of
@@ -433,7 +433,7 @@ void NOX::NLN::CONTACT::LinearSystem::apply_diagonal_inverse(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::CONTACT::LinearSystem::throwError(
+void NOX::NLN::CONTACT::LinearSystem::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   if (utils_.isPrintType(::NOX::Utils::Error))

@@ -28,7 +28,7 @@ STR::NLN::SOLVER::PseudoTransient::PseudoTransient()
  *----------------------------------------------------------------------------*/
 void STR::NLN::SOLVER::PseudoTransient::Setup()
 {
-  CheckInit();
+  check_init();
 
   // setup the nox parameter list for a pseudo transient solution method
   set_pseudo_transient_params();
@@ -37,14 +37,14 @@ void STR::NLN::SOLVER::PseudoTransient::Setup()
   // Note, that the issetup_ flag is also updated during this call.
   Nox::Setup();
 
-  FOUR_C_ASSERT(IsSetup(), "issetup_ should be \"true\" at this point!");
+  FOUR_C_ASSERT(is_setup(), "issetup_ should be \"true\" at this point!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::NLN::SOLVER::PseudoTransient::set_pseudo_transient_params()
 {
-  CheckInit();
+  check_init();
 
   /* get the nox parameter list and set the necessary parameters for a
    * pseudo transient solution procedure */

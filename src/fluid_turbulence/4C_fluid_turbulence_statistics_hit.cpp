@@ -159,7 +159,7 @@ namespace FLD
 
         int length = sblock.size();
 
-        exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
+        exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
 
         rblock.clear();
 
@@ -252,7 +252,7 @@ namespace FLD
     sumvelvel_->resize(3);
 
     // allocate some (toggle) vectors
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    const Epetra_Map* dofrowmap = discret_->dof_row_map();
     toggleu_ = CORE::LINALG::CreateVector(*dofrowmap, true);
     togglev_ = CORE::LINALG::CreateVector(*dofrowmap, true);
     togglew_ = CORE::LINALG::CreateVector(*dofrowmap, true);
@@ -429,13 +429,13 @@ namespace FLD
       const int pos = loc[2] + nummodes_ * (loc[1] + nummodes_ * loc[0]);
 
       // get local dof id corresponding to the global id
-      int lid = discret_->DofRowMap()->LID(dofs[0]);
+      int lid = discret_->dof_row_map()->LID(dofs[0]);
       // set value
       (*local_u1)[pos] = (*velnp)[lid];
       // analogously for remaining directions
-      lid = discret_->DofRowMap()->LID(dofs[1]);
+      lid = discret_->dof_row_map()->LID(dofs[1]);
       (*local_u2)[pos] = (*velnp)[lid];
-      lid = discret_->DofRowMap()->LID(dofs[2]);
+      lid = discret_->dof_row_map()->LID(dofs[2]);
       (*local_u3)[pos] = (*velnp)[lid];
     }
 
@@ -656,7 +656,7 @@ namespace FLD
     }
 
     // compute squared values of velocity
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    const Epetra_Map* dofrowmap = discret_->dof_row_map();
     Teuchos::RCP<Epetra_Vector> squaredvelnp = CORE::LINALG::CreateVector(*dofrowmap, true);
     squaredvelnp->Multiply(1.0, *velnp, *velnp, 0.0);
 
@@ -791,13 +791,13 @@ namespace FLD
       const int pos = loc[2] + nummodes_ * (loc[1] + nummodes_ * loc[0]);
 
       // get local dof id corresponding to the global id
-      int lid = discret_->DofRowMap()->LID(dofs[0]);
+      int lid = discret_->dof_row_map()->LID(dofs[0]);
       // set value
       (*local_u1)[pos] = (*velnp)[lid];
       // analogously for remaining directions
-      lid = discret_->DofRowMap()->LID(dofs[1]);
+      lid = discret_->dof_row_map()->LID(dofs[1]);
       (*local_u2)[pos] = (*velnp)[lid];
-      lid = discret_->DofRowMap()->LID(dofs[2]);
+      lid = discret_->dof_row_map()->LID(dofs[2]);
       (*local_u3)[pos] = (*velnp)[lid];
     }
 
@@ -842,7 +842,7 @@ namespace FLD
       const int pos = loc[2] + nummodes_ * (loc[1] + nummodes_ * loc[0]);
 
       // get local dof id corresponding to the global id
-      int lid = scatradiscret_->DofRowMap()->LID(dofs[0]);
+      int lid = scatradiscret_->dof_row_map()->LID(dofs[0]);
       // set value
       (*local_phi)[pos] = (*phinp)[lid];
     }
@@ -1078,7 +1078,7 @@ namespace FLD
     }
 
     // compute squared values of velocity
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    const Epetra_Map* dofrowmap = discret_->dof_row_map();
     Teuchos::RCP<Epetra_Vector> squaredvelnp = CORE::LINALG::CreateVector(*dofrowmap, true);
     squaredvelnp->Multiply(1.0, *velnp, *velnp, 0.0);
 
@@ -1874,7 +1874,7 @@ namespace FLD
     Teuchos::ParameterList params;
     params.set<int>("action", FLD::interpolate_hdg_for_hit);
 
-    discret_->SetState(1, "intvelnp", velnp);
+    discret_->set_state(1, "intvelnp", velnp);
 
     std::vector<int> dummy;
     CORE::LINALG::SerialDenseMatrix dummyMat;
@@ -2146,7 +2146,7 @@ namespace FLD
     //  }
     //
     //  // compute squared values of velocity
-    //  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    //  const Epetra_Map* dofrowmap = discret_->dof_row_map();
     //  Teuchos::RCP<Epetra_Vector> squaredvelnp = CORE::LINALG::CreateVector(*dofrowmap,true);
     //  squaredvelnp->Multiply(1.0,*velnp,*velnp,0.0);
     //

@@ -66,7 +66,7 @@ namespace FSI
     void Update() override;
 
     /// start a new time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     /// Prepare preconditioner for a new time step
     void prepare_time_step_preconditioner() override{};
@@ -87,12 +87,12 @@ namespace FSI
     //! 1) the single fields residuals
     //! 2) the Lagrange multiplier field lambda_
     //! 3) terms in the first nonlinear iteration
-    void SetupRHS(Epetra_Vector& f,  ///< empty rhs vector (to be filled)
+    void setup_rhs(Epetra_Vector& f,  ///< empty rhs vector (to be filled)
         bool firstcall  ///< indicates whether this is the first nonlinear iteration or not
         ) override = 0;
 
     /// setup composed system matrix from field solvers
-    void SetupSystemMatrix() override = 0;
+    void setup_system_matrix() override = 0;
     //@}
 
     /// create merged map of DOF in the final system from all fields
@@ -107,10 +107,10 @@ namespace FSI
     /// compute the residual and incremental norms required for convergence check
     virtual void build_convergence_norms() = 0;
 
-    void LinearSolve();
+    void linear_solve();
 
     /// create merged map with Dirichlet-constrained DOF from all fields
-    virtual Teuchos::RCP<Epetra_Map> CombinedDBCMap() = 0;
+    virtual Teuchos::RCP<Epetra_Map> combined_dbc_map() = 0;
 
     //! Extract the three field vectors from a given composed vector
     //!
@@ -125,7 +125,7 @@ namespace FSI
     //! \param sx (o) structural displacements
     //! \param fx (o) fluid velocities and pressure
     //! \param ax (o) ale displacements
-    virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+    virtual void extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx,
         Teuchos::RCP<const Epetra_Vector>& ax) = 0;
 
@@ -133,38 +133,38 @@ namespace FSI
     virtual void recover_lagrange_multiplier() = 0;
 
     /// Extract initial guess from fields
-    virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig) = 0;
+    virtual void initial_guess(Teuchos::RCP<Epetra_Vector> ig) = 0;
 
     //! @name Methods for infnorm-scaling of the system
 
     /// apply infnorm scaling to linear block system
-    void ScaleSystem(Epetra_Vector& b) override {}
+    void scale_system(Epetra_Vector& b) override {}
 
     /// undo infnorm scaling from scaled solution
-    void UnscaleSolution(Epetra_Vector& x, Epetra_Vector& b) override {}
+    void unscale_solution(Epetra_Vector& x, Epetra_Vector& b) override {}
 
     //@}
 
     //! @name Output
 
     //! print to screen information about residual forces and displacements
-    void PrintNewtonIter();
+    void print_newton_iter();
 
-    //! contains text to PrintNewtonIter
-    void PrintNewtonIterText();
+    //! contains text to print_newton_iter
+    void print_newton_iter_text();
 
-    //! contains header to PrintNewtonIter
+    //! contains header to print_newton_iter
     void print_newton_iter_header();
 
     //! print statistics of converged Newton-Raphson iteration
-    // void PrintNewtonConv();
+    // void print_newton_conv();
 
     //@}
 
     //! @name Access methods for subclasses
 
     /// get full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> DofRowMap() const { return blockrowdofmap_.FullMap(); }
+    Teuchos::RCP<const Epetra_Map> dof_row_map() const { return blockrowdofmap_.FullMap(); }
 
     //@}
 
@@ -174,7 +174,7 @@ namespace FSI
       defines the number of blocks, their maps and the block order. The block
       maps must be row maps by themselves and must not contain identical GIDs.
      */
-    void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
+    void set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
 
     /// extractor to communicate between full monolithic map and block maps
     const CORE::LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
@@ -201,7 +201,7 @@ namespace FSI
     virtual bool has_fluid_dof_map_changed(const Epetra_BlockMap& fluidincrementmap) = 0;
 
     /// access type-cast pointer to problem-specific ALE-wrapper
-    const Teuchos::RCP<ADAPTER::AleXFFsiWrapper>& AleField() { return ale_; }
+    const Teuchos::RCP<ADAPTER::AleXFFsiWrapper>& ale_field() { return ale_; }
 
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> systemmatrix_;  //!< block system matrix
 
@@ -270,7 +270,7 @@ namespace FSI
      * \author kruse
      * \date 05/14
      */
-    void ValidateParameters();
+    void validate_parameters();
 
     /// dof row map splitted in (field) blocks
     CORE::LINALG::MultiMapExtractor blockrowdofmap_;

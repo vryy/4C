@@ -372,7 +372,7 @@ namespace CONTACT
     */
     virtual Teuchos::RCP<Epetra_Map> ActiveNodes() const
     {
-      if (not Filled()) FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
+      if (not Filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
       return activenodes_;
     }
@@ -386,14 +386,14 @@ namespace CONTACT
     */
     virtual Teuchos::RCP<Epetra_Map> ActiveDofs() const
     {
-      if (not Filled()) FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
+      if (not Filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
       return activedofs_;
     }
 
     virtual Teuchos::RCP<Epetra_Map> InActiveNodes() const
     {
-      if (not Filled()) FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
+      if (not Filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
       return inactivenodes_;
     }
@@ -407,7 +407,7 @@ namespace CONTACT
     */
     virtual Teuchos::RCP<Epetra_Map> InActiveDofs() const
     {
-      if (not Filled()) FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
+      if (not Filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
       return inactivedofs_;
     }
@@ -420,7 +420,7 @@ namespace CONTACT
     */
     virtual Teuchos::RCP<Epetra_Map> ActiveNDofs() const
     {
-      if (not Filled()) FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
+      if (not Filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
       return activen_;
     }
@@ -433,7 +433,7 @@ namespace CONTACT
     */
     virtual Teuchos::RCP<Epetra_Map> ActiveTDofs() const
     {
-      if (not Filled()) FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
+      if (not Filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
       return activet_;
     }
@@ -449,7 +449,7 @@ namespace CONTACT
       if (Filled())
         return slipnodes_;
       else
-        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -464,7 +464,7 @@ namespace CONTACT
       if (Filled())
         return slipdofs_;
       else
-        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -479,7 +479,7 @@ namespace CONTACT
       if (Filled())
         return slipt_;
       else
-        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -494,7 +494,7 @@ namespace CONTACT
       if (Filled())
         return nonsmoothnodes_;
       else
-        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -509,7 +509,7 @@ namespace CONTACT
       if (Filled())
         return smoothnodes_;
       else
-        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -524,7 +524,7 @@ namespace CONTACT
       if (Filled())
         return sdofVertexRowmap_;
       else
-        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
     /*!
@@ -538,7 +538,7 @@ namespace CONTACT
       if (Filled())
         return sdofVertexColmap_;
       else
-        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
     virtual Teuchos::RCP<Epetra_Map> SdofEdgeRowmap() const
@@ -546,7 +546,7 @@ namespace CONTACT
       if (Filled())
         return sdofEdgeRowmap_;
       else
-        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
     virtual Teuchos::RCP<Epetra_Map> SdofEdgeColmap() const
@@ -554,7 +554,7 @@ namespace CONTACT
       if (Filled())
         return sdofEdgeColmap_;
       else
-        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
     virtual Teuchos::RCP<Epetra_Map> SdofSurfRowmap() const
@@ -562,7 +562,7 @@ namespace CONTACT
       if (Filled())
         return sdofSurfRowmap_;
       else
-        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
     virtual Teuchos::RCP<Epetra_Map> SdofSurfColmap() const
@@ -570,7 +570,7 @@ namespace CONTACT
       if (Filled())
         return sdofSurfColmap_;
       else
-        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -616,7 +616,7 @@ namespace CONTACT
     \return Filled()==false
 
     */
-    virtual void AddElement(Teuchos::RCP<CONTACT::Element> cele);
+    virtual void add_element(Teuchos::RCP<CONTACT::Element> cele);
 
     //! @name Parallel distribution and ghosting
     /* References
@@ -633,7 +633,7 @@ namespace CONTACT
     1. If required by \c perform_rebalancing, let's rebalance the interface discretizations.
     1. If required by \c enforce_ghosting_update, let's update the ghosting of the master-sided
     interface.
-    1. FillComplete to update all relevant maps on all procs.
+    1. fill_complete to update all relevant maps on all procs.
     1. Re-create search tree, if ghosting has changed.
 
     @param perform_rebalancing Flag to enforce rebalancing of interface discretizations
@@ -669,7 +669,7 @@ namespace CONTACT
     in three independent parts: (1) close slave part, (2) non-close
     slave part, (3) master part. This results in new "optimal" node/element
     maps of the interface discretization. Note that after Redistribute(),
-    we must call FillComplete() again. Note also that for contact
+    we must call fill_complete() again. Note also that for contact
     simulations Redistribute() might be called dynamically again and
     again to account for changes of the contact zone.
 
@@ -775,7 +775,7 @@ namespace CONTACT
     \brief evaluate coupling terms for nts coupling + lin
 
     */
-    void EvaluateNTS() final;
+    void evaluate_nts() final;
 
     /*!
     \brief evaluate coupling terms for lts coupling + lin
@@ -1394,7 +1394,7 @@ namespace CONTACT
     Derived version!
 
     */
-    void PreEvaluate(const int& step, const int& iter) final;
+    void pre_evaluate(const int& step, const int& iter) final;
 
     /*!
     \brief Routine to control contact term evaluation. Here, we decide if mortar, nts
@@ -1432,7 +1432,7 @@ namespace CONTACT
     Derived version!
 
     */
-    void PostEvaluate(const int step, const int iter) override;
+    void post_evaluate(const int step, const int iter) override;
 
     /*!
     \brief Compute cpp normal based on averaged nodal normal field on master side.
@@ -1563,7 +1563,7 @@ namespace CONTACT
     //! @{
 
     /*!
-    \brief FillComplete the mortar interface
+    \brief fill_complete the mortar interface
 
     The methods completes construction phase of a mortar interface. It creates all row/column maps
     of the mortar interface discretization. Extension of the interface ghosting is done
@@ -1579,7 +1579,7 @@ namespace CONTACT
     @param[in] isFinalParallelDistribution Is this the final parallel distribution?
     @param[in] maxdof Largest GID of underlying solid discretization
     */
-    void FillCompleteNew(const bool isFinalParallelDistribution, const int maxdof = 0) final;
+    void fill_complete_new(const bool isFinalParallelDistribution, const int maxdof = 0) final;
 
     /*!
     \brief Extend the interface ghosting while guaranteeing sufficient extension

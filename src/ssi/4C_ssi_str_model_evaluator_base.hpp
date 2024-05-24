@@ -20,9 +20,9 @@ namespace STR::MODELEVALUATOR
   class BaseSSI : public Generic
   {
    public:
-    bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override { return true; }
+    bool assemble_force(Epetra_Vector& f, const double& timefac_np) const override { return true; }
 
-    bool AssembleJacobian(
+    bool assemble_jacobian(
         CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override
     {
       return true;
@@ -34,11 +34,11 @@ namespace STR::MODELEVALUATOR
 
     void determine_stress_strain() override;
 
-    bool EvaluateForce() override { return true; }
+    bool evaluate_force() override { return true; }
 
-    bool EvaluateForceStiff() override { return true; }
+    bool evaluate_force_stiff() override { return true; }
 
-    bool EvaluateStiff() override { return true; }
+    bool evaluate_stiff() override { return true; }
 
     [[nodiscard]] Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
@@ -61,15 +61,15 @@ namespace STR::MODELEVALUATOR
 
     void OutputStepState(IO::DiscretizationWriter& iowriter) const override {}
 
-    void PostEvaluate() override {}
+    void post_evaluate() override {}
 
     void PostOutput() override {}
 
     void Predict(const INPAR::STR::PredEnum& pred_type) override {}
 
-    void PreEvaluate() override {}
+    void pre_evaluate() override {}
 
-    void ReadRestart(IO::DiscretizationReader& ioreader) override {}
+    void read_restart(IO::DiscretizationReader& ioreader) override {}
 
     void Reset(const Epetra_Vector& x) override {}
 

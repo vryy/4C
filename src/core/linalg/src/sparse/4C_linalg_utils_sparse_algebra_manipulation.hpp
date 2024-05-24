@@ -119,12 +119,12 @@ namespace CORE::LINALG
       Epetra_Vector& target);
 
   /*!
-   \brief Call FillComplete on a Epetra_CrsMatrix (for square matrices only!)
+   \brief Call fill_complete on a Epetra_CrsMatrix (for square matrices only!)
    */
   void Complete(Epetra_CrsMatrix& A);
 
   /*!
-   \brief Call FillComplete on a Epetra_CrsMatrix (for square matrices only!)
+   \brief Call fill_complete on a Epetra_CrsMatrix (for square matrices only!)
 
    This is the Teuchos::RCP wrapper of the above method.
    */
@@ -135,12 +135,12 @@ namespace CORE::LINALG
   }
 
   /*!
-   \brief Call FillComplete on a Epetra_CrsMatrix (for rectangular and square matrices)
+   \brief Call fill_complete on a Epetra_CrsMatrix (for rectangular and square matrices)
    */
   void Complete(Epetra_CrsMatrix& A, const Epetra_Map& domainmap, const Epetra_Map& rangemap);
 
   /*!
-   \brief Call FillComplete on a Epetra_CrsMatrix (for rectangular and square matrices)
+   \brief Call fill_complete on a Epetra_CrsMatrix (for rectangular and square matrices)
 
    This is the Teuchos::RCP wrapper of the above method.
    */
@@ -160,7 +160,7 @@ namespace CORE::LINALG
    All values on entry have to be Teuchos::null except the given rowmap and matrix A.
    Note that either A11rowmap or A22rowmap or both have to be nonzero. In case
    both rowmaps are supplied they have to be an exact and nonoverlapping split of A->RowMap().
-   Matrix blocks are FillComplete() on exit.
+   Matrix blocks are fill_complete() on exit.
 
    \param A         : Matrix A on input
    \param Ablock    : Blockmatrix version of A to be calculated
@@ -180,7 +180,7 @@ namespace CORE::LINALG
    All values on entry have to be Teuchos::null except the given rowmap and matrix A.
    Note that either A11rowmap or A22rowmap or both have to be nonzero. In case
    both rowmaps are supplied they have to be an exact and nonoverlapping split of A->RowMap().
-   Matrix blocks are FillComplete() on exit.
+   Matrix blocks are fill_complete() on exit.
 
    \param A         : Matrix A on input
    \param A11rowmap : rowmap of A11 or null
@@ -204,7 +204,7 @@ namespace CORE::LINALG
    Note that either A11domainmap or A22domainmap or both have to be nonzero!
    In case both rowmaps / domainmaps are supplied they have to be an exact and
    nonoverlapping split of A->RowMap() / A->DomainMap().
-   Matrix blocks are FillComplete() on exit.
+   Matrix blocks are fill_complete() on exit.
 
    \param A            : Matrix A on input
    \param A11rowmap    : rowmap of A11 or null
@@ -316,7 +316,7 @@ namespace CORE::LINALG
      \param x2      : second vector to be extracted
 
      */
-  bool SplitVector(const Epetra_Map& xmap, const Epetra_Vector& x, Teuchos::RCP<Epetra_Map>& x1map,
+  bool split_vector(const Epetra_Map& xmap, const Epetra_Vector& x, Teuchos::RCP<Epetra_Map>& x1map,
       Teuchos::RCP<Epetra_Vector>& x1, Teuchos::RCP<Epetra_Map>& x2map,
       Teuchos::RCP<Epetra_Vector>& x2);
 
@@ -331,7 +331,7 @@ namespace CORE::LINALG
    \param x2      : second vector to be extracted
 
    */
-  bool SplitVector(const Epetra_Map& xmap, const Epetra_Vector& x,
+  bool split_vector(const Epetra_Map& xmap, const Epetra_Vector& x,
       Teuchos::RCP<const Epetra_Map>& x1map, Teuchos::RCP<Epetra_Vector>& x1,
       Teuchos::RCP<const Epetra_Map>& x2map, Teuchos::RCP<Epetra_Vector>& x2);
 

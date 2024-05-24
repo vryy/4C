@@ -55,7 +55,7 @@ CONSTRAINTS::ConstrManager::ConstrManager()
 void CONSTRAINTS::ConstrManager::Init(
     Teuchos::RCP<DRT::Discretization> discr, const Teuchos::ParameterList& params)
 {
-  SetIsSetup(false);
+  set_is_setup(false);
 
   // set pointer to discretization
   actdisc_ = discr;
@@ -98,7 +98,7 @@ void CONSTRAINTS::ConstrManager::Init(
   haveconstraint_ = havepenaconstr_ or havelagrconstr_;
 
 
-  SetIsInit(true);
+  set_is_init(true);
 }
 
 
@@ -107,7 +107,7 @@ void CONSTRAINTS::ConstrManager::Init(
 void CONSTRAINTS::ConstrManager::Setup(
     Teuchos::RCP<const Epetra_Vector> disp, Teuchos::ParameterList params)
 {
-  CheckIsInit();
+  check_is_init();
 
   if (haveconstraint_)
   {
@@ -118,12 +118,12 @@ void CONSTRAINTS::ConstrManager::Setup(
     Teuchos::ParameterList p;
     uzawaparam_ = params.get<double>("uzawa parameter", 1);
     double time = params.get<double>("total time", 0.0);
-    const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
+    const Epetra_Map* dofrowmap = actdisc_->dof_row_map();
     // initialize constrMatrix
     constr_matrix_ =
         Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap, num_constr_id_, false, true));
     // build Epetra_Map used as domainmap for constrMatrix and rowmap for result vectors
-    constrmap_ = Teuchos::rcp(new Epetra_Map(*(constrdofset_->DofRowMap())));
+    constrmap_ = Teuchos::rcp(new Epetra_Map(*(constrdofset_->dof_row_map())));
     // build an all reduced version of the constraintmap, since sometimes all processors
     // have to know all values of the constraints and Lagrange multipliers
     redconstrmap_ = CORE::LINALG::AllreduceEMap(*constrmap_);
@@ -136,7 +136,7 @@ void CONSTRAINTS::ConstrManager::Setup(
     // We will always use the third systemvector for this purpose
     p.set("OffsetID", offset_id_);
     p.set("total time", time);
-    actdisc_->SetState("displacement", disp);
+    actdisc_->set_state("displacement", disp);
     volconstr3d_->Initialize(p, refbaseredundant);
     areaconstr3d_->Initialize(p, refbaseredundant);
     areaconstr2d_->Initialize(p, refbaseredundant);
@@ -166,7 +166,7 @@ void CONSTRAINTS::ConstrManager::Setup(
   }
   //----------------------------------------------------------------------------
   //---------------------------------------------------------Monitor Conditions!
-  actdisc_->SetState("displacement", disp);
+  actdisc_->set_state("displacement", disp);
   min_monitor_id_ = 10000;
   int maxMonitorID = 0;
   volmonitor3d_ =
@@ -206,21 +206,21 @@ void CONSTRAINTS::ConstrManager::Setup(
     // Export redundant vector into distributed one
     initialmonvalues_->Export(*initialmonredundant, *monimpo_, Add);
     monitortypes_ = Teuchos::rcp(new Epetra_Vector(*redmonmap_));
-    BuildMoniType();
+    build_moni_type();
   }
 
-  SetIsSetup(true);
+  set_is_setup(true);
 }
 
 
 /*----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::ConstrManager::EvaluateForceStiff(const double time,
+void CONSTRAINTS::ConstrManager::evaluate_force_stiff(const double time,
     Teuchos::RCP<const Epetra_Vector> displast, Teuchos::RCP<const Epetra_Vector> disp,
     Teuchos::RCP<Epetra_Vector> fint, Teuchos::RCP<CORE::LINALG::SparseOperator> stiff,
     Teuchos::ParameterList scalelist)
 {
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
   double scStiff = scalelist.get("scaleStiffEntries", 1.0);
@@ -229,7 +229,7 @@ void CONSTRAINTS::ConstrManager::EvaluateForceStiff(const double time,
   // create the parameters for the discretization
   Teuchos::ParameterList p;
   std::vector<CORE::Conditions::Condition*> constrcond(0);
-  const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
+  const Epetra_Map* dofrowmap = actdisc_->dof_row_map();
   constr_matrix_->Reset();  //=Teuchos::rcp(new
                             // CORE::LINALG::SparseMatrix(*dofrowmap,numConstrID_,false,true));
 
@@ -255,7 +255,7 @@ void CONSTRAINTS::ConstrManager::EvaluateForceStiff(const double time,
   Teuchos::RCP<Epetra_Vector> refbaseredundant = Teuchos::rcp(new Epetra_Vector(*redconstrmap_));
 
   actdisc_->ClearState();
-  actdisc_->SetState("displacement", disp);
+  actdisc_->set_state("displacement", disp);
   volconstr3d_->Evaluate(p, stiff, constr_matrix_, fint, refbaseredundant, actredundant);
   areaconstr3d_->Evaluate(p, stiff, constr_matrix_, fint, refbaseredundant, actredundant);
   areaconstr2d_->Evaluate(p, stiff, constr_matrix_, fint, refbaseredundant, actredundant);
@@ -295,15 +295,15 @@ void CONSTRAINTS::ConstrManager::EvaluateForceStiff(const double time,
 
 /*----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::ConstrManager::ComputeError(double time, Teuchos::RCP<Epetra_Vector> disp)
+void CONSTRAINTS::ConstrManager::compute_error(double time, Teuchos::RCP<Epetra_Vector> disp)
 {
-  CheckIsInit();
+  check_is_init();
   CheckIsSetup();
 
   std::vector<CORE::Conditions::Condition*> constrcond(0);
   Teuchos::ParameterList p;
   p.set("total time", time);
-  actdisc_->SetState("displacement", disp);
+  actdisc_->set_state("displacement", disp);
 
   Teuchos::RCP<Epetra_Vector> actredundant = Teuchos::rcp(new Epetra_Vector(*redconstrmap_));
   CORE::LINALG::Export(*actvalues_, *actredundant);
@@ -337,7 +337,7 @@ void CONSTRAINTS::ConstrManager::ComputeError(double time, Teuchos::RCP<Epetra_V
 
 /*----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::ConstrManager::ReadRestart(IO::DiscretizationReader& reader, const double& time)
+void CONSTRAINTS::ConstrManager::read_restart(IO::DiscretizationReader& reader, const double& time)
 {
   //  double uzawatemp = reader.ReadDouble("uzawaparameter");
   //  consolv_->SetUzawaParameter(uzawatemp);
@@ -404,7 +404,7 @@ void CONSTRAINTS::ConstrManager::compute_monitor_values(Teuchos::RCP<Epetra_Vect
   std::vector<CORE::Conditions::Condition*> monitcond(0);
   monitorvalues_->PutScalar(0.0);
   Teuchos::ParameterList p;
-  actdisc_->SetState("displacement", disp);
+  actdisc_->set_state("displacement", disp);
 
   Teuchos::RCP<Epetra_Vector> actmonredundant = Teuchos::rcp(new Epetra_Vector(*redmonmap_));
   p.set("OffsetID", min_monitor_id_);
@@ -424,18 +424,18 @@ void CONSTRAINTS::ConstrManager::compute_monitor_values(Teuchos::RCP<const Epetr
   std::vector<CORE::Conditions::Condition*> monitcond(0);
   monitorvalues_->PutScalar(0.0);
   Teuchos::ParameterList p;
-  if (not actdisc_->DofRowMap()->SameAs(disp->Map()))
+  if (not actdisc_->dof_row_map()->SameAs(disp->Map()))
   {
     // build merged dof row map
     Teuchos::RCP<Epetra_Map> largemap =
-        CORE::LINALG::MergeMap(*actdisc_->DofRowMap(), *constrmap_, false);
+        CORE::LINALG::MergeMap(*actdisc_->dof_row_map(), *constrmap_, false);
 
     CORE::LINALG::MapExtractor conmerger;
-    conmerger.Setup(*largemap, Teuchos::rcp(actdisc_->DofRowMap(), false), constrmap_);
-    actdisc_->SetState("displacement", conmerger.ExtractCondVector(disp));
+    conmerger.Setup(*largemap, Teuchos::rcp(actdisc_->dof_row_map(), false), constrmap_);
+    actdisc_->set_state("displacement", conmerger.ExtractCondVector(disp));
   }
   else
-    actdisc_->SetState("displacement", disp);
+    actdisc_->set_state("displacement", disp);
 
   Teuchos::RCP<Epetra_Vector> actmonredundant = Teuchos::rcp(new Epetra_Vector(*redmonmap_));
   p.set("OffsetID", min_monitor_id_);
@@ -472,7 +472,7 @@ void CONSTRAINTS::ConstrManager::PrintMonitorValues() const
   }
 }
 
-void CONSTRAINTS::ConstrManager::BuildMoniType()
+void CONSTRAINTS::ConstrManager::build_moni_type()
 {
   Teuchos::ParameterList p1;
   // build distributed and redundant dummy monitor vector

@@ -186,11 +186,11 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int EvaluateNeumann(Teuchos::ParameterList& params,  ///< ParameterList for communication
-          DRT::Discretization& discretization,             ///< discretization
-          CORE::Conditions::Condition& condition,          ///< Neumann condition to evaluate
-          std::vector<int>& lm,                            ///< location vector
-          CORE::LINALG::SerialDenseVector& elevec1,        ///< vector to be filled by element
+      int evaluate_neumann(Teuchos::ParameterList& params,  ///< ParameterList for communication
+          DRT::Discretization& discretization,              ///< discretization
+          CORE::Conditions::Condition& condition,           ///< Neumann condition to evaluate
+          std::vector<int>& lm,                             ///< location vector
+          CORE::LINALG::SerialDenseVector& elevec1,         ///< vector to be filled by element
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
 
@@ -269,25 +269,25 @@ namespace DRT
       }
 
       /// compute normal for 3D case using the first three nodes to specify a plane
-      void ComputeNormal(const CORE::LINALG::Matrix<4, 3>& xc,  ///< nodal coords in spatial frame
-          CORE::LINALG::Matrix<3, 1>& elenormal                 ///< resulting element normal
+      void compute_normal(const CORE::LINALG::Matrix<4, 3>& xc,  ///< nodal coords in spatial frame
+          CORE::LINALG::Matrix<3, 1>& elenormal                  ///< resulting element normal
       );
 
       /// Compute normal distance between plane and fourth node
-      double ComputeNormalDist(
+      double compute_normal_dist(
           const CORE::LINALG::Matrix<4, 3>& xc,        ///< nodal coords in spatial frame
           const CORE::LINALG::Matrix<3, 1>& elenormal  ///< element normal
       );
 
       /// Compute first derivative of normal distance with respect to the nodal displacements
-      void ComputeFirstDeriv(
+      void compute_first_deriv(
           const CORE::LINALG::Matrix<4, 3>& xc,        ///< nodal coords in spatial frame
           CORE::LINALG::SerialDenseVector& elevector,  ///< vector to store results into
           const CORE::LINALG::Matrix<3, 1>& elenormal  ///< element normal
       );
 
       /// Compute first derivative of normal distance with respect to the nodal displacements
-      void ComputeSecondDeriv(
+      void compute_second_deriv(
           const CORE::LINALG::Matrix<4, 3>& xc,        ///< nodal coords in spatial frame
           CORE::LINALG::SerialDenseMatrix& elematrix,  ///< vector to store results into
           const CORE::LINALG::Matrix<3, 1>& elenormal  ///< element normal

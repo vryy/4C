@@ -42,13 +42,13 @@ namespace ELCH
 
    protected:
     /// provide information about initial field
-    void PrepareTimeLoop() override;
+    void prepare_time_loop() override;
 
     /// print scatra solver type to screen
     void PrintScaTraSolver() override;
 
     /// convergence check for natural convection solver
-    bool ConvergenceCheck(int natconvitnum, int natconvitmax, double natconvittol) override;
+    bool convergence_check(int natconvitnum, int natconvitmax, double natconvittol) override;
   };
 }  // namespace ELCH
 

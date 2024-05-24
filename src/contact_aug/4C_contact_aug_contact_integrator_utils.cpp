@@ -160,7 +160,7 @@ bool CONTACT::INTEGRATOR::find_feasible_master_elements(MORTAR::Element& sele,
   const std::vector<int> desired_nids = {247, 248, 251};
   unsigned count = 0;
 
-  for (unsigned i = 0; i < static_cast<unsigned>(sele.NumNode()); ++i)
+  for (unsigned i = 0; i < static_cast<unsigned>(sele.num_node()); ++i)
   {
     const int sid = snodes[i]->Id();
     if (std::find(desired_nids.begin(), desired_nids.end(), sid) != desired_nids.end()) ++count;
@@ -176,7 +176,7 @@ bool CONTACT::INTEGRATOR::find_feasible_master_elements(MORTAR::Element& sele,
       std::cout << "sele #" << sele.Id() << ":\n";
       sele.Print(std::cout);
       std::cout << "\nSlave-nodes: ";
-      for (unsigned i = 0; i < static_cast<unsigned>(sele.NumNode()); ++i)
+      for (unsigned i = 0; i < static_cast<unsigned>(sele.num_node()); ++i)
       {
         std::cout << "#" << snodes[i]->Id() << " --> " << snodes[i]->X()[0] << ", "
                   << snodes[i]->X()[1] << ", " << snodes[i]->X()[2] << "\n";
@@ -186,7 +186,7 @@ bool CONTACT::INTEGRATOR::find_feasible_master_elements(MORTAR::Element& sele,
                 << "\n";
       DRT::Node** mnodes = proj.first->Nodes();
       std::cout << "\nMaster-nodes: ";
-      for (unsigned i = 0; i < static_cast<unsigned>(proj.first->NumNode()); ++i)
+      for (unsigned i = 0; i < static_cast<unsigned>(proj.first->num_node()); ++i)
       {
         std::cout << "#" << mnodes[i]->Id() << " --> " << mnodes[i]->X()[0] << ", "
                   << mnodes[i]->X()[1] << ", " << mnodes[i]->X()[2] << "\n";

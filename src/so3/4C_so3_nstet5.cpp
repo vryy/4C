@@ -83,7 +83,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::NStet5Type::ComputeNullSpace(
   // TODO: switch to correct data container!
   // do nullspace for element degrees of freedom
   /*
-  const Epetra_Map* rowmap = dis.DofRowMap(0);
+  const Epetra_Map* rowmap = dis.dof_row_map(0);
   const int lrows = rowmap->NumMyElements();
 
    double* mode[6];
@@ -415,9 +415,9 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NStet5::Lines()
 /*----------------------------------------------------------------------*
  |                                                             gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5Type::InitElementsandMaps(std::map<int, DRT::ELEMENTS::NStet5*>& elecids,
-    std::map<int, DRT::Node*>& noderids, const int myrank, const int numproc,
-    DRT::Discretization& dis)
+void DRT::ELEMENTS::NStet5Type::init_elementsand_maps(
+    std::map<int, DRT::ELEMENTS::NStet5*>& elecids, std::map<int, DRT::Node*>& noderids,
+    const int myrank, const int numproc, DRT::Discretization& dis)
 {
   const int numele = dis.NumMyColElements();
 
@@ -434,7 +434,7 @@ void DRT::ELEMENTS::NStet5Type::InitElementsandMaps(std::map<int, DRT::ELEMENTS:
     elecids[actele->Id()] = actele;
 
     // compute a map of all row nodes adjacent to a NStet5 element
-    for (int j = 0; j < actele->NumNode(); ++j)
+    for (int j = 0; j < actele->num_node(); ++j)
     {
       DRT::Node* node = actele->Nodes()[j];
       if (myrank == node->Owner()) noderids[node->Id()] = node;
@@ -448,7 +448,7 @@ void DRT::ELEMENTS::NStet5Type::InitElementsandMaps(std::map<int, DRT::ELEMENTS:
 /*----------------------------------------------------------------------*
  |                                                             gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5Type::InitAdjacency(std::map<int, DRT::ELEMENTS::NStet5*>& elecids,
+void DRT::ELEMENTS::NStet5Type::init_adjacency(std::map<int, DRT::ELEMENTS::NStet5*>& elecids,
     std::map<int, DRT::Node*>& noderids, std::map<int, std::vector<DRT::ELEMENTS::NStet5*>>& adjele,
     std::map<int, std::map<int, DRT::Node*>>& adjnode, std::map<int, std::vector<int>>& adjlm,
     std::map<int, std::map<int, std::vector<int>>>& adjsubele,
@@ -478,7 +478,7 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(std::map<int, DRT::ELEMENTS::NStet
     for (auto& j : myadjele)
     {
       DRT::Node** nodes = j->Nodes();
-      for (int k = 0; k < j->NumNode(); ++k) nodepatch[nodes[k]->Id()] = nodes[k];
+      for (int k = 0; k < j->num_node(); ++k) nodepatch[nodes[k]->Id()] = nodes[k];
     }
     adjnode[nodeidL] = nodepatch;
 
@@ -512,7 +512,7 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(std::map<int, DRT::ELEMENTS::NStet
     for (auto ele : myadjele)
     {
       bool foundit = false;
-      for (int i = 0; i < ele->NumNode(); ++i)
+      for (int i = 0; i < ele->num_node(); ++i)
       {
         if (ele->Nodes()[i]->Id() == nodeL->Id())
         {
@@ -603,14 +603,14 @@ int DRT::ELEMENTS::NStet5Type::Initialize(DRT::Discretization& dis)
 
   //----------------------------------------------------------------------
   // init elements, make maps of column elements and row nodes
-  InitElementsandMaps(elecids_, noderids_, myrank, numproc, dis);
+  init_elementsand_maps(elecids_, noderids_, myrank, numproc, dis);
 
   //----------------------------------------------------------------------
   // compute adjacency for each row node
   // make patch of adjacent elements
   // make patch of adjacent nodes (including center node itself)
   // make lm for nodal patch
-  InitAdjacency(elecids_, noderids_, adjele_, adjnode_, adjlm_, adjsubele_, lmlm_, dis);
+  init_adjacency(elecids_, noderids_, adjele_, adjnode_, adjlm_, adjsubele_, lmlm_, dis);
 
 
   return 0;

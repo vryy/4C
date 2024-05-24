@@ -185,7 +185,7 @@ namespace STR
      *
      *  \author mayr.mt \date 12/2013
      */
-    virtual double CalculateDt(const double norm  ///< current norm of local discretization error
+    virtual double calculate_dt(const double norm  ///< current norm of local discretization error
     );
 
     /*! \brief Prepare repetition of current time step
@@ -195,7 +195,7 @@ namespace STR
      *
      *  \author mayr.mt \date 12/2013
      */
-    virtual void ResetStep();
+    virtual void reset_step();
 
     //@}
 
@@ -226,7 +226,7 @@ namespace STR
     ) const;
 
     //! Modify step size to hit precisely output period
-    void SizeForOutput();
+    void size_for_output();
 
     //! Prepare output to file(s)
     void PrepareOutputPeriod(bool force_prepare);
@@ -235,10 +235,10 @@ namespace STR
     void OutputPeriod();
 
     //!  Update output periods
-    void UpdatePeriod();
+    void update_period();
 
     //! Set new step size
-    virtual void SetDt(const double dtnew);
+    virtual void set_dt(const double dtnew);
 
     //! Update step size
     virtual void UpdateStepSize();

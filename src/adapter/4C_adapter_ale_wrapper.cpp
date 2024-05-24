@@ -16,9 +16,9 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ADAPTER::AleNOXCorrectionWrapper::PrepareTimeStep()
+void ADAPTER::AleNOXCorrectionWrapper::prepare_time_step()
 {
-  AleWrapper::PrepareTimeStep();
+  AleWrapper::prepare_time_step();
 
   if (stepinc_ != Teuchos::null) stepinc_->PutScalar(0.0);
 

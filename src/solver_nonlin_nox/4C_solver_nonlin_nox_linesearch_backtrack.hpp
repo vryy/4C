@@ -87,7 +87,7 @@ namespace NOX
 
        private:
         //! throw NOX error
-        void throwError(const std::string& functionName, const std::string& errorMsg) const;
+        void throw_error(const std::string& functionName, const std::string& errorMsg) const;
 
        private:
         //! handle floating point exceptions

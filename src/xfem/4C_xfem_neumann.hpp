@@ -44,12 +44,12 @@ namespace CORE::LINALG
 namespace XFEM
 {
   /// evaluate Neumann boundary conditions
-  void EvaluateNeumann(Teuchos::ParameterList& params, Teuchos::RCP<DRT::Discretization> discret,
+  void evaluate_neumann(Teuchos::ParameterList& params, Teuchos::RCP<DRT::Discretization> discret,
       Teuchos::RCP<Epetra_Vector> systemvector,
       Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix = Teuchos::null);
 
   /// evaluate Neumann boundary conditions
-  void EvaluateNeumann(Teuchos::ParameterList& params, Teuchos::RCP<DRT::Discretization> discret,
+  void evaluate_neumann(Teuchos::ParameterList& params, Teuchos::RCP<DRT::Discretization> discret,
       Epetra_Vector& systemvector, CORE::LINALG::SparseOperator* systemmatrix = nullptr);
 
   /// evaluate standard Neumann boundary conditions

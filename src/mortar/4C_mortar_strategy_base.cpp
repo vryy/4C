@@ -43,9 +43,9 @@ MORTAR::StratDataContainer::StratDataContainer()
  | ctor (public)                                             popp 01/10 |
  *----------------------------------------------------------------------*/
 MORTAR::StrategyBase::StrategyBase(const Teuchos::RCP<MORTAR::StratDataContainer>& data_ptr,
-    const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, const Teuchos::ParameterList& params,
-    const int spatialDim, const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
-    const int maxdof)
+    const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
+    const Teuchos::ParameterList& params, const int spatialDim,
+    const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
     : probdofs_(data_ptr->ProbDofsPtr()),
       probnodes_(data_ptr->ProbNodesPtr()),
       comm_(data_ptr->CommPtr()),
@@ -58,7 +58,7 @@ MORTAR::StrategyBase::StrategyBase(const Teuchos::RCP<MORTAR::StratDataContainer
       data_ptr_(data_ptr)
 {
   // *** set data container variables
-  Data().ProbDofsPtr() = Teuchos::rcp(new Epetra_Map(*(DofRowMap)));
+  Data().ProbDofsPtr() = Teuchos::rcp(new Epetra_Map(*(dof_row_map)));
   Data().ProbNodesPtr() = Teuchos::rcp(new Epetra_Map(*(NodeRowMap)));
   Data().CommPtr() = comm;
   Data().SContact() = params;

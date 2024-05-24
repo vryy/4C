@@ -147,9 +147,9 @@ void SCATRA::ScaTraTimIntElchOST::WriteRestart() const
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input)
+void SCATRA::ScaTraTimIntElchOST::read_restart(const int step, Teuchos::RCP<IO::InputControl> input)
 {
-  TimIntOneStepTheta::ReadRestart(step, input);
+  TimIntOneStepTheta::read_restart(step, input);
 
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
@@ -431,9 +431,10 @@ void SCATRA::ScaTraTimIntElchBDF2::WriteRestart() const
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchBDF2::ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input)
+void SCATRA::ScaTraTimIntElchBDF2::read_restart(
+    const int step, Teuchos::RCP<IO::InputControl> input)
 {
-  TimIntBDF2::ReadRestart(step, input);
+  TimIntBDF2::read_restart(step, input);
 
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
@@ -724,10 +725,10 @@ void SCATRA::ScaTraTimIntElchGenAlpha::WriteRestart() const
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchGenAlpha::ReadRestart(
+void SCATRA::ScaTraTimIntElchGenAlpha::read_restart(
     const int step, Teuchos::RCP<IO::InputControl> input)
 {
-  TimIntGenAlpha::ReadRestart(step, input);
+  TimIntGenAlpha::read_restart(step, input);
 
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
@@ -958,10 +959,10 @@ void SCATRA::ScaTraTimIntElchStationary::WriteRestart() const
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchStationary::ReadRestart(
+void SCATRA::ScaTraTimIntElchStationary::read_restart(
     const int step, Teuchos::RCP<IO::InputControl> input)
 {
-  TimIntStationary::ReadRestart(step, input);
+  TimIntStationary::read_restart(step, input);
 
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
@@ -1128,7 +1129,7 @@ void SCATRA::ScaTraTimIntElchSCLOST::WriteRestart() const
 
 /*----------------------------------------------------------------------*
  -----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchSCLOST::ReadRestart(
+void SCATRA::ScaTraTimIntElchSCLOST::read_restart(
     const int step, Teuchos::RCP<IO::InputControl> input)
 {
   FOUR_C_THROW("Restart is not implemented for coupled space-charge layers.");

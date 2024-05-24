@@ -39,7 +39,7 @@ namespace CONTACT
     /*!
     \brief Standard constructor
 
-    \param[in] DofRowMap Dof row map of underlying problem
+    \param[in] dof_row_map Dof row map of underlying problem
     \param[in] NodeRowMap Node row map of underlying problem
     \param[in] params List of contact/parameters
     \param[in] interface All contact interface objects
@@ -48,7 +48,7 @@ namespace CONTACT
     \param[in] alphaf Mid-point for Generalized-alpha time integration
     \param[in] maxdof Highest DOF number in global problem
     */
-    PenaltyStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
+    PenaltyStrategy(const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
         Teuchos::ParameterList params, std::vector<Teuchos::RCP<CONTACT::Interface>> interface,
         const int spatialDim, const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
         const int maxdof);
@@ -57,7 +57,7 @@ namespace CONTACT
     \brief Shared data constructor
 
     \param[in] stratData Data container object
-    \param[in] DofRowMap Dof row map of underlying problem
+    \param[in] dof_row_map Dof row map of underlying problem
     \param[in] NodeRowMap Node row map of underlying problem
     \param[in] params List of contact/parameters
     \param[in] interface All contact interface objects
@@ -67,7 +67,7 @@ namespace CONTACT
     \param[in] maxdof Highest DOF number in global problem
     */
     PenaltyStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
-        const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
+        const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
         std::vector<Teuchos::RCP<CONTACT::Interface>> interface, const int spatialDim,
         const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof);
 
@@ -230,14 +230,14 @@ namespace CONTACT
      *         set force evaluation flag
      *
      */
-    void PreEvaluate(CONTACT::ParamsInterface& cparams) override;
+    void pre_evaluate(CONTACT::ParamsInterface& cparams) override;
 
     /*! \brief Run in the end of the Evaluate() routine to reset
      *         force evaluation flag
      *
      *
      */
-    void PostEvaluate(CONTACT::ParamsInterface& cparams) override;
+    void post_evaluate(CONTACT::ParamsInterface& cparams) override;
 
 
     /*! \brief Return the desired right-hand-side block pointer (read-only)

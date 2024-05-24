@@ -145,7 +145,7 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::prepare_gauss_point_data_
   }
 }
 
-void STR::MODELEVALUATOR::GaussPointDataOutputManager::PostEvaluate()
+void STR::MODELEVALUATOR::GaussPointDataOutputManager::post_evaluate()
 {
   if (output_type_ == INPAR::STR::GaussPointDataOutputType::nodes)
   {
@@ -216,10 +216,10 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::send_my_quantities_to_pro
 {
   // Pack quantities
   std::vector<char> sdata(0);
-  PackMyQuantities(sdata);
+  pack_my_quantities(sdata);
 
   MPI_Request request;
-  exporter.ISend(exporter.Comm().MyPID(), 0, sdata.data(), sdata.size(), MPI_TAG, request);
+  exporter.i_send(exporter.Comm().MyPID(), 0, sdata.data(), sdata.size(), MPI_TAG, request);
   exporter.Wait(request);
 }
 
@@ -235,7 +235,7 @@ STR::MODELEVALUATOR::GaussPointDataOutputManager::receive_quantities_from_proc(
       new std::unordered_map<std::string, int>());
 
   std::size_t pos = 0;
-  UnpackQuantities(pos, rdata, *quantities);
+  unpack_quantities(pos, rdata, *quantities);
 
   return quantities;
 }
@@ -246,7 +246,7 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::broadcast_my_quantitites(
   std::vector<char> data(0);
   if (exporter.Comm().MyPID() == 0)
   {
-    PackMyQuantities(data);
+    pack_my_quantities(data);
   }
 
   exporter.Broadcast(0, data, MPI_TAG);
@@ -255,13 +255,13 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::broadcast_my_quantitites(
   {
     std::size_t pos = 0;
     std::unordered_map<std::string, int> received_quantities{};
-    UnpackQuantities(pos, data, received_quantities);
+    unpack_quantities(pos, data, received_quantities);
 
     MergeQuantities(received_quantities);
   }
 }
 
-void STR::MODELEVALUATOR::GaussPointDataOutputManager::PackMyQuantities(
+void STR::MODELEVALUATOR::GaussPointDataOutputManager::pack_my_quantities(
     std::vector<char>& data) const
 {
   CORE::COMM::PackBuffer packBuffer;
@@ -270,7 +270,7 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::PackMyQuantities(
   std::swap(data, packBuffer());
 }
 
-void STR::MODELEVALUATOR::GaussPointDataOutputManager::UnpackQuantities(std::size_t pos,
+void STR::MODELEVALUATOR::GaussPointDataOutputManager::unpack_quantities(std::size_t pos,
     const std::vector<char>& data, std::unordered_map<std::string, int>& quantities) const
 {
   CORE::COMM::ParObject::ExtractfromPack(pos, data, quantities);

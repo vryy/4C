@@ -243,10 +243,10 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
     [[nodiscard]] bool IsVariable(const std::string& varname) const;
 
    private:
-    NodePtr ParsePrimary(Lexer& lexer);
-    NodePtr ParsePow(Lexer& lexer);
-    NodePtr ParseTerm(Lexer& lexer);
-    NodePtr ParseExpr(Lexer& lexer);
+    NodePtr parse_primary(Lexer& lexer);
+    NodePtr parse_pow(Lexer& lexer);
+    NodePtr parse_term(Lexer& lexer);
+    NodePtr parse_expr(Lexer& lexer);
     NodePtr Parse(Lexer& lexer);
 
     //! given symbolic expression
@@ -561,7 +561,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
          such as numbers, parentheses, independent variables, operator names
   */
   template <class T>
-  auto Parser<T>::ParsePrimary(Lexer& lexer) -> NodePtr
+  auto Parser<T>::parse_primary(Lexer& lexer) -> NodePtr
   {
     NodePtr lhs = nullptr;
 
@@ -569,7 +569,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
     {
       case Lexer::tok_lpar:
         lexer.Lexan();
-        lhs = ParseExpr(lexer);
+        lhs = parse_expr(lexer);
         if (lexer.tok_ != Lexer::tok_rpar) FOUR_C_THROW("')' expected");
         lexer.Lexan();
         break;
@@ -588,7 +588,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
         NodePtr rhs;
         lexer.Lexan();
         /*rhs = parse_primary();*/
-        rhs = ParsePow(lexer);
+        rhs = parse_pow(lexer);
         if (rhs->type_ == SyntaxTreeNode<T>::lt_number)
         {
           rhs->v_.number *= -1;
@@ -630,7 +630,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
             if (lexer.tok_ != Lexer::tok_lpar)
               FOUR_C_THROW("'(' expected after function name '%s'", name.c_str());
             lexer.Lexan();
-            lhs->lhs_ = ParseExpr(lexer);
+            lhs->lhs_ = parse_expr(lexer);
             if (lexer.tok_ != Lexer::tok_rpar) FOUR_C_THROW("')' expected");
             lexer.Lexan();
             break;
@@ -644,10 +644,10 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
             if (lexer.tok_ != Lexer::tok_lpar)
               FOUR_C_THROW("'(' expected after function name '%s'", name.c_str());
             lexer.Lexan();
-            lhs->lhs_ = ParseExpr(lexer);
+            lhs->lhs_ = parse_expr(lexer);
             if (lexer.tok_ != Lexer::tok_comma) FOUR_C_THROW("',' expected");
             lexer.Lexan();
-            lhs->rhs_ = ParseExpr(lexer);
+            lhs->rhs_ = parse_expr(lexer);
             if (lexer.tok_ != Lexer::tok_rpar)
               FOUR_C_THROW("')' expected for function name '%s'", name.c_str());
             lexer.Lexan();
@@ -678,18 +678,18 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
   \brief Parse entities connected by power: a^b
   */
   template <class T>
-  auto Parser<T>::ParsePow(Lexer& lexer) -> NodePtr
+  auto Parser<T>::parse_pow(Lexer& lexer) -> NodePtr
   {
     NodePtr lhs;
     NodePtr rhs;
 
-    lhs = ParsePrimary(lexer);
+    lhs = parse_primary(lexer);
     for (;;)
     {
       if (lexer.tok_ == Lexer::tok_pow)
       {
         lexer.Lexan();
-        rhs = ParsePrimary(lexer);
+        rhs = parse_primary(lexer);
         lhs = std::make_unique<SyntaxTreeNode<T>>(
             SyntaxTreeNode<T>::lt_operator, std::move(lhs), std::move(rhs));
         lhs->v_.op = '^';
@@ -709,18 +709,18 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
   \brief Parse entities connected by multiplication or division: a*b, a/b
   */
   template <class T>
-  auto Parser<T>::ParseTerm(Lexer& lexer) -> NodePtr
+  auto Parser<T>::parse_term(Lexer& lexer) -> NodePtr
   {
     NodePtr lhs;
     NodePtr rhs;
 
-    lhs = ParsePow(lexer);
+    lhs = parse_pow(lexer);
     for (;;)
     {
       if (lexer.tok_ == Lexer::tok_mul)
       {
         lexer.Lexan();
-        rhs = ParsePow(lexer);
+        rhs = parse_pow(lexer);
         lhs = std::make_unique<SyntaxTreeNode<T>>(
             SyntaxTreeNode<T>::lt_operator, std::move(lhs), std::move(rhs));
         lhs->v_.op = '*';
@@ -728,7 +728,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
       else if (lexer.tok_ == Lexer::tok_div)
       {
         lexer.Lexan();
-        rhs = ParsePow(lexer);
+        rhs = parse_pow(lexer);
         lhs = std::make_unique<SyntaxTreeNode<T>>(
             SyntaxTreeNode<T>::lt_operator, std::move(lhs), std::move(rhs));
         lhs->v_.op = '/';
@@ -751,7 +751,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
   {
     NodePtr lhs;
 
-    lhs = ParseExpr(lexer);
+    lhs = parse_expr(lexer);
 
     // check if parsing ended before processing the entire string
     if (lexer.tok_ != Lexer::tok_done)
@@ -768,18 +768,18 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
   \brief Parse entities connected by addition or subtraction: a+b, a-b
   */
   template <class T>
-  auto Parser<T>::ParseExpr(Lexer& lexer) -> NodePtr
+  auto Parser<T>::parse_expr(Lexer& lexer) -> NodePtr
   {
     typename SyntaxTreeNode<T>::NodePtr lhs;
     typename SyntaxTreeNode<T>::NodePtr rhs;
 
-    lhs = ParseTerm(lexer);
+    lhs = parse_term(lexer);
     for (;;)
     {
       if (lexer.tok_ == Lexer::tok_add)
       {
         lexer.Lexan();
-        rhs = ParseTerm(lexer);
+        rhs = parse_term(lexer);
         lhs = std::make_unique<SyntaxTreeNode<T>>(
             SyntaxTreeNode<T>::lt_operator, std::move(lhs), std::move(rhs));
         lhs->v_.op = '+';
@@ -787,7 +787,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
       else if (lexer.tok_ == Lexer::tok_sub)
       {
         lexer.Lexan();
-        rhs = ParseTerm(lexer);
+        rhs = parse_term(lexer);
         lhs = std::make_unique<SyntaxTreeNode<T>>(
             SyntaxTreeNode<T>::lt_operator, std::move(lhs), std::move(rhs));
         lhs->v_.op = '-';

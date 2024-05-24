@@ -215,7 +215,7 @@ namespace DRT
 
       //! @name Evaluation
 
-      void PreEvaluate(
+      void pre_evaluate(
           Teuchos::ParameterList&
               params,  ///< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  ///< pointer to discretization for de-assembly
@@ -315,8 +315,8 @@ namespace DRT
 
       //! @name Evaluation
       //! Calculate mechanical scalar stiffness term needed for monolithic SSI K_dS
-      void nln_kdS_ssi(DRT::Element::LocationArray& la,  //!< (i): location array
-          std::vector<double>& disp,                     //!< (i): current displacement
+      void nln_kd_s_ssi(DRT::Element::LocationArray& la,  //!< (i): location array
+          std::vector<double>& disp,                      //!< (i): current displacement
           CORE::LINALG::SerialDenseMatrix&
               stiffmatrix_kdS,            //!< (o): mechanical scalar stiffness term at current gp
           Teuchos::ParameterList& params  //!< parameter list
@@ -329,7 +329,7 @@ namespace DRT
        * @param[in] defgrad  deformation gradient
        * @param[in] N_XYZ   (material) derivative of shape functions
        */
-      void CalculateBop(CORE::LINALG::Matrix<numstr_, numdofperelement_>* bop,
+      void calculate_bop(CORE::LINALG::Matrix<numstr_, numdofperelement_>* bop,
           const CORE::LINALG::Matrix<numdim_, numdim_>* defgrad,
           const CORE::LINALG::Matrix<numdim_, numnod_>* N_XYZ) const;
       //@}

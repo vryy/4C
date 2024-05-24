@@ -295,52 +295,52 @@ SimpleWrapper::~SimpleWrapper() { delete mesh_; }
 
 void SimpleWrapper::CreateHex8(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
-  CreateElement(CORE::FE::CellType::hex8, xyze);
+  create_element(CORE::FE::CellType::hex8, xyze);
 }
 
 void SimpleWrapper::CreateTet4(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
-  CreateElement(CORE::FE::CellType::tet4, xyze);
+  create_element(CORE::FE::CellType::tet4, xyze);
 }
 
 void SimpleWrapper::CreatePyramid5(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
-  CreateElement(CORE::FE::CellType::pyramid5, xyze);
+  create_element(CORE::FE::CellType::pyramid5, xyze);
 }
 
 void SimpleWrapper::CreateWedge6(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
-  CreateElement(CORE::FE::CellType::wedge6, xyze);
+  create_element(CORE::FE::CellType::wedge6, xyze);
 }
 
 void SimpleWrapper::CreateHex8Sides(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
-  CreateElementSides(CORE::FE::CellType::hex8, xyze);
+  create_element_sides(CORE::FE::CellType::hex8, xyze);
 }
 
 void SimpleWrapper::CreateTet4Sides(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
-  CreateElementSides(CORE::FE::CellType::tet4, xyze);
+  create_element_sides(CORE::FE::CellType::tet4, xyze);
 }
 
 void SimpleWrapper::CreatePyramid5Sides(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
-  CreateElementSides(CORE::FE::CellType::pyramid5, xyze);
+  create_element_sides(CORE::FE::CellType::pyramid5, xyze);
 }
 
 void SimpleWrapper::CreateWedge6Sides(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
-  CreateElementSides(CORE::FE::CellType::wedge6, xyze);
+  create_element_sides(CORE::FE::CellType::wedge6, xyze);
 }
 
 void SimpleWrapper::CreateTri3(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
-  CreateSide(CORE::FE::CellType::tri3, xyze);
+  create_side(CORE::FE::CellType::tri3, xyze);
 }
 
 void SimpleWrapper::CreateQuad4(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
-  CreateSide(CORE::FE::CellType::quad4, xyze);
+  create_side(CORE::FE::CellType::quad4, xyze);
 }
 
 void SimpleWrapper::CreateHex8(double dx, double dy, double dz)
@@ -397,7 +397,7 @@ void SimpleWrapper::CreateQuad4Mesh(int rows, int cols)
       coord[1] = x * sqrt2 + y * sqrt2 + 0.5;
       coord[2] = 0.5;
 
-      GetId(CORE::LINALG::Matrix<3, 1>(coord, true), side_points_);
+      get_id(CORE::LINALG::Matrix<3, 1>(coord, true), side_points_);
     }
   }
 
@@ -440,7 +440,7 @@ void SimpleWrapper::CutTest_Cut(bool include_inner, bool do_Cut_Positions_Dofset
       INPAR::CUT::BCellGaussPts_Tessellation, true, true, do_Cut_Positions_Dofsets);
 }
 
-void SimpleWrapper::CreateElement(
+void SimpleWrapper::create_element(
     CORE::FE::CellType distype, const CORE::LINALG::SerialDenseMatrix& xyze)
 {
   int& id = element_count_[distype];
@@ -451,13 +451,13 @@ void SimpleWrapper::CreateElement(
   for (int i = 0; i < xyze.numCols(); ++i)
   {
     CORE::LINALG::Matrix<3, 1> x(&xyze(0, i));
-    nids.push_back(GetId(x, element_points_));
+    nids.push_back(get_id(x, element_points_));
   }
 
-  mesh_->AddElement(id, nids, xyze, distype);
+  mesh_->add_element(id, nids, xyze, distype);
 }
 
-void SimpleWrapper::CreateElementSides(
+void SimpleWrapper::create_element_sides(
     CORE::FE::CellType distype, const CORE::LINALG::SerialDenseMatrix& xyze)
 {
   //   int & id = side_count_[distype];
@@ -475,7 +475,7 @@ void SimpleWrapper::CreateElementSides(
           int node = CORE::FE::eleNodeNumbering_hex27_surfaces[i][j];
           std::copy(&xyze(0, node), &xyze(0, node) + 3, &side_xyze(0, j));
         }
-        CreateSide(CORE::FE::CellType::quad4, side_xyze);
+        create_side(CORE::FE::CellType::quad4, side_xyze);
       }
       break;
     }
@@ -489,7 +489,7 @@ void SimpleWrapper::CreateElementSides(
           int node = CORE::FE::eleNodeNumbering_tet10_surfaces[i][j];
           std::copy(&xyze(0, node), &xyze(0, node) + 3, &side_xyze(0, j));
         }
-        CreateSide(CORE::FE::CellType::tri3, side_xyze);
+        create_side(CORE::FE::CellType::tri3, side_xyze);
       }
       break;
     }
@@ -504,7 +504,7 @@ void SimpleWrapper::CreateElementSides(
           int node = CORE::FE::eleNodeNumbering_pyramid5_trisurfaces[i][j];
           std::copy(&xyze(0, node), &xyze(0, node) + 3, &tri3_side_xyze(0, j));
         }
-        CreateSide(CORE::FE::CellType::tri3, tri3_side_xyze);
+        create_side(CORE::FE::CellType::tri3, tri3_side_xyze);
       }
       for (int i = 0; i < 1; ++i)
       {
@@ -513,7 +513,7 @@ void SimpleWrapper::CreateElementSides(
           int node = CORE::FE::eleNodeNumbering_pyramid5_quadsurfaces[i][j];
           std::copy(&xyze(0, node), &xyze(0, node) + 3, &quad4_side_xyze(0, j));
         }
-        CreateSide(CORE::FE::CellType::quad4, quad4_side_xyze);
+        create_side(CORE::FE::CellType::quad4, quad4_side_xyze);
       }
       break;
     }
@@ -528,7 +528,7 @@ void SimpleWrapper::CreateElementSides(
           int node = CORE::FE::eleNodeNumbering_wedge18_trisurfaces[i][j];
           std::copy(&xyze(0, node), &xyze(0, node) + 3, &tri3_side_xyze(0, j));
         }
-        CreateSide(CORE::FE::CellType::tri3, tri3_side_xyze);
+        create_side(CORE::FE::CellType::tri3, tri3_side_xyze);
       }
       for (int i = 0; i < 3; ++i)
       {
@@ -537,7 +537,7 @@ void SimpleWrapper::CreateElementSides(
           int node = CORE::FE::eleNodeNumbering_wedge18_quadsurfaces[i][j];
           std::copy(&xyze(0, node), &xyze(0, node) + 3, &quad4_side_xyze(0, j));
         }
-        CreateSide(CORE::FE::CellType::quad4, quad4_side_xyze);
+        create_side(CORE::FE::CellType::quad4, quad4_side_xyze);
       }
       break;
     }
@@ -546,7 +546,7 @@ void SimpleWrapper::CreateElementSides(
   }
 }
 
-void SimpleWrapper::CreateSide(
+void SimpleWrapper::create_side(
     CORE::FE::CellType distype, const CORE::LINALG::SerialDenseMatrix& xyze)
 {
   // int & id = side_count_[distype];
@@ -558,13 +558,13 @@ void SimpleWrapper::CreateSide(
   for (int i = 0; i < xyze.numCols(); ++i)
   {
     CORE::LINALG::Matrix<3, 1> x(&xyze(0, i));
-    nids.push_back(GetId(x, side_points_));
+    nids.push_back(get_id(x, side_points_));
   }
 
   mesh_->AddCutSide(id, nids, xyze, distype);
 }
 
-int SimpleWrapper::GetId(
+int SimpleWrapper::get_id(
     const CORE::LINALG::Matrix<3, 1>& x, std::vector<CORE::LINALG::Matrix<3, 1>>& points)
 {
   unsigned size = points.size();

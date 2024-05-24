@@ -215,12 +215,12 @@ namespace SCATRA
     /*========================================================================*/
 
     //! assemble global system of equations
-    void AssembleMatAndRHS() override;
+    void assemble_mat_and_rhs() override;
 
     //! prepare time loop
-    void PrepareTimeLoop() override;
+    void prepare_time_loop() override;
 
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     void prepare_first_time_step() override;
 

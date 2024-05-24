@@ -50,7 +50,8 @@ namespace SCATRA
     void Update() override;
 
     /// read restart data
-    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
+    void read_restart(
+        const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
     /// routine to return scalar field phi at time step n+alpha_F
     Teuchos::RCP<Epetra_Vector> Phiaf() override { return Teuchos::null; }

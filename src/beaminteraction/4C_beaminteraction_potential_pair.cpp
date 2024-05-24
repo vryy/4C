@@ -55,7 +55,7 @@ void BEAMINTERACTION::BeamPotentialPair::Init(
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamPotentialPair::Setup()
 {
-  CheckInit();
+  check_init();
 
   // the flag issetup_ will be set in the derived method!
 }
@@ -190,16 +190,16 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamPotentialPair::CheckInit() const
+void BEAMINTERACTION::BeamPotentialPair::check_init() const
 {
-  if (not IsInit()) FOUR_C_THROW("Call Init() first!");
+  if (not is_init()) FOUR_C_THROW("Call Init() first!");
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamPotentialPair::CheckInitSetup() const
+void BEAMINTERACTION::BeamPotentialPair::check_init_setup() const
 {
-  if (not IsInit() or not IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
+  if (not is_init() or not is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
 }
 
 /*-----------------------------------------------------------------------------------------------*

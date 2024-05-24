@@ -206,7 +206,7 @@ namespace CORE::Conditions
                       Do not mess with their Teuchos::RCP!
 
     */
-    void AddGeometry(Teuchos::RCP<std::map<int, Teuchos::RCP<DRT::Element>>> geom)
+    void add_geometry(Teuchos::RCP<std::map<int, Teuchos::RCP<DRT::Element>>> geom)
     {
       geometry_ = geom;
     }
@@ -214,7 +214,7 @@ namespace CORE::Conditions
     /*!
     \brief Delete a geometry description of the condition
     */
-    void ClearGeometry() { geometry_ = Teuchos::null; }
+    void clear_geometry() { geometry_ = Teuchos::null; }
 
     //@}
 

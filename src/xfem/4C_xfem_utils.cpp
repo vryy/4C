@@ -151,7 +151,7 @@ void XFEM::UTILS::ExtractQuantityAtElement(CORE::LINALG::SerialDenseMatrix::Base
   DRT::Element::LocationArray la(dis->NumDofSets());
   element->LocationVector(*dis, la, false);
 
-  const size_t numnode = element->NumNode();
+  const size_t numnode = element->num_node();
 
   if (la[nds_vector].lm_.size() != numnode)
   {

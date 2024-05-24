@@ -137,7 +137,7 @@ namespace DRT
         // (in case of mixed/hybrid LM approaches, we don't compute the penalty term explicitly -
         // it 'evolves'); in that case we therefore don't chose the maximum, but add the penalty
         // term scaled with conv_stab_fac to the viscous counterpart; this happens by calling
-        // NIT_Stab_Penalty
+        // nit_stab_penalty
 
         switch (cond_type)
         {
@@ -145,7 +145,7 @@ namespace DRT
           case INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET:
           case INPAR::XFEM::CouplingCond_SURF_FSI_PART:
           {
-            NIT_Stab_Penalty(
+            nit_stab_penalty(
                 funct_m, timefacfac, std::pair<bool, double>(true, NIT_stab_fac_conv),  // F_Pen_Row
                 std::pair<bool, double>(false, 0.0),                                    // X_Pen_Row
                 std::pair<bool, double>(true, 1.0),                                     // F_Pen_Col
@@ -171,7 +171,7 @@ namespace DRT
 
             if (fldparaxfem_.XffConvStabScaling() == INPAR::XFEM::XFF_ConvStabScaling_upwinding)
             {
-              NIT_Stab_Penalty(funct_m, timefacfac,
+              nit_stab_penalty(funct_m, timefacfac,
                   std::pair<bool, double>(true, NIT_stab_fac_conv),  // F_Pen_Row
                   std::pair<bool, double>(true, NIT_stab_fac_conv),  // X_Pen_Row
                   std::pair<bool, double>(true, 1.0),                // F_Pen_Col
@@ -383,7 +383,7 @@ namespace DRT
         if (configmap.at(INPAR::XFEM::F_Pen_Row).first ||
             configmap.at(INPAR::XFEM::X_Pen_Row).first)
         {
-          NIT_Stab_Penalty(funct_m, timefacfac, configmap.at(INPAR::XFEM::F_Pen_Row),
+          nit_stab_penalty(funct_m, timefacfac, configmap.at(INPAR::XFEM::F_Pen_Row),
               configmap.at(INPAR::XFEM::X_Pen_Row), configmap.at(INPAR::XFEM::F_Pen_Col),
               configmap.at(INPAR::XFEM::X_Pen_Col));
 
@@ -778,7 +778,7 @@ namespace DRT
           for (unsigned ivel = 0; ivel < nsd_; ++ivel)
           {
             // rhs
-            rh_c_um_(mIndex(ir, ivel), 0) += tmp_val * traction_(ivel);
+            rh_c_um_(m_index(ir, ivel), 0) += tmp_val * traction_(ivel);
           }
         }
 
@@ -788,7 +788,7 @@ namespace DRT
           for (unsigned ivel = 0; ivel < nsd_; ++ivel)
           {
             // rhs
-            rh_c_us_(sIndex(ir, ivel), 0) -= tmp_val * traction_(ivel);
+            rh_c_us_(s_index(ir, ivel), 0) -= tmp_val * traction_(ivel);
           }
         }
 
@@ -800,13 +800,13 @@ namespace DRT
           {
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
-              const unsigned col = sIndex(ic, jvel);
+              const unsigned col = s_index(ic, jvel);
               for (unsigned ir = 0; ir < nen_; ++ir)
               {
                 //-----------------------------------------------
                 //    - (vm,
                 //-----------------------------------------------
-                c_umus_(mIndex(ir, ivel), col) -=
+                c_umus_(m_index(ir, ivel), col) -=
                     funct_m(ir) * dtraction_vel_(col, ivel) * facms * timefacfac;
               }
 
@@ -816,7 +816,7 @@ namespace DRT
                 //    + (vs,
                 //-----------------------------------------------
                 // diagonal block
-                c_usus_(sIndex(ir, ivel), col) +=
+                c_usus_(s_index(ir, ivel), col) +=
                     funct_s_(ir) * dtraction_vel_(col, ivel) * facss * timefacfac;
               }
             }
@@ -852,7 +852,7 @@ namespace DRT
           for (unsigned ivel = 0; ivel < nsd_; ++ivel)
           {
             // rhs
-            rh_c_um_(mIndex(ir, ivel), 0) += tmp_val * proj_traction(ivel);
+            rh_c_um_(m_index(ir, ivel), 0) += tmp_val * proj_traction(ivel);
           }
         }
 
@@ -862,7 +862,7 @@ namespace DRT
           for (unsigned ivel = 0; ivel < nsd_; ++ivel)
           {
             // rhs
-            rh_c_us_(sIndex(ir, ivel), 0) -= tmp_val * proj_traction(ivel);
+            rh_c_us_(s_index(ir, ivel), 0) -= tmp_val * proj_traction(ivel);
           }
         }
 
@@ -885,13 +885,13 @@ namespace DRT
           {
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
-              const unsigned col = sIndex(ic, jvel);
+              const unsigned col = s_index(ic, jvel);
               for (unsigned ir = 0; ir < nen_; ++ir)
               {
                 //-----------------------------------------------
                 //    - (vm,
                 //-----------------------------------------------
-                c_umus_(mIndex(ir, ivel), col) -=
+                c_umus_(m_index(ir, ivel), col) -=
                     funct_m(ir) * proj_dtraction_vel(col, ivel) * facms * timefacfac;
               }
 
@@ -901,7 +901,7 @@ namespace DRT
                 //    + (vs,
                 //-----------------------------------------------
                 // diagonal block
-                c_usus_(sIndex(ir, ivel), col) +=
+                c_usus_(s_index(ir, ivel), col) +=
                     funct_s_(ir) * proj_dtraction_vel(col, ivel) * facss * timefacfac;
               }
             }
@@ -938,7 +938,7 @@ namespace DRT
           {
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
-              const unsigned row = sIndex(ir, ivel);
+              const unsigned row = s_index(ir, ivel);
               // rhs
               rh_c_us_(row, 0) += dtraction_vel(row, jvel) * velint_diff(jvel, 0) * facs;
             }
@@ -956,16 +956,16 @@ namespace DRT
           {
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
-              const unsigned row = sIndex(ir, ivel);
+              const unsigned row = s_index(ir, ivel);
               for (unsigned ic = 0; ic < nen_; ++ic)
               {
-                const unsigned col = mIndex(ic, jvel);
+                const unsigned col = m_index(ic, jvel);
                 c_usum_(row, col) -= funct_m(ic) * dtraction_vel(row, jvel) * facsm;
               }
 
               for (unsigned ic = 0; ic < slave_nen_; ++ic)
               {
-                const unsigned col = sIndex(ic, jvel);
+                const unsigned col = s_index(ic, jvel);
                 c_usus_(row, col) += funct_s_(ic) * dtraction_vel(row, jvel) * facss;
                 for (unsigned k = 0; k < nsd_; ++k)
                 {
@@ -1176,7 +1176,7 @@ namespace DRT
           if (configmap.at(INPAR::XFEM::F_Pen_Row).first ||
               configmap.at(INPAR::XFEM::X_Pen_Row).first)
           {
-            NIT_Stab_Penalty(funct_m, timefacfac, configmap.at(INPAR::XFEM::F_Pen_Row),
+            nit_stab_penalty(funct_m, timefacfac, configmap.at(INPAR::XFEM::F_Pen_Row),
                 configmap.at(INPAR::XFEM::X_Pen_Row), configmap.at(INPAR::XFEM::F_Pen_Col),
                 configmap.at(INPAR::XFEM::X_Pen_Col), true);
           }
@@ -1485,7 +1485,7 @@ namespace DRT
             const double funct_m_ks_timefacfac_traction =
                 funct_m_timefacfac_ks(ir) * itraction_jump(ivel);
 
-            const unsigned row = mIndex(ir, ivel);
+            const unsigned row = m_index(ir, ivel);
             rh_c_um_(row, 0) += funct_m_ks_timefacfac_traction;
           }
 
@@ -1497,7 +1497,7 @@ namespace DRT
             const double funct_s_km_timefacfac_traction =
                 funct_s_timefacfac_km(ir) * itraction_jump(ivel);
 
-            const unsigned row = sIndex(ir, ivel);
+            const unsigned row = s_index(ir, ivel);
             rh_c_us_(row, 0) += funct_s_km_timefacfac_traction;
           }
         }  // end loop over velocity components
@@ -1549,7 +1549,7 @@ namespace DRT
                   derxy_m_timefacfac_ks(idum, ir) * itraction_jump_matrix(idum, ivel);
             }
 
-            const unsigned row = mIndex(ir, ivel);
+            const unsigned row = m_index(ir, ivel);
             rh_c_um_(row, 0) -= derxy_m_ks_timefacfac_sum;
           }
 
@@ -1566,7 +1566,7 @@ namespace DRT
                   derxy_s_timefacfac_km(idum, ir) * itraction_jump_matrix(idum, ivel);
             }
 
-            const unsigned row = sIndex(ir, ivel);
+            const unsigned row = s_index(ir, ivel);
             rh_c_us_(row, 0) -= derxy_s_km_timefacfac_sum;
           }
         }  // end loop over velocity components
@@ -1607,7 +1607,7 @@ namespace DRT
           for (unsigned ivel = 0; ivel < nsd_; ++ivel)
           {
             // -(v,p*n)
-            rh_c_um_(mIndex(ir, ivel), 0) -= funct_m_pres * normal_timefacfac(ivel);
+            rh_c_um_(m_index(ir, ivel), 0) -= funct_m_pres * normal_timefacfac(ivel);
           }
         }
 
@@ -1622,7 +1622,7 @@ namespace DRT
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
               // -(v,p*n)
-              rh_c_us_(sIndex(ir, ivel), 0) += funct_s_pres * normal_timefacfac(ivel);
+              rh_c_us_(s_index(ir, ivel), 0) += funct_s_pres * normal_timefacfac(ivel);
             }
           }  // end loop over velocity components
         }
@@ -1631,7 +1631,7 @@ namespace DRT
 
         for (unsigned ic = 0; ic < nen_; ++ic)
         {
-          const unsigned col = mPres(ic);
+          const unsigned col = m_pres(ic);
 
           for (unsigned ir = 0; ir < nen_; ++ir)
           {
@@ -1641,7 +1641,7 @@ namespace DRT
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
               // (v,Dp*n)
-              c_umum_(mIndex(ir, ivel), col) += tmp * normal_timefacfac(ivel);
+              c_umum_(m_index(ir, ivel), col) += tmp * normal_timefacfac(ivel);
             }
           }
         }
@@ -1650,7 +1650,7 @@ namespace DRT
         {
           for (unsigned ic = 0; ic < nen_; ++ic)
           {
-            const unsigned col = mPres(ic);
+            const unsigned col = m_pres(ic);
 
             for (unsigned ir = 0; ir < slave_nen_; ++ir)
             {
@@ -1663,7 +1663,7 @@ namespace DRT
                 //-----------------------------------------------
 
                 // (v,Dp*n)
-                c_usum_(sIndex(ir, ivel), col) -= tmp * normal_timefacfac(ivel);
+                c_usum_(s_index(ir, ivel), col) -= tmp * normal_timefacfac(ivel);
               }
             }
           }
@@ -1695,7 +1695,7 @@ namespace DRT
           for (unsigned ivel = 0; ivel < nsd_; ++ivel)
           {
             // -(vm, ks * ps*n)
-            rh_c_um_(mIndex(ir, ivel), 0) -= tmp * normal_timefacfac(ivel);
+            rh_c_um_(m_index(ir, ivel), 0) -= tmp * normal_timefacfac(ivel);
           }
         }
 
@@ -1705,7 +1705,7 @@ namespace DRT
           for (unsigned ivel = 0; ivel < nsd_; ++ivel)
           {
             // +(vs,ks * ps*n)
-            rh_c_us_(sIndex(ir, ivel), 0) += tmp * normal_timefacfac(ivel);
+            rh_c_us_(s_index(ir, ivel), 0) += tmp * normal_timefacfac(ivel);
           }
         }  // end loop over velocity components
 
@@ -1716,7 +1716,7 @@ namespace DRT
           //-----------------------------------------------
           //    + (vm, ks *(Dps)*n)
           //-----------------------------------------------
-          unsigned col = sPres(ic);
+          unsigned col = s_pres(ic);
 
           for (unsigned ir = 0; ir < nen_; ++ir)
           {
@@ -1724,7 +1724,7 @@ namespace DRT
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
               // (vm, ks * Dps*n)
-              c_umus_(mIndex(ir, ivel), col) += tmp * normal_timefacfac(ivel);
+              c_umus_(m_index(ir, ivel), col) += tmp * normal_timefacfac(ivel);
             }
           }
 
@@ -1736,7 +1736,7 @@ namespace DRT
             const double tmp = funct_s_s_dyad_(ir, ic) * facss;
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
-              c_usus_(sIndex(ir, ivel), col) -= tmp * normal_timefacfac(ivel);
+              c_usus_(s_index(ir, ivel), col) -= tmp * normal_timefacfac(ivel);
             }
           }
         }
@@ -1791,8 +1791,8 @@ namespace DRT
           // (qm*n, km * um)
           // -(qm*n,km * u_DBC) for weak DBC or
           // -(qm*n,km * us)
-          rh_c_um_(mPres(ir), 0) += funct_m(ir) * velint_diff_normal_timefacfac_km;
-          //    rhC_um_(mPres(ir),0) -= funct_m(ir)*velint_diff_normal_timefacfac; //TESTING!
+          rh_c_um_(m_pres(ir), 0) += funct_m(ir) * velint_diff_normal_timefacfac_km;
+          //    rhC_um_(m_pres(ir),0) -= funct_m(ir)*velint_diff_normal_timefacfac; //TESTING!
         }
 
         if (only_rhs) return;
@@ -1809,7 +1809,7 @@ namespace DRT
         {
           for (unsigned ir = 0; ir < nen_; ++ir)
           {
-            const unsigned row = mPres(ir);
+            const unsigned row = m_pres(ir);
 
             const double tmp = funct_m_m_dyad_(ir, ic) * facmm;
 
@@ -1817,10 +1817,10 @@ namespace DRT
             {
               // - (qm*n, km *(Dum))
 #ifndef PROJECT_VEL_FOR_PRESSURE_ADJOINT
-              C_umum_(row, mIndex(ic, ivel)) -= tmp * normal_timefacfac(ivel);
-              //        C_umum_(row, mIndex(ic,ivel)) += tmp*normal_timefacfac_km(ivel); //TESTING!
+              C_umum_(row, m_index(ic, ivel)) -= tmp * normal_timefacfac(ivel);
+              //        C_umum_(row, m_index(ic,ivel)) += tmp*normal_timefacfac_km(ivel); //TESTING!
 #else
-              c_umum_(row, mIndex(ic, ivel)) -= tmp * proj_norm_timefacfac(ivel);
+              c_umum_(row, m_index(ic, ivel)) -= tmp * proj_norm_timefacfac(ivel);
 #endif
             }
           }
@@ -1836,16 +1836,16 @@ namespace DRT
           {
             for (unsigned ir = 0; ir < nen_; ++ir)
             {
-              const unsigned row = mPres(ir);
+              const unsigned row = m_pres(ir);
               const double tmp = funct_s_m_dyad_(ic, ir) * facms;
 
               for (unsigned ivel = 0; ivel < nsd_; ++ivel)
               {
                 // -(qm*n, km * Dus)
 #ifndef PROJECT_VEL_FOR_PRESSURE_ADJOINT
-                C_umus_(row, sIndex(ic, ivel)) += tmp * normal_timefacfac(ivel);
+                C_umus_(row, s_index(ic, ivel)) += tmp * normal_timefacfac(ivel);
 #else
-                c_umus_(row, sIndex(ic, ivel)) += tmp * proj_norm_timefacfac(ivel);
+                c_umus_(row, s_index(ic, ivel)) += tmp * proj_norm_timefacfac(ivel);
 #endif
               }
             }
@@ -1888,7 +1888,7 @@ namespace DRT
         for (unsigned ir = 0; ir < slave_nen_; ++ir)
         {
           // (qs*n,ks* um)
-          rh_c_us_(sPres(ir), 0) += funct_s_(ir) * velint_diff_normal_timefacfac_ks;
+          rh_c_us_(s_pres(ir), 0) += funct_s_(ir) * velint_diff_normal_timefacfac_ks;
         }
 
         if (only_rhs) return;
@@ -1901,7 +1901,7 @@ namespace DRT
         {
           for (unsigned ir = 0; ir < slave_nen_; ++ir)
           {
-            const unsigned row = sPres(ir);
+            const unsigned row = s_pres(ir);
 
             const double tmp = funct_s_m_dyad_(ir, ic) * facsm;
 
@@ -1909,10 +1909,10 @@ namespace DRT
             {
               // -(qs*n, ks* Dum)
 #ifndef PROJECT_VEL_FOR_PRESSURE_ADJOINT
-              C_usum_(row, mIndex(ic, ivel)) -= tmp * normal_timefacfac(ivel);
-              //        C_usum_(row,mIndex(ic,ivel)) += tmp*normal_timefacfac_ks(ivel); //TESTING!
+              C_usum_(row, m_index(ic, ivel)) -= tmp * normal_timefacfac(ivel);
+              //        C_usum_(row,m_index(ic,ivel)) += tmp*normal_timefacfac_ks(ivel); //TESTING!
 #else
-              c_usum_(row, mIndex(ic, ivel)) -= tmp * proj_norm_timefacfac(ivel);
+              c_usum_(row, m_index(ic, ivel)) -= tmp * proj_norm_timefacfac(ivel);
 #endif
             }
           }
@@ -1926,7 +1926,7 @@ namespace DRT
         {
           for (unsigned ir = 0; ir < slave_nen_; ++ir)
           {
-            const unsigned row = sPres(ir);
+            const unsigned row = s_pres(ir);
 
             const double tmp = funct_s_s_dyad_(ir, ic) * facss;
 
@@ -1934,9 +1934,9 @@ namespace DRT
             {
               // +(qs*n, ks* Dus)
 #ifndef PROJECT_VEL_FOR_PRESSURE_ADJOINT
-              C_usus_(row, sIndex(ic, ivel)) += tmp * normal_timefacfac(ivel);
+              C_usus_(row, s_index(ic, ivel)) += tmp * normal_timefacfac(ivel);
 #else
-              c_usus_(row, sIndex(ic, ivel)) += tmp * proj_norm_timefacfac(ivel);
+              c_usus_(row, s_index(ic, ivel)) += tmp * proj_norm_timefacfac(ivel);
 #endif
             }
           }
@@ -1975,7 +1975,7 @@ namespace DRT
             //-----------------------------------------------
             //    - (vm, (2*km*mum) *eps(Dum)*n)
             //-----------------------------------------------
-            rh_c_um_(mIndex(ir, ivel), 0) +=
+            rh_c_um_(m_index(ir, ivel), 0) +=
                 tmp_val * vderxy_m_normal_transposed_viscm_timefacfac_km_(ivel);
           }
         }
@@ -1994,7 +1994,7 @@ namespace DRT
               //-----------------------------------------------
 
               // rhs
-              rh_c_us_(sIndex(ir, ivel), 0) -=
+              rh_c_us_(s_index(ir, ivel), 0) -=
                   tmp_val * vderxy_m_normal_transposed_viscm_timefacfac_km_(ivel);
             }
           }
@@ -2011,7 +2011,7 @@ namespace DRT
             const double tmp_derxy_m = derxy_m(ivel, ic);
             for (unsigned jvel = 0; jvel < nsd_; ++jvel)
             {
-              const unsigned col = mIndex(ic, jvel);
+              const unsigned col = m_index(ic, jvel);
 
               double tmp = half_normal_viscm_timefacfac_km_(jvel) * tmp_derxy_m;
               if (ivel == jvel) tmp += normal_deriv_tmp;
@@ -2019,7 +2019,7 @@ namespace DRT
               const double tmpm = tmp * facmm;
               for (unsigned ir = 0; ir < nen_; ++ir)
               {
-                c_umum_(mIndex(ir, ivel), col) -= funct_m(ir) * tmpm;
+                c_umum_(m_index(ir, ivel), col) -= funct_m(ir) * tmpm;
               }
 
               if (s_row.first)
@@ -2027,7 +2027,7 @@ namespace DRT
                 const double tmps = tmp * facsm;
                 for (unsigned ir = 0; ir < slave_nen_; ++ir)
                 {
-                  c_usum_(sIndex(ir, ivel), col) += funct_s_(ir) * tmps;
+                  c_usum_(s_index(ir, ivel), col) += funct_s_(ir) * tmps;
                 }
               }
             }
@@ -2092,12 +2092,12 @@ namespace DRT
           {
             for (unsigned jvel = 0; jvel < nsd_; ++jvel)
             {
-              const unsigned col = mIndex(ic, jvel);
+              const unsigned col = m_index(ic, jvel);
 
               for (unsigned ir = 0; ir < nen_; ++ir)
               {
-                // C_umum_(mIndex(ir,ivel), col) -= funct_m(ir) * tmp;
-                c_umum_(mIndex(ir, ivel), col) -=
+                // C_umum_(m_index(ir,ivel), col) -= funct_m(ir) * tmp;
+                c_umum_(m_index(ir, ivel), col) -=
                     funct_m(ir) * facmm *
                     (proj_matrix(jvel, ivel) * normal_deriv_tmp +
                         proj_matrix_derxy_m_(ivel, ic) * half_normal_(jvel));
@@ -2109,7 +2109,7 @@ namespace DRT
 
               for (unsigned ir = 0; ir < slave_nen_; ++ir)
               {
-                c_usum_(sIndex(ir, ivel), col) +=
+                c_usum_(s_index(ir, ivel), col) +=
                     funct_s_(ir) * facsm *
                     (proj_matrix(jvel, ivel) * normal_deriv_tmp +
                         proj_matrix_derxy_m_(ivel, ic) * half_normal_(jvel));
@@ -2128,7 +2128,7 @@ namespace DRT
             //-----------------------------------------------
             //    - (vm, (2*km*mum) *eps(Dum)*n)
             //-----------------------------------------------
-            rh_c_um_(mIndex(ir, ivel), 0) +=
+            rh_c_um_(m_index(ir, ivel), 0) +=
                 tmp_val * vderxy_x_normal_transposed_viscx_timefacfac_kx_pmatrix_(ivel);
           }
         }
@@ -2148,7 +2148,7 @@ namespace DRT
             //-----------------------------------------------
 
             // rhs
-            rh_c_us_(sIndex(ir, ivel), 0) -=
+            rh_c_us_(s_index(ir, ivel), 0) -=
                 tmp_val * vderxy_x_normal_transposed_viscx_timefacfac_kx_pmatrix_(ivel);
           }
         }
@@ -2194,7 +2194,7 @@ namespace DRT
           for (unsigned ivel = 0; ivel < nsd_; ++ivel)
           {
             // rhs
-            rh_c_um_(mIndex(ir, ivel), 0) +=
+            rh_c_um_(m_index(ir, ivel), 0) +=
                 tmp_val * vderxy_s_normal_transposed_viscs_timefacfac_ks_(ivel);
           }
         }
@@ -2205,7 +2205,7 @@ namespace DRT
           for (unsigned ivel = 0; ivel < nsd_; ++ivel)
           {
             // rhs
-            rh_c_us_(sIndex(ir, ivel), 0) -=
+            rh_c_us_(s_index(ir, ivel), 0) -=
                 tmp_val * vderxy_s_normal_transposed_viscs_timefacfac_ks_(ivel);
           }
         }
@@ -2222,7 +2222,7 @@ namespace DRT
 
             for (unsigned jvel = 0; jvel < nsd_; ++jvel)
             {
-              const unsigned col = sIndex(ic, jvel);
+              const unsigned col = s_index(ic, jvel);
 
               double tmp = half_normal_viscs_timefacfac_ks_(jvel) * tmp_derxy_s;
 
@@ -2234,7 +2234,7 @@ namespace DRT
                 //-----------------------------------------------
                 //    - (vm, (2*ks*mus) *eps(Dus)*n)
                 //-----------------------------------------------
-                c_umus_(mIndex(ir, ivel), col) -= funct_m(ir) * tmpm;
+                c_umus_(m_index(ir, ivel), col) -= funct_m(ir) * tmpm;
               }
 
               const double tmps = tmp * facss;
@@ -2244,7 +2244,7 @@ namespace DRT
                 //    + (vs, (2*ks*mus) *eps(Dus)*n)
                 //-----------------------------------------------
                 // diagonal block
-                c_usus_(sIndex(ir, ivel), col) += funct_s_(ir) * tmps;
+                c_usus_(s_index(ir, ivel), col) += funct_s_(ir) * tmps;
               }
             }
           }
@@ -2304,7 +2304,7 @@ namespace DRT
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
               // rhs
-              rh_c_um_(mIndex(ir, ivel), 0) +=
+              rh_c_um_(m_index(ir, ivel), 0) +=
                   derxy_m_viscm_timefacfac_km_half_tmp * velint_diff_dyad_normal_symm(ivel, jvel);
             }
           }
@@ -2329,7 +2329,7 @@ namespace DRT
             const double tmp_derxy_m = derxy_m_viscm_timefacfac_(jvel, ir);
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
-              const unsigned row = mIndex(ir, ivel);
+              const unsigned row = m_index(ir, ivel);
 
               double tmp = half_normal_(ivel) * tmp_derxy_m;
               if (ivel == jvel) tmp += normal_deriv_tmp;
@@ -2337,7 +2337,7 @@ namespace DRT
               const double tmpm = tmp * facmm;
               for (unsigned ic = 0; ic < nen_; ++ic)
               {
-                c_umum_(row, mIndex(ic, jvel)) -= funct_m(ic) * tmpm;
+                c_umum_(row, m_index(ic, jvel)) -= funct_m(ic) * tmpm;
               }
 
 
@@ -2346,7 +2346,7 @@ namespace DRT
                 const double tmps = tmp * facms;
                 for (unsigned ic = 0; ic < slave_nen_; ++ic)
                 {
-                  c_umus_(row, sIndex(ic, jvel)) += funct_s_(ic) * tmps;
+                  c_umus_(row, s_index(ic, jvel)) += funct_s_(ic) * tmps;
                 }
               }
             }
@@ -2421,13 +2421,13 @@ namespace DRT
           {
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
-              const unsigned row = mIndex(ir, ivel);
+              const unsigned row = m_index(ir, ivel);
 
               const double tmpm = facmm * (proj_matrix_(jvel, ivel) * normal_deriv_tmp +
                                               proj_matrix_derxy_m_(jvel, ir) * half_normal_(ivel));
               for (unsigned ic = 0; ic < nen_; ++ic)
               {
-                c_umum_(row, mIndex(ic, jvel)) -= funct_m(ic) * tmpm;
+                c_umum_(row, m_index(ic, jvel)) -= funct_m(ic) * tmpm;
               }
 
               if (s_col.first)
@@ -2437,7 +2437,7 @@ namespace DRT
                                 proj_matrix_derxy_m_(jvel, ir) * half_normal_(ivel));
                 for (unsigned ic = 0; ic < slave_nen_; ++ic)
                 {
-                  c_umus_(row, sIndex(ic, jvel)) += funct_s_(ic) * tmps;
+                  c_umus_(row, s_index(ic, jvel)) += funct_s_(ic) * tmps;
                 }
               }
             }
@@ -2471,8 +2471,8 @@ namespace DRT
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
               // rhs
-              rh_c_um_(mIndex(ir, ivel), 0) += derxy_m_viscm_timefacfac_km_half_tmp *
-                                               velint_proj_norm_diff_dyad_normal_symm_(ivel, jvel);
+              rh_c_um_(m_index(ir, ivel), 0) += derxy_m_viscm_timefacfac_km_half_tmp *
+                                                velint_proj_norm_diff_dyad_normal_symm_(ivel, jvel);
             }
           }
         }
@@ -2548,7 +2548,7 @@ namespace DRT
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
               // rhs
-              rh_c_us_(sIndex(ir, ivel), 0) +=
+              rh_c_us_(s_index(ir, ivel), 0) +=
                   derxy_s_viscs_timefacfac_ks_half_tmp * velint_diff_dyad_normal_symm(ivel, jvel);
             }
           }
@@ -2570,7 +2570,7 @@ namespace DRT
             const double tmp_derxy_s = derxy_s_viscs_timefacfac_ks(jvel, ir);
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
-              const unsigned row = sIndex(ir, ivel);
+              const unsigned row = s_index(ir, ivel);
 
               double tmp = half_normal_(ivel) * tmp_derxy_s;
               if (ivel == jvel) tmp += normal_deriv_tmp;
@@ -2578,7 +2578,7 @@ namespace DRT
               const double tmpm = tmp * facsm;
               for (unsigned ic = 0; ic < nen_; ++ic)
               {
-                c_usum_(row, mIndex(ic, jvel)) -= funct_m(ic) * tmpm;
+                c_usum_(row, m_index(ic, jvel)) -= funct_m(ic) * tmpm;
               }
 
               if (s_col.first)
@@ -2586,7 +2586,7 @@ namespace DRT
                 const double tmps = tmp * facss;
                 for (unsigned ic = 0; ic < slave_nen_; ++ic)
                 {
-                  c_usus_(row, sIndex(ic, jvel)) += funct_s_(ic) * tmps;
+                  c_usus_(row, s_index(ic, jvel)) += funct_s_(ic) * tmps;
                 }
               }
             }
@@ -2679,11 +2679,11 @@ namespace DRT
           {
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
-              const unsigned row = mIndex(ir, ivel);
+              const unsigned row = m_index(ir, ivel);
 
               for (unsigned ic = 0; ic < nen_; ++ic)
               {
-                c_umum_(row, mIndex(ic, jvel)) -=
+                c_umum_(row, m_index(ic, jvel)) -=
                     facmm *
                     (normal_deriv_m_(ic) *
                             (proj_matrix_(jvel, ivel) * normal_deriv_tmp +
@@ -2718,7 +2718,7 @@ namespace DRT
 
           for (unsigned ivel = 0; ivel < nsd_; ++ivel)
           {
-            rh_c_um_(mIndex(ir, ivel), 0) +=
+            rh_c_um_(m_index(ir, ivel), 0) +=
                 facmm *
                 (normal_deriv_tmp * vderxy_m_normal_tang_(ivel) + tmp_rhs(ir) * half_normal_(ivel));
           }
@@ -2729,7 +2729,7 @@ namespace DRT
        *----------------------------------------------------------------------*/
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_Stab_Penalty(
+      void NitscheCoupling<distype, slave_distype, slave_numdof>::nit_stab_penalty(
           const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct
           const double& timefacfac,                      ///< time integration factor
           const std::pair<bool, double>& m_row,          ///< scaling for master row
@@ -2738,7 +2738,7 @@ namespace DRT
           const std::pair<bool, double>& s_col,          ///< scaling for slave col
           bool only_rhs)
       {
-        TEUCHOS_FUNC_TIME_MONITOR("FLD::NIT_Stab_Penalty");
+        TEUCHOS_FUNC_TIME_MONITOR("FLD::nit_stab_penalty");
 
         // viscous stability term
 
@@ -2766,7 +2766,7 @@ namespace DRT
           {
             // +(stab * vm, u_DBC) (weak dirichlet case) or from
             // +(stab * vm, u_s)
-            rh_c_um_(mIndex(ir, ivel), 0) -= tmp_val * velint_diff_timefacfac_stabfac_(ivel);
+            rh_c_um_(m_index(ir, ivel), 0) -= tmp_val * velint_diff_timefacfac_stabfac_(ivel);
           }
         }
 
@@ -2783,7 +2783,7 @@ namespace DRT
             {
               // +(stab * vs, um)
               // -(stab * vs, us)
-              rh_c_us_(sIndex(ir, ivel), 0) += tmp_val * velint_diff_timefacfac_stabfac_(ivel);
+              rh_c_us_(s_index(ir, ivel), 0) += tmp_val * velint_diff_timefacfac_stabfac_(ivel);
             }
           }
         }
@@ -2800,7 +2800,7 @@ namespace DRT
 
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
-              c_umum_(mIndex(ir, ivel), mIndex(ic, ivel)) += tmp_val;
+              c_umum_(m_index(ir, ivel), m_index(ic, ivel)) += tmp_val;
             }
           }
         }
@@ -2820,7 +2820,7 @@ namespace DRT
 
               for (unsigned ivel = 0; ivel < nsd_; ++ivel)
               {
-                c_umus_(mIndex(ir, ivel), sIndex(ic, ivel)) -= tmp_val;
+                c_umus_(m_index(ir, ivel), s_index(ic, ivel)) -= tmp_val;
               }
             }
           }
@@ -2839,7 +2839,7 @@ namespace DRT
 
               for (unsigned ivel = 0; ivel < nsd_; ++ivel)
               {
-                c_usus_(sIndex(ir, ivel), sIndex(ic, ivel)) += tmp_val;
+                c_usus_(s_index(ir, ivel), s_index(ic, ivel)) += tmp_val;
               }
             }
           }
@@ -2857,7 +2857,7 @@ namespace DRT
 
               for (unsigned ivel = 0; ivel < nsd_; ++ivel)
               {
-                c_usum_(sIndex(ir, ivel), mIndex(ic, ivel)) -= tmp_val;
+                c_usum_(s_index(ir, ivel), m_index(ic, ivel)) -= tmp_val;
               }
             }
           }
@@ -2897,15 +2897,15 @@ namespace DRT
           {
             for (unsigned ic = 0; ic < nen_; ++ic)
             {
-              c_umum_(mIndex(ir, ivel), mIndex(ic, 0)) += tmp_val *
-                                                          velint_diff_timefacfac_stabfac_(ivel) *
-                                                          funct_m(ic) * m_row_linm1.second;
-              c_umum_(mIndex(ir, ivel), mIndex(ic, 1)) += tmp_val *
-                                                          velint_diff_timefacfac_stabfac_(ivel) *
-                                                          funct_m(ic) * m_row_linm2.second;
-              c_umum_(mIndex(ir, ivel), mIndex(ic, 2)) += tmp_val *
-                                                          velint_diff_timefacfac_stabfac_(ivel) *
-                                                          funct_m(ic) * m_row_linm3.second;
+              c_umum_(m_index(ir, ivel), m_index(ic, 0)) += tmp_val *
+                                                            velint_diff_timefacfac_stabfac_(ivel) *
+                                                            funct_m(ic) * m_row_linm1.second;
+              c_umum_(m_index(ir, ivel), m_index(ic, 1)) += tmp_val *
+                                                            velint_diff_timefacfac_stabfac_(ivel) *
+                                                            funct_m(ic) * m_row_linm2.second;
+              c_umum_(m_index(ir, ivel), m_index(ic, 2)) += tmp_val *
+                                                            velint_diff_timefacfac_stabfac_(ivel) *
+                                                            funct_m(ic) * m_row_linm3.second;
             }
           }
         }
@@ -2929,7 +2929,7 @@ namespace DRT
           const std::pair<bool, double>& s_col   ///< scaling for slave col
       )
       {
-        TEUCHOS_FUNC_TIME_MONITOR("FLD::NIT_Stab_Penalty");
+        TEUCHOS_FUNC_TIME_MONITOR("FLD::nit_stab_penalty");
 
         // viscous stability term
 
@@ -2968,11 +2968,11 @@ namespace DRT
             const double stab_funct_m_m_dyad_iric = funct_m_m_dyad_(ir, ic) * stabfac_timefacfac_mm;
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
-              const unsigned col = mIndex(ic, ivel);
-              //        C_umum_(mIndex(ir,ivel), mIndex(ic,ivel)) += tmp_val;
+              const unsigned col = m_index(ic, ivel);
+              //        C_umum_(m_index(ir,ivel), m_index(ic,ivel)) += tmp_val;
               for (unsigned jvel = 0; jvel < nsd_; ++jvel)
               {
-                c_umum_(mIndex(ir, jvel), col) +=
+                c_umum_(m_index(ir, jvel), col) +=
                     stab_funct_m_m_dyad_iric * proj_matrix_(ivel, jvel);
               }
             }
@@ -2989,7 +2989,7 @@ namespace DRT
           {
             // +(stab * vm, u_DBC) (weak dirichlet case) or from
             // +(stab * vm, u_s)
-            rh_c_um_(mIndex(ir, ivel), 0) -= tmp_val * (velint_diff_timefacfac_stabfac_(ivel));
+            rh_c_um_(m_index(ir, ivel), 0) -= tmp_val * (velint_diff_timefacfac_stabfac_(ivel));
           }
         }
 
@@ -3011,7 +3011,8 @@ namespace DRT
               {
                 for (unsigned jvel = 0; jvel < nsd_; ++jvel)
                 {
-                  c_umus_(mIndex(ir, jvel), sIndex(ic, ivel)) -= tmp_val * proj_matrix_(ivel, jvel);
+                  c_umus_(m_index(ir, jvel), s_index(ic, ivel)) -=
+                      tmp_val * proj_matrix_(ivel, jvel);
                 }
               }
             }
@@ -3033,7 +3034,8 @@ namespace DRT
               {
                 for (unsigned jvel = 0; jvel < nsd_; ++jvel)
                 {
-                  c_usus_(sIndex(ir, jvel), sIndex(ic, ivel)) += tmp_val * proj_matrix_(ivel, jvel);
+                  c_usus_(s_index(ir, jvel), s_index(ic, ivel)) +=
+                      tmp_val * proj_matrix_(ivel, jvel);
                 }
               }
             }
@@ -3054,7 +3056,8 @@ namespace DRT
               {
                 for (unsigned jvel = 0; jvel < nsd_; ++jvel)
                 {
-                  c_usum_(sIndex(ir, jvel), mIndex(ic, ivel)) -= tmp_val * proj_matrix_(ivel, jvel);
+                  c_usum_(s_index(ir, jvel), m_index(ic, ivel)) -=
+                      tmp_val * proj_matrix_(ivel, jvel);
                 }
               }
             }
@@ -3072,7 +3075,7 @@ namespace DRT
             {
               // +(stab * vs, um)
               // -(stab * vs, us)
-              rh_c_us_(sIndex(ir, ivel), 0) += tmp_val * velint_diff_timefacfac_stabfac_(ivel);
+              rh_c_us_(s_index(ir, ivel), 0) += tmp_val * velint_diff_timefacfac_stabfac_(ivel);
             }
           }
         }
@@ -3110,7 +3113,7 @@ namespace DRT
         {
           for (unsigned ir = 0; ir < nen_; ++ir)
           {
-            const unsigned mrow = mIndex(ir, ivel);
+            const unsigned mrow = m_index(ir, ivel);
 
             const double tmp = funct_m(ir) * stabfac_avg_scaled;
             rh_c_um_(mrow, 0) += tmp * velint_diff_(ivel);
@@ -3118,7 +3121,7 @@ namespace DRT
 
           for (unsigned ir = 0; ir < slave_nen_; ++ir)
           {
-            const unsigned srow = sIndex(ir, ivel);
+            const unsigned srow = s_index(ir, ivel);
 
             const double tmp = funct_s_(ir) * stabfac_avg_scaled;
             rh_c_us_(srow, 0) += tmp * velint_diff_(ivel);
@@ -3132,34 +3135,34 @@ namespace DRT
           //  [rho * (beta * n^b)] (0.5*vb,ub)
           for (unsigned ir = 0; ir < nen_; ++ir)
           {
-            const unsigned mrow = mIndex(ir, ivel);
+            const unsigned mrow = m_index(ir, ivel);
 
             for (unsigned ic = 0; ic < nen_; ++ic)
             {
-              c_umum_(mrow, mIndex(ic, ivel)) -= funct_m_m_dyad_(ir, ic) * stabfac_avg_scaled;
+              c_umum_(mrow, m_index(ic, ivel)) -= funct_m_m_dyad_(ir, ic) * stabfac_avg_scaled;
             }
 
             //  -[rho * (beta * n^b)] (0.5*vb,ue)
             for (unsigned ic = 0; ic < slave_nen_; ++ic)
             {
-              c_umus_(mrow, sIndex(ic, ivel)) += funct_s_m_dyad_(ic, ir) * stabfac_avg_scaled;
+              c_umus_(mrow, s_index(ic, ivel)) += funct_s_m_dyad_(ic, ir) * stabfac_avg_scaled;
             }
           }
 
           //  [rho * (beta * n^b)] (0.5*ve,ub)
           for (unsigned ir = 0; ir < slave_nen_; ++ir)
           {
-            const unsigned srow = sIndex(ir, ivel);
+            const unsigned srow = s_index(ir, ivel);
 
             for (unsigned ic = 0; ic < nen_; ++ic)
             {
-              c_usum_(srow, mIndex(ic, ivel)) -= funct_s_m_dyad_(ir, ic) * stabfac_avg_scaled;
+              c_usum_(srow, m_index(ic, ivel)) -= funct_s_m_dyad_(ir, ic) * stabfac_avg_scaled;
             }
 
             //-[rho * (beta * n^b)] (0.5*ve,ue)
             for (unsigned ic = 0; ic < slave_nen_; ++ic)
             {
-              c_usus_(srow, sIndex(ic, ivel)) += funct_s_s_dyad_(ir, ic) * stabfac_avg_scaled;
+              c_usus_(srow, s_index(ic, ivel)) += funct_s_s_dyad_(ir, ic) * stabfac_avg_scaled;
             }
           }
         }

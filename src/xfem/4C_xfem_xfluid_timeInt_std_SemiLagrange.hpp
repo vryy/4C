@@ -76,7 +76,7 @@ namespace XFEM
 
     //! run a Newton loop in order to compute the exact Lagrangian origin for a node which changed
     //! interface side
-    void NewtonLoop(DRT::Element*& ele,   ///< pointer to element
+    void newton_loop(DRT::Element*& ele,  ///< pointer to element
         TimeIntData* data,                ///< current data
         CORE::LINALG::Matrix<3, 1>& xi,   ///< local coordinates of point
         CORE::LINALG::Matrix<3, 1>& vel,  ///< velocity at current point
@@ -85,9 +85,9 @@ namespace XFEM
 
     //! perform one Newton iteration in order to compute the exact Lagrangian origin for a node
     //! which changed its interface side
-    void NewtonIter(DRT::Element*& ele,  ///< pointer to element to be updated
-        TimeIntData* data,               ///< current data to be updated
-        CORE::LINALG::Matrix<3, 1>& xi,  ///< local coordinates w.r.t ele to be updated
+    void newton_iter(DRT::Element*& ele,  ///< pointer to element to be updated
+        TimeIntData* data,                ///< current data to be updated
+        CORE::LINALG::Matrix<3, 1>& xi,   ///< local coordinates w.r.t ele to be updated
         CORE::LINALG::Matrix<3, 1>&
             residuum,  ///< residual for semilagrangean backtracking to be updated
         CORE::LINALG::Matrix<3, 1>&
@@ -116,7 +116,7 @@ namespace XFEM
     void new_iteration_nodal_data(std::vector<Teuchos::RCP<Epetra_Vector>> newRowVectors);
 
     //! reinitialize some data for new computations, e.g. at a new FGI
-    void reinitializeData();
+    void reinitialize_data();
 
 
     /*========================================================================*/
@@ -124,18 +124,18 @@ namespace XFEM
     /*========================================================================*/
 
     //! call the back tracking which computes the final values
-    void callBackTracking(DRT::Element*& ele,  ///< pointer to element
-        TimeIntData* data,                     ///< data
-        CORE::LINALG::Matrix<3, 1>& xi,        ///< local coordinates
-        const char* backTrackingType           ///< type of backTracking
+    void call_back_tracking(DRT::Element*& ele,  ///< pointer to element
+        TimeIntData* data,                       ///< data
+        CORE::LINALG::Matrix<3, 1>& xi,          ///< local coordinates
+        const char* backTrackingType             ///< type of back_tracking
     );
 
     //! track back the Lagrangian origin to get final values
     template <const int numnode, CORE::FE::CellType DISTYPE>
-    void backTracking(DRT::Element*& fittingele,  ///< pointer to element
-        TimeIntData* data,                        ///< data
-        CORE::LINALG::Matrix<3, 1>& xi,           ///< local coordinates
-        const char* backTrackingType              ///< type of backTrackingwVectors
+    void back_tracking(DRT::Element*& fittingele,  ///< pointer to element
+        TimeIntData* data,                         ///< data
+        CORE::LINALG::Matrix<3, 1>& xi,            ///< local coordinates
+        const char* backTrackingType               ///< type of backTrackingwVectors
     );
 
     /*========================================================================*/
@@ -143,8 +143,8 @@ namespace XFEM
     /*========================================================================*/
 
     //! determine point's dofset in element ele w.r.t old or new interface position
-    void getNodalDofSet(DRT::Element* ele,  ///< pointer to element
-        CORE::LINALG::Matrix<3, 1>& x,      ///< global coordinates of point
+    void get_nodal_dof_set(DRT::Element* ele,  ///< pointer to element
+        CORE::LINALG::Matrix<3, 1>& x,         ///< global coordinates of point
         std::vector<int>& nds,  ///< determine the points dofset w.r.t old/new interface position
         CORE::GEO::CUT::VolumeCell*& vc,  ///< valid fluid volumecell the point x lies in
         bool step_np                      ///< computation w.r.t old or new interface position?
@@ -182,7 +182,7 @@ namespace XFEM
     void export_alternativ_algo_data();
 
     //! export data to neighbour proc in Newton loop
-    void exportIterData(bool& procDone);
+    void export_iter_data(bool& procDone);
 
 
     /*========================================================================*/

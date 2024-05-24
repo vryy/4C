@@ -81,7 +81,7 @@ namespace NOX
         std::map<std::string, MeritFctName> get_supported_type_list() const;
 
         /// Set the infeasibility merit function type
-        void SetType(const std::string& type_name);
+        void set_type(const std::string& type_name);
 
        private:
         //    const ::NOX::Utils& utils_;

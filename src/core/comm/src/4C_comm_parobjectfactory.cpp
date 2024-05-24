@@ -252,7 +252,7 @@ void CORE::COMM::ParObjectFactory::InitializeElements(DRT::Discretization& dis)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COMM::ParObjectFactory::PreEvaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
+void CORE::COMM::ParObjectFactory::pre_evaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
@@ -264,7 +264,7 @@ void CORE::COMM::ParObjectFactory::PreEvaluate(DRT::Discretization& dis, Teuchos
 
   for (std::set<DRT::ElementType*>::iterator i = ae.begin(); i != ae.end(); ++i)
   {
-    (*i)->PreEvaluate(
+    (*i)->pre_evaluate(
         dis, p, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);
   }
 }

@@ -25,29 +25,29 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------------*/
 void STR::NLN::SOLVER::SingleStep::Setup()
 {
-  CheckInit();
+  check_init();
 
   // setup the nox parameter list for a full Newton solution method
-  SetSingleStepParams();
+  set_single_step_params();
 
   // Call the Setup() function of the base class
   // Note, that the issetup_ flag is also updated during this call.
   Nox::Setup();
 
-  FOUR_C_ASSERT(IsSetup(), "issetup_ should be \"true\" at this point!");
+  FOUR_C_ASSERT(is_setup(), "issetup_ should be \"true\" at this point!");
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::SingleStep::SetSingleStepParams()
+void STR::NLN::SOLVER::SingleStep::set_single_step_params()
 {
-  CheckInit();
+  check_init();
 
   // get the nox parameter list and set the necessary parameters for a
   // full Newton solution procedure
   Teuchos::ParameterList& p = DataSDyn().GetNoxParams();
-  SetSingleStepParams(p);
+  set_single_step_params(p);
 
   // ---------------------------------------------------------------------------
   // STATUS TEST
@@ -66,7 +66,7 @@ void STR::NLN::SOLVER::SingleStep::SetSingleStepParams()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::SingleStep::SetSingleStepParams(Teuchos::ParameterList& p)
+void STR::NLN::SOLVER::SingleStep::set_single_step_params(Teuchos::ParameterList& p)
 {
   // ---------------------------------------------------------------------------
   // Set-up the single step method
@@ -100,7 +100,7 @@ void STR::NLN::SOLVER::SingleStep::SetSingleStepParams(Teuchos::ParameterList& p
  *----------------------------------------------------------------------------*/
 void STR::NLN::SOLVER::SingleStep::ResetParams()
 {
-  SetSingleStepParams(nlnglobaldata_->GetNlnParameterList());
+  set_single_step_params(nlnglobaldata_->GetNlnParameterList());
 }
 
 
@@ -108,7 +108,7 @@ void STR::NLN::SOLVER::SingleStep::ResetParams()
  *----------------------------------------------------------------------------*/
 enum INPAR::STR::ConvergenceStatus STR::NLN::SOLVER::SingleStep::Solve()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   auto& nln_group = dynamic_cast<NOX::NLN::Group&>(Group());
 
@@ -124,7 +124,7 @@ enum INPAR::STR::ConvergenceStatus STR::NLN::SOLVER::SingleStep::Solve()
   // copy the solution group into the class variable
   Group() = nlnsolver_->getSolutionGroup();
 
-  Integrator().SetState(x_epetra.getEpetraVector());
+  Integrator().set_state(x_epetra.getEpetraVector());
 
   return ConvertFinalStatus(stepstatus);
 }

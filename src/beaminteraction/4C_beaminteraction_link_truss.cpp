@@ -84,7 +84,7 @@ void BEAMINTERACTION::BeamLinkTruss::Init(int id, const std::vector<std::pair<in
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLinkTruss::Setup(const int matnum)
 {
-  CheckInit();
+  check_init();
 
   // call setup of base class first
   BeamLinkPinJointed::Setup(matnum);
@@ -130,7 +130,7 @@ void BEAMINTERACTION::BeamLinkTruss::Setup(const int matnum)
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLinkTruss::Pack(CORE::COMM::PackBuffer& data) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -178,10 +178,10 @@ void BEAMINTERACTION::BeamLinkTruss::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::BeamLinkTruss::EvaluateForce(
+bool BEAMINTERACTION::BeamLinkTruss::evaluate_force(
     CORE::LINALG::SerialDenseVector& forcevec1, CORE::LINALG::SerialDenseVector& forcevec2)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   std::map<std::string, std::vector<double>> ele_state;
   get_disp_for_element_evaluation(ele_state);
@@ -202,11 +202,11 @@ bool BEAMINTERACTION::BeamLinkTruss::EvaluateForce(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::BeamLinkTruss::EvaluateStiff(CORE::LINALG::SerialDenseMatrix& stiffmat11,
+bool BEAMINTERACTION::BeamLinkTruss::evaluate_stiff(CORE::LINALG::SerialDenseMatrix& stiffmat11,
     CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
     CORE::LINALG::SerialDenseMatrix& stiffmat22)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   std::map<std::string, std::vector<double>> ele_state;
   get_disp_for_element_evaluation(ele_state);
@@ -232,12 +232,12 @@ bool BEAMINTERACTION::BeamLinkTruss::EvaluateStiff(CORE::LINALG::SerialDenseMatr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::BeamLinkTruss::EvaluateForceStiff(CORE::LINALG::SerialDenseVector& forcevec1,
-    CORE::LINALG::SerialDenseVector& forcevec2, CORE::LINALG::SerialDenseMatrix& stiffmat11,
-    CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
-    CORE::LINALG::SerialDenseMatrix& stiffmat22)
+bool BEAMINTERACTION::BeamLinkTruss::evaluate_force_stiff(
+    CORE::LINALG::SerialDenseVector& forcevec1, CORE::LINALG::SerialDenseVector& forcevec2,
+    CORE::LINALG::SerialDenseMatrix& stiffmat11, CORE::LINALG::SerialDenseMatrix& stiffmat12,
+    CORE::LINALG::SerialDenseMatrix& stiffmat21, CORE::LINALG::SerialDenseMatrix& stiffmat22)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   std::map<std::string, std::vector<double>> ele_state;
   get_disp_for_element_evaluation(ele_state);
@@ -269,7 +269,7 @@ bool BEAMINTERACTION::BeamLinkTruss::EvaluateForceStiff(CORE::LINALG::SerialDens
 void BEAMINTERACTION::BeamLinkTruss::ResetState(std::vector<CORE::LINALG::Matrix<3, 1>>& bspotpos,
     std::vector<CORE::LINALG::Matrix<3, 3>>& bspottriad)
 {
-  CheckInitSetup();
+  check_init_setup();
 
   BeamLinkPinJointed::ResetState(bspotpos, bspottriad);
 }

@@ -74,19 +74,19 @@ namespace FSI
     const Teuchos::RCP<ADAPTER::FluidMovingBoundary>& MBFluidField() { return fluid_; }
 
     /// read restart data
-    void ReadRestart(int step) override;
+    void read_restart(int step) override;
 
    protected:
     //! @name Time loop building blocks
 
     /// start a new time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     /// take current results for converged and save for next time step
     void Update() override;
 
     /// calculate stresses, strains, energies
-    virtual void PrepareOutput(bool force_prepare);
+    virtual void prepare_output(bool force_prepare);
 
     /// write output
     void Output() override;

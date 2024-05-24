@@ -291,7 +291,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::SetGlobalMaps()
 void BEAMINTERACTION::BeamToSolidMortarManager::SetLocalMaps(
     const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs)
 {
-  CheckSetup();
+  check_setup();
   CheckGlobalMaps();
 
   contact_pairs_ = contact_pairs;
@@ -402,7 +402,7 @@ std::pair<std::vector<int>, std::vector<int>>
 BEAMINTERACTION::BeamToSolidMortarManager::LocationVector(
     const BEAMINTERACTION::BeamContactPair& contact_pair) const
 {
-  CheckSetup();
+  check_setup();
   CheckLocalMaps();
 
   // Create the output vectors
@@ -412,7 +412,7 @@ BEAMINTERACTION::BeamToSolidMortarManager::LocationVector(
   // Get the global DOFs ids of the nodal Lagrange multipliers.
   if (n_lambda_node_ > 0)
   {
-    for (int i_node = 0; i_node < contact_pair.Element1()->NumNode(); i_node++)
+    for (int i_node = 0; i_node < contact_pair.Element1()->num_node(); i_node++)
     {
       const DRT::Node& node = *(contact_pair.Element1()->Nodes()[i_node]);
       if (BEAMINTERACTION::UTILS::IsBeamCenterlineNode(node))
@@ -470,7 +470,7 @@ BEAMINTERACTION::BeamToSolidMortarManager::LocationVector(
 void BEAMINTERACTION::BeamToSolidMortarManager::evaluate_global_coupling_contributions(
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
-  CheckSetup();
+  check_setup();
   CheckGlobalMaps();
 
   // Reset the global data structures.
@@ -511,7 +511,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penal
     const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
     Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff, Teuchos::RCP<Epetra_FEVector> force) const
 {
-  CheckSetup();
+  check_setup();
   CheckGlobalMaps();
 
   int linalg_error = 0;
@@ -566,7 +566,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penal
     linalg_error = global_fs_l_->Multiply(false, *lambda, *solid_force);
     if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
     Teuchos::RCP<Epetra_Vector> global_temp =
-        Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
+        Teuchos::rcp(new Epetra_Vector(*discret_->dof_row_map()));
     CORE::LINALG::Export(*beam_force, *global_temp);
     CORE::LINALG::Export(*solid_force, *global_temp);
 
@@ -587,7 +587,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penal
  */
 Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::GetGlobalLambda() const
 {
-  CheckSetup();
+  check_setup();
   CheckGlobalMaps();
 
   // Get the inverted kappa matrix.
@@ -618,7 +618,7 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::GetGlobal
 /**
  *
  */
-double BEAMINTERACTION::BeamToSolidMortarManager::GetEnergy() const
+double BEAMINTERACTION::BeamToSolidMortarManager::get_energy() const
 {
   // Since this value is also computed for the reference configuration, where the global mortar
   // matrices are not build yet we return 0 in this case.

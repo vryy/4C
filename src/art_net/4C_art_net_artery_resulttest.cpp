@@ -39,7 +39,7 @@ ART::ArteryResultTest::ArteryResultTest(ArtNetImplStationary& art_net)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ART::ArteryResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void ART::ArteryResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;

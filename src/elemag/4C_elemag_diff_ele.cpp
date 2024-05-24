@@ -435,7 +435,7 @@ void DRT::ELEMENTS::ElemagDiffIntFace::PatchLocationVector(
   // *this ElemagDiffIntFace element only once (no duplicates)
 
   //-----------------------------------------------------------------------
-  const int m_numnode = ParentMasterElement()->NumNode();
+  const int m_numnode = ParentMasterElement()->num_node();
   DRT::Node** m_nodes = ParentMasterElement()->Nodes();
 
   if (m_numnode != static_cast<int>(nds_master.size()))
@@ -444,7 +444,7 @@ void DRT::ELEMENTS::ElemagDiffIntFace::PatchLocationVector(
   }
 
   //-----------------------------------------------------------------------
-  const int s_numnode = ParentSlaveElement()->NumNode();
+  const int s_numnode = ParentSlaveElement()->num_node();
   DRT::Node** s_nodes = ParentSlaveElement()->Nodes();
 
   if (s_numnode != static_cast<int>(nds_slave.size()))
@@ -453,7 +453,7 @@ void DRT::ELEMENTS::ElemagDiffIntFace::PatchLocationVector(
   }
 
   //-----------------------------------------------------------------------
-  const int f_numnode = NumNode();
+  const int f_numnode = num_node();
   DRT::Node** f_nodes = Nodes();
 
   //-----------------------------------------------------------------------

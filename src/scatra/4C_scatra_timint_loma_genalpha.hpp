@@ -56,7 +56,8 @@ namespace SCATRA
     void UpdateThermPressure() override;
 
     /// read restart data
-    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
+    void read_restart(
+        const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
     /// routine to return thermo. press. at time step n+alpha_F for low-Mach-number flow
     double ThermPressAf() override { return thermpressaf_; }

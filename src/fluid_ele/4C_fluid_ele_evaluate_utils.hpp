@@ -3186,7 +3186,7 @@ namespace FLD
         DRT::ELEMENTS::DisTypeToOptGaussRule<DISTYPE>::rule);
 
     // gaussian points
-    // const GaussRule3D          gaussrule = getOptimalGaussrule(distype);
+    // const GaussRule3D          gaussrule = get_optimal_gaussrule(distype);
     // const IntegrationPoints3D  intpoints(gaussrule);
 
     for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)

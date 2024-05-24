@@ -17,7 +17,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-bool CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::EvaluateForceStiff(
+bool CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::evaluate_force_stiff(
     Teuchos::RCP<CORE::LINALG::SparseMatrix> me_stiff_ptr, Teuchos::RCP<Epetra_Vector> me_force_ptr)
 {
   if (me_stiff_ptr == Teuchos::null && me_force_ptr == Teuchos::null)
@@ -67,10 +67,10 @@ void CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::evaluate_coupling_terms(
   // set Q_dd to zero as default
   Q_dd_->Zero();
   // Evaluate the Constraint Pairs / equations objects
-  Teuchos::RCP<const Epetra_Vector> DisNp = gstate.GetDisNp();
+  Teuchos::RCP<const Epetra_Vector> dis_np = gstate.GetDisNp();
   for (const auto& obj : listMPCs_)
   {
-    obj->EvaluateEquation(*Q_dd_, *Q_dL_, *Q_Ld_, *constraint_vector_, *DisNp);
+    obj->EvaluateEquation(*Q_dd_, *Q_dL_, *Q_Ld_, *constraint_vector_, *dis_np);
   }
   IO::cout(IO::verbose) << "Evaluated all constraint objects" << IO::endl;
 

@@ -199,8 +199,8 @@ namespace XFEM
       return contact_ele_rowmap_fluidownerbased_;
     }
 
-    /// PrepareTimeStep
-    void PrepareTimeStep();
+    /// prepare_time_step
+    void prepare_time_step();
 
     /// prepare_iteration_step
     void prepare_iteration_step();
@@ -242,7 +242,7 @@ namespace XFEM
     );
 
     /// Get the fluid states at specific selexi
-    void Get_States(const int fluidele_id, const std::vector<int>& fluid_nds,
+    void get_states(const int fluidele_id, const std::vector<int>& fluid_nds,
         const DRT::ELEMENTS::StructuralSurface* sele, const CORE::LINALG::Matrix<2, 1>& selexsi,
         const CORE::LINALG::Matrix<3, 1>& x, DRT::Element*& fluidele,
         CORE::LINALG::SerialDenseMatrix& ele_xyze, std::vector<double>& velpres,
@@ -251,21 +251,21 @@ namespace XFEM
         CORE::LINALG::Matrix<3, 3>& vderxy_m, CORE::LINALG::Matrix<3, 1>& velpf_s);
 
     /// Get the Nitsche penalty parameter
-    void Get_Penalty_Param(DRT::Element* fluidele, CORE::GEO::CUT::VolumeCell* volumecell,
+    void get_penalty_param(DRT::Element* fluidele, CORE::GEO::CUT::VolumeCell* volumecell,
         CORE::LINALG::SerialDenseMatrix& ele_xyze, const CORE::LINALG::Matrix<3, 1>& elenormal,
         double& penalty_fac, const CORE::LINALG::Matrix<3, 1>& vel_m);
 
     /// Get the Nitsche penalty parameter
-    void Get_Penalty_Param(DRT::ELEMENTS::StructuralSurface* sele, double& penalty_fac);
+    void get_penalty_param(DRT::ELEMENTS::StructuralSurface* sele, double& penalty_fac);
 
     /// Get the volumecell for local coord xsi on sele
-    bool GetVolumecell(DRT::ELEMENTS::StructuralSurface*& sele, CORE::LINALG::Matrix<2, 1>& xsi,
+    bool get_volumecell(DRT::ELEMENTS::StructuralSurface*& sele, CORE::LINALG::Matrix<2, 1>& xsi,
         CORE::GEO::CUT::SideHandle*& sidehandle, std::vector<int>& nds, int& eleid,
         CORE::GEO::CUT::VolumeCell*& volumecell, CORE::LINALG::Matrix<3, 1>& elenormal,
         CORE::LINALG::Matrix<3, 1>& x, bool& FSI_integrated, double& distance);
 
     /// Evaluate the distance of x the boundary of a side
-    double DistancetoSide(CORE::LINALG::Matrix<3, 1>& x, CORE::GEO::CUT::Side* side,
+    double distanceto_side(CORE::LINALG::Matrix<3, 1>& x, CORE::GEO::CUT::Side* side,
         CORE::LINALG::Matrix<3, 1>& closest_x);
 
     /// Find the next physical interface side to x
@@ -283,11 +283,11 @@ namespace XFEM
         CORE::GEO::CUT::Side* side, std::set<CORE::GEO::CUT::Side*>& performed_sides);
 
     /// Get next element
-    CORE::GEO::CUT::Element* GetNextElement(CORE::GEO::CUT::Element* ele,
+    CORE::GEO::CUT::Element* get_next_element(CORE::GEO::CUT::Element* ele,
         std::set<CORE::GEO::CUT::Element*>& performed_elements, int& lastid);
 
     /// access to contact/meshtying bridge
-    CONTACT::NitscheStrategy& GetContactStrategy() { return contact_strategy_; }
+    CONTACT::NitscheStrategy& get_contact_strategy() { return contact_strategy_; }
 
     /// fluid state members initialized
     bool fluid_init_;

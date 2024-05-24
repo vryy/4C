@@ -63,26 +63,26 @@ THR::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::ParameterList& iopara
 
   // create state vectors
   // mid-temperatures
-  tempt_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+  tempt_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
 
   // create force vectors
   // internal force vector F_{int;n} at last time
-  fint_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fint_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
   // internal force vector F_{int;n+1} at new time
-  fintn_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fintn_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
   // stored force vector F_{transient;n} at last time
-  fcap_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fcap_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
   // stored force vector F_{transient;n+1} at new time
-  fcapn_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fcapn_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
   // set initial internal force vector
   apply_force_tang_internal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_, fcap_, fint_, tang_);
 
   // external force vector F_ext at last times
-  fext_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fext_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
   // external force vector F_{n+1} at new time
-  fextn_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fextn_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
   // set initial external force vector
-  ApplyForceExternal((*time_)[0], (*temp_)(0), fext_);
+  apply_force_external((*time_)[0], (*temp_)(0), fext_);
   // set initial external force vector of convective heat transfer boundary
   // conditions
   apply_force_external_conv((*time_)[0], (*temp_)(0), (*temp_)(0), fext_, tang_);
@@ -142,7 +142,7 @@ void THR::TimIntOneStepTheta::evaluate_rhs_tang_residual()
   // --> use (*temp_)(0)
   apply_force_external_conv(timen_, (*temp_)(0), tempn_, fextn_, tang_);
 
-  ApplyForceExternal(timen_, (*temp_)(0), fextn_);
+  apply_force_external(timen_, (*temp_)(0), fextn_);
 
   // interface forces to external forces
   fextn_->Update(1.0, *fifc_, 1.0);
@@ -206,7 +206,7 @@ double THR::TimIntOneStepTheta::calc_ref_norm_temperature()
   // points within the timestep (end point, generalized midpoint).
 
   double charnormtemp = 0.0;
-  charnormtemp = THR::AUX::CalculateVectorNorm(iternorm_, (*temp_)(0));
+  charnormtemp = THR::AUX::calculate_vector_norm(iternorm_, (*temp_)(0));
 
   // rise your hat
   return charnormtemp;
@@ -228,19 +228,19 @@ double THR::TimIntOneStepTheta::CalcRefNormForce()
 
   // norm of the internal forces
   double fintnorm = 0.0;
-  fintnorm = THR::AUX::CalculateVectorNorm(iternorm_, fintn_);
+  fintnorm = THR::AUX::calculate_vector_norm(iternorm_, fintn_);
 
   // norm of the external forces
   double fextnorm = 0.0;
-  fextnorm = THR::AUX::CalculateVectorNorm(iternorm_, fextn_);
+  fextnorm = THR::AUX::calculate_vector_norm(iternorm_, fextn_);
 
   // norm of reaction forces
   double freactnorm = 0.0;
-  freactnorm = THR::AUX::CalculateVectorNorm(iternorm_, freact_);
+  freactnorm = THR::AUX::calculate_vector_norm(iternorm_, freact_);
 
   // norm of stored forces
   double fcapnorm = 0.0;
-  fcapnorm = THR::AUX::CalculateVectorNorm(iternorm_, fcap_);
+  fcapnorm = THR::AUX::calculate_vector_norm(iternorm_, fcap_);
 
   // return char norm
   return std::max(fcapnorm, std::max(fintnorm, std::max(fextnorm, freactnorm)));
@@ -258,7 +258,7 @@ void THR::TimIntOneStepTheta::update_iter_incrementally()
   // the Dirichlet DOFs as well. Thus we need to protect those
   // DOFs of overwriting; they already hold the
   // correctly 'predicted', final values.
-  Teuchos::RCP<Epetra_Vector> aux = CORE::LINALG::CreateVector(*discret_->DofRowMap(), false);
+  Teuchos::RCP<Epetra_Vector> aux = CORE::LINALG::CreateVector(*discret_->dof_row_map(), false);
 
   // new end-point temperatures
   // T_{n+1}^{i+1} := T_{n+1}^{<k>} + IncT_{n+1}^{i}
@@ -342,7 +342,7 @@ void THR::TimIntOneStepTheta::UpdateStepElement()
   // action for elements
   p.set<int>("action", THR::calc_thermo_update_istep);
   // go to elements
-  discret_->SetState(0, "temperature", tempn_);
+  discret_->set_state(0, "temperature", tempn_);
   discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
 }  // UpdateStepElement()
@@ -406,11 +406,11 @@ void THR::TimIntOneStepTheta::apply_force_tang_internal(const double time,  //!<
 /*----------------------------------------------------------------------*
  | evaluate the internal force                               dano 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntOneStepTheta::ApplyForceInternal(const double time,  //!< evaluation time
-    const double dt,                                                 //!< step size
-    const Teuchos::RCP<Epetra_Vector> temp,                          //!< temperature state
-    const Teuchos::RCP<Epetra_Vector> tempi,                         //!< incremental temperatures
-    Teuchos::RCP<Epetra_Vector> fint                                 //!< internal force
+void THR::TimIntOneStepTheta::apply_force_internal(const double time,  //!< evaluation time
+    const double dt,                                                   //!< step size
+    const Teuchos::RCP<Epetra_Vector> temp,                            //!< temperature state
+    const Teuchos::RCP<Epetra_Vector> tempi,                           //!< incremental temperatures
+    Teuchos::RCP<Epetra_Vector> fint                                   //!< internal force
 )
 {
   // create the parameters for the discretization
@@ -418,7 +418,7 @@ void THR::TimIntOneStepTheta::ApplyForceInternal(const double time,  //!< evalua
   // set parameters
   p.set("theta", theta_);
   // call the base function
-  TimInt::ApplyForceInternal(p, time, dt, temp, tempi, fint);
+  TimInt::apply_force_internal(p, time, dt, temp, tempi, fint);
   // finish
   return;
 

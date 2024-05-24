@@ -46,8 +46,8 @@ void elch_dyn(int restart)
 
   // ensure that all dofs are assigned in the right order; this creates dof numbers with
   //       fluid dof < scatra/elch dof
-  fluiddis->FillComplete();
-  scatradis->FillComplete();
+  fluiddis->fill_complete();
+  scatradis->fill_complete();
 
   // access the problem-specific parameter list
   const auto& elchcontrol = problem->ELCHControlParams();
@@ -92,7 +92,7 @@ void elch_dyn(int restart)
 
       // now me may redistribute or ghost the scatra discretization
       // finalize discretization
-      scatradis->FillComplete(true, true, true);
+      scatradis->fill_complete(true, true, true);
 
       // now we can call Init() on the base algorithm
       // scatra time integrator is constructed and initialized inside
@@ -100,7 +100,7 @@ void elch_dyn(int restart)
 
       // now me may redistribute or ghost the scatra discretization
       // finalize discretization
-      scatradis->FillComplete(true, true, true);
+      scatradis->fill_complete(true, true, true);
 
       // only now we must call Setup() on the base algorithm.
       // all objects relying on the parallel distribution are
@@ -109,12 +109,12 @@ void elch_dyn(int restart)
       scatraonly->Setup();
 
       // read the restart information, set vectors and variables
-      if (restart) scatraonly->ScaTraField()->ReadRestart(restart);
+      if (restart) scatraonly->ScaTraField()->read_restart(restart);
 
       // set velocity field
-      // note: The order ReadRestart() before SetVelocityField() is important here!!
+      // note: The order read_restart() before SetVelocityField() is important here!!
       // for time-dependent velocity fields, SetVelocityField() is additionally called in each
-      // PrepareTimeStep()-call
+      // prepare_time_step()-call
       scatraonly->ScaTraField()->SetVelocityField();
 
       // enter time loop to solve problem with given convective velocity
@@ -135,7 +135,7 @@ void elch_dyn(int restart)
       {
         // fill scatra discretization by cloning fluid discretization
         DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis, scatradis);
-        scatradis->FillComplete();
+        scatradis->fill_complete();
         // determine implementation type of cloned scatra elements
         INPAR::SCATRA::ImplType impltype = INPAR::SCATRA::impltype_undefined;
         if (CORE::UTILS::IntegralValue<int>(elchcontrol, "DIFFCOND_FORMULATION"))
@@ -161,7 +161,7 @@ void elch_dyn(int restart)
       const auto& fdyn = (problem->FluidDynamicParams());
 
       Teuchos::RCP<DRT::Discretization> aledis = problem->GetDis("ale");
-      if (!aledis->Filled()) aledis->FillComplete(false, false, false);
+      if (!aledis->Filled()) aledis->fill_complete(false, false, false);
       // is ALE needed or not?
       const auto withale = CORE::UTILS::IntegralValue<INPAR::ELCH::ElchMovingBoundary>(
           elchcontrol, "MOVINGBOUNDARY");
@@ -174,7 +174,7 @@ void elch_dyn(int restart)
           // clone ALE discretization from fluid discretization
           DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis, aledis);
 
-          aledis->FillComplete(true, true, false);
+          aledis->fill_complete(true, true, false);
           // setup material in every ALE element
           Teuchos::ParameterList params;
           params.set<std::string>("action", "setup_material");
@@ -212,15 +212,15 @@ void elch_dyn(int restart)
 
         // NOTE : At this point we may redistribute and/or
         //        ghost our discretizations at will.
-        scatradis->FillComplete();
-        fluiddis->FillComplete();
-        aledis->FillComplete();
+        scatradis->fill_complete();
+        fluiddis->fill_complete();
+        aledis->fill_complete();
 
         // now we can call Setup() on the scatra time integrator
         elch->Setup();
 
         // read the restart information, set vectors and variables
-        if (restart) elch->ReadRestart(restart);
+        if (restart) elch->read_restart(restart);
 
         // solve the whole electrochemistry problem
         elch->TimeLoop();
@@ -257,15 +257,15 @@ void elch_dyn(int restart)
 
         // NOTE : At this point we may redistribute and/or
         //        ghost our discretizations at will.
-        scatradis->FillComplete();
-        fluiddis->FillComplete();
-        aledis->FillComplete();
+        scatradis->fill_complete();
+        fluiddis->fill_complete();
+        aledis->fill_complete();
 
         // discretizations are done, now we can call Setup() on the algorithm
         elch->Setup();
 
         // read the restart information, set vectors and variables
-        if (restart) elch->ReadRestart(restart);
+        if (restart) elch->read_restart(restart);
 
         // solve the whole electrochemistry problem
         elch->TimeLoop();

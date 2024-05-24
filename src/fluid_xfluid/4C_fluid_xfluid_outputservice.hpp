@@ -74,7 +74,7 @@ namespace FLD
     virtual ~XFluidOutputService() = default;
 
     /// prepare standard output
-    void PrepareOutput();
+    void prepare_output();
 
     /// standard output routine
     void Output(int step, double time, bool write_restart_data,
@@ -228,12 +228,12 @@ namespace FLD
 
    private:
     /// Gmsh output function for elements without an CORE::GEO::CUT::ElementHandle
-    void GmshOutputElement(DRT::Discretization& discret,  ///< background fluid discretization
-        std::ofstream& vel_f,                             ///< output file stream for velocity
-        std::ofstream& press_f,                           ///< output file stream for pressure
-        std::ofstream& acc_f,                             ///< output file stream for acceleration
-        DRT::Element* actele,                             ///< element
-        std::vector<int>& nds,                            ///< vector holding the nodal dofsets
+    void gmsh_output_element(DRT::Discretization& discret,  ///< background fluid discretization
+        std::ofstream& vel_f,                               ///< output file stream for velocity
+        std::ofstream& press_f,                             ///< output file stream for pressure
+        std::ofstream& acc_f,                               ///< output file stream for acceleration
+        DRT::Element* actele,                               ///< element
+        std::vector<int>& nds,                              ///< vector holding the nodal dofsets
         Teuchos::RCP<const Epetra_Vector> vel,  ///< vector holding velocity and pressure dofs
         Teuchos::RCP<const Epetra_Vector> acc = Teuchos::null,  ///< vector holding acceleration
         Teuchos::RCP<const Epetra_Vector> dispnp =

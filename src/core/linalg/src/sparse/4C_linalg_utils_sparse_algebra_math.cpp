@@ -29,7 +29,7 @@ namespace CORE::LINALG
     int DoAdd(const Epetra_CrsMatrix& A, const double scalarA, Epetra_CrsMatrix& B,
         const double scalarB, const int startRow = 0)
     {
-      if (!A.Filled()) FOUR_C_THROW("Internal error, matrix A must have called FillComplete()");
+      if (!A.Filled()) FOUR_C_THROW("Internal error, matrix A must have called fill_complete()");
 
       const int NumMyRows = A.NumMyRows();
 
@@ -142,7 +142,7 @@ namespace CORE::LINALG
 void CORE::LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
     CORE::LINALG::SparseMatrixBase& B, const double scalarB)
 {
-  if (!A.Filled()) FOUR_C_THROW("FillComplete was not called on A");
+  if (!A.Filled()) FOUR_C_THROW("fill_complete was not called on A");
 
   Epetra_CrsMatrix* Aprime = nullptr;
   Teuchos::RCP<EpetraExt::RowMatrix_Transpose> Atrans = Teuchos::null;
@@ -187,7 +187,7 @@ void CORE::LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA, const d
 void CORE::LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
     Epetra_CrsMatrix& B, const double scalarB)
 {
-  if (!A.Filled()) FOUR_C_THROW("FillComplete was not called on A");
+  if (!A.Filled()) FOUR_C_THROW("fill_complete was not called on A");
 
   Epetra_CrsMatrix* Aprime = nullptr;
   Teuchos::RCP<EpetraExt::RowMatrix_Transpose> Atrans = Teuchos::null;
@@ -218,7 +218,7 @@ void CORE::LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA, const d
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_CrsMatrix> CORE::LINALG::Transpose(const Epetra_CrsMatrix& A)
 {
-  if (!A.Filled()) FOUR_C_THROW("FillComplete was not called on A");
+  if (!A.Filled()) FOUR_C_THROW("fill_complete was not called on A");
 
   Teuchos::RCP<EpetraExt::RowMatrix_Transpose> Atrans =
       Teuchos::rcp(new EpetraExt::RowMatrix_Transpose(/*false,nullptr,false*/));
@@ -249,7 +249,7 @@ Teuchos::RCP<Epetra_CrsMatrix> CORE::LINALG::Multiply(
    * "There are basically 3 different matrix-matrix-multiplies in the new EpetraExt MMM:
    *
    * 1) Re-use existing C.  I think this works, but it isn't well tested.
-   * 2) Start with a clean C and FillComplete.  This is the one we're using in MueLu that works
+   * 2) Start with a clean C and fill_complete.  This is the one we're using in MueLu that works
    * fine. 3) Any other case.  This is the one you found a bug in.
    *
    * I'll try to track the bug in #3 down, but you really should be calling #2 (or #1) if at all
@@ -259,9 +259,9 @@ Teuchos::RCP<Epetra_CrsMatrix> CORE::LINALG::Multiply(
    *
    */
 
-  // make sure FillComplete was called on the matrices
-  if (!A.Filled()) FOUR_C_THROW("A has to be FillComplete");
-  if (!B.Filled()) FOUR_C_THROW("B has to be FillComplete");
+  // make sure fill_complete was called on the matrices
+  if (!A.Filled()) FOUR_C_THROW("A has to be fill_complete");
+  if (!B.Filled()) FOUR_C_THROW("B has to be fill_complete");
 
   // do a very coarse guess of nonzeros per row (horrible memory consumption!)
   // int guessnpr = A.MaxNumEntries()*B.MaxNumEntries();

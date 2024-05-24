@@ -90,7 +90,7 @@ namespace PASI
      *
      * \param[in] restartstep restart step
      */
-    void ReadRestart(int restartstep) override;
+    void read_restart(int restartstep) override;
 
     /*!
      * \brief timeloop of coupled problem
@@ -109,10 +109,10 @@ namespace PASI
     void TestResults(const Epetra_Comm& comm);
 
     //! get initialization status
-    bool IsInit() { return isinit_; };
+    bool is_init() { return isinit_; };
 
     //! get setup status
-    bool IsSetup() { return issetup_; };
+    bool is_setup() { return issetup_; };
 
    protected:
     /*!
@@ -122,7 +122,7 @@ namespace PASI
      *
      * \param[in] printheader flag to control output of time step header
      */
-    void PrepareTimeStep(bool printheader = true);
+    void prepare_time_step(bool printheader = true);
 
     /*!
      * \brief pre evaluate time step
@@ -196,13 +196,13 @@ namespace PASI
     //! check correct setup
     void CheckIsSetup()
     {
-      if (not IsSetup()) FOUR_C_THROW("pasi algorithm not setup correctly!");
+      if (not is_setup()) FOUR_C_THROW("pasi algorithm not setup correctly!");
     };
 
     //! check correct initialization
-    void CheckIsInit()
+    void check_is_init()
     {
-      if (not IsInit()) FOUR_C_THROW("pasi algorithm not initialized correctly!");
+      if (not is_init()) FOUR_C_THROW("pasi algorithm not initialized correctly!");
     };
 
     //! structural field
@@ -229,7 +229,7 @@ namespace PASI
      *
      * \author Sebastian Fuchs \date 05/2019
      */
-    void InitStructureField();
+    void init_structure_field();
 
     /*!
      * \brief init particle algorithm
@@ -255,10 +255,10 @@ namespace PASI
     bool issetup_;
 
     //! set flag indicating correct initialization
-    void SetIsInit(bool isinit) { isinit_ = isinit; };
+    void set_is_init(bool isinit) { isinit_ = isinit; };
 
     //! set flag indicating correct setup
-    void SetIsSetup(bool issetup) { issetup_ = issetup; };
+    void set_is_setup(bool issetup) { issetup_ = issetup; };
   };
 
 }  // namespace PASI

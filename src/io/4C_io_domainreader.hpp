@@ -88,7 +88,7 @@ namespace IO
      */
     IO::GRIDGENERATOR::RectangularCuboidInputs read_rectangular_cuboid_input_data() const;
 
-    /// finalize reading. FillComplete(false,false,false), that is, do not
+    /// finalize reading. fill_complete(false,false,false), that is, do not
     /// initialize elements. This is done later after reading boundary conditions.
     void Complete() const;
 

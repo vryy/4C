@@ -337,7 +337,7 @@ namespace WEAR
       if (Filled())
         return wdofmap_;
       else
-        FOUR_C_THROW("CONTACT::WearInterface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::WearInterface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -350,7 +350,7 @@ namespace WEAR
       if (Filled())
         return wmdofmap_;
       else
-        FOUR_C_THROW("CONTACT::WearInterface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::WearInterface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -363,7 +363,7 @@ namespace WEAR
       if (Filled())
         return sndofmap_;
       else
-        FOUR_C_THROW("CONTACT::WearInterface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::WearInterface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -376,7 +376,7 @@ namespace WEAR
       if (Filled())
         return mndofmap_;
       else
-        FOUR_C_THROW("CONTACT::WearInterface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::WearInterface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -389,7 +389,7 @@ namespace WEAR
       if (Filled())
         return activmasternodes_;
       else
-        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -402,7 +402,7 @@ namespace WEAR
       if (Filled())
         return slipmasternodes_;
       else
-        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -415,7 +415,7 @@ namespace WEAR
       if (Filled())
         return slipmn_;
       else
-        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 

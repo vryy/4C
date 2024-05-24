@@ -166,7 +166,7 @@ namespace DRT
     or adding/deleting boundary conditions, this method has to be called to (re)construct
     pointer topologies.<br>
     It builds in this order:<br>
-    Standard FillComplete of base class
+    Standard fill_complete of base class
     - row map of nodes
     - column map of nodes
     - row map of elements
@@ -216,7 +216,7 @@ namespace DRT
     This map includes all faces stored on this proc and also owned by this proc.
     This map is non-ambiguous, meaning that it is a non-overlapping map.
 
-    \return nullptr if Filled() is false. A call to FillComplete() is a prerequisite.
+    \return nullptr if Filled() is false. A call to fill_complete() is a prerequisite.
     */
     virtual const Epetra_Map* FaceRowMap() const;
 
@@ -227,7 +227,7 @@ namespace DRT
     This map includes all internal faces stored on this proc including any ghosted faces
     This map is ambiguous, meaning that it is an overlapping map
 
-    \return nullptr if Filled() is false. A call to FillComplete() is a prerequisite.
+    \return nullptr if Filled() is false. A call to fill_complete() is a prerequisite.
     */
     virtual const Epetra_Map* FaceColMap() const;
 

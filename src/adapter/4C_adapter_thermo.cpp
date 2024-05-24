@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 ADAPTER::ThermoBaseAlgorithm::ThermoBaseAlgorithm(
     const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis)
 {
-  SetupThermo(prbdyn, actdis);
+  setup_thermo(prbdyn, actdis);
 }
 
 
@@ -42,7 +42,7 @@ ADAPTER::ThermoBaseAlgorithm::ThermoBaseAlgorithm(
 /*----------------------------------------------------------------------*
  |                                                          bborn 08/09 |
  *----------------------------------------------------------------------*/
-void ADAPTER::ThermoBaseAlgorithm::SetupThermo(
+void ADAPTER::ThermoBaseAlgorithm::setup_thermo(
     const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis)
 {
   const Teuchos::ParameterList& tdyn = GLOBAL::Problem::Instance()->thermal_dynamic_params();
@@ -56,7 +56,7 @@ void ADAPTER::ThermoBaseAlgorithm::SetupThermo(
     case INPAR::THR::dyna_onesteptheta:
     case INPAR::THR::dyna_genalpha:
     case INPAR::THR::dyna_expleuler:
-      SetupTimInt(prbdyn, timinttype, actdis);  // <-- here is the show
+      setup_tim_int(prbdyn, timinttype, actdis);  // <-- here is the show
       break;
     default:
       FOUR_C_THROW(
@@ -64,22 +64,22 @@ void ADAPTER::ThermoBaseAlgorithm::SetupThermo(
       break;
   }
 
-}  // SetupThermo()
+}  // setup_thermo()
 
 
 /*----------------------------------------------------------------------*
  | setup of thermal time integration                        bborn 08/09 |
  *----------------------------------------------------------------------*/
-void ADAPTER::ThermoBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& prbdyn,
+void ADAPTER::ThermoBaseAlgorithm::setup_tim_int(const Teuchos::ParameterList& prbdyn,
     INPAR::THR::DynamicType timinttype, Teuchos::RCP<DRT::Discretization> actdis)
 {
   // this is not exactly a one hundred meter race, but we need timing
   Teuchos::RCP<Teuchos::Time> t =
-      Teuchos::TimeMonitor::getNewTimer("ADAPTER::ThermoBaseAlgorithm::SetupThermo");
+      Teuchos::TimeMonitor::getNewTimer("ADAPTER::ThermoBaseAlgorithm::setup_thermo");
   Teuchos::TimeMonitor monitor(*t);
 
   // set degrees of freedom in the discretization
-  if (not actdis->Filled()) actdis->FillComplete();
+  if (not actdis->Filled()) actdis->fill_complete();
 
   // -------------------------------------------------------------------
   // context for output and restart
@@ -168,7 +168,7 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& prb
 
   // see you
   return;
-}  // SetupTimInt()
+}  // setup_tim_int()
 
 
 /*----------------------------------------------------------------------*
@@ -179,7 +179,7 @@ void ADAPTER::Thermo::Integrate()
   while (NotFinished())
   {
     // call the predictor
-    PrepareTimeStep();
+    prepare_time_step();
 
     // integrate time step
     INPAR::THR::ConvergenceStatus convStatus = Solve();

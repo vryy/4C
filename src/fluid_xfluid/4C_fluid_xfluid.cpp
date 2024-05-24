@@ -121,7 +121,7 @@ void FLD::XFluid::add_additional_scalar_dofset_and_coupling()
         "!= 1?");
 
   // assign degrees of freedom (as a new dofset has been added!)
-  xdiscret_->FillComplete(true, false, false);
+  xdiscret_->fill_complete(true, false, false);
 
   xdiscret_->GetDofSetProxy()->PrintAllDofsets(xdiscret_->Comm());
 
@@ -209,14 +209,14 @@ void FLD::XFluid::Init(bool createinitialstate)
   // -------------------------------------------------------------------
 
   // read the interface displacement and interface velocity for the old timestep which was written
-  // in Output we have to do this before ReadRestart() is called to get the right initial CUT
+  // in Output we have to do this before read_restart() is called to get the right initial CUT
   // corresponding to time t^n at which the last solution was written
   //
   // REMARK: ivelnp_ and idispnp_ will be set again for the new time step in PrepareXFEMSolve()
 
   const int restart = GLOBAL::Problem::Instance()->Restart();
 
-  if (restart) condition_manager_->ReadRestart(restart);
+  if (restart) condition_manager_->read_restart(restart);
 
 
   // TODO: this has to be removed when different includeinner flags for level-set and mesh cuts can
@@ -453,7 +453,7 @@ void FLD::XFluid::set_element_general_fluid_xfem_parameter()
 
   //------------------------------------------------------------------------------------------------------
   // set the params in the XFEM-parameter-list class
-  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*discret_, eleparams, Teuchos::null,
+  DRT::ELEMENTS::FluidType::Instance().pre_evaluate(*discret_, eleparams, Teuchos::null,
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   return;
@@ -483,7 +483,7 @@ void FLD::XFluid::set_face_general_fluid_xfem_parameter()
     if (physicaltype_ == INPAR::FLUID::oseen)
       faceparams.set<int>("OSEENFIELDFUNCNO", params_->get<int>("OSEENFIELDFUNCNO"));
 
-    DRT::ELEMENTS::FluidIntFaceType::Instance().PreEvaluate(*discret_, faceparams, Teuchos::null,
+    DRT::ELEMENTS::FluidIntFaceType::Instance().pre_evaluate(*discret_, faceparams, Teuchos::null,
         Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
 
@@ -498,7 +498,7 @@ void FLD::XFluid::set_face_general_fluid_xfem_parameter()
     faceparams.sublist("XFLUID DYNAMIC/STABILIZATION") =
         params_->sublist("XFLUID DYNAMIC/STABILIZATION");
 
-    DRT::ELEMENTS::FluidIntFaceType::Instance().PreEvaluate(*discret_, faceparams, Teuchos::null,
+    DRT::ELEMENTS::FluidIntFaceType::Instance().pre_evaluate(*discret_, faceparams, Teuchos::null,
         Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
 
@@ -544,7 +544,7 @@ void FLD::XFluid::set_element_time_parameter()
   // call standard loop over elements
   // discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
-  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*discret_, eleparams, Teuchos::null,
+  DRT::ELEMENTS::FluidType::Instance().pre_evaluate(*discret_, eleparams, Teuchos::null,
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
@@ -564,7 +564,7 @@ void FLD::XFluid::CreateInitialState()
   // initialize the state class iterator with -1
   // the XFluidState class called from the constructor is then indexed with 0
   // all further first cuts of a new time-step have then index 1 and have to be reset to 0 in
-  // PrepareTimeStep()
+  // prepare_time_step()
   state_it_ = -1;
 
   // ---------------------------------------------------------------------
@@ -723,7 +723,7 @@ void FLD::XFluid::ExtractNodeVectors(Teuchos::RCP<DRT::DiscretizationXFEM> dis,
 /*----------------------------------------------------------------------*
  |  evaluate elements, volumecells and boundary cells      schott 03/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::AssembleMatAndRHS(int itnum)
+void FLD::XFluid::assemble_mat_and_rhs(int itnum)
 {
   discret_->Comm().Barrier();
 
@@ -731,7 +731,7 @@ void FLD::XFluid::AssembleMatAndRHS(int itnum)
 
   //----------------------------------------------------------------------
   // set state vectors for cutter discretization
-  condition_manager_->SetState();
+  condition_manager_->set_state();
 
   //----------------------------------------------------------------------
   // zero state vectors for interface forces based on cutter discretization
@@ -748,16 +748,16 @@ void FLD::XFluid::AssembleMatAndRHS(int itnum)
   // set general vector values needed by elements
   discret_->ClearState();
 
-  discret_->SetState("hist", state_->hist_);
-  discret_->SetState("veln", state_->veln_);
-  discret_->SetState("accam", state_->accam_);
-  discret_->SetState("scaaf", state_->scaaf_);
-  discret_->SetState("scaam", state_->scaam_);
+  discret_->set_state("hist", state_->hist_);
+  discret_->set_state("veln", state_->veln_);
+  discret_->set_state("accam", state_->accam_);
+  discret_->set_state("scaaf", state_->scaaf_);
+  discret_->set_state("scaam", state_->scaam_);
 
   if (alefluid_)
   {
-    discret_->SetState("dispnp", state_->dispnp_);
-    discret_->SetState("gridv", state_->gridvnp_);
+    discret_->set_state("dispnp", state_->dispnp_);
+    discret_->set_state("gridv", state_->gridvnp_);
   }
 
   SetStateTimInt();
@@ -789,7 +789,7 @@ void FLD::XFluid::AssembleMatAndRHS(int itnum)
     //-------------------------------------------------------------------------------
     // finalize the complete matrix
     // REMARK: for EpetraFECrs matrices Complete() calls the GlobalAssemble() routine to gather
-    // entries from all processors and calls a FillComplete for the first run. For further
+    // entries from all processors and calls a fill_complete for the first run. For further
     // Newton-steps then the optimized FEAssemble routine is used for speedup.
     state_->sysmat_->Complete();
 
@@ -1561,12 +1561,12 @@ void FLD::XFluid::assemble_mat_and_rhs_gradient_penalty(
     // FOUR_C_THROW("which vectors have to be set for gradient penalty for timeintegration in
     // alefluid?!"); In principle we would not need gridv, as tau is anyway set to 1.0 at the end
     // ...
-    discret_->SetState("dispnp", state_->dispnp_);
-    discret_->SetState("gridv", state_->gridvnp_);
+    discret_->set_state("dispnp", state_->dispnp_);
+    discret_->set_state("gridv", state_->gridvnp_);
   }
 
   // set scheme-specific element parameters and vector values
-  discret_->SetState("velaf", vec);
+  discret_->set_state("velaf", vec);
 
 
 
@@ -1940,9 +1940,9 @@ void FLD::XFluid::ComputeErrorNorms(Teuchos::RCP<CORE::LINALG::SerialDenseVector
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("u and p at time n+1 (converged)", state_->velnp_);
+  discret_->set_state("u and p at time n+1 (converged)", state_->velnp_);
 
-  condition_manager_->SetState();
+  condition_manager_->set_state();
 
   // evaluate domain error norms and interface/boundary error norms at XFEM-interface
   // loop row elements
@@ -2032,7 +2032,7 @@ void FLD::XFluid::ComputeErrorNorms(Teuchos::RCP<CORE::LINALG::SerialDenseVector
 
             //------------------------------------------------------------
             // Evaluate domain integral errors
-            impl->ComputeError(ele, *params_, mat, *discret_, la[0].lm_, ele_dom_norms,
+            impl->compute_error(ele, *params_, mat, *discret_, la[0].lm_, ele_dom_norms,
                 intpoints_sets[set_counter][cellcount]);
           }
         }
@@ -2185,7 +2185,7 @@ void FLD::XFluid::print_stabilization_details() const
 /*----------------------------------------------------------------------*
  |  Print information about current time step to screen    schott 02/15 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::PrintTimeStepInfo()
+void FLD::XFluid::print_time_step_info()
 {
   // -------------------------------------------------------------------
   //                       output to screen
@@ -2257,9 +2257,9 @@ void FLD::XFluid::TimeLoop()
 /*------------------------------------------------------------------------------------------------*
  | prepare a fluid time step                                                         schott 07/11 |
  *------------------------------------------------------------------------------------------------*/
-void FLD::XFluid::PrepareTimeStep()
+void FLD::XFluid::prepare_time_step()
 {
-  if (myrank_ == 0) IO::cout << "PrepareTimeStep (FLD::XFluid::PrepareTimeStep) " << IO::endl;
+  if (myrank_ == 0) IO::cout << "prepare_time_step (FLD::XFluid::prepare_time_step) " << IO::endl;
 
   // -------------------------------------------------------------------
   //              reset counters used within timestep
@@ -2368,7 +2368,7 @@ void FLD::XFluid::DoPredictor()
 void FLD::XFluid::PrepareXFEMSolve()
 {
   // TODO: do we need to call PrepareXFEMSolve for each Newton increment when solving a monolithic
-  // system can we shift this to PrepareTimeStep()?
+  // system can we shift this to prepare_time_step()?
   // -------------------------------------------------------------------
   // set new interface positions and possible values for XFEM Weak Dirichlet and Neumann BCs
   // -------------------------------------------------------------------
@@ -2452,7 +2452,7 @@ void FLD::XFluid::Solve()
       // get cpu time
       const double tcpu = Teuchos::Time::wallTime();
 
-      AssembleMatAndRHS(itnum);
+      assemble_mat_and_rhs(itnum);
 
       // end time measurement for element
       dtele_ = Teuchos::Time::wallTime() - tcpu;
@@ -2484,7 +2484,7 @@ void FLD::XFluid::Solve()
     // that would not vanish due to the projection
     if (projector_ != Teuchos::null) projector_->ApplyPT(*state_->Residual());
 
-    if (ConvergenceCheck(itnum, itemax_, velrestol, velinctol, presrestol, presinctol)) break;
+    if (convergence_check(itnum, itemax_, velrestol, velinctol, presrestol, presinctol)) break;
 
     //--------- Apply Dirichlet boundary conditions to system of equations
     //          residual displacements are supposed to be zero at
@@ -2514,7 +2514,7 @@ void FLD::XFluid::Solve()
 
       // scale system prior to solver call
       if (fluid_infnormscaling_ != Teuchos::null)
-        fluid_infnormscaling_->ScaleSystem(state_->SystemMatrix(), *(state_->Residual()));
+        fluid_infnormscaling_->scale_system(state_->SystemMatrix(), *(state_->Residual()));
 
       // if Krylov space projection is used, check whether constant pressure
       // is in nullspace of sysmat_
@@ -2533,7 +2533,7 @@ void FLD::XFluid::Solve()
 
       // unscale solution
       if (fluid_infnormscaling_ != Teuchos::null)
-        fluid_infnormscaling_->UnscaleSolution(
+        fluid_infnormscaling_->unscale_solution(
             state_->SystemMatrix(), *(state_->IncVel()), *(state_->Residual()));
 
       solver_->ResetTolerance();
@@ -2573,7 +2573,7 @@ void FLD::XFluid::Solve()
   solver_->Reset();
 }
 
-bool FLD::XFluid::ConvergenceCheck(int itnum, int itemax, const double velrestol,
+bool FLD::XFluid::convergence_check(int itnum, int itemax, const double velrestol,
     const double velinctol, const double presrestol, const double presinctol)
 {
   bool stopnonliniter = false;
@@ -2687,7 +2687,7 @@ bool FLD::XFluid::ConvergenceCheck(int itnum, int itemax, const double velrestol
   return stopnonliniter;
 }
 
-void FLD::XFluid::LinearSolve() { FOUR_C_THROW("LinearSolve not implemented for Xfluid"); }
+void FLD::XFluid::linear_solve() { FOUR_C_THROW("linear_solve not implemented for Xfluid"); }
 
 
 void FLD::XFluid::init_krylov_space_projection()
@@ -2786,7 +2786,7 @@ void FLD::XFluid::setup_krylov_space_projection(CORE::Conditions::Condition* ksp
   if (alefluid_ and (*weighttype == "integration")) updateprojection_ = true;
 
   projector_ = Teuchos::rcp(
-      new CORE::LINALG::KrylovProjector(activemodeids, weighttype, discret_->DofRowMap()));
+      new CORE::LINALG::KrylovProjector(activemodeids, weighttype, discret_->dof_row_map()));
 
   // update the projector
   update_krylov_space_projection();
@@ -2849,7 +2849,7 @@ void FLD::XFluid::update_krylov_space_projection()
 
     if (alefluid_)
     {
-      discret_->SetState("dispnp", state_->dispnp_);
+      discret_->set_state("dispnp", state_->dispnp_);
     }
 
     /*
@@ -2875,13 +2875,13 @@ void FLD::XFluid::update_krylov_space_projection()
 
   // construct c by setting all pressure values to 1.0 and export to c
   presmode->PutScalar(1.0);
-  Teuchos::RCP<Epetra_Vector> tmpc = CORE::LINALG::CreateVector(*(discret_->DofRowMap()), true);
+  Teuchos::RCP<Epetra_Vector> tmpc = CORE::LINALG::CreateVector(*(discret_->dof_row_map()), true);
   CORE::LINALG::Export(*presmode, *tmpc);
   Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_->ExtractKSPCondVector(*tmpc);
   CORE::LINALG::Export(*tmpkspc, *c0);
 
   // fillcomplete the projector to compute (w^T c)^(-1)
-  projector_->FillComplete();
+  projector_->fill_complete();
 
 }  // XFluid::update_krylov_space_projection
 
@@ -2894,7 +2894,7 @@ void FLD::XFluid::check_matrix_nullspace()
   if (projector_ != Teuchos::null)
   {
     Teuchos::RCP<Epetra_MultiVector> c = projector_->GetNonConstKernel();
-    projector_->FillComplete();
+    projector_->fill_complete();
     int nsdim = c->NumVectors();
     if (nsdim != 1) FOUR_C_THROW("Only one mode, namely the constant pressure mode, expected.");
 
@@ -2965,7 +2965,7 @@ void FLD::XFluid::UpdateByIncrements(
     //   the DBCs are set again in velnp
 
     Teuchos::RCP<Epetra_Vector> velnp_tmp =
-        CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+        CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
 
     state_->incvel_->Update(1.0, *stepinc, -1.0, *state_->velnp_, 0.0);
     state_->incvel_->Update(1.0, *state_->veln_, 1.0);
@@ -2983,7 +2983,7 @@ void FLD::XFluid::UpdateByIncrements(
   else  // the first call in a new time-step
   {
     // for the first call in a new time-step the initialization of velnp_ is not allowed as
-    // velnp_ includes a predicted solution (set in PrepareTimeStep).
+    // velnp_ includes a predicted solution (set in prepare_time_step).
     // This predicted solution does not include the DBCs yet, however, in the following
     // PrepareXFEMSolve()-call veln_ and the predicted solution velnp_ will be mapped to the new
     // interface position and afterwards DBCs will be set in velnp_.
@@ -3029,7 +3029,7 @@ void FLD::XFluid::Evaluate(
   //    //   the DBCs are set again in velnp
   //
   //    Teuchos::RCP<Epetra_Vector> velnp_tmp =
-  //    CORE::LINALG::CreateVector(*discret_->DofRowMap(),true);
+  //    CORE::LINALG::CreateVector(*discret_->dof_row_map(),true);
   //
   //    state_->incvel_->Update(1.0, *stepinc, -1.0, *state_->velnp_, 0.0);
   //    state_->incvel_->Update(1.0, *state_->veln_, 1.0);
@@ -3047,7 +3047,7 @@ void FLD::XFluid::Evaluate(
   //  else // the first call in a new time-step
   //  {
   //    // for the first call in a new time-step the initialization of velnp_ is not allowed as
-  //    // velnp_ includes a predicted solution (set in PrepareTimeStep).
+  //    // velnp_ includes a predicted solution (set in prepare_time_step).
   //    // This predicted solution does not include the DBCs yet, however, in the following
   //    PrepareXFEMSolve()-call
   //    // veln_ and the predicted solution velnp_ will be mapped to the new interface position and
@@ -3098,7 +3098,7 @@ void FLD::XFluid::Evaluate(
     // get cpu time
     const double tcpu = Teuchos::Time::wallTime();
 
-    AssembleMatAndRHS(itnum);
+    assemble_mat_and_rhs(itnum);
 
     // end time measurement for element
     dtele_ = Teuchos::Time::wallTime() - tcpu;
@@ -3142,7 +3142,7 @@ void FLD::XFluid::TimeUpdate()
     // this is required for the time update of the subgrid scales and
     // makes sure that the current subgrid scales correspond to the
     // current residual
-    AssembleMatAndRHS();
+    assemble_mat_and_rhs();
 
     // create the parameters for the discretization
     Teuchos::ParameterList eleparams;
@@ -3292,7 +3292,7 @@ void FLD::XFluid::cut_and_set_state_vectors()
   // iteration to vectors w.r.t current dofset and interface position
   //
   // NOTE:
-  // fluid predictor has been called in PrepareTimeStep, therefore veln_ != velnp_, so we have to
+  // fluid predictor has been called in prepare_time_step, therefore veln_ != velnp_, so we have to
   // map both vectors, also in the first call of a new time-step. When SL is necessary to map
   // velnp_, it might worsen the quality of the predicted solution:
   // * for partitioned FSI:
@@ -3354,13 +3354,13 @@ void FLD::XFluid::x_timint_store_old_state_data(const bool firstcall_in_timestep
   if (firstcall_in_timestep)
   {
     // store the solution of the old time step t^n w.r.t the old interface position
-    veln_Intn_ = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
+    veln_Intn_ = Teuchos::rcp(new Epetra_Vector(*discret_->dof_row_map()));
     *veln_Intn_ = *(state_->veln_);
-    accn_Intn_ = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
+    accn_Intn_ = Teuchos::rcp(new Epetra_Vector(*discret_->dof_row_map()));
     *accn_Intn_ = *(state_->accn_);
 
     // for BDF2
-    velnm_Intn_ = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
+    velnm_Intn_ = Teuchos::rcp(new Epetra_Vector(*discret_->dof_row_map()));
     *velnm_Intn_ = *(state_->velnm_);
 
     // safe the old wizard and dofset w.r.t the interface position of the last time-step
@@ -3374,7 +3374,7 @@ void FLD::XFluid::x_timint_store_old_state_data(const bool firstcall_in_timestep
   //------------------------------------------
   // store the last velocity solution w.r.t the last interface position (last XFSI iteration or last
   // time-step solution for first-call) to get mapped as fluid predictor for next XFSI iteration
-  velnp_Intnpi_ = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
+  velnp_Intnpi_ = Teuchos::rcp(new Epetra_Vector(*discret_->dof_row_map()));
   *velnp_Intnpi_ = *state_->velnp_;
 
   // get the wizard w.r.t the last interface position (last XFSI iteration)
@@ -3500,7 +3500,7 @@ void FLD::XFluid::x_timint_do_time_step_transfer(const bool screen_out)
     FOUR_C_THROW("check which vectors have to be reconstructed for non-OST scheme");
 
   //---------------------------------------------------------------
-  const Epetra_Map* newdofrowmap = discret_->DofRowMap();
+  const Epetra_Map* newdofrowmap = discret_->dof_row_map();
 
   // all vectors that have to be transferred from old dofset at t^n to new dofset at t^(n+1=
   std::vector<Teuchos::RCP<const Epetra_Vector>> oldRowStateVectors;
@@ -3714,7 +3714,7 @@ bool FLD::XFluid::x_timint_do_increment_step_transfer(
 
 
   //---------------------------------------------------------------
-  const Epetra_Map* newdofrowmap = discret_->DofRowMap();
+  const Epetra_Map* newdofrowmap = discret_->dof_row_map();
 
   // all vectors that have to be transferred from old dofset to new dofset
   // vec_n+1(Gamma_n+1,i) -> vec_n+1(Gamma_n+1,i+1)
@@ -4472,7 +4472,7 @@ void FLD::XFluid::SetInitialFlowField(
   // special initial function: Beltrami flow (3-D)
   else if (initfield == INPAR::FLUID::initfield_beltrami_flow)
   {
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
     int err = 0;
 
@@ -4570,7 +4570,7 @@ void FLD::XFluid::SetInitialFlowField(
 
     const Teuchos::RCP<CORE::GEO::CutWizard>& wizard = state_->Wizard();
     const Teuchos::RCP<XFEM::XFEMDofSet>& dofset = state_->DofSet();
-    const Epetra_Map* dofrowmap = dofset->DofRowMap();
+    const Epetra_Map* dofrowmap = dofset->dof_row_map();
 
     //------------------------
     // get material parameters
@@ -4760,7 +4760,7 @@ void FLD::XFluid::set_dirichlet_neumann_bc()
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("velaf", state_->velnp_);
+  discret_->set_state("velaf", state_->velnp_);
   // predicted dirichlet values
   // velnp then also holds prescribed new dirichlet values
   discret_->EvaluateDirichlet(
@@ -4770,22 +4770,22 @@ void FLD::XFluid::set_dirichlet_neumann_bc()
 
   if (alefluid_)
   {
-    discret_->SetState("dispnp", state_->dispnp_);
+    discret_->set_state("dispnp", state_->dispnp_);
   }
 
   // set thermodynamic pressure
   eleparams.set("thermodynamic pressure", thermpressaf_);
 
   state_->neumann_loads_->PutScalar(0.0);
-  discret_->SetState("scaaf", state_->scaaf_);
+  discret_->set_state("scaaf", state_->scaaf_);
 
-  XFEM::EvaluateNeumann(eleparams, discret_, state_->neumann_loads_);
+  XFEM::evaluate_neumann(eleparams, discret_, state_->neumann_loads_);
 
   discret_->ClearState();
 }
 
 
-void FLD::XFluid::AssembleMatAndRHS() {}
+void FLD::XFluid::assemble_mat_and_rhs() {}
 
 
 
@@ -4950,7 +4950,7 @@ void FLD::XFluid::predict_tang_vel_consist_acc()
   state_->incvel_->PutScalar(0.0);
 
   // for solution increments on Dirichlet boundary
-  Teuchos::RCP<Epetra_Vector> dbcinc = CORE::LINALG::CreateVector(*(discret_->DofRowMap()), true);
+  Teuchos::RCP<Epetra_Vector> dbcinc = CORE::LINALG::CreateVector(*(discret_->dof_row_map()), true);
 
   // copy last converged solution
   dbcinc->Update(1.0, *state_->veln_, 0.0);
@@ -4958,7 +4958,7 @@ void FLD::XFluid::predict_tang_vel_consist_acc()
   // get Dirichlet values at t_{n+1}
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("velnp", state_->velnp_);
+  discret_->set_state("velnp", state_->velnp_);
 
   // predicted Dirichlet values
   // velnp_ then also holds prescribed new dirichlet values
@@ -4985,12 +4985,12 @@ void FLD::XFluid::predict_tang_vel_consist_acc()
   // -------------------------------------------------------------------
   // assemble matrix and rhs based on the last interface position (note, this is done before a new
   // state class is created after performing the predictor!)
-  AssembleMatAndRHS(1);
+  assemble_mat_and_rhs(1);
 
 
   // add linear reaction forces to residual
   // linear reactions
-  Teuchos::RCP<Epetra_Vector> freact = CORE::LINALG::CreateVector(*(discret_->DofRowMap()), true);
+  Teuchos::RCP<Epetra_Vector> freact = CORE::LINALG::CreateVector(*(discret_->dof_row_map()), true);
   state_->sysmat_->Multiply(false, *dbcinc, *freact);
 
   // add linear reaction forces due to prescribed Dirichlet BCs
@@ -5048,7 +5048,7 @@ void FLD::XFluid::update_iter_incrementally(Teuchos::RCP<const Epetra_Vector> ve
   {
     // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
     // values.
-    Teuchos::RCP<Epetra_Vector> aux = CORE::LINALG::CreateVector(*(discret_->DofRowMap(0)), true);
+    Teuchos::RCP<Epetra_Vector> aux = CORE::LINALG::CreateVector(*(discret_->dof_row_map(0)), true);
     aux->Update(1.0, *state_->velnp_, 1.0, *vel, 0.0);
     //    dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), velnp_);
     state_->dbcmaps_->InsertCondVector(state_->dbcmaps_->ExtractCondVector(state_->velnp_), aux);
@@ -5062,7 +5062,7 @@ void FLD::XFluid::update_iter_incrementally(Teuchos::RCP<const Epetra_Vector> ve
 // -------------------------------------------------------------------
 // Read Restart data
 // -------------------------------------------------------------------
-void FLD::XFluid::ReadRestart(int step)
+void FLD::XFluid::read_restart(int step)
 {
   //-------- fluid discretization
   IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
@@ -5070,7 +5070,7 @@ void FLD::XFluid::ReadRestart(int step)
   step_ = reader.ReadInt("step");
 
   if (myrank_ == 0)
-    IO::cout << "ReadRestart for fluid dis (time=" << time_ << " ; step=" << step_ << ")"
+    IO::cout << "read_restart for fluid dis (time=" << time_ << " ; step=" << step_ << ")"
              << IO::endl;
 
   if (myrank_ == 0)
@@ -5111,11 +5111,11 @@ void FLD::XFluid::ReadRestart(int step)
   // that was used when the restart data was written. Especially
   // in case of multiphysics problems & periodic boundary conditions
   // it is better to check the consistency of the maps here:
-  if (not(discret_->DofRowMap())->SameAs(state_->velnp_->Map()))
+  if (not(discret_->dof_row_map())->SameAs(state_->velnp_->Map()))
     FOUR_C_THROW("Global dof numbering in maps does not match");
-  if (not(discret_->DofRowMap())->SameAs(state_->veln_->Map()))
+  if (not(discret_->dof_row_map())->SameAs(state_->veln_->Map()))
     FOUR_C_THROW("Global dof numbering in maps does not match");
-  if (not(discret_->DofRowMap())->SameAs(state_->accn_->Map()))
+  if (not(discret_->dof_row_map())->SameAs(state_->accn_->Map()))
     FOUR_C_THROW("Global dof numbering in maps does not match");
 
 
@@ -5396,9 +5396,9 @@ void FLD::XFluid::SetStateTimInt()
 {
   // set scheme-specific element parameters and vector values
   if (timealgo_ == INPAR::FLUID::timeint_afgenalpha)
-    discret_->SetState("velaf", state_->velaf_);
+    discret_->set_state("velaf", state_->velaf_);
   else
-    discret_->SetState("velaf", state_->velnp_);
+    discret_->set_state("velaf", state_->velnp_);
 }
 
 /*----------------------------------------------------------------------*

@@ -26,14 +26,14 @@ ELEMAG::ElemagResultTest::ElemagResultTest(ElemagTimeInt& elemagalgo)
   dis_ = elemagalgo.Discretization();
   // mysol_ = CORE::LINALG::CreateVector(*(dis_->NodeRowMap()), true);
   error_ = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(4));
-  error_ = elemagalgo.ComputeError();
+  error_ = elemagalgo.compute_error();
   // elemagalgo.NodalPressureField(mysol_);
 }
 
 /*----------------------------------------------------------------------*
  |                                                     berardocco 10/18 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void ELEMAG::ElemagResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;

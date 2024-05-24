@@ -150,13 +150,13 @@ namespace DRT
       /*========================================================================*/
 
       //! get diffusion manager for diffusion-conduction formulation
-      Teuchos::RCP<ScaTraEleDiffManagerElchScl> DiffManager()
+      Teuchos::RCP<ScaTraEleDiffManagerElchScl> diff_manager()
       {
         return Teuchos::rcp_static_cast<ScaTraEleDiffManagerElchScl>(my::diffmanager_);
       }
 
       //! get internal variable manager for diffusion-conduction formulation
-      Teuchos::RCP<ScaTraEleInternalVariableManagerElchScl<my::nsd_, my::nen_>> VarManager()
+      Teuchos::RCP<ScaTraEleInternalVariableManagerElchScl<my::nsd_, my::nen_>> var_manager()
       {
         return Teuchos::rcp_static_cast<
             ScaTraEleInternalVariableManagerElchScl<my::nsd_, my::nen_>>(my::scatravarmanager_);

@@ -66,7 +66,7 @@ namespace MORTAR
   @param inmat Matrix on which the row and column maps will be transformed
   @param newrowmap New row map used for the given input matrix
 
-  \post Output matrix will be FillComplete()
+  \post Output matrix will be fill_complete()
   */
   Teuchos::RCP<CORE::LINALG::SparseMatrix> MatrixRowTransformGIDs(
       Teuchos::RCP<const CORE::LINALG::SparseMatrix> inmat,
@@ -85,7 +85,7 @@ namespace MORTAR
   @param newdomainmap New domain map used for the given input matrix, which will indirectly
   transform the column map of the given input matrix
 
-  \post Output matrix will be FillComplete()
+  \post Output matrix will be fill_complete()
   */
   Teuchos::RCP<CORE::LINALG::SparseMatrix> MatrixColTransformGIDs(
       Teuchos::RCP<const CORE::LINALG::SparseMatrix> inmat,
@@ -138,7 +138,7 @@ namespace MORTAR
   @param newdomainmap New domain map used for the given input matrix, which will indirectly
   transform the column map of the given input matrix
 
-  \post Output matrix will be FillComplete()
+  \post Output matrix will be fill_complete()
   */
   Teuchos::RCP<CORE::LINALG::SparseMatrix> MatrixRowColTransformGIDs(
       Teuchos::RCP<const CORE::LINALG::SparseMatrix> inmat,

@@ -151,7 +151,7 @@ namespace CONTACT
      * @param[in] master_xi           master side Gauss point coordinates
      */
     template <int dim>
-    void GPTSForces(MORTAR::Element& slave_ele, MORTAR::Element& master_ele,
+    void gpts_forces(MORTAR::Element& slave_ele, MORTAR::Element& master_ele,
         const CORE::LINALG::SerialDenseVector& slave_shape,
         const CORE::LINALG::SerialDenseMatrix& slave_shape_deriv,
         const std::vector<CORE::GEN::Pairedvector<int, double>>& d_slave_xi_dd,
@@ -178,7 +178,7 @@ namespace CONTACT
      * @param[in] d_test_val_ds    derivative of quantity to be integrated w.r.t. scalar s
      */
     template <int dim>
-    void IntegrateElchTest(double fac, const ElementDataBundle<dim>& ele_data_bundle, double jac,
+    void integrate_elch_test(double fac, const ElementDataBundle<dim>& ele_data_bundle, double jac,
         const CORE::GEN::Pairedvector<int, double>& d_jac_dd, double wgt, double test_val,
         const CORE::GEN::Pairedvector<int, double>& d_test_val_dd,
         const CORE::GEN::Pairedvector<int, double>& d_test_val_ds);

@@ -177,16 +177,16 @@ namespace STR
 
    protected:
     //! Returns the initialization status
-    const bool& IsInit() const { return isinit_; };
+    const bool& is_init() const { return isinit_; };
 
     //! Returns the setup status
-    const bool& IsSetup() const { return issetup_; };
+    const bool& is_setup() const { return issetup_; };
 
     //! Checks the initialization status
-    void CheckInit() const;
+    void check_init() const;
 
     //! Checks the initialization and setup status
-    void CheckInitSetup() const;
+    void check_init_setup() const;
 
     //! Get discretization pointer
     Teuchos::RCP<DRT::Discretization> DiscretPtr();

@@ -115,7 +115,7 @@ namespace FLD
 
    private:
     /// create wizard, perform cut, create new dofset and update xfem discretization
-    void CreateNewCutState(
+    void create_new_cut_state(
         Teuchos::RCP<XFEM::XFEMDofSet>& dofset,  //!< xfem dofset obtained from the new wizard
         Teuchos::RCP<CORE::GEO::CutWizard>&
             wizard,  //!< cut wizard associated with current intersection state

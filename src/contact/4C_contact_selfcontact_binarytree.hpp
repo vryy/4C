@@ -354,11 +354,11 @@ namespace CONTACT
         return false;
       else if (edge1 != edge2)
       {
-        if (edge1->GreaterNode() < edge2->GreaterNode())
+        if (edge1->greater_node() < edge2->greater_node())
           return true;
-        else if (edge1->GreaterNode() == edge2->GreaterNode())
+        else if (edge1->greater_node() == edge2->greater_node())
         {
-          if (edge1->LesserNode() < edge2->LesserNode())
+          if (edge1->lesser_node() < edge2->lesser_node())
             return true;
           else
             return false;
@@ -444,13 +444,13 @@ namespace CONTACT
     \brief Calculate the cost function of a dual edge
 
     */
-    void CalculateCosts();
+    void calculate_costs();
 
     /*!
     \brief return greater node of dual edge
 
     */
-    Teuchos::RCP<SelfBinaryTreeNode> GreaterNode()
+    Teuchos::RCP<SelfBinaryTreeNode> greater_node()
     {
       if (node1_ > node2_)
         return node1_;
@@ -460,7 +460,7 @@ namespace CONTACT
         return node1_;
     }
 
-    Teuchos::RCP<SelfBinaryTreeNode> LesserNode()
+    Teuchos::RCP<SelfBinaryTreeNode> lesser_node()
     {
       if (node1_ > node2_)
         return node2_;
@@ -519,10 +519,10 @@ namespace CONTACT
     //! @name Evaluation methods
 
     /*!
-    \brief Evaluate search self binary tree: call SetEnlarge() and SearchContact()
+    \brief Evaluate search self binary tree: call set_enlarge() and search_contact()
 
     */
-    void EvaluateSearch() final;
+    void evaluate_search() final;
 
     /*!
     \brief Initialize the self binary tree
@@ -702,7 +702,7 @@ namespace CONTACT
     \brief Calculate minimal element length / inflation factor "enlarge"
 
     */
-    void SetEnlarge() final;
+    void set_enlarge() final;
 
     /*!
     \brief Update the dual graph and determine the root nodes
@@ -732,7 +732,7 @@ namespace CONTACT
     \param [in]  elelist:    list (gids) of all contact elements of the surface
 
      */
-    void CalculateDualGraph(
+    void calculate_dual_graph(
         std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>* dualGraph,
         const std::vector<int>& elelist);
 
@@ -763,7 +763,7 @@ namespace CONTACT
     separate approach for large self contact problems!
 
     */
-    virtual void SearchContact();
+    virtual void search_contact();
 
     /*!
     \brief Find contact of adjacent surfaces
@@ -776,14 +776,14 @@ namespace CONTACT
     \brief Test for adjacency (2D)
 
     */
-    bool TestAdjacent2D(
+    bool test_adjacent2_d(
         Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2);
 
     /*!
     \brief Test for adjacency (2D)
 
     */
-    bool TestAdjacent3D(
+    bool test_adjacent3_d(
         Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2);
     //@}
 
@@ -793,20 +793,20 @@ namespace CONTACT
     \brief Plot the adjacency matrix
 
      */
-    void PlotAdjacencyMatrix();
+    void plot_adjacency_matrix();
 
     /*!
     \brief Plot the dual graph
 
      */
-    void PlotDualGraph(
+    void plot_dual_graph(
         std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>> dualgraph);
 
     /*!
     \brief Plot root nodes and the self binary tree
 
      */
-    void PlotRootsAndTree();
+    void plot_roots_and_tree();
     //@}
 
     // don't want = operator and cctor

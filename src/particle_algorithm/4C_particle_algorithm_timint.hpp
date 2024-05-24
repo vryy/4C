@@ -115,7 +115,7 @@ namespace PARTICLEALGORITHM
      *
      * \param[in] currenttime current time
      */
-    virtual void SetCurrentTime(const double currenttime) final;
+    virtual void set_current_time(const double currenttime) final;
 
     /*!
      * \brief time integration scheme specific pre-interaction routine

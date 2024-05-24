@@ -166,7 +166,7 @@ double CORE::GEO::CUT::Tri3BoundaryCell::Area()
   double area = 0.25 * sqrt(areasqr);
 
   // Alternative options:
-  //  - cross-product (see cut_tetmesh.cpp in IsValidTet())
+  //  - cross-product (see cut_tetmesh.cpp in is_valid_tet())
 
   return area;
 }

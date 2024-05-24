@@ -59,13 +59,13 @@ namespace SCATRA
     void TimeLoopTwoWay();
 
     /// provide information about initial field
-    virtual void PrepareTimeLoop(){};
+    virtual void prepare_time_loop(){};
 
     /// initial calculations for two-way coupling time loop
     void prepare_time_loop_two_way();
 
     /// start a new time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     /// start a new time step
     void prepare_time_step_convection();
@@ -74,7 +74,7 @@ namespace SCATRA
     virtual void PrintScaTraSolver();
 
     /// solve Navier-Stokes equations for current time step
-    void DoFluidStep();
+    void do_fluid_step();
 
     /// solve transport (convection-diffusion) equations for current time step
     void DoTransportStep();
@@ -95,7 +95,7 @@ namespace SCATRA
     void Output() override;
 
     /// convergence check for natural convection solver
-    virtual bool ConvergenceCheck(int natconvitnum, int natconvitmax, double natconvittol);
+    virtual bool convergence_check(int natconvitnum, int natconvitmax, double natconvittol);
 
     /// flag for natural convection effects
     int natconv_;

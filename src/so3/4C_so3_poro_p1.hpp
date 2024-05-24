@@ -164,7 +164,7 @@ namespace DRT
       //! initialize the inverse of the jacobian and its determinant in the material configuration
       void InitElement() override;
 
-      void PreEvaluate(
+      void pre_evaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly

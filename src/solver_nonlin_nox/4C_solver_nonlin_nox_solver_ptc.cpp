@@ -68,7 +68,7 @@ void NOX::NLN::Solver::PseudoTransient::init()
   const Teuchos::ParameterList& p_ptc = paramsPtr->sublist("Pseudo Transient");
   deltaInit_ = p_ptc.get<double>("deltaInit");
   if (deltaInit_ == 0.0)
-    throwError("init()", "The initial pseudo time step is not allowed to be equal to 0.0!");
+    throw_error("init()", "The initial pseudo time step is not allowed to be equal to 0.0!");
   else if (deltaInit_ < 0.0)
     calcDeltaInit_ = true;
   delta_ = deltaInit_;
@@ -215,7 +215,7 @@ void NOX::NLN::Solver::PseudoTransient::create_lin_system_pre_post_operator()
     // Get the linear system
     Teuchos::RCP<NOX::NLN::Group> nlnSolnPtr = Teuchos::rcp_dynamic_cast<NOX::NLN::Group>(solnPtr);
     if (nlnSolnPtr.is_null())
-      throwError("create_lin_system_pre_post_operator", "The group cast failed!");
+      throw_error("create_lin_system_pre_post_operator", "The group cast failed!");
     /* Call the reset function of the nox nln linear system to reset the
      * corresponding pre/post operator map. */
     nlnSolnPtr->reset_lin_sys_pre_post_operator(p_linsolver, true);
@@ -226,7 +226,7 @@ void NOX::NLN::Solver::PseudoTransient::create_lin_system_pre_post_operator()
     msg << "The name of the \"Method\" in the \"Direction\" sublist has to match the name "
         << "of the corresponding sub-sublist! There is no \"Direction->" << dir_str
         << "\" sub-sublist!" << std::endl;
-    throwError("create_lin_system_pre_post_operator()", msg.str());
+    throw_error("create_lin_system_pre_post_operator()", msg.str());
   }
   return;
 }
@@ -252,7 +252,7 @@ void NOX::NLN::Solver::PseudoTransient::create_group_pre_post_operator()
    * the nln group class with the ptc pre/post-operator. */
   // Get the nln group
   Teuchos::RCP<NOX::NLN::Group> nlnSoln = Teuchos::rcp_dynamic_cast<NOX::NLN::Group>(solnPtr);
-  if (nlnSoln.is_null()) throwError("create_group_pre_post_operator", "The group cast failed!");
+  if (nlnSoln.is_null()) throw_error("create_group_pre_post_operator", "The group cast failed!");
   /* Call the reset function of the nox nln group to reset the corresponding
    * pre/post operator map. */
   nlnSoln->reset_pre_post_operator(p_grpOpt, true);
@@ -484,7 +484,7 @@ void NOX::NLN::Solver::PseudoTransient::adjust_pseudo_time_step()
   Teuchos::RCP<NOX::NLN::Group> oldNlnSolnPtr =
       Teuchos::rcp_dynamic_cast<NOX::NLN::Group>(oldSolnPtr);
   if (oldNlnSolnPtr.is_null())
-    throwError("update_pseudo_time_step", "Dynamic cast to NOX::NLN::Group failed!");
+    throw_error("update_pseudo_time_step", "Dynamic cast to NOX::NLN::Group failed!");
   oldNlnSolnPtr->adjust_pseudo_time_step(delta_, stepSize, *dirPtr, *this);
 
   if (utilsPtr->isPrintType(::NOX::Utils::Details))
@@ -555,7 +555,7 @@ void NOX::NLN::Solver::PseudoTransient::update_pseudo_time_step()
         // ---------------------------------------------------------------
         case tsc_tte:
         {
-          throwError("UpdatePseudoTimeStep()",
+          throw_error("UpdatePseudoTimeStep()",
               "The \"Temporal Truncation Error\" method is not yet implemented!");
           break;
         }
@@ -611,7 +611,7 @@ void NOX::NLN::Solver::PseudoTransient::update_pseudo_time_step()
         }
         default:
         {
-          throwError("UpdatePseudoTimeStep()", "Unknown time step control type.");
+          throw_error("UpdatePseudoTimeStep()", "Unknown time step control type.");
           break;
         }
       }
@@ -667,7 +667,7 @@ NOX::NLN::Solver::PseudoTransient::get_scaling_operator_type() const
 const Epetra_Vector& NOX::NLN::Solver::PseudoTransient::get_scaling_diag_operator() const
 {
   if (scalingDiagOpPtr_.is_null())
-    throwError("get_scaling_diag_operator", "The scaling operator is not initialized!");
+    throw_error("get_scaling_diag_operator", "The scaling operator is not initialized!");
 
   return *scalingDiagOpPtr_;
 }
@@ -762,7 +762,7 @@ void NOX::NLN::Solver::PseudoTransient::printUpdate()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::Solver::PseudoTransient::throwError(
+void NOX::NLN::Solver::PseudoTransient::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   if (utilsPtr->isPrintType(::NOX::Utils::Error))

@@ -130,11 +130,11 @@ namespace XFEM
 
     void setup_full_map_extractors(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis);
 
-    void SetupCouplings(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis);
+    void setup_couplings(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis);
 
-    void SetupFullCouplings(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis);
+    void setup_full_couplings(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis);
 
-    void SetupFullExtractor(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis);
+    void setup_full_extractor(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis);
 
     std::string cond_name_;
     int startdim_;

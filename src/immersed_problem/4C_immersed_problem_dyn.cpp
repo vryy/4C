@@ -58,8 +58,8 @@ void immersed_problem_drt()
         case GLOBAL::ProblemType::immersed_fsi:
         {
           // fill discretizations
-          problem->GetDis("structure")->FillComplete(false, false, false);
-          problem->GetDis("fluid")->FillComplete(false, false, false);
+          problem->GetDis("structure")->fill_complete(false, false, false);
+          problem->GetDis("fluid")->fill_complete(false, false, false);
 
           // SAFETY FIRST
           {
@@ -108,7 +108,7 @@ void immersed_problem_drt()
           // read restart step
           const int restart = GLOBAL::Problem::Instance()->Restart();
           if (restart)
-            algo->ReadRestart(restart);
+            algo->read_restart(restart);
           else
             // additional setup for structural search tree, etc.
             algo->setup_structural_discretization();

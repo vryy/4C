@@ -61,7 +61,7 @@ void BEAMINTERACTION::BeamContactPair::Init(
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamContactPair::Setup()
 {
-  CheckInit();
+  check_init();
 
   // the flag issetup_ will be set in the derived method!
 }
@@ -170,16 +170,16 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair:
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactPair::CheckInit() const
+void BEAMINTERACTION::BeamContactPair::check_init() const
 {
-  if (not IsInit()) FOUR_C_THROW("Call Init() first!");
+  if (not is_init()) FOUR_C_THROW("Call Init() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactPair::CheckInitSetup() const
+void BEAMINTERACTION::BeamContactPair::check_init_setup() const
 {
-  if (not IsInit() or not IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
+  if (not is_init() or not is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

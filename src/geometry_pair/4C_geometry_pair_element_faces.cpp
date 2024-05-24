@@ -49,7 +49,7 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::Setup(
  *
  */
 template <typename surface, typename scalar_type>
-void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::SetState(
+void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::set_state(
     const Teuchos::RCP<const Epetra_Vector>& displacement,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
@@ -140,14 +140,14 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::Setup(
   // Initialize variables for this method.
   std::vector<int> my_node_gid, other_faces_node_gid;
   my_node_gid.clear();
-  my_node_gid.reserve(this->drt_face_element_->NumNode());
+  my_node_gid.reserve(this->drt_face_element_->num_node());
   other_faces_node_gid.clear();
 
   // Temporary variables.
   std::vector<int> temp_node_dof_gid(3);
 
   // First add the node GIDs of this face.
-  for (int i_node = 0; i_node < this->drt_face_element_->NumNode(); i_node++)
+  for (int i_node = 0; i_node < this->drt_face_element_->num_node(); i_node++)
   {
     const DRT::Node* my_node = this->drt_face_element_->Nodes()[i_node];
     my_node_gid.push_back(my_node->Id());
@@ -156,7 +156,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::Setup(
 
   // Add the node GIDs of the connected faces.
   ConnectedFace temp_connected_face;
-  for (int i_node = 0; i_node < this->drt_face_element_->NumNode(); i_node++)
+  for (int i_node = 0; i_node < this->drt_face_element_->num_node(); i_node++)
   {
     // Loop over all elements connected to a node of this face.
     const DRT::Node* node = this->drt_face_element_->Nodes()[i_node];
@@ -179,7 +179,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::Setup(
         {
           // Add the node GIDs of this element.
           for (int i_node_connected_element = 0;
-               i_node_connected_element < find_in_faces->second->GetDrtFaceElement()->NumNode();
+               i_node_connected_element < find_in_faces->second->GetDrtFaceElement()->num_node();
                i_node_connected_element++)
           {
             const DRT::Node* other_node =
@@ -233,7 +233,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::Setup(
   // GID of the connected faces in the GID vector of this face. The connectivity to the other patch
   // faces is still required for the calculation of the averaged reference normals.
   if (not evaluate_current_normals_)
-    this->patch_dof_gid_.resize(3 * this->drt_face_element_->NumNode());
+    this->patch_dof_gid_.resize(3 * this->drt_face_element_->num_node());
 }
 
 
@@ -241,7 +241,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::Setup(
  *
  */
 template <typename surface, typename scalar_type>
-void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::SetState(
+void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::set_state(
     const Teuchos::RCP<const Epetra_Vector>& displacement,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
@@ -310,7 +310,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::SetState(
           normals(node_map_iterator.second)(i_dim) += temp_normal(i_dim);
       }
     }
-    AverageNodalNormals(normals, this->face_position_.nodal_normals_);
+    average_nodal_normals(normals, this->face_position_.nodal_normals_);
   }
 }
 
@@ -351,7 +351,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface,
         normals(node_map_iterator.second)(i_dim) += temp_normal(i_dim);
     }
   }
-  AverageNodalNormals(normals, this->face_reference_position_.nodal_normals_);
+  average_nodal_normals(normals, this->face_reference_position_.nodal_normals_);
 }
 
 /**
@@ -394,7 +394,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::evaluate_face
  */
 template <typename surface, typename scalar_type>
 template <typename T>
-void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::AverageNodalNormals(
+void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::average_nodal_normals(
     CORE::LINALG::Matrix<surface::n_nodes_, 1, CORE::LINALG::Matrix<3, 1, T>>& normals,
     CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, T>& averaged_normals) const
 {
@@ -423,7 +423,7 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volum
   std::vector<int> lmrowowner;
   std::vector<int> lmstride;
   this->GetDrtFaceElement()->LocationVector(*discret, surface_gid, lmrowowner, lmstride);
-  this->GetDrtFaceElement()->ParentElement()->LocationVector(
+  this->GetDrtFaceElement()->parent_element()->LocationVector(
       *discret, this->patch_dof_gid_, lmrowowner, lmstride);
 
   // Safety checks.
@@ -449,7 +449,7 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volum
       GEOMETRYPAIR::InitializeElementData<volume, double>::Initialize(nullptr);
   this->face_reference_position_ =
       GEOMETRYPAIR::InitializeElementData<surface, double>::Initialize(nullptr);
-  const DRT::Node* const* nodes = this->drt_face_element_->ParentElement()->Nodes();
+  const DRT::Node* const* nodes = this->drt_face_element_->parent_element()->Nodes();
   for (unsigned int i_node = 0; i_node < volume::n_nodes_; i_node++)
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
       volume_reference_position_.element_position_(i_node * 3 + i_dim) = nodes[i_node]->X()[i_dim];
@@ -535,7 +535,7 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volum
  *
  */
 template <typename surface, typename scalar_type, typename volume>
-void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volume>::SetState(
+void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volume>::set_state(
     const Teuchos::RCP<const Epetra_Vector>& displacement,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {

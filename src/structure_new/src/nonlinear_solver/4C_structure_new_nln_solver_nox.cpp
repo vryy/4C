@@ -41,7 +41,7 @@ STR::NLN::SOLVER::Nox::Nox()
  *----------------------------------------------------------------------------*/
 void STR::NLN::SOLVER::Nox::Setup()
 {
-  CheckInit();
+  check_init();
 
   /* Set ::NOX::Epetra::Interface::Required
    * This interface is necessary for the evaluation of basic things
@@ -102,7 +102,7 @@ void STR::NLN::SOLVER::Nox::Setup()
   // -------------------------------------------------------------------------
   // Create NOX linear system to provide access to Jacobian etc.
   // -------------------------------------------------------------------------
-  linsys_ = problem_->CreateLinearSystem();
+  linsys_ = problem_->create_linear_system();
 
   // -------------------------------------------------------------------------
   // Create NOX group
@@ -127,7 +127,7 @@ void STR::NLN::SOLVER::Nox::Setup()
 void STR::NLN::SOLVER::Nox::Reset()
 {
   // safety check
-  CheckInitSetup();
+  check_init_setup();
 
   // do a hard reset at the beginning to be on the safe side
   nlnsolver_ = Teuchos::null;
@@ -149,7 +149,7 @@ void STR::NLN::SOLVER::Nox::Reset()
 void STR::NLN::SOLVER::Nox::ResetParams()
 {
   // safety check
-  CheckInitSetup();
+  check_init_setup();
 
   const Teuchos::ParameterList& pdir =
       nlnglobaldata_->GetNlnParameterList().sublist("Direction", true);
@@ -185,7 +185,7 @@ void STR::NLN::SOLVER::Nox::ResetParams()
  *----------------------------------------------------------------------------*/
 enum INPAR::STR::ConvergenceStatus STR::NLN::SOLVER::Nox::Solve()
 {
-  CheckInitSetup();
+  check_init_setup();
 
   // solve the non-linear step
   ::NOX::StatusTest::StatusType finalstatus = nlnsolver_->solve();
@@ -207,7 +207,7 @@ enum INPAR::STR::ConvergenceStatus STR::NLN::SOLVER::Nox::Solve()
 enum INPAR::STR::ConvergenceStatus STR::NLN::SOLVER::Nox::ConvertFinalStatus(
     const ::NOX::StatusTest::StatusType& finalstatus) const
 {
-  CheckInitSetup();
+  check_init_setup();
 
   INPAR::STR::ConvergenceStatus convstatus = INPAR::STR::conv_success;
 

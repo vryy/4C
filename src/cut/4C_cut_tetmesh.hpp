@@ -340,7 +340,7 @@ namespace CORE::GEO
 
         /*!
           \brief Fill the inner domain of the volume cell for tets.
-              SeedDomain() has already been called, i.e. tets associated with boundary-tris are
+              seed_domain() has already been called, i.e. tets associated with boundary-tris are
           already covered.
          */
         void Fill()
@@ -384,7 +384,7 @@ namespace CORE::GEO
                ++i)
           {
             Entity<length>* m = *i;
-            PushNewNeighbors(stack, m);
+            push_new_neighbors(stack, m);
           }
 
           // Loop over the stack of "interior tets" associated with border_ entities (i.e. surfaces)
@@ -396,7 +396,7 @@ namespace CORE::GEO
 
             Add(m, false);
 
-            PushNewNeighbors(stack, m);
+            push_new_neighbors(stack, m);
           }
 
           // Throw error if the domain is not filled.
@@ -411,7 +411,7 @@ namespace CORE::GEO
           not contained in the Domain. If so then insert the tet to the stack. QUESTION: Is this
           testing a bit too much?
          */
-        void PushNewNeighbors(PlainEntitySet<length>& stack, Entity<length>* m)
+        void push_new_neighbors(PlainEntitySet<length>& stack, Entity<length>* m)
         {
           const std::vector<Entity<length - 1>*>& bs = m->Children();
           for (typename std::vector<Entity<length - 1>*>::const_iterator i = bs.begin();
@@ -476,7 +476,7 @@ namespace CORE::GEO
               for (PlainEntitySet<2>::iterator i = lines.begin(); i != lines.end(); ++i)
               {
                 Entity<2>* l = *i;
-                Entity<3>* tri = FindUniqueTri(tm, facet, domain, l);
+                Entity<3>* tri = find_unique_tri(tm, facet, domain, l);
 
                 if (tri != nullptr)
                 {
@@ -516,7 +516,7 @@ namespace CORE::GEO
                i != lines.end(); ++i)
           {
             const std::pair<Point*, Point*>& l = i->first;
-            Handle<2> h = tm->MakeHandle(l.first, l.second);
+            Handle<2> h = tm->make_handle(l.first, l.second);
             std::map<Handle<2>, Entity<2>>::iterator j = tm->tet_lines_.find(h);
             if (j != tm->tet_lines_.end())
             {
@@ -543,7 +543,7 @@ namespace CORE::GEO
          *              If Yes -> return nullptr (i.e. no unique tri exists)
          *              If NO  -> Add tri and continue loop over tris.
          */
-        Entity<3>* FindUniqueTri(TetMesh* tm, Facet* facet, Domain<3>& domain, Entity<2>* l)
+        Entity<3>* find_unique_tri(TetMesh* tm, Facet* facet, Domain<3>& domain, Entity<2>* l)
         {
           Entity<3>* tri = nullptr;
           const std::vector<Entity<3>*>& tris = l->Parents();  // TRIs connected to this line.
@@ -620,8 +620,8 @@ namespace CORE::GEO
        * VOLUMETOL. Also switches the order in which nodes are stored if the tets are numbered the
        * wrong way (deduced from taking the cross product).
        *
-       *  The TETs accepted in IsValidTet(...) are not necessarily TETs which are acceptable within
-       * arithmetic precision. Thus two option exists:
+       *  The TETs accepted in is_valid_tet(...) are not necessarily TETs which are acceptable
+       * within arithmetic precision. Thus two option exists:
        *
        *  1) Use the way by "Kuettler": Find the volume of the TET and check against a predefined
        * volume-tolerance. Leads to problems with cuts in non-local coordinates.
@@ -633,12 +633,12 @@ namespace CORE::GEO
        *
        *    where B is the distance of a point of the TET furthest away from to the origin.
        *   Accept a TET if all its lengths are larger than the arithmetic tolerance. */
-      void FixBrokenTets();
+      void fix_broken_tets();
 
-      void FindProperSides(const PlainEntitySet<3>& tris, std::vector<std::vector<int>>& sides,
+      void find_proper_sides(const PlainEntitySet<3>& tris, std::vector<std::vector<int>>& sides,
           const PlainEntitySet<4>* members = nullptr);
 
-      void CollectCoordinates(
+      void collect_coordinates(
           const std::vector<std::vector<int>>& sides, std::vector<Point*>& side_coords);
 
       /// Initialize valid tets and create children for the tet-cells (i.e. surfaces) and
@@ -646,17 +646,17 @@ namespace CORE::GEO
       ///   and the connectivity of these.
       void Init();
 
-      void CallQHull(
+      void call_q_hull(
           const std::vector<Point*>& points, std::vector<std::vector<int>>& tets, bool project);
 
       /// Somehow checks if tet is valid. Uses intersection for FindCommonSides(t,sides).
-      bool IsValidTet(const std::vector<Point*>& t);
+      bool is_valid_tet(const std::vector<Point*>& t);
 
-      void TestUsedPoints(const std::vector<std::vector<int>>& tets);
+      void test_used_points(const std::vector<std::vector<int>>& tets);
 
-      bool FillFacetMesh();
+      bool fill_facet_mesh();
 
-      void SwapTetHandle(Entity<4>* tet, const Handle<4>& handle)
+      void swap_tet_handle(Entity<4>* tet, const Handle<4>& handle)
       {
         tet->Disconnect();
         tet->SetHandle(handle);
@@ -667,7 +667,7 @@ namespace CORE::GEO
       }
 
       template <int length>
-      Entity<length>* SwapHandle(Entity<length>* e, const Handle<length>& handle,
+      Entity<length>* swap_handle(Entity<length>* e, const Handle<length>& handle,
           std::map<Handle<length>, Entity<length>>& entities)
       {
         Entity<length>& new_e = entities[handle];
@@ -678,7 +678,7 @@ namespace CORE::GEO
         return &new_e;
       }
 
-      Handle<2> MakeHandle(Point* p1, Point* p2)
+      Handle<2> make_handle(Point* p1, Point* p2)
       {
         std::vector<Point*>::const_iterator i1 = std::find(points_.begin(), points_.end(), p1);
         std::vector<Point*>::const_iterator i2 = std::find(points_.begin(), points_.end(), p2);
@@ -693,7 +693,7 @@ namespace CORE::GEO
         return Handle<2>(points);
       }
 
-      Handle<3> MakeHandle(Point* p1, Point* p2, Point* p3)
+      Handle<3> make_handle(Point* p1, Point* p2, Point* p3)
       {
         std::vector<Point*>::const_iterator i1 = std::find(points_.begin(), points_.end(), p1);
         std::vector<Point*>::const_iterator i2 = std::find(points_.begin(), points_.end(), p2);
@@ -710,7 +710,7 @@ namespace CORE::GEO
         return Handle<3>(points);
       }
 
-      bool FillFacet(Facet* f)
+      bool fill_facet(Facet* f)
       {
         FacetMesh& cf = facet_mesh_[f];
         if (not cf.Fill(this, f))
@@ -738,7 +738,7 @@ namespace CORE::GEO
         not associated to any accepted tet but is still associated to an UNIQUE tet (however small)
         it is added.
        */
-      void SeedDomain(Domain<4>& cell_domain, Facet* f, bool force = false)
+      void seed_domain(Domain<4>& cell_domain, Facet* f, bool force = false)
       {
         if (force or not f->OnBoundaryCellSide())
         {

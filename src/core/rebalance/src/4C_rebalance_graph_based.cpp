@@ -120,7 +120,7 @@ CORE::REBALANCE::BuildWeights(const DRT::Discretization& dis)
   {
     DRT::Element* ele = dis.lRowElement(i);
     DRT::Node** nodes = ele->Nodes();
-    const int numnode = ele->NumNode();
+    const int numnode = ele->num_node();
     std::vector<int> lm(numnode);
     std::vector<int> lmrowowner(numnode);
     for (int n = 0; n < numnode; ++n)
@@ -156,7 +156,7 @@ Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildGraph(
   for (int lid = 0; lid < roweles->NumMyElements(); ++lid)
   {
     DRT::Element* ele = dis->gElement(roweles->GID(lid));
-    const int numnode = ele->NumNode();
+    const int numnode = ele->num_node();
     const int* nodeids = ele->NodeIds();
     copy(nodeids, nodeids + numnode, inserter(mynodes, mynodes.begin()));
   }
@@ -207,7 +207,7 @@ Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildGraph(
   for (int lid = 0; lid < roweles->NumMyElements(); ++lid)
   {
     DRT::Element* ele = dis->gElement(roweles->GID(lid));
-    const int numnode = ele->NumNode();
+    const int numnode = ele->num_node();
     const int* nodeids = ele->NodeIds();
     for (int i = 0; i < numnode; ++i)
     {
@@ -349,12 +349,12 @@ Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildMonolithicNodeGraph(
   for (int rowele_i = 0; rowele_i < dis.NumMyRowElements(); ++rowele_i)
   {
     const auto* element = dis.lRowElement(rowele_i);
-    for (int i_node = 0; i_node < element->NumNode(); ++i_node)
+    for (int i_node = 0; i_node < element->num_node(); ++i_node)
     {
       const auto* node = element->Nodes()[i_node];
       node_information.SumIntoMyValue(rowele_i, i_node, node->Id());
     }
-    node_information.SumIntoMyValue(rowele_i, element->NumNode(), -1);
+    node_information.SumIntoMyValue(rowele_i, element->num_node(), -1);
   }
 
   // 3. Get the connectivity information
@@ -379,11 +379,11 @@ Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildMonolithicNodeGraph(
 
   for (const auto* element : dis.MyRowElementRange())
   {
-    for (int i_node = 0; i_node < element->NumNode(); ++i_node)
+    for (int i_node = 0; i_node < element->num_node(); ++i_node)
     {
       const auto* node_main = element->Nodes()[i_node];
       int index_main = node_main->Id();
-      for (int j_node = 0; j_node < element->NumNode(); ++j_node)
+      for (int j_node = 0; j_node < element->num_node(); ++j_node)
       {
         const auto* node_inner = element->Nodes()[j_node];
         int index = node_inner->Id();
@@ -411,7 +411,7 @@ Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildMonolithicNodeGraph(
     int primitive_lid_in_map = my_colliding_primitives_map.LID(primitive_gid);
     if (primitive_lid_in_map < 0) FOUR_C_THROW("Could not find lid for gid %d", primitive_gid);
 
-    for (int i_node = 0; i_node < predicate->NumNode(); ++i_node)
+    for (int i_node = 0; i_node < predicate->num_node(); ++i_node)
     {
       const auto* node_main = predicate->Nodes()[i_node];
       int index_main = node_main->Id();

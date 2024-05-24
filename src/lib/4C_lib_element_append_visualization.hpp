@@ -47,12 +47,12 @@ namespace DRT::ELEMENTS
     // Add each node to the output.
     const DRT::Node* const* nodes = ele.Nodes();
 
-    for (int inode = 0; inode < ele.NumNode(); ++inode)
+    for (int inode = 0; inode < ele.num_node(); ++inode)
       for (unsigned int idim = 0; idim < num_spatial_dimensions; ++idim)
         point_coordinates.push_back(nodes[numbering[inode]]->X()[idim]);
 
     // Return the number of added points.
-    return ele.NumNode();
+    return ele.num_node();
   }
 
   /**
@@ -142,7 +142,7 @@ namespace DRT::ELEMENTS
 
       // Get the position of the control points in the reference configuration.
       CORE::LINALG::Matrix<number_of_output_points * dim_output, 1, double> pos_controlpoints;
-      for (unsigned int i_controlpoint = 0; i_controlpoint < (unsigned int)ele.NumNode();
+      for (unsigned int i_controlpoint = 0; i_controlpoint < (unsigned int)ele.num_node();
            ++i_controlpoint)
       {
         const DRT::Node* controlpoint = ele.Nodes()[i_controlpoint];
@@ -225,7 +225,7 @@ namespace DRT::ELEMENTS
     const std::vector<int>& numbering =
         DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(ele.Shape()).second;
 
-    for (unsigned int inode = 0; inode < (unsigned int)ele.NumNode(); ++inode)
+    for (unsigned int inode = 0; inode < (unsigned int)ele.num_node(); ++inode)
     {
       std::vector<int> nodedofs;
       nodedofs.clear();
@@ -251,7 +251,7 @@ namespace DRT::ELEMENTS
       }
     }
 
-    return ele.NumNode();
+    return ele.num_node();
   }
 
   /**

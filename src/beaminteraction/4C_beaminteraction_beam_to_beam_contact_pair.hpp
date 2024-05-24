@@ -70,7 +70,7 @@ namespace BEAMINTERACTION
     \brief things that need to be done in a separate loop before the actual evaluation loop
            over all contact pairs
     */
-    void PreEvaluate() override;
+    void pre_evaluate() override;
 
     /*!
     \brief Evaluate this contact element pair, return value indicates whether pair is active,
@@ -143,7 +143,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Get energy of penalty contact.
     */
-    double GetEnergy() const override;
+    double get_energy() const override;
 
     //@}
 
@@ -260,7 +260,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Find segments close to each other
     */
-    void GetCloseSegments(const std::vector<CORE::LINALG::Matrix<3, 1, double>>& endpoints1,
+    void get_close_segments(const std::vector<CORE::LINALG::Matrix<3, 1, double>>& endpoints1,
         const std::vector<CORE::LINALG::Matrix<3, 1, double>>& endpoints2,
         std::map<std::pair<int, int>, CORE::LINALG::Matrix<3, 1, double>>& closesmallanglesegments,
         std::map<std::pair<int, int>, CORE::LINALG::Matrix<3, 1, double>>& closelargeanglesegments,
@@ -290,18 +290,18 @@ namespace BEAMINTERACTION
     /*!
     \brief Subdivide elements into segments for CPP
     */
-    double CreateSegments(const DRT::Element* ele,
+    double create_segments(const DRT::Element* ele,
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& endpoints_final, int& numsegment, int i);
 
     /*!
     \brief Get maximal gap at which a contact can become active
     */
-    double GetMaxActiveDist();
+    double get_max_active_dist();
 
     /*!
     \brief Check, if segments are fine enough
     */
-    bool CheckSegment(CORE::LINALG::Matrix<3, 1, double>& r1,
+    bool check_segment(CORE::LINALG::Matrix<3, 1, double>& r1,
         CORE::LINALG::Matrix<3, 1, double>& t1, CORE::LINALG::Matrix<3, 1, double>& r2,
         CORE::LINALG::Matrix<3, 1, double>& t2, CORE::LINALG::Matrix<3, 1, double>& rm,
         double& segdist);
@@ -309,7 +309,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Calculate scalar contact force
     */
-    void CalcPenaltyLaw(
+    void calc_penalty_law(
         Teuchos::RCP<BeamToBeamContactVariables<numnodes, numnodalvalues>> variables);
 
     /*!
@@ -332,7 +332,7 @@ namespace BEAMINTERACTION
     /*!
      \brief Compute contact forces
      */
-    void EvaluateFcContact(CORE::LINALG::SerialDenseVector& forcevec1,
+    void evaluate_fc_contact(CORE::LINALG::SerialDenseVector& forcevec1,
         CORE::LINALG::SerialDenseVector& forcevec2, const CORE::LINALG::Matrix<3, 1, TYPE>& r1,
         const CORE::LINALG::Matrix<3, 1, TYPE>& r2, const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
         const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi,
@@ -404,7 +404,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Lin. of contact point coordinate eta with fixed xi
     */
-    void ComputeLinEtaFixXi(
+    void compute_lin_eta_fix_xi(
         CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_eta,
         const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r,
         const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi,
@@ -416,7 +416,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Lin. of contact point coordinate xi with fixed eta
     */
-    void ComputeLinXiFixEta(
+    void compute_lin_xi_fix_eta(
         CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_xi,
         const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r,
         const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
@@ -429,14 +429,15 @@ namespace BEAMINTERACTION
     \brief Compute linearization of integration interval bounds (necessary in case of
     ENDPOINTSEGMENTATION)
     */
-    void ComputeLinXiBound(
+    void compute_lin_xi_bound(
         CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_xi_bound,
         TYPE& eta1_bound, TYPE eta2);
 
     /*!
     \brief Compute linearization of gap
     */
-    void ComputeLinGap(CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_gap,
+    void compute_lin_gap(
+        CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_gap,
         const CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_xi,
         const CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_eta,
         const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r, const TYPE& norm_delta_r,
@@ -462,7 +463,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Compute linearization of normal vector
     */
-    void ComputeLinNormal(
+    void compute_lin_normal(
         CORE::LINALG::Matrix<3, 2 * 3 * numnodes * numnodalvalues, TYPE>& delta_normal,
         const CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_xi,
         const CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_eta,
@@ -475,7 +476,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Calculate shape function values for given parameter values
     */
-    void GetShapeFunctions(CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+    void get_shape_functions(CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
         CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
         CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
         CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi,
@@ -487,7 +488,7 @@ namespace BEAMINTERACTION
     \brief Calculate one specified shape function value / derivative for given parameter value and
     element
     */
-    void GetShapeFunctions(CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N,
+    void get_shape_functions(CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N,
         const TYPE& eta, int deriv, const DRT::Element* ele) const;
 
     /*!
@@ -566,7 +567,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Compute normal vector and gap function at contact point
     */
-    void ComputeNormal(CORE::LINALG::Matrix<3, 1, TYPE>& r1, CORE::LINALG::Matrix<3, 1, TYPE>& r2,
+    void compute_normal(CORE::LINALG::Matrix<3, 1, TYPE>& r1, CORE::LINALG::Matrix<3, 1, TYPE>& r2,
         CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi, CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi,
         Teuchos::RCP<BeamToBeamContactVariables<numnodes, numnodalvalues>> variables,
         int contacttype);
@@ -574,18 +575,18 @@ namespace BEAMINTERACTION
     /*!
     \brief Check, if we have contact or not (e.g. gap < gmax [e.g. gmax=0]?)
     */
-    bool CheckContactStatus(const double& gap);
+    bool check_contact_status(const double& gap);
 
     /*!
       \brief Get jacobi factor of beam element
     */
-    double GetJacobi(const DRT::Element* element1);
+    double get_jacobi(const DRT::Element* element1);
 
     /** \brief get Jacobi factor of beam element at xi \in [-1;1]
      *
      *  \author grill
      *  \date 06/16 */
-    inline double GetJacobiAtXi(const DRT::Element* element1, const double& xi)
+    inline double get_jacobi_at_xi(const DRT::Element* element1, const double& xi)
     {
       const DRT::ELEMENTS::Beam3Base* ele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element1);
 
@@ -597,7 +598,7 @@ namespace BEAMINTERACTION
     /*!
       \brief clear class variables at the beginning of a Newton step
     */
-    void ClearClassVariables();
+    void clear_class_variables();
 
     /*!
       \brief Linearization-check of coordinates xi and eta via FAD
@@ -623,7 +624,7 @@ namespace BEAMINTERACTION
     //  /*!
     //    \brief FD-Check of stiffness matrix
     //  */
-    //  void FDCheck( CORE::LINALG::SparseMatrix& stiffmatrix,
+    //  void fd_check( CORE::LINALG::SparseMatrix& stiffmatrix,
     //                Epetra_Vector& fint,
     //                const double& pp,
     //                std::map<std::pair<int,int>, Teuchos::RCP<BeamContactPair> >& contactpairmap,

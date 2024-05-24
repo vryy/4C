@@ -42,7 +42,7 @@ namespace STR
 
       int IntegrateStep() override;
 
-      void PrepareTimeStep() override;
+      void prepare_time_step() override;
 
       void update_state_incrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
 
@@ -52,9 +52,9 @@ namespace STR
 
       void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
 
-      void SetState(const Teuchos::RCP<Epetra_Vector>& x) override;
+      void set_state(const Teuchos::RCP<Epetra_Vector>& x) override;
 
-      void ResetStep() override;
+      void reset_step() override;
 
       INPAR::STR::ConvergenceStatus Solve() override;
 
@@ -68,7 +68,7 @@ namespace STR
 
       Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() override;
 
-      Teuchos::RCP<const Epetra_Vector> InitialGuess() override;
+      Teuchos::RCP<const Epetra_Vector> initial_guess() override;
 
       Teuchos::RCP<const Epetra_Vector> GetF() const override;
 
@@ -107,13 +107,13 @@ namespace STR
      protected:
       STR::EXPLICIT::Generic& ExplInt()
       {
-        CheckInitSetup();
+        check_init_setup();
         return *explint_ptr_;
       };
 
       STR::NLN::SOLVER::Generic& NlnSolver()
       {
-        CheckInitSetup();
+        check_init_setup();
         return *nlnsolver_ptr_;
       };
 

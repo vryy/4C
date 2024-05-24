@@ -311,11 +311,11 @@ void MAT::PAR::FluidPoroPhaseLawByFunction::Initialize()
   switch (GLOBAL::Problem::Instance()->NDim())
   {
     case 1:
-      return InitializeInternal<1>();
+      return initialize_internal<1>();
     case 2:
-      return InitializeInternal<2>();
+      return initialize_internal<2>();
     case 3:
-      return InitializeInternal<3>();
+      return initialize_internal<3>();
     default:
       FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
   }
@@ -324,7 +324,7 @@ void MAT::PAR::FluidPoroPhaseLawByFunction::Initialize()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void MAT::PAR::FluidPoroPhaseLawByFunction::InitializeInternal()
+void MAT::PAR::FluidPoroPhaseLawByFunction::initialize_internal()
 {
   if (GLOBAL::Problem::Instance()
           ->FunctionById<CORE::UTILS::FunctionOfAnything>(functionID_saturation_ - 1)

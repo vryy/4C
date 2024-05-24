@@ -43,12 +43,12 @@ void XFEM::XFieldField::CouplingDofSet::Dof(
  *----------------------------------------------------------------------------*/
 int XFEM::XFieldField::CouplingDofSet::NumDofPerNode(const DRT::Node& node) const
 {
-  return MyNumDofPerNode(node.Id());
+  return my_num_dof_per_node(node.Id());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int XFEM::XFieldField::CouplingDofSet::MyNumDofPerNode(const int& node_gid) const
+int XFEM::XFieldField::CouplingDofSet::my_num_dof_per_node(const int& node_gid) const
 {
   std::map<int, int>::const_iterator pos = my_num_dof_per_node_.find(node_gid);
   if (pos == my_num_dof_per_node_.end())

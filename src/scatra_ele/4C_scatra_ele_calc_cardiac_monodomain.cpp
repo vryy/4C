@@ -296,7 +296,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Sysmat(
       //----------------------------------------------------------------
 
       // diffusive term
-      aniso::CalcRHSDiff(erhs, k, rhsfac);
+      aniso::calc_rhs_diff(erhs, k, rhsfac);
 
     }  // end loop all scalars
   }    // end loop Gauss points

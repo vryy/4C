@@ -97,8 +97,8 @@ namespace BEAMINTERACTION
     void print_summary_one_line_per_active_segment_pair(std::ostream& out) const override;
 
     /**
-     * \brief Check if this pair is in contact. The correct value is only returned after PreEvaluate
-     * and Evaluate are run on the geometry pair.
+     * \brief Check if this pair is in contact. The correct value is only returned after
+     * pre_evaluate and Evaluate are run on the geometry pair.
      * @return true if it is in contact.
      */
     inline bool GetContactFlag() const override
@@ -156,9 +156,9 @@ namespace BEAMINTERACTION
     /**
      * \brief Get energy of penalty contact. Not yet implemented.
      */
-    double GetEnergy() const override
+    double get_energy() const override
     {
-      FOUR_C_THROW("GetEnergy not implemented yet!");
+      FOUR_C_THROW("get_energy not implemented yet!");
       return 0.0;
     }
 

@@ -114,39 +114,39 @@ namespace SSTI
 
    private:
     //! assemble global system of equations
-    void AssembleMatAndRHS();
+    void assemble_mat_and_rhs();
 
     //! build null spaces associated with blocks of global system matrix
-    void BuildNullSpaces();
+    void build_null_spaces();
 
     //! Get Matrix and Right-Hand-Side for all subproblems incl. coupling
-    void EvaluateSubproblems();
+    void evaluate_subproblems();
 
     //! get solution increment for given subproblem
-    Teuchos::RCP<Epetra_Vector> ExtractSubIncrement(Subproblem sub);
+    Teuchos::RCP<Epetra_Vector> extract_sub_increment(Subproblem sub);
 
     // build and return vector of equilibration methods for each block of system matrix
     std::vector<CORE::LINALG::EquilibrationMethod> get_block_equilibration();
 
     //! evaluate time step using Newton-Raphson iteration
-    void NewtonLoop();
+    void newton_loop();
 
     //! output solution to screen and files
     void Output() override;
 
-    void PrepareNewtonStep();
+    void prepare_newton_step();
 
     //! prepare time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     //! solve linear system of equations
-    void LinearSolve();
+    void linear_solve();
 
     //! update scalar transport and structure fields after time step evaluation
     void Update() override;
 
     //! update routine after newton iteration
-    void UpdateIterStates();
+    void update_iter_states();
 
     //! Newton Raphson loop
     //@{

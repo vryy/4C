@@ -100,7 +100,7 @@ void LUBRICATION::TimIntStationary::add_neumann_to_residual()
 void LUBRICATION::TimIntStationary::add_time_integration_specific_vectors(
     bool forcedincrementalsolver)
 {
-  discret_->SetState("prenp", prenp_);
+  discret_->set_state("prenp", prenp_);
 }
 
 
@@ -116,7 +116,7 @@ void LUBRICATION::TimIntStationary::Update(const int num)
 /*----------------------------------------------------------------------*
  |                                                          wirtz 11/15 |
  -----------------------------------------------------------------------*/
-void LUBRICATION::TimIntStationary::ReadRestart(int step)
+void LUBRICATION::TimIntStationary::read_restart(int step)
 {
   IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
   time_ = reader.ReadDouble("time");

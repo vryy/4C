@@ -67,7 +67,7 @@ namespace BEAMINTERACTION
      * \brief Things that need to be done in a separate loop before the actual evaluation loop over
      * all contact pairs. (derived)
      */
-    void PreEvaluate() override{};
+    void pre_evaluate() override{};
 
     /**
      * \brief Evaluate this contact element pair.
@@ -152,9 +152,9 @@ namespace BEAMINTERACTION
     /**
      * \brief Get energy of penalty contact. Not yet implemented.
      */
-    double GetEnergy() const override
+    double get_energy() const override
     {
-      FOUR_C_THROW("GetEnergy not implemented yet!");
+      FOUR_C_THROW("get_energy not implemented yet!");
       return 0.0;
     }
 

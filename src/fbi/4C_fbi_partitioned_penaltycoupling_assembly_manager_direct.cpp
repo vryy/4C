@@ -43,7 +43,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerDir
  *
  */
 void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerDirect::
-    EvaluateForceStiff(const DRT::Discretization& discretization1,
+    evaluate_force_stiff(const DRT::Discretization& discretization1,
         const DRT::Discretization& discretization2, Teuchos::RCP<Epetra_FEVector>& ff,
         Teuchos::RCP<Epetra_FEVector>& fb, Teuchos::RCP<CORE::LINALG::SparseOperator> cff,
         Teuchos::RCP<CORE::LINALG::SparseMatrix>& cbb,
@@ -75,8 +75,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManag
 
   for (auto& elepairptr : assembly_contact_elepairs_)
   {
-    // PreEvaluate the pair
-    elepairptr->PreEvaluate();
+    // pre_evaluate the pair
+    elepairptr->pre_evaluate();
   }
 
   for (auto& elepairptr : assembly_contact_elepairs_)

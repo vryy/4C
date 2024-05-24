@@ -133,7 +133,7 @@ namespace ART
     \brief read restart data
 
     */
-    void ReadRestart(int step, bool CoupledTo3D = false) override;
+    void read_restart(int step, bool CoupledTo3D = false) override;
 
     //! @name access methods for composite algorithms
 

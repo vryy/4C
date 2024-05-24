@@ -176,7 +176,7 @@ namespace STR
 
       // reset
       // remember: sta_ and sti_ are merged and work on the same vectors
-      sta_->ResetStep();
+      sta_->reset_step();
 
       return;
     }

@@ -80,7 +80,7 @@ void DRT::ELEMENTS::FluidHDGType::ComputeNullSpace(
 {
   if (DRT::DiscretizationFaces* facedis = dynamic_cast<DRT::DiscretizationFaces*>(&dis))
   {
-    const Epetra_Map* rowmap = dis.DofRowMap();
+    const Epetra_Map* rowmap = dis.dof_row_map();
     const int lrows = rowmap->NumMyElements();
     double* mode[6];
     for (int i = 0; i < dimns; ++i) mode[i] = &(ns[i * lrows]);

@@ -218,10 +218,10 @@ namespace CORE::GEO
       Node* GetNode(int nid) const;
 
       /// get the mesh's side based on node ids and return the side
-      SideHandle* GetSide(std::vector<int>& nodeids) const;
+      SideHandle* get_side(std::vector<int>& nodeids) const;
 
       /// get the mesh's side based on side id
-      SideHandle* GetSide(int sid) const;
+      SideHandle* get_side(int sid) const;
 
       /// get the mesh's element based on element id
       ElementHandle* GetElement(int eid) const;
@@ -246,17 +246,17 @@ namespace CORE::GEO
           std::vector<plain_volumecell_set>& cell_sets, const DRT::Discretization& dis);
 
       /// write gmsh cut output for number of dofsets and the connected vc sets
-      void DumpGmshNumDOFSets(
+      void dump_gmsh_num_dof_sets(
           std::string filename, bool include_inner, const DRT::Discretization& dis);
 
       /// write gmsh output for volumecells
-      void DumpGmshVolumeCells(std::string name, bool include_inner);
+      void dump_gmsh_volume_cells(std::string name, bool include_inner);
 
       /// write gmsh output for volumecells
       void dump_gmsh_integration_cells(std::string name);
 
       /// write gmsh output for volumecells
-      void DumpGmshVolumeCells(std::string name);
+      void dump_gmsh_volume_cells(std::string name);
 
 
       /*========================================================================*/
@@ -264,7 +264,7 @@ namespace CORE::GEO
       /*========================================================================*/
 
       /// print cell statistics
-      void PrintCellStats();
+      void print_cell_stats();
 
      protected:
       /*========================================================================*/

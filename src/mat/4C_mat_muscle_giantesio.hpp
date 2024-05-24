@@ -264,7 +264,8 @@ namespace MAT
      * @param[in] M Structural tensor of fiber directions
      * @return Fa Active deformation gradient
      */
-    CORE::LINALG::Matrix<3, 3> ActDefGrad(const double omegaa, const CORE::LINALG::Matrix<3, 3>& M);
+    CORE::LINALG::Matrix<3, 3> act_def_grad(
+        const double omegaa, const CORE::LINALG::Matrix<3, 3>& M);
 
     /*!
      * @brief Returns the first derivative of the active deformation gradient Fa w.r.t. omegaa
@@ -292,7 +293,7 @@ namespace MAT
      * @param[in] Fa Active deformation gradient
      * @return invFa Inverse of the active deformation gradient
      */
-    CORE::LINALG::Matrix<3, 3> InvActDefGrad(const CORE::LINALG::Matrix<3, 3>& Fa);
+    CORE::LINALG::Matrix<3, 3> inv_act_def_grad(const CORE::LINALG::Matrix<3, 3>& Fa);
 
     /*!
      * @brief Returns the first derivative of the inverse of the active deformation gradient Fa
@@ -311,7 +312,7 @@ namespace MAT
      * @param[in] currentTime Active deformation gradient
      * @return isActive true, if active; false, if passive
      */
-    bool IsActive(const double& currentTime);
+    bool is_active(const double& currentTime);
 
     /// Giantesio material parameters
     MAT::PAR::MuscleGiantesio* params_{};

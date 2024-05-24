@@ -80,7 +80,7 @@ namespace ADAPTER
     //! @name Vector access
 
     //! initial guess of Newton's method
-    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> initial_guess() const = 0;
 
     //! rhs of Newton's method
     virtual Teuchos::RCP<const Epetra_Vector> RHS() const = 0;
@@ -96,7 +96,7 @@ namespace ADAPTER
     //! @name Misc
 
     //! dof map of vector of unknowns
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const = 0;
+    virtual Teuchos::RCP<const Epetra_Map> dof_row_map() const = 0;
 
     //! direct access to system matrix
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() = 0;
@@ -134,7 +134,7 @@ namespace ADAPTER
     //! @name Time step helpers
     //@{
 
-    virtual void ResetTime(const double dtold) = 0;
+    virtual void reset_time(const double dtold) = 0;
 
     //! Return target time \f$t_{n+1}\f$
     virtual double Time() const = 0;
@@ -153,10 +153,10 @@ namespace ADAPTER
     virtual int Integrate() = 0;
 
     //! start new time step
-    virtual void PrepareTimeStep() = 0;
+    virtual void prepare_time_step() = 0;
 
     //! set time step size
-    virtual void SetDt(const double dtnew) = 0;
+    virtual void set_dt(const double dtnew) = 0;
 
     //! Set time and step
     virtual void SetTimeStep(const double time, const int step) = 0;
@@ -189,7 +189,7 @@ namespace ADAPTER
     virtual void Output() = 0;
 
     //! read restart information for given time step
-    virtual void ReadRestart(const int step) = 0;
+    virtual void read_restart(const int step) = 0;
 
     /*! \brief Reset time step
      *
@@ -199,7 +199,7 @@ namespace ADAPTER
      *
      *  \author mayr.mt \date 08/2013
      */
-    virtual void ResetStep() = 0;
+    virtual void reset_step() = 0;
 
     //@}
 
@@ -260,7 +260,7 @@ namespace ADAPTER
     virtual ~AleBaseAlgorithm() = default;
 
     //! Teuchos::RCP version of ale field solver
-    Teuchos::RCP<Ale> AleField() { return ale_; }
+    Teuchos::RCP<Ale> ale_field() { return ale_; }
 
    private:
     /*! \brief Setup ALE algorithm
@@ -268,8 +268,8 @@ namespace ADAPTER
      *  Setup the ALE algorithm. We allow for overriding some parameters with
      *  values specified in given problem-dependent ParameterList.
      */
-    void SetupAle(const Teuchos::ParameterList& prbdyn,  ///< the problem's parameter list
-        Teuchos::RCP<DRT::Discretization> actdis         ///< pointer to discretization
+    void setup_ale(const Teuchos::ParameterList& prbdyn,  ///< the problem's parameter list
+        Teuchos::RCP<DRT::Discretization> actdis          ///< pointer to discretization
     );
 
     //! ALE field solver

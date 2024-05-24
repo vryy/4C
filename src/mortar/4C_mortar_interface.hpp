@@ -175,9 +175,9 @@ namespace MORTAR
 
     inline bool IsRedistributed() const { return redistributed_; }
 
-    inline Teuchos::RCP<DRT::Discretization>& IDiscret() { return idiscret_; }
+    inline Teuchos::RCP<DRT::Discretization>& i_discret() { return idiscret_; }
 
-    inline Teuchos::RCP<const DRT::Discretization> IDiscret() const { return idiscret_; }
+    inline Teuchos::RCP<const DRT::Discretization> i_discret() const { return idiscret_; }
 
     inline int& Dim() { return dim_; }
 
@@ -371,9 +371,9 @@ namespace MORTAR
     /// @name DataContainer specific functions
     /// @{
 
-    inline bool IsInit() const { return isinit_; }
+    inline bool is_init() const { return isinit_; }
 
-    inline void SetIsInit(bool isinit) { isinit_ = isinit; }
+    inline void set_is_init(bool isinit) { isinit_ = isinit; }
 
     /// @}
 
@@ -604,9 +604,9 @@ namespace MORTAR
     virtual void Print(std::ostream& os) const;
 
     /*!
-    \brief Check whether interface was called FillComplete
+    \brief Check whether interface was called fill_complete
 
-    @return Boolean flag to indicate if FillComplete has been called
+    @return Boolean flag to indicate if fill_complete has been called
     */
     bool Filled() const;
 
@@ -644,8 +644,8 @@ namespace MORTAR
     /*!
     \brief Get interface contact parameter list
     */
-    Teuchos::ParameterList& InterfaceParams() { return imortar_; };
-    const Teuchos::ParameterList& InterfaceParams() const { return imortar_; };
+    Teuchos::ParameterList& interface_params() { return imortar_; };
+    const Teuchos::ParameterList& interface_params() const { return imortar_; };
 
     /*!
     \brief Get quadratic 2d/3d slave element flag
@@ -682,7 +682,7 @@ namespace MORTAR
       if (Filled())
         return oldnodecolmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -694,7 +694,7 @@ namespace MORTAR
       if (Filled())
         return oldelecolmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -706,7 +706,7 @@ namespace MORTAR
       if (Filled())
         return snoderowmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -717,7 +717,7 @@ namespace MORTAR
     */
     const Teuchos::RCP<Epetra_Map>& PSlaveRowNodes() const
     {
-      if (not Filled()) FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
+      if (not Filled()) FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
 
       return interface_data_->PSNodeRowMap();
     }
@@ -730,7 +730,7 @@ namespace MORTAR
       if (Filled())
         return mnoderowmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -741,7 +741,7 @@ namespace MORTAR
     */
     const Teuchos::RCP<Epetra_Map>& PMasterRowNodes() const
     {
-      if (not Filled()) FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
+      if (not Filled()) FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
 
       return interface_data_->PMNodeRowMap();
     }
@@ -754,7 +754,7 @@ namespace MORTAR
       if (Filled())
         return snodecolmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -766,7 +766,7 @@ namespace MORTAR
       if (Filled())
         return mnodecolmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -778,7 +778,7 @@ namespace MORTAR
       if (Filled())
         return snoderowmapbound_;
       else
-        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -790,7 +790,7 @@ namespace MORTAR
       if (Filled())
         return snodecolmapbound_;
       else
-        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -802,7 +802,7 @@ namespace MORTAR
       if (Filled())
         return mnoderowmapnobound_;
       else
-        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -814,7 +814,7 @@ namespace MORTAR
       if (Filled())
         return mnodecolmapnobound_;
       else
-        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -826,7 +826,7 @@ namespace MORTAR
       if (Filled())
         return selerowmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -838,7 +838,7 @@ namespace MORTAR
       if (Filled())
         return melerowmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -850,7 +850,7 @@ namespace MORTAR
       if (Filled())
         return selecolmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -862,7 +862,7 @@ namespace MORTAR
       if (Filled())
         return melecolmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -874,7 +874,7 @@ namespace MORTAR
       if (Filled())
         return sdofrowmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -886,7 +886,7 @@ namespace MORTAR
       if (Filled())
         return sdofcolmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -897,7 +897,7 @@ namespace MORTAR
     */
     const Teuchos::RCP<Epetra_Map>& PSlaveRowDofs() const
     {
-      if (not Filled()) FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
+      if (not Filled()) FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
 
       return interface_data_->PSDofRowMap();
     }
@@ -910,7 +910,7 @@ namespace MORTAR
       if (Filled())
         return mdofrowmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -922,7 +922,7 @@ namespace MORTAR
       if (Filled())
         return mdofcolmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -933,7 +933,7 @@ namespace MORTAR
     */
     const Teuchos::RCP<Epetra_Map>& PMasterRowDofs() const
     {
-      if (not Filled()) FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
+      if (not Filled()) FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
 
       return interface_data_->PMDofRowMap();
     }
@@ -946,7 +946,7 @@ namespace MORTAR
       if (Filled())
         return lmdofmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -1007,7 +1007,7 @@ namespace MORTAR
 
     \return Filled()==true
     */
-    void FillComplete(const bool isFinalParallelDistribution, const int maxdof = 0,
+    void fill_complete(const bool isFinalParallelDistribution, const int maxdof = 0,
         const double meanVelocity = 0.0);
 
     /*!
@@ -1016,7 +1016,7 @@ namespace MORTAR
     1. If required by \c perform_rebalancing, let's rebalance the interface discretizations.
     1. If required by \c enforce_ghosting_update, let's update the ghosting of the master-sided
     interface.
-    1. FillComplete to update all relevant maps on all procs.
+    1. fill_complete to update all relevant maps on all procs.
     1. Re-create search tree, if ghosting has changed.
 
     @param perform_rebalancing Flag to enforce rebalancing of interface discretizations
@@ -1045,7 +1045,7 @@ namespace MORTAR
     Internally, we call ZOLTAN to re-partition both slave and
     master side of the interface independently. This results in new
     "optimal" node/element maps of the interface discretization.
-    Note that after Redistribute(), we must call FillComplete() again.
+    Note that after Redistribute(), we must call fill_complete() again.
 
     References
     ==========
@@ -1122,7 +1122,7 @@ namespace MORTAR
     \param[in] Enum to encode type of state
     \param[in] Vector with state data
     */
-    void SetState(const enum StateType& statetype, const Epetra_Vector& vec);
+    void set_state(const enum StateType& statetype, const Epetra_Vector& vec);
 
     /*!
     \brief Create integration cells for interface
@@ -1357,7 +1357,7 @@ namespace MORTAR
     \param[in] outParams Parameter list with output configuration and auxiliary output data
     \param[in] requiredEntries List of required parameter list entries
 
-    \sa OutputState()
+    \sa output_state()
      */
     bool CheckOutputList(const Teuchos::ParameterList& outParams,
         const std::vector<std::string>& requiredEntries) const;
@@ -1434,7 +1434,7 @@ namespace MORTAR
     \brief Evaluate node-to-segment coupling
 
     */
-    virtual void EvaluateNTS();
+    virtual void evaluate_nts();
 
     /*!
     \brief Evaluate line-to-segment coupling
@@ -1471,7 +1471,7 @@ namespace MORTAR
            starts
 
     */
-    virtual void PreEvaluate(const int& step, const int& iter);
+    virtual void pre_evaluate(const int& step, const int& iter);
 
     /*!
     \brief Evaluate mortar interface
@@ -1487,7 +1487,7 @@ namespace MORTAR
     \brief do scaling and other operations after real coupling
 
     */
-    virtual void PostEvaluate(const int step = 0, const int iter = 0);
+    virtual void post_evaluate(const int step = 0, const int iter = 0);
 
     /*!
     \brief find master nodes for one snode
@@ -1538,7 +1538,7 @@ namespace MORTAR
     //! @{
 
     /*!
-    \brief FillComplete the mortar interface
+    \brief fill_complete the mortar interface
 
     The methods completes construction phase of a mortar interface. It creates all row/column maps
     of the mortar interface discretization. Extension of the interface ghosting is done
@@ -1554,7 +1554,7 @@ namespace MORTAR
     @param[in] isFinalParallelDistribution Is this the final parallel distribution?
     @param[in] maxdof Largest GID of underlying solid discretization
     */
-    virtual void FillCompleteNew(const bool isFinalParallelDistribution, const int maxdof = 0);
+    virtual void fill_complete_new(const bool isFinalParallelDistribution, const int maxdof = 0);
 
     /*!
     \brief Extend the interface ghosting while guaranteeing sufficient extension
@@ -1599,7 +1599,7 @@ namespace MORTAR
     however we do not need (or even want) slave redundancy. Redundancy of the
     master side is controlled via the input file.
 
-    \post The interface discretization is _NOT_ FillComplete.
+    \post The interface discretization is _NOT_ fill_complete.
 
     \param[in] isFinalParallelDistribution Is this parallel distribution final?
     \param[in] meanVelocity Mean velocity of this interface (needed for contact with binning)

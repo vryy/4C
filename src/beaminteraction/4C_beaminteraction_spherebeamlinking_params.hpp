@@ -59,77 +59,77 @@ namespace BEAMINTERACTION
     void ResetTimeStep(double structure_delta_time);
 
     //! returns the isinit_ flag
-    inline const bool& IsInit() const { return isinit_; };
+    inline const bool& is_init() const { return isinit_; };
 
     //! returns the issetup_ flag
-    inline const bool& IsSetup() const { return issetup_; };
+    inline const bool& is_setup() const { return issetup_; };
 
     //! Checks the init and setup status
-    inline void CheckInitSetup() const
+    inline void check_init_setup() const
     {
-      if (!IsInit() or !IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
+      if (!is_init() or !is_setup()) FOUR_C_THROW("Call Init() and Setup() first!");
     }
 
     //! Checks the init status
-    inline void CheckInit() const
+    inline void check_init() const
     {
-      if (!IsInit()) FOUR_C_THROW("Init() has not been called, yet!");
+      if (!is_init()) FOUR_C_THROW("Init() has not been called, yet!");
     }
 
     /// linker material id
     Teuchos::RCP<MAT::CrosslinkerMat> GetLinkerMaterial() const
     {
       /// HACK: FIX IF MORE THAN ONE CROSSLINKER TYPE
-      CheckInitSetup();
+      check_init_setup();
       return mat_.back();
     };
 
     /// time step for stochastic events concerning crosslinking
     double const& DeltaTime() const
     {
-      CheckInitSetup();
+      check_init_setup();
       return deltatime_;
     };
 
     /// contraction rate of cell (integrin linker) in [microm/s]
     double ContractionRate(INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
     {
-      CheckInitSetup();
+      check_init_setup();
       return contractionrate_.at(linkertype);
     };
 
     /// number of linker per type
     std::vector<int> const& MaxNumLinkerPerType() const
     {
-      CheckInitSetup();
+      check_init_setup();
       return maxnumlinkerpertype_;
     };
 
     /// material number for linker types
     std::vector<int> const& MatLinkerPerType() const
     {
-      CheckInitSetup();
+      check_init_setup();
       return matlinkerpertype_;
     };
 
     /// get all active linker types
     std::vector<INPAR::BEAMINTERACTION::CrosslinkerType> const& LinkerTypes() const
     {
-      CheckInitSetup();
+      check_init_setup();
       return linkertypes_;
     };
 
     // distance between two binding spots on a filament
     double filament_bspot_interval_global(INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
     {
-      CheckInitSetup();
+      check_init_setup();
       return filamentbspotintervalglobal_.at(linkertype);
     };
 
     // distance between two binding spots on a filament
     double filament_bspot_interval_local(INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
     {
-      CheckInitSetup();
+      check_init_setup();
       return filamentbspotintervallocal_.at(linkertype);
     };
 
@@ -137,7 +137,7 @@ namespace BEAMINTERACTION
     std::pair<double, double> const& filament_bspot_range_local(
         INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
     {
-      CheckInitSetup();
+      check_init_setup();
       return filamentbspotrangelocal_.at(linkertype);
     };
 
@@ -145,7 +145,7 @@ namespace BEAMINTERACTION
     std::pair<double, double> const& filament_bspot_range_global(
         INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
     {
-      CheckInitSetup();
+      check_init_setup();
       return filamentbspotrangeglobal_.at(linkertype);
     };
 

@@ -104,7 +104,7 @@ namespace BEAMINTERACTION
       if (neighbors1->GetLeftNeighbor() != nullptr)
       {
         const CORE::FE::CellType distype_ele1l = neighbors1->GetLeftNeighbor()->Shape();
-        const int numnode_ele1l = neighbors1->GetLeftNeighbor()->NumNode();
+        const int numnode_ele1l = neighbors1->GetLeftNeighbor()->num_node();
         const int node_ele1l = neighbors1->GetLeftConNode() + 1;
 
         CORE::LINALG::SerialDenseMatrix temppos(3, numnode_ele1l);
@@ -138,7 +138,7 @@ namespace BEAMINTERACTION
       if (neighbors1->GetRightNeighbor() != nullptr)
       {
         const CORE::FE::CellType distype_ele1r = neighbors1->GetRightNeighbor()->Shape();
-        const int numnode_ele1r = neighbors1->GetRightNeighbor()->NumNode();
+        const int numnode_ele1r = neighbors1->GetRightNeighbor()->num_node();
         const int node_ele1r = neighbors1->GetRightConNode() + 1;
 
         CORE::LINALG::SerialDenseMatrix temppos(3, numnode_ele1r);

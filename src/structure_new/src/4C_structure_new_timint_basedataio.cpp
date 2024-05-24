@@ -147,7 +147,7 @@ void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
 void STR::TIMINT::BaseDataIO::Setup()
 {
   // safety check
-  FOUR_C_ASSERT(IsInit(), "Init() has not been called, yet!");
+  FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
 
   if (outputeveryiter_) writer_every_iter_ = Teuchos::rcp(new IO::EveryIterationWriter());
 
@@ -156,9 +156,9 @@ void STR::TIMINT::BaseDataIO::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataIO::CheckInitSetup() const
+void STR::TIMINT::BaseDataIO::check_init_setup() const
 {
-  FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*

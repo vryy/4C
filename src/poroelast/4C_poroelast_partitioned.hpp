@@ -29,7 +29,7 @@ namespace POROELAST
         Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter);
 
     //! proceed one time step (prepare, solve, update)
-    void DoTimeStep() override;
+    void do_time_step() override;
 
     //! initialise system
     void SetupSystem() override;
@@ -42,13 +42,13 @@ namespace POROELAST
 
    protected:
     //! prepare new time step
-    void PrepareTimeStep() override;
+    void prepare_time_step() override;
 
     //! solve one time step of structural problem
-    void DoStructStep();
+    void do_struct_step();
 
     //! solve one time step of fluid problem
-    void DoFluidStep();
+    void do_fluid_step();
 
     //! solve one time step (iteration between fields)
     void Solve() override;
@@ -57,7 +57,7 @@ namespace POROELAST
     void UpdateAndOutput();
 
     //! convergence check of outer loop
-    bool ConvergenceCheck(int itnum);
+    bool convergence_check(int itnum);
 
     //! fluid increment of the outer loop
     Teuchos::RCP<Epetra_Vector> fluidincnp_;

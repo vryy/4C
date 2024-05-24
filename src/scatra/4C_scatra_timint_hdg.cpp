@@ -80,10 +80,10 @@ void SCATRA::TimIntHDG::Setup()
       Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(0, eledofs, 0, false));
   if (discret_->AddDofSet(dofsetaux) != 2)
     FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-  discret_->FillComplete();
+  discret_->fill_complete();
 
   // HDG vectors passed to the element
-  const Epetra_Map *intdofrowmap = discret_->DofRowMap(nds_intvar_);
+  const Epetra_Map *intdofrowmap = discret_->dof_row_map(nds_intvar_);
   intphinp_ = CORE::LINALG::CreateVector(*intdofrowmap, true);
   intphin_ = CORE::LINALG::CreateVector(*intdofrowmap, true);
 
@@ -91,9 +91,9 @@ void SCATRA::TimIntHDG::Setup()
   if (discret_->Comm().MyPID() == 0)
   {
     std::cout << "Number of degrees of freedom in HDG system: "
-              << discret_->DofRowMap(0)->NumGlobalElements() << std::endl;
+              << discret_->dof_row_map(0)->NumGlobalElements() << std::endl;
     std::cout << "Number of degrees of freedom of interior variables: "
-              << discret_->DofRowMap(nds_intvar_)->NumGlobalElements() << std::endl;
+              << discret_->dof_row_map(nds_intvar_)->NumGlobalElements() << std::endl;
   }
 
   // implement ost and bdf2 through gen-alpha facilities
@@ -225,10 +225,10 @@ void SCATRA::TimIntHDG::SetTheta()
 void SCATRA::TimIntHDG::add_time_integration_specific_vectors(bool forcedincrementalsolver)
 {
   // set hdg vector and interior variables vector
-  discret_->SetState(0, "phin", phin_);
-  discret_->SetState(0, "phiaf", phinp_);
-  discret_->SetState(nds_intvar_, "intphinp", intphinp_);
-  discret_->SetState(nds_intvar_, "intphin", intphin_);
+  discret_->set_state(0, "phin", phin_);
+  discret_->set_state(0, "phiaf", phinp_);
+  discret_->set_state(nds_intvar_, "intphinp", intphinp_);
+  discret_->set_state(nds_intvar_, "intphin", intphin_);
 }  // add_time_integration_specific_vectors
 
 /*----------------------------------------------------------------------*
@@ -305,8 +305,8 @@ namespace
     Teuchos::ParameterList eleparams;
     CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::interpolate_hdg_to_node, eleparams);
-    dis.SetState(0, "phiaf", traceValues);
-    dis.SetState(nds_intvar_, "intphinp", interiorValues);
+    dis.set_state(0, "phiaf", traceValues);
+    dis.set_state(nds_intvar_, "intphinp", interiorValues);
     DRT::Element::LocationArray la(ndofs);
     CORE::LINALG::SerialDenseMatrix dummyMat;
     CORE::LINALG::SerialDenseVector dummyVec;
@@ -319,21 +319,21 @@ namespace
     {
       DRT::Element *ele = dis.lColElement(el);
       ele->LocationVector(dis, la, false);
-      interpolVec.size(ele->NumNode() * (2 + ndim));
+      interpolVec.size(ele->num_node() * (2 + ndim));
 
       ele->Evaluate(eleparams, dis, la, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
 
       // sum values on nodes into vectors and record the touch count (build average of values)
-      for (int i = 0; i < ele->NumNode(); ++i)
+      for (int i = 0; i < ele->num_node(); ++i)
       {
         DRT::Node *node = ele->Nodes()[i];
         const int localIndex = dis.NodeRowMap()->LID(node->Id());
         if (localIndex < 0) continue;
         touchCount[localIndex]++;
         (*phi)[localIndex] += interpolVec(i);
-        (*tracephi)[localIndex] += interpolVec(i + ele->NumNode());
+        (*tracephi)[localIndex] += interpolVec(i + ele->num_node());
         for (int d = 0; d < ndim; ++d)
-          (*gradphi)[d][localIndex] += interpolVec(i + (d + 2) * ele->NumNode());
+          (*gradphi)[d][localIndex] += interpolVec(i + (d + 2) * ele->num_node());
       }
     }
 
@@ -352,7 +352,7 @@ namespace
 /*----------------------------------------------------------------------*
  | output of solution vector to binio                     hoermann 09/15|
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntHDG::OutputState()
+void SCATRA::TimIntHDG::output_state()
 {
   // output of solution
 
@@ -372,7 +372,7 @@ void SCATRA::TimIntHDG::OutputState()
 
   output_->WriteVector("elementdegree", elementdegree_, IO::elementvector);
 
-}  // OutputState
+}  // output_state
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -390,7 +390,7 @@ void SCATRA::TimIntHDG::WriteRestart() const
 /*----------------------------------------------------------------------*
  | read restart                                          hoermann 09/15 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntHDG::ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input)
+void SCATRA::TimIntHDG::read_restart(const int step, Teuchos::RCP<IO::InputControl> input)
 {
   IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
 
@@ -439,7 +439,7 @@ void SCATRA::TimIntHDG::ReadRestart(const int step, Teuchos::RCP<IO::InputContro
   // replace all ghosted element with the original thus the correct polynomial degree is used
   discret_->export_column_elements(*discret_->ElementColMap(), false, false);
 
-  hdgdis_->FillComplete();
+  hdgdis_->fill_complete();
 
   // store the number of dofs per element on vector
   for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
@@ -458,22 +458,22 @@ void SCATRA::TimIntHDG::ReadRestart(const int step, Teuchos::RCP<IO::InputContro
 
   hdgdis_->assign_degrees_of_freedom(0);
 
-  // clear map cache since after every FillComplete() / assign_degrees_of_freedom() old maps are
+  // clear map cache since after every fill_complete() / assign_degrees_of_freedom() old maps are
   // stored in the mapstack
   output_->ClearMapCache();
 
   // reset the residual, increment and sysmat to the size
-  residual_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
-  increment_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
-  neumann_loads_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
+  residual_.reset(new Epetra_Vector(*(discret_->dof_row_map())));
+  increment_.reset(new Epetra_Vector(*(discret_->dof_row_map())));
+  neumann_loads_.reset(new Epetra_Vector(*(discret_->dof_row_map())));
   sysmat_ = Teuchos::null;
-  sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(discret_->DofRowMap()), 27));
+  sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(discret_->dof_row_map()), 27));
 
   // reset the state vectors
-  intphinp_.reset(new Epetra_Vector(*(discret_->DofRowMap(nds_intvar_)), true));
-  intphin_.reset(new Epetra_Vector(*(discret_->DofRowMap(nds_intvar_)), true));
-  phinp_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
-  phin_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
+  intphinp_.reset(new Epetra_Vector(*(discret_->dof_row_map(nds_intvar_)), true));
+  intphin_.reset(new Epetra_Vector(*(discret_->dof_row_map(nds_intvar_)), true));
+  phinp_.reset(new Epetra_Vector(*(discret_->dof_row_map())));
+  phin_.reset(new Epetra_Vector(*(discret_->dof_row_map())));
 
   // read state vectors that are needed for hdg
   reader.ReadVector(phinp_, "phinp_trace");
@@ -514,17 +514,17 @@ void SCATRA::TimIntHDG::SetInitialField(
           "action", SCATRA::Action::set_initial_field, eleparams);
       eleparams.set<int>("funct", startfuncno);
 
-      discret_->SetState("phiaf", phinp_);
-      discret_->SetState("phin", phin_);
-      discret_->SetState(nds_intvar_, "intphin", intphin_);
-      discret_->SetState(nds_intvar_, "intphinp", intphinp_);
+      discret_->set_state("phiaf", phinp_);
+      discret_->set_state("phin", phin_);
+      discret_->set_state(nds_intvar_, "intphin", intphin_);
+      discret_->set_state(nds_intvar_, "intphinp", intphinp_);
 
       CORE::LINALG::SerialDenseMatrix dummyMat;
       CORE::LINALG::SerialDenseVector updateVec1, updateVec2, dummyVec;
       DRT::Element::LocationArray la(discret_->NumDofSets());
 
-      const Epetra_Map *dofrowmap = discret_->DofRowMap();
-      const Epetra_Map *intdofrowmap = discret_->DofRowMap(nds_intvar_);
+      const Epetra_Map *dofrowmap = discret_->dof_row_map();
+      const Epetra_Map *intdofrowmap = discret_->dof_row_map(nds_intvar_);
       double error = 0;
 
       for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
@@ -642,16 +642,16 @@ void SCATRA::TimIntHDG::update_interior_variables(Teuchos::RCP<Epetra_Vector> up
   Teuchos::ParameterList eleparams;
   CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::update_interior_variables, eleparams);
-  discret_->SetState("phiaf", phinp_);
-  discret_->SetState("phin", phin_);
-  discret_->SetState(nds_intvar_, "intphin", intphin_);
-  discret_->SetState(nds_intvar_, "intphinp", intphinp_);
+  discret_->set_state("phiaf", phinp_);
+  discret_->set_state("phin", phin_);
+  discret_->set_state(nds_intvar_, "intphin", intphin_);
+  discret_->set_state(nds_intvar_, "intphinp", intphinp_);
 
   CORE::LINALG::SerialDenseMatrix dummyMat;
   CORE::LINALG::SerialDenseVector dummyVec;
   CORE::LINALG::SerialDenseVector updateVec;
   DRT::Element::LocationArray la(discret_->NumDofSets());
-  const Epetra_Map *intdofrowmap = discret_->DofRowMap(nds_intvar_);
+  const Epetra_Map *intdofrowmap = discret_->dof_row_map(nds_intvar_);
 
   for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
   {
@@ -680,21 +680,21 @@ void SCATRA::TimIntHDG::update_interior_variables(Teuchos::RCP<Epetra_Vector> up
 /*-------------------------------------------------------------------------------------*
  | finite difference check for system matrix (for debugging only)       hoermann 09/15 |
  *-------------------------------------------------------------------------------------*/
-void SCATRA::TimIntHDG::FDCheck()
+void SCATRA::TimIntHDG::fd_check()
 {
   // make a copy of state variables to undo perturbations later
   Teuchos::RCP<Epetra_Vector> phinp_original = Teuchos::rcp(new Epetra_Vector(*phinp_));
 
   discret_->ClearState(true);
 
-  const Epetra_Map *dofrowmap = discret_->DofRowMap(0);
-  const Epetra_Map *intdofrowmap = discret_->DofRowMap(nds_intvar_);
+  const Epetra_Map *dofrowmap = discret_->dof_row_map(0);
+  const Epetra_Map *intdofrowmap = discret_->dof_row_map(nds_intvar_);
 
   Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1, systemmatrix2;
   Teuchos::RCP<Epetra_Vector> systemvector1, systemvector2, systemvector3;
 
   // create matrix and vector for calculation of sysmat and assemble
-  systemmatrix1 = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(discret_->DofRowMap()), 27));
+  systemmatrix1 = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(discret_->dof_row_map()), 27));
   systemvector1 = CORE::LINALG::CreateVector(*dofrowmap, true);
   CORE::FE::AssembleStrategy strategy(
       0, 0, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);
@@ -715,10 +715,10 @@ void SCATRA::TimIntHDG::FDCheck()
   update_interior_variables(intphitemp);
 
   discret_->ClearState(true);
-  discret_->SetState("phiaf", phinp_);
-  discret_->SetState(nds_intvar_, "intphin", intphin_);
-  discret_->SetState(0, "phin", phin_);
-  discret_->SetState(nds_intvar_, "intphinp", intphitemp);
+  discret_->set_state("phiaf", phinp_);
+  discret_->set_state(nds_intvar_, "intphin", intphin_);
+  discret_->set_state(0, "phin", phin_);
+  discret_->set_state(nds_intvar_, "intphinp", intphitemp);
   Teuchos::ParameterList eleparams;
   CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_mat_and_rhs, eleparams);
@@ -784,10 +784,10 @@ void SCATRA::TimIntHDG::FDCheck()
 
       discret_->ClearState(true);
 
-      discret_->SetState("phiaf", phinp_);
-      discret_->SetState(nds_intvar_, "intphin", intphin_);
-      discret_->SetState(0, "phin", phin_);
-      discret_->SetState(nds_intvar_, "intphinp", intphitemp);
+      discret_->set_state("phiaf", phinp_);
+      discret_->set_state(nds_intvar_, "intphin", intphin_);
+      discret_->set_state(0, "phin", phin_);
+      discret_->set_state(nds_intvar_, "intphinp", intphitemp);
 
       Teuchos::ParameterList eleparams;
       CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
@@ -815,7 +815,7 @@ void SCATRA::TimIntHDG::FDCheck()
       for (int j = 0; j < phinp_->MyLength(); ++j)
         (*fdvec)[j] = -(*systemvector1)[j] / eps + (*residualVec)[j] / eps;
 
-      for (int rowlid = 0; rowlid < discret_->DofRowMap()->NumMyElements(); ++rowlid)
+      for (int rowlid = 0; rowlid < discret_->dof_row_map()->NumMyElements(); ++rowlid)
       {
         // get global index of current matrix row
         const int rowgid = sysmatcopy->RowMap().GID(rowlid);
@@ -874,7 +874,7 @@ void SCATRA::TimIntHDG::evaluate_error_compared_to_analytical_sol()
     case INPAR::SCATRA::calcerror_byfunction:
     case INPAR::SCATRA::calcerror_spherediffusion:
     {
-      Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors = ComputeError();
+      Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors = compute_error();
       if (errors == Teuchos::null)
         FOUR_C_THROW("It was not possible to compute error. Check the error function number.");
 
@@ -940,7 +940,7 @@ void SCATRA::TimIntHDG::evaluate_error_compared_to_analytical_sol()
 /*----------------------------------------------------------------------------------*
  | compute relative error with reference to analytical solution    berardocco 08/20 |
  *----------------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SerialDenseVector> SCATRA::TimIntHDG::ComputeError() const
+Teuchos::RCP<CORE::LINALG::SerialDenseVector> SCATRA::TimIntHDG::compute_error() const
 {
   // If we are here it means that we either arrived at the end and we are checking the results or
   // that we specified that we want to compute the error. In any case, if the error function was not
@@ -958,8 +958,8 @@ Teuchos::RCP<CORE::LINALG::SerialDenseVector> SCATRA::TimIntHDG::ComputeError() 
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("phiaf", phinp_);
-  discret_->SetState(nds_intvar_, "intphinp", intphinp_);
+  discret_->set_state("phiaf", phinp_);
+  discret_->set_state(nds_intvar_, "intphinp", intphinp_);
   // get (squared) error values
   // The error is computed for the transported scalar and its gradient. Notice that so far only
   // the L2 error is computed, feel free to extend the calculations to any error measure needed
@@ -976,15 +976,15 @@ Teuchos::RCP<CORE::LINALG::SerialDenseVector> SCATRA::TimIntHDG::ComputeError() 
 /*----------------------------------------------------------------------*
  | prepare time loop                                     hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntHDG::PrepareTimeLoop()
+void SCATRA::TimIntHDG::prepare_time_loop()
 {
   // calculate matrices on element
   CalcMatInitial();
 
   // call base class routine
-  ScaTraTimIntImpl::PrepareTimeLoop();
+  ScaTraTimIntImpl::prepare_time_loop();
 
-}  // SCATRA::TimIntHDG::PrepareTimeLoop
+}  // SCATRA::TimIntHDG::prepare_time_loop
 
 
 /*----------------------------------------------------------------------*
@@ -1001,16 +1001,16 @@ void SCATRA::TimIntHDG::CalcMatInitial()
   CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_mat_initial, eleparams);
 
-  discret_->SetState("phiaf", phinp_);
-  discret_->SetState("phin", phin_);
-  discret_->SetState(nds_intvar_, "intphin", intphin_);
-  discret_->SetState(nds_intvar_, "intphinp", intphinp_);
+  discret_->set_state("phiaf", phinp_);
+  discret_->set_state("phin", phin_);
+  discret_->set_state(nds_intvar_, "intphin", intphin_);
+  discret_->set_state(nds_intvar_, "intphinp", intphinp_);
 
   Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1, systemmatrix2;
   Teuchos::RCP<Epetra_Vector> systemvector1, systemvector2, systemvector3;
 
   // create matrix and vector for calculation of sysmat and assemble
-  systemmatrix1 = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(discret_->DofRowMap()), 27));
+  systemmatrix1 = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(discret_->dof_row_map()), 27));
   CORE::FE::AssembleStrategy strategy(
       0, 0, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
@@ -1092,8 +1092,8 @@ void SCATRA::TimIntHDG::AdaptDegree()
   CORE::LINALG::SerialDenseMatrix dummyMat;
   CORE::LINALG::SerialDenseVector dummyVec;
 
-  discret_->SetState("phiaf", phinp_);
-  discret_->SetState(nds_intvar_, "intphinp", intphinp_);
+  discret_->set_state("phiaf", phinp_);
+  discret_->set_state(nds_intvar_, "intphinp", intphinp_);
 
   // get cpu time
   //  const double tccalcerr = Teuchos::Time::wallTime();
@@ -1179,7 +1179,7 @@ void SCATRA::TimIntHDG::AdaptDegree()
   // replace all ghosted element with the original thus the correct polynomial degree is used
   discret_->export_column_elements(*discret_->ElementColMap(), false, false);
 
-  hdgdis_->FillComplete();
+  hdgdis_->fill_complete();
 
   // store the number of dofs per element on vector
   for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
@@ -1198,7 +1198,7 @@ void SCATRA::TimIntHDG::AdaptDegree()
 
   hdgdis_->assign_degrees_of_freedom(0);
 
-  // clear map cache since after every FillComplete() / assign_degrees_of_freedom() old maps are
+  // clear map cache since after every fill_complete() / assign_degrees_of_freedom() old maps are
   // stored in the mapstack
   output_->ClearMapCache();
 
@@ -1211,17 +1211,17 @@ void SCATRA::TimIntHDG::AdaptDegree()
   CORE::LINALG::Export(*intphinp_, *intphinp_old);
 
   // reset the residual, increment and sysmat to the size of the adapted new dofset
-  residual_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
-  increment_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
-  neumann_loads_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
+  residual_.reset(new Epetra_Vector(*(discret_->dof_row_map())));
+  increment_.reset(new Epetra_Vector(*(discret_->dof_row_map())));
+  neumann_loads_.reset(new Epetra_Vector(*(discret_->dof_row_map())));
   sysmat_ = Teuchos::null;
-  sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(discret_->DofRowMap()), 27));
+  sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(discret_->dof_row_map()), 27));
 
   // reset the state vectors
-  intphinp_.reset(new Epetra_Vector(*(discret_->DofRowMap(nds_intvar_)), true));
-  intphin_.reset(new Epetra_Vector(*(discret_->DofRowMap(nds_intvar_)), true));
-  phinp_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
-  phin_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
+  intphinp_.reset(new Epetra_Vector(*(discret_->dof_row_map(nds_intvar_)), true));
+  intphin_.reset(new Epetra_Vector(*(discret_->dof_row_map(nds_intvar_)), true));
+  phinp_.reset(new Epetra_Vector(*(discret_->dof_row_map())));
+  phin_.reset(new Epetra_Vector(*(discret_->dof_row_map())));
 
   //  // end time measurement for element
   //  double dtfillcomplete=Teuchos::Time::wallTime()-tcfillcomplete;
@@ -1284,8 +1284,8 @@ void SCATRA::TimIntHDG::AdaptVariableVector(Teuchos::RCP<Epetra_Vector> phi_new,
   eleparams.set<int>("nds_intvar_old", nds_intvar_old);
 
   // dof row map for adapted dofset
-  const Epetra_Map *intdofrowmap = discret_->DofRowMap(nds_intvar_);
-  const Epetra_Map *dofrowmap = discret_->DofRowMap(0);
+  const Epetra_Map *intdofrowmap = discret_->dof_row_map(nds_intvar_);
+  const Epetra_Map *dofrowmap = discret_->dof_row_map(0);
 
 
   // set old state vector on parameter list
@@ -1358,16 +1358,16 @@ void SCATRA::TimIntHDG::AdaptVariableVector(Teuchos::RCP<Epetra_Vector> phi_new,
 /*----------------------------------------------------------------------*
  | chooses the assembly process for matrix and rhs       hoermann 06/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntHDG::AssembleMatAndRHS()
+void SCATRA::TimIntHDG::assemble_mat_and_rhs()
 {
   if (!CORE::UTILS::IntegralValue<int>(*params_, "SEMIIMPLICIT"))
-    SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS();
+    SCATRA::ScaTraTimIntImpl::assemble_mat_and_rhs();
   else  // in semi-implicit evaluation matrix does not change, thus only rhs is assembled in every
         // step
     AssembleRHS();
 
   return;
-}  // TimIntHDG::AssembleMatAndRHS
+}  // TimIntHDG::assemble_mat_and_rhs
 
 /*----------------------------------------------------------------------*
  | contains the assembly process only for rhs            hoermann 06/16 |

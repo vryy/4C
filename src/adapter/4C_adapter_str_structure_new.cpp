@@ -97,7 +97,7 @@ void ADAPTER::StructureBaseAlgorithmNew::Init(const Teuchos::ParameterList& prbd
  *----------------------------------------------------------------------------*/
 void ADAPTER::StructureBaseAlgorithmNew::Setup()
 {
-  if (not IsInit()) FOUR_C_THROW("You have to call Init() first!");
+  if (not is_init()) FOUR_C_THROW("You have to call Init() first!");
 
   // major switch to different time integrators
   switch (CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(*sdyn_, "DYNAMICTYP"))
@@ -112,7 +112,7 @@ void ADAPTER::StructureBaseAlgorithmNew::Setup()
     case INPAR::STR::dyna_ab4:
     case INPAR::STR::dyna_euma:
     case INPAR::STR::dyna_euimsto:
-      SetupTimInt();  // <-- here is the show
+      setup_tim_int();  // <-- here is the show
       break;
     default:
       FOUR_C_THROW(
@@ -130,8 +130,9 @@ void ADAPTER::StructureBaseAlgorithmNew::register_model_evaluator(
     const std::string name, Teuchos::RCP<STR::MODELEVALUATOR::Generic> me)
 {
   // safety checks
-  if (not IsInit()) FOUR_C_THROW("Init(...) must be called before register_model_evaluator(...) !");
-  if (IsSetup()) FOUR_C_THROW("register_model_evaluator(...) must be called before Setup() !");
+  if (not is_init())
+    FOUR_C_THROW("Init(...) must be called before register_model_evaluator(...) !");
+  if (is_setup()) FOUR_C_THROW("register_model_evaluator(...) must be called before Setup() !");
 
   // set RCP ptr to model evaluator in problem dynamic parameter list
   const_cast<Teuchos::ParameterList&>(*prbdyn_).set<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
@@ -141,9 +142,9 @@ void ADAPTER::StructureBaseAlgorithmNew::register_model_evaluator(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
+void ADAPTER::StructureBaseAlgorithmNew::setup_tim_int()
 {
-  if (not IsInit()) FOUR_C_THROW("You have to call Init() first!");
+  if (not is_init()) FOUR_C_THROW("You have to call Init() first!");
 
   // get the problem instance
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
@@ -164,12 +165,12 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   if (actdis_->GetCondition("PointCoupling") != nullptr)
   {
     std::vector<Teuchos::RCP<DRT::Discretization>> actdis_vec(1, actdis_);
-    actdis_vec[0]->FillComplete(false, false, false);
+    actdis_vec[0]->fill_complete(false, false, false);
     CORE::REBALANCE::RebalanceDiscretizationsByBinning(actdis_vec, true);
   }
   else if (not actdis_->Filled() || not actdis_->HaveDofs())
   {
-    actdis_->FillComplete();
+    actdis_->fill_complete();
   }
 
   // ---------------------------------------------------------------------------
@@ -301,7 +302,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
 void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
     std::set<enum INPAR::STR::ModelType>& modeltypes) const
 {
-  if (not IsInit()) FOUR_C_THROW("You have to call Init() first!");
+  if (not is_init()) FOUR_C_THROW("You have to call Init() first!");
   // ---------------------------------------------------------------------------
   // check for meshtying and contact conditions
   // ---------------------------------------------------------------------------
@@ -471,7 +472,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   // check for beam interactions (either contact or potential-based)
   // ---------------------------------------------------------------------------
   // get beam contact strategy
-  const Teuchos::ParameterList& beamcontact = GLOBAL::Problem::Instance()->BeamContactParams();
+  const Teuchos::ParameterList& beamcontact = GLOBAL::Problem::Instance()->beam_contact_params();
   INPAR::BEAMCONTACT::Strategy strategy =
       CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::Strategy>(beamcontact, "BEAMS_STRATEGY");
 
@@ -778,7 +779,7 @@ void ADAPTER::StructureBaseAlgorithmNew::set_time_integration_strategy(
   ti_strategy->Init(dataio, datasdyn, dataglobalstate);
 
   /* In the restart case, we Setup the structural time integration after the
-   * discretization has been redistributed. See STR::TIMINT::Base::ReadRestart()
+   * discretization has been redistributed. See STR::TIMINT::Base::read_restart()
    * for more information.                                     hiermeier 05/16*/
   if (not restart) ti_strategy->Setup();
 }

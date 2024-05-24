@@ -30,7 +30,7 @@ CORE::GEO::CUT::Facet::Facet(
       position_(cutsurface ? Point::oncutsurface : Point::undecided),
       is_planar_computed_(false)
 {
-  FindCornerPoints();
+  find_corner_points();
 
   if (cutsurface)
   {
@@ -139,7 +139,7 @@ void CORE::GEO::CUT::Facet::Coordinates(double* x)
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Facet::CornerCoordinates(double* x)
 {
-  FindCornerPoints();
+  find_corner_points();
   for (std::vector<Point*>::const_iterator i = corner_points_.begin(); i != corner_points_.end();
        ++i)
   {
@@ -153,7 +153,7 @@ void CORE::GEO::CUT::Facet::CornerCoordinates(double* x)
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Facet::GetAllPoints(Mesh& mesh, PointSet& cut_points, bool dotriangulate)
 {
-  if (IsPlanar(mesh, dotriangulate))
+  if (is_planar(mesh, dotriangulate))
   {
     std::copy(points_.begin(), points_.end(), std::inserter(cut_points, cut_points.begin()));
     for (plain_facet_set::iterator i = holes_.begin(); i != holes_.end(); ++i)
@@ -205,14 +205,14 @@ void CORE::GEO::CUT::Facet::AddHole(Facet* hole)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Facet::IsPlanar(Mesh& mesh, bool dotriangulate)
+bool CORE::GEO::CUT::Facet::is_planar(Mesh& mesh, bool dotriangulate)
 {
   if (dotriangulate)
   {
     // if ( not IsTriangulated() and points_.size() > 3 )
     if (not IsTriangulated() and corner_points_.size() > 3)
     {
-      CreateTriangulation(mesh, points_);
+      create_triangulation(mesh, points_);
       planar_known_ = true;
       planar_ = false;
     }
@@ -220,7 +220,7 @@ bool CORE::GEO::CUT::Facet::IsPlanar(Mesh& mesh, bool dotriangulate)
 
   if (not planar_known_)
   {
-    planar_ = IsPlanar(mesh, points_);
+    planar_ = is_planar(mesh, points_);
     planar_known_ = true;
   }
 
@@ -229,9 +229,9 @@ bool CORE::GEO::CUT::Facet::IsPlanar(Mesh& mesh, bool dotriangulate)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Facet::IsPlanar(Mesh& mesh, const std::vector<Point*>& points)
+bool CORE::GEO::CUT::Facet::is_planar(Mesh& mesh, const std::vector<Point*>& points)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::Facet::IsPlanar" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::Facet::is_planar" );
 
   if (is_planar_computed_) return is_planar_;
 
@@ -280,7 +280,7 @@ bool CORE::GEO::CUT::Facet::IsPlanar(Mesh& mesh, const std::vector<Point*>& poin
     {
       // there is one point that is not within the plain
 
-      CreateTriangulation(mesh, points);
+      create_triangulation(mesh, points);
 
       is_planar_computed_ = true;
       is_planar_ = false;
@@ -310,7 +310,7 @@ bool CORE::GEO::CUT::Facet::ShareSameCutSide(Facet* f) /* Does the facet share t
   the geometry. For concave facets, Ear-clipping procedure is utilized --
   slightly less accurate due to deleting the inline points but no other choice
 *-----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Facet::CreateTriangulation(Mesh& mesh, const std::vector<Point*>& points)
+void CORE::GEO::CUT::Facet::create_triangulation(Mesh& mesh, const std::vector<Point*>& points)
 {
   // Perform centre-point triangulation
   // Find the middle point (M) and join them with the corners of the facet to create triangles
@@ -425,7 +425,7 @@ void CORE::GEO::CUT::Facet::CreateTriangulation(Mesh& mesh, const std::vector<Po
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Facet::GetNodalIds(
+void CORE::GEO::CUT::Facet::get_nodal_ids(
     Mesh& mesh, const std::vector<Point*>& points, std::vector<int>& nids)
 {
   for (std::vector<Point*>::const_iterator i = points.begin(); i != points.end(); ++i)
@@ -578,7 +578,7 @@ void CORE::GEO::CUT::Facet::GetLines(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Facet::IsLine(Point* p1, Point* p2)
+bool CORE::GEO::CUT::Facet::is_line(Point* p1, Point* p2)
 {
   if (IsTriangulated())
   {
@@ -586,16 +586,16 @@ bool CORE::GEO::CUT::Facet::IsLine(Point* p1, Point* p2)
          i != triangulation_.end(); ++i)
     {
       std::vector<Point*>& points = *i;
-      if (IsLine(points, p1, p2)) return true;
+      if (is_line(points, p1, p2)) return true;
     }
   }
   else
   {
-    if (IsLine(points_, p1, p2)) return true;
+    if (is_line(points_, p1, p2)) return true;
     for (plain_facet_set::iterator i = holes_.begin(); i != holes_.end(); ++i)
     {
       Facet* hole = *i;
-      if (hole->IsLine(p1, p2)) return true;
+      if (hole->is_line(p1, p2)) return true;
     }
   }
   return false;
@@ -603,7 +603,7 @@ bool CORE::GEO::CUT::Facet::IsLine(Point* p1, Point* p2)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Facet::IsLine(const std::vector<Point*>& points, Point* p1, Point* p2)
+bool CORE::GEO::CUT::Facet::is_line(const std::vector<Point*>& points, Point* p1, Point* p2)
 {
   std::vector<Point*>::const_iterator i1 = std::find(points.begin(), points.end(), p1);
   if (i1 != points.end())
@@ -911,10 +911,10 @@ void CORE::GEO::CUT::Facet::Neighbors(Point* p, const plain_volumecell_set& cell
     if (cells.count(c) > 0)
     {
       if (done.count(c) == 0 and connected.count(c) == 0 and
-          elements.count(c->ParentElement()) == 0)
+          elements.count(c->parent_element()) == 0)
       {
         connected.insert(c);
-        elements.insert(c->ParentElement());
+        elements.insert(c->parent_element());
         c->Neighbors(p, cells, done, connected, elements);
       }
     }
@@ -946,7 +946,7 @@ bool CORE::GEO::CUT::Facet::Equals(CORE::FE::CellType distype)
 {
   if (holes_.size() == 0)
   {
-    FindCornerPoints();
+    find_corner_points();
     switch (distype)
     {
       case CORE::FE::CellType::point1:
@@ -1140,7 +1140,7 @@ void CORE::GEO::CUT::Facet::TestFacetArea(double tolerance, bool istetmeshinters
     double diff = area[0] - area[1];
     if (fabs(diff) >= tolerance)
     {
-      int eleId = (*cells_.begin())->ParentElement()->Id();
+      int eleId = (*cells_.begin())->parent_element()->Id();
       std::stringstream str;
       if (istetmeshintersection)
       {
@@ -1160,7 +1160,7 @@ void CORE::GEO::CUT::Facet::TestFacetArea(double tolerance, bool istetmeshinters
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Facet::FindCornerPoints()
+void CORE::GEO::CUT::Facet::find_corner_points()
 {
   if (corner_points_.size() == 0)
   {
