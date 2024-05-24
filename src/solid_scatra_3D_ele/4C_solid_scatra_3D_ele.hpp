@@ -17,6 +17,7 @@ Pack, Unpack, NumDofPerNode etc.
 #include "4C_lib_elementtype.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_solid_3D_ele_calc_eas.hpp"
+#include "4C_solid_scatra_3D_ele_calc_lib_nitsche.hpp"
 #include "4C_solid_scatra_3D_ele_factory.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
 
@@ -135,6 +136,27 @@ namespace DRT::ELEMENTS
 
     /// return SCATRA::ImplType
     [[nodiscard]] INPAR::SCATRA::ImplType ImplType() const { return properties_.impltype; }
+
+    /*!
+     * @brief Returns the Cauchy stress in the direction @p dir at @p xi with normal @p n
+     *
+     * @param disp Nodal displacements of the element
+     * @param scalars Scalars at the nodes of the element
+     * @param xi
+     * @param n
+     * @param dir
+     * @param linearizations [in/out] : Struct holding the linearizations that are possible for
+     * evaluation
+     * @return double
+     *
+     * @note @p scalars is an optional since it might not be set in the very initial call of the
+     * stucture. Once the structure does not evaluate itself after setup, this optional parameter
+     * can be made mandatory.
+     */
+    double GetCauchyNDirAtXi(const std::vector<double>& disp,
+        const std::optional<std::vector<double>>& scalars, const CORE::LINALG::Matrix<3, 1>& xi,
+        const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
+        SolidScatraCauchyNDirLinearizations<3>& linearizations);
 
    private:
     //! cell type

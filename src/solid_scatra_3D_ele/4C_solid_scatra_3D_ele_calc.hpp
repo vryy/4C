@@ -14,6 +14,7 @@
 #include "4C_lib_element.hpp"
 #include "4C_solid_3D_ele_calc_interface.hpp"
 #include "4C_solid_3D_ele_formulation.hpp"
+#include "4C_solid_scatra_3D_ele_calc_lib_nitsche.hpp"
 #include "4C_structure_new_gauss_point_data_output_manager.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -81,6 +82,12 @@ namespace DRT::ELEMENTS
     void evaluate_d_stress_d_scalar(const DRT::Element& ele, MAT::So3Material& solid_material,
         const DRT::Discretization& discretization, const DRT::Element::LocationArray& la,
         Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& stiffness_matrix_dScalar);
+
+    double GetCauchyNDirAtXi(const DRT::Element& ele, MAT::So3Material& solid_material,
+        const std::vector<double>& disp, const std::optional<std::vector<double>>& scalars,
+        const CORE::LINALG::Matrix<3, 1>& xi, const CORE::LINALG::Matrix<3, 1>& n,
+        const CORE::LINALG::Matrix<3, 1>& dir,
+        SolidScatraCauchyNDirLinearizations<3>& linearizations);
 
    private:
     /// static values for matrix sizes

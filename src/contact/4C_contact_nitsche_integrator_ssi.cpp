@@ -10,10 +10,15 @@
 #include "4C_contact_nitsche_integrator_ssi.hpp"
 
 #include "4C_contact_nitsche_utils.hpp"
+#include "4C_discretization_fem_general_cell_type.hpp"
+#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_scatra_ele_parameter_boundary.hpp"
 #include "4C_scatra_ele_parameter_timint.hpp"
 #include "4C_so3_base.hpp"
 #include "4C_so3_scatra.hpp"
+#include "4C_solid_scatra_3D_ele.hpp"
+#include "4C_solid_scatra_3D_ele_calc_lib_nitsche.hpp"
+#include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -197,42 +202,98 @@ void CONTACT::IntegratorNitscheSsi::SoEleCauchyStruct(MORTAR::Element& mortar_el
   static CORE::LINALG::Matrix<dim, 1> d_sigma_nt_dn(true), d_sigma_nt_dt(true),
       d_sigma_nt_dxi(true);
 
+  DRT::ELEMENTS::SolidScatraCauchyNDirLinearizations<3> linearizations{};
+  linearizations.solid.d_cauchyndir_dd = &d_sigma_nt_dd;
+  linearizations.solid.d_cauchyndir_dn = &d_sigma_nt_dn;
+  linearizations.solid.d_cauchyndir_ddir = &d_sigma_nt_dt;
+  linearizations.solid.d_cauchyndir_dxi = &d_sigma_nt_dxi;
+
   if (mortar_ele.MoData().ParentScalar().empty())
   {
-    dynamic_cast<DRT::ELEMENTS::SoBase*>(mortar_ele.parent_element())
-        ->get_cauchy_n_dir_and_derivatives_at_xi(parent_xi, mortar_ele.MoData().ParentDisp(),
-            gp_normal, test_dir, sigma_nt, &d_sigma_nt_dd, nullptr, nullptr, nullptr, nullptr,
-            &d_sigma_nt_dn, &d_sigma_nt_dt, &d_sigma_nt_dxi, nullptr, nullptr, nullptr, nullptr,
-            nullptr);
+    // Note: This branch is only needed since the structure is evaluating itself during setup before
+    // the ssi problem is setup. Once this is fixed, this can be deleted.
+    sigma_nt = std::invoke(
+        [&]()
+        {
+          if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::SoBase*>(mortar_ele.parent_element());
+              solid_ele != nullptr)
+          {
+            // old solid element
+            double cauchy_n_dir = 0;
+            dynamic_cast<DRT::ELEMENTS::SoBase*>(mortar_ele.parent_element())
+                ->get_cauchy_n_dir_and_derivatives_at_xi(parent_xi,
+                    mortar_ele.MoData().ParentDisp(), gp_normal, test_dir, sigma_nt, &d_sigma_nt_dd,
+                    nullptr, nullptr, nullptr, nullptr, &d_sigma_nt_dn, &d_sigma_nt_dt,
+                    &d_sigma_nt_dxi, nullptr, nullptr, nullptr, nullptr, nullptr);
+
+            return cauchy_n_dir;
+          }
+          else if (auto* solid_ele =
+                       dynamic_cast<DRT::ELEMENTS::SolidScatra*>(mortar_ele.parent_element());
+                   solid_ele != nullptr)
+          {
+            // new solid element
+            // SSI is not yet setup, so don't set the scalar.
+            // Note: Once it is fixed in the structure time integration framework, the
+            // scalars-parameter can be made non-optional
+            return solid_ele->GetCauchyNDirAtXi(mortar_ele.MoData().ParentDisp(), std::nullopt,
+                parent_xi, gp_normal, test_dir, linearizations);
+          }
+          else
+          {
+            FOUR_C_THROW("Unknown solid-scatra element type");
+          }
+        });
   }
   else
   {
-    switch (mortar_ele.parent_element()->Shape())
-    {
-      case CORE::FE::CellType::hex8:
-      {
-        dynamic_cast<DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>*>(
-            mortar_ele.parent_element())
-            ->get_cauchy_n_dir_and_derivatives_at_xi(parent_xi, mortar_ele.MoData().ParentDisp(),
-                mortar_ele.MoData().ParentScalar(), gp_normal, test_dir, sigma_nt, &d_sigma_nt_dd,
-                d_sigma_nt_ds, &d_sigma_nt_dn, &d_sigma_nt_dt, &d_sigma_nt_dxi);
-        break;
-      }
-      case CORE::FE::CellType::tet4:
-      {
-        dynamic_cast<DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>*>(
-            mortar_ele.parent_element())
-            ->get_cauchy_n_dir_and_derivatives_at_xi(parent_xi, mortar_ele.MoData().ParentDisp(),
-                mortar_ele.MoData().ParentScalar(), gp_normal, test_dir, sigma_nt, &d_sigma_nt_dd,
-                d_sigma_nt_ds, &d_sigma_nt_dn, &d_sigma_nt_dt, &d_sigma_nt_dxi);
-        break;
-      }
-      default:
-      {
-        FOUR_C_THROW("SSI Nitsche contact not implemented for used (bulk) elements");
-        break;
-      }
-    }
+    linearizations.d_cauchyndir_ds = d_sigma_nt_ds;
+    sigma_nt = std::invoke(
+        [&]()
+        {
+          if (auto* solid_ele =
+                  dynamic_cast<DRT::ELEMENTS::SolidScatra*>(mortar_ele.parent_element());
+              solid_ele != nullptr)
+          {
+            return solid_ele->GetCauchyNDirAtXi(mortar_ele.MoData().ParentDisp(),
+                mortar_ele.MoData().ParentScalar(), parent_xi, gp_normal, test_dir, linearizations);
+          }
+
+          switch (mortar_ele.parent_element()->Shape())
+          {
+            case CORE::FE::CellType::hex8:
+            {
+              double cauchy_n_dir = 0;
+              dynamic_cast<
+                  DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>*>(
+                  mortar_ele.parent_element())
+                  ->get_cauchy_n_dir_and_derivatives_at_xi(parent_xi,
+                      mortar_ele.MoData().ParentDisp(), mortar_ele.MoData().ParentScalar(),
+                      gp_normal, test_dir, cauchy_n_dir, &d_sigma_nt_dd, d_sigma_nt_ds,
+                      &d_sigma_nt_dn, &d_sigma_nt_dt, &d_sigma_nt_dxi);
+
+              return cauchy_n_dir;
+            }
+            case CORE::FE::CellType::tet4:
+            {
+              double cauchy_n_dir = 0;
+              dynamic_cast<
+                  DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>*>(
+                  mortar_ele.parent_element())
+                  ->get_cauchy_n_dir_and_derivatives_at_xi(parent_xi,
+                      mortar_ele.MoData().ParentDisp(), mortar_ele.MoData().ParentScalar(),
+                      gp_normal, test_dir, cauchy_n_dir, &d_sigma_nt_dd, d_sigma_nt_ds,
+                      &d_sigma_nt_dn, &d_sigma_nt_dt, &d_sigma_nt_dxi);
+
+              return cauchy_n_dir;
+            }
+            default:
+            {
+              FOUR_C_THROW(
+                  "Nitsche contact is not implemented for this shape of old solid-scatra element!");
+            }
+          }
+        });
   }
 
   cauchy_nt_wgt += nitsche_wgt * sigma_nt;

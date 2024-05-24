@@ -15,6 +15,7 @@ solid formulation
 #include "4C_mat_so3_material.hpp"
 #include "4C_solid_3D_ele_calc_displacement_based.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
+#include "4C_solid_3D_ele_calc_lib_formulation.hpp"
 #include "4C_solid_3D_ele_calc_lib_integration.hpp"
 #include "4C_solid_3D_ele_calc_lib_io.hpp"
 #include "4C_solid_3D_ele_interface_serializable.hpp"
@@ -28,6 +29,17 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
+  template <typename T>
+  T* get_ptr(std::optional<T>& opt)
+  {
+    return opt.has_value() ? &opt.value() : nullptr;
+  }
+  template <typename T>
+  const T* get_data(const std::optional<std::vector<T>>& opt)
+  {
+    return opt.has_value() ? opt.value().data() : nullptr;
+  }
+
   template <CORE::FE::CellType celltype>
   inline static constexpr int num_str = CORE::FE::dim<celltype>*(CORE::FE::dim<celltype> + 1) / 2;
 
@@ -171,6 +183,56 @@ namespace
             "tempfield", 2, 1, gauss_integration, params, "gp_temp");
       }
     }
+  }
+
+
+
+  template <CORE::FE::CellType celltype, typename SolidFormulation>
+  double EvaluateCauchyNDirAtXi(MAT::So3Material& mat,
+      DRT::ELEMENTS::ShapeFunctionsAndDerivatives<celltype> shape_functions,
+      const CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>>&
+          deformation_gradient,
+      const std::optional<std::vector<double>>& scalars_at_xi, const CORE::LINALG::Matrix<3, 1>& n,
+      const CORE::LINALG::Matrix<3, 1>& dir, int eleGID,
+      const DRT::ELEMENTS::ElementFormulationDerivativeEvaluator<celltype, SolidFormulation>&
+          evaluator,
+      DRT::ELEMENTS::SolidScatraCauchyNDirLinearizations<3>& linearizations)
+  {
+    DRT::ELEMENTS::CauchyNDirLinearizationDependencies<celltype> linearization_dependencies =
+        DRT::ELEMENTS::get_initialized_cauchy_n_dir_linearization_dependencies(
+            evaluator, linearizations);
+
+    double cauchy_n_dir = 0;
+    mat.evaluate_cauchy_n_dir_and_derivatives(deformation_gradient, n, dir, cauchy_n_dir,
+        linearizations.solid.d_cauchyndir_dn, linearizations.solid.d_cauchyndir_ddir,
+        get_ptr(linearization_dependencies.d_cauchyndir_dF),
+        get_ptr(linearization_dependencies.d2_cauchyndir_dF2),
+        get_ptr(linearization_dependencies.d2_cauchyndir_dF_dn),
+        get_ptr(linearization_dependencies.d2_cauchyndir_dF_ddir), -1, eleGID,
+        get_data(scalars_at_xi), nullptr, nullptr, nullptr);
+
+    // Evaluate pure solid linearizations
+    DRT::ELEMENTS::evaluate_cauchy_n_dir_linearizations<celltype>(
+        linearization_dependencies, linearizations.solid);
+
+    // Evaluate ssi-linearizations
+    if (linearizations.d_cauchyndir_ds)
+    {
+      FOUR_C_ASSERT(linearization_dependencies.d_cauchyndir_dF, "Not all tensors are computed!");
+      FOUR_C_ASSERT(
+          scalars_at_xi.has_value(), "Scalar needs to have a value if the derivatives are needed!");
+      linearizations.d_cauchyndir_ds->shape(CORE::FE::num_nodes<celltype>, 1);
+
+      static CORE::LINALG::Matrix<9, 1> d_F_dc(true);
+      mat.evaluate_linearization_od(deformation_gradient, (*scalars_at_xi)[0], &d_F_dc);
+
+      double d_cauchyndir_ds_gp = (*linearization_dependencies.d_cauchyndir_dF).Dot(d_F_dc);
+
+      CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype>, 1>(
+          linearizations.d_cauchyndir_ds->values(), true)
+          .Update(d_cauchyndir_ds_gp, shape_functions.shapefunctions_, 1.0);
+    }
+    return cauchy_n_dir;
   }
 }  // namespace
 
@@ -486,6 +548,59 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::CalculateStr
 
   Serialize(stress_data, serialized_stress_data);
   Serialize(strain_data, serialized_strain_data);
+}
+
+template <CORE::FE::CellType celltype, typename SolidFormulation>
+double DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::GetCauchyNDirAtXi(
+    const DRT::Element& ele, MAT::So3Material& solid_material, const std::vector<double>& disp,
+    const std::optional<std::vector<double>>& scalars, const CORE::LINALG::Matrix<3, 1>& xi,
+    const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
+    SolidScatraCauchyNDirLinearizations<3>& linearizations)
+{
+  if constexpr (has_gauss_point_history<SolidFormulation>)
+  {
+    FOUR_C_THROW(
+        "Cannot evaluate the Cauchy stress at xi with an element formulation with Gauss point "
+        "history. The element formulation is %s.",
+        CORE::UTILS::TryDemangle(typeid(SolidFormulation).name()).c_str());
+  }
+  else
+  {
+    // project scalar values to xi
+    const auto scalar_values_at_xi = std::invoke(
+        [&]() -> std::optional<std::vector<double>>
+        {
+          if (!scalars.has_value()) return std::nullopt;
+
+          return DRT::ELEMENTS::ProjectNodalQuantityToXi<celltype>(xi, *scalars);
+        });
+
+    ElementNodes<celltype> element_nodes = EvaluateElementNodes<celltype>(ele, disp);
+
+    const ShapeFunctionsAndDerivatives<celltype> shape_functions =
+        EvaluateShapeFunctionsAndDerivs<celltype>(xi, element_nodes);
+
+    const JacobianMapping<celltype> jacobian_mapping =
+        EvaluateJacobianMapping(shape_functions, element_nodes);
+
+    const PreparationData<SolidFormulation> preparation_data =
+        Prepare(ele, element_nodes, history_data_);
+
+    return Evaluate(ele, element_nodes, xi, shape_functions, jacobian_mapping, preparation_data,
+        history_data_,
+        [&](const CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>>&
+                deformation_gradient,
+            const CORE::LINALG::Matrix<num_str_, 1>& gl_strain, const auto& linearization)
+        {
+          const ElementFormulationDerivativeEvaluator<celltype, SolidFormulation> evaluator(ele,
+              element_nodes, xi, shape_functions, jacobian_mapping, deformation_gradient,
+              preparation_data, history_data_);
+
+          return EvaluateCauchyNDirAtXi<celltype>(solid_material, shape_functions,
+              deformation_gradient, scalar_values_at_xi, n, dir, ele.Id(), evaluator,
+              linearizations);
+        });
+  }
 }
 
 template <CORE::FE::CellType celltype, typename SolidFormulation>

@@ -11,6 +11,7 @@ Evaluate(...), evaluate_neumann(...), etc.
 #include "4C_lib_elements_paramsinterface.hpp"
 #include "4C_solid_3D_ele_neumann_evaluator.hpp"
 #include "4C_solid_scatra_3D_ele.hpp"
+#include "4C_solid_scatra_3D_ele_calc_lib_nitsche.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -145,4 +146,14 @@ int DRT::ELEMENTS::SolidScatra::evaluate_neumann(Teuchos::ParameterList& params,
   DRT::ELEMENTS::EvaluateNeumannByElement(*this, discretization, condition, lm, elevec1, time);
   return 0;
 }
+
+double DRT::ELEMENTS::SolidScatra::GetCauchyNDirAtXi(const std::vector<double>& disp,
+    const std::optional<std::vector<double>>& scalars, const CORE::LINALG::Matrix<3, 1>& xi,
+    const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
+    DRT::ELEMENTS::SolidScatraCauchyNDirLinearizations<3>& linearizations)
+{
+  return DRT::ELEMENTS::GetCauchyNDirAtXi(solid_scatra_calc_variant_, *this, SolidMaterial(), disp,
+      scalars, xi, n, dir, linearizations);
+}
+
 FOUR_C_NAMESPACE_CLOSE
