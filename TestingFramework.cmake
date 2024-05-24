@@ -109,27 +109,23 @@ endfunction()
 # 4C Test - run simulation with .dat file
 # Usage in TestingFrameworkListOfTests.cmake: "four_c_test(<input_file> optional: NP <> RESTART_STEP <> TIMEOUT <> OMP_THREADS <> POST_ENSIGHT_STRUCTURE <> LABEL <>)"
 
-# <input_file>:   must equal the name of a .dat file in directory tests/input_files; without ".dat"
+# TEST_FILE:              must equal the name of a .dat file in directory tests/input_files; without ".dat".
+#                         If two files are provided the second input file is restartet based on the results of the first input file.
 
 # optional:
-# NP:                     Number of processors the test should use; 1 if not specified
-# RESTART_STEP:           Number of restart step; 0 or not defined indicates no restart
-# TIMEOUT:                Manually defined duration for test timeout; default global timeout if not specified
-# OMP_THREADS:            Number of OpenMP threads per proccessor the test should use; default deactivated
+# NP:                     Number of processors the test should use. Fallback to 1 if not specified.
+#                         For two input files two NP's are required.
+# RESTART_STEP:           Number of restart step; not defined indicates no restart
+# TIMEOUT:                Manually defined duration for test timeout; defaults to global timeout if not specified
+# OMP_THREADS:            Number of OpenMP threads per proccessor the test should use; defaults to deactivated
 # POST_ENSIGHT_STRUCTURE: Test post_ensight options in serial and parallel (for structure simulation only!)
 # LABELS:                 Add labels to the test
 
-function(four_c_test input_file)
+function(four_c_test)
 
   set(options "")
-  set(oneValueArgs
-      NP
-      RESTART_STEP
-      TIMEOUT
-      OMP_THREADS
-      POST_ENSIGHT_STRUCTURE
-      )
-  set(multiValueArgs LABELS)
+  set(oneValueArgs RESTART_STEP TIMEOUT OMP_THREADS POST_ENSIGHT_STRUCTURE)
+  set(multiValueArgs TEST_FILE NP LABELS)
   cmake_parse_arguments(
     _parsed
     "${options}"
@@ -138,8 +134,13 @@ function(four_c_test input_file)
     ${ARGN}
     )
 
+  # validate input arguments
   if(DEFINED _parsed_UNPARSED_ARGUMENTS)
     message(FATAL_ERROR "There are unparsed arguments: ${_parsed_UNPARSED_ARGUMENTS}!")
+  endif()
+
+  if(NOT DEFINED _parsed_TEST_FILE)
+    message(FATAL_ERROR "Test file is required for test!")
   endif()
 
   if(NOT DEFINED _parsed_NP)
@@ -147,7 +148,7 @@ function(four_c_test input_file)
   endif()
 
   if(NOT DEFINED _parsed_RESTART_STEP)
-    set(_parsed_RESTART_STEP 0)
+    set(_parsed_RESTART_STEP "")
   endif()
 
   if(NOT DEFINED _parsed_TIMEOUT)
@@ -166,18 +167,46 @@ function(four_c_test input_file)
     set(_parsed_LABELS "")
   endif()
 
-  set(name_of_test ${input_file}-p${_parsed_NP})
-  set(source_file ${PROJECT_SOURCE_DIR}/tests/input_files/${input_file}.dat)
-  # check if .dat file exists
-  if(NOT EXISTS ${source_file})
-    message(FATAL_ERROR "Test source file ${source_file} does not exist!")
+  list(LENGTH _parsed_TEST_FILE num_TEST_FILE)
+  list(LENGTH _parsed_NP num_NP)
+  if(num_TEST_FILE GREATER 2 OR NOT num_NP EQUAL num_TEST_FILE)
+    message(
+      FATAL_ERROR
+        "You provided more than two test files or the provided number of processors do not match your provided test files!"
+      )
   endif()
 
-  set(additional_fixture "")
-  set(test_directory ${PROJECT_BINARY_DIR}/framework_test_output/${input_file}_p${_parsed_NP})
+  # check if source files exist
+  set(source_file "")
+  foreach(string IN LISTS _parsed_TEST_FILE)
+    set(file_name "${PROJECT_SOURCE_DIR}/tests/input_files/${string}.dat")
+    if(NOT EXISTS ${file_name})
+      message(FATAL_ERROR "Test source file ${file_name} does not exist!")
+    endif()
+    list(APPEND source_file ${file_name})
+  endforeach()
+
+  # set base test name and directory
+  if(num_TEST_FILE EQUAL 1)
+    set(base_test_file ${source_file})
+    set(base_NP ${_parsed_NP})
+    set(name_of_test ${_parsed_TEST_FILE}-p${_parsed_NP})
+    set(test_directory ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_test})
+  elseif(num_TEST_FILE EQUAL 2)
+    list(GET source_file 0 base_test_file)
+    list(GET source_file 1 restart_test_file)
+    list(GET _parsed_TEST_FILE 0 base_test)
+    list(GET _parsed_TEST_FILE 1 restart_test)
+    list(GET _parsed_NP 0 base_NP)
+    list(GET _parsed_NP 1 restart_NP)
+    set(name_of_test
+        ${base_test}-p${base_NP}_for_${restart_test}-p${restart_NP}-restart_step_${_parsed_RESTART_STEP}
+        )
+    set(test_directory ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_test})
+  endif()
 
   set(test_command
-      "mkdir -p ${test_directory} && ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${_parsed_NP} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> ${source_file} ${test_directory}/xxx"
+      "mkdir -p ${test_directory} && ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${base_NP} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> ${base_test_file} ${test_directory}/xxx"
       )
 
   # Optional timeout
@@ -187,10 +216,9 @@ function(four_c_test input_file)
   endif()
 
   # Optional OpenMP threads per processor
-  set(total_procs ${_parsed_NP})
+  set(total_procs ${base_NP})
   if(${_parsed_OMP_THREADS})
-    set(name_of_test ${name_of_test}-t${_parsed_OMP_THREADS})
-    set(test_directory ${test_directory}_t${_parsed_OMP_THREADS})
+    set(name_of_test ${name_of_test}-OMP${_parsed_OMP_THREADS})
     set(test_command
         "export OMP_NUM_THREADS=${_parsed_OMP_THREADS}; ${test_command}; unset OMP_NUM_THREADS"
         )
@@ -202,8 +230,6 @@ function(four_c_test input_file)
     ${name_of_test}
     TEST_COMMAND
     ${test_command}
-    ADDITIONAL_FIXTURE
-    ${additional_fixture}
     NP
     ${total_procs}
     TIMEOUT
@@ -212,10 +238,13 @@ function(four_c_test input_file)
     "${_parsed_LABELS}"
     )
 
+  # set additional fixture for restart or post_ensight
+  set(additional_fixture "${name_of_test}")
+
   # restart option
-  if(${_parsed_RESTART_STEP})
-    set(additional_fixture "${name_of_test};${additional_fixture}")
-    set(name_of_test "${name_of_test}-restart")
+  if(NOT _parsed_RESTART_STEP STREQUAL "" AND num_TEST_FILE EQUAL 1)
+    # restart with same input file
+    set(name_of_test "${name_of_test}-restart_from_same_input")
     set(test_command "${test_command} restart=${_parsed_RESTART_STEP}")
     _add_test_with_options(
       NAME_OF_TEST
@@ -231,11 +260,47 @@ function(four_c_test input_file)
       LABELS
       "${_parsed_LABELS}"
       )
+
+  elseif(NOT _parsed_RESTART_STEP STREQUAL "" AND num_TEST_FILE EQUAL 2)
+    # restart with different input file
+    set(name_of_test
+        ${restart_test}-p${restart_NP}_from_${base_test}-p${base_NP}-restart_step_${_parsed_RESTART_STEP}
+        )
+    set(restart_test_directory ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_test})
+    set(test_command
+        "mkdir -p ${restart_test_directory} && ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${restart_NP} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> ${restart_test_file} ${restart_test_directory}/xxx restartfrom=${test_directory}/xxx restart=${_parsed_RESTART_STEP}"
+        )
+
+    # Optional OpenMP threads per processor
+    set(total_procs ${restart_NP})
+    if(${_parsed_OMP_THREADS})
+      set(name_of_test ${name_of_test}-OMP${_parsed_OMP_THREADS})
+      set(test_command
+          "export OMP_NUM_THREADS=${_parsed_OMP_THREADS}; ${test_command}; unset OMP_NUM_THREADS"
+          )
+      math(EXPR total_procs "${_parsed_NP}*${_parsed_OMP_THREADS}")
+    endif()
+
+    _add_test_with_options(
+      NAME_OF_TEST
+      ${name_of_test}
+      TEST_COMMAND
+      ${test_command}
+      ADDITIONAL_FIXTURE
+      ${additional_fixture}
+      NP
+      ${total_procs}
+      TIMEOUT
+      "${_parsed_TIMEOUT}"
+      LABELS
+      "${_parsed_LABELS}"
+      )
+    set_run_serial(${name_of_test})
+
   endif()
 
-  # post_ensight test in serial and parallel
+  # post_ensight_structure test in serial and parallel
   if(${_parsed_POST_ENSIGHT_STRUCTURE})
-    set(additional_fixture ${name_of_test})
     # serial run
     set(name_of_ensight_test "${name_of_test}-post_ensight_serial")
     set(ensight_command
@@ -273,88 +338,11 @@ function(four_c_test input_file)
       LABELS
       "${_parsed_LABELS}"
       )
-
   endif()
 
 endfunction()
 
 # The macros defined in this section can be used in the file 'TestingFrameworkListOfTests.cmake' to define tests
-
-###########
-# RESTART SIMULATION
-# CAUTION: This tests bases on results of a previous simulation/test
-# Usage in TestingFrameworkListOfTests.cmake: "four_c_restart_only(<name_of_input_file> <num_proc> <restart_step> <optional: identifier>)"
-# <name_of_test>: give it a name, typically equal to a test file name
-# <name_of_input_file>: must equal the name of a .dat file in directory tests/input_files; without ".dat"
-# <name_of_input_file_restart>: the name of an input file the current restart can base on
-# <num_proc>: number of processors the test should use
-# <num_proc_base_run>: number of processors of precursor base run
-# <restart_step>: number of restart step; <""> indicates no restart
-# <optional: identifier>: add an identifier to the file results are read from
-macro(
-  four_c_restart_only_with_name
-  name_of_restart_test
-  name_of_input_file
-  name_of_input_file_restart
-  num_proc
-  num_proc_base_run
-  restart_step
-  )
-  # set additional output prefix identifier to empty string "" in default case or to specific string if specified as optional input argument
-  if(${ARGC} GREATER 6)
-    set(IDENTIFIER ${ARGV6})
-  else()
-    set(IDENTIFIER "")
-  endif()
-
-  set(name_of_test ${name_of_restart_test}-p${num_proc}-restart-${restart_step})
-  set(source_file ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file}.dat)
-  set(test_directory ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}_p${num_proc})
-
-  add_test(
-    NAME ${name_of_test}
-    COMMAND
-      bash -c
-      "mkdir -p ${test_directory} && ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> ${source_file} framework_test_output/${name_of_input_file}_p${num_proc}/xxx${IDENTIFIER} restartfrom=framework_test_output/${name_of_input_file_restart}_p${num_proc_base_run}/xxx${IDENTIFIER} restart=${restart_step}"
-    )
-
-  require_fixture(
-    ${name_of_test} "${name_of_input_file_restart}-p${num_proc_base_run};test_cleanup"
-    )
-  set_processors(${name_of_test} ${num_proc})
-  set_timeout(${name_of_test})
-
-  # Set "RUN_SERIAL TRUE" because result files can only be read by one process.
-  set_run_serial(${name_of_test})
-endmacro(four_c_restart_only_with_name)
-
-# RESTART SIMULATION
-# CAUTION: This tests bases on results of a previous simulation/test
-# Usage in TestingFrameworkListOfTests.cmake: "four_c_restart_only(<name_of_input_file> <num_proc> <restart_step> <optional: identifier>)"
-# <name_of_input_file>: must equal the name of a .dat file in directory tests/input_files; without ".dat"
-# <name_of_input_file_restart>: the name of an input file the current restart can base on
-# <num_proc>: number of processors the test should use
-# <num_proc_base_run>: number of processors of precursor base run
-# <restart_step>: number of restart step; <""> indicates no restart
-# <optional: identifier>: add an identifier to the file results are read from
-macro(
-  four_c_restart_only
-  name_of_input_file
-  name_of_input_file_restart
-  num_proc
-  num_proc_base_run
-  restart_step
-  )
-  set(name_of_test ${name_of_input_file})
-  four_c_restart_only_with_name(
-    ${name_of_test}
-    ${name_of_input_file}
-    ${name_of_input_file_restart}
-    ${num_proc}
-    ${num_proc_base_run}
-    ${restart_step}
-    )
-endmacro(four_c_restart_only)
 
 ###########
 # NESTED PARALLELISM
@@ -470,7 +458,7 @@ endmacro(four_c_test_cut_test)
 # <num_proc>: number of processors the test should use
 macro(four_c_test_pre_processing name_of_input_file num_proc)
   set(name_of_test ${name_of_input_file}-p${num_proc}-pre_processing)
-  set(test_directory ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}_p${num_proc})
+  set(test_directory ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}-p${num_proc})
 
   set(RUNPREEXODUS_NOHEAD
       ${FOUR_C_ENABLE_ADDRESS_SANITIZER_TEST_OPTIONS}\ ./pre_exodus\ --exo=${PROJECT_SOURCE_DIR}/tests/pre_processing_test/${name_of_input_file}.e
@@ -514,7 +502,7 @@ macro(
   startstep
   )
   set(test_directory
-      ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}_p${num_proc_base_run}
+      ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}-p${num_proc_base_run}
       )
 
   # set additional output prefix identifier to empty string "" in default case or to specific string if specified as optional input argument
@@ -558,7 +546,7 @@ macro(
 endmacro(four_c_test_post_processing)
 
 ###########
-# COMPARE ABSOULTE - compare arbitrary result csv file to corresponding reference file with absolute difference
+# COMPARE ABSOLUTE - compare arbitrary result csv file to corresponding reference file with absolute difference
 # Implementation can be found in 'utilities/diff_with_tolerance.py'
 # CAUTION: This tests bases on results of a previous simulation/test
 # Usage in TestingFrameworkListOfTests.cmake: "four_c_test_result_file_abs(<name_of_input_file> <num_proc> <filetag> <resultfilename> <referencefilename> <tolerance>)"
@@ -581,7 +569,7 @@ macro(
   )
   set(name_of_test ${name_of_input_file}-p${num_proc}-${filetag})
   set(test_directory
-      ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}_p${num_proc_base_run}
+      ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}-p${num_proc_base_run}
       )
 
   # add test to testing framework
@@ -628,7 +616,7 @@ macro(
   )
   set(name_of_test ${name_of_input_file}-p${num_proc}-${filetag})
   set(test_directory
-      ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}_p${num_proc_base_run}
+      ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}-p${num_proc_base_run}
       )
 
   # add test to testing framework
@@ -667,7 +655,7 @@ macro(
   tolerance
   )
   set(test_directory
-      ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}_p${num_proc_base_run}/${pvd_resultfilename}
+      ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}-p${num_proc_base_run}/${pvd_resultfilename}
       )
 
   # this test takes a list of times as extra arguments to check results at those timesteps
