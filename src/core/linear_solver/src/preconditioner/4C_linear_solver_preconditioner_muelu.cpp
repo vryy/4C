@@ -65,8 +65,6 @@ CORE::LINEAR_SOLVER::MueLuPreconditioner::MueLuPreconditioner(Teuchos::Parameter
 void CORE::LINEAR_SOLVER::MueLuPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
-  SetupLinearProblem(matrix, x, b);
-
   // check whether A is a Epetra_CrsMatrix i.e. no block matrix
   Teuchos::RCP<Epetra_CrsMatrix> A =
       Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(Teuchos::rcp(matrix, false));
@@ -178,8 +176,6 @@ void CORE::LINEAR_SOLVER::MueLuFluidBlockPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
-
-  SetupLinearProblem(matrix, x, b);
 
   // adapt nullspace for splitted pure fluid problem
   int nv = 0;     // number of velocity dofs
@@ -317,8 +313,6 @@ void CORE::LINEAR_SOLVER::MueLuTsiBlockPreconditioner::Setup(
 {
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
 
-  SetupLinearProblem(matrix, x, b);
-
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A =
       Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
   if (A == Teuchos::null) FOUR_C_THROW("matrix is not a BlockSparseMatrix");
@@ -439,8 +433,6 @@ void CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::Setup(
 {
   using EpetraMap = Xpetra::EpetraMapT<int, Xpetra::EpetraNode>;
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
-
-  SetupLinearProblem(matrix, x, b);
 
   // Check whether input matrix is an actual blocked operator
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A =
@@ -727,8 +719,6 @@ void CORE::LINEAR_SOLVER::MueLuBeamSolidBlockPreconditioner::Setup(
   using EpetraMap = Xpetra::EpetraMapT<int, Xpetra::EpetraNode>;
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
 
-  SetupLinearProblem(matrix, x, b);
-
   // first we check if the input matrix is of normal CRS type
   Teuchos::RCP<Epetra_CrsMatrix> A =
       Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(Teuchos::rcp(matrix, false));
@@ -867,8 +857,6 @@ void CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
-
-  SetupLinearProblem(matrix, x, b);
 
   if (create)
   {

@@ -31,8 +31,6 @@ CORE::LINEAR_SOLVER::SimplePreconditioner::SimplePreconditioner(Teuchos::Paramet
 void CORE::LINEAR_SOLVER::SimplePreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
-  SetupLinearProblem(matrix, x, b);
-
   if (create)
   {
     // SIMPLER does not need copy of preconditioning matrix to live
@@ -263,8 +261,6 @@ CORE::LINEAR_SOLVER::BGSPreconditioner::BGSPreconditioner(
 void CORE::LINEAR_SOLVER::BGSPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
-  SetupLinearProblem(matrix, x, b);
-
   if (create)
   {
     p_ = Teuchos::null;
