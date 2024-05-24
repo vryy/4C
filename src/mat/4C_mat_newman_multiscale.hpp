@@ -133,7 +133,7 @@ namespace MAT
 
    private:
     //! return material parameters
-    const MAT::PAR::ScatraMicroMacroCoupling* Params() const override { return params_; };
+    const MAT::PAR::ScatraMicroMacroCoupling* params() const override { return params_; };
 
     //! material parameters
     MAT::PAR::NewmanMultiScale* params_;

@@ -43,7 +43,7 @@ XFEM::MultiFieldMapExtractor::MultiFieldMapExtractor()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::MultiFieldMapExtractor::Reset(unsigned num_dis, bool full)
+void XFEM::MultiFieldMapExtractor::reset(unsigned num_dis, bool full)
 {
   // set the flag to false (just to be sure)
   issetup_ = false;
@@ -117,7 +117,7 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
   max_num_reserved_dofs_per_node_ = max_num_reserved_dofs_per_node;
 
   // reset member variables
-  Reset(dis_vec.size());
+  reset(dis_vec.size());
 
   // save the slave discretization vector
   slave_discret_vec_ = dis_vec;
@@ -147,7 +147,7 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
   // create an auxiliary master interface discretization
   // ------------------------------------------------------------------------
   idiscret_ = Teuchos::rcp(
-      new DRT::Discretization("multifield_interface", Teuchos::rcp<Epetra_Comm>(Comm().Clone())));
+      new DRT::Discretization("multifield_interface", Teuchos::rcp<Epetra_Comm>(comm().Clone())));
 
   // ------------------------------------------------------------------------
   // (1) create a list of coupling discretizations per node on this proc and
@@ -214,15 +214,15 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
   // (2) round robin loop
   // ------------------------------------------------------------------------
   // create an exporter for point to point communication
-  CORE::COMM::Exporter exporter(Comm());
-  const int numprocs = Comm().NumProc();
+  CORE::COMM::Exporter exporter(comm());
+  const int numprocs = comm().NumProc();
 
   for (int p = 0; p < numprocs; ++p)
   {
     // Send block to next proc. Receive a block from the last proc
     if (p > 0)
     {
-      int myrank = Comm().MyPID();
+      int myrank = comm().MyPID();
       int tag = myrank;
 
       int frompid = myrank;
@@ -386,7 +386,7 @@ void XFEM::MultiFieldMapExtractor::Setup()
   issetup_ = false;
 
   // first call reset (no full reset!)
-  Reset(num_sl_dis(), false);
+  reset(num_sl_dis(), false);
 
   // build the slave node map extractor objects
   build_slave_node_map_extractors();
@@ -449,13 +449,13 @@ void XFEM::MultiFieldMapExtractor::build_slave_node_map_extractors()
     partial_maps[MULTIFIELD::block_interface] = Teuchos::null;
     partial_maps[MULTIFIELD::block_interface] =
         Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(my_interface_row_node_gids.size()),
-            my_interface_row_node_gids.data(), 0, Comm()));
+            my_interface_row_node_gids.data(), 0, comm()));
 
     // slave sided non-interface node maps
     partial_maps[MULTIFIELD::block_non_interface] = Teuchos::null;
     partial_maps[MULTIFIELD::block_non_interface] =
         Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(my_non_interface_row_node_gids.size()),
-            my_non_interface_row_node_gids.data(), 0, Comm()));
+            my_non_interface_row_node_gids.data(), 0, comm()));
 
     // setup node map extractor
     slave_map_extractors_[dis_count++][map_nodes]->Setup(*((*cit_dis)->NodeRowMap()), partial_maps);
@@ -508,13 +508,13 @@ void XFEM::MultiFieldMapExtractor::build_slave_dof_map_extractors()
     // create slave interface dof row map
     partial_maps[MULTIFIELD::block_interface] = Teuchos::null;
     partial_maps[MULTIFIELD::block_interface] = Teuchos::rcp(new Epetra_Map(
-        -1, static_cast<int>(my_sl_interface_dofs.size()), my_sl_interface_dofs.data(), 0, Comm()));
+        -1, static_cast<int>(my_sl_interface_dofs.size()), my_sl_interface_dofs.data(), 0, comm()));
 
     // create slave non-interface dof row map
     partial_maps[MULTIFIELD::block_non_interface] = Teuchos::null;
     partial_maps[MULTIFIELD::block_non_interface] =
         Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(my_sl_non_interface_dofs.size()),
-            my_sl_non_interface_dofs.data(), 0, Comm()));
+            my_sl_non_interface_dofs.data(), 0, comm()));
 
     // setup dof map extractor
     slave_map_extractors_[dis_count++][map_dofs]->Setup(*((*cit_dis)->dof_row_map()), partial_maps);
@@ -555,7 +555,7 @@ void XFEM::MultiFieldMapExtractor::build_interface_coupling_dof_set()
 
     // communicate the number of standard DoF's
     // Supposed to be the same value on all discretizations and all nodes.
-    if (g_num_std_dof == -1) Comm().MaxAll(&my_num_std_dof, &g_num_std_dof, 1);
+    if (g_num_std_dof == -1) comm().MaxAll(&my_num_std_dof, &g_num_std_dof, 1);
 
     if (my_num_std_dof != -1 and g_num_std_dof != my_num_std_dof)
       FOUR_C_THROW(
@@ -666,7 +666,7 @@ void XFEM::MultiFieldMapExtractor::build_master_dof_map_extractor()
         my_ma_interface_dofs.push_back(i_discret().Dof(inode, j));
     }
     partial_maps.at(i) = Teuchos::rcp<const Epetra_Map>(new Epetra_Map(
-        -1, static_cast<int>(my_ma_interface_dofs.size()), my_ma_interface_dofs.data(), 0, Comm()));
+        -1, static_cast<int>(my_ma_interface_dofs.size()), my_ma_interface_dofs.data(), 0, comm()));
   }
 
   // --------------------------------------------------------------------------
@@ -963,12 +963,12 @@ int XFEM::MultiFieldMapExtractor::slave_id(enum FieldName field) const
  *----------------------------------------------------------------------------*/
 void XFEM::MultiFieldMapExtractor::build_global_interface_node_gid_set()
 {
-  Comm().Barrier();
+  comm().Barrier();
   std::set<int> g_unique_row_node_gid_set;
   g_interface_node_gid_set_.clear();
 
   // loop over all proc's
-  for (unsigned p = 0; p < static_cast<unsigned>(Comm().NumProc()); ++p)
+  for (unsigned p = 0; p < static_cast<unsigned>(comm().NumProc()); ++p)
   {
     int num_my_unique_row_nodes = 0;
     std::vector<int> my_unique_row_node_gid_vec(0);
@@ -976,7 +976,7 @@ void XFEM::MultiFieldMapExtractor::build_global_interface_node_gid_set()
     int num_my_interface_row_nodes = 0;
     std::vector<int> my_interface_row_node_gid_vec(0);
 
-    if (p == static_cast<unsigned>(Comm().MyPID()))
+    if (p == static_cast<unsigned>(comm().MyPID()))
     {
       std::set<int> my_unique_row_node_gid_set;
       std::set<int> my_interface_row_node_gid_set;
@@ -1006,23 +1006,23 @@ void XFEM::MultiFieldMapExtractor::build_global_interface_node_gid_set()
           my_interface_row_node_gid_vec.begin());
     }
     // wait since only one proc did all the work
-    Comm().Barrier();
+    comm().Barrier();
     // ------------------------------------------------------------------------
     // send the unique row node GID vector from processor p to all proc's
     // ------------------------------------------------------------------------
-    Comm().Broadcast(&num_my_unique_row_nodes, 1, p);
+    comm().Broadcast(&num_my_unique_row_nodes, 1, p);
     if (num_my_unique_row_nodes == 0) continue;
     my_unique_row_node_gid_vec.resize(num_my_unique_row_nodes, -1);
-    Comm().Broadcast(my_unique_row_node_gid_vec.data(), num_my_unique_row_nodes, p);
+    comm().Broadcast(my_unique_row_node_gid_vec.data(), num_my_unique_row_nodes, p);
 
     // ------------------------------------------------------------------------
     // send the interface row node GID vector from processor p to all proc's
     // ------------------------------------------------------------------------
-    Comm().Broadcast(&num_my_interface_row_nodes, 1, p);
+    comm().Broadcast(&num_my_interface_row_nodes, 1, p);
     if (num_my_interface_row_nodes > 0)
     {
       my_interface_row_node_gid_vec.resize(num_my_interface_row_nodes, -1);
-      Comm().Broadcast(my_interface_row_node_gid_vec.data(), num_my_interface_row_nodes, p);
+      comm().Broadcast(my_interface_row_node_gid_vec.data(), num_my_interface_row_nodes, p);
       // create/extend the global interface row node gid set
       g_interface_node_gid_set_.insert(
           my_interface_row_node_gid_vec.begin(), my_interface_row_node_gid_vec.end());
@@ -1050,7 +1050,7 @@ void XFEM::MultiFieldMapExtractor::build_master_interface_node_maps(
   {
     master_interface_node_maps_.push_back(
         Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(my_master_interface_node_gids[i].size()),
-            my_master_interface_node_gids[i].data(), 0, Comm())));
+            my_master_interface_node_gids[i].data(), 0, comm())));
   }
 }
 

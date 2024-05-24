@@ -222,19 +222,19 @@ namespace CORE::LINEAR_SOLVER
     /*!
       \brief setup phase of preconditioner
     */
-    void Setup(Teuchos::RCP<Epetra_Operator> A, const Teuchos::ParameterList& origvlist,
+    void setup(Teuchos::RCP<Epetra_Operator> A, const Teuchos::ParameterList& origvlist,
         const Teuchos::ParameterList& origplist);
 
     /*!
       \brief do one sweep of simple or simplec preconditioning
     */
-    void Simple(CORE::LINALG::ANA::Vector& vx, CORE::LINALG::ANA::Vector& px,
+    void simple(CORE::LINALG::ANA::Vector& vx, CORE::LINALG::ANA::Vector& px,
         CORE::LINALG::ANA::Vector& vb, CORE::LINALG::ANA::Vector& pb) const;
 
     /*!
       \brief do one sweep of simpler preconditioning
     */
-    void Simpler(CORE::LINALG::ANA::Vector& vx, CORE::LINALG::ANA::Vector& px,
+    void simpler(CORE::LINALG::ANA::Vector& vx, CORE::LINALG::ANA::Vector& px,
         CORE::LINALG::ANA::Vector& vb, CORE::LINALG::ANA::Vector& pb) const;
 
 

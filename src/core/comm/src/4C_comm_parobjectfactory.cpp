@@ -79,8 +79,7 @@ int CORE::COMM::ParObjectType::UniqueParObjectId()
 {
   if (objectid_ == 0)
   {
-    CORE::COMM::ParObjectFactory::Instance().Register(this);
-    // ParObjectFactory::Instance().finalize_registration();
+    CORE::COMM::ParObjectFactory::Instance().do_register(this);
   }
   return objectid_;
 }
@@ -166,7 +165,7 @@ Teuchos::RCP<DRT::Element> CORE::COMM::ParObjectFactory::Create(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COMM::ParObjectFactory::Register(ParObjectType* object_type)
+void CORE::COMM::ParObjectFactory::do_register(ParObjectType* object_type)
 {
   std::string name = object_type->Name();
   const unsigned char* str = reinterpret_cast<const unsigned char*>(name.c_str());

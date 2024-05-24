@@ -126,7 +126,7 @@ namespace DRT
       Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> inv_jhist_;
 
       /// get number of gaussian points considered
-      inline int NGP() const { return fhist_->numRows(); }
+      inline int num_gp() const { return fhist_->numRows(); }
 
       /// get no. of nodal points
       inline int num_node() const { return numnode_; }

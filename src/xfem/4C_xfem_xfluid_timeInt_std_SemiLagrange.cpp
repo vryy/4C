@@ -503,7 +503,7 @@ void XFEM::XfluidSemiLagrange::newton_loop(DRT::Element*& ele,  /// pointer to e
   residuum.Clear();
 
   // data->vel_ = vel^(n+1) for FGI>1, vel = vel^n
-  residuum.Update((1.0 - Theta(data)), vel, Theta(data), data->vel_);  // dt*v(data->startpoint_)
+  residuum.Update((1.0 - theta(data)), vel, theta(data), data->vel_);  // dt*v(data->startpoint_)
   residuum.Update(1.0, data->startpoint_, -1.0, origNodeCoords,
       dt_);  // R = data->startpoint_ - data->node_ + dt*v(data->startpoint_)
 
@@ -592,7 +592,7 @@ void XFEM::XfluidSemiLagrange::newton_loop(DRT::Element*& ele,  /// pointer to e
       // reset residual
       residuum.Clear();
       residuum.Update(
-          (1.0 - Theta(data)), vel, Theta(data), data->vel_);  // dt*v(data->startpoint_)
+          (1.0 - theta(data)), vel, theta(data), data->vel_);  // dt*v(data->startpoint_)
       residuum.Update(1.0, data->startpoint_, -1.0, origNodeCoords,
           dt_);  // R = data->startpoint_ - data->movNode_ + dt*v(data->startpoint_)
 
@@ -723,7 +723,7 @@ void XFEM::XfluidSemiLagrange::newton_iter(DRT::Element*& ele,  /// pointer to e
 
   // build sysmat
   // JAC = I + dt(1-theta)*velDerivXY
-  sysmat.Update((1.0 - Theta(data)) * dt_, vel_deriv);  // dt*(1-theta)dN/dx
+  sysmat.Update((1.0 - theta(data)) * dt_, vel_deriv);  // dt*(1-theta)dN/dx
 
   for (int i = 0; i < nsd; i++) sysmat(i, i) += 1.0;  // I + dt*velDerivXY
 
@@ -1490,16 +1490,16 @@ void XFEM::XfluidSemiLagrange::back_tracking(DRT::Element*& fittingele,  /// poi
 
   for (size_t index = 0; index < oldVectors_.size(); index++)
   {
-    vel.Multiply(1.0 - Theta(data), velnDeriv1[index], transportVeln);  // v = (1-theta)*Dv^n/Dx*v^n
-    vel.Multiply(Theta(data), data->velDeriv_[index], data->vel_,
+    vel.Multiply(1.0 - theta(data), velnDeriv1[index], transportVeln);  // v = (1-theta)*Dv^n/Dx*v^n
+    vel.Multiply(theta(data), data->velDeriv_[index], data->vel_,
         1.0);  // v = theta*Dv^n+1/Dx*v^n+1+(1-theta)*Dv^n/Dx*v^n
     vel.Update(
         1.0, veln[index], deltaT);  // v = v_n + dt*(theta*Dv^n+1/Dx*v^n+1+(1-theta)*Dv^n/Dx*v^n)
     velValues[index] = vel;
 
     pres.Multiply(
-        1.0 - Theta(data), presnDeriv1[index], transportVeln);  // p = (1-theta)*Dp^n/Dx*v^n
-    pres.Multiply(Theta(data), data->presDeriv_[index], data->vel_,
+        1.0 - theta(data), presnDeriv1[index], transportVeln);  // p = (1-theta)*Dp^n/Dx*v^n
+    pres.Multiply(theta(data), data->presDeriv_[index], data->vel_,
         1.0);  // p = theta*Dp^n+1/Dx*v^n+1+(1-theta)*Dp^n/Dx*v^n
     pres.MultiplyTN(1.0, nodepresdata[index], shapeFcn,
         deltaT);  // p = p_n + dt*(theta*Dp^n+1/Dx*v^n+1+(1-theta)*Dp^n/Dx*v^n)
@@ -1740,7 +1740,7 @@ void XFEM::XfluidSemiLagrange::compute_nodal_gradient(
 /*------------------------------------------------------------------------------------------------*
  * get the time integration factor theta fitting to the computation type             schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-double XFEM::XfluidSemiLagrange::Theta(TimeIntData* data) const
+double XFEM::XfluidSemiLagrange::theta(TimeIntData* data) const
 {
   double theta = -1.0;
 

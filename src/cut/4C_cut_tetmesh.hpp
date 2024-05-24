@@ -644,7 +644,7 @@ namespace CORE::GEO
       /// Initialize valid tets and create children for the tet-cells (i.e. surfaces) and
       /// tet-surfaces (i.e. lines)
       ///   and the connectivity of these.
-      void Init();
+      void init();
 
       void call_q_hull(
           const std::vector<Point*>& points, std::vector<std::vector<int>>& tets, bool project);

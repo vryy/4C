@@ -579,7 +579,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
       eval_shape_func_and_derivs_at_int_point(intpoints, iquad, ele->Id());
 
       // call material law => sets capacoeff_
-      Materialize(ele, iquad);
+      materialize(ele, iquad);
 
       CORE::LINALG::Matrix<1, 1> temp(false);
       temp.MultiplyTN(funct_, etempn_);
@@ -798,7 +798,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::evaluate_fext(
     // call routine for calculation of radiation in element nodes
     // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
     // ---------------------------------------------------------------------
-    Radiation(ele, time);
+    radiation(ele, time);
     // fext = fext + N . r. detJ . w(gp)
     // with funct_: shape functions, fac_:detJ . w(gp)
     efext.MultiplyNN(fac_, funct_, radiation_, 1.0);
@@ -841,7 +841,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::linear_thermo_contribution(
 
     // call material law => cmat_,heatflux_
     // negative q is used for balance equation: -q = -(-k gradtemp)= k * gradtemp
-    Materialize(ele, iquad);
+    materialize(ele, iquad);
 
 #ifdef THRASOUTPUT
     std::cout << "CalculateFintCondCapa heatflux_ = " << heatflux_ << std::endl;
@@ -1358,7 +1358,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::nonlinear_thermo_disp_contribution(
     // call material law => cmat_,heatflux_ and dercmat_
     // negative q is used for balance equation:
     // heatflux_ = k_0 . Grad T
-    Materialize(ele, iquad);
+    materialize(ele, iquad);
     // heatflux_ := qintermediate = k_0 . Grad T
 
     // -------------------------------------------- coupling to mechanics
@@ -1724,7 +1724,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::nonlinear_coupled_tang(
 
     // call material law => cmat_,heatflux_
     // negative q is used for balance equation: -q = -(-k gradtemp)= k * gradtemp
-    Materialize(ele, iquad);
+    materialize(ele, iquad);
 
     // put thermal material tangent in vector notation
     CORE::LINALG::Matrix<6, 1> cmat_vct(true);
@@ -2499,7 +2499,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::linear_heatflux_tempgrad(const DRT::Ele
 
     // call material law => cmat_,heatflux_
     // negative q is used for balance equation: -q = -(-k gradtemp)= k * gradtemp
-    Materialize(ele, iquad);
+    materialize(ele, iquad);
 
     // store the heat flux for postprocessing
     if (eheatflux != nullptr)
@@ -2550,7 +2550,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::nonlinear_heatflux_tempgrad(
     // call material law => cmat_,heatflux_ and dercmat_
     // negative q is used for balance equation:
     // heatflux_ = k_0 . Grad T
-    Materialize(ele, iquad);
+    materialize(ele, iquad);
     // heatflux_ := qintermediate = k_0 . Grad T
 
     // -------------------------------------------- coupling to mechanics
@@ -2673,7 +2673,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::calculate_lump_matrix(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::Radiation(const DRT::Element* ele, const double time)
+void DRT::ELEMENTS::TemperImpl<distype>::radiation(const DRT::Element* ele, const double time)
 {
   std::vector<CORE::Conditions::Condition*> myneumcond;
 
@@ -2776,7 +2776,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(const DRT::Element* ele, cons
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::Materialize(const DRT::Element* ele, const int gp)
+void DRT::ELEMENTS::TemperImpl<distype>::materialize(const DRT::Element* ele, const int gp)
 {
   auto material = ele->Material();
 

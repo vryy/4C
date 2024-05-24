@@ -362,7 +362,7 @@ void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::get_global_sl_ma_activ
 
   Teuchos::RCP<Epetra_Map> imap = Teuchos::null;
 
-  for (const Teuchos::RCP<CONTACT::Interface>& cit : combo_.Get().Interfaces())
+  for (const Teuchos::RCP<CONTACT::Interface>& cit : combo_.get().Interfaces())
   {
     const CONTACT::AUG::Interface& interface = dynamic_cast<AUG::Interface&>(*cit);
 

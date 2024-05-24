@@ -211,7 +211,7 @@ namespace IO
     }
 
     /// Access to the interface object.
-    EveryIterationWriterInterface& Interface()
+    EveryIterationWriterInterface& interface()
     {
       if (not interface_)
         FOUR_C_THROW("The every iteration interface has not been initialized correctly.");

@@ -176,7 +176,7 @@ namespace CORE::VOLMORTAR
      \brief get auxiliary plane normal (2D)
 
      */
-    virtual double* Auxn() { return auxn_; }
+    virtual double* auxn() { return auxn_; }
 
     /*!
      \brief Build maps based n coupling dofs
@@ -228,7 +228,7 @@ namespace CORE::VOLMORTAR
      \brief complete created matrices
 
      */
-    virtual void Complete();
+    virtual void complete();
 
     /*!
      \brief compute projection matrices D^-1 * M
@@ -268,13 +268,13 @@ namespace CORE::VOLMORTAR
      \brief Get discretization of Omega_1
 
      */
-    virtual Teuchos::RCP<const DRT::Discretization> Discret1() const { return dis1_; }
+    virtual Teuchos::RCP<const DRT::Discretization> discret1() const { return dis1_; }
 
     /*!
      \brief Get discretization of Omega_2
 
      */
-    virtual Teuchos::RCP<DRT::Discretization> Discret2() const { return dis2_; }
+    virtual Teuchos::RCP<DRT::Discretization> discret2() const { return dis2_; }
 
     /*!
      \brief Evaluate element-based
@@ -310,7 +310,7 @@ namespace CORE::VOLMORTAR
      \brief Initialize / reset volmortar coupling
 
      */
-    virtual void Initialize();
+    virtual void initialize();
 
     /*!
      \brief Initialize DOP normals for DOP calculation (Search algorithm)
@@ -386,7 +386,7 @@ namespace CORE::VOLMORTAR
      \brief get parameter list
 
      */
-    Teuchos::ParameterList& Params() { return params_; };
+    Teuchos::ParameterList& params() { return params_; };
 
     /*!
      \brief perform cut and create integration cells (3D)
@@ -418,7 +418,7 @@ namespace CORE::VOLMORTAR
      \brief search algorithm
 
      */
-    virtual std::vector<int> Search(DRT::Element& ele,
+    virtual std::vector<int> search(DRT::Element& ele,
         Teuchos::RCP<CORE::GEO::SearchTree> SearchTree,
         std::map<int, CORE::LINALG::Matrix<9, 2>>& currentKDOPs);
 

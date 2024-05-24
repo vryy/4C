@@ -471,7 +471,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::evalua
     }
 
     // Projection of Gauss point on surface with fixed eta to get xi1 and xi2
-    Projection(2, xi1, xi2, eta, proj_allowed);
+    projection(2, xi1, xi2, eta, proj_allowed);
 
     // Check if the projected point found for this contact pair is really on the
     // considered surface element, i.e. xi1 and xi2 in [-1, 1]
@@ -1614,7 +1614,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
 
       // Projection of surface edge
       bool proj_allowed = true;
-      Projection(i, xi1, xi2, eta, proj_allowed);
+      projection(i, xi1, xi2, eta, proj_allowed);
 
       if (output)
       {
@@ -1686,7 +1686,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
 
     // Projection of beam start point
     bool proj_allowed = true;
-    Projection(2, xi1, xi2, eta, proj_allowed);
+    projection(2, xi1, xi2, eta, proj_allowed);
 
     if (fabs(xi1) < limit && fabs(xi2) < limit)
     {
@@ -1718,7 +1718,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
 
     // Projection of beam end point
     bool proj_allowed = true;
-    Projection(2, xi1, xi2, eta, proj_allowed);
+    projection(2, xi1, xi2, eta, proj_allowed);
 
     if (fabs(xi1) < limit && fabs(xi2) < limit)
     {
@@ -1828,7 +1828,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
  | Projection                                                           |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Projection(
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::projection(
     const int& fixed_par, TYPEBTS& xi1, TYPEBTS& xi2, TYPEBTS& eta, bool& proj_allowed)
 {
   proj_allowed = true;

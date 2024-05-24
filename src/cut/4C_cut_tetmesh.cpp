@@ -78,7 +78,7 @@ CORE::GEO::CUT::TetMesh::TetMesh(
     }
   }
 
-  Init();
+  init();
 }
 
 /* Loop over the facets of the tetmesh. Can every facet (triangulated at this stage) be associated
@@ -294,7 +294,7 @@ void CORE::GEO::CUT::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
 /* Initialize the data-structures needed for the TetMesh. The call to Qhull has to be performed
  * before.
  */
-void CORE::GEO::CUT::TetMesh::Init()
+void CORE::GEO::CUT::TetMesh::init()
 {
   unsigned numtets = tets_.size();
 

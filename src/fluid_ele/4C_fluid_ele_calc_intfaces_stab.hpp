@@ -189,7 +189,7 @@ namespace DRT
           ) override;
 
      private:
-      int Degree(const CORE::FE::CellType parent_ele_distype);
+      int degree(const CORE::FE::CellType parent_ele_distype);
 
       //! reassemble matrix block from master-slave pairs to patch-node block for field (row, col)
       void reassemble_mat_block(const int row_block,   ///< row block

@@ -125,7 +125,7 @@ namespace XFEM
           const std::vector<std::string>& conditions_to_copy) const;
 
       //! re-partitioning of newly created discretizations (e.g. split by condition)
-      void Redistribute(Teuchos::RCP<DRT::Discretization> dis, std::vector<int>& noderowvec,
+      void redistribute(Teuchos::RCP<DRT::Discretization> dis, std::vector<int>& noderowvec,
           std::vector<int>& nodecolvec) const;
 
       /*! \brief Split a discretization into two parts by removing elements near boundary

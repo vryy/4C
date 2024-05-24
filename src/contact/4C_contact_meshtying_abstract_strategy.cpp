@@ -44,7 +44,7 @@ CONTACT::MtAbstractStrategy::MtAbstractStrategy(const Epetra_Map* dof_row_map,
       dualquadslavetrafo_(false)
 {
   // call setup method with flag redistributed=FALSE
-  Setup(false);
+  setup(false);
 
   // store interface maps with parallel distribution of underlying
   // problem discretization (i.e. interface maps before parallel
@@ -107,7 +107,7 @@ void CONTACT::MtAbstractStrategy::redistribute_meshtying()
     }
 
     // re-setup strategy with flag redistributed=TRUE
-    Setup(true);
+    setup(true);
 
     // time measurement
     Comm().Barrier();
@@ -128,7 +128,7 @@ void CONTACT::MtAbstractStrategy::redistribute_meshtying()
 /*----------------------------------------------------------------------*
  | setup this strategy object                                popp 08/10 |
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
+void CONTACT::MtAbstractStrategy::setup(bool redistributed)
 {
   // ------------------------------------------------------------------------
   // setup global accessible Epetra_Maps
@@ -409,7 +409,7 @@ void CONTACT::MtAbstractStrategy::restrict_meshtying_zone()
   // Step 3: re-setup global maps and vectors with flag redistributed=FALSE
   // (this flag must be FALSE here, because the slave set has been reduced and
   // thus the non-interface set N needs to be updated / re-setup as well)
-  Setup(false);
+  setup(false);
 
   // Step 4: re-setup slave dof row map with parallel distribution of
   // underlying problem discretization (i.e. slave dof row maps before

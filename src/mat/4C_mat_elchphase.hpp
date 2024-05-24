@@ -208,7 +208,7 @@ namespace MAT
     void setup_mat_map();
 
     /// clear everything
-    void Clear();
+    void clear();
 
     /// my material parameters
     MAT::PAR::ElchPhase* params_;

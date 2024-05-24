@@ -122,7 +122,7 @@ void DRT::ELEMENTS::StructuralSurface::trace_estimate_vol_matrix(
   for (int gp = 0; gp < ip.IP().nquad; ++gp)
   {
     const CORE::LINALG::Matrix<3, 1> xi(ip.IP().qxg[gp], false);
-    Strains<dt_vol>(xrefe, xcurr, xi, jac, defgrd, glstrain, rcg, bop, N_XYZ);
+    strains<dt_vol>(xrefe, xcurr, xi, jac, defgrd, glstrain, rcg, bop, N_XYZ);
 
     CORE::LINALG::Matrix<6, 6> cmat(true);
     CORE::LINALG::Matrix<6, 1> stress(true);
@@ -182,7 +182,7 @@ void DRT::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix(
 
     CORE::LINALG::Matrix<3, 1> xi;
     for (int i = 0; i < 3; ++i) xi(i) = pqxg(0, i);
-    Strains<dt_vol>(xrefe, xcurr, xi, jac, defgrd, glstrain, rcg, bop, N_XYZ);
+    strains<dt_vol>(xrefe, xcurr, xi, jac, defgrd, glstrain, rcg, bop, N_XYZ);
 
     CORE::LINALG::Matrix<6, 6> cmat(true);
     CORE::LINALG::Matrix<6, 1> stress(true);
@@ -239,7 +239,7 @@ void DRT::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix(
 }
 
 template <CORE::FE::CellType dt_vol>
-void DRT::ELEMENTS::StructuralSurface::Strains(
+void DRT::ELEMENTS::StructuralSurface::strains(
     const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xrefe,
     const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
     const CORE::LINALG::Matrix<3, 1>& xi, double& jac, CORE::LINALG::Matrix<3, 3>& defgrd,
@@ -495,7 +495,7 @@ void DRT::ELEMENTS::StructuralSurface::trace_estimate_vol_matrix_tsi(
   for (int gp = 0; gp < ip.IP().nquad; ++gp)
   {
     const CORE::LINALG::Matrix<3, 1> xi(ip.IP().qxg[gp], false);
-    Strains<dt_vol>(xrefe, xcurr, xi, jac, defgrd, glstrain, rcg, bop, N_XYZ);
+    strains<dt_vol>(xrefe, xcurr, xi, jac, defgrd, glstrain, rcg, bop, N_XYZ);
 
     CORE::LINALG::Matrix<3, 3> iC;
     iC.MultiplyTN(defgrd, defgrd);
@@ -562,7 +562,7 @@ void DRT::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix_tsi(
     CORE::LINALG::Matrix<3, 1> xi;
     for (int i = 0; i < 3; ++i) xi(i) = pqxg(0, i);
 
-    Strains<dt_vol>(xrefe, xcurr, xi, jac, defgrd, glstrain, rcg, bop, N_XYZ);
+    strains<dt_vol>(xrefe, xcurr, xi, jac, defgrd, glstrain, rcg, bop, N_XYZ);
 
     CORE::LINALG::Matrix<3, 3> iC;
     iC.MultiplyTN(defgrd, defgrd);

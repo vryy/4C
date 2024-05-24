@@ -148,7 +148,7 @@ CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::Instance()
  *----------------------------------------------------------------------------*/
 template <class DebugPolicy, unsigned probdim, CORE::FE::CellType ref_type,
     CORE::FE::CellType tar_type>
-void CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::Setup()
+void CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::setup()
 {
   ref_val_.putScalar(0.0);
   x_ref_.putScalar(0.0);
@@ -164,7 +164,7 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
     MORTAR::Element& ref_ele, const double* ref_xi, MORTAR::Element& target_ele, double* target_xi,
     double& alpha)
 {
-  Setup();
+  setup();
 
   const DRT::Node* const* ref_nodes = ref_ele.Nodes();
 

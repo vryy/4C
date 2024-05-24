@@ -136,7 +136,7 @@ namespace CORE::LINALG
 
    private:
     /// Get number of solver calls done on this solver
-    inline int Ncall() const { return ncall_; }
+    inline int ncall() const { return ncall_; }
 
     /// my internal preconditioner
     Teuchos::RCP<Epetra_Operator> prec_;

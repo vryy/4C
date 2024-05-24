@@ -357,9 +357,9 @@ namespace DRT
 
       DRT::Node** Nodes() override;
 
-      Teuchos::RCP<CORE::MAT::Material> Material() const;
+      Teuchos::RCP<CORE::MAT::Material> material() const;
 
-      int Id() const;
+      int id() const;
 
     };  // class So3_Scatra
 

@@ -213,7 +213,7 @@ namespace IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void DomainReader::Complete() const
+  void DomainReader::complete() const
   {
     const int myrank = comm_->MyPID();
 

@@ -308,7 +308,7 @@ namespace MORTAR
      Thus, center_triangulation() is NOT used anymore.
 
      */
-    virtual bool Triangulation(std::map<int, double>& projpar, double tol);
+    virtual bool triangulation(std::map<int, double>& projpar, double tol);
     virtual bool delaunay_triangulation(
         std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linvertex, double tol);
     virtual bool center_triangulation(

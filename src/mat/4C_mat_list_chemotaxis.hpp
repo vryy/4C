@@ -149,7 +149,7 @@ namespace MAT
 
    private:
     /// clear everything
-    void Clear();
+    void clear();
 
     /// my material parameters
     MAT::PAR::MatListChemotaxis* paramschemo_;

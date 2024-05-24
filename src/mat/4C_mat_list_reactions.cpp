@@ -130,7 +130,7 @@ void MAT::MatListReactions::setup_mat_map()
 /*----------------------------------------------------------------------*
  | reset everything                                          thon 11/14 |
  *----------------------------------------------------------------------*/
-void MAT::MatListReactions::Clear()
+void MAT::MatListReactions::clear()
 {
   paramsreac_ = nullptr;
   return;
@@ -176,7 +176,7 @@ void MAT::MatListReactions::Pack(CORE::COMM::PackBuffer& data) const
 void MAT::MatListReactions::Unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
-  Clear();
+  clear();
 
   std::vector<char>::size_type position = 0;
 

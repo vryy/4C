@@ -77,7 +77,7 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::ParameterList smoo_params_;
     std::string prec_type_;
 
-    void Params_TSI_AMG_BGS(Teuchos::ParameterList &params);
+    void params_tsi_amg_bgs(Teuchos::ParameterList &params);
 
     // Helper function to convert int to std::string
     std::string convert_int(int number)

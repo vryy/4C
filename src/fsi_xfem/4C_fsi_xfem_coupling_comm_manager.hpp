@@ -124,7 +124,7 @@ namespace XFEM
         std::string str1, std::string str2 = "", std::string str3 = "", std::string str4 = "");
 
    private:
-    void Setup(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis);
+    void setup(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis);
 
     void setup_multi_map_extractors(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis);
 

@@ -194,23 +194,23 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateVolmortar()
    ***********************************************************/
   // check_initial_residuum();
   // mesh initialization procedure
-  if (CORE::UTILS::IntegralValue<int>(Params(), "MESH_INIT")) mesh_init();
+  if (CORE::UTILS::IntegralValue<int>(params(), "MESH_INIT")) mesh_init();
 
   /***********************************************************
    * initialize global matrices                              *
    ***********************************************************/
-  Initialize();
+  initialize();
 
   /***********************************************************
    * Segment-based integration                               *
    ***********************************************************/
-  if (CORE::UTILS::IntegralValue<IntType>(Params(), "INTTYPE") == inttype_segments)
+  if (CORE::UTILS::IntegralValue<IntType>(params(), "INTTYPE") == inttype_segments)
     evaluate_segments();
 
   /***********************************************************
    * Element-based Integration                               *
    ***********************************************************/
-  else if (CORE::UTILS::IntegralValue<IntType>(Params(), "INTTYPE") == inttype_elements)
+  else if (CORE::UTILS::IntegralValue<IntType>(params(), "INTTYPE") == inttype_elements)
     evaluate_elements();
 
   // no other possibility
@@ -220,7 +220,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateVolmortar()
   /***********************************************************
    * complete global matrices and create projection operator *
    ***********************************************************/
-  Complete();
+  complete();
   create_projection_operator();
 
   /**************************************************
@@ -397,7 +397,7 @@ CORE::LINALG::Matrix<9, 2> CORE::VOLMORTAR::VolMortarCoupl::calc_dop(DRT::Elemen
 /*----------------------------------------------------------------------*
  |  Perform searching procedure                              farah 05/14|
  *----------------------------------------------------------------------*/
-std::vector<int> CORE::VOLMORTAR::VolMortarCoupl::Search(DRT::Element& ele,
+std::vector<int> CORE::VOLMORTAR::VolMortarCoupl::search(DRT::Element& ele,
     Teuchos::RCP<CORE::GEO::SearchTree> SearchTree,
     std::map<int, CORE::LINALG::Matrix<9, 2>>& currentKDOPs)
 {
@@ -445,7 +445,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::AssignMaterials()
     // get master element
     DRT::Element* Aele = dis1_->lColElement(j);
 
-    std::vector<int> found = Search(*Aele, SearchTreeB, CurrentDOPsB);
+    std::vector<int> found = search(*Aele, SearchTreeB, CurrentDOPsB);
 
     /***********************************************************
      * Assign materials                                        *
@@ -461,7 +461,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::AssignMaterials()
     // get master element
     DRT::Element* Bele = dis2_->lColElement(j);
 
-    std::vector<int> found = Search(*Bele, SearchTreeA, CurrentDOPsA);
+    std::vector<int> found = search(*Bele, SearchTreeA, CurrentDOPsA);
 
     /***********************************************************
      * Assign materials                                        *
@@ -740,7 +740,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::evaluate_consistent_interpolation()
     DRT::Node* anode = dis1_->gNode(gid);
 
     // get found elements from other discr.
-    std::vector<int> found = Search(*anode->Elements()[0], SearchTreeB, CurrentDOPsB);
+    std::vector<int> found = search(*anode->Elements()[0], SearchTreeB, CurrentDOPsB);
 
     assemble_consistent_interpolation_p12(anode, found);
   }  // end node loop
@@ -753,7 +753,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::evaluate_consistent_interpolation()
     DRT::Node* bnode = dis2_->gNode(gid);
 
     // get found elements from other discr.
-    std::vector<int> found = Search(*bnode->Elements()[0], SearchTreeA, CurrentDOPsA);
+    std::vector<int> found = search(*bnode->Elements()[0], SearchTreeA, CurrentDOPsA);
 
     assemble_consistent_interpolation_p21(bnode, found);
   }  // end node loop
@@ -798,7 +798,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::evaluate_elements()
     // get master element
     DRT::Element* Aele = dis1_->lColElement(j);
 
-    std::vector<int> found = Search(*Aele, SearchTreeB, CurrentDOPsB);
+    std::vector<int> found = search(*Aele, SearchTreeB, CurrentDOPsB);
     integrate3_d_ele_based_p12(*Aele, found);
 
     // create trafo operator for quadr. modification
@@ -823,7 +823,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::evaluate_elements()
     // get master element
     DRT::Element* Bele = dis2_->lColElement(j);
 
-    std::vector<int> found = Search(*Bele, SearchTreeA, CurrentDOPsA);
+    std::vector<int> found = search(*Bele, SearchTreeA, CurrentDOPsA);
     integrate3_d_ele_based_p21(*Bele, found);
 
     // create trafo operator for quadr. modification
@@ -856,7 +856,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::evaluate_segments()
     DRT::Element* Aele = dis1_->lColElement(i);
 
     // get found elements from other discr.
-    std::vector<int> found = Search(*Aele, SearchTreeB, CurrentDOPsB);
+    std::vector<int> found = search(*Aele, SearchTreeB, CurrentDOPsB);
 
     /***********************************************************
      * Assign materials                                        *
@@ -1055,28 +1055,28 @@ void CORE::VOLMORTAR::VolMortarCoupl::read_and_check_input(
 void CORE::VOLMORTAR::VolMortarCoupl::check_initial_residuum()
 {
   // create vectors of initial primary variables
-  Teuchos::RCP<Epetra_Vector> var_A = CORE::LINALG::CreateVector(*Discret1()->dof_row_map(0), true);
-  Teuchos::RCP<Epetra_Vector> var_B = CORE::LINALG::CreateVector(*Discret2()->dof_row_map(1), true);
+  Teuchos::RCP<Epetra_Vector> var_A = CORE::LINALG::CreateVector(*discret1()->dof_row_map(0), true);
+  Teuchos::RCP<Epetra_Vector> var_B = CORE::LINALG::CreateVector(*discret2()->dof_row_map(1), true);
 
   // solution
   Teuchos::RCP<Epetra_Vector> result_A =
-      CORE::LINALG::CreateVector(*Discret2()->dof_row_map(1), true);
+      CORE::LINALG::CreateVector(*discret2()->dof_row_map(1), true);
   Teuchos::RCP<Epetra_Vector> result_B =
-      CORE::LINALG::CreateVector(*Discret2()->dof_row_map(1), true);
+      CORE::LINALG::CreateVector(*discret2()->dof_row_map(1), true);
 
   // node positions for Discr A
-  for (int i = 0; i < Discret1()->NumMyRowElements(); ++i)
+  for (int i = 0; i < discret1()->NumMyRowElements(); ++i)
   {
-    DRT::Element* Aele = Discret1()->lRowElement(i);
+    DRT::Element* Aele = discret1()->lRowElement(i);
     for (int j = 0; j < Aele->num_node(); ++j)
     {
       DRT::Node* cnode = Aele->Nodes()[j];
-      int nsdof = Discret1()->NumDof(0, cnode);
+      int nsdof = discret1()->NumDof(0, cnode);
 
       // loop over slave dofs
       for (int jdof = 0; jdof < nsdof; ++jdof)
       {
-        int id = Discret1()->Dof(0, cnode, jdof);
+        int id = discret1()->Dof(0, cnode, jdof);
         double val = cnode->X()[jdof];
 
         var_A->ReplaceGlobalValue(id, 0, val);
@@ -1085,18 +1085,18 @@ void CORE::VOLMORTAR::VolMortarCoupl::check_initial_residuum()
   }
 
   // node positions for Discr B
-  for (int i = 0; i < Discret2()->NumMyRowElements(); ++i)
+  for (int i = 0; i < discret2()->NumMyRowElements(); ++i)
   {
-    DRT::Element* Bele = Discret2()->lRowElement(i);
+    DRT::Element* Bele = discret2()->lRowElement(i);
     for (int j = 0; j < Bele->num_node(); ++j)
     {
       DRT::Node* cnode = Bele->Nodes()[j];
-      int nsdof = Discret2()->NumDof(1, cnode);
+      int nsdof = discret2()->NumDof(1, cnode);
 
       // loop over slave dofs
       for (int jdof = 0; jdof < nsdof; ++jdof)
       {
-        int id = Discret2()->Dof(1, cnode, jdof);
+        int id = discret2()->Dof(1, cnode, jdof);
         double val = cnode->X()[jdof];
 
         var_B->ReplaceGlobalValue(id, 0, val);
@@ -1144,9 +1144,9 @@ void CORE::VOLMORTAR::VolMortarCoupl::mesh_init()
 
   // init zero residuum vector for old iteration
   Teuchos::RCP<Epetra_Vector> ResoldA =
-      CORE::LINALG::CreateVector(*Discret1()->dof_row_map(dofseta), true);
+      CORE::LINALG::CreateVector(*discret1()->dof_row_map(dofseta), true);
   Teuchos::RCP<Epetra_Vector> ResoldB =
-      CORE::LINALG::CreateVector(*Discret2()->dof_row_map(dofsetb), true);
+      CORE::LINALG::CreateVector(*discret2()->dof_row_map(dofsetb), true);
 
   // output
   if (myrank_ == 0)
@@ -1159,14 +1159,14 @@ void CORE::VOLMORTAR::VolMortarCoupl::mesh_init()
   {
     // init
     dmatrix_xa_ =
-        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*Discret1()->dof_row_map(dofseta), 10));
+        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*discret1()->dof_row_map(dofseta), 10));
     mmatrix_xa_ =
-        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*Discret1()->dof_row_map(dofseta), 100));
+        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*discret1()->dof_row_map(dofseta), 100));
 
     dmatrix_xb_ =
-        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*Discret2()->dof_row_map(dofsetb), 10));
+        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*discret2()->dof_row_map(dofsetb), 10));
     mmatrix_xb_ =
-        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*Discret2()->dof_row_map(dofsetb), 100));
+        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*discret2()->dof_row_map(dofsetb), 100));
 
     // output
     if (myrank_ == 0) std::cout << "*****       step " << mi << std::endl;
@@ -1188,7 +1188,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::mesh_init()
       // get master element
       DRT::Element* Aele = dis1_->lColElement(j);
 
-      std::vector<int> found = Search(*Aele, SearchTreeB, CurrentDOPsB);
+      std::vector<int> found = search(*Aele, SearchTreeB, CurrentDOPsB);
       integrate3_d_ele_based_a_dis_mesh_init(*Aele, found, dofseta, dofsetb);
     }
 
@@ -1201,24 +1201,24 @@ void CORE::VOLMORTAR::VolMortarCoupl::mesh_init()
       // get master element
       DRT::Element* Bele = dis2_->lColElement(j);
 
-      std::vector<int> found = Search(*Bele, SearchTreeA, CurrentDOPsA);
+      std::vector<int> found = search(*Bele, SearchTreeA, CurrentDOPsA);
       integrate3_d_ele_based_b_dis_mesh_init(*Bele, found, dofseta, dofsetb);
     }
 
     // complete...
     dmatrix_xa_->Complete();
-    mmatrix_xa_->Complete(*Discret2()->dof_row_map(dofsetb), *Discret1()->dof_row_map(dofseta));
+    mmatrix_xa_->Complete(*discret2()->dof_row_map(dofsetb), *discret1()->dof_row_map(dofseta));
     dmatrix_xb_->Complete();
-    mmatrix_xb_->Complete(*Discret1()->dof_row_map(dofseta), *Discret2()->dof_row_map(dofsetb));
+    mmatrix_xb_->Complete(*discret1()->dof_row_map(dofseta), *discret2()->dof_row_map(dofsetb));
 
     mergedmap_ = CORE::LINALG::MergeMap(
-        *Discret1()->dof_row_map(dofseta), *Discret2()->dof_row_map(dofsetb), false);
+        *discret1()->dof_row_map(dofseta), *discret2()->dof_row_map(dofsetb), false);
     Teuchos::RCP<Epetra_Vector> mergedsol = CORE::LINALG::CreateVector(*mergedmap_);
     Teuchos::RCP<Epetra_Vector> mergedX = CORE::LINALG::CreateVector(*mergedmap_);
     Teuchos::RCP<Epetra_Vector> mergedXa =
-        CORE::LINALG::CreateVector(*Discret1()->dof_row_map(dofseta));
+        CORE::LINALG::CreateVector(*discret1()->dof_row_map(dofseta));
     Teuchos::RCP<Epetra_Vector> mergedXb =
-        CORE::LINALG::CreateVector(*Discret2()->dof_row_map(dofsetb));
+        CORE::LINALG::CreateVector(*discret2()->dof_row_map(dofsetb));
 
     for (int n = 0; n < dis1_->NodeRowMap()->NumMyElements(); ++n)
     {
@@ -1272,9 +1272,9 @@ void CORE::VOLMORTAR::VolMortarCoupl::mesh_init()
     //--------------------------------------------------------------
     // Check:
     Teuchos::RCP<Epetra_Vector> solDA =
-        CORE::LINALG::CreateVector(*Discret1()->dof_row_map(dofseta));
+        CORE::LINALG::CreateVector(*discret1()->dof_row_map(dofseta));
     Teuchos::RCP<Epetra_Vector> solMA =
-        CORE::LINALG::CreateVector(*Discret1()->dof_row_map(dofseta));
+        CORE::LINALG::CreateVector(*discret1()->dof_row_map(dofseta));
 
     int err = 0;
     err = dmatrix_xa_->Multiply(false, *mergedXa, *solDA);
@@ -1284,9 +1284,9 @@ void CORE::VOLMORTAR::VolMortarCoupl::mesh_init()
     if (err != 0) FOUR_C_THROW("stop");
 
     Teuchos::RCP<Epetra_Vector> solDB =
-        CORE::LINALG::CreateVector(*Discret2()->dof_row_map(dofsetb));
+        CORE::LINALG::CreateVector(*discret2()->dof_row_map(dofsetb));
     Teuchos::RCP<Epetra_Vector> solMB =
-        CORE::LINALG::CreateVector(*Discret2()->dof_row_map(dofsetb));
+        CORE::LINALG::CreateVector(*discret2()->dof_row_map(dofsetb));
 
     err = dmatrix_xb_->Multiply(false, *mergedXb, *solDB);
     if (err != 0) FOUR_C_THROW("stop");
@@ -1319,9 +1319,9 @@ void CORE::VOLMORTAR::VolMortarCoupl::mesh_init()
     {
       double fac = 0.0;
       Teuchos::RCP<Epetra_Vector> DiffA =
-          CORE::LINALG::CreateVector(*Discret1()->dof_row_map(dofseta), true);
+          CORE::LINALG::CreateVector(*discret1()->dof_row_map(dofseta), true);
       Teuchos::RCP<Epetra_Vector> DiffB =
-          CORE::LINALG::CreateVector(*Discret2()->dof_row_map(dofsetb), true);
+          CORE::LINALG::CreateVector(*discret2()->dof_row_map(dofsetb), true);
       err = DiffA->Update(1.0, *solDA, 0.0);
       if (err != 0) FOUR_C_THROW("stop");
       err = DiffA->Update(-1.0, *ResoldA, 1.0);
@@ -1390,51 +1390,51 @@ void CORE::VOLMORTAR::VolMortarCoupl::mesh_init()
     solver.Solve(k->EpetraOperator(), mergedsol, mergedX, solver_params);
 
     Teuchos::RCP<Epetra_Vector> sola =
-        CORE::LINALG::CreateVector(*Discret1()->dof_row_map(dofseta));
+        CORE::LINALG::CreateVector(*discret1()->dof_row_map(dofseta));
     Teuchos::RCP<Epetra_Vector> solb =
-        CORE::LINALG::CreateVector(*Discret2()->dof_row_map(dofsetb));
+        CORE::LINALG::CreateVector(*discret2()->dof_row_map(dofsetb));
 
     CORE::LINALG::MapExtractor mapext(*mergedmap_,
-        Teuchos::rcp(new Epetra_Map(*(Discret1()->dof_row_map(dofseta)))),
-        Teuchos::rcp(new Epetra_Map(*(Discret2()->dof_row_map(dofsetb)))));
+        Teuchos::rcp(new Epetra_Map(*(discret1()->dof_row_map(dofseta)))),
+        Teuchos::rcp(new Epetra_Map(*(discret2()->dof_row_map(dofsetb)))));
     mapext.ExtractCondVector(mergedsol, sola);
     mapext.ExtractOtherVector(mergedsol, solb);
 
     //--------------------------------------------------------------
     // Post Processing... Node Relocation
     // node positions
-    for (int i = 0; i < Discret1()->NumMyRowElements(); ++i)
+    for (int i = 0; i < discret1()->NumMyRowElements(); ++i)
     {
-      DRT::Element* Aele = Discret1()->lRowElement(i);
+      DRT::Element* Aele = discret1()->lRowElement(i);
       for (int j = 0; j < Aele->num_node(); ++j)
       {
         DRT::Node* cnode = Aele->Nodes()[j];
-        int nsdof = Discret1()->NumDof(dofseta, cnode);
+        int nsdof = discret1()->NumDof(dofseta, cnode);
         std::vector<double> nvector(3);
 
         // loop over slave dofs
         for (int jdof = 0; jdof < nsdof; ++jdof)
         {
-          const int lid = sola->Map().LID(Discret1()->Dof(dofseta, cnode, jdof));
+          const int lid = sola->Map().LID(discret1()->Dof(dofseta, cnode, jdof));
           nvector[jdof] = (*sola)[lid] - cnode->X()[jdof];
         }
         cnode->ChangePos(nvector);
       }
     }
 
-    for (int i = 0; i < Discret2()->NumMyRowElements(); ++i)
+    for (int i = 0; i < discret2()->NumMyRowElements(); ++i)
     {
-      DRT::Element* Bele = Discret2()->lRowElement(i);
+      DRT::Element* Bele = discret2()->lRowElement(i);
       for (int j = 0; j < Bele->num_node(); ++j)
       {
         DRT::Node* cnode = Bele->Nodes()[j];
-        int nsdof = Discret2()->NumDof(dofsetb, cnode);
+        int nsdof = discret2()->NumDof(dofsetb, cnode);
         std::vector<double> nvector(3);
 
         // loop over slave dofs
         for (int jdof = 0; jdof < nsdof; ++jdof)
         {
-          const int lid = solb->Map().LID(Discret2()->Dof(dofsetb, cnode, jdof));
+          const int lid = solb->Map().LID(discret2()->Dof(dofsetb, cnode, jdof));
           nvector[jdof] = (*solb)[lid] - cnode->X()[jdof];
         }
         cnode->ChangePos(nvector);
@@ -1446,9 +1446,9 @@ void CORE::VOLMORTAR::VolMortarCoupl::mesh_init()
 
     // last check:
     Teuchos::RCP<Epetra_Vector> checka =
-        CORE::LINALG::CreateVector(*Discret1()->dof_row_map(dofseta));
+        CORE::LINALG::CreateVector(*discret1()->dof_row_map(dofseta));
     Teuchos::RCP<Epetra_Vector> checkb =
-        CORE::LINALG::CreateVector(*Discret2()->dof_row_map(dofsetb));
+        CORE::LINALG::CreateVector(*discret2()->dof_row_map(dofsetb));
 
     for (int n = 0; n < dis1_->NodeRowMap()->NumMyElements(); ++n)
     {
@@ -1500,9 +1500,9 @@ void CORE::VOLMORTAR::VolMortarCoupl::mesh_init()
     //--------------------------------------------------------------
     // Check:
     Teuchos::RCP<Epetra_Vector> finalDA =
-        CORE::LINALG::CreateVector(*Discret1()->dof_row_map(dofseta));
+        CORE::LINALG::CreateVector(*discret1()->dof_row_map(dofseta));
     Teuchos::RCP<Epetra_Vector> finalMA =
-        CORE::LINALG::CreateVector(*Discret1()->dof_row_map(dofseta));
+        CORE::LINALG::CreateVector(*discret1()->dof_row_map(dofseta));
 
     err = dmatrix_xa_->Multiply(false, *checka, *finalDA);
     if (err != 0) FOUR_C_THROW("stop");
@@ -1511,9 +1511,9 @@ void CORE::VOLMORTAR::VolMortarCoupl::mesh_init()
     if (err != 0) FOUR_C_THROW("stop");
 
     Teuchos::RCP<Epetra_Vector> finalDB =
-        CORE::LINALG::CreateVector(*Discret2()->dof_row_map(dofsetb));
+        CORE::LINALG::CreateVector(*discret2()->dof_row_map(dofsetb));
     Teuchos::RCP<Epetra_Vector> finalMB =
-        CORE::LINALG::CreateVector(*Discret2()->dof_row_map(dofsetb));
+        CORE::LINALG::CreateVector(*discret2()->dof_row_map(dofsetb));
 
     err = dmatrix_xb_->Multiply(false, *checkb, *finalDB);
     if (err != 0) FOUR_C_THROW("stop");
@@ -1624,7 +1624,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::perform_cut(
 
   // *************************************
   // TESSELATION *************************
-  if (CORE::UTILS::IntegralValue<CutType>(Params(), "CUTTYPE") == cuttype_tessellation)
+  if (CORE::UTILS::IntegralValue<CutType>(params(), "CUTTYPE") == cuttype_tessellation)
   {
     // Set options for the cut wizard
     wizard->SetOptions(INPAR::CUT::NDS_Strategy_full,
@@ -1686,7 +1686,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::perform_cut(
 
   // *******************************************
   // DIRECT DIVERGENCE *************************
-  else if (CORE::UTILS::IntegralValue<CutType>(Params(), "CUTTYPE") == cuttype_directdivergence)
+  else if (CORE::UTILS::IntegralValue<CutType>(params(), "CUTTYPE") == cuttype_directdivergence)
   {
     // Set options for the cut wizard
     wizard->SetOptions(INPAR::CUT::NDS_Strategy_full,
@@ -2081,7 +2081,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate2_d(
           case CORE::FE::CellType::quad4:
           {
             static VolMortarIntegrator<CORE::FE::CellType::quad4, CORE::FE::CellType::quad4>
-                integrator(Params());
+                integrator(params());
             integrator.IntegrateCells2D(
                 sele, mele, cells[q], *d1_, *m12_, dis1_, dis2_, dofset12_.first, dofset12_.second);
             break;
@@ -2089,7 +2089,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate2_d(
           case CORE::FE::CellType::tri3:
           {
             static VolMortarIntegrator<CORE::FE::CellType::quad4, CORE::FE::CellType::tri3>
-                integrator(Params());
+                integrator(params());
             integrator.IntegrateCells2D(
                 sele, mele, cells[q], *d1_, *m12_, dis1_, dis2_, dofset12_.first, dofset12_.second);
             break;
@@ -2110,7 +2110,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate2_d(
           case CORE::FE::CellType::quad4:
           {
             static VolMortarIntegrator<CORE::FE::CellType::tri3, CORE::FE::CellType::quad4>
-                integrator(Params());
+                integrator(params());
             integrator.IntegrateCells2D(
                 sele, mele, cells[q], *d1_, *m12_, dis1_, dis2_, dofset12_.first, dofset12_.second);
             break;
@@ -2118,7 +2118,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate2_d(
           case CORE::FE::CellType::tri3:
           {
             static VolMortarIntegrator<CORE::FE::CellType::tri3, CORE::FE::CellType::tri3>
-                integrator(Params());
+                integrator(params());
             integrator.IntegrateCells2D(
                 sele, mele, cells[q], *d1_, *m12_, dis1_, dis2_, dofset12_.first, dofset12_.second);
             break;
@@ -2151,7 +2151,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate2_d(
           case CORE::FE::CellType::quad4:
           {
             static VolMortarIntegrator<CORE::FE::CellType::quad4, CORE::FE::CellType::quad4>
-                integrator(Params());
+                integrator(params());
             integrator.IntegrateCells2D(
                 mele, sele, cells[q], *d2_, *m21_, dis2_, dis1_, dofset21_.first, dofset21_.second);
             break;
@@ -2159,7 +2159,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate2_d(
           case CORE::FE::CellType::tri3:
           {
             static VolMortarIntegrator<CORE::FE::CellType::quad4, CORE::FE::CellType::tri3>
-                integrator(Params());
+                integrator(params());
             integrator.IntegrateCells2D(
                 mele, sele, cells[q], *d2_, *m21_, dis2_, dis1_, dofset21_.first, dofset21_.second);
             break;
@@ -2180,7 +2180,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate2_d(
           case CORE::FE::CellType::quad4:
           {
             static VolMortarIntegrator<CORE::FE::CellType::tri3, CORE::FE::CellType::quad4>
-                integrator(Params());
+                integrator(params());
             integrator.IntegrateCells2D(
                 mele, sele, cells[q], *d2_, *m21_, dis2_, dis1_, dofset21_.first, dofset21_.second);
             break;
@@ -2188,7 +2188,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate2_d(
           case CORE::FE::CellType::tri3:
           {
             static VolMortarIntegrator<CORE::FE::CellType::tri3, CORE::FE::CellType::tri3>
-                integrator(Params());
+                integrator(params());
             integrator.IntegrateCells2D(
                 mele, sele, cells[q], *d2_, *m21_, dis2_, dis1_, dofset21_.first, dofset21_.second);
             break;
@@ -2233,7 +2233,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::hex8:
           {
             static VolMortarIntegrator<CORE::FE::CellType::hex8, CORE::FE::CellType::hex8>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2242,7 +2242,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::hex20:
           {
             static VolMortarIntegrator<CORE::FE::CellType::hex8, CORE::FE::CellType::hex20>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2251,7 +2251,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::hex27:
           {
             static VolMortarIntegrator<CORE::FE::CellType::hex8, CORE::FE::CellType::hex27>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2260,7 +2260,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::tet4:
           {
             static VolMortarIntegrator<CORE::FE::CellType::hex8, CORE::FE::CellType::tet4>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2269,7 +2269,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::tet10:
           {
             static VolMortarIntegrator<CORE::FE::CellType::hex8, CORE::FE::CellType::tet10>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2278,7 +2278,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::pyramid5:
           {
             static VolMortarIntegrator<CORE::FE::CellType::hex8, CORE::FE::CellType::pyramid5>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2301,7 +2301,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::hex8:
           {
             static VolMortarIntegrator<CORE::FE::CellType::hex20, CORE::FE::CellType::hex8>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2310,7 +2310,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::hex20:
           {
             static VolMortarIntegrator<CORE::FE::CellType::hex20, CORE::FE::CellType::hex20>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2319,7 +2319,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::hex27:
           {
             static VolMortarIntegrator<CORE::FE::CellType::hex20, CORE::FE::CellType::hex27>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2328,7 +2328,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::tet4:
           {
             static VolMortarIntegrator<CORE::FE::CellType::hex20, CORE::FE::CellType::tet4>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2337,7 +2337,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::tet10:
           {
             static VolMortarIntegrator<CORE::FE::CellType::hex20, CORE::FE::CellType::tet10>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2346,7 +2346,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::pyramid5:
           {
             static VolMortarIntegrator<CORE::FE::CellType::hex20, CORE::FE::CellType::pyramid5>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2369,7 +2369,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::hex8:
           {
             static VolMortarIntegrator<CORE::FE::CellType::hex27, CORE::FE::CellType::hex8>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2378,7 +2378,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::hex20:
           {
             static VolMortarIntegrator<CORE::FE::CellType::hex27, CORE::FE::CellType::hex20>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2387,7 +2387,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::hex27:
           {
             static VolMortarIntegrator<CORE::FE::CellType::hex27, CORE::FE::CellType::hex27>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2396,7 +2396,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::tet4:
           {
             static VolMortarIntegrator<CORE::FE::CellType::hex27, CORE::FE::CellType::tet4>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2405,7 +2405,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::tet10:
           {
             static VolMortarIntegrator<CORE::FE::CellType::hex27, CORE::FE::CellType::tet10>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2414,7 +2414,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::pyramid5:
           {
             static VolMortarIntegrator<CORE::FE::CellType::hex27, CORE::FE::CellType::pyramid5>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2437,7 +2437,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::hex8:
           {
             static VolMortarIntegrator<CORE::FE::CellType::tet4, CORE::FE::CellType::hex8>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2446,7 +2446,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::hex20:
           {
             static VolMortarIntegrator<CORE::FE::CellType::tet4, CORE::FE::CellType::hex20>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2455,7 +2455,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::hex27:
           {
             static VolMortarIntegrator<CORE::FE::CellType::tet4, CORE::FE::CellType::hex27>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2464,7 +2464,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::tet4:
           {
             static VolMortarIntegrator<CORE::FE::CellType::tet4, CORE::FE::CellType::tet4>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2473,7 +2473,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::tet10:
           {
             static VolMortarIntegrator<CORE::FE::CellType::tet4, CORE::FE::CellType::tet10>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2482,7 +2482,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::pyramid5:
           {
             static VolMortarIntegrator<CORE::FE::CellType::tet4, CORE::FE::CellType::pyramid5>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2505,7 +2505,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::hex8:
           {
             static VolMortarIntegrator<CORE::FE::CellType::tet10, CORE::FE::CellType::hex8>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2514,7 +2514,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::hex20:
           {
             static VolMortarIntegrator<CORE::FE::CellType::tet10, CORE::FE::CellType::hex20>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2523,7 +2523,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::hex27:
           {
             static VolMortarIntegrator<CORE::FE::CellType::tet10, CORE::FE::CellType::hex27>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2532,7 +2532,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::tet4:
           {
             static VolMortarIntegrator<CORE::FE::CellType::tet10, CORE::FE::CellType::tet4>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2541,7 +2541,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::tet10:
           {
             static VolMortarIntegrator<CORE::FE::CellType::tet10, CORE::FE::CellType::tet10>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2550,7 +2550,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::pyramid5:
           {
             static VolMortarIntegrator<CORE::FE::CellType::tet10, CORE::FE::CellType::pyramid5>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2573,7 +2573,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::hex8:
           {
             static VolMortarIntegrator<CORE::FE::CellType::pyramid5, CORE::FE::CellType::hex8>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2582,7 +2582,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::hex20:
           {
             static VolMortarIntegrator<CORE::FE::CellType::pyramid5, CORE::FE::CellType::hex20>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2591,7 +2591,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::hex27:
           {
             static VolMortarIntegrator<CORE::FE::CellType::pyramid5, CORE::FE::CellType::hex27>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2600,7 +2600,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::tet4:
           {
             static VolMortarIntegrator<CORE::FE::CellType::pyramid5, CORE::FE::CellType::tet4>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2609,7 +2609,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::tet10:
           {
             static VolMortarIntegrator<CORE::FE::CellType::pyramid5, CORE::FE::CellType::tet10>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2618,7 +2618,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell(
           case CORE::FE::CellType::pyramid5:
           {
             static VolMortarIntegrator<CORE::FE::CellType::pyramid5, CORE::FE::CellType::pyramid5>
-                integrator(Params());
+                integrator(params());
             integrator.InitializeGP(false, 0, cells[q]->Shape());
             integrator.IntegrateCells3D(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -2653,7 +2653,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_p12(
     // 2D "volume" elements
     case CORE::FE::CellType::quad4:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::quad4> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::quad4> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
           dofset12_.second, p12_dofrowmap_, p12_dofcolmap_);
@@ -2661,7 +2661,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_p12(
     }
     case CORE::FE::CellType::quad8:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::quad8> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::quad8> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
           dofset12_.second, p12_dofrowmap_, p12_dofcolmap_);
@@ -2669,7 +2669,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_p12(
     }
     case CORE::FE::CellType::quad9:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::quad9> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::quad9> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
           dofset12_.second, p12_dofrowmap_, p12_dofcolmap_);
@@ -2677,7 +2677,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_p12(
     }
     case CORE::FE::CellType::tri3:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::tri3> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::tri3> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
           dofset12_.second, p12_dofrowmap_, p12_dofcolmap_);
@@ -2685,7 +2685,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_p12(
     }
     case CORE::FE::CellType::tri6:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::tri6> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::tri6> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
           dofset12_.second, p12_dofrowmap_, p12_dofcolmap_);
@@ -2694,7 +2694,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_p12(
     // 3D volume elements
     case CORE::FE::CellType::hex8:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::hex8> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::hex8> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
           dofset12_.second, p12_dofrowmap_, p12_dofcolmap_);
@@ -2702,7 +2702,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_p12(
     }
     case CORE::FE::CellType::hex27:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::hex27> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::hex27> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
           dofset12_.second, p12_dofrowmap_, p12_dofcolmap_);
@@ -2710,7 +2710,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_p12(
     }
     case CORE::FE::CellType::hex20:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::hex20> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::hex20> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
           dofset12_.second, p12_dofrowmap_, p12_dofcolmap_);
@@ -2718,7 +2718,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_p12(
     }
     case CORE::FE::CellType::tet4:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::tet4> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::tet4> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
           dofset12_.second, p12_dofrowmap_, p12_dofcolmap_);
@@ -2726,7 +2726,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_p12(
     }
     case CORE::FE::CellType::tet10:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::tet10> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::tet10> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
           dofset12_.second, p12_dofrowmap_, p12_dofcolmap_);
@@ -2734,7 +2734,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_p12(
     }
     case CORE::FE::CellType::pyramid5:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::pyramid5> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::pyramid5> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
           dofset12_.second, p12_dofrowmap_, p12_dofcolmap_);
@@ -2761,7 +2761,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_p21(
     // 2D "volume" elements
     case CORE::FE::CellType::quad4:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::quad4> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::quad4> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
           dofset21_.second, p21_dofrowmap_, p21_dofcolmap_);
@@ -2769,7 +2769,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_p21(
     }
     case CORE::FE::CellType::quad8:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::quad8> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::quad8> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
           dofset21_.second, p21_dofrowmap_, p21_dofcolmap_);
@@ -2777,7 +2777,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_p21(
     }
     case CORE::FE::CellType::quad9:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::quad9> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::quad9> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
           dofset21_.second, p21_dofrowmap_, p21_dofcolmap_);
@@ -2785,7 +2785,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_p21(
     }
     case CORE::FE::CellType::tri3:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::tri3> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::tri3> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
           dofset21_.second, p21_dofrowmap_, p21_dofcolmap_);
@@ -2793,7 +2793,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_p21(
     }
     case CORE::FE::CellType::tri6:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::tri6> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::tri6> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
           dofset21_.second, p21_dofrowmap_, p21_dofcolmap_);
@@ -2802,7 +2802,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_p21(
     // 3D volume elements
     case CORE::FE::CellType::hex8:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::hex8> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::hex8> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
           dofset21_.second, p21_dofrowmap_, p21_dofcolmap_);
@@ -2810,7 +2810,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_p21(
     }
     case CORE::FE::CellType::hex20:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::hex20> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::hex20> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
           dofset21_.second, p21_dofrowmap_, p21_dofcolmap_);
@@ -2818,7 +2818,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_p21(
     }
     case CORE::FE::CellType::hex27:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::hex27> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::hex27> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
           dofset21_.second, p21_dofrowmap_, p21_dofcolmap_);
@@ -2826,7 +2826,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_p21(
     }
     case CORE::FE::CellType::tet4:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::tet4> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::tet4> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
           dofset21_.second, p21_dofrowmap_, p21_dofcolmap_);
@@ -2834,7 +2834,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_p21(
     }
     case CORE::FE::CellType::tet10:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::tet10> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::tet10> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
           dofset21_.second, p21_dofrowmap_, p21_dofcolmap_);
@@ -2842,7 +2842,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_p21(
     }
     case CORE::FE::CellType::pyramid5:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::pyramid5> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::pyramid5> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
           dofset21_.second, p21_dofrowmap_, p21_dofcolmap_);
@@ -2868,7 +2868,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_a_dis_mesh_init(
     // 2D surface elements
     case CORE::FE::CellType::hex8:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::hex8> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::hex8> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrix_xa_, *mmatrix_xa_, dis1_, dis2_,
           dofseta, dofsetb, p12_dofrowmap_, p12_dofcolmap_);
@@ -2876,7 +2876,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_a_dis_mesh_init(
     }
     case CORE::FE::CellType::tet4:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::tet4> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::tet4> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrix_xa_, *mmatrix_xa_, dis1_, dis2_,
           dofseta, dofsetb, p12_dofrowmap_, p12_dofcolmap_);
@@ -2884,7 +2884,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_a_dis_mesh_init(
     }
     case CORE::FE::CellType::hex27:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::hex27> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::hex27> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrix_xa_, *mmatrix_xa_, dis1_, dis2_,
           dofseta, dofsetb, p12_dofrowmap_, p12_dofcolmap_);
@@ -2892,7 +2892,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_a_dis_mesh_init(
     }
     case CORE::FE::CellType::hex20:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::hex20> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::hex20> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrix_xa_, *mmatrix_xa_, dis1_, dis2_,
           dofseta, dofsetb, p12_dofrowmap_, p12_dofcolmap_);
@@ -2900,7 +2900,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_a_dis_mesh_init(
     }
     case CORE::FE::CellType::tet10:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::tet10> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::tet10> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrix_xa_, *mmatrix_xa_, dis1_, dis2_,
           dofseta, dofsetb, p12_dofrowmap_, p12_dofcolmap_);
@@ -2908,7 +2908,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_a_dis_mesh_init(
     }
     case CORE::FE::CellType::pyramid5:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::pyramid5> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::pyramid5> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrix_xa_, *mmatrix_xa_, dis1_, dis2_,
           dofseta, dofsetb, p12_dofrowmap_, p12_dofcolmap_);
@@ -2935,7 +2935,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_b_dis_mesh_init(
     // 2D surface elements
     case CORE::FE::CellType::hex8:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::hex8> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::hex8> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrix_xb_, *mmatrix_xb_, dis2_, dis1_,
           dofseta, dofsetb, p21_dofrowmap_, p21_dofcolmap_);
@@ -2943,7 +2943,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_b_dis_mesh_init(
     }
     case CORE::FE::CellType::tet4:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::tet4> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::tet4> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrix_xb_, *mmatrix_xb_, dis2_, dis1_,
           dofseta, dofsetb, p21_dofrowmap_, p21_dofcolmap_);
@@ -2951,7 +2951,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_b_dis_mesh_init(
     }
     case CORE::FE::CellType::hex27:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::hex27> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::hex27> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrix_xb_, *mmatrix_xb_, dis2_, dis1_,
           dofseta, dofsetb, p21_dofrowmap_, p21_dofcolmap_);
@@ -2959,7 +2959,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_b_dis_mesh_init(
     }
     case CORE::FE::CellType::hex20:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::hex20> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::hex20> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrix_xb_, *mmatrix_xb_, dis2_, dis1_,
           dofseta, dofsetb, p21_dofrowmap_, p21_dofcolmap_);
@@ -2967,7 +2967,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_b_dis_mesh_init(
     }
     case CORE::FE::CellType::tet10:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::tet10> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::tet10> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrix_xb_, *mmatrix_xb_, dis2_, dis1_,
           dofseta, dofsetb, p21_dofrowmap_, p21_dofcolmap_);
@@ -2975,7 +2975,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_b_dis_mesh_init(
     }
     case CORE::FE::CellType::pyramid5:
     {
-      static VolMortarIntegratorEleBased<CORE::FE::CellType::pyramid5> integrator(Params());
+      static VolMortarIntegratorEleBased<CORE::FE::CellType::pyramid5> integrator(params());
       integrator.InitializeGP();
       integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrix_xb_, *mmatrix_xb_, dis2_, dis1_,
           dofseta, dofsetb, p21_dofrowmap_, p21_dofcolmap_);
@@ -3052,7 +3052,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell_direct_divergence(
           case CORE::FE::CellType::hex8:
           {
             static VolMortarIntegrator<CORE::FE::CellType::hex8, CORE::FE::CellType::hex8>
-                integrator(Params());
+                integrator(params());
             integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
                 switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
                 dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3061,7 +3061,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell_direct_divergence(
           case CORE::FE::CellType::tet4:
           {
             static VolMortarIntegrator<CORE::FE::CellType::hex8, CORE::FE::CellType::tet4>
-                integrator(Params());
+                integrator(params());
             integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
                 switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
                 dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3070,7 +3070,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell_direct_divergence(
           case CORE::FE::CellType::pyramid5:
           {
             static VolMortarIntegrator<CORE::FE::CellType::hex8, CORE::FE::CellType::pyramid5>
-                integrator(Params());
+                integrator(params());
             integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
                 switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
                 dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3092,7 +3092,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell_direct_divergence(
           case CORE::FE::CellType::hex8:
           {
             static VolMortarIntegrator<CORE::FE::CellType::tet4, CORE::FE::CellType::hex8>
-                integrator(Params());
+                integrator(params());
             integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
                 switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
                 dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3101,7 +3101,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell_direct_divergence(
           case CORE::FE::CellType::tet4:
           {
             static VolMortarIntegrator<CORE::FE::CellType::tet4, CORE::FE::CellType::tet4>
-                integrator(Params());
+                integrator(params());
             integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
                 switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
                 dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3110,7 +3110,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell_direct_divergence(
           case CORE::FE::CellType::pyramid5:
           {
             static VolMortarIntegrator<CORE::FE::CellType::tet4, CORE::FE::CellType::pyramid5>
-                integrator(Params());
+                integrator(params());
             integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
                 switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
                 dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3132,7 +3132,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell_direct_divergence(
           case CORE::FE::CellType::hex8:
           {
             static VolMortarIntegrator<CORE::FE::CellType::pyramid5, CORE::FE::CellType::hex8>
-                integrator(Params());
+                integrator(params());
             integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
                 switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
                 dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3141,7 +3141,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell_direct_divergence(
           case CORE::FE::CellType::tet4:
           {
             static VolMortarIntegrator<CORE::FE::CellType::pyramid5, CORE::FE::CellType::tet4>
-                integrator(Params());
+                integrator(params());
             integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
                 switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
                 dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3150,7 +3150,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell_direct_divergence(
           case CORE::FE::CellType::pyramid5:
           {
             static VolMortarIntegrator<CORE::FE::CellType::pyramid5, CORE::FE::CellType::pyramid5>
-                integrator(Params());
+                integrator(params());
             integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
                 switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
                 dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3194,7 +3194,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::hex8:
         {
           static VolMortarIntegrator<CORE::FE::CellType::hex8, CORE::FE::CellType::hex8> integrator(
-              Params());
+              params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3203,7 +3203,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::hex20:
         {
           static VolMortarIntegrator<CORE::FE::CellType::hex8, CORE::FE::CellType::hex20>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3212,7 +3212,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::hex27:
         {
           static VolMortarIntegrator<CORE::FE::CellType::hex8, CORE::FE::CellType::hex27>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3221,7 +3221,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::tet4:
         {
           static VolMortarIntegrator<CORE::FE::CellType::hex8, CORE::FE::CellType::tet4> integrator(
-              Params());
+              params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3230,7 +3230,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::tet10:
         {
           static VolMortarIntegrator<CORE::FE::CellType::hex8, CORE::FE::CellType::tet10>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3239,7 +3239,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::pyramid5:
         {
           static VolMortarIntegrator<CORE::FE::CellType::hex8, CORE::FE::CellType::pyramid5>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3262,7 +3262,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::hex8:
         {
           static VolMortarIntegrator<CORE::FE::CellType::hex20, CORE::FE::CellType::hex8>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3271,7 +3271,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::hex20:
         {
           static VolMortarIntegrator<CORE::FE::CellType::hex20, CORE::FE::CellType::hex20>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3280,7 +3280,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::hex27:
         {
           static VolMortarIntegrator<CORE::FE::CellType::hex20, CORE::FE::CellType::hex27>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3289,7 +3289,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::tet4:
         {
           static VolMortarIntegrator<CORE::FE::CellType::hex20, CORE::FE::CellType::tet4>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3298,7 +3298,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::tet10:
         {
           static VolMortarIntegrator<CORE::FE::CellType::hex20, CORE::FE::CellType::tet10>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3307,7 +3307,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::pyramid5:
         {
           static VolMortarIntegrator<CORE::FE::CellType::hex20, CORE::FE::CellType::pyramid5>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3330,7 +3330,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::hex8:
         {
           static VolMortarIntegrator<CORE::FE::CellType::hex27, CORE::FE::CellType::hex8>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3339,7 +3339,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::hex20:
         {
           static VolMortarIntegrator<CORE::FE::CellType::hex27, CORE::FE::CellType::hex20>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3348,7 +3348,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::hex27:
         {
           static VolMortarIntegrator<CORE::FE::CellType::hex27, CORE::FE::CellType::hex27>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3357,7 +3357,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::tet4:
         {
           static VolMortarIntegrator<CORE::FE::CellType::hex27, CORE::FE::CellType::tet4>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3366,7 +3366,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::tet10:
         {
           static VolMortarIntegrator<CORE::FE::CellType::hex27, CORE::FE::CellType::tet10>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3375,7 +3375,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::pyramid5:
         {
           static VolMortarIntegrator<CORE::FE::CellType::hex27, CORE::FE::CellType::pyramid5>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3398,7 +3398,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::hex8:
         {
           static VolMortarIntegrator<CORE::FE::CellType::tet4, CORE::FE::CellType::hex8> integrator(
-              Params());
+              params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3407,7 +3407,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::hex20:
         {
           static VolMortarIntegrator<CORE::FE::CellType::tet4, CORE::FE::CellType::hex20>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3416,7 +3416,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::hex27:
         {
           static VolMortarIntegrator<CORE::FE::CellType::tet4, CORE::FE::CellType::hex27>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3425,7 +3425,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::tet4:
         {
           static VolMortarIntegrator<CORE::FE::CellType::tet4, CORE::FE::CellType::tet4> integrator(
-              Params());
+              params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3434,7 +3434,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::tet10:
         {
           static VolMortarIntegrator<CORE::FE::CellType::tet4, CORE::FE::CellType::tet10>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3443,7 +3443,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::pyramid5:
         {
           static VolMortarIntegrator<CORE::FE::CellType::tet4, CORE::FE::CellType::pyramid5>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3466,7 +3466,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::hex8:
         {
           static VolMortarIntegrator<CORE::FE::CellType::tet10, CORE::FE::CellType::hex8>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3475,7 +3475,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::hex20:
         {
           static VolMortarIntegrator<CORE::FE::CellType::tet10, CORE::FE::CellType::hex20>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3484,7 +3484,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::hex27:
         {
           static VolMortarIntegrator<CORE::FE::CellType::tet10, CORE::FE::CellType::hex27>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3493,7 +3493,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::tet4:
         {
           static VolMortarIntegrator<CORE::FE::CellType::tet10, CORE::FE::CellType::tet4>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3502,7 +3502,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::tet10:
         {
           static VolMortarIntegrator<CORE::FE::CellType::tet10, CORE::FE::CellType::tet10>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3511,7 +3511,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::pyramid5:
         {
           static VolMortarIntegrator<CORE::FE::CellType::tet10, CORE::FE::CellType::pyramid5>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3534,7 +3534,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::hex8:
         {
           static VolMortarIntegrator<CORE::FE::CellType::pyramid5, CORE::FE::CellType::hex8>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3543,7 +3543,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::hex20:
         {
           static VolMortarIntegrator<CORE::FE::CellType::pyramid5, CORE::FE::CellType::hex20>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3552,7 +3552,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::hex27:
         {
           static VolMortarIntegrator<CORE::FE::CellType::pyramid5, CORE::FE::CellType::hex27>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3561,7 +3561,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::tet4:
         {
           static VolMortarIntegrator<CORE::FE::CellType::pyramid5, CORE::FE::CellType::tet4>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3570,7 +3570,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::tet10:
         {
           static VolMortarIntegrator<CORE::FE::CellType::pyramid5, CORE::FE::CellType::tet10>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3579,7 +3579,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
         case CORE::FE::CellType::pyramid5:
         {
           static VolMortarIntegrator<CORE::FE::CellType::pyramid5, CORE::FE::CellType::pyramid5>
-              integrator(Params());
+              integrator(params());
           integrator.InitializeGP(true, domain);
           integrator.IntegrateEle3D(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
@@ -3609,7 +3609,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d(
 /*----------------------------------------------------------------------*
  |  init (public)                                            farah 10/13|
  *----------------------------------------------------------------------*/
-void CORE::VOLMORTAR::VolMortarCoupl::Initialize()
+void CORE::VOLMORTAR::VolMortarCoupl::initialize()
 {
   /* ******************************************************************
    * (re)setup global Mortar CORE::LINALG::SparseMatrices                   *
@@ -3637,7 +3637,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Initialize()
 /*----------------------------------------------------------------------*
  |  Complete (public)                                        farah 01/14|
  *----------------------------------------------------------------------*/
-void CORE::VOLMORTAR::VolMortarCoupl::Complete()
+void CORE::VOLMORTAR::VolMortarCoupl::complete()
 {
   // complete...
   d1_->Complete(*p12_dofrowmap_, *p12_dofrowmap_);
@@ -3844,8 +3844,8 @@ bool CORE::VOLMORTAR::VolMortarCoupl::polygon_clipping_convex_hull(
   cross2[2] = diff2[0] * edge2[1] - diff2[1] * edge2[0];
 
   // check against auxiliary plane normal
-  double check1 = cross1[0] * Auxn()[0] + cross1[1] * Auxn()[1] + cross1[2] * Auxn()[2];
-  double check2 = cross2[0] * Auxn()[0] + cross2[1] * Auxn()[1] + cross2[2] * Auxn()[2];
+  double check1 = cross1[0] * auxn()[0] + cross1[1] * auxn()[1] + cross1[2] * auxn()[2];
+  double check2 = cross2[0] * auxn()[0] + cross2[1] * auxn()[1] + cross2[2] * auxn()[2];
 
   // check polygon 1 and throw dserror if not c-clockwise
   if (check1 <= 0) FOUR_C_THROW("ERROR: Polygon 1 (slave) not ordered counter-clockwise!");
@@ -3870,9 +3870,9 @@ bool CORE::VOLMORTAR::VolMortarCoupl::polygon_clipping_convex_hull(
 
     // edge normal is result of cross product
     std::array<double, 3> n = {0.0, 0.0, 0.0};
-    n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
-    n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
-    n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
+    n[0] = edge[1] * auxn()[2] - edge[2] * auxn()[1];
+    n[1] = edge[2] * auxn()[0] - edge[0] * auxn()[2];
+    n[2] = edge[0] * auxn()[1] - edge[1] * auxn()[0];
 
     // we need the next edge vector now
     std::array<double, 3> nextedge = {0.0, 0.0, 0.0};
@@ -3905,9 +3905,9 @@ bool CORE::VOLMORTAR::VolMortarCoupl::polygon_clipping_convex_hull(
 
     // edge normal is result of cross product
     std::array<double, 3> n = {0.0, 0.0, 0.0};
-    n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
-    n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
-    n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
+    n[0] = edge[1] * auxn()[2] - edge[2] * auxn()[1];
+    n[1] = edge[2] * auxn()[0] - edge[0] * auxn()[2];
+    n[2] = edge[0] * auxn()[1] - edge[1] * auxn()[0];
 
     // we need the next edge vector now
     std::array<double, 3> nextedge = {0.0, 0.0, 0.0};
@@ -4015,12 +4015,12 @@ bool CORE::VOLMORTAR::VolMortarCoupl::polygon_clipping_convex_hull(
       // outward edge normals of polygon 1 and 2 edges
       std::array<double, 3> n1 = {0.0, 0.0, 0.0};
       std::array<double, 3> n2 = {0.0, 0.0, 0.0};
-      n1[0] = edge1[1] * Auxn()[2] - edge1[2] * Auxn()[1];
-      n1[1] = edge1[2] * Auxn()[0] - edge1[0] * Auxn()[2];
-      n1[2] = edge1[0] * Auxn()[1] - edge1[1] * Auxn()[0];
-      n2[0] = edge2[1] * Auxn()[2] - edge2[2] * Auxn()[1];
-      n2[1] = edge2[2] * Auxn()[0] - edge2[0] * Auxn()[2];
-      n2[2] = edge2[0] * Auxn()[1] - edge2[1] * Auxn()[0];
+      n1[0] = edge1[1] * auxn()[2] - edge1[2] * auxn()[1];
+      n1[1] = edge1[2] * auxn()[0] - edge1[0] * auxn()[2];
+      n1[2] = edge1[0] * auxn()[1] - edge1[1] * auxn()[0];
+      n2[0] = edge2[1] * auxn()[2] - edge2[2] * auxn()[1];
+      n2[1] = edge2[2] * auxn()[0] - edge2[0] * auxn()[2];
+      n2[2] = edge2[0] * auxn()[1] - edge2[1] * auxn()[0];
 
       // check for parallelity of edges
       double parallel = edge1[0] * n2[0] + edge1[1] * n2[1] + edge1[2] * n2[2];
@@ -4156,9 +4156,9 @@ bool CORE::VOLMORTAR::VolMortarCoupl::polygon_clipping_convex_hull(
 
       // compute distance from point on poly1 to edge
       std::array<double, 3> n = {0.0, 0.0, 0.0};
-      n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
-      n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
-      n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
+      n[0] = edge[1] * auxn()[2] - edge[2] * auxn()[1];
+      n[1] = edge[2] * auxn()[0] - edge[0] * auxn()[2];
+      n[2] = edge[0] * auxn()[1] - edge[1] * auxn()[0];
       double ln = sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
       for (int k = 0; k < 3; ++k) n[k] /= ln;
 
@@ -4189,9 +4189,9 @@ bool CORE::VOLMORTAR::VolMortarCoupl::polygon_clipping_convex_hull(
 
         // compute distance from point on poly1 to edge
         std::array<double, 3> n = {0.0, 0.0, 0.0};
-        n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
-        n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
-        n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
+        n[0] = edge[1] * auxn()[2] - edge[2] * auxn()[1];
+        n[1] = edge[2] * auxn()[0] - edge[0] * auxn()[2];
+        n[2] = edge[0] * auxn()[1] - edge[1] * auxn()[0];
         double ln = sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
         for (int k = 0; k < 3; ++k) n[k] /= ln;
 
@@ -4230,9 +4230,9 @@ bool CORE::VOLMORTAR::VolMortarCoupl::polygon_clipping_convex_hull(
 
       // compute distance from point on poly1 to edge
       std::array<double, 3> n = {0.0, 0.0, 0.0};
-      n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
-      n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
-      n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
+      n[0] = edge[1] * auxn()[2] - edge[2] * auxn()[1];
+      n[1] = edge[2] * auxn()[0] - edge[0] * auxn()[2];
+      n[2] = edge[0] * auxn()[1] - edge[1] * auxn()[0];
       double ln = sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
       for (int k = 0; k < 3; ++k) n[k] /= ln;
 
@@ -4263,9 +4263,9 @@ bool CORE::VOLMORTAR::VolMortarCoupl::polygon_clipping_convex_hull(
 
         // compute distance from point on poly1 to edge
         std::array<double, 3> n = {0.0, 0.0, 0.0};
-        n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
-        n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
-        n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
+        n[0] = edge[1] * auxn()[2] - edge[2] * auxn()[1];
+        n[1] = edge[2] * auxn()[0] - edge[0] * auxn()[2];
+        n[2] = edge[0] * auxn()[1] - edge[1] * auxn()[0];
         double ln = sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
         for (int k = 0; k < 3; ++k) n[k] /= ln;
 
@@ -4304,9 +4304,9 @@ bool CORE::VOLMORTAR::VolMortarCoupl::polygon_clipping_convex_hull(
 
       // compute distance from point on poly1 to edge
       std::array<double, 3> n = {0.0, 0.0, 0.0};
-      n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
-      n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
-      n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
+      n[0] = edge[1] * auxn()[2] - edge[2] * auxn()[1];
+      n[1] = edge[2] * auxn()[0] - edge[0] * auxn()[2];
+      n[2] = edge[0] * auxn()[1] - edge[1] * auxn()[0];
       double ln = sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
       for (int k = 0; k < 3; ++k) n[k] /= ln;
 
@@ -4337,9 +4337,9 @@ bool CORE::VOLMORTAR::VolMortarCoupl::polygon_clipping_convex_hull(
 
         // compute distance from point on poly1 to edge
         std::array<double, 3> n = {0.0, 0.0, 0.0};
-        n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
-        n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
-        n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
+        n[0] = edge[1] * auxn()[2] - edge[2] * auxn()[1];
+        n[1] = edge[2] * auxn()[0] - edge[0] * auxn()[2];
+        n[2] = edge[0] * auxn()[1] - edge[1] * auxn()[0];
         double ln = sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
         for (int k = 0; k < 3; ++k) n[k] /= ln;
 
@@ -4457,9 +4457,9 @@ bool CORE::VOLMORTAR::VolMortarCoupl::polygon_clipping_convex_hull(
     std::array<double, 3> newxaxis = {collconvexhull[1].Coord()[0] - collconvexhull[0].Coord()[0],
         collconvexhull[1].Coord()[1] - collconvexhull[0].Coord()[1],
         collconvexhull[1].Coord()[2] - collconvexhull[0].Coord()[2]};
-    std::array<double, 3> newyaxis = {Auxn()[1] * newxaxis[2] - Auxn()[2] * newxaxis[1],
-        Auxn()[2] * newxaxis[0] - Auxn()[0] * newxaxis[2],
-        Auxn()[0] * newxaxis[1] - Auxn()[1] * newxaxis[0]};
+    std::array<double, 3> newyaxis = {auxn()[1] * newxaxis[2] - auxn()[2] * newxaxis[1],
+        auxn()[2] * newxaxis[0] - auxn()[0] * newxaxis[2],
+        auxn()[0] * newxaxis[1] - auxn()[1] * newxaxis[0]};
     double lnewxaxis =
         sqrt(newxaxis[0] * newxaxis[0] + newxaxis[1] * newxaxis[1] + newxaxis[2] * newxaxis[2]);
     double lnewyaxis =
@@ -4482,7 +4482,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::polygon_clipping_convex_hull(
     {
       trafo(0, k) = newxaxis[k];
       trafo(1, k) = newyaxis[k];
-      trafo(2, k) = Auxn()[k];
+      trafo(2, k) = auxn()[k];
     }
 
     // temporary storage for transformed points
@@ -4546,7 +4546,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::center_triangulation(
       for (int k = 0; k < 3; ++k) coords(k, i) = clip[i].Coord()[k];
 
     // create IntCell object and push back
-    cells.push_back(Teuchos::rcp(new MORTAR::IntCell(0, 3, coords, Auxn(), CORE::FE::CellType::tri3,
+    cells.push_back(Teuchos::rcp(new MORTAR::IntCell(0, 3, coords, auxn(), CORE::FE::CellType::tri3,
         linvertex[0], linvertex[1], linvertex[2], derivauxn)));
 
     // get out of here
@@ -4669,7 +4669,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::center_triangulation(
       for (int k = 0; k < 3; ++k) coords(k, 2) = clip[num + 1].Coord()[k];
 
     // create IntCell object and push back
-    cells.push_back(Teuchos::rcp(new MORTAR::IntCell(num, 3, coords, Auxn(),
+    cells.push_back(Teuchos::rcp(new MORTAR::IntCell(num, 3, coords, auxn(),
         CORE::FE::CellType::tri3, lincenter, linvertex[num], linvertex[numplus1], derivauxn)));
   }
 
@@ -4705,7 +4705,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::delaunay_triangulation(
       for (int k = 0; k < 3; ++k) coords(k, i) = clip[i].Coord()[k];
 
     // create IntCell object and push back
-    cells.push_back(Teuchos::rcp(new MORTAR::IntCell(0, 3, coords, Auxn(), CORE::FE::CellType::tri3,
+    cells.push_back(Teuchos::rcp(new MORTAR::IntCell(0, 3, coords, auxn(), CORE::FE::CellType::tri3,
         linvertex[0], linvertex[1], linvertex[2], derivauxn)));
 
     // get out of here
@@ -4811,9 +4811,9 @@ bool CORE::VOLMORTAR::VolMortarCoupl::delaunay_triangulation(
 
       // try to minimize error
       int direction = 0;
-      if (abs(Auxn()[0]) >= abs(Auxn()[1]) && abs(Auxn()[0]) >= abs(Auxn()[2])) direction = 1;
-      if (abs(Auxn()[1]) >= abs(Auxn()[0]) && abs(Auxn()[1]) >= abs(Auxn()[2])) direction = 2;
-      if (abs(Auxn()[2]) >= abs(Auxn()[0]) && abs(Auxn()[2]) >= abs(Auxn()[1])) direction = 3;
+      if (abs(auxn()[0]) >= abs(auxn()[1]) && abs(auxn()[0]) >= abs(auxn()[2])) direction = 1;
+      if (abs(auxn()[1]) >= abs(auxn()[0]) && abs(auxn()[1]) >= abs(auxn()[2])) direction = 2;
+      if (abs(auxn()[2]) >= abs(auxn()[0]) && abs(auxn()[2]) >= abs(auxn()[1])) direction = 3;
       if (direction == 0) FOUR_C_THROW("ERROR: Did not find best direction");
 
       // intersection of the two perpendicular bisections
@@ -5102,7 +5102,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::delaunay_triangulation(
     }
 
     // create IntCell object and push back
-    cells.push_back(Teuchos::rcp(new MORTAR::IntCell(t, 3, coords, Auxn(), CORE::FE::CellType::tri3,
+    cells.push_back(Teuchos::rcp(new MORTAR::IntCell(t, 3, coords, auxn(), CORE::FE::CellType::tri3,
         linvertex[idx0], linvertex[idx1], linvertex[idx2], derivauxn)));
   }
 

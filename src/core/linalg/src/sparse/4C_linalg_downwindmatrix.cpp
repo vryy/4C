@@ -23,7 +23,7 @@ CORE::LINALG::DownwindMatrix::DownwindMatrix(Teuchos::RCP<Epetra_CrsMatrix> A, c
     const int np, const double tau, const int outlevel)
     : outlevel_(outlevel), nv_(nv), np_(np), bs_(nv + np), tau_(tau)
 {
-  Setup(*A);
+  setup(*A);
   return;
 }
 
@@ -31,7 +31,7 @@ CORE::LINALG::DownwindMatrix::DownwindMatrix(Teuchos::RCP<Epetra_CrsMatrix> A, c
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 03/08|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
+void CORE::LINALG::DownwindMatrix::setup(const Epetra_CrsMatrix& A)
 {
   Teuchos::Time time("", true);
   if (!A.Filled()) FOUR_C_THROW("Input matrix has to be fill_complete");

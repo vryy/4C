@@ -3713,7 +3713,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CommunicateBinIds(
   }
 
   // wait for all communication to finish
-  Wait(exporter, request, static_cast<int>(binstosend.size()));
+  wait(exporter, request, static_cast<int>(binstosend.size()));
 }
 
 /*----------------------------------------------------------------------------*
@@ -4038,7 +4038,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_beam_link_aft
   }
 
   // wait for all communication to finish
-  Wait(exporter, request, static_cast<int>(sdata.size()));
+  wait(exporter, request, static_cast<int>(sdata.size()));
 }
 
 /*----------------------------------------------------------------------------*
@@ -4185,12 +4185,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::i_send_recv_any(
   recv_any(exporter, receivesize, recv);
 
   // wait for all communication to finish
-  Wait(exporter, request, static_cast<int>(send.size()));
+  wait(exporter, request, static_cast<int>(send.size()));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Wait(
+void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::wait(
     CORE::COMM::Exporter& exporter, std::vector<MPI_Request>& request, int length) const
 {
   check_init();

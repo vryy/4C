@@ -136,10 +136,10 @@ namespace MAT
     void read_restart(const int gp_id) const;
 
     //! return name of micro-scale input file
-    std::string MicroInputFileName() const { return Params()->MicroInputFileName(); }
+    std::string MicroInputFileName() const { return params()->MicroInputFileName(); }
 
     //! return number of micro-scale discretization
-    int MicroDisNum() const { return Params()->MicroDisNum(); }
+    int MicroDisNum() const { return params()->MicroDisNum(); }
 
     //! return specific micro-scale surface area A_s
     //!
@@ -147,7 +147,7 @@ namespace MAT
     //! \return  specific area between micro and macro dis
     double specific_micro_scale_surface_area(const double detF) const
     {
-      return Params()->specific_micro_scale_surface_area() * std::pow(detF, -1.0 / 3.0);
+      return params()->specific_micro_scale_surface_area() * std::pow(detF, -1.0 / 3.0);
     }
 
     //! set time stepping data: time step size @p dt, current time @p time, and number of time step
@@ -160,7 +160,7 @@ namespace MAT
 
    private:
     //! material parameters
-    virtual const MAT::PAR::ScatraMicroMacroCoupling* Params() const = 0;
+    virtual const MAT::PAR::ScatraMicroMacroCoupling* params() const = 0;
 
     //! map between Gauss point ID and Gauss point submaterial
     std::map<int, Teuchos::RCP<ScatraMultiScaleGP>> matgp_;

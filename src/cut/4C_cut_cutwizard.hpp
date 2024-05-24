@@ -320,7 +320,7 @@ namespace CORE::GEO
     void find_position_dof_sets(bool include_inner);
 
     //! write statistics and output to screen and files
-    void Output(bool include_inner);
+    void output(bool include_inner);
 
     //! Check that cut is initialized correctly
     bool safety_checks(bool is_prepare_cut_call);

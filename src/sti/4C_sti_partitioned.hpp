@@ -39,7 +39,7 @@ namespace STI
     bool exit_outer_coupling() const;
 
     //! evaluate time step using outer coupling iteration
-    void Solve() override;
+    void solve() override;
 
     //! evaluate time step using one-way coupling iteration
     void solve_one_way() const;

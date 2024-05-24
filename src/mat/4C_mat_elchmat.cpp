@@ -105,7 +105,7 @@ void MAT::ElchMat::setup_mat_map()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElchMat::Clear()
+void MAT::ElchMat::clear()
 {
   params_ = nullptr;
   mat_.clear();
@@ -144,7 +144,7 @@ void MAT::ElchMat::Pack(CORE::COMM::PackBuffer& data) const
 void MAT::ElchMat::Unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
-  Clear();
+  clear();
 
   std::vector<char>::size_type position = 0;
 

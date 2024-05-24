@@ -674,9 +674,9 @@ void CORE::GEO::CUT::COLOREDGRAPH::Graph::Split(Graph& used, plain_int_set& free
 
   plain_int_set::iterator facet_it = facet_row->begin();
 
-  Fill(split_trace, used, free, connection, *facet_it, c1);
+  fill(split_trace, used, free, connection, *facet_it, c1);
   ++facet_it;
-  Fill(split_trace, used, free, connection, *facet_it, c2);
+  fill(split_trace, used, free, connection, *facet_it, c2);
 
 
   // detect anomalies, where split line is connected to facets from both cycles
@@ -765,11 +765,11 @@ void CORE::GEO::CUT::COLOREDGRAPH::Graph::Split(Graph& used, plain_int_set& free
         // select where to start the split
         if (fine_cycle->count(f1) > 0)
         {
-          Fill(isolated_split_trace, used, free, connection, f2, *open_cycle);
+          fill(isolated_split_trace, used, free, connection, f2, *open_cycle);
         }
         else if (fine_cycle->count(f2) > 0)
         {
-          Fill(isolated_split_trace, used, free, connection, f1, *open_cycle);
+          fill(isolated_split_trace, used, free, connection, f1, *open_cycle);
         }
         else
         {
@@ -780,7 +780,7 @@ void CORE::GEO::CUT::COLOREDGRAPH::Graph::Split(Graph& used, plain_int_set& free
   }
 }
 
-void CORE::GEO::CUT::COLOREDGRAPH::Graph::Fill(const std::vector<int>& split_trace, Graph& used,
+void CORE::GEO::CUT::COLOREDGRAPH::Graph::fill(const std::vector<int>& split_trace, Graph& used,
     plain_int_set& free, Graph& connection, int seed, Graph& c)
 {
   plain_int_set visited;

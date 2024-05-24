@@ -1447,7 +1447,7 @@ namespace CORE::FE::NURBS
     //--------------------------------------------------
     //! \brief throw an errormessage
     //--------------------------------------------------
-    void Throwerror(const std::string errormessage);
+    void throwerror(const std::string errormessage);
   };
 
 }  // namespace CORE::FE::NURBS

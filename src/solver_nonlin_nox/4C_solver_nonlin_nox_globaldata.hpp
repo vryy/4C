@@ -140,7 +140,7 @@ namespace NOX
 
      private:
       //! setup the nln_utils class
-      void Setup();
+      void setup();
 
       //! check the constructor input
       void check_input() const;

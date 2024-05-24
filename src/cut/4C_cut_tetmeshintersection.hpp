@@ -95,7 +95,7 @@ namespace CORE::GEO
           const plain_volumecell_set& parent_cells, std::map<VolumeCell*, ChildCell>& cellmap);
 
       /// Generate IntegrationCells and BoundaryCells within the parent VolumeCell
-      void Fill(Mesh& parent_mesh, Element* element, const plain_volumecell_set& parent_cells,
+      void fill(Mesh& parent_mesh, Element* element, const plain_volumecell_set& parent_cells,
           std::map<VolumeCell*, ChildCell>& cellmap);
 
       /// Fill a parent cell with its child cells by means of the child cell topology.
@@ -104,7 +104,7 @@ namespace CORE::GEO
         - fails if there a flat rats that isolate different regions of the
           parent cell
        */
-      void Fill(VolumeCell* parent_cell, ChildCell& childcell);
+      void fill(VolumeCell* parent_cell, ChildCell& childcell);
 
       /// find some (most) of the child cells for each parent cell
       void seed_cells(Mesh& parent_mesh, const plain_volumecell_set& parent_cells,
@@ -147,7 +147,7 @@ namespace CORE::GEO
 
       Point* swap_point(const std::map<Point*, Point*>& pointmap, Point* point);
 
-      void Register(Point* parent_point, Point* child_point);
+      void do_register(Point* parent_point, Point* child_point);
 
       void copy_cut_side(Side* s, Facet* f);
 

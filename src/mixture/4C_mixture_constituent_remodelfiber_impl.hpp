@@ -109,7 +109,7 @@ namespace MIXTURE
     [[nodiscard]] double evaluate_deposition_stretch(double time) const;
     void update_homeostatic_values(const Teuchos::ParameterList& params, int eleGID);
 
-    void Initialize();
+    void initialize();
 
     /// my material parameters
     MIXTURE::PAR::MixtureConstituentRemodelFiberImpl* params_;

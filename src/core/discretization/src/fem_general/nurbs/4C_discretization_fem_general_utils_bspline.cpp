@@ -38,7 +38,7 @@ CORE::FE::NURBS::BsplinePolynomial::BsplinePolynomial(const BsplinePolynomial& o
 
 
 
-void CORE::FE::NURBS::BsplinePolynomial::Throwerror(const std::string errormessage)
+void CORE::FE::NURBS::BsplinePolynomial::throwerror(const std::string errormessage)
 {
   // give some information on bspline
   PrintBspline();

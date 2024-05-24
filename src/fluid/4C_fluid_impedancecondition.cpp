@@ -574,7 +574,7 @@ void FLD::UTILS::FluidImpedanceBc::read_restart(IO::DiscretizationReader& reader
 /*----------------------------------------------------------------------*
  | Area calculation                                          Thon 07/16 |
  *----------------------------------------------------------------------*/
-double FLD::UTILS::FluidImpedanceBc::Area(const int condid)
+double FLD::UTILS::FluidImpedanceBc::area(const int condid)
 {
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here

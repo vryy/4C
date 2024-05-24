@@ -330,9 +330,9 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::FluidInter
       n_xi_gp_(true)
 {
   // polynomial degree for exact integration of gradient w.r.t parent element
-  const int pdegree = Degree(pdistype);
+  const int pdegree = degree(pdistype);
   // polynomial degree for exact integration of gradient w.r.t neighbor element
-  const int ndegree = Degree(ndistype);
+  const int ndegree = degree(ndistype);
 
   // in case of different neighboring elements the maximal degree determines the integration rule
   int patch_degree = std::max(pdegree, ndegree);
@@ -387,7 +387,7 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::FluidInter
 //  get the required degree to integrate face stabilizations terms
 //-----------------------------------------------------------------
 template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
-int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Degree(
+int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::degree(
     const CORE::FE::CellType parent_ele_distype)
 {
   int degree = 0;

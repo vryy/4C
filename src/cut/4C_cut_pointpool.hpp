@@ -126,10 +126,10 @@ namespace CORE::GEO
           unsigned newid, const double* x, Edge* cut_edge, Side* cut_side, double tolerance);
 
       /// get the leaf where the point with the given coordinates lies in
-      OctTreeNode* Leaf(const double* x);
+      OctTreeNode* leaf(const double* x);
 
       /// split the current boounding box (tree-node)
-      void Split(int level);
+      void split(int level);
 
 
       /*========================================================================*/

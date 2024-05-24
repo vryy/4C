@@ -187,7 +187,7 @@ namespace FLD
     \brief Time integration independent setup called by Constructor
 
     */
-    void Setup();
+    void setup();
 
     //! time step size
     double dt_;

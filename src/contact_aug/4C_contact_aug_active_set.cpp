@@ -221,7 +221,7 @@ CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::update_initial_status(
   if (not cparams.IsPredictor() or cparams.GetStepNp() != cparams.GetRestartStep() + 1)
   {
     init_active_list.clear();
-    return Merge(istatus);
+    return merge(istatus);
   }
 
   plain_interface_set& interfaces = strategy_.interface_;
@@ -315,12 +315,12 @@ CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::update_initial_status(
              << std::string(60, '*') << "\n";
   }
 
-  return Merge(new_istatus);
+  return merge(new_istatus);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::Merge(
+CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::merge(
     const std::vector<Status>& istatus) const
 {
   Status status = Status::unevaluated;

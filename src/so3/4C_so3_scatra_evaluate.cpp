@@ -363,8 +363,8 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::nln_kd_s_ssi(DRT::Element::Loca
     CORE::LINALG::Matrix<numstr_, 1> dSdc(true);
 
     // get dSdc, hand in nullptr as 'cmat' to evaluate the off-diagonal block
-    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_static_cast<MAT::So3Material>(Material());
-    so3mat->Evaluate(&defgrad, &glstrain, params, &dSdc, nullptr, gp, Id());
+    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_static_cast<MAT::So3Material>(material());
+    so3mat->Evaluate(&defgrad, &glstrain, params, &dSdc, nullptr, gp, id());
 
     /*==== end of call material law ===============================================*/
 

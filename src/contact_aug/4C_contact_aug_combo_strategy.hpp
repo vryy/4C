@@ -274,10 +274,10 @@ namespace CONTACT
       /// @{
 
       /// access the currently active contact strategy
-      CONTACT::AUG::Strategy& Get();
+      CONTACT::AUG::Strategy& get();
 
       /// access the currently active contact strategy (read-only)
-      const CONTACT::AUG::Strategy& Get() const;
+      const CONTACT::AUG::Strategy& get() const;
 
       /// update the strategy switching conditions
       void switch_update(CONTACT::ParamsInterface& cparams);

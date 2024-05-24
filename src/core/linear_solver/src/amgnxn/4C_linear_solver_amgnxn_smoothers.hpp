@@ -195,7 +195,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
         const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero = false) const override;
 
    private:
-    void Setup();
+    void setup();
 
     Teuchos::RCP<AMGNXN::BlockedMatrix> a_;
     std::vector<Teuchos::ParameterList> muelu_lists_;

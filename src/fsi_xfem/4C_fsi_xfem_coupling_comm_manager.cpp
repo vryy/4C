@@ -35,7 +35,7 @@ XFEM::CouplingCommManager::CouplingCommManager(
   std::map<int, Teuchos::RCP<const DRT::Discretization>> dis_map;
   dis_map.insert(std::pair<int, Teuchos::RCP<const DRT::Discretization>>(0, dis0));
 
-  Setup(dis_map);
+  setup(dis_map);
 }
 
 /*-----------------------------------------------------------------------------------------*
@@ -49,7 +49,7 @@ XFEM::CouplingCommManager::CouplingCommManager(Teuchos::RCP<const DRT::Discretiz
   dis_map.insert(std::pair<int, Teuchos::RCP<const DRT::Discretization>>(0, dis0));
   dis_map.insert(std::pair<int, Teuchos::RCP<const DRT::Discretization>>(1, dis1));
 
-  Setup(dis_map);
+  setup(dis_map);
 }
 
 /*-----------------------------------------------------------------------------------------*
@@ -60,7 +60,7 @@ XFEM::CouplingCommManager::CouplingCommManager(
     int enddim)
     : cond_name_(cond_name), startdim_(startdim), enddim_(enddim)
 {
-  Setup(dis);
+  setup(dis);
 }
 
 
@@ -205,7 +205,7 @@ bool XFEM::CouplingCommManager::InsertMatrix(int transform_id, int idxA,
 /*-----------------------------------------------------------------------------------------*
 | Setup Coupling_Comm_Manager                                                  ager 06/2016|
 *-----------------------------------------------------------------------------------------*/
-void XFEM::CouplingCommManager::Setup(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis)
+void XFEM::CouplingCommManager::setup(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis)
 {
   if (cond_name_ != "")  // Setup for Communication on Condition
   {

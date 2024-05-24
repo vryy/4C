@@ -287,7 +287,7 @@ namespace POROMULTIPHASESCATRA
 
     //! project a Gauss point on 1D element into 2D/3D element
     template <typename T>
-    void Projection(
+    void projection(
         CORE::LINALG::Matrix<numdim_, 1, T>& r1, std::vector<T>& xi, bool& projection_valid);
 
     //! Check for duplicate projections

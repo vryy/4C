@@ -42,7 +42,7 @@ CORE::COMM::Exporter::Exporter(
 void CORE::COMM::Exporter::i_send(const int frompid, const int topid, const char* data,
     const int dsize, const int tag, MPI_Request& request) const
 {
-  if (MyPID() != frompid) return;
+  if (my_pid() != frompid) return;
   const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
   if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Isend((void*)data, dsize, MPI_CHAR, topid, tag, comm->Comm(), &request);
@@ -51,7 +51,7 @@ void CORE::COMM::Exporter::i_send(const int frompid, const int topid, const char
 void CORE::COMM::Exporter::i_send(const int frompid, const int topid, const int* data,
     const int dsize, const int tag, MPI_Request& request) const
 {
-  if (MyPID() != frompid) return;
+  if (my_pid() != frompid) return;
   const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
   if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Isend((void*)data, dsize, MPI_INT, topid, tag, comm->Comm(), &request);
@@ -60,7 +60,7 @@ void CORE::COMM::Exporter::i_send(const int frompid, const int topid, const int*
 void CORE::COMM::Exporter::i_send(const int frompid, const int topid, const double* data,
     const int dsize, const int tag, MPI_Request& request) const
 {
-  if (MyPID() != frompid) return;
+  if (my_pid() != frompid) return;
   const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
   if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Isend((void*)data, dsize, MPI_DOUBLE, topid, tag, comm->Comm(), &request);
@@ -179,7 +179,7 @@ void CORE::COMM::Exporter::Broadcast(
 
   int length = static_cast<int>(data.size());
   MPI_Bcast(&length, 1, MPI_INT, frompid, comm->Comm());
-  if (MyPID() != frompid)
+  if (my_pid() != frompid)
   {
     data.resize(length);
   }
@@ -195,7 +195,7 @@ void CORE::COMM::Exporter::construct_exporter()
   // send_plan()(lid,proc)    = 1 for data with local id lid needs sending to proc
   // send_plan()(lid,proc)    = 0 otherwise
   // send_plan()(lid,MyPID()) = 0 always! (I never send to myself)
-  send_plan().resize(NumProc());
+  send_plan().resize(num_proc());
 
   // To build these plans, everybody has to communicate what he has and wants:
   // bundle this info to save on communication:
@@ -210,7 +210,7 @@ void CORE::COMM::Exporter::construct_exporter()
   std::copy(TargetMap().MyGlobalElements(),
       TargetMap().MyGlobalElements() + TargetMap().NumMyElements(), std::back_inserter(sendbuff));
 
-  for (int proc = 0; proc < NumProc(); ++proc)
+  for (int proc = 0; proc < num_proc(); ++proc)
   {
     int recvsizes[2];
     recvsizes[0] = sizes[0];
@@ -218,13 +218,13 @@ void CORE::COMM::Exporter::construct_exporter()
     Comm().Broadcast(recvsizes, 2, proc);
     const int recvsize = recvsizes[0] + recvsizes[1];
     std::vector<int> recvbuff(recvsize);
-    if (proc == MyPID()) std::copy(sendbuff.begin(), sendbuff.end(), recvbuff.data());
+    if (proc == my_pid()) std::copy(sendbuff.begin(), sendbuff.end(), recvbuff.data());
     Comm().Broadcast(recvbuff.data(), recvsize, proc);
     // const int* have = recvbuff.data();            // this is what proc has
     const int* want = &recvbuff[recvsizes[0]];  // this is what proc needs
 
     // Loop what proc wants and what I have (send_plan)
-    if (proc != MyPID())
+    if (proc != my_pid())
     {
       for (int i = 0; i < recvsizes[1]; ++i)
       {
@@ -248,14 +248,14 @@ void CORE::COMM::Exporter::generic_export(ExporterHelper& helper)
   helper.PreExportTest(this);
 
   //------------------------------------------------ do the send/recv loop
-  for (int i = 0; i < NumProc() - 1; ++i)
+  for (int i = 0; i < num_proc() - 1; ++i)
   {
-    int tproc = MyPID() + 1 + i;
-    int sproc = MyPID() - 1 - i;
-    if (tproc < 0) tproc += NumProc();
-    if (sproc < 0) sproc += NumProc();
-    if (tproc > NumProc() - 1) tproc -= NumProc();
-    if (sproc > NumProc() - 1) sproc -= NumProc();
+    int tproc = my_pid() + 1 + i;
+    int sproc = my_pid() - 1 - i;
+    if (tproc < 0) tproc += num_proc();
+    if (sproc < 0) sproc += num_proc();
+    if (tproc > num_proc() - 1) tproc -= num_proc();
+    if (sproc > num_proc() - 1) sproc -= num_proc();
     // cout << "Proc " << MyPID() << " tproc " << tproc << " sproc " << sproc << endl;
     // fflush(stdout);
 
@@ -289,14 +289,14 @@ void CORE::COMM::Exporter::generic_export(ExporterHelper& helper)
     snmessages[1] = sendgid.size();
 
     MPI_Request sizerequest;
-    i_send(MyPID(), tproc, snmessages.data(), 2, 1, sizerequest);
+    i_send(my_pid(), tproc, snmessages.data(), 2, 1, sizerequest);
 
     // do the sending of the objects
     MPI_Request sendrequest;
-    i_send(MyPID(), tproc, sendblock().data(), sendblock().size(), 2, sendrequest);
+    i_send(my_pid(), tproc, sendblock().data(), sendblock().size(), 2, sendrequest);
 
     MPI_Request sendgidrequest;
-    i_send(MyPID(), tproc, sendgid.data(), sendgid.size(), 3, sendgidrequest);
+    i_send(my_pid(), tproc, sendgid.data(), sendgid.size(), 3, sendgidrequest);
 
     //---------------------------------------- do the receiving from sproc
     // receive how many messages I will receive from sproc

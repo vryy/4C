@@ -170,7 +170,7 @@ namespace XFEM
     /*========================================================================*/
 
     //! compute the theta which has to be used for computation
-    double Theta(TimeIntData* data) const;
+    double theta(TimeIntData* data) const;
 
 
 

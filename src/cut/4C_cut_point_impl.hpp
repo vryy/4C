@@ -70,7 +70,7 @@ namespace CORE::GEO
     }  // namespace IMPL
 
     template <class Filter>
-    Line* Point::Find(Filter& filter, bool unique)
+    Line* Point::find(Filter& filter, bool unique)
     {
       Line* line_found = nullptr;
       for (plain_line_set::iterator i = lines_.begin(); i != lines_.end(); ++i)
@@ -98,19 +98,19 @@ namespace CORE::GEO
     inline Line* Point::CommonLine(Point* other)
     {
       IMPL::LineBetweenFilter filter(this, other);
-      return Find(filter, true);
+      return find(filter, true);
     }
 
     inline Line* Point::CutLine(Side* side, bool unique)
     {
       IMPL::LineHasSideFilter filter(side);
-      return Find(filter, unique);
+      return find(filter, unique);
     }
 
     inline Line* Point::CutLine(Line* line, Side* side, Element* element)
     {
       IMPL::NextLineOnElementCutFilter filter(line, side, element);
-      return Find(filter, true);
+      return find(filter, true);
     }
 
   }  // namespace CUT

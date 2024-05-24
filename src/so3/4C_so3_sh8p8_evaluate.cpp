@@ -1092,20 +1092,21 @@ void DRT::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  // lo
 
     // return gp strains if necessary
     if (iostrain != INPAR::STR::strain_none)
-      Strain(elestrain, iostrain, gp, detdefgrad, defgrad, invdefgrad, glstrain);
+      strain(elestrain, iostrain, gp, detdefgrad, defgrad, invdefgrad, glstrain);
 
     // call material law
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);  // 2nd PK stress
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress_tensor(true);  // 2nd PK stress
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
 
-    SolidMaterial()->Evaluate(&defgrad, &glstrain, params, &stress, &cmat, gp, Id());
+    SolidMaterial()->Evaluate(&defgrad, &glstrain, params, &stress_tensor, &cmat, gp, Id());
     if (iso_ == iso_enforced)
     {
       CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> pk2gen(
-          stress);  // may contain non-isochoric material response
+          stress_tensor);  // may contain non-isochoric material response
       CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cgen(
           cmat);  // may contain non-isochoric material response
-      MAT::VolumetrifyAndIsochorify(nullptr, nullptr, &stress, &cmat, glstrain, pk2gen, cgen);
+      MAT::VolumetrifyAndIsochorify(
+          nullptr, nullptr, &stress_tensor, &cmat, glstrain, pk2gen, cgen);
     }
     // end of call material law
 
@@ -1114,7 +1115,7 @@ void DRT::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  // lo
 
     // return Gauss point stresses if necessary
     if (iostress != INPAR::STR::stress_none)
-      Stress(elestress, iostress, gp, detdefgrad, defgrad, glstrain, stress, pressure);
+      stress(elestress, iostress, gp, detdefgrad, defgrad, glstrain, stress_tensor, pressure);
 
     // effective shape function of scalar pressure field at current Gauss point
     CORE::LINALG::Matrix<NUMPRES_, 1> prshfct(true);
@@ -1132,7 +1133,7 @@ void DRT::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  // lo
       // fint := fint
       //      + (B^T . sigma) * detJ * w(gp)
       //      + (-G) . ep   // will be done _after_ Gauss point loop
-      force->MultiplyTN(detJ_w, bop, stress, 1.0);
+      force->MultiplyTN(detJ_w, bop, stress_tensor, 1.0);
     }
 
     // incompressiblity equation
@@ -1272,7 +1273,7 @@ void DRT::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  // lo
               (*bopbydisp)(istr, NUMNOD_ * inod + jnod) = G_ij_glob(istr);
 
           // Scalar Gij results from product of G_ij with stress, scaled with detJ*weights
-          double Gij = detJ_w * stress.Dot(G_ij_glob);
+          double Gij = detJ_w * stress_tensor.Dot(G_ij_glob);
 
           // add "geometric part" Gij times detJ*weights to stiffness matrix
           (*stiffmatrix)(NUMDIM_ * inod + 0, NUMDIM_ * jnod + 0) += Gij;
@@ -1477,14 +1478,14 @@ void DRT::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  // lo
             else if (eastype_ == soh8_eassosh8)
             {
               eas_constraint_and_tangent<NUMEAS_SOSH8_>(feas, Kaa, Kad, Kap, defgradD, invrgtstrD,
-                  rcgbyrgtstr, detdefgrad, tinvdefgrad_vct, WmT, cmat, stress, effpressure, detJ_w,
-                  cb, defgradbydisp, prshfct, M);
+                  rcgbyrgtstr, detdefgrad, tinvdefgrad_vct, WmT, cmat, stress_tensor, effpressure,
+                  detJ_w, cb, defgradbydisp, prshfct, M);
             }
             else if (eastype_ == soh8_easa)
             {
               eas_constraint_and_tangent<NUMEAS_A_>(feas, Kaa, Kad, Kap, defgradD, invrgtstrD,
-                  rcgbyrgtstr, detdefgrad, tinvdefgrad_vct, WmT, cmat, stress, effpressure, detJ_w,
-                  cb, defgradbydisp, prshfct, M);
+                  rcgbyrgtstr, detdefgrad, tinvdefgrad_vct, WmT, cmat, stress_tensor, effpressure,
+                  detJ_w, cb, defgradbydisp, prshfct, M);
             }
             else
             {
@@ -1982,7 +1983,7 @@ void DRT::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  // lo
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::Stress(CORE::LINALG::Matrix<NUMGPT_, MAT::NUM_STRESS_3D>* elestress,
+void DRT::ELEMENTS::SoSh8p8::stress(CORE::LINALG::Matrix<NUMGPT_, MAT::NUM_STRESS_3D>* elestress,
     const INPAR::STR::StressType iostress, const int gp, const double& detdefgrd,
     const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& defgrd,
     const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain,
@@ -2053,7 +2054,7 @@ void DRT::ELEMENTS::SoSh8p8::Stress(CORE::LINALG::Matrix<NUMGPT_, MAT::NUM_STRES
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::Strain(
+void DRT::ELEMENTS::SoSh8p8::strain(
     CORE::LINALG::Matrix<NUMGPT_, MAT::NUM_STRESS_3D>* elestrain,  ///< store the strain herein
     const INPAR::STR::StrainType iostrain,
     const int gp,             ///< Gauss point index

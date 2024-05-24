@@ -304,12 +304,12 @@ namespace FLD
       /*!
       \brief calculate area at outflow boundary
       */
-      double Area(double& density, double& viscosity, std::string ds_condname, int condid);
+      double area(double& density, double& viscosity, std::string ds_condname, int condid);
 
       /*!
       \brief output
       */
-      void Output(IO::DiscretizationWriter& output, std::string ds_condname, int condnum);
+      void output(IO::DiscretizationWriter& output, std::string ds_condname, int condnum);
 
       /*!
       \brief Read restart
@@ -324,7 +324,7 @@ namespace FLD
       /*!
       \brief Interpolation function
       */
-      void Interpolate(Teuchos::RCP<std::vector<double>> V1, Teuchos::RCP<std::vector<double>> V2,
+      void interpolate(Teuchos::RCP<std::vector<double>> V1, Teuchos::RCP<std::vector<double>> V2,
           int index1, int& index2, double period);
 
       /*!

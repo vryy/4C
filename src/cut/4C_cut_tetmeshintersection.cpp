@@ -57,7 +57,7 @@ CORE::GEO::CUT::TetMeshIntersection::TetMeshIntersection(Options& options, Eleme
     Node* n = mesh_.GetNode(std::distance(points.begin(), i), p->X());
     Point* np = n->point();
     np->Position(p->Position());
-    Register(p, np);
+    do_register(p, np);
   }
 
   // Create the tets and register if the nodes of the tets are on a cut surface (i.e. register
@@ -299,7 +299,7 @@ void CORE::GEO::CUT::TetMeshIntersection::Cut(Mesh& parent_mesh, Element* elemen
 
   mesh_.create_integration_cells(count, tetcellsonly);
 
-  Fill(parent_mesh, element, parent_cells, cellmap);
+  fill(parent_mesh, element, parent_cells, cellmap);
 }
 
 /// Make sure connectivity between the new VolumeCell (of the children of the VC) are correctly
@@ -321,7 +321,7 @@ void CORE::GEO::CUT::TetMeshIntersection::map_volume_cells(Mesh& parent_mesh, El
 
     if (childset.size() > 0)
     {
-      Fill(vc, cc);
+      fill(vc, cc);
       std::copy(childset.begin(), childset.end(),
           std::inserter(done_child_cells, done_child_cells.begin()));
     }
@@ -414,7 +414,7 @@ void CORE::GEO::CUT::TetMeshIntersection::map_volume_cells(Mesh& parent_mesh, El
               }
 
               ChildCell& cc = *parent_cell_info[0];
-              Fill(cc.parent_, cc);
+              fill(cc.parent_, cc);
               std::copy(cc.cells_.begin(), cc.cells_.end(),
                   std::inserter(done_child_cells, done_child_cells.begin()));
               nonnodecells -= 1;
@@ -511,7 +511,7 @@ void CORE::GEO::CUT::TetMeshIntersection::map_volume_cells(Mesh& parent_mesh, El
               if (found)
               {
                 ChildCell& cc = *parent_cell_info[otherindex];
-                Fill(cc.parent_, cc);
+                fill(cc.parent_, cc);
                 std::copy(cc.cells_.begin(), cc.cells_.end(),
                     std::inserter(done_child_cells, done_child_cells.begin()));
                 nonnodecells -= 1;
@@ -591,7 +591,7 @@ void CORE::GEO::CUT::TetMeshIntersection::map_volume_cells(Mesh& parent_mesh, El
       }
       if (childset.size() > 0)
       {
-        Fill(parent_vc, cc);
+        fill(parent_vc, cc);
         nonnodecells -= 1;
       }
       else
@@ -655,7 +655,7 @@ void CORE::GEO::CUT::TetMeshIntersection::map_volume_cells(Mesh& parent_mesh, El
     if (not cc.done_)
     {
       // finish partly filled volume cells
-      Fill(vc, cc);
+      fill(vc, cc);
     }
 
     register_new_points(parent_mesh, childset);
@@ -846,7 +846,7 @@ void CORE::GEO::CUT::TetMeshIntersection::build_surface_cell_map(VolumeCell* vc,
   }
 }
 
-void CORE::GEO::CUT::TetMeshIntersection::Fill(Mesh& parent_mesh, Element* element,
+void CORE::GEO::CUT::TetMeshIntersection::fill(Mesh& parent_mesh, Element* element,
     const plain_volumecell_set& parent_cells, std::map<VolumeCell*, ChildCell>& cellmap)
 {
   for (std::map<VolumeCell*, ChildCell>::iterator i = cellmap.begin(); i != cellmap.end(); ++i)
@@ -977,7 +977,7 @@ void CORE::GEO::CUT::TetMeshIntersection::Fill(Mesh& parent_mesh, Element* eleme
   }
 }
 
-void CORE::GEO::CUT::TetMeshIntersection::Fill(VolumeCell* parent_cell, ChildCell& childcell)
+void CORE::GEO::CUT::TetMeshIntersection::fill(VolumeCell* parent_cell, ChildCell& childcell)
 {
   plain_volumecell_set& child_cells = childcell.cells_;
 
@@ -1119,7 +1119,7 @@ void CORE::GEO::CUT::TetMeshIntersection::register_new_points(
           if (child_to_parent_.count(p) == 0)
           {
             Point* pp = parent_mesh.NewPoint(p->X(), nullptr, nullptr, p->Tolerance());
-            Register(pp, p);
+            do_register(pp, p);
           }
         }
       }
@@ -1207,7 +1207,7 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::TetMeshIntersection::swap_point(
   return j->second;
 }
 
-void CORE::GEO::CUT::TetMeshIntersection::Register(Point* parent_point, Point* child_point)
+void CORE::GEO::CUT::TetMeshIntersection::do_register(Point* parent_point, Point* child_point)
 {
   child_to_parent_[child_point] = parent_point;
   parent_to_child_[parent_point] = child_point;
@@ -1235,7 +1235,7 @@ void CORE::GEO::CUT::TetMeshIntersection::copy_cut_side(Side* s, Facet* f)
     }
     else
     {
-      Register(p, new_node->point());
+      do_register(p, new_node->point());
     }
   }
 
@@ -1268,7 +1268,7 @@ void CORE::GEO::CUT::TetMeshIntersection::copy_cut_side(Side* s, Facet* f)
       {
         np = Point::NewPoint(mesh_, p->X(), p->t(e), ne, nullptr, p->Tolerance());
         np->Position(Point::oncutsurface);
-        Register(p, np);
+        do_register(p, np);
       }
     }
   }

@@ -635,7 +635,7 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
     //============================================================================
     case calc_struct_update_istep:
     {
-      auto thermoSolid = Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(Material(), false);
+      auto thermoSolid = Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(material(), false);
       if (thermoSolid != Teuchos::null)
       {
         std::vector<double> mytempnp(((la[0].lm_).size()) / nsd_, 0.0);
@@ -673,7 +673,7 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
             FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
           // zero-sized element
-          if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id())) return 1;
+          if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, id())) return 1;
 
           // get weights from cp's
           for (int inode = 0; inode < nen_; inode++)
@@ -888,7 +888,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::lin_fint_tsi(
     //            in the material: 1.) Delta T = subtract ( N . T - T_0 )
     //                             2.) couplstress = C . Delta T
     // do not call the material for Robinson's material
-    if (Material()->MaterialType() != CORE::Materials::m_vp_robinson)
+    if (material()->MaterialType() != CORE::Materials::m_vp_robinson)
       Materialize(&couplstress, &ctemp, &NT, &cmat, &glstrain, params);
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
@@ -1024,7 +1024,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::lin_kdT_tsi(DRT::Element::Locat
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
     Teuchos::RCP<MAT::TRAIT::ThermoSolid> thermoSolidMaterial =
-        Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(Material(), false);
+        Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(material(), false);
     if (thermoSolidMaterial != Teuchos::null)
     {
       // calculate the nodal strains: strain = B . d
@@ -1139,7 +1139,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi(
     if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
     // zero-sized element
-    if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id())) return;
+    if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, id())) return;
 
     // get weights from cp's
     for (int inode = 0; inode < nen_; inode++)
@@ -1228,7 +1228,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi(
     //            in the material: 1.) Delta T = subtract ( N . T - T_0 )
     //                             2.) couplstress = C . Delta T
     // do not call the material for Robinson's material
-    if (Material()->MaterialType() != CORE::Materials::m_vp_robinson)
+    if (material()->MaterialType() != CORE::Materials::m_vp_robinson)
       Materialize(&couplstress, &ctemp, &NT, &cmat_T, &glstrain, params);
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
@@ -1404,7 +1404,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Locat
     if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
     // zero-sized element
-    if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id())) return;
+    if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, id())) return;
 
     // get weights from cp's
     for (int inode = 0; inode < nen_; inode++)
@@ -1454,7 +1454,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Locat
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
     Teuchos::RCP<MAT::TRAIT::ThermoSolid> thermoSolidMaterial =
-        Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(Material(), false);
+        Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(material(), false);
     if (thermoSolidMaterial != Teuchos::null)
     {
       CORE::LINALG::Matrix<numstr_, 1> glstrain(false);
@@ -1472,7 +1472,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Locat
       // with shape functions)
       thermoSolidMaterial->GetdSdT(&ctemp);
     }
-    else if (Material()->MaterialType() == CORE::Materials::m_thermoplhyperelast)
+    else if (material()->MaterialType() == CORE::Materials::m_thermoplhyperelast)
     {
       // inverse of Right Cauchy-Green tensor = F^{-1} . F^{-T}
       CORE::LINALG::Matrix<nsd_, nsd_> Cinv(false);
@@ -1488,7 +1488,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Locat
       params.set<CORE::LINALG::Matrix<numstr_, 1>>("Cinv_vct", Cinv_vct);
 
       Teuchos::RCP<MAT::ThermoPlasticHyperElast> thermoplhyperelast =
-          Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(Material(), true);
+          Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(material(), true);
       // get thermal material tangent
       thermoplhyperelast->setup_cthermo(ctemp, params);
     }  // m_thermoplhyperelast
@@ -1512,7 +1512,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Locat
 
       // in case of temperature-dependent Young's modulus, additional term for
       // coupling stiffness matrix k_dT
-      if ((Material()->MaterialType() == CORE::Materials::m_thermostvenant))
+      if ((material()->MaterialType() == CORE::Materials::m_thermostvenant))
       {
         // k_dT += B_d^T . stress_T . N_T
         stiffmatrix_kdT->MultiplyNT(detJ_w, Bstress_T, shapefunct, 1.0);
@@ -1721,7 +1721,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
       //            in the material: 1.) Delta T = subtract (N . T - T_0)
       //                             2.) couplstress = C . Delta T
       // do not call the material for Robinson's material
-      if (Material()->MaterialType() != CORE::Materials::m_vp_robinson)
+      if (material()->MaterialType() != CORE::Materials::m_vp_robinson)
         Materialize(&couplstress_bar,
             &ctemp_bar,  // is not filled! pass an empty matrix
             &NT, &cmat_T_bar, &glstrain_bar, params);
@@ -2015,13 +2015,13 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element::
       // --------------------------------------------------------------
       // in case of thermo-elasto-plastic material we get additional terms due
       // to temperature-dependence of the plastic multiplier Dgamma
-      if (Material()->MaterialType() == CORE::Materials::m_thermoplhyperelast)
+      if (material()->MaterialType() == CORE::Materials::m_thermoplhyperelast)
       {
         params.set<CORE::LINALG::Matrix<nsd_, nsd_>>("defgrd", defgrd_bar);
         params.set<CORE::LINALG::Matrix<numstr_, 1>>("Cinv_vct", Cinv_barvct);
 
         Teuchos::RCP<MAT::ThermoPlasticHyperElast> thermoplhyperelast =
-            Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(Material(), true);
+            Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(material(), true);
         // dCmat_dT = F^{-1} . 1/Dt . ds_{n+1}/dT_{n+1} . F^{-T}
         //          = - 2 . mubar . 1/Dt . dDgamma/dT . N_bar
         // with dDgamma/dT= - sqrt(2/3) . dsigma_y(astrain_p^{n+1},T_{n+1})/dT
@@ -2029,7 +2029,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element::
         Cmat_kdT.Update(thermoplhyperelast->CMat_kdT(gp));
       }
       Teuchos::RCP<MAT::TRAIT::ThermoSolid> thermoSolidMaterial =
-          Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(Material(), false);
+          Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(material(), false);
       if (thermoSolidMaterial != Teuchos::null)
       {
         CORE::LINALG::Matrix<numstr_, 1> glstrain(false);
@@ -2063,7 +2063,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element::
         // k_dT = k_dT + (detF_0/detF)^{-1/3} (B^T . C_T . N_T) . detJ . w(gp)
         stiffmatrix_kdT->MultiplyTN((detJ_w / f_bar_factor), bop, cn, 1.0);
 
-        if (Material()->MaterialType() == CORE::Materials::m_thermoplhyperelast)
+        if (material()->MaterialType() == CORE::Materials::m_thermoplhyperelast)
         {
           // k_dT = k_dT + (detF_0/detF)^{-1/3} (B^T . dCmat/dT . N_temp) . detJ . w(gp)
           // (24x8)                            (24x6)         (6x1)    (1x8)
@@ -2106,7 +2106,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Materialize(
 
   // backwards compatibility: not all materials use the new interface
   Teuchos::RCP<MAT::TRAIT::ThermoSolid> thermoSolidMaterial =
-      Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(Material(), false);
+      Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(material(), false);
   if (thermoSolidMaterial != Teuchos::null)
   {
     // new interface already includes temperature terms in stress evaluation
@@ -2117,14 +2117,14 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Materialize(
   // All materials that have a pure CORE::LINALG::Matrix
   // interface go to the material law here.
   // the old interface does not exist anymore...
-  Teuchos::RCP<CORE::MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = material();
   switch (mat->MaterialType())
   {
     // small strain von Mises thermoelastoplastic material
     case CORE::Materials::m_thermopllinelast:
     {
       Teuchos::RCP<MAT::ThermoPlasticLinElast> thrpllinelast =
-          Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticLinElast>(Material(), true);
+          Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticLinElast>(material(), true);
       thrpllinelast->Evaluate(*Ntemp, *ctemp, *couplstress);
       return;
       break;
@@ -2140,7 +2140,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Materialize(
     case CORE::Materials::m_thermoplhyperelast:
     {
       Teuchos::RCP<MAT::ThermoPlasticHyperElast> thermoplhyperelast =
-          Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(Material(), true);
+          Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(material(), true);
       thermoplhyperelast->Evaluate(*Ntemp, *ctemp, *cmat, *couplstress, params);
       return;
       break;
@@ -2162,7 +2162,7 @@ template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Ctemp(
     CORE::LINALG::Matrix<numstr_, 1>* ctemp, Teuchos::ParameterList& params)
 {
-  switch (Material()->MaterialType())
+  switch (material()->MaterialType())
   {
     // thermo st.venant-kirchhoff-material
     case CORE::Materials::m_thermostvenant:
@@ -2173,7 +2173,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Ctemp(
     case CORE::Materials::m_thermopllinelast:
     {
       Teuchos::RCP<MAT::ThermoPlasticLinElast> thrpllinelast =
-          Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticLinElast>(Material(), true);
+          Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticLinElast>(material(), true);
       return thrpllinelast->setup_cthermo(*ctemp);
       break;
     }
@@ -2189,7 +2189,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Ctemp(
     case CORE::Materials::m_thermoplhyperelast:
     {
       Teuchos::RCP<MAT::ThermoPlasticHyperElast> thermoplhyperelast =
-          Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(Material(), true);
+          Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(material(), true);
       thermoplhyperelast->setup_cthermo(*ctemp, params);
       return;
       break;
@@ -2465,7 +2465,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::init_jacobian_mapping_special_f
     if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
     // zero-sized element
-    if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id())) return;
+    if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, id())) return;
 
     // get weights from cp's
     for (int inode = 0; inode < nen_; inode++)

@@ -596,7 +596,7 @@ void MORTAR::BinaryTree::evaluate_search()
 /*----------------------------------------------------------------------*
  | get communicator (public)                                  popp 10/08|
  *----------------------------------------------------------------------*/
-const Epetra_Comm& MORTAR::BinaryTree::Comm() const { return Discret().Comm(); }
+const Epetra_Comm& MORTAR::BinaryTree::comm() const { return Discret().Comm(); }
 
 /*----------------------------------------------------------------------*
  | Find min. length of master and slave elements (public)     popp 10/08|
@@ -643,10 +643,10 @@ void MORTAR::BinaryTree::print_tree(Teuchos::RCP<BinaryTreeNode> treenode)
   // if treenode has no elements (NOSLAVE_ELEMENTS,NOMASTER_ELEMENTS)
   if (treenode->Type() == NOSLAVE_ELEMENTS || treenode->Type() == NOMASTER_ELEMENTS)
   {
-    std::cout << "\n" << Comm().MyPID() << " Tree has no element to print";
+    std::cout << "\n" << comm().MyPID() << " Tree has no element to print";
     return;
   }
-  std::cout << "\n" << Comm().MyPID() << " Tree at layer: " << treenode->Layer() << " Elements: ";
+  std::cout << "\n" << comm().MyPID() << " Tree at layer: " << treenode->Layer() << " Elements: ";
   for (int i = 0; i < (int)(treenode->Elelist().size()); i++)
     std::cout << " " << treenode->Elelist()[i];
 
@@ -669,7 +669,7 @@ void MORTAR::BinaryTree::print_tree_of_map(
   // print tree, elements listet in brackets (), belong to one treenode!
   for (int i = 0; i < (int)(treenodesmap.size()); i++)
   {
-    std::cout << "\n" << Comm().MyPID() << " Tree at layer: " << i << " Elements: ";
+    std::cout << "\n" << comm().MyPID() << " Tree at layer: " << i << " Elements: ";
     for (int k = 0; k < (int)(treenodesmap[i].size()); k++)
     {
       Teuchos::RCP<BinaryTreeNode> currentnode = treenodesmap[i][k];

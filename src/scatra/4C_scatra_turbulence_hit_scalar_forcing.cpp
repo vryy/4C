@@ -588,9 +588,9 @@ namespace SCATRA
               }
 
               // interpolate spectrum to wave number
-              double E_n = Interpolate(k, (*wavenumbers_)[rr_k - 1], (*wavenumbers_)[rr_k],
+              double E_n = interpolate(k, (*wavenumbers_)[rr_k - 1], (*wavenumbers_)[rr_k],
                   (*scalarvariancespectrum_n_)[rr_k - 1], (*scalarvariancespectrum_n_)[rr_k]);
-              double E_np = Interpolate(k, (*wavenumbers_)[rr_k - 1], (*wavenumbers_)[rr_k],
+              double E_np = interpolate(k, (*wavenumbers_)[rr_k - 1], (*wavenumbers_)[rr_k],
                   (*scalarvariancespectrum_np_)[rr_k - 1], (*scalarvariancespectrum_np_)[rr_k]);
 
               // get position in fac-vector

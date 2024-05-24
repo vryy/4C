@@ -182,7 +182,7 @@ namespace NOX
               const ::NOX::MeritFunction::Generic& merit_func, const ::NOX::Abstract::Group& grp);
 
           /// reset the internal state at the beginning of a new Newton iteration
-          void Reset();
+          void reset();
 
           enum NOX::NLN::INNER::StatusTest::FilterStatusType acceptability_check(
               const Point& trial_fp);
@@ -191,7 +191,7 @@ namespace NOX
            *  comparison in obvious cases
            *
            * \author hiermeier */
-          unsigned Prefiltering(const Point& trial_fp);
+          unsigned prefiltering(const Point& trial_fp);
 
           /** identify all points in the current filter set which are not
            * dominated by the new trial point */

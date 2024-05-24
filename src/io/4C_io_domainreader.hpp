@@ -90,7 +90,7 @@ namespace IO
 
     /// finalize reading. fill_complete(false,false,false), that is, do not
     /// initialize elements. This is done later after reading boundary conditions.
-    void Complete() const;
+    void complete() const;
 
     /// discretization name
     std::string name_;

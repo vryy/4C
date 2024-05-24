@@ -1128,7 +1128,7 @@ namespace CONTACT
         }
 
         /// initialize this object
-        void Init(Strategy* strat, const double delta = 1.0e-8);
+        void init(Strategy* strat, const double delta = 1.0e-8);
 
         /// apply the perturbation
         void do_perturbation(const int gid, const int dof);

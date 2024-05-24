@@ -88,7 +88,7 @@ void MIXTURE::MixtureConstituentRemodelFiberImpl::UnpackConstituent(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   MIXTURE::MixtureConstituent::UnpackConstituent(position, data);
-  Initialize();
+  initialize();
 
   anisotropy_extension_.UnpackAnisotropy(data, position);
   for (RemodelFiber<2>& fiber : remodel_fiber_) fiber.Unpack(position, data);
@@ -100,7 +100,7 @@ void MIXTURE::MixtureConstituentRemodelFiberImpl::register_anisotropy_extensions
   anisotropy.register_anisotropy_extension(anisotropy_extension_);
 }
 
-void MIXTURE::MixtureConstituentRemodelFiberImpl::Initialize()
+void MIXTURE::MixtureConstituentRemodelFiberImpl::initialize()
 {
   dgrowthscalard_c_.resize(num_gp());
   dlambdard_c_.resize(num_gp());
@@ -120,7 +120,7 @@ void MIXTURE::MixtureConstituentRemodelFiberImpl::ReadElement(
     int numgp, INPUT::LineDefinition* linedef)
 {
   MIXTURE::MixtureConstituent::ReadElement(numgp, linedef);
-  Initialize();
+  initialize();
 }
 
 void MIXTURE::MixtureConstituentRemodelFiberImpl::Setup(Teuchos::ParameterList& params, int eleGID)

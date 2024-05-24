@@ -418,7 +418,7 @@ namespace DRT
           const int iel);
 
       //! Compute geometric part of stiffness matrix
-      void Kg(CORE::LINALG::SerialDenseMatrix& estif,  ///< element stiffness matrix (to be filled)
+      void kg(CORE::LINALG::SerialDenseMatrix& estif,  ///< element stiffness matrix (to be filled)
           const CORE::LINALG::SerialDenseMatrix& boplin,  ///< B-operator
           const CORE::LINALG::SerialDenseMatrix& stress,  ///< 2. Piola-Kirchhoff stress tensor
           const double fac,                               ///< factor for Gaussian quadrature
@@ -426,7 +426,7 @@ namespace DRT
           const int numeps);
 
       //! Compute elastic part of stiffness matrix
-      void Keu(CORE::LINALG::SerialDenseMatrix& estif,  ///< element stiffness matrix (to be filled)
+      void keu(CORE::LINALG::SerialDenseMatrix& estif,  ///< element stiffness matrix (to be filled)
           const CORE::LINALG::SerialDenseMatrix&
               b_cure,  ///< B-operator for current configuration (input)
           const CORE::LINALG::SerialDenseMatrix& C,  ///< material tensor (input)
@@ -435,7 +435,7 @@ namespace DRT
           const int numeps);
 
       //! Compute internal forces for solid approach
-      void Fint(
+      void fint(
           const CORE::LINALG::SerialDenseMatrix& stress,  ///< 2. Piola-Kirchhoff stress (input)
           const CORE::LINALG::SerialDenseMatrix&
               b_cure,  ///< B-operator for current configuration (input)

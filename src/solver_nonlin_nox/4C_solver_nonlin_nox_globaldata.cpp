@@ -62,7 +62,7 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList
 {
   check_input();
   // do some setup things
-  Setup();
+  setup();
 }
 
 /*----------------------------------------------------------------------------*
@@ -86,7 +86,7 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList
 {
   check_input();
   // do some setup things
-  Setup();
+  setup();
 }
 
 /*----------------------------------------------------------------------------*
@@ -109,7 +109,7 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList
 {
   check_input();
   // do some setup things
-  Setup();
+  setup();
 }
 
 /*----------------------------------------------------------------------------*
@@ -131,7 +131,7 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList
 {
   check_input();
   // do some setup things
-  Setup();
+  setup();
 }
 
 /*----------------------------------------------------------------------------*
@@ -159,7 +159,7 @@ void NOX::NLN::GlobalData::check_input() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::GlobalData::Setup()
+void NOX::NLN::GlobalData::setup()
 {
   // set the nonlinear optimzation problem type
   nlnparams_->set("Optimization Problem Type", opt_type_);

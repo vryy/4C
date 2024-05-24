@@ -88,7 +88,7 @@ void MAT::MatListChemoReac::setup_mat_map()
 /*----------------------------------------------------------------------*
  | reset everything                                          thon 06/15 |
  *----------------------------------------------------------------------*/
-void MAT::MatListChemoReac::Clear()
+void MAT::MatListChemoReac::clear()
 {
   paramsreachemo_ = nullptr;
   return;
@@ -126,7 +126,7 @@ void MAT::MatListChemoReac::Pack(CORE::COMM::PackBuffer& data) const
 void MAT::MatListChemoReac::Unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
-  Clear();
+  clear();
 
   std::vector<char>::size_type position = 0;
 

@@ -126,7 +126,7 @@ namespace CORE::COMM
         std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions);
 
    private:
-    void Register(ParObjectType* object_type);
+    void do_register(ParObjectType* object_type);
 
     void finalize_registration();
 

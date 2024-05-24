@@ -104,7 +104,7 @@ void MAT::ElchPhase::setup_mat_map()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElchPhase::Clear()
+void MAT::ElchPhase::clear()
 {
   params_ = nullptr;
   mat_.clear();

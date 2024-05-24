@@ -92,7 +92,7 @@ NOX::NLN::INNER::StatusTest::Filter::Filter(const FilterParams& fparams, const :
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::Reset()
+void NOX::NLN::INNER::StatusTest::Filter::reset()
 {
   filter_.clear();
   blocking_.filter_iterates_.clear();
@@ -451,7 +451,7 @@ void NOX::NLN::INNER::StatusTest::Filter::init_points(const Interface::Required&
     // --------------------------------------------------------------------
     case 1:
     {
-      Reset();
+      reset();
       curr_points_.first = Point::create(merit_func, theta_, grp);
       curr_fpoints_.first = Point::makeFilterPoint(*curr_points_.first, false);
 
@@ -1085,7 +1085,7 @@ void NOX::NLN::INNER::StatusTest::Filter::augment_filter()
 enum NOX::NLN::INNER::StatusTest::FilterStatusType
 NOX::NLN::INNER::StatusTest::Filter::acceptability_check(const Point& trial_fp)
 {
-  const unsigned prefiltering_index = Prefiltering(trial_fp);
+  const unsigned prefiltering_index = prefiltering(trial_fp);
 
   /* If prefiltering did not succeed, we perform the acceptability check point
    * by point */
@@ -1121,7 +1121,7 @@ NOX::NLN::INNER::StatusTest::Filter::acceptability_check(const Point& trial_fp)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-unsigned NOX::NLN::INNER::StatusTest::Filter::Prefiltering(const Point& trial_fp)
+unsigned NOX::NLN::INNER::StatusTest::Filter::prefiltering(const Point& trial_fp)
 {
   const double sqrt_num_coords =
       std::sqrt<double>(static_cast<double>(trial_fp.num_coords_)).real();

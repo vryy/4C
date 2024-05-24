@@ -340,7 +340,7 @@ namespace DRT
       /// @}
 
       //! get the body force
-      virtual void Radiation(const DRT::Element* ele,  //!< current element we are dealing with
+      virtual void radiation(const DRT::Element* ele,  //!< current element we are dealing with
           const double time                            //!< current times
       );
 
@@ -363,7 +363,7 @@ namespace DRT
 
       //! determine heat flux and conductivity tensor
       //! based on material law
-      virtual void Materialize(const DRT::Element* ele,  //!< current element
+      virtual void materialize(const DRT::Element* ele,  //!< current element
           int gp                                         //!< current GP id
       );
 

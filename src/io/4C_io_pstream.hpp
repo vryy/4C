@@ -93,7 +93,7 @@ namespace IO
       if (not is_initialized_) FOUR_C_THROW("Setup the output before you use it!");
 
       // are we on a proc that is allowed to output
-      if (OnPid())
+      if (on_pid())
       {
         // store formatting in this semi persistent buffer
         fmt_tmp_ << s;
@@ -163,7 +163,7 @@ namespace IO
 
    private:
     /// Return whether this is a target processor for output
-    bool OnPid();
+    bool on_pid();
 
     /// Shelter copy constructor
     Pstream(const Pstream& old);

@@ -80,7 +80,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     std::vector<std::vector<Teuchos::RCP<AMGNXN::MueluSmootherWrapper>>> s_pos_block_level_;
     std::string verbosity_;
 
-    void Setup();
+    void setup();
 
     Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
     build_mue_lu_hierarchy(Teuchos::ParameterList paramListFromXml, int numdf, int dimns,
@@ -123,7 +123,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     Teuchos::ParameterList params_;
     Teuchos::ParameterList params_smoothers_;
 
-    void Setup();
+    void setup();
     Teuchos::RCP<AMGNXN::GenericSmoother> build_smoother(int level);
   };
 }  // namespace CORE::LINEAR_SOLVER::AMGNXN

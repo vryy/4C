@@ -115,7 +115,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::Output(IO::DiscretizationWri
 
   for (mapiter = fvsf_map_.begin(); mapiter != fvsf_map_.end(); mapiter++)
   {
-    mapiter->second->FluidVolumetricSurfaceFlowBc::Output(
+    mapiter->second->FluidVolumetricSurfaceFlowBc::output(
         output, "VolumetricSurfaceFlowCond", mapiter->first);
   }
 
@@ -374,7 +374,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
   // Evaluate the area of the design surface.
   // This will also return the viscosity and density of the fluid
   // -------------------------------------------------------------------
-  area_ = this->Area(density_, viscosity_, ds_condname, condid_);
+  area_ = this->area(density_, viscosity_, ds_condname, condid_);
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -850,7 +850,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::build_condition_dof_row_map(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Output(
+void FLD::UTILS::FluidVolumetricSurfaceFlowBc::output(
     IO::DiscretizationWriter& output, std::string ds_condname, int condnum)
 {
   // condnum contains the number of the present condition
@@ -929,7 +929,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::read_restart(
     // evaluate the new flowrates vector
     int nq_pos = 0;
     Teuchos::RCP<std::vector<double>> nq = Teuchos::rcp(new std::vector<double>(nQSize, 0.0));
-    this->Interpolate(flowrates_, nq, flowratespos_, nq_pos, period_);
+    this->interpolate(flowrates_, nq, flowratespos_, nq_pos, period_);
 
     // store new values in class
     flowratespos_ = nq_pos;
@@ -1711,7 +1711,7 @@ std::complex<double> FLD::UTILS::FluidVolumetricSurfaceFlowBc::bessel_j01(
 /*!
 
 */
-double FLD::UTILS::FluidVolumetricSurfaceFlowBc::Area(
+double FLD::UTILS::FluidVolumetricSurfaceFlowBc::area(
     double& density, double& viscosity, std::string ds_condname, int condid)
 {
   // fill in parameter list for subsequent element evaluation
@@ -1855,7 +1855,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::DFT(Teuchos::RCP<std::vector<doub
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Interpolate(Teuchos::RCP<std::vector<double>> V1,
+void FLD::UTILS::FluidVolumetricSurfaceFlowBc::interpolate(Teuchos::RCP<std::vector<double>> V1,
     Teuchos::RCP<std::vector<double>> V2, int index1, int& index2, double period)
 {
   // Get size of V1 and V2
@@ -2091,7 +2091,7 @@ void FLD::UTILS::TotalTractionCorrector::Output(IO::DiscretizationWriter& output
 
   for (mapiter = fvsf_map_.begin(); mapiter != fvsf_map_.end(); mapiter++)
   {
-    mapiter->second->FluidVolumetricSurfaceFlowBc::Output(
+    mapiter->second->FluidVolumetricSurfaceFlowBc::output(
         output, "TotalTractionCorrectionCond", mapiter->first);
   }
 

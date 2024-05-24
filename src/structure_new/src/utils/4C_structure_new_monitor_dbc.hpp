@@ -129,7 +129,7 @@ namespace STR
         const CORE::LINALG::Matrix<DIM, 1>& rmoment, const double& area_ref,
         const double& area_cur) const;
 
-    inline const Epetra_Comm& Comm() const;
+    inline const Epetra_Comm& comm() const;
 
     inline void throw_if_not_init() const { FOUR_C_ASSERT(isinit_, "Call Init() first!"); }
 

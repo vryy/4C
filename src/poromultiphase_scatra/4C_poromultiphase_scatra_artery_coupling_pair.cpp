@@ -605,7 +605,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 
         // project into 3D domain
         bool projection_valid = false;
-        Projection<double>(r1, xi, projection_valid);
+        projection<double>(r1, xi, projection_valid);
         eta_[gpid] = eta;
         xi_[gpid] = xi;
         // projection is valid and GP is so far unclaimed by other pair
@@ -695,7 +695,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     compute_artery_coords_and_derivs_ref<double>(r1, r1_eta, N1, N1_eta);
 
     bool projection_valid = false;
-    Projection<double>(r1, xi_[i_gp], projection_valid);
+    projection<double>(r1, xi_[i_gp], projection_valid);
     if (!projection_valid) FOUR_C_THROW("Gauss point could not be projected");
 
     // compute (dX/dxi)^-1
@@ -729,7 +729,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   compute_artery_coords_and_derivs_ref<double>(r1, r1_eta, N1, N1_eta);
 
   bool projection_valid = false;
-  Projection<double>(r1, xi_[0], projection_valid);
+  projection<double>(r1, xi_[0], projection_valid);
 
   // coupling pairs is only active if projection is valid
   isactive_ = projection_valid;
@@ -1238,7 +1238,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       compute_artery_coords_and_derivs_ref<double>(r1, r1_eta, N1, N1_eta);
 
       bool projection_valid = false;
-      Projection<double>(r1, myXi[i_gp], projection_valid);
+      projection<double>(r1, myXi[i_gp], projection_valid);
       if (!projection_valid) FOUR_C_THROW("Gauss point could not be projected");
       // save the converged value
       eta_s_[i_gp] = eta_s.val();
@@ -2155,7 +2155,7 @@ FAD POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, dis
     // project
     bool projection_valid = false;
     std::vector<FAD> xi(numdim_, 0.0);
-    Projection<FAD>(r1, xi, projection_valid);
+    projection<FAD>(r1, xi, projection_valid);
     if (!projection_valid) FOUR_C_THROW("Gauss point could not be projected");
 
     get2_d3_d_shape_functions<FAD>(N2, N2_xi, xi);
@@ -2622,7 +2622,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   {
     get1_d_shape_functions<double>(N1, N1_eta, 0.0);
     compute_artery_coords_and_derivs_ref<double>(r1, r1_eta, N1, N1_eta);
-    Projection<double>(r1, xi, projection_valid);
+    projection<double>(r1, xi, projection_valid);
     // case: completely inside
     if (projection_valid)
     {
@@ -2643,7 +2643,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       // first possibility: segment goes from [-1; 1], second point lies inside 3D element
       get1_d_shape_functions<double>(N1, N1_eta, 1.0);
       compute_artery_coords_and_derivs_ref<double>(r1, r1_eta, N1, N1_eta);
-      Projection<double>(r1, xi, projection_valid);
+      projection<double>(r1, xi, projection_valid);
       if (projection_valid)
       {
         eta_a_ = -1.0;
@@ -2668,7 +2668,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       // first possibility: segment goes from [-1; 1], second point lies inside 3D element
       get1_d_shape_functions<double>(N1, N1_eta, -1.0);
       compute_artery_coords_and_derivs_ref<double>(r1, r1_eta, N1, N1_eta);
-      Projection<double>(r1, xi, projection_valid);
+      projection<double>(r1, xi, projection_valid);
       if (projection_valid)
       {
         eta_a_ = -1.0;
@@ -2692,7 +2692,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     {
       get1_d_shape_functions<double>(N1, N1_eta, -1.0);
       compute_artery_coords_and_derivs_ref<double>(r1, r1_eta, N1, N1_eta);
-      Projection<double>(r1, xi, projection_valid);
+      projection<double>(r1, xi, projection_valid);
       // case: segment goes from [-1.0; intersections[0]]
       if (projection_valid)
       {
@@ -2705,7 +2705,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
         // case: segment goes from [intersections[0]; 1.0]
         get1_d_shape_functions<double>(N1, N1_eta, 1.0);
         compute_artery_coords_and_derivs_ref<double>(r1, r1_eta, N1, N1_eta);
-        Projection<double>(r1, xi, projection_valid);
+        projection<double>(r1, xi, projection_valid);
         eta_a_ = intersections[0];
         eta_b_ = 1.0;
         isactive_ = true;
@@ -3205,7 +3205,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 template <CORE::FE::CellType distypeArt, CORE::FE::CellType distypeCont, int dim>
 template <typename T>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont,
-    dim>::Projection(CORE::LINALG::Matrix<numdim_, 1, T>& r1, std::vector<T>& xi,
+    dim>::projection(CORE::LINALG::Matrix<numdim_, 1, T>& r1, std::vector<T>& xi,
     bool& projection_valid)
 {
   projection_valid = true;

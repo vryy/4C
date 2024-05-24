@@ -1626,7 +1626,7 @@ void CORE::LINALG::SparseMatrix::Load(const Epetra_Comm& comm, std::string& file
 /*----------------------------------------------------------------------*
   (private)
  *----------------------------------------------------------------------*/
-void CORE::LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase) const
+void CORE::LINALG::SparseMatrix::split2x2(BlockSparseMatrixBase& Abase) const
 {
   // for timing of this method
   TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SparseMatrix::Split2x2");

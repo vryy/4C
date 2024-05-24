@@ -160,7 +160,7 @@ bool STI::Partitioned::exit_outer_coupling() const
 /*--------------------------------------------------------------------------------*
  | evaluate time step using outer coupling iteration                   fang 09/17 |
  *--------------------------------------------------------------------------------*/
-void STI::Partitioned::Solve()
+void STI::Partitioned::solve()
 {
   switch (couplingtype_)
   {

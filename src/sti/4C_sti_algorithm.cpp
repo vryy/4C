@@ -270,7 +270,7 @@ void STI::Algorithm::TimeLoop()
     double time = timer_->wallTime();
 
     // evaluate time step
-    Solve();
+    solve();
 
     // determine time spent by nonlinear solver and take maximum over all processors via
     // communication

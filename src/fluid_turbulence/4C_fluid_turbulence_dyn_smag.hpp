@@ -128,7 +128,7 @@ namespace FLD
     */
 
     /// provide access to the box filter
-    Teuchos::RCP<FLD::Boxfilter> Boxfilter();
+    Teuchos::RCP<FLD::Boxfilter> boxfilter();
     /*!
     \brief Compute Cs using the filtered quantities.
     This is an element call!

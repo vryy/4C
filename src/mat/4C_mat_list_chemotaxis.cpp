@@ -113,7 +113,7 @@ void MAT::MatListChemotaxis::setup_mat_map()
 /*----------------------------------------------------------------------*
  | reset everything                                          thon 06/15 |
  *----------------------------------------------------------------------*/
-void MAT::MatListChemotaxis::Clear()
+void MAT::MatListChemotaxis::clear()
 {
   paramschemo_ = nullptr;
   return;
@@ -149,7 +149,7 @@ void MAT::MatListChemotaxis::Pack(CORE::COMM::PackBuffer& data) const
 void MAT::MatListChemotaxis::Unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
-  Clear();
+  clear();
 
   std::vector<char>::size_type position = 0;
 
