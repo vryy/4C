@@ -79,7 +79,6 @@ AZSUB             40
 AZOMEGA           1.0
 AZGRAPH           1
 IFPACKOVERLAP     5
-AZSCAL            none
 ML_PRINT          0
 ML_MAXCOARSESIZE  100
 ML_MAXLEVEL       3
@@ -109,7 +108,6 @@ AZSUB             40
 AZOMEGA           0.9
 AZGRAPH           1
 IFPACKOVERLAP     3
-AZSCAL            none
 ML_PRINT          0
 ML_MAXCOARSESIZE  1
 ML_MAXLEVEL       1

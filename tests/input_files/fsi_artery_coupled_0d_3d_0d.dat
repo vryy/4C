@@ -63,7 +63,6 @@ AZSUB                           400
 AZOMEGA                         1.0
 AZGRAPH                         1
 IFPACKOVERLAP                   0
-AZSCAL                          infnorm
 AZCONV                          AZ_noscaled
 ML_PRINT                        0
 ML_MAXCOARSESIZE                1000
@@ -94,7 +93,6 @@ AZSUB                           40
 AZOMEGA                         1.0
 AZGRAPH                         1
 IFPACKOVERLAP                   0
-AZSCAL                          infnorm
 ML_PRINT                        0
 ML_MAXCOARSESIZE                1000
 ML_MAXLEVEL                     3
@@ -123,7 +121,6 @@ AZSUB                           35
 AZOMEGA                         1.0
 AZGRAPH                         1
 IFPACKOVERLAP                   0
-AZSCAL                          none
 AZCONV                          AZ_r0
 ML_PRINT                        0
 ML_MAXCOARSESIZE                1
@@ -153,7 +150,6 @@ AZSUB                           25
 AZOMEGA                         1.0
 AZGRAPH                         1
 IFPACKOVERLAP                   0
-AZSCAL                          infnorm
 AZCONV                          AZ_r0
 ML_PRINT                        0
 ML_MAXCOARSESIZE                5000

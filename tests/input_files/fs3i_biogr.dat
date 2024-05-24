@@ -28,7 +28,6 @@ AZITER                          2500
 AZSUB                           25
 AZOMEGA                         1.0
 AZGRAPH                         1
-AZSCAL                          none
 ML_PRINT                        0
 ML_MAXCOARSESIZE                10000
 ML_MAXLEVEL                     5
@@ -104,7 +103,6 @@ AZOMEGA                         0.69
 AZGRAPH                         1
 IFPACKOVERLAP                   8
 IFPACKCOMBINE                   Zero
-AZSCAL                          none
 ML_PRINT                        0
 ML_MAXCOARSESIZE                1000
 ML_MAXLEVEL                     5
@@ -241,7 +239,6 @@ AZSUB                           25
 AZOMEGA                         1.0
 AZGRAPH                         1
 IFPACKOVERLAP                   0
-AZSCAL                          infnorm
 --------------------------------------------------------------------SOLVER 4
 NAME                            SCAT_FLUID
 SOLVER                          Belos
@@ -257,7 +254,6 @@ AZSUB                           25
 AZOMEGA                         1.0
 AZGRAPH                         1
 IFPACKOVERLAP                   0
-AZSCAL                          none
 ML_PRINT                        0
 ML_MAXCOARSESIZE                5000
 ML_MAXLEVEL                     5
@@ -287,7 +283,6 @@ AZSUB                           25
 AZOMEGA                         1.0
 AZGRAPH                         1
 IFPACKOVERLAP                   0
-AZSCAL                          none
 ML_PRINT                        0
 ML_MAXCOARSESIZE                5000
 ML_MAXLEVEL                     5
@@ -318,7 +313,6 @@ AZITER                          1000
 AZSUB                           50
 AZOMEGA                         1.0
 AZGRAPH                         1
-AZSCAL                          none
 ML_PRINT                        0
 ML_MAXCOARSESIZE                25000
 ML_MAXLEVEL                     5

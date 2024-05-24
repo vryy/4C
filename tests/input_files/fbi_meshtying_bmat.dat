@@ -134,7 +134,6 @@ AZITER         1000
 AZSUB          1000
 AZOMEGA        1.0
 AZGRAPH        1
-AZSCAL         none
 ---------------------------------------------------------SOLVER 3
 SOLVER         Belos
 AZOUTPUT       0
@@ -149,7 +148,6 @@ AZITER         1000
 AZSUB          1000
 AZOMEGA        1.0
 AZGRAPH        1
-AZSCAL         none
 ---------------------------------------------------------------------SOLVER 4
 NAME           2,2 block solver/smoothers
 SOLVER         Belos
@@ -165,7 +163,6 @@ AZITER         1000
 AZSUB          1000
 AZOMEGA        1.0
 AZGRAPH        1
-AZSCAL         none
 ML_PRINT          0
 ML_MAXCOARSESIZE  125
 ML_MAXLEVEL       2

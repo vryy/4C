@@ -21,7 +21,6 @@ AZOMEGA                         0
 AZOUTPUT                        100
 AZPREC                          MLFLUID2
 AZREUSE                         5
-AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           50
 AZTOL                           1e-06

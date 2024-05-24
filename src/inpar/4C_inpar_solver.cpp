@@ -214,17 +214,6 @@ namespace INPAR::SOLVER
           "BGS2X2_BLOCK2_DAMPING", 1., "damping parameter for BGS2X2 preconditioner block2", &list);
     }
 
-    // parameters for scaling of linear system
-    {
-      setStringToIntegralParameter<CORE::LINEAR_SOLVER::ScalingStrategy>("AZSCAL", "none",
-          "scaling of the linear system to improve properties",
-          tuple<std::string>("none", "sym", "infnorm"),
-          tuple<CORE::LINEAR_SOLVER::ScalingStrategy>(CORE::LINEAR_SOLVER::ScalingStrategy::none,
-              CORE::LINEAR_SOLVER::ScalingStrategy::symmetric,
-              CORE::LINEAR_SOLVER::ScalingStrategy::infnorm),
-          &list);
-    }
-
     // user-given name of solver block (just for beauty)
     CORE::UTILS::StringParameter("NAME", "No_name", "User specified name for solver block", &list);
 

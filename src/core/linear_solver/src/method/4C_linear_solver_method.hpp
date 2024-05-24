@@ -82,14 +82,6 @@ namespace CORE::LINEAR_SOLVER
     cheap_simple             ///< CheapSIMPLE for 2x2 systems? (inhouse implementation)
   };
 
-  //! scaling strategies for linear solvers
-  enum class ScalingStrategy
-  {
-    none,       ///< no scaling of the linear system
-    symmetric,  ///< symmetric scaling of the linear system
-    infnorm     ///< infinity-norm scaling of the linear system
-  };
-
   /// linear solver type base class
   template <class MatrixType, class VectorType>
   class SolverTypeBase

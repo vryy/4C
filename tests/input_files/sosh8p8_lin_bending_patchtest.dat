@@ -86,7 +86,6 @@ AZOUTPUT                        0
 IFPACKOVERLAP                   0
 AZPREC                          ILU
 AZREUSE                         0
-AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08

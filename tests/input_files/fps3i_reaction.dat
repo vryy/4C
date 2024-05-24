@@ -266,7 +266,6 @@ AZOMEGA                         0
 AZOUTPUT                        0
 AZPREC                          BGS2x2
 AZREUSE                         0
-AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
@@ -297,7 +296,6 @@ AZOMEGA                         0
 AZOUTPUT                        0
 AZPREC                          MLFLUID2
 AZREUSE                         0
-AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
@@ -328,7 +326,6 @@ AZOMEGA                         0
 AZOUTPUT                        0
 AZPREC                          MLFLUID2
 AZREUSE                         0
-AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
@@ -365,7 +362,6 @@ AZSUB                           25
 AZOMEGA                         1.0
 AZGRAPH                         1
 IFPACKOVERLAP                   0
-AZSCAL                          none
 ML_PRINT                        0
 ML_MAXCOARSESIZE                5000
 ML_MAXLEVEL                     5
@@ -395,7 +391,6 @@ AZSUB                           25
 AZOMEGA                         1.0
 AZGRAPH                         1
 IFPACKOVERLAP                   0
-AZSCAL                          infnorm
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoro MATID 2 POROLAWID 10 INITPOROSITY 0.2
 MAT 10 MAT_PoroLawNeoHooke BULKMODULUS 2.0e6 PENALTYPARAMETER 0.001

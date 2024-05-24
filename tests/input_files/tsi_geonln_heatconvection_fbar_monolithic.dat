@@ -105,7 +105,6 @@ AZOMEGA                         0
 AZOUTPUT                        0
 AZPREC                          BGS2x2
 AZREUSE                         0
-AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
@@ -138,7 +137,6 @@ AZOMEGA                         0
 AZOUTPUT                        0
 AZPREC                          MLFLUID2
 AZREUSE                         0
-AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
@@ -170,7 +168,6 @@ AZOMEGA                         0
 AZOUTPUT                        0
 AZPREC                          MLFLUID2
 AZREUSE                         0
-AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           50
 AZTOL                           1e-08

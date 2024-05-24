@@ -1073,10 +1073,6 @@ AZTOL                           1e-08
 // damping for GaussSeidel and jacobi type methods
 AZOMEGA                         0
 //
-// scaling of the system
-//     none,sym,infnorm
-AZSCAL                          none
-//
 // ML print-out level (0-10)
 ML_PRINT                        0
 //

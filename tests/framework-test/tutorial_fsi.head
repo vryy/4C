@@ -758,10 +758,6 @@ AZPREC                          ILU
 // how often to recompute some preconditioners
 AZREUSE                         0
 //
-// scaling of the system
-//                              none,sym,infnorm
-AZSCAL                          none
-//
 // Type of linear solver algorithm to use.
 //                              CG,GMRES,GMRESR,CGS,TFQMR,BiCGSTAB,LU,FGMRES
 AZSOLVE                         GMRES
@@ -967,10 +963,6 @@ AZPREC                          ILU
 // how often to recompute some preconditioners
 AZREUSE                         0
 //
-// scaling of the system
-//                              none,sym,infnorm
-AZSCAL                          none
-//
 // Type of linear solver algorithm to use.
 //                              CG,GMRES,GMRESR,CGS,TFQMR,BiCGSTAB,LU,FGMRES
 AZSOLVE                         GMRES
@@ -1175,10 +1167,6 @@ AZPREC                          ILU
 //
 // how often to recompute some preconditioners
 AZREUSE                         0
-//
-// scaling of the system
-//                              none,sym,infnorm
-AZSCAL                          none
 //
 // Type of linear solver algorithm to use.
 //                              CG,GMRES,GMRESR,CGS,TFQMR,BiCGSTAB,LU,FGMRES

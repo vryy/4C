@@ -66,7 +66,6 @@ AZGRAPH                1
 IFPACKGFILL            1
 IFPACKOVERLAP          1
 IFPACKCOMBINE          Zero
-AZSCAL                 sym
 ------------------------------------------------STRUCT NOX/Printing
 Outer Iteration                 = Yes
 Inner Iteration                 = No

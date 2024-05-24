@@ -127,7 +127,6 @@ AZITER                          1000
 AZSUB                           25
 AZOMEGA                         1.0
 AZGRAPH                         1
-AZSCAL                          infnorm
 --------------------------------------------------------------------SOLVER 2
 NAME                            Fluid_Solver
 SOLVER                          Belos
@@ -143,7 +142,6 @@ AZSUB                           40
 AZOMEGA                         1.0
 AZGRAPH                         1
 IFPACKOVERLAP                   0
-AZSCAL                          none
 ML_PRINT                        0
 ML_MAXCOARSESIZE                1
 ML_MAXLEVEL                     2
@@ -173,7 +171,6 @@ AZSUB                           40
 AZOMEGA                         1.0
 AZGRAPH                         1
 IFPACKOVERLAP                   0
-AZSCAL                          none
 ML_PRINT                        0
 ML_MAXCOARSESIZE                1
 ML_MAXLEVEL                     2
