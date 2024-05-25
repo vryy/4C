@@ -537,16 +537,16 @@ void STR::ResultTest::test_node_on_geometry(INPUT::LineDefinition& res, int& ner
     switch (geometry_type)
     {
       case 0:
-        err = CompareValues(result, "NODE", res);
+        err = compare_values(result, "NODE", res);
         break;
       case 1:
-        err = CompareValues(result, "LINE", res);
+        err = compare_values(result, "LINE", res);
         break;
       case 2:
-        err = CompareValues(result, "SURFACE", res);
+        err = compare_values(result, "SURFACE", res);
         break;
       case 3:
-        err = CompareValues(result, "VOLUME", res);
+        err = compare_values(result, "VOLUME", res);
         break;
       default:
         break;
