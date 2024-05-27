@@ -16,17 +16,17 @@ or for an application in association with physical products in particular.
 
 ## Contents
 
-1. [Getting Up and Running with 4C](#getting-up-and-running-with-fourc)
+1. [Getting Up and Running with 4C](#getting-up-and-running-with-4c)
     1. [Set-up LRZ GitLab account](#set-up-lrz-gitlab-account)
     1. [Configure Git](#configure-git)
     1. [Clone the Repository](#clone-the-repository)
     1. [Set-Up the Environment](#set-up-the-environment)
     1. [Configure and Build](#configure-and-build)
     1. [Prepare and Run Simulations](#prepare-and-run-simulations)
-    1. [Updating 4C](#updating-fourc)
+    1. [Updating 4C](#updating-4c)
 1. [Where to Ask Questions](#where-to-ask-questions)
 1. [Contributing](#contributing)
-1. [How to cite 4C](#how-to-cite-fourc)
+1. [How to cite 4C](#how-to-cite-4c)
 1. [License](#license)
 
 ## Getting Up and Running with 4C
@@ -123,7 +123,7 @@ Some further third party libraries (TPLs) are mandatory, e.g.
 
 - ParMETIS (recommended version: 4.0.3)
 - SuiteSparse (recommended version: 5.4.0)
-- SuperLUDist (mandatory version: 2.5 (due to Trilinos/Amesos))
+- SuperLUDist (recommended version: 7.2)
 - Qhull (recommended version: 2012.1)
 - CLN (recommened version: 1.3.4)
 
