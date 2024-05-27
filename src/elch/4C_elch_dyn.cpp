@@ -10,12 +10,12 @@
 
 #include "4C_ale_utils_clonestrategy.hpp"
 #include "4C_discretization_dofset_predefineddofnumber.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_elch_algorithm.hpp"
 #include "4C_elch_moving_boundary_algorithm.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_elch.hpp"
 #include "4C_inpar_validparameters.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_scatra_ele.hpp"
 #include "4C_scatra_timint_elch.hpp"
 #include "4C_scatra_utils_clonestrategy.hpp"
@@ -134,7 +134,8 @@ void elch_dyn(int restart)
       if (scatradis->NumGlobalNodes() == 0)
       {
         // fill scatra discretization by cloning fluid discretization
-        DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis, scatradis);
+        CORE::FE::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(
+            fluiddis, scatradis, GLOBAL::Problem::Instance()->CloningMaterialMap());
         scatradis->fill_complete();
         // determine implementation type of cloned scatra elements
         INPAR::SCATRA::ImplType impltype = INPAR::SCATRA::impltype_undefined;
@@ -172,7 +173,8 @@ void elch_dyn(int restart)
         if (aledis->NumGlobalNodes() == 0)
         {
           // clone ALE discretization from fluid discretization
-          DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis, aledis);
+          CORE::FE::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+              fluiddis, aledis, GLOBAL::Problem::Instance()->CloningMaterialMap());
 
           aledis->fill_complete(true, true, false);
           // setup material in every ALE element

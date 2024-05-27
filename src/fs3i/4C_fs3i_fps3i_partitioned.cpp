@@ -17,6 +17,7 @@
 #include "4C_adapter_fld_poro.hpp"
 #include "4C_adapter_str_fpsiwrapper.hpp"
 #include "4C_discretization_condition_selector.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fpsi_monolithic_plain.hpp"
@@ -26,7 +27,6 @@
 #include "4C_inpar_scatra.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linear_solver_method.hpp"
@@ -161,7 +161,8 @@ void FS3I::PartFPS3I::Init()
   if (fluidscatradis->NumGlobalNodes() == 0)
   {
     // fill fluid-based scatra discretization by cloning fluid discretization
-    DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis, fluidscatradis);
+    CORE::FE::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(
+        fluiddis, fluidscatradis, GLOBAL::Problem::Instance()->CloningMaterialMap());
     fluidscatradis->fill_complete();
 
     // set implementation type of cloned scatra elements to advanced reactions
@@ -188,8 +189,8 @@ void FS3I::PartFPS3I::Init()
   if (structscatradis->NumGlobalNodes() == 0)
   {
     // fill poro-based scatra discretization by cloning structure discretization
-    DRT::UTILS::CloneDiscretization<POROELASTSCATRA::UTILS::PoroScatraCloneStrategy>(
-        structdis, structscatradis);
+    CORE::FE::CloneDiscretization<POROELASTSCATRA::UTILS::PoroScatraCloneStrategy>(
+        structdis, structscatradis, GLOBAL::Problem::Instance()->CloningMaterialMap());
 
     // redistribute FPSI interface here, since if done before the PoroScatra cloning does not work
     // fpsi_->redistribute_interface();

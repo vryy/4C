@@ -10,7 +10,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "4C_lib_utils_createdis.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 
 #include "4C_discretization_dofset_transparent_independent.hpp"
 #include "4C_io_linedefinition.hpp"
@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::DiscretizationCreatorBase::InitialChecks(
+void CORE::FE::DiscretizationCreatorBase::InitialChecks(
     const DRT::Discretization& sourcedis, const DRT::Discretization& targetdis) const
 {
   // are the source and target discretizations ready?
@@ -36,11 +36,11 @@ void DRT::UTILS::DiscretizationCreatorBase::InitialChecks(
   }
   // Ok. Let's go on
   return;
-}  // DRT::UTILS::DiscretizationCreatorBase::InitialChecks
+}  // CORE::FE::DiscretizationCreatorBase::InitialChecks
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::DiscretizationCreatorBase::CreateNodes(const DRT::Discretization& sourcedis,
+void CORE::FE::DiscretizationCreatorBase::CreateNodes(const DRT::Discretization& sourcedis,
     DRT::Discretization& targetdis, const std::set<int>& rownodeset,
     const std::set<int>& colnodeset, const bool isnurbsdis, const bool buildimmersednode) const
 {
@@ -83,11 +83,11 @@ void DRT::UTILS::DiscretizationCreatorBase::CreateNodes(const DRT::Discretizatio
   targetdis.CheckFilledGlobally();
 
   return;
-}  // DRT::UTILS::DiscretizationCreatorBase::CreateNodes
+}  // CORE::FE::DiscretizationCreatorBase::CreateNodes
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> DRT::UTILS::DiscretizationCreatorBase::CreateMap(
+Teuchos::RCP<Epetra_Map> CORE::FE::DiscretizationCreatorBase::CreateMap(
     std::set<int>& gidset, const DRT::Discretization& targetdis) const
 {
   // we get the node maps almost for free
@@ -99,11 +99,11 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::DiscretizationCreatorBase::CreateMap(
   targetgidvec.clear();
 
   return map;
-}  // DRT::UTILS::DiscretizationCreatorBase::CreateMap
+}  // CORE::FE::DiscretizationCreatorBase::CreateMap
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::DiscretizationCreatorBase::CopyConditions(const DRT::Discretization& sourcedis,
+void CORE::FE::DiscretizationCreatorBase::CopyConditions(const DRT::Discretization& sourcedis,
     DRT::Discretization& targetdis,
     const std::map<std::string, std::string>& conditions_to_copy) const
 {
@@ -121,12 +121,12 @@ void DRT::UTILS::DiscretizationCreatorBase::CopyConditions(const DRT::Discretiza
     }
     conds.clear();
   }
-}  // DRT::UTILS::DiscretizationCreatorBase::CopyConditions
+}  // CORE::FE::DiscretizationCreatorBase::CopyConditions
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Discretization>
-DRT::UTILS::DiscretizationCreatorBase::create_matching_discretization(
+CORE::FE::DiscretizationCreatorBase::create_matching_discretization(
     const Teuchos::RCP<DRT::Discretization>& sourcedis, const std::string& targetdisname,
     bool clonedofs, bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions) const
 {
@@ -194,11 +194,11 @@ DRT::UTILS::DiscretizationCreatorBase::create_matching_discretization(
   // return identical dis
   return targetdis;
 
-}  // DRT::UTILS::DiscretizationCreatorBase::create_matching_discretization
+}  // CORE::FE::DiscretizationCreatorBase::create_matching_discretization
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::DiscretizationCreatorBase::Finalize(
+void CORE::FE::DiscretizationCreatorBase::Finalize(
     const DRT::Discretization& sourcedis, DRT::Discretization& targetdis) const
 {
   // export according to previously filled maps
@@ -254,11 +254,11 @@ void DRT::UTILS::DiscretizationCreatorBase::Finalize(
     if (not sourcedis.ElementColMap()->SameAs(*(targetdis.ElementColMap())))
       FOUR_C_THROW("ElementColMaps of source and target discretization are different!");
   }
-}  // DRT::UTILS::DiscretizationCreatorBase::Finalize
+}  // CORE::FE::DiscretizationCreatorBase::Finalize
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-INPUT::Lines DRT::UTILS::ValidCloningMaterialMapLines()
+INPUT::Lines CORE::FE::ValidCloningMaterialMapLines()
 {
   // this defines the valid input line
   INPUT::LineDefinition structure = INPUT::LineDefinition::Builder()
@@ -276,11 +276,11 @@ INPUT::Lines DRT::UTILS::ValidCloningMaterialMapLines()
   lines.Add(structure);
 
   return lines;
-}  // DRT::UTILS::ValidCloningMaterialMapLines
+}  // CORE::FE::ValidCloningMaterialMapLines
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::PrintCloningMaterialMapDatHeader()
+void CORE::FE::PrintCloningMaterialMapDatHeader()
 {
   INPUT::Lines lines = ValidCloningMaterialMapLines();
   lines.Print(std::cout);

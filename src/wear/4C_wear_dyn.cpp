@@ -15,10 +15,10 @@
 
 #include "4C_ale_utils_clonestrategy.hpp"
 #include "4C_discretization_condition_utils.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_fsi_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_wear.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_wear_partitioned.hpp"
 
@@ -66,7 +66,8 @@ void wear_dyn_drt(int restart)
   // clone ale mesh from structure discretization
   if (aledis->NumGlobalNodes() == 0)
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(structdis, aledis);
+    CORE::FE::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+        structdis, aledis, GLOBAL::Problem::Instance()->CloningMaterialMap());
     aledis->fill_complete();
     // setup material in every ALE element
     Teuchos::ParameterList params;

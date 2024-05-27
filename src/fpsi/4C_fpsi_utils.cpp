@@ -18,11 +18,11 @@
 
 #include "4C_ale_utils_clonestrategy.hpp"
 #include "4C_discretization_condition_selector.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_fpsi_monolithic_plain.hpp"
 #include "4C_fsi_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_fpsi.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_poroelast_scatra_utils_clonestrategy.hpp"
 #include "4C_poroelast_scatra_utils_setup.hpp"
 #include "4C_poroelast_utils_clonestrategy.hpp"
@@ -131,7 +131,8 @@ Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::setup_discretizations(const Epetra_Com
   // 3.- Create ALE elements if the ale discretization is empty
   if (aledis->NumGlobalNodes() == 0)  // ALE discretization still empty
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis, aledis);
+    CORE::FE::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+        fluiddis, aledis, GLOBAL::Problem::Instance()->CloningMaterialMap());
     aledis->fill_complete();
     // setup material in every ALE element
     Teuchos::ParameterList params;

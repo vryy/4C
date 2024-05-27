@@ -10,12 +10,12 @@
 
 #include "4C_adapter_str_fsiwrapper_immersed.hpp"
 #include "4C_ale_utils_clonestrategy.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_fsi_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_immersed_problem_immersed_base.hpp"
 #include "4C_immersed_problem_immersed_partitioned_fsi_dirichletneumann.hpp"
 #include "4C_inpar_immersed.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_rebalance_binning_based.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>

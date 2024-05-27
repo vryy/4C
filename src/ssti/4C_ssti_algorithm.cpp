@@ -12,9 +12,9 @@
 #include "4C_adapter_str_factory.hpp"
 #include "4C_adapter_str_ssiwrapper.hpp"
 #include "4C_adapter_str_structure_new.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_ssti.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_scatra_timint_implicit.hpp"
@@ -226,9 +226,11 @@ void SSTI::SSTIAlgorithm::clone_discretizations(const Epetra_Comm& comm)
 
   if (scatradis->NumGlobalNodes() == 0)
   {
-    DRT::UTILS::CloneDiscretization<SSTI::SSTIScatraStructureCloneStrategy>(structdis, scatradis);
+    CORE::FE::CloneDiscretization<SSTI::SSTIScatraStructureCloneStrategy>(
+        structdis, scatradis, GLOBAL::Problem::Instance()->CloningMaterialMap());
     scatradis->fill_complete();
-    DRT::UTILS::CloneDiscretization<SSTI::SSTIScatraThermoCloneStrategy>(scatradis, thermodis);
+    CORE::FE::CloneDiscretization<SSTI::SSTIScatraThermoCloneStrategy>(
+        scatradis, thermodis, GLOBAL::Problem::Instance()->CloningMaterialMap());
     thermodis->fill_complete();
   }
   else

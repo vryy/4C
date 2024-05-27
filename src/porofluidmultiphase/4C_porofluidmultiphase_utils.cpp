@@ -9,6 +9,7 @@
 #include "4C_porofluidmultiphase_utils.hpp"
 
 #include "4C_adapter_porofluidmultiphase.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_discretization_geometry_intersection_service.hpp"
 #include "4C_discretization_geometry_intersection_service_templates.hpp"
 #include "4C_discretization_geometry_position_array.hpp"
@@ -16,7 +17,6 @@
 #include "4C_discretization_geometry_searchtree_service.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_bio.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_mat_cnst_1d_art.hpp"
 #include "4C_mat_material_factory.hpp"
@@ -290,8 +290,8 @@ POROFLUIDMULTIPHASE::UTILS::CreateFullyOverlappingArteryDiscretization(
 {
   // we clone a search discretization of the artery discretization on which the search will be
   // performed in a brute force way fully overlapping
-  Teuchos::RCP<DRT::UTILS::DiscretizationCreatorBase> discloner =
-      Teuchos::rcp(new DRT::UTILS::DiscretizationCreatorBase());
+  Teuchos::RCP<CORE::FE::DiscretizationCreatorBase> discloner =
+      Teuchos::rcp(new CORE::FE::DiscretizationCreatorBase());
   Teuchos::RCP<DRT::Discretization> artsearchdis =
       discloner->create_matching_discretization(artdis, disname, false, false, false, false);
 

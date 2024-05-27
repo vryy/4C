@@ -24,6 +24,7 @@
 #include "4C_discretization_condition_selector.hpp"
 #include "4C_discretization_condition_utils.hpp"
 #include "4C_discretization_dofset_predefineddofnumber.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fsi_monolithicfluidsplit.hpp"
 #include "4C_fsi_monolithicstructuresplit.hpp"
@@ -31,7 +32,6 @@
 #include "4C_global_data.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
@@ -97,7 +97,8 @@ void FS3I::PartFS3I::Init()
   //---------------------------------------------------------------------
   if (aledis->NumGlobalNodes() == 0)
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis, aledis);
+    CORE::FE::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+        fluiddis, aledis, GLOBAL::Problem::Instance()->CloningMaterialMap());
     aledis->fill_complete();
     // setup material in every ALE element
     Teuchos::ParameterList params;
@@ -132,7 +133,8 @@ void FS3I::PartFS3I::Init()
           "'volume_matching'!");
 
     // fill fluid-based scatra discretization by cloning fluid discretization
-    DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis, fluidscatradis);
+    CORE::FE::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(
+        fluiddis, fluidscatradis, GLOBAL::Problem::Instance()->CloningMaterialMap());
     fluidscatradis->fill_complete();
     // set implementation type of cloned scatra elements to advanced reactions
     for (int i = 0; i < fluidscatradis->NumMyColElements(); ++i)
@@ -185,7 +187,8 @@ void FS3I::PartFS3I::Init()
           "'volume_matching'!");
 
     // fill structure-based scatra discretization by cloning structure discretization
-    DRT::UTILS::CloneDiscretization<SSI::ScatraStructureCloneStrategy>(structdis, structscatradis);
+    CORE::FE::CloneDiscretization<SSI::ScatraStructureCloneStrategy>(
+        structdis, structscatradis, GLOBAL::Problem::Instance()->CloningMaterialMap());
     structscatradis->fill_complete();
 
     volume_coupling_objects_.push_back(Teuchos::null);
@@ -338,7 +341,7 @@ Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> FS3I::PartFS3I::create_vol_mortar_ob
   // as standard DIRICHLET/NEUMANN CONDITIONS
   SCATRA::ScatraFluidCloneStrategy clonestrategy;
   const auto conditions_to_copy = clonestrategy.ConditionsToCopy();
-  DRT::UTILS::DiscretizationCreatorBase creator;
+  CORE::FE::DiscretizationCreatorBase creator;
   creator.CopyConditions(*slavedis, *slavedis, conditions_to_copy);
 
   // first call fill_complete for single discretizations.

@@ -19,9 +19,9 @@
 #include "4C_discretization_dofset.hpp"
 #include "4C_discretization_dofset_predefineddofnumber.hpp"
 #include "4C_discretization_fem_general_element_center.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_so3_plast_ssn.hpp"
 #include "4C_so3_thermo.hpp"
 #include "4C_thermo_ele_impl_utils.hpp"
@@ -153,7 +153,8 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
           "MATCHINGGRID is set to 'no' in TSI DYNAMIC section, but thermo discretization is "
           "empty!");
 
-    DRT::UTILS::CloneDiscretization<TSI::UTILS::ThermoStructureCloneStrategy>(structdis, thermdis);
+    CORE::FE::CloneDiscretization<TSI::UTILS::ThermoStructureCloneStrategy>(
+        structdis, thermdis, GLOBAL::Problem::Instance()->CloningMaterialMap());
     thermdis->fill_complete();
 
     // connect degrees of freedom for periodic boundary conditions

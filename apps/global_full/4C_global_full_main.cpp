@@ -13,6 +13,7 @@
 #include "4C_config_trilinos_version.hpp"
 
 #include "4C_comm_utils.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_global_legacy_module.hpp"
 #include "4C_inpar_validconditions.hpp"
@@ -20,7 +21,6 @@
 #include "4C_inpar_validmaterials.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_lib_elementdefinition.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_function.hpp"
 #include "4C_utils_result_test.hpp"
@@ -293,7 +293,7 @@ int main(int argc, char *argv[])
       PrintConditionDatHeader();
       PrintMaterialDatHeader();
       PrintContactConstitutiveLawDatHeader();
-      DRT::UTILS::PrintCloningMaterialMapDatHeader();
+      CORE::FE::PrintCloningMaterialMapDatHeader();
       PrintElementDatHeader();
 
       INPUT::Lines result_lines("RESULT DESCRIPTION",

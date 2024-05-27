@@ -14,12 +14,12 @@
 #include "4C_adapter_str_ssiwrapper.hpp"
 #include "4C_adapter_str_structure_new.hpp"
 #include "4C_coupling_volmortar.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_global_data_read.hpp"
 #include "4C_inpar_ssi.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_inputreader.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_rebalance_binning_based.hpp"
@@ -246,15 +246,17 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
     }
 
     // fill scatra discretization by cloning structure discretization
-    DRT::UTILS::CloneDiscretization<SSI::ScatraStructureCloneStrategy>(structdis, scatradis);
+    CORE::FE::CloneDiscretization<SSI::ScatraStructureCloneStrategy>(
+        structdis, scatradis, GLOBAL::Problem::Instance()->CloningMaterialMap());
     scatradis->fill_complete();
 
     // create discretization for scatra manifold based on SSISurfaceManifold condition
     if (IsScaTraManifold())
     {
       auto scatra_manifold_dis = problem->GetDis("scatra_manifold");
-      DRT::UTILS::CloneDiscretizationFromCondition<SSI::ScatraStructureCloneStrategyManifold>(
-          *structdis, *scatra_manifold_dis, "SSISurfaceManifold");
+      CORE::FE::CloneDiscretizationFromCondition<SSI::ScatraStructureCloneStrategyManifold>(
+          *structdis, *scatra_manifold_dis, "SSISurfaceManifold",
+          GLOBAL::Problem::Instance()->CloningMaterialMap());
 
       // clone conditions. Needed this way, as many conditions are cloned from SSISurfaceManifold.
       std::vector<std::map<std::string, std::string>> conditions_to_copy = {
@@ -281,7 +283,7 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
         conditions_to_copy.emplace_back(tempmap);
       }
 
-      DRT::UTILS::DiscretizationCreatorBase creator;
+      CORE::FE::DiscretizationCreatorBase creator;
       for (const auto& condition_to_copy : conditions_to_copy)
         creator.CopyConditions(*structdis, *scatra_manifold_dis, condition_to_copy);
 
@@ -341,7 +343,7 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
     // as standard DIRICHLET/NEUMANN CONDITIONS
     SSI::ScatraStructureCloneStrategy clonestrategy;
     const auto conditions_to_copy = clonestrategy.ConditionsToCopy();
-    DRT::UTILS::DiscretizationCreatorBase creator;
+    CORE::FE::DiscretizationCreatorBase creator;
     creator.CopyConditions(*scatradis, *scatradis, conditions_to_copy);
 
     // safety check, since it is not reasonable to have SOLIDSCATRA or SOLIDPOROP1 Elements with a

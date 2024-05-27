@@ -13,6 +13,7 @@
 
 #include "4C_comm_utils.hpp"
 #include "4C_contact_constitutivelaw_bundle.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_global_legacy_module.hpp"
 #include "4C_inpar_problemtype.hpp"
 #include "4C_inpar_validparameters.hpp"
@@ -22,7 +23,6 @@
 #include "4C_lib_discret.hpp"
 #include "4C_lib_discret_faces.hpp"
 #include "4C_lib_discret_hdg.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_particle_engine_particlereader.hpp"
 #include "4C_rebalance_graph_based.hpp"
 
