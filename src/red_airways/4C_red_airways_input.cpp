@@ -17,8 +17,6 @@ RedAirBloodScatraLine3 elements
 
 FOUR_C_NAMESPACE_OPEN
 
-using namespace DRT::UTILS;
-
 
 /*----------------------------------------------------------------------*
 | Read in the RED_AIRWAY elements                                       |

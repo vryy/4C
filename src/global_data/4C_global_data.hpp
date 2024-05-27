@@ -17,7 +17,7 @@
 
 #include "4C_discretization_fem_general_shape_function_type.hpp"
 #include "4C_global_data_enums.hpp"
-#include "4C_lib_utils_restart_manager.hpp"
+#include "4C_io_walltime_based_restart.hpp"
 #include "4C_utils_function_manager.hpp"
 #include "4C_utils_random.hpp"
 #include "4C_utils_result_test.hpp"
@@ -558,7 +558,7 @@ namespace GLOBAL
     CORE::UTILS::Random* Random() { return &random_; }
 
     /// Return the class that handles restart initiating -> to be extended
-    DRT::UTILS::RestartManager* RestartManager() { return &restartmanager_; }
+    IO::RestartManager* RestartManager() { return &restartmanager_; }
 
     /**
      * Set the @p function_manager which contains all parsed functions.
@@ -622,7 +622,7 @@ namespace GLOBAL
     CORE::UTILS::Random random_;
 
     /// handles restart
-    DRT::UTILS::RestartManager restartmanager_;
+    IO::RestartManager restartmanager_;
 
     //! The central list of all paramters read from input.
     Teuchos::RCP<Teuchos::ParameterList> parameters_;

@@ -9,7 +9,7 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "4C_lib_utils_restart_manager.hpp"
+#include "4C_io_walltime_based_restart.hpp"
 
 #include "4C_utils_exceptions.hpp"
 
@@ -29,7 +29,7 @@ namespace
 }  // namespace
 
 
-DRT::UTILS::RestartManager::RestartManager()
+IO::RestartManager::RestartManager()
     : startwalltime_(walltime_in_seconds()),
       restartevrytime_(-1.0),
       restartcounter_(0),
@@ -51,15 +51,14 @@ DRT::UTILS::RestartManager::RestartManager()
 }
 
 /// set the time interval to enforce restart writing
-void DRT::UTILS::RestartManager::SetupRestartManager(
-    const double restartinterval, const int restartevry)
+void IO::RestartManager::SetupRestartManager(const double restartinterval, const int restartevry)
 {
   restartevrytime_ = restartinterval;
   restartevrystep_ = restartevry;
 }
 
 /// return whether it is time for a restart after a certain walltime interval
-bool DRT::UTILS::RestartManager::Restart(const int step, const Epetra_Comm& comm)
+bool IO::RestartManager::Restart(const int step, const Epetra_Comm& comm)
 {
   // make sure that all after the first field write restart, too
   if (step == lastacceptedstep_) return true;
@@ -93,12 +92,12 @@ bool DRT::UTILS::RestartManager::Restart(const int step, const Epetra_Comm& comm
   return false;
 }
 
-void DRT::UTILS::RestartManager::restart_signal_handler(
+void IO::RestartManager::restart_signal_handler(
     int signal_number, siginfo_t* signal_information, void* ignored)
 {
   signal_ = signal_information->si_signo;
 }
 
-volatile int DRT::UTILS::RestartManager::signal_;
+volatile int IO::RestartManager::signal_;
 
 FOUR_C_NAMESPACE_CLOSE
