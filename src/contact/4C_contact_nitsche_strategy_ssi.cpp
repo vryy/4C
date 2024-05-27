@@ -33,24 +33,15 @@ void CONTACT::NitscheStrategySsi::integrate(const CONTACT::ParamsInterface& cpar
  *----------------------------------------------------------------------*/
 void CONTACT::NitscheStrategySsi::evaluate_reference_state()
 {
-  // initialize an estimate of TraceHE
-  init_trace_he();
-}
+  auto phinp = Global::Problem::instance()->get_dis("structure")->get_state(1, "scalarfield");
+  const auto* scatra_dofrowmap = Global::Problem::instance()->get_dis("scatra")->dof_row_map();
+  Core::LinAlg::Vector<double> phinp_dofrowmap(*scatra_dofrowmap, true);
+  Core::LinAlg::export_to(*phinp, phinp_dofrowmap);
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void CONTACT::NitscheStrategySsi::init_trace_he()
-{
-  for (const auto& interface : interface_)
-  {
-    for (int e = 0; e < interface->discret().element_col_map()->NumMyElements(); ++e)
-    {
-      auto* mele = dynamic_cast<Mortar::Element*>(
-          interface->discret().g_element(interface->discret().element_col_map()->GID(e)));
-      // set the initial TraceHE to the edge length size of the element
-      mele->trace_he() = mele->max_edge_size();
-    }
-  }
+  set_state(Mortar::state_scalar, phinp_dofrowmap);
+
+  // call base class
+  CONTACT::NitscheStrategy::evaluate_reference_state();
 }
 
 /*------------------------------------------------------------------------*

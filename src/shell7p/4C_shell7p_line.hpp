@@ -114,7 +114,7 @@ namespace Discret::ELEMENTS
     [[nodiscard]] int num_dof_per_element() const override { return 0; }
 
 
-    [[nodiscard]] Discret::ELEMENTS::Shell7p* parent_element() const
+    [[nodiscard]] Discret::ELEMENTS::Shell7p* parent_element() const override
     {
       Core::Elements::Element* parent = this->Core::Elements::FaceElement::parent_element();
       // make sure the static cast below is really valid

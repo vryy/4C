@@ -1650,25 +1650,25 @@ void Mortar::Element::node_linearization(
 }
 
 /*----------------------------------------------------------------------*
- |                                                           seitz 11/16|
  *----------------------------------------------------------------------*/
-void Mortar::Element::estimate_nitsche_trace_max_eigenvalue_combined()
+void Mortar::Element::estimate_nitsche_trace_max_eigenvalue()
 {
-  if (n_dim() != 3)
-    FOUR_C_THROW(
-        "Contact using Nitsche's method is only supported for 3D problems."
-        "We do not intend to support 2D problems.");
+  FOUR_C_ASSERT(n_dim() == 3,
+      "Contact using Nitsche's method is only supported for 3D problems. We do not intend to "
+      "support 2D problems.");
 
-  Teuchos::RCP<Core::Elements::Element> surf_ele =
-      parent_element()->surfaces()[face_parent_number()];
-  Discret::ELEMENTS::StructuralSurface* surf =
-      dynamic_cast<Discret::ELEMENTS::StructuralSurface*>(surf_ele.get());
+  auto surf_ele = parent_element()->surfaces()[face_parent_number()];
+  auto* surf = dynamic_cast<Discret::ELEMENTS::StructuralSurface*>(surf_ele.get());
 
-  traceHE_ = 1. / surf->estimate_nitsche_trace_max_eigenvalue_combined(mo_data().parent_disp());
+  if (mo_data().parent_scalar().empty())
+    traceHE_ = 1.0 / surf->estimate_nitsche_trace_max_eigenvalue(mo_data().parent_disp());
+  else
+    traceHE_ = 1.0 / surf->estimate_nitsche_trace_max_eigenvalue(
+                         mo_data().parent_disp(), mo_data().parent_scalar());
 
   if (parent_element()->num_material() > 1)
     if (parent_element()->material(1)->material_type() == Core::Materials::m_th_fourier_iso)
-      traceHCond_ = 1. / surf->estimate_nitsche_trace_max_eigenvalue_tsi(mo_data().parent_disp());
+      traceHCond_ = 1.0 / surf->estimate_nitsche_trace_max_eigenvalue_tsi(mo_data().parent_disp());
 }
 
 
@@ -1678,7 +1678,10 @@ void Mortar::Element::estimate_nitsche_trace_max_eigenvalue_combined()
 Mortar::ElementNitscheContainer& Mortar::Element::get_nitsche_container()
 {
   if (!parent_element()) FOUR_C_THROW("parent element pointer not set");
-  if (nitsche_container_ == Teuchos::null) switch (parent_element()->shape())
+
+  if (nitsche_container_ == Teuchos::null)
+  {
+    switch (parent_element()->shape())
     {
       case Core::FE::CellType::hex8:
         nitsche_container_ =
@@ -1699,6 +1702,7 @@ Mortar::ElementNitscheContainer& Mortar::Element::get_nitsche_container()
       default:
         FOUR_C_THROW("Nitsche data container not ready. Just add it here...");
     }
+  }
   return *nitsche_container_;
 }
 

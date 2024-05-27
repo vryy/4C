@@ -1357,7 +1357,7 @@ might become invalid after a redistribution of the discretization.
 
     If no parent master has been assigned, nullptr is returned (e.g. on non-face discretizations)
     */
-    Element* parent_element() const { return parent_master_; }
+    virtual Element* parent_element() const { return parent_master_; }
 
     /*!
     \brief Return the master element the face element is connected to

@@ -28,7 +28,7 @@ namespace Discret
     class StructuralSurfaceType : public Core::Elements::ElementType
     {
      public:
-      std::string name() const override { return "StructuralSurfaceType"; }
+      [[nodiscard]] std::string name() const override { return "StructuralSurfaceType"; }
 
       static StructuralSurfaceType& instance();
 
@@ -46,7 +46,6 @@ namespace Discret
       {
         Core::LinAlg::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented!");
-        return nullspace;
       }
 
      private:
@@ -95,12 +94,12 @@ namespace Discret
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* clone() const override;
+      [[nodiscard]] Core::Elements::Element* clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      Core::FE::CellType shape() const override;
+      [[nodiscard]] Core::FE::CellType shape() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -108,7 +107,7 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      inline int unique_par_object_id() const override
+      [[nodiscard]] inline int unique_par_object_id() const override
       {
         return StructuralSurfaceType::instance().unique_par_object_id();
       }
@@ -138,7 +137,7 @@ namespace Discret
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      inline int num_dof_per_node(const Core::Nodes::Node& node) const override
+      [[nodiscard]] inline int num_dof_per_node(const Core::Nodes::Node& node) const override
       {
         return numdofpernode_;
       }
@@ -154,14 +153,14 @@ namespace Discret
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      inline int num_dof_per_element() const override { return 0; }
+      [[nodiscard]] inline int num_dof_per_element() const override { return 0; }
 
       /*!
       \brief Print this element
       */
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& element_type() const override
+      [[nodiscard]] Core::Elements::ElementType& element_type() const override
       {
         return StructuralSurfaceType::instance();
       }
@@ -203,18 +202,31 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevector2,
           Core::LinAlg::SerialDenseVector& elevector3) override;
 
-      //! Evaluate trace inequality and return the maximal eigenvalue
-      virtual double estimate_nitsche_trace_max_eigenvalue_combined(
-          std::vector<double>& parent_disp);
+      //! \brief Evaluate trace inequality and return the maximal eigenvalue
+      //!
+      //! \param[in] parent_disp    displacement values on corresponding parent element
+      //! \return maximum eigenvalue
+      double estimate_nitsche_trace_max_eigenvalue(const std::vector<double>& parent_disp);
+
+      //! \brief Evaluate trace inequality and return the maximal eigenvalue
+      //!
+      //! \param[in] parent_disp    displacement values on corresponding parent element
+      //! \param[in] parent_scalar  scalar values on corresponding parent element
+      //! \return maximum eigenvalue
+      double estimate_nitsche_trace_max_eigenvalue(
+          const std::vector<double>& parent_disp, const std::vector<double>& parent_scalar);
 
       //! Evaluate trace inequality and return the maximal eigenvalue
-      virtual double estimate_nitsche_trace_max_eigenvalue_tsi(std::vector<double>& parent_disp);
+      double estimate_nitsche_trace_max_eigenvalue_tsi(std::vector<double>& parent_disp);
 
       //! Return a pointer to the parent element of this boundary element
-      virtual Core::Elements::Element* parent_element() const { return parent_master_element(); }
+      [[nodiscard]] Core::Elements::Element* parent_element() const override
+      {
+        return parent_master_element();
+      }
 
       //! Return local surface number
-      int l_surf_number() const { return face_master_number(); }
+      [[nodiscard]] int l_surf_number() const { return face_master_number(); }
 
      public:  // changed to public rauch 05/2014
       //! action for surface evaluation
@@ -316,7 +328,6 @@ namespace Discret
           x(i, 1) = nodes()[i]->x()[1];
           x(i, 2) = nodes()[i]->x()[2];
         }
-        return;
       }
 
       /*!
@@ -335,7 +346,6 @@ namespace Discret
           x(i, 1) = nodes()[i]->x()[1] + disp[i * 3 + 1];
           x(i, 2) = nodes()[i]->x()[2] + disp[i * 3 + 2];
         }
-        return;
       }
 
       /*!
@@ -355,7 +365,6 @@ namespace Discret
           x(i, 1) = xrefe(i, 1) + disp[i * 3 + 1];
           x(i, 2) = xrefe(i, 2) + disp[i * 3 + 2];
         }
-        return;
       }
 
       //! Submethod to compute the enclosed volume for volume constraint boundary condition
@@ -414,7 +423,8 @@ namespace Discret
 
       //! Templated version: parent and surface discretization type
       template <Core::FE::CellType dt_vol, Core::FE::CellType dt_surf>
-      double estimate_nitsche_trace_max_eigenvalue_combined(std::vector<double>& parent_disp);
+      double estimate_nitsche_trace_max_eigenvalue(
+          const std::vector<double>& parent_disp, const std::vector<double>& parent_scalar);
 
       //! the volume stiffness matrix
       //! unlike the "full" stiffness matrix we don't use the geometric term here
@@ -422,6 +432,7 @@ namespace Discret
       void trace_estimate_vol_matrix(
           const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xrefe,
           const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xcurr,
+          const std::vector<double>& parent_scalar,
           Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol> * 3, Core::FE::num_nodes<dt_vol> * 3>&
               vol);
 
@@ -430,6 +441,7 @@ namespace Discret
       void trace_estimate_surf_matrix(
           const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xrefe,
           const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xcurr,
+          const std::vector<double>& parent_scalar,
           Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol> * 3, Core::FE::num_nodes<dt_vol> * 3>&
               surf);
 

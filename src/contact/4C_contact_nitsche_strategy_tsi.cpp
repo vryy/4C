@@ -117,7 +117,7 @@ void CONTACT::NitscheStrategyTsi::update_trace_ineq_etimates()
           interface->discret().g_element(interface->discret().element_col_map()->GID(e)));
       if (NitWgt == Inpar::CONTACT::NitWgt_slave && !mele->is_slave()) continue;
       if (NitWgt == Inpar::CONTACT::NitWgt_master && mele->is_slave()) continue;
-      mele->estimate_nitsche_trace_max_eigenvalue_combined();
+      mele->estimate_nitsche_trace_max_eigenvalue();
     }
   }
 }

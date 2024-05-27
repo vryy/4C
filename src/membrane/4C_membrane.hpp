@@ -706,7 +706,7 @@ namespace Discret
       /*!
        * \brief Return pointer to the parent element
        */
-      virtual Discret::ELEMENTS::Membrane<distype2>* parent_element() const
+      Discret::ELEMENTS::Membrane<distype2>* parent_element() const override
       {
         Core::Elements::Element* parent = this->Core::Elements::FaceElement::parent_element();
         // make sure the static cast below is really valid

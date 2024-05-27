@@ -61,20 +61,7 @@ namespace CONTACT
       curr_state_eval_ = true;
     }
 
-    /*!
-     * @note currently there is no support for friction; furthermore we can not call
-     * 'update_trace_ineq_etimates' at the moment since at this stage we do not have the gp
-     * concentrations -> so far no adaptive nitsche penalty possible!
-     */
     void evaluate_reference_state() override;
-
-    /*!
-     * @brief initialize TraceHE parameter of the mortar elements
-     *
-     * @note: this approximation is done here since update_trace_ineq_etimates() can not be called
-     * at the moment
-     */
-    void init_trace_he();
 
     void integrate(const CONTACT::ParamsInterface& cparams) override;
 
