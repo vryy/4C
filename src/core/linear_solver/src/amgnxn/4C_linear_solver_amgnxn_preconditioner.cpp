@@ -39,14 +39,6 @@ CORE::LINEAR_SOLVER::AmGnxnPreconditioner::AmGnxnPreconditioner(Teuchos::Paramet
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<Epetra_Operator> CORE::LINEAR_SOLVER::AmGnxnPreconditioner::PrecOperator() const
-{
-  return p_;
-}
-
-/*------------------------------------------------------------------------------*/
-/*------------------------------------------------------------------------------*/
-
 void CORE::LINEAR_SOLVER::AmGnxnPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
@@ -79,7 +71,7 @@ void CORE::LINEAR_SOLVER::AmGnxnPreconditioner::Setup(
 
   // Free old matrix and preconditioner
   a_ = Teuchos::null;
-  p_ = Teuchos::null;
+  preconditioner_operator_ = Teuchos::null;
 
   // Create own copy of the system matrix in order to allow reusing the preconditioner
   a_ = A;
@@ -97,20 +89,20 @@ void CORE::LINEAR_SOLVER::AmGnxnPreconditioner::Setup(
   // Create the Operator
   if (myInterface.get_preconditioner_type() == "AMG(BlockSmoother)")
   {
-    p_ = Teuchos::rcp(
+    preconditioner_operator_ = Teuchos::rcp(
         new AmGnxnOperator(a_, myInterface.GetNumPdes(), myInterface.GetNullSpacesDim(),
             myInterface.GetNullSpacesData(), myInterface.get_preconditioner_params(),
             myInterface.GetSmoothersParams(), myInterface.GetSmoothersParams()));
   }
   else if (myInterface.get_preconditioner_type() == "BlockSmoother(X)")
   {
-    p_ = Teuchos::rcp(new BlockSmootherOperator(a_, myInterface.GetNumPdes(),
+    preconditioner_operator_ = Teuchos::rcp(new BlockSmootherOperator(a_, myInterface.GetNumPdes(),
         myInterface.GetNullSpacesDim(), myInterface.GetNullSpacesData(),
         myInterface.get_preconditioner_params(), myInterface.GetSmoothersParams()));
   }
   else if (myInterface.get_preconditioner_type() == "Merge_and_Ifpack")
   {
-    p_ = Teuchos::rcp(new MergedOperator(
+    preconditioner_operator_ = Teuchos::rcp(new MergedOperator(
         a_, myInterface.get_preconditioner_params(), myInterface.GetSmoothersParams()));
   }
   else
