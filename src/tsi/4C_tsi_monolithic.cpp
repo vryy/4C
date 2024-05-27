@@ -285,7 +285,6 @@ void TSI::Monolithic::create_linear_solver()
   switch (azprectype)
   {
     case CORE::LINEAR_SOLVER::PreconditionerType::block_gauss_seidel_2x2:
-    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_nxn:
     case CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple:
     {
       // get parameter list of structural dynamics
@@ -351,7 +350,7 @@ void TSI::Monolithic::create_linear_solver()
     default:
       FOUR_C_THROW(
           "Block Gauss-Seidel BGS2x2 preconditioner expected. Alternatively you can define your "
-          "own AMG block preconditioner (using an xml file). This is experimental.");
+          "own algebraic multigrid block preconditioner (using an xml file).");
       break;
   }
 
