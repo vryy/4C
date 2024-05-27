@@ -29,6 +29,7 @@
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fs3i_biofilm_fsi_utils.hpp"
 #include "4C_fsi_monolithicfluidsplit.hpp"
+#include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_gmsh.hpp"

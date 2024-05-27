@@ -10,6 +10,7 @@
 
 #include "4C_adapter_poromultiphase.hpp"
 #include "4C_discretization_dofset_predefineddofnumber.hpp"
+#include "4C_global_data.hpp"
 #include "4C_inpar_bio.hpp"
 #include "4C_lib_utils_createdis.hpp"
 #include "4C_poroelast_utils.hpp"
@@ -96,7 +97,7 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
   {
     // fill poro fluid discretization by cloning structure discretization
     DRT::UTILS::CloneDiscretization<POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy>(
-        structdis, fluiddis);
+        structdis, fluiddis, GLOBAL::Problem::Instance()->CloningMaterialMap());
   }
   else
   {

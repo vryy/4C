@@ -18,7 +18,7 @@
 
 #include "4C_comm_utils_factory.hpp"
 #include "4C_discretization_condition_utils.hpp"
-#include "4C_global_data.hpp"
+#include "4C_io_linedefinition.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_lib_immersed_node.hpp"
 #include "4C_material_base.hpp"
@@ -290,17 +290,17 @@ namespace DRT
 
       /// Create the clone field material map from the input file
       void create_clone_field_mat_map(std::map<int, int>& matmap,
-          const DRT::Discretization& sourcedis, const DRT::Discretization& targetdis) const
+          const DRT::Discretization& sourcedis, const DRT::Discretization& targetdis,
+          const std::map<std::pair<std::string, std::string>, std::map<int, int>>& clonefieldmatmap)
+          const
       {
         if (matmap.size()) FOUR_C_THROW("The input material map is supposed to be empty!");
 
-        std::map<std::pair<std::string, std::string>, std::map<int, int>> clonefieldmatmap =
-            GLOBAL::Problem::Instance()->CloningMaterialMap();
         if (clonefieldmatmap.size() < 1)
           FOUR_C_THROW("At least one material pairing required in --CLONING MATERIAL MAP.");
 
         std::pair<std::string, std::string> key(sourcedis.Name(), targetdis.Name());
-        matmap = clonefieldmatmap[key];
+        matmap = clonefieldmatmap.at(key);
         if (matmap.size() < 1)
           FOUR_C_THROW("Key pair '%s/%s' not defined in --CLONING MATERIAL MAP.",
               sourcedis.Name().c_str(), targetdis.Name().c_str());
@@ -822,12 +822,12 @@ namespace DRT
     };  // class DiscretizationCreator
 
 
-    /// clone target discretization from a given source discretization
+    /// clone target discretization @p targetdis from a given source discretization @p sourcedis.
+    /// The @p clonefieldmatmap is required from the global CloningMaterialMap.
     template <class CloneStrategy>
-    void CloneDiscretization(
-        Teuchos::RCP<DRT::Discretization> sourcedis,  ///< source discretization
-        Teuchos::RCP<DRT::Discretization> targetdis   ///< target discretization
-    )
+    void CloneDiscretization(Teuchos::RCP<DRT::Discretization> sourcedis,
+        Teuchos::RCP<DRT::Discretization> targetdis,
+        const std::map<std::pair<std::string, std::string>, std::map<int, int>>& clonefieldmatmap)
     {
       // access the communicator for time measurement
       const Epetra_Comm& comm = sourcedis->Comm();
@@ -839,7 +839,7 @@ namespace DRT
             Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<CloneStrategy>());
 
         std::map<int, int> matmap;
-        clonewizard->create_clone_field_mat_map(matmap, *sourcedis, *targetdis);
+        clonewizard->create_clone_field_mat_map(matmap, *sourcedis, *targetdis, clonefieldmatmap);
 
         clonewizard->create_matching_discretization(sourcedis, targetdis, matmap);
       }
@@ -852,13 +852,13 @@ namespace DRT
       return;
     };  // CloneDiscretization
 
-    /// clone target discretization from a given condition of the source discretization
+    /// clone target discretization @p targetdis from a given source discretization @p sourcedis
+    /// based on conditions @p conds. The @p clonefieldmatmap is required from the global
+    /// CloningMaterialMap.
     template <class CloneStrategy>
-    void CloneDiscretizationFromCondition(
-        const DRT::Discretization& sourcedis,                   ///< source discretization
-        DRT::Discretization& targetdis,                         ///< target discretization
-        const std::vector<CORE::Conditions::Condition*>& conds  ///< source conditions to clone from
-    )
+    void CloneDiscretizationFromCondition(const DRT::Discretization& sourcedis,
+        DRT::Discretization& targetdis, const std::vector<CORE::Conditions::Condition*>& conds,
+        const std::map<std::pair<std::string, std::string>, std::map<int, int>>& clonefieldmatmap)
     {
       const DRT::Discretization* sourcedis_ptr =
           dynamic_cast<const DRT::Discretization*>(&sourcedis);
@@ -876,7 +876,8 @@ namespace DRT
             Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<CloneStrategy>());
 
         std::map<int, int> matmap;
-        clonewizard->create_clone_field_mat_map(matmap, *sourcedis_ptr, *targetdis_ptr);
+        clonewizard->create_clone_field_mat_map(
+            matmap, *sourcedis_ptr, *targetdis_ptr, clonefieldmatmap);
 
         clonewizard->create_matching_discretization_from_condition(
             *sourcedis_ptr, conds, *targetdis_ptr, matmap);
@@ -892,13 +893,13 @@ namespace DRT
       return;
     };  // CloneDiscretizationFromCondition
 
-    /// clone target discretization from a given condition of the source discretization
+    /// clone target discretization @p targetdis from a given source discretization @p sourcedis
+    /// based on the name of a condition @p condname. The @p clonefieldmatmap is required from the
+    /// global CloningMaterialMap.
     template <class CloneStrategy>
-    void CloneDiscretizationFromCondition(
-        const DRT::Discretization& sourcedis,  ///< source discretization
-        DRT::Discretization& targetdis,        ///< target discretization
-        const std::string& condname            ///< source condition name to clone from
-    )
+    void CloneDiscretizationFromCondition(const DRT::Discretization& sourcedis,
+        DRT::Discretization& targetdis, const std::string& condname,
+        const std::map<std::pair<std::string, std::string>, std::map<int, int>>& clonefieldmatmap)
     {
       // access the communicator for time measurement
       const Epetra_Comm& comm = sourcedis.Comm();
@@ -910,7 +911,7 @@ namespace DRT
             Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<CloneStrategy>());
 
         std::map<int, int> matmap;
-        clonewizard->create_clone_field_mat_map(matmap, sourcedis, targetdis);
+        clonewizard->create_clone_field_mat_map(matmap, sourcedis, targetdis, clonefieldmatmap);
 
         clonewizard->create_matching_discretization_from_condition(
             sourcedis, condname, targetdis, matmap);

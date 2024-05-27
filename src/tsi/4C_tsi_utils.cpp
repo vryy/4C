@@ -153,7 +153,8 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
           "MATCHINGGRID is set to 'no' in TSI DYNAMIC section, but thermo discretization is "
           "empty!");
 
-    DRT::UTILS::CloneDiscretization<TSI::UTILS::ThermoStructureCloneStrategy>(structdis, thermdis);
+    DRT::UTILS::CloneDiscretization<TSI::UTILS::ThermoStructureCloneStrategy>(
+        structdis, thermdis, GLOBAL::Problem::Instance()->CloningMaterialMap());
     thermdis->fill_complete();
 
     // connect degrees of freedom for periodic boundary conditions

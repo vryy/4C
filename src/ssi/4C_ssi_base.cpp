@@ -246,7 +246,8 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
     }
 
     // fill scatra discretization by cloning structure discretization
-    DRT::UTILS::CloneDiscretization<SSI::ScatraStructureCloneStrategy>(structdis, scatradis);
+    DRT::UTILS::CloneDiscretization<SSI::ScatraStructureCloneStrategy>(
+        structdis, scatradis, GLOBAL::Problem::Instance()->CloningMaterialMap());
     scatradis->fill_complete();
 
     // create discretization for scatra manifold based on SSISurfaceManifold condition
@@ -254,7 +255,8 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
     {
       auto scatra_manifold_dis = problem->GetDis("scatra_manifold");
       DRT::UTILS::CloneDiscretizationFromCondition<SSI::ScatraStructureCloneStrategyManifold>(
-          *structdis, *scatra_manifold_dis, "SSISurfaceManifold");
+          *structdis, *scatra_manifold_dis, "SSISurfaceManifold",
+          GLOBAL::Problem::Instance()->CloningMaterialMap());
 
       // clone conditions. Needed this way, as many conditions are cloned from SSISurfaceManifold.
       std::vector<std::map<std::string, std::string>> conditions_to_copy = {

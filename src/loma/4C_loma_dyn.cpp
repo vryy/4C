@@ -140,7 +140,8 @@ void loma_dyn(int restart)
       if (scatradis->NumGlobalNodes() == 0)
       {
         // fill scatra discretization by cloning fluid discretization
-        DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis, scatradis);
+        DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(
+            fluiddis, scatradis, GLOBAL::Problem::Instance()->CloningMaterialMap());
 
         // set implementation type of cloned scatra elements to loma
         for (int i = 0; i < scatradis->NumMyColElements(); ++i)

@@ -57,7 +57,8 @@ namespace POROELASTSCATRA
       if (scatradis->NumGlobalNodes() == 0)
       {
         // fill scatra discretization by cloning structure discretization
-        DRT::UTILS::CloneDiscretization<PoroScatraCloneStrategy>(structdis, scatradis);
+        DRT::UTILS::CloneDiscretization<PoroScatraCloneStrategy>(
+            structdis, scatradis, GLOBAL::Problem::Instance()->CloningMaterialMap());
         scatradis->fill_complete();
 
         // assign materials. Order is important here!

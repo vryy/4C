@@ -11,6 +11,7 @@
 
 #include "4C_adapter_scatra_base_algorithm.hpp"
 #include "4C_discretization_dofset_predefineddofnumber.hpp"
+#include "4C_global_data.hpp"
 #include "4C_lib_utils_createdis.hpp"
 #include "4C_scatra_resulttest_elch.hpp"
 #include "4C_scatra_timint_elch.hpp"
@@ -74,7 +75,8 @@ void sti_dyn(const int& restartstep  //! time step for restart
 
   // clone thermo discretization from scatra discretization, using clone strategy for scatra-thermo
   // interaction
-  DRT::UTILS::CloneDiscretization<STI::ScatraThermoCloneStrategy>(scatradis, thermodis);
+  DRT::UTILS::CloneDiscretization<STI::ScatraThermoCloneStrategy>(
+      scatradis, thermodis, GLOBAL::Problem::Instance()->CloningMaterialMap());
   thermodis->fill_complete(false, true, true);
 
   // add proxy of scalar transport degrees of freedom to thermo discretization and vice versa

@@ -161,7 +161,8 @@ void FS3I::PartFPS3I::Init()
   if (fluidscatradis->NumGlobalNodes() == 0)
   {
     // fill fluid-based scatra discretization by cloning fluid discretization
-    DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis, fluidscatradis);
+    DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(
+        fluiddis, fluidscatradis, GLOBAL::Problem::Instance()->CloningMaterialMap());
     fluidscatradis->fill_complete();
 
     // set implementation type of cloned scatra elements to advanced reactions
@@ -189,7 +190,7 @@ void FS3I::PartFPS3I::Init()
   {
     // fill poro-based scatra discretization by cloning structure discretization
     DRT::UTILS::CloneDiscretization<POROELASTSCATRA::UTILS::PoroScatraCloneStrategy>(
-        structdis, structscatradis);
+        structdis, structscatradis, GLOBAL::Problem::Instance()->CloningMaterialMap());
 
     // redistribute FPSI interface here, since if done before the PoroScatra cloning does not work
     // fpsi_->redistribute_interface();

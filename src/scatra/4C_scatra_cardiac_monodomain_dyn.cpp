@@ -206,7 +206,8 @@ void scatra_cardiac_monodomain_dyn(int restart)
         scatradis->fill_complete();
 
         // fill scatra discretization by cloning fluid discretization
-        DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis, scatradis);
+        DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(
+            fluiddis, scatradis, GLOBAL::Problem::Instance()->CloningMaterialMap());
 
         // set implementation type of cloned scatra elements
         for (int i = 0; i < scatradis->NumMyColElements(); ++i)

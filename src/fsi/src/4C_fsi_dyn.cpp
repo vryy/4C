@@ -109,7 +109,8 @@ void fluid_ale_drt()
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes() == 0)
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis, aledis);
+    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+        fluiddis, aledis, GLOBAL::Problem::Instance()->CloningMaterialMap());
     aledis->fill_complete();
     // setup material in every ALE element
     Teuchos::ParameterList params;
@@ -164,7 +165,7 @@ void fluid_xfem_drt()
     if (aledis->NumGlobalNodes() == 0)
     {
       DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
-          problem->GetDis("fluid"), aledis);
+          problem->GetDis("fluid"), aledis, GLOBAL::Problem::Instance()->CloningMaterialMap());
       aledis->fill_complete();
       // setup material in every ALE element
       Teuchos::ParameterList params;
@@ -256,7 +257,8 @@ void fluid_freesurf_drt()
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes() == 0)
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis, aledis);
+    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+        fluiddis, aledis, GLOBAL::Problem::Instance()->CloningMaterialMap());
     aledis->fill_complete();
     // setup material in every ALE element
     Teuchos::ParameterList params;
@@ -451,7 +453,8 @@ void fsi_ale_drt()
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes() == 0)  // empty ale discretization
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis, aledis);
+    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+        fluiddis, aledis, GLOBAL::Problem::Instance()->CloningMaterialMap());
     aledis->fill_complete();
     // setup material in every ALE element
     Teuchos::ParameterList params;
@@ -801,7 +804,8 @@ void xfsi_drt()
     // Create ALE elements if the ale discretization is empty
     if (aledis->NumGlobalNodes() == 0)  // ALE discretization still empty
     {
-      DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis, aledis);
+      DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+          fluiddis, aledis, GLOBAL::Problem::Instance()->CloningMaterialMap());
       aledis->fill_complete();
       // setup material in every ALE element
       Teuchos::ParameterList params;
@@ -949,7 +953,8 @@ void xfpsi_drt()
     // 3.- Create ALE elements if the ale discretization is empty
     if (aledis->NumGlobalNodes() == 0)  // ALE discretization still empty
     {
-      DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis, aledis);
+      DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+          fluiddis, aledis, GLOBAL::Problem::Instance()->CloningMaterialMap());
       aledis->fill_complete();
       // setup material in every ALE element
       Teuchos::ParameterList params;

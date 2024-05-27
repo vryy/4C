@@ -63,7 +63,8 @@ namespace POROELAST
         }
 
         // create fluid discretization
-        DRT::UTILS::CloneDiscretization<PoroCloneStrategy>(structdis, fluiddis);
+        DRT::UTILS::CloneDiscretization<PoroCloneStrategy>(
+            structdis, fluiddis, GLOBAL::Problem::Instance()->CloningMaterialMap());
         fluiddis->fill_complete();
 
         // set material pointers

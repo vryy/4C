@@ -14,6 +14,7 @@
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_coupling_matchingoctree.hpp"
+#include "4C_global_data.hpp"
 #include "4C_inpar_s2i.hpp"
 #include "4C_lib_utils_createdis.hpp"
 #include "4C_lib_utils_gid_vector.hpp"

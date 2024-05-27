@@ -134,7 +134,8 @@ void elch_dyn(int restart)
       if (scatradis->NumGlobalNodes() == 0)
       {
         // fill scatra discretization by cloning fluid discretization
-        DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis, scatradis);
+        DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(
+            fluiddis, scatradis, GLOBAL::Problem::Instance()->CloningMaterialMap());
         scatradis->fill_complete();
         // determine implementation type of cloned scatra elements
         INPAR::SCATRA::ImplType impltype = INPAR::SCATRA::impltype_undefined;
@@ -172,7 +173,8 @@ void elch_dyn(int restart)
         if (aledis->NumGlobalNodes() == 0)
         {
           // clone ALE discretization from fluid discretization
-          DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis, aledis);
+          DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+              fluiddis, aledis, GLOBAL::Problem::Instance()->CloningMaterialMap());
 
           aledis->fill_complete(true, true, false);
           // setup material in every ALE element
