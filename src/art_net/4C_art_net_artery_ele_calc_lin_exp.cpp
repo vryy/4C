@@ -124,7 +124,7 @@ int DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Evaluate(Artery* ele,
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
   // ---------------------------------------------------------------------
-  Sysmat(ele, eqnp, eareanp, elemat1, elevec1, mat, dt);
+  sysmat(ele, eqnp, eareanp, elemat1, elevec1, mat, dt);
 
 
   return 0;
@@ -392,7 +392,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Initial(Artery* ele,
  |                                                                      |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Sysmat(Artery* ele,
+void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::sysmat(Artery* ele,
     const CORE::LINALG::Matrix<my::iel_, 1>& eqnp, const CORE::LINALG::Matrix<my::iel_, 1>& eareanp,
     CORE::LINALG::Matrix<2 * my::iel_, 2 * my::iel_>& sysmat,
     CORE::LINALG::Matrix<2 * my::iel_, 1>& rhs, Teuchos::RCP<const CORE::MAT::Material> material,

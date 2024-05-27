@@ -132,38 +132,38 @@ namespace CORE::GEO
         /// destructor
         virtual ~PointGraph() = default;
 
-        facet_iterator fbegin() { return GetGraph().main_cycles_.begin(); }
+        facet_iterator fbegin() { return get_graph().main_cycles_.begin(); }
 
-        facet_iterator fend() { return GetGraph().main_cycles_.end(); }
+        facet_iterator fend() { return get_graph().main_cycles_.end(); }
 
-        hole_iterator hbegin() { return GetGraph().hole_cycles_.begin(); }
+        hole_iterator hbegin() { return get_graph().hole_cycles_.begin(); }
 
-        hole_iterator hend() { return GetGraph().hole_cycles_.end(); }
+        hole_iterator hend() { return get_graph().hole_cycles_.end(); }
 
-        void Print() { GetGraph().Print(); }
+        void Print() { get_graph().Print(); }
 
        protected:
         /*! \brief Graph is filled with all edges that are created due to additional
          *  cut points and cut lines */
-        void FillGraph(Element *element, Side *side, Cycle &cycle, Strategy strategy);
+        void fill_graph(Element *element, Side *side, Cycle &cycle, Strategy strategy);
 
         /** Graph is filled with all edges of the selfcut: uncutted edges,
          *  selfcutedges and new splitted edges; but no the cutted edges */
-        void FillGraph(Side *side, Cycle &cycle);
+        void fill_graph(Side *side, Cycle &cycle);
 
         /** \brief add cut lines to graph
          *
          *  no need to add any more point to cycle because cut lines just join already
          *  existing points on the edge. making cut lines do not introduce additional
          *  points */
-        virtual void AddCutLinesToGraph(Element *element, Side *side, Strategy strategy);
+        virtual void add_cut_lines_to_graph(Element *element, Side *side, Strategy strategy);
 
-        virtual void BuildCycle(const std::vector<Point *> &edge_points, Cycle &cycle) const;
+        virtual void build_cycle(const std::vector<Point *> &edge_points, Cycle &cycle) const;
 
         /// access the graph of the most derived class
-        virtual inline PointGraph::Graph &GetGraph() { return *graph_; }
+        virtual inline PointGraph::Graph &get_graph() { return *graph_; }
 
-        virtual inline const Teuchos::RCP<PointGraph::Graph> &GraphPtr() { return graph_; }
+        virtual inline const Teuchos::RCP<PointGraph::Graph> &graph_ptr() { return graph_; }
 
        private:
         Teuchos::RCP<CORE::GEO::CUT::IMPL::PointGraph::Graph> create_graph(unsigned dim);

@@ -78,7 +78,7 @@ namespace WEAR
         ) override = 0;
 
     //! access to structural field
-    Teuchos::RCP<ADAPTER::FSIStructureWrapper> StructureField() { return structure_; }
+    Teuchos::RCP<ADAPTER::FSIStructureWrapper> structure_field() { return structure_; }
 
     //! access to ALE field
     ADAPTER::AleWearWrapper& ale_field() { return *ale_; }

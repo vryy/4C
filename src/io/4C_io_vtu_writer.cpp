@@ -37,7 +37,7 @@ VtuWriter::VtuWriter(unsigned int myrank, unsigned int num_processors,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const std::string& VtuWriter::WriterString() const
+const std::string& VtuWriter::writer_string() const
 {
   static std::string name("UnstructuredGrid");
   return name;
@@ -45,7 +45,7 @@ const std::string& VtuWriter::WriterString() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const std::string& VtuWriter::WriterOpeningTag() const
+const std::string& VtuWriter::writer_opening_tag() const
 {
   static std::string tag("<UnstructuredGrid>");
   return tag;
@@ -53,7 +53,7 @@ const std::string& VtuWriter::WriterOpeningTag() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const std::string& VtuWriter::WriterPOpeningTag() const
+const std::string& VtuWriter::writer_p_opening_tag() const
 {
   static std::string tag("<PUnstructuredGrid GhostLevel=\"0\">");
   return tag;
@@ -61,7 +61,7 @@ const std::string& VtuWriter::WriterPOpeningTag() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const std::vector<std::string>& VtuWriter::WriterPPieceTags() const
+const std::vector<std::string>& VtuWriter::writer_p_piece_tags() const
 {
   static std::vector<std::string> tags;
   tags.clear();
@@ -78,7 +78,7 @@ const std::vector<std::string>& VtuWriter::WriterPPieceTags() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const std::string& VtuWriter::WriterSuffix() const
+const std::string& VtuWriter::writer_suffix() const
 {
   static std::string name(".vtu");
   return name;
@@ -86,7 +86,7 @@ const std::string& VtuWriter::WriterSuffix() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const std::string& VtuWriter::WriterPSuffix() const
+const std::string& VtuWriter::writer_p_suffix() const
 {
   static std::string name(".pvtu");
   return name;
@@ -294,7 +294,7 @@ void VtuWriter::write_point_data_vector(const IO::visualization_vector_type_vari
         "point data fields are mixed. First, all point data needs to be written, "
         "then all cell data!");
 
-  this->WriteDataArray(data, num_components_per_point, name);
+  this->write_data_array(data, num_components_per_point, name);
 
   if (myrank_ == 0)
     IO::cout(IO::debug) << "\nVtuWriter: point data " << name << " written." << IO::endl;
@@ -339,7 +339,7 @@ void VtuWriter::WriteCellDataVector(const IO::visualization_vector_type_variant&
         "point data fields are mixed. First, all point data needs to be written, "
         "then all cell data!");
 
-  this->WriteDataArray(data, num_components_per_cell, name);
+  this->write_data_array(data, num_components_per_cell, name);
 
   if (myrank_ == 0)
     IO::cout(IO::debug) << "\nVtuWriter: cell data " << name << " written." << IO::endl;

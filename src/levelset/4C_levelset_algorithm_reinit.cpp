@@ -316,7 +316,7 @@ bool SCATRA::LevelSetAlgorithm::convergence_check_reinit()
     const double err = global_sum / ((double)global_num_nodes);
 
     if (myrank_ == 0)
-      std::cout << "Convergence Check Reinitialization: Err  " << err << "  Tol  " << reinit_tol_
+      std::cout << "Convergence Check reinitialization: Err  " << err << "  Tol  " << reinit_tol_
                 << " Number of nodes in band  " << global_num_nodes << std::endl;
 
     if (err <
@@ -338,7 +338,7 @@ void SCATRA::LevelSetAlgorithm::prepare_time_step_reinit()
   if (pseudostep_ == 0)
   {
     // TODO: Restructure enforcement of Dirichlet boundary conditions on phin_
-    ApplyDirichletBC(time_, phin_, Teuchos::null);
+    apply_dirichlet_bc(time_, phin_, Teuchos::null);
     calc_initial_time_derivative();
   }
 
@@ -400,7 +400,7 @@ void SCATRA::LevelSetAlgorithm::calc_node_based_reinit_vel()
       // activate reinitialization calculation routines
       eleparams.set<bool>("solve reinit eq", true);
 
-      discret_->ClearState();  // TODO Caution if called from NonlinearSolve
+      discret_->ClearState();  // TODO Caution if called from nonlinear_solve
       // set initial phi, i.e., solution of level-set equation
       discret_->set_state("phizero", initialphireinit_);
 
@@ -467,11 +467,11 @@ void SCATRA::LevelSetAlgorithm::calc_node_based_reinit_vel()
  *----------------------------------------------------------------------*/
 void SCATRA::LevelSetAlgorithm::solve_reinit()
 {
-  // we simply call the NonlinearSolve (since the reinitialization equation is
+  // we simply call the nonlinear_solve (since the reinitialization equation is
   // indeed nonlinear), and all the rest concerning the correct action type and
   // parameters is handled via the switchreinit_-flag in the concrete time-integration
   // schemes for level-set problems
-  NonlinearSolve();
+  nonlinear_solve();
 
   return;
 }
@@ -1261,7 +1261,7 @@ void SCATRA::LevelSetAlgorithm::compute_normal_vector_to_interface(
   normal(1) = (edge1(2) * edge2(0) - edge1(0) * edge2(2));
   normal(2) = (edge1(0) * edge2(1) - edge1(1) * edge2(0));
 
-  //  const Epetra_Comm& comm = scatra_.Discretization()->Comm();
+  //  const Epetra_Comm& comm = scatra_.discretization()->Comm();
   //  std::cout << "proc " << comm.MyPID() << " normal " <<  normal << std::endl;
   //  std::cout << "proc " << comm.MyPID() << " patch " <<  patchcoord << std::endl;
 

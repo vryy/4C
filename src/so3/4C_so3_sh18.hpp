@@ -200,7 +200,7 @@ namespace DRT
 
       //! init the inverse of the jacobian and its determinant in the material configuration
       //! return the number of negative eigenvalues
-      int InitJacobianMapping() override;
+      int init_jacobian_mapping() override;
 
       //! Calculate nonlinear stiffness and mass matrix
       void nlnstiffmass(std::vector<int>& lm,  ///< location matrix
@@ -218,24 +218,24 @@ namespace DRT
           ) override;
 
       // parameter space coords of one node
-      CORE::LINALG::Matrix<3, 1> NodeParamCoord(const int node);
+      CORE::LINALG::Matrix<3, 1> node_param_coord(const int node);
       // parameter space coords of all nodes
-      CORE::LINALG::Matrix<18, 3> NodeParamCoord();
+      CORE::LINALG::Matrix<18, 3> node_param_coord();
 
-      void FlipT();
+      void flip_t();
 
       //! Lump mass matrix
       void soh18_lumpmass(CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* emass);
 
-      void EvaluateT(const CORE::LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18>& jac,
+      void evaluate_t(const CORE::LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18>& jac,
           CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& TinvT);
 
-      void EasSetup(
+      void eas_setup(
           std::vector<CORE::LINALG::Matrix<6, num_eas>>& M_gp,  // M-matrix evaluated at GPs
           CORE::LINALG::Matrix<3, 1>& G3_contra,  // contravariant basis vector G3 at element center
           const CORE::LINALG::Matrix<NUMNOD_SOH18, 3>& xrefe);  // material element coords
 
-      void SetupDSG();
+      void setup_dsg();
       void integrate_dsg_shear_r(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_shear_r);
       void integrate_dsg_shear_s(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_shear_s);
       void integrate_dsg_membrane_r(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_r);
@@ -246,27 +246,27 @@ namespace DRT
       void calc_consistent_defgrd(const CORE::LINALG::Matrix<3, 3>& defgrd_disp,
           CORE::LINALG::Matrix<6, 1> glstrain_mod, CORE::LINALG::Matrix<3, 3>& defgrd_mod);
 
-      void CalculateBopLoc(const CORE::LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xcurr,
+      void calculate_bop_loc(const CORE::LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xcurr,
           const CORE::LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xrefe,
           const CORE::LINALG::Matrix<9, 1>& shape_q9, const CORE::LINALG::Matrix<2, 9>& deriv_q9,
           const int gp, CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH18>& bop_loc);
 
-      void CalculateLocStrain(const CORE::LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xcurr,
+      void calculate_loc_strain(const CORE::LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xcurr,
           const CORE::LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xrefe,
           const CORE::LINALG::Matrix<9, 1>& shape_q9, const CORE::LINALG::Matrix<2, 9>& deriv_q9,
           const int gp, CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& lstrain);
 
-      void CalculateGeoStiff(const CORE::LINALG::Matrix<9, 1>& shape_q9,
+      void calculate_geo_stiff(const CORE::LINALG::Matrix<9, 1>& shape_q9,
           const CORE::LINALG::Matrix<2, 9>& deriv_q9,
           CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& TinvT, const int gp,
           const double detJ_w, const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress,
           CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* stiffmatrix);
 
-      void Update();
+      void update();
 
 
       /** recover elementwise stored stuff */
-      void Recover(const std::vector<double>& residual) override;
+      void recover(const std::vector<double>& residual) override;
 
       //@}
 

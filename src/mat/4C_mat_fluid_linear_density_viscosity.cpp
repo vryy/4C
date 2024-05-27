@@ -33,7 +33,7 @@ MAT::PAR::LinearDensityViscosity::LinearDensityViscosity(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::LinearDensityViscosity::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::LinearDensityViscosity::create_material()
 {
   return Teuchos::rcp(new MAT::LinearDensityViscosity(this));
 }

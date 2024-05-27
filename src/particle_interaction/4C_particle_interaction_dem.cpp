@@ -85,13 +85,13 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::Setup(
   setup_particle_interaction_writer();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::WriteRestart() const
+void PARTICLEINTERACTION::ParticleInteractionDEM::write_restart() const
 {
   // call base class function
-  ParticleInteractionBase::WriteRestart();
+  ParticleInteractionBase::write_restart();
 
   // write restart of history pair handler
-  historypairs_->WriteRestart();
+  historypairs_->write_restart();
 }
 
 void PARTICLEINTERACTION::ParticleInteractionDEM::read_restart(
@@ -133,9 +133,9 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialStates()
   set_initial_inertia();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::PreEvaluateTimeStep()
+void PARTICLEINTERACTION::ParticleInteractionDEM::pre_evaluate_time_step()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionDEM::PreEvaluateTimeStep");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionDEM::pre_evaluate_time_step");
 }
 
 void PARTICLEINTERACTION::ParticleInteractionDEM::evaluate_interactions()
@@ -180,7 +180,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::post_evaluate_time_step(
 double PARTICLEINTERACTION::ParticleInteractionDEM::max_interaction_distance() const
 {
   // particle contact interaction distance
-  double interactiondistance = 2.0 * MaxParticleRadius();
+  double interactiondistance = 2.0 * max_particle_radius();
 
   // add adhesion distance
   if (adhesion_) interactiondistance += adhesion_->GetAdhesionDistance();

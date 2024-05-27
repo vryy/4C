@@ -84,7 +84,7 @@ namespace MAT
         /// standard constructor
         explicit CoupAnisoExpo(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
 
-        Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override { return Teuchos::null; };
+        Teuchos::RCP<CORE::MAT::Material> create_material() override { return Teuchos::null; };
 
         /// @name material parameters
         //@{

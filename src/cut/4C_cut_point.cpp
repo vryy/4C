@@ -423,7 +423,7 @@ double CORE::GEO::CUT::Point::t(Edge* edge)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Point::Intersection(plain_edge_set& edges)
+void CORE::GEO::CUT::Point::intersection(plain_edge_set& edges)
 {
   plain_edge_set intersection;
   std::set_intersection(cut_edges_.begin(), cut_edges_.end(), edges.begin(), edges.end(),
@@ -433,7 +433,7 @@ void CORE::GEO::CUT::Point::Intersection(plain_edge_set& edges)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Point::Intersection(plain_side_set& sides)
+void CORE::GEO::CUT::Point::intersection(plain_side_set& sides)
 {
   plain_side_set intersection;
   std::set_intersection(cut_sides_.begin(), cut_sides_.end(), sides.begin(), sides.end(),
@@ -443,7 +443,7 @@ void CORE::GEO::CUT::Point::Intersection(plain_side_set& sides)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Point::Intersection(plain_facet_set& facets)
+void CORE::GEO::CUT::Point::intersection(plain_facet_set& facets)
 {
   plain_facet_set intersection;
   std::set_intersection(facets_.begin(), facets_.end(), facets.begin(), facets.end(),
@@ -453,7 +453,7 @@ void CORE::GEO::CUT::Point::Intersection(plain_facet_set& facets)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Point::Intersection(plain_element_set& elements)
+void CORE::GEO::CUT::Point::intersection(plain_element_set& elements)
 {
   plain_element_set intersection;
   std::set_intersection(cut_elements_.begin(), cut_elements_.end(), elements.begin(),
@@ -1066,7 +1066,7 @@ void CORE::GEO::CUT::FindCommonElements(
   for (++ie; ie != element.end(); ++ie)
   {
     Point* p = *ie;
-    p->Intersection(elements);
+    p->intersection(elements);
     if (elements.size() == 0)
     {
       break;

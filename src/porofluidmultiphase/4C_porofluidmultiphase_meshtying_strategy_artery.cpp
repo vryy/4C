@@ -58,7 +58,7 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
   artnettimint_->Init(probparams, artdyn, "artery_scatra");
 
   // print user info
-  if (porofluidmultitimint->Discretization()->Comm().MyPID() == 0)
+  if (porofluidmultitimint->discretization()->Comm().MyPID() == 0)
   {
     std::cout << "\n";
     std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
@@ -88,7 +88,7 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
 
   // initialize mesh tying object
   arttoporofluidcoupling_ = POROMULTIPHASESCATRA::UTILS::CreateAndInitArteryCouplingStrategy(
-      arterydis_, porofluidmultitimint->Discretization(), poroparams.sublist("ARTERY COUPLING"),
+      arterydis_, porofluidmultitimint->discretization(), poroparams.sublist("ARTERY COUPLING"),
       couplingcondname, "COUPLEDDOFS_ART", "COUPLEDDOFS_PORO", evaluate_on_lateral_surface);
 
   // Initialize rhs vector
@@ -182,7 +182,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::initialize_linear_solver(
   blocksmootherparams1.sublist("Belos Parameters");
   blocksmootherparams1.sublist("MueLu Parameters");
 
-  porofluidmultitimint_->Discretization()->compute_null_space_if_necessary(blocksmootherparams1);
+  porofluidmultitimint_->discretization()->compute_null_space_if_necessary(blocksmootherparams1);
 
   Teuchos::ParameterList& blocksmootherparams2 = solver->Params().sublist("Inverse2");
   blocksmootherparams2.sublist("Belos Parameters");

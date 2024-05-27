@@ -48,7 +48,7 @@ void SCATRA::MeshtyingStrategyStd::EvaluateMeshtying()
 /*----------------------------------------------------------------------*
  | setup meshtying objects                                   fang 02/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyStd::SetupMeshtying() { return; }
+void SCATRA::MeshtyingStrategyStd::setup_meshtying() { return; }
 
 
 /*----------------------------------------------------------------------*

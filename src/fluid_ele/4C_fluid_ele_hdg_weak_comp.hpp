@@ -148,7 +148,7 @@ namespace DRT
       \brief Get number of degrees of freedom per face
 
       */
-      int NumDofPerFace(const unsigned face) const override
+      int num_dof_per_face(const unsigned face) const override
       {
         return (1 + CORE::FE::getDimension(distype_)) * NumDofPerComponent(face);
       }
@@ -166,7 +166,7 @@ namespace DRT
       \brief Get number of degrees of freedom per element, zero for the primary dof set
       and equal to the given number for the secondary dof set
       */
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       /*!
       \brief Returns the number of dofs per element for the interior variables

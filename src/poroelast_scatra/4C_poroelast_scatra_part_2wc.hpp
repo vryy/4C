@@ -43,17 +43,17 @@ namespace POROELASTSCATRA
     void prepare_output() override;
 
     //! update time step
-    void Update() override;
+    void update() override;
 
     //! write output print to screen
-    void Output() override;
+    void output() override;
 
    protected:
     //! perform iteration step of structure field
     void DoPoroStep() override;
 
     //! perform iteration step of scatra field
-    void DoScatraStep() override;
+    void do_scatra_step() override;
 
     //! convergence check of outer loop
     bool convergence_check(int itnum);

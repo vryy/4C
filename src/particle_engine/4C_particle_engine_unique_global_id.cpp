@@ -39,7 +39,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::Setup()
   // nothing to do
 }
 
-void PARTICLEENGINE::UniqueGlobalIdHandler::WriteRestart(
+void PARTICLEENGINE::UniqueGlobalIdHandler::write_restart(
     std::shared_ptr<IO::DiscretizationWriter> writer) const
 {
   // write maximum global id in restart

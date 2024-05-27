@@ -65,7 +65,7 @@ XFEM::CouplingCommManager::CouplingCommManager(
 
 
 /*--------------------------------------------------------------------------------------------------------------*
-| Transfer conditioned part of Vector from Discretization A --> B with different transfer types ager
+| Transfer conditioned part of Vector from discretization A --> B with different transfer types ager
 03/2016|
 *--------------------------------------------------------------------------------------------------------------*/
 void XFEM::CouplingCommManager::InsertVector(const int idxA, Teuchos::RCP<const Epetra_Vector> vecA,
@@ -109,16 +109,16 @@ void XFEM::CouplingCommManager::InsertVector(const int idxA, Teuchos::RCP<const 
       if (idxA < idxB)  // this Coupling Object is directly stored
       {
         if (!add)
-          *vecB = *GetCoupling(idxA, idxB)->MasterToSlave(vecA);
+          *vecB = *get_coupling(idxA, idxB)->MasterToSlave(vecA);
         else
-          vecB->Update(scale, *GetCoupling(idxA, idxB)->MasterToSlave(vecA), 1.0);
+          vecB->Update(scale, *get_coupling(idxA, idxB)->MasterToSlave(vecA), 1.0);
       }
       else if (idxA > idxB)  // just the inverse Coupling Object is stored
       {
         if (!add)
-          *vecB = *GetCoupling(idxB, idxA)->SlaveToMaster(vecA);
+          *vecB = *get_coupling(idxB, idxA)->SlaveToMaster(vecA);
         else
-          vecB->Update(scale, *GetCoupling(idxB, idxA)->SlaveToMaster(vecA), 1.0);
+          vecB->Update(scale, *get_coupling(idxB, idxA)->SlaveToMaster(vecA), 1.0);
       }
       else
       {
@@ -135,7 +135,7 @@ void XFEM::CouplingCommManager::InsertVector(const int idxA, Teuchos::RCP<const 
     }
     case CouplingCommManager::partial_to_global:
     {
-      Teuchos::RCP<CORE::LINALG::MultiMapExtractor> mme = GetFullMapExtractor();
+      Teuchos::RCP<CORE::LINALG::MultiMapExtractor> mme = get_full_map_extractor();
       Teuchos::RCP<Epetra_Vector> fullvec = Teuchos::rcp(new Epetra_Vector(*mme->Map(idxB), true));
       InsertVector(idxA, vecA, idxB, fullvec, CouplingCommManager::partial_to_full, false, scale);
       if (!add)
@@ -146,7 +146,7 @@ void XFEM::CouplingCommManager::InsertVector(const int idxA, Teuchos::RCP<const 
     }
     case CouplingCommManager::full_to_global:
     {
-      Teuchos::RCP<CORE::LINALG::MultiMapExtractor> mme = GetFullMapExtractor();
+      Teuchos::RCP<CORE::LINALG::MultiMapExtractor> mme = get_full_map_extractor();
       Teuchos::RCP<Epetra_Vector> fullvec = Teuchos::rcp(new Epetra_Vector(*mme->Map(idxB), true));
       InsertVector(idxA, vecA, idxB, fullvec, CouplingCommManager::full_to_full, false, scale);
       if (!add)
@@ -173,7 +173,7 @@ bool XFEM::CouplingCommManager::InsertMatrix(int transform_id, int idxA,
   {
     case CouplingCommManager::col:
     {
-      return GetTransform(transform_id)
+      return get_transform(transform_id)
           ->
           operator()(matA, matA.RangeMap(), matA.DomainMap(), scale, nullptr,
               get_coupling_converter(idxA, idxB).getRawPtr(), matB, exactmatch, addmatrix);
@@ -181,7 +181,7 @@ bool XFEM::CouplingCommManager::InsertMatrix(int transform_id, int idxA,
     }
     case CouplingCommManager::row:
     {
-      return GetTransform(transform_id)
+      return get_transform(transform_id)
           ->
           operator()(matA, matA.RangeMap(), matA.DomainMap(), scale,
               get_coupling_converter(idxA, idxB).getRawPtr(), nullptr, matB, true, addmatrix);
@@ -189,7 +189,7 @@ bool XFEM::CouplingCommManager::InsertMatrix(int transform_id, int idxA,
     }
     case CouplingCommManager::row_and_col:
     {
-      return GetTransform(transform_id)
+      return get_transform(transform_id)
           ->
           operator()(matA, matA.RangeMap(), matA.DomainMap(), scale,
               get_coupling_converter(idxA, idxB).getRawPtr(),
@@ -212,7 +212,7 @@ void XFEM::CouplingCommManager::setup(std::map<int, Teuchos::RCP<const DRT::Disc
     setup_multi_map_extractors(dis);
     setup_couplings(dis);
   }
-  else  // Setup for Communication on full Discretization
+  else  // Setup for Communication on full discretization
   {
     setup_full_couplings(dis);       // First Couple full discretizations (from startdim to enddim)
     setup_full_map_extractors(dis);  // Setup Extractors between Couplingpart of discretization and
@@ -258,13 +258,13 @@ void XFEM::CouplingCommManager::setup_full_map_extractors(
     Teuchos::RCP<CORE::LINALG::MapExtractor> me = Teuchos::rcp(new CORE::LINALG::MapExtractor());
     if (static_cast<std::size_t>(dit->first) < dis.size() - 1)
     {
-      Teuchos::RCP<CORE::ADAPTER::Coupling> coup = GetCoupling(dit->first, dit->first + 1);
+      Teuchos::RCP<CORE::ADAPTER::Coupling> coup = get_coupling(dit->first, dit->first + 1);
       me->Setup(*dit->second->dof_row_map(), coup->MasterDofMap(),
           CORE::LINALG::SplitMap(*dit->second->dof_row_map(), *coup->MasterDofMap()));
     }
     else
     {
-      Teuchos::RCP<CORE::ADAPTER::Coupling> coup = GetCoupling(dit->first - 1, dit->first);
+      Teuchos::RCP<CORE::ADAPTER::Coupling> coup = get_coupling(dit->first - 1, dit->first);
       me->Setup(*dit->second->dof_row_map(), coup->SlaveDofMap(),
           CORE::LINALG::SplitMap(*dit->second->dof_row_map(), *coup->SlaveDofMap()));
     }
@@ -370,11 +370,11 @@ Teuchos::RCP<CORE::ADAPTER::CouplingConverter> XFEM::CouplingCommManager::get_co
 {
   if (idxA < idxB)
   {
-    return Teuchos::rcp(new CORE::ADAPTER::CouplingMasterConverter(*GetCoupling(idxA, idxB)));
+    return Teuchos::rcp(new CORE::ADAPTER::CouplingMasterConverter(*get_coupling(idxA, idxB)));
   }
   else if (idxA > idxB)
   {
-    return Teuchos::rcp(new CORE::ADAPTER::CouplingSlaveConverter(*GetCoupling(idxB, idxA)));
+    return Teuchos::rcp(new CORE::ADAPTER::CouplingSlaveConverter(*get_coupling(idxB, idxA)));
   }
   else
   {
@@ -389,7 +389,7 @@ Teuchos::RCP<CORE::ADAPTER::CouplingConverter> XFEM::CouplingCommManager::get_co
 /*------------------------------------------------------------------------------------------------*
 | Get Coupling Object between Discret A and B                                      -- ager 03/2016|
 *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::ADAPTER::Coupling> XFEM::CouplingCommManager::GetCoupling(int idxA, int idxB)
+Teuchos::RCP<CORE::ADAPTER::Coupling> XFEM::CouplingCommManager::get_coupling(int idxA, int idxB)
 {
   if (idxA < idxB)
   {
@@ -417,7 +417,7 @@ Teuchos::RCP<CORE::ADAPTER::Coupling> XFEM::CouplingCommManager::GetCoupling(int
 /*------------------------------------------------------------------------------------------------*
 | Get Transform Object between Discret A and B                                        ager 03/2016|
 *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::MatrixLogicalSplitAndTransform> XFEM::CouplingCommManager::GetTransform(
+Teuchos::RCP<CORE::LINALG::MatrixLogicalSplitAndTransform> XFEM::CouplingCommManager::get_transform(
     int transform_id)
 {
   std::map<int, Teuchos::RCP<CORE::LINALG::MatrixLogicalSplitAndTransform>>::iterator tit =
@@ -456,7 +456,7 @@ Teuchos::RCP<CORE::LINALG::MultiMapExtractor> XFEM::CouplingCommManager::GetMapE
 | Coupling_Comm_Manager Debug Output                                                     ager
 03/2016|
 *---------------------------------------------------------------------------------------------------*/
-void XFEM::CouplingCommManager::DebugOut(
+void XFEM::CouplingCommManager::debug_out(
     std::string str1, std::string str2, std::string str3, std::string str4)
 {
 #ifdef COUP_MANAGER_DEBUG_OUT

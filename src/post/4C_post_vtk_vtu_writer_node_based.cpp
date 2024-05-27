@@ -38,25 +38,25 @@ PostVtuWriterNode::PostVtuWriterNode(PostField* field, const std::string& filena
 }
 
 
-const std::string& PostVtuWriterNode::WriterString() const
+const std::string& PostVtuWriterNode::writer_string() const
 {
   static std::string name("UnstructuredGrid");
   return name;
 }
 
-const std::string& PostVtuWriterNode::WriterOpeningTag() const
+const std::string& PostVtuWriterNode::writer_opening_tag() const
 {
   static std::string tag("<UnstructuredGrid>");
   return tag;
 }
 
-const std::string& PostVtuWriterNode::WriterPOpeningTag() const
+const std::string& PostVtuWriterNode::writer_p_opening_tag() const
 {
   static std::string tag("<PUnstructuredGrid GhostLevel=\"0\">");
   return tag;
 }
 
-const std::vector<std::string>& PostVtuWriterNode::WriterPPieceTags() const
+const std::vector<std::string>& PostVtuWriterNode::writer_p_piece_tags() const
 {
   static std::vector<std::string> tags;
   tags.clear();
@@ -69,20 +69,20 @@ const std::vector<std::string>& PostVtuWriterNode::WriterPPieceTags() const
   return tags;
 }
 
-const std::string& PostVtuWriterNode::WriterSuffix() const
+const std::string& PostVtuWriterNode::writer_suffix() const
 {
   static std::string name(".vtu");
   return name;
 }
 
-const std::string& PostVtuWriterNode::WriterPSuffix() const
+const std::string& PostVtuWriterNode::writer_p_suffix() const
 {
   static std::string name(".pvtu");
   return name;
 }
 
 
-void PostVtuWriterNode::WriteGeo()
+void PostVtuWriterNode::write_geo()
 {
   using namespace FourC;
 
@@ -111,11 +111,11 @@ void PostVtuWriterNode::WriteGeo()
 
     if (ele->IsNurbsElement())
     {
-      WriteGeoNurbsEle(ele, celltypes, outNodeId, celloffset, coordinates);
+      write_geo_nurbs_ele(ele, celltypes, outNodeId, celloffset, coordinates);
     }
     else if (beamele != nullptr)
     {
-      WriteGeoBeamEle(beamele, celltypes, outNodeId, celloffset, coordinates);
+      write_geo_beam_ele(beamele, celltypes, outNodeId, celloffset, coordinates);
     }
     else
     {
@@ -248,7 +248,7 @@ void PostVtuWriterNode::WriteGeo()
 
 
 
-void PostVtuWriterNode::WriteDofResultStep(std::ofstream& file,
+void PostVtuWriterNode::write_dof_result_step(std::ofstream& file,
     const Teuchos::RCP<Epetra_Vector>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from,
@@ -342,7 +342,7 @@ void PostVtuWriterNode::WriteDofResultStep(std::ofstream& file,
     FOUR_C_THROW(
         "Cannot write point data at this stage. Most likely cell and point data fields are mixed.");
 
-  this->WriteSolutionVector(solution, ncomponents, name, file);
+  this->write_solution_vector(solution, ncomponents, name, file);
 }
 
 
@@ -414,7 +414,7 @@ void PostVtuWriterNode::write_nodal_result_step(std::ofstream& file,
     FOUR_C_THROW(
         "Cannot write point data at this stage. Most likely cell and point data fields are mixed.");
 
-  this->WriteSolutionVector(solution, ncomponents, name, file);
+  this->write_solution_vector(solution, ncomponents, name, file);
 }
 
 
@@ -432,13 +432,14 @@ void PostVtuWriterNode::write_element_result_step(std::ofstream& file,
   }
 }
 
-void PostVtuWriterNode::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_t>& celltypes,
-    int& outNodeId, std::vector<int32_t>& celloffset, std::vector<double>& coordinates)
+void PostVtuWriterNode::write_geo_nurbs_ele(const DRT::Element* ele,
+    std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
+    std::vector<double>& coordinates)
 {
   FOUR_C_THROW("VTU node based filter cannot handle NURBS elements");
 }
 
-void PostVtuWriterNode::WriteGeoBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
+void PostVtuWriterNode::write_geo_beam_ele(const DRT::ELEMENTS::Beam3Base* beamele,
     std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
     std::vector<double>& coordinates)
 {

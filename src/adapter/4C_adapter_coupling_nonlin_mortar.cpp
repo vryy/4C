@@ -93,26 +93,26 @@ void ADAPTER::CouplingNonLinMortar::Setup(Teuchos::RCP<DRT::Discretization> mast
     if (coupleddof[ii] == 1) numcoupleddof += 1;
 
   // read the mortar conditions and set probtype
-  ReadMortarCondition(masterdis, slavedis, coupleddof, couplingcond, input, mastergnodes,
+  read_mortar_condition(masterdis, slavedis, coupleddof, couplingcond, input, mastergnodes,
       slavegnodes, masterelements, slaveelements);
 
   // add contact nodes to interface discr.
-  AddMortarNodes(masterdis, slavedis, coupleddof, input, mastergnodes, slavegnodes, masterelements,
-      slaveelements, interface, numcoupleddof);
+  add_mortar_nodes(masterdis, slavedis, coupleddof, input, mastergnodes, slavegnodes,
+      masterelements, slaveelements, interface, numcoupleddof);
 
   // add contact eles to interface discr.
-  AddMortarElements(
+  add_mortar_elements(
       masterdis, slavedis, input, masterelements, slaveelements, interface, numcoupleddof);
 
   // complete interface, store as int. var. and do
   // parallel red.
-  CompleteInterface(masterdis, interface);
+  complete_interface(masterdis, interface);
 
   // Initialize matrices
-  InitMatrices();
+  init_matrices();
 
   // create stratgy object if required
-  CreateStrategy(masterdis, slavedis, input, numcoupleddof);
+  create_strategy(masterdis, slavedis, input, numcoupleddof);
 
   // set setup flag
   issetup_ = true;
@@ -124,7 +124,7 @@ void ADAPTER::CouplingNonLinMortar::Setup(Teuchos::RCP<DRT::Discretization> mast
 /*----------------------------------------------------------------------*
  |  read mortar condition                                    farah 10/14|
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingNonLinMortar::CreateStrategy(Teuchos::RCP<DRT::Discretization> masterdis,
+void ADAPTER::CouplingNonLinMortar::create_strategy(Teuchos::RCP<DRT::Discretization> masterdis,
     Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::ParameterList& input, int numcoupleddof)
 {
   // nothing to do for pure adapter
@@ -135,9 +135,9 @@ void ADAPTER::CouplingNonLinMortar::CreateStrategy(Teuchos::RCP<DRT::Discretizat
 /*----------------------------------------------------------------------*
  |  read mortar condition                                    farah 10/14|
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingNonLinMortar::ReadMortarCondition(Teuchos::RCP<DRT::Discretization> masterdis,
-    Teuchos::RCP<DRT::Discretization> slavedis, std::vector<int> coupleddof,
-    const std::string& couplingcond, Teuchos::ParameterList& input,
+void ADAPTER::CouplingNonLinMortar::read_mortar_condition(
+    Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<DRT::Discretization> slavedis,
+    std::vector<int> coupleddof, const std::string& couplingcond, Teuchos::ParameterList& input,
     std::map<int, DRT::Node*>& mastergnodes, std::map<int, DRT::Node*>& slavegnodes,
     std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
     std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements)
@@ -234,7 +234,7 @@ void ADAPTER::CouplingNonLinMortar::ReadMortarCondition(Teuchos::RCP<DRT::Discre
 /*----------------------------------------------------------------------*
  |  add mortar nodes                                         farah 10/14|
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingNonLinMortar::AddMortarNodes(Teuchos::RCP<DRT::Discretization> masterdis,
+void ADAPTER::CouplingNonLinMortar::add_mortar_nodes(Teuchos::RCP<DRT::Discretization> masterdis,
     Teuchos::RCP<DRT::Discretization> slavedis, std::vector<int> coupleddof,
     Teuchos::ParameterList& input, std::map<int, DRT::Node*>& mastergnodes,
     std::map<int, DRT::Node*>& slavegnodes,
@@ -343,7 +343,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarNodes(Teuchos::RCP<DRT::Discretizat
 /*----------------------------------------------------------------------*
  |  add mortar elements                                      farah 10/14|
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingNonLinMortar::AddMortarElements(Teuchos::RCP<DRT::Discretization> masterdis,
+void ADAPTER::CouplingNonLinMortar::add_mortar_elements(Teuchos::RCP<DRT::Discretization> masterdis,
     Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::ParameterList& input,
     std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
     std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements,
@@ -477,7 +477,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarElements(Teuchos::RCP<DRT::Discreti
 /*----------------------------------------------------------------------*
  |  Initialize matrices                                      farah 02/16|
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingNonLinMortar::InitMatrices()
+void ADAPTER::CouplingNonLinMortar::init_matrices()
 {
   // safety check
   if (slavedofrowmap_ == Teuchos::null or slavenoderowmap_ == Teuchos::null)
@@ -506,7 +506,7 @@ void ADAPTER::CouplingNonLinMortar::InitMatrices()
 /*----------------------------------------------------------------------*
  |  complete interface (also print and parallel redist.)     farah 02/16|
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingNonLinMortar::CompleteInterface(
+void ADAPTER::CouplingNonLinMortar::complete_interface(
     Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<CONTACT::Interface>& interface)
 {
   const Teuchos::ParameterList& input =
@@ -782,7 +782,7 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
   check_setup();
 
   // init matrices
-  InitMatrices();
+  init_matrices();
 
   // set lagrange multiplier and displacement state
   interface_->set_state(MORTAR::String2StateType(statename), *vec);
@@ -790,7 +790,7 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
 
   // general interface init: data container etc...
   interface_->Initialize();
-  interface_->SetElementAreas();
+  interface_->set_element_areas();
 
   // loop over all slave col elements and direct integration
   for (int j = 0; j < interface_->SlaveColElements()->NumMyElements(); ++j)
@@ -847,7 +847,7 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinDM(const std::string& statename,
   check_setup();
 
   // init matrices with redistributed maps
-  InitMatrices();
+  init_matrices();
 
   // set current lm and displ state
   interface_->set_state(MORTAR::String2StateType(statename), *vec);
@@ -855,7 +855,7 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinDM(const std::string& statename,
 
   // init internal data
   interface_->Initialize();
-  interface_->SetElementAreas();
+  interface_->set_element_areas();
 
   // call interface evaluate (d,m,gap...)
   interface_->Evaluate();
@@ -871,7 +871,7 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinDM(const std::string& statename,
   MLin_->Complete(*smdofrowmap_, *masterdofrowmap_);
 
   // Dinv * M
-  CreateP();
+  create_p();
 
   // transform to initial parallel distrib.
   matrix_row_col_transform();
@@ -946,7 +946,7 @@ void ADAPTER::CouplingNonLinMortar::IntegrateAll(const std::string& statename,
   check_setup();
 
   // init matrices with redistributed maps
-  InitMatrices();
+  init_matrices();
 
   // set current lm and displ state
   interface_->set_state(MORTAR::String2StateType(statename), *vec);
@@ -954,7 +954,7 @@ void ADAPTER::CouplingNonLinMortar::IntegrateAll(const std::string& statename,
 
   // init internal data
   interface_->Initialize();
-  interface_->SetElementAreas();
+  interface_->set_element_areas();
 
   // call interface evaluate (d,m,gap...)
   interface_->Evaluate();
@@ -971,7 +971,7 @@ void ADAPTER::CouplingNonLinMortar::IntegrateAll(const std::string& statename,
   MLin_->Complete(*smdofrowmap_, *masterdofrowmap_);
 
   // Dinv * M
-  CreateP();
+  create_p();
 
   // transform to initial parallel distrib.
   matrix_row_col_transform();
@@ -990,7 +990,7 @@ void ADAPTER::CouplingNonLinMortar::EvaluateSliding(const std::string& statename
   check_setup();
 
   // init matrices with redistributed maps
-  InitMatrices();
+  init_matrices();
 
   // set current lm and displ state
   interface_->set_state(MORTAR::String2StateType(statename), *vec);
@@ -998,7 +998,7 @@ void ADAPTER::CouplingNonLinMortar::EvaluateSliding(const std::string& statename
 
   // init internal data
   interface_->Initialize();
-  interface_->SetElementAreas();
+  interface_->set_element_areas();
 
   interface_->BuildActiveSet(true);
 
@@ -1023,7 +1023,7 @@ void ADAPTER::CouplingNonLinMortar::EvaluateSliding(const std::string& statename
   N_->Complete(*smdofrowmap_, *slavedofrowmap_);
 
   // Dinv * M
-  CreateP();
+  create_p();
 
   // transform to initial parallel distrib.
   matrix_row_col_transform();
@@ -1034,7 +1034,7 @@ void ADAPTER::CouplingNonLinMortar::EvaluateSliding(const std::string& statename
 /*----------------------------------------------------------------------*
  |  compute projection operator P                            wirtz 02/16|
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingNonLinMortar::CreateP()
+void ADAPTER::CouplingNonLinMortar::create_p()
 {
   // safety check
   check_setup();

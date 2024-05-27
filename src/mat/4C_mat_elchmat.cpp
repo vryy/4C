@@ -45,7 +45,7 @@ MAT::PAR::ElchMat::ElchMat(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
   }
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ElchMat::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ElchMat::create_material()
 {
   return Teuchos::rcp(new MAT::ElchMat(this));
 }

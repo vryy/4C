@@ -36,7 +36,7 @@ void STR::EXPLICIT::Generic::Setup()
   // ---------------------------------------------------------------------------
   // set the new pre/post operator for the nox nln group in the parameter list
   // ---------------------------------------------------------------------------
-  Teuchos::ParameterList& p_grp_opt = SDyn().GetNoxParams().sublist("Group Options");
+  Teuchos::ParameterList& p_grp_opt = s_dyn().GetNoxParams().sublist("Group Options");
 
   // create the new generic pre/post operator
   Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> prepost_generic_ptr =
@@ -52,7 +52,7 @@ void STR::EXPLICIT::Generic::Setup()
   // ---------------------------------------------------------------------------
   // set the new pre/post operator for the nox nln solver in the parameter list
   // ---------------------------------------------------------------------------
-  Teuchos::ParameterList& p_sol_opt = SDyn().GetNoxParams().sublist("Solver Options");
+  Teuchos::ParameterList& p_sol_opt = s_dyn().GetNoxParams().sublist("Solver Options");
 
   NOX::NLN::AUX::AddToPrePostOpVector(p_sol_opt, prepost_generic_ptr);
 
@@ -70,7 +70,7 @@ bool STR::EXPLICIT::Generic::ApplyForce(const Epetra_Vector& x, Epetra_Vector& f
   // evaluate the different model types (static case) at t_{n+1}^{i}
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
-  ResetEvalParams();
+  reset_eval_params();
   bool ok = ModelEval().ApplyForce(x, f, 1.0);
   return ok;
 }
@@ -85,7 +85,7 @@ bool STR::EXPLICIT::Generic::ApplyStiff(const Epetra_Vector& x, CORE::LINALG::Sp
   // evaluate the different model types (static case) at t_{n+1}^{i}
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
-  ResetEvalParams();
+  reset_eval_params();
   const bool ok = ModelEval().ApplyStiff(x, jac, 1.0);
 
   if (not ok) return ok;
@@ -105,7 +105,7 @@ bool STR::EXPLICIT::Generic::ApplyForceStiff(
   // evaluate the different model types (static case) at t_{n+1}^{i}
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
-  ResetEvalParams();
+  reset_eval_params();
   const bool ok = ModelEval().ApplyForceStiff(x, f, jac, 1.0);
 
   if (not ok) return ok;
@@ -174,11 +174,11 @@ double STR::EXPLICIT::Generic::get_default_step_length() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::Generic::ResetEvalParams()
+void STR::EXPLICIT::Generic::reset_eval_params()
 {
   // set the time step dependent parameters for the element evaluation
-  EvalData().SetTotalTime(GlobalState().GetTimeNp());
-  EvalData().SetDeltaTime((*GlobalState().GetDeltaTime())[0]);
+  EvalData().SetTotalTime(global_state().GetTimeNp());
+  EvalData().SetDeltaTime((*global_state().GetDeltaTime())[0]);
   EvalData().SetIsTolerateError(true);
 }
 

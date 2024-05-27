@@ -416,7 +416,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
   CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
       ele, my::xyze_);
   CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
-  if (ele->IsAle()) GetGridDispALE(discretization, lm, edispnp);
+  if (ele->IsAle()) get_grid_disp_ale(discretization, lm, edispnp);
   prepare_gauss_rule();
 
   return;
@@ -835,7 +835,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::tau_w_via_gradient(
   {
     CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
     CORE::LINALG::Matrix<nsd_, nen_> egridv(true);
-    my::GetGridDispVelALE(discretization, lm, edispnp, egridv);
+    my::get_grid_disp_vel_ale(discretization, lm, edispnp, egridv);
     evel -= egridv;
   }
 
@@ -1055,7 +1055,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::calc_mk(DRT::ELEMENTS::F
       ele, my::xyze_);
 
   CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
-  if (ele->IsAle()) GetGridDispALE(discretization, lm, edispnp);
+  if (ele->IsAle()) get_grid_disp_ale(discretization, lm, edispnp);
 
   elevec1[0] = calc_mk();
   return 0;
@@ -1100,7 +1100,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::x_wall_projection(DRT::E
       ele, my::xyze_);
 
   CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
-  if (ele->IsAle()) GetGridDispALE(discretization, lm, edispnp);
+  if (ele->IsAle()) get_grid_disp_ale(discretization, lm, edispnp);
 
   //  CORE::FE::GaussIntegration intpoints(CORE::FE::CellType::line6);
 
@@ -1312,7 +1312,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::x_wall_projection(DRT::E
  | get ALE grid displacements only for element                      bk 02/15 |
  *---------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::GetGridDispALE(
+void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_grid_disp_ale(
     DRT::Discretization& discretization, const std::vector<int>& lm,
     CORE::LINALG::Matrix<nsd_, nen_>& edispnp)
 {
@@ -1327,7 +1327,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::GetGridDispALE(
 }
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::LinMeshMotion_3D(
+void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::lin_mesh_motion_3_d(
     CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
     const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const double& press, const double& timefac,
     const double& timefacfac)
@@ -1457,7 +1457,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::prepare_gauss_rule()
 }
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Sysmat(
+void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::sysmat(
     const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
     const CORE::LINALG::Matrix<nsd_, nen_>& eprescpgaf,
     const CORE::LINALG::Matrix<nsd_, nen_>& ebofon,
@@ -1485,7 +1485,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Sysmat(
     double& Cv, bool isale, double* saccn, double* sveln, double* svelnp,
     const CORE::FE::GaussIntegration& intpoints)
 {
-  my::Sysmat(ebofoaf, eprescpgaf, ebofon, eprescpgn, evelaf, evelam, eveln, evelnp, fsevelaf,
+  my::sysmat(ebofoaf, eprescpgaf, ebofon, eprescpgn, evelaf, evelam, eveln, evelnp, fsevelaf,
       fsescaaf, evel_hat, ereynoldsstress_hat, epreaf, epream, epren, eprenp, eaccam, escaaf,
       escaam, escadtam, eveldtam, epredtam, escabofoaf, escabofon, emhist, edispnp, egridv, estif,
       emesh,  // -> emesh

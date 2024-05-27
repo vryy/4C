@@ -38,18 +38,18 @@ MAT::PAR::BeamReissnerElastPlasticMaterialParams::BeamReissnerElastPlasticMateri
 
   if (isohard_modulus_m_ <= 0.0) yield_stress_m_ = -1.0;
 
-  if (torsion_plasticity_ && std::abs(GetYoungsModulus() - 2.0 * GetShearModulus()) > 1e-9)
+  if (torsion_plasticity_ && std::abs(get_youngs_modulus() - 2.0 * get_shear_modulus()) > 1e-9)
   {
     FOUR_C_THROW(
         "Young's modulus must be equal to two times the shear modulus if plasticity for torsional "
         "moments is turned on");
   }
 
-  if (yield_stress_m_ >= 0 && std::abs(GetMomentInertia2() - GetMomentInertia3()) > 1e-9)
+  if (yield_stress_m_ >= 0 && std::abs(get_moment_inertia2() - get_moment_inertia3()) > 1e-9)
     FOUR_C_THROW("area moment of inertia 2 and 3 need to be equal");
 
   if (torsion_plasticity_ &&
-      std::abs(get_moment_inertia_polar() - 2.0 * GetMomentInertia2()) > 1e-9)
+      std::abs(get_moment_inertia_polar() - 2.0 * get_moment_inertia2()) > 1e-9)
   {
     FOUR_C_THROW(
         "polar area moment of inertia needs to be assigned twice the value of area moment of "
@@ -58,7 +58,8 @@ MAT::PAR::BeamReissnerElastPlasticMaterialParams::BeamReissnerElastPlasticMateri
 }
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::BeamReissnerElastPlasticMaterialParams::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material>
+MAT::PAR::BeamReissnerElastPlasticMaterialParams::create_material()
 {
   /* all the different parameter sets (Reissner/Kirchhoff/..., 'classic'/'by modes') are used to
    * parameterize the same constitutive relations based on a hyperelastic stored energy function
@@ -208,7 +209,7 @@ void MAT::BeamPlasticMaterial<T>::Unpack(const std::vector<char>& data)
   this->ExtractfromPack(position, data, kappaplastaccum_);
   this->ExtractfromPack(position, data, kappaplastconv_);
 
-  this->SetParameter(nullptr);
+  this->set_parameter(nullptr);
 
   if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
@@ -219,7 +220,7 @@ void MAT::BeamPlasticMaterial<T>::Unpack(const std::vector<char>& data)
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
 
 
-      this->SetParameter(static_cast<MAT::PAR::BeamReissnerElastPlasticMaterialParams*>(mat));
+      this->set_parameter(static_cast<MAT::PAR::BeamReissnerElastPlasticMaterialParams*>(mat));
     }
 
   if (position != data.size())

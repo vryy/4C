@@ -119,7 +119,7 @@ void ssi_drt()
     // objects relying on the parallel distribution
     ssi->Setup();
 
-    // 3.2- Read restart if needed. (Discretization called inside)
+    // 3.2- Read restart if needed. (discretization called inside)
     if (ssi->IsRestart()) ssi->read_restart(problem->Restart());
 
     // 3.3 AFTER restart: reset input filename of the problem so that results from other runs can be

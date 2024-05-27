@@ -127,7 +127,7 @@ void DRT::Discretization::boundary_conditions_geometry()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::AssignGlobalIDs(const Epetra_Comm& comm,
+void DRT::Discretization::assign_global_i_ds(const Epetra_Comm& comm,
     const std::map<std::vector<int>, Teuchos::RCP<DRT::Element>>& elementmap,
     std::map<int, Teuchos::RCP<DRT::Element>>& finalgeometry)
 {
@@ -223,7 +223,7 @@ void DRT::Discretization::AssignGlobalIDs(const Epetra_Comm& comm,
 
     gid += 1;
   }
-}  // AssignGlobalIDs
+}  // assign_global_i_ds
 
 
 /*----------------------------------------------------------------------*
@@ -315,7 +315,7 @@ bool DRT::Discretization::build_linesin_condition(
   // Lines be added to the condition: (line_id) -> (line).
   auto finallines = Teuchos::rcp(new std::map<int, Teuchos::RCP<DRT::Element>>());
 
-  AssignGlobalIDs(Comm(), linemap, *finallines);
+  assign_global_i_ds(Comm(), linemap, *finallines);
 
   cond->add_geometry(finallines);
 
@@ -545,7 +545,7 @@ bool DRT::Discretization::build_surfacesin_condition(
   Teuchos::RCP<std::map<int, Teuchos::RCP<DRT::Element>>> final_geometry =
       Teuchos::rcp(new std::map<int, Teuchos::RCP<DRT::Element>>());
 
-  AssignGlobalIDs(Comm(), surfmap, *final_geometry);
+  assign_global_i_ds(Comm(), surfmap, *final_geometry);
   cond->add_geometry(final_geometry);
 
   // elements were created that need new unique ids

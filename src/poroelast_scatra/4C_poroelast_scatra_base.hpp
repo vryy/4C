@@ -68,13 +68,13 @@ namespace POROELASTSCATRA
     };
 
     //! update time step
-    void Update() override
+    void update() override
     {
       FOUR_C_THROW("not implemented in base class. override in subclass.");
     };
 
     //! write output print to screen
-    void Output() override
+    void output() override
     {
       FOUR_C_THROW("not implemented in base class. override in subclass.");
     };
@@ -86,7 +86,7 @@ namespace POROELASTSCATRA
     virtual void SetupSystem();
 
     //! Build the combined dirichlet map of the monolithic poro problem
-    virtual void BuildCombinedDBCMap() { poro_->BuildCombinedDBCMap(); };
+    virtual void build_combined_dbc_map() { poro_->build_combined_dbc_map(); };
 
     //! perform result test
     void TestResults(const Epetra_Comm& comm);
@@ -104,9 +104,9 @@ namespace POROELASTSCATRA
     const Teuchos::RCP<ADAPTER::FluidPoro>& fluid_field() { return poro_->fluid_field(); };
 
     //! return pointer to porous structure
-    const Teuchos::RCP<ADAPTER::FPSIStructureWrapper>& StructureField()
+    const Teuchos::RCP<ADAPTER::FPSIStructureWrapper>& structure_field()
     {
-      return poro_->StructureField();
+      return poro_->structure_field();
     };
 
     //! return pointer to scalar transport problem

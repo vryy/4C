@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
  discrete thermo residuals   fang 11/15 |
  *-------------------------------------------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleSTIElch<distype>::CalcMatAndRhsSource(
+void DRT::ELEMENTS::ScaTraEleSTIElch<distype>::calc_mat_and_rhs_source(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
     CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
     const double& timefacfac,  //!< domain integration factor times time integration factor
@@ -29,13 +29,13 @@ void DRT::ELEMENTS::ScaTraEleSTIElch<distype>::CalcMatAndRhsSource(
 )
 {
   // matrix and vector contributions arising from Joule's heat
-  CalcMatAndRhsJoule(emat, erhs, timefacfac, rhsfac);
+  calc_mat_and_rhs_joule(emat, erhs, timefacfac, rhsfac);
 
   // matrix and vector contributions arising from heat of mixing
-  CalcMatAndRhsMixing(emat, erhs, timefacfac, rhsfac);
+  calc_mat_and_rhs_mixing(emat, erhs, timefacfac, rhsfac);
 
   // matrix and vector contributions arising from Soret effect
-  CalcMatAndRhsSoret(emat, erhs, timefacfac, rhsfac);
+  calc_mat_and_rhs_soret(emat, erhs, timefacfac, rhsfac);
 
   return;
 };
@@ -46,19 +46,19 @@ void DRT::ELEMENTS::ScaTraEleSTIElch<distype>::CalcMatAndRhsSource(
  scatra dofs   fang 11/15 |
  *-------------------------------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleSTIElch<distype>::CalcMatSourceOD(
+void DRT::ELEMENTS::ScaTraEleSTIElch<distype>::calc_mat_source_od(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
     const double& timefacfac  //!< domain integration factor times time integration factor
 )
 {
   // matrix contributions arising from Joule's heat
-  CalcMatJouleOD(emat, timefacfac);
+  calc_mat_joule_od(emat, timefacfac);
 
   // matrix contributions arising from heat of mixing
-  CalcMatMixingOD(emat, timefacfac);
+  calc_mat_mixing_od(emat, timefacfac);
 
   // matrix contributions arising from Soret effect
-  CalcMatSoretOD(emat, timefacfac);
+  calc_mat_soret_od(emat, timefacfac);
 
   return;
 };

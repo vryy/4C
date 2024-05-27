@@ -94,7 +94,7 @@ namespace INPUT
     void Read(
         DatFileReader& reader, std::multimap<int, Teuchos::RCP<CORE::Conditions::Condition>>& cmap);
 
-    /// print my dat file section and possible conditions from the Discretization
+    /// print my dat file section and possible conditions from the discretization
     std::ostream& Print(std::ostream& stream, const DRT::Discretization* dis = nullptr);
 
     /// name of my section in input file

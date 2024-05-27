@@ -81,7 +81,7 @@ void CORE::GEO::CUT::Cycle::CommonEdges(plain_edge_set& edges) const
     for (++i; i != points_.end(); ++i)
     {
       Point* p = *i;
-      p->Intersection(edges);
+      p->intersection(edges);
       if (edges.size() == 0)
       {
         break;
@@ -94,12 +94,12 @@ void CORE::GEO::CUT::Cycle::CommonEdges(plain_edge_set& edges) const
   }
 }
 
-void CORE::GEO::CUT::Cycle::Intersection(plain_side_set& sides) const
+void CORE::GEO::CUT::Cycle::intersection(plain_side_set& sides) const
 {
   for (std::vector<Point*>::const_iterator i = points_.begin(); i != points_.end(); ++i)
   {
     Point* p = *i;
-    p->Intersection(sides);
+    p->intersection(sides);
     if (sides.size() == 0) break;
   }
 }

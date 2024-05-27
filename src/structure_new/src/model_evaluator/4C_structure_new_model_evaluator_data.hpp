@@ -246,7 +246,7 @@ namespace STR
       /** \brief get reference to the set model evaluator
        *
        *  \note Currently only used in the contact data container and therefore
-       *  not part of the ParamsInterface. Feel free to add. */
+       *  not part of the params_interface. Feel free to add. */
       const Generic& GetModelEvaluator() const
       {
         FOUR_C_ASSERT(model_ptr_, "No reference to the model evaluator available!");
@@ -1257,28 +1257,28 @@ namespace STR
       }
 
       //! Time integration strategy
-      inline const STR::TIMINT::Base& TimInt() const
+      inline const STR::TIMINT::Base& tim_int() const
       {
         check_init();
         return str_data_ptr_->TimInt();
       }
 
       //! Structural dynamic data
-      inline const STR::TIMINT::BaseDataSDyn& SDyn() const
+      inline const STR::TIMINT::BaseDataSDyn& s_dyn() const
       {
         check_init();
         return str_data_ptr_->SDyn();
       }
 
       //! input/ouput parameters
-      inline const STR::TIMINT::BaseDataIO& InOutput() const
+      inline const STR::TIMINT::BaseDataIO& in_output() const
       {
         check_init();
         return str_data_ptr_->InOutput();
       }
 
       //! global state variables
-      inline const STR::TIMINT::BaseDataGlobalState& GState() const
+      inline const STR::TIMINT::BaseDataGlobalState& g_state() const
       {
         check_init();
         return str_data_ptr_->GState();

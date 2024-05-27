@@ -52,12 +52,12 @@ FSI::LungMonolithic::LungMonolithic(
   Teuchos::RCP<ADAPTER::FluidLung> fluidfield =
       Teuchos::rcp_dynamic_cast<ADAPTER::FluidLung>(fluid_field());
   const Teuchos::RCP<ADAPTER::StructureLung>& structfield =
-      Teuchos::rcp_dynamic_cast<ADAPTER::StructureLung>(StructureField());
+      Teuchos::rcp_dynamic_cast<ADAPTER::StructureLung>(structure_field());
 
   // consistency check: all dofs contained in ale(fluid)-structure coupling need to
   // be part of the structure volume constraint, too. this needs to be checked because during
   // setup_system_matrix, we rely on this information!
-  const Teuchos::RCP<const Epetra_Map> asimap = StructureField()->Interface()->LungASICondMap();
+  const Teuchos::RCP<const Epetra_Map> asimap = structure_field()->Interface()->LungASICondMap();
   for (int i = 0; i < asimap->NumMyElements(); ++i)
   {
     if (structfield->LungConstrMap()->LID(asimap->GID(i)) == -1)
@@ -87,7 +87,7 @@ FSI::LungMonolithic::LungMonolithic(
   NumConstrID_ = FluidLungVolConIDs.size();
 
   ConstrDofSet_ = Teuchos::rcp(new CONSTRAINTS::ConstraintDofSet());
-  ConstrDofSet_->assign_degrees_of_freedom(fluid_field()->Discretization(), NumConstrID_, 0);
+  ConstrDofSet_->assign_degrees_of_freedom(fluid_field()->discretization(), NumConstrID_, 0);
 
   // The "OffsetID" is used during the evaluation of constraints on
   // the element level. For assembly of the constraint parts, the gid
@@ -126,9 +126,9 @@ FSI::LungMonolithic::LungMonolithic(
 
   // build merged structure dof map
   Teuchos::RCP<Epetra_Map> FullStructDofMap =
-      CORE::LINALG::MergeMap(*StructureField()->dof_row_map(), *ConstrMap_, false);
+      CORE::LINALG::MergeMap(*structure_field()->dof_row_map(), *ConstrMap_, false);
   CORE::LINALG::MapExtractor StructConstrExtractor(
-      *FullStructDofMap, ConstrMap_, StructureField()->dof_row_map());
+      *FullStructDofMap, ConstrMap_, structure_field()->dof_row_map());
 
   AddStructConstrMatrix_ =
       Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
@@ -138,13 +138,13 @@ FSI::LungMonolithic::LungMonolithic(
       Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
           *fluid_field()->Interface(), *fluid_field()->Interface(), 108, false, true));
   FluidConstrMatrix_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *fluid_field()->Discretization()->dof_row_map(), NumConstrID_, false, true));
+      *fluid_field()->discretization()->dof_row_map(), NumConstrID_, false, true));
   ConstrFluidMatrix_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*ConstrMap_,
-      fluid_field()->Discretization()->dof_row_map()->NumGlobalElements(), false, true));
+      fluid_field()->discretization()->dof_row_map()->NumGlobalElements(), false, true));
 
   // additional "ale" matrices filled in the fluid elements
   Teuchos::RCP<Epetra_Map> emptymap =
-      Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, fluid_field()->Discretization()->Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, fluid_field()->discretization()->Comm()));
   CORE::LINALG::MapExtractor constrextractor;
   constrextractor.Setup(*ConstrMap_, emptymap, ConstrMap_);
   AleConstrMatrix_ =
@@ -155,9 +155,9 @@ FSI::LungMonolithic::LungMonolithic(
           *fluid_field()->Interface(), constrextractor, 108, false, true));
 
   AddStructRHS_ =
-      Teuchos::rcp(new Epetra_Vector(*StructureField()->Discretization()->dof_row_map(), true));
+      Teuchos::rcp(new Epetra_Vector(*structure_field()->discretization()->dof_row_map(), true));
   AddFluidRHS_ =
-      Teuchos::rcp(new Epetra_Vector(*fluid_field()->Discretization()->dof_row_map(), true));
+      Teuchos::rcp(new Epetra_Vector(*fluid_field()->discretization()->dof_row_map(), true));
   ConstrRHS_ = Teuchos::rcp(new Epetra_Vector(*ConstrMap_, true));
 
   OldVols_ = Teuchos::rcp(new Epetra_Vector(*ConstrMap_, true));
@@ -200,11 +200,11 @@ void FSI::LungMonolithic::GeneralSetup()
   linearsolverstrategy_ =
       CORE::UTILS::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
-  set_default_parameters(fsidyn, NOXParameterList());
+  set_default_parameters(fsidyn, nox_parameter_list());
 
   // ToDo: Set more detailed convergence tolerances like in standard FSI
   // additionally set tolerance for volume constraint
-  NOXParameterList().set("Norm abs vol constr", fsimono.get<double>("CONVTOL"));
+  nox_parameter_list().set("Norm abs vol constr", fsimono.get<double>("CONVTOL"));
 
   //-----------------------------------------------------------------------------
   // ordinary fsi coupling
@@ -214,26 +214,26 @@ void FSI::LungMonolithic::GeneralSetup()
 
   CORE::ADAPTER::Coupling& coupsf = structure_fluid_coupling();
   CORE::ADAPTER::Coupling& coupsa = structure_ale_coupling();
-  CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  CORE::ADAPTER::Coupling& coupfa = fluid_ale_coupling();
 
   const int ndim = GLOBAL::Problem::Instance()->NDim();
 
   // structure to fluid
 
-  coupsf.setup_condition_coupling(*StructureField()->Discretization(),
-      StructureField()->Interface()->FSICondMap(), *fluid_field()->Discretization(),
+  coupsf.setup_condition_coupling(*structure_field()->discretization(),
+      structure_field()->Interface()->FSICondMap(), *fluid_field()->discretization(),
       fluid_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
   // structure to ale
 
-  coupsa.setup_condition_coupling(*StructureField()->Discretization(),
-      StructureField()->Interface()->FSICondMap(), *ale_field()->Discretization(),
+  coupsa.setup_condition_coupling(*structure_field()->discretization(),
+      structure_field()->Interface()->FSICondMap(), *ale_field()->discretization(),
       ale_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
   // fluid to ale at the interface
 
-  icoupfa_->setup_condition_coupling(*fluid_field()->Discretization(),
-      fluid_field()->Interface()->FSICondMap(), *ale_field()->Discretization(),
+  icoupfa_->setup_condition_coupling(*fluid_field()->discretization(),
+      fluid_field()->Interface()->FSICondMap(), *ale_field()->discretization(),
       ale_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
   // In the following we assume that both couplings find the same dof
@@ -247,10 +247,10 @@ void FSI::LungMonolithic::GeneralSetup()
     FOUR_C_THROW("No nodes in matching FSI interface. Empty FSI coupling condition?");
 
   // the fluid-ale coupling always matches
-  const Epetra_Map* fluidnodemap = fluid_field()->Discretization()->NodeRowMap();
-  const Epetra_Map* alenodemap = ale_field()->Discretization()->NodeRowMap();
+  const Epetra_Map* fluidnodemap = fluid_field()->discretization()->NodeRowMap();
+  const Epetra_Map* alenodemap = ale_field()->discretization()->NodeRowMap();
 
-  coupfa.setup_coupling(*fluid_field()->Discretization(), *ale_field()->Discretization(),
+  coupfa.setup_coupling(*fluid_field()->discretization(), *ale_field()->discretization(),
       *fluidnodemap, *alenodemap, ndim);
 
   fluid_field()->SetMeshMap(coupfa.MasterDofMap());
@@ -262,22 +262,22 @@ void FSI::LungMonolithic::GeneralSetup()
   //-----------------------------------------------------------------------------
 
   // coupling of structure and ale dofs at airway outflow
-  coupsaout_->setup_constrained_condition_coupling(*StructureField()->Discretization(),
-      StructureField()->Interface()->LungASICondMap(), *ale_field()->Discretization(),
+  coupsaout_->setup_constrained_condition_coupling(*structure_field()->discretization(),
+      structure_field()->Interface()->LungASICondMap(), *ale_field()->discretization(),
       ale_field()->Interface()->LungASICondMap(), "StructAleCoupling", "FSICoupling", ndim);
   if (coupsaout_->MasterDofMap()->NumGlobalElements() == 0)
     FOUR_C_THROW("No nodes in matching structure ale interface. Empty coupling condition?");
 
   // coupling of fluid and structure dofs at airway outflow
-  coupfsout_->setup_constrained_condition_coupling(*fluid_field()->Discretization(),
-      fluid_field()->Interface()->LungASICondMap(), *StructureField()->Discretization(),
-      StructureField()->Interface()->LungASICondMap(), "StructAleCoupling", "FSICoupling", ndim);
+  coupfsout_->setup_constrained_condition_coupling(*fluid_field()->discretization(),
+      fluid_field()->Interface()->LungASICondMap(), *structure_field()->discretization(),
+      structure_field()->Interface()->LungASICondMap(), "StructAleCoupling", "FSICoupling", ndim);
   if (coupfsout_->MasterDofMap()->NumGlobalElements() == 0)
     FOUR_C_THROW("No nodes in matching structure ale/fluid interface. Empty coupling condition?");
 
   // coupling of fluid and ale dofs at airway outflow
-  coupfaout_->setup_constrained_condition_coupling(*fluid_field()->Discretization(),
-      fluid_field()->Interface()->LungASICondMap(), *ale_field()->Discretization(),
+  coupfaout_->setup_constrained_condition_coupling(*fluid_field()->discretization(),
+      fluid_field()->Interface()->LungASICondMap(), *ale_field()->discretization(),
       ale_field()->Interface()->LungASICondMap(), "StructAleCoupling", "FSICoupling", ndim);
   if (coupfaout_->MasterDofMap()->NumGlobalElements() == 0)
     FOUR_C_THROW("No nodes in matching ale fluid ouflow interface. Empty coupling condition?");
@@ -341,7 +341,7 @@ void FSI::LungMonolithic::GeneralSetup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::LungMonolithic::StructToAleOutflow(
+Teuchos::RCP<Epetra_Vector> FSI::LungMonolithic::struct_to_ale_outflow(
     Teuchos::RCP<Epetra_Vector> iv) const
 {
   return coupsaout_->MasterToSlave(iv);
@@ -366,7 +366,7 @@ void FSI::LungMonolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increm
   {
     // extract sum of all iterative increments of lagrange multipliers
     // in this time step (this is what we get from NOX)
-    IncLagrMultVec_ = Extractor().ExtractVector(step_increment, 3);
+    IncLagrMultVec_ = extractor().ExtractVector(step_increment, 3);
 
     // update current lagrange multipliers
     LagrMultVec_->Update(1.0, *LagrMultVecOld_, 1.0, *IncLagrMultVec_, 0.0);
@@ -381,7 +381,7 @@ void FSI::LungMonolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increm
   Teuchos::RCP<Epetra_Vector> CurrVolsRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
 
   const Teuchos::RCP<ADAPTER::StructureLung>& structfield =
-      Teuchos::rcp_dynamic_cast<ADAPTER::StructureLung>(StructureField());
+      Teuchos::rcp_dynamic_cast<ADAPTER::StructureLung>(structure_field());
   CurrVolsRed->PutScalar(0.0);
   AddStructRHS_->PutScalar(0.0);
   AddStructConstrMatrix_->Zero();
@@ -477,14 +477,14 @@ void FSI::LungMonolithic::scale_system(CORE::LINALG::BlockSparseMatrixBase& mat,
         mat.Matrix(3, 2).EpetraMatrix()->RightScale(*acolsum_))
       FOUR_C_THROW("ale scaling failed");
 
-    Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b, 0);
-    Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b, 2);
+    Teuchos::RCP<Epetra_Vector> sx = extractor().ExtractVector(b, 0);
+    Teuchos::RCP<Epetra_Vector> ax = extractor().ExtractVector(b, 2);
 
     if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
-    Extractor().InsertVector(*sx, 0, b);
-    Extractor().InsertVector(*ax, 2, b);
+    extractor().InsertVector(*sx, 0, b);
+    extractor().InsertVector(*ax, 2, b);
   }
 }
 
@@ -500,23 +500,23 @@ void FSI::LungMonolithic::unscale_solution(
 
   if (scaling_infnorm)
   {
-    Teuchos::RCP<Epetra_Vector> sy = Extractor().ExtractVector(x, 0);
-    Teuchos::RCP<Epetra_Vector> ay = Extractor().ExtractVector(x, 2);
+    Teuchos::RCP<Epetra_Vector> sy = extractor().ExtractVector(x, 0);
+    Teuchos::RCP<Epetra_Vector> ay = extractor().ExtractVector(x, 2);
 
     if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) FOUR_C_THROW("ale scaling failed");
 
-    Extractor().InsertVector(*sy, 0, x);
-    Extractor().InsertVector(*ay, 2, x);
+    extractor().InsertVector(*sy, 0, x);
+    extractor().InsertVector(*ay, 2, x);
 
-    Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b, 0);
-    Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b, 2);
+    Teuchos::RCP<Epetra_Vector> sx = extractor().ExtractVector(b, 0);
+    Teuchos::RCP<Epetra_Vector> ax = extractor().ExtractVector(b, 2);
 
     if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
-    Extractor().InsertVector(*sx, 0, b);
-    Extractor().InsertVector(*ax, 2, b);
+    extractor().InsertVector(*sx, 0, b);
+    extractor().InsertVector(*ax, 2, b);
 
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0, 0).EpetraMatrix();
     srowsum_->Reciprocal(*srowsum_);
@@ -549,15 +549,15 @@ void FSI::LungMonolithic::unscale_solution(
   mat.Apply(x, r);
   r.Update(1., b, 1.);
 
-  Teuchos::RCP<Epetra_Vector> sr = Extractor().ExtractVector(r, 0);
-  Teuchos::RCP<Epetra_Vector> fr = Extractor().ExtractVector(r, 1);
-  Teuchos::RCP<Epetra_Vector> ar = Extractor().ExtractVector(r, 2);
-  Teuchos::RCP<Epetra_Vector> cr = Extractor().ExtractVector(r, 3);
+  Teuchos::RCP<Epetra_Vector> sr = extractor().ExtractVector(r, 0);
+  Teuchos::RCP<Epetra_Vector> fr = extractor().ExtractVector(r, 1);
+  Teuchos::RCP<Epetra_Vector> ar = extractor().ExtractVector(r, 2);
+  Teuchos::RCP<Epetra_Vector> cr = extractor().ExtractVector(r, 3);
 
   // increment additional ale residual
   aleresidual_->Update(-1., *ar, 0.);
 
-  std::ios_base::fmtflags flags = Utils()->out().flags();
+  std::ios_base::fmtflags flags = utils()->out().flags();
 
   double n, ns, nf, na, nc;
   r.Norm2(&n);
@@ -565,7 +565,7 @@ void FSI::LungMonolithic::unscale_solution(
   fr->Norm2(&nf);
   ar->Norm2(&na);
   cr->Norm2(&nc);
-  Utils()->out() << std::scientific << "\nlinear solver quality:\n"
+  utils()->out() << std::scientific << "\nlinear solver quality:\n"
                  << "L_2-norms:\n"
                  << "   |r|=" << n << "   |rs|=" << ns << "   |rf|=" << nf << "   |ra|=" << na
                  << "   |rc|=" << nc << "\n";
@@ -574,11 +574,11 @@ void FSI::LungMonolithic::unscale_solution(
   fr->NormInf(&nf);
   ar->NormInf(&na);
   cr->NormInf(&nc);
-  Utils()->out() << "L_inf-norms:\n"
+  utils()->out() << "L_inf-norms:\n"
                  << "   |r|=" << n << "   |rs|=" << ns << "   |rf|=" << nf << "   |ra|=" << na
                  << "   |rc|=" << nc << "\n";
 
-  Utils()->out().flags(flags);
+  utils()->out().flags(flags);
 }
 
 
@@ -658,13 +658,13 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::LungMonolithic::create_status_test(
       Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
 
   Teuchos::RCP<NOX::FSI::PartialNormF> structureDisp = Teuchos::rcp(new NOX::FSI::PartialNormF(
-      "displacement", Extractor(), 0, nlParams.get<double>("Norm abs disp"),
+      "displacement", extractor(), 0, nlParams.get<double>("Norm abs disp"),
       ::NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled));
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> structureDispUpdate =
-      Teuchos::rcp(new NOX::FSI::PartialNormUpdate("displacement update", Extractor(), 0,
+      Teuchos::rcp(new NOX::FSI::PartialNormUpdate("displacement update", extractor(), 0,
           nlParams.get<double>("Norm abs disp"), NOX::FSI::PartialNormUpdate::Scaled));
 
-  AddStatusTest(structureDisp);
+  add_status_test(structureDisp);
   structcombo->addStatusTest(structureDisp);
   // structcombo->addStatusTest(structureDispUpdate);
 
@@ -687,7 +687,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::LungMonolithic::create_status_test(
       Teuchos::rcp(new NOX::FSI::PartialNormUpdate("interface update", interfaceextract, 0,
           nlParams.get<double>("Norm abs vel"), NOX::FSI::PartialNormUpdate::Scaled));
 
-  AddStatusTest(interfaceTest);
+  add_status_test(interfaceTest);
   interfacecombo->addStatusTest(interfaceTest);
   // interfacecombo->addStatusTest(interfaceTestUpdate);
 
@@ -710,7 +710,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::LungMonolithic::create_status_test(
       Teuchos::rcp(new NOX::FSI::PartialNormUpdate("velocity update", fluidvelextract, 0,
           nlParams.get<double>("Norm abs vel"), NOX::FSI::PartialNormUpdate::Scaled));
 
-  AddStatusTest(innerFluidVel);
+  add_status_test(innerFluidVel);
   fluidvelcombo->addStatusTest(innerFluidVel);
   // fluidvelcombo->addStatusTest(innerFluidVelUpdate);
 
@@ -733,7 +733,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::LungMonolithic::create_status_test(
       Teuchos::rcp(new NOX::FSI::PartialNormUpdate("pressure update", fluidpressextract, 0,
           nlParams.get<double>("Norm abs pres"), NOX::FSI::PartialNormUpdate::Scaled));
 
-  AddStatusTest(fluidPress);
+  add_status_test(fluidPress);
   fluidpresscombo->addStatusTest(fluidPress);
   // fluidpresscombo->addStatusTest(fluidPressUpdate);
 
@@ -757,7 +757,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::LungMonolithic::create_status_test(
       Teuchos::rcp(new NOX::FSI::PartialNormUpdate("volume constraint update", volconstrextract, 0,
           nlParams.get<double>("Norm abs vol constr"), NOX::FSI::PartialNormUpdate::Scaled));
 
-  AddStatusTest(VolConstr);
+  add_status_test(VolConstr);
   volconstrcombo->addStatusTest(VolConstr);
   // volconstrcombo->addStatusTest(VolConstrUpdate);
 
@@ -770,9 +770,9 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::LungMonolithic::create_status_test(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungMonolithic::Update()
+void FSI::LungMonolithic::update()
 {
-  FSI::BlockMonolithic::Update();
+  FSI::BlockMonolithic::update();
 
   // update fluid flow rates and structure volumes and lagrange multipliers
   OldVols_->Update(1.0, *CurrVols_, 0.0);
@@ -783,17 +783,17 @@ void FSI::LungMonolithic::Update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungMonolithic::Output()
+void FSI::LungMonolithic::output()
 {
   // Note: The order is important here! In here control file entries are
   // written. And these entries define the order in which the filters handle
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
-  StructureField()->Output();
+  structure_field()->Output();
 
   // additional output of volume constraint related forces
   //   ADAPTER::StructureLung& structfield =
-  //   dynamic_cast<ADAPTER::StructureLung&>(StructureField());
+  //   dynamic_cast<ADAPTER::StructureLung&>(structure_field());
   //   structfield.OutputForces(AddStructRHS_);
 
   // Write history vectors in case of restart
@@ -802,7 +802,7 @@ void FSI::LungMonolithic::Output()
   if (writerestartevery_ and (Step() % writerestartevery_ == 0))
   {
     const Teuchos::RCP<ADAPTER::StructureLung>& structfield =
-        Teuchos::rcp_dynamic_cast<ADAPTER::StructureLung>(StructureField());
+        Teuchos::rcp_dynamic_cast<ADAPTER::StructureLung>(structure_field());
     Teuchos::RCP<Epetra_Vector> OldFlowRatesRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
     CORE::LINALG::Export(*OldFlowRates_, *OldFlowRatesRed);
     Teuchos::RCP<Epetra_Vector> OldVolsRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
@@ -870,7 +870,7 @@ void FSI::LungMonolithic::read_restart(int step)
   FSI::Monolithic::read_restart(step);
 
   const Teuchos::RCP<ADAPTER::StructureLung>& structfield =
-      Teuchos::rcp_dynamic_cast<ADAPTER::StructureLung>(StructureField());
+      Teuchos::rcp_dynamic_cast<ADAPTER::StructureLung>(structure_field());
 
   Teuchos::RCP<Epetra_Vector> OldFlowRatesRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
   Teuchos::RCP<Epetra_Vector> OldVolsRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
@@ -917,7 +917,7 @@ Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> FSI::LungMonolithic::SystemMat
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungMonolithic::CreateSystemMatrix(bool structuresplit)
+void FSI::LungMonolithic::create_system_matrix(bool structuresplit)
 {
   const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
@@ -968,7 +968,7 @@ void FSI::LungMonolithic::CreateSystemMatrix(bool structuresplit)
   switch (linearsolverstrategy_)
   {
     case INPAR::FSI::PreconditionedKrylov:
-      systemmatrix_ = Teuchos::rcp(new LungOverlappingBlockMatrix(Extractor(), *StructureField(),
+      systemmatrix_ = Teuchos::rcp(new LungOverlappingBlockMatrix(extractor(), *structure_field(),
           *fluid_field(), *ale_field(), structuresplit,
           CORE::UTILS::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"), pcomega[0], pciter[0],
           spcomega[0], spciter[0], fpcomega[0], fpciter[0], apcomega[0], apciter[0]));

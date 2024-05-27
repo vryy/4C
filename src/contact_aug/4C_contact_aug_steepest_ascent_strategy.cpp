@@ -114,7 +114,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AUG::STEEPESTASCENT::Strategy:
       // (only necessary in the parallel redistribution case)
       if (ParRedist())
       {
-        MORTAR::MatrixRowColTransformer& transformer = Data().matrix_row_col_transformer();
+        MORTAR::MatrixRowColTransformer& transformer = data().matrix_row_col_transformer();
         mat_ptr = transformer.redistributed_to_unredistributed(bt, *mat_ptr);
       }
 
@@ -154,16 +154,16 @@ void CONTACT::AUG::STEEPESTASCENT::Strategy::add_contributions_to_matrix_block_d
     CORE::LINALG::SparseMatrix& kdd, const CONTACT::ParamsInterface* cparams) const
 {
   //  if ( cparams and cparams->GetPredictorType() != INPAR::STR::pred_tangdis )
-  kdd.Add(*Data().DGGLinMatrixPtr(), false, 1.0, 1.0);
+  kdd.Add(*data().DGGLinMatrixPtr(), false, 1.0, 1.0);
 
   /* ignore the Lagrange multiplier dependent contact contributions during the
    * TangDis predictor */
   //  if ( cparams and cparams->GetPredictorType() != INPAR::STR::pred_tangdis )
-  kdd.Add(*Data().DGLmLinMatrixPtr(), false, -1.0, 1.0);
+  kdd.Add(*data().DGLmLinMatrixPtr(), false, -1.0, 1.0);
 
   // add inactive contributions (this is not well tested)
-  if (Data().add_inactiv_force_contributions())
-    kdd.Add(*Data().InactiveDDMatrixPtr(), false, -1.0, 1.0);
+  if (data().add_inactiv_force_contributions())
+    kdd.Add(*data().InactiveDDMatrixPtr(), false, -1.0, 1.0);
 }
 
 /*----------------------------------------------------------------------------*
@@ -257,7 +257,7 @@ CONTACT::AUG::STEEPESTASCENT::Strategy::compute_active_lagrange_incr_in_normal_d
 {
   // active lagrange multiplier increment in normal direction
   Teuchos::RCP<Epetra_Vector> znincr_active_ptr =
-      Teuchos::rcp(new Epetra_Vector(Data().GActiveNDofRowMap(), true));
+      Teuchos::rcp(new Epetra_Vector(data().GActiveNDofRowMap(), true));
   Epetra_Vector& znincr_active = *znincr_active_ptr;
 
   // nothing to do, if there are no active contributions
@@ -269,8 +269,8 @@ CONTACT::AUG::STEEPESTASCENT::Strategy::compute_active_lagrange_incr_in_normal_d
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> gradWGapUpdate;
   // Split dLmNWGapLinMatrix_
-  CORE::LINALG::SplitMatrix2x2(Data().d_lm_nw_gap_lin_matrix_ptr(),
-      Data().g_active_n_dof_row_map_ptr(), emptymap, gdisprowmap_, emptymap, gradWGapUpdate,
+  CORE::LINALG::SplitMatrix2x2(data().d_lm_nw_gap_lin_matrix_ptr(),
+      data().g_active_n_dof_row_map_ptr(), emptymap, gdisprowmap_, emptymap, gradWGapUpdate,
       tempmtx12, tempmtx21, tempmtx22);
 
   // calculate the Uzawa Update increment
@@ -278,16 +278,16 @@ CONTACT::AUG::STEEPESTASCENT::Strategy::compute_active_lagrange_incr_in_normal_d
   int err = gradWGapUpdate->Multiply(false, displ_incr, znincr_active);
   if (err) FOUR_C_THROW("Multiply error! (err=%d)", err);
 
-  CATCH_EPETRA_ERROR(znincr_active.Update(1.0, Data().WGap(), 1.0));
+  CATCH_EPETRA_ERROR(znincr_active.Update(1.0, data().WGap(), 1.0));
 
   // Scaling of the Lagrange multiplier increment
   // --> inverse area scaling
-  MultiplyElementwise(Data().KappaVec(), Data().GActiveNodeRowMap(), znincr_active, true);
+  MultiplyElementwise(data().KappaVec(), data().GActiveNodeRowMap(), znincr_active, true);
 
   // Update the final Lagrange multiplier increment.
   // These values will also be used to update the nodal quantities during
   // the recover routine.
-  MultiplyElementwise(Data().Cn(), Data().GActiveNodeRowMap(), znincr_active, false);
+  MultiplyElementwise(data().Cn(), data().GActiveNodeRowMap(), znincr_active, false);
 
   // We correct the increment sign.
   znincr_active.Scale(-1.0);
@@ -302,7 +302,7 @@ CONTACT::AUG::STEEPESTASCENT::Strategy::compute_inactive_lagrange_incr_in_normal
     const Epetra_Vector& displ_incr, const Epetra_Vector& zold)
 {
   Teuchos::RCP<Epetra_Map> ginactivedofs =
-      CORE::LINALG::SplitMap(SlDoFRowMap(true), Data().GActiveDofRowMap());
+      CORE::LINALG::SplitMap(SlDoFRowMap(true), data().GActiveDofRowMap());
 
   // inactive lagrange multiplier increment in normal and tangential direction
   Teuchos::RCP<Epetra_Vector> zincr_inactive_ptr = Teuchos::rcp(new Epetra_Vector(*ginactivedofs));
@@ -317,10 +317,10 @@ CONTACT::AUG::STEEPESTASCENT::Strategy::compute_inactive_lagrange_incr_in_normal
   Teuchos::RCP<const Epetra_Vector> displ_incr_sl_ptr =
       CORE::LINALG::ExtractMyVector(displ_incr, SlDoFRowMap(true));
 
-  int err = Data().InactiveLinMatrix().Multiply(false, *displ_incr_sl_ptr, zincr_inactive);
+  int err = data().InactiveLinMatrix().Multiply(false, *displ_incr_sl_ptr, zincr_inactive);
   if (err) FOUR_C_THROW("Multiply error (err=%d)!", err);
 
-  zincr_inactive.ReciprocalMultiply(-1.0, Data().InactiveDiagMatrix(), zincr_inactive, 0.0);
+  zincr_inactive.ReciprocalMultiply(-1.0, data().InactiveDiagMatrix(), zincr_inactive, 0.0);
 
   CATCH_EPETRA_ERROR(zincr_inactive.Update(-1.0, zold_inactive, 1.0));
 
@@ -340,9 +340,9 @@ void CONTACT::AUG::STEEPESTASCENT::Strategy::post_augment_direction(
 void CONTACT::AUG::STEEPESTASCENT::Strategy::remove_condensed_contributions_from_rhs(
     Epetra_Vector& str_rhs) const
 {
-  Epetra_Vector regforce(*Data().GSlMaDofRowMapPtr());
-  CORE::LINALG::AssembleMyVector(0.0, regforce, 1.0, *Data().SlForceGPtr());
-  CORE::LINALG::AssembleMyVector(1.0, regforce, 1.0, *Data().MaForceGPtr());
+  Epetra_Vector regforce(*data().GSlMaDofRowMapPtr());
+  CORE::LINALG::AssembleMyVector(0.0, regforce, 1.0, *data().SlForceGPtr());
+  CORE::LINALG::AssembleMyVector(1.0, regforce, 1.0, *data().MaForceGPtr());
 
   Epetra_Vector regforce_exp(*ProblemDofs());
   CORE::LINALG::Export(regforce, regforce_exp);

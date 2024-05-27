@@ -52,7 +52,7 @@ namespace DRT
     //! @name Enums and Friends
 
     /*!
-    \brief The Discretization is a friend of Node
+    \brief The discretization is a friend of Node
     */
     friend class Discretization;
 
@@ -199,7 +199,7 @@ namespace DRT
     \param name : Name of condition
     \param cond : The Condition class
 
-    \note Normally, This method would be called by the Discretization to
+    \note Normally, This method would be called by the discretization to
           set references to a Condition in the nodes. As the Condition is
           Teuchos::RCP, one can not say who actually owns the underlying object.
           The node does not communicate any conditions through Pack/Unpack,
@@ -309,7 +309,7 @@ namespace DRT
 
     Resizes the element ptr vector and adds ptr at the end of vector
     */
-    inline void AddElementPtr(DRT::Element* eleptr)
+    inline void add_element_ptr(DRT::Element* eleptr)
     {
       const int size = element_.size();
       element_.resize(size + 1);

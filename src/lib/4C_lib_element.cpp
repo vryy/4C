@@ -465,7 +465,7 @@ void DRT::Element::LocationVector(const DRT::Discretization& dis, const std::vec
 
   la.Clear();
 
-  // we need to look at all DofSets of our Discretization
+  // we need to look at all DofSets of our discretization
   for (int dofset = 0; dofset < la.Size(); ++dofset)
   {
     std::vector<int>& lm = la[dofset].lm_;
@@ -527,7 +527,7 @@ void DRT::Element::LocationVector(const DRT::Discretization& dis, const std::vec
     }
 
     // fill the vector with face dofs
-    if (this->NumDofPerFace(0) > 0)
+    if (this->num_dof_per_face(0) > 0)
     {
       for (int i = 0; i < NumFace(); ++i)
       {
@@ -578,7 +578,7 @@ void DRT::Element::LocationVector(
 
   la.Clear();
 
-  // we need to look at all DofSets of our Discretization
+  // we need to look at all DofSets of our discretization
   for (int dofset = 0; dofset < la.Size(); ++dofset)
   {
     std::vector<int>& lm = la[dofset].lm_;
@@ -646,7 +646,7 @@ void DRT::Element::LocationVector(
     }
 
     // fill the vector with face dofs
-    if (this->NumDofPerFace(0) > 0)
+    if (this->num_dof_per_face(0) > 0)
     {
       for (int i = 0; i < NumFace(); ++i)
       {
@@ -698,7 +698,7 @@ void DRT::Element::LocationVector(
 
             if (!dirichRelevant)
             {
-              for (int j = 0; j < this->NumDofPerFace(i); ++j) lmdirich.push_back(0);
+              for (int j = 0; j < this->num_dof_per_face(i); ++j) lmdirich.push_back(0);
               continue;
             }
 
@@ -823,7 +823,7 @@ void DRT::Element::LocationVector(const Discretization& dis, std::vector<int>& l
   lmowner.resize(lm.size(), Owner());
 
   // fill the vector with face dofs
-  if (this->NumDofPerFace(0) > 0)
+  if (this->num_dof_per_face(0) > 0)
   {
     for (int i = 0; i < NumFace(); ++i)
     {
@@ -903,7 +903,7 @@ void DRT::Element::LocationVector(const Discretization& dis, std::vector<int>& l
   lmowner.resize(lm.size(), Owner());
 
   // fill the vector with face dofs
-  if (NumDofPerFace(0) > 0)
+  if (num_dof_per_face(0) > 0)
   {
     for (int i = 0; i < NumFace(); ++i)
     {
@@ -1169,6 +1169,9 @@ void DRT::FaceElement::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  set the local trafo map (protected)                kronbichler 03/15|
  *----------------------------------------------------------------------*/
-void DRT::FaceElement::SetLocalTrafoMap(const std::vector<int>& trafo) { localtrafomap_ = trafo; }
+void DRT::FaceElement::set_local_trafo_map(const std::vector<int>& trafo)
+{
+  localtrafomap_ = trafo;
+}
 
 FOUR_C_NAMESPACE_CLOSE

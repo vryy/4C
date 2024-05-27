@@ -44,7 +44,7 @@ MORTAR::Coupling2d::Coupling2d(DRT::Discretization& idiscret, int dim, bool quad
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Comm& MORTAR::Coupling2d::Comm() const { return idiscret_.Comm(); }
+const Epetra_Comm& MORTAR::Coupling2d::comm() const { return idiscret_.Comm(); }
 
 
 /*----------------------------------------------------------------------*
@@ -159,7 +159,7 @@ bool MORTAR::Coupling2d::Project()
       std::vector<double> xm(2, 0.0);
       CORE::LINALG::SerialDenseVector mval(mele_.num_node());
       CORE::LINALG::SerialDenseMatrix deriv(mele_.num_node(), 1);
-      mele_.EvaluateShape(xinode.data(), mval, deriv, mele_.num_node());
+      mele_.evaluate_shape(xinode.data(), mval, deriv, mele_.num_node());
 
       for (int mn = 0; mn < MasterElement().num_node(); mn++)
       {
@@ -861,7 +861,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInter
   {
     // do the overlap integration (integrate and linearize both M and gap)
     MORTAR::Integrator::Impl(SlaveElement(), MasterElement(), interface_params())
-        ->IntegrateSegment2D(SlaveElement(), sxia, sxib, MasterElement(), mxia, mxib, Comm());
+        ->IntegrateSegment2D(SlaveElement(), sxia, sxib, MasterElement(), mxia, mxib, comm());
   }
 
   // *******************************************************************
@@ -911,7 +911,7 @@ MORTAR::Coupling2dManager::Coupling2dManager(DRT::Discretization& idiscret, int 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::Coupling2dManager::IntegrateCoupling(
+void MORTAR::Coupling2dManager::integrate_coupling(
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // decide which type of numerical integration scheme
@@ -1054,7 +1054,7 @@ void MORTAR::Coupling2dManager::IntegrateCoupling(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling2dManager::EvaluateCoupling(
+bool MORTAR::Coupling2dManager::evaluate_coupling(
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   if (MasterElements().size() == 0) return false;
@@ -1067,7 +1067,7 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling(
   //*********************************
   if (algo == INPAR::MORTAR::algorithm_mortar or algo == INPAR::MORTAR::algorithm_gpts)
   {
-    IntegrateCoupling(mparams_ptr);
+    integrate_coupling(mparams_ptr);
   }
 
   //*********************************
@@ -1165,7 +1165,7 @@ void MORTAR::Coupling2dManager::consist_dual_shape()
           INPAR::MORTAR::shape_standard, sxi.data(), sval, sderiv, nnodes);
     }
     else
-      SlaveElement().EvaluateShape(sxi.data(), sval, sderiv, nnodes);
+      SlaveElement().evaluate_shape(sxi.data(), sval, sderiv, nnodes);
 
     // evaluate the two slave side Jacobians
     double dxdsxi = SlaveElement().Jacobian(sxi.data());

@@ -38,7 +38,7 @@ MAT::PAR::FluidPoroMultiPhase::FluidPoroMultiPhase(Teuchos::RCP<CORE::MAT::PAR::
 /*----------------------------------------------------------------------*
  | create a poro multiphase material                        vuong 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FluidPoroMultiPhase::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FluidPoroMultiPhase::create_material()
 {
   return Teuchos::rcp(new MAT::FluidPoroMultiPhase(this));
 }
@@ -224,9 +224,9 @@ void MAT::FluidPoroMultiPhase::Initialize()
   if (Parameter() != nullptr)  // params is null pointer in post-process mode
   {
     if (Parameter()->local_)
-      materials = MaterialMapWrite();
+      materials = material_map_write();
     else
-      materials = Parameter()->MaterialMapWrite();
+      materials = Parameter()->material_map_write();
 
     std::map<int, Teuchos::RCP<CORE::MAT::Material>>::iterator it;
     for (it = materials->begin(); it != materials->end(); it++)

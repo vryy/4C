@@ -58,7 +58,7 @@ namespace MAT
         //! @}
 
         /// Create material instance of matching type with my parameters
-        Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override { return Teuchos::null; };
+        Teuchos::RCP<CORE::MAT::Material> create_material() override { return Teuchos::null; };
       };  // class IsoMuscleBlemker
     }     // namespace PAR
 

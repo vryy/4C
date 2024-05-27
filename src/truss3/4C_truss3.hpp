@@ -163,7 +163,7 @@ namespace DRT
       void LocationVector(
           const Discretization& dis, LocationArray& la, bool doDirichlet) const override;
 
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       int NumDofPerNode(const DRT::Node& node) const override
       {
@@ -216,7 +216,7 @@ namespace DRT
       };
 
       //! get access to the parameter interface
-      inline STR::ELEMENTS::ParamsInterface& ParamsInterface()
+      inline STR::ELEMENTS::ParamsInterface& params_interface()
       {
         if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;
@@ -233,14 +233,14 @@ namespace DRT
           std::map<std::string, std::vector<double>>& ele_state);
 
       //! determine Gauss rule from required type of integration
-      CORE::FE::GaussRule1D MyGaussRule(int nnode, IntegrationType integrationtype);
+      CORE::FE::GaussRule1D my_gauss_rule(int nnode, IntegrationType integrationtype);
 
       //! calculation of elastic energy
       //!
       //! \param ele_state [in]   elemental states (depending on the instantiated element)
       //! \param params
       //! \param intenergy
-      virtual void Energy(const std::map<std::string, std::vector<double>>& ele_state,
+      virtual void energy(const std::map<std::string, std::vector<double>>& ele_state,
           Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& intenergy);
 
       //! cross section area

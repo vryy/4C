@@ -46,26 +46,26 @@ namespace
       // first particle
       {
         globalid = 1;
-        particle = createTestParticle({1.20, 0.70, 2.10}, {0.23, 1.76, 3.89}, {0.12});
+        particle = create_test_particle({1.20, 0.70, 2.10}, {0.23, 1.76, 3.89}, {0.12});
         container_->AddParticle(index, globalid, particle);
       }
 
       // second particle
       {
         globalid = 2;
-        particle = createTestParticle({-1.05, 12.6, -8.54}, {0.25, -21.5, 1.0}, {12.34});
+        particle = create_test_particle({-1.05, 12.6, -8.54}, {0.25, -21.5, 1.0}, {12.34});
         container_->AddParticle(index, globalid, particle);
       }
 
       // third particle
       {
         globalid = 3;
-        particle = createTestParticle({61.0, -2.63, 0.11}, {-7.35, -5.98, 1.11}, {0.5});
+        particle = create_test_particle({61.0, -2.63, 0.11}, {-7.35, -5.98, 1.11}, {0.5});
         container_->AddParticle(index, globalid, particle);
       }
     }
 
-    PARTICLEENGINE::ParticleStates createTestParticle(
+    PARTICLEENGINE::ParticleStates create_test_particle(
         std::vector<double> pos, std::vector<double> vel, std::vector<double> mass)
     {
       PARTICLEENGINE::ParticleStates particle;
@@ -138,7 +138,7 @@ namespace
     particle.assign(statesvectorsize_, std::vector<double>{});
 
     globalid = 4;
-    particle = createTestParticle({-1.23, 1.70, 9.10}, {6.23, 2.3, 6.9}, {5.12});
+    particle = create_test_particle({-1.23, 1.70, 9.10}, {6.23, 2.3, 6.9}, {5.12});
 
     int index(0);
     container_->AddParticle(index, globalid, particle);
@@ -156,7 +156,7 @@ namespace
     PARTICLEENGINE::ParticleStates particle_reference;
     particle_reference.assign(statesvectorsize_, std::vector<double>{});
 
-    particle_reference = createTestParticle({-1.23, 1.70, 9.10}, {6.23, 2.3, 6.9}, {5.12});
+    particle_reference = create_test_particle({-1.23, 1.70, 9.10}, {6.23, 2.3, 6.9}, {5.12});
 
     int index = 0;
 
@@ -191,17 +191,18 @@ namespace
       if (index == 0)
       {
         globalid_reference = 1;
-        particle_reference = createTestParticle({1.20, 0.70, 2.10}, {0.23, 1.76, 3.89}, {0.12});
+        particle_reference = create_test_particle({1.20, 0.70, 2.10}, {0.23, 1.76, 3.89}, {0.12});
       }
       else if (index == 1)
       {
         globalid_reference = 2;
-        particle_reference = createTestParticle({-1.05, 12.6, -8.54}, {0.25, -21.5, 1.0}, {12.34});
+        particle_reference =
+            create_test_particle({-1.05, 12.6, -8.54}, {0.25, -21.5, 1.0}, {12.34});
       }
       else if (index == 2)
       {
         globalid_reference = 3;
-        particle_reference = createTestParticle({61.0, -2.63, 0.11}, {-7.35, -5.98, 1.11}, {0.5});
+        particle_reference = create_test_particle({61.0, -2.63, 0.11}, {-7.35, -5.98, 1.11}, {0.5});
       }
 
       container_->GetParticle(index, globalid, particle);
@@ -229,12 +230,13 @@ namespace
       if (index == 0)
       {
         globalid_reference = 3;
-        particle_reference = createTestParticle({61.0, -2.63, 0.11}, {-7.35, -5.98, 1.11}, {0.5});
+        particle_reference = create_test_particle({61.0, -2.63, 0.11}, {-7.35, -5.98, 1.11}, {0.5});
       }
       else if (index == 1)
       {
         globalid_reference = 2;
-        particle_reference = createTestParticle({-1.05, 12.6, -8.54}, {0.25, -21.5, 1.0}, {12.34});
+        particle_reference =
+            create_test_particle({-1.05, 12.6, -8.54}, {0.25, -21.5, 1.0}, {12.34});
       }
 
       container_->GetParticle(index, globalid, particle);
@@ -393,17 +395,17 @@ namespace
       if (index == 0)
       {
         particle_reference =
-            createTestParticle({1.8, 1.05, 3.15}, {0.7475, 5.72, 12.6425}, {0.114});
+            create_test_particle({1.8, 1.05, 3.15}, {0.7475, 5.72, 12.6425}, {0.114});
       }
       else if (index == 1)
       {
         particle_reference =
-            createTestParticle({-1.575, 18.9, -12.81}, {0.8125, -69.875, 3.25}, {11.723});
+            create_test_particle({-1.575, 18.9, -12.81}, {0.8125, -69.875, 3.25}, {11.723});
       }
       else if (index == 2)
       {
         particle_reference =
-            createTestParticle({91.5, -3.945, 0.165}, {-23.8875, -19.435, 3.6075}, {0.475});
+            create_test_particle({91.5, -3.945, 0.165}, {-23.8875, -19.435, 3.6075}, {0.475});
       }
 
       container_->GetParticle(index, globalid, particle);
@@ -428,16 +430,17 @@ namespace
       SCOPED_TRACE("Particle " + std::to_string(index));
       if (index == 0)
       {
-        particle_reference = createTestParticle({1.315, 1.58, 4.045}, {0.23, 1.76, 3.89}, {0.12});
+        particle_reference = create_test_particle({1.315, 1.58, 4.045}, {0.23, 1.76, 3.89}, {0.12});
       }
       else if (index == 1)
       {
-        particle_reference = createTestParticle({-0.925, 1.85, -8.04}, {0.25, -21.5, 1.0}, {12.34});
+        particle_reference =
+            create_test_particle({-0.925, 1.85, -8.04}, {0.25, -21.5, 1.0}, {12.34});
       }
       else if (index == 2)
       {
         particle_reference =
-            createTestParticle({57.325, -5.62, 0.665}, {-7.35, -5.98, 1.11}, {0.5});
+            create_test_particle({57.325, -5.62, 0.665}, {-7.35, -5.98, 1.11}, {0.5});
       }
 
       container_->GetParticle(index, globalid, particle);
@@ -467,7 +470,7 @@ namespace
     vel[2] = 0.933;
     mass[0] = 1.234;
 
-    particle_reference = createTestParticle(pos, vel, mass);
+    particle_reference = create_test_particle(pos, vel, mass);
 
     container_->set_state(pos, PARTICLEENGINE::Position);
     container_->set_state(vel, PARTICLEENGINE::Velocity);
@@ -489,7 +492,7 @@ namespace
     PARTICLEENGINE::ParticleStates particle_reference;
     particle_reference.assign(statesvectorsize_, std::vector<double>{});
 
-    particle_reference = createTestParticle({0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0});
+    particle_reference = create_test_particle({0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0});
 
     container_->ClearState(PARTICLEENGINE::Position);
     container_->ClearState(PARTICLEENGINE::Velocity);

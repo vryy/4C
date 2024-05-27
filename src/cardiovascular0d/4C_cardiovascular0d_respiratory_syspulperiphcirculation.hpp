@@ -112,7 +112,7 @@ namespace UTILS
 
     CardiovascularRespiratory0DSysPulPeriphCirculation(
         Teuchos::RCP<DRT::Discretization>
-            discr,                         ///< Discretization where Cardiovascular0D lives on
+            discr,                         ///< discretization where Cardiovascular0D lives on
         const std::string& conditionname,  ///< Name of condition to create Cardiovascular0D from
         std::vector<int>& curID            ///< current ID
     );

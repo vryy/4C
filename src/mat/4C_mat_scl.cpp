@@ -44,12 +44,12 @@ MAT::PAR::Scl::Scl(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
         transnrparanum_, transnr_.size());
 
   // check if number of provided parameter is valid for a the chosen predefined function
-  CheckProvidedParams(transnrcurve_, transnr_);
+  check_provided_params(transnrcurve_, transnr_);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Scl::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Scl::create_material()
 {
   return Teuchos::rcp(new MAT::Scl(this));
 }
@@ -126,9 +126,9 @@ void MAT::Scl::Unpack(const std::vector<char>& data)
 double MAT::Scl::compute_transference_number(const double cint) const
 {
   if (trans_nr_curve() < 0)
-    return EvalPreDefinedFunct(trans_nr_curve(), cint, trans_nr_params());
+    return eval_pre_defined_funct(trans_nr_curve(), cint, trans_nr_params());
   else if (trans_nr_curve() == 0)
-    return EvalPreDefinedFunct(-1, cint, trans_nr_params());
+    return eval_pre_defined_funct(-1, cint, trans_nr_params());
   else
   {
     return GLOBAL::Problem::Instance()
@@ -160,7 +160,7 @@ double MAT::Scl::compute_diffusion_coefficient(
 {
   // L indicates the mobility factor corresponding to the linear onsager relation
   const double LRT = params_->R_ * inv_val_valence_faraday_squared() *
-                     ComputeConductivity(concentration, temperature) *
+                     compute_conductivity(concentration, temperature) *
                      (1.0 / (1.0 - (concentration - params_->cbulk_) * params_->delta_nu_)) *
                      temperature;
   const double c_max = params_->cmax_;
@@ -277,7 +277,7 @@ double MAT::Scl::compute_onsager_coefficient(
   // onsager coefficient (mobility factor) is derived from the measurable ionic conductivity and is
   // also related to deltanu, the difference between the partial molar volumes of vacancies and
   // cations
-  const double conductivity = ComputeConductivity(concentration, temperature);
+  const double conductivity = compute_conductivity(concentration, temperature);
   return inv_val_valence_faraday_squared() * conductivity /
          (1.0 - (concentration - params_->cbulk_) * params_->delta_nu_);
 }
@@ -290,7 +290,7 @@ double MAT::Scl::compute_concentration_derivative_of_onsager_coefficient(
   // derivative of mobility factor w.r.t concentration depends on the concentration dependence of
   // the conductivity and another factor deltanu, that takes volumetric effects into account
   // (usually, deltanu = 0.0)
-  const double conductivity = ComputeConductivity(concentration, temperature);
+  const double conductivity = compute_conductivity(concentration, temperature);
   const double conductivityderconc =
       compute_concentration_derivative_of_conductivity(concentration, temperature);
   const double cbulk = params_->cbulk_;

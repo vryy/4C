@@ -48,7 +48,7 @@ MAT::PAR::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastH
   }
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MultiplicativeSplitDefgradElastHyper::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MultiplicativeSplitDefgradElastHyper::create_material()
 {
   return Teuchos::rcp(new MAT::MultiplicativeSplitDefgradElastHyper(this));
 }

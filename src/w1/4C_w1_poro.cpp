@@ -218,7 +218,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1Poro<distype>::GetMaterials()
+void DRT::ELEMENTS::Wall1Poro<distype>::get_materials()
 {
   // get structure material
   if (struct_mat_ == Teuchos::null)

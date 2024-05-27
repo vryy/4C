@@ -90,7 +90,7 @@ MAT::PAR::ConstraintMixture::ConstraintMixture(Teuchos::RCP<CORE::MAT::PAR::Mate
 }
 
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ConstraintMixture::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ConstraintMixture::create_material()
 {
   return Teuchos::rcp(new MAT::ConstraintMixture(this));
 }

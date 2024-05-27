@@ -102,38 +102,38 @@ namespace FLD
 
    protected:
     // set element params for xwall EnrichmentType, distributed for xwall discretization
-    virtual void SetXWallParamsXWDis(Teuchos::ParameterList& eleparams);
+    virtual void set_x_wall_params_xw_dis(Teuchos::ParameterList& eleparams);
 
     // setup XWall
-    void Setup();
+    void setup();
 
     // initialize some maps
-    void InitXWallMaps();
+    void init_x_wall_maps();
 
     // initialize a toggle vector for the element
-    void InitToggleVector();
+    void init_toggle_vector();
 
     // initialize wall distance
-    void InitWallDist();
+    void init_wall_dist();
 
     // setup xwall discretization
-    void SetupXWallDis();
+    void setup_x_wall_dis();
 
     // setup l2 projection
-    void SetupL2Projection();
+    void setup_l2_projection();
 
     // calculate wall shear stress
-    void CalcTauW(int step, Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> wss);
+    void calc_tau_w(int step, Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> wss);
 
     // l2 project vectors
-    void L2ProjectVector(Teuchos::RCP<Epetra_Vector> veln, Teuchos::RCP<Epetra_Vector> velnp,
+    void l2_project_vector(Teuchos::RCP<Epetra_Vector> veln, Teuchos::RCP<Epetra_Vector> velnp,
         Teuchos::RCP<Epetra_Vector> accn);
 
     // calculate parameter for stabilization parameter mk
     void calc_mk();
 
     // for inflowchannel
-    void TransferAndSaveTauw();
+    void transfer_and_save_tauw();
 
     // for inflowchannel
     void overwrite_transferred_values();
@@ -314,7 +314,7 @@ namespace FLD
 
    private:
     // set element params for xwall EnrichmentType, distributed for xwall discretization
-    void SetXWallParamsXWDis(Teuchos::ParameterList& eleparams) override;
+    void set_x_wall_params_xw_dis(Teuchos::ParameterList& eleparams) override;
     Teuchos::RCP<Epetra_Vector> mydispnp_;
     Teuchos::RCP<Epetra_Vector> mygridv_;
 

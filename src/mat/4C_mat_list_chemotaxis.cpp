@@ -47,12 +47,12 @@ MAT::PAR::MatListChemotaxis::MatListChemotaxis(Teuchos::RCP<CORE::MAT::PAR::Mate
     {
       const int pairid = *m;
       Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(pairid);
-      MaterialMapWrite()->insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(pairid, mat));
+      material_map_write()->insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(pairid, mat));
     }
   }
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MatListChemotaxis::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MatListChemotaxis::create_material()
 {
   return Teuchos::rcp(new MAT::MatListChemotaxis(this));
 }
@@ -104,7 +104,7 @@ void MAT::MatListChemotaxis::setup_mat_map()
     const int pairid = *m;
     Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(pairid);
     if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
-    MaterialMapWrite()->insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(pairid, mat));
+    material_map_write()->insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(pairid, mat));
   }
   return;
 }

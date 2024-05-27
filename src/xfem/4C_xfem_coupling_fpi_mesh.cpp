@@ -63,7 +63,7 @@ XFEM::MeshCouplingFPI::MeshCouplingFPI(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFPI::SetCouplingName()
+void XFEM::MeshCouplingFPI::set_coupling_name()
 {
   // Set couling name dependent on the field type ... to be able to differentiate between the two
   // fpi coupling objects!
@@ -81,9 +81,9 @@ void XFEM::MeshCouplingFPI::SetCouplingName()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFPI::InitStateVectors()
+void XFEM::MeshCouplingFPI::init_state_vectors()
 {
-  XFEM::MeshCoupling::InitStateVectors();
+  XFEM::MeshCoupling::init_state_vectors();
 
   const Epetra_Map* cutterdofrowmap = cutter_dis_->dof_row_map();
   const Epetra_Map* cutterdofcolmap = cutter_dis_->DofColMap();
@@ -634,7 +634,7 @@ void XFEM::MeshCouplingFPI::GmshOutput(const std::string& filename_base, const i
 
   // compute the current boundary position
   std::map<int, CORE::LINALG::Matrix<3, 1>> currinterfacepositions;
-  XFEM::UTILS::ExtractNodeVectors(cutter_dis_, currinterfacepositions, idispnp_);
+  XFEM::UTILS::extract_node_vectors(cutter_dis_, currinterfacepositions, idispnp_);
 
 
   const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_fsi.str(),
@@ -690,7 +690,7 @@ void XFEM::MeshCouplingFPI::gmsh_output_discretization(std::ostream& gmshfilecon
   Teuchos::RCP<Epetra_Vector> solid_dispnp =
       CORE::LINALG::CreateVector(*cond_dis_->dof_row_map(), true);
 
-  XFEM::UTILS::ExtractNodeVectors(cond_dis_, currsolidpositions, solid_dispnp);
+  XFEM::UTILS::extract_node_vectors(cond_dis_, currsolidpositions, solid_dispnp);
 
   XFEM::UTILS::PrintDiscretizationToStream(cond_dis_, cond_dis_->Name(), true, false, true, false,
       false, false, gmshfilecontent, &currsolidpositions);
@@ -939,7 +939,7 @@ double XFEM::MeshCouplingFPI::CalcPorosity(
 
   Teuchos::ParameterList params;  // empty parameter list;
   double porosity;
-  poromat->ComputePorosity(params, pres, J,
+  poromat->compute_porosity(params, pres, J,
       1,  // not used
       porosity, false);
   return porosity;

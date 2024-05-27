@@ -30,7 +30,7 @@ namespace CORE::Dofsets
     - owns auxiliary dofs that belong to the same nodes as the original dof set, but
     - are not necessarily build based on element information, but can be chosen arbitrarily
 
-    This DofSet is meant to be used as secondary DofSet in a Discretization
+    This DofSet is meant to be used as secondary DofSet in a discretization
     if there are two volume coupled Discretizations with non-matching nodes. Think
     of Structure-Thermo coupling. In this case, the structure discretization gets a
     auxiliary dof set with one degree of freedom (temperature) per node and the thermo
@@ -146,7 +146,7 @@ namespace CORE::Dofsets
     }
 
     /// get number of element dofs for this element
-    int NumDofPerElement(const DRT::Element& element) const override
+    int num_dof_per_element(const DRT::Element& element) const override
     {
       if (numdofperelementelewise_ == Teuchos::null)
         return numdofperelement_;
@@ -155,7 +155,7 @@ namespace CORE::Dofsets
     }
 
     /// get number of element dofs for this element
-    int NumDofPerFace(const DRT::Element& element, int face) const override
+    int num_dof_per_face(const DRT::Element& element, int face) const override
     {
       if (numdofperfacefacewise_ == Teuchos::null)
         return numdofperface_;

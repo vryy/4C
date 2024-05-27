@@ -92,7 +92,7 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Create the indirect assembly manager for this condition.
-     * @param discret (in) Discretization.
+     * @param discret (in) discretization.
      */
     Teuchos::RCP<SUBMODELEVALUATOR::BeamContactAssemblyManager> create_indirect_assembly_manager(
         const Teuchos::RCP<const DRT::Discretization>& discret) override;
@@ -110,7 +110,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Check if a solid ID is in this condition.
      */
-    virtual bool IdInOther(const int id_other) const = 0;
+    virtual bool id_in_other(const int id_other) const = 0;
 
     /**
      * \brief Return the created beam contact pair for this condition.
@@ -171,7 +171,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Check if a solid ID is in this condition.
      */
-    inline bool IdInOther(const int id_other) const override
+    inline bool id_in_other(const int id_other) const override
     {
       if (volume_ids_.find(id_other) != volume_ids_.end()) return true;
       return false;
@@ -196,7 +196,7 @@ namespace BEAMINTERACTION
         const Teuchos::RCP<const CORE::Conditions::Condition>& condition_line,
         const Teuchos::RCP<const CORE::Conditions::Condition>& condition_other,
         const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params,
-        const bool is_mesh_tying);
+        const bool is_mesh_tying_in);
 
 
     /**
@@ -209,7 +209,7 @@ namespace BEAMINTERACTION
      * \brief Here we get all face elements that are needed for the created pairs. This includes
      * elements which are not part of any pair, but share a node with a surface of a pair.
      *
-     * @param discret (in) Discretization.
+     * @param discret (in) discretization.
      */
     void Setup(const Teuchos::RCP<const DRT::Discretization>& discret) override;
 
@@ -230,7 +230,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Check if a solid ID is in this condition.
      */
-    inline bool IdInOther(const int id_other) const override
+    inline bool id_in_other(const int id_other) const override
     {
       if (surface_ids_.find(id_other) != surface_ids_.end()) return true;
       return false;
@@ -239,12 +239,12 @@ namespace BEAMINTERACTION
     /**
      * \brief If this condition is a mesh tying condition.
      */
-    inline bool IsMeshTying() const { return is_mesh_tying_; }
+    inline bool is_mesh_tying() const { return is_mesh_tying_; }
 
     /**
      * \brief If this condition is a contact condition.
      */
-    inline bool IsContact() const { return !is_mesh_tying_; }
+    inline bool is_contact() const { return !is_mesh_tying_; }
 
    private:
     //! If the condition is mesh tying or contact.

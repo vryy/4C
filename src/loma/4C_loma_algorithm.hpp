@@ -93,7 +93,7 @@ namespace LOMA
 
    protected:
     /// do initial calculations
-    void InitialCalculations();
+    void initial_calculations();
 
     /// prepare time step
     void prepare_time_step() override;
@@ -102,7 +102,7 @@ namespace LOMA
     void outer_loop();
 
     /// do monolithic iteration loop
-    void MonoLoop();
+    void mono_loop();
 
     /// set fluid values required in scatra
     void set_fluid_values_in_sca_tra();
@@ -111,7 +111,7 @@ namespace LOMA
     void set_sca_tra_values_in_fluid();
 
     /// set up right-hand-side for monolithic low-Mach-number system
-    void SetupMonoLomaMatrix();
+    void setup_mono_loma_matrix();
 
     /// evaluate off-diagonal block with fluid weighting functions
     void evaluate_loma_od_block_mat_fluid(Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_fs);
@@ -120,22 +120,22 @@ namespace LOMA
     // void EvaluateLomaODBlockMatScaTra(Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_sf);
 
     /// set up right-hand-side for monolithic low-Mach-number system
-    void SetupMonoLomaRHS();
+    void setup_mono_loma_rhs();
 
     /// solve monolithic low-Mach-number system
-    void MonoLomaSystemSolve();
+    void mono_loma_system_solve();
 
     /// update for next iteration step for monolithic low-Mach-number system
-    void IterUpdate();
+    void iter_update();
 
     /// convergence Check for present iteration step
     bool convergence_check(int itnum);
 
     /// update for next time step
-    void TimeUpdate();
+    void time_update();
 
     /// write output
-    void Output() override;
+    void output() override;
 
     /// flag for monolithic solver
     bool monolithic_;

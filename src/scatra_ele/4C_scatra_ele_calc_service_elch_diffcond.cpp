@@ -134,7 +134,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::correct_rhs_fro
 {
   // fac->-fac to change sign of rhs
   if (my::scatraparatimint_->IsIncremental())
-    my::CalcRHSLinMass(erhs, k, 0.0, -fac, 0.0, diff_manager()->GetPhasePoro(0));
+    my::calc_rhs_lin_mass(erhs, k, 0.0, -fac, 0.0, diff_manager()->GetPhasePoro(0));
   else
     FOUR_C_THROW("Must be incremental!");
 }
@@ -142,7 +142,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::correct_rhs_fro
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateAction(DRT::Element* ele,
+int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_action(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -199,7 +199,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateAction(D
 
     default:
     {
-      myelectrode::EvaluateAction(ele, params, discretization, action, la, elemat1_epetra,
+      myelectrode::evaluate_action(ele, params, discretization, action, la, elemat1_epetra,
           elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
 
       break;
@@ -474,7 +474,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_elch_d
       double A_s = cond->parameters().Get<double>("A_s");
 
       // call utility class for element evaluation
-      Utils()->evaluate_elch_kinetics_at_integration_point(ele, emat, erhs, ephinp, ehist, timefac,
+      utils()->evaluate_elch_kinetics_at_integration_point(ele, emat, erhs, ephinp, ehist, timefac,
           fac, my::funct_, cond, nume, stoich, valence_k, kinetics, pot0, frt, fns, A_s, k);
     }  // end of loop over integration points gpid
   }    // end loop over scalars
@@ -571,7 +571,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_electr
       if (frt <= 0.0) FOUR_C_THROW("A negative factor frt is not possible by definition");
 
       // call utility class for element evaluation
-      Utils()->evaluate_electrode_status_at_integration_point(ele, scalars, params, cond, ephinp,
+      utils()->evaluate_electrode_status_at_integration_point(ele, scalars, params, cond, ephinp,
           ephidtnp, my::funct_, zerocur, kinetics, stoich, nume, pot0, frt, timefac, fac, A_s, k);
     }  // loop over integration points
 
@@ -591,7 +591,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_electr
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalculateFlux(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calculate_flux(
     CORE::LINALG::Matrix<nsd_, 1>& q, const INPAR::SCATRA::FluxType fluxtype, const int k)
 {
   /*
@@ -640,7 +640,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalculateFlux(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalculateCurrent(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calculate_current(
     CORE::LINALG::Matrix<nsd_, 1>& q, const INPAR::SCATRA::FluxType fluxtype, const double fac)
 {
   /*
@@ -743,7 +743,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
 
         // get material parameter (constants values)
         set_internal_variables_for_mat_and_rhs();
-        GetMaterialParams(ele, densn, densnp, densam, visc);
+        get_material_params(ele, densn, densnp, densam, visc);
 
         // get values of all transported scalars at integration point
         conint(0) = my::funct_.Dot(my::ephinp_[0]);

@@ -56,7 +56,7 @@ namespace SCATRA
    protected:
     /// update state vectors
     /// current solution becomes old solution of next time step
-    void UpdateState() override
+    void update_state() override
     {
       FOUR_C_THROW("You should not need this function!");
       return;

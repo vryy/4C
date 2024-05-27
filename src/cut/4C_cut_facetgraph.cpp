@@ -114,8 +114,8 @@ CORE::GEO::CUT::FacetGraph::FacetGraph(
       Facet *f = *i;
       if (all_facets.count(f) > 0)
       {
-        graph_.Add(FacetId(f), current);
-        index_value_map[FacetId(f)] = static_cast<const void *>(f);
+        graph_.Add(facet_id(f), current);
+        index_value_map[facet_id(f)] = static_cast<const void *>(f);
       }
     }
   }
@@ -138,7 +138,7 @@ CORE::GEO::CUT::FacetGraph::FacetGraph(
 
       if (all_facets.count(f) > 0)
       {
-        int p1 = FacetId(f);
+        int p1 = facet_id(f);
         plain_int_set &row = graph_[p1];
         for (plain_int_set::iterator i = row.begin(); i != row.end(); ++i)
         {
@@ -156,7 +156,7 @@ CORE::GEO::CUT::FacetGraph::FacetGraph(
 
           if (all_facets.count(h) > 0)
           {
-            int p1 = FacetId(h);
+            int p1 = facet_id(h);
             plain_int_set &row = graph_[p1];
             for (plain_int_set::const_iterator i = row.begin(); i != row.end(); ++i)
             {
@@ -228,12 +228,12 @@ void CORE::GEO::CUT::FacetGraph::CreateVolumeCells(
   }
 
   // finally add the volumes to the volume cells
-  AddToVolumeCells(mesh, element, volumes, cells);
+  add_to_volume_cells(mesh, element, volumes, cells);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::FacetGraph::AddToVolumeCells(Mesh &mesh, Element *element,
+void CORE::GEO::CUT::FacetGraph::add_to_volume_cells(Mesh &mesh, Element *element,
     std::vector<plain_facet_set> &volumes, plain_volumecell_set &cells) const
 {
   for (std::vector<plain_facet_set>::iterator i = volumes.begin(); i != volumes.end(); ++i)
@@ -260,7 +260,7 @@ void CORE::GEO::CUT::FacetGraph::AddToVolumeCells(Mesh &mesh, Element *element,
     }
 
     std::map<std::pair<Point *, Point *>, plain_facet_set> volume_lines;
-    CollectVolumeLines(collected_facets, volume_lines);
+    collect_volume_lines(collected_facets, volume_lines);
 
     cells.insert(mesh.NewVolumeCell(collected_facets, volume_lines, element));
   }
@@ -268,7 +268,7 @@ void CORE::GEO::CUT::FacetGraph::AddToVolumeCells(Mesh &mesh, Element *element,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::FacetGraph::CollectVolumeLines(plain_facet_set &collected_facets,
+void CORE::GEO::CUT::FacetGraph::collect_volume_lines(plain_facet_set &collected_facets,
     std::map<std::pair<Point *, Point *>, plain_facet_set> &volume_lines) const
 {
   for (plain_facet_set::iterator i = collected_facets.begin(); i != collected_facets.end(); ++i)

@@ -46,12 +46,12 @@ MAT::PAR::MatListReactions::MatListReactions(Teuchos::RCP<CORE::MAT::PAR::Materi
     {
       const int reacid = *m;
       Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(reacid);
-      MaterialMapWrite()->insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(reacid, mat));
+      material_map_write()->insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(reacid, mat));
     }
   }
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MatListReactions::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MatListReactions::create_material()
 {
   return Teuchos::rcp(new MAT::MatListReactions(this));
 }
@@ -122,7 +122,7 @@ void MAT::MatListReactions::setup_mat_map()
     const int reacid = *m;
     Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(reacid);
     if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
-    MaterialMapWrite()->insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(reacid, mat));
+    material_map_write()->insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(reacid, mat));
   }
   return;
 }
@@ -164,7 +164,7 @@ void MAT::MatListReactions::Pack(CORE::COMM::PackBuffer& data) const
       std::vector<int>::const_iterator m;
       for (m = paramsreac_->ReacIds()->begin(); m != paramsreac_->ReacIds()->end(); m++)
       {
-        (MaterialMapRead()->find(*m))->second->Pack(data);
+        (material_map_read()->find(*m))->second->Pack(data);
       }
     }
   }
@@ -217,7 +217,8 @@ void MAT::MatListReactions::Unpack(const std::vector<char>& data)
       const int actmatid = *m;
       Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(actmatid);
       if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
-      MaterialMapWrite()->insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(actmatid, mat));
+      material_map_write()->insert(
+          std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(actmatid, mat));
     }
 
     if (paramsreac_->local_)
@@ -227,7 +228,7 @@ void MAT::MatListReactions::Unpack(const std::vector<char>& data)
       {
         std::vector<char> pbtest;
         ExtractfromPack(position, data, pbtest);
-        (MaterialMapWrite()->find(*m))->second->Unpack(pbtest);
+        (material_map_write()->find(*m))->second->Unpack(pbtest);
       }
     }
     // in the postprocessing mode, we do not unpack everything we have packed

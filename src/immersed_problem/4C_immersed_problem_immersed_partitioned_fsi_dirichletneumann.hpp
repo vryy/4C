@@ -84,14 +84,14 @@ namespace IMMERSED
     everything works fine.
 
     */
-    void FSIOp(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag) override;
+    void fsi_op(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag) override;
 
     /// interface fluid operator
-    Teuchos::RCP<Epetra_Vector> FluidOp(
+    Teuchos::RCP<Epetra_Vector> fluid_op(
         Teuchos::RCP<Epetra_Vector> fluid_artificial_velocity, const FillType fillFlag) override;
 
     /// interface structural operator
-    Teuchos::RCP<Epetra_Vector> StructOp(
+    Teuchos::RCP<Epetra_Vector> struct_op(
         Teuchos::RCP<Epetra_Vector> struct_bdry_traction, const FillType fillFlag) override;
     /// initial guess
     Teuchos::RCP<Epetra_Vector> initial_guess() override;
@@ -106,22 +106,22 @@ namespace IMMERSED
         Teuchos::RCP<Epetra_Vector> dirichvals, Teuchos::RCP<Epetra_Map> dbcmap);
 
     /// set state necessary state vectors
-    virtual void SetStatesFluidOP();
+    virtual void set_states_fluid_op();
 
     /// set state necessary state vectors
     virtual void set_states_velocity_correction();
 
     /// set state necessary state vectors
-    virtual void SetStatesStructOP();
+    virtual void set_states_struct_op();
 
     /// call the nonlinear fluid solver
-    virtual void SolveFluid();
+    virtual void solve_fluid();
 
     /// call the nonlinear structural solver
-    virtual void SolveStruct();
+    virtual void solve_struct();
 
     /// determine elements cut by the boundary
-    void PrepareFluidOp();
+    void prepare_fluid_op();
 
     /// call to special extraction method
     virtual Teuchos::RCP<Epetra_Vector> extract_interface_dispnp();
@@ -130,13 +130,13 @@ namespace IMMERSED
     virtual void apply_interface_forces(Teuchos::RCP<Epetra_Vector> full_traction_vec);
 
     /// call to special routine that adds dirichlet values to fluid field
-    virtual void AddDirichCond();
+    virtual void add_dirich_cond();
 
     /// call to special routine that removes dirichlet values from fluid field
-    virtual void RemoveDirichCond();
+    virtual void remove_dirich_cond();
 
     /// calc the fsi residual
-    virtual int CalcResidual(Epetra_Vector& F, const Teuchos::RCP<Epetra_Vector> newstate,
+    virtual int calc_residual(Epetra_Vector& F, const Teuchos::RCP<Epetra_Vector> newstate,
         const Teuchos::RCP<Epetra_Vector> oldstate);
 
     /*!

@@ -173,14 +173,14 @@ CORE::LINALG::Solver* CONTACT::AUG::ComboStrategy::GetLinearSolver() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::RunPreEvaluate(CONTACT::ParamsInterface& cparams)
+void CONTACT::AUG::ComboStrategy::run_pre_evaluate(CONTACT::ParamsInterface& cparams)
 {
-  get().RunPreEvaluate(cparams);
+  get().run_pre_evaluate(cparams);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::RunPostEvaluate(CONTACT::ParamsInterface& cparams)
+void CONTACT::AUG::ComboStrategy::run_post_evaluate(CONTACT::ParamsInterface& cparams)
 {
   const MORTAR::ActionType curr_eval = data_.GetCurrentEvalState();
   IO::cout << MORTAR::ActionType2String(curr_eval) << "\n";
@@ -209,10 +209,10 @@ void CONTACT::AUG::ComboStrategy::RunPostEvaluate(CONTACT::ParamsInterface& cpar
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::RunPreSolve(
+void CONTACT::AUG::ComboStrategy::run_pre_solve(
     const Teuchos::RCP<const Epetra_Vector>& curr_disp, const CONTACT::ParamsInterface& cparams)
 {
-  get().RunPreSolve(curr_disp, cparams);
+  get().run_pre_solve(curr_disp, cparams);
 }
 
 /*----------------------------------------------------------------------------*
@@ -459,13 +459,13 @@ void CONTACT::AUG::ComboStrategy::GlobalNoDbc::Reset(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
+void CONTACT::AUG::ComboStrategy::eval_force(CONTACT::ParamsInterface& cparams)
 {
-  get().PreEvalForce(cparams);
+  get().pre_eval_force(cparams);
 
-  get().AssembleGap();
+  get().assemble_gap();
 
-  get().EvalAugmentedForces();
+  get().eval_augmented_forces();
 
 #ifdef DEBUG_COMBO_STRATEGY
   std::cout << __LINE__ << " -- " << __PRETTY_FUNCTION__ << std::endl;
@@ -477,18 +477,18 @@ void CONTACT::AUG::ComboStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::ComboStrategy::run_post_eval_force(CONTACT::ParamsInterface& cparams)
 {
-  get().AssembleContactRHS();
-  get().EvalStrContactRHS();
+  get().assemble_contact_rhs();
+  get().eval_str_contact_rhs();
   get().EvalConstrRHS();
 
-  get().PostEvalForce(cparams);
+  get().post_eval_force(cparams);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::EvalForceStiff(CONTACT::ParamsInterface& cparams)
+void CONTACT::AUG::ComboStrategy::eval_force_stiff(CONTACT::ParamsInterface& cparams)
 {
-  EvalForce(cparams);
+  eval_force(cparams);
 }
 
 /*----------------------------------------------------------------------------*
@@ -499,21 +499,21 @@ void CONTACT::AUG::ComboStrategy::run_post_eval_force_stiff(CONTACT::ParamsInter
   run_post_eval_force(cparams);
 
   get().assemble_contact_stiff();
-  get().PostEvalForceStiff(cparams);
+  get().post_eval_force_stiff(cparams);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::ComboStrategy::eval_static_constraint_rhs(CONTACT::ParamsInterface& cparams)
 {
-  get().SetCurrentEvalState(cparams);
+  get().set_current_eval_state(cparams);
   get().InitEvalInterface(cparams);
 
   get().Initialize(cparams.GetActionType());
-  get().AssembleGap();
+  get().assemble_gap();
 
   get().eval_constraint_forces();
-  get().ZeroizeLMForces();
+  get().zeroize_lm_forces();
 }
 
 /*----------------------------------------------------------------------------*
@@ -523,8 +523,8 @@ void CONTACT::AUG::ComboStrategy::run_post_eval_static_constraint_rhs(
 {
   //  switch_->Update( cparams );
 
-  get().AssembleContactRHS();
-  get().EvalStrContactRHS();
+  get().assemble_contact_rhs();
+  get().eval_str_contact_rhs();
   get().EvalConstrRHS();
 }
 
@@ -548,25 +548,25 @@ void CONTACT::AUG::ComboStrategy::switch_update(CONTACT::ParamsInterface& cparam
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::RunPostIterate(const CONTACT::ParamsInterface& cparams)
+void CONTACT::AUG::ComboStrategy::run_post_iterate(const CONTACT::ParamsInterface& cparams)
 {
-  get().RunPostIterate(cparams);
+  get().run_post_iterate(cparams);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::RunPreComputeX(
+void CONTACT::AUG::ComboStrategy::run_pre_compute_x(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold, Epetra_Vector& dir_mutable)
 {
-  get().RunPreComputeX(cparams, xold, dir_mutable);
+  get().run_pre_compute_x(cparams, xold, dir_mutable);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::RunPostComputeX(const CONTACT::ParamsInterface& cparams,
+void CONTACT::AUG::ComboStrategy::run_post_compute_x(const CONTACT::ParamsInterface& cparams,
     const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
-  get().RunPostComputeX(cparams, xold, dir, xnew);
+  get().run_post_compute_x(cparams, xold, dir, xnew);
 }
 
 /*----------------------------------------------------------------------------*
@@ -588,10 +588,10 @@ void CONTACT::AUG::ComboStrategy::remove_condensed_contributions_from_rhs(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::CorrectParameters(
+void CONTACT::AUG::ComboStrategy::correct_parameters(
     CONTACT::ParamsInterface& cparams, const NOX::NLN::CorrectionType type)
 {
-  get().CorrectParameters(cparams, type);
+  get().correct_parameters(cparams, type);
 }
 
 /*----------------------------------------------------------------------------*
@@ -604,14 +604,14 @@ void CONTACT::AUG::ComboStrategy::reset_lagrange_multipliers(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CONTACT::Interface>>& CONTACT::AUG::ComboStrategy::Interfaces()
+std::vector<Teuchos::RCP<CONTACT::Interface>>& CONTACT::AUG::ComboStrategy::interfaces()
 {
   return interface_sets_[switch_->Id()];
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const std::vector<Teuchos::RCP<CONTACT::Interface>>& CONTACT::AUG::ComboStrategy::Interfaces() const
+const std::vector<Teuchos::RCP<CONTACT::Interface>>& CONTACT::AUG::ComboStrategy::interfaces() const
 {
   return interface_sets_[switch_->Id()];
 }

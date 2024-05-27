@@ -689,7 +689,7 @@ double MORTAR::Element::compute_averaged_unit_normal_at_xi(const double* xi, dou
   CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
 
   // get shape function values and derivatives at xi
-  EvaluateShape(xi, val, deriv, nnodes, false);
+  evaluate_shape(xi, val, deriv, nnodes, false);
 
   // initialize n
   n[0] = 0.0;
@@ -730,7 +730,7 @@ void MORTAR::Element::DerivUnitNormalAtXi(
   double geta[3];
 
   // get shape function values and derivatives at xi
-  EvaluateShape(xi, val, deriv, nnodes);
+  evaluate_shape(xi, val, deriv, nnodes);
 
   // get local element basis vectors
   Metrics(xi, gxi, geta);
@@ -939,7 +939,7 @@ void MORTAR::Element::Metrics(const double* xi, double* gxi, double* geta)
   CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
 
   // get shape function values and derivatives at xi
-  EvaluateShape(xi, val, deriv, nnodes, false);
+  evaluate_shape(xi, val, deriv, nnodes, false);
 
   // get coordinates of element nodes
   CORE::LINALG::SerialDenseMatrix coord(3, nnodes);
@@ -1038,7 +1038,7 @@ void MORTAR::Element::DerivJacobian(
   // evaluate shape functions
   CORE::LINALG::SerialDenseVector val(nnodes);
   CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
-  EvaluateShape(xi, val, deriv, nnodes, false);
+  evaluate_shape(xi, val, deriv, nnodes, false);
 
   // metrics routine gives local basis vectors
   Metrics(xi, gxi, geta);
@@ -1209,7 +1209,7 @@ double MORTAR::Element::ComputeArea()
 /*----------------------------------------------------------------------*
  |  Compute length / area of the element                     seitz 09/17|
  *----------------------------------------------------------------------*/
-double MORTAR::Element::ComputeAreaDeriv(CORE::GEN::Pairedvector<int, double>& area_deriv)
+double MORTAR::Element::compute_area_deriv(CORE::GEN::Pairedvector<int, double>& area_deriv)
 {
   double area = 0.0;
   CORE::FE::CellType dt = Shape();
@@ -1311,7 +1311,7 @@ bool MORTAR::Element::LocalToGlobal(const double* xi, double* globcoord, int int
   CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
 
   // Evaluate shape, get nodal coords  and interpolate global coords
-  EvaluateShape(xi, val, deriv, nnodes, false);
+  evaluate_shape(xi, val, deriv, nnodes, false);
   GetNodalCoords(coord);
 
   // init globcoords
@@ -1423,8 +1423,8 @@ double MORTAR::Element::MinEdgeSize()
       CORE::LINALG::SerialDenseVector sval0(nrow);
       CORE::LINALG::SerialDenseVector sval1(nrow);
       CORE::LINALG::SerialDenseMatrix sderiv(nrow, 1);
-      EvaluateShape(sxi0, sval0, sderiv, nrow);
-      EvaluateShape(sxi1, sval1, sderiv, nrow);
+      evaluate_shape(sxi0, sval0, sderiv, nrow);
+      evaluate_shape(sxi1, sval1, sderiv, nrow);
 
       std::array<double, 3> gpx0 = {0.0, 0.0, 0.0};
       std::array<double, 3> gpx1 = {0.0, 0.0, 0.0};
@@ -1463,10 +1463,10 @@ double MORTAR::Element::MinEdgeSize()
       CORE::LINALG::SerialDenseVector sval2(nrow);
       CORE::LINALG::SerialDenseVector sval3(nrow);
       CORE::LINALG::SerialDenseMatrix sderiv(nrow, 2);
-      EvaluateShape(sxi0, sval0, sderiv, nrow);
-      EvaluateShape(sxi1, sval1, sderiv, nrow);
-      EvaluateShape(sxi2, sval2, sderiv, nrow);
-      EvaluateShape(sxi3, sval3, sderiv, nrow);
+      evaluate_shape(sxi0, sval0, sderiv, nrow);
+      evaluate_shape(sxi1, sval1, sderiv, nrow);
+      evaluate_shape(sxi2, sval2, sderiv, nrow);
+      evaluate_shape(sxi3, sval3, sderiv, nrow);
 
       std::array<double, 3> gpx0 = {0.0, 0.0, 0.0};
       std::array<double, 3> gpx1 = {0.0, 0.0, 0.0};

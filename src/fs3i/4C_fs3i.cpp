@@ -89,8 +89,8 @@ void FS3I::FS3IBase::Setup()
 /*----------------------------------------------------------------------*/
 void FS3I::FS3IBase::check_interface_dirichlet_bc()
 {
-  Teuchos::RCP<DRT::Discretization> masterdis = scatravec_[0]->ScaTraField()->Discretization();
-  Teuchos::RCP<DRT::Discretization> slavedis = scatravec_[1]->ScaTraField()->Discretization();
+  Teuchos::RCP<DRT::Discretization> masterdis = scatravec_[0]->ScaTraField()->discretization();
+  Teuchos::RCP<DRT::Discretization> slavedis = scatravec_[1]->ScaTraField()->discretization();
 
   Teuchos::RCP<const Epetra_Map> mastermap = scatracoup_->MasterDofMap();
   Teuchos::RCP<const Epetra_Map> permmastermap = scatracoup_->PermMasterDofMap();
@@ -274,7 +274,7 @@ void FS3I::FS3IBase::CheckFS3IInputs()
 
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
-    Teuchos::RCP<DRT::Discretization> disscatra = (scatravec_[i])->ScaTraField()->Discretization();
+    Teuchos::RCP<DRT::Discretization> disscatra = (scatravec_[i])->ScaTraField()->discretization();
     std::vector<CORE::Conditions::Condition*> coupcond;
     disscatra->GetCondition("ScaTraCoupling", coupcond);
 
@@ -803,7 +803,7 @@ void FS3I::FS3IBase::extract_scatra_field_vectors(Teuchos::RCP<const Epetra_Vect
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3IBase::CheckIsSetup()
+void FS3I::FS3IBase::check_is_setup()
 {
   if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
 };

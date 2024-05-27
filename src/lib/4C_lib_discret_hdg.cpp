@@ -63,7 +63,7 @@ int DRT::DiscretizationHDG::fill_complete(
     std::vector<int>& ids = nodeIds[f->first];
     FOUR_C_ASSERT(ids.size() > 0, "Lost a face during communication");
     f->second->SetNodeIds(ids.size(), ids.data());
-    f->second->SetLocalTrafoMap(trafoMap[f->first]);
+    f->second->set_local_trafo_map(trafoMap[f->first]);
 
     // refresh node pointers if they have been set up
     DRT::Node** oldnodes = f->second->Nodes();
@@ -150,9 +150,9 @@ int DRT::DiscretizationHDG::fill_complete(
 
 
 /*----------------------------------------------------------------------*
- | AssignGlobalIDs                                        schoeder 06/14|
+ | assign_global_i_ds                                        schoeder 06/14|
  *----------------------------------------------------------------------*/
-void DRT::DiscretizationHDG::AssignGlobalIDs(const Epetra_Comm& comm,
+void DRT::DiscretizationHDG::assign_global_i_ds(const Epetra_Comm& comm,
     const std::map<std::vector<int>, Teuchos::RCP<DRT::Element>>& elementmap,
     std::map<int, Teuchos::RCP<DRT::Element>>& finalelements)
 {
@@ -326,7 +326,7 @@ void DRT::UTILS::DbcHDG::read_dirichlet_condition(const DRT::DiscretizationFaces
     {
       const DRT::FaceElement* faceele = dynamic_cast<const DRT::FaceElement*>(discret.lRowFace(i));
       const unsigned int dofperface =
-          faceele->ParentMasterElement()->NumDofPerFace(faceele->FaceMasterNumber());
+          faceele->ParentMasterElement()->num_dof_per_face(faceele->FaceMasterNumber());
       const unsigned int dofpercomponent =
           faceele->ParentMasterElement()->NumDofPerComponent(faceele->FaceMasterNumber());
       const unsigned int component = dofperface / dofpercomponent;
@@ -491,7 +491,7 @@ void DRT::UTILS::DbcHDG::do_dirichlet_condition(const DRT::DiscretizationFaces& 
     {
       const DRT::FaceElement* faceele = dynamic_cast<const DRT::FaceElement*>(discret.lRowFace(i));
       const unsigned int dofperface =
-          faceele->ParentMasterElement()->NumDofPerFace(faceele->FaceMasterNumber());
+          faceele->ParentMasterElement()->num_dof_per_face(faceele->FaceMasterNumber());
       const unsigned int dofpercomponent =
           faceele->ParentMasterElement()->NumDofPerComponent(faceele->FaceMasterNumber());
       const unsigned int component = dofperface / dofpercomponent;

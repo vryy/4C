@@ -83,7 +83,7 @@ void PARTICLEWALL::WallHandlerBase::Setup(
   walldatastate_->Setup();
 }
 
-void PARTICLEWALL::WallHandlerBase::WriteRestart(const int step, const double time) const
+void PARTICLEWALL::WallHandlerBase::write_restart(const int step, const double time) const
 {
   // get wall discretization writer
   Teuchos::RCP<IO::DiscretizationWriter> walldiscretizationwriter = walldiscretization_->Writer();

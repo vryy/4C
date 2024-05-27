@@ -40,13 +40,13 @@ SCATRA::ConvCheckStrategyBase::ConvCheckStrategyBase(
 /*----------------------------------------------------------------------*
  | perform convergence check for Newton-Raphson iteration    fang 02/16 |
  *----------------------------------------------------------------------*/
-bool SCATRA::ConvCheckStrategyStd::AbortNonlinIter(
+bool SCATRA::ConvCheckStrategyStd::abort_nonlin_iter(
     const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
     double& actresidual                    //!< return maximum current residual value
 ) const
 {
   // extract processor ID
-  const int mypid = scatratimint.Discretization()->Comm().MyPID();
+  const int mypid = scatratimint.discretization()->Comm().MyPID();
 
   // extract current Newton-Raphson iteration step
   const int itnum = scatratimint.IterNum();
@@ -162,7 +162,7 @@ bool SCATRA::ConvCheckStrategyStd::AbortNonlinIter(
 
   // proceed with next iteration step
   return false;
-}  // SCATRA::ConvCheckStrategyStd::AbortNonlinIter()
+}  // SCATRA::ConvCheckStrategyStd::abort_nonlin_iter()
 
 
 /*--------------------------------------------------------------------------------------------*
@@ -173,7 +173,7 @@ bool SCATRA::ConvCheckStrategyStd::AbortOuterIter(
 ) const
 {
   // extract processor ID
-  const int mypid = scatratimint.Discretization()->Comm().MyPID();
+  const int mypid = scatratimint.discretization()->Comm().MyPID();
 
   // extract current outer iteration step
   const int itnum = scatratimint.IterNumOuter();
@@ -245,7 +245,7 @@ bool SCATRA::ConvCheckStrategyStd::AbortOuterIter(
 /*----------------------------------------------------------------------*
  | perform convergence check for Newton-Raphson iteration    fang 04/16 |
  *----------------------------------------------------------------------*/
-bool SCATRA::ConvCheckStrategyStdMicroScale::AbortNonlinIter(
+bool SCATRA::ConvCheckStrategyStdMicroScale::abort_nonlin_iter(
     const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
     double& actresidual                    //!< return maximum current residual value
 ) const
@@ -291,19 +291,19 @@ bool SCATRA::ConvCheckStrategyStdMicroScale::AbortNonlinIter(
 
   // proceed with next iteration step
   return false;
-}  // SCATRA::ConvCheckStrategyStdMicroScale::AbortNonlinIter()
+}  // SCATRA::ConvCheckStrategyStdMicroScale::abort_nonlin_iter()
 
 
 /*----------------------------------------------------------------------*
  | perform convergence check for Newton-Raphson iteration    fang 02/16 |
  *----------------------------------------------------------------------*/
-bool SCATRA::ConvCheckStrategyStdElch::AbortNonlinIter(
+bool SCATRA::ConvCheckStrategyStdElch::abort_nonlin_iter(
     const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
     double& actresidual                    //!< return maximum current residual value
 ) const
 {
   // extract processor ID
-  const int mypid = scatratimint.Discretization()->Comm().MyPID();
+  const int mypid = scatratimint.discretization()->Comm().MyPID();
 
   // extract current Newton-Raphson iteration step
   const int itnum = scatratimint.IterNum();
@@ -450,19 +450,19 @@ bool SCATRA::ConvCheckStrategyStdElch::AbortNonlinIter(
 
   // proceed with next iteration step
   return false;
-}  // SCATRA::ConvCheckStrategyStdElch::AbortNonlinIter()
+}  // SCATRA::ConvCheckStrategyStdElch::abort_nonlin_iter()
 
 
 /*----------------------------------------------------------------------*
  | perform convergence check for Newton-Raphson iteration    fang 02/16 |
  *----------------------------------------------------------------------*/
-bool SCATRA::ConvCheckStrategyS2ILM::AbortNonlinIter(
+bool SCATRA::ConvCheckStrategyS2ILM::abort_nonlin_iter(
     const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
     double& actresidual                    //!< return maximum current residual value
 ) const
 {
   // extract processor ID
-  const int mypid = scatratimint.Discretization()->Comm().MyPID();
+  const int mypid = scatratimint.discretization()->Comm().MyPID();
 
   // extract current Newton-Raphson iteration step
   const int itnum = scatratimint.IterNum();
@@ -608,19 +608,19 @@ bool SCATRA::ConvCheckStrategyS2ILM::AbortNonlinIter(
 
   // proceed with next iteration step
   return false;
-}  // SCATRA::ConvCheckStrategyS2ILM::AbortNonlinIter()
+}  // SCATRA::ConvCheckStrategyS2ILM::abort_nonlin_iter()
 
 
 /*----------------------------------------------------------------------*
  | perform convergence check for Newton-Raphson iteration    fang 02/16 |
  *----------------------------------------------------------------------*/
-bool SCATRA::ConvCheckStrategyS2ILMElch::AbortNonlinIter(
+bool SCATRA::ConvCheckStrategyS2ILMElch::abort_nonlin_iter(
     const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
     double& actresidual                    //!< return maximum current residual value
 ) const
 {
   // extract processor ID
-  const int mypid = scatratimint.Discretization()->Comm().MyPID();
+  const int mypid = scatratimint.discretization()->Comm().MyPID();
 
   // extract current Newton-Raphson iteration step
   const int itnum = scatratimint.IterNum();
@@ -799,13 +799,13 @@ bool SCATRA::ConvCheckStrategyS2ILMElch::AbortNonlinIter(
 
   // proceed with next iteration step
   return false;
-}  // SCATRA::ConvCheckStrategyS2ILMElch::AbortNonlinIter()
+}  // SCATRA::ConvCheckStrategyS2ILMElch::abort_nonlin_iter()
 
 
 /*----------------------------------------------------------------------*
  | perform convergence check for Newton-Raphson iteration    fang 08/17 |
  *----------------------------------------------------------------------*/
-bool SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortNonlinIter(
+bool SCATRA::ConvCheckStrategyStdMacroScaleElch::abort_nonlin_iter(
     const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
     double& actresidual                    //!< return maximum current residual value
 ) const
@@ -815,7 +815,7 @@ bool SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortNonlinIter(
   if (elchtimint == nullptr) FOUR_C_THROW("Cast of scalar transport time integrator failed!");
 
   // extract processor ID
-  const int mypid = scatratimint.Discretization()->Comm().MyPID();
+  const int mypid = scatratimint.discretization()->Comm().MyPID();
 
   // extract current Newton-Raphson iteration step
   const int itnum = scatratimint.IterNum();
@@ -993,7 +993,7 @@ bool SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortNonlinIter(
 
   // proceed with next iteration step
   return false;
-}  // SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortNonlinIter
+}  // SCATRA::ConvCheckStrategyStdMacroScaleElch::abort_nonlin_iter
 
 
 /*--------------------------------------------------------------------------------------------*
@@ -1008,7 +1008,7 @@ bool SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortOuterIter(
   if (elchtimint == nullptr) FOUR_C_THROW("Cast of scalar transport time integrator failed!");
 
   // extract processor ID
-  const int mypid = scatratimint.Discretization()->Comm().MyPID();
+  const int mypid = scatratimint.discretization()->Comm().MyPID();
 
   // extract current outer iteration step
   const int itnum = scatratimint.IterNumOuter();
@@ -1105,13 +1105,13 @@ bool SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortOuterIter(
 /*-------------------------------------------------------------------------*
  | perform convergence check for Newton-Raphson iteration kremheller 12/17 |
  *------------------------------------------------------------------------*/
-bool SCATRA::ConvCheckStrategyPoroMultiphaseScatra::AbortNonlinIter(
+bool SCATRA::ConvCheckStrategyPoroMultiphaseScatra::abort_nonlin_iter(
     const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
     double& actresidual                    //!< return maximum current residual value
 ) const
 {
   // extract processor ID
-  const int mypid = scatratimint.Discretization()->Comm().MyPID();
+  const int mypid = scatratimint.discretization()->Comm().MyPID();
 
   // extract current Newton-Raphson iteration step
   const int itnum = scatratimint.IterNum();
@@ -1224,18 +1224,18 @@ bool SCATRA::ConvCheckStrategyPoroMultiphaseScatra::AbortNonlinIter(
   actresidual = std::max(conc_res_Rms, conc_inc_L2 / conc_state_L2);
   // proceed with next iteration step
   return false;
-}  // SCATRA::ConvCheckStrategyStd::AbortNonlinIter()
+}  // SCATRA::ConvCheckStrategyStd::abort_nonlin_iter()
 
 /*-------------------------------------------------------------------------*
  | perform convergence check for Newton-Raphson iteration kremheller 12/17 |
  *------------------------------------------------------------------------*/
-bool SCATRA::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying::AbortNonlinIter(
+bool SCATRA::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying::abort_nonlin_iter(
     const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
     double& actresidual                    //!< return maximum current residual value
 ) const
 {
   // extract processor ID
-  const int mypid = scatratimint.Discretization()->Comm().MyPID();
+  const int mypid = scatratimint.discretization()->Comm().MyPID();
 
   // extract current Newton-Raphson iteration step
   const int itnum = scatratimint.IterNum();
@@ -1381,6 +1381,6 @@ bool SCATRA::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying::AbortNonlinIter(
       std::max(conc_res_art_Rms, conc_inc_art_L2 / conc_state_art_L2));
   // proceed with next iteration step
   return false;
-}  // SCATRA::ConvCheckStrategyStd::AbortNonlinIter()
+}  // SCATRA::ConvCheckStrategyStd::abort_nonlin_iter()
 
 FOUR_C_NAMESPACE_CLOSE

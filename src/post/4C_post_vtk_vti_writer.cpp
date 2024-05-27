@@ -44,13 +44,13 @@ PostVtiWriter::PostVtiWriter(PostField* field, const std::string& filename)
 }
 
 
-const std::string& PostVtiWriter::WriterString() const
+const std::string& PostVtiWriter::writer_string() const
 {
   static std::string name("ImageData");
   return name;
 }
 
-const std::string& PostVtiWriter::WriterOpeningTag() const
+const std::string& PostVtiWriter::writer_opening_tag() const
 {
   static std::string tag;
   std::stringstream stream;
@@ -64,7 +64,7 @@ const std::string& PostVtiWriter::WriterOpeningTag() const
   return tag;
 }
 
-const std::string& PostVtiWriter::WriterPOpeningTag() const
+const std::string& PostVtiWriter::writer_p_opening_tag() const
 {
   static std::string tag;
   std::stringstream stream;
@@ -78,7 +78,7 @@ const std::string& PostVtiWriter::WriterPOpeningTag() const
   return tag;
 }
 
-const std::vector<std::string>& PostVtiWriter::WriterPPieceTags() const
+const std::vector<std::string>& PostVtiWriter::writer_p_piece_tags() const
 {
   static std::vector<std::string> tags;
   tags.clear();
@@ -103,13 +103,13 @@ const std::vector<std::string>& PostVtiWriter::WriterPPieceTags() const
   return tags;
 }
 
-const std::string& PostVtiWriter::WriterSuffix() const
+const std::string& PostVtiWriter::writer_suffix() const
 {
   static std::string name(".vti");
   return name;
 }
 
-const std::string& PostVtiWriter::WriterPSuffix() const
+const std::string& PostVtiWriter::writer_p_suffix() const
 {
   static std::string name(".pvti");
   return name;
@@ -117,7 +117,7 @@ const std::string& PostVtiWriter::WriterPSuffix() const
 
 
 
-void PostVtiWriter::WriteGeo()
+void PostVtiWriter::write_geo()
 {
   // There is no such thing as geometry for ImageData, however we need to prepare some things
 
@@ -130,7 +130,8 @@ void PostVtiWriter::WriteGeo()
 
 
 
-void PostVtiWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<Epetra_Vector>& data,
+void PostVtiWriter::write_dof_result_step(std::ofstream& file,
+    const Teuchos::RCP<Epetra_Vector>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from,
     const bool fillzeros)
@@ -218,7 +219,7 @@ void PostVtiWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<E
     FOUR_C_THROW(
         "Cannot write point data at this stage. Most likely cell and point data fields are mixed.");
 
-  this->WriteSolutionVector(solution, ncomponents, name, file);
+  this->write_solution_vector(solution, ncomponents, name, file);
 
   return;
 }
@@ -303,7 +304,7 @@ void PostVtiWriter::write_nodal_result_step(std::ofstream& file,
     FOUR_C_THROW(
         "Cannot write point data at this stage. Most likely cell and point data fields are mixed.");
 
-  this->WriteSolutionVector(solution, ncomponents, name, file);
+  this->write_solution_vector(solution, ncomponents, name, file);
 
   return;
 }
@@ -380,14 +381,14 @@ void PostVtiWriter::write_element_result_step(std::ofstream& file,
     FOUR_C_THROW(
         "Cannot write cell data at this stage. Most likely cell and point data fields are mixed.");
 
-  this->WriteSolutionVector(solution, ncomponents, name, file);
+  this->write_solution_vector(solution, ncomponents, name, file);
 
   return;
 }
 
 
 
-void PostVtiWriter::WriterPrepTimestep()
+void PostVtiWriter::writer_prep_timestep()
 {
   using namespace FourC;
 

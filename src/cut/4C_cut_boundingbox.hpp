@@ -51,23 +51,23 @@ namespace CORE::GEO
       BoundingBox() : empty_(true){};
 
       /// Initialize the BoundingBox by using information of a node
-      void Init(Node& node);
+      void init(Node& node);
 
       /// Initialize the BoundingBox by using information of an edge
-      void Init(Edge& edge);
+      void init(Edge& edge);
 
       /// Initialize the BoundingBox by using information of a side
-      void Init(Side& side);
+      void init(Side& side);
 
       /// Initialize the BoundingBox by using information of a volume cell
-      void Init(VolumeCell& volcell);
+      void init(VolumeCell& volcell);
 
       /** \brief initializes bounding box over the volumecell in local
        *  coordinates (rst) with respect to elem1 */
-      void Init(VolumeCell& volcell, Element* elem1);
+      void init(VolumeCell& volcell, Element* elem1);
 
       /// Initialize the BoundingBox by using the information of an element
-      void Init(Element& element);
+      void init(Element& element);
 
      public:
       /// destructor

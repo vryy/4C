@@ -43,14 +43,15 @@ void STR::TIMINT::Implicit::Setup()
   // ---------------------------------------------------------------------------
   // cast the base class integrator
   // ---------------------------------------------------------------------------
-  implint_ptr_ = Teuchos::rcp_dynamic_cast<STR::IMPLICIT::Generic>(IntegratorPtr());
+  implint_ptr_ = Teuchos::rcp_dynamic_cast<STR::IMPLICIT::Generic>(integrator_ptr());
 
   // ---------------------------------------------------------------------------
   // build NOX interface
   // ---------------------------------------------------------------------------
   Teuchos::RCP<STR::TIMINT::NoxInterface> noxinterface_ptr =
-      Teuchos::rcp(new STR::TIMINT::NoxInterface());
-  noxinterface_ptr->Init(DataGlobalStatePtr(), implint_ptr_, DBCPtr(), Teuchos::rcp(this, false));
+      Teuchos::rcp(new STR::TIMINT::NoxInterface);
+  noxinterface_ptr->Init(
+      data_global_state_ptr(), implint_ptr_, DBCPtr(), Teuchos::rcp(this, false));
   noxinterface_ptr->Setup();
 
   // ---------------------------------------------------------------------------
@@ -58,7 +59,7 @@ void STR::TIMINT::Implicit::Setup()
   // ---------------------------------------------------------------------------
   const enum INPAR::STR::PredEnum& predtype = DataSDyn().GetPredictorType();
   predictor_ptr_ = STR::PREDICT::BuildPredictor(predtype);
-  predictor_ptr_->Init(predtype, implint_ptr_, DBCPtr(), DataGlobalStatePtr(), DataIOPtr(),
+  predictor_ptr_->Init(predtype, implint_ptr_, DBCPtr(), data_global_state_ptr(), data_io_ptr(),
       DataSDyn().GetNoxParamsPtr());
   predictor_ptr_->Setup();
 
@@ -72,7 +73,7 @@ void STR::TIMINT::Implicit::Setup()
                  "Please use NLNSOL as \"fullnewton\" for reliable result."
               << std::endl;
   nlnsolver_ptr_ = STR::NLN::SOLVER::BuildNlnSolver(nlnSolverType);
-  nlnsolver_ptr_->Init(DataGlobalStatePtr(), DataSDynPtr(), noxinterface_ptr, implint_ptr_,
+  nlnsolver_ptr_->Init(data_global_state_ptr(), data_s_dyn_ptr(), noxinterface_ptr, implint_ptr_,
       Teuchos::rcp(this, false));
   nlnsolver_ptr_->Setup();
 
@@ -84,9 +85,9 @@ void STR::TIMINT::Implicit::Setup()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Implicit::set_state(const Teuchos::RCP<Epetra_Vector>& x)
 {
-  IntegratorPtr()->set_state(*x);
+  integrator_ptr()->set_state(*x);
   ::NOX::Epetra::Vector x_nox(x, ::NOX::Epetra::Vector::CreateView);
-  NlnSolver().SolutionGroup().setX(x_nox);
+  nln_solver().SolutionGroup().setX(x_nox);
   set_state_in_sync_with_nox_group(true);
 }
 
@@ -108,11 +109,11 @@ void STR::TIMINT::Implicit::prepare_time_step()
    * routine, such it becomes consistent with non-adaptive update routine! See the
    * UpdateStepTime() routine for more information.                             hiermeier 12/2015
    *
-  double& time_np = DataGlobalState().GetTimeNp();
-  time_np = DataGlobalState().GetTimeN() + (*DataGlobalState().GetDeltaTime())[0]; */
+  double& time_np = data_global_state().GetTimeNp();
+  time_np = data_global_state().GetTimeN() + (*data_global_state().GetDeltaTime())[0]; */
 
-  ::NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
-  Predictor().Predict(grp);
+  ::NOX::Abstract::Group& grp = nln_solver().SolutionGroup();
+  predictor().Predict(grp);
 }
 
 /*----------------------------------------------------------------------------*
@@ -132,8 +133,8 @@ int STR::TIMINT::Implicit::IntegrateStep()
 {
   check_init_setup();
   // do the predictor step
-  ::NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
-  Predictor().Predict(grp);
+  ::NOX::Abstract::Group& grp = nln_solver().SolutionGroup();
+  predictor().Predict(grp);
   return Solve();
 }
 
@@ -144,9 +145,9 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::Solve()
   check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();
   // reset the non-linear solver
-  NlnSolver().Reset();
+  nln_solver().Reset();
   // solve the non-linear problem
-  INPAR::STR::ConvergenceStatus convstatus = NlnSolver().Solve();
+  INPAR::STR::ConvergenceStatus convstatus = nln_solver().Solve();
   // return convergence status
   return PerformErrorAction(convstatus);
 }
@@ -159,7 +160,7 @@ void STR::TIMINT::Implicit::update_state_incrementally(Teuchos::RCP<const Epetra
 
   check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();
-  ::NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
+  ::NOX::Abstract::Group& grp = nln_solver().SolutionGroup();
 
   auto* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
   FOUR_C_ASSERT(grp_ptr != nullptr, "Dynamic cast failed!");
@@ -178,12 +179,12 @@ void STR::TIMINT::Implicit::update_state_incrementally(Teuchos::RCP<const Epetra
   // Reset the state variables
   const auto& x_eptra = dynamic_cast<const ::NOX::Epetra::Vector&>(grp_ptr->getX());
   // set the consistent state in the models (e.g. structure and contact models)
-  ImplInt().ResetModelStates(x_eptra.getEpetraVector());
+  impl_int().ResetModelStates(x_eptra.getEpetraVector());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Implicit::determine_stress_strain() { ImplInt().determine_stress_strain(); }
+void STR::TIMINT::Implicit::determine_stress_strain() { impl_int().determine_stress_strain(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -200,7 +201,7 @@ void STR::TIMINT::Implicit::Evaluate()
 {
   check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();
-  ::NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
+  ::NOX::Abstract::Group& grp = nln_solver().SolutionGroup();
 
   auto* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
   FOUR_C_ASSERT(grp_ptr != nullptr, "Dynamic cast failed!");
@@ -217,18 +218,18 @@ void STR::TIMINT::Implicit::Evaluate()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const ::NOX::Abstract::Group& STR::TIMINT::Implicit::GetSolutionGroup() const
+const ::NOX::Abstract::Group& STR::TIMINT::Implicit::get_solution_group() const
 {
   check_init_setup();
-  return NlnSolver().GetSolutionGroup();
+  return nln_solver().get_solution_group();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Abstract::Group> STR::TIMINT::Implicit::SolutionGroupPtr()
+Teuchos::RCP<::NOX::Abstract::Group> STR::TIMINT::Implicit::solution_group_ptr()
 {
   check_init_setup();
-  return Teuchos::rcpFromRef(NlnSolver().SolutionGroup());
+  return Teuchos::rcpFromRef(nln_solver().SolutionGroup());
 }
 
 /*----------------------------------------------------------------------------*
@@ -248,7 +249,7 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
     return INPAR::STR::conv_success;
   }
   // get ID of actual processor in parallel
-  const int& myrank = DataGlobalState().GetMyRank();
+  const int& myrank = data_global_state().GetMyRank();
 
   // what to do when nonlinear solver does not converge
   switch (GetDivergenceAction())
@@ -309,7 +310,7 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
       // reset step (e.g. quantities on element level or model specific stuff)
       reset_step();
 
-      Integrator().update_constant_state_contributions();
+      integrator().update_constant_state_contributions();
 
       return INPAR::STR::conv_fail_repeat;
       break;
@@ -346,7 +347,7 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
       // reset step (e.g. quantities on element level or model specific stuff)
       reset_step();
 
-      Integrator().update_constant_state_contributions();
+      integrator().update_constant_state_contributions();
 
       return INPAR::STR::conv_fail_repeat;
       break;
@@ -360,7 +361,7 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
       double proc_randnum_get = ((double)rand() / (double)RAND_MAX);
       double proc_randnum = proc_randnum_get;
       double randnum = 1.0;
-      const Epetra_Comm& comm = Discretization()->Comm();
+      const Epetra_Comm& comm = discretization()->Comm();
       comm.SumAll(&proc_randnum, &randnum, 1);
       const double numproc = comm.NumProc();
       randnum /= numproc;
@@ -390,7 +391,7 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
       // reset step (e.g. quantities on element level or model specific stuff)
       reset_step();
 
-      Integrator().update_constant_state_contributions();
+      integrator().update_constant_state_contributions();
 
       return INPAR::STR::conv_fail_repeat;
       break;
@@ -453,7 +454,7 @@ void STR::TIMINT::Implicit::check_for_time_step_increase(INPAR::STR::Convergence
       // increase the step size if the remaining number of steps is a even number
       if (((GetStepEnd() - GetStepNp()) % 2) == 0 and GetStepEnd() != GetStepNp())
       {
-        if (DataGlobalState().GetMyRank() == 0)
+        if (data_global_state().GetMyRank() == 0)
           IO::cout << "Nonlinear solver successful. Double timestep size!" << IO::endl;
 
         set_div_con_refine_level(get_div_con_refine_level() - 1);

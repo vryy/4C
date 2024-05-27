@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 XFEM::XfsCouplingManager::XfsCouplingManager(Teuchos::RCP<ConditionManager> condmanager,
     Teuchos::RCP<ADAPTER::Structure> structure, Teuchos::RCP<FLD::XFluid> xfluid,
     std::vector<int> idx)
-    : CouplingCommManager(structure->Discretization(), "XFEMSurfFSIMono", 0, 3),
+    : CouplingCommManager(structure->discretization(), "XFEMSurfFSIMono", 0, 3),
       struct_(structure),
       xfluid_(xfluid),
       cond_name_("XFEMSurfFSIMono"),
@@ -98,13 +98,13 @@ void XFEM::XfsCouplingManager::SetCouplingStates()
   if (mcfsi_->get_averaging_strategy() != INPAR::XFEM::Xfluid_Sided)
   {
     // Set Dispnp (used to calc local coord of gausspoints)
-    struct_->Discretization()->set_state("dispnp", struct_->Dispnp());
+    struct_->discretization()->set_state("dispnp", struct_->Dispnp());
     // Set Velnp (used for interface integration)
     Teuchos::RCP<Epetra_Vector> fullvelnp =
         Teuchos::rcp(new Epetra_Vector(struct_->Velnp()->Map(), true));
     fullvelnp->Update(1.0, *struct_->Dispnp(), -1.0, *struct_->Dispn(), 0.0);
     fullvelnp->Update(-(dt - 1 / scaling_FSI) * scaling_FSI, *struct_->Veln(), scaling_FSI);
-    struct_->Discretization()->set_state("velaf", fullvelnp);
+    struct_->discretization()->set_state("velaf", fullvelnp);
   }
 }
 

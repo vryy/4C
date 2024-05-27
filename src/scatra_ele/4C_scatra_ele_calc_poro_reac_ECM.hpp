@@ -49,16 +49,16 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! get the material parameters
-      void GetMaterialParams(const DRT::Element* ele,  //!< the element we are dealing with
-          std::vector<double>& densn,                  //!< density at t_(n)
-          std::vector<double>& densnp,                 //!< density at t_(n+1) or t_(n+alpha_F)
-          std::vector<double>& densam,                 //!< density at t_(n+alpha_M)
-          double& visc,                                //!< fluid viscosity
-          const int iquad = -1                         //!< id of current gauss point (default = -1)
+      void get_material_params(const DRT::Element* ele,  //!< the element we are dealing with
+          std::vector<double>& densn,                    //!< density at t_(n)
+          std::vector<double>& densnp,                   //!< density at t_(n+1) or t_(n+alpha_F)
+          std::vector<double>& densam,                   //!< density at t_(n+alpha_M)
+          double& visc,                                  //!< fluid viscosity
+          const int iquad = -1  //!< id of current gauss point (default = -1)
           ) override;
 
       //! evaluate material
-      void Materials(
+      void materials(
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)

@@ -46,7 +46,7 @@ BEAMINTERACTION::BeamToFluidAssemblyManagerFactory::create_assembly_manager(
               interaction_pairs, assemblystrategy));
       break;
     default:
-      FOUR_C_THROW("Beam To Fluid Meshtying Discretization Type not supported!");
+      FOUR_C_THROW("Beam To Fluid Meshtying discretization Type not supported!");
       return Teuchos::null;
   }
 }

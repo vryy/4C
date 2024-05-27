@@ -52,7 +52,7 @@ FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(
   // check and fix ml nullspace if neccessary
   {
     CORE::LINALG::Solver& solver = *(structure.LinearSolver());
-    const Epetra_Map& oldmap = *(structure.Discretization()->dof_row_map());
+    const Epetra_Map& oldmap = *(structure.discretization()->dof_row_map());
     const Epetra_Map& newmap = Matrix(0, 0).EpetraMatrix()->RowMap();
     CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Structure", oldmap, newmap, solver.Params());
   }
@@ -64,7 +64,7 @@ FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(
   }
   {
     CORE::LINALG::Solver& solver = *(ale.LinearSolver());
-    const Epetra_Map& oldmap = *(ale.Discretization()->dof_row_map());
+    const Epetra_Map& oldmap = *(ale.discretization()->dof_row_map());
     const Epetra_Map& newmap = Matrix(2, 2).EpetraMatrix()->RowMap();
     CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Ale", oldmap, newmap, solver.Params());
   }
@@ -95,7 +95,7 @@ int FSI::BlockPreconditioningMatrix::ApplyInverse(
 #ifdef BLOCKMATRIXMERGE
   MergeSolve(X, Y);
 #else
-  SGS(X, Y);
+  sgs(X, Y);
 #endif
 
   if (pcdbg_ != Teuchos::null)

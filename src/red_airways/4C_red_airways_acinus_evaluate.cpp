@@ -146,7 +146,7 @@ int DRT::ELEMENTS::RedAcinus::Evaluate(Teuchos::ParameterList& params,
     break;
     case update_scatra:
     {
-      DRT::ELEMENTS::RedAcinusImplInterface::Impl(this)->UpdateScatra(
+      DRT::ELEMENTS::RedAcinusImplInterface::Impl(this)->update_scatra(
           this, params, discretization, lm, mat);
     }
     break;
@@ -206,7 +206,7 @@ int DRT::ELEMENTS::RedAcinus::evaluate_neumann(Teuchos::ParameterList& params,
  |                                                                      |
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::RedAcinus::EvaluateDirichlet(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::RedAcinus::evaluate_dirichlet(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1)
 {

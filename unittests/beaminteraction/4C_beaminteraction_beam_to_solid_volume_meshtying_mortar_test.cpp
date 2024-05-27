@@ -94,9 +94,9 @@ namespace
       contact_pair.ele1pos_.shape_function_data_ = q_beam.shape_function_data_;
       contact_pair.ele2posref_ = q_solid;
       contact_pair.ele2pos_.shape_function_data_ = q_solid.shape_function_data_;
-      contact_pair.CastGeometryPair()->Evaluate(
+      contact_pair.cast_geometry_pair()->Evaluate(
           contact_pair.ele1posref_, contact_pair.ele2posref_, contact_pair.line_to_3D_segments_);
-      contact_pair.EvaluateDM(local_D, local_M, local_kappa, local_constraint);
+      contact_pair.evaluate_dm(local_D, local_M, local_kappa, local_constraint);
 
       // Check the results for D.
       for (unsigned int i_row = 0; i_row < lambda_type::n_dof_; i_row++)

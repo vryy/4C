@@ -39,7 +39,7 @@ MAT::PAR::ParticleWallMaterialDEM::ParticleWallMaterialDEM(
 /*---------------------------------------------------------------------------*
  | create material instance of matching type with parameters  sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ParticleWallMaterialDEM::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ParticleWallMaterialDEM::create_material()
 {
   return Teuchos::rcp(new MAT::ParticleWallMaterialDEM(this));
 }

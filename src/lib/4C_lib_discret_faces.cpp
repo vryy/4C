@@ -918,7 +918,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
   // rebuild the faces and therefore we have to be sure that the map faces_ is clear
   // therefore, the old faces are deleted and replaced by new ones
   std::map<int, Teuchos::RCP<DRT::Element>> finalFaces;
-  AssignGlobalIDs(Comm(), faces, finalFaces);
+  assign_global_i_ds(Comm(), faces, finalFaces);
   for (std::map<int, Teuchos::RCP<DRT::Element>>::iterator faceit = finalFaces.begin();
        faceit != finalFaces.end(); ++faceit)
     faces_[faceit->first] = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(faceit->second, true);
@@ -1073,7 +1073,7 @@ void DRT::DiscretizationFaces::PrintFaces(std::ostream& os) const
   if (Comm().MyPID() == 0)
   {
     os << "--------------------------------------------------\n";
-    os << "Discretization: " << Name() << std::endl;
+    os << "discretization: " << Name() << std::endl;
     os << "--------------------------------------------------\n";
     os << numglobalfaces << " Faces (global)\n";
     os << "--------------------------------------------------\n";

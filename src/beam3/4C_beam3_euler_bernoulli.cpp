@@ -539,7 +539,7 @@ void DRT::ELEMENTS::Beam3eb::GetPosAtXi(
   CORE::LINALG::Matrix<12, 1> disp_totlag(true);
   update_disp_totlag<2, 6>(disp, disp_totlag);
 
-  Beam3Base::GetPosAtXi<2, 2, double>(pos, xi, disp_totlag);
+  Beam3Base::get_pos_at_xi<2, 2, double>(pos, xi, disp_totlag);
 }
 
 /*-----------------------------------------------------------------------------------------------*

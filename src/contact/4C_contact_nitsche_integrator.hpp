@@ -65,7 +65,7 @@ namespace CONTACT
     }
 
    protected:
-    void IntegrateGP_2D(MORTAR::Element& sele, MORTAR::Element& mele,
+    void integrate_gp_2_d(MORTAR::Element& sele, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -76,7 +76,7 @@ namespace CONTACT
         std::vector<CORE::GEN::Pairedvector<int, double>>& derivsxi,
         std::vector<CORE::GEN::Pairedvector<int, double>>& derivmxi) override;
 
-    void IntegrateGP_3D(MORTAR::Element& sele, MORTAR::Element& mele,
+    void integrate_gp_3_d(MORTAR::Element& sele, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -114,7 +114,7 @@ namespace CONTACT
      *                                  \boldsymbol{t}}{\mathrm{d} \boldsymbol{d}^2} \f]
      */
     template <int dim>
-    void SoEleCauchy(MORTAR::Element& moEle, double* boundary_gpcoord,
+    void so_ele_cauchy(MORTAR::Element& moEle, double* boundary_gpcoord,
         std::vector<CORE::GEN::Pairedvector<int, double>> boundary_gpcoord_lin, double gp_wgt,
         const CORE::LINALG::Matrix<dim, 1>& normal,
         std::vector<CORE::GEN::Pairedvector<int, double>>& normal_deriv,
@@ -160,7 +160,7 @@ namespace CONTACT
 
    protected:
     template <int dim>
-    void BuildAdjointTest(MORTAR::Element& moEle, double fac,
+    void build_adjoint_test(MORTAR::Element& moEle, double fac,
         const CORE::LINALG::SerialDenseMatrix& dsntdd,
         const CORE::LINALG::SerialDenseMatrix& d2sntdd2,
         const CORE::LINALG::SerialDenseMatrix& d2sntDdDn,
@@ -174,7 +174,7 @@ namespace CONTACT
         CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseVector>& deriv_adjoint_test);
 
     template <int dim>
-    void IntegrateTest(double fac, MORTAR::Element& ele,
+    void integrate_test(double fac, MORTAR::Element& ele,
         const CORE::LINALG::SerialDenseVector& shape, const CORE::LINALG::SerialDenseMatrix& deriv,
         const std::vector<CORE::GEN::Pairedvector<int, double>>& dxi, double jac,
         const CORE::GEN::Pairedvector<int, double>& jacintcellmap, double wgt, double test_val,

@@ -55,7 +55,7 @@ int DRT::ELEMENTS::FluidPoroBoundary::Evaluate(Teuchos::ParameterList& params,
     case FLD::fpsi_coupling:
     {
       DRT::ELEMENTS::FluidBoundaryFactory::ProvideImpl(Shape(), impltype)
-          ->EvaluateAction(
+          ->evaluate_action(
               this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }

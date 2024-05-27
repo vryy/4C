@@ -53,7 +53,7 @@ bool CORE::Conditions::ConditionSelector::SelectDofs(DRT::Node* node, std::set<i
   // put all conditioned dofs into conddofset
   if (ContainsNode(node->Id()))
   {
-    std::vector<int> dof = Discretization().Dof(0, node);
+    std::vector<int> dof = discretization().Dof(0, node);
     for (unsigned k = 0; k < dof.size(); ++k)
     {
       // test for dof position

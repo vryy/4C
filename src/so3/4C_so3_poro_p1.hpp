@@ -186,7 +186,7 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int MyEvaluate(
+      int my_evaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
@@ -216,7 +216,7 @@ namespace DRT
 
       //! Calculate coupling terms in nonlinear stiffness and internal force for poroelasticity
       //! problems
-      void CouplingPoroelast(std::vector<int>& lm,                   //!< location matrix
+      void coupling_poroelast(std::vector<int>& lm,                  //!< location matrix
           CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& disp,  //!< current displacements
           CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& vel,   //!< current velocities
           CORE::LINALG::Matrix<Base::numnod_, 1>* porosity,          //!< porosity value
@@ -246,7 +246,7 @@ namespace DRT
           double& dphi_dp) override;
 
       //! gauss point loop for evaluation of stiffness and rhs vector
-      void GaussPointLoopP1(Teuchos::ParameterList& params,
+      void gauss_point_loop_p1(Teuchos::ParameterList& params,
           const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& xrefe,
           const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& xcurr,
           const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& nodaldisp,
@@ -262,7 +262,7 @@ namespace DRT
           CORE::LINALG::Matrix<Base::numnod_, 1>& ecoupl_force_p1);
 
       //! gauss point loop for evaluation of stiffness (off diagonal)
-      void GaussPointLoopP1OD(Teuchos::ParameterList& params,
+      void gauss_point_loop_p1_od(Teuchos::ParameterList& params,
           const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& xrefe,
           const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& xcurr,
           const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& nodaldisp,

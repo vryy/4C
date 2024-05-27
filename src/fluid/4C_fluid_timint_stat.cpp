@@ -99,7 +99,7 @@ void FLD::TimIntStationary::solve_stationary_problem()
   // numbers within only ONE simulation when you apply a proper
   // (pseudo-)timecurve
 
-  while (NotFinished())
+  while (not_finished())
   {
     // -------------------------------------------------------------------
     //              set (pseudo-)time-dependent parameters
@@ -124,7 +124,7 @@ void FLD::TimIntStationary::solve_stationary_problem()
     // -------------------------------------------------------------------
     //           preparation of AVM3-based scale separation
     // -------------------------------------------------------------------
-    if (step_ == 1 and fssgv_ != INPAR::FLUID::no_fssgv) AVM3Preparation();
+    if (step_ == 1 and fssgv_ != INPAR::FLUID::no_fssgv) av_m3_preparation();
 
     // -------------------------------------------------------------------
     //                     solve equation system

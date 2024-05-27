@@ -129,9 +129,9 @@ namespace
       Teuchos::RCP<CORE::MAT::PAR::Material> curmat)
   {
     static_assert(std::is_base_of_v<CORE::MAT::PAR::Parameter, MaterialParameter>);
-    if (curmat->Parameter() == nullptr) curmat->SetParameter(new MaterialParameter(curmat));
+    if (curmat->Parameter() == nullptr) curmat->set_parameter(new MaterialParameter(curmat));
     auto* params = static_cast<MaterialParameter*>(curmat->Parameter());
-    return params->CreateMaterial();
+    return params->create_material();
   }
 
   template <typename MaterialParameter>
@@ -139,9 +139,9 @@ namespace
       Teuchos::RCP<CORE::MAT::PAR::Material> curmat)
   {
     static_assert(std::is_base_of_v<CORE::MAT::PAR::Parameter, MaterialParameter>);
-    if (curmat->Parameter() == nullptr) curmat->SetParameter(new MaterialParameter(curmat));
+    if (curmat->Parameter() == nullptr) curmat->set_parameter(new MaterialParameter(curmat));
     auto* params = dynamic_cast<MaterialParameter*>(curmat->Parameter());
-    return params->CreateMaterial();
+    return params->create_material();
   }
 }  // namespace
 

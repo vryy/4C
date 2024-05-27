@@ -765,7 +765,7 @@ int STR::MODELEVALUATOR::Data::GetStepNp() const { return GState().GetStepNp(); 
 std::string STR::MODELEVALUATOR::ContactData::GetOutputFilePath() const
 {
   check_init();
-  return InOutput().GetOutputPtr()->Output()->FileName();
+  return in_output().GetOutputPtr()->Output()->FileName();
 }
 
 /*----------------------------------------------------------------------------*

@@ -165,7 +165,7 @@ namespace DRT
        * Meshfree bins do not have dofs
        *///
       /*------------------------------------------------------------------------*/
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       /*========================================================================*/
       //! @name Query methods

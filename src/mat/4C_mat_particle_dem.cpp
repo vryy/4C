@@ -35,7 +35,7 @@ MAT::PAR::ParticleMaterialDEM::ParticleMaterialDEM(Teuchos::RCP<CORE::MAT::PAR::
 /*---------------------------------------------------------------------------*
  | create material instance of matching type with parameters  sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ParticleMaterialDEM::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ParticleMaterialDEM::create_material()
 {
   return Teuchos::rcp(new MAT::ParticleMaterialDEM(this));
 }

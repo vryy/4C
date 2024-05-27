@@ -250,7 +250,7 @@ namespace THR
 
     //! Print to screen predictor informations about residual norm etc.
     //! \author lw (originally) \date 12/07
-    void PrintPredictor();
+    void print_predictor();
 
     //! Print to screen information about residual forces and temperatures
     //! \author lw (originally) \date 12/07
@@ -273,7 +273,7 @@ namespace THR
     void PrintStep() override;
 
     //! The text for summary print, see #PrintStep
-    void PrintStepText(FILE* ofile  //!< output file handle
+    void print_step_text(FILE* ofile  //!< output file handle
     );
 
     //@}
@@ -352,7 +352,7 @@ namespace THR
     TimIntImpl(const TimIntImpl& old);
 
     // called when unconverged AND dicvont_halve_step
-    void HalveTimeStep();
+    void halve_time_step();
 
     void check_for_time_step_increase();
 

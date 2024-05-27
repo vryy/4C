@@ -230,8 +230,8 @@ namespace CONTACT
     /*!
     \brief Write restart
     */
-    void WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> output);
-    void WriteRestart(IO::DiscretizationWriter& output);
+    void write_restart(Teuchos::RCP<IO::DiscretizationWriter> output);
+    void write_restart(IO::DiscretizationWriter& output);
 
     //@}
 

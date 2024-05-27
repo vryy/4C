@@ -149,32 +149,32 @@ void StructureFilter::WriteAllResults(PostField* field)
     // although appearing here twice, only one function call to PostStress
     // is really postprocessing Gauss point stresses, since only _either_
     // Cauchy _or_ 2nd Piola-Kirchhoff stresses are written during simulation!
-    PostStress("gauss_cauchy_stresses_xyz", stresstype_);
-    PostStress("gauss_2PK_stresses_xyz", stresstype_);
+    post_stress("gauss_cauchy_stresses_xyz", stresstype_);
+    post_stress("gauss_2PK_stresses_xyz", stresstype_);
     // in case of coupled problem (e.g. TSI) write the stresses arising due to
     // coupling to another field
-    PostStress("gauss_cauchy_coupling_stresses_xyz", stresstype_);
-    PostStress("gauss_2PK_coupling_stresses_xyz", stresstype_);
+    post_stress("gauss_cauchy_coupling_stresses_xyz", stresstype_);
+    post_stress("gauss_2PK_coupling_stresses_xyz", stresstype_);
   }
   if (straintype_ != "none")
   {
     // although appearing here twice, only one function call to PostStress
     // is really postprocessing Gauss point strains, since only _either_
     // Green-Lagrange _or_ Euler-Almansi strains are written during simulation!
-    PostStress("gauss_GL_strains_xyz", straintype_);
-    PostStress("gauss_EA_strains_xyz", straintype_);
-    PostStress("gauss_LOG_strains_xyz", straintype_);
+    post_stress("gauss_GL_strains_xyz", straintype_);
+    post_stress("gauss_EA_strains_xyz", straintype_);
+    post_stress("gauss_LOG_strains_xyz", straintype_);
     // the same for plastic strains
-    PostStress("gauss_pl_GL_strains_xyz", straintype_);
-    PostStress("gauss_pl_EA_strains_xyz", straintype_);
+    post_stress("gauss_pl_GL_strains_xyz", straintype_);
+    post_stress("gauss_pl_EA_strains_xyz", straintype_);
   }
   if (optquantitytype_ != "none")
   {
-    PostStress("gauss_membrane_thickness", optquantitytype_);
+    post_stress("gauss_membrane_thickness", optquantitytype_);
   }
 
   // write structural rotation tensor R
-  if (field->problem()->struct_rot() == "yes") PostStress("rotation", "cxyz");
+  if (field->problem()->struct_rot() == "yes") post_stress("rotation", "cxyz");
 
   // Write element and node owners
   WriteElementResults(field);
@@ -606,20 +606,20 @@ void ThermoFilter::WriteAllResults(PostField* field)
 
   if (heatfluxtype_ != "none")
   {
-    // although appearing here twice, only one function call to PostHeatflux
+    // although appearing here twice, only one function call to post_heatflux
     // is really postprocessing Gauss point heatfluxes, since only _either_
     // Current _or_ Initial heatfluxes are written during simulation!
-    PostHeatflux("gauss_current_heatfluxes_xyz", heatfluxtype_);
-    PostHeatflux("gauss_initial_heatfluxes_xyz", heatfluxtype_);
+    post_heatflux("gauss_current_heatfluxes_xyz", heatfluxtype_);
+    post_heatflux("gauss_initial_heatfluxes_xyz", heatfluxtype_);
     writer_->WriteResult("heatflux", "heatflux", nodebased, field->problem()->num_dim());
   }
   if (tempgradtype_ != "none")
   {
-    // although appearing here twice, only one function call to PostHeatflux
+    // although appearing here twice, only one function call to post_heatflux
     // is really postprocessing Gauss point temperature gradients, since only _either_
     // Initial _or_ Current temperature gradients are written during simulation!
-    PostHeatflux("gauss_current_tempgrad_xyz", tempgradtype_);
-    PostHeatflux("gauss_initial_tempgrad_xyz", tempgradtype_);
+    post_heatflux("gauss_current_tempgrad_xyz", tempgradtype_);
+    post_heatflux("gauss_initial_tempgrad_xyz", tempgradtype_);
     writer_->WriteResult("tempgrad", "tempgrad", nodebased, field->problem()->num_dim());
   }
 

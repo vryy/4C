@@ -227,7 +227,7 @@ std::vector<std::vector<DRT::Element*>> Beam3ContactOctTree::OctTreeSearch(
     std::cout << "Initialization     :\t\t" << t_01 - t_start << " seconds" << std::endl;
     std::cout << "Bound. Box Creation:\t\t" << t_02 - t_01 << " seconds" << std::endl;
     std::cout << "Octree Search      :\t\t" << t_03 - t_02 << " seconds" << std::endl;
-    std::cout << "Intersection       :\t\t" << t_04 - t_03 << " seconds" << std::endl;
+    std::cout << "intersection       :\t\t" << t_04 - t_03 << " seconds" << std::endl;
     std::cout << "Octree output      :\t\t" << Teuchos::Time::wallTime() - t_04 << " seconds"
               << std::endl;
     std::cout << "=============================================================" << std::endl;
@@ -386,10 +386,10 @@ void Beam3ContactOctTree::OctreeOutput(
     // active contact pairs
     if ((int)contactpairelements.size() > 0)
     {
-      // Print ContactPairs to .dat-file and plot with Matlab....................
+      // Print contact_pairs to .dat-file and plot with Matlab....................
       std::ostringstream filename;
       if (step != -2)
-        filename << "ContactPairs" << std::setw(6) << std::setfill('0') << step << ".dat";
+        filename << "contact_pairs" << std::setw(6) << std::setfill('0') << step << ".dat";
       else
         filename << "ContactPairsInit.dat";
       std::ofstream out(filename.str());
@@ -1503,7 +1503,7 @@ bool Beam3ContactOctTree::spbb_is_in_this_octant(CORE::LINALG::Matrix<3, 1>& oct
 }
 
 /*-----------------------------------------------------------------------------------*
- |  Bounding Box Intersection function (private)                          meier 01/11|
+ |  Bounding Box intersection function (private)                          meier 01/11|
  |  Intersects Bounding Boxes in same line of map OctreeMap                          |
  |  Gives back vector of intersection pairs                                          |
  *----------------------------------------------------------------------------------*/
@@ -1623,14 +1623,14 @@ void Beam3ContactOctTree::bounding_box_intersection(
   searchdis_.Comm().MaxAll(&isectimelocal, &isectimeglobal, 1);
   discret_.Comm().Barrier();
   if (!searchdis_.Comm().MyPID())
-    std::cout << "Intersection time:\t\t" << isectimeglobal << " seconds" << std::endl;
+    std::cout << "intersection time:\t\t" << isectimeglobal << " seconds" << std::endl;
 #endif
 
   return;
 }  // end of method bounding_box_intersection()
 
 /*-----------------------------------------------------------------------------------*
- |  Axis Aligned Bounding Box Intersection function when both bounding boxes         |
+ |  Axis Aligned Bounding Box intersection function when both bounding boxes         |
  |  represent actual finite elements  (private)                         mueller 11/11|
  *----------------------------------------------------------------------------------*/
 bool Beam3ContactOctTree::intersection_aabb(
@@ -1666,7 +1666,7 @@ bool Beam3ContactOctTree::intersection_aabb(
   {
     for (int j = 0; j < J + 1; j++)
     {
-      // Intersection Test
+      // intersection Test
       a_xmin = (*allbboxes_)[i * 6][entry1];
       a_xmax = (*allbboxes_)[i * 6 + 1][entry1];
       a_ymin = (*allbboxes_)[i * 6 + 2][entry1];
@@ -1691,7 +1691,7 @@ bool Beam3ContactOctTree::intersection_aabb(
 }
 
 /*-----------------------------------------------------------------------------------*
- |  Cylindrical Oriented Bounding Box Intersection function when both bounding boxes |
+ |  Cylindrical Oriented Bounding Box intersection function when both bounding boxes |
  |  represent actual finite elements  (private)                         mueller 11/11|
  *----------------------------------------------------------------------------------*/
 bool Beam3ContactOctTree::intersection_cobb(
@@ -1803,12 +1803,12 @@ bool Beam3ContactOctTree::intersection_cobb(
     if (intersection) break;
   }
 
-  //  std::cout<<"Intersection total: "<< Teuchos::Time::wallTime()-t_start<<std::endl;
+  //  std::cout<<"intersection total: "<< Teuchos::Time::wallTime()-t_start<<std::endl;
   return intersection;
 }
 
 /*-----------------------------------------------------------------------------------*
- |  Spherical Bounding Box Intersection function when both bounding boxes           |
+ |  Spherical Bounding Box intersection function when both bounding boxes           |
  |  for linkers                                       (private)        mueller 01/12|
  *----------------------------------------------------------------------------------*/
 bool Beam3ContactOctTree::intersection_spbb(

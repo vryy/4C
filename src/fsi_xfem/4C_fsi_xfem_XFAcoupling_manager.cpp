@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 XFEM::XfaCouplingManager::XfaCouplingManager(Teuchos::RCP<FLD::XFluid> xfluid,
     Teuchos::RCP<ADAPTER::AleFpsiWrapper> ale, std::vector<int> idx,
     Teuchos::RCP<ADAPTER::Structure> structure)
-    : CouplingCommManager(xfluid->Discretization(), ale->Discretization(), "", 0, 3),
+    : CouplingCommManager(xfluid->discretization(), ale->discretization(), "", 0, 3),
       ale_(ale),
       xfluid_(xfluid),
       idx_(idx),
@@ -34,20 +34,20 @@ XFEM::XfaCouplingManager::XfaCouplingManager(Teuchos::RCP<FLD::XFluid> xfluid,
 
   if (structure_ != Teuchos::null)
   {
-    if (ale_->Discretization()->GetCondition("StructAleCoupling") != nullptr &&
-        structure_->Discretization()->GetCondition("StructAleCoupling") != nullptr)
+    if (ale_->discretization()->GetCondition("StructAleCoupling") != nullptr &&
+        structure_->discretization()->GetCondition("StructAleCoupling") != nullptr)
     {
-      if (ale_->Discretization()->GetCondition("StructAleCoupling")->GetNodes()->size() !=
-          structure_->Discretization()->GetCondition("StructAleCoupling")->GetNodes()->size())
+      if (ale_->discretization()->GetCondition("StructAleCoupling")->GetNodes()->size() !=
+          structure_->discretization()->GetCondition("StructAleCoupling")->GetNodes()->size())
       {
         FOUR_C_THROW("XFACoupling_Manager: For StructAleCoupling NumNodes not equal! (%d != %d)",
-            ale_->Discretization()->GetCondition("StructAleCoupling")->GetNodes()->size(),
-            structure_->Discretization()->GetCondition("StructAleCoupling")->GetNodes()->size());
+            ale_->discretization()->GetCondition("StructAleCoupling")->GetNodes()->size(),
+            structure_->discretization()->GetCondition("StructAleCoupling")->GetNodes()->size());
       }
 
       std::cout << "|== XFACoupling_Manager: Setup of Ale Structure Coupling! ==|" << std::endl;
       ale_struct_coupling_ = Teuchos::rcp(new XFEM::CouplingCommManager(
-          ale_->Discretization(), structure_->Discretization(), "StructAleCoupling"));
+          ale_->discretization(), structure_->discretization(), "StructAleCoupling"));
     }
   }
 }

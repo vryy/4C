@@ -26,7 +26,7 @@ namespace
   {
     if (ele.IsParamsInterface())
     {
-      return *ele.StrParamsInterface().StressDataPtr();
+      return *ele.str_params_interface().StressDataPtr();
     }
     else
     {
@@ -39,7 +39,7 @@ namespace
   {
     if (ele.IsParamsInterface())
     {
-      return *ele.StrParamsInterface().StrainDataPtr();
+      return *ele.str_params_interface().StrainDataPtr();
     }
     else
     {
@@ -52,7 +52,7 @@ namespace
   {
     if (ele.IsParamsInterface())
     {
-      return ele.StrParamsInterface().GetStressOutputType();
+      return ele.str_params_interface().GetStressOutputType();
     }
     else
     {
@@ -65,7 +65,7 @@ namespace
   {
     if (ele.IsParamsInterface())
     {
-      return ele.StrParamsInterface().GetStrainOutputType();
+      return ele.str_params_interface().GetStrainOutputType();
     }
     else
     {
@@ -87,7 +87,7 @@ int DRT::ELEMENTS::Shell7p::Evaluate(Teuchos::ParameterList& params,
       [&]()
       {
         if (IsParamsInterface())
-          return StrParamsInterface().GetActionType();
+          return str_params_interface().GetActionType();
         else
           return String2ActionType(params.get<std::string>("action", "none"));
       });
@@ -129,7 +129,7 @@ int DRT::ELEMENTS::Shell7p::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::struct_calc_recover:
     {
       shell_interface_->Recover(
-          *this, discretization, dof_index_array, params, StrParamsInterface());
+          *this, discretization, dof_index_array, params, str_params_interface());
     }
     break;
     case ELEMENTS::struct_calc_stress:
@@ -148,7 +148,7 @@ int DRT::ELEMENTS::Shell7p::Evaluate(Teuchos::ParameterList& params,
       if (IsParamsInterface())
       {
         // new structural time integration
-        StrParamsInterface().add_contribution_to_energy_type(int_energy, STR::internal_energy);
+        str_params_interface().add_contribution_to_energy_type(int_energy, STR::internal_energy);
       }
       else
       {
@@ -197,7 +197,7 @@ int DRT::ELEMENTS::Shell7p::evaluate_neumann(Teuchos::ParameterList& params,
       [&]()
       {
         if (IsParamsInterface())
-          return StrParamsInterface().GetTotalTime();
+          return str_params_interface().GetTotalTime();
         else
           return params.get("total time", -1.0);
       });

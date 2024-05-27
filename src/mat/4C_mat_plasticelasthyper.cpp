@@ -83,7 +83,7 @@ MAT::PAR::PlasticElastHyper::PlasticElastHyper(Teuchos::RCP<CORE::MAT::PAR::Mate
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::PlasticElastHyper::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::PlasticElastHyper::create_material()
 {
   return Teuchos::rcp(new MAT::PlasticElastHyper(this));
 }
@@ -414,7 +414,7 @@ void MAT::PlasticElastHyper::SetupTSI(const int numgp, const int numdofperelemen
   // no TSI with plastic spin yet
   // besides the kinematic hardening term (see above) there is not much to do
   // just add the derivatives of theating and NCP function in the
-  // EvaluateNCPandSpin(...) function
+  // evaluate_nc_pand_spin(...) function
   if (PlSpinChi() != 0.) FOUR_C_THROW("no thermo-plasticitiy with plastic spin");
 
   /// Hill TSI only with pl_flow dissipation
@@ -846,8 +846,9 @@ void MAT::PlasticElastHyper::EvaluatePlast(const CORE::LINALG::Matrix<3, 3>* def
     EvaluateCauchyPlast(
         dPI, ddPII, defgrd, *cauchy, d_cauchy_dFpi, *d_cauchy_dC, *d_cauchy_dF, d_cauchy_dT);
 
-  EvaluateNCP(&mStr, &dMdC, &dMdFpinv, &dPK2dFpinv, deltaDp, gp, temp, NCP, dNCPdC, dNCPdDp, dNCPdT,
-      dPK2dDp, active, elast, as_converged, dHdC, dHdDp, params, dt, &d_cauchy_dFpi, d_cauchy_ddp);
+  evaluate_ncp(&mStr, &dMdC, &dMdFpinv, &dPK2dFpinv, deltaDp, gp, temp, NCP, dNCPdC, dNCPdDp,
+      dNCPdT, dPK2dDp, active, elast, as_converged, dHdC, dHdDp, params, dt, &d_cauchy_dFpi,
+      d_cauchy_ddp);
 
   return;
 }
@@ -856,7 +857,7 @@ void MAT::PlasticElastHyper::EvaluatePlast(const CORE::LINALG::Matrix<3, 3>* def
 /*----------------------------------------------------------------------*
  |  evaluate NCP function                                   seitz 05/14 |
  *----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::EvaluateNCP(const CORE::LINALG::Matrix<3, 3>* mStr,
+void MAT::PlasticElastHyper::evaluate_ncp(const CORE::LINALG::Matrix<3, 3>* mStr,
     const CORE::LINALG::Matrix<6, 6>* dMdC, const CORE::LINALG::Matrix<6, 9>* dMdFpinv,
     const CORE::LINALG::Matrix<6, 9>* dPK2dFpinv, const CORE::LINALG::Matrix<3, 3>* deltaDp,
     const int gp, const double* temp, CORE::LINALG::Matrix<6, 1>* NCP,
@@ -925,7 +926,7 @@ void MAT::PlasticElastHyper::EvaluateNCP(const CORE::LINALG::Matrix<3, 3>* mStr,
 
   // different tensor norms
   tmp61.Multiply(PlAniso_full_, eta_v);
-  double absHeta = NormStressLike(tmp61);
+  double absHeta = norm_stress_like(tmp61);
   double abseta_H = tmp61.Dot(eta_v_strainlike);
   if (abseta_H < -1.e-16)
     FOUR_C_THROW("this should not happen. eta : H : eta =%f < 0", abseta_H);
@@ -1370,7 +1371,7 @@ void MAT::PlasticElastHyper::EvaluatePlast(const CORE::LINALG::Matrix<3, 3>* def
   if (cauchy)
     EvaluateCauchyPlast(dPI, ddPII, defgrd, *cauchy, d_cauchy_dFpi, *d_cauchy_dC, *d_cauchy_dF);
 
-  EvaluateNCPandSpin(&mStr, &dMdC, &dMdFpinv, &dPK2dFpinv, deltaLp, gp, NCP, dNCPdC, dNCPdLp,
+  evaluate_nc_pand_spin(&mStr, &dMdC, &dMdFpinv, &dPK2dFpinv, deltaLp, gp, NCP, dNCPdC, dNCPdLp,
       dPK2dLp, active, elast, as_converged, dt, &d_cauchy_dFpi, d_cauchy_ddp);
 
   return;
@@ -1379,7 +1380,7 @@ void MAT::PlasticElastHyper::EvaluatePlast(const CORE::LINALG::Matrix<3, 3>* def
 /*----------------------------------------------------------------------*
  |  evaluate NCP function and plastic spin equation         seitz 05/14 |
  *----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::EvaluateNCPandSpin(const CORE::LINALG::Matrix<3, 3>* mStr,
+void MAT::PlasticElastHyper::evaluate_nc_pand_spin(const CORE::LINALG::Matrix<3, 3>* mStr,
     const CORE::LINALG::Matrix<6, 6>* dMdC, const CORE::LINALG::Matrix<6, 9>* dMdFpinv,
     const CORE::LINALG::Matrix<6, 9>* dPK2dFpinv, const CORE::LINALG::Matrix<3, 3>* deltaLp,
     const int gp, CORE::LINALG::Matrix<9, 1>* NCP, CORE::LINALG::Matrix<9, 6>* dNCPdC,
@@ -1457,7 +1458,7 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(const CORE::LINALG::Matrix<3, 3>
   }
 
   tmp61.Multiply(PlAniso_full_, eta_v);
-  double absHeta = NormStressLike(tmp61);
+  double absHeta = norm_stress_like(tmp61);
   double abseta_H = tmp61.Dot(eta_v_strainlike);
   if (abseta_H < -1.e-16)
     FOUR_C_THROW("this should not happen. tmp=%f", abseta_H);
@@ -2180,7 +2181,7 @@ int MAT::PlasticElastHyper::evaluate_kin_quant_plast(const CORE::LINALG::Matrix<
 /*----------------------------------------------------------------------*
  |  tensor norm from stress-like Voigt-notation             seitz 05/14 |
  *----------------------------------------------------------------------*/
-double MAT::PlasticElastHyper::NormStressLike(const CORE::LINALG::Matrix<6, 1>& stress)
+double MAT::PlasticElastHyper::norm_stress_like(const CORE::LINALG::Matrix<6, 1>& stress)
 {
   double norm = 0;
   for (int i = 0; i < 3; ++i) norm += stress(i) * stress(i);

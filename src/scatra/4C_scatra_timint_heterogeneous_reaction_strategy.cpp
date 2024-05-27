@@ -42,7 +42,7 @@ SCATRA::HeterogeneousReactionStrategy::HeterogeneousReactionStrategy(
 void SCATRA::HeterogeneousReactionStrategy::EvaluateMeshtying()
 {
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   // create parameter list
   Teuchos::ParameterList condparams;
@@ -57,17 +57,17 @@ void SCATRA::HeterogeneousReactionStrategy::EvaluateMeshtying()
 
   // provide scatra discretization with convective velocity
   discret_->set_state(scatratimint_->NdsVel(), "convective velocity field",
-      scatratimint_->Discretization()->GetState(
+      scatratimint_->discretization()->GetState(
           scatratimint_->NdsVel(), "convective velocity field"));
 
   // provide scatra discretization with velocity
   discret_->set_state(scatratimint_->NdsVel(), "velocity field",
-      scatratimint_->Discretization()->GetState(scatratimint_->NdsVel(), "velocity field"));
+      scatratimint_->discretization()->GetState(scatratimint_->NdsVel(), "velocity field"));
 
   if (scatratimint_->IsALE())
   {
     discret_->set_state(scatratimint_->NdsDisp(), "dispnp",
-        scatratimint_->Discretization()->GetState(scatratimint_->NdsDisp(), "dispnp"));
+        scatratimint_->discretization()->GetState(scatratimint_->NdsDisp(), "dispnp"));
   }
 
   discret_->Evaluate(condparams, scatratimint_->SystemMatrix(), scatratimint_->Residual());
@@ -87,23 +87,23 @@ void SCATRA::HeterogeneousReactionStrategy::EvaluateMeshtying()
 /*----------------------------------------------------------------------*
  | initialize meshtying objects                              rauch 09/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
+void SCATRA::HeterogeneousReactionStrategy::setup_meshtying()
 {
   // call Init() of base class
-  SCATRA::MeshtyingStrategyStd::SetupMeshtying();
+  SCATRA::MeshtyingStrategyStd::setup_meshtying();
 
   // make sure we set up everything properly
   heterogeneous_reaction_sanity_check();
 
-  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(scatratimint_->Discretization()->Comm().Clone());
+  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(scatratimint_->discretization()->Comm().Clone());
 
   // standard case
-  discret_ = Teuchos::rcp(new DRT::Discretization(scatratimint_->Discretization()->Name(), com));
+  discret_ = Teuchos::rcp(new DRT::Discretization(scatratimint_->discretization()->Name(), com));
 
   // call complete without assigning degrees of freedom
   discret_->fill_complete(false, true, false);
 
-  Teuchos::RCP<DRT::Discretization> scatradis = scatratimint_->Discretization();
+  Teuchos::RCP<DRT::Discretization> scatradis = scatratimint_->discretization();
 
   // create scatra elements if the scatra discretization is empty
   {
@@ -143,11 +143,11 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
     discret_->ReplaceDofSet(newdofset, false);
 
     // add all secondary dofsets as proxies
-    for (int ndofset = 1; ndofset < scatratimint_->Discretization()->NumDofSets(); ++ndofset)
+    for (int ndofset = 1; ndofset < scatratimint_->discretization()->NumDofSets(); ++ndofset)
     {
       Teuchos::RCP<CORE::Dofsets::DofSetGIDBasedWrapper> gidmatchingdofset =
-          Teuchos::rcp(new CORE::Dofsets::DofSetGIDBasedWrapper(scatratimint_->Discretization(),
-              scatratimint_->Discretization()->GetDofSetProxy(ndofset)));
+          Teuchos::rcp(new CORE::Dofsets::DofSetGIDBasedWrapper(scatratimint_->discretization(),
+              scatratimint_->discretization()->GetDofSetProxy(ndofset)));
       discret_->AddDofSet(gidmatchingdofset);
     }
 
@@ -189,7 +189,7 @@ void SCATRA::HeterogeneousReactionStrategy::evaluate_condition(Teuchos::Paramete
     Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring, const int condid)
 {
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   // Call evaluate_condition on auxiliary discretization.
   // This condition has all dofs, both from the volume-
@@ -219,21 +219,21 @@ void SCATRA::HeterogeneousReactionStrategy::heterogeneous_reaction_sanity_check(
 {
   bool valid_slave = false;
 
-  const Epetra_Comm& com = scatratimint_->Discretization()->Comm();
+  const Epetra_Comm& com = scatratimint_->discretization()->Comm();
 
   if (com.MyPID() == 0) std::cout << " Sanity check for HeterogeneousReactionStrategy ...";
 
   CORE::Conditions::Condition* slave_cond =
-      scatratimint_->Discretization()->GetCondition("ScatraHeteroReactionSlave");
+      scatratimint_->discretization()->GetCondition("ScatraHeteroReactionSlave");
 
-  const Epetra_Map* element_row_map = scatratimint_->Discretization()->ElementRowMap();
+  const Epetra_Map* element_row_map = scatratimint_->discretization()->ElementRowMap();
 
   // loop over row elements
   for (int lid = 0; lid < element_row_map->NumMyElements(); lid++)
   {
     const int gid = element_row_map->GID(lid);
 
-    DRT::Element* ele = scatratimint_->Discretization()->gElement(gid);
+    DRT::Element* ele = scatratimint_->discretization()->gElement(gid);
     DRT::Node** nodes = ele->Nodes();
     if (ele->Shape() == CORE::FE::CellType::quad4 or ele->Shape() == CORE::FE::CellType::tri3)
     {

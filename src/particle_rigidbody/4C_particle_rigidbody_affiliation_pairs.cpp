@@ -39,7 +39,7 @@ void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::Setup(
   particleengineinterface_ = particleengineinterface;
 }
 
-void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::WriteRestart() const
+void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::write_restart() const
 {
   // get bin discretization writer
   std::shared_ptr<IO::DiscretizationWriter> binwriter =

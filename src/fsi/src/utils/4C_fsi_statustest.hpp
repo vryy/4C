@@ -111,16 +111,16 @@ namespace NOX
         \note Returns -1.0 if F(x) has not been calculated for the given
         grp (i.e., grp.isF() is false).
       */
-      virtual double computeNorm(const ::NOX::Abstract::Group& grp) = 0;
+      virtual double compute_norm(const ::NOX::Abstract::Group& grp) = 0;
 
       /// compute the norm of a given vector
-      double computeNorm(const Epetra_Vector& v);
+      double compute_norm(const Epetra_Vector& v);
 
       /*! In the case of a relative norm calculation, initializes
         \c trueTolerance based on the F-value at the initial guess.*/
-      // void relativeSetup(::NOX::Abstract::Group& initialGuess);
+      // void relative_setup(::NOX::Abstract::Group& initialGuess);
 
-      double Tolerance() const { return true_tolerance_; }
+      double tolerance() const { return true_tolerance_; }
 
      private:
       //! %Status
@@ -163,7 +163,7 @@ namespace NOX
       void SetNewton(Teuchos::RCP<NOX::FSI::Newton> newton) { newton_ = newton; }
 
      protected:
-      Teuchos::RCP<NOX::FSI::Newton> Newton() { return newton_; }
+      Teuchos::RCP<NOX::FSI::Newton> newton() { return newton_; }
 
      private:
       Teuchos::RCP<NOX::FSI::Newton> newton_;
@@ -188,7 +188,7 @@ namespace NOX
           ScaleType stype = Scaled);
 
      protected:
-      double computeNorm(const ::NOX::Abstract::Group& grp) override;
+      double compute_norm(const ::NOX::Abstract::Group& grp) override;
 
      private:
       const CORE::LINALG::MultiMapExtractor extractor_;
@@ -206,7 +206,7 @@ namespace NOX
           ScaleType stype = Scaled);
 
      protected:
-      double computeNorm(const ::NOX::Abstract::Group& grp) override;
+      double compute_norm(const ::NOX::Abstract::Group& grp) override;
 
      private:
       const CORE::LINALG::MapExtractor extractor1_;
@@ -268,7 +268,7 @@ namespace NOX
 
      protected:
       /// compute the norm of a given vector
-      virtual double computeNorm(const Epetra_Vector& v);
+      virtual double compute_norm(const Epetra_Vector& v);
 
      private:
       //! %Status
@@ -312,7 +312,7 @@ namespace NOX
 
      protected:
       /// compute the norm of a given vector
-      double computeNorm(const Epetra_Vector& v) override;
+      double compute_norm(const Epetra_Vector& v) override;
 
      private:
       const CORE::LINALG::MultiMapExtractor extractor_;

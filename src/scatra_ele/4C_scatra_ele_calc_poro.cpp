@@ -135,7 +135,7 @@ DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(
  | evaluate action                                          vuong 07/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::EvaluateAction(DRT::Element* ele,
+int DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::evaluate_action(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -161,12 +161,12 @@ int DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::EvaluateAction(DRT::Element* ele,
       extract_element_and_node_values_poro(ele, params, discretization, la);
 
       // calculate scalars and domain integral
-      CalculateScalars(ele, elevec1_epetra, inverting, false);
+      calculate_scalars(ele, elevec1_epetra, inverting, false);
 
       break;
     }
     default:
-      return my::EvaluateAction(ele, params, discretization, action, la, elemat1_epetra,
+      return my::evaluate_action(ele, params, discretization, action, la, elemat1_epetra,
           elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
       break;
   }
@@ -269,7 +269,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::extract_element_and_node_values_
  |  get the material constants  (protected)                  vuong 10/14|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::GetMaterialParams(
+void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::get_material_params(
     const DRT::Element* ele,      //!< the element we are dealing with
     std::vector<double>& densn,   //!< density at t_(n)
     std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
@@ -279,7 +279,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::GetMaterialParams(
 )
 {
   // calculate gauss point porosity from fluid and solid and (potentially) scatra solution
-  ComputePorosity(ele);
+  compute_porosity(ele);
 
   // get the material
   Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
@@ -296,20 +296,20 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::GetMaterialParams(
       int matid = actmat->MatID(k);
       Teuchos::RCP<CORE::MAT::Material> singlemat = actmat->MaterialById(matid);
 
-      my::Materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
+      my::materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
     }
   }
   else
-    my::Materials(material, 0, densn[0], densnp[0], densam[0], visc, iquad);
+    my::materials(material, 0, densn[0], densnp[0], densam[0], visc, iquad);
 
   return;
-}  // ScaTraEleCalcPoro::GetMaterialParams
+}  // ScaTraEleCalcPoro::get_material_params
 
 /*----------------------------------------------------------------------*
  |                                                           vuong 07/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::MatScaTra(
+void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::mat_scatra(
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -331,18 +331,18 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::MatScaTra(
   //  if(k<NO_CONVECTION_NR)
   {
     // set diffusivity (scaled with porosity)
-    SetDiffusivity(actmat, k, porosity);
+    set_diffusivity(actmat, k, porosity);
 
     // set densities (scaled with porosity)
-    SetDensities(porosity, densn, densnp, densam);
+    set_densities(porosity, densn, densnp, densam);
   }
   //  else
   //  {
   //    // set diffusivity (scaled with porosity)
-  //    SetDiffusivity(actmat,k,1.0);
+  //    set_diffusivity(actmat,k,1.0);
   //
   //    // set densities (scaled with porosity)
-  //    SetDensities(1.0,densn,densnp,densam);
+  //    set_densities(1.0,densn,densnp,densam);
   //  }
 
   return;
@@ -352,7 +352,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::MatScaTra(
  |                                                           vuong 07/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetDiffusivity(
+inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::set_diffusivity(
     const Teuchos::RCP<const MAT::ScatraMat>& material, const int k, const double scale)
 {
   my::diffmanager_->SetIsotropicDiff(material->Diffusivity() * scale, k);
@@ -364,7 +364,7 @@ inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetDiffusivity(
  |                                                           vuong 07/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetDensities(
+inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::set_densities(
     double porosity, double& densn, double& densnp, double& densam)
 {
   // all densities are set to the porosity
@@ -379,7 +379,7 @@ inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetDensities(
  |  get the material constants  (protected)                  vuong 10/14|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorosity(
+void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::compute_porosity(
     const DRT::Element* ele  //!< the element we are dealing with
 )
 {
@@ -411,7 +411,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorosity(
     const double J = det / det0;
 
     // fluid pressure at gauss point
-    const double pres = ComputePorePressure();
+    const double pres = compute_pore_pressure();
 
     // empty parameter list
     Teuchos::ParameterList params;
@@ -435,7 +435,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorosity(
     params.set<double>("delta time", my::scatraparatimint_->Dt());
 
     // use structure material to evaluate porosity
-    structmat->ComputePorosity(
+    structmat->compute_porosity(
         params, pres, J, -1, porosity, nullptr, nullptr, nullptr, nullptr, nullptr, false);
   }
 
@@ -449,7 +449,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorosity(
  |  get the material constants  (protected)                  vuong 10/14|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-double DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorePressure()
+double DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::compute_pore_pressure()
 {
   return my::eprenp_.Dot(my::funct_);
 }
@@ -459,7 +459,7 @@ double DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorePressure()
 | (overwrites method in ScaTraEleCalc)                                 |
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::CalculateScalars(const DRT::Element* ele,
+void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::calculate_scalars(const DRT::Element* ele,
     CORE::LINALG::SerialDenseVector& scalars, bool inverting, bool calc_grad_phi)
 {
   // integration points and weights
@@ -472,7 +472,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::CalculateScalars(const DRT::Elem
     const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     // calculate gauss point porosity from fluid and solid and (potentially) scatra solution
-    ComputePorosity(ele);
+    compute_porosity(ele);
 
     // calculate integrals of (inverted) scalar(s) and domain
     if (inverting)
@@ -509,7 +509,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::CalculateScalars(const DRT::Elem
   }  // loop over integration points
 
   return;
-}  // ScaTraEleCalc::CalculateScalars
+}  // ScaTraEleCalc::calculate_scalars
 
 // template classes
 

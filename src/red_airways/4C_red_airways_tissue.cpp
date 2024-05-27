@@ -116,7 +116,7 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
       Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(
           sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
-  structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::StructureRedAirway>(structure->StructureField());
+  structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::StructureRedAirway>(structure->structure_field());
   structure_->Setup();
 
   SetupRedAirways();
@@ -197,7 +197,7 @@ void AIRWAY::RedAirwayTissue::Integrate()
     {
       DoRedAirwayStep();
       RelaxPressure(iter);
-      DoStructureStep();
+      do_structure_step();
       iter++;
     } while (NotConverged(iter) && iter < itermax_);
 
@@ -206,7 +206,7 @@ void AIRWAY::RedAirwayTissue::Integrate()
       FOUR_C_THROW("FIELD ITERATION NOT CONVERGED IN %d STEPS AT TIME T=%f", itermax_, Time());
     }
 
-    UpdateAndOutput();
+    update_and_output();
   }
 }
 
@@ -336,7 +336,7 @@ void AIRWAY::RedAirwayTissue::RelaxPressure(int iter)
 /*----------------------------------------------------------------------*
  |  Integrate structure time step and calculate fluxes   yoshihara 09/12|
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayTissue::DoStructureStep()
+void AIRWAY::RedAirwayTissue::do_structure_step()
 {
   structure_->SetPressure(couppres_ip_);
   structure_->prepare_time_step();
@@ -437,7 +437,7 @@ void AIRWAY::RedAirwayTissue::OutputIteration(Teuchos::RCP<Epetra_Vector> pres_i
 /*----------------------------------------------------------------------*
  |  Update and output                                    yoshihara 09/12|
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayTissue::UpdateAndOutput()
+void AIRWAY::RedAirwayTissue::update_and_output()
 {
   constexpr bool force_prepare = false;
   structure_->prepare_output(force_prepare);

@@ -118,7 +118,7 @@ void wear_dyn_drt(int restart)
   Teuchos::TimeMonitor::summarize();
 
   // perform the result test
-  GLOBAL::Problem::Instance()->AddFieldTest(stru_ale->StructureField()->CreateFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(stru_ale->structure_field()->CreateFieldTest());
   GLOBAL::Problem::Instance()->TestAll(comm);
 
   return;

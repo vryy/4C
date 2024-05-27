@@ -58,7 +58,7 @@ bool CORE::GEO::CUT::IntegrationCell::Contains(CORE::LINALG::Matrix<probdim, 1>&
       CORE::GEO::CUT::Position::Create(coords, x, celltype);
   pos->Compute();
 
-  return pos->WithinLimits();
+  return pos->within_limits();
 }
 
 /*----------------------------------------------------------------------------*

@@ -137,16 +137,16 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 04/2018
      *
-     * \param[in] print_header flag to control output of time step header
+     * \param[in] do_print_header flag to control output of time step header
      */
-    void prepare_time_step(bool print_header = true);
+    void prepare_time_step(bool do_print_header = true);
 
     /*!
      * \brief pre evaluate time step
      *
      * \author Sebastian Fuchs \date 11/2020
      */
-    void PreEvaluateTimeStep();
+    void pre_evaluate_time_step();
 
     /*!
      * \brief integrate time step
@@ -179,7 +179,7 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 07/2020
      */
-    void WriteRestart() const;
+    void write_restart() const;
 
     /*!
      * \brief create particle field specific result test objects

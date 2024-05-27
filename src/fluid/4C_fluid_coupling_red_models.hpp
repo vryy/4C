@@ -62,34 +62,34 @@ namespace FLD
       virtual ~FluidCouplingWrapperBase() = default;
 
       /*!
-      \brief Wrapper for FluidCouplingWrapper::FlowRateCalculation
+      \brief Wrapper for FluidCouplingWrapper::flow_rate_calculation
       */
-      void FlowRateCalculation(double time, double dta);
+      void flow_rate_calculation(double time, double dta);
 
       /*!
-      \brief Wrapper for FluidCouplingWrapper::PressureCalculation
+      \brief Wrapper for FluidCouplingWrapper::pressure_calculation
       */
-      void PressureCalculation(double time, double dta);
+      void pressure_calculation(double time, double dta);
 
       /*!
-      \brief Wrapper for FluidCouplingWrapper::OutflowBoundary
+      \brief Wrapper for FluidCouplingWrapper::outflow_boundary
       */
       void apply_boundary_conditions(double time, double dta, double theta);
 
       /*!
-      \brief Wrapper for FluidCouplingWrapper::UpdateResidual
+      \brief Wrapper for FluidCouplingWrapper::update_residual
       */
-      void UpdateResidual(Teuchos::RCP<Epetra_Vector> residual);
+      void update_residual(Teuchos::RCP<Epetra_Vector> residual);
 
 
 
-      void EvaluateDirichlet(
+      void evaluate_dirichlet(
           Teuchos::RCP<Epetra_Vector> velnp, const Epetra_Map& condmap, double time);
 
       /*!
-      \brief Wrapper for FluidCouplingWrapper::WriteRestart
+      \brief Wrapper for FluidCouplingWrapper::write_restart
       */
-      void WriteRestart(IO::DiscretizationWriter& output);
+      void write_restart(IO::DiscretizationWriter& output);
 
       /*!
       \brief Wrapper for FluidCouplingWrapper::read_restart
@@ -210,7 +210,7 @@ namespace FLD
       /*!
       \brief write flowrates_ and flowratespos_ to result files
       */
-      void WriteRestart(IO::DiscretizationWriter& output, int condnum);
+      void write_restart(IO::DiscretizationWriter& output, int condnum);
 
       /*!
       \brief read flowrates_ and flowratespos_
@@ -222,43 +222,43 @@ namespace FLD
         \brief compute and store flow rate of all previous
         time steps belonging to one cycle
       */
-      double FlowRateCalculation(double time, double dta, int condid);
+      double flow_rate_calculation(double time, double dta, int condid);
 
       /*!
         \brief compute and store pressure of all previous
         time steps belonging to one cycle
       */
-      double PressureCalculation(double time, double dta, int condid);
+      double pressure_calculation(double time, double dta, int condid);
 
 
       /*!
         \brief compute convolution integral and apply pressure
         to elements
       */
-      void OutflowBoundary(double pressure, double time, double dta, double theta, int condid);
+      void outflow_boundary(double pressure, double time, double dta, double theta, int condid);
 
       /*!
         \brief compute apply inflow as a Dirichlet BC
       */
-      void InflowBoundary(double flowrate, double time, double dta, double theta, int condid);
+      void inflow_boundary(double flowrate, double time, double dta, double theta, int condid);
 
-      void UpdateResidual(Teuchos::RCP<Epetra_Vector> residual);
+      void update_residual(Teuchos::RCP<Epetra_Vector> residual);
 
 
 
-      void EvaluateDirichlet(
+      void evaluate_dirichlet(
           Teuchos::RCP<Epetra_Vector> velnp, const Epetra_Map& condmap, double time);
 
       /*!
       \brief compute TimeUpdate
       */
-      void TimeUpdate() {}
+      void time_update() {}
 
-      void Integrate(bool flag, Teuchos::RCP<Teuchos::ParameterList>& params) {}
+      void integrate(bool flag, Teuchos::RCP<Teuchos::ParameterList>& params) {}
 
-      void SaveState(){};
+      void save_state(){};
 
-      void LoadState(){};
+      void load_state(){};
 
      private:
       /*!

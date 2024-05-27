@@ -53,7 +53,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::EvaluateS2ICoupling(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::evaluate_s2_i_coupling(
     const DRT::FaceElement* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& eslavematrix, CORE::LINALG::SerialDenseMatrix& emastermatrix,
@@ -76,21 +76,21 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
   }
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
-  this->ExtractNodeValues(discretization, la);
+  this->extract_node_values(discretization, la);
   std::vector<CORE::LINALG::Matrix<nen_, 1>> emasterphinp(
       my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
   if (params.isParameter("evaluate_manifold_coupling"))
-    my::ExtractNodeValues(emasterphinp, discretization, la, "manifold_on_scatra");
+    my::extract_node_values(emasterphinp, discretization, la, "manifold_on_scatra");
   else
-    my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
+    my::extract_node_values(emasterphinp, discretization, la, "imasterphinp");
 
   CORE::LINALG::Matrix<nen_, 1> eslavetempnp(true);
   CORE::LINALG::Matrix<nen_, 1> emastertempnp(true);
   if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)
   {
-    my::ExtractNodeValues(
+    my::extract_node_values(
         eslavetempnp, discretization, la, "islavetemp", my::scatraparams_->NdsThermo());
-    my::ExtractNodeValues(
+    my::extract_node_values(
         emastertempnp, discretization, la, "imastertemp", my::scatraparams_->NdsThermo());
   }
 
@@ -109,7 +109,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
   std::vector<CORE::LINALG::Matrix<nen_, 1>> eslavestress_vector(
       6, CORE::LINALG::Matrix<nen_, 1>(true));
   if (is_pseudo_contact)
-    my::ExtractNodeValues(eslavestress_vector, discretization, la, "mechanicalStressState",
+    my::extract_node_values(eslavestress_vector, discretization, la, "mechanicalStressState",
         my::scatraparams_->nds_two_tensor_quantity());
 
   // loop over integration points
@@ -133,7 +133,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
         my::numdofpernode_, eslavematrix, emastermatrix, dummymatrix, dummymatrix, eslaveresidual,
         dummyvector);
   }  // loop over integration points
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::EvaluateS2ICoupling
+}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::evaluate_s2_i_coupling
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -456,15 +456,15 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
       my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
   if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedcapacitance)
   {
-    my::ExtractNodeValues(eslavephidtnp, discretization, la, "islavephidtnp");
-    my::ExtractNodeValues(emasterphidtnp, discretization, la, "imasterphidtnp");
+    my::extract_node_values(eslavephidtnp, discretization, la, "islavephidtnp");
+    my::extract_node_values(emasterphidtnp, discretization, la, "imasterphidtnp");
   }
 
   // extract local nodal values of current time step at master-side of scatra-scatra interface
-  this->ExtractNodeValues(discretization, la);
+  this->extract_node_values(discretization, la);
   std::vector<CORE::LINALG::Matrix<nen_, 1>> emasterphinp(
       my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
-  my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
+  my::extract_node_values(emasterphinp, discretization, la, "imasterphinp");
 
   CORE::LINALG::Matrix<nsd_, 1> normal;
 
@@ -473,7 +473,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
   std::vector<CORE::LINALG::Matrix<nen_, 1>> eslavestress_vector(
       6, CORE::LINALG::Matrix<nen_, 1>(true));
   if (is_pseudo_contact)
-    my::ExtractNodeValues(eslavestress_vector, discretization, la, "mechanicalStressState",
+    my::extract_node_values(eslavestress_vector, discretization, la, "mechanicalStressState",
         my::scatraparams_->nds_two_tensor_quantity());
 
   // integration points and weights
@@ -589,19 +589,19 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::evalua
   const bool is_pseudo_contact = my::scatraparamsboundary_->IsPseudoContact();
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
-  this->ExtractNodeValues(discretization, la);
+  this->extract_node_values(discretization, la);
   std::vector<CORE::LINALG::Matrix<nen_, 1>> emasterphinp(
       my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
   if (params.isParameter("evaluate_manifold_coupling"))
-    my::ExtractNodeValues(emasterphinp, discretization, la, "manifold_on_scatra");
+    my::extract_node_values(emasterphinp, discretization, la, "manifold_on_scatra");
   else
-    my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
+    my::extract_node_values(emasterphinp, discretization, la, "imasterphinp");
 
   // element slave mechanical stress tensor
   std::vector<CORE::LINALG::Matrix<nen_, 1>> eslavestress_vector(
       6, CORE::LINALG::Matrix<nen_, 1>(true));
   if (is_pseudo_contact)
-    my::ExtractNodeValues(eslavestress_vector, discretization, la, "mechanicalStressState",
+    my::extract_node_values(eslavestress_vector, discretization, la, "mechanicalStressState",
         my::scatraparams_->nds_two_tensor_quantity());
 
   CORE::LINALG::Matrix<nsd_, 1> normal;
@@ -826,21 +826,21 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
       my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
   if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedcapacitance)
   {
-    my::ExtractNodeValues(eslavephidtnp, discretization, la, "islavephidtnp");
-    my::ExtractNodeValues(emasterphidtnp, discretization, la, "imasterphidtnp");
+    my::extract_node_values(eslavephidtnp, discretization, la, "islavephidtnp");
+    my::extract_node_values(emasterphidtnp, discretization, la, "imasterphidtnp");
   }
 
   // extract local nodal values of current time step on master side of scatra-scatra interface
-  this->ExtractNodeValues(discretization, la);
+  this->extract_node_values(discretization, la);
   std::vector<CORE::LINALG::Matrix<nen_, 1>> emasterphinp(
       my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
-  my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
+  my::extract_node_values(emasterphinp, discretization, la, "imasterphinp");
 
   // element slave mechanical stress tensor
   std::vector<CORE::LINALG::Matrix<nen_, 1>> eslavestress_vector(
       6, CORE::LINALG::Matrix<nen_, 1>(true));
   if (is_pseudo_contact)
-    my::ExtractNodeValues(eslavestress_vector, discretization, la, "mechanicalStressState",
+    my::extract_node_values(eslavestress_vector, discretization, la, "mechanicalStressState",
         my::scatraparams_->nds_two_tensor_quantity());
 
   CORE::LINALG::Matrix<nsd_, 1> normal;
@@ -940,7 +940,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::GetValence(
+double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::get_valence(
     const Teuchos::RCP<const CORE::MAT::Material>& material, const int k) const
 {
   // valence cannot be computed for electrode material
@@ -1128,7 +1128,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::CalcS2ICouplingFlux(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::calc_s2_i_coupling_flux(
     const DRT::FaceElement* ele, const Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseVector& scalars)
@@ -1159,13 +1159,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::CalcS2
   }
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
-  this->ExtractNodeValues(discretization, la);
+  this->extract_node_values(discretization, la);
   std::vector<CORE::LINALG::Matrix<nen_, 1>> emasterphinp(
       my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
   if (params.isParameter("evaluate_manifold_coupling"))
-    my::ExtractNodeValues(emasterphinp, discretization, la, "manifold_on_scatra");
+    my::extract_node_values(emasterphinp, discretization, la, "manifold_on_scatra");
   else
-    my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
+    my::extract_node_values(emasterphinp, discretization, la, "imasterphinp");
 
   // integration points and weights
   const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
@@ -1180,9 +1180,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::CalcS2
     CORE::LINALG::Matrix<nen_, 1> emastertempnp(true);
     if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)
     {
-      my::ExtractNodeValues(
+      my::extract_node_values(
           eslavetempnp, discretization, la, "islavetemp", my::scatraparams_->NdsThermo());
-      my::ExtractNodeValues(
+      my::extract_node_values(
           emastertempnp, discretization, la, "imastertemp", my::scatraparams_->NdsThermo());
     }
 

@@ -21,8 +21,8 @@ FOUR_C_NAMESPACE_OPEN
 ADAPTER::FluidFluidFSI::FluidFluidFSI(Teuchos::RCP<Fluid> xfluidfluid, Teuchos::RCP<Fluid> embfluid,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     bool isale, bool dirichletcond)
-    : FluidFSI(xfluidfluid, embfluid->Discretization(), solver, params,
-          embfluid->Discretization()->Writer(), isale, dirichletcond)
+    : FluidFSI(xfluidfluid, embfluid->discretization(), solver, params,
+          embfluid->discretization()->Writer(), isale, dirichletcond)
 {
   // cast fluid to XFluidFluid
   xfluidfluid_ = Teuchos::rcp_dynamic_cast<FLD::XFluidFluid>(xfluidfluid);
@@ -119,7 +119,7 @@ void ADAPTER::FluidFluidFSI::Update()
       xfluidfluid_->interpolate_embedded_state_vectors();
 
     // refresh the merged fluid map extractor
-    SetupInterface();
+    setup_interface();
 
     // create new extended shape derivatives matrix
     prepare_shape_derivatives();
@@ -183,7 +183,7 @@ void ADAPTER::FluidFluidFSI::Evaluate(
 
   // this is the case of a full Newton approach: update the map extractor, as fluid DOFs possibly
   // have changed!
-  SetupInterface();
+  setup_interface();
 }
 
 /*----------------------------------------------------------------------*
@@ -218,9 +218,9 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidFluidFSI::Dispn() { return fluid
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<DRT::Discretization>& ADAPTER::FluidFluidFSI::Discretization()
+const Teuchos::RCP<DRT::Discretization>& ADAPTER::FluidFluidFSI::discretization()
 {
-  return fluidimpl_->Discretization();
+  return fluidimpl_->discretization();
 }
 
 /*----------------------------------------------------------------------*
@@ -241,7 +241,10 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::FluidFluidFSI::VelocityRowMap()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFluidFSI::UseBlockMatrix(bool split_fluidsysmat) { prepare_shape_derivatives(); }
+void ADAPTER::FluidFluidFSI::use_block_matrix(bool split_fluidsysmat)
+{
+  prepare_shape_derivatives();
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -259,7 +262,7 @@ Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ADAPTER::FluidFluidFSI::ShapeD
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFluidFSI::SetupInterface(const int nds_master)
+void ADAPTER::FluidFluidFSI::setup_interface(const int nds_master)
 {
   // check nds_master
   if (nds_master != 0) FOUR_C_THROW("nds_master is supposed to be 0 here");
@@ -273,7 +276,7 @@ void ADAPTER::FluidFluidFSI::SetupInterface(const int nds_master)
     FOUR_C_THROW(errmsg.str());
   }
 
-  FluidFSI::SetupInterface();
+  FluidFSI::setup_interface();
 
   // get background fluid map
   Teuchos::RCP<const Epetra_Map> xfluidmap =
@@ -290,7 +293,7 @@ void ADAPTER::FluidFluidFSI::prepare_shape_derivatives()
 {
   // the dof-maps may have changed: create a new shape derivatives matrix
   Teuchos::RCP<std::set<int>> condelements =
-      mergedfluidinterface_->conditioned_element_map(*fluidimpl_->Discretization()());
+      mergedfluidinterface_->conditioned_element_map(*fluidimpl_->discretization()());
   xfluidfluid_->prepare_shape_derivatives(mergedfluidinterface_, condelements);
 }
 

@@ -30,7 +30,7 @@ namespace CORE::Dofsets
   /*! \brief This class extends a standard DofSet to a DofSet whose mapping uses global IDs
 
     This class is used like a proxy. It is meant to be used as secondary DofSet in a
-    Discretization if there are two only partially coupled Discretizations with matching
+    discretization if there are two only partially coupled Discretizations with matching
     nodes. If you have only partial coupling, the standard Lid matching based on the
     column map lids does not work anymore, since the secondary discretization may have
     a different amount of elements and entirely different maps. Therefore, we have to

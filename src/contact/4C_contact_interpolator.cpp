@@ -150,7 +150,7 @@ void NTS::Interpolator::interpolate2_d(MORTAR::Node& snode, std::vector<MORTAR::
       int ncol = meles[nummaster]->num_node();
       CORE::LINALG::SerialDenseVector mval(ncol);
       CORE::LINALG::SerialDenseMatrix mderiv(ncol, 1);
-      meles[nummaster]->EvaluateShape(mxi, mval, mderiv, ncol, false);
+      meles[nummaster]->evaluate_shape(mxi, mval, mderiv, ncol, false);
 
       // get slave and master nodal coords for Jacobian / GP evaluation
       CORE::LINALG::SerialDenseMatrix scoord(3, sele->num_node());
@@ -405,7 +405,7 @@ bool NTS::Interpolator::interpolate3_d(MORTAR::Node& snode, std::vector<MORTAR::
       int ncol = meles[nummaster]->num_node();
       CORE::LINALG::SerialDenseVector mval(ncol);
       CORE::LINALG::SerialDenseMatrix mderiv(ncol, 2);
-      meles[nummaster]->EvaluateShape(mxi, mval, mderiv, ncol, false);
+      meles[nummaster]->evaluate_shape(mxi, mval, mderiv, ncol, false);
 
       // get slave and master nodal coords for Jacobian / GP evaluation
       CORE::LINALG::SerialDenseMatrix scoord(3, sele->num_node());
@@ -611,7 +611,7 @@ void NTS::Interpolator::interpolate_master_temp3_d(
         int ncol = meles[nummaster]->num_node();
         CORE::LINALG::SerialDenseVector mval(ncol);
         CORE::LINALG::SerialDenseMatrix mderiv(ncol, 2);
-        meles[nummaster]->EvaluateShape(mxi, mval, mderiv, ncol, false);
+        meles[nummaster]->evaluate_shape(mxi, mval, mderiv, ncol, false);
 
         // get slave and master nodal coords for Jacobian / GP evaluation
         CORE::LINALG::SerialDenseMatrix scoord(3, sele.num_node());
@@ -1398,8 +1398,8 @@ void NTS::Interpolator::deriv_xi_g_p2_d(MORTAR::Element& sele, MORTAR::Element& 
   CORE::LINALG::SerialDenseMatrix derivsxigp(numsnode, 1);
   CORE::LINALG::SerialDenseMatrix derivmxigp(nummnode, 1);
 
-  sele.EvaluateShape(psxigp, valsxigp, derivsxigp, numsnode, false);
-  mele.EvaluateShape(pmxigp, valmxigp, derivmxigp, nummnode, false);
+  sele.evaluate_shape(psxigp, valsxigp, derivsxigp, numsnode, false);
+  mele.evaluate_shape(pmxigp, valmxigp, derivmxigp, nummnode, false);
 
   // we also need the GP slave coordinates + normal
   std::array<double, 3> sgpn = {0.0, 0.0, 0.0};
@@ -1578,8 +1578,8 @@ void NTS::Interpolator::DerivXiGP3D(MORTAR::Element& sele, MORTAR::Element& mele
   CORE::LINALG::SerialDenseMatrix derivsxigp(numsnode, 2, true);
   CORE::LINALG::SerialDenseMatrix derivmxigp(nummnode, 2, true);
 
-  sele.EvaluateShape(sxigp, valsxigp, derivsxigp, numsnode);
-  mele.EvaluateShape(mxigp, valmxigp, derivmxigp, nummnode);
+  sele.evaluate_shape(sxigp, valsxigp, derivsxigp, numsnode);
+  mele.evaluate_shape(mxigp, valmxigp, derivmxigp, nummnode);
 
   // we also need the GP slave coordinates + normal
   std::array<double, 3> sgpn = {0.0, 0.0, 0.0};

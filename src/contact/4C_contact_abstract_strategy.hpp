@@ -758,7 +758,7 @@ namespace CONTACT
     //!@{
 
     //! Return the NOX::NLN::CONSTRAINT::Interface::Required member object
-    const Teuchos::RCP<CONTACT::NoxInterface>& NoxInterfacePtr() { return noxinterface_ptr_; };
+    const Teuchos::RCP<CONTACT::NoxInterface>& nox_interface_ptr() { return noxinterface_ptr_; };
 
     /*! \brief Return the Lagrange multiplier dof row map
      *
@@ -1169,7 +1169,7 @@ namespace CONTACT
     //! Return contact interfaces
     const std::vector<Teuchos::RCP<CONTACT::Interface>>& ContactInterfaces() const
     {
-      return Interfaces();
+      return interfaces();
     }
 
     /*!
@@ -1440,7 +1440,7 @@ namespace CONTACT
     /*!
     \brief Read restart data from disk
 
-    @param reader Discretization reader to be used for reading the restart data
+    @param reader discretization reader to be used for reading the restart data
     @param dis Displacement vector of the solid field
     */
     void DoReadRestart(
@@ -1452,7 +1452,7 @@ namespace CONTACT
     /*!
     \brief Read restart data from disk
 
-    @param reader Discretization reader to be used for reading the restart data
+    @param reader discretization reader to be used for reading the restart data
     @param dis Displacement vector of the solid field
     @param cparams_ptr ??
     */
@@ -1613,7 +1613,7 @@ namespace CONTACT
      *
      *  \date 03/2016
      *  \author hiermeier */
-    virtual void EvalForceStiff(CONTACT::ParamsInterface& cparams);
+    virtual void eval_force_stiff(CONTACT::ParamsInterface& cparams);
 
     /*! \brief Compute force terms
      *
@@ -1621,7 +1621,7 @@ namespace CONTACT
      * integration
      *
      *  \author hiermeier \date 03/2016 */
-    virtual void EvalForce(CONTACT::ParamsInterface& cparams);
+    virtual void eval_force(CONTACT::ParamsInterface& cparams);
 
     /*! \brief Compute the constraint rhs
      *
@@ -1638,7 +1638,7 @@ namespace CONTACT
      *
      *  \date 03/2016
      *  \author hiermeier */
-    virtual void RunPreEvaluate(CONTACT::ParamsInterface& cparams);
+    virtual void run_pre_evaluate(CONTACT::ParamsInterface& cparams);
 
     /** \brief Run in the end of a call to STR::ModelEvaluator::EvaluteForce/Stiff/ForceStiff
      *
@@ -1647,7 +1647,7 @@ namespace CONTACT
      *
      *  \date 03/2016
      *  \author hiermeier */
-    virtual void RunPostEvaluate(CONTACT::ParamsInterface& cparams);
+    virtual void run_post_evaluate(CONTACT::ParamsInterface& cparams);
 
     /*! \brief Recover the current state
      *
@@ -1667,8 +1667,8 @@ namespace CONTACT
      *
      *  \date 05/2016
      *  \author hiermeier */
-    virtual void RunPostComputeX(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
-        const Epetra_Vector& dir, const Epetra_Vector& xnew);
+    virtual void run_post_compute_x(const CONTACT::ParamsInterface& cparams,
+        const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew);
 
     /*! \brief run pre-compute x routine for contact
      *
@@ -1684,8 +1684,8 @@ namespace CONTACT
      *
      *  \date 03/2017
      *  \author hiermeier */
-    virtual void RunPreComputeX(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
-        Epetra_Vector& dir_mutable);
+    virtual void run_pre_compute_x(const CONTACT::ParamsInterface& cparams,
+        const Epetra_Vector& xold, Epetra_Vector& dir_mutable);
 
     /*! \brief Executed at the end of the NOX::NLN::Group::applyJacobianInverse()
      *  method
@@ -1710,10 +1710,10 @@ namespace CONTACT
      *                           and the structural time integration
      *
      *  \author hiermeier \date 03/2017  */
-    virtual void RunPostIterate(const CONTACT::ParamsInterface& cparams);
+    virtual void run_post_iterate(const CONTACT::ParamsInterface& cparams);
 
     /// run before before the nonlinear solver starts
-    virtual void RunPreSolve(const Teuchos::RCP<const Epetra_Vector>& curr_disp,
+    virtual void run_pre_solve(const Teuchos::RCP<const Epetra_Vector>& curr_disp,
         const CONTACT::ParamsInterface& cparams);
 
     /*! \brief Reset the internal stored Lagrange multipliers
@@ -1730,7 +1730,7 @@ namespace CONTACT
     //! Evaluate the weighted gap gradient error
     virtual void eval_weighted_gap_gradient_error(CONTACT::ParamsInterface& cparams);
 
-    virtual void CorrectParameters(
+    virtual void correct_parameters(
         CONTACT::ParamsInterface& cparams, const NOX::NLN::CorrectionType type);
 
     /*! \brief Remove condensed contact contributions from the structural right-hand side
@@ -1743,10 +1743,10 @@ namespace CONTACT
 
    protected:
     //! access the contact interfaces of the concrete strategies (read and write)
-    virtual std::vector<Teuchos::RCP<CONTACT::Interface>>& Interfaces() = 0;
+    virtual std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces() = 0;
 
     //! access the contact interfaces of the concrete strategies (read-only)
-    virtual const std::vector<Teuchos::RCP<CONTACT::Interface>>& Interfaces() const = 0;
+    virtual const std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces() const = 0;
 
     /*! \brief Evaluate contact
 
@@ -1822,14 +1822,14 @@ namespace CONTACT
 
      \param state (in): std::string defining in which direction to convert D and M
      */
-    void StoreDM(const std::string& state);
+    void store_dm(const std::string& state);
 
     /*! \brief Store current (contact) nodal entries to old ones
 
      Contact nodes own their current entries and old ones (last converged
      state) from. p.e. the mortar matrices D and M. This function writes the
      current ones to the old ones. */
-    void StoreToOld(MORTAR::StrategyBase::QuantityType type);
+    void store_to_old(MORTAR::StrategyBase::QuantityType type);
 
     /*! \brief Update global self contact state
 
@@ -1841,12 +1841,12 @@ namespace CONTACT
     void update_global_self_contact_state();
 
     /// access global self contact lagrange multiplier map (read & write)
-    inline const Epetra_Map& GSelfContactLmMap() const
+    inline const Epetra_Map& g_self_contact_lm_map() const
     {
       return *data().g_self_contact_lm_dof_row_map_ptr();
     }
 
-    inline const Epetra_Map& GSelfContactRefMap() const
+    inline const Epetra_Map& g_self_contact_ref_map() const
     {
       return *data().g_self_contact_ref_dof_row_map_ptr();
     }

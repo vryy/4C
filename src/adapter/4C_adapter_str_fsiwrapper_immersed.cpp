@@ -50,13 +50,13 @@ ADAPTER::FSIStructureWrapperImmersed::FSIStructureWrapperImmersed(Teuchos::RCP<S
 void ADAPTER::FSIStructureWrapperImmersed::apply_immersed_interface_forces(
     Teuchos::RCP<Epetra_Vector> iforce_fsi, Teuchos::RCP<Epetra_Vector> iforce_immersed)
 {
-  FSIModelEvaluator()->get_interface_force_np_ptr()->PutScalar(0.0);
+  fsi_model_evaluator()->get_interface_force_np_ptr()->PutScalar(0.0);
 
   if (iforce_fsi != Teuchos::null)
-    interface_->AddFSICondVector(iforce_fsi, FSIModelEvaluator()->get_interface_force_np_ptr());
+    interface_->AddFSICondVector(iforce_fsi, fsi_model_evaluator()->get_interface_force_np_ptr());
   if (iforce_immersed != Teuchos::null)
     interface_->AddIMMERSEDCondVector(
-        iforce_immersed, FSIModelEvaluator()->get_interface_force_np_ptr());
+        iforce_immersed, fsi_model_evaluator()->get_interface_force_np_ptr());
 
   return;
 }
@@ -243,7 +243,7 @@ void ADAPTER::FSIStructureWrapperImmersed::Output(
   // write extra output for specified step and time
   else
   {
-    if (structure_->Discretization()->Comm().MyPID() == 0)
+    if (structure_->discretization()->Comm().MyPID() == 0)
       std::cout << "\n   Write EXTRA STRUCTURE Output Step=" << step << " Time=" << time
                 << " ...   \n"
                 << std::endl;

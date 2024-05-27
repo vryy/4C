@@ -108,7 +108,7 @@ void MIXTURE::GrowthRemodelMixtureRule::Update(CORE::LINALG::Matrix<3, 3> const&
     growth_strategy_->evaluate_inverse_growth_deformation_gradient(
         iFg, *this, compute_current_reference_growth_scalar(gp), gp);
 
-    for (const auto& constituent : Constituents())
+    for (const auto& constituent : constituents())
     {
       constituent->UpdateElasticPart(F, iFg, params, dt, gp, eleGID);
     }
@@ -136,9 +136,9 @@ void MIXTURE::GrowthRemodelMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3
   CORE::LINALG::Matrix<6, 6> ccmat;
 
   // Iterate over all constituents and apply their contributions to the stress and linearization
-  for (std::size_t i = 0; i < Constituents().size(); ++i)
+  for (std::size_t i = 0; i < constituents().size(); ++i)
   {
-    MixtureConstituent& constituent = *Constituents()[i];
+    MixtureConstituent& constituent = *constituents()[i];
     cstress.Clear();
     ccmat.Clear();
     if (growth_strategy_->has_inelastic_growth_deformation_gradient())
@@ -171,9 +171,9 @@ void MIXTURE::GrowthRemodelMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3
         double growthScalar = 0.0;
         CORE::LINALG::Matrix<1, 6> dGrowthScalarDC(true);
 
-        for (std::size_t i = 0; i < Constituents().size(); ++i)
+        for (std::size_t i = 0; i < constituents().size(); ++i)
         {
-          MixtureConstituent& constituent = *Constituents()[i];
+          MixtureConstituent& constituent = *constituents()[i];
 
           growthScalar += params_->mass_fractions_[i] * constituent.GetGrowthScalar(gp);
           dGrowthScalarDC.Update(
@@ -193,9 +193,9 @@ void MIXTURE::GrowthRemodelMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3
 double MIXTURE::GrowthRemodelMixtureRule::compute_current_reference_growth_scalar(int gp) const
 {
   double current_reference_growth_scalar = 0.0;
-  for (std::size_t i = 0; i < Constituents().size(); ++i)
+  for (std::size_t i = 0; i < constituents().size(); ++i)
   {
-    MixtureConstituent& constituent = *Constituents()[i];
+    MixtureConstituent& constituent = *constituents()[i];
     current_reference_growth_scalar +=
         params_->mass_fractions_[i] * constituent.GetGrowthScalar(gp);
   }
@@ -205,9 +205,9 @@ double MIXTURE::GrowthRemodelMixtureRule::compute_current_reference_growth_scala
 double MIXTURE::GrowthRemodelMixtureRule::get_constituent_initial_reference_mass_density(
     const MixtureConstituent& constituent) const
 {
-  for (std::size_t i = 0; i < Constituents().size(); ++i)
+  for (std::size_t i = 0; i < constituents().size(); ++i)
   {
-    MixtureConstituent& cur_constituent = *Constituents()[i];
+    MixtureConstituent& cur_constituent = *constituents()[i];
     if (cur_constituent.Id() == constituent.Id())
     {
       return params_->initial_reference_density_ * params_->mass_fractions_[i];

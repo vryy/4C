@@ -77,7 +77,7 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface);
 
     //! write restart of particle interaction handler
-    virtual void WriteRestart() const;
+    virtual void write_restart() const;
 
     //! read restart of particle interaction handler
     virtual void read_restart(const std::shared_ptr<IO::DiscretizationReader> reader);
@@ -91,7 +91,7 @@ namespace PARTICLEINTERACTION
     virtual void SetInitialStates() = 0;
 
     //! pre evaluate time step
-    virtual void PreEvaluateTimeStep() = 0;
+    virtual void pre_evaluate_time_step() = 0;
 
     //! evaluate particle interactions
     virtual void evaluate_interactions() = 0;
@@ -136,7 +136,7 @@ namespace PARTICLEINTERACTION
 
    protected:
     //! maximum particle radius (on this processor)
-    virtual double MaxParticleRadius() const;
+    virtual double max_particle_radius() const;
 
     //! communication
     const Epetra_Comm& comm_;

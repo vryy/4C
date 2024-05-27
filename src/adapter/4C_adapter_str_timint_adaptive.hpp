@@ -62,7 +62,7 @@ namespace ADAPTER
     //! Access routines
     //{@
 
-    Teuchos::RCP<STR::TimAda> StrAda() const { return sta_; }
+    Teuchos::RCP<STR::TimAda> str_ada() const { return sta_; }
 
     //@}
 

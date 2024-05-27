@@ -84,7 +84,7 @@ int DRT::ELEMENTS::Wall1Poro<distype>::Evaluate(Teuchos::ParameterList& params,
 
   if (this->IsParamsInterface())
   {
-    act = this->ParamsInterface().GetActionType();
+    act = this->params_interface().GetActionType();
   }
   else
   {
@@ -112,7 +112,7 @@ int DRT::ELEMENTS::Wall1Poro<distype>::Evaluate(Teuchos::ParameterList& params,
       // in some cases we need to write/change some data before evaluating
       pre_evaluate(params, discretization, la);
 
-      MyEvaluate(params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra,
+      my_evaluate(params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra,
           elevec2_epetra, elevec3_epetra);
     }
     break;
@@ -127,7 +127,7 @@ int DRT::ELEMENTS::Wall1Poro<distype>::Evaluate(Teuchos::ParameterList& params,
           elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
 
       // add volume coupling specific terms
-      MyEvaluate(params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra,
+      my_evaluate(params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra,
           elevec2_epetra, elevec3_epetra);
     }
     break;
@@ -137,7 +137,7 @@ int DRT::ELEMENTS::Wall1Poro<distype>::Evaluate(Teuchos::ParameterList& params,
 }
 
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::Wall1Poro<distype>::MyEvaluate(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -150,7 +150,7 @@ int DRT::ELEMENTS::Wall1Poro<distype>::MyEvaluate(Teuchos::ParameterList& params
 
   if (this->IsParamsInterface())
   {
-    act = this->ParamsInterface().GetActionType();
+    act = this->params_interface().GetActionType();
   }
   else
   {
@@ -382,7 +382,7 @@ int DRT::ELEMENTS::Wall1Poro<distype>::MyEvaluate(Teuchos::ParameterList& params
         extract_values_from_global_vector(
             discretization, 1, la[1].lm_, &myfluidvel, &myepreaf, "fluidvel");
 
-        CouplingPoroelast(
+        coupling_poroelast(
             lm, mydisp, myvel, myfluidvel, myepreaf, matptr, nullptr, nullptr, params);
       }
       else if (la.Size() > 2)
@@ -539,7 +539,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::nonlinear_stiffness_poroelast(
     Teuchos::ParameterList& params                        // algorithmic parameters e.g. time
 )
 {
-  GetMaterials();
+  get_materials();
 
   // update element geometry
   CORE::LINALG::Matrix<numdim_, numnod_> xrefe;  // material coord. of element
@@ -561,7 +561,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::nonlinear_stiffness_poroelast(
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
-  GaussPointLoop(params, xrefe, xcurr, disp, vel, evelnp, epreaf, nullptr, erea_v, stiffmatrix,
+  gauss_point_loop(params, xrefe, xcurr, disp, vel, evelnp, epreaf, nullptr, erea_v, stiffmatrix,
       reamatrix, force);
 
   if (reamatrix != nullptr)
@@ -607,7 +607,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::nonlinear_stiffness_poroelast_pressure_b
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1Poro<distype>::GaussPointLoop(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::Wall1Poro<distype>::gauss_point_loop(Teuchos::ParameterList& params,
     const CORE::LINALG::Matrix<numdim_, numnod_>& xrefe,
     const CORE::LINALG::Matrix<numdim_, numnod_>& xcurr,
     const CORE::LINALG::Matrix<numdim_, numnod_>& nodaldisp,
@@ -652,7 +652,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::GaussPointLoop(Teuchos::ParameterList& p
     compute_shape_functions_and_derivatives(gp, shapefct, deriv, N_XYZ);
 
     // compute deformation gradient
-    ComputeDefGradient(defgrd, N_XYZ, xcurr);
+    compute_def_gradient(defgrd, N_XYZ, xcurr);
 
     // inverse deformation gradient F^-1
     CORE::LINALG::Matrix<numdim_, numdim_> defgrd_inv(false);
@@ -674,7 +674,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::GaussPointLoop(Teuchos::ParameterList& p
 
     // non-linear B-operator
     CORE::LINALG::Matrix<numstr_, numdof_> bop;
-    ComputeBOperator(bop, defgrd, N_XYZ);
+    compute_b_operator(bop, defgrd, N_XYZ);
 
     //----------------------------------------------------
     // pressure at integration point
@@ -788,7 +788,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::gauss_point_loop_pressure_based(
     compute_shape_functions_and_derivatives(gp, shapefct, deriv, N_XYZ);
 
     // compute deformation gradient
-    ComputeDefGradient(defgrd, N_XYZ, xcurr);
+    compute_def_gradient(defgrd, N_XYZ, xcurr);
 
     // inverse deformation gradient F^-1
     CORE::LINALG::Matrix<numdim_, numdim_> defgrd_inv(false);
@@ -810,7 +810,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::gauss_point_loop_pressure_based(
 
     // non-linear B-operator
     CORE::LINALG::Matrix<numstr_, numdof_> bop;
-    ComputeBOperator(bop, defgrd, N_XYZ);
+    compute_b_operator(bop, defgrd, N_XYZ);
 
     // derivative of press w.r.t. displacements (only in case of vol fracs)
     CORE::LINALG::Matrix<1, numdof_> dps_dus(true);
@@ -1218,7 +1218,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::fill_matrix_and_vectors_brinkman(const i
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1Poro<distype>::CouplingPoroelast(std::vector<int>& lm,  // location matrix
+void DRT::ELEMENTS::Wall1Poro<distype>::coupling_poroelast(std::vector<int>& lm,  // location matrix
     CORE::LINALG::Matrix<numdim_, numnod_>& disp,    // current displacements
     CORE::LINALG::Matrix<numdim_, numnod_>& vel,     // current velocities
     CORE::LINALG::Matrix<numdim_, numnod_>& evelnp,  // current fluid velocity
@@ -1229,7 +1229,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::CouplingPoroelast(std::vector<int>& lm, 
     CORE::LINALG::Matrix<numdof_, 1>* force,  // element internal force vector
     Teuchos::ParameterList& params)           // algorithmic parameters e.g. time
 {
-  GetMaterials();
+  get_materials();
 
   //=======================================================================
 
@@ -1252,7 +1252,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::CouplingPoroelast(std::vector<int>& lm, 
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
   if (stiffmatrix != nullptr)
-    GaussPointLoopOD(params, xrefe, xcurr, disp, vel, evelnp, epreaf, nullptr, *stiffmatrix);
+    gauss_point_loop_od(params, xrefe, xcurr, disp, vel, evelnp, epreaf, nullptr, *stiffmatrix);
 }
 
 template <CORE::FE::CellType distype>
@@ -1290,7 +1290,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::coupling_poroelast_pressure_based(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1Poro<distype>::GaussPointLoopOD(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::Wall1Poro<distype>::gauss_point_loop_od(Teuchos::ParameterList& params,
     const CORE::LINALG::Matrix<numdim_, numnod_>& xrefe,
     const CORE::LINALG::Matrix<numdim_, numnod_>& xcurr,
     const CORE::LINALG::Matrix<numdim_, numnod_>& nodaldisp,
@@ -1330,7 +1330,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::GaussPointLoopOD(Teuchos::ParameterList&
     compute_shape_functions_and_derivatives(gp, shapefct, deriv, N_XYZ);
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
-    ComputeDefGradient(defgrd, N_XYZ, xcurr);
+    compute_def_gradient(defgrd, N_XYZ, xcurr);
 
     // jacobian determinant of transformation between spatial and material space "|dx/dX|"
     double J = 0.0;
@@ -1342,7 +1342,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::GaussPointLoopOD(Teuchos::ParameterList&
 
     // non-linear B-operator (may so be called, meaning
     CORE::LINALG::Matrix<numstr_, numdof_> bop;
-    ComputeBOperator(bop, defgrd, N_XYZ);
+    compute_b_operator(bop, defgrd, N_XYZ);
 
     // Right Cauchy-Green tensor = F^T * F
     CORE::LINALG::Matrix<numdim_, numdim_> cauchygreen;
@@ -1440,7 +1440,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::gauss_point_loop_od_pressure_based(
     compute_shape_functions_and_derivatives(gp, shapefct, deriv, N_XYZ);
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
-    ComputeDefGradient(defgrd, N_XYZ, xcurr);
+    compute_def_gradient(defgrd, N_XYZ, xcurr);
 
     // jacobian determinant of transformation between spatial and material space "|dx/dX|"
     double J = 0.0;
@@ -1452,7 +1452,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::gauss_point_loop_od_pressure_based(
 
     // non-linear B-operator (may so be called, meaning
     CORE::LINALG::Matrix<numstr_, numdof_> bop;
-    ComputeBOperator(bop, defgrd, N_XYZ);
+    compute_b_operator(bop, defgrd, N_XYZ);
 
     // Right Cauchy-Green tensor = F^T * F
     CORE::LINALG::Matrix<numdim_, numdim_> cauchygreen;
@@ -1766,7 +1766,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::coupling_stress_poroelast(
     compute_shape_functions_and_derivatives(gp, shapefct, deriv, N_XYZ);
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
-    ComputeDefGradient(defgrd, N_XYZ, xcurr);
+    compute_def_gradient(defgrd, N_XYZ, xcurr);
 
     //----------------------------------------------------
     // pressure at integration point
@@ -1791,7 +1791,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::coupling_stress_poroelast(
 
         // push forward of material stress to the spatial configuration
         CORE::LINALG::Matrix<numdim_, numdim_> cauchycouplstress;
-        PK2toCauchy(couplstress, defgrd, cauchycouplstress);
+        p_k2to_cauchy(couplstress, defgrd, cauchycouplstress);
 
         (*elestress)(gp, 0) = cauchycouplstress(0, 0);
         (*elestress)(gp, 1) = cauchycouplstress(1, 1);
@@ -1928,8 +1928,8 @@ void DRT::ELEMENTS::Wall1Poro<distype>::compute_jacobian_determinant_volume_chan
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1Poro<distype>::PK2toCauchy(CORE::LINALG::Matrix<Wall1::numstr_, 1>& stress,
-    CORE::LINALG::Matrix<numdim_, numdim_>& defgrd,
+void DRT::ELEMENTS::Wall1Poro<distype>::p_k2to_cauchy(
+    CORE::LINALG::Matrix<Wall1::numstr_, 1>& stress, CORE::LINALG::Matrix<numdim_, numdim_>& defgrd,
     CORE::LINALG::Matrix<numdim_, numdim_>& cauchystress)
 {
   // calculate the Jacobi-deterinant
@@ -1948,7 +1948,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::PK2toCauchy(CORE::LINALG::Matrix<Wall1::
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1Poro<distype>::ComputeDefGradient(
+void DRT::ELEMENTS::Wall1Poro<distype>::compute_def_gradient(
     CORE::LINALG::Matrix<numdim_, numdim_>& defgrd,
     const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ,
     const CORE::LINALG::Matrix<numdim_, numnod_>& xcurr)
@@ -1968,7 +1968,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::ComputeDefGradient(
 }
 
 template <CORE::FE::CellType distype>
-inline void DRT::ELEMENTS::Wall1Poro<distype>::ComputeBOperator(
+inline void DRT::ELEMENTS::Wall1Poro<distype>::compute_b_operator(
     CORE::LINALG::Matrix<numstr_, numdof_>& bop,
     const CORE::LINALG::Matrix<numdim_, numdim_>& defgrd,
     const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ)
@@ -2167,7 +2167,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::compute_porosity_and_linearization(
 {
   double dphi_dJ = 0.0;
 
-  struct_mat_->ComputePorosity(params, press, J, gp, porosity, nullptr, &dphi_dJ, nullptr, nullptr,
+  struct_mat_->compute_porosity(params, press, J, gp, porosity, nullptr, &dphi_dJ, nullptr, nullptr,
       nullptr  // dphi_dpp not needed
   );
 
@@ -2181,7 +2181,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::compute_porosity_and_linearization_od(
     const CORE::LINALG::Matrix<numnod_, 1>& shapfct,
     const CORE::LINALG::Matrix<numnod_, 1>* myporosity, double& porosity, double& dphi_dp)
 {
-  struct_mat_->ComputePorosity(params, press, J, gp, porosity, &dphi_dp,
+  struct_mat_->compute_porosity(params, press, J, gp, porosity, &dphi_dp,
       nullptr,  // dphi_dJ not needed
       nullptr,  // dphi_dJdp not needed
       nullptr,  // dphi_dJJ not needed

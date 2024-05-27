@@ -152,13 +152,13 @@ DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::FluidEleCalc()
       // LOMA-specific variables
       diffus_(0.0),
       rhscon_(0.0),
-      densaf_(1.0),         // initialized to 1.0 (filled in Fluid::GetMaterialParams)
-      densam_(1.0),         // initialized to 1.0 (filled in Fluid::GetMaterialParams)
-      densn_(1.0),          // initialized to 1.0 (filled in Fluid::GetMaterialParams)
-      scadtfac_(0.0),       // initialized to 0.0 (filled in Fluid::GetMaterialParams)
-      scaconvfacaf_(0.0),   // initialized to 0.0 (filled in Fluid::GetMaterialParams)
-      scaconvfacn_(0.0),    // initialized to 0.0 (filled in Fluid::GetMaterialParams)
-      thermpressadd_(0.0),  // initialized to 0.0 (filled in Fluid::GetMaterialParams)
+      densaf_(1.0),         // initialized to 1.0 (filled in Fluid::get_material_params)
+      densam_(1.0),         // initialized to 1.0 (filled in Fluid::get_material_params)
+      densn_(1.0),          // initialized to 1.0 (filled in Fluid::get_material_params)
+      scadtfac_(0.0),       // initialized to 0.0 (filled in Fluid::get_material_params)
+      scaconvfacaf_(0.0),   // initialized to 0.0 (filled in Fluid::get_material_params)
+      scaconvfacn_(0.0),    // initialized to 0.0 (filled in Fluid::get_material_params)
+      thermpressadd_(0.0),  // initialized to 0.0 (filled in Fluid::get_material_params)
       convvelintn_(true),
       vderxyn_(true),
       vdivn_(0.0),
@@ -174,9 +174,9 @@ DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::FluidEleCalc()
       // weakly_compressible-specific variables
       preaf_(0.0),
       pream_(0.0),
-      preconvfacaf_(0.0),  // initialized to 0.0 (filled in Fluid::GetMaterialParams)
+      preconvfacaf_(0.0),  // initialized to 0.0 (filled in Fluid::get_material_params)
       tder_pre_(0.0),
-      predtfac_(0.0),  // initialized to 0.0 (filled in Fluid::GetMaterialParams)
+      predtfac_(0.0),  // initialized to 0.0 (filled in Fluid::get_material_params)
       grad_preaf_(true),
       conv_preaf_(0.0),
       // turbulence-specific variables
@@ -254,7 +254,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(DRT::ELEMENTS::Fluid
   ebofoaf_.Clear();
   eprescpgaf_.Clear();
   escabofoaf_.Clear();
-  BodyForce(ele, ebofoaf_, eprescpgaf_, escabofoaf_);
+  body_force(ele, ebofoaf_, eprescpgaf_, escabofoaf_);
   if (params.get("forcing", false))
   {
     static CORE::LINALG::Matrix<nsd_, nen_> interiorebofoaf;
@@ -467,7 +467,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(DRT::ELEMENTS::Fluid
   {
     if (not fldparatimint_->is_new_ost_implementation())
     {
-      GetGridDispVelALE(discretization, lm, edispnp_, egridv_);
+      get_grid_disp_vel_ale(discretization, lm, edispnp_, egridv_);
       egridvn_.Clear();
     }
     else
@@ -522,7 +522,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(DRT::ELEMENTS::Fluid
     CiDeltaSq = (*ele_CiDeltaSq)[id];
   }
   // identify elements of inflow section
-  InflowElement(ele);
+  inflow_element(ele);
 
   // set element id
   eid_ = ele->Id();
@@ -611,14 +611,14 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(Teuchos::ParameterLi
   // remember the layer of averaging for the dynamic Smagorinsky model
   int nlayer = 0;
 
-  GetTurbulenceParams(turbmodelparams, Cs_delta_sq, Ci_delta_sq, nlayer, CsDeltaSq, CiDeltaSq);
+  get_turbulence_params(turbmodelparams, Cs_delta_sq, Ci_delta_sq, nlayer, CsDeltaSq, CiDeltaSq);
 
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
   // ---------------------------------------------------------------------
   if (not fldparatimint_->is_new_ost_implementation())
   {
-    Sysmat(ebofoaf, eprescpgaf, ebofon, eprescpgn, evelaf, evelam, eveln, evelnp, fsevelaf,
+    sysmat(ebofoaf, eprescpgaf, ebofon, eprescpgn, evelaf, evelam, eveln, evelnp, fsevelaf,
         fsescaaf, evel_hat, ereynoldsstress_hat, epreaf, epream, epren, eprenp, eaccam, escaaf,
         escaam, escadtam, eveldtam, epredtam, escabofoaf, escabofon, emhist, edispnp, egridv,
         elemat1,
@@ -628,7 +628,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(Teuchos::ParameterLi
   }
   else
   {
-    SysmatOSTNew(ebofoaf, eprescpgaf, ebofon, eprescpgn, evelaf, evelam, eveln, evelnp, fsevelaf,
+    sysmat_ost_new(ebofoaf, eprescpgaf, ebofon, eprescpgn, evelaf, evelam, eveln, evelnp, fsevelaf,
         fsescaaf, evel_hat, ereynoldsstress_hat, epreaf, epream, epren, eprenp, eaccam, escaaf,
         escaam, escadtam, escabofoaf, escabofon, emhist, edispnp, egridv, egridvn, elemat1,
         elemat2,  // -> emesh
@@ -650,7 +650,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(Teuchos::ParameterLi
  |  calculate element matrix and right hand side (private)   g.bau 03/07|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::sysmat(
     const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
     const CORE::LINALG::Matrix<nsd_, nen_>& eprescpgaf,
     const CORE::LINALG::Matrix<nsd_, nen_>& ebofon,
@@ -715,7 +715,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
   // get material parameters at element center
   if (not fldpara_->MatGp() or not fldpara_->TauGp())
   {
-    GetMaterialParams(material, evelaf, epreaf, epream, escaaf, escaam, escabofoaf, thermpressaf,
+    get_material_params(material, evelaf, epreaf, epream, escaaf, escaam, escabofoaf, thermpressaf,
         thermpressam, thermpressdtaf, thermpressdtam, vol);
 
     // calculate all-scale or fine-scale subgrid viscosity at element center
@@ -728,7 +728,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
     {
       if (fldpara_->TurbModAction() == INPAR::FLUID::dynamic_vreman)
         Cs_delta_sq = Cv;  // use the declaration of Cs_delta_sq for the dynamic Vreman constant
-      CalcSubgrVisc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
+      calc_subgr_visc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
       // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
       visceff_ += sgvisc_;
     }
@@ -749,8 +749,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
     {
       // make sure to get material parameters at element center
       if (fldpara_->MatGp())
-        // GetMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,thermpressaf,thermpressam,thermpressdtam,vol);
-        GetMaterialParams(material, evelaf, epreaf, epream, escaaf, escaam, escabofoaf,
+        // get_material_params(material,evelaf,epreaf,epream,escaaf,escaam,thermpressaf,thermpressam,thermpressdtam,vol);
+        get_material_params(material, evelaf, epreaf, epream, escaaf, escaam, escabofoaf,
             thermpressaf, thermpressam, thermpressdtaf, thermpressdtam, vol);
 
       // provide necessary velocities and gradients at element center
@@ -796,7 +796,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
     }
 
     // calculate stabilization parameters at element center
-    CalcStabParameter(vol);
+    calc_stab_parameter(vol);
   }
 
   // get Gaussian integration points
@@ -894,8 +894,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
 
     if (fldpara_->MatGp())
     {
-      GetMaterialParams(material, evelaf, epreaf, epream, escaaf, escaam, escabofoaf, thermpressaf,
-          thermpressam, thermpressdtaf, thermpressdtam, vol);
+      get_material_params(material, evelaf, epreaf, epream, escaaf, escaam, escabofoaf,
+          thermpressaf, thermpressam, thermpressdtaf, thermpressdtam, vol);
 
       // calculate all-scale or fine-scale subgrid viscosity at integration point
       visceff_ = visc_;
@@ -904,7 +904,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
           fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or
           fldpara_->TurbModAction() == INPAR::FLUID::vreman)
       {
-        CalcSubgrVisc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
+        calc_subgr_visc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
         // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
         visceff_ += sgvisc_;
       }
@@ -914,7 +914,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
 
     // calculate stabilization parameter at integration point
     if (fldpara_->TauGp() and fldpara_->StabType() == INPAR::FLUID::stabtype_residualbased)
-      CalcStabParameter(vol);
+      calc_stab_parameter(vol);
 
     // potential evaluation of coefficient of multifractal subgrid-scales at integration point
     if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
@@ -924,7 +924,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
         // make sure to get material parameters at gauss point
         if (not fldpara_->MatGp())
         {
-          // GetMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
+          // get_material_params(material,evelaf,epreaf,epream,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
           // would overwrite materials at the element center, hence BGp() should always be combined
           // with MatGp()
           FOUR_C_THROW(
@@ -971,7 +971,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
     }
 
     // Adds surface tension force to the Gausspoint.
-    // Note: has to be called after GetMaterialParams(), otherwise gamma_ is uninitialized!!
+    // Note: has to be called after get_material_params(), otherwise gamma_ is uninitialized!!
     if (fldpara_->get_include_surface_tension())
       add_surface_tension_force(escaaf, escaam, egradphi, ecurvature);
 
@@ -988,7 +988,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
 
     // compute viscous term from previous iteration and viscous operator
     if (is_higher_order_ele_)
-      CalcDivEps(evelaf);
+      calc_div_eps(evelaf);
     else
     {
       visc_old_.Clear();
@@ -1043,7 +1043,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
     {
       // compute additional Galerkin terms on right-hand side of continuity equation
       // -> different for generalized-alpha and other time-integration schemes
-      ComputeGalRHSContEq(eveln, escaaf, escaam, escadtam, isale);
+      compute_gal_rhs_cont_eq(eveln, escaaf, escaam, escadtam, isale);
 
       // add to residual of continuity equation
       conres_old_ -= rhscon_;
@@ -1117,7 +1117,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
     // compute first version of velocity-based momentum residual containing
     // inertia term, convection term (convective and reactive part),
     // reaction term and cross-stress term
-    LinGalMomResU(lin_resM_Du_, timefacfac);
+    lin_gal_mom_res_u(lin_resM_Du_, timefacfac);
 
     // potentially rescale first version of velocity-based momentum residual
     if (fldpara_->Tds() == INPAR::FLUID::subscales_time_dependent &&
@@ -1140,7 +1140,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
     //     excluding viscous part for low-Mach-number flow)
     static CORE::LINALG::Matrix<nsd_, nsd_> viscstress(true);
     viscstress.Clear();
-    ViscousGalPart(estif_u_, velforce_, viscstress, timefacfac, rhsfac);
+    viscous_gal_part(estif_u_, velforce_, viscstress, timefacfac, rhsfac);
 
     // 3) stabilization of continuity equation,
     //    standard Galerkin viscous part for low-Mach-number flow and
@@ -1148,16 +1148,16 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
     if (fldpara_->CStab() or fldpara_->PhysicalType() == INPAR::FLUID::loma or
         fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible or
         fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible_stokes)
-      ContStab(estif_u_, velforce_, fldparatimint_->TimeFac(), timefacfac, timefacfacpre, rhsfac);
+      cont_stab(estif_u_, velforce_, fldparatimint_->TimeFac(), timefacfac, timefacfacpre, rhsfac);
 
     // 4) standard Galerkin pressure term
-    PressureGalPart(estif_p_v_, velforce_, timefacfac, timefacfacpre, rhsfac, press);
+    pressure_gal_part(estif_p_v_, velforce_, timefacfac, timefacfacpre, rhsfac, press);
 
     // 5) standard Galerkin continuity term
-    ContinuityGalPart(estif_q_u_, preforce_, timefacfac, timefacfacpre, rhsfac);
+    continuity_gal_part(estif_q_u_, preforce_, timefacfac, timefacfacpre, rhsfac);
 
     // 6) standard Galerkin bodyforce term on right-hand side
-    BodyForceRhsTerm(velforce_, rhsfac);
+    body_force_rhs_term(velforce_, rhsfac);
 
     // 7) additional standard Galerkin terms due to conservative formulation
     if (fldpara_->IsConservative())
@@ -1172,7 +1172,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
         fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible or
         fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible_stokes)
     {
-      LomaGalPart(estif_q_u_, preforce_, timefacfac, rhsfac);
+      loma_gal_part(estif_q_u_, preforce_, timefacfac, rhsfac);
     }
 
     // 9) additional standard Galerkin term for temporal derivative of pressure
@@ -1193,12 +1193,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
     // inertia term, convection term (convective and reactive part) and
     // viscous term
     //----------------------------------------------------------------------
-    StabLinGalMomResU(lin_resM_Du_, timefacfac);
+    stab_lin_gal_mom_res_u(lin_resM_Du_, timefacfac);
 
     // 10) PSPG term
     if (fldpara_->PSPG())
     {
-      PSPG(estif_q_u_, ppmat_, preforce_, lin_resM_Du_, fac3, timefacfac, timefacfacpre, rhsfac,
+      pspg(estif_q_u_, ppmat_, preforce_, lin_resM_Du_, fac3, timefacfac, timefacfacpre, rhsfac,
           *iquad);
     }
 
@@ -1206,21 +1206,21 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
     //     left-hand side and Reynolds-stress term on right-hand side
     if (fldpara_->SUPG())
     {
-      SUPG(estif_u_, estif_p_v_, velforce_, preforce_, lin_resM_Du_, fac3, timefacfac,
+      supg(estif_u_, estif_p_v_, velforce_, preforce_, lin_resM_Du_, fac3, timefacfac,
           timefacfacpre, rhsfac);
     }
 
     // 12) reactive stabilization term
     if (fldpara_->RStab() != INPAR::FLUID::reactive_stab_none)
     {
-      ReacStab(
+      reac_stab(
           estif_u_, estif_p_v_, velforce_, lin_resM_Du_, timefacfac, timefacfacpre, rhsfac, fac3);
     }
 
     // 13) viscous stabilization term
     if (is_higher_order_ele_ and (fldpara_->VStab() != INPAR::FLUID::viscous_stab_none))
     {
-      ViscStab(
+      visc_stab(
           estif_u_, estif_p_v_, velforce_, lin_resM_Du_, timefacfac, timefacfacpre, rhsfac, fac3);
     }
 
@@ -1237,7 +1237,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
     //     iteration) as well as cross-stress term on right-hand side
     if (fldpara_->Cross() != INPAR::FLUID::cross_stress_stab_none)
     {
-      CrossStressStab(
+      cross_stress_stab(
           estif_u_, estif_p_v_, velforce_, lin_resM_Du_, timefacfac, timefacfacpre, rhsfac, fac3);
     }
 
@@ -1245,7 +1245,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
     //     (only for Newton iteration)
     if (fldpara_->Reynolds() == INPAR::FLUID::reynolds_stress_stab and fldpara_->IsNewton())
     {
-      ReynoldsStressStab(estif_u_, estif_p_v_, lin_resM_Du_, timefacfac, timefacfacpre, fac3);
+      reynolds_stress_stab(estif_u_, estif_p_v_, lin_resM_Du_, timefacfac, timefacfacpre, fac3);
     }
 
     // 16) fine-scale subgrid-viscosity term
@@ -1269,16 +1269,16 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
     //     (parameter-free inf-sub-stabilization, e.g. used instead of PSPG)
     if (fldpara_->PPP())
     {
-      PressureProjection(ppmat_);
+      pressure_projection(ppmat_);
     }
 
     // linearization wrt mesh motion
     if (emesh.IsInitialized())
     {
       if (nsd_ == 3)
-        LinMeshMotion_3D(emesh, evelaf, press, fldparatimint_->TimeFac(), timefacfac);
+        lin_mesh_motion_3_d(emesh, evelaf, press, fldparatimint_->TimeFac(), timefacfac);
       else if (nsd_ == 2)
-        LinMeshMotion_2D(emesh, evelaf, press, fldparatimint_->TimeFac(), timefacfac);
+        lin_mesh_motion_2_d(emesh, evelaf, press, fldparatimint_->TimeFac(), timefacfac);
       else
         FOUR_C_THROW("Linearization of the mesh motion is not available in 1D");
     }
@@ -1392,7 +1392,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
  |  compute body force at element nodes (protected)            vg 10/11 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForce(DRT::ELEMENTS::Fluid* ele,
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::body_force(DRT::ELEMENTS::Fluid* ele,
     CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf, CORE::LINALG::Matrix<nsd_, nen_>& eprescpgaf,
     CORE::LINALG::Matrix<nen_, 1>& escabofoaf)
 {
@@ -1735,7 +1735,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::eval_shape_func_and_derivs_a
  | get ALE grid displacements and grid velocity for element     schott 11/14 |
  *---------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetGridDispVelALE(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::get_grid_disp_vel_ale(
     DRT::Discretization& discretization, const std::vector<int>& lm,
     CORE::LINALG::Matrix<nsd_, nen_>& edispnp, CORE::LINALG::Matrix<nsd_, nen_>& egridv)
 {
@@ -1751,7 +1751,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetGridDispVelALE(
     }
     default:
     {
-      GetGridDispALE(discretization, lm, edispnp);
+      get_grid_disp_ale(discretization, lm, edispnp);
       extract_values_from_global_vector(
           discretization, lm, *rotsymmpbc_, &egridv, nullptr, "gridv");
       break;
@@ -1763,7 +1763,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetGridDispVelALE(
  | get ALE grid displacements only for element                      bk 02/15 |
  *---------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetGridDispALE(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::get_grid_disp_ale(
     DRT::Discretization& discretization, const std::vector<int>& lm,
     CORE::LINALG::Matrix<nsd_, nen_>& edispnp)
 {
@@ -1849,7 +1849,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::set_advective_vel_oseen(
 // |  compute material parameters                                vg 09/09 |
 // *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::get_material_params(
     Teuchos::RCP<const CORE::MAT::Material> material,
     const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const CORE::LINALG::Matrix<nen_, 1>& epreaf,
     const CORE::LINALG::Matrix<nen_, 1>& epream, const CORE::LINALG::Matrix<nen_, 1>& escaaf,
@@ -1857,7 +1857,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
     const double thermpressaf, const double thermpressam, const double thermpressdtaf,
     const double thermpressdtam, const double vol)
 {
-  GetMaterialParams(material, evelaf, epreaf, epream, escaaf, escaam, escabofoaf, thermpressaf,
+  get_material_params(material, evelaf, epreaf, epream, escaaf, escaam, escabofoaf, thermpressaf,
       thermpressam, thermpressdtaf, thermpressdtam, vol, densam_, densaf_, densn_, visc_, viscn_,
       gamma_);
 }
@@ -1867,7 +1867,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
  |  compute material parameters                                vg 09/09 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::get_material_params(
     Teuchos::RCP<const CORE::MAT::Material> material,
     const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const CORE::LINALG::Matrix<nen_, 1>& epreaf,
     const CORE::LINALG::Matrix<nen_, 1>& epream, const CORE::LINALG::Matrix<nen_, 1>& escaaf,
@@ -1904,7 +1904,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
       // calculate characteristic element length
       double h_u = 0.0;
       double h_p = 0.0;
-      CalcCharEleLength(vol, vel_norm, h_u, h_p);
+      calc_char_ele_length(vol, vel_norm, h_u, h_p);
 
       // get constant density
       densaf = actmat->Density();
@@ -1967,7 +1967,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
 
     // compute rate of strain at n+alpha_F or n+1
     double rateofstrain = -1.0e30;
-    rateofstrain = GetStrainRate(evelaf);
+    rateofstrain = get_strain_rate(evelaf);
 
     // compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
     // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
@@ -1992,7 +1992,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
 
     // compute rate of strain at n+alpha_F or n+1
     double rateofstrain = -1.0e30;
-    rateofstrain = GetStrainRate(evelaf);
+    rateofstrain = get_strain_rate(evelaf);
 
     // compute viscosity according to a modified power law model for shear-thinning fluids
     // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
@@ -2018,7 +2018,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
 
     // compute rate of strain at n+alpha_F or n+1
     double rateofstrain = -1.0e30;
-    rateofstrain = GetStrainRate(evelaf);
+    rateofstrain = get_strain_rate(evelaf);
 
     // calculate dynamic viscosity according to Herschel-Bulkley model
     // (within lower and upper limit of shear rate)
@@ -2047,7 +2047,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
 
     // compute rate of strain at n+alpha_F or n+1
     double rateofstrain = -1.0e30;
-    rateofstrain = GetStrainRate(evelaf);
+    rateofstrain = get_strain_rate(evelaf);
 
     // compute viscosity for Yoghurt-like flows according to Afonso et al. (2003)
     visc = actmat->ComputeViscosity(rateofstrain, tempaf);
@@ -2585,7 +2585,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
     FOUR_C_THROW("zero or negative (physical) diffusivity");
 
   return;
-}  // FluidEleCalc::GetMaterialParams
+}  // FluidEleCalc::get_material_params
 
 /*----------------------------------------------------------------------*
  |  Get mk                                                     bk 09/14 |
@@ -2600,7 +2600,7 @@ double DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::get_mk()
  |  calculation of stabilization parameter                     vg 09/09 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const double vol)
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_stab_parameter(const double vol)
 {
   //---------------------------------------------------------------------
   // preliminary definition of values which will already be computed for
@@ -2705,7 +2705,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
 
         // total reaction coefficient sigma_tot: sum of "artificial" reaction
         // due to time factor and reaction coefficient (reaction coefficient
-        // ensured to remain zero in GetMaterialParams for non-reactive material)
+        // ensured to remain zero in get_material_params for non-reactive material)
         double sigma_tot = reacoeff_;
         if (fldpara_->WhichTau() == INPAR::FLUID::tau_taylor_hughes_zarins or
             fldpara_->WhichTau() == INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen or
@@ -2791,12 +2791,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
 
         // total reaction coefficient sigma_tot: sum of "artificial" reaction
         // due to time factor and reaction coefficient (reaction coefficient
-        // ensured to remain zero in GetMaterialParams for non-reactive material)
+        // ensured to remain zero in get_material_params for non-reactive material)
         const double sigma_tot = 1.0 / fldparatimint_->TimeFac() + reacoeff_;
         // NOTE: Gen_Alpha (implementation by Peter Gamnitzer) used a different time factor!
 
         // calculate characteristic element length
-        CalcCharEleLength(vol, vel_norm, h_u, h_p);
+        calc_char_ele_length(vol, vel_norm, h_u, h_p);
 
         // various parameter computations for case with dt:
         // relating viscous to reactive part (re01: tau_Mu, re11: tau_Mp)
@@ -2849,7 +2849,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
         vel_norm = convvelint_.Norm2();
 
         // calculate characteristic element length
-        CalcCharEleLength(vol, vel_norm, h_u, h_p);
+        calc_char_ele_length(vol, vel_norm, h_u, h_p);
 
         // various parameter computations for case without dt:
         // relating viscous to reactive part (re01: tau_Mu, re11: tau_Mp)
@@ -2928,11 +2928,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
         vel_norm = convvelint_.Norm2();
 
         // calculate characteristic element length
-        CalcCharEleLength(vol, vel_norm, h_u, h_p);
+        calc_char_ele_length(vol, vel_norm, h_u, h_p);
 
         // total reaction coefficient sigma_tot: sum of "artificial" reaction
         // due to time factor and reaction coefficient (reaction coefficient
-        // ensured to remain zero in GetMaterialParams for non-reactive material)
+        // ensured to remain zero in get_material_params for non-reactive material)
         double sigma_tot = reacoeff_;
         if (fldpara_->WhichTau() == INPAR::FLUID::tau_shakib_hughes_codina)
           sigma_tot += 1.0 / fldparatimint_->Dt();
@@ -2996,11 +2996,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
         vel_norm = convvelint_.Norm2();
 
         // calculate characteristic element length
-        CalcCharEleLength(vol, vel_norm, h_u, h_p);
+        calc_char_ele_length(vol, vel_norm, h_u, h_p);
 
         // total reaction coefficient sigma_tot: sum of "artificial" reaction
         // due to time factor and reaction coefficient (reaction coefficient
-        // ensured to remain zero in GetMaterialParams for non-reactive material)
+        // ensured to remain zero in get_material_params for non-reactive material)
         double sigma_tot = reacoeff_;
         if (fldpara_->WhichTau() == INPAR::FLUID::tau_codina ||
             fldpara_->WhichTau() == INPAR::FLUID::tau_codina_convscaled)
@@ -3061,7 +3061,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
           sigma_tot += 1.0 / fldparatimint_->TimeFac();
 
         // calculate characteristic element length
-        CalcCharEleLength(vol, 0.0, h_u, h_p);
+        calc_char_ele_length(vol, 0.0, h_u, h_p);
 
         // various parameter computations for case with dt:
         // relating viscous to reactive part
@@ -3101,7 +3101,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
         /*----------------------------------------------------------------------*/
 
         // calculate characteristic element length
-        CalcCharEleLength(vol, 0.0, h_u, h_p);
+        calc_char_ele_length(vol, 0.0, h_u, h_p);
 
         // compute stabilization parameter tau_Mp (tau_Mu not required)
         tau_(0) = 0.0;
@@ -3560,7 +3560,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
         //    Vol 193, pp. 1403-1419, 2004.
 
         // calculate characteristic element length
-        CalcCharEleLength(vol, vel_norm, h_u, h_p);
+        calc_char_ele_length(vol, vel_norm, h_u, h_p);
 
         //---------------------------------------------- compute tau_Mu = tau_Mp
         /* convective : viscous forces (element reynolds number)*/
@@ -3642,7 +3642,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
  |  calculation of characteristic element length               vg 01/11 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcCharEleLength(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_char_ele_length(
     const double vol, const double vel_norm, double& h_u, double& h_p)
 {
   // check for potential 1-D computations
@@ -3773,7 +3773,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcCharEleLength(
 
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivEps(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_div_eps(
     const CORE::LINALG::Matrix<nsd_, nen_>& evelaf)
 {
   /*--- viscous term: div(epsilon(u)) --------------------------------*/
@@ -4163,7 +4163,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_subgrid_scale_veloci
 
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::LinGalMomResU(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::lin_gal_mom_res_u(
     CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, const double& timefacfac)
 {
   /*
@@ -4447,7 +4447,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::lin_gal_mom_res_u_subscales(
 
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::StabLinGalMomResU(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::stab_lin_gal_mom_res_u(
     CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, const double& timefacfac)
 {
   /*
@@ -4689,7 +4689,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::inertia_convection_reaction_
 
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ViscousGalPart(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::viscous_gal_part(
     CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     CORE::LINALG::Matrix<nsd_, nen_>& velforce, CORE::LINALG::Matrix<nsd_, nsd_>& viscstress,
     const double& timefacfac, const double& rhsfac)
@@ -4758,7 +4758,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ViscousGalPart(
 }
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ContStab(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::cont_stab(
     CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     CORE::LINALG::Matrix<nsd_, nen_>& velforce, const double& timefac, const double& timefacfac,
     const double& timefacfacpre, const double& rhsfac)
@@ -4843,7 +4843,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ContStab(
 
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PressureGalPart(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::pressure_gal_part(
     CORE::LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v, CORE::LINALG::Matrix<nsd_, nen_>& velforce,
     const double& timefacfac, const double& timefacfacpre, const double& rhsfac,
     const double& press)
@@ -4878,7 +4878,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PressureGalPart(
 
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ContinuityGalPart(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::continuity_gal_part(
     CORE::LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, CORE::LINALG::Matrix<nen_, 1>& preforce,
     const double& timefacfac, const double& timefacfacpre, const double& rhsfac)
 {
@@ -4915,7 +4915,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ContinuityGalPart(
  |  add integration point contribution to pressure matrices         nis Jan13 |
  *----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PressureProjection(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::pressure_projection(
     CORE::LINALG::Matrix<nen_, nen_>& ppmat)
 {
   // mass matrix of pressure basis functions - used as temp
@@ -4957,7 +4957,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::pressure_projection_finalize
 }
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForceRhsTerm(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::body_force_rhs_term(
     CORE::LINALG::Matrix<nsd_, nen_>& velforce, const double& rhsfac)
 {
   for (int idim = 0; idim < nsd_; ++idim)
@@ -5105,7 +5105,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::conservative_formulation(
 
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PSPG(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::pspg(
     CORE::LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, CORE::LINALG::Matrix<nen_, nen_>& ppmat,
     CORE::LINALG::Matrix<nen_, 1>& preforce, CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du,
     const double& fac3, const double& timefacfac, const double& timefacfacpre, const double& rhsfac,
@@ -5251,7 +5251,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PSPG(
 }
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SUPG(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::supg(
     CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     CORE::LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v, CORE::LINALG::Matrix<nsd_, nen_>& velforce,
     CORE::LINALG::Matrix<nen_, 1>& preforce, CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du,
@@ -5516,7 +5516,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SUPG(
 }
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ReacStab(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::reac_stab(
     CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     CORE::LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v, CORE::LINALG::Matrix<nsd_, nen_>& velforce,
     CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, const double& timefacfac,
@@ -5661,7 +5661,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ReacStab(
 
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ViscStab(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::visc_stab(
     CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     CORE::LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v, CORE::LINALG::Matrix<nsd_, nen_>& velforce,
     CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, const double& timefacfac,
@@ -5781,7 +5781,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ViscStab(
 
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ConvDivStab(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::conv_div_stab(
     CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     CORE::LINALG::Matrix<nsd_, nen_>& velforce, const double& timefacfac, const double& rhsfac)
 {
@@ -5829,7 +5829,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ConvDivStab(
 
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CrossStressStab(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::cross_stress_stab(
     CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     CORE::LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v, CORE::LINALG::Matrix<nsd_, nen_>& velforce,
     CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, const double& timefacfac,
@@ -5970,7 +5970,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CrossStressStab(
 }
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ReynoldsStressStab(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::reynolds_stress_stab(
     CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     CORE::LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v,
     CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, const double& timefacfac,
@@ -6126,7 +6126,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateService(DRT::ELEMENTS
         if (ele->Owner() ==
             discretization.Comm().MyPID())  // don't store values of ghosted elements
         {
-          return CalcDissipation(ele, params, discretization, lm, mat);
+          return calc_dissipation(ele, params, discretization, lm, mat);
         }
       }
       else
@@ -7385,7 +7385,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::extract_values_from_global_v
  * -> dissipation
  *--------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
+int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<CORE::MAT::Material> mat)
 {
@@ -7402,7 +7402,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
   CORE::LINALG::Matrix<nsd_, nen_> ebofoaf(true);
   CORE::LINALG::Matrix<nsd_, nen_> eprescpgaf(true);
   CORE::LINALG::Matrix<nen_, 1> escabofoaf(true);
-  BodyForce(ele, ebofoaf, eprescpgaf, escabofoaf);
+  body_force(ele, ebofoaf, eprescpgaf, escabofoaf);
 
   // if not available, the arrays for the subscale quantities have to be
   // resized and initialised to zero
@@ -7538,7 +7538,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
     CsDeltaSq = (*ele_CsDeltaSq)[id];
     CiDeltaSq = (*ele_CiDeltaSq)[id];
   }
-  GetTurbulenceParams(turbmodelparams, Cs_delta_sq, Ci_delta_sq, smaglayer, CsDeltaSq, CiDeltaSq);
+  get_turbulence_params(turbmodelparams, Cs_delta_sq, Ci_delta_sq, smaglayer, CsDeltaSq, CiDeltaSq);
 
 
   //----------------------------------------------------------------------
@@ -7629,7 +7629,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
   // get material parameters at element center
   if (not fldpara_->MatGp() or not fldpara_->TauGp())
   {
-    GetMaterialParams(mat, evelaf, epreaf, epream, escaaf, escaam, escabofoaf, thermpressaf,
+    get_material_params(mat, evelaf, epreaf, epream, escaaf, escaam, escabofoaf, thermpressaf,
         thermpressam, thermpressdtaf, thermpressdtam, vol);
 
     // calculate all-scale or fine-scale subgrid viscosity at element center
@@ -7638,7 +7638,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
         fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or
         fldpara_->TurbModAction() == INPAR::FLUID::vreman)
     {
-      CalcSubgrVisc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
+      calc_subgr_visc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
       // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
       visceff_ += sgvisc_;
     }
@@ -7657,8 +7657,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
     {
       // make sure to get material parameters at element center
       if (fldpara_->MatGp())
-        // GetMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,thermpressaf,thermpressam,thermpressdtam,vol);
-        GetMaterialParams(mat, evelaf, epreaf, epream, escaaf, escaam, escabofoaf, thermpressaf,
+        // get_material_params(material,evelaf,epreaf,epream,escaaf,escaam,thermpressaf,thermpressam,thermpressdtam,vol);
+        get_material_params(mat, evelaf, epreaf, epream, escaaf, escaam, escabofoaf, thermpressaf,
             thermpressam, thermpressdtaf, thermpressdtam, vol);
 
       // provide necessary velocities and gradients at element center
@@ -7687,7 +7687,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
     if (ele->IsAle()) convvelint_.Multiply(-1.0, egridv, funct_, 1.0);
 
     // calculate stabilization parameters at element center
-    CalcStabParameter(vol);
+    calc_stab_parameter(vol);
   }
 
 
@@ -7766,7 +7766,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
 
     // compute viscous term from previous iteration and viscous operator
     if (is_higher_order_ele_)
-      CalcDivEps(evelaf);
+      calc_div_eps(evelaf);
     else
       visc_old_.Clear();
 
@@ -7793,7 +7793,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
     // get material parameters at integration point
     if (fldpara_->MatGp())
     {
-      GetMaterialParams(mat, evelaf, epreaf, epream, escaaf, escaam, escabofoaf, thermpressaf,
+      get_material_params(mat, evelaf, epreaf, epream, escaaf, escaam, escabofoaf, thermpressaf,
           thermpressam, thermpressdtaf, thermpressdtam, vol);
 
       // calculate all-scale or fine-scale subgrid viscosity at integration point
@@ -7802,7 +7802,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
           fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or
           fldpara_->TurbModAction() == INPAR::FLUID::vreman)
       {
-        CalcSubgrVisc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
+        calc_subgr_visc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
         // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
         visceff_ += sgvisc_;
       }
@@ -7817,7 +7817,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
       {
         // make sure to get material parameters at gauss point
         if (not fldpara_->MatGp())
-          GetMaterialParams(mat, evelaf, epreaf, epream, escaaf, escaam, escabofoaf, thermpressaf,
+          get_material_params(mat, evelaf, epreaf, epream, escaaf, escaam, escabofoaf, thermpressaf,
               thermpressam, thermpressdtaf, thermpressdtam, vol);
 
         // calculate parameters of multifractal subgrid-scales
@@ -7837,7 +7837,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
     }
 
     // calculate stabilization parameter at integration point
-    if (fldpara_->TauGp()) CalcStabParameter(vol);
+    if (fldpara_->TauGp()) calc_stab_parameter(vol);
 
 
     // compute residual of continuity equation
@@ -7849,9 +7849,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
     {
       // compute additional Galerkin terms on right-hand side of continuity equation
       // -> different for generalized-alpha and other time-integration schemes
-      ComputeGalRHSContEq(eveln, escaaf, escaam, escadtam, ele->IsAle());
+      compute_gal_rhs_cont_eq(eveln, escaaf, escaam, escadtam, ele->IsAle());
       if (not fldparatimint_->IsGenalpha())
-        FOUR_C_THROW("Does ComputeGalRHSContEq() for ost really the right thing?");
+        FOUR_C_THROW("Does compute_gal_rhs_cont_eq() for ost really the right thing?");
       // remark: I think the term theta*u^n+1*nabla T^n+1 is missing.
       //         Moreover, the resulting conres_old_ should be multiplied by theta (see
       //         monres_old_).
@@ -8776,7 +8776,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::FDcheck(
  |find elements of inflow section                                rasthofer 10/12 |
  *-------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InflowElement(DRT::Element* ele)
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::inflow_element(DRT::Element* ele)
 {
   is_inflow_ele_ = false;
 
@@ -8812,7 +8812,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassMatrix(DRT::ELEMENTS:
   CORE::LINALG::Matrix<nsd_, nen_> mat1(true);
   CORE::LINALG::Matrix<nen_, 1> mat2(true);
 
-  GetMaterialParams(mat, mat1, mat2, mat2, mat2, mat2, mat2, 0.0, 0.0, 0.0, 0.0, 0.0);
+  get_material_params(mat, mat1, mat2, mat2, mat2, mat2, mat2, 0.0, 0.0, 0.0, 0.0, 0.0);
 
   // ---------------------------------------------------------------------------
   // Geometry
@@ -9954,7 +9954,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_channel_statistics(
   {
     CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
     // get new node positions of ALE mesh
-    GetGridDispALE(discretization, lm, edispnp);
+    get_grid_disp_ale(discretization, lm, edispnp);
 
     for (int inode = 0; inode < nen_; inode++)
     {
@@ -10522,7 +10522,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcTimeStep(DRT::ELEMENTS::F
   // ---------------------------------------------------------------------
   CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
   CORE::LINALG::Matrix<nsd_, nen_> egridv(true);
-  if (ele->IsAle()) GetGridDispVelALE(discretization, lm, edispnp, egridv);
+  if (ele->IsAle()) get_grid_disp_vel_ale(discretization, lm, edispnp, egridv);
 
 
   // evaluate shape functions and derivatives element center
@@ -10599,7 +10599,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_mass_flow_periodic_hill(
   CORE::LINALG::Matrix<nsd_, nen_> mat1(true);
   CORE::LINALG::Matrix<nen_, 1> mat2(true);
 
-  GetMaterialParams(mat, mat1, mat2, mat2, mat2, mat2, mat2, 0.0, 0.0, 0.0, 0.0, 0.0);
+  get_material_params(mat, mat1, mat2, mat2, mat2, mat2, mat2, 0.0, 0.0, 0.0, 0.0, 0.0);
 
   // ---------------------------------------------------------------------------
   // Geometry
@@ -10633,7 +10633,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_mass_flow_periodic_hill(
     CORE::LINALG::Matrix<nsd_, nen_> mat1(true);
     CORE::LINALG::Matrix<nen_, 1> mat2(true);
 
-    GetMaterialParams(mat, mat1, mat2, mat2, mat2, mat2, mat2, 0.0, 0.0, 0.0, 0.0, 0.0);
+    get_material_params(mat, mat1, mat2, mat2, mat2, mat2, mat2, 0.0, 0.0, 0.0, 0.0, 0.0);
 
     velint_.Multiply(evelnp, funct_);
 
@@ -10732,7 +10732,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_vel_gradient_ele_center(
 }
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::LinMeshMotion_2D(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::lin_mesh_motion_2_d(
     CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
     const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const double& press, const double& timefac,
     const double& timefacfac)
@@ -10837,7 +10837,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::LinMeshMotion_2D(
 
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::LinMeshMotion_3D(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::lin_mesh_motion_3_d(
     CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
     const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const double& press, const double& timefac,
     const double& timefacfac)
@@ -11547,7 +11547,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::LinMeshMotion_3D(
 
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeGalRHSContEq(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_gal_rhs_cont_eq(
     const CORE::LINALG::Matrix<nsd_, nen_>& eveln, const CORE::LINALG::Matrix<nen_, 1>& escaaf,
     const CORE::LINALG::Matrix<nen_, 1>& escaam, const CORE::LINALG::Matrix<nen_, 1>& escadtam,
     bool isale)
@@ -12164,7 +12164,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::update_material_params(
 
     // compute rate of strain at n+alpha_F or n+1
     double rateofstrain = -1.0e30;
-    rateofstrain = GetStrainRate(evelaf);
+    rateofstrain = get_strain_rate(evelaf);
 
     // compute viscosity for Yoghurt-like flows according to Afonso et al. (2003)
     visc_ = actmat->ComputeViscosity(rateofstrain, tempaf);
@@ -12251,7 +12251,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::recompute_gal_and_compute_cr
 
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::LomaGalPart(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::loma_gal_part(
     CORE::LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, CORE::LINALG::Matrix<nen_, 1>& preforce,
     const double& timefacfac, const double& rhsfac)
 {
@@ -12454,7 +12454,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::weak_comp_pressure_inertia_g
  |  calculate element matrix and right hand side (private)   g.bau 03/07|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::sysmat_ost_new(
     const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
     const CORE::LINALG::Matrix<nsd_, nen_>& eprescpgaf,
     const CORE::LINALG::Matrix<nsd_, nen_>& ebofon,
@@ -12518,7 +12518,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
   // get material parameters at element center
   if (not fldpara_->MatGp() or not fldpara_->TauGp())
   {
-    GetMaterialParams(material, evelaf, epreaf, epream, escaaf, escaam, escabofoaf, thermpressaf,
+    get_material_params(material, evelaf, epreaf, epream, escaaf, escaam, escabofoaf, thermpressaf,
         thermpressam, thermpressdtaf, thermpressdtam, vol);
 
     // calculate all-scale or fine-scale subgrid viscosity at element center
@@ -12531,7 +12531,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
     {
       if (fldpara_->TurbModAction() == INPAR::FLUID::dynamic_vreman)
         Cs_delta_sq = Cv;  // use the declaration of Cs_delta_sq for the dynamic Vreman constant
-      CalcSubgrVisc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
+      calc_subgr_visc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
       // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
       visceff_ += sgvisc_;
     }
@@ -12552,8 +12552,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
     {
       // make sure to get material parameters at element center
       if (fldpara_->MatGp())
-        // GetMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,thermpressaf,thermpressam,thermpressdtam,vol);
-        GetMaterialParams(material, evelaf, epreaf, epream, escaaf, escaam, escabofoaf,
+        // get_material_params(material,evelaf,epreaf,epream,escaaf,escaam,thermpressaf,thermpressam,thermpressdtam,vol);
+        get_material_params(material, evelaf, epreaf, epream, escaaf, escaam, escabofoaf,
             thermpressaf, thermpressam, thermpressdtaf, thermpressdtam, vol);
 
       // provide necessary velocities and gradients at element center
@@ -12603,7 +12603,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
     }
 
     // calculate stabilization parameters at element center
-    CalcStabParameter(vol);
+    calc_stab_parameter(vol);
   }
 
   // get Gaussian integration points
@@ -12708,8 +12708,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
 
     if (fldpara_->MatGp())
     {
-      GetMaterialParams(material, evelaf, epreaf, epream, escaaf, escaam, escabofoaf, thermpressaf,
-          thermpressam, thermpressdtaf, thermpressdtam, vol);
+      get_material_params(material, evelaf, epreaf, epream, escaaf, escaam, escabofoaf,
+          thermpressaf, thermpressam, thermpressdtaf, thermpressdtam, vol);
 
       // calculate all-scale or fine-scale subgrid viscosity at integration point
       visceff_ = visc_;
@@ -12718,7 +12718,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
           fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or
           fldpara_->TurbModAction() == INPAR::FLUID::vreman)
       {
-        CalcSubgrVisc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
+        calc_subgr_visc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
         // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
         visceff_ += sgvisc_;
       }
@@ -12728,7 +12728,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
 
     // calculate stabilization parameter at integration point
     if (fldpara_->TauGp() and fldpara_->StabType() == INPAR::FLUID::stabtype_residualbased)
-      CalcStabParameter(vol);
+      calc_stab_parameter(vol);
 
     // potential evaluation of coefficient of multifractal subgrid-scales at integration point
     if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
@@ -12738,7 +12738,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
         // make sure to get material parameters at gauss point
         if (not fldpara_->MatGp())
         {
-          // GetMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
+          // get_material_params(material,evelaf,epreaf,epream,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
           // would overwrite materials at the element center, hence BGp() should always be combined
           // with MatGp()
           FOUR_C_THROW(
@@ -12787,7 +12787,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
 
     // TODO: Need gradphi and curvature at time n. (Can be implemented for interface values at
     // timestep t^(n+1)) Adds surface tension force to the Gausspoint.
-    // Note: has to be called after GetMaterialParams(), otherwise gamma_ is uninitialized!!
+    // Note: has to be called after get_material_params(), otherwise gamma_ is uninitialized!!
     if (fldpara_->get_include_surface_tension())
       add_surface_tension_force(escaaf, escaam, egradphi, ecurvature);
 
@@ -12804,7 +12804,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
 
     // compute viscous term from previous iteration and viscous operator
     if (is_higher_order_ele_)
-      CalcDivEps(evelaf, eveln);
+      calc_div_eps(evelaf, eveln);
     else
     {
       visc_old_.Clear();
@@ -12892,7 +12892,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
     {
       // compute additional Galerkin terms on right-hand side of continuity equation
       // -> different for generalized-alpha and other time-integration schemes
-      ComputeGalRHSContEq(eveln, escaaf, escaam, escadtam, isale);
+      compute_gal_rhs_cont_eq(eveln, escaaf, escaam, escadtam, isale);
 
       // add to residual of continuity equation
       conres_old_ -= rhscon_;
@@ -12952,7 +12952,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
     // compute first version of velocity-based momentum residual containing
     // inertia term, convection term (convective and reactive part),
     // reaction term and cross-stress term
-    LinGalMomResUOSTNew(lin_resM_Du_, timefacfac);
+    lin_gal_mom_res_uost_new(lin_resM_Du_, timefacfac);
 
     // potentially rescale first version of velocity-based momentum residual
     if (fldpara_->Tds() == INPAR::FLUID::subscales_time_dependent &&
@@ -12977,24 +12977,24 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
     static CORE::LINALG::Matrix<nsd_, nsd_> viscstress(true);
     viscstress.Clear();
 
-    ViscousGalPart(estif_u_, velforce_, viscstress, timefacfac, rhsfac, rhsfacn);
+    viscous_gal_part(estif_u_, velforce_, viscstress, timefacfac, rhsfac, rhsfacn);
 
     // 3) stabilization of continuity equation,
     //    standard Galerkin viscous part for low-Mach-number flow and
     //    right-hand-side part of standard Galerkin viscous term
     if (fldpara_->CStab() or fldpara_->PhysicalType() == INPAR::FLUID::loma)
-      ContStab(estif_u_, velforce_, fldparatimint_->TimeFac(), timefacfac, timefacfacpre, rhsfac,
+      cont_stab(estif_u_, velforce_, fldparatimint_->TimeFac(), timefacfac, timefacfacpre, rhsfac,
           rhsfacn);
 
     // 4) standard Galerkin pressure term
-    PressureGalPart(
+    pressure_gal_part(
         estif_p_v_, velforce_, timefacfac, timefacfacpre, rhsfac, rhsfacn, press, pressn);
 
     // 5) standard Galerkin continuity term
-    ContinuityGalPart(estif_q_u_, preforce_, timefacfac, timefacfacpre, rhsfac, rhsfacn);
+    continuity_gal_part(estif_q_u_, preforce_, timefacfac, timefacfacpre, rhsfac, rhsfacn);
 
     // 6) standard Galerkin bodyforce term on right-hand side
-    BodyForceRhsTerm(velforce_, rhsfac, rhsfacn);
+    body_force_rhs_term(velforce_, rhsfac, rhsfacn);
 
     // 7) additional standard Galerkin terms due to conservative formulation
     //    New One Step Theta not implemented for this as of yet!
@@ -13009,7 +13009,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
     if (fldpara_->PhysicalType() == INPAR::FLUID::loma or
         fldpara_->PhysicalType() == INPAR::FLUID::artcomp)
     {
-      LomaGalPart(estif_q_u_, preforce_, timefacfac, rhsfac);
+      loma_gal_part(estif_q_u_, preforce_, timefacfac, rhsfac);
     }
 
     // 9) additional standard Galerkin term for temporal derivative of pressure
@@ -13022,12 +13022,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
     // inertia term, convection term (convective and reactive part) and
     // viscous term
     //----------------------------------------------------------------------
-    StabLinGalMomResU(lin_resM_Du_, timefacfac);
+    stab_lin_gal_mom_res_u(lin_resM_Du_, timefacfac);
 
     // 10) PSPG term
     if (fldpara_->PSPG())
     {
-      PSPGOSTNew(estif_q_u_, ppmat_, preforce_, lin_resM_Du_, fac3, timefacfac, timefacfacpre,
+      pspgost_new(estif_q_u_, ppmat_, preforce_, lin_resM_Du_, fac3, timefacfac, timefacfacpre,
           rhsfac, *iquad);
     }
 
@@ -13035,21 +13035,21 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
     //     left-hand side and Reynolds-stress term on right-hand side
     if (fldpara_->SUPG())
     {
-      SUPGOSTNew(estif_u_, estif_p_v_, velforce_, preforce_, lin_resM_Du_, fac3, timefacfac,
+      supgost_new(estif_u_, estif_p_v_, velforce_, preforce_, lin_resM_Du_, fac3, timefacfac,
           timefacfacpre, rhsfac);
     }
 
     // 12) reactive stabilization term
     if (fldpara_->RStab() != INPAR::FLUID::reactive_stab_none)
     {
-      ReacStab(
+      reac_stab(
           estif_u_, estif_p_v_, velforce_, lin_resM_Du_, timefacfac, timefacfacpre, rhsfac, fac3);
     }
 
     // 13) viscous stabilization term
     if (is_higher_order_ele_ and (fldpara_->VStab() != INPAR::FLUID::viscous_stab_none))
     {
-      ViscStab(
+      visc_stab(
           estif_u_, estif_p_v_, velforce_, lin_resM_Du_, timefacfac, timefacfacpre, rhsfac, fac3);
     }
 
@@ -13066,7 +13066,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
     //     iteration) as well as cross-stress term on right-hand side
     if (fldpara_->Cross() != INPAR::FLUID::cross_stress_stab_none)
     {
-      CrossStressStab(
+      cross_stress_stab(
           estif_u_, estif_p_v_, velforce_, lin_resM_Du_, timefacfac, timefacfacpre, rhsfac, fac3);
     }
 
@@ -13074,7 +13074,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
     //     (only for Newton iteration)
     if (fldpara_->Reynolds() == INPAR::FLUID::reynolds_stress_stab and fldpara_->IsNewton())
     {
-      ReynoldsStressStab(estif_u_, estif_p_v_, lin_resM_Du_, timefacfac, timefacfacpre, fac3);
+      reynolds_stress_stab(estif_u_, estif_p_v_, lin_resM_Du_, timefacfac, timefacfacpre, fac3);
     }
 
     // 16) fine-scale subgrid-viscosity term
@@ -13098,16 +13098,16 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
     //     (parameter-free inf-sub-stabilization, e.g. used instead of PSPG)
     if (fldpara_->PPP())
     {
-      PressureProjection(ppmat_);
+      pressure_projection(ppmat_);
     }
 
     // linearization wrt mesh motion
     if (emesh.IsInitialized())
     {
       if (nsd_ == 3)
-        LinMeshMotion_3D(emesh, evelaf, press, fldparatimint_->TimeFac(), timefacfac);
+        lin_mesh_motion_3_d(emesh, evelaf, press, fldparatimint_->TimeFac(), timefacfac);
       else if (nsd_ == 2)
-        LinMeshMotion_2D(emesh, evelaf, press, fldparatimint_->TimeFac(), timefacfac);
+        lin_mesh_motion_2_d(emesh, evelaf, press, fldparatimint_->TimeFac(), timefacfac);
       else
         FOUR_C_THROW("Linearization of the mesh motion is not available in 1D");
     }
@@ -13217,7 +13217,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
 }
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivEps(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_div_eps(
     const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const CORE::LINALG::Matrix<nsd_, nen_>& eveln)
 {
   /*--- viscous term: div(epsilon(u)) --------------------------------*/
@@ -13718,7 +13718,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_subgrid_scale_veloci
 
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::LinGalMomResUOSTNew(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::lin_gal_mom_res_uost_new(
     CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, const double& timefacfac)
 {
   /*
@@ -13983,7 +13983,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::inertia_convection_reaction_
 
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ViscousGalPart(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::viscous_gal_part(
     CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     CORE::LINALG::Matrix<nsd_, nen_>& velforce, CORE::LINALG::Matrix<nsd_, nsd_>& viscstress,
     const double& timefacfac, const double& rhsfac, const double& rhsfacn)
@@ -14066,7 +14066,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ViscousGalPart(
 }
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ContStab(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::cont_stab(
     CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     CORE::LINALG::Matrix<nsd_, nen_>& velforce, const double& timefac, const double& timefacfac,
     const double& timefacfacpre, const double& rhsfac, const double& rhsfacn)
@@ -14165,7 +14165,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ContStab(
 
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PressureGalPart(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::pressure_gal_part(
     CORE::LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v, CORE::LINALG::Matrix<nsd_, nen_>& velforce,
     const double& timefacfac, const double& timefacfacpre, const double& rhsfac,
     const double& rhsfacn, const double& press, const double& pressn)
@@ -14220,7 +14220,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PressureGalPart(
 
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ContinuityGalPart(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::continuity_gal_part(
     CORE::LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, CORE::LINALG::Matrix<nen_, 1>& preforce,
     const double& timefacfac, const double& timefacfacpre, const double& rhsfac,
     const double& rhsfacn)
@@ -14275,7 +14275,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ContinuityGalPart(
 }
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForceRhsTerm(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::body_force_rhs_term(
     CORE::LINALG::Matrix<nsd_, nen_>& velforce, const double& rhsfac, const double rhsfacn)
 {
   for (int idim = 0; idim < nsd_; ++idim)
@@ -14309,7 +14309,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForceRhsTerm(
 }
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PSPGOSTNew(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::pspgost_new(
     CORE::LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, CORE::LINALG::Matrix<nen_, nen_>& ppmat,
     CORE::LINALG::Matrix<nen_, 1>& preforce, CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du,
     const double& fac3, const double& timefacfac, const double& timefacfacpre, const double& rhsfac,
@@ -14460,7 +14460,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PSPGOSTNew(
 }
 
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SUPGOSTNew(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::supgost_new(
     CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     CORE::LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v, CORE::LINALG::Matrix<nsd_, nen_>& velforce,
     CORE::LINALG::Matrix<nen_, 1>& preforce, CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du,
@@ -14753,7 +14753,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::get_grid_disp_vel_aleost_new
     }
     default:
     {
-      GetGridDispALE(discretization, lm, edispnp);
+      get_grid_disp_ale(discretization, lm, edispnp);
       extract_values_from_global_vector(
           discretization, lm, *rotsymmpbc_, &egridvnp, nullptr, "gridv");
       extract_values_from_global_vector(
@@ -14813,7 +14813,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::set_convective_velint_n(cons
  |  compute turbulence parameters                       rasthofer 10/11 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetTurbulenceParams(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::get_turbulence_params(
     Teuchos::ParameterList& turbmodelparams, double& Cs_delta_sq, double& Ci_delta_sq, int& nlayer,
     double CsDeltaSq, double CiDeltaSq)
 {
@@ -15024,14 +15024,14 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetTurbulenceParams(
   }
 
   return;
-}  // FluidEleCalc::GetTurbulenceParams
+}  // FluidEleCalc::get_turbulence_params
 
 
 /*----------------------------------------------------------------------*
  |  calculation of (all-scale) subgrid viscosity               vg 09/09 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcSubgrVisc(
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_subgr_visc(
     const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const double vol, double& Cs_delta_sq,
     double& Ci_delta_sq)
 {
@@ -15060,7 +15060,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcSubgrVisc(
 
   // compute (all-scale) rate of strain
   double rateofstrain = -1.0e30;
-  rateofstrain = GetStrainRate(evelaf);
+  rateofstrain = get_strain_rate(evelaf);
 
   if (fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
   {
@@ -15362,7 +15362,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_fine_scale_subgr_visc(
 
     // compute (all-scale) rate of strain
     double rateofstrain = -1.0e30;
-    rateofstrain = GetStrainRate(evelaf);
+    rateofstrain = get_strain_rate(evelaf);
 
     fssgvisc_ = densaf_ * fldpara_->Cs() * fldpara_->Cs() * hk * hk * rateofstrain;
   }
@@ -15383,7 +15383,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_fine_scale_subgr_visc(
 
     // fine-scale rate of strain
     double fsrateofstrain = -1.0e30;
-    fsrateofstrain = GetStrainRate(fsevelaf);
+    fsrateofstrain = get_strain_rate(fsevelaf);
 
     fssgvisc_ = densaf_ * fldpara_->Cs() * fldpara_->Cs() * hk * hk * fsrateofstrain;
   }
@@ -15676,7 +15676,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::prepare_multifractal_subgr_s
       }
       case INPAR::FLUID::strainrate:
       {
-        strainnorm = GetStrainRate(evelaf);
+        strainnorm = get_strain_rate(evelaf);
         strainnorm /= sqrt(2.0);  // cf. Burton & Dahm 2005
         Re_ele = strainnorm * hk * hk * densaf_ / visc_;
         break;
@@ -15717,7 +15717,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::prepare_multifractal_subgr_s
     if ((not fldpara_->CalcN()) or (fldpara_->RefVel() != INPAR::FLUID::strainrate))
     {
       // strainnorm = GetNormStrain(evelaf,derxy_,vderxy_);
-      strainnorm = GetStrainRate(evelaf);
+      strainnorm = get_strain_rate(evelaf);
       strainnorm /= sqrt(2.0);  // cf. Burton & Dahm 2005
     }
     // and reference length

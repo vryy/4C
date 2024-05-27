@@ -50,7 +50,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
     };  // class Ion
 

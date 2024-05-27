@@ -68,9 +68,9 @@ void FS3I::PartFS3I2Wc::Setup()
 void FS3I::PartFS3I2Wc::Timeloop()
 {
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
-  InitialCalculations();
+  initial_calculations();
 
   // prepare time loop
   fsi_->PrepareTimeloop();
@@ -88,7 +88,7 @@ void FS3I::PartFS3I2Wc::Timeloop()
   // output of initial state
   constexpr bool force_prepare = true;
   fsi_->prepare_output(force_prepare);
-  fsi_->Output();
+  fsi_->output();
   ScatraOutput();
 
   while (NotFinished())
@@ -106,11 +106,11 @@ void FS3I::PartFS3I2Wc::Timeloop()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I2Wc::InitialCalculations()
+void FS3I::PartFS3I2Wc::initial_calculations()
 {
   // set initial fluid velocity field for evaluation of initial scalar
   // time derivative in fluid-based scalar transport
-  scatravec_[0]->ScaTraField()->SetVelocityField(
+  scatravec_[0]->ScaTraField()->set_velocity_field(
       fsi_->fluid_field()->Velnp(), Teuchos::null, Teuchos::null, Teuchos::null);
 
   // set initial value of thermodynamic pressure in fluid-based scalar
@@ -140,7 +140,7 @@ void FS3I::PartFS3I2Wc::InitialCalculations()
   fsi_->fluid_field()->SetScalarFields(scatravec_[0]->ScaTraField()->Phinp(),
       Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())
           ->ThermPressNp(),
-      Teuchos::null, scatravec_[0]->ScaTraField()->Discretization());
+      Teuchos::null, scatravec_[0]->ScaTraField()->discretization());
 
   return;
 }
@@ -151,7 +151,7 @@ void FS3I::PartFS3I2Wc::InitialCalculations()
 void FS3I::PartFS3I2Wc::prepare_time_step()
 {
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   // prepare time step for both fluid- and structure-based scatra field
   for (unsigned i = 0; i < scatravec_.size(); ++i)
@@ -263,7 +263,7 @@ void FS3I::PartFS3I2Wc::set_sca_tra_values_in_fsi()
             FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phiaf()),
             FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phiam()),
             FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phidtam()),
-            scatravec_[0]->ScaTraField()->Discretization());
+            scatravec_[0]->ScaTraField()->discretization());
       else
         fsi_->fluid_field()->set_loma_iter_scalar_fields(
             FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phiaf()),
@@ -278,7 +278,7 @@ void FS3I::PartFS3I2Wc::set_sca_tra_values_in_fsi()
             Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())
                 ->ThermPressDtAm(),
             Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())
-                ->Discretization());
+                ->discretization());
     }
     break;
     case INPAR::FLUID::timeint_one_step_theta:
@@ -288,7 +288,7 @@ void FS3I::PartFS3I2Wc::set_sca_tra_values_in_fsi()
             FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phinp()),
             FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phin()),
             FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phidtnp()),
-            scatravec_[0]->ScaTraField()->Discretization());
+            scatravec_[0]->ScaTraField()->discretization());
       else
         fsi_->fluid_field()->set_loma_iter_scalar_fields(
             FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phinp()),
@@ -303,7 +303,7 @@ void FS3I::PartFS3I2Wc::set_sca_tra_values_in_fsi()
             Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())
                 ->ThermPressDtNp(),
             Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())
-                ->Discretization());
+                ->discretization());
     }
     break;
     default:
@@ -314,7 +314,7 @@ void FS3I::PartFS3I2Wc::set_sca_tra_values_in_fsi()
   // set structure-scalar field in structure
   // (Note potential inconsistencies related to this call in case of generalized-alpha time
   // integration!)
-  fsi_->StructureField()->Discretization()->set_state(
+  fsi_->structure_field()->discretization()->set_state(
       1, "scalarfield", structure_scalar_to_structure(scatravec_[1]->ScaTraField()->Phinp()));
 }
 
@@ -411,7 +411,7 @@ void FS3I::PartFS3I2Wc::TimeUpdateAndOutput()
         ->UpdateThermPressure();
 
   // update structure, fluid and ALE
-  fsi_->Update();
+  fsi_->update();
 
   // set scalar and thermodynamic pressure at n+1 and SCATRA trueresidual
   // for statistical evaluation and evaluation of Neumann boundary
@@ -420,13 +420,13 @@ void FS3I::PartFS3I2Wc::TimeUpdateAndOutput()
       Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())
           ->ThermPressNp(),
       FluidScalarToFluid(scatravec_[0]->ScaTraField()->TrueResidual()),
-      scatravec_[0]->ScaTraField()->Discretization());
+      scatravec_[0]->ScaTraField()->discretization());
 
   // Note: The order is important here! Herein, control file entries are
   // written, defining the order in which the filters handle the
   // discretizations, which in turn defines the dof number ordering of the
   // discretizations.
-  fsi_->Output();
+  fsi_->output();
 
   // output of fluid- and structure-based scalar transport
   ScatraOutput();

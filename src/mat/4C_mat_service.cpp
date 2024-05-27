@@ -760,7 +760,7 @@ T* MAT::CreateMaterialParameterInstance(Teuchos::RCP<CORE::MAT::PAR::Material> c
 {
   if (curmat->Parameter() == nullptr)
   {
-    curmat->SetParameter(new T(curmat));
+    curmat->set_parameter(new T(curmat));
   }
   auto* params = dynamic_cast<T*>(curmat->Parameter());
   return params;

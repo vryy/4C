@@ -97,7 +97,7 @@ void ART::UTILS::SetMaterialPointersMatchingGrid(Teuchos::RCP<const DRT::Discret
 /*----------------------------------------------------------------------*
  |                                                     kremheller 03/18 |
  *----------------------------------------------------------------------*/
-bool ART::ArteryScatraCloneStrategy::DetermineEleType(
+bool ART::ArteryScatraCloneStrategy::determine_ele_type(
     DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // clone the element
@@ -117,7 +117,7 @@ bool ART::ArteryScatraCloneStrategy::DetermineEleType(
 /*----------------------------------------------------------------------*
  | set the element data (protected)                    kremheller 03/18 |
  *----------------------------------------------------------------------*/
-void ART::ArteryScatraCloneStrategy::SetElementData(
+void ART::ArteryScatraCloneStrategy::set_element_data(
     Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbs)
 {
   // We need to set material and possibly other things to complete element setup.
@@ -147,7 +147,7 @@ void ART::ArteryScatraCloneStrategy::SetElementData(
 /*----------------------------------------------------------------------*
  | check if material type is admissible                kremheller 03/18 |
  *----------------------------------------------------------------------*/
-void ART::ArteryScatraCloneStrategy::CheckMaterialType(const int matid)
+void ART::ArteryScatraCloneStrategy::check_material_type(const int matid)
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
@@ -161,7 +161,7 @@ void ART::ArteryScatraCloneStrategy::CheckMaterialType(const int matid)
 /*----------------------------------------------------------------------*
  |                                                     kremheller 03/18 |
  *----------------------------------------------------------------------*/
-std::map<std::string, std::string> ART::ArteryScatraCloneStrategy::ConditionsToCopy() const
+std::map<std::string, std::string> ART::ArteryScatraCloneStrategy::conditions_to_copy() const
 {
   return {{"TransportDirichlet", "Dirichlet"}, {"TransportPointNeumann", "PointNeumann"},
       {"Initfield", "Initfield"}, {"ArtScatraCouplConNodebased", "ArtScatraCouplConNodebased"},

@@ -54,7 +54,7 @@ namespace POROELAST
     void Solve() override;
 
     //! update and write output to screen and files after solved time step
-    void UpdateAndOutput();
+    void update_and_output();
 
     //! convergence check of outer loop
     bool convergence_check(int itnum);

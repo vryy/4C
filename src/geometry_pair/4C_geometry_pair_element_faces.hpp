@@ -469,7 +469,7 @@ namespace GEOMETRYPAIR
      * \brief Convert the face element parameter coordinates to the volume element parameter
      * coordinates.
      */
-    void XiFaceToXiVolume(const CORE::LINALG::Matrix<2, 1, double>& xi_face,
+    void xi_face_to_xi_volume(const CORE::LINALG::Matrix<2, 1, double>& xi_face,
         CORE::LINALG::Matrix<3, 1, double>& xi_volume) const;
 
    protected:

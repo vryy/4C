@@ -46,7 +46,7 @@ namespace MAT
       /// standard constructor
       explicit MultiplicativeSplitDefgradElastHyper(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
       /// length of elastic material list
       const int nummat_elast_;

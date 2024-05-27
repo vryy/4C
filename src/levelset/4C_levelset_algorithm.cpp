@@ -196,7 +196,7 @@ void SCATRA::LevelSetAlgorithm::Setup()
     if (CORE::UTILS::IntegralValue<int>(
             levelsetparams_->sublist("REINITIALIZATION"), "REINIT_INITIAL"))
     {
-      Reinitialization();
+      reinitialization();
 
       // reset phin vector
       // remark: for BDF2, we do not have to set phinm,
@@ -256,7 +256,7 @@ void SCATRA::LevelSetAlgorithm::TimeLoop()
 {
   // safety check
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   // provide information about initial field (do not do for restarts!)
   if (Step() == 0)
@@ -284,13 +284,13 @@ void SCATRA::LevelSetAlgorithm::TimeLoop()
     //                     reinitialize level-set
     // -----------------------------------------------------------------
     // will be done only if required
-    Reinitialization();
+    reinitialization();
 
     // -------------------------------------------------------------------
     //                         update solution
     //        current solution becomes old solution of next time step
     // -------------------------------------------------------------------
-    UpdateState();
+    update_state();
 
     // -------------------------------------------------------------------
     //       evaluate error for problems with analytical solution
@@ -329,7 +329,7 @@ void SCATRA::LevelSetAlgorithm::Solve()
   //                    solve level-set equation
   // -----------------------------------------------------------------
   if (solvtype_ == INPAR::SCATRA::solvertype_nonlinear)
-    NonlinearSolve();
+    nonlinear_solve();
   else
     linear_solve();
 
@@ -340,7 +340,7 @@ void SCATRA::LevelSetAlgorithm::Solve()
 /*----------------------------------------------------------------------*
  | reinitialize level-set                               rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::Reinitialization()
+void SCATRA::LevelSetAlgorithm::reinitialization()
 {
   // check for reinitialization action first
 
@@ -426,11 +426,11 @@ void SCATRA::LevelSetAlgorithm::check_and_write_output_and_restart()
     output_state();
 
     // write output to Gmsh postprocessing files
-    if (outputgmsh_) OutputToGmsh(step_, time_);
+    if (outputgmsh_) output_to_gmsh(step_, time_);
   }
 
   // add restart data
-  if (IsRestartStep()) WriteRestart();
+  if (IsRestartStep()) write_restart();
 
   // -----------------------------------------------------------------
   //             further level-set specific values

@@ -640,7 +640,7 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint2D(
     {
       CORE::LINALG::SerialDenseVector auxval(ns_);
       CORE::LINALG::SerialDenseMatrix deriv(ns_, 1);
-      gpele.EvaluateShape(gpeta, auxval, deriv, gpele.num_node());
+      gpele.evaluate_shape(gpeta, auxval, deriv, gpele.num_node());
 
       for (int i = 0; i < ns_; ++i) val(i) = auxval(i);
     }
@@ -887,7 +887,7 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint3D(
     {
       CORE::LINALG::SerialDenseVector auxval(ns_);
       CORE::LINALG::SerialDenseMatrix deriv(ns_, 2);
-      gpele.EvaluateShape(gpeta, auxval, deriv, gpele.num_node());
+      gpele.evaluate_shape(gpeta, auxval, deriv, gpele.num_node());
 
       for (int i = 0; i < ns_; ++i) val(i) = auxval(i);
     }
@@ -2674,7 +2674,7 @@ double MORTAR::ProjectorCalc<distype>::evaluate_f_element_normal(
   {
     CORE::LINALG::SerialDenseVector auxval(n_);
     CORE::LINALG::SerialDenseMatrix deriv(n_, 1);
-    ele.EvaluateShape(eta, auxval, deriv, ele.num_node());
+    ele.evaluate_shape(eta, auxval, deriv, ele.num_node());
 
     for (int i = 0; i < n_; ++i) val(i) = auxval(i);
   }
@@ -2748,7 +2748,7 @@ double MORTAR::ProjectorCalc<distype>::evaluate_grad_f_element_normal(
   {
     CORE::LINALG::SerialDenseVector auxval(n_);
     CORE::LINALG::SerialDenseMatrix auxderiv(n_, 1);
-    ele.EvaluateShape(eta, auxval, auxderiv, ele.num_node());
+    ele.evaluate_shape(eta, auxval, auxderiv, ele.num_node());
 
     for (int i = 0; i < n_; ++i)
     {

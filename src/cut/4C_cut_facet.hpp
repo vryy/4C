@@ -397,7 +397,7 @@ namespace CORE::GEO
       for (++is; is != side.end(); ++is)
       {
         Point* p = *is;
-        p->Intersection(facets);
+        p->intersection(facets);
         if (facets.size() == 0)
         {
           break;
@@ -412,8 +412,8 @@ namespace CORE::GEO
     inline void FindCommonFacets(Point* p1, Point* p2, Point* p3, plain_facet_set& facets)
     {
       facets = p1->Facets();
-      p2->Intersection(facets);
-      p3->Intersection(facets);
+      p2->intersection(facets);
+      p3->intersection(facets);
 
       std::vector<Point*> side(3);
       side[0] = p1;
@@ -426,9 +426,9 @@ namespace CORE::GEO
         Point* p1, Point* p2, Point* p3, Point* p4, plain_facet_set& facets)
     {
       facets = p1->Facets();
-      p2->Intersection(facets);
-      p3->Intersection(facets);
-      p4->Intersection(facets);
+      p2->intersection(facets);
+      p3->intersection(facets);
+      p4->intersection(facets);
     }
 
   }  // namespace CUT

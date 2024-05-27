@@ -58,9 +58,9 @@ void MIXTURE::SimpleMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
 
   // This is the simplest mixture rule
   // Just iterate over all constituents and add all stress/cmat contributions
-  for (std::size_t i = 0; i < Constituents().size(); ++i)
+  for (std::size_t i = 0; i < constituents().size(); ++i)
   {
-    MixtureConstituent& constituent = *Constituents()[i];
+    MixtureConstituent& constituent = *constituents()[i];
     cstress.Clear();
     ccmat.Clear();
     constituent.Evaluate(F, E_strain, params, cstress, ccmat, gp, eleGID);

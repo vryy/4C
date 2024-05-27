@@ -226,7 +226,7 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       /*!
       \brief Print this element
@@ -378,7 +378,7 @@ namespace DRT
      protected:
       /// Update history variables at the end of time step (fiber direction, inelastic deformation)
       /// (braeu 07/16)
-      void Update_element(std::vector<double>& disp,  // current displacements
+      void update_element(std::vector<double>& disp,  // current displacements
           Teuchos::ParameterList& params,             // algorithmic parameters e.g. time
           Teuchos::RCP<CORE::MAT::Material> mat);     // material
 
@@ -408,7 +408,7 @@ namespace DRT
        *
        *  \author hiermeier
        *  \date 04/16 */
-      inline DRT::ELEMENTS::ParamsInterface& ParamsInterface()
+      inline DRT::ELEMENTS::ParamsInterface& params_interface()
       {
         if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;
@@ -418,7 +418,7 @@ namespace DRT
        *
        *  \author vuong
        *  \date 11/16 */
-      STR::ELEMENTS::ParamsInterface& StrParamsInterface();
+      STR::ELEMENTS::ParamsInterface& str_params_interface();
 
      private:
       /** \brief interface ptr
@@ -698,7 +698,7 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       /*!
        * \brief Return pointer to the parent element

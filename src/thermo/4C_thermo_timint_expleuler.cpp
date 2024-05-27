@@ -63,7 +63,7 @@ void THR::TimIntExplEuler::IntegrateStep()
   tempn_->Update(dt, *(*rate_)(0), 1.0);
 
   // apply Dirichlet BCs
-  ApplyDirichletBC(timen_, tempn_, raten_, false);
+  apply_dirichlet_bc(timen_, tempn_, raten_, false);
 
   // build new external forces
   fextn_->PutScalar(0.0);
@@ -122,7 +122,7 @@ void THR::TimIntExplEuler::IntegrateStep()
   }
 
   // apply Dirichlet BCs on temperature rates
-  ApplyDirichletBC(timen_, Teuchos::null, raten_, false);
+  apply_dirichlet_bc(timen_, Teuchos::null, raten_, false);
 
   // wassup?
   return;

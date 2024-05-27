@@ -236,7 +236,7 @@ namespace MAT
     void Reset() override{};
 
    protected:
-    void SetParameter(MAT::PAR::BeamElastHyperMaterialParameterGeneric* parameter)
+    void set_parameter(MAT::PAR::BeamElastHyperMaterialParameterGeneric* parameter)
     {
       params_ = parameter;
     }

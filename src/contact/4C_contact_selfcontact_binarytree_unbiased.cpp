@@ -43,12 +43,12 @@ void CONTACT::UnbiasedSelfBinaryTree::add_tree_nodes_to_contact_pairs(
 
   // check reference configuration for non smooth self contact
   if (two_half_pass_ and check_nonsmooth_selfcontactsurface_)
-    addcontactpair = rough_check_ref_config(treenode1->Elelist()[0], treenode2->Elelist()[0]);
+    addcontactpair = rough_check_ref_config(treenode1->elelist()[0], treenode2->elelist()[0]);
 
   if (addcontactpair)
   {
-    SetContactPairs()[treenode1->Elelist()[0]].push_back(treenode2->Elelist()[0]);
-    SetContactPairs()[treenode2->Elelist()[0]].push_back(treenode1->Elelist()[0]);
+    set_contact_pairs()[treenode1->elelist()[0]].push_back(treenode2->elelist()[0]);
+    set_contact_pairs()[treenode2->elelist()[0]].push_back(treenode1->elelist()[0]);
   }
 
   return;
@@ -76,7 +76,7 @@ void CONTACT::UnbiasedSelfBinaryTree::calculate_proc_specific_dual_graph(
     std::vector<int> possadjids;
 
     // get current elements and its nodes
-    DRT::Element* element = Discret().gElement(gid);
+    DRT::Element* element = discret().gElement(gid);
     if (!element) FOUR_C_THROW("Cannot find element with gid %\n", gid);
     DRT::Node** nodes = element->Nodes();
     if (!nodes) FOUR_C_THROW("Null pointer!");
@@ -86,11 +86,11 @@ void CONTACT::UnbiasedSelfBinaryTree::calculate_proc_specific_dual_graph(
 
     // first tree node of one dual edge which includes current element
     // is the element itself saved as a tree node
-    Teuchos::RCP<SelfBinaryTreeNode> node1 = Leafsmap()[gid];
+    Teuchos::RCP<SelfBinaryTreeNode> node1 = leafsmap()[gid];
 
     // for 2D only: get the finite element nodes of the element and save them as end nodes of the
     // tree node
-    if (Dim() == 2)
+    if (dim() == 2)
     {
       std::vector<int> nodeIds;
       nodeIds.push_back(element->NodeIds()[0]);
@@ -129,7 +129,7 @@ void CONTACT::UnbiasedSelfBinaryTree::calculate_proc_specific_dual_graph(
 
     // add the vector of adjacent tree nodes to the adjacency matrix we only need the matrix in 3D,
     // because in 2D the adjacency test works by comparing end nodes only
-    if (Dim() == 3) SetAdjacencymatrix()[gid] = adjtreenodes;
+    if (dim() == 3) set_adjacencymatrix()[gid] = adjtreenodes;
 
     // get adjacent dual edges
     for (unsigned k = 0; k < adjdualedges.size(); ++k)
@@ -145,13 +145,13 @@ void CONTACT::UnbiasedSelfBinaryTree::calculate_proc_specific_dual_graph(
  *----------------------------------------------------------------------*/
 void CONTACT::UnbiasedSelfBinaryTree::define_search_elements()
 {
-  const int eleID = ContactPairs().begin()->first;
+  const int eleID = contact_pairs().begin()->first;
 
   // do as long as there are still contact pairs
-  if (ContactPairs().find(eleID) != ContactPairs().end() && !ContactPairs().empty())
+  if (contact_pairs().find(eleID) != contact_pairs().end() && !contact_pairs().empty())
   {
     // get the current element to content of "isslave"
-    DRT::Element* element = Discret().gElement(eleID);
+    DRT::Element* element = discret().gElement(eleID);
     CONTACT::Element* celement = dynamic_cast<CONTACT::Element*>(element);
     if (celement->IsSlave() != true)
       FOUR_C_THROW("Element: this should not happen!");
@@ -164,17 +164,17 @@ void CONTACT::UnbiasedSelfBinaryTree::define_search_elements()
       }
 
     // get the ID of elements in contact with current one
-    std::vector<int> contacteleID = ContactPairs()[eleID];
+    std::vector<int> contacteleID = contact_pairs()[eleID];
 
     // erase the current element from list of contact pairs
-    SetContactPairs().erase(eleID);
+    set_contact_pairs().erase(eleID);
 
     for (unsigned j = 0; j < contacteleID.size(); ++j)
     {
       celement->AddSearchElements(contacteleID[j]);
 
       // recursively call this function again
-      if (ContactPairs().find(contacteleID[j]) != ContactPairs().end()) define_search_elements();
+      if (contact_pairs().find(contacteleID[j]) != contact_pairs().end()) define_search_elements();
     }
   }
 
@@ -184,11 +184,11 @@ void CONTACT::UnbiasedSelfBinaryTree::define_search_elements()
 /*----------------------------------------------------------------------*
  |  Get the contracted node (private)                      schmidt 01/19|
  *----------------------------------------------------------------------*/
-void CONTACT::UnbiasedSelfBinaryTree::GetContractedNode(
+void CONTACT::UnbiasedSelfBinaryTree::get_contracted_node(
     Teuchos::RCP<SelfDualEdge>& contractedEdge, Teuchos::RCP<SelfBinaryTreeNode>& contractedNode)
 {
   // call the base class
-  CONTACT::SelfBinaryTree::GetContractedNode(contractedEdge, contractedNode);
+  CONTACT::SelfBinaryTree::get_contracted_node(contractedEdge, contractedNode);
 
   // add owner of contracted node
   contractedNode->SetParentOwner(
@@ -213,14 +213,14 @@ void CONTACT::UnbiasedSelfBinaryTree::Init()
 
   // initialize binary tree leaf nodes and create element list
   std::vector<int> elelist;
-  InitLeafNodesAndMap(elelist);
+  init_leaf_nodes_and_map(elelist);
 
   // initialize and calculate processor specific dual graph
   std::map<int, std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>>
       procdualgraph;
 
   // loop over all interface processors
-  for (int p = 0; p < Comm().NumProc(); ++p)
+  for (int p = 0; p < comm().NumProc(); ++p)
   {
     std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>> dualgraph;
 
@@ -243,7 +243,7 @@ void CONTACT::UnbiasedSelfBinaryTree::initialize_tree_bottom_up(
         procdualGraph)
 {
   // vector collecting root nodes
-  SetRoots().resize(0);
+  set_roots().resize(0);
 
   std::map<int,
       std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>>::iterator
@@ -268,7 +268,7 @@ void CONTACT::UnbiasedSelfBinaryTree::initialize_tree_bottom_up(
           dualGraph.begin();
       Teuchos::RCP<SelfDualEdge> contractedEdge = iter->first;
       Teuchos::RCP<SelfBinaryTreeNode> newNode(Teuchos::null);
-      GetContractedNode(contractedEdge, newNode);
+      get_contracted_node(contractedEdge, newNode);
 
       // update dualGraph
       // this means we have to create new edges, which include the new tree node and delete the
@@ -283,28 +283,28 @@ void CONTACT::UnbiasedSelfBinaryTree::initialize_tree_bottom_up(
       if (adjEdges[0] == contractedEdge)
       {
         // save the tree node as root and continue the loop
-        SetRoots().push_back(newNode);
+        set_roots().push_back(newNode);
         dualGraph.erase(contractedEdge);
         continue;
       }
 
-      UpdateDualGraph(contractedEdge, adjEdges, newNode, &dualGraph);
+      update_dual_graph(contractedEdge, adjEdges, newNode, &dualGraph);
     }  // while(!(dualGraph).empty())
     //**********************************************************************
     ++iterator;
   }
 
   // complete the tree starting from its roots (top-down)
-  if (Roots().size() == 0) FOUR_C_THROW("No root tree node found!");
+  if (roots().size() == 0) FOUR_C_THROW("No root tree node found!");
 
   // SAFETY CHECK: check whether all leaf nodes were assigned a root node
-  std::vector<int> list = Roots()[0]->Elelist();
-  for (unsigned i = 1; i < Roots().size(); ++i)
+  std::vector<int> list = roots()[0]->elelist();
+  for (unsigned i = 1; i < roots().size(); ++i)
   {
-    std::vector<int> listi = Roots()[i]->Elelist();
+    std::vector<int> listi = roots()[i]->elelist();
     for (unsigned j = 0; j < listi.size(); ++j) list.push_back(listi[j]);
   }
-  if (list.size() != Leafsmap().size())
+  if (list.size() != leafsmap().size())
     FOUR_C_THROW(
         "Not all leaf nodes got assigned to a root node! This is not acceptable, but might appear "
         "for the unbiased self contact tree as only surface elements (nodes) are contracted (and "
@@ -314,16 +314,16 @@ void CONTACT::UnbiasedSelfBinaryTree::initialize_tree_bottom_up(
         "be assigned to a root node and the algorithm fails! %i elements were not assigned to a "
         "root node!\n\n"
         "POSSIBLE SOLUTION: choose a different number of processors!",
-        Leafsmap().size() - list.size());
+        leafsmap().size() - list.size());
 
-  for (unsigned k = 0; k < Roots().size(); ++k) Roots()[k]->CompleteTree(0, Enlarge());
+  for (unsigned k = 0; k < roots().size(); ++k) roots()[k]->CompleteTree(0, enlarge());
   // output to screen
-  if (Comm().MyPID() == 0)
-    std::cout << "\nFound " << Roots().size() << " root node(s) for unbiased self binary tree."
+  if (comm().MyPID() == 0)
+    std::cout << "\nFound " << roots().size() << " root node(s) for unbiased self binary tree."
               << std::endl;
 
   // in 3D we have to calculate adjacent tree nodes
-  if (Dim() == 3)
+  if (dim() == 3)
   {
     calculate_adjacent_leaves();
     calculate_adjacent_tnodes();
@@ -349,7 +349,7 @@ bool CONTACT::UnbiasedSelfBinaryTree::rough_check_ref_config(int ele1gid, int el
   static CORE::LINALG::Matrix<1, 1> scalarprod(true);
 
   // get center and normal of leaf1-element
-  const DRT::Element* ele1 = Discret().gElement(ele1gid);
+  const DRT::Element* ele1 = discret().gElement(ele1gid);
   const CORE::FE::CellType dtele1 = ele1->Shape();
   switch (dtele1)
   {
@@ -385,7 +385,7 @@ bool CONTACT::UnbiasedSelfBinaryTree::rough_check_ref_config(int ele1gid, int el
       break;
   }
   // get center of master element
-  const DRT::Element* ele2 = Discret().gElement(ele2gid);
+  const DRT::Element* ele2 = discret().gElement(ele2gid);
   const CORE::FE::CellType dtele2 = ele2->Shape();
   switch (dtele2)
   {
@@ -439,35 +439,35 @@ bool CONTACT::UnbiasedSelfBinaryTree::rough_check_ref_config(int ele1gid, int el
 void CONTACT::UnbiasedSelfBinaryTree::search_contact()
 {
   // check is root node available
-  if (Roots().size() == 0) FOUR_C_THROW("No root node for search!");
-  if (Roots()[0] == Teuchos::null) FOUR_C_THROW("No root node for search!");
+  if (roots().size() == 0) FOUR_C_THROW("No root node for search!");
+  if (roots()[0] == Teuchos::null) FOUR_C_THROW("No root node for search!");
 
   // reset contact pairs from last iteration
-  SetContactPairs().clear();
+  set_contact_pairs().clear();
 
   //**********************************************************************
   // STEP 1: update geometry (DOPs and sample vectors) bottom-up
   //**********************************************************************
   // update tree bottom up (for every tree layer)
-  for (int i = ((int)(Treenodes().size() - 1)); i >= 0; --i)
+  for (int i = ((int)(treenodes().size() - 1)); i >= 0; --i)
   {
-    for (int j = 0; j < (int)(Treenodes()[i].size()); ++j)
-      Treenodes()[i][j]->UpdateSlabsBottomUp(Enlarge());
+    for (int j = 0; j < (int)(treenodes()[i].size()); ++j)
+      treenodes()[i][j]->UpdateSlabsBottomUp(enlarge());
   }
-  UpdateNormals();
+  update_normals();
 
   //**********************************************************************
   // STEP 2: distribute roots among all processors
   //**********************************************************************
   // therefore find out which processor owns which root node
   std::vector<unsigned> myroots(0);
-  for (unsigned i = 0; i < Roots().size(); ++i)
-    if (Roots()[i]->Owner() == Comm().MyPID()) myroots.push_back(i);
+  for (unsigned i = 0; i < roots().size(); ++i)
+    if (roots()[i]->Owner() == comm().MyPID()) myroots.push_back(i);
 
   //**********************************************************************
   // STEP 3: search for self contact starting at root nodes
   //**********************************************************************
-  for (unsigned k = 0; k < myroots.size(); ++k) SearchSelfContact(Roots()[myroots[k]]);
+  for (unsigned k = 0; k < myroots.size(); ++k) search_self_contact(roots()[myroots[k]]);
 
   //**********************************************************************
   // STEP 4: search for two-body contact between different roots
@@ -477,25 +477,25 @@ void CONTACT::UnbiasedSelfBinaryTree::search_contact()
   for (unsigned m = 0; m < myroots.size(); ++m)
   {
     checkedroots.insert(myroots[m]);
-    for (unsigned k = 0; k < Roots().size(); ++k)
+    for (unsigned k = 0; k < roots().size(); ++k)
     {
       // only perform the search if current proc did not search yet
       if (checkedroots.find(k) == checkedroots.end())
-        SearchRootContact(Roots()[myroots[m]], Roots()[k]);
+        search_root_contact(roots()[myroots[m]], roots()[k]);
     }
   }
 
   //**********************************************************************
   // STEP 5: all contact elements have to be slave elements
   //**********************************************************************
-  std::map<int, Teuchos::RCP<SelfBinaryTreeNode>>::iterator leafiter = SetLeafsmap().begin();
-  std::map<int, Teuchos::RCP<SelfBinaryTreeNode>>::iterator leafiter_end = SetLeafsmap().end();
+  std::map<int, Teuchos::RCP<SelfBinaryTreeNode>>::iterator leafiter = set_leafsmap().begin();
+  std::map<int, Teuchos::RCP<SelfBinaryTreeNode>>::iterator leafiter_end = set_leafsmap().end();
 
   // set all contact elements and nodes to slave
   while (leafiter != leafiter_end)
   {
     const int gid = leafiter->first;
-    DRT::Element* element = Discret().gElement(gid);
+    DRT::Element* element = discret().gElement(gid);
     CONTACT::Element* celement = dynamic_cast<CONTACT::Element*>(element);
 
     // set contact element to slave
@@ -518,7 +518,7 @@ void CONTACT::UnbiasedSelfBinaryTree::search_contact()
   if (searchele_all_proc_) communicate_search_elements_all_procs();
 
   // define the search elements based on the contact pairs map
-  while (!ContactPairs().empty())
+  while (!contact_pairs().empty())
   {
     define_search_elements();
   }
@@ -531,17 +531,17 @@ void CONTACT::UnbiasedSelfBinaryTree::search_contact()
  *-----------------------------------------------------------------------*/
 void CONTACT::UnbiasedSelfBinaryTree::communicate_search_elements_all_procs()
 {
-  for (int elelid = 0; elelid < Discret().ElementColMap()->NumMyElements(); ++elelid)
+  for (int elelid = 0; elelid < discret().ElementColMap()->NumMyElements(); ++elelid)
   {
-    int elegid = Discret().ElementColMap()->GID(elelid);
+    int elegid = discret().ElementColMap()->GID(elelid);
     std::vector<int> searchelements;
     std::vector<int> searchelements_all;
-    if (ContactPairs().find(elegid) != ContactPairs().end())
-      searchelements = ContactPairs()[elegid];
+    if (contact_pairs().find(elegid) != contact_pairs().end())
+      searchelements = contact_pairs()[elegid];
 
-    CORE::LINALG::AllreduceVector(searchelements, searchelements_all, Discret().Comm());
+    CORE::LINALG::AllreduceVector(searchelements, searchelements_all, discret().Comm());
 
-    if (searchelements_all.size()) SetContactPairs()[elegid] = searchelements_all;
+    if (searchelements_all.size()) set_contact_pairs()[elegid] = searchelements_all;
   }
   return;
 }

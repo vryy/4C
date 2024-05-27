@@ -726,12 +726,12 @@ void STR::TIMINT::GenAlphaDataSDyn::Setup()
   STR::TIMINT::BaseDataSDyn::Setup();
 
   midavg_ = CORE::UTILS::IntegralValue<INPAR::STR::MidAverageEnum>(
-      GetSDynParams().sublist("GENALPHA"), "GENAVG");
-  beta_ = GetSDynParams().sublist("GENALPHA").get<double>("BETA");
-  gamma_ = GetSDynParams().sublist("GENALPHA").get<double>("GAMMA");
-  alphaf_ = GetSDynParams().sublist("GENALPHA").get<double>("ALPHA_F");
-  alpham_ = GetSDynParams().sublist("GENALPHA").get<double>("ALPHA_M");
-  rhoinf_ = GetSDynParams().sublist("GENALPHA").get<double>("RHO_INF");
+      get_s_dyn_params().sublist("GENALPHA"), "GENAVG");
+  beta_ = get_s_dyn_params().sublist("GENALPHA").get<double>("BETA");
+  gamma_ = get_s_dyn_params().sublist("GENALPHA").get<double>("GAMMA");
+  alphaf_ = get_s_dyn_params().sublist("GENALPHA").get<double>("ALPHA_F");
+  alpham_ = get_s_dyn_params().sublist("GENALPHA").get<double>("ALPHA_M");
+  rhoinf_ = get_s_dyn_params().sublist("GENALPHA").get<double>("RHO_INF");
 
   issetup_ = true;
 }
@@ -752,7 +752,7 @@ void STR::TIMINT::OneStepThetaDataSDyn::Setup()
   // call base class setup
   STR::TIMINT::BaseDataSDyn::Setup();
 
-  theta_ = GetSDynParams().sublist("ONESTEPTHETA").get<double>("THETA");
+  theta_ = get_s_dyn_params().sublist("ONESTEPTHETA").get<double>("THETA");
 
   issetup_ = true;
 }

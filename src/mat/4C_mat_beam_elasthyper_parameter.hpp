@@ -104,7 +104,7 @@ namespace MAT
       bool Uses_FAD() { return use_fad_; };
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
      private:
       /// Flag to store if the material is used with a beam material and automatic differentiation
@@ -186,13 +186,13 @@ namespace MAT
       }
       //@}
      protected:
-      double GetCrossSectionArea() const { return cross_section_area_; }
+      double get_cross_section_area() const { return cross_section_area_; }
       double get_shear_correction_factor() const { return shear_correction_factor_; }
-      double GetShearModulus() const { return shear_modulus_; }
-      double GetMomentInertia2() const { return area_moment_inertia_2_; }
-      double GetMomentInertia3() const { return area_moment_inertia_3_; }
+      double get_shear_modulus() const { return shear_modulus_; }
+      double get_moment_inertia2() const { return area_moment_inertia_2_; }
+      double get_moment_inertia3() const { return area_moment_inertia_3_; }
       double get_moment_inertia_polar() const { return area_moment_inertia_polar_; }
-      double GetYoungsModulus() const { return youngs_modulus_; }
+      double get_youngs_modulus() const { return youngs_modulus_; }
 
      private:
       /// @name constitutive parameters

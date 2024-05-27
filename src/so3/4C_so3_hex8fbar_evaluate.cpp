@@ -59,7 +59,7 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
   ELEMENTS::ActionType act = ELEMENTS::none;
 
   if (IsParamsInterface())
-    act = ParamsInterface().GetActionType();
+    act = params_interface().GetActionType();
   else
   {
     // get the required action
@@ -213,13 +213,13 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
       INPAR::STR::StrainType ioplstrain = INPAR::STR::strain_none;
       if (IsParamsInterface())
       {
-        stressdata = StrParamsInterface().StressDataPtr();
-        straindata = StrParamsInterface().StrainDataPtr();
-        plstraindata = StrParamsInterface().plastic_strain_data_ptr();
+        stressdata = str_params_interface().StressDataPtr();
+        straindata = str_params_interface().StrainDataPtr();
+        plstraindata = str_params_interface().plastic_strain_data_ptr();
 
-        iostress = StrParamsInterface().GetStressOutputType();
-        iostrain = StrParamsInterface().GetStrainOutputType();
-        ioplstrain = StrParamsInterface().get_plastic_strain_output_type();
+        iostress = str_params_interface().GetStressOutputType();
+        iostrain = str_params_interface().GetStrainOutputType();
+        ioplstrain = str_params_interface().get_plastic_strain_output_type();
       }
       else
       {
@@ -287,7 +287,7 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
-      Update_element(mydisp, params, Material());
+      update_element(mydisp, params, Material());
     }
     break;
 
@@ -316,7 +316,7 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
 
       // build def gradient for every gauss point
       CORE::LINALG::SerialDenseMatrix gpdefgrd(NUMGPT_SOH8 + 1, 9);
-      DefGradient(mydisp, gpdefgrd, *prestress_);
+      def_gradient(mydisp, gpdefgrd, *prestress_);
 
       // update deformation gradient and put back to storage
       CORE::LINALG::Matrix<3, 3> deltaF;
@@ -551,7 +551,7 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
 
       if (IsParamsInterface())  // new structural time integration
       {
-        StrParamsInterface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
+        str_params_interface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
       }
       else  // old structural time integration
       {
@@ -579,7 +579,7 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)              gee 03/11|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8fbar::InitJacobianMapping()
+void DRT::ELEMENTS::SoHex8fbar::init_jacobian_mapping()
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;
@@ -640,7 +640,7 @@ int DRT::ELEMENTS::SoHex8fbar::evaluate_neumann(Teuchos::ParameterList& params,
   // find out whether we will use a time curve
   double time = -1.0;
   if (IsParamsInterface())
-    time = ParamsInterface().GetTotalTime();
+    time = params_interface().GetTotalTime();
   else
     time = params.get("total time", -1.0);
 
@@ -899,9 +899,9 @@ void DRT::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // location 
       // check, if errors are tolerated or should throw a FOUR_C_THROW
       if (IsParamsInterface())
       {
-        if (StrParamsInterface().IsTolerateErrors())
+        if (str_params_interface().IsTolerateErrors())
         {
-          StrParamsInterface().SetEleEvalErrorFlag(
+          str_params_interface().SetEleEvalErrorFlag(
               STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
           stiffmatrix->Clear();
           force->Clear();
@@ -1187,7 +1187,7 @@ void DRT::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // location 
 
         // e = F^{T-1} . E . F^{-1}
         CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> euler_almansi_bar;
-        GLtoEA(&plglstrain_bar, &defgrd_bar, &euler_almansi_bar);
+        g_lto_ea(&plglstrain_bar, &defgrd_bar, &euler_almansi_bar);
 
         (*eleplstrain)(gp, 0) = euler_almansi_bar(0, 0);
         (*eleplstrain)(gp, 1) = euler_almansi_bar(1, 1);
@@ -1358,8 +1358,8 @@ void DRT::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // location 
         double timintfac_vel = 0.0;
         if (IsParamsInterface())
         {
-          timintfac_dis = StrParamsInterface().GetTimIntFactorDisp();
-          timintfac_vel = StrParamsInterface().GetTimIntFactorVel();
+          timintfac_dis = str_params_interface().GetTimIntFactorDisp();
+          timintfac_vel = str_params_interface().GetTimIntFactorVel();
         }
         else
         {
@@ -1454,7 +1454,7 @@ int DRT::ELEMENTS::SoHex8fbarType::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoHex8fbar*>(dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_hex8fbar* failed");
-    actele->InitJacobianMapping();
+    actele->init_jacobian_mapping();
   }
   return 0;
 }
@@ -1463,7 +1463,7 @@ int DRT::ELEMENTS::SoHex8fbarType::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  compute def gradient at every gaussian point (protected)   gee 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8fbar::DefGradient(const std::vector<double>& disp,
+void DRT::ELEMENTS::SoHex8fbar::def_gradient(const std::vector<double>& disp,
     CORE::LINALG::SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
@@ -1591,7 +1591,7 @@ void DRT::ELEMENTS::SoHex8fbar::update_jacobian_mapping(
 /*----------------------------------------------------------------------*
  |  Update inelastic deformation (G&R)                       braeu 07/16|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8fbar::Update_element(std::vector<double>& disp,
+void DRT::ELEMENTS::SoHex8fbar::update_element(std::vector<double>& disp,
     Teuchos::ParameterList& params, const Teuchos::RCP<CORE::MAT::Material>& mat)
 {
   if (SolidMaterial()->UsesExtendedUpdate())

@@ -172,10 +172,10 @@ void SCATRA::TimIntOneStepTheta::set_old_part_of_righthandside()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::ExplicitPredictor() const
+void SCATRA::TimIntOneStepTheta::explicit_predictor() const
 {
   // call base class routine
-  ScaTraTimIntImpl::ExplicitPredictor();
+  ScaTraTimIntImpl::explicit_predictor();
 
   // predict discrete solution variables
   phinp_->Update(dta_, *phidtn_, 1.0);
@@ -190,7 +190,7 @@ void SCATRA::TimIntOneStepTheta::add_neumann_to_residual()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::AVM3Separation()
+void SCATRA::TimIntOneStepTheta::av_m3_separation()
 {
   // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
@@ -210,7 +210,7 @@ void SCATRA::TimIntOneStepTheta::dynamic_computation_of_cs()
   {
     // perform filtering and computation of Prt
     // compute averaged values for LkMk and MkMk
-    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
+    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = dirichlet_toggle();
     DynSmag_->apply_filter_for_dynamic_computation_of_prt(
         phinp_, 0.0, dirichtoggle, *extraparams_, NdsVel());
   }
@@ -222,7 +222,7 @@ void SCATRA::TimIntOneStepTheta::dynamic_computation_of_cv()
 {
   if (turbmodel_ == INPAR::FLUID::dynamic_vreman)
   {
-    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
+    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = dirichlet_toggle();
     Vrem_->apply_filter_for_dynamic_computation_of_dt(
         phinp_, 0.0, dirichtoggle, *extraparams_, NdsVel());
   }
@@ -256,7 +256,7 @@ void SCATRA::TimIntOneStepTheta::compute_time_derivative()
   // However, we do not want to break the linear relationship
   // as stated above. We do not want to set Dirichlet values for
   // dependent values like phidtnp_. This turned out to be inconsistent.
-  // ApplyDirichletBC(time_,Teuchos::null,phidtnp_);
+  // apply_dirichlet_bc(time_,Teuchos::null,phidtnp_);
 }
 
 /*----------------------------------------------------------------------*
@@ -308,10 +308,10 @@ void SCATRA::TimIntOneStepTheta::Update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::WriteRestart() const
+void SCATRA::TimIntOneStepTheta::write_restart() const
 {
   // call base class routine
-  ScaTraTimIntImpl::WriteRestart();
+  ScaTraTimIntImpl::write_restart();
 
   // additional state vectors that are needed for One-Step-Theta restart
   output_->WriteVector("phidtn", phidtn_);
@@ -353,7 +353,7 @@ void SCATRA::TimIntOneStepTheta::read_restart(const int step, Teuchos::RCP<IO::I
 
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
       turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
-    AVM3Preparation();
+    av_m3_preparation();
 
   // read restart on micro scale in multi-scale simulations if necessary
   if (macro_scale_)

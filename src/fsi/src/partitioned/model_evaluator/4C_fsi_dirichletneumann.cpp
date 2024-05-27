@@ -38,7 +38,8 @@ void FSI::DirichletNeumann::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::DirichletNeumann::FSIOp(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag)
+void FSI::DirichletNeumann::fsi_op(
+    const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag)
 {
   // Check if the test case uses the new Structural time integration or if it is one of our legacy
   // test cases
@@ -55,26 +56,26 @@ void FSI::DirichletNeumann::FSIOp(const Epetra_Vector& x, Epetra_Vector& F, cons
   if (kinematiccoupling_)  // coupling variable: interface displacements/velocity
   {
     const Teuchos::RCP<Epetra_Vector> icoupn = Teuchos::rcp(new Epetra_Vector(x));
-    if (MyDebugWriter() != Teuchos::null) MyDebugWriter()->WriteVector("icoupn", *icoupn);
+    if (my_debug_writer() != Teuchos::null) my_debug_writer()->WriteVector("icoupn", *icoupn);
 
-    const Teuchos::RCP<Epetra_Vector> iforce = FluidOp(icoupn, fillFlag);
-    if (MyDebugWriter() != Teuchos::null) MyDebugWriter()->WriteVector("icoupn", *iforce);
+    const Teuchos::RCP<Epetra_Vector> iforce = fluid_op(icoupn, fillFlag);
+    if (my_debug_writer() != Teuchos::null) my_debug_writer()->WriteVector("icoupn", *iforce);
 
-    const Teuchos::RCP<Epetra_Vector> icoupnp = StructOp(iforce, fillFlag);
-    if (MyDebugWriter() != Teuchos::null) MyDebugWriter()->WriteVector("icoupnp", *icoupnp);
+    const Teuchos::RCP<Epetra_Vector> icoupnp = struct_op(iforce, fillFlag);
+    if (my_debug_writer() != Teuchos::null) my_debug_writer()->WriteVector("icoupnp", *icoupnp);
 
     F.Update(1.0, *icoupnp, -1.0, *icoupn, 0.0);
   }
   else  // coupling variable: interface forces
   {
     const Teuchos::RCP<Epetra_Vector> iforcen = Teuchos::rcp(new Epetra_Vector(x));
-    if (MyDebugWriter() != Teuchos::null) MyDebugWriter()->WriteVector("iforcen", *iforcen);
+    if (my_debug_writer() != Teuchos::null) my_debug_writer()->WriteVector("iforcen", *iforcen);
 
-    const Teuchos::RCP<Epetra_Vector> icoupn = StructOp(iforcen, fillFlag);
-    if (MyDebugWriter() != Teuchos::null) MyDebugWriter()->WriteVector("icoupn", *icoupn);
+    const Teuchos::RCP<Epetra_Vector> icoupn = struct_op(iforcen, fillFlag);
+    if (my_debug_writer() != Teuchos::null) my_debug_writer()->WriteVector("icoupn", *icoupn);
 
-    const Teuchos::RCP<Epetra_Vector> iforcenp = FluidOp(icoupn, fillFlag);
-    if (MyDebugWriter() != Teuchos::null) MyDebugWriter()->WriteVector("iforcenp", *iforcenp);
+    const Teuchos::RCP<Epetra_Vector> iforcenp = fluid_op(icoupn, fillFlag);
+    if (my_debug_writer() != Teuchos::null) my_debug_writer()->WriteVector("iforcenp", *iforcenp);
 
     F.Update(1.0, *iforcenp, -1.0, *iforcen, 0.0);
   }

@@ -133,7 +133,7 @@ namespace FLD
     \brief return scaling factor for the residual
 
     */
-    double ResidualScaling() const override { return 1.0 / (theta_ * dta_); }
+    double residual_scaling() const override { return 1.0 / (theta_ * dta_); }
 
     //! @name Time Step Size Adaptivity
     //@{
@@ -168,7 +168,7 @@ namespace FLD
     \brief velocity required for evaluation of related quantities required on element level
 
     */
-    Teuchos::RCP<const Epetra_Vector> EvaluationVel() override { return velnp_; };
+    Teuchos::RCP<const Epetra_Vector> evaluation_vel() override { return velnp_; };
 
 
    private:

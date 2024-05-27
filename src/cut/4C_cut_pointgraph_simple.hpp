@@ -60,15 +60,15 @@ namespace CORE::GEO
          *  \param cycle       (out): created point cycle
          *
          *  \author hiermeier \date 11/16 */
-        void BuildCycle(const std::vector<Point*>& edge_points, Cycle& cycle) const override;
+        void build_cycle(const std::vector<Point*>& edge_points, Cycle& cycle) const override;
 
         /** \brief Add cut lines to the graph object [derived]
          *
-         *  There are no cut lines in 1-D, thus we jump to AddCutPointsToCycle,
+         *  There are no cut lines in 1-D, thus we jump to add_cut_points_to_cycle,
          *  thus it is at least a little bit less confusing.
          *
          *  \author hiermeier \date 11/16 */
-        virtual void AddCutLinesToGraph(
+        virtual void add_cut_lines_to_graph(
             Element* element, Side* side, Strategy strategy, Cycle& cycle);
 
         /** \brief Add points instead of lines in 1-D
@@ -80,7 +80,7 @@ namespace CORE::GEO
          *  This routine becomes for example important for the LevelSetCut, since a
          *  LevelSet side has no edges nor nodes. But we need the cut point for the boundary
          *  integration cell construction. */
-        void AddCutPointsToCycle(Element* element, Side* side, Cycle& cycle);
+        void add_cut_points_to_cycle(Element* element, Side* side, Cycle& cycle);
 
       };  // class SimplePointGraph_1D
 

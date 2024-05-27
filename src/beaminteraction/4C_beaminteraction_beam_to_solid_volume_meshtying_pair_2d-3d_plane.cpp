@@ -37,7 +37,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::pre_
     GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
     GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
     this->get_coupling_reference_position(beam_coupling_ref, solid_coupling_ref);
-    this->CastGeometryPair()->pre_evaluate(
+    this->cast_geometry_pair()->pre_evaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
   }
 }
@@ -57,7 +57,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::Eval
     GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
     GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
     this->get_coupling_reference_position(beam_coupling_ref, solid_coupling_ref);
-    this->CastGeometryPair()->Evaluate(
+    this->cast_geometry_pair()->Evaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
@@ -193,7 +193,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::Eval
  *
  */
 template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::GetTriadAtXiDouble(
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::get_triad_at_xi_double(
     const double xi, CORE::LINALG::Matrix<3, 3, double>& triad, const bool reference) const
 {
   if (reference)

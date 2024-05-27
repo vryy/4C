@@ -65,7 +65,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
           CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag = false) override;
 
-      void Sysmat(const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
+      void sysmat(const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
           const CORE::LINALG::Matrix<nsd_, nen_>& eprescpgaf,
           const CORE::LINALG::Matrix<nsd_, nen_>& ebofon,
           const CORE::LINALG::Matrix<nsd_, nen_>& eprescpgn,
@@ -101,11 +101,11 @@ namespace DRT
           const CORE::FE::GaussIntegration& intpoints) override;
 
       //! get ALE grid displacements and grid velocity for element
-      void GetGridDispALE(DRT::Discretization& discretization, const std::vector<int>& lm,
+      void get_grid_disp_ale(DRT::Discretization& discretization, const std::vector<int>& lm,
           CORE::LINALG::Matrix<nsd_, nen_>& edispnp) override;
 
       //! linearisation in the case of mesh motion 3-D
-      void LinMeshMotion_3D(
+      void lin_mesh_motion_3_d(
           CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,  ///< mesh motion
           const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,  ///< velocity at time n+alpha_f / n+1
           const double& press,                             ///< pressure at integration point

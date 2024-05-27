@@ -25,7 +25,7 @@ namespace XFEM
   {
     //! extract the nodal vectors and store them in node-vector-map
     //! \author schott \date 01/13
-    void ExtractNodeVectors(Teuchos::RCP<DRT::Discretization> dis,
+    void extract_node_vectors(Teuchos::RCP<DRT::Discretization> dis,
         std::map<int, CORE::LINALG::Matrix<3, 1>>& nodevecmap, Teuchos::RCP<Epetra_Vector> idispnp);
 
     //! @name Get material properties for the Volume Cell

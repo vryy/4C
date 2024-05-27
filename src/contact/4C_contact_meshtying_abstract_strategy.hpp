@@ -496,7 +496,7 @@ namespace CONTACT
     //! @{
 
     //! Return the NOX::NLN::CONSTRAINT::Interface::Required member object
-    const Teuchos::RCP<CONTACT::MtNoxInterface>& NoxInterfacePtr() { return noxinterface_ptr_; };
+    const Teuchos::RCP<CONTACT::MtNoxInterface>& nox_interface_ptr() { return noxinterface_ptr_; };
 
     /*! \brief Return the desired right-hand-side block pointer (read-only)
      *
@@ -557,7 +557,7 @@ namespace CONTACT
     virtual bool evaluate_force_stiff(const Teuchos::RCP<const Epetra_Vector> dis) = 0;
 
     //! after applying Newton increment
-    virtual void RunPostComputeX(
+    virtual void run_post_compute_x(
         const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew){};
 
     /*! \brief Get the correct RHS for convergence check
@@ -579,7 +579,7 @@ namespace CONTACT
     \param vec (in/out)):  empty global vetcor to be assembled to
 
     */
-    void AssembleCoords(const std::string& sidename, bool ref, Teuchos::RCP<Epetra_Vector> vec);
+    void assemble_coords(const std::string& sidename, bool ref, Teuchos::RCP<Epetra_Vector> vec);
 
     /*!
     \brief Do mesh initialization for rotational invariance

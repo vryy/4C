@@ -188,7 +188,7 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       /*!
       \brief Print this element
@@ -362,10 +362,10 @@ namespace DRT
 
 
       //! init the inverse of the jacobian and its determinant in the material configuration
-      virtual int InitJacobianMapping();
+      virtual int init_jacobian_mapping();
 
       //! init the quadrature points
-      virtual void InitGp();
+      virtual void init_gp();
 
       //! Calculate nonlinear stiffness and mass matrix
       virtual void nlnstiffmass(std::vector<int>& lm,  ///< location matrix
@@ -383,23 +383,23 @@ namespace DRT
       );                                          ///< plastic strain output option
 
       //! Lump mass matrix (bborn 07/08)
-      void Lumpmass(CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* emass);
+      void lumpmass(CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* emass);
 
-      void FlipT();
+      void flip_t();
 
       // parameter space coords of one node
-      CORE::LINALG::Matrix<3, 1> NodeParamCoord(const int node);
+      CORE::LINALG::Matrix<3, 1> node_param_coord(const int node);
       // parameter space coords of all nodes
-      CORE::LINALG::Matrix<18, 3> NodeParamCoord();
+      CORE::LINALG::Matrix<18, 3> node_param_coord();
 
       // Update the element
-      void Update(){/* do nothing */};
+      void update(){/* do nothing */};
 
       //@}
 
 
       /** recover elementwise stored stuff */
-      virtual void Recover(const std::vector<double>& residual) { return; }
+      virtual void recover(const std::vector<double>& residual) { return; }
 
      private:
       std::string get_element_type_string() const { return "SOLIDH18"; }

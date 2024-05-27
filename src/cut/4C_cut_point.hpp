@@ -244,13 +244,13 @@ namespace CORE::GEO
 
       Node* CutNode();
 
-      void Intersection(plain_edge_set& edges);
+      void intersection(plain_edge_set& edges);
 
-      void Intersection(plain_side_set& sides);
+      void intersection(plain_side_set& sides);
 
-      void Intersection(plain_facet_set& facets);
+      void intersection(plain_facet_set& facets);
 
-      void Intersection(plain_element_set& elements);
+      void intersection(plain_element_set& elements);
 
       const plain_element_set& Elements() const { return cut_elements_; }
 
@@ -646,7 +646,7 @@ namespace CORE::GEO
       for (++is; is != side.end(); ++is)
       {
         Point* p = *is;
-        p->Intersection(sides);
+        p->intersection(sides);
         if (sides.size() == 0)
         {
           break;
@@ -657,16 +657,16 @@ namespace CORE::GEO
     inline void FindCommonSides(Point* p1, Point* p2, Point* p3, plain_side_set& sides)
     {
       sides = p1->CutSides();
-      p2->Intersection(sides);
-      p3->Intersection(sides);
+      p2->intersection(sides);
+      p3->intersection(sides);
     }
 
     inline void FindCommonSides(Point* p1, Point* p2, Point* p3, Point* p4, plain_side_set& sides)
     {
       sides = p1->CutSides();
-      p2->Intersection(sides);
-      p3->Intersection(sides);
-      p4->Intersection(sides);
+      p2->intersection(sides);
+      p3->intersection(sides);
+      p4->intersection(sides);
     }
 
     /// Find distance between points

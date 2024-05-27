@@ -121,7 +121,7 @@ namespace BEAMINTERACTION
       void ResetStepState() override;
 
       //! derived
-      void WriteRestart(
+      void write_restart(
           IO::DiscretizationWriter& ia_writer, IO::DiscretizationWriter& bin_writer) const override;
 
       //! derived
@@ -135,7 +135,7 @@ namespace BEAMINTERACTION
       void PostReadRestart() override;
 
       //! derived
-      void RunPostIterate(const ::NOX::Solver::Generic& solver) override{/*empty*/};
+      void run_post_iterate(const ::NOX::Solver::Generic& solver) override{/*empty*/};
 
       //! derived
       void init_submodel_dependencies(

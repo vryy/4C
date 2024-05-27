@@ -240,7 +240,7 @@ namespace DRT
 
         //! project gaussian point from linearized interface in normal direction onto corresponding
         //! side (2D slave element)
-        virtual void ProjectOnSide(
+        virtual void project_on_side(
             CORE::LINALG::Matrix<nsd_, 1>&
                 x_gp_lin,  ///< global coordinates of gaussian point w.r.t linearized interface
             CORE::LINALG::Matrix<nsd_, 1>& x_side,  ///< projected gaussian point on side

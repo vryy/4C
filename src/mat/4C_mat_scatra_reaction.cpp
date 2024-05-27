@@ -200,7 +200,7 @@ void MAT::PAR::ScatraReactionMat::Initialize() { reaction_->Initialize(numscal_,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScatraReactionMat::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScatraReactionMat::create_material()
 {
   return Teuchos::rcp(new MAT::ScatraReactionMat(this));
 }
@@ -314,7 +314,7 @@ void MAT::ScatraReactionMat::Unpack(const std::vector<char>& data)
 /*-------------------------------------------------------------------------------/
  | return reaction coefficient at Gauss-point                 Brandstaeter 11/16 |
 /-------------------------------------------------------------------------------*/
-double MAT::ScatraReactionMat::ReacCoeff(const std::vector<std::pair<std::string, double>>&
+double MAT::ScatraReactionMat::reac_coeff(const std::vector<std::pair<std::string, double>>&
         constants  //!< vector containing values which are independent of the scalars
 ) const
 {
@@ -334,9 +334,10 @@ double MAT::ScatraReactionMat::ReacCoeff(const std::vector<std::pair<std::string
     gpcoord[1] = constants[size - 2].second;
     gpcoord[2] = constants[size - 1].second;
 
-    reaccoeff *= (GLOBAL::Problem::Instance()
-                      ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(DisFunctReacCoeffID() - 1)
-                      .Evaluate(gpcoord, time, 0));
+    reaccoeff *=
+        (GLOBAL::Problem::Instance()
+                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(dis_funct_reac_coeff_id() - 1)
+                .Evaluate(gpcoord, time, 0));
   }
 
   return reaccoeff;
@@ -352,11 +353,11 @@ double MAT::ScatraReactionMat::calc_rea_body_force_term(const int k,  //!< curre
     double scale_phi  //!< scaling factor for scalar values (used for reference concentrations)
 ) const
 {
-  const double reaccoeff = ReacCoeff(constants);
+  const double reaccoeff = reac_coeff(constants);
 
-  if (Stoich()->at(k) != 0 and fabs(reaccoeff) > 1.0e-14)
+  if (stoich()->at(k) != 0 and fabs(reaccoeff) > 1.0e-14)
   {
-    return calc_rea_body_force_term(k, phinp, constants, reaccoeff * Stoich()->at(k),
+    return calc_rea_body_force_term(k, phinp, constants, reaccoeff * stoich()->at(k),
         scale_phi);  // scalar at integration point np
   }
   else
@@ -374,11 +375,11 @@ void MAT::ScatraReactionMat::calc_rea_body_force_deriv_matrix(const int k,  //!<
     double scale_phi  //!< scaling factor for scalar values (used for reference concentrations)
 ) const
 {
-  const double reaccoeff = ReacCoeff(constants);
+  const double reaccoeff = reac_coeff(constants);
 
-  if (Stoich()->at(k) != 0 and fabs(reaccoeff) > 1.0e-14)
+  if (stoich()->at(k) != 0 and fabs(reaccoeff) > 1.0e-14)
   {
-    calc_rea_body_force_deriv(k, derivs, phinp, constants, reaccoeff * Stoich()->at(k), scale_phi);
+    calc_rea_body_force_deriv(k, derivs, phinp, constants, reaccoeff * stoich()->at(k), scale_phi);
   }
 
   return;
@@ -397,12 +398,12 @@ void MAT::ScatraReactionMat::calc_rea_body_force_deriv_matrix_add_variables(
     double scale_phi  //!< scaling factor for scalar values (used for reference concentrations)
 ) const
 {
-  const double reaccoeff = ReacCoeff(constants);
+  const double reaccoeff = reac_coeff(constants);
 
-  if (Stoich()->at(k) != 0 and fabs(reaccoeff) > 1.0e-14)
+  if (stoich()->at(k) != 0 and fabs(reaccoeff) > 1.0e-14)
   {
     calc_rea_body_force_deriv_add_variables(
-        k, derivs, variables, constants, reaccoeff * Stoich()->at(k), scale_phi);
+        k, derivs, variables, constants, reaccoeff * stoich()->at(k), scale_phi);
   }
 
   return;
@@ -415,9 +416,9 @@ void MAT::ScatraReactionMat::add_additional_variables(const int k,  //!< current
     const std::vector<std::pair<std::string, double>>& variables    //!< variables
 ) const
 {
-  if (Stoich()->at(k) != 0)
+  if (stoich()->at(k) != 0)
   {
-    params_->reaction_->add_additional_variables(k, variables, *Couprole());
+    params_->reaction_->add_additional_variables(k, variables, *couprole());
   }
 
   return;
@@ -436,7 +437,7 @@ double MAT::ScatraReactionMat::calc_rea_body_force_term(int k,  //!< current sca
 ) const
 {
   return params_->reaction_->calc_rea_body_force_term(
-      k, NumScal(), phinp, constants, *Couprole(), scale_reac, scale_phi);
+      k, NumScal(), phinp, constants, *couprole(), scale_reac, scale_phi);
 }
 
 /*--------------------------------------------------------------------------------*
@@ -453,7 +454,7 @@ void MAT::ScatraReactionMat::calc_rea_body_force_deriv(int k,  //!< current scal
 ) const
 {
   params_->reaction_->calc_rea_body_force_deriv(
-      k, NumScal(), derivs, phinp, constants, *Couprole(), scale_reac, scale_phi);
+      k, NumScal(), derivs, phinp, constants, *couprole(), scale_reac, scale_phi);
 
   return;
 }
@@ -473,7 +474,7 @@ void MAT::ScatraReactionMat::calc_rea_body_force_deriv_add_variables(int k,  //!
 ) const
 {
   params_->reaction_->calc_rea_body_force_deriv_add_variables(
-      k, derivs, variables, constants, *Couprole(), scale_reac, scale_phi);
+      k, derivs, variables, constants, *couprole(), scale_reac, scale_phi);
 
   return;
 }
@@ -495,11 +496,11 @@ double MAT::ScatraReactionMat::CalcPermInfluence(const int k,  //!< current scal
   constants.push_back(std::pair<std::string, double>("y", gpcoord[1]));
   constants.push_back(std::pair<std::string, double>("z", gpcoord[2]));
 
-  if (not(Stoich()->at(k) > 0))
+  if (not(stoich()->at(k) > 0))
     FOUR_C_THROW("You need to specify a positive STOICH entry for scalar %i", k);
-  if (fabs(ReacCoeff(constants)) > 1.0e-14) FOUR_C_THROW("You need to set REACOEFF to 0.0!");
+  if (fabs(reac_coeff(constants)) > 1.0e-14) FOUR_C_THROW("You need to set REACOEFF to 0.0!");
 
-  return (calc_rea_body_force_term(k, phinp, constants, Stoich()->at(k), scale));
+  return (calc_rea_body_force_term(k, phinp, constants, stoich()->at(k), scale));
 }
 
 /*---------------------------------------------------------------------------------/
@@ -520,7 +521,7 @@ void MAT::ScatraReactionMat::calc_perm_influence_deriv(const int k,  //!< curren
   constants.push_back(std::pair<std::string, double>("y", gpcoord[1]));
   constants.push_back(std::pair<std::string, double>("z", gpcoord[2]));
 
-  calc_rea_body_force_deriv(k, derivs, phinp, constants, Stoich()->at(k), scale);
+  calc_rea_body_force_deriv(k, derivs, phinp, constants, stoich()->at(k), scale);
 }
 
 FOUR_C_NAMESPACE_CLOSE

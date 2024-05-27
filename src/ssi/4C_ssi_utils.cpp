@@ -529,20 +529,20 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> SSI::UTILS::SSIMatrices::setup_sparse_m
 SSI::UTILS::SSIMaps::SSIMaps(const SSI::SsiMono& ssi_mono_algorithm)
     : block_maps_sub_problems_(),
       scatra_matrixtype_(ssi_mono_algorithm.ScaTraField()->MatrixType()),
-      scatra_manifold_matrixtype_(ssi_mono_algorithm.IsScaTraManifold()
+      scatra_manifold_matrixtype_(ssi_mono_algorithm.is_sca_tra_manifold()
                                       ? ssi_mono_algorithm.ScaTraManifold()->MatrixType()
                                       : CORE::LINALG::MatrixType::undefined),
       ssi_matrixtype_(ssi_mono_algorithm.MatrixType())
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps(
-      ssi_mono_algorithm.IsScaTraManifold() ? 3 : 2, Teuchos::null);
+      ssi_mono_algorithm.is_sca_tra_manifold() ? 3 : 2, Teuchos::null);
   Teuchos::RCP<const Epetra_Map> merged_map;
 
   partial_maps[GetProblemPosition(Subproblem::scalar_transport)] =
       Teuchos::rcp(new Epetra_Map(*ssi_mono_algorithm.ScaTraField()->dof_row_map()));
   partial_maps[GetProblemPosition(Subproblem::structure)] =
-      Teuchos::rcp(new Epetra_Map(*ssi_mono_algorithm.StructureField()->dof_row_map()));
-  if (ssi_mono_algorithm.IsScaTraManifold())
+      Teuchos::rcp(new Epetra_Map(*ssi_mono_algorithm.structure_field()->dof_row_map()));
+  if (ssi_mono_algorithm.is_sca_tra_manifold())
   {
     partial_maps[GetProblemPosition(Subproblem::manifold)] =
         Teuchos::rcp(new Epetra_Map(*ssi_mono_algorithm.ScaTraManifold()->dof_row_map()));
@@ -561,9 +561,9 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SsiMono& ssi_mono_algorithm)
     case CORE::LINALG::MatrixType::block_field:
     {
       auto block_map_structure = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(
-          *ssi_mono_algorithm.StructureField()->Discretization()->dof_row_map(),
+          *ssi_mono_algorithm.structure_field()->discretization()->dof_row_map(),
           std::vector<Teuchos::RCP<const Epetra_Map>>(
-              1, ssi_mono_algorithm.StructureField()->dof_row_map())));
+              1, ssi_mono_algorithm.structure_field()->dof_row_map())));
 
       block_map_structure->check_for_valid_map_extractor();
 
@@ -574,7 +574,7 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SsiMono& ssi_mono_algorithm)
         case CORE::LINALG::MatrixType::sparse:
         {
           auto block_map_scatra = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(
-              *ssi_mono_algorithm.ScaTraField()->Discretization()->dof_row_map(),
+              *ssi_mono_algorithm.ScaTraField()->discretization()->dof_row_map(),
               std::vector<Teuchos::RCP<const Epetra_Map>>(
                   1, ssi_mono_algorithm.ScaTraField()->dof_row_map())));
 
@@ -583,10 +583,10 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SsiMono& ssi_mono_algorithm)
           block_maps_sub_problems_.insert(
               std::make_pair(Subproblem::scalar_transport, block_map_scatra));
 
-          if (ssi_mono_algorithm.IsScaTraManifold())
+          if (ssi_mono_algorithm.is_sca_tra_manifold())
           {
             auto block_map_scatra_manifold = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(
-                *ssi_mono_algorithm.ScaTraManifold()->Discretization()->dof_row_map(),
+                *ssi_mono_algorithm.ScaTraManifold()->discretization()->dof_row_map(),
                 std::vector<Teuchos::RCP<const Epetra_Map>>(
                     1, ssi_mono_algorithm.ScaTraManifold()->dof_row_map())));
 
@@ -603,7 +603,7 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SsiMono& ssi_mono_algorithm)
           block_maps_sub_problems_.insert(std::make_pair(
               Subproblem::scalar_transport, ssi_mono_algorithm.ScaTraField()->BlockMaps()));
 
-          if (ssi_mono_algorithm.IsScaTraManifold())
+          if (ssi_mono_algorithm.is_sca_tra_manifold())
           {
             block_maps_sub_problems_.insert(std::make_pair(
                 Subproblem::manifold, ssi_mono_algorithm.ScaTraManifold()->BlockMaps()));
@@ -737,7 +737,7 @@ void SSI::UTILS::SSIMaps::create_and_check_block_maps_sub_problems(
 {
   const int num_blocks_systemmatrix =
       BlockMapScaTra()->NumMaps() + BlockMapStructure()->NumMaps() +
-      (ssi_mono_algorithm.IsScaTraManifold() ? block_map_sca_tra_manifold()->NumMaps() : 0);
+      (ssi_mono_algorithm.is_sca_tra_manifold() ? block_map_sca_tra_manifold()->NumMaps() : 0);
 
   std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps_system_matrix(
       num_blocks_systemmatrix, Teuchos::null);
@@ -752,7 +752,7 @@ void SSI::UTILS::SSIMaps::create_and_check_block_maps_sub_problems(
   partial_maps_system_matrix.at(GetBlockPositions(Subproblem::structure).at(0)) =
       BlockMapStructure()->FullMap();
 
-  if (ssi_mono_algorithm.IsScaTraManifold())
+  if (ssi_mono_algorithm.is_sca_tra_manifold())
   {
     for (int i = 0; i < block_map_sca_tra_manifold()->NumMaps(); ++i)
     {

@@ -889,7 +889,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
           CORE::LINALG::Matrix<3, 1> a(true);
 
           CORE::GEO::CUT::Point* point = cell[k];
-          const CORE::LINALG::Matrix<3, 1>& rst = e->LocalCoordinates(point);
+          const CORE::LINALG::Matrix<3, 1>& rst = e->local_coordinates(point);
 
           switch (actele->Shape())
           {
@@ -1016,7 +1016,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
         CORE::LINALG::Matrix<3, 1> a(true);
 
         CORE::GEO::CUT::Point* point = points[i];
-        const CORE::LINALG::Matrix<3, 1>& rst = e->LocalCoordinates(point);
+        const CORE::LINALG::Matrix<3, 1>& rst = e->local_coordinates(point);
 
         switch (actele->Shape())
         {
@@ -1224,7 +1224,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
         CORE::GEO::CUT::Point* p = *i;
 
         // the bc corner points will always lie on the respective side
-        const CORE::LINALG::Matrix<2, 1>& eta = s->LocalCoordinates(p);
+        const CORE::LINALG::Matrix<2, 1>& eta = s->local_coordinates(p);
 
         switch (side->Shape())
         {
@@ -1291,7 +1291,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_discretization(
   if (!gmsh_discret_out_) return;
 
   if (discret_->Comm().MyPID() == 0)
-    std::cout << "Discretization output " << discret_->Name() << std::endl;
+    std::cout << "discretization output " << discret_->Name() << std::endl;
 
   // cast to DiscretizationFaces
   Teuchos::RCP<DRT::DiscretizationFaces> xdiscret =

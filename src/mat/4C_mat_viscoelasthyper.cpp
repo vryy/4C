@@ -42,7 +42,7 @@ MAT::PAR::ViscoElastHyper::ViscoElastHyper(Teuchos::RCP<CORE::MAT::PAR::Material
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ViscoElastHyper::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ViscoElastHyper::create_material()
 {
   return Teuchos::rcp(new MAT::ViscoElastHyper(this));
 }
@@ -537,9 +537,9 @@ void MAT::ViscoElastHyper::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
       invariants_modified(modinv, prinv);
     }
     // calculate viscous quantities
-    EvaluateKinQuantVis(C_strain, C_stress, iC_stress, prinv, rateinv, modC_strain, params, scgrate,
-        modrcgrate, modrateinv, gp);
-    EvaluateMuXi(prinv, modinv, mu, modmu, xi, modxi, rateinv, modrateinv, params, gp, eleGID);
+    evaluate_kin_quant_vis(C_strain, C_stress, iC_stress, prinv, rateinv, modC_strain, params,
+        scgrate, modrcgrate, modrateinv, gp);
+    evaluate_mu_xi(prinv, modinv, mu, modmu, xi, modxi, rateinv, modrateinv, params, gp, eleGID);
   }
 
   // blank resulting quantities
@@ -586,7 +586,7 @@ void MAT::ViscoElastHyper::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   {
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Q(true);  // artificial viscous stress
     CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatq(true);
-    EvaluateViscoGenMax(stress, cmat, Q, cmatq, params, gp);
+    evaluate_visco_gen_max(stress, cmat, Q, cmatq, params, gp);
     stress->Update(1.0, Q, 1.0);
     cmat->Update(1.0, cmatq, 1.0);
   }
@@ -606,7 +606,7 @@ void MAT::ViscoElastHyper::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   {
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Q(true);  // artificial viscous stress
     CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatq(true);
-    EvaluateViscoFract(*stress, *cmat, Q, cmatq, params, gp);
+    evaluate_visco_fract(*stress, *cmat, Q, cmatq, params, gp);
     stress->Update(1.0, Q, 1.);
     cmat->Update(1.0, cmatq, 1.);
   }
@@ -638,7 +638,7 @@ void MAT::ViscoElastHyper::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 /*----------------------------------------------------------------------*/
 /* Evaluate Quantities for viscous Part                           09/13 */
 /*----------------------------------------------------------------------*/
-void MAT::ViscoElastHyper::EvaluateKinQuantVis(CORE::LINALG::Matrix<6, 1>& rcg,
+void MAT::ViscoElastHyper::evaluate_kin_quant_vis(CORE::LINALG::Matrix<6, 1>& rcg,
     CORE::LINALG::Matrix<6, 1>& scg, CORE::LINALG::Matrix<6, 1>& icg,
     CORE::LINALG::Matrix<3, 1>& prinv, CORE::LINALG::Matrix<7, 1>& rateinv,
     CORE::LINALG::Matrix<6, 1>& modrcg, Teuchos::ParameterList& params,
@@ -710,7 +710,7 @@ void MAT::ViscoElastHyper::EvaluateKinQuantVis(CORE::LINALG::Matrix<6, 1>& rcg,
 /*----------------------------------------------------------------------*/
 /* Evaluate Factors for viscous Quantities                        09/13 */
 /*----------------------------------------------------------------------*/
-void MAT::ViscoElastHyper::EvaluateMuXi(CORE::LINALG::Matrix<3, 1>& prinv,
+void MAT::ViscoElastHyper::evaluate_mu_xi(CORE::LINALG::Matrix<3, 1>& prinv,
     CORE::LINALG::Matrix<3, 1>& modinv, CORE::LINALG::Matrix<8, 1>& mu,
     CORE::LINALG::Matrix<8, 1>& modmu, CORE::LINALG::Matrix<33, 1>& xi,
     CORE::LINALG::Matrix<33, 1>& modxi, CORE::LINALG::Matrix<7, 1>& rateinv,
@@ -825,7 +825,7 @@ void MAT::ViscoElastHyper::evaluate_iso_visco_modified(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ViscoElastHyper::EvaluateViscoGenMax(CORE::LINALG::Matrix<6, 1>* stress,
+void MAT::ViscoElastHyper::evaluate_visco_gen_max(CORE::LINALG::Matrix<6, 1>* stress,
     CORE::LINALG::Matrix<6, 6>* cmat, CORE::LINALG::Matrix<6, 1>& Q,
     CORE::LINALG::Matrix<6, 6>& cmatq, Teuchos::ParameterList& params, const int gp)
 {
@@ -931,7 +931,7 @@ void MAT::ViscoElastHyper::EvaluateViscoGenMax(CORE::LINALG::Matrix<6, 1>* stres
   else
     FOUR_C_THROW("Invalid input. Try valid input OST or CONVOL");
   return;
-}  // end EvaluateViscoGenMax
+}  // end evaluate_visco_gen_max
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1076,7 +1076,7 @@ void MAT::ViscoElastHyper::evaluate_visco_generalized_gen_max(CORE::LINALG::Matr
       lambdascalar1 = tau / (tau + theta * dt);
       lambdascalar2 = (tau - dt + theta * dt) / tau;
 
-      // see EvaluateViscoGenMax
+      // see evaluate_visco_gen_max
       deltascalar = lambdascalar1;
 
       // calculate artificial viscous stresses Q
@@ -1121,7 +1121,7 @@ void MAT::ViscoElastHyper::evaluate_visco_generalized_gen_max(CORE::LINALG::Matr
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ViscoElastHyper::EvaluateViscoFract(CORE::LINALG::Matrix<6, 1> stress,
+void MAT::ViscoElastHyper::evaluate_visco_fract(CORE::LINALG::Matrix<6, 1> stress,
     CORE::LINALG::Matrix<6, 6> cmat, CORE::LINALG::Matrix<6, 1>& Q,
     CORE::LINALG::Matrix<6, 6>& cmatq, Teuchos::ParameterList& params, const int gp)
 {

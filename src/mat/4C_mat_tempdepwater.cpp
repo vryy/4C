@@ -28,7 +28,7 @@ MAT::PAR::TempDepWater::TempDepWater(Teuchos::RCP<CORE::MAT::PAR::Material> matd
 {
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::TempDepWater::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::TempDepWater::create_material()
 {
   return Teuchos::rcp(new MAT::TempDepWater(this));
 }

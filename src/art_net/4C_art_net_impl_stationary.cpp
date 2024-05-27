@@ -102,7 +102,7 @@ void ART::ArtNetImplStationary::Init(const Teuchos::ParameterList& globaltimepar
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time", time_);
-    discret_->EvaluateDirichlet(
+    discret_->evaluate_dirichlet(
         eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0);  // just in case of change
   }
@@ -192,7 +192,7 @@ void ART::ArtNetImplStationary::Solve(Teuchos::RCP<Teuchos::ParameterList> Coupl
 void ART::ArtNetImplStationary::SolveScatra()
 {
   // print user info
-  if (Discretization()->Comm().MyPID() == 0)
+  if (discretization()->Comm().MyPID() == 0)
   {
     std::cout << "\n";
     std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
@@ -208,7 +208,7 @@ void ART::ArtNetImplStationary::SolveScatra()
     FOUR_C_THROW("this type of coupling is only available for explicit time integration");
 
   // provide scatra discretization with fluid primary variable field
-  scatra_->ScaTraField()->Discretization()->set_state(1, "one_d_artery_pressure", pressurenp_);
+  scatra_->ScaTraField()->discretization()->set_state(1, "one_d_artery_pressure", pressurenp_);
   scatra_->ScaTraField()->prepare_time_step();
 
   // -------------------------------------------------------------------
@@ -329,16 +329,16 @@ void ART::ArtNetImplStationary::prepare_time_step()
   ART::TimInt::prepare_time_step();
 
   // Apply DBC
-  ApplyDirichletBC();
+  apply_dirichlet_bc();
 
   // Apply Neumann
-  ApplyNeumannBC(neumann_loads_);
+  apply_neumann_bc(neumann_loads_);
 }
 
 /*----------------------------------------------------------------------*
  | evaluate Dirichlet boundary conditions at t_{n+1}   kremheller 03/18 |
  *----------------------------------------------------------------------*/
-void ART::ArtNetImplStationary::ApplyDirichletBC()
+void ART::ArtNetImplStationary::apply_dirichlet_bc()
 {
   // time measurement: apply Dirichlet conditions
   TEUCHOS_FUNC_TIME_MONITOR("      + apply dirich cond.");
@@ -350,7 +350,7 @@ void ART::ArtNetImplStationary::ApplyDirichletBC()
   // Dirichlet values
   // \c  pressurenp_ then also holds prescribed new Dirichlet values
   discret_->ClearState();
-  discret_->EvaluateDirichlet(
+  discret_->evaluate_dirichlet(
       p, pressurenp_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
   discret_->ClearState();
 }
@@ -379,7 +379,7 @@ void ART::ArtNetImplStationary::reset_artery_diam_previous_time_step()
 /*----------------------------------------------------------------------*
  | evaluate Neumann boundary conditions                kremheller 03/18 |
  *----------------------------------------------------------------------*/
-void ART::ArtNetImplStationary::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>& neumann_loads)
+void ART::ArtNetImplStationary::apply_neumann_bc(const Teuchos::RCP<Epetra_Vector>& neumann_loads)
 {
   // prepare load vector
   neumann_loads->PutScalar(0.0);
@@ -393,7 +393,7 @@ void ART::ArtNetImplStationary::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>
   discret_->ClearState();
 
   return;
-}  // ArtNetImplStationary::ApplyNeumannBC
+}  // ArtNetImplStationary::apply_neumann_bc
 
 /*----------------------------------------------------------------------*
  | add actual Neumann loads                            kremheller 03/18 |

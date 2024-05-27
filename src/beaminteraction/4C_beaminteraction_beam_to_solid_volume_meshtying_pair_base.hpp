@@ -130,7 +130,7 @@ namespace BEAMINTERACTION
      * @return RPC with the type of geometry pair for this beam contact pair.
      */
     inline Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolume<double, beam, solid>>
-    CastGeometryPair() const
+    cast_geometry_pair() const
     {
       return Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::GeometryPairLineToVolume<double, beam, solid>>(
           this->geometry_pair_, true);

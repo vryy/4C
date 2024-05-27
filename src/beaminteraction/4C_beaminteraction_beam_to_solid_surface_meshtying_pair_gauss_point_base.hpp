@@ -52,7 +52,7 @@ namespace BEAMINTERACTION
      * \brief Get the penalty potential for Gauss point to segment coupling.
      * @return Penalty potential.
      */
-    scalar_type GetPenaltyPotential() const;
+    scalar_type get_penalty_potential() const;
   };
 }  // namespace BEAMINTERACTION
 

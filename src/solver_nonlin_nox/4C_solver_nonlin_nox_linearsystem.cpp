@@ -42,7 +42,7 @@ NOX::NLN::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
-    const Teuchos::RCP<CORE::LINALG::SparseOperator>& jacobian,
+    const Teuchos::RCP<CORE::LINALG::SparseOperator>& jacobian_op,
     const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
     const Teuchos::RCP<CORE::LINALG::SparseOperator>& preconditioner,
     const ::NOX::Epetra::Vector& cloneVector,
@@ -63,10 +63,10 @@ NOX::NLN::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
       timeApplyJacbianInverse_(0.0),
       resNorm2_(0.0),
       prePostOperatorPtr_(Teuchos::null),
-      jac_ptr_(jacobian)
+      jac_ptr_(jacobian_op)
 {
   // Jacobian operator is supplied
-  jacType_ = NOX::NLN::AUX::GetOperatorType(Jacobian());
+  jacType_ = NOX::NLN::AUX::GetOperatorType(jacobian());
 
   reset(linearSolverParams);
 }
@@ -78,7 +78,7 @@ NOX::NLN::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
-    const Teuchos::RCP<CORE::LINALG::SparseOperator>& jacobian,
+    const Teuchos::RCP<CORE::LINALG::SparseOperator>& jacobian_op,
     const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
     const Teuchos::RCP<CORE::LINALG::SparseOperator>& preconditioner,
     const ::NOX::Epetra::Vector& cloneVector)
@@ -98,10 +98,10 @@ NOX::NLN::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
       timeApplyJacbianInverse_(0.0),
       resNorm2_(0.0),
       prePostOperatorPtr_(Teuchos::null),
-      jac_ptr_(jacobian)
+      jac_ptr_(jacobian_op)
 {
   // Jacobian operator is supplied
-  jacType_ = NOX::NLN::AUX::GetOperatorType(Jacobian());
+  jacType_ = NOX::NLN::AUX::GetOperatorType(jacobian());
 
   reset(linearSolverParams);
 }
@@ -113,7 +113,7 @@ NOX::NLN::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
-    const Teuchos::RCP<CORE::LINALG::SparseOperator>& jacobian,
+    const Teuchos::RCP<CORE::LINALG::SparseOperator>& jacobian_op,
     const ::NOX::Epetra::Vector& cloneVector,
     const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject)
     : utils_(printParams),
@@ -132,10 +132,10 @@ NOX::NLN::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
       timeApplyJacbianInverse_(0.0),
       resNorm2_(0.0),
       prePostOperatorPtr_(Teuchos::null),
-      jac_ptr_(jacobian)
+      jac_ptr_(jacobian_op)
 {
   // Jacobian operator is supplied
-  jacType_ = NOX::NLN::AUX::GetOperatorType(Jacobian());
+  jacType_ = NOX::NLN::AUX::GetOperatorType(jacobian());
 
   reset(linearSolverParams);
 }
@@ -147,7 +147,7 @@ NOX::NLN::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
-    const Teuchos::RCP<CORE::LINALG::SparseOperator>& jacobian,
+    const Teuchos::RCP<CORE::LINALG::SparseOperator>& jacobian_op,
     const ::NOX::Epetra::Vector& cloneVector)
     : utils_(printParams),
       solvers_(solvers),
@@ -165,10 +165,10 @@ NOX::NLN::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
       timeApplyJacbianInverse_(0.0),
       resNorm2_(0.0),
       prePostOperatorPtr_(Teuchos::null),
-      jac_ptr_(jacobian)
+      jac_ptr_(jacobian_op)
 {
   // Jacobian operator is supplied
-  jacType_ = NOX::NLN::AUX::GetOperatorType(Jacobian());
+  jacType_ = NOX::NLN::AUX::GetOperatorType(jacobian());
 
   reset(linearSolverParams);
 }
@@ -236,8 +236,8 @@ bool NOX::NLN::LinearSystem::applyJacobianBlock(const ::NOX::Epetra::Vector& inp
 bool NOX::NLN::LinearSystem::applyJacobian(
     const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const
 {
-  Jacobian().SetUseTranspose(false);
-  int status = Jacobian().Apply(input.getEpetraVector(), result.getEpetraVector());
+  jacobian().SetUseTranspose(false);
+  int status = jacobian().Apply(input.getEpetraVector(), result.getEpetraVector());
   return (status == 0);
 }
 
@@ -247,9 +247,9 @@ bool NOX::NLN::LinearSystem::applyJacobianTranspose(
     const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const
 {
   // Apply the Jacobian
-  Jacobian().SetUseTranspose(true);
-  int status = Jacobian().Apply(input.getEpetraVector(), result.getEpetraVector());
-  Jacobian().SetUseTranspose(false);
+  jacobian().SetUseTranspose(true);
+  int status = jacobian().Apply(input.getEpetraVector(), result.getEpetraVector());
+  jacobian().SetUseTranspose(false);
 
   return (status == 0);
 }
@@ -284,7 +284,7 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
    * possibility to change the linear system. */
   ::NOX::Epetra::Vector& nonConstInput = const_cast<::NOX::Epetra::Vector&>(input);
 
-  prePostOperatorPtr_->run_pre_apply_jacobian_inverse(nonConstInput, Jacobian(), *this);
+  prePostOperatorPtr_->run_pre_apply_jacobian_inverse(nonConstInput, jacobian(), *this);
 
   double startTime = timer_.wallTime();
 
@@ -300,7 +300,7 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
    *     CORE::LINALG::SparseMatrix ---> Epetra_CrsMatrix */
   Epetra_LinearProblem linProblem;
   set_linear_problem_for_solve(
-      linProblem, Jacobian(), result.getEpetraVector(), nonConstInput.getEpetraVector());
+      linProblem, jacobian(), result.getEpetraVector(), nonConstInput.getEpetraVector());
 
   // ************* Begin linear system scaling *****************
   if (!Teuchos::is_null(scaling_))
@@ -315,10 +315,10 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
 
   // get current linear solver from the std_map
   Teuchos::RCP<CORE::LINALG::Solver> currSolver;
-  NOX::NLN::SolutionType solType = GetActiveLinSolver(solvers_, currSolver);
+  NOX::NLN::SolutionType solType = get_active_lin_solver(solvers_, currSolver);
 
   // set solver options if necessary
-  auto solver_params = SetSolverOptions(linearSolverParams, currSolver, solType);
+  auto solver_params = set_solver_options(linearSolverParams, currSolver, solType);
 
   // solve
   int iter = linearSolverParams.get<int>("Number of Nonlinear Iterations", -10);
@@ -345,7 +345,7 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
   double endTime = timer_.wallTime();
   timeApplyJacbianInverse_ += (endTime - startTime);
 
-  prePostOperatorPtr_->run_post_apply_jacobian_inverse(result, nonConstInput, Jacobian(), *this);
+  prePostOperatorPtr_->run_post_apply_jacobian_inverse(result, nonConstInput, jacobian(), *this);
 
   return (linsol_status == 0);
 }
@@ -364,11 +364,11 @@ bool NOX::NLN::LinearSystem::applyRightPreconditioning(bool useTranspose,
  *----------------------------------------------------------------------*/
 bool NOX::NLN::LinearSystem::computeJacobian(const ::NOX::Epetra::Vector& x)
 {
-  prePostOperatorPtr_->run_pre_compute_jacobian(Jacobian(), x.getEpetraVector(), *this);
+  prePostOperatorPtr_->run_pre_compute_jacobian(jacobian(), x.getEpetraVector(), *this);
 
-  bool success = jacInterfacePtr_->computeJacobian(x.getEpetraVector(), Jacobian());
+  bool success = jacInterfacePtr_->computeJacobian(x.getEpetraVector(), jacobian());
 
-  prePostOperatorPtr_->run_post_compute_jacobian(Jacobian(), x.getEpetraVector(), *this);
+  prePostOperatorPtr_->run_post_compute_jacobian(jacobian(), x.getEpetraVector(), *this);
   return success;
 }
 
@@ -378,14 +378,14 @@ bool NOX::NLN::LinearSystem::computeFandJacobian(
     const ::NOX::Epetra::Vector& x, ::NOX::Epetra::Vector& rhs)
 {
   prePostOperatorPtr_->run_pre_compute_fand_jacobian(
-      rhs.getEpetraVector(), Jacobian(), x.getEpetraVector(), *this);
+      rhs.getEpetraVector(), jacobian(), x.getEpetraVector(), *this);
 
   const bool success =
       Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Jacobian>(jacInterfacePtr_, true)
-          ->computeFandJacobian(x.getEpetraVector(), rhs.getEpetraVector(), Jacobian());
+          ->computeFandJacobian(x.getEpetraVector(), rhs.getEpetraVector(), jacobian());
 
   prePostOperatorPtr_->run_post_compute_fand_jacobian(
-      rhs.getEpetraVector(), Jacobian(), x.getEpetraVector(), *this);
+      rhs.getEpetraVector(), jacobian(), x.getEpetraVector(), *this);
   return success;
 }
 
@@ -395,15 +395,15 @@ bool NOX::NLN::LinearSystem::compute_correction_system(const enum CorrectionType
     const ::NOX::Abstract::Group& grp, const ::NOX::Epetra::Vector& x, ::NOX::Epetra::Vector& rhs)
 {
   prePostOperatorPtr_->run_pre_compute_fand_jacobian(
-      rhs.getEpetraVector(), Jacobian(), x.getEpetraVector(), *this);
+      rhs.getEpetraVector(), jacobian(), x.getEpetraVector(), *this);
 
   const bool success =
       Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Jacobian>(jacInterfacePtr_, true)
           ->compute_correction_system(
-              type, grp, x.getEpetraVector(), rhs.getEpetraVector(), Jacobian());
+              type, grp, x.getEpetraVector(), rhs.getEpetraVector(), jacobian());
 
   prePostOperatorPtr_->run_post_compute_fand_jacobian(
-      rhs.getEpetraVector(), Jacobian(), x.getEpetraVector(), *this);
+      rhs.getEpetraVector(), jacobian(), x.getEpetraVector(), *this);
 
   return success;
 }
@@ -433,7 +433,7 @@ void NOX::NLN::LinearSystem::adjust_pseudo_time_step(double& delta, const double
   Teuchos::RCP<Epetra_Vector> v = Teuchos::rcp(new Epetra_Vector(scalingDiagOp));
   v->Scale(ptcsolver.get_inverse_pseudo_time_step());
   Teuchos::RCP<CORE::LINALG::SparseMatrix> jac =
-      Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(JacobianPtr());
+      Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(jacobian_ptr());
   if (jac.is_null())
     throw_error("adjust_pseudo_time_step()", "Cast to CORE::LINALG::SparseMatrix failed!");
   // get the diagonal terms of the jacobian
@@ -527,14 +527,14 @@ NOX::NLN::LinearSystem::getPrecInterface() const
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Operator> NOX::NLN::LinearSystem::getJacobianOperator() const
 {
-  return JacobianPtr();
+  return jacobian_ptr();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Operator> NOX::NLN::LinearSystem::getJacobianOperator()
 {
-  return JacobianPtr();
+  return jacobian_ptr();
 }
 
 /*----------------------------------------------------------------------*
@@ -648,7 +648,7 @@ const CORE::LINALG::SparseMatrix& NOX::NLN::LinearSystem::getJacobianBlock(
     case LinSystem::LinalgBlockSparseMatrix:
     {
       typedef CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy> linalg_bsm;
-      const linalg_bsm& jac_block = dynamic_cast<const linalg_bsm&>(Jacobian());
+      const linalg_bsm& jac_block = dynamic_cast<const linalg_bsm&>(jacobian());
 
       if (rbid >= static_cast<unsigned>(jac_block.Rows()) or
           cbid >= static_cast<unsigned>(jac_block.Cols()))
@@ -664,7 +664,7 @@ const CORE::LINALG::SparseMatrix& NOX::NLN::LinearSystem::getJacobianBlock(
         FOUR_C_THROW("There is only one block for a CORE::LINALG::SparseMatrix!");
 
       const CORE::LINALG::SparseMatrix& jac_sm =
-          dynamic_cast<const CORE::LINALG::SparseMatrix&>(Jacobian());
+          dynamic_cast<const CORE::LINALG::SparseMatrix&>(jacobian());
 
       return jac_sm;
     }
@@ -715,7 +715,7 @@ void NOX::NLN::LinearSystem::replace_diagonal_of_jacobian(
 double NOX::NLN::LinearSystem::compute_serial_condition_number_of_jacobian(
     const LinSystem::ConditionNumber condnum_type) const
 {
-  if (Jacobian().Comm().NumProc() > 1) FOUR_C_THROW("Currently only one processor is supported!");
+  if (jacobian().Comm().NumProc() > 1) FOUR_C_THROW("Currently only one processor is supported!");
 
   CORE::LINALG::SerialDenseMatrix dense_jac;
   convert_jacobian_to_dense_matrix(dense_jac);
@@ -773,12 +773,12 @@ void NOX::NLN::LinearSystem::compute_serial_eigenvalues_of_jacobian(
     CORE::LINALG::SerialDenseVector& reigenvalues,
     CORE::LINALG::SerialDenseVector& ieigenvalues) const
 {
-  if (Jacobian().Comm().NumProc() > 1) FOUR_C_THROW("Currently only one processor is supported!");
+  if (jacobian().Comm().NumProc() > 1) FOUR_C_THROW("Currently only one processor is supported!");
 
   CORE::LINALG::SerialDenseMatrix dense_jac;
   convert_jacobian_to_dense_matrix(dense_jac);
 
-  throwIfZeroRow(dense_jac);
+  throw_if_zero_row(dense_jac);
   solve_non_symm_eigen_value_problem(dense_jac, reigenvalues, ieigenvalues);
 }
 
@@ -798,7 +798,7 @@ void NOX::NLN::LinearSystem::prepare_block_dense_matrix(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LinearSystem::throwIfZeroRow(
+void NOX::NLN::LinearSystem::throw_if_zero_row(
     const CORE::LINALG::SerialDenseMatrix& block_dense) const
 {
   for (int r = 0; r < block_dense.numCols(); ++r)
@@ -822,7 +822,7 @@ void NOX::NLN::LinearSystem::convert_jacobian_to_dense_matrix(
       typedef CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>
           linalg_blocksparsematrix;
       const linalg_blocksparsematrix& block_sparse =
-          dynamic_cast<const linalg_blocksparsematrix&>(Jacobian());
+          dynamic_cast<const linalg_blocksparsematrix&>(jacobian());
 
       const Epetra_Map& full_rangemap = block_sparse.FullRangeMap();
       const Epetra_Map& full_domainmap = block_sparse.FullDomainMap();
@@ -843,7 +843,7 @@ void NOX::NLN::LinearSystem::convert_jacobian_to_dense_matrix(
     case NOX::NLN::LinSystem::LinalgSparseMatrix:
     {
       const CORE::LINALG::SparseMatrix& jac =
-          dynamic_cast<const CORE::LINALG::SparseMatrix&>(Jacobian());
+          dynamic_cast<const CORE::LINALG::SparseMatrix&>(jacobian());
 
       convert_sparse_to_dense_matrix(jac, dense_jac, jac.RangeMap(), jac.DomainMap());
 
@@ -927,12 +927,12 @@ void NOX::NLN::LinearSystem::solve_non_symm_eigen_value_problem(
   reigenvalues.size(mat.numCols());
   ieigenvalues.size(mat.numCols());
 
-  callGEEV(mat, reigenvalues, ieigenvalues);
+  call_geev(mat, reigenvalues, ieigenvalues);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LinearSystem::callGGEV(CORE::LINALG::SerialDenseMatrix& mat,
+void NOX::NLN::LinearSystem::call_ggev(CORE::LINALG::SerialDenseMatrix& mat,
     CORE::LINALG::SerialDenseVector& reigenvalues,
     CORE::LINALG::SerialDenseVector& ieigenvalues) const
 {
@@ -975,7 +975,7 @@ void NOX::NLN::LinearSystem::callGGEV(CORE::LINALG::SerialDenseMatrix& mat,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LinearSystem::callGEEV(CORE::LINALG::SerialDenseMatrix& mat,
+void NOX::NLN::LinearSystem::call_geev(CORE::LINALG::SerialDenseMatrix& mat,
     CORE::LINALG::SerialDenseVector& reigenvalues,
     CORE::LINALG::SerialDenseVector& ieigenvalues) const
 {

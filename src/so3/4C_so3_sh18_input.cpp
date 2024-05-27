@@ -85,7 +85,7 @@ bool DRT::ELEMENTS::SoSh18::ReadElement(
   else
     FOUR_C_THROW("unknown volumetric locking method");
 
-  SetupDSG();
+  setup_dsg();
 
   return true;
 }

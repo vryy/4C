@@ -40,7 +40,7 @@ namespace DRT
      the stiffness matrixes of a porous fluid problem are evaluated. OD means
      off diagonal, indicating linearizations with respect to structural degrees of freedom,
      that will be assembled into off diagonal entries in the global system matrix.
-     The terms are eventually evaluated in the GaussPointLoop.. methods
+     The terms are eventually evaluated in the gauss_point_loop.. methods
 
      This a calculation class implemented as a singleton, like all calc classes in fluid
      (see comments on base classes for more details). In short this means that on instance
@@ -185,7 +185,7 @@ namespace DRT
           \param isale            (i) ALE flag
           \param intpoints        (i) Gaussian integration points
        */
-      int Evaluate(Teuchos::ParameterList& params, const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
+      int evaluate(Teuchos::ParameterList& params, const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
           CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& elemat1,
           CORE::LINALG::Matrix<(nsd_ + 1) * nen_, 1>& elevec1,
           const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
@@ -289,7 +289,7 @@ namespace DRT
         \param intpoints        (i) Gaussian integration points
 
        */
-      void Sysmat(Teuchos::ParameterList& params, const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
+      void sysmat(Teuchos::ParameterList& params, const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
           const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
           const CORE::LINALG::Matrix<nsd_, nen_>& evelnp,
           const CORE::LINALG::Matrix<nsd_, nen_>& eveln,
@@ -373,7 +373,7 @@ namespace DRT
         \param timefac            (i) time factor
         \param timefacfac         (i) time factor * integration factor
        */
-      void Lin3DMeshMotionOD(CORE::LINALG::Matrix<nsd_ * nen_, nsd_ * nen_>& ecoupl_u,
+      void lin3_d_mesh_motion_od(CORE::LINALG::Matrix<nsd_ * nen_, nsd_ * nen_>& ecoupl_u,
           const double& dphi_dp, const double& dphi_dJ, const double& refporositydot,
           const double& timefac, const double& timefacfac);
 
@@ -387,7 +387,7 @@ namespace DRT
         \param timefac            (i) time factor
         \param timefacfac         (i) time factor * integration factor
        */
-      void Lin2DMeshMotionOD(CORE::LINALG::Matrix<nsd_ * nen_, nsd_ * nen_>& ecoupl_u,
+      void lin2_d_mesh_motion_od(CORE::LINALG::Matrix<nsd_ * nen_, nsd_ * nen_>& ecoupl_u,
           const double& dphi_dp, const double& dphi_dJ, const double& refporositydot,
           const double& timefac, const double& timefacfac);
 
@@ -420,7 +420,7 @@ namespace DRT
           const double& timefacfacpre);
 
       //! Compute element matrix entries: PSPG
-      virtual void PSPG(
+      virtual void pspg(
           CORE::LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u,  //!< block (weighting function q x u)
           CORE::LINALG::Matrix<nen_, nen_>& ppmat,             //!< block (weighting function q x p)
           CORE::LINALG::Matrix<nen_, 1>& preforce,             //!< rhs forces pressure
@@ -438,7 +438,7 @@ namespace DRT
       );
 
       //! Compute element matrix entries: Biot
-      virtual void StabBiot(
+      virtual void stab_biot(
           CORE::LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u,  //!< block (weighting function q x u)
           CORE::LINALG::Matrix<nen_, nen_>& ppmat,             //!< block (weighting function q x p)
           CORE::LINALG::Matrix<nen_, 1>& preforce,             //!< rhs forces pressure
@@ -456,8 +456,8 @@ namespace DRT
       );
 
       //! Compute element matrix entries: reactive stabilization
-      virtual void ReacStab(CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>&
-                                estif_u,                       //!< block (weighting function v x u)
+      virtual void reac_stab(CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>&
+                                 estif_u,                      //!< block (weighting function v x u)
           CORE::LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v,  //!< block (weighting function v x p)
           CORE::LINALG::Matrix<nsd_, nen_>& velforce,          //!< rhs forces velocity
           CORE::LINALG::Matrix<nsd_ * nsd_, nen_>&
@@ -472,7 +472,7 @@ namespace DRT
       );
 
       //! Compute linearization of momentum residual w.r.t fluid velocities
-      void ComputeLinResMDu(const double& timefacfac,
+      void compute_lin_res_m_du(const double& timefacfac,
           CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du,
           CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resMRea_Du);
 
@@ -481,11 +481,11 @@ namespace DRT
           const double& timefacfac, CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du);
 
       //! Compute linearization of momentum residual w.r.t fluid pressure
-      void ComputeLinResMDp(const double& timefacfacpre, const double& dphi_dp,
+      void compute_lin_res_m_dp(const double& timefacfacpre, const double& dphi_dp,
           CORE::LINALG::Matrix<nsd_, nen_>& lin_resM_Dp);
 
       //! calculate div(epsilon(u))
-      void CalcDivEps(
+      void calc_div_eps(
           const CORE::LINALG::Matrix<nsd_, nen_>& evelaf  //!< velocity at time n+alpha_f / n+1
       );
 
@@ -498,7 +498,7 @@ namespace DRT
         \param F_X             (o) derivative of deformation gradient w.r.t. material coordinates
         XYZ
        */
-      void ComputeFDerivative(const CORE::LINALG::Matrix<nsd_, nen_>& edispnp,
+      void compute_f_derivative(const CORE::LINALG::Matrix<nsd_, nen_>& edispnp,
           const CORE::LINALG::Matrix<nsd_, nsd_>& defgrd_inv,
           CORE::LINALG::Matrix<nsd_ * nsd_, nsd_>& F_x,
           CORE::LINALG::Matrix<nsd_ * nsd_, nsd_>& F_X);
@@ -517,7 +517,7 @@ namespace DRT
         \param grad_porosity  (o) spatial gradient of porosity
         \param refgrad_porosity  (o) reference gradient of porosity
        */
-      void ComputeGradients(const double& J, const double& dphidp, const double& dphidJ,
+      void compute_gradients(const double& J, const double& dphidp, const double& dphidJ,
           const CORE::LINALG::Matrix<nsd_ * nsd_, 1>& defgrd_IT_vec,
           const CORE::LINALG::Matrix<nsd_ * nsd_, nsd_>& F_x,
           const CORE::LINALG::Matrix<nsd_, 1>& gradp,
@@ -603,7 +603,7 @@ namespace DRT
         \param dphi_dpp     (o) second derivative of porosity gradient w.r.t. fluid pressure
         \param save         (i) flag for saving porosity within structure material
        */
-      virtual void ComputePorosity(Teuchos::ParameterList& params, const double& press,
+      virtual void compute_porosity(Teuchos::ParameterList& params, const double& press,
           const double& J, const int& gp, const CORE::LINALG::Matrix<nen_, 1>& shapfct,
           const CORE::LINALG::Matrix<nen_, 1>* myporosity, double& porosity, double* dphi_dp,
           double* dphi_dJ, double* dphi_dJdp, double* dphi_dJJ, double* dphi_dpp, bool save);
@@ -691,7 +691,7 @@ namespace DRT
         \param material           (i) fluid material
         \param intpoints          (i) Gaussian integration points
        */
-      void GaussPointLoop(Teuchos::ParameterList& params,
+      void gauss_point_loop(Teuchos::ParameterList& params,
           const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
           const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
           const CORE::LINALG::Matrix<nsd_, nen_>& evelnp,
@@ -743,7 +743,7 @@ namespace DRT
         \param material           (i) fluid material
         \param intpoints          (i) Gaussian integration points
        */
-      void GaussPointLoopOD(Teuchos::ParameterList& params,
+      void gauss_point_loop_od(Teuchos::ParameterList& params,
           const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
           const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
           const CORE::LINALG::Matrix<nsd_, nen_>& evelnp,
@@ -891,7 +891,7 @@ namespace DRT
                                    dofs
         \param ecoupl_u        (o) coupling element matrix of continuity equation
        */
-      virtual void FillMatrixContiOD(const double& timefacfacpre, const double& dphi_dp,
+      virtual void fill_matrix_conti_od(const double& timefacfacpre, const double& dphi_dp,
           const double& dphi_dJ, const double& dphi_dJJ, const double& dphi_dJdp,
           const double& refporositydot, const CORE::LINALG::Matrix<nsd_, nen_ * nsd_>& dgradphi_dus,
           const CORE::LINALG::Matrix<1, nsd_ * nen_>& dphi_dus,
@@ -913,7 +913,7 @@ namespace DRT
       double setup_material_derivatives();
 
       //! access structure material of corresponding solid (poro) element
-      void GetStructMaterial(DRT::ELEMENTS::Fluid* ele);
+      void get_struct_material(DRT::ELEMENTS::Fluid* ele);
 
       //! get material parameters of poro fluid element
       void get_material_paramters(Teuchos::RCP<const CORE::MAT::Material> material);
@@ -944,7 +944,7 @@ namespace DRT
       void compute_stabilization_parameters(const double& vol);
 
       //! get compute RHS of contiuity equation of time step n
-      void ComputeOldRHSConti(double dphi_dp);
+      void compute_old_rhs_conti(double dphi_dp);
 
       void compute_mixture_strong_residual(Teuchos::ParameterList& params,
           const CORE::LINALG::Matrix<nsd_, nsd_>& defgrd,
@@ -952,15 +952,15 @@ namespace DRT
           const CORE::LINALG::Matrix<nsd_, nen_>& edispn,
           const CORE::LINALG::Matrix<nsd_ * nsd_, nsd_>& F_X, int gp, bool computeLinOD);
 
-      virtual int ComputeVolume(Teuchos::ParameterList& params,  //!< paramters
-          DRT::ELEMENTS::Fluid* ele,                             //!< current fluid element
-          DRT::Discretization& discretization,                   //!< fluid discretization
+      virtual int compute_volume(Teuchos::ParameterList& params,  //!< paramters
+          DRT::ELEMENTS::Fluid* ele,                              //!< current fluid element
+          DRT::Discretization& discretization,                    //!< fluid discretization
           std::vector<int>& lm,                     //!< location vector for DOF management
           CORE::LINALG::SerialDenseVector& elevec1  //!< reference to element vector to be filled
       );
 
       //! Compute deformation gradient
-      void ComputeDefGradient(
+      void compute_def_gradient(
           CORE::LINALG::Matrix<nsd_, nsd_>& defgrd,  //!<<    (i) deformation gradient at gausspoint
           const CORE::LINALG::Matrix<nsd_, nen_>&
               N_XYZ,  //!<<    (i) derivatives of shape functions w.r.t. reference coordinates

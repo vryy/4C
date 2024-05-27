@@ -27,7 +27,7 @@ MAT::PAR::ScatraMultiScale::ScatraMultiScale(Teuchos::RCP<CORE::MAT::PAR::Materi
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScatraMultiScale::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScatraMultiScale::create_material()
 {
   return Teuchos::rcp(new MAT::ScatraMultiScale(this));
 }

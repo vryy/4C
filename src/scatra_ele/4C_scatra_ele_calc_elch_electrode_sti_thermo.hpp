@@ -74,19 +74,19 @@ namespace DRT
           ) override;
 
       //! get material parameters
-      void GetMaterialParams(const DRT::Element* ele,  //!< current element
-          std::vector<double>& densn,                  //!< density at t_(n)
-          std::vector<double>& densnp,                 //!< density at t_(n+1) or t_(n+alpha_F)
-          std::vector<double>& densam,                 //!< density at t_(n+alpha_M)
-          double& visc,                                //!< fluid viscosity
-          const int iquad                              //!< ID of current integration point
+      void get_material_params(const DRT::Element* ele,  //!< current element
+          std::vector<double>& densn,                    //!< density at t_(n)
+          std::vector<double>& densnp,                   //!< density at t_(n+1) or t_(n+alpha_F)
+          std::vector<double>& densam,                   //!< density at t_(n+alpha_M)
+          double& visc,                                  //!< fluid viscosity
+          const int iquad                                //!< ID of current integration point
           ) override;
 
       //! calculate element matrix and element right-hand side vector
-      void CalcMatAndRhs(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
-          CORE::LINALG::SerialDenseVector& erhs,                 //!< element rhs to calculate+
-          const int k,                                           //!< index of current scalar
-          const double fac,                                      //!< domain-integration factor
+      void calc_mat_and_rhs(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs,                    //!< element rhs to calculate+
+          const int k,                                              //!< index of current scalar
+          const double fac,                                         //!< domain-integration factor
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double taufac,  //!< tau times domain-integration factor

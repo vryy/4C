@@ -182,7 +182,7 @@ int DRT::ELEMENTS::RedInterAcinarDep::evaluate_neumann(Teuchos::ParameterList& p
  |                                                                      |
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::RedInterAcinarDep::EvaluateDirichlet(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::RedInterAcinarDep::evaluate_dirichlet(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1)
 {

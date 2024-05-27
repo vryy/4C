@@ -76,7 +76,7 @@ namespace DRT
       //! extract element based or nodal values --> L2-projection case: called within
       //! extract_element_and_node_values
       //  return extracted values of phinp
-      virtual void ExtractNodalFlux(DRT::Element* ele, Teuchos::ParameterList& params,
+      virtual void extract_nodal_flux(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           const int numfluidphases);
 
@@ -84,7 +84,7 @@ namespace DRT
       void set_internal_variables_for_mat_and_rhs() override;
 
       //! evaluate material
-      void Materials(
+      void materials(
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
@@ -94,8 +94,8 @@ namespace DRT
           const int iquad = -1  //!< id of current gauss point (default = -1)
           ) override;
 
-      //! material MatMultiPoroFluid
-      virtual void MatMultiPoroFluid(
+      //! material mat_multi_poro_fluid
+      virtual void mat_multi_poro_fluid(
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
@@ -105,8 +105,8 @@ namespace DRT
           const int iquad = -1  //!< id of current gauss point (default = -1)
       );
 
-      //! material MatMultiPoroVolFrac
-      virtual void MatMultiPoroVolFrac(
+      //! material mat_multi_poro_vol_frac
+      virtual void mat_multi_poro_vol_frac(
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
@@ -116,8 +116,8 @@ namespace DRT
           const int iquad = -1  //!< id of current gauss point (default = -1)
       );
 
-      //! material MatMultiPoroSolid
-      virtual void MatMultiPoroSolid(
+      //! material mat_multi_poro_solid
+      virtual void mat_multi_poro_solid(
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
@@ -145,7 +145,7 @@ namespace DRT
           ) override;
 
       //! compute pore pressure
-      double ComputePorePressure() override;
+      double compute_pore_pressure() override;
 
       //! get internal variable manager for multiporo formulation
       Teuchos::RCP<ScaTraEleInternalVariableManagerMultiPoro<nsd_, nen_>> var_manager()
@@ -157,8 +157,8 @@ namespace DRT
       //! calculation of convective element matrix in convective form
       //! the only difference to the base class version is, that there is no scaling with the
       //! density
-      void CalcMatConv(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                                         //!< index of current scalar
+      void calc_mat_conv(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                                           //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double densnp,      //!< density at time_(n+1)
           const CORE::LINALG::Matrix<nen_, 1>& sgconv  //!< subgrid-scale convective operator
@@ -186,23 +186,23 @@ namespace DRT
           ) override;
 
       //! calculation of mass element matrix (standard shape functions)
-      void CalcMatMass(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int& k,                                        //!< index of current scalar
-          const double& fac,                                   //!< domain-integration factor
-          const double& densam                                 //!< density at time_(n+am)
+      void calc_mat_mass(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int& k,                                          //!< index of current scalar
+          const double& fac,                                     //!< domain-integration factor
+          const double& densam                                   //!< density at time_(n+am)
           ) override;
 
       //! calculation of convective element matrix (OD term structure coupling)
       //! difference to base class: linearization of mesh motion + shapederivatives pressure
       //! gradient have to be included
-      void CalcConvODMesh(CORE::LINALG::SerialDenseMatrix& emat, const int k,
+      void calc_conv_od_mesh(CORE::LINALG::SerialDenseMatrix& emat, const int k,
           const int ndofpernodemesh, const double fac, const double rhsfac, const double densnp,
           const double J, const CORE::LINALG::Matrix<nsd_, 1>& gradphi,
           const CORE::LINALG::Matrix<nsd_, 1>& convelint) override;
 
       //! calculation of linearized mass (off diagonal/shapederivative term mesh)
       //! difference to base class: linearization of porosity is included
-      void CalcLinMassODMesh(
+      void calc_lin_mass_od_mesh(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const int ndofpernodemesh,              //!< number of dofs per node of ale element
@@ -234,11 +234,12 @@ namespace DRT
 
       //! standard Galerkin diffusive term (off diagonal/shapederivative term mesh)
       //! difference to base class: linearization of porosity and effective diffusivity
-      void CalcDiffODMesh(CORE::LINALG::SerialDenseMatrix& emat,  //!< element current to be filled
-          const int k,                                            //!< index of current scalar
-          const int ndofpernodemesh,  //!< number of dofs per node of ale element
-          const double diffcoeff,     //!< diffusion coefficient
-          const double fac,           //!< domain-integration factor
+      void calc_diff_od_mesh(
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element current to be filled
+          const int k,                            //!< index of current scalar
+          const int ndofpernodemesh,              //!< number of dofs per node of ale element
+          const double diffcoeff,                 //!< diffusion coefficient
+          const double fac,                       //!< domain-integration factor
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double J,       //!< determinant of Jacobian det(dx/ds)
           const CORE::LINALG::Matrix<nsd_, 1>& gradphi,    //!< scalar gradient at Gauss point
@@ -249,9 +250,10 @@ namespace DRT
 
       //! reactive terms (standard Galerkin) (off diagonal/shapederivative term mesh)
       //! difference to base class: linearization of porosity
-      void CalcReactODMesh(CORE::LINALG::SerialDenseMatrix& emat,  //!< element current to be filled
-          const int k,                                             //!< index of current scalar
-          const int ndofpernodemesh,  //!< number of dofs per node of ale element
+      void calc_react_od_mesh(
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element current to be filled
+          const int k,                            //!< index of current scalar
+          const int ndofpernodemesh,              //!< number of dofs per node of ale element
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double rea_phi,  //!< reactive term
           const double J,        //!< determinant of Jacobian det(dx/ds)
@@ -260,7 +262,7 @@ namespace DRT
           ) override;
 
       //! calculation of convective element matrix in convective form (off diagonal term fluid)
-      void CalcMatConvODFluid(
+      void calc_mat_conv_od_fluid(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const int ndofpernodefluid,  //!< number of dofs per node of fluid element // only a dummy
@@ -283,7 +285,7 @@ namespace DRT
 
       //! calculation of linearized mass (off diagonal terms fluid)
       //! linearization of porosity*saturation*vtrans
-      void CalcLinMassODFluid(
+      void calc_lin_mass_od_fluid(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const int ndofpernodemesh,  //!< number of dofs per node of fluid element // only a dummy
@@ -314,7 +316,7 @@ namespace DRT
 
       //! standard Galerkin reactive term (off diagonal terms fluid)
       //! linearization of porosity*saturation*vreact
-      void CalcReactODFluid(
+      void calc_react_od_fluid(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element current to be filled
           const int k,                            //!< index of current scalar
           const int ndofpernodemesh,              //!< number of dofs per node of ale element
@@ -324,9 +326,10 @@ namespace DRT
 
       //! standard Galerkin diffusive term (off diagonal terms fluid)
       //! linearization of porosity*saturation*d_eff
-      void CalcDiffODFluid(CORE::LINALG::SerialDenseMatrix& emat,  //!< element current to be filled
-          const int k,                                             //!< index of current scalar
-          const int ndofpernodemesh,  //!< number of dofs per node of ale element
+      void calc_diff_od_fluid(
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element current to be filled
+          const int k,                            //!< index of current scalar
+          const int ndofpernodemesh,              //!< number of dofs per node of ale element
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const CORE::LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient at Gauss point
           ) override;
@@ -338,14 +341,14 @@ namespace DRT
           const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager);
 
       //! Get right hand side including reaction bodyforce term
-      void GetRhsInt(double& rhsint,  //!< rhs containing bodyforce at Gauss point
-          const double densnp,        //!< density at t_(n+1)
-          const int k                 //!< index of current scalar
+      void get_rhs_int(double& rhsint,  //!< rhs containing bodyforce at Gauss point
+          const double densnp,          //!< density at t_(n+1)
+          const int k                   //!< index of current scalar
           ) override;
 
       //! calculation of reactive element matrix
-      void CalcMatReact(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                                          //!< index of current scalar
+      void calc_mat_react(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                                            //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double
               timetaufac,  //!< domain-integration factor times time-integration factor times tau

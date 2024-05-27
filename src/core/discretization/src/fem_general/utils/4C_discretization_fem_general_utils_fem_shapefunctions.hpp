@@ -2939,7 +2939,7 @@ namespace CORE::FE
       VectorType& funct,     ///< to be filled with the values hermite shape functions of order five
       const NumberType1& r,  ///< r coordinate
       const NumberType2& l,  ///< length of element
-      const CORE::FE::CellType& distype  ///< distinguish between Discretization Type
+      const CORE::FE::CellType& distype  ///< distinguish between discretization Type
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -2976,7 +2976,7 @@ namespace CORE::FE
       VectorType& funct,     ///< to be filled with the values hermite shape functions of order five
       const NumberType1& r,  ///< r coordinate
       const NumberType2& l,  ///< length of element
-      const CORE::FE::CellType& distype  ///< distinguish between Discretization Type
+      const CORE::FE::CellType& distype  ///< distinguish between discretization Type
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -3012,7 +3012,7 @@ namespace CORE::FE
       VectorType& funct,     ///< to be filled with the values hermite shape functions of order five
       const NumberType1& r,  ///< r coordinate
       const NumberType2& l,  ///< length of element
-      const CORE::FE::CellType& distype  ///< distinguish between Discretization Type
+      const CORE::FE::CellType& distype  ///< distinguish between discretization Type
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -3047,7 +3047,7 @@ namespace CORE::FE
       VectorType& funct,     ///< to be filled with the values hermite shape functions of order five
       const NumberType1& r,  ///< r coordinate
       const NumberType2& l,  ///< length of element
-      const CORE::FE::CellType& distype  ///< distinguish between Discretization Type
+      const CORE::FE::CellType& distype  ///< distinguish between discretization Type
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation

@@ -38,8 +38,8 @@ void CONTACT::AUG::ActiveSet::Update(const CONTACT::ParamsInterface& cparams)
  *----------------------------------------------------------------------------*/
 bool CONTACT::AUG::ActiveSet::skip_update() const
 {
-  const DataContainer& data = strategy_.Data();
-  const plain_interface_set& interfaces = strategy_.Interfaces();
+  const DataContainer& data = strategy_.data();
+  const plain_interface_set& interfaces = strategy_.interfaces();
 
   // get out of here if not in the semi-smooth Newton case
   // (but before doing this, check if there are invalid active nodes)
@@ -82,7 +82,7 @@ bool CONTACT::AUG::ActiveSet::skip_update() const
 void CONTACT::AUG::ActiveSet::post_update(
     const CONTACT::ParamsInterface& cparams, const enum Status gstatus)
 {
-  DataContainer& data = strategy_.Data();
+  DataContainer& data = strategy_.data();
 
   // check the convergence of the active set
   data.is_active_set_converged() = data.GActiveNodeRowMap().SameAs(data.g_old_active_slave_nodes());
@@ -134,11 +134,11 @@ void CONTACT::AUG::ActiveSet::post_update(
 CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::update_status(
     const CONTACT::ParamsInterface& cparams) const
 {
-  plain_interface_set& interfaces = strategy_.Interfaces();
-  CONTACT::AUG::DataContainer& data = strategy_.Data();
+  plain_interface_set& interfaces = strategy_.interfaces();
+  CONTACT::AUG::DataContainer& data = strategy_.data();
 
   // assume that active set has converged and check for opposite
-  strategy_.Data().is_active_set_converged() = true;
+  strategy_.data().is_active_set_converged() = true;
 
   std::vector<Status> istatus(interfaces.size(), Status::unchanged);
 
@@ -351,7 +351,7 @@ CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::merge(
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::ActiveSet::Print(std::ostream& os) const
 {
-  plain_interface_set& interfaces = strategy_.Interfaces();
+  plain_interface_set& interfaces = strategy_.interfaces();
 
   unsigned ilid = 0;
   for (plain_interface_set::const_iterator cit = interfaces.begin(); cit != interfaces.end(); ++cit)
@@ -392,8 +392,8 @@ void CONTACT::AUG::ActiveSet::Print(std::ostream& os) const
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::ActiveSet::update_maps(const CONTACT::ParamsInterface& cparams)
 {
-  DataContainer& data = strategy_.Data();
-  plain_interface_set& interfaces = strategy_.Interfaces();
+  DataContainer& data = strategy_.data();
+  plain_interface_set& interfaces = strategy_.interfaces();
 
   // only if it's a full Newton step...
   if (cparams.IsDefaultStep())
@@ -438,7 +438,7 @@ void CONTACT::AUG::ActiveSet::update_maps(const CONTACT::ParamsInterface& cparam
 void CONTACT::AUG::ActiveSet::sanity_check(
     const CONTACT::ParamsInterface& cparams, const enum Status gstatus) const
 {
-  const DataContainer& data = strategy_.Data();
+  const DataContainer& data = strategy_.data();
 
   if (cparams.IsDefaultStep() and (gstatus == Status::changed) == data.is_active_set_converged())
     FOUR_C_THROW(

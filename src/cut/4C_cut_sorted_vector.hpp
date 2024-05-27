@@ -140,7 +140,7 @@ namespace CORE::GEO
           iterator p = lower_bound(x);
           if (p == end() or less_(x, *p))
           {
-            return Pairib_(InsertImpl_(p, x), true);
+            return Pairib_(insert_impl(p, x), true);
           }
           else
           {
@@ -150,7 +150,7 @@ namespace CORE::GEO
         else
         {
           iterator p = upper_bound(x);
-          return Pairib_(InsertImpl_(p, x), true);
+          return Pairib_(insert_impl(p, x), true);
         }
       }
 
@@ -241,7 +241,7 @@ namespace CORE::GEO
         std::sort(vec_.begin(), vec_.end(), less_);
         if (bNoDuplicates)
         {
-          vec_.erase(Unique_(), vec_.end());
+          vec_.erase(unique(), vec_.end());
         }
       }
 
@@ -251,19 +251,19 @@ namespace CORE::GEO
         std::stable_sort(vec_.begin(), vec_.end(), less_);
         if (bNoDuplicates)
         {
-          erase(Unique_(), end());
+          erase(unique(), end());
         }
       }
 
       bool operator==(const SortedVector<K, bNoDuplicates, Pr, A>& other) const
       {
-        return Eq(other);
+        return eq(other);
       }
 
-      bool operator<(const SortedVector<K, bNoDuplicates, Pr, A>& other) const { return Lt(other); }
+      bool operator<(const SortedVector<K, bNoDuplicates, Pr, A>& other) const { return lt(other); }
 
      protected:
-      iterator Unique_()
+      iterator unique()
       {
         iterator front_ = vec_.begin(), out_ = vec_.end(), end_ = vec_.end();
         bool bCopy_ = false;
@@ -289,29 +289,29 @@ namespace CORE::GEO
         return out_;
       }
 
-      bool Eq(const Myt_& x) const
+      bool eq(const Myt_& x) const
       {
         return (size() == x.size() and std::equal(begin(), end(), x.begin()));
       }
 
-      bool Lt(const Myt_& x) const
+      bool lt(const Myt_& x) const
       {
         return (std::lexicographical_compare(begin(), end(), x.begin(), x.end()));
       }
 
-      iterator InsertImpl_(iterator p, const value_type& x)
+      iterator insert_impl(iterator p, const value_type& x)
       {
         iterator i = vec_.insert(p, x);
         return i;
       }
 
-      bool Leq_(const K& ty0, const K& ty1) { return not less_(ty1, ty0); }
+      bool leq(const K& ty0, const K& ty1) { return not less_(ty1, ty0); }
 
-      bool Geq_(const K& ty0, const K& ty1) { return not less_(ty0, ty1); }
+      bool geq(const K& ty0, const K& ty1) { return not less_(ty0, ty1); }
 
-      bool Lt_(const K& ty0, const K& ty1) { return less_(ty0, ty1); }
+      bool lt(const K& ty0, const K& ty1) { return less_(ty0, ty1); }
 
-      bool Gt_(const K& ty0, const K& ty1) { return less_(ty1, ty0); }
+      bool gt(const K& ty0, const K& ty1) { return less_(ty1, ty0); }
 
       key_compare less_;
       Cont vec_;

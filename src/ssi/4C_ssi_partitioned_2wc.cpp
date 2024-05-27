@@ -84,7 +84,7 @@ void SSI::SSIPart2WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList
     }
   }
 
-  if (DiffTimeStepSize())
+  if (diff_time_step_size())
   {
     FOUR_C_THROW("Different time stepping for two way coupling not implemented yet.");
   }
@@ -103,8 +103,8 @@ void SSI::SSIPart2WC::Setup()
   SSI::SSIPart::Setup();
 
   // construct increment vectors
-  scaincnp_ = CORE::LINALG::CreateVector(*ScaTraField()->Discretization()->dof_row_map(0), true);
-  dispincnp_ = CORE::LINALG::CreateVector(*StructureField()->dof_row_map(0), true);
+  scaincnp_ = CORE::LINALG::CreateVector(*ScaTraField()->discretization()->dof_row_map(0), true);
+  dispincnp_ = CORE::LINALG::CreateVector(*structure_field()->dof_row_map(0), true);
 }
 
 /*----------------------------------------------------------------------*
@@ -114,7 +114,7 @@ void SSI::SSIPart2WC::Timeloop()
 {
   // safety checks
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   prepare_time_loop();
 
@@ -138,7 +138,7 @@ void SSI::SSIPart2WC::Timeloop()
             *ScaTraField()->ScatraParameterList(), "OUTPUTNONLINSOLVERSTATS"))
       ScaTraField()->output_nonlin_solver_stats(IterationCount(), dtnonlinsolve, Step(), Comm());
 
-    UpdateAndOutput();
+    update_and_output();
   }
 }
 
@@ -153,19 +153,19 @@ void SSI::SSIPart2WC::do_struct_step()
   }
 
   // Newton-Raphson iteration
-  StructureField()->Solve();
+  structure_field()->Solve();
 
-  if (is_s2_i_kinetics_with_pseudo_contact()) StructureField()->determine_stress_strain();
+  if (is_s2_i_kinetics_with_pseudo_contact()) structure_field()->determine_stress_strain();
 
   //  set mesh displacement and velocity fields
-  return SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp(),
+  return set_struct_solution(structure_field()->Dispnp(), structure_field()->Velnp(),
       is_s2_i_kinetics_with_pseudo_contact());
 }
 
 /*----------------------------------------------------------------------*
  | Solve Scatra field                                        Thon 12/14 |
  *----------------------------------------------------------------------*/
-void SSI::SSIPart2WC::DoScatraStep()
+void SSI::SSIPart2WC::do_scatra_step()
 {
   if (Comm().MyPID() == 0)
   {
@@ -181,7 +181,7 @@ void SSI::SSIPart2WC::DoScatraStep()
   SetScatraSolution(ScaTraField()->Phinp());
 
   // set micro scale value (projected to macro scale) to structure field
-  if (MacroScale()) set_micro_scatra_solution(ScaTraField()->PhinpMicro());
+  if (macro_scale()) set_micro_scatra_solution(ScaTraField()->PhinpMicro());
 
   // evaluate temperature from function and set to structural discretization
   evaluate_and_set_temperature_field();
@@ -190,13 +190,13 @@ void SSI::SSIPart2WC::DoScatraStep()
 /*----------------------------------------------------------------------*
  | Solve Scatra field                                        Thon 12/14 |
  *----------------------------------------------------------------------*/
-void SSI::SSIPart2WC::PreOperator1()
+void SSI::SSIPart2WC::pre_operator1()
 {
   if (IterationCount() != 1 and use_old_structure_time_int())
   {
     // NOTE: the predictor is NOT called in here. Just the screen output is not correct.
     // we only get norm of the evaluation of the structure problem
-    StructureField()->prepare_partition_step();
+    structure_field()->prepare_partition_step();
   }
 }
 
@@ -207,9 +207,9 @@ void SSI::SSIPart2WC::prepare_time_loop()
 {
   // initial output
   constexpr bool force_prepare = true;
-  StructureField()->prepare_output(force_prepare);
-  StructureField()->Output();
-  SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp(), false);
+  structure_field()->prepare_output(force_prepare);
+  structure_field()->Output();
+  set_struct_solution(structure_field()->Dispnp(), structure_field()->Velnp(), false);
   ScaTraField()->prepare_time_loop();
 }
 
@@ -220,7 +220,7 @@ void SSI::SSIPart2WC::prepare_time_step(bool printheader)
 {
   increment_time_and_step();
 
-  SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp(), false);
+  set_struct_solution(structure_field()->Dispnp(), structure_field()->Velnp(), false);
   ScaTraField()->prepare_time_step();
 
   // if adaptive time stepping and different time step size: calculate time step in scatra
@@ -228,27 +228,27 @@ void SSI::SSIPart2WC::prepare_time_step(bool printheader)
   if (ScaTraField()->TimeStepAdapted()) set_dt_from_sca_tra_to_ssi();
 
   SetScatraSolution(ScaTraField()->Phinp());
-  if (MacroScale()) set_micro_scatra_solution(ScaTraField()->PhinpMicro());
+  if (macro_scale()) set_micro_scatra_solution(ScaTraField()->PhinpMicro());
 
   // NOTE: the predictor of the structure is called in here
-  StructureField()->prepare_time_step();
+  structure_field()->prepare_time_step();
 
-  if (printheader) PrintHeader();
+  if (printheader) print_header();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIPart2WC::UpdateAndOutput()
+void SSI::SSIPart2WC::update_and_output()
 {
   constexpr bool force_prepare = false;
-  StructureField()->prepare_output(force_prepare);
+  structure_field()->prepare_output(force_prepare);
 
-  StructureField()->Update();
+  structure_field()->Update();
   ScaTraField()->Update();
 
   ScaTraField()->evaluate_error_compared_to_analytical_sol();
 
-  StructureField()->Output();
+  structure_field()->Output();
   ScaTraField()->check_and_write_output_and_restart();
 }
 
@@ -262,7 +262,7 @@ void SSI::SSIPart2WC::iter_update_states()
   // will be compared in convergence_check to the solutions,
   // obtained from the next Struct and Scatra steps.
   scaincnp_->Update(1.0, *ScaTraField()->Phinp(), 0.0);
-  dispincnp_->Update(1.0, *StructureField()->Dispnp(), 0.0);
+  dispincnp_->Update(1.0, *structure_field()->Dispnp(), 0.0);
 }  // iter_update_states()
 
 
@@ -292,16 +292,16 @@ void SSI::SSIPart2WC::outer_loop()
     // standard ssi_2wc :
     // 1.) solve structural system
     // 2.) set disp and vel states in scatra field
-    PreOperator1();
-    Operator1();
-    PostOperator1();
+    pre_operator1();
+    operator1();
+    post_operator1();
 
     // standard ssi_2wc :
     // 1.) solve scalar transport equation
     // 2.) set phi state in structure field
-    PreOperator2();
-    Operator2();
-    PostOperator2();
+    pre_operator2();
+    operator2();
+    post_operator2();
 
     // check convergence for all fields
     // stop iteration loop if converged
@@ -340,13 +340,13 @@ bool SSI::SSIPart2WC::convergence_check(int itnum)
   // build the current scalar increment Inc T^{i+1}
   // \f Delta T^{k+1} = Inc T^{k+1} = T^{k+1} - T^{k}  \f
   scaincnp_->Update(1.0, *(ScaTraField()->Phinp()), -1.0);
-  dispincnp_->Update(1.0, *(StructureField()->Dispnp()), -1.0);
+  dispincnp_->Update(1.0, *(structure_field()->Dispnp()), -1.0);
 
   // build the L2-norm of the scalar increment and the scalar
   scaincnp_->Norm2(&scaincnorm_L2);
   ScaTraField()->Phinp()->Norm2(&scanorm_L2);
   dispincnp_->Norm2(&dispincnorm_L2);
-  StructureField()->Dispnp()->Norm2(&dispnorm_L2);
+  structure_field()->Dispnp()->Norm2(&dispnorm_L2);
 
   // care for the case that there is (almost) zero scalar
   if (scanorm_L2 < 1e-6) scanorm_L2 = 1.0;
@@ -425,17 +425,17 @@ bool SSI::SSIPart2WC::convergence_check(int itnum)
 /*----------------------------------------------------------------------*
  | calculate velocities by a FD approximation                Thon 14/11 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> SSI::SSIPart2WC::CalcVelocity(Teuchos::RCP<const Epetra_Vector> dispnp)
+Teuchos::RCP<Epetra_Vector> SSI::SSIPart2WC::calc_velocity(Teuchos::RCP<const Epetra_Vector> dispnp)
 {
   Teuchos::RCP<Epetra_Vector> vel = Teuchos::null;
   // copy D_n onto V_n+1
-  vel = Teuchos::rcp(new Epetra_Vector(*(StructureField()->Dispn())));
+  vel = Teuchos::rcp(new Epetra_Vector(*(structure_field()->Dispn())));
   // calculate velocity with timestep Dt()
   //  V_n+1^k = (D_n+1^k - D_n) / Dt
   vel->Update(1. / Dt(), *dispnp, -1. / Dt());
 
   return vel;
-}  // CalcVelocity()
+}  // calc_velocity()
 
 /*----------------------------------------------------------------------*
  | Constructor                                               Thon 12/14 |
@@ -486,9 +486,9 @@ void SSI::SSIPart2WCSolidToScatraRelax::outer_loop()
 
   // these are the relaxed inputs
   Teuchos::RCP<Epetra_Vector> dispnp =
-      CORE::LINALG::CreateVector(*(StructureField()->dof_row_map(0)), true);
+      CORE::LINALG::CreateVector(*(structure_field()->dof_row_map(0)), true);
   Teuchos::RCP<Epetra_Vector> velnp =
-      CORE::LINALG::CreateVector(*(StructureField()->dof_row_map(0)), true);
+      CORE::LINALG::CreateVector(*(structure_field()->dof_row_map(0)), true);
 
   while (!stopnonliniter)
   {
@@ -496,8 +496,8 @@ void SSI::SSIPart2WCSolidToScatraRelax::outer_loop()
 
     if (IterationCount() == 1)
     {
-      dispnp->Update(1.0, *(StructureField()->Dispnp()), 0.0);  // TSI does Dispn()
-      velnp->Update(1.0, *(StructureField()->Velnp()), 0.0);
+      dispnp->Update(1.0, *(structure_field()->Dispnp()), 0.0);  // TSI does Dispn()
+      velnp->Update(1.0, *(structure_field()->Velnp()), 0.0);
     }
 
     // store scalars and displacements for the convergence check later
@@ -507,14 +507,14 @@ void SSI::SSIPart2WCSolidToScatraRelax::outer_loop()
     // begin nonlinear solver / outer iteration ***************************
 
     // set relaxed mesh displacements and velocity field
-    SetStructSolution(dispnp, velnp, is_s2_i_kinetics_with_pseudo_contact());
+    set_struct_solution(dispnp, velnp, is_s2_i_kinetics_with_pseudo_contact());
 
     // solve scalar transport equation
-    DoScatraStep();
+    do_scatra_step();
 
     // prepare a partitioned structure step
     if (IterationCount() != 1 and use_old_structure_time_int())
-      StructureField()->prepare_partition_step();
+      structure_field()->prepare_partition_step();
 
     // solve structural system
     do_struct_step();
@@ -526,7 +526,7 @@ void SSI::SSIPart2WCSolidToScatraRelax::outer_loop()
     stopnonliniter = convergence_check(IterationCount());
 
     // get relaxation parameter
-    CalcOmega(omega_, IterationCount());
+    calc_omega(omega_, IterationCount());
 
     // do the relaxation
     // d^{i+1} = omega^{i+1} . d^{i+1} + (1- omega^{i+1}) d^i
@@ -539,15 +539,15 @@ void SSI::SSIPart2WCSolidToScatraRelax::outer_loop()
     {
       // since the velocity depends nonlinear on the displacements we can just approximate them via
       // finite differences here.
-      velnp = CalcVelocity(dispnp);
+      velnp = calc_velocity(dispnp);
     }
     else
     {
       // consistent derivation of velocity field from displacement field
       // set_state(dispnp) will automatically be undone during the next evaluation of the structural
       // field
-      StructureField()->set_state(dispnp);
-      velnp->Update(1., *StructureField()->Velnp(), 0.);
+      structure_field()->set_state(dispnp);
+      velnp->Update(1., *structure_field()->Velnp(), 0.);
     }
   }
 }
@@ -555,7 +555,7 @@ void SSI::SSIPart2WCSolidToScatraRelax::outer_loop()
 /*----------------------------------------------------------------------*
  | Calculate relaxation parameter                            Thon 12/14 |
  *----------------------------------------------------------------------*/
-void SSI::SSIPart2WCSolidToScatraRelax::CalcOmega(double& omega, const int itnum)
+void SSI::SSIPart2WCSolidToScatraRelax::calc_omega(double& omega, const int itnum)
 {
   // nothing to do in here since we have a constant relaxation parameter: omega != startomega_;
   if (Comm().MyPID() == 0)
@@ -585,13 +585,13 @@ void SSI::SSIPart2WCSolidToScatraRelaxAitken::Setup()
   SSI::SSIPart2WC::Setup();
 
   // setup old scatra increment vector
-  dispincnpold_ = CORE::LINALG::CreateVector(*StructureField()->dof_row_map(0), true);
+  dispincnpold_ = CORE::LINALG::CreateVector(*structure_field()->dof_row_map(0), true);
 }
 
 /*----------------------------------------------------------------------*
  | Calculate relaxation parameter via Aitken                 Thon 12/14 |
  *----------------------------------------------------------------------*/
-void SSI::SSIPart2WCSolidToScatraRelaxAitken::CalcOmega(double& omega, const int itnum)
+void SSI::SSIPart2WCSolidToScatraRelaxAitken::calc_omega(double& omega, const int itnum)
 {
   const Teuchos::ParameterList& ssicontrolpart =
       GLOBAL::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
@@ -604,7 +604,7 @@ void SSI::SSIPart2WCSolidToScatraRelaxAitken::CalcOmega(double& omega, const int
   // calculate difference of current (i+1) and old (i) residual vector
   // dispincnpdiff = ( r^{i+1}_{n+1} - r^i_{n+1} )
   Teuchos::RCP<Epetra_Vector> dispincnpdiff =
-      CORE::LINALG::CreateVector(*(StructureField()->dof_row_map(0)), true);
+      CORE::LINALG::CreateVector(*(structure_field()->dof_row_map(0)), true);
   dispincnpdiff->Update(
       1.0, *dispincnp_, (-1.0), *dispincnpold_, 0.0);  // update r^{i+1}_{n+1} - r^i_{n+1}
 
@@ -722,7 +722,7 @@ void SSI::SSIPart2WCScatraToSolidRelax::outer_loop()
 
   // this is the relaxed input
   Teuchos::RCP<Epetra_Vector> phinp =
-      CORE::LINALG::CreateVector(*ScaTraField()->Discretization()->dof_row_map(0), true);
+      CORE::LINALG::CreateVector(*ScaTraField()->discretization()->dof_row_map(0), true);
 
   while (!stopnonliniter)
   {
@@ -735,7 +735,7 @@ void SSI::SSIPart2WCScatraToSolidRelax::outer_loop()
 
     // store scalars and displacements for the convergence check later
     scaincnp_->Update(1.0, *phinp, 0.0);
-    dispincnp_->Update(1.0, *StructureField()->Dispnp(), 0.0);
+    dispincnp_->Update(1.0, *structure_field()->Dispnp(), 0.0);
 
 
     // begin nonlinear solver / outer iteration ***************************
@@ -748,20 +748,20 @@ void SSI::SSIPart2WCScatraToSolidRelax::outer_loop()
 
     // prepare partitioned structure step
     if (IterationCount() != 1 and use_old_structure_time_int())
-      StructureField()->prepare_partition_step();
+      structure_field()->prepare_partition_step();
 
     // solve structural system
     do_struct_step();
 
     // solve scalar transport equation
-    DoScatraStep();
+    do_scatra_step();
 
     // check convergence for all fields and stop iteration loop if
     // convergence is achieved overall
     stopnonliniter = convergence_check(IterationCount());
 
     // get relaxation parameter
-    CalcOmega(omega_, IterationCount());
+    calc_omega(omega_, IterationCount());
 
     // do the relaxation
     // d^{i+1} = omega^{i+1} . d^{i+1} + (1- omega^{i+1}) d^i
@@ -773,7 +773,7 @@ void SSI::SSIPart2WCScatraToSolidRelax::outer_loop()
 /*----------------------------------------------------------------------*
  | Calculate relaxation parameter                            Thon 12/14 |
  *----------------------------------------------------------------------*/
-void SSI::SSIPart2WCScatraToSolidRelax::CalcOmega(double& omega, const int itnum)
+void SSI::SSIPart2WCScatraToSolidRelax::calc_omega(double& omega, const int itnum)
 {
   // nothing to do in here since we have a constant relaxation parameter: omega != startomega_;
   if (Comm().MyPID() == 0)
@@ -803,13 +803,13 @@ void SSI::SSIPart2WCScatraToSolidRelaxAitken::Setup()
   SSI::SSIPart2WC::Setup();
 
   // setup old scatra increment vector
-  scaincnpold_ = CORE::LINALG::CreateVector(*ScaTraField()->Discretization()->dof_row_map(), true);
+  scaincnpold_ = CORE::LINALG::CreateVector(*ScaTraField()->discretization()->dof_row_map(), true);
 }
 
 /*----------------------------------------------------------------------*
  | Calculate relaxation parameter via Aitken                 Thon 12/14 |
  *----------------------------------------------------------------------*/
-void SSI::SSIPart2WCScatraToSolidRelaxAitken::CalcOmega(double& omega, const int itnum)
+void SSI::SSIPart2WCScatraToSolidRelaxAitken::calc_omega(double& omega, const int itnum)
 {
   const Teuchos::ParameterList& ssicontrolpart =
       GLOBAL::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
@@ -821,7 +821,7 @@ void SSI::SSIPart2WCScatraToSolidRelaxAitken::CalcOmega(double& omega, const int
 
   // scaincnpdiff =  r^{i+1}_{n+1} - r^i_{n+1}
   Teuchos::RCP<Epetra_Vector> scaincnpdiff =
-      CORE::LINALG::CreateVector(*ScaTraField()->Discretization()->dof_row_map(0), true);
+      CORE::LINALG::CreateVector(*ScaTraField()->discretization()->dof_row_map(0), true);
   scaincnpdiff->Update(1.0, *scaincnp_, (-1.0), *scaincnpold_, 0.0);
 
   double scaincnpdiffnorm = 0.0;

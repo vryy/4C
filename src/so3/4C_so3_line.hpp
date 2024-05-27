@@ -151,7 +151,7 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      inline int NumDofPerElement() const override { return 0; }
+      inline int num_dof_per_element() const override { return 0; }
 
       /*!
       \brief Print this element

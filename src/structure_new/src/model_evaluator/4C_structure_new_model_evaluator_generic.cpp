@@ -76,7 +76,7 @@ void STR::MODELEVALUATOR::Generic::check_init() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::MODELEVALUATOR::Data& STR::MODELEVALUATOR::Generic::EvalData()
+STR::MODELEVALUATOR::Data& STR::MODELEVALUATOR::Generic::eval_data()
 {
   check_init();
   return *eval_data_ptr_;
@@ -92,7 +92,7 @@ const STR::MODELEVALUATOR::Data& STR::MODELEVALUATOR::Generic::EvalData() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::MODELEVALUATOR::Data>& STR::MODELEVALUATOR::Generic::EvalDataPtr()
+Teuchos::RCP<STR::MODELEVALUATOR::Data>& STR::MODELEVALUATOR::Generic::eval_data_ptr()
 {
   check_init();
   return eval_data_ptr_;
@@ -100,7 +100,7 @@ Teuchos::RCP<STR::MODELEVALUATOR::Data>& STR::MODELEVALUATOR::Generic::EvalDataP
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TIMINT::BaseDataGlobalState& STR::MODELEVALUATOR::Generic::GState()
+STR::TIMINT::BaseDataGlobalState& STR::MODELEVALUATOR::Generic::g_state()
 {
   check_init();
   return *gstate_ptr_;
@@ -108,7 +108,7 @@ STR::TIMINT::BaseDataGlobalState& STR::MODELEVALUATOR::Generic::GState()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& STR::MODELEVALUATOR::Generic::GStatePtr()
+Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& STR::MODELEVALUATOR::Generic::g_state_ptr()
 {
   check_init();
   return gstate_ptr_;
@@ -124,7 +124,7 @@ const STR::TIMINT::BaseDataGlobalState& STR::MODELEVALUATOR::Generic::GState() c
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TIMINT::BaseDataIO& STR::MODELEVALUATOR::Generic::GInOutput()
+STR::TIMINT::BaseDataIO& STR::MODELEVALUATOR::Generic::g_in_output()
 {
   check_init();
   return *gio_ptr_;
@@ -132,7 +132,7 @@ STR::TIMINT::BaseDataIO& STR::MODELEVALUATOR::Generic::GInOutput()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TIMINT::BaseDataIO> STR::MODELEVALUATOR::Generic::GInOutputPtr()
+Teuchos::RCP<STR::TIMINT::BaseDataIO> STR::MODELEVALUATOR::Generic::g_in_output_ptr()
 {
   check_init();
   return gio_ptr_;
@@ -148,7 +148,7 @@ const STR::TIMINT::BaseDataIO& STR::MODELEVALUATOR::Generic::GInOutput() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-DRT::Discretization& STR::MODELEVALUATOR::Generic::Discret()
+DRT::Discretization& STR::MODELEVALUATOR::Generic::discret()
 {
   check_init();
   return *discret_ptr_;
@@ -156,7 +156,7 @@ DRT::Discretization& STR::MODELEVALUATOR::Generic::Discret()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization>& STR::MODELEVALUATOR::Generic::DiscretPtr()
+Teuchos::RCP<DRT::Discretization>& STR::MODELEVALUATOR::Generic::discret_ptr()
 {
   check_init();
   return discret_ptr_;
@@ -172,7 +172,7 @@ const DRT::Discretization& STR::MODELEVALUATOR::Generic::Discret() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::Integrator& STR::MODELEVALUATOR::Generic::Int()
+STR::Integrator& STR::MODELEVALUATOR::Generic::integrator()
 {
   check_init();
   return *int_ptr_;
@@ -188,7 +188,7 @@ const STR::Integrator& STR::MODELEVALUATOR::Generic::Int() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::Integrator>& STR::MODELEVALUATOR::Generic::IntPtr() { return int_ptr_; }
+Teuchos::RCP<STR::Integrator>& STR::MODELEVALUATOR::Generic::int_ptr() { return int_ptr_; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -200,7 +200,7 @@ const STR::TIMINT::Base& STR::MODELEVALUATOR::Generic::TimInt() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const int& STR::MODELEVALUATOR::Generic::DofOffset() const
+const int& STR::MODELEVALUATOR::Generic::dof_offset() const
 {
   check_init();
   return dof_offset_;
@@ -222,7 +222,7 @@ Teuchos::RCP<Epetra_Vector> STR::MODELEVALUATOR::Generic::GetFextIncr() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Generic::EvalErrorCheck() const
+bool STR::MODELEVALUATOR::Generic::eval_error_check() const
 {
   // --- Did an exception occur during the evaluation process? -----------------
   bool ok = true;

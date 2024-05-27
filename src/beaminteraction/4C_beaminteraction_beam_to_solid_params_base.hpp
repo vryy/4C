@@ -117,7 +117,7 @@ namespace BEAMINTERACTION
      * \brief Returns the Gauss rule.
      * @return gauss rule.
      */
-    inline CORE::FE::GaussRule1D GetGaussRule() const { return gauss_rule_; }
+    inline CORE::FE::GaussRule1D get_gauss_rule() const { return gauss_rule_; }
 
     /**
      * \brief Returns true if the coupling should be evaluated with FAD.
@@ -144,7 +144,7 @@ namespace BEAMINTERACTION
     //! Enforcement strategy for constraints.
     INPAR::BEAMTOSOLID::BeamToSolidConstraintEnforcement constraint_enforcement_;
 
-    //! Discretization used for the contact.
+    //! discretization used for the contact.
     INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization contact_discretization_;
 
     //! Shape function for the mortar Lagrange-multiplicators

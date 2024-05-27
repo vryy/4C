@@ -160,7 +160,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
 
   std::vector<int> mydirichdofs(0);
   add_dirichmaps_volfrac_spec_ = Teuchos::rcp(new Epetra_Map(
-      -1, 0, mydirichdofs.data(), 0, ScatraAlgo()->ScaTraField()->Discretization()->Comm()));
+      -1, 0, mydirichdofs.data(), 0, ScatraAlgo()->ScaTraField()->discretization()->Comm()));
 
   // done.
 }
@@ -204,7 +204,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Timeloop()
     Comm().MaxAll(&mydttimestep, &dttimestep_, 1);
     // *********** time measurement ***********
 
-    UpdateAndOutput();
+    update_and_output();
   }
 }
 
@@ -216,7 +216,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::prepare_time_step(bool prin
   // keep them in sync!
   increment_time_and_step();
 
-  if (printheader) PrintHeader();
+  if (printheader) print_header();
 
   SetPoroSolution();
   scatra_->ScaTraField()->prepare_time_step();
@@ -245,11 +245,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::prepare_time_loop()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::UpdateAndOutput()
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::update_and_output()
 {
   // set scatra on fluid (necessary for possible domain integrals)
   SetScatraSolution();
-  poromulti_->UpdateAndOutput();
+  poromulti_->update_and_output();
 
   // scatra field
   scatra_->ScaTraField()->Update();
@@ -266,7 +266,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::UpdateAndOutput()
   {
     std::cout << "Finished POROMULTIPHASESCATRA STEP " << std::setw(5) << std::setprecision(4)
               << std::scientific << Step() << "/" << std::setw(5) << std::setprecision(4)
-              << std::scientific << NStep() << ": dtstep = " << dttimestep_ << std::endl;
+              << std::scientific << n_step() << ": dtstep = " << dttimestep_ << std::endl;
   }
 }
 
@@ -312,12 +312,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetPoroSolution()
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::apply_additional_dbc_for_vol_frac_species()
 {
   // remove the old one
-  ScatraAlgo()->ScaTraField()->RemoveDirichCond(add_dirichmaps_volfrac_spec_);
+  ScatraAlgo()->ScaTraField()->remove_dirich_cond(add_dirichmaps_volfrac_spec_);
 
   std::vector<int> mydirichdofs(0);
 
   // get map and validdof-vector
-  const Epetra_Map* elecolmap = ScatraAlgo()->ScaTraField()->Discretization()->ElementColMap();
+  const Epetra_Map* elecolmap = ScatraAlgo()->ScaTraField()->discretization()->ElementColMap();
   Teuchos::RCP<const Epetra_Vector> valid_volfracspec_dofs =
       poro_field()->fluid_field()->valid_vol_frac_spec_dofs();
 
@@ -327,7 +327,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::apply_additional_dbc_for_vo
   {
     // dynamic_cast necessary because virtual inheritance needs runtime information
     DRT::ELEMENTS::Transport* myele = dynamic_cast<DRT::ELEMENTS::Transport*>(
-        ScatraAlgo()->ScaTraField()->Discretization()->gElement(elecolmap->GID(iele)));
+        ScatraAlgo()->ScaTraField()->discretization()->gElement(elecolmap->GID(iele)));
 
     const CORE::MAT::Material& material2 = *(myele->Material(2));
 
@@ -363,12 +363,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::apply_additional_dbc_for_vo
 
     for (int inode = 0; inode < (myele->num_node()); inode++)
     {
-      if (nodes[inode]->Owner() == ScatraAlgo()->ScaTraField()->Discretization()->Comm().MyPID())
+      if (nodes[inode]->Owner() == ScatraAlgo()->ScaTraField()->discretization()->Comm().MyPID())
       {
         std::vector<int> scatradofs =
-            ScatraAlgo()->ScaTraField()->Discretization()->Dof(0, nodes[inode]);
+            ScatraAlgo()->ScaTraField()->discretization()->Dof(0, nodes[inode]);
         std::vector<int> fluiddofs =
-            poro_field()->fluid_field()->Discretization()->Dof(0, nodes[inode]);
+            poro_field()->fluid_field()->discretization()->Dof(0, nodes[inode]);
 
         for (int idof = 0; idof < numscatramat; ++idof)
         {
@@ -390,7 +390,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::apply_additional_dbc_for_vo
             // species dof identified with < 1
             if (ScatraAlgo()->ScaTraField()->DirichMaps()->CondMap()->LID(scatradofs[idof]) == -1 &&
                 (int)(*valid_volfracspec_dofs)
-                        [poro_field()->fluid_field()->Discretization()->dof_row_map()->LID(
+                        [poro_field()->fluid_field()->discretization()->dof_row_map()->LID(
                             fluiddofs[scalartophaseid + numvolfrac])] < 1)
             {
               mydirichdofs.push_back(scatradofs[idof]);
@@ -407,10 +407,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::apply_additional_dbc_for_vo
   // build map
   int nummydirichvals = mydirichdofs.size();
   add_dirichmaps_volfrac_spec_ = Teuchos::rcp(new Epetra_Map(-1, nummydirichvals,
-      mydirichdofs.data(), 0, ScatraAlgo()->ScaTraField()->Discretization()->Comm()));
+      mydirichdofs.data(), 0, ScatraAlgo()->ScaTraField()->discretization()->Comm()));
 
   // add the condition
-  ScatraAlgo()->ScaTraField()->AddDirichCond(add_dirichmaps_volfrac_spec_);
+  ScatraAlgo()->ScaTraField()->add_dirich_cond(add_dirichmaps_volfrac_spec_);
 
   return;
 }
@@ -421,7 +421,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetScatraSolution()
 {
   poromulti_->SetScatraSolution(ndsporofluid_scatra_, scatra_->ScaTraField()->Phinp());
   if (artery_coupl_)
-    poromulti_->fluid_field()->ArtNetTimInt()->Discretization()->set_state(
+    poromulti_->fluid_field()->ArtNetTimInt()->discretization()->set_state(
         2, "one_d_artery_phinp", scatramsht_->ArtScatraField()->Phinp());
 }
 

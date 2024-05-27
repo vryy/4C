@@ -32,10 +32,10 @@ MAT::PAR::MembraneElastHyper::MembraneElastHyper(Teuchos::RCP<CORE::MAT::PAR::Ma
 /*----------------------------------------------------------------------*
  |                                                       sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MembraneElastHyper::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MembraneElastHyper::create_material()
 {
   return Teuchos::rcp(new MAT::MembraneElastHyper(this));
-}  // MAT::PAR::MembraneElastHyper::CreateMaterial
+}  // MAT::PAR::MembraneElastHyper::create_material
 
 
 MAT::MembraneElastHyperType MAT::MembraneElastHyperType::instance_;

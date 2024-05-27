@@ -950,7 +950,7 @@ void CORE::GEO::CUT::SelfCut::determine_self_cut_position()
       CORE::LINALG::Matrix<2, 1> oncut_cord_loc2;
       CORE::LINALG::Matrix<3, 1> otherSideNormal;
       onselfcutedgenode->point()->Coordinates(oncut_cord.A());
-      otherselfcutside->LocalCoordinates(oncut_cord, oncut_cord_loc, false);
+      otherselfcutside->local_coordinates(oncut_cord, oncut_cord_loc, false);
       oncut_cord_loc2(0) = oncut_cord_loc(0);
       oncut_cord_loc2(1) = oncut_cord_loc(1);
       otherselfcutside->Normal(oncut_cord_loc2, otherSideNormal);

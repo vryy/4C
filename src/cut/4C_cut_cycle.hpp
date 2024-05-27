@@ -66,7 +66,7 @@ namespace CORE::GEO
       /*!
       \brief Get only the sides that are cut by any one of the points in the cycle
        */
-      void Intersection(plain_side_set& sides) const;
+      void intersection(plain_side_set& sides) const;
 
       /*!
       \brief Check whether these two cycles are one and the same

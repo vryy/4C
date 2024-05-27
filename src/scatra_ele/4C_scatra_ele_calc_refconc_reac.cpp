@@ -59,7 +59,7 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::set_advanced_reaction_ter
     const double* gpcoord                                   //!< current Gauss-point coordinates
 )
 {
-  const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = advreac::ReaManager();
+  const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = advreac::rea_manager();
 
   remanager->AddToReaBodyForce(
       matreaclist->calc_rea_body_force_term(k, my::scatravarmanager_->Phinp(), gpcoord, 1.0 / j_) *
@@ -146,7 +146,7 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::set_internal_variables_fo
  |  calculation of diffusive element matrix                thon 02/16 |
  *--------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcMatDiff(
+void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::calc_mat_diff(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac)
 {
   CORE::LINALG::Matrix<nsd_, nsd_> Diff_tens(c_inv_);

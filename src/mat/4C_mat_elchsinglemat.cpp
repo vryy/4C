@@ -51,19 +51,19 @@ MAT::PAR::ElchSingleMat::ElchSingleMat(Teuchos::RCP<CORE::MAT::PAR::Material> ma
   if (number_conductivity_temp_scale_funct_params_ !=
       static_cast<int>(conductivity_temp_scale_funct_params_.size()))
     FOUR_C_THROW("Mismatch in number of parameters for temp scale function for conductivity!");
-  CheckProvidedParams(
+  check_provided_params(
       diffusion_coefficient_concentration_dependence_funct_num_, diffusion_coefficent_params_);
-  CheckProvidedParams(conductivity_concentration_dependence_funct_num_, conductivity_params_);
-  CheckProvidedParams(
+  check_provided_params(conductivity_concentration_dependence_funct_num_, conductivity_params_);
+  check_provided_params(
       diffusion_coefficient_temperature_scaling_funct_num_, diffusion_temp_scale_funct_params_);
-  CheckProvidedParams(
+  check_provided_params(
       conductivity_temperature_scaling_funct_num_, conductivity_temp_scale_funct_params_);
 }
 
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void MAT::PAR::ElchSingleMat::CheckProvidedParams(
+void MAT::PAR::ElchSingleMat::check_provided_params(
     const int functnr, const std::vector<double>& functparams)
 {
   // name of specified curve
@@ -247,7 +247,7 @@ double MAT::ElchSingleMat::compute_diffusion_coefficient_concentration_dependent
   if (diffusion_coefficient_concentration_dependence_funct_num() < 0)
   {
     diffusionCoefficient =
-        EvalPreDefinedFunct(diffusion_coefficient_concentration_dependence_funct_num(),
+        eval_pre_defined_funct(diffusion_coefficient_concentration_dependence_funct_num(),
             concentration, diffusion_coefficient_params());
   }
   else if (diffusion_coefficient_concentration_dependence_funct_num() == 0)
@@ -282,7 +282,7 @@ double MAT::ElchSingleMat::compute_temperature_dependent_scale_factor(const doub
   else if (functionNumber < 0)
   {
     temperatureDependentScaleFactor =
-        EvalPreDefinedFunct(functionNumber, temperature, functionParams);
+        eval_pre_defined_funct(functionNumber, temperature, functionParams);
   }
   else if (functionNumber > 0)
   {
@@ -398,7 +398,7 @@ double MAT::ElchSingleMat::compute_temperature_dependent_scale_factor_deriv(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::ElchSingleMat::ComputeConductivity(
+double MAT::ElchSingleMat::compute_conductivity(
     const double concentration, const double temperature) const
 {
   double conductivity = compute_conductivity_concentration_dependent(concentration);
@@ -420,8 +420,8 @@ double MAT::ElchSingleMat::compute_conductivity_concentration_dependent(
   // evaluate pre implemented concentration dependent conductivity
   if (conductivity_concentration_dependence_funct_num() < 0)
   {
-    conductivity = EvalPreDefinedFunct(
-        conductivity_concentration_dependence_funct_num(), concentration, ConductivityParams());
+    conductivity = eval_pre_defined_funct(
+        conductivity_concentration_dependence_funct_num(), concentration, conductivity_params());
   }
   else if (conductivity_concentration_dependence_funct_num() == 0)
   {
@@ -454,7 +454,7 @@ double MAT::ElchSingleMat::compute_concentration_derivative_of_conductivity(
   if (conductivity_concentration_dependence_funct_num() < 0)
   {
     conductivity_conc_deriv = eval_first_deriv_pre_defined_funct(
-        conductivity_concentration_dependence_funct_num(), concentration, ConductivityParams());
+        conductivity_concentration_dependence_funct_num(), concentration, conductivity_params());
   }
   else if (conductivity_concentration_dependence_funct_num() == 0)
   {
@@ -498,7 +498,7 @@ double MAT::ElchSingleMat::compute_temperature_derivative_of_conductivity(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::ElchSingleMat::EvalPreDefinedFunct(
+double MAT::ElchSingleMat::eval_pre_defined_funct(
     const int functnr, const double scalar, const std::vector<double>& functparams) const
 {
   double functval(0.0);

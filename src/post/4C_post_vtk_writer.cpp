@@ -37,7 +37,7 @@ PostVtkWriter::PostVtkWriter(PostField *field, const std::string &filename)
 
 
 
-void PostVtkWriter::WriteVtkHeader()
+void PostVtkWriter::write_vtk_header()
 {
   if (!currentout_) FOUR_C_THROW("Invalid output stream");
 
@@ -48,11 +48,11 @@ void PostVtkWriter::WriteVtkHeader()
   currentout_ << "<!-- \n";
   currentout_ << "# vtk DataFile Version 3.0\n";
   currentout_ << "-->\n";
-  currentout_ << "<VTKFile type=\"" << this->WriterString() << "\" version=\"0.1\"";
+  currentout_ << "<VTKFile type=\"" << this->writer_string() << "\" version=\"0.1\"";
   currentout_ << " compressor=\"vtkZLibDataCompressor\"";
   currentout_ << " byte_order=\"" << byteorder << "\"";
   currentout_ << ">\n";
-  currentout_ << this->WriterOpeningTag() << "\n";
+  currentout_ << this->writer_opening_tag() << "\n";
 
   // Print output time and cycle
   if (time_ != std::numeric_limits<double>::min() || cycle_ != std::numeric_limits<int>::max())
@@ -80,10 +80,10 @@ void PostVtkWriter::WriteVtkHeader()
     currentmasterout_ << "<!-- \n";
     currentmasterout_ << "# vtk DataFile Version 3.0\n";
     currentmasterout_ << "-->\n";
-    currentmasterout_ << "<VTKFile type=\"P" << this->WriterString() << "\" version=\"0.1\"";
+    currentmasterout_ << "<VTKFile type=\"P" << this->writer_string() << "\" version=\"0.1\"";
     currentmasterout_ << " byte_order=\"" << byteorder << "\"";
     currentmasterout_ << ">\n";
-    currentmasterout_ << "  " << this->WriterPOpeningTag() << "\n";
+    currentmasterout_ << "  " << this->writer_p_opening_tag() << "\n";
   }
 
   currentPhase_ = INIT;
@@ -91,7 +91,7 @@ void PostVtkWriter::WriteVtkHeader()
 
 
 
-void PostVtkWriter::WriteVtkFooter()
+void PostVtkWriter::write_vtk_footer()
 {
   if (!currentout_) FOUR_C_THROW("Invalid output stream");
 
@@ -121,14 +121,14 @@ void PostVtkWriter::WriteVtkFooter()
 
   currentout_ << "</Piece>\n";
 
-  currentout_ << "</" << this->WriterString() << ">\n";
+  currentout_ << "</" << this->writer_string() << ">\n";
   currentout_ << "</VTKFile>\n";
 
   currentout_ << std::flush;
 
   // Also start master file on processor 0
   typedef std::vector<std::string> pptags_type;
-  const pptags_type &ppiecetags = this->WriterPPieceTags();
+  const pptags_type &ppiecetags = this->writer_p_piece_tags();
   if (myrank_ == 0)
   {
     if (!currentmasterout_) FOUR_C_THROW("Invalid output stream");
@@ -136,7 +136,7 @@ void PostVtkWriter::WriteVtkFooter()
 
     for (pptags_type::const_iterator it = ppiecetags.begin(); it != ppiecetags.end(); ++it)
       currentmasterout_ << "    " << *it << "\n";
-    currentmasterout_ << "  </P" << this->WriterString() << ">\n";
+    currentmasterout_ << "  </P" << this->writer_string() << ">\n";
     currentmasterout_ << "</VTKFile>\n";
 
     currentmasterout_ << std::flush;
@@ -191,8 +191,8 @@ void PostVtkWriter::WriteSpecialField(SpecialFieldInterface &special,
 
 
 
-void PostVtkWriter::WriteSolutionVector(const std::vector<double> &solution, const int ncomponents,
-    const std::string &name, std::ofstream &file) const
+void PostVtkWriter::write_solution_vector(const std::vector<double> &solution,
+    const int ncomponents, const std::string &name, std::ofstream &file) const
 {
   using namespace FourC;
 
@@ -278,7 +278,8 @@ void PostVtkWriter::WriteResult(const std::string groupname, const std::string n
     case dofbased:
     {
       const Teuchos::RCP<Epetra_Vector> data = result->read_result(groupname);
-      this->WriteDofResultStep(currentout_, data, dummy, groupname, name, numdf, from, fillzeros);
+      this->write_dof_result_step(
+          currentout_, data, dummy, groupname, name, numdf, from, fillzeros);
       break;
     }
     case nodebased:
@@ -320,7 +321,7 @@ void PostVtkWriter::WriteFiles(PostFilterBase &filter)
 
   for (timestep_ = 0; timestep_ < (int)soltime.size(); ++timestep_)
   {
-    this->WriterPrepTimestep();
+    this->writer_prep_timestep();
 
     {
       std::ostringstream tmpstream;
@@ -330,12 +331,12 @@ void PostVtkWriter::WriteFiles(PostFilterBase &filter)
 
     time_ = soltime[timestep_];
     filenames.push_back(
-        std::pair<double, std::string>(time_, filenamebase_ + this->WriterPSuffix()));
+        std::pair<double, std::string>(time_, filenamebase_ + this->writer_p_suffix()));
 
     {
       std::ostringstream tmpstream;
       tmpstream << dirname << "/" << filenamebase_ << "-" << std::setfill('0')
-                << std::setw(npdigits_) << myrank_ << this->WriterSuffix();
+                << std::setw(npdigits_) << myrank_ << this->writer_suffix();
       currentout_.close();
       currentout_.open(tmpstream.str().c_str());
     }
@@ -343,23 +344,23 @@ void PostVtkWriter::WriteFiles(PostFilterBase &filter)
     if (myrank_ == 0)
     {
       currentmasterout_.close();
-      currentmasterout_.open((dirname + "/" + filenamebase_ + this->WriterPSuffix()).c_str());
+      currentmasterout_.open((dirname + "/" + filenamebase_ + this->writer_p_suffix()).c_str());
     }
 
-    WriteVtkHeader();
+    write_vtk_header();
 
-    WriteGeo();
+    write_geo();
 
     filter.WriteAllResults(field_);
 
-    WriteVtkFooter();
+    write_vtk_footer();
   }
 
-  WriteVtkMasterFile(filenames, dirname);
+  write_vtk_master_file(filenames, dirname);
 }
 
 
-void PostVtkWriter::WriteVtkMasterFile(
+void PostVtkWriter::write_vtk_master_file(
     const std::vector<std::pair<double, std::string>> &filenames, const std::string &dirname) const
 {
   // finally, write a single masterfile

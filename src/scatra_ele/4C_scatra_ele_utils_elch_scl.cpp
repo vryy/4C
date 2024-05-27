@@ -86,7 +86,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatScl(
   diffmanager->SetBulkConc(matscl->BulkConcentration());
 
   // set concentration dependent conductivity of cations
-  diffmanager->SetCond(matscl->ComputeConductivity(concentration, temperature));
+  diffmanager->SetCond(matscl->compute_conductivity(concentration, temperature));
 
   // derivative of electronic conductivity w.r.t. concentration
   diffmanager->SetConcDerivCond(

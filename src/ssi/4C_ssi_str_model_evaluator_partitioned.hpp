@@ -56,7 +56,7 @@ namespace STR
 
       void determine_stress_strain() override{};
 
-      void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
+      void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
           const NOX::NLN::Group& curr_grp) override;
       //! @}
 

@@ -78,13 +78,13 @@ namespace FPSI
     void prepare_time_step() override;
 
     //! take current results for converged and save for next time step
-    void Update() override;
+    void update() override;
 
     //! calculate stresses, strains, energies
     virtual void prepare_output(bool force_prepare);
 
     //! Output routine accounting for Lagrange multiplier at the interface
-    void Output() override;
+    void output() override;
 
     //! @name access sub-fields
     const Teuchos::RCP<POROELAST::Monolithic>& poro_field() { return poroelast_subproblem_; };
@@ -109,12 +109,12 @@ namespace FPSI
 
    public:
     //! FPSI coupling object (does the interface evaluations)
-    Teuchos::RCP<FPSI::FPSICoupling>& FPSICoupl() { return fpsicoupl_; }
+    Teuchos::RCP<FPSI::FpsiCoupling>& FPSICoupl() { return fpsicoupl_; }
 
     //! @name Access General Couplings
-    CORE::ADAPTER::Coupling& FluidAleCoupling() { return *coupfa_; }
+    CORE::ADAPTER::Coupling& fluid_ale_coupling() { return *coupfa_; }
 
-    const CORE::ADAPTER::Coupling& FluidAleCoupling() const { return *coupfa_; }
+    const CORE::ADAPTER::Coupling& fluid_ale_coupling() const { return *coupfa_; }
 
     // Couplings for FSI
     CORE::ADAPTER::Coupling& structure_fluid_coupling_fsi() { return *coupsf_fsi_; }
@@ -132,17 +132,21 @@ namespace FPSI
 
    protected:
     //! @name Transfer helpers
-    virtual Teuchos::RCP<Epetra_Vector> FluidToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> fluid_to_ale(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> ale_to_fluid(Teuchos::RCP<const Epetra_Vector> iv) const;
 
-    virtual Teuchos::RCP<Epetra_Vector> StructToFluid_FSI(
+    virtual Teuchos::RCP<Epetra_Vector> struct_to_fluid_fsi(
         Teuchos::RCP<const Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> FluidToStruct_FSI(
+    virtual Teuchos::RCP<Epetra_Vector> fluid_to_struct_fsi(
         Teuchos::RCP<const Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> StructToAle_FSI(Teuchos::RCP<const Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> AleToStruct_FSI(Teuchos::RCP<const Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> FluidToAle_FSI(Teuchos::RCP<const Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> AleToFluid_FSI(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> struct_to_ale_fsi(
+        Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> ale_to_struct_fsi(
+        Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> fluid_to_ale_fsi(
+        Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> ale_to_fluid_fsi(
+        Teuchos::RCP<const Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> ale_to_fluid_interface_fsi(
         Teuchos::RCP<const Epetra_Vector> iv) const;
 
@@ -166,7 +170,7 @@ namespace FPSI
     Teuchos::RCP<CORE::ADAPTER::Coupling> iffcoupsf_fsi_;
 
     //! FPSI Coupling Object
-    Teuchos::RCP<FPSI::FPSICoupling> fpsicoupl_;
+    Teuchos::RCP<FPSI::FpsiCoupling> fpsicoupl_;
   };
   // MonolithicBase
 

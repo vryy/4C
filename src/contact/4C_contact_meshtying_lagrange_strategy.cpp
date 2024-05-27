@@ -206,7 +206,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitializatio
   //**********************************************************************
   // fill Xmaster first
   Teuchos::RCP<Epetra_Vector> Xmaster = CORE::LINALG::CreateVector(*gmdofrowmap_, true);
-  AssembleCoords("master", true, Xmaster);
+  assemble_coords("master", true, Xmaster);
 
   //**********************************************************************
   // (2) solve for modified slave positions on global level
@@ -243,7 +243,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitializatio
 
       // build rhs
       Teuchos::RCP<Epetra_Vector> xm = CORE::LINALG::CreateVector(*gmdofrowmap_, true);
-      AssembleCoords("master", true, xm);
+      assemble_coords("master", true, xm);
       Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
       mmatrix_->Multiply(false, *xm, *rhs);
 
@@ -1188,7 +1188,7 @@ void CONTACT::MtLagrangeStrategy::run_post_apply_jacobian_inverse(Epetra_Vector&
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::MtLagrangeStrategy::RunPostComputeX(
+void CONTACT::MtLagrangeStrategy::run_post_compute_x(
     const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
   if (SystemType() != INPAR::CONTACT::system_condensed)

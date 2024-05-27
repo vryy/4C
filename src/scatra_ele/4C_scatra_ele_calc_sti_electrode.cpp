@@ -42,7 +42,7 @@ DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::Instance(
  | calculate element matrix and element right-hand side vector   fang 11/15 |
  *--------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::Sysmat(
+void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::sysmat(
     DRT::Element* ele,                          ///< current element
     CORE::LINALG::SerialDenseMatrix& emat,      ///< element matrix
     CORE::LINALG::SerialDenseVector& erhs,      ///< element right-hand side vector
@@ -78,23 +78,23 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::Sysmat(
     set_internal_variables_for_mat_and_rhs();
 
     // evaluate material parameters at current integration point
-    GetMaterialParams(ele, dummyvec, densnp, densam, dummy, iquad);
+    get_material_params(ele, dummyvec, densnp, densam, dummy, iquad);
 
     // matrix and vector contributions arising from mass term
     if (not my::scatraparatimint_->IsStationary())
     {
-      my::CalcMatMass(emat, 0, fac, densam[0]);
-      my::CalcRHSLinMass(erhs, 0, rhsfac, fac, densam[0], densnp[0]);
+      my::calc_mat_mass(emat, 0, fac, densam[0]);
+      my::calc_rhs_lin_mass(erhs, 0, rhsfac, fac, densam[0], densnp[0]);
     }
 
     // vector contributions arising from history value
     // need to adapt history value to time integration scheme first
     double rhsint(0.0);
-    my::ComputeRhsInt(rhsint, densam[0], densnp[0], my::scatravarmanager_->Hist(0));
+    my::compute_rhs_int(rhsint, densam[0], densnp[0], my::scatravarmanager_->Hist(0));
     my::calc_rhs_hist_and_source(erhs, 0, fac, rhsint);
 
     // matrix and vector contributions arising from diffusion term
-    my::CalcMatDiff(emat, 0, timefacfac);
+    my::calc_mat_diff(emat, 0, timefacfac);
     my::calc_rhs_diff(erhs, 0, rhsfac);
 
 
@@ -103,7 +103,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::Sysmat(
     if (my::scatrapara_->IsConservative())
     {
       double vdiv(0.0);
-      my::GetDivergence(vdiv, my::evelnp_);
+      my::get_divergence(vdiv, my::evelnp_);
       my::calc_mat_conv_add_cons(emat, 0, timefacfac, vdiv, densnp[0]);
 
       double vrhs = rhsfac * my::scatravarmanager_->Phinp(0) * vdiv * densnp[0];
@@ -112,9 +112,9 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::Sysmat(
 
     // matrix and vector contributions arising from source terms
     if (ele->Material()->MaterialType() == CORE::Materials::m_soret)
-      mystielch::CalcMatAndRhsSource(emat, erhs, timefacfac, rhsfac);
+      mystielch::calc_mat_and_rhs_source(emat, erhs, timefacfac, rhsfac);
     else if (ele->Material()->MaterialType() == CORE::Materials::m_th_fourier_iso)
-      CalcMatAndRhsJoule(emat, erhs, timefacfac, rhsfac);
+      calc_mat_and_rhs_joule(emat, erhs, timefacfac, rhsfac);
   }  // loop over integration points
 }
 
@@ -123,7 +123,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::Sysmat(
  | element matrix and right-hand side vector contributions arising from Joule's heat   fang 11/15 |
  *------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatAndRhsJoule(
+void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_and_rhs_joule(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
     CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
     const double& timefacfac,  //!< domain integration factor times time integration factor
@@ -148,7 +148,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatAndRhsJoule(
  |
  *--------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatAndRhsMixing(
+void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_and_rhs_mixing(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
     CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
     const double& timefacfac,  //!< domain integration factor times time integration factor
@@ -201,7 +201,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatAndRhsMixing(
  | element matrix and right-hand side vector contributions arising from Soret effect   fang 11/15 |
  *------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatAndRhsSoret(
+void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_and_rhs_soret(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
     CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
     const double& timefacfac,  //!< domain integration factor times time integration factor
@@ -337,14 +337,14 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::sysmat_od_thermo_scatra(
     // evaluate material parameters at current integration point
     double dummy(0.);
     std::vector<double> dummyvec(my::numscal_, 0.);
-    GetMaterialParams(ele, dummyvec, dummyvec, dummyvec, dummy, iquad);
+    get_material_params(ele, dummyvec, dummyvec, dummyvec, dummy, iquad);
 
     // provide element matrix with linearizations of source terms in discrete thermo residuals
     // w.r.t. scatra dofs
     if (ele->Material()->MaterialType() == CORE::Materials::m_soret)
-      mystielch::CalcMatSourceOD(emat, my::scatraparatimint_->TimeFac() * fac);
+      mystielch::calc_mat_source_od(emat, my::scatraparatimint_->TimeFac() * fac);
     else if (ele->Material()->MaterialType() == CORE::Materials::m_th_fourier_iso)
-      CalcMatJouleOD(emat, my::scatraparatimint_->TimeFac() * fac);
+      calc_mat_joule_od(emat, my::scatraparatimint_->TimeFac() * fac);
   }
 }
 
@@ -354,7 +354,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::sysmat_od_thermo_scatra(
  w.r.t. scatra dofs   fang 11/15 |
  *------------------------------------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatJouleOD(
+void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_joule_od(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
     const double& timefacfac  //!< domain integration factor times time integration factor
 )
@@ -388,7 +388,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatJouleOD(
  w.r.t. scatra dofs   fang 11/15 |
  *--------------------------------------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatMixingOD(
+void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_mixing_od(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
     const double& timefacfac  //!< domain integration factor times time integration factor
 )
@@ -455,7 +455,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatMixingOD(
  w.r.t. scatra dofs   fang 11/15 |
  *------------------------------------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatSoretOD(
+void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_soret_od(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
     const double& timefacfac  //!< domain integration factor times time integration factor
 )
@@ -547,7 +547,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::extract_element_and_node
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::GetMaterialParams(const DRT::Element* ele,
+void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::get_material_params(const DRT::Element* ele,
     std::vector<double>& densn, std::vector<double>& densnp, std::vector<double>& densam,
     double& visc, const int iquad)
 {
@@ -564,7 +564,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::GetMaterialParams(const 
   material = ele->Material(1);
   if (material->MaterialType() == CORE::Materials::m_electrode)
   {
-    utils_->MatElectrode(
+    utils_->mat_electrode(
         material, var_manager()->Conc(), my::scatravarmanager_->Phinp(0), diffmanagerstielectrode_);
     diffmanagerstielectrode_->SetOCPAndDerivs(
         ele, var_manager()->Conc(), my::scatravarmanager_->Phinp(0));

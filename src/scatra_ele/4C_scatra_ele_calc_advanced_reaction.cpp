@@ -65,7 +65,7 @@ DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::ScaTraEleCalcAdvReac(
  |  get the material constants  (private)                      thon 09/14|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::GetMaterialParams(
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::get_material_params(
     const DRT::Element* ele,      //!< the element we are dealing with
     std::vector<double>& densn,   //!< density at t_(n)
     std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
@@ -80,7 +80,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::GetMaterialParams(
   // We may have some reactive and some non-reactive elements in one discretisation.
   // But since the calculation classes are singleton, we have to reset all reactive stuff in case
   // of non-reactive elements:
-  ReaManager()->Clear(my::numscal_);
+  rea_manager()->Clear(my::numscal_);
 
   if (material->MaterialType() == CORE::Materials::m_matlist)
   {
@@ -93,7 +93,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::GetMaterialParams(
       int matid = actmat->MatID(k);
       Teuchos::RCP<CORE::MAT::Material> singlemat = actmat->MaterialById(matid);
 
-      Materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
+      materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
     }
   }
 
@@ -109,26 +109,26 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::GetMaterialParams(
       Teuchos::RCP<CORE::MAT::Material> singlemat = actmat->MaterialById(matid);
 
       // Note: order is important here!!
-      Materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
+      materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
 
       set_advanced_reaction_terms(
-          k, actmat, GetGpCoord());  // every reaction calculation stuff happens in here!!
+          k, actmat, get_gp_coord());  // every reaction calculation stuff happens in here!!
     }
   }
 
   else
   {
-    Materials(material, 0, densn[0], densnp[0], densam[0], visc, iquad);
+    materials(material, 0, densn[0], densnp[0], densam[0], visc, iquad);
   }
 
   return;
-}  // ScaTraEleCalc::GetMaterialParams
+}  // ScaTraEleCalc::get_material_params
 
 /*----------------------------------------------------------------------*
  |  evaluate single material  (protected)                    thon 02/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::Materials(
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::materials(
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -141,7 +141,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::Materials(
   switch (material->MaterialType())
   {
     case CORE::Materials::m_scatra:
-      my::MatScaTra(material, k, densn, densnp, densam, visc, iquad);
+      my::mat_scatra(material, k, densn, densnp, densam, visc, iquad);
       break;
     default:
       FOUR_C_THROW("Material type %i is not supported", material->MaterialType());
@@ -155,14 +155,14 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::Materials(
  |  Get right hand side including reaction bodyforce term    thon 02/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::GetRhsInt(
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::get_rhs_int(
     double& rhsint,       //!< rhs containing bodyforce at Gauss point
     const double densnp,  //!< density at t_(n+1)
     const int k           //!< index of current scalar
 )
 {
   //... + all advanced reaction terms
-  rhsint = my::bodyforce_[k].Dot(my::funct_) + densnp * ReaManager()->GetReaBodyForce(k);
+  rhsint = my::bodyforce_[k].Dot(my::funct_) + densnp * rea_manager()->GetReaBodyForce(k);
 
   return;
 }
@@ -171,7 +171,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::GetRhsInt(
  |  calculation of reactive element matrix for coupled reactions  thon 02/14  |
  *----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::CalcMatReact(
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::calc_mat_react(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac,
     const double timetaufac, const double taufac, const double densnp,
     const CORE::LINALG::Matrix<nen_, 1>& sgconv, const CORE::LINALG::Matrix<nen_, 1>& diff)
@@ -180,7 +180,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::CalcMatReact(
   // c)=Id*K-------------------------------------- NOTE: K_i must not depend on any concentrations!!
   // Otherwise we loose the corresponding linearisations.
 
-  my::CalcMatReact(emat, k, timefacfac, timetaufac, taufac, densnp, sgconv, diff);
+  my::calc_mat_react(emat, k, timefacfac, timetaufac, taufac, densnp, sgconv, diff);
 
   const CORE::LINALG::Matrix<nen_, 1>& conv = my::scatravarmanager_->Conv(k);
 
@@ -188,7 +188,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::CalcMatReact(
   // NOTE: The shape of f(c) can be arbitrary. So better consider using this term for new
   // implementations
 
-  const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = ReaManager();
+  const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = rea_manager();
 
   CORE::LINALG::Matrix<nen_, 1> functint = my::funct_;
   if (not my::scatrapara_->MatGP()) functint = funct_elementcenter_;
@@ -328,7 +328,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::set_advanced_reactio
     const double* gpcoord                                   //!< current Gauss-point coordinates
 )
 {
-  const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = ReaManager();
+  const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = rea_manager();
 
   remanager->AddToReaBodyForce(
       matreaclist->calc_rea_body_force_term(k, my::scatravarmanager_->Phinp(), gpcoord), k);

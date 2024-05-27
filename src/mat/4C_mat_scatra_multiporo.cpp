@@ -31,7 +31,7 @@ MAT::PAR::ScatraMatMultiPoroFluid::ScatraMatMultiPoroFluid(
 {
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScatraMatMultiPoroFluid::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScatraMatMultiPoroFluid::create_material()
 {
   return Teuchos::rcp(new MAT::ScatraMatMultiPoroFluid(this));
 }
@@ -121,7 +121,7 @@ MAT::PAR::ScatraMatMultiPoroVolFrac::ScatraMatMultiPoroVolFrac(
 {
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScatraMatMultiPoroVolFrac::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScatraMatMultiPoroVolFrac::create_material()
 {
   return Teuchos::rcp(new MAT::ScatraMatMultiPoroVolFrac(this));
 }
@@ -210,7 +210,7 @@ MAT::PAR::ScatraMatMultiPoroSolid::ScatraMatMultiPoroSolid(
 {
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScatraMatMultiPoroSolid::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScatraMatMultiPoroSolid::create_material()
 {
   return Teuchos::rcp(new MAT::ScatraMatMultiPoroSolid(this));
 }
@@ -303,7 +303,7 @@ MAT::PAR::ScatraMatMultiPoroTemperature::ScatraMatMultiPoroTemperature(
 {
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScatraMatMultiPoroTemperature::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScatraMatMultiPoroTemperature::create_material()
 {
   return Teuchos::rcp(new MAT::ScatraMatMultiPoroTemperature(this));
 }

@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 *-----------------------------------------------------------------------------------------*/
 XFEM::XffCouplingManager::XffCouplingManager(Teuchos::RCP<ConditionManager> condmanager,
     Teuchos::RCP<FLD::XFluid> xfluid, Teuchos::RCP<FLD::XFluid> fluid, std::vector<int> idx)
-    : CouplingCommManager(fluid->Discretization(), "XFEMSurfFluidFluid", 0, 3),
+    : CouplingCommManager(fluid->discretization(), "XFEMSurfFluidFluid", 0, 3),
       fluid_(fluid),
       xfluid_(xfluid),
       cond_name_("XFEMSurfFluidFluid"),

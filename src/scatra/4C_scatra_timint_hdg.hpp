@@ -53,7 +53,7 @@ namespace SCATRA
     //! update configuration and output to file/screen
     void output_state() override;
 
-    void WriteRestart() const override;
+    void write_restart() const override;
 
     //! read restart
     void read_restart(
@@ -144,31 +144,31 @@ namespace SCATRA
     void evaluate_error_compared_to_analytical_sol() override;
 
     //! adapt degree of test functions and change dofsets accordingly
-    virtual void AdaptDegree();
+    virtual void adapt_degree();
 
     //! adapt variable vectors required due to the change of the degrees of the test functions
-    virtual void AdaptVariableVector(Teuchos::RCP<Epetra_Vector> phi_new,
+    virtual void adapt_variable_vector(Teuchos::RCP<Epetra_Vector> phi_new,
         Teuchos::RCP<Epetra_Vector> phi_old, Teuchos::RCP<Epetra_Vector> intphi_new,
         Teuchos::RCP<Epetra_Vector> intphi_old, int nds_var_old, int nds_intvar_old,
         std::vector<DRT::Element::LocationArray> la_old);
 
     //! calculate matrices on element
-    virtual void CalcMatInitial();
+    virtual void calc_mat_initial();
 
     //! chooses the assemble process (assemble matrix and rhs or only rhs)
     void assemble_mat_and_rhs() override;
 
     //! contains the assembly process only for rhs
-    void AssembleRHS();
+    void assemble_rhs();
 
     //! pack material
-    virtual void PackMaterial() { return; };
+    virtual void pack_material() { return; };
 
     //! adapt material
-    virtual void UnpackMaterial() { return; };
+    virtual void unpack_material() { return; };
 
     //! project material field
-    virtual void ProjectMaterial() { return; };
+    virtual void project_material() { return; };
 
    private:
     //! time algorithm flag actually set (we internally reset it)

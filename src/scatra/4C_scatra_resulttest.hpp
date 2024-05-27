@@ -58,8 +58,8 @@ namespace SCATRA
 
    protected:
     //! get nodal result to be tested
-    virtual double ResultNode(const std::string quantity,  //! name of quantity to be tested
-        DRT::Node* node                                    //! node carrying the result to be tested
+    virtual double result_node(const std::string quantity,  //! name of quantity to be tested
+        DRT::Node* node  //! node carrying the result to be tested
     ) const;
 
     //! get special result to be tested

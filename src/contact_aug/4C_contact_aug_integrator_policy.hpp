@@ -54,7 +54,7 @@ namespace CONTACT
           const double length_n_inv, const Deriv1stVecMap& d_non_unit_normal,
           Deriv1stVecMap& d_unit_normal, const bool reset = true) const;
 
-      void Deriv1st_Jacobian(const CORE::LINALG::Matrix<probdim, 1>& unit_normal,
+      void deriv1st_jacobian(const CORE::LINALG::Matrix<probdim, 1>& unit_normal,
           const Deriv1stVecMap& d_non_unit_normal, Deriv1stMap& d_jac) const;
 
       /// @}
@@ -118,7 +118,7 @@ namespace CONTACT
           const CORE::LINALG::Matrix<probdim, 1>& snormal,
           CORE::LINALG::Matrix<probdim, probdim>& lmat_inv) const;
 
-      void Deriv1st_MXiGP(const CORE::LINALG::Matrix<probdim, probdim>& lmat_inv,
+      void deriv1st_m_xi_gp(const CORE::LINALG::Matrix<probdim, probdim>& lmat_inv,
           MORTAR::Element& sele, MORTAR::Element& mele,
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
           const CORE::LINALG::Matrix<MASTERNUMNODE, 1>& mval, const double alpha,

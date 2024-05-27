@@ -48,7 +48,7 @@ void ADAPTER::FluidLung::Init()
   // get lung fluid-structure volume constraints
 
   std::vector<CORE::Conditions::Condition*> temp;
-  Discretization()->GetCondition("StructFluidSurfCoupling", temp);
+  discretization()->GetCondition("StructFluidSurfCoupling", temp);
   for (unsigned i = 0; i < temp.size(); ++i)
   {
     CORE::Conditions::Condition& cond = *(temp[i]);
@@ -74,10 +74,10 @@ void ADAPTER::FluidLung::Init()
   // build mapextractor for outflow fsi boundary dofs <-> full map
 
   std::vector<int> fsinodes;
-  CORE::Conditions::FindConditionedNodes(*Discretization(), "FSICoupling", fsinodes);
+  CORE::Conditions::FindConditionedNodes(*discretization(), "FSICoupling", fsinodes);
 
   std::set<int> outflownodes;
-  CORE::Conditions::FindConditionedNodes(*Discretization(), "StructAleCoupling", outflownodes);
+  CORE::Conditions::FindConditionedNodes(*discretization(), "StructAleCoupling", outflownodes);
 
   std::vector<int> outflowfsinodes;
 
@@ -91,8 +91,8 @@ void ADAPTER::FluidLung::Init()
 
   for (unsigned int i = 0; i < outflowfsinodes.size(); ++i)
   {
-    DRT::Node* actnode = Discretization()->gNode(outflowfsinodes[i]);
-    const std::vector<int> dof = Discretization()->Dof(actnode);
+    DRT::Node* actnode = discretization()->gNode(outflowfsinodes[i]);
+    const std::vector<int> dof = discretization()->Dof(actnode);
 
     const int ndim = GLOBAL::Problem::Instance()->NDim();
     if (ndim > static_cast<int>(dof.size()))
@@ -104,7 +104,7 @@ void ADAPTER::FluidLung::Init()
   if (pos != dofmapvec.end() and *pos < 0) FOUR_C_THROW("illegal dof number %d", *pos);
 
   Teuchos::RCP<Epetra_Map> outflowfsidofmap = Teuchos::rcp(
-      new Epetra_Map(-1, dofmapvec.size(), dofmapvec.data(), 0, Discretization()->Comm()));
+      new Epetra_Map(-1, dofmapvec.size(), dofmapvec.data(), 0, discretization()->Comm()));
 
   outflowfsiinterface_ =
       Teuchos::rcp(new CORE::LINALG::MapExtractor(*Interface()->FullMap(), outflowfsidofmap));
@@ -135,13 +135,13 @@ void ADAPTER::FluidLung::ListLungVolCons(std::set<int>& LungVolConIDs, int& MinL
 void ADAPTER::FluidLung::InitializeVolCon(
     Teuchos::RCP<Epetra_Vector> initflowrate, const int offsetID)
 {
-  if (!(Discretization()->Filled())) FOUR_C_THROW("fill_complete() was not called");
-  if (!Discretization()->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
+  if (!(discretization()->Filled())) FOUR_C_THROW("fill_complete() was not called");
+  if (!discretization()->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // set ale displacements, fluid and grid velocities
-  Discretization()->ClearState();
-  Discretization()->set_state("convectivevel", ConvectiveVel());
-  Discretization()->set_state("dispnp", Dispnp());
+  discretization()->ClearState();
+  discretization()->set_state("convectivevel", ConvectiveVel());
+  discretization()->set_state("dispnp", Dispnp());
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
@@ -180,13 +180,13 @@ void ADAPTER::FluidLung::InitializeVolCon(
       std::vector<int> lm;
       std::vector<int> lmowner;
       std::vector<int> lmstride;
-      curr->second->LocationVector(*Discretization(), lm, lmowner, lmstride);
+      curr->second->LocationVector(*discretization(), lm, lmowner, lmstride);
 
       // Reshape element matrices and vectors and init to zero
       elevector3.size(1);
 
       // call the element specific evaluate method
-      int err = curr->second->Evaluate(params, *Discretization(), lm, elematrix1, elematrix2,
+      int err = curr->second->Evaluate(params, *discretization(), lm, elematrix1, elematrix2,
           elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("error while evaluating elements");
 
@@ -213,16 +213,16 @@ void ADAPTER::FluidLung::EvaluateVolCon(
     Teuchos::RCP<Epetra_Vector> FluidRHS, Teuchos::RCP<Epetra_Vector> CurrFlowRates,
     Teuchos::RCP<Epetra_Vector> lagrMultVecRed, const int offsetID, const double dttheta)
 {
-  if (!(Discretization()->Filled())) FOUR_C_THROW("fill_complete() was not called");
-  if (!Discretization()->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
+  if (!(discretization()->Filled())) FOUR_C_THROW("fill_complete() was not called");
+  if (!discretization()->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // set ale displacements, fluid and grid velocities
-  Discretization()->ClearState();
-  Discretization()->set_state("convectivevel", ConvectiveVel());
-  Discretization()->set_state("dispnp", Dispnp());
+  discretization()->ClearState();
+  discretization()->set_state("convectivevel", ConvectiveVel());
+  discretization()->set_state("dispnp", Dispnp());
 
   // residual scaling for fluid matrices needed
-  const double invresscale = 1.0 / ResidualScaling();
+  const double invresscale = 1.0 / residual_scaling();
 
   //---------------------------------------------------------------------
   // loop through conditions and evaluate them
@@ -270,7 +270,7 @@ void ADAPTER::FluidLung::EvaluateVolCon(
       std::vector<int> lm;
       std::vector<int> lmowner;
       std::vector<int> lmstride;
-      curr->second->LocationVector(*Discretization(), lm, lmowner, lmstride);
+      curr->second->LocationVector(*discretization(), lm, lmowner, lmstride);
 
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
@@ -283,7 +283,7 @@ void ADAPTER::FluidLung::EvaluateVolCon(
 
       //---------------------------------------------------------------------
       // call the element specific evaluate method
-      int err = curr->second->Evaluate(params, *Discretization(), lm, elematrix1, elematrix2,
+      int err = curr->second->Evaluate(params, *discretization(), lm, elematrix1, elematrix2,
           elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("error while evaluating elements");
 

@@ -29,7 +29,7 @@ template <CORE::FE::CellType distype>
 DRT::ELEMENTS::Shell7pEleCalc<distype>::Shell7pEleCalc()
     : DRT::ELEMENTS::Shell7pEleCalcInterface::Shell7pEleCalcInterface(),
       intpoints_midsurface_(
-          SHELL::CreateGaussIntegrationPoints<distype>(SHELL::GetGaussRule<distype>()))
+          SHELL::CreateGaussIntegrationPoints<distype>(SHELL::get_gauss_rule<distype>()))
 {
   cur_thickness_.resize(intpoints_midsurface_.NumPoints(), shell_data_.thickness);
 }
@@ -69,7 +69,7 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::Unpack(
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Shell7pEleCalc<distype>::MaterialPostSetup(
+void DRT::ELEMENTS::Shell7pEleCalc<distype>::material_post_setup(
     DRT::Element& ele, MAT::So3Material& solid_material)
 {
   // element/nodal wise defined data

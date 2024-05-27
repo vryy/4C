@@ -273,10 +273,10 @@ namespace FLD
 
    protected:
     /// initialize all state members based on the xfluid dof-rowmap
-    void InitStateVectors();
+    void init_state_vectors();
 
     /// initialize the system matrix of the intersected fluid
-    void InitSystemMatrix();
+    void init_system_matrix();
 
     /// initialize coupling matrices and rhs vectors for all coupling objects
     void init_coupling_matrices_and_rhs();

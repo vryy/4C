@@ -76,9 +76,9 @@ namespace ART
 
 
       /*!
-      \brief Wrapper for ArtJunctionBc::UpdateResidual
+      \brief Wrapper for ArtJunctionBc::update_residual
      */
-      void UpdateResidual(Teuchos::RCP<Epetra_Vector> residual);
+      void update_residual(Teuchos::RCP<Epetra_Vector> residual);
 
       /*!
       \brief Standard solver
@@ -151,48 +151,48 @@ namespace ART
       /*!
       \Apply the boundary condition to the elements
       */
-      void ApplyBc(double time, double dta, int condid);
+      void apply_bc(double time, double dta, int condid);
 
       /*!
       \Solve the boundary condition to the elements
       */
-      int Solve(Teuchos::ParameterList &params);
+      int solve(Teuchos::ParameterList &params);
 
 
       /*!
       \Evaluate the Jacobian matrix to solve the nonlinear problem
       */
-      void Jacobian_Eval(CORE::LINALG::SerialDenseMatrix &Jacobian, std::vector<double> &A,
+      void jacobian_eval(CORE::LINALG::SerialDenseMatrix &Jacobian, std::vector<double> &A,
           std::vector<double> &Q, std::vector<double> &W, std::vector<double> &Ao,
           std::vector<double> &rho, std::vector<double> &beta, std::vector<double> &Pext);
 
       /*!
       \Evaluate the residual vector needed to solve the nonlinear problem
       */
-      void Residual_Eval(CORE::LINALG::SerialDenseVector &f, std::vector<double> &A,
+      void residual_eval(CORE::LINALG::SerialDenseVector &f, std::vector<double> &A,
           std::vector<double> &Q, std::vector<double> &W, std::vector<double> &Ao,
           std::vector<double> &rho, std::vector<double> &beta, std::vector<double> &Pext);
 
-      void Residual_Eval(CORE::LINALG::SerialDenseMatrix &f, std::vector<double> &A,
+      void residual_eval(CORE::LINALG::SerialDenseMatrix &f, std::vector<double> &A,
           std::vector<double> &Q, std::vector<double> &W, std::vector<double> &Ao,
           std::vector<double> &rho, std::vector<double> &beta, std::vector<double> &Pext);
 
       /*!
       \Evaluate the residual vector needed to solve the nonlinear problem
       */
-      void Update_Result(CORE::LINALG::SerialDenseVector &xn, CORE::LINALG::SerialDenseVector &dx);
+      void update_result(CORE::LINALG::SerialDenseVector &xn, CORE::LINALG::SerialDenseVector &dx);
 
       /*!
       \Evaluate the residual vector needed to solve the nonlinear problem
       */
-      double twoNorm(CORE::LINALG::SerialDenseVector &x);
+      double two_norm(CORE::LINALG::SerialDenseVector &x);
 
 
 
       /*!
       \Update the Residual
       */
-      void UpdateResidual(Teuchos::RCP<Epetra_Vector> residual);
+      void update_residual(Teuchos::RCP<Epetra_Vector> residual);
 
 
      protected:

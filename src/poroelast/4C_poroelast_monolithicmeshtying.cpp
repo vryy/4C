@@ -36,8 +36,8 @@ POROELAST::MonolithicMeshtying::MonolithicMeshtying(const Epetra_Comm& comm,
   const int ndim = GLOBAL::Problem::Instance()->NDim();
   std::vector<int> coupleddof(ndim, 1);  // 1,1,1 should be in coupleddof
   // coupleddof[ndim]=0; // not necessary because structural discretization is used
-  mortar_adapter_->Setup(
-      StructureField()->Discretization(), StructureField()->Discretization(), coupleddof, "Mortar");
+  mortar_adapter_->Setup(structure_field()->discretization(), structure_field()->discretization(),
+      coupleddof, "Mortar");
 
   fvelactiverowdofmap_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor);
 
@@ -86,8 +86,8 @@ void POROELAST::MonolithicMeshtying::Evaluate(
 
   // for the set_state() methods in EvaluatePoroMt() non const state vectores are needed
   // ->WriteAccess... methods are used (even though we will not change the states ...)
-  Teuchos::RCP<Epetra_Vector> svel = StructureField()->WriteAccessVelnp();
-  Teuchos::RCP<Epetra_Vector> sdisp = StructureField()->WriteAccessDispnp();
+  Teuchos::RCP<Epetra_Vector> svel = structure_field()->WriteAccessVelnp();
+  Teuchos::RCP<Epetra_Vector> sdisp = structure_field()->WriteAccessDispnp();
 
   // for the EvaluatePoroMt() method RCPs on the matrices are needed...
   Teuchos::RCP<CORE::LINALG::SparseMatrix> f =
@@ -98,7 +98,7 @@ void POROELAST::MonolithicMeshtying::Evaluate(
   Teuchos::RCP<Epetra_Vector> frhs = Extractor()->ExtractVector(rhs_, 1);
 
   // modify system matrix and rhs for meshtying
-  mortar_adapter_->EvaluatePoroMt(fvel, svel, modfpres, sdisp, StructureField()->Discretization(),
+  mortar_adapter_->EvaluatePoroMt(fvel, svel, modfpres, sdisp, structure_field()->discretization(),
       f, k_fs, frhs, fluid_structure_coupling(), fluid_field()->dof_row_map());
 
   // assign modified parts of system matrix into full system matrix

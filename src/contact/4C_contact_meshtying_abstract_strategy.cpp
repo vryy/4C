@@ -343,8 +343,8 @@ void CONTACT::MtAbstractStrategy::MortarCoupling(const Teuchos::RCP<const Epetra
   // compute g-vector at global level
   Teuchos::RCP<Epetra_Vector> xs = CORE::LINALG::CreateVector(*gsdofrowmap_, true);
   Teuchos::RCP<Epetra_Vector> xm = CORE::LINALG::CreateVector(*gmdofrowmap_, true);
-  AssembleCoords("slave", true, xs);
-  AssembleCoords("master", true, xm);
+  assemble_coords("slave", true, xs);
+  assemble_coords("master", true, xm);
   Teuchos::RCP<Epetra_Vector> Dxs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   dmatrix_->Multiply(false, *xs, *Dxs);
   Teuchos::RCP<Epetra_Vector> Mxm = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -572,8 +572,8 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector>
   // compute g-vector at global level
   Teuchos::RCP<Epetra_Vector> xs = CORE::LINALG::CreateVector(*gsdofrowmap_, true);
   Teuchos::RCP<Epetra_Vector> xm = CORE::LINALG::CreateVector(*gmdofrowmap_, true);
-  AssembleCoords("slave", true, xs);
-  AssembleCoords("master", true, xm);
+  assemble_coords("slave", true, xs);
+  assemble_coords("master", true, xm);
   Teuchos::RCP<Epetra_Vector> Dxs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   dmatrix_->Multiply(false, *xs, *Dxs);
   Teuchos::RCP<Epetra_Vector> Mxm = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -1217,7 +1217,7 @@ void CONTACT::MtAbstractStrategy::VisualizeGmsh(const int step, const int iter)
 /*----------------------------------------------------------------------*
  | Visualization of meshtying segments with gmsh              popp 08/08|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::AssembleCoords(
+void CONTACT::MtAbstractStrategy::assemble_coords(
     const std::string& sidename, bool ref, Teuchos::RCP<Epetra_Vector> vec)
 {
   // NOTE:

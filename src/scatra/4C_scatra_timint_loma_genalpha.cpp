@@ -252,10 +252,10 @@ void SCATRA::TimIntLomaGenAlpha::UpdateThermPressure()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::WriteRestart() const
+void SCATRA::TimIntLomaGenAlpha::write_restart() const
 {
   // write standard fields first
-  TimIntGenAlpha::WriteRestart();
+  TimIntGenAlpha::write_restart();
 
   // write additional restart data for loma
   // required for restart of closed systems
@@ -333,7 +333,7 @@ void SCATRA::TimIntLomaGenAlpha::dynamic_computation_of_cs()
   {
     // perform filtering and computation of Prt
     // compute averaged values for LkMk and MkMk
-    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
+    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = dirichlet_toggle();
     DynSmag_->apply_filter_for_dynamic_computation_of_prt(
         phiaf_, thermpressaf_, dirichtoggle, *extraparams_, NdsVel());
   }
@@ -349,7 +349,7 @@ void SCATRA::TimIntLomaGenAlpha::dynamic_computation_of_cv()
 {
   if (turbmodel_ == INPAR::FLUID::dynamic_vreman)
   {
-    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
+    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = dirichlet_toggle();
     Vrem_->apply_filter_for_dynamic_computation_of_dt(
         phiaf_, thermpressaf_, dirichtoggle, *extraparams_, NdsVel());
   }

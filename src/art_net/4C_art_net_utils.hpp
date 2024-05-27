@@ -47,21 +47,21 @@ namespace ART
 
    protected:
     /// determine element type string and whether element is copied or not
-    bool DetermineEleType(
+    bool determine_ele_type(
         DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
 
     //! provide cloned element with element specific data (material etc.)
-    void SetElementData(
+    void set_element_data(
         Teuchos::RCP<DRT::Element> newele,  //! current cloned element on target discretization
         DRT::Element* oldele,               //! current element on source discretization
         const int matid,                    //! material of cloned element
         const bool isnurbs                  //! nurbs flag
     );
 
-    void CheckMaterialType(const int matid);
+    void check_material_type(const int matid);
 
     /// returns conditions names to be copied (source and target name)
-    std::map<std::string, std::string> ConditionsToCopy() const;
+    std::map<std::string, std::string> conditions_to_copy() const;
   };  // class ArteryScatraCloneStrategy
 
   namespace UTILS

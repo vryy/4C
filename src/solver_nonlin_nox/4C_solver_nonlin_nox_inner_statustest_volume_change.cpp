@@ -33,7 +33,7 @@ NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::VolumeChang
 
   if (iter_ls == 0)
   {
-    if (SetElementVolumes(grp, ref_ele_vols_) != ::NOX::Abstract::Group::Ok)
+    if (set_element_volumes(grp, ref_ele_vols_) != ::NOX::Abstract::Group::Ok)
       FOUR_C_THROW("The evaluation of the reference volumes failed!");
     return status_unevaluated;
   }
@@ -43,9 +43,9 @@ NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::VolumeChang
     return status_unevaluated;
   }
 
-  const ::NOX::Abstract::Group::ReturnType eval_status = SetElementVolumes(grp, curr_ele_vols_);
+  const ::NOX::Abstract::Group::ReturnType eval_status = set_element_volumes(grp, curr_ele_vols_);
 
-  num_bad_eles_ = NumberOfBadElements();
+  num_bad_eles_ = number_of_bad_elements();
   if (num_bad_eles_ == 0 and eval_status == ::NOX::Abstract::Group::Ok)
     status_ = status_converged;
   else
@@ -85,7 +85,7 @@ std::ostream& NOX::NLN::INNER::StatusTest::VolumeChange::Print(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::Abstract::Group::ReturnType NOX::NLN::INNER::StatusTest::VolumeChange::SetElementVolumes(
+::NOX::Abstract::Group::ReturnType NOX::NLN::INNER::StatusTest::VolumeChange::set_element_volumes(
     const ::NOX::Abstract::Group& grp, Teuchos::RCP<Epetra_Vector>& ele_vols) const
 {
   const NOX::NLN::Group& nln_grp = dynamic_cast<const NOX::NLN::Group&>(grp);
@@ -96,7 +96,7 @@ std::ostream& NOX::NLN::INNER::StatusTest::VolumeChange::Print(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int NOX::NLN::INNER::StatusTest::VolumeChange::NumberOfBadElements()
+int NOX::NLN::INNER::StatusTest::VolumeChange::number_of_bad_elements()
 {
   min_vol_change_ = 1.0;
   max_vol_change_ = 1.0;

@@ -141,55 +141,55 @@ namespace MORTAR
     \brief Return dim of Problem
 
     */
-    const int& Dim() const { return dim_; }
+    const int& dim() const { return dim_; }
 
     /*!
     \brief Get discretization of the interface
 
     */
-    DRT::Discretization& Discret() const { return idiscret_; }
+    DRT::Discretization& discret() const { return idiscret_; }
 
     /*!
     \brief Return pointer to normals of DOP
 
     */
-    const CORE::LINALG::SerialDenseMatrix& Dopnormals() const { return dopnormals_; }
+    const CORE::LINALG::SerialDenseMatrix& dopnormals() const { return dopnormals_; }
 
     /*!
     \brief Return pointer to element list of tree node
 
     */
-    std::vector<int> Elelist() const { return elelist_; }
+    std::vector<int> elelist() const { return elelist_; }
 
     /*!
     \brief Return no. of vertices
 
     */
-    const int& Kdop() const { return kdop_; }
+    const int& kdop() const { return kdop_; }
 
     /*!
     \brief Return layer of current tree node
 
     */
-    int Layer() const { return layer_; }
+    int get_layer() const { return layer_; }
 
     /*!
     \brief Set layer of current tree node
 
     */
-    void SetLayer(int layer) { layer_ = layer; }
+    void set_layer(int layer) { layer_ = layer; }
 
     /*!
     \brief Return pointer to slabs of DOP
 
     */
-    CORE::LINALG::SerialDenseMatrix& Slabs() { return slabs_; }
+    CORE::LINALG::SerialDenseMatrix& slabs() { return slabs_; }
 
     /*!
     \brief Return bool indicating whether auxiliary position is used when computing dops
 
     */
-    const bool& UseAuxPos() const { return useauxpos_; }
+    const bool& use_aux_pos() const { return useauxpos_; }
     //@}
 
    private:
@@ -255,37 +255,37 @@ namespace MORTAR
     \brief Return dim of the problem
 
     */
-    const int& Dim() const { return dim_; }
+    const int& dim() const { return dim_; }
 
     /*!
     \brief Get discretization of the interface
 
     */
-    DRT::Discretization& Discret() const { return idiscret_; }
+    DRT::Discretization& discret() const { return idiscret_; }
 
     /*!
     \brief Get matrix of DOP normals
 
     */
-    const CORE::LINALG::SerialDenseMatrix& DopNormals() const { return dopnormals_; }
+    const CORE::LINALG::SerialDenseMatrix& dop_normals() const { return dopnormals_; }
 
     /*!
     \brief Return factor "enlarge" to enlarge dops
 
     */
-    double& Enlarge() { return enlarge_; }
+    double& enlarge() { return enlarge_; }
 
     /*!
     \brief Return factor "eps" to set "enlarge"
 
     */
-    const double& Eps() const { return eps_; }
+    const double& eps() const { return eps_; }
 
     /*!
     \brief Get number of vertices of DOP
 
     */
-    const int& Kdop() const { return kdop_; }
+    const int& kdop() const { return kdop_; }
     //@}
 
    private:

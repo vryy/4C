@@ -115,7 +115,7 @@ void MIXTURE::MixtureConstituentElastHyperDamage::EvaluateElasticPart(
 {
   // Compute total inelastic deformation gradient
   static CORE::LINALG::Matrix<3, 3> iFin(false);
-  iFin.MultiplyNN(iFextin, PrestretchTensor(gp));
+  iFin.MultiplyNN(iFextin, prestretch_tensor(gp));
 
   // Evaluate 3D elastic part
   MAT::ElastHyperEvaluateElasticPart(

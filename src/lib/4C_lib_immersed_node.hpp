@@ -45,7 +45,7 @@ namespace DRT
     //! @name Enums and Friends
 
     /*!
-    \brief The Discretization is a friend of Node
+    \brief The discretization is a friend of Node
     */
     friend class Discretization;
 

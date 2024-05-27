@@ -3339,7 +3339,7 @@ void CONTACT::LagrangeStrategy::EvalConstrRHS()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
+void CONTACT::LagrangeStrategy::eval_force(CONTACT::ParamsInterface& cparams)
 {
   //---------------------------------------------------------------
   // For selfcontact the master/slave sets are updated within the -
@@ -3377,14 +3377,14 @@ void CONTACT::LagrangeStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
 
   if (SystemType() != INPAR::CONTACT::system_condensed)
   {
-    EvalStrContactRHS();  // evaluate the structure/displacement rhs
-    EvalConstrRHS();      // evaluate the constraint rhs (saddle-point system only)
+    eval_str_contact_rhs();  // evaluate the structure/displacement rhs
+    EvalConstrRHS();         // evaluate the constraint rhs (saddle-point system only)
 
     if (constrrhs_ != Teuchos::null)
       constrrhs_->Scale(-1.0);  // scale with -1.0 --> when old structure is deleted change this!!!
   }
   else
-    EvalStrContactRHS();
+    eval_str_contact_rhs();
 
   INPAR::MORTAR::LagMultQuad lagmultquad =
       CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
@@ -3965,7 +3965,7 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_frictionless()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::AssembleContactRHS()
+void CONTACT::LagrangeStrategy::assemble_contact_rhs()
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
@@ -3986,7 +3986,7 @@ void CONTACT::LagrangeStrategy::AssembleContactRHS()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::EvalStrContactRHS()
+void CONTACT::LagrangeStrategy::eval_str_contact_rhs()
 {
   if (!IsInContact() and !WasInContact() and !was_in_contact_last_time_step())
   {
@@ -4113,10 +4113,10 @@ void CONTACT::LagrangeStrategy::post_evaluate(CONTACT::ParamsInterface& cparams)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::EvalForceStiff(CONTACT::ParamsInterface& cparams)
+void CONTACT::LagrangeStrategy::eval_force_stiff(CONTACT::ParamsInterface& cparams)
 {
   // call the evaluate force routine if not done before
-  if (!evalForceCalled_) EvalForce(cparams);
+  if (!evalForceCalled_) eval_force(cparams);
 
   // bye bye
   return;
@@ -4233,11 +4233,11 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::LagrangeStrategy::GetMatrixBlo
       Teuchos::RCP<CORE::LINALG::SparseMatrix> kzz_ptr = Teuchos::null;
       if (IsSelfContact())
       {
-        kzz_ptr =
-            Teuchos::rcp(new CORE::LINALG::SparseMatrix(GSelfContactRefMap(), 100, false, true));
+        kzz_ptr = Teuchos::rcp(
+            new CORE::LINALG::SparseMatrix(g_self_contact_ref_map(), 100, false, true));
 
         Teuchos::RCP<Epetra_Map> unused_lmdofs =
-            CORE::LINALG::SplitMap(GSelfContactRefMap(), *gsdofrowmap_);
+            CORE::LINALG::SplitMap(g_self_contact_ref_map(), *gsdofrowmap_);
         Epetra_Vector ones = Epetra_Vector(*unused_lmdofs, false);
         ones.PutScalar(1.0);
         if (CORE::LINALG::InsertMyRowDiagonalIntoUnfilledMatrix(*kzz_ptr, ones))
@@ -4302,7 +4302,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::LagrangeStrategy::GetMatrixBlo
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::RunPostComputeX(const CONTACT::ParamsInterface& cparams,
+void CONTACT::LagrangeStrategy::run_post_compute_x(const CONTACT::ParamsInterface& cparams,
     const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
   if (SystemType() != INPAR::CONTACT::system_condensed)

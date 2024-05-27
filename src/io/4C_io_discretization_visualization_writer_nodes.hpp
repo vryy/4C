@@ -101,7 +101,7 @@ namespace IO
     void set_geometry_from_discretization();
 
    private:
-    //! Discretization containing nodes of which geometry and result data shall be visualized
+    //! discretization containing nodes of which geometry and result data shall be visualized
     Teuchos::RCP<const DRT::Discretization> discretization_;
 
     //! The actual visualization writer object that additionally stores the geometry and result data

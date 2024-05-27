@@ -58,7 +58,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       //! evaluate action
-      int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
+      int evaluate_action(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -72,14 +72,14 @@ namespace DRT
       /*========================================================================*/
 
       //! Prepare everything what is needed in CallMatAndRhs() to calculate the sysmat and the rhs
-      void Sysmat(DRT::Element* ele,                  //!< the element we are dealing with
+      void sysmat(DRT::Element* ele,                  //!< the element we are dealing with
           CORE::LINALG::SerialDenseMatrix& emat,      //!< element matrix to calculate
           CORE::LINALG::SerialDenseVector& erhs,      //!< element rhs to calculate
           CORE::LINALG::SerialDenseVector& subgrdiff  //!< subgrid-diff.-scaling vector
           ) override;
 
       //! calculate contributions to matrix and rhs (inside of loop over all scalars)
-      virtual void CalcMatAndRhs(
+      virtual void calc_mat_and_rhs(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
           CORE::LINALG::SerialDenseVector& erhs,  //!< element rhs to calculate+
           const int k,                            //!< index of current scalar
@@ -121,12 +121,12 @@ namespace DRT
           ) override;
 
       //! get material parameters
-      void GetMaterialParams(const DRT::Element* ele,  //!< the element we are dealing with
-          std::vector<double>& densn,                  //!< density at t_(n)
-          std::vector<double>& densnp,                 //!< density at t_(n+1) or t_(n+alpha_F)
-          std::vector<double>& densam,                 //!< density at t_(n+alpha_M)
-          double& visc,                                //!< fluid viscosity
-          const int iquad = -1                         //!< id of current gauss point (default = -1)
+      void get_material_params(const DRT::Element* ele,  //!< the element we are dealing with
+          std::vector<double>& densn,                    //!< density at t_(n)
+          std::vector<double>& densnp,                   //!< density at t_(n+1) or t_(n+alpha_F)
+          std::vector<double>& densam,                   //!< density at t_(n+alpha_M)
+          double& visc,                                  //!< fluid viscosity
+          const int iquad = -1  //!< id of current gauss point (default = -1)
           ) override = 0;
 
       /*========================================================================*/
@@ -147,17 +147,19 @@ namespace DRT
       /*========================================================================*/
 
       //! Potential equation ENC
-      void CalcMatPotEquENC(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                                              //!< index of current scalar
-          const double fac,                                         //!< domain-integration factor
-          const double alphaf                                       //!< time factor for ENC
+      void calc_mat_pot_equ_enc(
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                            //!< index of current scalar
+          const double fac,                       //!< domain-integration factor
+          const double alphaf                     //!< time factor for ENC
       );
 
       //! CalcRhs: Potential equation ENC
-      void CalcRhsPotEquENC(CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                                              //!< index of current scalar
-          const double fac,                                         //!< domain-integration factor
-          const double conint                                       //!< concentration at GP
+      void calc_rhs_pot_equ_enc(
+          CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+          const int k,                            //!< index of current scalar
+          const double fac,                       //!< domain-integration factor
+          const double conint                     //!< concentration at GP
       );
 
       //! process an electrode boundary kinetics point condition
@@ -220,15 +222,15 @@ namespace DRT
           ) = 0;
 
       //! calculate weighted mass flux (no reactive flux so far) -> elch-specific implementation
-      virtual void CalculateFlux(CORE::LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
-          const INPAR::SCATRA::FluxType fluxtype,                   //!< type fo flux
-          const int k                                               //!< index of current scalar
+      virtual void calculate_flux(CORE::LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
+          const INPAR::SCATRA::FluxType fluxtype,                    //!< type fo flux
+          const int k                                                //!< index of current scalar
           ) = 0;
 
       //! calculate weighted current flux (no reactive flux so far) -> elch-specific implementation
-      virtual void CalculateCurrent(CORE::LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
-          const INPAR::SCATRA::FluxType fluxtype,                      //!< type fo flux
-          const double fac                                             //!< integration factor
+      virtual void calculate_current(CORE::LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
+          const INPAR::SCATRA::FluxType fluxtype,                       //!< type fo flux
+          const double fac                                              //!< integration factor
       ){};
 
       //! calculate error of numerical solution with respect to analytical solution
@@ -249,9 +251,10 @@ namespace DRT
       );
 
       // Get conductivity from material
-      virtual void GetConductivity(const enum INPAR::ELCH::EquPot
-                                       equpot,  //!< type of closing equation for electric potential
-          double& sigma_all,                    //!< conductivity of electrolyte solution
+      virtual void get_conductivity(
+          const enum INPAR::ELCH::EquPot
+              equpot,         //!< type of closing equation for electric potential
+          double& sigma_all,  //!< conductivity of electrolyte solution
           std::vector<double>&
               sigma,  //!< conductivity of all single ions + overall electrolyte solution
           bool effCond) = 0;

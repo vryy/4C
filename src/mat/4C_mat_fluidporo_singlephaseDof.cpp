@@ -50,21 +50,21 @@ MAT::PAR::FluidPoroPhaseDof* MAT::PAR::FluidPoroPhaseDof::CreatePhaseDof(int pha
     case CORE::Materials::m_fluidporo_phasedof_diffpressure:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofDiffPressure(curmat));
+        curmat->set_parameter(new MAT::PAR::FluidPoroPhaseDofDiffPressure(curmat));
       phasedof = static_cast<MAT::PAR::FluidPoroPhaseDofDiffPressure*>(curmat->Parameter());
       break;
     }
     case CORE::Materials::m_fluidporo_phasedof_pressure:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofPressure(curmat));
+        curmat->set_parameter(new MAT::PAR::FluidPoroPhaseDofPressure(curmat));
       phasedof = static_cast<MAT::PAR::FluidPoroPhaseDofPressure*>(curmat->Parameter());
       break;
     }
     case CORE::Materials::m_fluidporo_phasedof_saturation:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofSaturation(curmat));
+        curmat->set_parameter(new MAT::PAR::FluidPoroPhaseDofSaturation(curmat));
       phasedof = static_cast<MAT::PAR::FluidPoroPhaseDofSaturation*>(curmat->Parameter());
       break;
     }

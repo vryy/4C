@@ -197,7 +197,7 @@ namespace DRT
       virtual void update_jacobian_mapping(
           const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress);
       // compute defgrd in all gp for given disp
-      virtual void DefGradient(const std::vector<double>& disp,
+      virtual void def_gradient(const std::vector<double>& disp,
           CORE::LINALG::SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress);
 
       //! Calculate nonlinear stiffness and mass matrix
@@ -223,7 +223,7 @@ namespace DRT
           const INPAR::STR::StrainType ioplstrain);  ///< plastic strain output option
 
       //! init the inverse of the jacobian and its determinant in the material configuration
-      void InitJacobianMapping() override;
+      void init_jacobian_mapping() override;
 
      private:
       std::string get_element_type_string() const { return "SOLIDP5FBAR"; }

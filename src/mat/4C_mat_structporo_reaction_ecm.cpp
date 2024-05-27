@@ -29,7 +29,7 @@ MAT::PAR::StructPoroReactionECM::StructPoroReactionECM(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::StructPoroReactionECM::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::StructPoroReactionECM::create_material()
 {
   return Teuchos::rcp(new MAT::StructPoroReactionECM(this));
 }
@@ -158,7 +158,7 @@ void MAT::StructPoroReactionECM::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::StructPoroReactionECM::Reaction(const double porosity, const double J,
+void MAT::StructPoroReactionECM::reaction(const double porosity, const double J,
     Teuchos::RCP<std::vector<double>> scalars, Teuchos::ParameterList& params)
 {
   double dt = params.get<double>("delta time", -1.0);

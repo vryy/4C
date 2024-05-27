@@ -241,7 +241,7 @@ namespace NOX
 
      protected:
       /// access the jacobian
-      inline CORE::LINALG::SparseOperator& Jacobian() const
+      inline CORE::LINALG::SparseOperator& jacobian() const
       {
         if (jac_ptr_.is_null()) throw_error("JacPtr", "JacPtr is nullptr!");
 
@@ -249,7 +249,7 @@ namespace NOX
       }
 
       /// access the jacobian (read-only)
-      inline const Teuchos::RCP<CORE::LINALG::SparseOperator>& JacobianPtr() const
+      inline const Teuchos::RCP<CORE::LINALG::SparseOperator>& jacobian_ptr() const
       {
         if (jac_ptr_.is_null()) throw_error("JacPtr", "JacPtr is nullptr!");
 
@@ -260,12 +260,12 @@ namespace NOX
       //! problem specific subclasses.
 
       //! sets the options of the underlying solver
-      virtual CORE::LINALG::SolverParams SetSolverOptions(Teuchos::ParameterList& p,
+      virtual CORE::LINALG::SolverParams set_solver_options(Teuchos::ParameterList& p,
           Teuchos::RCP<CORE::LINALG::Solver>& solverPtr,
           const NOX::NLN::SolutionType& solverType) = 0;
 
       //! Returns a pointer to linear solver, which has to be used
-      virtual NOX::NLN::SolutionType GetActiveLinSolver(
+      virtual NOX::NLN::SolutionType get_active_lin_solver(
           const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers,
           Teuchos::RCP<CORE::LINALG::Solver>& currSolver) = 0;
 
@@ -298,7 +298,7 @@ namespace NOX
           CORE::LINALG::SerialDenseMatrix& block_dense) const;
 
       /// throw an error if there is a row containing only zeros
-      void throwIfZeroRow(const CORE::LINALG::SerialDenseMatrix& block_dense) const;
+      void throw_if_zero_row(const CORE::LINALG::SerialDenseMatrix& block_dense) const;
 
       /// solve the non-symmetric eigenvalue problem
       void solve_non_symm_eigen_value_problem(CORE::LINALG::SerialDenseMatrix& mat,
@@ -306,12 +306,12 @@ namespace NOX
           CORE::LINALG::SerialDenseVector& ieigenvalues) const;
 
       /// call GEEV from LAPACK
-      void callGEEV(CORE::LINALG::SerialDenseMatrix& mat,
+      void call_geev(CORE::LINALG::SerialDenseMatrix& mat,
           CORE::LINALG::SerialDenseVector& reigenvalues,
           CORE::LINALG::SerialDenseVector& ieigenvalues) const;
 
       /// call GGEV from LAPACK
-      void callGGEV(CORE::LINALG::SerialDenseMatrix& mat,
+      void call_ggev(CORE::LINALG::SerialDenseMatrix& mat,
           CORE::LINALG::SerialDenseVector& reigenvalues,
           CORE::LINALG::SerialDenseVector& ieigenvalues) const;
 

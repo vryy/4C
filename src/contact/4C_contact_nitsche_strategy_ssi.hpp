@@ -95,10 +95,10 @@ namespace CONTACT
     NitscheStrategySsi(const NitscheStrategySsi& old) = delete;
 
    protected:
-    Teuchos::RCP<Epetra_FEVector> SetupRhsBlockVec(
+    Teuchos::RCP<Epetra_FEVector> setup_rhs_block_vec(
         const enum CONTACT::VecBlockType& bt) const override;
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SetupMatrixBlockPtr(
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> setup_matrix_block_ptr(
         const enum CONTACT::MatBlockType& bt) override;
 
     void complete_matrix_block_ptr(

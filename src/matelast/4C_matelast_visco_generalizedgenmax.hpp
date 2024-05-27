@@ -46,7 +46,7 @@ namespace MAT
 
         /// create material instance of matching type with my parameters
 
-        Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override { return Teuchos::null; };
+        Teuchos::RCP<CORE::MAT::Material> create_material() override { return Teuchos::null; };
       };  // class GeneralizedGenMax
 
 
@@ -76,7 +76,7 @@ namespace MAT
 
         /// Override this method and throw error, as the material should be created in within the
         /// Factory method of the elastic summand
-        Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override
+        Teuchos::RCP<CORE::MAT::Material> create_material() override
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "
@@ -107,7 +107,7 @@ namespace MAT
         //@}
 
         /// create material instance of matching type with my parameters
-        Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override { return Teuchos::null; };
+        Teuchos::RCP<CORE::MAT::Material> create_material() override { return Teuchos::null; };
       };  // class ViscoPart
 
     }  // namespace PAR

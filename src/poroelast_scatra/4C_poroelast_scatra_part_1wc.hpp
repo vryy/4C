@@ -28,16 +28,16 @@ namespace POROELASTSCATRA
     //! solve one time step of porous media problem
     void DoPoroStep() override;
     //! solve one time step of scalar transport problem
-    void DoScatraStep() override;
+    void do_scatra_step() override;
 
     //! prepare output
     void prepare_output() override;
 
     //! update time step
-    void Update() override;
+    void update() override;
 
     //! write output print to screen
-    void Output() override;
+    void output() override;
   };
 
   class PoroScatraPart1WCPoroToScatra : public PoroScatraPart1WC

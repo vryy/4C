@@ -61,11 +61,11 @@ void ADAPTER::FBIConstraintenforcer::Setup(Teuchos::RCP<ADAPTER::FSIStructureWra
 {
   fluid_ = fluid;
   structure_ = structure;
-  discretizations_.push_back(structure_->Discretization());
-  discretizations_.push_back(fluid_->Discretization());
+  discretizations_.push_back(structure_->discretization());
+  discretizations_.push_back(fluid_->discretization());
 
   CORE::LINALG::CreateMapExtractorFromDiscretization(
-      *(fluid_->Discretization()), 3, *velocity_pressure_splitter_);
+      *(fluid_->discretization()), 3, *velocity_pressure_splitter_);
 
   bool meshtying =
       (GLOBAL::Problem::Instance()->FluidDynamicParams().get<std::string>("MESHTYING") != "no");
@@ -74,27 +74,27 @@ void ADAPTER::FBIConstraintenforcer::Setup(Teuchos::RCP<ADAPTER::FSIStructureWra
 
   if (meshtying)
   {
-    if (structure_->Discretization()->Comm().NumProc() > 1)
+    if (structure_->discretization()->Comm().NumProc() > 1)
       FOUR_C_THROW(
           "Currently fluid mesh tying can only be used for serial computations, since offproc "
           "assembly is not supported. Once the coupling matrices are computed by the fluid element "
           "owner, this will change.");
 
     fluidmatrix = (Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->GetMeshtying())
-                      ->InitSystemMatrix();
+                      ->init_system_matrix();
   }
   else
   {
     fluidmatrix = Teuchos::rcp(
-        new CORE::LINALG::SparseMatrix(*(fluid_->Discretization()->dof_row_map()), 30, true, true,
+        new CORE::LINALG::SparseMatrix(*(fluid_->discretization()->dof_row_map()), 30, true, true,
             CORE::LINALG::SparseMatrix::FE_MATRIX));  // todo Is there a better estimator?
   }
 
-  bridge_->Setup(structure_->Discretization()->dof_row_map(),
-      fluid_->Discretization()->dof_row_map(), fluidmatrix, meshtying);
-  if (structure_->Discretization()->Comm().NumProc() > 1)
+  bridge_->Setup(structure_->discretization()->dof_row_map(),
+      fluid_->discretization()->dof_row_map(), fluidmatrix, meshtying);
+  if (structure_->discretization()->Comm().NumProc() > 1)
   {
-    geometrycoupler_->ExtendBeamGhosting(*(structure->Discretization()));
+    geometrycoupler_->ExtendBeamGhosting(*(structure->discretization()));
 
     // After ghosting we need to explicitly set up the MultiMapExtractor again
     Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(structure_, true)
@@ -103,7 +103,7 @@ void ADAPTER::FBIConstraintenforcer::Setup(Teuchos::RCP<ADAPTER::FSIStructureWra
 
   geometrycoupler_->Setup(
       discretizations_, CORE::REBALANCE::GetColVersionOfRowVector(
-                            structure_->Discretization(), structure_->Dispnp()));
+                            structure_->discretization(), structure_->Dispnp()));
 }
 
 /*----------------------------------------------------------------------*/
@@ -114,10 +114,10 @@ void ADAPTER::FBIConstraintenforcer::Evaluate()
   // but the element pairs are created using the elements needing all information on all their
   // DOFs
   column_structure_displacement_ =
-      CORE::REBALANCE::GetColVersionOfRowVector(structure_->Discretization(), structure_->Dispnp());
+      CORE::REBALANCE::GetColVersionOfRowVector(structure_->discretization(), structure_->Dispnp());
   column_structure_velocity_ =
-      CORE::REBALANCE::GetColVersionOfRowVector(structure_->Discretization(), structure_->Velnp());
-  column_fluid_velocity_ = CORE::REBALANCE::GetColVersionOfRowVector(fluid_->Discretization(),
+      CORE::REBALANCE::GetColVersionOfRowVector(structure_->discretization(), structure_->Velnp());
+  column_fluid_velocity_ = CORE::REBALANCE::GetColVersionOfRowVector(fluid_->discretization(),
       Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp());
 
   geometrycoupler_->UpdateBinning(discretizations_[0], column_structure_displacement_);
@@ -134,7 +134,7 @@ void ADAPTER::FBIConstraintenforcer::Evaluate()
   // For now we need to separate the pair creation from the search, since the search takes place
   // on the fluid elements owner, while (for now) the pair has to be created on the beam element
   // owner
-  CreatePairs(pairids);
+  create_pairs(pairids);
 
   // Create all needed matrix and vector contributions based on the current state
   bridge_->Evaluate(discretizations_[0], discretizations_[1],
@@ -172,7 +172,7 @@ void ADAPTER::FBIConstraintenforcer::recompute_coupling_without_pair_creation()
   // Before each search we delete all pair and segment information
   bridge_->ResetBridge();
 
-  ResetAllPairStates();
+  reset_all_pair_states();
 
   // Create all needed matrix and vector contributions based on the current state
   bridge_->Evaluate(discretizations_[0], discretizations_[1],
@@ -190,20 +190,20 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIConstraintenforcer::FluidToStructure()
 
 // For now we need to separate the pair creation from the search, since the search takes place on
 // the fluid elements owner, while (for now) the pair has to be created on the beam element owner
-void ADAPTER::FBIConstraintenforcer::CreatePairs(
+void ADAPTER::FBIConstraintenforcer::create_pairs(
     Teuchos::RCP<std::map<int, std::vector<int>>> pairids)
 {
-  if ((structure_->Discretization())->Comm().NumProc() > 1)
+  if ((structure_->discretization())->Comm().NumProc() > 1)
   {
     // The geometrycoupler takes care of all MPI communication that needs to be done before the
     // pairs can finally be created
     geometrycoupler_->PreparePairCreation(discretizations_, pairids);
 
     column_structure_displacement_ = CORE::REBALANCE::GetColVersionOfRowVector(
-        structure_->Discretization(), structure_->Dispnp());
+        structure_->discretization(), structure_->Dispnp());
     column_structure_velocity_ = CORE::REBALANCE::GetColVersionOfRowVector(
-        structure_->Discretization(), structure_->Velnp());
-    column_fluid_velocity_ = CORE::REBALANCE::GetColVersionOfRowVector(fluid_->Discretization(),
+        structure_->discretization(), structure_->Velnp());
+    column_fluid_velocity_ = CORE::REBALANCE::GetColVersionOfRowVector(fluid_->discretization(),
         Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp());
   }
 
@@ -218,21 +218,21 @@ void ADAPTER::FBIConstraintenforcer::CreatePairs(
        beamelementiterator++)
   {
     // add beam elements to the element pair pointer
-    ele_ptrs[0] = (structure_->Discretization())->gElement(beamelementiterator->first);
+    ele_ptrs[0] = (structure_->discretization())->gElement(beamelementiterator->first);
 
 
-    if (ele_ptrs[0]->Owner() != structure_->Discretization()->Comm().MyPID())
+    if (ele_ptrs[0]->Owner() != structure_->discretization()->Comm().MyPID())
       FOUR_C_THROW(
           "For now we can only create the pair on the beam owner, but beam element owner is %i "
           "and "
           "we are on proc %i \n",
-          ele_ptrs[0]->Owner(), structure_->Discretization()->Comm().MyPID());
+          ele_ptrs[0]->Owner(), structure_->discretization()->Comm().MyPID());
 
     // loop over all fluid elements, in which the beam element might lie
     for (std::vector<int>::const_iterator fluideleIter = beamelementiterator->second.begin();
          fluideleIter != (beamelementiterator->second).end(); fluideleIter++)
     {
-      DRT::Element* fluidele = (fluid_->Discretization())->gElement(*fluideleIter);
+      DRT::Element* fluidele = (fluid_->discretization())->gElement(*fluideleIter);
 
       // add fluid element to the element pair pointer
       ele_ptrs[1] = fluidele;
@@ -246,14 +246,14 @@ void ADAPTER::FBIConstraintenforcer::CreatePairs(
   }
 }
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIConstraintenforcer::ResetAllPairStates()
+void ADAPTER::FBIConstraintenforcer::reset_all_pair_states()
 {
   // Get current state
   column_structure_displacement_ =
-      CORE::REBALANCE::GetColVersionOfRowVector(structure_->Discretization(), structure_->Dispnp());
+      CORE::REBALANCE::GetColVersionOfRowVector(structure_->discretization(), structure_->Dispnp());
   column_structure_velocity_ =
-      CORE::REBALANCE::GetColVersionOfRowVector(structure_->Discretization(), structure_->Velnp());
-  column_fluid_velocity_ = CORE::REBALANCE::GetColVersionOfRowVector(fluid_->Discretization(),
+      CORE::REBALANCE::GetColVersionOfRowVector(structure_->discretization(), structure_->Velnp());
+  column_fluid_velocity_ = CORE::REBALANCE::GetColVersionOfRowVector(fluid_->discretization(),
       Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp());
 
   std::vector<DRT::Element const*> ele_ptrs(2);
@@ -282,13 +282,13 @@ void ADAPTER::FBIConstraintenforcer::extract_current_element_dofs(
   std::vector<double> vel_tmp;
 
   // extract the current position of the beam element from the displacement vector
-  BEAMINTERACTION::UTILS::ExtractPosDofVecAbsoluteValues(*(structure_->Discretization()),
+  BEAMINTERACTION::UTILS::ExtractPosDofVecAbsoluteValues(*(structure_->discretization()),
       elements[0], column_structure_displacement_,
       beam_dofvec);  // todo get "interface" displacements only for beam
                      // elements
   // extract velocity of the beam element
   BEAMINTERACTION::UTILS::ExtractPosDofVecValues(
-      *(structure_->Discretization()), elements[0], column_structure_velocity_, vel_tmp);
+      *(structure_->discretization()), elements[0], column_structure_velocity_, vel_tmp);
 
   for (double val : vel_tmp) beam_dofvec.push_back(val);
 
@@ -307,7 +307,7 @@ void ADAPTER::FBIConstraintenforcer::extract_current_element_dofs(
 
   // extract current fluid velocities
   BEAMINTERACTION::UTILS::GetCurrentElementDis(
-      *(fluid_->Discretization()), elements[1], column_fluid_velocity_, vel_tmp);
+      *(fluid_->discretization()), elements[1], column_fluid_velocity_, vel_tmp);
 
   // todo This is a very crude way to separate the pressure from the velocity dofs.. maybe just
   // use an extractor?

@@ -34,7 +34,7 @@ namespace MAT
       StructPoro(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
       //! @name material parameters
       //!@{
@@ -81,7 +81,7 @@ namespace MAT
     In addition it provides poro specific functions, as giving the constitutive law
     for the porosity.
 
-    Main methods of this material are the ComputePorosity(...) methods, providing
+    Main methods of this material are the compute_porosity(...) methods, providing
     the porosity and its derivatives. If the constitutive law is a governing equation
     itself (for poro P1 elements, for instance), the material evaluates the
     consitutive law itself and its derivatives in the ConstituitiveDerivatives(...)
@@ -177,8 +177,8 @@ namespace MAT
     virtual double ref_porosity_time_deriv() const { return 0.0; }
 
     //! compute current porosity and save it
-    virtual void ComputePorosity(Teuchos::ParameterList& params,  //!< (i) element parameter list
-        double press,                                             //!< (i) pressure at gauss point
+    virtual void compute_porosity(Teuchos::ParameterList& params,  //!< (i) element parameter list
+        double press,                                              //!< (i) pressure at gauss point
         double J,          //!< (i) determinant of jacobian at gauss point
         int gp,            //!< (i) number of current gauss point
         double& porosity,  //!< (o) porosity at gauss point
@@ -191,8 +191,8 @@ namespace MAT
         bool save = true);
 
     //! compute current porosity and save it
-    void ComputePorosity(Teuchos::ParameterList& params,  //!< (i) element parameter list
-        double press,                                     //!< (i) pressure at gauss point
+    void compute_porosity(Teuchos::ParameterList& params,  //!< (i) element parameter list
+        double press,                                      //!< (i) pressure at gauss point
         double J,          //!< (i) determinant of jacobian at gauss point
         int gp,            //!< (i) number of current gauss point
         double& porosity,  //!< (o) porosity at gauss point
@@ -344,7 +344,7 @@ namespace MAT
 
    protected:
     //! compute current porosity and save it
-    void ComputePorosity(
+    void compute_porosity(
         const double& refporosity,  //!< (i) initial/reference porosity at gauss point
         const double& press,        //!< (i) pressure at gauss point
         const double& J,            //!< (i) determinant of jacobian at gauss point

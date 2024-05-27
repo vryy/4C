@@ -45,7 +45,7 @@ namespace POROMULTIPHASE
     void read_restart(int restart) override;
 
     // update
-    void UpdateAndOutput() override;
+    void update_and_output() override;
 
     // update
     Teuchos::RCP<const Epetra_Vector> RelaxedFluidPhinp() const override { return fluidphinp_; }

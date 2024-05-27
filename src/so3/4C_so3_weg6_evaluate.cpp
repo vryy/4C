@@ -400,7 +400,7 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
 
       // build def gradient for every gauss point
       CORE::LINALG::SerialDenseMatrix gpdefgrd(NUMGPT_WEG6, 9);
-      DefGradient(mydisp, gpdefgrd, *prestress_);
+      def_gradient(mydisp, gpdefgrd, *prestress_);
 
       // update deformation gradient and put back to storage
       CORE::LINALG::Matrix<3, 3> deltaF;
@@ -555,7 +555,7 @@ int DRT::ELEMENTS::SoWeg6::evaluate_neumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)              gee 04/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoWeg6::InitJacobianMapping()
+void DRT::ELEMENTS::SoWeg6::init_jacobian_mapping()
 {
   /* pointer to (static) shape function array
    * for each node, evaluated at each gp*/
@@ -938,8 +938,8 @@ void DRT::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location
           double timintfac_vel = 0.0;
           if (IsParamsInterface())
           {
-            timintfac_dis = StrParamsInterface().GetTimIntFactorDisp();
-            timintfac_vel = StrParamsInterface().GetTimIntFactorVel();
+            timintfac_dis = str_params_interface().GetTimIntFactorDisp();
+            timintfac_vel = str_params_interface().GetTimIntFactorVel();
           }
           else
           {
@@ -1154,7 +1154,7 @@ int DRT::ELEMENTS::SoWeg6Type::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoWeg6*>(dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_weg6* failed");
-    actele->InitJacobianMapping();
+    actele->init_jacobian_mapping();
   }
   return 0;
 }
@@ -1162,7 +1162,7 @@ int DRT::ELEMENTS::SoWeg6Type::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  compute def gradient at every gaussian point (protected)   gee 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoWeg6::DefGradient(const std::vector<double>& disp,
+void DRT::ELEMENTS::SoWeg6::def_gradient(const std::vector<double>& disp,
     CORE::LINALG::SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> shapefcts = sow6_shapefcts();

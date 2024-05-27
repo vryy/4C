@@ -31,30 +31,30 @@ MIXTURE::ElastinMembraneAnisotropyExtension::ElastinMembraneAnisotropyExtension(
 
 void MIXTURE::ElastinMembraneAnisotropyExtension::on_global_data_initialized()
 {
-  if (GetAnisotropy()->has_gp_cylinder_coordinate_system())
+  if (get_anisotropy()->has_gp_cylinder_coordinate_system())
   {
-    for (int gp = 0; gp < GetAnisotropy()->get_number_of_gauss_points(); ++gp)
+    for (int gp = 0; gp < get_anisotropy()->get_number_of_gauss_points(); ++gp)
     {
       std::array<CORE::LINALG::Matrix<3, 1>, 1> fibers;
 
-      fibers[0].Update(GetAnisotropy()->get_gp_cylinder_coordinate_system(gp).GetRad());
-      MAT::FiberAnisotropyExtension<1>::SetFibers(gp, fibers);
+      fibers[0].Update(get_anisotropy()->get_gp_cylinder_coordinate_system(gp).GetRad());
+      MAT::FiberAnisotropyExtension<1>::set_fibers(gp, fibers);
     }
 
-    orthogonal_structural_tensor_.resize(GetAnisotropy()->get_number_of_gauss_points());
+    orthogonal_structural_tensor_.resize(get_anisotropy()->get_number_of_gauss_points());
 
-    SetFiberLocation(MAT::FiberLocation::GPFibers);
+    set_fiber_location(MAT::FiberLocation::GPFibers);
   }
-  else if (GetAnisotropy()->has_element_cylinder_coordinate_system())
+  else if (get_anisotropy()->has_element_cylinder_coordinate_system())
   {
     std::array<CORE::LINALG::Matrix<3, 1>, 1> fibers;
 
-    fibers[0].Update(GetAnisotropy()->get_element_cylinder_coordinate_system().GetRad());
-    FiberAnisotropyExtension<1>::SetFibers(BaseAnisotropyExtension::GPDEFAULT, fibers);
+    fibers[0].Update(get_anisotropy()->get_element_cylinder_coordinate_system().GetRad());
+    FiberAnisotropyExtension<1>::set_fibers(BaseAnisotropyExtension::GPDEFAULT, fibers);
 
     orthogonal_structural_tensor_.resize(1);
 
-    SetFiberLocation(MAT::FiberLocation::ElementFibers);
+    set_fiber_location(MAT::FiberLocation::ElementFibers);
   }
   else
   {
@@ -243,7 +243,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::pre_evaluate(
 
   // Evaluate mue frac
   std::shared_ptr<ElastinMembranePrestressStrategy> strategy =
-      std::dynamic_pointer_cast<ElastinMembranePrestressStrategy>(PrestressStrategy());
+      std::dynamic_pointer_cast<ElastinMembranePrestressStrategy>(prestress_strategy());
 
   if (strategy == nullptr)
   {
@@ -277,7 +277,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::EvaluateElasticPart(
 {
   // Compute total inelastic deformation gradient
   static CORE::LINALG::Matrix<3, 3> iFin(false);
-  iFin.MultiplyNN(iFextin, PrestretchTensor(gp));
+  iFin.MultiplyNN(iFextin, prestretch_tensor(gp));
 
   // Evaluate 3D elastic part
   MAT::ElastHyperEvaluateElasticPart(
@@ -299,7 +299,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::evaluate_membrane_str
   const CORE::LINALG::Matrix<3, 3> Id = CORE::LINALG::IdentityMatrix<3>();
   CORE::LINALG::Matrix<3, 3> iFin(false);
 
-  iFin.MultiplyNN(Id, PrestretchTensor(gp));
+  iFin.MultiplyNN(Id, prestretch_tensor(gp));
 
   evaluate_stress_c_mat_membrane(Id, iFin, params, S, cmat, gp, eleGID);
 }

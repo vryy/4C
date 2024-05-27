@@ -918,7 +918,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
   // jacobian determinant: 1-st order derivative
   // 1-st int: 1-st paired vector key corresponds to varied dof GID
   Deriv1stMap deriv1st_jac;
-  this->Deriv1st_Jacobian(unit_normal, d_non_unit_normal, deriv1st_jac);
+  this->deriv1st_jacobian(unit_normal, d_non_unit_normal, deriv1st_jac);
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {

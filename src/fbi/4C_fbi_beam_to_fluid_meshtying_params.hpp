@@ -117,7 +117,7 @@ namespace FBI
      * \brief Returns the Gauss rule.
      * \returns gauss rule.
      */
-    inline CORE::FE::GaussRule1D GetGaussRule() const { return gauss_rule_; }
+    inline CORE::FE::GaussRule1D get_gauss_rule() const { return gauss_rule_; }
 
     /**
      * \brief Returns a pointer to the visualization output parameters.
@@ -149,7 +149,7 @@ namespace FBI
     /// Enforcement strategy for constraints.
     INPAR::FBI::BeamToFluidConstraintEnforcement constraint_enforcement_;
 
-    /// Discretization used for the contact.
+    /// discretization used for the contact.
     INPAR::FBI::BeamToFluidDiscretization meshtying_discretization_;
 
     /// Penalty parameter.

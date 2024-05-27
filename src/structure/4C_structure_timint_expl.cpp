@@ -131,13 +131,13 @@ void STR::TimIntExpl::PrintStep()
   // print out
   if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
   {
-    PrintStepText(stdout);
+    print_step_text(stdout);
   }
 }
 
 /*----------------------------------------------------------------------*/
 /* print step summary */
-void STR::TimIntExpl::PrintStepText(FILE* ofile)
+void STR::TimIntExpl::print_step_text(FILE* ofile)
 {
   fprintf(ofile,
       "Finalised: step %6d"

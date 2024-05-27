@@ -136,7 +136,7 @@ namespace IO
 
     /** @brief Initialize the object
      *
-     *  @param[in] parent_writer  Discretization which is currently used to
+     *  @param[in] parent_writer  discretization which is currently used to
      *                            generate the load/time step output.
      *  @param[in] interface      Access to the problem specific output routines
      *                            and load/time step numbers.

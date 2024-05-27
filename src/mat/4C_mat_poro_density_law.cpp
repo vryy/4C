@@ -42,14 +42,14 @@ MAT::PAR::PoroDensityLaw* MAT::PAR::PoroDensityLaw::CreateDensityLaw(int matID)
     case CORE::Materials::m_poro_densitylaw_constant:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::PoroDensityLawConstant(curmat));
+        curmat->set_parameter(new MAT::PAR::PoroDensityLawConstant(curmat));
       densitylaw = static_cast<MAT::PAR::PoroDensityLawConstant*>(curmat->Parameter());
       break;
     }
     case CORE::Materials::m_poro_densitylaw_exp:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::PoroDensityLawExp(curmat));
+        curmat->set_parameter(new MAT::PAR::PoroDensityLawExp(curmat));
       densitylaw = static_cast<MAT::PAR::PoroDensityLawExp*>(curmat->Parameter());
       break;
     }
@@ -71,7 +71,7 @@ MAT::PAR::PoroDensityLawExp::PoroDensityLawExp(Teuchos::RCP<CORE::MAT::PAR::Mate
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::PoroDensityLawExp::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::PoroDensityLawExp::create_material()
 {
   return Teuchos::null;
 }

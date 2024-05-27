@@ -103,7 +103,7 @@ int DRT::ELEMENTS::SoHex8ThermoType::Initialize(DRT::Discretization& dis)
             dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_hex8_thermo* failed");
     // initialise all quantities
-    actele->SoHex8::InitJacobianMapping();
+    actele->SoHex8::init_jacobian_mapping();
     // as an alternative we can call: So_hex8Type::Initialize(dis);
     actele->So3Thermo<DRT::ELEMENTS::SoHex8,
         CORE::FE::CellType::hex8>::init_jacobian_mapping_special_for_nurbs(dis);
@@ -212,7 +212,7 @@ int DRT::ELEMENTS::SoHex8fbarThermoType::Initialize(DRT::Discretization& dis)
     if (!actele) FOUR_C_THROW("cast to So_hex8fbar_thermo* failed");
 
     // initialise all quantities
-    actele->SoHex8fbar::InitJacobianMapping();
+    actele->SoHex8fbar::init_jacobian_mapping();
     // as an alternative we can call: So_hex8fbarType::Initialize(dis);
     actele->So3Thermo<DRT::ELEMENTS::SoHex8fbar,
         CORE::FE::CellType::hex8>::init_jacobian_mapping_special_for_nurbs(dis);
@@ -310,7 +310,7 @@ int DRT::ELEMENTS::SoTet4ThermoType::Initialize(DRT::Discretization& dis)
             dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_tet4_thermo* failed");
 
-    actele->SoTet4::InitJacobianMapping();
+    actele->SoTet4::init_jacobian_mapping();
     // as an alternative we can call: So_tet4Type::Initialize(dis);
     actele->So3Thermo<DRT::ELEMENTS::SoTet4,
         CORE::FE::CellType::tet4>::init_jacobian_mapping_special_for_nurbs(dis);
@@ -407,7 +407,7 @@ int DRT::ELEMENTS::SoTet10ThermoType::Initialize(DRT::Discretization& dis)
             dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_tet10_thermo* failed");
 
-    actele->SoTet10::InitJacobianMapping();
+    actele->SoTet10::init_jacobian_mapping();
     // as an alternative we can call: So_tet4Type::Initialize(dis);
     actele->So3Thermo<DRT::ELEMENTS::SoTet10,
         CORE::FE::CellType::tet10>::init_jacobian_mapping_special_for_nurbs(dis);
@@ -504,7 +504,7 @@ int DRT::ELEMENTS::SoHex27ThermoType::Initialize(DRT::Discretization& dis)
             dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_hex27_thermo* failed");
 
-    actele->SoHex27::InitJacobianMapping();
+    actele->SoHex27::init_jacobian_mapping();
     // as an alternative we can call: So_hex27Type::Initialize(dis);
     actele->So3Thermo<DRT::ELEMENTS::SoHex27,
         CORE::FE::CellType::hex27>::init_jacobian_mapping_special_for_nurbs(dis);
@@ -601,7 +601,7 @@ int DRT::ELEMENTS::SoHex20ThermoType::Initialize(DRT::Discretization& dis)
             dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_hex20_thermo* failed");
 
-    actele->SoHex20::InitJacobianMapping();
+    actele->SoHex20::init_jacobian_mapping();
     // as an alternative we can call: So_hex27Type::Initialize(dis);
     actele->So3Thermo<DRT::ELEMENTS::SoHex20,
         CORE::FE::CellType::hex20>::init_jacobian_mapping_special_for_nurbs(dis);
@@ -705,7 +705,7 @@ int DRT::ELEMENTS::SoNurbs27ThermoType::Initialize(DRT::Discretization& dis)
             CORE::FE::CellType::nurbs27>*>(dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_hex20_thermo* failed");
 
-    actele->SoNurbs27::InitJacobianMapping(dis);
+    actele->SoNurbs27::init_jacobian_mapping(dis);
     // as an alternative we can call: So_hex27Type::Initialize(dis);
     actele->So3Thermo<DRT::ELEMENTS::NURBS::SoNurbs27,
         CORE::FE::CellType::nurbs27>::init_jacobian_mapping_special_for_nurbs(dis);

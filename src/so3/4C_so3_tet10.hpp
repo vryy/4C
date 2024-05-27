@@ -200,7 +200,7 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       /*!
       \brief Print this element
@@ -363,12 +363,12 @@ namespace DRT
 
       //! Update history variables at the end of time step (fiber direction, inelastic deformation)
       //! (gebauer 07/19)
-      void Update_element(std::vector<double>& disp,      // current displacements
+      void update_element(std::vector<double>& disp,      // current displacements
           Teuchos::ParameterList& params,                 // algorithmic parameters e.g. time
           const Teuchos::RCP<CORE::MAT::Material>& mat);  // material
 
       /// compute defgrd in all gp for given disp
-      void DefGradient(const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix& gpdefgrd,
+      void def_gradient(const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix& gpdefgrd,
           DRT::ELEMENTS::PreStress& prestress);
 
 
@@ -378,7 +378,7 @@ namespace DRT
       SoTet10& operator=(const SoTet10& old);
 
       //! init the inverse of the jacobian and its determinant in the material configuration
-      virtual void InitJacobianMapping();
+      virtual void init_jacobian_mapping();
 
       //! Calculate nonlinear stiffness and mass matrix
       virtual void so_tet10_nlnstiffmass(std::vector<int>& lm,  ///< location matrix
@@ -440,7 +440,7 @@ namespace DRT
        *
        * @param params ParameterList to be passed to the materials
        */
-      void MaterialPostSetup(Teuchos::ParameterList& params) override;
+      void material_post_setup(Teuchos::ParameterList& params) override;
 
      private:
       std::string get_element_type_string() const { return "SOLIDT10"; }

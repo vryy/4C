@@ -103,7 +103,7 @@ namespace STR
       void set_state(const Epetra_Vector& x) override;
 
       //! [derived]
-      void WriteRestart(
+      void write_restart(
           IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! [derived]
@@ -136,7 +136,7 @@ namespace STR
       //! @}
      protected:
       //! reset the time step dependent parameters for the element evaluation [derived]
-      void ResetEvalParams() override;
+      void reset_eval_params() override;
 
      private:
       /*! \brief Calculate the right-hand-side vector at \f$ t_{n+1} \f$  [derived]

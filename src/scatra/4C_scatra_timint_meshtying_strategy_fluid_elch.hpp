@@ -44,7 +44,7 @@ namespace SCATRA
     void InitMeshtying() override;
 
     //! setup meshtying objects
-    void SetupMeshtying() override;
+    void setup_meshtying() override;
 
    private:
     //! copy constructor

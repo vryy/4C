@@ -81,7 +81,7 @@ bool CONTACT::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInte
 
   // create a CONTACT integrator instance with correct num_gp and Dim
   Teuchos::RCP<CONTACT::Integrator> integrator =
-      CONTACT::INTEGRATOR::BuildIntegrator(stype_, imortar_, SlaveElement().Shape(), Comm());
+      CONTACT::INTEGRATOR::BuildIntegrator(stype_, imortar_, SlaveElement().Shape(), comm());
   // *******************************************************************
   // different options for mortar integration
   // *******************************************************************
@@ -103,7 +103,7 @@ bool CONTACT::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInte
     //                   Integrate stuff !!!                    //
     // ***********************************************************
     integrator->integrate_deriv_segment2_d(
-        SlaveElement(), sxia, sxib, MasterElement(), mxia, mxib, Comm(), mparams_ptr);
+        SlaveElement(), sxia, sxib, MasterElement(), mxia, mxib, comm(), mparams_ptr);
     // ***********************************************************
     //                   END INTEGRATION !!!                    //
     // ***********************************************************
@@ -161,7 +161,7 @@ const Epetra_Comm& CONTACT::Coupling2dManager::Comm() const { return idiscret_.C
 /*----------------------------------------------------------------------*
  |  Evaluate coupling pairs                                  farah 10/14|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling2dManager::EvaluateCoupling(
+bool CONTACT::Coupling2dManager::evaluate_coupling(
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   if (MasterElements().size() == 0) return false;
@@ -174,7 +174,7 @@ bool CONTACT::Coupling2dManager::EvaluateCoupling(
   // Mortar Contact
   //*********************************
   if (algo == INPAR::MORTAR::algorithm_mortar || algo == INPAR::MORTAR::algorithm_gpts)
-    IntegrateCoupling(mparams_ptr);
+    integrate_coupling(mparams_ptr);
 
   //*********************************
   // Error
@@ -189,7 +189,7 @@ bool CONTACT::Coupling2dManager::EvaluateCoupling(
 /*----------------------------------------------------------------------*
  |  Evaluate mortar coupling pairs                           Popp 03/09 |
  *----------------------------------------------------------------------*/
-void CONTACT::Coupling2dManager::IntegrateCoupling(
+void CONTACT::Coupling2dManager::integrate_coupling(
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   //**********************************************************************
@@ -509,7 +509,7 @@ void CONTACT::Coupling2dManager::consist_dual_shape()
       SlaveElement().evaluate_shape_lag_mult_lin(
           INPAR::MORTAR::shape_standard, sxi, sval, sderiv, nnodes);
     else
-      SlaveElement().EvaluateShape(sxi, sval, sderiv, nnodes);
+      SlaveElement().evaluate_shape(sxi, sval, sderiv, nnodes);
     SlaveElement().evaluate2nd_deriv_shape(sxi, ssecderiv, nnodes);
 
     // evaluate the two slave side Jacobians

@@ -78,9 +78,9 @@ ADAPTER::PoroFluidMultiphaseWrapper::artery_porofluid_sysmat() const
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> ADAPTER::PoroFluidMultiphaseWrapper::Discretization() const
+Teuchos::RCP<DRT::Discretization> ADAPTER::PoroFluidMultiphaseWrapper::discretization() const
 {
-  return porofluid_->Discretization();
+  return porofluid_->discretization();
 }
 
 /*----------------------------------------------------------------------*/
@@ -101,9 +101,9 @@ void ADAPTER::PoroFluidMultiphaseWrapper::ApplyMeshMovement(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::PoroFluidMultiphaseWrapper::SetVelocityField(Teuchos::RCP<const Epetra_Vector> vel)
+void ADAPTER::PoroFluidMultiphaseWrapper::set_velocity_field(Teuchos::RCP<const Epetra_Vector> vel)
 {
-  porofluid_->SetVelocityField(vel);
+  porofluid_->set_velocity_field(vel);
 }
 
 /*----------------------------------------------------------------------*/

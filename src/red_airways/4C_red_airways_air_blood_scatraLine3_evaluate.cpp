@@ -183,7 +183,7 @@ int DRT::ELEMENTS::RedAirBloodScatraLine3::evaluate_neumann(Teuchos::ParameterLi
  |                                                                      |
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::RedAirBloodScatraLine3::EvaluateDirichlet(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::RedAirBloodScatraLine3::evaluate_dirichlet(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1)
 {

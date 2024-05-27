@@ -223,11 +223,11 @@ void INPAR::LEVELSET::SetValidConditions(
 
 
   /*--------------------------------------------------------------------*/
-  // Characteristic Galerkin Boundaries for LevelSet-Reinitialization
+  // Characteristic Galerkin Boundaries for LevelSet-reinitialization
 
   Teuchos::RCP<ConditionDefinition> surfreinitializationtaylorgalerkin =
       Teuchos::rcp(new ConditionDefinition("REINITIALIZATION TAYLOR GALERKIN SURF CONDITIONS",
-          "ReinitializationTaylorGalerkin", "Surface Reinitialization Taylor Galerkin",
+          "ReinitializationTaylorGalerkin", "Surface reinitialization Taylor Galerkin",
           CORE::Conditions::ReinitializationTaylorGalerkin, true,
           CORE::Conditions::geometry_type_surface));
 

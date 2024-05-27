@@ -47,7 +47,7 @@ DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::ScaTraEleUtilsElchElectrode
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::MatElectrode(
+void DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::mat_electrode(
     Teuchos::RCP<const CORE::MAT::Material> material, const double concentration,
     const double temperature, Teuchos::RCP<ScaTraEleDiffManagerElchElectrode> diffmanager)
 {
@@ -70,7 +70,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::MatElectrode(
       0, 0);
 
   // electronic conductivity
-  diffmanager->SetCond(matelectrode->ComputeConductivity(concentration, temperature));
+  diffmanager->SetCond(matelectrode->compute_conductivity(concentration, temperature));
 
   // derivative of electronic conductivity w.r.t. concentration
   diffmanager->SetConcDerivCond(

@@ -137,25 +137,25 @@ namespace CORE::GEO
         side_ptr_ = nullptr;
         options_ptr_ = options;
 
-        if (static_cast<unsigned>(xyze_lineElement.numRows()) != ProbDim() or
-            static_cast<unsigned>(xyze_lineElement.numCols()) != NumNodesEdge())
+        if (static_cast<unsigned>(xyze_lineElement.numRows()) != prob_dim() or
+            static_cast<unsigned>(xyze_lineElement.numCols()) != num_nodes_edge())
           FOUR_C_THROW(
               "Dimension mismatch of xyze_lineElement! \n"
               "expected input: %d x %d (rows x cols)\n"
               "current input : %d x %d (rows x cols)",
-              ProbDim(), NumNodesEdge(), xyze_lineElement.numRows(), xyze_lineElement.numCols());
+              prob_dim(), num_nodes_edge(), xyze_lineElement.numRows(), xyze_lineElement.numCols());
 
-        if (static_cast<unsigned>(xyze_surfaceElement.numRows()) != ProbDim() or
-            static_cast<unsigned>(xyze_surfaceElement.numCols()) != NumNodesSide())
+        if (static_cast<unsigned>(xyze_surfaceElement.numRows()) != prob_dim() or
+            static_cast<unsigned>(xyze_surfaceElement.numCols()) != num_nodes_side())
           FOUR_C_THROW(
               "Dimension mismatch of xyze_surfaceElement! \n"
               "expected input: %d x %d (rows x cols)\n"
               "current input : %d x %d (rows x cols)",
-              ProbDim(), NumNodesSide(), xyze_surfaceElement.numRows(),
+              prob_dim(), num_nodes_side(), xyze_surfaceElement.numRows(),
               xyze_surfaceElement.numCols());
 
-        SetCoordinates(xyze_surfaceElement.values(), xyze_lineElement.values());
-        ScaleAndShift();
+        set_coordinates(xyze_surfaceElement.values(), xyze_lineElement.values());
+        scale_and_shift();
 
         isinit_ = true;
       }
@@ -182,8 +182,8 @@ namespace CORE::GEO
         side_ptr_ = side_ptr;
         options_ptr_ = &(mesh_ptr->CreateOptions());
 
-        SetCoordinates();
-        ScaleAndShift();
+        set_coordinates();
+        scale_and_shift();
 
         isinit_ = true;
       }
@@ -223,7 +223,7 @@ namespace CORE::GEO
 
       virtual double* FinalPoint(unsigned cp_id) = 0;
 
-      /// Get the coordinates of the computed point from Edge-Edge Intersection
+      /// Get the coordinates of the computed point from Edge-Edge intersection
       virtual double* FinalPointEdgeEdge() = 0;
 
       /** Access the cut point local coordinates on the side element
@@ -238,9 +238,9 @@ namespace CORE::GEO
               IntersectionStatus2String(get_intersection_status()).c_str());
 
         side_rs_cuts.clear();
-        side_rs_cuts.reserve(NumCutPoints());
+        side_rs_cuts.reserve(num_cut_points());
 
-        for (unsigned i = 0; i < NumCutPoints(); ++i)
+        for (unsigned i = 0; i < num_cut_points(); ++i)
           side_rs_cuts.push_back(CORE::LINALG::Matrix<dimside, 1>(local_side_coordinates(i), true));
       }
 
@@ -256,13 +256,13 @@ namespace CORE::GEO
               IntersectionStatus2String(get_intersection_status()).c_str());
 
         xyz_cuts.clear();
-        xyz_cuts.reserve(NumCutPoints());
+        xyz_cuts.reserve(num_cut_points());
 
-        for (unsigned i = 0; i < NumCutPoints(); ++i)
+        for (unsigned i = 0; i < num_cut_points(); ++i)
           xyz_cuts.push_back(CORE::LINALG::Matrix<probdim, 1>(FinalPoint(i), false));
       }
 
-      virtual double* LocalCoordinates() = 0;
+      virtual double* local_coordinates() = 0;
 
       virtual double* local_side_coordinates(unsigned cp_id) = 0;
 
@@ -271,36 +271,36 @@ namespace CORE::GEO
       virtual bool LineWithinLimits(double tol = REFERENCETOL) const = 0;
 
      protected:
-      virtual unsigned NumCutPoints() const = 0;
+      virtual unsigned num_cut_points() const = 0;
 
       virtual const IntersectionStatus& get_intersection_status() const = 0;
 
       inline void check_init() const
       {
         if (not isinit_)
-          FOUR_C_THROW("The Intersection object is not initialized! Call Init() first.");
+          FOUR_C_THROW("The intersection object is not initialized! Call Init() first.");
       }
 
-      virtual unsigned ProbDim() const = 0;
-      virtual unsigned NumNodesSide() const = 0;
-      virtual unsigned NumNodesEdge() const = 0;
+      virtual unsigned prob_dim() const = 0;
+      virtual unsigned num_nodes_side() const = 0;
+      virtual unsigned num_nodes_edge() const = 0;
 
-      virtual void SetCoordinates() = 0;
-      virtual void SetCoordinates(double* xyze_surfaceElement, double* xyze_lineElement) = 0;
+      virtual void set_coordinates() = 0;
+      virtual void set_coordinates(double* xyze_surfaceElement, double* xyze_lineElement) = 0;
 
-      virtual void ScaleAndShift() = 0;
+      virtual void scale_and_shift() = 0;
 
       /// Are the global coordinates scaled?
-      const bool& IsScaled() const { return isscaled_; }
+      const bool& is_scaled() const { return isscaled_; }
 
       /// Are the global coordinates shifted?
-      const bool& IsShifted() const { return isshifted_; }
+      const bool& is_shifted() const { return isshifted_; }
 
       /// Shall we use the bounding box information?
-      const bool& UseBoundingBox() const { return useboundingbox_; }
+      const bool& use_bounding_box() const { return useboundingbox_; }
 
       /// get a reference to the mesh object
-      Mesh& GetMesh()
+      Mesh& get_mesh()
       {
         if (mesh_ptr_ != nullptr) return *mesh_ptr_;
         FOUR_C_THROW("The mesh pointer is not yet initialized!");
@@ -308,7 +308,7 @@ namespace CORE::GEO
       }
 
       /// get a pointer to the mesh object
-      Mesh* GetMeshPtr()
+      Mesh* get_mesh_ptr()
       {
         if (mesh_ptr_ != nullptr) return mesh_ptr_;
         FOUR_C_THROW("The mesh pointer is not yet initialized!");
@@ -324,7 +324,7 @@ namespace CORE::GEO
       }
 
       /// get a pointer to the edge object
-      Edge* GetEdgePtr()
+      Edge* get_edge_ptr()
       {
         if (edge_ptr_ != nullptr) return edge_ptr_;
         FOUR_C_THROW("The edge pointer is not yet initialized!");
@@ -340,7 +340,7 @@ namespace CORE::GEO
       }
 
       /// get a pointer to the side object
-      Side* GetSidePtr()
+      Side* get_side_ptr()
       {
         if (side_ptr_ != nullptr) return side_ptr_;
         FOUR_C_THROW("The side pointer is not yet initialized!");
@@ -348,7 +348,7 @@ namespace CORE::GEO
       }
 
       /// get a pointer to the cut options object
-      Options* GetOptionsPtr()
+      Options* get_options_ptr()
       {
         if (options_ptr_ != nullptr) return options_ptr_;
         FOUR_C_THROW("The option pointer is not yet initialized!");
@@ -417,7 +417,7 @@ namespace CORE::GEO
       // No public access to these methods! Use the base class accessors, instead.
      protected:
       /// get the number of detected feasible cut points
-      unsigned NumCutPoints() const override
+      unsigned num_cut_points() const override
       {
         if (num_cut_points_ > 1 and (multiple_xsi_edge_.size() != num_cut_points_ or
                                         multiple_xsi_side_.size() != num_cut_points_))
@@ -430,7 +430,7 @@ namespace CORE::GEO
       const IntersectionStatus& get_intersection_status() const override { return istatus_; }
 
       /// get the local cut coordinates
-      double* LocalCoordinates() override { return xsi_.A(); }
+      double* local_coordinates() override { return xsi_.A(); }
 
       /** \brief access the local coordinates of the cut point corresponding to the
        *  cut point ID \c cp_id on the side element
@@ -440,7 +440,7 @@ namespace CORE::GEO
        *  \author hiermeier \date 01/17 */
       double* local_side_coordinates(unsigned cp_id) override
       {
-        if (NumCutPoints() < 2) return xsi_side_.A();
+        if (num_cut_points() < 2) return xsi_side_.A();
 
         return multiple_xsi_side_[cp_id].A();
       }
@@ -453,7 +453,7 @@ namespace CORE::GEO
        *  \author hiermeier \date 01/17 */
       const CORE::LINALG::Matrix<dimedge, 1>& local_edge_coordinates(const unsigned& cp_id) const
       {
-        if (NumCutPoints() < 2) return xsi_edge_;
+        if (num_cut_points() < 2) return xsi_edge_;
 
         return multiple_xsi_edge_[cp_id];
       }
@@ -598,7 +598,7 @@ namespace CORE::GEO
                 CORE::GEO::CUT::OUTPUT::GmshCoordDump(file, p, 0);
                 CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
                 file.close();
-                GenerateGmshDump();
+                generate_gmsh_dump();
                 FOUR_C_THROW("Distance between point touching edge is too high! Check this case!");
               }
               it = touching_edges.erase(it);
@@ -633,7 +633,7 @@ namespace CORE::GEO
       IntersectionStatus compute_edge_side_intersection(double& tolerance, bool check_inside = true,
           std::vector<int>* touched_edges = nullptr) override
       {
-        switch (GetOptionsPtr()->geom_intersect_floattype())
+        switch (get_options_ptr()->geom_intersect_floattype())
         {
           case INPAR::CUT::floattype_cln:
           {
@@ -731,7 +731,7 @@ namespace CORE::GEO
               std::stringstream err_msg;
               err_msg << "Touching " << touched.size()
                       << " edges, but no intersection! This should not happen! ";
-              GenerateGmshDump();
+              generate_gmsh_dump();
               FOUR_C_THROW(err_msg.str());
             }
           }
@@ -743,7 +743,7 @@ namespace CORE::GEO
       /** \brief Computes the intersection points of the edge with the specified side
        *   and stores the points in cuts
        *
-       *  WARNING: Intersection just works for planes ( TRI3, QUAD4 unwarped! ) with lines!!!
+       *  WARNING: intersection just works for planes ( TRI3, QUAD4 unwarped! ) with lines!!!
        *
        *  (1) try to find not overlapping geometries with bounding-boxes to avoid a big load
        *  of work ... has to be done. This is here just for performance ... intersection
@@ -785,7 +785,7 @@ namespace CORE::GEO
       ParallelIntersectionStatus handle_parallel_intersection(
           PointSet& cuts, int id = -1, bool output = false) override;
 
-      virtual void GenerateGmshDump();
+      virtual void generate_gmsh_dump();
 
       // Handle cases for which normal intersection procedure did not work
       bool HandleSpecialCases() override;
@@ -797,37 +797,37 @@ namespace CORE::GEO
        *  element parameter space bounds */
       bool SurfaceWithinLimits(double tol = REFERENCETOL) const override
       {
-        return CORE::GEO::CUT::KERNEL::WithinLimits<sidetype>(xsi_side_, tol);
+        return CORE::GEO::CUT::KERNEL::within_limits<sidetype>(xsi_side_, tol);
       }
 
       /** \brief Will return TRUE, if local side coordinates are within the TRI3
        *  side element parameter space bounds */
-      bool Tri3WithinLimits(double tol = REFERENCETOL) const
+      bool tri3_within_limits(double tol = REFERENCETOL) const
       {
-        return CORE::GEO::CUT::KERNEL::WithinLimits<CORE::FE::CellType::tri3>(xsi_side_, tol);
+        return CORE::GEO::CUT::KERNEL::within_limits<CORE::FE::CellType::tri3>(xsi_side_, tol);
       }
 
       /** \brief Will return TRUE, if local edge coordinate is within the line
        *  element parameter space bounds */
       bool LineWithinLimits(double tol = REFERENCETOL) const override
       {
-        return CORE::GEO::CUT::KERNEL::WithinLimits<edgetype>(xsi_edge_, tol);
+        return CORE::GEO::CUT::KERNEL::within_limits<edgetype>(xsi_edge_, tol);
       }
 
       /// access the problem dimension
-      unsigned ProbDim() const override { return probdim; }
+      unsigned prob_dim() const override { return probdim; }
 
       /// access the number of nodes of the side ( or 2-nd edge ) element
-      unsigned NumNodesSide() const override { return numNodesSide; }
+      unsigned num_nodes_side() const override { return numNodesSide; }
 
       /// access the number of nodes of the edge
-      unsigned NumNodesEdge() const override { return numNodesEdge; }
+      unsigned num_nodes_edge() const override { return numNodesEdge; }
 
       /// set the edge and side coordinates
-      void SetCoordinates() override;
+      void set_coordinates() override;
 
       /// set the edge and side coordinates
-      void SetCoordinates(double* xyze_surfaceElement, double* xyze_lineElement) override
+      void set_coordinates(double* xyze_surfaceElement, double* xyze_lineElement) override
       {
         xyze_lineElement_.SetCopy(xyze_lineElement);
         xyze_surfaceElement_.SetCopy(xyze_surfaceElement);
@@ -841,12 +841,12 @@ namespace CORE::GEO
        *
        *  \author hiermeier
        *  \date 08/16 */
-      void ScaleAndShift() override
+      void scale_and_shift() override
       {
         // ---------------------------------------------------------------------
         // scale the input elements if desired
         // ---------------------------------------------------------------------
-        if (not IsScaled())
+        if (not is_scaled())
           scale_ = 1.0;
         else
         {
@@ -858,7 +858,7 @@ namespace CORE::GEO
         // ---------------------------------------------------------------------
         // shift the input elements if desired
         // ---------------------------------------------------------------------
-        if (not IsShifted())
+        if (not is_shifted())
           shift_ = 0;
         else
         {
@@ -880,7 +880,7 @@ namespace CORE::GEO
       /** check if the given local coordinates are at one of the edges of the side element,
        *  i.e. at the boundaries of the side element. */
       template <class T>
-      bool AtEdge(const T& xsi)
+      bool at_edge(const T& xsi)
       {
         return CORE::GEO::CUT::KERNEL::AtEdge<sidetype>(xsi);
       }
@@ -947,7 +947,7 @@ namespace CORE::GEO
        *  \author hiermeier \date 08/16 */
       bool compute_edge_tri3_intersection(int triangleid, KERNEL::PointOnSurfaceLoc& location)
       {
-        switch (GetOptionsPtr()->geom_intersect_floattype())
+        switch (get_options_ptr()->geom_intersect_floattype())
         {
           case INPAR::CUT::floattype_cln:
           {
@@ -995,7 +995,7 @@ namespace CORE::GEO
       IntersectionStatus compute_edge_tri3_intersection_quad4_split(
           int triangleid, bool* close_to_shared_edge = nullptr)
       {
-        switch (GetOptionsPtr()->geom_intersect_floattype())
+        switch (get_options_ptr()->geom_intersect_floattype())
         {
           case INPAR::CUT::floattype_cln:
           {
@@ -1067,7 +1067,7 @@ namespace CORE::GEO
         }
         else
         {
-          FOUR_C_THROW("Cut::Intersection::get_triangle: For Triangulation a QUAD4 is expected!");
+          FOUR_C_THROW("Cut::intersection::get_triangle: For Triangulation a QUAD4 is expected!");
         }
       };
 
@@ -1077,7 +1077,7 @@ namespace CORE::GEO
           double& tolerance, bool& zeroarea, KERNEL::PointOnSurfaceLoc& loc,
           std::vector<int>& touched_edges, bool signeddistance = false)
       {
-        switch (GetOptionsPtr()->geom_distance_floattype())
+        switch (get_options_ptr()->geom_distance_floattype())
         {
           case INPAR::CUT::floattype_cln:
           {
@@ -1185,7 +1185,7 @@ namespace CORE::GEO
           bool& zeroarea, KERNEL::PointOnSurfaceLoc& loc, std::vector<int>& touched_edges,
           bool signeddistance, int tri3_id, bool& extended_tri_tolerance_loc_triangle_split)
       {
-        switch (GetOptionsPtr()->geom_distance_floattype())
+        switch (get_options_ptr()->geom_distance_floattype())
         {
           case INPAR::CUT::floattype_cln:
           {
@@ -1276,7 +1276,7 @@ namespace CORE::GEO
       /// add cut point that is a node to all edges and sides it touches
       void insert_cut(Node* n, PointSet& cuts)
       {
-        cuts.insert(Point::insert_cut(GetEdgePtr(), GetSidePtr(), n));
+        cuts.insert(Point::insert_cut(get_edge_ptr(), get_side_ptr(), n));
       }
 
       void add_connectivity_info(Point* p, const CORE::LINALG::Matrix<probdim, 1>& xreal,
@@ -1313,10 +1313,10 @@ namespace CORE::GEO
 
       /// shifting calculated based on the input element
       CORE::LINALG::Matrix<probdim, 1> shift_;
-    };  // class Intersection
+    };  // class intersection
 
     /*--------------------------------------------------------------------------*/
-    /** \brief Create a Intersection object
+    /** \brief Create a intersection object
      *
      *  \author hiermeier \date 12/16 */
     class IntersectionFactory
@@ -1377,7 +1377,7 @@ namespace CORE::GEO
   }  // namespace CUT
 }  // namespace CORE::GEO
 
-// static members of Intersection base class
+// static members of intersection base class
 template <unsigned probdim, CORE::FE::CellType edgetype, CORE::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned numNodesEdge, unsigned numNodesSide>
 CORE::LINALG::Matrix<probdim, numNodesEdge> CORE::GEO::CUT::Intersection<probdim, edgetype,

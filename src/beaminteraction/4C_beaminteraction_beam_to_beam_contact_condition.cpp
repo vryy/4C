@@ -53,9 +53,9 @@ void BEAMINTERACTION::BeamToBeamContactCondition::BuildIdSets(
 bool BEAMINTERACTION::BeamToBeamContactCondition::IdsInCondition(
     const int id_line, const int id_other) const
 {
-  if (IdIsInCondition(line_ids_, id_line) and IdIsInCondition(other_line_ids_, id_other))
+  if (id_is_in_condition(line_ids_, id_line) and id_is_in_condition(other_line_ids_, id_other))
     return true;
-  if (IdIsInCondition(line_ids_, id_other) and IdIsInCondition(other_line_ids_, id_line))
+  if (id_is_in_condition(line_ids_, id_other) and id_is_in_condition(other_line_ids_, id_line))
     return true;
   return false;
 }

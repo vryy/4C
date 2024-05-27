@@ -196,7 +196,7 @@ namespace SCATRA
     void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override;
 
     //! initialize system matrix
-    Teuchos::RCP<CORE::LINALG::SparseOperator> InitSystemMatrix() const;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> init_system_matrix() const;
 
     //! prepare time loop
     virtual void prepare_time_loop();
@@ -231,10 +231,10 @@ namespace SCATRA
     }
 
     //! do explicit predictor step to obtain better starting value for Newton-Raphson iteration
-    virtual void ExplicitPredictor() const;
+    virtual void explicit_predictor() const;
 
     //! set the velocity field (zero or field by function)
-    virtual void SetVelocityField();
+    virtual void set_velocity_field();
 
     /*! Set external force field
 
@@ -253,7 +253,7 @@ namespace SCATRA
 
     //! set convective velocity field (+ pressure and acceleration field as
     //! well as fine-scale velocity field, if required)
-    virtual void SetVelocityField(
+    virtual void set_velocity_field(
         Teuchos::RCP<const Epetra_Vector> convvel,  //!< convective velocity/press. vector
         Teuchos::RCP<const Epetra_Vector> acc,      //!< acceleration vector
         Teuchos::RCP<const Epetra_Vector> vel,      //!< velocity vector
@@ -541,10 +541,10 @@ namespace SCATRA
     Teuchos::RCP<const CORE::LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
 
     //! add dirichlet dofs to dbcmaps_
-    void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
+    void add_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoadd);
 
     //! remove dirichlet dofs from dbcmaps_
-    void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove);
+    void remove_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoremove);
 
     //! return pointer to const dofrowmap
     Teuchos::RCP<const Epetra_Map> dof_row_map();
@@ -553,7 +553,7 @@ namespace SCATRA
     Teuchos::RCP<const Epetra_Map> dof_row_map(int nds);
 
     //! return discretization
-    Teuchos::RCP<DRT::Discretization> Discretization() const override { return discret_; }
+    Teuchos::RCP<DRT::Discretization> discretization() const override { return discret_; }
 
     //! return the parameter lists
     Teuchos::RCP<Teuchos::ParameterList> ScatraParameterList() const { return params_; }
@@ -570,7 +570,7 @@ namespace SCATRA
     virtual void check_and_write_output_and_restart();
 
     //! write restart data to disk
-    virtual void WriteRestart() const;
+    virtual void write_restart() const;
 
     //! write results to disk
     void WriteResult();
@@ -676,7 +676,7 @@ namespace SCATRA
     void setup_matrix_block_maps();
 
     //! some of the set up of the (block) maps of the scatra system matrix has to be done after
-    //! SetupMeshtying() has been called
+    //! setup_meshtying() has been called
     void post_setup_matrix_block_maps();
 
     /*!
@@ -957,9 +957,9 @@ namespace SCATRA
     void apply_dirichlet_to_system();
 
     //! Apply Dirichlet boundary conditions on provided state vector
-    virtual void ApplyDirichletBC(const double time,  //!< evaluation time
-        Teuchos::RCP<Epetra_Vector> phinp,            //!< transported scalar(s) (may be = null)
-        Teuchos::RCP<Epetra_Vector> phidt             //!< first time derivative (may be = null)
+    virtual void apply_dirichlet_bc(const double time,  //!< evaluation time
+        Teuchos::RCP<Epetra_Vector> phinp,              //!< transported scalar(s) (may be = null)
+        Teuchos::RCP<Epetra_Vector> phidt               //!< first time derivative (may be = null)
     );
 
     //! compute outward pointing unit normal vectors at given bc's
@@ -979,13 +979,14 @@ namespace SCATRA
     );
 
     //! potential residual scaling and potential addition of Neumann terms
-    void ScalingAndNeumann();
+    void scaling_and_neumann();
 
     //! add actual Neumann loads multipl. with time factor to the residual
     virtual void add_neumann_to_residual() = 0;
 
     //! evaluate Neumann boundary conditions
-    virtual void ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>& neumann_loads  //!< Neumann loads
+    virtual void apply_neumann_bc(
+        const Teuchos::RCP<Epetra_Vector>& neumann_loads  //!< Neumann loads
     );
 
     //! add parameters depending on the problem, i.e., loma, level-set, ...
@@ -994,13 +995,13 @@ namespace SCATRA
     );
 
     //! return the right time-scaling-factor for the true residual
-    virtual double ResidualScaling() const = 0;
+    virtual double residual_scaling() const = 0;
 
     //! solve linear system
     void linear_solve();
 
     //! contains the nonlinear iteration loop
-    virtual void NonlinearSolve();
+    virtual void nonlinear_solve();
 
     //! contains the nonlinear iteration loop for truly partitioned multi-scale simulations
     void nonlinear_multi_scale_solve();
@@ -1052,7 +1053,7 @@ namespace SCATRA
     bool is_init() const { return isinit_; };
 
     //! check if \ref Setup() was called
-    void CheckIsSetup() const;
+    void check_is_setup() const;
 
     //! check if \ref Init() was called
     void check_is_init() const;
@@ -1075,10 +1076,10 @@ namespace SCATRA
     virtual void output_state();
 
     //! write state vectors (phinp and convective velocity) to Gmsh postprocessing files
-    void OutputToGmsh(const int step, const double time) const;
+    void output_to_gmsh(const int step, const double time) const;
 
     //! write flux vectors to BINIO
-    virtual void OutputFlux(Teuchos::RCP<Epetra_MultiVector> flux,  //!< flux vector
+    virtual void output_flux(Teuchos::RCP<Epetra_MultiVector> flux,  //!< flux vector
         const std::string& fluxtype  //!< flux type ("domain" or "boundary")
     );
 
@@ -1092,7 +1093,7 @@ namespace SCATRA
     void adapt_time_step_size();
 
     //! compute time step size
-    virtual void ComputeTimeStepSize(double& dt);
+    virtual void compute_time_step_size(double& dt);
 
     //! increment time and step value
     void increment_time_and_step();
@@ -1111,7 +1112,7 @@ namespace SCATRA
     virtual void compute_null_space_if_necessary() const;
 
     //! create scalar handler
-    virtual void CreateScalarHandler();
+    virtual void create_scalar_handler();
 
     /*--- calculate and update -----------------------------------------------*/
 
@@ -1124,15 +1125,15 @@ namespace SCATRA
     /*--- set, prepare, and predict ------------------------------------------*/
 
     //! prepare AVM3-based scale separation
-    void AVM3Preparation();
+    void av_m3_preparation();
 
     //! AVM3-based scale separation
-    virtual void AVM3Separation() = 0;
+    virtual void av_m3_separation() = 0;
 
     /*--- calculate and update -----------------------------------------------*/
 
     //! scaling of AVM3-based subgrid-diffusivity matrix
-    void AVM3Scaling(Teuchos::ParameterList& eleparams  //!< parameter list
+    void av_m3_scaling(Teuchos::ParameterList& eleparams  //!< parameter list
     );
 
     /*--- query and output ---------------------------------------------------*/
@@ -1163,7 +1164,7 @@ namespace SCATRA
      * be removed.
      * note: VM3 solver still needs an explicit toggle vector for construction
      */
-    Teuchos::RCP<const Epetra_Vector> DirichletToggle();
+    Teuchos::RCP<const Epetra_Vector> dirichlet_toggle();
 
     /*========================================================================*/
 
@@ -1669,7 +1670,7 @@ namespace SCATRA
     //! @name general framework
     /*========================================================================*/
     //! check if \ref Setup() was called
-    void CheckIsSetup() const;
+    void check_is_setup() const;
 
     /*========================================================================*/
     //! @name Internal variables
@@ -1723,7 +1724,7 @@ namespace SCATRA
     /*========================================================================*/
 
     //! evaluate mean and total scalars and print them to file and screen
-    virtual void EvaluateIntegrals(const ScaTraTimIntImpl* const scatratimint) = 0;
+    virtual void evaluate_integrals(const ScaTraTimIntImpl* const scatratimint) = 0;
 
     //! print bar to screen as bottom of table
     void finalize_screen_output();
@@ -1732,17 +1733,17 @@ namespace SCATRA
     virtual void init_strategy_specific(const ScaTraTimIntImpl* const scatratimint) = 0;
 
     //! evluate csv data and return it in a map
-    virtual std::map<std::string, std::vector<double>> PrepareCSVOutput() = 0;
+    virtual std::map<std::string, std::vector<double>> prepare_csv_output() = 0;
 
     //! fill parameter list and set variables in discretization for evaluation of mean scalars
-    void PrepareEvaluate(
+    void prepare_evaluate(
         const ScaTraTimIntImpl* const scatratimint, Teuchos::ParameterList& eleparams);
 
     //! print header of table for summary of mean values to screen
-    void PrintHeaderToScreen(const std::string& dis_name);
+    void print_header_to_screen(const std::string& dis_name);
 
     //! Print evaluated data to screen
-    virtual void PrintToScreen() = 0;
+    virtual void print_to_screen() = 0;
 
     /*========================================================================*/
     //! @name Internal variables
@@ -1784,13 +1785,13 @@ namespace SCATRA
     OutputScalarsStrategyDomain() : dummy_domain_id_(-1), numdofpernode_(0), numscal_(0){};
 
    protected:
-    void EvaluateIntegrals(const ScaTraTimIntImpl* const scatratimint) override;
+    void evaluate_integrals(const ScaTraTimIntImpl* const scatratimint) override;
 
     void init_strategy_specific(const ScaTraTimIntImpl* const scatratimint) override;
 
-    std::map<std::string, std::vector<double>> PrepareCSVOutput() override;
+    std::map<std::string, std::vector<double>> prepare_csv_output() override;
 
-    void PrintToScreen() override;
+    void print_to_screen() override;
 
    private:
     const int dummy_domain_id_;
@@ -1812,13 +1813,13 @@ namespace SCATRA
     OutputScalarsStrategyCondition() : conditions_(), numdofpernodepercondition_(){};
 
    protected:
-    void EvaluateIntegrals(const ScaTraTimIntImpl* const scatratimint) override;
+    void evaluate_integrals(const ScaTraTimIntImpl* const scatratimint) override;
 
     void init_strategy_specific(const ScaTraTimIntImpl* const scatratimint) override;
 
-    std::map<std::string, std::vector<double>> PrepareCSVOutput() override;
+    std::map<std::string, std::vector<double>> prepare_csv_output() override;
 
-    void PrintToScreen() override;
+    void print_to_screen() override;
 
    private:
     //! vector of 'TotalAndMeanScalar'-conditions
@@ -1840,13 +1841,13 @@ namespace SCATRA
                                                   public OutputScalarsStrategyCondition
   {
    protected:
-    void EvaluateIntegrals(const ScaTraTimIntImpl* const scatratimint) override;
+    void evaluate_integrals(const ScaTraTimIntImpl* const scatratimint) override;
 
     void init_strategy_specific(const ScaTraTimIntImpl* const scatratimint) override;
 
-    std::map<std::string, std::vector<double>> PrepareCSVOutput() override;
+    std::map<std::string, std::vector<double>> prepare_csv_output() override;
 
-    void PrintToScreen() override;
+    void print_to_screen() override;
   };
 
   /*========================================================================*/

@@ -209,7 +209,7 @@ void redairway_tissue_dyn()
   // Resulttest for red_airway-tissue coupling
   // create result tests for single fields
   GLOBAL::Problem::Instance()->AddFieldTest(redairway_tissue->RedAirwayField()->CreateFieldTest());
-  GLOBAL::Problem::Instance()->AddFieldTest(redairway_tissue->StructureField()->CreateFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(redairway_tissue->structure_field()->CreateFieldTest());
 
   // Do the actual testing
   GLOBAL::Problem::Instance()->TestAll(actdis->Comm());

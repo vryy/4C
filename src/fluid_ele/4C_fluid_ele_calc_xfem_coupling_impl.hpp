@@ -167,7 +167,7 @@ namespace DRT
 
         //! project gaussian point from linearized interface in normal direction onto corresponding
         //! side
-        void ProjectOnSide(
+        void project_on_side(
             CORE::LINALG::Matrix<nsd_, 1>&
                 x_gp_lin,  ///< global coordinates of gaussian point w.r.t linearized interface
             CORE::LINALG::Matrix<nsd_, 1>& x_side,  ///< projected gaussian point on side
@@ -190,7 +190,7 @@ namespace DRT
         //@{
 
         //! get spatial derivatives of slave elements nodal shape functions
-        void GetSlaveFunctDeriv(CORE::LINALG::Matrix<nsd_, slave_nen_>& slave_derxy) const;
+        void get_slave_funct_deriv(CORE::LINALG::Matrix<nsd_, slave_nen_>& slave_derxy) const;
 
         //@}
 
@@ -225,7 +225,7 @@ namespace DRT
         std::string
             veln_statename_;  ///< name of previous velocity state (for access from discretization)
 
-        // TODO: shift this vector to the same class as ProjectOnSide which is based on the cutter
+        // TODO: shift this vector to the same class as project_on_side which is based on the cutter
         // discretization
         CORE::LINALG::Matrix<nsd_, slave_nen_>
             interface_velnp_jump_;  ///< cutter element's prescribed velocity jump height or
@@ -293,7 +293,7 @@ namespace DRT
         SlaveElementRepresentation(CORE::LINALG::SerialDenseMatrix::Base& slave_xyze){};
 
         //! get nodal shape function derivatives
-        void GetSlaveFunctDeriv(CORE::LINALG::Matrix<nsd_, slave_nen_>& slave_derxy) const
+        void get_slave_funct_deriv(CORE::LINALG::Matrix<nsd_, slave_nen_>& slave_derxy) const
         {
           FOUR_C_THROW("There is no concrete slave element available.");
         };

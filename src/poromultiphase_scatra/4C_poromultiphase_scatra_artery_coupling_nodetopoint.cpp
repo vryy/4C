@@ -81,7 +81,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::pre_evaluate
   // output
   int total_numactive_pairs = 0;
   int numactive_pairs = static_cast<int>(coupl_elepairs_.size());
-  Comm().SumAll(&numactive_pairs, &total_numactive_pairs, 1);
+  comm().SumAll(&numactive_pairs, &total_numactive_pairs, 1);
   if (myrank_ == 0)
   {
     std::cout << total_numactive_pairs
@@ -152,14 +152,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::output_coupl
     std::cout << "\nSummary of coupling pairs (segments):" << std::endl;
     std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << std::endl;
   }
-  Comm().Barrier();
+  comm().Barrier();
   for (const auto& coupl_elepair : coupl_elepairs_)
   {
     std::cout << "Proc " << std::right << std::setw(2) << myrank_ << ": Artery-ele " << std::right
               << std::setw(5) << coupl_elepair->Ele1GID() << ": <---> continuous-ele " << std::right
               << std::setw(7) << coupl_elepair->Ele2GID() << std::endl;
   }
-  Comm().Barrier();
+  comm().Barrier();
   if (myrank_ == 0) std::cout << "\n";
 }
 

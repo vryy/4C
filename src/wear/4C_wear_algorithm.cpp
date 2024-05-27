@@ -56,7 +56,8 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
           const_cast<Teuchos::ParameterList&>(
               GLOBAL::Problem::Instance()->structural_dynamic_params()),
           GLOBAL::Problem::Instance()->GetDis("structure")));
-  structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->StructureField());
+  structure_ =
+      Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->structure_field());
   structure_->Setup();
 
   if (structure_ == Teuchos::null)
@@ -71,10 +72,10 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
     FOUR_C_THROW("cast from ADAPTER::Ale to ADAPTER::AleFsiWrapper failed");
 
   // create empty operator
-  ale_->CreateSystemMatrix();
+  ale_->create_system_matrix();
 
   // contact/meshtying manager
-  cmtman_ = StructureField()->meshtying_contact_bridge()->ContactManager();
+  cmtman_ = structure_field()->meshtying_contact_bridge()->ContactManager();
 
   // copy interfaces for material configuration
   // stactic cast of mortar strategy to contact strategy
@@ -124,7 +125,7 @@ void WEAR::Algorithm::create_material_interface()
   Teuchos::ParameterList cparams = cstrategy.Params();
 
   // check for fill_complete of discretization
-  if (!structure_->Discretization()->Filled()) FOUR_C_THROW("Discretization is not fillcomplete");
+  if (!structure_->discretization()->Filled()) FOUR_C_THROW("discretization is not fillcomplete");
 
   // let's check for contact boundary conditions in discret
   // and detect groups of matching conditions
@@ -136,7 +137,7 @@ void WEAR::Algorithm::create_material_interface()
   }
 
   std::vector<CORE::Conditions::Condition*> contactconditions(0);
-  structure_->Discretization()->GetCondition("Contact", contactconditions);
+  structure_->discretization()->GetCondition("Contact", contactconditions);
 
   // there must be more than one contact condition
   // unless we have a self contact problem!
@@ -156,7 +157,7 @@ void WEAR::Algorithm::create_material_interface()
   // maximum dof number in discretization
   // later we want to create NEW Lagrange multiplier degrees of
   // freedom, which of course must not overlap with displacement dofs
-  int maxdof = structure_->Discretization()->dof_row_map()->MaxAllGID();
+  int maxdof = structure_->discretization()->dof_row_map()->MaxAllGID();
 
   // get input par.
   INPAR::CONTACT::SolvingStrategy stype =
@@ -332,8 +333,8 @@ void WEAR::Algorithm::create_material_interface()
       {
         int gid = (*nodeids)[k];
         // do only nodes that I have in my discretization
-        if (!structure_->Discretization()->NodeColMap()->MyGID(gid)) continue;
-        DRT::Node* node = structure_->Discretization()->gNode(gid);
+        if (!structure_->discretization()->NodeColMap()->MyGID(gid)) continue;
+        DRT::Node* node = structure_->discretization()->gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
         // store initial active node gids
@@ -362,7 +363,7 @@ void WEAR::Algorithm::create_material_interface()
         if (ftype != INPAR::CONTACT::friction_none)
         {
           Teuchos::RCP<CONTACT::FriNode> cnode = Teuchos::rcp(new CONTACT::FriNode(node->Id(),
-              node->X(), node->Owner(), structure_->Discretization()->Dof(0, node), isslave[j],
+              node->X(), node->Owner(), structure_->discretization()->Dof(0, node), isslave[j],
               isactive[j] + foundinitialactive, friplus));
           //-------------------
           // get nurbs weight!
@@ -375,7 +376,7 @@ void WEAR::Algorithm::create_material_interface()
 
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
           std::vector<CORE::Conditions::Condition*> contactSymconditions(0);
-          structure_->Discretization()->GetCondition("mrtrsym", contactSymconditions);
+          structure_->discretization()->GetCondition("mrtrsym", contactSymconditions);
 
           for (unsigned j = 0; j < contactSymconditions.size(); j++)
             if (contactSymconditions.at(j)->ContainsNode(node->Id()))
@@ -402,7 +403,7 @@ void WEAR::Algorithm::create_material_interface()
         else
         {
           Teuchos::RCP<CONTACT::Node> cnode = Teuchos::rcp(new CONTACT::Node(node->Id(), node->X(),
-              node->Owner(), structure_->Discretization()->Dof(0, node), isslave[j],
+              node->Owner(), structure_->discretization()->Dof(0, node), isslave[j],
               isactive[j] + foundinitialactive));
           //-------------------
           // get nurbs weight!
@@ -415,7 +416,7 @@ void WEAR::Algorithm::create_material_interface()
 
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
           std::vector<CORE::Conditions::Condition*> contactSymconditions(0);
-          structure_->Discretization()->GetCondition("mrtrsym", contactSymconditions);
+          structure_->discretization()->GetCondition("mrtrsym", contactSymconditions);
 
           for (unsigned j = 0; j < contactSymconditions.size(); j++)
             if (contactSymconditions.at(j)->ContainsNode(node->Id()))
@@ -468,7 +469,7 @@ void WEAR::Algorithm::create_material_interface()
         if (cparams.get<bool>("NURBS") == true)
         {
           DRT::NURBS::NurbsDiscretization* nurbsdis =
-              dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*(structure_->Discretization())));
+              dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*(structure_->discretization())));
 
           Teuchos::RCP<DRT::NURBS::Knotvector> knots = (*nurbsdis).GetKnotVector();
           std::vector<CORE::LINALG::SerialDenseVector> parentknots(dim);

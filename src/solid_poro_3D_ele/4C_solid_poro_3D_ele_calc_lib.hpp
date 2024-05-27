@@ -113,7 +113,7 @@ namespace DRT::ELEMENTS
    * @param jacobian_mapping (in) : An object holding quantities of the jacobian mapping
    * (inverse Jacobian, determinant, derivatives of the shape functions w.r.t. XYZ)
    * @param ele (in) : Element
-   * @param discretization (in) : Discretization
+   * @param discretization (in) : discretization
    * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
    * @param kinematictype (in): kinematic type of element
    * @return volchange: volume change
@@ -274,7 +274,7 @@ namespace DRT::ELEMENTS
   {
     double dphi_dJ = 0.0;
 
-    porostructmat.ComputePorosity(params, solidpressure, volchange, gp, porosity,
+    porostructmat.compute_porosity(params, solidpressure, volchange, gp, porosity,
         nullptr,  // dphi_dp not needed
         &dphi_dJ,
         nullptr,  // dphi_dJdp not needed
@@ -298,11 +298,11 @@ namespace DRT::ELEMENTS
    * @return porosity (volfrac of multiphase porspace + volfracs of additional porous networks)
    */
   template <CORE::FE::CellType celltype>
-  double ComputePorosity(MAT::StructPoro& porostructmat, Teuchos::ParameterList& params,
+  double compute_porosity(MAT::StructPoro& porostructmat, Teuchos::ParameterList& params,
       const double solidpressure, const double volchange, const int gp)
   {
     double porosity = 0.0;
-    porostructmat.ComputePorosity(params, solidpressure, volchange, gp, porosity, nullptr,
+    porostructmat.compute_porosity(params, solidpressure, volchange, gp, porosity, nullptr,
         nullptr,  // dphi_dJ not needed
         nullptr,  // dphi_dJdp not needed
         nullptr,  // dphi_dJJ not needed

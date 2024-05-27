@@ -139,7 +139,7 @@ void PARTICLEWALL::WallResultTest::test_node(INPUT::LineDefinition& res, int& ne
       FOUR_C_THROW("result check failed with unknown quantity '%s'!", quantity.c_str());
 
     // compare values
-    const int err = CompareValues(actresult, "NODE", res);
+    const int err = compare_values(actresult, "NODE", res);
     nerr += err;
     test_count++;
   }
@@ -172,7 +172,7 @@ void PARTICLEWALL::WallResultTest::TestSpecial(
     FOUR_C_THROW("result check failed with unknown quantity '%s'!", quantity.c_str());
 
   // compare values
-  const int err = CompareValues(actresult, "SPECIAL", res);
+  const int err = compare_values(actresult, "SPECIAL", res);
   nerr += err;
   test_count++;
 }

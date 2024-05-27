@@ -306,7 +306,7 @@ namespace MORTAR
     \brief Evaluate shape functions and derivatives
 
     */
-    virtual bool EvaluateShape(
+    virtual bool evaluate_shape(
         const double* xi, CORE::LINALG::Matrix<3, 1>& val, CORE::LINALG::Matrix<3, 2>& deriv);
 
     /*!

@@ -56,10 +56,10 @@ namespace POROMULTIPHASESCATRA
 
    protected:
     //! perform iteration step of structure-fluid field
-    void DoPoroStep();
+    void do_poro_step();
 
     //! perform iteration step of scatra field
-    void DoScatraStep();
+    void do_scatra_step();
 
     //! convergence check of outer loop
     bool convergence_check(int itnum);

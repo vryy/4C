@@ -93,10 +93,10 @@ namespace STR
     {
       // allocate auxiliary integrator
       sta_ = Teuchos::rcp(
-          new T(timeparams, ioparams, sdyn, xparams, sti->Discretization(), sti->Solver(),
+          new T(timeparams, ioparams, sdyn, xparams, sti->discretization(), sti->Solver(),
               Teuchos::null,  // no contact solver
               sti->DiscWriter()));
-      sta_->Init(timeparams, sdyn, xparams, sti->Discretization(), sti->Solver());
+      sta_->Init(timeparams, sdyn, xparams, sti->discretization(), sti->Solver());
 
       // check explicitness
       if (sta_->MethodImplicit())

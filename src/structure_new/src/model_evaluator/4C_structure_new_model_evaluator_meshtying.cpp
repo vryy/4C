@@ -71,7 +71,7 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
 
   // create the meshtying factory
   MORTAR::STRATEGY::FactoryMT factory;
-  factory.Init(GStatePtr());
+  factory.Init(g_state_ptr());
   factory.Setup();
 
   // check the problem dimension
@@ -85,7 +85,7 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
   factory.read_and_check_input(cparams);
 
   // check for fill_complete of discretization
-  if (not Discret().Filled()) FOUR_C_THROW("Discretization is not fill_complete.");
+  if (not discret().Filled()) FOUR_C_THROW("discretization is not fill_complete.");
 
   // ---------------------------------------------------------------------
   // build the meshtying interfaces
@@ -98,7 +98,7 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
   // ---------------------------------------------------------------------
   // build the solver strategy object
   // ---------------------------------------------------------------------
-  strategy_ptr_ = factory.BuildStrategy(cparams, poroslave, poromaster, DofOffset(), interfaces);
+  strategy_ptr_ = factory.BuildStrategy(cparams, poroslave, poromaster, dof_offset(), interfaces);
 
   // build the search tree
   factory.BuildSearchTree(interfaces);
@@ -116,10 +116,10 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
       Int().GetDbc().GetZerosPtr(), Int().GetDbc().GetZerosPtr());  // ToDo redistribute_meshtying??
   strategy_ptr_->MortarCoupling(Int().GetDbc().GetZerosPtr());
 
-  strategy_ptr_->NoxInterfacePtr()->Init(GStatePtr());
-  strategy_ptr_->NoxInterfacePtr()->Setup();
+  strategy_ptr_->nox_interface_ptr()->Init(g_state_ptr());
+  strategy_ptr_->nox_interface_ptr()->Setup();
 
-  if (!GState().GetRestartStep())
+  if (!g_state().GetRestartStep())
   {
     // perform mesh initialization if required by input parameter MESH_RELOCATION
     auto mesh_relocation_parameter = CORE::UTILS::IntegralValue<INPAR::MORTAR::MeshRelocation>(
@@ -131,14 +131,14 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
           dynamic_cast<MORTAR::StrategyBase&>(*strategy_ptr_).MeshInitialization();
       if (Xslavemod != Teuchos::null)
       {
-        mesh_relocation_ = Teuchos::rcp(new Epetra_Vector(*GState().dof_row_map()));
+        mesh_relocation_ = Teuchos::rcp(new Epetra_Vector(*g_state().dof_row_map()));
         for (int i = 0; i < strategy_ptr_->SlaveRowNodes()->NumMyElements(); ++i)
           for (int d = 0; d < strategy_ptr_->Dim(); ++d)
           {
-            int gid = GState().GetDiscret()->Dof(
-                GState().GetDiscret()->gNode(strategy_ptr_->SlaveRowNodes()->GID(i)), d);
+            int gid = g_state().GetDiscret()->Dof(
+                g_state().GetDiscret()->gNode(strategy_ptr_->SlaveRowNodes()->GID(i)), d);
             mesh_relocation_->operator[](mesh_relocation_->Map().LID(gid)) =
-                GState().GetDiscret()->gNode(strategy_ptr_->SlaveRowNodes()->GID(i))->X()[d] -
+                g_state().GetDiscret()->gNode(strategy_ptr_->SlaveRowNodes()->GID(i))->X()[d] -
                 Xslavemod->operator[](Xslavemod->Map().LID(gid));
           }
         apply_mesh_initialization(Xslavemod);
@@ -376,7 +376,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Meshtying::get_last_time_
 void STR::MODELEVALUATOR::Meshtying::run_pre_apply_jacobian_inverse(const Epetra_Vector& rhs,
     Epetra_Vector& result, const Epetra_Vector& xold, const NOX::NLN::Group& grp)
 {
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd = GState().JacobianDisplBlock();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd = g_state().JacobianDisplBlock();
   const_cast<CONTACT::MtAbstractStrategy&>(Strategy())
       .run_pre_apply_jacobian_inverse(jac_dd, const_cast<Epetra_Vector&>(rhs));
 }
@@ -401,21 +401,21 @@ Teuchos::RCP<const CORE::LINALG::SparseMatrix> STR::MODELEVALUATOR::Meshtying::G
  *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Meshtying::evaluate_force()
 {
-  return Strategy().evaluate_force(GState().GetDisNp());
+  return Strategy().evaluate_force(g_state().GetDisNp());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Meshtying::evaluate_force_stiff()
 {
-  return Strategy().evaluate_force_stiff(GState().GetDisNp());
+  return Strategy().evaluate_force_stiff(g_state().GetDisNp());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Meshtying::evaluate_stiff()
 {
-  return Strategy().evaluate_stiff(GState().GetDisNp());
+  return Strategy().evaluate_stiff(g_state().GetDisNp());
 }
 
 /*----------------------------------------------------------------------------*
@@ -431,8 +431,8 @@ void STR::MODELEVALUATOR::Meshtying::apply_mesh_initialization(
   Teuchos::RCP<Epetra_Map> allreduceslavemap = CORE::LINALG::AllreduceEMap(*slavemap);
 
   // export modified node positions to column map of problem discretization
-  const Epetra_Map* dof_colmap = DiscretPtr()->DofColMap();
-  const Epetra_Map* node_colmap = DiscretPtr()->NodeColMap();
+  const Epetra_Map* dof_colmap = discret_ptr()->DofColMap();
+  const Epetra_Map* node_colmap = discret_ptr()->NodeColMap();
   Teuchos::RCP<Epetra_Vector> Xslavemodcol = CORE::LINALG::CreateVector(*dof_colmap, false);
   CORE::LINALG::Export(*Xslavemod, *Xslavemodcol);
 
@@ -449,10 +449,10 @@ void STR::MODELEVALUATOR::Meshtying::apply_mesh_initialization(
     int ilid = node_colmap->LID(gid);
     if (ilid < 0) continue;
 
-    DRT::Node* mynode = DiscretPtr()->gNode(gid);
+    DRT::Node* mynode = discret_ptr()->gNode(gid);
 
     // get degrees of freedom associated with this fluid/structure node
-    std::vector<int> nodedofs = DiscretPtr()->Dof(0, mynode);
+    std::vector<int> nodedofs = discret_ptr()->Dof(0, mynode);
     std::vector<double> nvector(3, 0.0);
 
     // create new position vector
@@ -472,17 +472,17 @@ void STR::MODELEVALUATOR::Meshtying::apply_mesh_initialization(
   }
 
   // re-initialize finite elements
-  CORE::COMM::ParObjectFactory::Instance().InitializeElements(Discret());
+  CORE::COMM::ParObjectFactory::Instance().initialize_elements(discret());
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Meshtying::RunPostComputeX(
+void STR::MODELEVALUATOR::Meshtying::run_post_compute_x(
     const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
   check_init_setup();
 
-  Strategy().RunPostComputeX(xold, dir, xnew);
+  Strategy().run_post_compute_x(xold, dir, xnew);
 }
 
 /*----------------------------------------------------------------------*
@@ -496,7 +496,7 @@ void STR::MODELEVALUATOR::Meshtying::remove_condensed_contributions_from_rhs(Epe
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Meshtying::WriteRestart(
+void STR::MODELEVALUATOR::Meshtying::write_restart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   if (mesh_relocation_ != Teuchos::null)
@@ -513,7 +513,7 @@ void STR::MODELEVALUATOR::Meshtying::WriteRestart(
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Meshtying::read_restart(IO::DiscretizationReader& ioreader)
 {
-  mesh_relocation_ = Teuchos::rcp(new Epetra_Vector(*Discret().dof_row_map(), true));
+  mesh_relocation_ = Teuchos::rcp(new Epetra_Vector(*discret().dof_row_map(), true));
   ioreader.ReadVector(mesh_relocation_, "mesh_relocation");
 
   strategy_ptr_->set_state(MORTAR::state_new_displacement, *mesh_relocation_);

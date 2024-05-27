@@ -74,16 +74,17 @@ namespace ADAPTER
     //! @name Transfer helpers
 
     /// field transform
-    virtual Teuchos::RCP<Epetra_Vector> AleToFluidField(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> ale_to_fluid_field(Teuchos::RCP<Epetra_Vector> iv) const;
 
     /// field transform
-    virtual Teuchos::RCP<Epetra_Vector> AleToFluidField(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> ale_to_fluid_field(
+        Teuchos::RCP<const Epetra_Vector> iv) const;
 
     /// interface transform
-    virtual Teuchos::RCP<Epetra_Vector> FluidToAle(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> fluid_to_ale(Teuchos::RCP<Epetra_Vector> iv) const;
 
     /// interface transform
-    virtual Teuchos::RCP<Epetra_Vector> FluidToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> fluid_to_ale(Teuchos::RCP<const Epetra_Vector> iv) const;
 
    private:
     /// ALE-fluid wrapper

@@ -148,7 +148,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::Evaluate(DRT::Element* el
   shapes_->Evaluate(*ele);
 
   read_global_vectors(ele, discretization, la);
-  GetMaterialParams(ele);
+  get_material_params(ele);
 
   elevec1.putScalar(0.0);
   if (!local_solver_->scatrapara_->SemiImplicit())
@@ -222,7 +222,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
 
     case SCATRA::Action::set_initial_field:
     {
-      ElementInit(ele);
+      element_init(ele);
       prepare_material_params(ele);
       // set initial field
       return SetInitialField(ele, params, elevec1_epetra, elevec2_epetra);
@@ -234,7 +234,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
       if (hdgele->PadaptEle() || !hdgele->MatInit())
       {
         shapes_->Evaluate(*ele);
-        ElementInit(ele);
+        element_init(ele);
         read_global_vectors(ele, discretization, la);
         prepare_material_params(ele);
         local_solver_->ComputeMatrices(ele);
@@ -258,7 +258,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
     }
     case SCATRA::Action::time_update_material:
     {
-      TimeUpdateMaterial(ele);
+      time_update_material(ele);
       break;
     }
     case SCATRA::Action::get_material_internal_state:
@@ -765,7 +765,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::compute_int
       CORE::FE::PolynomialSpaceCache<probdim>::Instance().Create(params);
 
   const CORE::FE::IntPointsAndWeights<CORE::FE::dim<distype>> intpoints(
-      SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(2 * hdgele->Degree()));
+      SCATRA::DisTypeToMatGaussRule<distype>::get_gauss_rule(2 * hdgele->Degree()));
 
   std::vector<CORE::LINALG::SerialDenseVector> shape_gp(intpoints.IP().nquad);
   std::vector<CORE::LINALG::SerialDenseMatrix> massPartDW(
@@ -1396,11 +1396,11 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::prepare_material_params(
       Teuchos::RCP<CORE::MAT::Material> singlemat = actmat->MaterialById(matid);
 
       for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)
-        PrepareMaterials(ele, singlemat, k, difftensor);
+        prepare_materials(ele, singlemat, k, difftensor);
     }
   }
   else
-    PrepareMaterials(ele, material, 0, difftensor);
+    prepare_materials(ele, material, 0, difftensor);
 
   DRT::ELEMENTS::ScaTraHDG* hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(ele);
   for (unsigned int i = 0; i < (*difftensor).size(); ++i)
@@ -1409,14 +1409,14 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::prepare_material_params(
 
 
   return;
-}  // ScaTraEleCalcHDG::GetMaterialParams
+}  // ScaTraEleCalcHDG::get_material_params
 
 
 /*----------------------------------------------------------------------*
  |  get the material parameter                            hoermann 09/15|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::GetMaterialParams(
+void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::get_material_params(
     DRT::Element* ele  //!< the element we are dealing with
 )
 {
@@ -1439,11 +1439,11 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::GetMaterialParams(
       int matid = actmat->MatID(k);
       Teuchos::RCP<CORE::MAT::Material> singlemat = actmat->MaterialById(matid);
 
-      Materials(singlemat, k, difftensor, ivecn, ivecnp, ivecnpderiv);
+      materials(singlemat, k, difftensor, ivecn, ivecnp, ivecnpderiv);
     }
   }
   else
-    Materials(material, 0, difftensor, ivecn, ivecnp, ivecnpderiv);
+    materials(material, 0, difftensor, ivecn, ivecnp, ivecnpderiv);
 
   DRT::ELEMENTS::ScaTraHDG* hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(ele);
   local_solver_->set_material_parameter(hdgele, ivecn, ivecnp, ivecnpderiv);
@@ -1451,7 +1451,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::GetMaterialParams(
 
 
   return;
-}  // ScaTraEleCalcHDG::GetMaterialParams
+}  // ScaTraEleCalcHDG::get_material_params
 
 
 /*----------------------------------------------------------------------*
@@ -1762,7 +1762,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(const DRT
  |  evaluate single material  (protected)                hoermann 09/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::PrepareMaterials(
+void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::prepare_materials(
     DRT::Element* ele,                                       //!< the element we are dealing with
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
@@ -1832,7 +1832,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::prepare_mat
  * Element Init
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ElementInit(DRT::Element* ele)
+void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::element_init(DRT::Element* ele)
 {
   DRT::ELEMENTS::ScaTraHDG* hdgele =
       dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(const_cast<DRT::Element*>(ele));

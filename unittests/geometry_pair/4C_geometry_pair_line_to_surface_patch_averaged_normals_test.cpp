@@ -44,7 +44,7 @@ namespace
      * \brief Return a reference to the connected faces of a face element.
      */
     template <typename A>
-    std::map<int, GEOMETRYPAIR::ConnectedFace>& GetConnectedFaces(A& face_element)
+    std::map<int, GEOMETRYPAIR::ConnectedFace>& get_connected_faces(A& face_element)
     {
       return face_element->connected_faces_;
     }
@@ -53,7 +53,7 @@ namespace
      * \brief Get the number of dofs for the beam.
      */
     template <typename A>
-    unsigned int GetNOtherDof(A& face_element)
+    unsigned int get_n_other_dof(A& face_element)
     {
       return face_element->n_dof_other_element_;
     }
@@ -95,7 +95,7 @@ namespace
         face_elements_map[investigated_face_element_volume_id]);
 
     // Offset in the derivatives for the beam dof.
-    const unsigned int dof_offset = GetNOtherDof(face_element);
+    const unsigned int dof_offset = get_n_other_dof(face_element);
 
     // Setup all face elements and get the patch information.
     for (auto& face_element_map_iterator : face_elements_map)
@@ -110,33 +110,33 @@ namespace
         EXPECT_EQ(face_element->GetPatchGID()[i], patch_dof_gid_reference[i]);
 
       // Check if the local node ID map of the connected faces to the main face could be found.
-      EXPECT_EQ(GetConnectedFaces(face_element).size(), 3);
+      EXPECT_EQ(get_connected_faces(face_element).size(), 3);
 
-      EXPECT_EQ(GetConnectedFaces(face_element)[10].node_lid_map_.size(), 1);
-      EXPECT_EQ(GetConnectedFaces(face_element)[10].node_lid_map_[3], 1);
-      EXPECT_EQ(GetConnectedFaces(face_element)[10].my_node_patch_lid_.size(), 4);
-      EXPECT_EQ(GetConnectedFaces(face_element)[10].my_node_patch_lid_[0], 5);
-      EXPECT_EQ(GetConnectedFaces(face_element)[10].my_node_patch_lid_[1], 6);
-      EXPECT_EQ(GetConnectedFaces(face_element)[10].my_node_patch_lid_[2], 7);
-      EXPECT_EQ(GetConnectedFaces(face_element)[10].my_node_patch_lid_[3], 1);
+      EXPECT_EQ(get_connected_faces(face_element)[10].node_lid_map_.size(), 1);
+      EXPECT_EQ(get_connected_faces(face_element)[10].node_lid_map_[3], 1);
+      EXPECT_EQ(get_connected_faces(face_element)[10].my_node_patch_lid_.size(), 4);
+      EXPECT_EQ(get_connected_faces(face_element)[10].my_node_patch_lid_[0], 5);
+      EXPECT_EQ(get_connected_faces(face_element)[10].my_node_patch_lid_[1], 6);
+      EXPECT_EQ(get_connected_faces(face_element)[10].my_node_patch_lid_[2], 7);
+      EXPECT_EQ(get_connected_faces(face_element)[10].my_node_patch_lid_[3], 1);
 
-      EXPECT_EQ(GetConnectedFaces(face_element)[11].node_lid_map_.size(), 2);
-      EXPECT_EQ(GetConnectedFaces(face_element)[11].node_lid_map_[0], 1);
-      EXPECT_EQ(GetConnectedFaces(face_element)[11].node_lid_map_[3], 2);
-      EXPECT_EQ(GetConnectedFaces(face_element)[11].my_node_patch_lid_.size(), 4);
-      EXPECT_EQ(GetConnectedFaces(face_element)[11].my_node_patch_lid_[0], 1);
-      EXPECT_EQ(GetConnectedFaces(face_element)[11].my_node_patch_lid_[1], 7);
-      EXPECT_EQ(GetConnectedFaces(face_element)[11].my_node_patch_lid_[2], 8);
-      EXPECT_EQ(GetConnectedFaces(face_element)[11].my_node_patch_lid_[3], 2);
+      EXPECT_EQ(get_connected_faces(face_element)[11].node_lid_map_.size(), 2);
+      EXPECT_EQ(get_connected_faces(face_element)[11].node_lid_map_[0], 1);
+      EXPECT_EQ(get_connected_faces(face_element)[11].node_lid_map_[3], 2);
+      EXPECT_EQ(get_connected_faces(face_element)[11].my_node_patch_lid_.size(), 4);
+      EXPECT_EQ(get_connected_faces(face_element)[11].my_node_patch_lid_[0], 1);
+      EXPECT_EQ(get_connected_faces(face_element)[11].my_node_patch_lid_[1], 7);
+      EXPECT_EQ(get_connected_faces(face_element)[11].my_node_patch_lid_[2], 8);
+      EXPECT_EQ(get_connected_faces(face_element)[11].my_node_patch_lid_[3], 2);
 
-      EXPECT_EQ(GetConnectedFaces(face_element)[13].node_lid_map_.size(), 2);
-      EXPECT_EQ(GetConnectedFaces(face_element)[13].node_lid_map_[2], 1);
-      EXPECT_EQ(GetConnectedFaces(face_element)[13].node_lid_map_[3], 0);
-      EXPECT_EQ(GetConnectedFaces(face_element)[13].my_node_patch_lid_.size(), 4);
-      EXPECT_EQ(GetConnectedFaces(face_element)[13].my_node_patch_lid_[0], 4);
-      EXPECT_EQ(GetConnectedFaces(face_element)[13].my_node_patch_lid_[1], 5);
-      EXPECT_EQ(GetConnectedFaces(face_element)[13].my_node_patch_lid_[2], 1);
-      EXPECT_EQ(GetConnectedFaces(face_element)[13].my_node_patch_lid_[3], 0);
+      EXPECT_EQ(get_connected_faces(face_element)[13].node_lid_map_.size(), 2);
+      EXPECT_EQ(get_connected_faces(face_element)[13].node_lid_map_[2], 1);
+      EXPECT_EQ(get_connected_faces(face_element)[13].node_lid_map_[3], 0);
+      EXPECT_EQ(get_connected_faces(face_element)[13].my_node_patch_lid_.size(), 4);
+      EXPECT_EQ(get_connected_faces(face_element)[13].my_node_patch_lid_[0], 4);
+      EXPECT_EQ(get_connected_faces(face_element)[13].my_node_patch_lid_[1], 5);
+      EXPECT_EQ(get_connected_faces(face_element)[13].my_node_patch_lid_[2], 1);
+      EXPECT_EQ(get_connected_faces(face_element)[13].my_node_patch_lid_[3], 0);
     }
 
     // Calculate the averaged reference normals on the face.

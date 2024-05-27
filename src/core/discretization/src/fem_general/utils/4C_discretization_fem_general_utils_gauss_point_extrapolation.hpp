@@ -42,7 +42,7 @@ namespace CORE::FE
    *
    * @note This method is not thread-safe and must not be called in a multi-threaded environment.
    *
-   * @tparam distype Discretization type of the element
+   * @tparam distype discretization type of the element
    * @param integration (in) : Gauss integration points
    * @return CORE::LINALG::SerialDenseMatrix
    */
@@ -62,7 +62,7 @@ namespace CORE::FE
    *
    * @note This method is not thread-safe and must not be called in a multi-threaded environment.
    *
-   * @tparam distype Discretization type of the element
+   * @tparam distype discretization type of the element
    * @param dis (in) : discretization
    * @param ele (in) : element
    * @param integration (in) : Gauss integration points

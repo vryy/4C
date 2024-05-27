@@ -1309,7 +1309,7 @@ void CORE::GEO::CUT::Facet::CornerPointsLocal(
     if (shadow and elem1->isShadow())
       elem1->local_coordinates_quad(glo, loc);
     else
-      elem1->LocalCoordinates(glo, loc);
+      elem1->local_coordinates(glo, loc);
 
     pt_local.push_back(loc(0, 0));
     pt_local.push_back(loc(1, 0));

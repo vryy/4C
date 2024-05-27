@@ -32,7 +32,7 @@ MAT::PAR::CarreauYasuda::CarreauYasuda(Teuchos::RCP<CORE::MAT::PAR::Material> ma
 {
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::CarreauYasuda::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::CarreauYasuda::create_material()
 {
   return Teuchos::rcp(new MAT::CarreauYasuda(this));
 }

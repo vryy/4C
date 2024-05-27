@@ -100,12 +100,12 @@ void MIXTURE::MapMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
 
   // evaluate the mass fractions at the given element id (one based entires in the csv file)
   auto massfracs =
-      GetValidateMassFractions(params_->mass_fractions_map_, eleGID + 1, Constituents().size());
+      GetValidateMassFractions(params_->mass_fractions_map_, eleGID + 1, constituents().size());
 
   // Iterate over all constituents and add all stress/cmat contributions
-  for (std::size_t i = 0; i < Constituents().size(); ++i)
+  for (std::size_t i = 0; i < constituents().size(); ++i)
   {
-    MixtureConstituent& constituent = *Constituents()[i];
+    MixtureConstituent& constituent = *constituents()[i];
     cstress.Clear();
     ccmat.Clear();
     constituent.Evaluate(F, E_strain, params, cstress, ccmat, gp, eleGID);

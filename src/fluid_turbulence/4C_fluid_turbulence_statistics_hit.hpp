@@ -92,7 +92,7 @@ namespace FLD
     }
 
     //! interpolation function
-    static double Interpolate(
+    static double interpolate(
         const double& x, const double& x_1, const double& x_2, const double& y_1, const double& y_2)
     {
       const double value = y_1 + (y_2 - y_1) / (x_2 - x_1) * (x - x_1);

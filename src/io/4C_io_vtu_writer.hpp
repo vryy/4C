@@ -56,22 +56,22 @@ class VtuWriter : public VtkWriterBase
 
  protected:
   //! Return the opening xml tag for this writer type
-  const std::string& WriterOpeningTag() const override;
+  const std::string& writer_opening_tag() const override;
 
   //! Return the parallel opening xml tag for this writer type
-  const std::string& WriterPOpeningTag() const override;
+  const std::string& writer_p_opening_tag() const override;
 
   //! Return a vector of parallel piece tags for each file
-  const std::vector<std::string>& WriterPPieceTags() const override;
+  const std::vector<std::string>& writer_p_piece_tags() const override;
 
   //! Return the parallel file suffix including the dot for this file type
-  const std::string& WriterPSuffix() const override;
+  const std::string& writer_p_suffix() const override;
 
   //! Return the string of this writer type
-  const std::string& WriterString() const override;
+  const std::string& writer_string() const override;
 
   //! Return the file suffix including the dot for this file type
-  const std::string& WriterSuffix() const override;
+  const std::string& writer_suffix() const override;
 };
 
 FOUR_C_NAMESPACE_CLOSE

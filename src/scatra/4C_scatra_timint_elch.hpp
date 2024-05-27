@@ -81,7 +81,7 @@ namespace SCATRA
     void set_element_specific_sca_tra_parameters(Teuchos::ParameterList& eleparams) const override;
 
     //! contains the nonlinear iteration loop
-    void NonlinearSolve() override;
+    void nonlinear_solve() override;
 
     //! calculate error compared to analytical solution
     void evaluate_error_compared_to_analytical_sol() override;
@@ -157,7 +157,7 @@ namespace SCATRA
     //! output cell voltage to screen and file
     void OutputCellVoltage();
 
-    void WriteRestart() const override;
+    void write_restart() const override;
 
     //! output type of closing equation for electric potential
     INPAR::ELCH::EquPot EquPot() const { return equpot_; }
@@ -225,7 +225,7 @@ namespace SCATRA
     void prepare_first_time_step() override;
 
     //! initialize meshtying strategy (including standard case without meshtying)
-    void CreateScalarHandler() override;
+    void create_scalar_handler() override;
 
     /*========================================================================*/
     //! @name ELCH methods
@@ -234,7 +234,7 @@ namespace SCATRA
     /*--- set, prepare, and predict ------------------------------------------*/
 
     //! compute time step size
-    void ComputeTimeStepSize(double& dt) final;
+    void compute_time_step_size(double& dt) final;
 
     //! temperature is computed based on function prescribed in input file
     double compute_temperature_from_function() const;
@@ -243,10 +243,10 @@ namespace SCATRA
     void evaluate_electrode_info_interior();
 
     //! evaluate cell voltage of electrode
-    void EvaluateCellVoltage();
+    void evaluate_cell_voltage();
 
     //! Evaluate cccv phase based on c rate and cell voltage
-    void EvaluateCCCVPhase();
+    void evaluate_cccv_phase();
 
     //! extrapolate current state and adapt time step
     double extrapolate_state_adapt_time_step(double dt);
@@ -255,13 +255,13 @@ namespace SCATRA
     void valid_parameter_diff_cond();
 
     //! Initialize Nernst-BC
-    void InitNernstBC();
+    void init_nernst_bc();
 
     //! initialize meshtying strategy (including standard case without meshtying)
     void create_meshtying_strategy() override;
 
     //! set up concentration-potential splitter
-    void SetupConcPotSplit();
+    void setup_conc_pot_split();
 
     //! set up concentration-potential-potential splitter for macro scale in multi-scale
     //! simulations
@@ -286,7 +286,7 @@ namespace SCATRA
     //! \param effCond     flag for computation of effective conductivity
     //! \param specresist  flag for computation of specific electrolyte resistance
     //! \return            specific resistance
-    double ComputeConductivity(
+    double compute_conductivity(
         CORE::LINALG::SerialDenseVector& sigma, bool effCond = false, bool specresist = false);
 
     //! apply galvanostatic control (update electrode potential) (ELCH)
@@ -318,10 +318,10 @@ namespace SCATRA
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<Epetra_Vector> rhs) override;
 
-    void ApplyDirichletBC(
+    void apply_dirichlet_bc(
         double time, Teuchos::RCP<Epetra_Vector> phinp, Teuchos::RCP<Epetra_Vector> phidt) override;
 
-    void ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>& neumann_loads) override;
+    void apply_neumann_bc(const Teuchos::RCP<Epetra_Vector>& neumann_loads) override;
 
     void perform_aitken_relaxation(
         Epetra_Vector& phinp, const Epetra_Vector& phinp_inc_diff) override;
@@ -333,7 +333,7 @@ namespace SCATRA
         Teuchos::RCP<Epetra_Vector> vec  //!< current phi vector to be checked
     );
 
-    void OutputFlux(Teuchos::RCP<Epetra_MultiVector> flux, const std::string& fluxtype) override;
+    void output_flux(Teuchos::RCP<Epetra_MultiVector> flux, const std::string& fluxtype) override;
 
     /*========================================================================*/
     //! @name ELCH variables
@@ -452,7 +452,7 @@ namespace SCATRA
     //! return maximum number of dofs per node
     int NumDofPerNode() const override
     {
-      CheckIsSetup();
+      check_is_setup();
       return *(numdofpernode_.rbegin());
     };
 
@@ -460,7 +460,7 @@ namespace SCATRA
     //! density)
     int NumScal() const override
     {
-      CheckIsSetup();
+      check_is_setup();
       return *(numscal_.rbegin());
     }
 

@@ -106,7 +106,7 @@ DRT::ELEMENTS::SoSh18::SoSh18(const DRT::ELEMENTS::SoSh18& old)
       dsg_ctl_(old.dsg_ctl_),
       eas_(old.eas_)
 {
-  SetupDSG();
+  setup_dsg();
   return;
 }
 
@@ -180,7 +180,7 @@ void DRT::ELEMENTS::SoSh18::Unpack(const std::vector<char>& data)
   dsg_membrane_ = ExtractInt(position, data);
   dsg_ctl_ = ExtractInt(position, data);
   eas_ = ExtractInt(position, data);
-  SetupDSG();
+  setup_dsg();
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

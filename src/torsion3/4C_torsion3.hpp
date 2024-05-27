@@ -168,7 +168,7 @@ namespace DRT
       /*!
       \brief Get number of degrees of freedom per element not including nodal degrees of freedom
       */
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       /*!
       \brief Print this element
@@ -282,7 +282,7 @@ namespace DRT
        *
        *  \author hiermeier
        *  \date 04/16 */
-      inline STR::ELEMENTS::ParamsInterface& ParamsInterface()
+      inline STR::ELEMENTS::ParamsInterface& params_interface()
       {
         if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;

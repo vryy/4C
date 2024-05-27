@@ -74,7 +74,7 @@ namespace INPUT
         const Teuchos::RCP<MAT::PAR::Bundle>& mmap  ///< the materials we read here
     );
 
-    /// print my DAT file section and possible materials from the Discretization
+    /// print my DAT file section and possible materials from the discretization
     std::ostream& Print(std::ostream& stream,  ///< the output stream
         const DRT::Discretization* dis = nullptr);
 

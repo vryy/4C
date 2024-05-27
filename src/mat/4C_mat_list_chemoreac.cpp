@@ -29,7 +29,7 @@ MAT::PAR::MatListChemoReac::MatListChemoReac(Teuchos::RCP<CORE::MAT::PAR::Materi
 }
 
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MatListChemoReac::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MatListChemoReac::create_material()
 {
   return Teuchos::rcp(new MAT::MatListChemoReac(this));
 }

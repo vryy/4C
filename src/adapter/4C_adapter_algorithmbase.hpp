@@ -64,10 +64,10 @@ namespace ADAPTER
 
    protected:
     /// total number of time steps
-    int NStep() const { return nstep_; }
+    int n_step() const { return nstep_; }
 
     /// maximum simulation time
-    double MaxTime() const { return maxtime_; }
+    double max_time() const { return maxtime_; }
 
     //! @name Time loop building blocks
 
@@ -82,21 +82,21 @@ namespace ADAPTER
     virtual void prepare_time_step() {}
 
     /// take current results for converged and save for next time step
-    virtual void Update() {}
+    virtual void update() {}
 
     /// write output
-    virtual void Output() {}
+    virtual void output() {}
 
     /// set method name for screen output
-    void SetMethod(std::string method) { method_ = method; }
+    void set_method(std::string method) { method_ = method; }
 
     //@}
 
     /// print time step header
-    void PrintHeader();
+    void print_header();
 
     /// return printscreen_
-    int PrintScreenEvry() { return printscreen_; }
+    int print_screen_evry() { return printscreen_; }
 
    private:
     /// communication (mainly for screen output)

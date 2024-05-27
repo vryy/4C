@@ -613,7 +613,7 @@ namespace DRT
 
           // Shape function derivatives for slave side
           CORE::LINALG::Matrix<nsd_, slave_nen_> derxy_s;
-          this->GetSlaveFunctDeriv(derxy_s);
+          this->get_slave_funct_deriv(derxy_s);
 
           // Spatial velocity gradient for slave side
           CORE::LINALG::Matrix<nsd_, nsd_> vderxy_s;
@@ -1397,7 +1397,7 @@ namespace DRT
             // viscous adjoint consistency term
             // Shape function derivatives for slave side
             CORE::LINALG::Matrix<nsd_, slave_nen_> derxy_s;
-            this->GetSlaveFunctDeriv(derxy_s);
+            this->get_slave_funct_deriv(derxy_s);
 
             CORE::LINALG::Matrix<nsd_, slave_nen_> derxy_s_viscs_timefacfac_ks(derxy_s);
             derxy_s_viscs_timefacfac_ks.Scale(adj_visc_scale_ * ks_viscs_fac);

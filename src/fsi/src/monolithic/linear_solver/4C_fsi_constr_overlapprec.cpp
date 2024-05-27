@@ -75,7 +75,7 @@ void FSI::ConstrOverlappingBlockMatrix::SetupPreconditioner()
   Teuchos::RCP<Epetra_Map> irownodes = Teuchos::null;
 
   structuresolver_->Setup(structInnerOp.EpetraMatrix());
-  fluidsolver_->Setup(fluidInnerOp.EpetraMatrix(), fsidofmapex, fluid_.Discretization(), irownodes,
+  fluidsolver_->Setup(fluidInnerOp.EpetraMatrix(), fsidofmapex, fluid_.discretization(), irownodes,
       structuresplit_);
   if (constalesolver_ == Teuchos::null) alesolver_->Setup(aleInnerOp.EpetraMatrix());
 
@@ -85,7 +85,7 @@ void FSI::ConstrOverlappingBlockMatrix::SetupPreconditioner()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::ConstrOverlappingBlockMatrix::SGS(
+void FSI::ConstrOverlappingBlockMatrix::sgs(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
   const CORE::LINALG::SparseMatrix& StructInnerOp = Matrix(0, 0);

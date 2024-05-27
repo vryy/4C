@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  |  calculate stabilization parameter  (private)              gjb 06/08 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTau(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau(
     double& tau,            //!< the stabilisation parameters (one per transported scalar)
     const double diffus,    //!< diffusivity or viscosity
     const double reacoeff,  //!< reaction coefficient
@@ -57,7 +57,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTau(
     case INPAR::SCATRA::tau_codina:
     case INPAR::SCATRA::tau_codina_wo_dt:
     {
-      CalcTauCodina(tau, diffus, reacoeff, densnp, convelint, vol);
+      calc_tau_codina(tau, diffus, reacoeff, densnp, convelint, vol);
       break;
     }
     case INPAR::SCATRA::tau_franca_madureira_valentin:
@@ -68,7 +68,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTau(
     }
     case INPAR::SCATRA::tau_exact_1d:
     {
-      CalcTau1DExact(tau, diffus, reacoeff, densnp, convelint, vol);
+      calc_tau1_d_exact(tau, diffus, reacoeff, densnp, convelint, vol);
       break;
     }
     case INPAR::SCATRA::tau_zero:
@@ -160,7 +160,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_taylor_hughes_zari
 
   // total reaction coefficient sigma_tot: sum of "artificial" reaction
   // due to time factor and reaction coefficient (reaction coefficient
-  // ensured to be zero in GetMaterialParams for non-reactive material)
+  // ensured to be zero in get_material_params for non-reactive material)
   double sigma_tot = reacoeff;
   if (scatrapara_->TauDef() == INPAR::SCATRA::tau_taylor_hughes_zarins)
     sigma_tot += 1.0 / scatraparatimint_->Dt();
@@ -241,13 +241,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_franca_valentin(
 
   // total reaction coefficient sigma_tot: sum of "artificial" reaction
   // due to time factor and reaction coefficient (reaction coefficient
-  // ensured to be zero in GetMaterialParams for non-reactive material)
+  // ensured to be zero in get_material_params for non-reactive material)
   double sigma_tot = reacoeff;
   if (scatrapara_->TauDef() == INPAR::SCATRA::tau_franca_valentin)
     sigma_tot += 1.0 / scatraparatimint_->TimeFac();
 
   // calculate characteristic element length
-  const double h = CalcCharEleLength(vol, vel_norm, convelint);
+  const double h = calc_char_ele_length(vol, vel_norm, convelint);
 
   // various parameter computations:
   // relating convective to viscous part
@@ -317,13 +317,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_franca_shakib_codi
 
   // total reaction coefficient sigma_tot: sum of "artificial" reaction
   // due to time factor and reaction coefficient (reaction coefficient
-  // ensured to be zero in GetMaterialParams for non-reactive material)
+  // ensured to be zero in get_material_params for non-reactive material)
   double sigma_tot = reacoeff;
   if (scatrapara_->TauDef() == INPAR::SCATRA::tau_shakib_hughes_codina)
     sigma_tot += 1.0 / scatraparatimint_->Dt();
 
   // calculate characteristic element length
-  const double h = CalcCharEleLength(vol, vel_norm, convelint);
+  const double h = calc_char_ele_length(vol, vel_norm, convelint);
 
   // definition of constants as described above
   const double c1 = 4.0;
@@ -348,7 +348,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_franca_shakib_codi
  |  calculation of tau according to Codina                     vg 01/11 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauCodina(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_codina(
     double& tau,            //!< the stabilisation parameters (one per transported scalar)
     const double diffus,    //!< diffusivity or viscosity
     const double reacoeff,  //!< reaction coefficient
@@ -380,13 +380,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauCodina(
 
   // total reaction coefficient sigma_tot: sum of "artificial" reaction
   // due to time factor and reaction coefficient (reaction coefficient
-  // ensured to be zero in GetMaterialParams for non-reactive material)
+  // ensured to be zero in get_material_params for non-reactive material)
   double sigma_tot = reacoeff;
   if (scatrapara_->TauDef() == INPAR::SCATRA::tau_codina)
     sigma_tot += 1.0 / scatraparatimint_->Dt();
 
   // calculate characteristic element length
-  const double h = CalcCharEleLength(vol, vel_norm, convelint);
+  const double h = calc_char_ele_length(vol, vel_norm, convelint);
 
   // definition of constants as described above
   const double c1 = 1.0;
@@ -428,7 +428,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_franca_madureira_v
 
   // total reaction coefficient sigma_tot: sum of "artificial" reaction
   // due to time factor and reaction coefficient (reaction coefficient
-  // ensured to be zero in GetMaterialParams for non-reactive material)
+  // ensured to be zero in get_material_params for non-reactive material)
   double sigma_tot = reacoeff;
   if (scatrapara_->TauDef() == INPAR::SCATRA::tau_franca_madureira_valentin)
     sigma_tot += 1.0 / scatraparatimint_->TimeFac();
@@ -465,7 +465,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_franca_madureira_v
  |  exact calculation of tau for 1D                            vg 01/11 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTau1DExact(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau1_d_exact(
     double& tau,            //!< the stabilisation parameters (one per transported scalar)
     const double diffus,    //!< diffusivity or viscosity
     const double reacoeff,  //!< reaction coefficient
@@ -509,7 +509,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTau1DExact(
  |  calculation of characteristic element length               vg 01/11 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcCharEleLength(
+double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_char_ele_length(
     const double vol,                               //!< element volume
     const double vel_norm,                          //!< norm of velocity
     const CORE::LINALG::Matrix<nsd_, 1>& convelint  //!< convective velocity at integration point
@@ -573,7 +573,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcCharEleLength(
  |  calculate artificial diffusivity                           vg 10/09 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcArtificialDiff(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_artificial_diff(
     const double vol,                                //!< element volume
     const int k,                                     //!< id of current scalar
     const double densnp,                             //!< density at t_(n+1)
@@ -590,7 +590,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcArtificialDiff(
   // get characteristic element length as cubic root of element volume
   // (2D: square root of element area, 1D: element length)
   const double h = std::pow(vol, (1.0 / dim));
-  //  const double h = CalcCharEleLength(vol,convelint.Norm2(),convelint);
+  //  const double h = calc_char_ele_length(vol,convelint.Norm2(),convelint);
   //  //std::pow(vol,(1.0/dim));
 
   // artificial diffusivity
@@ -761,7 +761,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcArtificialDiff(
 
           // calculate stream length
           // according to John and Knobloch stream length in direction of b_h^par should be used
-          // const double h_stream = CalcCharEleLength(vol,vel_norm);
+          // const double h_stream = calc_char_ele_length(vol,vel_norm);
 
           // get norm of velocity vector b_h^par
           const double vel_norm_bhpar = abs(conv_phi / grad_norm);
@@ -836,7 +836,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcArtificialDiff(
   diffmanager_->set_isotropic_sub_grid_diff(artdiff, k);
 
   return;
-}  // ScaTraEleCalc::CalcSubgrDiff
+}  // ScaTraEleCalc::calc_subgr_diff
 
 
 /*-------------------------------------------------------------------------------*
@@ -844,7 +844,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcArtificialDiff(
  | (depending on respective stationary or time-integration scheme)      vg 10/11 |
  *-------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcStrongResidual(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_strong_residual(
     const int k,           //!< index of current scalar
     double& scatrares,     //!< residual of convection-diffusion-reaction eq
     const double densam,   //!< density at t_(n+am)
@@ -894,14 +894,14 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcStrongResidual(
   }
 
   return;
-}  // ScaTraEleCalc::CalcStrongResidual
+}  // ScaTraEleCalc::calc_strong_residual
 
 
 /*----------------------------------------------------------------------*
  |  calculate subgrid-scale velocity                           vg 10/09 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrVelocity(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_velocity(
     const DRT::Element* ele,                         //!< the element we are dealing with
     CORE::LINALG::Matrix<nsd_, 1>& sgvelint,         //!< subgrid velocity at integration point
     const double densam,                             //!< density at t_(n+am)
@@ -1093,7 +1093,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrVelocity(
   }
 
   return;
-}  // ScaTraEleCalc::CalcSubgrVelocity
+}  // ScaTraEleCalc::calc_subgr_velocity
 
 
 /*---------------------------------------------------------------*

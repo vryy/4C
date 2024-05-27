@@ -63,7 +63,7 @@ void XFEM::LevelSetCoupling::SetCouplingDofsets()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCoupling::SetConditionsToCopy()
+void XFEM::LevelSetCoupling::set_conditions_to_copy()
 {
   // set only the unique given condition name
   conditions_to_copy_.push_back(cond_name_);
@@ -149,7 +149,7 @@ bool XFEM::LevelSetCoupling::HaveMatchingNodes(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCoupling::InitStateVectors()
+void XFEM::LevelSetCoupling::init_state_vectors()
 {
   // initialize state vectors w.r.t. background discretization
   InitStateVectors_Bg();
@@ -193,7 +193,7 @@ void XFEM::LevelSetCoupling::init_state_vectors_cutter()
 // TODO: check output functionality
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCoupling::PrepareCutterOutput()
+void XFEM::LevelSetCoupling::prepare_cutter_output()
 {
   // -------------------------------------------------------------------
   // prepare output

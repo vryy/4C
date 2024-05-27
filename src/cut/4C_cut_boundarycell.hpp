@@ -75,7 +75,7 @@ namespace CORE::GEO
       /*!
       \brief Returns the center of tri3 and quad4 boundarycell
        */
-      virtual void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint) = 0;
+      virtual void element_center(CORE::LINALG::Matrix<3, 1>& midpoint) = 0;
 
       /*!
       \brief Get the outward normal vector for the tri3 and quad4 boundarycell
@@ -228,10 +228,10 @@ namespace CORE::GEO
           bool shadow = false);
 
      protected:
-      virtual CORE::FE::GaussRule2D MySimpleGaussRule() = 0;
+      virtual CORE::FE::GaussRule2D my_simple_gauss_rule() = 0;
 
       template <CORE::FE::CellType distype>
-      double MyArea()
+      double my_area()
       {
         const int numnodes = CORE::FE::num_nodes<distype>;
         CORE::LINALG::Matrix<3, numnodes> xyze(this->xyz_, true);
@@ -239,7 +239,7 @@ namespace CORE::GEO
         CORE::LINALG::Matrix<2, numnodes> deriv;
         CORE::LINALG::Matrix<2, 2> metrictensor;
 
-        CORE::FE::GaussRule2D gaussrule = this->MySimpleGaussRule();
+        CORE::FE::GaussRule2D gaussrule = this->my_simple_gauss_rule();
         CORE::FE::IntegrationPoints2D intpoints(gaussrule);
 
         double area = 0;
@@ -261,7 +261,8 @@ namespace CORE::GEO
        *  \author shahmiri
        *  \date 07/12 */
       template <CORE::FE::CellType distype>
-      void MyElementCenter(CORE::LINALG::Matrix<3, 1>& center, CORE::LINALG::Matrix<3, 1>& midpoint)
+      void my_element_center(
+          CORE::LINALG::Matrix<3, 1>& center, CORE::LINALG::Matrix<3, 1>& midpoint)
       {
         const int numnodes = CORE::FE::num_nodes<distype>;
         CORE::LINALG::Matrix<3, numnodes> xyze(this->xyz_, true);
@@ -299,7 +300,7 @@ namespace CORE::GEO
 
       double Area() override { return 0.0; };
 
-      void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint) override;
+      void element_center(CORE::LINALG::Matrix<3, 1>& midpoint) override;
 
       void Normal(
           const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const override;
@@ -311,7 +312,7 @@ namespace CORE::GEO
       bool IsValidBoundaryCell() override { return true; };
 
      protected:
-      CORE::FE::GaussRule2D MySimpleGaussRule() override
+      CORE::FE::GaussRule2D my_simple_gauss_rule() override
       {
         return CORE::FE::GaussRule2D::undefined;
       }
@@ -337,7 +338,7 @@ namespace CORE::GEO
 
       double Area() override;
 
-      void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint) override;
+      void element_center(CORE::LINALG::Matrix<3, 1>& midpoint) override;
 
       void Normal(
           const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const override;
@@ -349,7 +350,7 @@ namespace CORE::GEO
       bool IsValidBoundaryCell() override { return (Area() > REF_AREA_BCELL); };
 
      protected:
-      CORE::FE::GaussRule2D MySimpleGaussRule() override
+      CORE::FE::GaussRule2D my_simple_gauss_rule() override
       {
         return CORE::FE::GaussRule2D::undefined;
       }
@@ -374,7 +375,7 @@ namespace CORE::GEO
 
       double Area() override;
 
-      void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint) override;
+      void element_center(CORE::LINALG::Matrix<3, 1>& midpoint) override;
 
       void Normal(
           const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const override;
@@ -390,7 +391,7 @@ namespace CORE::GEO
       bool IsValidBoundaryCell() override;
 
      protected:
-      CORE::FE::GaussRule2D MySimpleGaussRule() override
+      CORE::FE::GaussRule2D my_simple_gauss_rule() override
       {
         return CORE::FE::GaussRule2D::tri_3point;
       }
@@ -414,9 +415,9 @@ namespace CORE::GEO
       void DumpGmshNormal(std::ofstream& file) override;
 
       // Maybe shoelace theorem can be used here?
-      double Area() override { return MyArea<CORE::FE::CellType::quad4>(); }
+      double Area() override { return my_area<CORE::FE::CellType::quad4>(); }
 
-      void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint) override;
+      void element_center(CORE::LINALG::Matrix<3, 1>& midpoint) override;
 
       void Normal(
           const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const override;
@@ -429,7 +430,7 @@ namespace CORE::GEO
       bool IsValidBoundaryCell() override { return (Area() > REF_AREA_BCELL); }
 
      protected:
-      CORE::FE::GaussRule2D MySimpleGaussRule() override
+      CORE::FE::GaussRule2D my_simple_gauss_rule() override
       {
         return CORE::FE::GaussRule2D::quad_4point;
       }
@@ -455,7 +456,7 @@ namespace CORE::GEO
 
       double Area() override { return 0.0; }
 
-      void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint) override;
+      void element_center(CORE::LINALG::Matrix<3, 1>& midpoint) override;
 
       void Normal(
           const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const override;
@@ -467,7 +468,7 @@ namespace CORE::GEO
       bool IsValidBoundaryCell() override { return (Area() > REF_AREA_BCELL); }
 
      protected:
-      CORE::FE::GaussRule2D MySimpleGaussRule() override
+      CORE::FE::GaussRule2D my_simple_gauss_rule() override
       {
         return CORE::FE::GaussRule2D::quad_4point;
       }

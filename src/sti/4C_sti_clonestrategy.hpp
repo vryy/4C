@@ -50,21 +50,21 @@ namespace STI
     virtual ~ScatraThermoCloneStrategy() = default;
 
     //! check material of cloned element
-    void CheckMaterialType(const int matid  //! material of cloned element
+    void check_material_type(const int matid  //! material of cloned element
     );
 
     //! return map with original names of conditions to be cloned as key values, and final names of
     //! cloned conditions as mapped values
-    virtual std::map<std::string, std::string> ConditionsToCopy() const;
+    virtual std::map<std::string, std::string> conditions_to_copy() const;
 
     //! decide whether element should be cloned or not, and if so, determine type of cloned element
-    bool DetermineEleType(DRT::Element* actele,  //! current element on source discretization
-        const bool ismyele,                      //! ownership flag
-        std::vector<std::string>& eletype        //! vector storing types of cloned elements
+    bool determine_ele_type(DRT::Element* actele,  //! current element on source discretization
+        const bool ismyele,                        //! ownership flag
+        std::vector<std::string>& eletype          //! vector storing types of cloned elements
     );
 
     //! provide cloned element with element specific data
-    void SetElementData(
+    void set_element_data(
         Teuchos::RCP<DRT::Element> newele,  //! current cloned element on target discretization
         DRT::Element* oldele,               //! current element on source discretization
         const int matid,                    //! material of cloned element

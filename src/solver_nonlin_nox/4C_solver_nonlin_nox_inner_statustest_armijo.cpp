@@ -40,7 +40,7 @@ NOX::NLN::INNER::StatusTest::Armijo::Armijo(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::INNER::StatusTest::Armijo::Setup(
+bool NOX::NLN::INNER::StatusTest::Armijo::setup(
     const NOX::NLN::LineSearch::Generic& linesearch, const ::NOX::Abstract::Group& grp)
 {
   const ::NOX::MeritFunction::Generic& mrtFct = linesearch.GetMeritFunction();
@@ -103,7 +103,7 @@ NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Armijo::Che
     // If the search direction is no descent direction,
     // this function detects it and returns the corresponding
     // status.
-    if (Setup(*linesearch, grp))
+    if (setup(*linesearch, grp))
       status_ = status_unevaluated;
     else
       status_ = status_no_descent_direction;

@@ -472,7 +472,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd, nen>::porosity_linear
  | of a term scaled with div (v^s)                     kremheller 03/18 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd, nen>::CalcDivVelODMesh(
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd, nen>::calc_div_vel_od_mesh(
     CORE::LINALG::SerialDenseMatrix& mymat, const CORE::LINALG::Matrix<nen, 1>& funct,
     const CORE::LINALG::Matrix<nsd, nen>& deriv, const CORE::LINALG::Matrix<nsd, nen>& derxy,
     const CORE::LINALG::Matrix<nsd, nsd>& xjm, const CORE::LINALG::Matrix<nsd, nsd>& gridvelderiv,
@@ -481,7 +481,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd, nen>::CalcDivVelODMes
 {
   // d (div v_s)/d d_n+1 = derxy * 1.0/theta/dt * d_n+1
   // prefactor is fac since timefacfac/theta/dt = fac
-  CalcLinFacODMesh(mymat, funct, derxy, fac, numdofpernode, phasetoadd);
+  calc_lin_fac_od_mesh(mymat, funct, derxy, fac, numdofpernode, phasetoadd);
 
   // shapederivatives see fluid_ele_calc_poro.cpp
   if (nsd == 3)
@@ -597,7 +597,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd, nen>::CalcDivVelODMes
  | (Fac = Jacobian determinant)                        kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd, nen>::CalcLinFacODMesh(
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd, nen>::calc_lin_fac_od_mesh(
     CORE::LINALG::SerialDenseMatrix& mymat, const CORE::LINALG::Matrix<nen, 1>& funct,
     const CORE::LINALG::Matrix<nsd, nen>& derxy, const double vrhs, const int numdofpernode,
     const int phasetoadd)
@@ -633,7 +633,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd, nen>::CalcLinFacODMes
  | (diffusive term)                                    kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd, nen>::CalcDiffODMesh(
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd, nen>::calc_diff_od_mesh(
     CORE::LINALG::SerialDenseMatrix& mymat, const CORE::LINALG::Matrix<nsd, nen>& deriv,
     const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
     const CORE::LINALG::Matrix<nsd, 1>& diffflux, const CORE::LINALG::Matrix<nsd, 1>& refgrad,
@@ -1001,7 +1001,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDivVel<nsd,
   gridvelderiv.MultiplyNT(*(variablemanager.EConVelnp()), deriv);
 
   // OD mesh - div vel term
-  EvaluatorBase<nsd, nen>::CalcDivVelODMesh(mymat, funct, deriv, derxy, xjm, gridvelderiv,
+  EvaluatorBase<nsd, nen>::calc_div_vel_od_mesh(mymat, funct, deriv, derxy, xjm, gridvelderiv,
       timefacfac, fac, det, numdofpernode, phasetoadd);
 
   return;
@@ -1438,8 +1438,8 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd,
     refgradpres.Update(phasemanager.PressureDeriv(curphase, idof), refgradphi[idof], 1.0);
 
   // OD mesh - diffusive term
-  EvaluatorBase<nsd, nen>::CalcDiffODMesh(mymat, deriv, derxy, xjm, diffflux, refgradpres, gradpres,
-      timefacfac, v, numdofpernode, phasetoadd);
+  EvaluatorBase<nsd, nen>::calc_diff_od_mesh(mymat, deriv, derxy, xjm, diffflux, refgradpres,
+      gradpres, timefacfac, v, numdofpernode, phasetoadd);
 
   return;
 }
@@ -1580,7 +1580,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorReac<nsd,
   // 1) linearization of fac +
   // 2) possible linearization w.r.t porosity
   // rhs ---> -
-  EvaluatorBase<nsd, nen>::CalcLinFacODMesh(
+  EvaluatorBase<nsd, nen>::calc_lin_fac_od_mesh(
       mymat, funct, derxy, -1.0 * vrhs, numdofpernode, phasetoadd);
 
   return;
@@ -1762,7 +1762,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,
     // get vector to fill
     CORE::LINALG::SerialDenseVector& myvec = *elevec[0];
 
-    double vtrans = GetRhsTrans(
+    double vtrans = get_rhs_trans(
         curphase, phasetoadd, numdofpernode, phasemanager, variablemanager, rhsfac, fac);
 
     for (int vi = 0; vi < nen; ++vi)
@@ -1795,7 +1795,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,
   // get matrix to fill
   CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
 
-  double vtrans = GetRhsTrans(
+  double vtrans = get_rhs_trans(
       curphase, phasetoadd, numdofpernode, phasemanager, variablemanager, timefacfac, fac);
 
   // linearization of porosity
@@ -1812,7 +1812,8 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,
   // linearization of mesh motion (Jacobian)
   // 1) linearization of fac +
   // 2) possible linearization w.r.t porosity
-  EvaluatorBase<nsd, nen>::CalcLinFacODMesh(mymat, funct, derxy, vtrans, numdofpernode, phasetoadd);
+  EvaluatorBase<nsd, nen>::calc_lin_fac_od_mesh(
+      mymat, funct, derxy, vtrans, numdofpernode, phasetoadd);
 
   return;
 }
@@ -1838,8 +1839,9 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,
  | evaluate transient term at GP                       kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-double DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd, nen>::GetRhsTrans(int curphase,
-    int phasetoadd, int numdofpernode, const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
+double DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd, nen>::get_rhs_trans(
+    int curphase, int phasetoadd, int numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
     const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac)
 {
@@ -2041,7 +2043,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd,
     // get vector to fill
     CORE::LINALG::SerialDenseVector& myvec = *elevec[0];
 
-    double vtrans = GetRhsTrans(
+    double vtrans = get_rhs_trans(
         curphase, phasetoadd, numdofpernode, phasemanager, variablemanager, rhsfac, fac);
 
     for (int vi = 0; vi < nen; ++vi)
@@ -2075,7 +2077,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd,
   // get matrix to fill
   CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
 
-  double vtrans = GetRhsTrans(
+  double vtrans = get_rhs_trans(
       curphase, phasetoadd, numdofpernode, phasemanager, variablemanager, timefacfac, fac);
 
   // linearization of porosity
@@ -2092,7 +2094,8 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd,
   // linearization of mesh motion (Jacobian)
   // 1) linearization of fac +
   // 2) possible linearization w.r.t porosity
-  EvaluatorBase<nsd, nen>::CalcLinFacODMesh(mymat, funct, derxy, vtrans, numdofpernode, phasetoadd);
+  EvaluatorBase<nsd, nen>::calc_lin_fac_od_mesh(
+      mymat, funct, derxy, vtrans, numdofpernode, phasetoadd);
 
   return;
 }
@@ -2118,7 +2121,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd,
  | evaluate transient term at GP                       kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-double DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd, nen>::GetRhsTrans(
+double DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd, nen>::get_rhs_trans(
     int curphase, int phasetoadd, int numdofpernode,
     const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
     const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
@@ -2417,7 +2420,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd,
     // get vector to fill
     CORE::LINALG::SerialDenseVector& myvec = *elevec[0];
 
-    double vtrans = GetRhsTrans(
+    double vtrans = get_rhs_trans(
         curphase, phasetoadd, numdofpernode, phasemanager, variablemanager, rhsfac, fac);
 
     for (int vi = 0; vi < nen; ++vi)
@@ -2448,7 +2451,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd,
   // get matrix to fill
   CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
 
-  double vtrans = GetRhsTrans(
+  double vtrans = get_rhs_trans(
       curphase, phasetoadd, numdofpernode, phasemanager, variablemanager, timefacfac, fac);
 
   // linearization of porosity
@@ -2465,7 +2468,8 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd,
   // linearization of mesh motion (Jacobian)
   // 1) linearization of fac +
   // 2) possible linearization w.r.t porosity
-  EvaluatorBase<nsd, nen>::CalcLinFacODMesh(mymat, funct, derxy, vtrans, numdofpernode, phasetoadd);
+  EvaluatorBase<nsd, nen>::calc_lin_fac_od_mesh(
+      mymat, funct, derxy, vtrans, numdofpernode, phasetoadd);
 
   return;
 }
@@ -2491,7 +2495,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd,
  | evaluate transient term at GP                       kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-double DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd, nen>::GetRhsTrans(
+double DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd, nen>::get_rhs_trans(
     int curphase, int phasetoadd, int numdofpernode,
     const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
     const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
@@ -2999,7 +3003,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd,
   for (unsigned int i = 0; i < domainint_funct_.size(); i++)
   {
     // NOLINTNEXTLINE (bugprone-narrowing-conversions)
-    myvec[i] += Function(domainint_funct_[i] - 1).Evaluate(variables, constants, 0) * fac;
+    myvec[i] += function(domainint_funct_[i] - 1).Evaluate(variables, constants, 0) * fac;
   }
 }
 
@@ -3007,7 +3011,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd,
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
 inline const CORE::UTILS::FunctionOfAnything&
-DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd, nen>::Function(int functnum) const
+DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd, nen>::function(int functnum) const
 {
   const auto& funct =
       GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfAnything>(functnum);
@@ -3524,7 +3528,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTerms<nsd,
   if (!inittimederiv)
   {
     const double vrhs =
-        GetRhs(curphase, phasetoadd, numdofpernode, phasemanager, variablemanager, rhsfac, fac);
+        get_rhs(curphase, phasetoadd, numdofpernode, phasemanager, variablemanager, rhsfac, fac);
 
     for (int vi = 0; vi < nen; ++vi)
     {
@@ -3555,10 +3559,11 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTerms<nsd,
   CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
 
   const double vrhs =
-      GetRhs(curphase, phasetoadd, numdofpernode, phasemanager, variablemanager, timefacfac, fac);
+      get_rhs(curphase, phasetoadd, numdofpernode, phasemanager, variablemanager, timefacfac, fac);
 
   // linearization of mesh motion (Jacobian)
-  EvaluatorBase<nsd, nen>::CalcLinFacODMesh(mymat, funct, derxy, vrhs, numdofpernode, phasetoadd);
+  EvaluatorBase<nsd, nen>::calc_lin_fac_od_mesh(
+      mymat, funct, derxy, vrhs, numdofpernode, phasetoadd);
 
   return;
 }
@@ -3584,7 +3589,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTerms<nsd,
  | evaluate rhs term at GP                             kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-double DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTerms<nsd, nen>::GetRhs(
+double DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTerms<nsd, nen>::get_rhs(
     int curphase, int phasetoadd, int numdofpernode,
     const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
     const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
@@ -3731,7 +3736,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddDivVelTerm<nsd,
   gridvelderiv.MultiplyNT(*(variablemanager.EConVelnp()), deriv);
 
   // OD mesh - div vel term
-  EvaluatorBase<nsd, nen>::CalcDivVelODMesh(mymat, funct, deriv, derxy, xjm, gridvelderiv,
+  EvaluatorBase<nsd, nen>::calc_div_vel_od_mesh(mymat, funct, deriv, derxy, xjm, gridvelderiv,
       timefacfac * sumaddvolfrac * (-1.0), fac * sumaddvolfrac * (-1.0), det, numdofpernode,
       phasetoadd);
 
@@ -3788,7 +3793,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTermsSat<nsd,
     //----------------------------------------------------------------
 
     // first: get rhs
-    const double vrhs = EvaluatorVolFracAddInstatTerms<nsd, nen>::GetRhs(
+    const double vrhs = EvaluatorVolFracAddInstatTerms<nsd, nen>::get_rhs(
         curphase, phasetoadd, numdofpernode, phasemanager, variablemanager, timefacfac, fac);
 
     // call base class for saturation linearization
@@ -4522,7 +4527,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDiff<nsd,
     refgradphi.Multiply(xjm, gradphi[ivolfrac]);
 
     // OD mesh - diffusive term
-    EvaluatorBase<nsd, nen>::CalcDiffODMesh(mymat, deriv, derxy, xjm, diffflux, refgradphi,
+    EvaluatorBase<nsd, nen>::calc_diff_od_mesh(mymat, deriv, derxy, xjm, diffflux, refgradphi,
         gradphi[ivolfrac], timefacfac, v, numdofpernode, ivolfrac);
   }
   return;
@@ -4689,7 +4694,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracReac<nsd,
       // 1) linearization of fac +
       // 2) possible linearization w.r.t porosity
       // rhs ---> -
-      EvaluatorBase<nsd, nen>::CalcLinFacODMesh(
+      EvaluatorBase<nsd, nen>::calc_lin_fac_od_mesh(
           mymat, funct, derxy, -1.0 * vrhs, numdofpernode, ivolfrac);
     }
   }
@@ -5041,7 +5046,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
           // 1)
           // -----------------------------------------------------------------------------------------------------------------------------------------
           // OD mesh - diffusive term
-          EvaluatorBase<nsd, nen>::CalcDiffODMesh(mymat, deriv, derxy, xjm, diffflux,
+          EvaluatorBase<nsd, nen>::calc_diff_od_mesh(mymat, deriv, derxy, xjm, diffflux,
               refgradscalarnp, gradscalarnp[iscal], timefacfac, v, numdofpernode, ivolfrac);
 
           // 2)
@@ -5390,7 +5395,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureDiff<nsd,
       refgradphi.Multiply(xjm, gradphi[ivolfracpress]);
 
       // OD mesh - diffusive term
-      EvaluatorBase<nsd, nen>::CalcDiffODMesh(mymat, deriv, derxy, xjm, diffflux, refgradphi,
+      EvaluatorBase<nsd, nen>::calc_diff_od_mesh(mymat, deriv, derxy, xjm, diffflux, refgradphi,
           gradphi[ivolfracpress], timefacfac, v, numdofpernode, ivolfracpress);
     }
   }
@@ -5573,7 +5578,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureReac<nsd,
       // 1) linearization of fac +
       // 2) possible linearization w.r.t porosity
       // rhs ---> -
-      EvaluatorBase<nsd, nen>::CalcLinFacODMesh(
+      EvaluatorBase<nsd, nen>::calc_lin_fac_od_mesh(
           mymat, funct, derxy, -1.0 * vrhs, numdofpernode, ivolfracpress);
     }
   }

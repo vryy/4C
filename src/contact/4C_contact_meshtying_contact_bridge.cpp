@@ -173,14 +173,14 @@ void CONTACT::MeshtyingContactBridge::read_restart(IO::DiscretizationReader& rea
 /*----------------------------------------------------------------------*
  |  Write restart                                            farah 06/14|
  *----------------------------------------------------------------------*/
-void CONTACT::MeshtyingContactBridge::WriteRestart(
+void CONTACT::MeshtyingContactBridge::write_restart(
     Teuchos::RCP<IO::DiscretizationWriter>& output, bool forcedrestart)
 {
   // contact
-  if (HaveContact()) ContactManager()->WriteRestart(*output, forcedrestart);
+  if (HaveContact()) ContactManager()->write_restart(*output, forcedrestart);
 
   // meshtying
-  if (HaveMeshtying()) MtManager()->WriteRestart(*output, forcedrestart);
+  if (HaveMeshtying()) MtManager()->write_restart(*output, forcedrestart);
 
   return;
 }

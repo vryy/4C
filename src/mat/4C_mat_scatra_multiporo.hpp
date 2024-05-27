@@ -58,7 +58,7 @@ namespace MAT
       ScatraMatMultiPoroFluid(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
       /// ID of fluid phase the scalar is associated with
       const int phaseID_;
@@ -83,7 +83,7 @@ namespace MAT
       ScatraMatMultiPoroVolFrac(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
       /// ID of fluid phase the scalar is associated with
       const int phaseID_;
@@ -102,7 +102,7 @@ namespace MAT
       ScatraMatMultiPoroSolid(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
       /// delta used for modelling dependency of diffusivity on
       /// (saturation*porosity)^delta
@@ -121,7 +121,7 @@ namespace MAT
       ScatraMatMultiPoroTemperature(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
       const int numfluidphases_;
       const int numvolfrac_;

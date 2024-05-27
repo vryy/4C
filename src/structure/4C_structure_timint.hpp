@@ -240,18 +240,18 @@ namespace STR
 
     //! Apply Dirichlet boundary conditions on provided state vectors
     //! (reimplemented in static time integrator)
-    virtual void ApplyDirichletBC(const double time,  //!< at time
-        Teuchos::RCP<Epetra_Vector> dis,              //!< displacements
-                                                      //!< (may be Teuchos::null)
-        Teuchos::RCP<Epetra_Vector> vel,              //!< velocities
-                                                      //!< (may be Teuchos::null)
-        Teuchos::RCP<Epetra_Vector> acc,              //!< accelerations
-                                                      //!< (may be Teuchos::null)
-        bool recreatemap                              //!< recreate map extractor/toggle-vector
-                                                      //!< which stores the DOF IDs subjected
-                                                      //!< to Dirichlet BCs
-                                                      //!< This needs to be true if the bounded DOFs
-                                                      //!< have been changed.
+    virtual void apply_dirichlet_bc(const double time,  //!< at time
+        Teuchos::RCP<Epetra_Vector> dis,                //!< displacements
+                                                        //!< (may be Teuchos::null)
+        Teuchos::RCP<Epetra_Vector> vel,                //!< velocities
+                                                        //!< (may be Teuchos::null)
+        Teuchos::RCP<Epetra_Vector> acc,                //!< accelerations
+                                                        //!< (may be Teuchos::null)
+        bool recreatemap                                //!< recreate map extractor/toggle-vector
+                                                        //!< which stores the DOF IDs subjected
+                                                        //!< to Dirichlet BCs
+        //!< This needs to be true if the bounded DOFs
+        //!< have been changed.
     );
 
     /// start new time step
@@ -608,7 +608,7 @@ namespace STR
     //@{
 
     //! Access discretisation
-    Teuchos::RCP<DRT::Discretization> Discretization() override
+    Teuchos::RCP<DRT::Discretization> discretization() override
     {
       // Here a 'false' must be used. This is due to
       // the fact that TimInt possesses a references
@@ -788,7 +788,7 @@ namespace STR
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override;
 
     //! switch structure field to block matrix in fsi simulations
-    void UseBlockMatrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
+    void use_block_matrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
         Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps) override = 0;
 
     //! Return sparse mass matrix
@@ -868,7 +868,7 @@ namespace STR
     }
 
     //! Return (rotatory) transformation matrix of local co-ordinate systems
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetLocSysTrafo() const;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> get_loc_sys_trafo() const;
 
     //! Return locsys manager
     Teuchos::RCP<CORE::Conditions::LocsysManager> LocsysManager() override { return locsysman_; }
@@ -1257,7 +1257,7 @@ namespace STR
     bool is_init() const { return isinit_; };
 
     //! check if \ref Setup() was called
-    void CheckIsSetup()
+    void check_is_setup()
     {
       if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
     };

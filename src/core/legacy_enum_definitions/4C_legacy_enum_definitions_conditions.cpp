@@ -59,7 +59,7 @@ std::string_view CORE::Conditions::to_string(const CORE::Conditions::ConditionTy
       return "Superconvergent Patch Recovery boundary condition";
     case CORE::Conditions::FSICoupling:
       return "FSI Coupling condition";
-    case CORE::Conditions::FPSICoupling:
+    case CORE::Conditions::fpsi_coupling:
       return "FPSI Coupling condition";
     case CORE::Conditions::XFEM_Surf_Displacement:
       return "XFEM Surface Displacement condition";
@@ -277,7 +277,7 @@ std::string_view CORE::Conditions::to_string(const CORE::Conditions::ConditionTy
       return "Spring Dashpot Coupling Condition";
     case CORE::Conditions::TotalTractionCorrectionCond:
       return "Total traction correct condition";
-    case CORE::Conditions::NoPenetration:
+    case CORE::Conditions::no_penetration:
       return "No Penetration Condition";
     case CORE::Conditions::TotalTractionCorrectionBorderNodes:
       return "Total traction correction border nodes condition";

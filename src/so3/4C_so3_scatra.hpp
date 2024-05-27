@@ -248,7 +248,7 @@ namespace DRT
           ) override;
 
       //! init the inverse of the jacobian and its determinant in the material configuration
-      // virtual void InitJacobianMapping();
+      // virtual void init_jacobian_mapping();
 
 
       //@}

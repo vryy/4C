@@ -622,7 +622,7 @@ bool DRT::ELEMENTS::So3Plast<distype>::ReadElement(
   if (so3mat->MaterialType() != CORE::Materials::m_plelasthyper)
     std::cout << "*** warning *** so3plast used w/o PlasticElastHyper material. Better use "
                  "standard solid element!\n";
-  if (HavePlasticSpin())
+  if (have_plastic_spin())
     plspintype_ = plspin;
   else
     plspintype_ = zerospin;
@@ -906,14 +906,14 @@ template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>::soh8_expol(
  | Have plastic spin                                        seitz 05/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool DRT::ELEMENTS::So3Plast<distype>::HavePlasticSpin()
+bool DRT::ELEMENTS::So3Plast<distype>::have_plastic_spin()
 {
   // get plastic hyperelastic material
   MAT::PlasticElastHyper* plmat = nullptr;
   if (Material()->MaterialType() == CORE::Materials::m_plelasthyper)
     plmat = static_cast<MAT::PlasticElastHyper*>(Material().get());
 
-  if (plmat != nullptr) return plmat->HavePlasticSpin();
+  if (plmat != nullptr) return plmat->have_plastic_spin();
 
   return false;
 }

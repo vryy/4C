@@ -35,12 +35,12 @@ FOUR_C_NAMESPACE_OPEN
 ADAPTER::StructureTimeAdaJoint::StructureTimeAdaJoint(Teuchos::RCP<Structure> structure)
     : StructureTimeAda(structure), sta_(Teuchos::null), sta_wrapper_(Teuchos::null)
 {
-  if (stm_->is_setup()) SetupAuxiliar();
+  if (stm_->is_setup()) setup_auxiliar();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimeAdaJoint::SetupAuxiliar()
+void ADAPTER::StructureTimeAdaJoint::setup_auxiliar()
 {
   const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
   const Teuchos::ParameterList& jep = sdyn.sublist("TIMEADAPTIVITY").sublist("JOINT EXPLICIT");
@@ -64,7 +64,7 @@ void ADAPTER::StructureTimeAdaJoint::SetupAuxiliar()
   Teuchos::ParameterList& nox = xparams->sublist("NOX");
   nox = problem->StructuralNoxParams();
   //
-  Teuchos::RCP<IO::DiscretizationWriter> output = stm_->Discretization()->Writer();
+  Teuchos::RCP<IO::DiscretizationWriter> output = stm_->discretization()->Writer();
   //
   Teuchos::RCP<STR::TIMINT::BaseDataIO> dataio = Teuchos::rcp(new STR::TIMINT::BaseDataIO());
   dataio->Init(*ioflags, adyn, *xparams, output);
@@ -79,16 +79,16 @@ void ADAPTER::StructureTimeAdaJoint::SetupAuxiliar()
       Teuchos::rcp(new std::set<enum INPAR::STR::EleTech>());
   //
   Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<CORE::LINALG::Solver>>>
-      linsolvers = STR::SOLVER::BuildLinSolvers(*modeltypes, adyn, *stm_->Discretization());
+      linsolvers = STR::SOLVER::BuildLinSolvers(*modeltypes, adyn, *stm_->discretization());
   //
   Teuchos::RCP<STR::TIMINT::BaseDataSDyn> datasdyn = STR::TIMINT::BuildDataSDyn(adyn);
-  datasdyn->Init(stm_->Discretization(), adyn, *xparams, modeltypes, eletechs, linsolvers);
+  datasdyn->Init(stm_->discretization(), adyn, *xparams, modeltypes, eletechs, linsolvers);
   datasdyn->Setup();
 
   // setup global state
   Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> dataglobalstate =
       STR::TIMINT::build_data_global_state();
-  dataglobalstate->Init(stm_->Discretization(), adyn, datasdyn);
+  dataglobalstate->Init(stm_->discretization(), adyn, datasdyn);
   dataglobalstate->Setup();
 
   // setup auxiliary integrator
@@ -102,7 +102,7 @@ void ADAPTER::StructureTimeAdaJoint::SetupAuxiliar()
   if (restart)
   {
     const STR::TIMINT::Base& sti = *stm_;
-    const auto& gstate = sti.DataGlobalState();
+    const auto& gstate = sti.data_global_state();
     dataglobalstate->GetDisN()->Update(1.0, *(gstate.GetDisN()), 0.0);
     dataglobalstate->GetVelN()->Update(1.0, *(gstate.GetVelN()), 0.0);
     dataglobalstate->GetAccN()->Update(1.0, *(gstate.GetAccN()), 0.0);
@@ -186,7 +186,7 @@ void ADAPTER::StructureTimeAdaJoint::integrate_step_auxiliar()
   // integrate the auxiliary time integrator one step in time
   // buih: another solution is to use the wrapper, but it will do more than necessary
   const STR::TIMINT::Base& sta = *sta_;
-  const auto& gstate = sta.DataGlobalState();
+  const auto& gstate = sta.data_global_state();
 
   sta_->IntegrateStep();
 
@@ -205,10 +205,10 @@ void ADAPTER::StructureTimeAdaJoint::update_auxiliar()
   // for reference: the vector map of the global state vectors may need to be checked to ensure they
   // are the same
   const STR::TIMINT::Base& stm = *stm_;
-  const STR::TIMINT::BaseDataGlobalState& gstate_i = stm.DataGlobalState();
+  const STR::TIMINT::BaseDataGlobalState& gstate_i = stm.data_global_state();
 
   const STR::TIMINT::Base& sta = *sta_;
-  const STR::TIMINT::BaseDataGlobalState& gstate_a_const = sta.DataGlobalState();
+  const STR::TIMINT::BaseDataGlobalState& gstate_a_const = sta.data_global_state();
   STR::TIMINT::BaseDataGlobalState& gstate_a =
       const_cast<STR::TIMINT::BaseDataGlobalState&>(gstate_a_const);
 

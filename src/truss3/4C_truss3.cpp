@@ -201,7 +201,8 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Truss3::Lines()
  |determine Gauss rule from required type of integration                |
  |                                                   (public)cyron 09/09|
  *----------------------------------------------------------------------*/
-CORE::FE::GaussRule1D DRT::ELEMENTS::Truss3::MyGaussRule(int nnode, IntegrationType integrationtype)
+CORE::FE::GaussRule1D DRT::ELEMENTS::Truss3::my_gauss_rule(
+    int nnode, IntegrationType integrationtype)
 {
   CORE::FE::GaussRule1D gaussrule = CORE::FE::GaussRule1D::undefined;
 
@@ -356,7 +357,7 @@ void DRT::ELEMENTS::Truss3::LocationVector(
 
   la.Clear();
 
-  // we need to look at all DofSets of our Discretization
+  // we need to look at all DofSets of our discretization
   for (int dofset = 0; dofset < la.Size(); ++dofset)
   {
     std::vector<int>& lm = la[dofset].lm_;

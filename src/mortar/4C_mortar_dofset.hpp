@@ -58,7 +58,7 @@ namespace MORTAR
     This specialized DofSet does not generate DOFs by itself, but rather extracts them from the
     mortar nodes and sticks them into the discretization of the mortar interface.
 
-    @param[in] dis Discretization of a mortar interface
+    @param[in] dis discretization of a mortar interface
     @param[in] dspos Position of DOfSet inside its discretization
     @param[in] start User-defined offset for DOF numbering [currently not supported]
 

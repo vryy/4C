@@ -39,7 +39,7 @@ MAT::PAR::FerEchPV::FerEchPV(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
 }
 
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FerEchPV::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FerEchPV::create_material()
 {
   return Teuchos::rcp(new MAT::FerEchPV(this));
 }

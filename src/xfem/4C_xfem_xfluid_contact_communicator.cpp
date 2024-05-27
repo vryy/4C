@@ -360,7 +360,7 @@ void XFEM::XFluidContactComm::get_states(const int fluidele_id, const std::vecto
           CORE::GEO::CUT::PositionFactory::build_position<3, CORE::FE::CellType::hex8>(xyze, x);
       if (!pos->Compute(1e-1))  // if we are a litte bit outside of the element we don't care ...
       {
-        pos->LocalCoordinates(fluidele_xsi);
+        pos->local_coordinates(fluidele_xsi);
         std::cout << "fluidele_xsi: " << fluidele_xsi << std::endl;
         std::ofstream file("DEBUG_OUT_D007.pos");
         CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "The point");
@@ -373,7 +373,7 @@ void XFEM::XFluidContactComm::get_states(const int fluidele_id, const std::vecto
         CORE::GEO::CUT::OUTPUT::GmshEndSection(file, true);
         FOUR_C_THROW("Couldn'd compute local coordinate for fluid element (DEBUG_OUT_D007.pos)!");
       }
-      pos->LocalCoordinates(fluidele_xsi);
+      pos->local_coordinates(fluidele_xsi);
 
       static CORE::LINALG::Matrix<3, 3> xji;
       static CORE::LINALG::Matrix<3, 3> xjm;
@@ -690,7 +690,7 @@ bool XFEM::XFluidContactComm::get_volumecell(DRT::ELEMENTS::StructuralSurface*& 
   for (std::size_t ss = 0; ss < subsides.size(); ++ss)
   {
     CORE::GEO::CUT::Side* s = subsides[ss];
-    if (s->LocalCoordinates(x, tmpxsi_tmp, true, 1e-10))
+    if (s->local_coordinates(x, tmpxsi_tmp, true, 1e-10))
     {
       found_side = ss;
       tmpxsi = tmpxsi_tmp;
@@ -706,7 +706,7 @@ bool XFEM::XFluidContactComm::get_volumecell(DRT::ELEMENTS::StructuralSurface*& 
     for (std::size_t ss = 0; ss < subsides.size(); ++ss)
     {
       CORE::GEO::CUT::Side* s = subsides[ss];
-      if (s->LocalCoordinates(x, tmpxsi_tmp, true, 1e-6))
+      if (s->local_coordinates(x, tmpxsi_tmp, true, 1e-6))
       {
         found_side = ss;
         tmpxsi = tmpxsi_tmp;
@@ -825,7 +825,7 @@ bool XFEM::XFluidContactComm::get_volumecell(DRT::ELEMENTS::StructuralSurface*& 
             bool success = pos->Compute(1e-6, true);
             if (success)
             {
-              pos->LocalCoordinates(tmpxsi);
+              pos->local_coordinates(tmpxsi);
               if (fabs(tmpxsi(2, 0)) > 1e-3)
                 FOUR_C_THROW("To far away from this facet %f!", tmpxsi(2, 0));
               facet = afacet;
@@ -986,7 +986,7 @@ CORE::GEO::CUT::Side* XFEM::XFluidContactComm::findnext_physical_side(CORE::LINA
     Teuchos::RCP<CORE::GEO::CUT::Position> pos =
         CORE::GEO::CUT::PositionFactory::build_position<3, CORE::FE::CellType::quad4>(xyze, newx);
     pos->Compute(1e-15, true);
-    pos->LocalCoordinates(newxsi);
+    pos->local_coordinates(newxsi);
   }
   else
     FOUR_C_THROW("Not a quad4!");
@@ -1007,7 +1007,7 @@ double XFEM::XFluidContactComm::distanceto_side(CORE::LINALG::Matrix<3, 1>& x,
         CORE::GEO::CUT::PositionFactory::build_position<3, CORE::FE::CellType::line2>(xyzl, x);
     pos->Compute(true);
     CORE::LINALG::Matrix<1, 1> rst;
-    pos->LocalCoordinates(rst);
+    pos->local_coordinates(rst);
     if (fabs(rst(0.0)) < 1)
     {
       static CORE::LINALG::Matrix<2, 1> funct;
@@ -1361,7 +1361,7 @@ void XFEM::XFluidContactComm::get_cut_side_integration_points(
             CORE::GEO::CUT::PositionFactory::build_position<3, CORE::FE::CellType::quad4>(
                 xquad_m, x_gp_lin);
         pos->Compute(true);
-        pos->LocalCoordinates(rst);
+        pos->local_coordinates(rst);
         coords(idx, 0) = rst(0);
         coords(idx, 1) = rst(1);
 

@@ -121,7 +121,7 @@ namespace MORTAR
        *  Stores knot vector, zerosized information and normal factor
        *
        *  \author Farah */
-      void PrepareNURBSElement(const DRT::Discretization& discret, Teuchos::RCP<DRT::Element> ele,
+      void prepare_nurbs_element(const DRT::Discretization& discret, Teuchos::RCP<DRT::Element> ele,
           Teuchos::RCP<MORTAR::Element> cele) const;
 
       /*! \brief Prepare mortar node for NURBS case
@@ -129,7 +129,7 @@ namespace MORTAR
        *  Stores control point weight
        *
        *  \author Farah */
-      void PrepareNURBSNode(const DRT::Node* node, Teuchos::RCP<MORTAR::Node> mnode) const;
+      void prepare_nurbs_node(const DRT::Node* node, Teuchos::RCP<MORTAR::Node> mnode) const;
 
       //!@}
 
@@ -137,20 +137,20 @@ namespace MORTAR
       //!@{
 
       //! Returns the global state data container (read-only, do not change this!!!)
-      const STR::TIMINT::BaseDataGlobalState& GState() const;
+      const STR::TIMINT::BaseDataGlobalState& g_state() const;
 
       //! Returns the (structural) discretization
-      DRT::Discretization& Discret();
-      const DRT::Discretization& Discret() const;
+      DRT::Discretization& discret();
+      const DRT::Discretization& discret() const;
 
       //! returns a reference to a copy of the structural communicator
-      Epetra_Comm& Comm();
-      const Epetra_Comm& Comm() const;
-      Teuchos::RCP<Epetra_Comm> CommPtr();
-      Teuchos::RCP<const Epetra_Comm> CommPtr() const;
+      Epetra_Comm& comm();
+      const Epetra_Comm& comm() const;
+      Teuchos::RCP<Epetra_Comm> comm_ptr();
+      Teuchos::RCP<const Epetra_Comm> comm_ptr() const;
 
       //! returns the problem dimension
-      const int& Dim() const;
+      const int& dim() const;
 
       //!@}
 

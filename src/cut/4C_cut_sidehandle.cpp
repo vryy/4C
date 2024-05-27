@@ -303,7 +303,7 @@ CORE::GEO::CUT::Quad9SideHandle::Quad9SideHandle(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Tri6SideHandle::LocalCoordinates(
+void CORE::GEO::CUT::Tri6SideHandle::local_coordinates(
     const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst)
 {
   CORE::LINALG::Matrix<3, 6> xyze;
@@ -320,12 +320,12 @@ void CORE::GEO::CUT::Tri6SideHandle::LocalCoordinates(
   if (not success)
   {
   }
-  pos->LocalCoordinates(rst);
+  pos->local_coordinates(rst);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Quad4SideHandle::LocalCoordinates(
+void CORE::GEO::CUT::Quad4SideHandle::local_coordinates(
     const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst)
 {
   CORE::LINALG::Matrix<3, 4> xyze;
@@ -342,12 +342,12 @@ void CORE::GEO::CUT::Quad4SideHandle::LocalCoordinates(
   if (not success)
   {
   }
-  pos->LocalCoordinates(rst);
+  pos->local_coordinates(rst);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Quad8SideHandle::LocalCoordinates(
+void CORE::GEO::CUT::Quad8SideHandle::local_coordinates(
     const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst)
 {
   CORE::LINALG::Matrix<3, 8> xyze;
@@ -364,12 +364,12 @@ void CORE::GEO::CUT::Quad8SideHandle::LocalCoordinates(
   if (not success)
   {
   }
-  pos->LocalCoordinates(rst);
+  pos->local_coordinates(rst);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Quad9SideHandle::LocalCoordinates(
+void CORE::GEO::CUT::Quad9SideHandle::local_coordinates(
     const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst)
 {
   CORE::LINALG::Matrix<3, 9> xyze;
@@ -386,7 +386,7 @@ void CORE::GEO::CUT::Quad9SideHandle::LocalCoordinates(
   if (not success)
   {
   }
-  pos->LocalCoordinates(rst);
+  pos->local_coordinates(rst);
 }
 
 FOUR_C_NAMESPACE_CLOSE

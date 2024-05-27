@@ -490,7 +490,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::ResetStepState() { check
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteRestart(
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::write_restart(
     IO::DiscretizationWriter& ia_writer, IO::DiscretizationWriter& bin_writer) const
 {
   // empty
@@ -523,7 +523,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PostReadRestart()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::RunPostIterate(
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::run_post_iterate(
     const ::NOX::Solver::Generic& solver)
 {
   check_init_setup();

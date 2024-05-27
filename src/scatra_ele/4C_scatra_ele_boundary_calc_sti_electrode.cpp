@@ -61,7 +61,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::EvaluateS2ICoupling(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::evaluate_s2_i_coupling(
     const DRT::FaceElement* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& eslavematrix, CORE::LINALG::SerialDenseMatrix& emastermatrix,
@@ -78,9 +78,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::Evaluat
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
-  ExtractNodeValues(discretization, la);
+  extract_node_values(discretization, la);
   std::vector<CORE::LINALG::Matrix<nen_, 1>> emasterscatra(2, CORE::LINALG::Matrix<nen_, 1>(true));
-  my::ExtractNodeValues(
+  my::extract_node_values(
       emasterscatra, discretization, la, "imasterscatra", my::scatraparams_->NdsScaTra());
 
   // integration points and weights
@@ -91,14 +91,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::Evaluat
 
   CORE::LINALG::Matrix<nen_, 1> emastertemp(true);
   if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)
-    my::ExtractNodeValues(emastertemp, discretization, la, "imastertemp", 3);
+    my::extract_node_values(emastertemp, discretization, la, "imastertemp", 3);
 
   // element slave mechanical stress tensor
   const bool is_pseudo_contact = my::scatraparamsboundary_->IsPseudoContact();
   std::vector<CORE::LINALG::Matrix<nen_, 1>> eslavestress_vector(
       6, CORE::LINALG::Matrix<nen_, 1>(true));
   if (is_pseudo_contact)
-    my::ExtractNodeValues(eslavestress_vector, discretization, la, "mechanicalStressState",
+    my::extract_node_values(eslavestress_vector, discretization, la, "mechanicalStressState",
         my::scatraparams_->nds_two_tensor_quantity());
 
   CORE::LINALG::Matrix<nsd_, 1> normal;
@@ -327,9 +327,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::evaluat
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
-  ExtractNodeValues(discretization, la);
+  extract_node_values(discretization, la);
   std::vector<CORE::LINALG::Matrix<nen_, 1>> emasterscatra(2, CORE::LINALG::Matrix<nen_, 1>(true));
-  my::ExtractNodeValues(
+  my::extract_node_values(
       emasterscatra, discretization, la, "imasterscatra", my::scatraparams_->NdsScaTra());
 
   // integration points and weights
@@ -340,7 +340,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::evaluat
 
   CORE::LINALG::Matrix<nen_, 1> emastertemp(true);
   if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)
-    my::ExtractNodeValues(emastertemp, discretization, la, "imastertemp", 3);
+    my::extract_node_values(emastertemp, discretization, la, "imastertemp", 3);
 
   // get primary variable to derive the linearization
   const auto differentiationtype =
@@ -351,7 +351,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::evaluat
   std::vector<CORE::LINALG::Matrix<nen_, 1>> eslavestress_vector(
       6, CORE::LINALG::Matrix<nen_, 1>(true));
   if (is_pseudo_contact)
-    my::ExtractNodeValues(eslavestress_vector, discretization, la, "mechanicalStressState",
+    my::extract_node_values(eslavestress_vector, discretization, la, "mechanicalStressState",
         my::scatraparams_->nds_two_tensor_quantity());
 
   CORE::LINALG::Matrix<nsd_, 1> normal;
@@ -711,7 +711,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::EvaluateAction(
+int DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::evaluate_action(
     DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     SCATRA::BoundaryAction action, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -725,7 +725,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::Evaluate
   {
     case SCATRA::BoundaryAction::calc_s2icoupling:
     {
-      EvaluateS2ICoupling(
+      evaluate_s2_i_coupling(
           ele, params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra);
       break;
     }
@@ -738,7 +738,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::Evaluate
 
     default:
     {
-      my::EvaluateAction(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
+      my::evaluate_action(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
           elevec1_epetra, elevec2_epetra, elevec3_epetra);
       break;
     }
@@ -750,14 +750,14 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::Evaluate
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::ExtractNodeValues(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::extract_node_values(
     const DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
   // call base class routine
-  my::ExtractNodeValues(discretization, la);
+  my::extract_node_values(discretization, la);
 
   // extract nodal electrochemistry variables associated with time t_{n+1} or t_{n+alpha_f}
-  my::ExtractNodeValues(eelchnp_, discretization, la, "scatra", my::scatraparams_->NdsScaTra());
+  my::extract_node_values(eelchnp_, discretization, la, "scatra", my::scatraparams_->NdsScaTra());
 }
 
 

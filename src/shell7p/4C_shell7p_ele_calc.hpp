@@ -49,7 +49,7 @@ namespace DRT
 
       void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data) override;
 
-      void MaterialPostSetup(DRT::Element& ele, MAT::So3Material& solid_material) override;
+      void material_post_setup(DRT::Element& ele, MAT::So3Material& solid_material) override;
 
       void evaluate_nonlinear_force_stiffness_mass(DRT::Element& ele,
           MAT::So3Material& solid_material, const DRT::Discretization& discretization,

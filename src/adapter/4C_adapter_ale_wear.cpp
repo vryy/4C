@@ -23,7 +23,7 @@ ADAPTER::AleWearWrapper::AleWearWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(ale)
 {
   // create the Wear interface
   interface_ = Teuchos::rcp(new ALE::UTILS::MapExtractor);
-  interface_->Setup(*Discretization());
+  interface_->Setup(*discretization());
   SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_wear, interface_);
 
   return;

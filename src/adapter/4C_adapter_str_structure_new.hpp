@@ -419,7 +419,7 @@ namespace ADAPTER
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override = 0;
 
     /// switch structure field to block matrix
-    void UseBlockMatrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
+    void use_block_matrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
         Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps) override = 0;
 
     /// return contact/meshtying bridge
@@ -436,7 +436,7 @@ namespace ADAPTER
     STR::MODELEVALUATOR::Generic& ModelEvaluator(INPAR::STR::ModelType mtype) override = 0;
 
     /// direct access to discretization
-    Teuchos::RCP<DRT::Discretization> Discretization() override = 0;
+    Teuchos::RCP<DRT::Discretization> discretization() override = 0;
 
     /// are there any algebraic constraints?
     bool HaveConstraint() override = 0;
@@ -561,7 +561,7 @@ namespace ADAPTER
         const std::string name, Teuchos::RCP<STR::MODELEVALUATOR::Generic> me);
 
     /// structural field solver
-    Teuchos::RCP<Structure> StructureField() { return str_wrapper_; }
+    Teuchos::RCP<Structure> structure_field() { return str_wrapper_; }
 
    public:
     [[nodiscard]] inline const bool& is_init() const { return isinit_; };
@@ -621,17 +621,17 @@ namespace ADAPTER
      *
      *  \author hiermeier
      *  \date 09/16 */
-    void SetModelTypes(std::set<enum INPAR::STR::ModelType>& modeltypes) const;
+    void set_model_types(std::set<enum INPAR::STR::ModelType>& modeltypes) const;
 
     /// Set all found model types.
     void detect_element_technologies(std::set<enum INPAR::STR::EleTech>& eletechs) const;
 
     /// Set different time integrator specific parameters in the different parameter lists
-    virtual void SetParams(Teuchos::ParameterList& ioflags, Teuchos::ParameterList& xparams,
+    virtual void set_params(Teuchos::ParameterList& ioflags, Teuchos::ParameterList& xparams,
         Teuchos::ParameterList& time_adaptivity_params);
 
     /// Create, initialize and setup the global state data container
-    virtual void SetGlobalState(Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& dataglobalstate,
+    virtual void set_global_state(Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& dataglobalstate,
         const Teuchos::RCP<const STR::TIMINT::BaseDataSDyn>& datasdyn_ptr);
 
     /// Create, initialize and setup the time integration strategy object
@@ -641,13 +641,13 @@ namespace ADAPTER
         const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& dataglobalstate, const int& restart);
 
     /// set the final structure time integrator object
-    virtual void SetStructureWrapper(const Teuchos::ParameterList& ioflags,
+    virtual void set_structure_wrapper(const Teuchos::ParameterList& ioflags,
         const Teuchos::ParameterList& sdyn, const Teuchos::ParameterList& xparams,
         const Teuchos::ParameterList& time_adaptivity_params,
         Teuchos::RCP<STR::TIMINT::Base> ti_strategy);
 
     /// create the time integrator wrapper
-    void CreateWrapper(Teuchos::RCP<STR::TIMINT::Base> ti_strategy);
+    void create_wrapper(Teuchos::RCP<STR::TIMINT::Base> ti_strategy);
 
    protected:
     /// structural field solver

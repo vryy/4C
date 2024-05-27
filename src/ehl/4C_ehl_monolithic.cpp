@@ -120,14 +120,14 @@ void EHL::Monolithic::prepare_time_step()
   // counter and print header
   // increment time and step counter
   increment_time_and_step();
-  PrintHeader();
+  print_header();
 
   // apply current pressure to structure
   // set the external fluid force on the structure, which result from the fluid pressure
   set_lubrication_solution(lubrication_->LubricationField()->Prenp());
 
   // call the predictor
-  StructureField()->prepare_time_step();
+  structure_field()->prepare_time_step();
   lubrication_->LubricationField()->prepare_time_step();
 
 }  // prepare_time_step()
@@ -232,9 +232,9 @@ void EHL::Monolithic::create_linear_solver()
       solver_->put_solver_params_to_sub_params("Inverse2", tsolverparams);
 
       // prescribe rigid body modes
-      StructureField()->Discretization()->compute_null_space_if_necessary(
+      structure_field()->discretization()->compute_null_space_if_necessary(
           solver_->Params().sublist("Inverse1"));
-      lubrication_->LubricationField()->Discretization()->compute_null_space_if_necessary(
+      lubrication_->LubricationField()->discretization()->compute_null_space_if_necessary(
           solver_->Params().sublist("Inverse2"));
 
 
@@ -266,9 +266,9 @@ void EHL::Monolithic::create_linear_solver()
 
       // ... 4C calculates the null space vectors. These are then stored in the sublists
       //     Inverse1 and Inverse2 from where they...
-      StructureField()->Discretization()->compute_null_space_if_necessary(
+      structure_field()->discretization()->compute_null_space_if_necessary(
           solver_->Params().sublist("Inverse1"));
-      lubrication_->LubricationField()->Discretization()->compute_null_space_if_necessary(
+      lubrication_->LubricationField()->discretization()->compute_null_space_if_necessary(
           solver_->Params().sublist("Inverse2"));
 
       // ... are copied from here to ...
@@ -350,10 +350,10 @@ void EHL::Monolithic::Timeloop()
     prepare_output(force_prepare);
 
     // update all single field solvers
-    Update();
+    update();
 
     // write output to screen and files
-    Output();
+    output();
 
   }  // NotFinished
 }  // TimeLoop()
@@ -412,7 +412,7 @@ void EHL::Monolithic::NewtonFull()
 
     if (dry_contact_)
     {
-      mortaradapter_->CondenseContact(systemmatrix_, rhs_, StructureField()->Dispnp(), Dt());
+      mortaradapter_->CondenseContact(systemmatrix_, rhs_, structure_field()->Dispnp(), Dt());
       apply_dbc();
     }
     // *********** time measurement ***********
@@ -532,22 +532,22 @@ void EHL::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> stepinc)
   if (new_disp->Update(1., *sx, 1.)) FOUR_C_THROW("update failed");
 
   // set interface height, velocity etc to lubrication field
-  SetStructSolution(new_disp);
+  set_struct_solution(new_disp);
 
   // apply current pressure to structure
   // set the external fluid force on the structure, which result from the fluid pressure
   set_lubrication_solution(lubrication_->LubricationField()->Prenp());
 
   // structure Evaluate (builds tangent, residual and applies DBC)
-  StructureField()->Evaluate(sx);
-  StructureField()->Discretization()->ClearState(true);
+  structure_field()->Evaluate(sx);
+  structure_field()->discretization()->ClearState(true);
 
   /// lubrication field
 
   // lubrication Evaluate
   // (builds tangent, residual and applies DBC and recent coupling values)
   lubrication_->LubricationField()->Evaluate();
-  lubrication_->LubricationField()->Discretization()->ClearState(true);
+  lubrication_->LubricationField()->discretization()->ClearState(true);
 
 }  // Evaluate()
 
@@ -563,10 +563,10 @@ void EHL::Monolithic::extract_field_vectors(
   TEUCHOS_FUNC_TIME_MONITOR("EHL::Monolithic::extract_field_vectors");
 
   // process structure unknowns of the first field
-  sx = Extractor()->ExtractVector(x, 0);
+  sx = extractor()->ExtractVector(x, 0);
 
   // process lubrication unknowns of the second field
-  lx = Extractor()->ExtractVector(x, 1);
+  lx = extractor()->ExtractVector(x, 1);
 }  // extract_field_vectors()
 
 
@@ -575,7 +575,7 @@ void EHL::Monolithic::extract_field_vectors(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> EHL::Monolithic::dof_row_map() const
 {
-  return Extractor()->FullMap();
+  return extractor()->FullMap();
 }  // dof_row_map()
 
 
@@ -591,7 +591,7 @@ void EHL::Monolithic::SetupSystem()
   std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
 
   // use its own dof_row_map, that is the 0th map of the discretization
-  vecSpaces.push_back(StructureField()->dof_row_map(0));
+  vecSpaces.push_back(structure_field()->dof_row_map(0));
   vecSpaces.push_back(lubrication_->LubricationField()->dof_row_map(0));
 
   if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No structure equation. Panic.");
@@ -603,15 +603,15 @@ void EHL::Monolithic::SetupSystem()
   // initialise EHL-systemmatrix_
   systemmatrix_ =
       Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
-          *Extractor(), *Extractor(), 81, false, true));
+          *extractor(), *extractor(), 81, false, true));
 
   // create empty matrix
   k_sl_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *(StructureField()->Discretization()->dof_row_map(0)), 81, true, true));
+      *(structure_field()->discretization()->dof_row_map(0)), 81, true, true));
 
   // create empty matrix
   k_ls_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *(lubrication_->LubricationField()->Discretization()->dof_row_map(0)), 81, true, true));
+      *(lubrication_->LubricationField()->discretization()->dof_row_map(0)), 81, true, true));
 
 }  // SetupSystem()
 
@@ -624,7 +624,7 @@ void EHL::Monolithic::set_dof_row_maps(const std::vector<Teuchos::RCP<const Epet
   Teuchos::RCP<Epetra_Map> fullmap = CORE::LINALG::MultiMapExtractor::MergeMaps(maps);
 
   // full EHL-blockmap
-  Extractor()->Setup(*fullmap, maps);
+  extractor()->Setup(*fullmap, maps);
 }  // set_dof_row_maps()
 
 
@@ -672,7 +672,7 @@ void EHL::Monolithic::setup_system_matrix()
   //----------------------------------------------
 
   // Effective dynamic stiffness matrix, Dirichlet already applied.
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ss = StructureField()->SystemMatrix();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ss = structure_field()->SystemMatrix();
   k_ss->UnComplete();
 
   //----------------------------------------------------------------------
@@ -724,7 +724,7 @@ void EHL::Monolithic::setup_system_matrix()
   k_ss->Add(*dm_dd, false, -(1.0 - alphaf), 1.0);
 
   k_ss->Complete();
-  k_ss->ApplyDirichlet(*StructureField()->GetDBCMapExtractor()->CondMap(), true);
+  k_ss->ApplyDirichlet(*structure_field()->GetDBCMapExtractor()->CondMap(), true);
 
   // Assign k_ss to system matrix
   systemmatrix_->Assign(0, 0, CORE::LINALG::View, *k_ss);
@@ -763,12 +763,12 @@ void EHL::Monolithic::setup_system_matrix()
   k_sl_->Add(*slaveiforce_derivp, false, -(1.0 - alphaf), 1.0);
   k_sl_->Add(*masteriforce_derivp, false, -(1.0 - alphaf), 1.0);
 
-  k_sl_->Complete(*(Extractor()->Map(1)),  // pressue dof map
-      *(Extractor()->Map(0))               // displacement dof map
+  k_sl_->Complete(*(extractor()->Map(1)),  // pressue dof map
+      *(extractor()->Map(0))               // displacement dof map
   );
 
   // No DBC need to be applied, since lubrication interface disp-dofs must NOT have dbc conditions!
-  k_sl_->ApplyDirichlet(*StructureField()->GetDBCMapExtractor()->CondMap(), false);
+  k_sl_->ApplyDirichlet(*structure_field()->GetDBCMapExtractor()->CondMap(), false);
 
   // Assign k_sl to system matrix
   systemmatrix_->Assign(0, 1, CORE::LINALG::View, *(k_sl_));
@@ -791,7 +791,7 @@ void EHL::Monolithic::setup_system_matrix()
 
   k_ls_->Reset();
   k_ls_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *(lubrication_->LubricationField()->Discretization()->dof_row_map(0)), 81, false, true));
+      *(lubrication_->LubricationField()->discretization()->dof_row_map(0)), 81, false, true));
 
   /*
    * Three distinct types of derivatives of the lubrication residual wrt to interface displacement
@@ -814,11 +814,11 @@ void EHL::Monolithic::setup_system_matrix()
 
   // Global matrix associated with the discrete film height derivative
   Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ls_linH =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(Extractor()->Map(1)), 81, false, false));
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(extractor()->Map(1)), 81, false, false));
 
   // Global matrix associated with the discrete tangential velocity derivative
   Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ls_linV =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(Extractor()->Map(1)), 81, false, false));
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(extractor()->Map(1)), 81, false, false));
 
   // Call elements and assemble
   apply_lubrication_coupl_matrix(k_ls_linH, k_ls_linV);
@@ -833,7 +833,7 @@ void EHL::Monolithic::setup_system_matrix()
 
   CORE::LINALG::MatrixRowTransform()(*ddgap_dd, 1.0,
       CORE::ADAPTER::CouplingMasterConverter(*ada_strDisp_to_lubDisp_), *dh_dd, false);
-  dh_dd->Complete(*(Extractor()->Map(0)), *ada_strDisp_to_lubDisp_->SlaveDofMap());
+  dh_dd->Complete(*(extractor()->Map(0)), *ada_strDisp_to_lubDisp_->SlaveDofMap());
 
   // Multiply with associated matrix
   Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ls_H =
@@ -847,17 +847,17 @@ void EHL::Monolithic::setup_system_matrix()
   //-----------------------------------------
   Teuchos::RCP<CORE::LINALG::SparseMatrix> avTangVelDeriv = mortaradapter_->AvTangVelDeriv();
   Teuchos::RCP<CORE::LINALG::SparseMatrix> dst = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *lubrication_->LubricationField()->Discretization()->dof_row_map(1), 81, true, false));
+      *lubrication_->LubricationField()->discretization()->dof_row_map(1), 81, true, false));
   CORE::LINALG::MatrixRowTransform().operator()(*avTangVelDeriv, 1.,
       CORE::ADAPTER::CouplingMasterConverter(*ada_strDisp_to_lubDisp_), *dst, false);
-  dst->Complete(*StructureField()->dof_row_map(),
-      *lubrication_->LubricationField()->Discretization()->dof_row_map(1));
+  dst->Complete(*structure_field()->dof_row_map(),
+      *lubrication_->LubricationField()->discretization()->dof_row_map(1));
   Teuchos::RCP<CORE::LINALG::SparseMatrix> tmp = CORE::LINALG::MLMultiply(*k_ls_linV, *dst, true);
   k_ls_->Add(*tmp, false, -1.0, 1.0);
 
 
-  k_ls_->Complete(*(Extractor()->Map(0)),  // displacement dof map
-      *(Extractor()->Map(1))               // pressue dof map
+  k_ls_->Complete(*(extractor()->Map(0)),  // displacement dof map
+      *(extractor()->Map(1))               // pressue dof map
   );
 
   // Apply Dirichet to k_ls
@@ -884,7 +884,7 @@ void EHL::Monolithic::setup_rhs()
   rhs_ = Teuchos::rcp(new Epetra_Vector(*dof_row_map(), true));
 
   // fill the EHL rhs vector rhs_ with the single field rhs
-  setup_vector(*rhs_, StructureField()->RHS(), lubrication_->LubricationField()->RHS());
+  setup_vector(*rhs_, structure_field()->RHS(), lubrication_->LubricationField()->RHS());
 }  // setup_rhs()
 
 
@@ -957,8 +957,8 @@ void EHL::Monolithic::setup_vector(
   // extract dofs of the two fields
   // and put the structural/lubrication field vector into the global vector f
   // noticing the block number
-  Extractor()->InsertVector(*sv, 0, f);
-  Extractor()->InsertVector(*lv, 1, f);
+  extractor()->InsertVector(*sv, 0, f);
+  extractor()->InsertVector(*lv, 1, f);
 
 }  // setup_vector()
 
@@ -1118,7 +1118,7 @@ void EHL::Monolithic::print_newton_iter()
 {
   // print to standard out
   // replace myrank_ here general by Comm().MyPID()
-  if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0) and
+  if ((Comm().MyPID() == 0) and print_screen_evry() and (Step() % print_screen_evry() == 0) and
       printiter_)
   {
     if (iter_ == 1) print_newton_iter_header(stdout);
@@ -1452,12 +1452,12 @@ void EHL::Monolithic::apply_lubrication_coupl_matrix(
   // provide bool whether lubrication grid is displaced or not
   lparams.set<bool>("isale", true);
 
-  lubrication_->LubricationField()->Discretization()->ClearState(true);
+  lubrication_->LubricationField()->discretization()->ClearState(true);
   // set the variables that are needed by the elements
-  lubrication_->LubricationField()->Discretization()->set_state(
+  lubrication_->LubricationField()->discretization()->set_state(
       0, "prenp", lubrication_->LubricationField()->Prenp());
 
-  SetStructSolution(structure_->Dispnp());
+  set_struct_solution(structure_->Dispnp());
 
   // build specific assemble strategy for the lubrication-mechanical system matrix
   // from the point of view of lubrication_->LubricationField:
@@ -1469,15 +1469,15 @@ void EHL::Monolithic::apply_lubrication_coupl_matrix(
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate the lubrication-mechanical system matrix on the lubrication element
-  lubrication_->LubricationField()->Discretization()->Evaluate(lparams, lubricationstrategy);
+  lubrication_->LubricationField()->discretization()->Evaluate(lparams, lubricationstrategy);
 
-  matheight->Complete(*(lubrication_->LubricationField()->Discretization()->dof_row_map(1)),
-      *(lubrication_->LubricationField()->Discretization()->dof_row_map(0)));
+  matheight->Complete(*(lubrication_->LubricationField()->discretization()->dof_row_map(1)),
+      *(lubrication_->LubricationField()->discretization()->dof_row_map(0)));
 
-  matvel->Complete(*(lubrication_->LubricationField()->Discretization()->dof_row_map(1)),
-      *(lubrication_->LubricationField()->Discretization()->dof_row_map(0)));
+  matvel->Complete(*(lubrication_->LubricationField()->discretization()->dof_row_map(1)),
+      *(lubrication_->LubricationField()->discretization()->dof_row_map(0)));
 
-  lubrication_->LubricationField()->Discretization()->ClearState(true);
+  lubrication_->LubricationField()->discretization()->ClearState(true);
 
   return;
 }  // apply_lubrication_coupl_matrix()
@@ -1487,7 +1487,8 @@ void EHL::Monolithic::apply_lubrication_coupl_matrix(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> EHL::Monolithic::combined_dbc_map()
 {
-  const Teuchos::RCP<const Epetra_Map> scondmap = StructureField()->GetDBCMapExtractor()->CondMap();
+  const Teuchos::RCP<const Epetra_Map> scondmap =
+      structure_field()->GetDBCMapExtractor()->CondMap();
   const Teuchos::RCP<const Epetra_Map> lcondmap =
       lubrication_->LubricationField()->GetDBCMapExtractor()->CondMap();
   Teuchos::RCP<Epetra_Map> condmap = CORE::LINALG::MergeMap(scondmap, lcondmap, false);
@@ -1528,14 +1529,14 @@ void EHL::Monolithic::scale_system(CORE::LINALG::BlockSparseMatrixBase& mat, Epe
         (mat.Matrix(0, 1).EpetraMatrix()->RightScale(*lcolsum_)))
       FOUR_C_THROW("lubrication scaling failed");
 
-    Teuchos::RCP<Epetra_Vector> sx = Extractor()->ExtractVector(b, 0);
-    Teuchos::RCP<Epetra_Vector> lx = Extractor()->ExtractVector(b, 1);
+    Teuchos::RCP<Epetra_Vector> sx = extractor()->ExtractVector(b, 0);
+    Teuchos::RCP<Epetra_Vector> lx = extractor()->ExtractVector(b, 1);
 
     if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (lx->Multiply(1.0, *lrowsum_, *lx, 0.0)) FOUR_C_THROW("lubrication scaling failed");
 
-    Extractor()->InsertVector(*sx, 0, b);
-    Extractor()->InsertVector(*lx, 1, b);
+    extractor()->InsertVector(*sx, 0, b);
+    extractor()->InsertVector(*lx, 1, b);
   }
 }  // scale_system
 
@@ -1550,24 +1551,24 @@ void EHL::Monolithic::unscale_solution(
 
   if (scaling_infnorm)
   {
-    Teuchos::RCP<Epetra_Vector> sy = Extractor()->ExtractVector(x, 0);
-    Teuchos::RCP<Epetra_Vector> ly = Extractor()->ExtractVector(x, 1);
+    Teuchos::RCP<Epetra_Vector> sy = extractor()->ExtractVector(x, 0);
+    Teuchos::RCP<Epetra_Vector> ly = extractor()->ExtractVector(x, 1);
 
     if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ly->Multiply(1.0, *lcolsum_, *ly, 0.0)) FOUR_C_THROW("lubrication scaling failed");
 
-    Extractor()->InsertVector(*sy, 0, x);
-    Extractor()->InsertVector(*ly, 1, x);
+    extractor()->InsertVector(*sy, 0, x);
+    extractor()->InsertVector(*ly, 1, x);
 
-    Teuchos::RCP<Epetra_Vector> sx = Extractor()->ExtractVector(b, 0);
-    Teuchos::RCP<Epetra_Vector> lx = Extractor()->ExtractVector(b, 1);
+    Teuchos::RCP<Epetra_Vector> sx = extractor()->ExtractVector(b, 0);
+    Teuchos::RCP<Epetra_Vector> lx = extractor()->ExtractVector(b, 1);
 
     if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (lx->ReciprocalMultiply(1.0, *lrowsum_, *lx, 0.0))
       FOUR_C_THROW("lubrication scaling failed");
 
-    Extractor()->InsertVector(*sx, 0, b);
-    Extractor()->InsertVector(*lx, 1, b);
+    extractor()->InsertVector(*sx, 0, b);
+    extractor()->InsertVector(*lx, 1, b);
 
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0, 0).EpetraMatrix();
     srowsum_->Reciprocal(*srowsum_);
@@ -1810,10 +1811,10 @@ void EHL::Monolithic::set_default_parameters()
 void EHL::Monolithic::prepare_output(bool force_prepare)
 {
   // prepare output (i.e. calculate stresses, strains, energies)
-  StructureField()->prepare_output(force_prepare);
+  structure_field()->prepare_output(force_prepare);
 
   // reset states
-  StructureField()->Discretization()->ClearState(true);
+  structure_field()->discretization()->ClearState(true);
 }
 /*----------------------------------------------------------------------*/
 
@@ -1899,7 +1900,7 @@ void EHL::Monolithic::LinCouetteForceDisp(Teuchos::RCP<CORE::LINALG::SparseMatri
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& dm_dd)
 {
   const int ndim = GLOBAL::Problem::Instance()->NDim();
-  DRT::Discretization& lub_dis = *lubrication_->LubricationField()->Discretization();
+  DRT::Discretization& lub_dis = *lubrication_->LubricationField()->discretization();
   Teuchos::RCP<Epetra_Vector> visc_vec =
       Teuchos::rcp(new Epetra_Vector(*lubrication_->LubricationField()->dof_row_map(1)));
   for (int i = 0; i < lub_dis.NodeRowMap()->NumMyElements(); ++i)
@@ -2059,7 +2060,7 @@ void EHL::Monolithic::LinCouetteForcePres(Teuchos::RCP<CORE::LINALG::SparseMatri
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->SlaveDofMap()));
   hinv_relV->Multiply(1., *h_inv, *relVel, 0.);
 
-  DRT::Discretization& lub_dis = *lubrication_->LubricationField()->Discretization();
+  DRT::Discretization& lub_dis = *lubrication_->LubricationField()->discretization();
   Teuchos::RCP<CORE::LINALG::SparseMatrix> dVisc_dp =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(lub_dis.dof_row_map(1)), 81));
 
@@ -2130,8 +2131,8 @@ void EHL::Monolithic::apply_dbc()
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(systemmatrix_->Matrix(1, 0)));
   Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ll =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(systemmatrix_->Matrix(1, 1)));
-  k_ss->ApplyDirichlet(*StructureField()->GetDBCMapExtractor()->CondMap(), true);
-  k_sl->ApplyDirichlet(*StructureField()->GetDBCMapExtractor()->CondMap(), false);
+  k_ss->ApplyDirichlet(*structure_field()->GetDBCMapExtractor()->CondMap(), true);
+  k_sl->ApplyDirichlet(*structure_field()->GetDBCMapExtractor()->CondMap(), false);
   k_ls->ApplyDirichlet(*lubrication_->LubricationField()->GetDBCMapExtractor()->CondMap(), false);
   k_ll->ApplyDirichlet(*lubrication_->LubricationField()->GetDBCMapExtractor()->CondMap(), true);
 
@@ -2150,7 +2151,7 @@ void EHL::Monolithic::apply_dbc()
 
 
   CORE::LINALG::apply_dirichlet_to_system(
-      *rhs_, *zeros_, *StructureField()->GetDBCMapExtractor()->CondMap());
+      *rhs_, *zeros_, *structure_field()->GetDBCMapExtractor()->CondMap());
   CORE::LINALG::apply_dirichlet_to_system(
       *rhs_, *zeros_, *lubrication_->LubricationField()->GetDBCMapExtractor()->CondMap());
 

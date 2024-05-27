@@ -144,7 +144,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() = 0;
 
     /// direct access to discretization
-    virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
+    virtual Teuchos::RCP<DRT::Discretization> discretization() = 0;
 
     /// Return MapExtractor for Dirichlet boundary conditions
     virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() = 0;

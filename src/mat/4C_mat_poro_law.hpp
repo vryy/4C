@@ -44,7 +44,7 @@ namespace MAT
           ) = 0;
 
       //! compute current porosity and save it
-      virtual void ComputePorosity(
+      virtual void compute_porosity(
           const double& refporosity,  //!< (i) initial/reference porosity at gauss point
           const double& press,        //!< (i) pressure at gauss point
           const double& J,            //!< (i) determinant of jacobian at gauss point
@@ -73,7 +73,7 @@ namespace MAT
       explicit PoroLawLinear(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
 
       //! evaluate constitutive relation for porosity and compute derivatives using reference
@@ -91,7 +91,7 @@ namespace MAT
           ) override;
 
       //! compute current porosity and save it
-      void ComputePorosity(
+      void compute_porosity(
           const double& refporosity,  //!< (i) initial/reference porosity at gauss point
           const double& press,        //!< (i) pressure at gauss point
           const double& J,            //!< (i) determinant of jacobian at gauss point
@@ -131,7 +131,7 @@ namespace MAT
       explicit PoroLawNeoHooke(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
       //! evaluate constitutive relation for porosity and compute derivatives
       void constitutive_derivatives(const Teuchos::ParameterList& params,  //!< (i) parameter list
@@ -147,7 +147,7 @@ namespace MAT
           ) override;
 
       //! compute current porosity and save it
-      void ComputePorosity(
+      void compute_porosity(
           const double& refporosity,  //!< (i) initial/reference porosity at gauss point
           const double& press,        //!< (i) pressure at gauss point
           const double& J,            //!< (i) determinant of jacobian at gauss point
@@ -185,7 +185,7 @@ namespace MAT
       explicit PoroLawConstant(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
       //! evaluate constitutive relation for porosity and compute derivatives
       void constitutive_derivatives(const Teuchos::ParameterList& params,  //!< (i) parameter list
@@ -201,7 +201,7 @@ namespace MAT
           ) override;
 
       //! compute current porosity and save it
-      void ComputePorosity(
+      void compute_porosity(
           const double& refporosity,  //!< (i) initial/reference porosity at gauss point
           const double& press,        //!< (i) pressure at gauss point
           const double& J,            //!< (i) determinant of jacobian at gauss point
@@ -230,7 +230,7 @@ namespace MAT
       explicit PoroLawIncompSkeleton(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
       //! evaluate constitutive relation for porosity and compute derivatives
       void constitutive_derivatives(const Teuchos::ParameterList& params,  //!< (i) parameter list
@@ -246,7 +246,7 @@ namespace MAT
           ) override;
 
       //! compute current porosity and save it
-      void ComputePorosity(
+      void compute_porosity(
           const double& refporosity,  //!< (i) initial/reference porosity at gauss point
           const double& press,        //!< (i) pressure at gauss point
           const double& J,            //!< (i) determinant of jacobian at gauss point
@@ -275,7 +275,7 @@ namespace MAT
       explicit PoroLawLinBiot(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
       //! evaluate constitutive relation for porosity and compute derivatives
       void constitutive_derivatives(const Teuchos::ParameterList& params,  //!< (i) parameter list
@@ -291,7 +291,7 @@ namespace MAT
           ) override;
 
       //! compute current porosity and save it
-      void ComputePorosity(
+      void compute_porosity(
           const double& refporosity,  //!< (i) initial/reference porosity at gauss point
           const double& press,        //!< (i) pressure at gauss point
           const double& J,            //!< (i) determinant of jacobian at gauss point
@@ -330,7 +330,7 @@ namespace MAT
       explicit PoroLawDensityDependent(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
       //! evaluate constitutive relation for porosity and compute derivatives
       void constitutive_derivatives(const Teuchos::ParameterList& params,  //!< (i) parameter list
@@ -346,7 +346,7 @@ namespace MAT
           ) override;
 
       //! compute current porosity and save it
-      void ComputePorosity(
+      void compute_porosity(
           const double& refporosity,  //!< (i) initial/reference porosity at gauss point
           const double& press,        //!< (i) pressure at gauss point
           const double& J,            //!< (i) determinant of jacobian at gauss point

@@ -31,7 +31,7 @@ FBI::FBIBinningGeometryCoupler::FBIBinningGeometryCoupler()
 {
 }
 /*----------------------------------------------------------------------*/
-void FBI::FBIBinningGeometryCoupler::SetupBinning(
+void FBI::FBIBinningGeometryCoupler::setup_binning(
     std::vector<Teuchos::RCP<DRT::Discretization>>& discretizations,
     Teuchos::RCP<const Epetra_Vector> structure_displacement)
 {
@@ -40,10 +40,10 @@ void FBI::FBIBinningGeometryCoupler::SetupBinning(
 
   std::vector<Teuchos::RCP<const Epetra_Vector>> disp_vec = {structure_displacement, disp2};
 
-  PartitionGeometry(discretizations, structure_displacement);
+  partition_geometry(discretizations, structure_displacement);
 }
 /*----------------------------------------------------------------------*/
-void FBI::FBIBinningGeometryCoupler::PartitionGeometry(
+void FBI::FBIBinningGeometryCoupler::partition_geometry(
     std::vector<Teuchos::RCP<DRT::Discretization>>& discretizations,
     Teuchos::RCP<const Epetra_Vector> structure_displacement)
 {
@@ -107,7 +107,7 @@ void FBI::FBIBinningGeometryCoupler::Setup(
   Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("FBI::FBICoupler::Setup");
   Teuchos::TimeMonitor monitor(*t);
 
-  SetupBinning(discretizations, structure_displacement);
+  setup_binning(discretizations, structure_displacement);
 
   FBI::FBIGeometryCoupler::Setup(discretizations, structure_displacement);
 }

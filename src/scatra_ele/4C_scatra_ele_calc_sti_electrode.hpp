@@ -69,7 +69,7 @@ namespace DRT
           ) override;
 
       //! calculate element matrix and element right-hand side vector
-      void Sysmat(DRT::Element* ele,                  ///< current element
+      void sysmat(DRT::Element* ele,                  ///< current element
           CORE::LINALG::SerialDenseMatrix& emat,      ///< element matrix
           CORE::LINALG::SerialDenseVector& erhs,      ///< element right-hand side vector
           CORE::LINALG::SerialDenseVector& subgrdiff  ///< subgrid diffusivity scaling vector
@@ -81,7 +81,7 @@ namespace DRT
       );
 
       //! element matrix and right-hand side vector contributions arising from Joule's heat
-      void CalcMatAndRhsJoule(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+      void calc_mat_and_rhs_joule(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
           CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
           const double& timefacfac,  //!< domain integration factor times time integration factor
           const double& rhsfac  //!< domain integration factor times time integration factor for
@@ -89,7 +89,7 @@ namespace DRT
           ) override;
 
       //! element matrix and right-hand side vector contributions arising from heat of mixing
-      void CalcMatAndRhsMixing(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+      void calc_mat_and_rhs_mixing(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
           CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
           const double& timefacfac,  //!< domain integration factor times time integration factor
           const double& rhsfac  //!< domain integration factor times time integration factor for
@@ -97,7 +97,7 @@ namespace DRT
           ) override;
 
       //! element matrix and right-hand side vector contributions arising from Soret effect
-      void CalcMatAndRhsSoret(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+      void calc_mat_and_rhs_soret(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
           CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
           const double& timefacfac,  //!< domain integration factor times time integration factor
           const double& rhsfac  //!< domain integration factor times time integration factor for
@@ -106,19 +106,19 @@ namespace DRT
 
       //! provide element matrix with linearizations of Joule's heat term in discrete thermo
       //! residuals w.r.t. scatra dofs
-      void CalcMatJouleOD(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+      void calc_mat_joule_od(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
           const double& timefacfac  //!< domain integration factor times time integration factor
           ) override;
 
       //! provide element matrix with linearizations of heat of mixing term in discrete thermo
       //! residuals w.r.t. scatra dofs
-      void CalcMatMixingOD(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+      void calc_mat_mixing_od(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
           const double& timefacfac  //!< domain integration factor times time integration factor
           ) override;
 
       //! provide element matrix with linearizations of Soret effect term in discrete thermo
       //! residuals w.r.t. scatra dofs
-      void CalcMatSoretOD(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+      void calc_mat_soret_od(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
           const double& timefacfac  //!< domain integration factor times time integration factor
           ) override;
 
@@ -130,12 +130,12 @@ namespace DRT
           ) override;
 
       //! get material parameters
-      void GetMaterialParams(const DRT::Element* ele,  //!< current element
-          std::vector<double>& densn,                  //!< density at t_(n)
-          std::vector<double>& densnp,                 //!< density at t_(n+1) or t_(n+alpha_F)
-          std::vector<double>& densam,                 //!< density at t_(n+alpha_M)
-          double& visc,                                //!< fluid viscosity
-          const int iquad                              //!< ID of current integration point
+      void get_material_params(const DRT::Element* ele,  //!< current element
+          std::vector<double>& densn,                    //!< density at t_(n)
+          std::vector<double>& densnp,                   //!< density at t_(n+1) or t_(n+alpha_F)
+          std::vector<double>& densam,                   //!< density at t_(n+alpha_M)
+          double& visc,                                  //!< fluid viscosity
+          const int iquad                                //!< ID of current integration point
           ) override;
 
       //! evaluate Soret material

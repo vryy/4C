@@ -44,7 +44,7 @@ namespace FS3I
     void DoFPSIStep();
 
     /// Scatra step
-    void DoScatraStep();
+    void do_scatra_step();
 
     //! routine for preparing time step
     virtual void prepare_time_step();

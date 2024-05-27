@@ -124,7 +124,7 @@ void FS3I::ACFSI::Init()
 
   if (not IsRealtiveEqualTo(dt_, fsiperssisteps * fsi_->fluid_field()->Dt(), 1.0))
     FOUR_C_THROW("Your fluid time step does not match!");
-  if (not IsRealtiveEqualTo(dt_, fsiperssisteps * fsi_->StructureField()->Dt(), 1.0))
+  if (not IsRealtiveEqualTo(dt_, fsiperssisteps * fsi_->structure_field()->Dt(), 1.0))
     FOUR_C_THROW("Your structure time step does not match!");
   if (not IsRealtiveEqualTo(dt_, fsiperssisteps * fsi_->ale_field()->Dt(), 1.0))
     FOUR_C_THROW("Your ale time step does not match!");
@@ -152,7 +152,7 @@ void FS3I::ACFSI::Setup()
   meanmanager_ = Teuchos::rcp(new FS3I::MeanManager(*fsi_->fluid_field()->dof_row_map(0),
       *scatravec_[0]->ScaTraField()->dof_row_map(), *fsi_->fluid_field()->PressureRowMap()));
 
-  structureincrement_ = CORE::LINALG::CreateVector(*fsi_->StructureField()->dof_row_map(0), true);
+  structureincrement_ = CORE::LINALG::CreateVector(*fsi_->structure_field()->dof_row_map(0), true);
   fluidincrement_ = CORE::LINALG::CreateVector(*fsi_->fluid_field()->dof_row_map(0), true);
   aleincrement_ = CORE::LINALG::CreateVector(*fsi_->ale_field()->dof_row_map(), true);
   fluidphinp_lp_ = CORE::LINALG::CreateVector(*scatravec_[0]->ScaTraField()->dof_row_map(), true);
@@ -187,7 +187,7 @@ void FS3I::ACFSI::read_restart()
     if (not restartfrompartfsi)  // standard restart
     {
       IO::DiscretizationReader fluidreader = IO::DiscretizationReader(
-          fsi_->fluid_field()->Discretization(), input_control_file, restart);
+          fsi_->fluid_field()->discretization(), input_control_file, restart);
       meanmanager_->read_restart(fluidreader);
 
       fsiisperiodic_ = (bool)fluidreader.ReadInt("fsi_periodic_flag");
@@ -201,7 +201,7 @@ void FS3I::ACFSI::read_restart()
         const int beginnperiodstep = get_step_of_beginn_of_this_period_and_prepare_reading(
             fsi_->fluid_field()->Step(), fsi_->fluid_field()->Time(), fsi_->fluid_field()->Dt());
         IO::DiscretizationReader fluidreaderbeginnperiod = IO::DiscretizationReader(
-            fsi_->fluid_field()->Discretization(), input_control_file, beginnperiodstep);
+            fsi_->fluid_field()->discretization(), input_control_file, beginnperiodstep);
 
         // some safety check:
         Teuchos::RCP<Epetra_Vector> WallShearStress_lp_new =
@@ -233,7 +233,7 @@ void FS3I::ACFSI::read_restart()
     {
       // AC-FSI specific input
       IO::DiscretizationReader reader = IO::DiscretizationReader(
-          fsi_->fluid_field()->Discretization(), input_control_file, restart);
+          fsi_->fluid_field()->discretization(), input_control_file, restart);
       reader.ReadVector(wall_shear_stress_lp_, "wss");
     }
   }
@@ -248,7 +248,7 @@ void FS3I::ACFSI::read_restart()
 void FS3I::ACFSI::Timeloop()
 {
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   // prepare time loop
   fsi_->PrepareTimeloop();
@@ -415,7 +415,7 @@ void FS3I::ACFSI::small_time_scale_outer_loop_iter_stagg()
   {
     itnum++;
 
-    structureincrement_->Update(1.0, *fsi_->StructureField()->Dispnp(), 0.0);
+    structureincrement_->Update(1.0, *fsi_->structure_field()->Dispnp(), 0.0);
     fluidincrement_->Update(1.0, *fsi_->fluid_field()->Velnp(), 0.0);
     aleincrement_->Update(1.0, *fsi_->ale_field()->Dispnp(), 0.0);
 
@@ -665,8 +665,8 @@ void FS3I::ACFSI::DoFSIStepSubcycled(const int subcyclingsteps)
     if (subcyclingiter != 1)  // for the first subcycling step we...
     {
       constexpr bool force_prepare = false;
-      fsi_->prepare_output(force_prepare);  //... will do this in UpdateAndOutput()
-      fsi_->Update();                       //... will do this in UpdateAndOutput()
+      fsi_->prepare_output(force_prepare);  //... will do this in update_and_output()
+      fsi_->update();                       //... will do this in update_and_output()
       fsi_->prepare_time_step();            //... have already done this in prepare_time_step()
       // now fix the step_ counter. When subcycling the fsi subproblem we do not want to proceed the
       // step_ AND the time_, but just the time_.
@@ -757,7 +757,7 @@ double FS3I::ACFSI::get_step_of_one_period_ago_and_prepare_reading(
 
     // AC-FSI specific input
     IO::DiscretizationReader reader =
-        IO::DiscretizationReader(fsi_->fluid_field()->Discretization(),
+        IO::DiscretizationReader(fsi_->fluid_field()->discretization(),
             GLOBAL::Problem::Instance()->InputControlFile(), previousperiodstep);
 
     double previousperiodtime = reader.ReadDouble("time");
@@ -800,7 +800,7 @@ double FS3I::ACFSI::get_step_of_beginn_of_this_period_and_prepare_reading(
 
     // AC-FSI specific input
     IO::DiscretizationReader reader =
-        IO::DiscretizationReader(fsi_->fluid_field()->Discretization(),
+        IO::DiscretizationReader(fsi_->fluid_field()->discretization(),
             GLOBAL::Problem::Instance()->InputControlFile(), teststep);
 
     double testtime = reader.ReadDouble("time");
@@ -865,10 +865,10 @@ void FS3I::ACFSI::SetTimeAndStepInFSI(const double time, const int step)
   // Note: The last function did not touch the subfields, so we have to do it yourself
 
   // Set time and step in structure field
-  fsi_->StructureField()->set_time(time - fsi_->Dt());
-  fsi_->StructureField()->SetTimen(time);
-  fsi_->StructureField()->SetStep(step - 1);
-  fsi_->StructureField()->SetStepn(step);
+  fsi_->structure_field()->set_time(time - fsi_->Dt());
+  fsi_->structure_field()->SetTimen(time);
+  fsi_->structure_field()->SetStep(step - 1);
+  fsi_->structure_field()->SetStepn(step);
 
   // Set time and step in fluid field
   fsi_->fluid_field()->SetTimeStep(time, step);
@@ -933,7 +933,7 @@ void FS3I::ACFSI::small_time_scale_update_and_output()
   // Update field variables
   constexpr bool force_prepare = false;
   fsi_->prepare_output(force_prepare);
-  fsi_->Update();
+  fsi_->update();
   UpdateScatraFields();
 
   // Update the isperiodic_ flags
@@ -962,7 +962,7 @@ void FS3I::ACFSI::FsiOutput()
   //     * Discretizations.
 
   // structure output
-  fsi_->StructureField()->Output();
+  fsi_->structure_field()->Output();
   if (coupling == fsi_iter_monolithicstructuresplit) fsi_->OutputLambda();
 
   // fluid output
@@ -982,7 +982,7 @@ void FS3I::ACFSI::FsiOutput()
     Teuchos::RCP<IO::DiscretizationWriter> fluiddiskwriter = fsi_->fluid_field()->DiscWriter();
 
     // fluiddiskwriter->WriteVector("wss", fsi_->fluid_field()->calculate_wall_shear_stresses());
-    meanmanager_->WriteRestart(fluiddiskwriter);
+    meanmanager_->write_restart(fluiddiskwriter);
 
     fluiddiskwriter->WriteInt("fsi_periodic_flag", (int)fsiisperiodic_);
     fluiddiskwriter->WriteInt("scatra_periodic_flag", (int)scatraisperiodic_);
@@ -1075,7 +1075,7 @@ bool FS3I::ACFSI::part_fs3i_convergence_ckeck(const int itnum)
 
   // calculate fsi increments. scatra increment is already done in the scatra fields convergence
   // check
-  structureincrement_->Update(1.0, *fsi_->StructureField()->Dispnp(), -1.0);
+  structureincrement_->Update(1.0, *fsi_->structure_field()->Dispnp(), -1.0);
   fluidincrement_->Update(1.0, *fsi_->fluid_field()->Velnp(), -1.0);
   aleincrement_->Update(1.0, *fsi_->ale_field()->Dispnp(), -1.0);
 
@@ -1101,7 +1101,7 @@ bool FS3I::ACFSI::part_fs3i_convergence_ckeck(const int itnum)
   scatra->Norm2(&scatranorm_L2);
   if (scatranorm_L2 < 1e-05) scatranorm_L2 = 1.0;
   double structurenorm_L2(0.0);
-  fsi_->StructureField()->Dispnp()->Norm2(&structurenorm_L2);
+  fsi_->structure_field()->Dispnp()->Norm2(&structurenorm_L2);
   if (structurenorm_L2 < 1e-05) structurenorm_L2 = 1.0;
   double fluidnorm_L2(0.0);
   fsi_->fluid_field()->Velnp()->Norm2(&fluidnorm_L2);
@@ -1173,7 +1173,7 @@ void FS3I::ACFSI::check_if_times_and_steps_and_dts_match()
 
   // check times
   const double fluidtime = fsi_->fluid_field()->Time();
-  const double structuretime = fsi_->StructureField()->Time();
+  const double structuretime = fsi_->structure_field()->Time();
   const double aletime = fsi_->ale_field()->Time();
   const double fsitime = fsi_->Time();
   const double fluidscatratime = scatravec_[0]->ScaTraField()->Time();
@@ -1196,7 +1196,7 @@ void FS3I::ACFSI::check_if_times_and_steps_and_dts_match()
 
   // check steps
   const int fluidstep = fsi_->fluid_field()->Step();
-  const int structurestep = fsi_->StructureField()->Step();
+  const int structurestep = fsi_->structure_field()->Step();
   const int alestep = fsi_->ale_field()->Step();
   const int fsistep = fsi_->Step();
   const int fluidscatrastep = scatravec_[0]->ScaTraField()->Step();
@@ -1222,7 +1222,7 @@ void FS3I::ACFSI::check_if_times_and_steps_and_dts_match()
       (double)(GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<int>(
           "FSI_STEPS_PER_SCATRA_STEP"));
   const double fluiddt = fsi_->fluid_field()->Dt() * fsiperssisteps;
-  const double structuredt = fsi_->StructureField()->Dt() * fsiperssisteps;
+  const double structuredt = fsi_->structure_field()->Dt() * fsiperssisteps;
   const double aledt = fsi_->ale_field()->Dt() * fsiperssisteps;
   const double fsidt = fsi_->Dt() * fsiperssisteps;
   const double fluidscatradt = scatravec_[0]->ScaTraField()->Dt();

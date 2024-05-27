@@ -23,18 +23,18 @@ void CONTACT::NitscheStrategyFpi::set_state(
   CONTACT::NitscheStrategyPoro::set_state(statename, vec);
   if (statename == MORTAR::state_new_displacement)
   {
-    DoContactSearch();
+    do_contact_search();
   }
 }
 
-void CONTACT::NitscheStrategyFpi::DoContactSearch()
+void CONTACT::NitscheStrategyFpi::do_contact_search()
 {
   for (auto& interface : interface_)
   {
     interface->Initialize();
     interface->evaluate_search_binarytree();
     interface->evaluate_nodal_normals();
-    interface->ExportNodalNormals();
+    interface->export_nodal_normals();
   }
 }
 

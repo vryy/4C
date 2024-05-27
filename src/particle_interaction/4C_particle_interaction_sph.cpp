@@ -170,10 +170,10 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
   }
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::WriteRestart() const
+void PARTICLEINTERACTION::ParticleInteractionSPH::write_restart() const
 {
   // call base class function
-  ParticleInteractionBase::WriteRestart();
+  ParticleInteractionBase::write_restart();
 }
 
 void PARTICLEINTERACTION::ParticleInteractionSPH::read_restart(
@@ -330,9 +330,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
   }
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::PreEvaluateTimeStep()
+void PARTICLEINTERACTION::ParticleInteractionSPH::pre_evaluate_time_step()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionSPH::PreEvaluateTimeStep");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionSPH::pre_evaluate_time_step");
 
   // prescribe open boundary states
   if (dirichletopenboundary_) dirichletopenboundary_->prescribe_open_boundary_states(time_);
@@ -405,7 +405,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::post_evaluate_time_step(
 
 double PARTICLEINTERACTION::ParticleInteractionSPH::max_interaction_distance() const
 {
-  return MaxParticleRadius();
+  return max_particle_radius();
 }
 
 void PARTICLEINTERACTION::ParticleInteractionSPH::distribute_interaction_history() const

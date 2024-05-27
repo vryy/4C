@@ -55,10 +55,10 @@ void MIXTURE::MixtureConstituentElastHyper::Evaluate(const CORE::LINALG::Matrix<
     CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, const int gp,
     const int eleGID)
 {
-  if (PrestressStrategy() != nullptr)
+  if (prestress_strategy() != nullptr)
   {
     MAT::ElastHyperEvaluateElasticPart(
-        F, PrestretchTensor(gp), S_stress, cmat, Summands(), SummandProperties(), gp, eleGID);
+        F, prestretch_tensor(gp), S_stress, cmat, Summands(), SummandProperties(), gp, eleGID);
   }
   else
   {
@@ -74,7 +74,7 @@ void MIXTURE::MixtureConstituentElastHyper::EvaluateElasticPart(const CORE::LINA
     CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
   static CORE::LINALG::Matrix<3, 3> iFin(false);
-  iFin.MultiplyNN(iFextin, PrestretchTensor(gp));
+  iFin.MultiplyNN(iFextin, prestretch_tensor(gp));
 
   MAT::ElastHyperEvaluateElasticPart(
       F, iFin, S_stress, cmat, Summands(), SummandProperties(), gp, eleGID);

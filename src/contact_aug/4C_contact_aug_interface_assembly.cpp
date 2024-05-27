@@ -23,25 +23,25 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::INTERFACE::AssembleStrategy::AssembleStrategy(Interface* inter)
-    : inter_(inter),
-      interface_data_ptr_(Inter().shared_interface_data_ptr().get()),
-      idiscret_(Inter().Discret())
+CONTACT::AUG::INTERFACE::AssembleStrategy::AssembleStrategy(Interface* interface)
+    : inter_(interface),
+      interface_data_ptr_(inter().shared_interface_data_ptr().get()),
+      idiscret_(inter().Discret())
 {
   // empty
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Map& CONTACT::AUG::INTERFACE::AssembleStrategy::SlNodeRowMap(
+const Epetra_Map& CONTACT::AUG::INTERFACE::AssembleStrategy::sl_node_row_map(
     const enum MapType map_type) const
 {
   switch (map_type)
   {
     case MapType::all_slave_nodes:
-      return *IData().SNodeRowMap();
+      return *i_data().SNodeRowMap();
     case MapType::active_slave_nodes:
-      return *IData().ActiveNodes();
+      return *i_data().ActiveNodes();
     default:
       FOUR_C_THROW("Unknown MapType! (enum=%d)", map_type);
       exit(EXIT_FAILURE);
@@ -50,15 +50,15 @@ const Epetra_Map& CONTACT::AUG::INTERFACE::AssembleStrategy::SlNodeRowMap(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Map& CONTACT::AUG::INTERFACE::AssembleStrategy::SlNDofRowMap(
+const Epetra_Map& CONTACT::AUG::INTERFACE::AssembleStrategy::sl_n_dof_row_map(
     const enum MapType map_type) const
 {
   switch (map_type)
   {
     case MapType::all_slave_nodes:
-      return *IData().SNDofRowMap();
+      return *i_data().SNDofRowMap();
     case MapType::active_slave_nodes:
-      return *IData().ActiveN();
+      return *i_data().ActiveN();
     default:
       FOUR_C_THROW("Unknown MapType! (enum=%d)", map_type);
       exit(EXIT_FAILURE);
@@ -81,13 +81,13 @@ template <typename assemble_policy>
 void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::AssembleBMatrix(
     CORE::LINALG::SparseMatrix& BMatrix) const
 {
-  const int nummyndof = IData().SNDofRowMap()->NumMyElements();
-  const int* myndofs = IData().SNDofRowMap()->MyGlobalElements();
+  const int nummyndof = i_data().SNDofRowMap()->NumMyElements();
+  const int* myndofs = i_data().SNDofRowMap()->MyGlobalElements();
 
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
-  const int nummysnodes = IData().SNodeRowMap()->NumMyElements();
-  const int* mysnodegids = IData().SNodeRowMap()->MyGlobalElements();
+  const int nummysnodes = i_data().SNodeRowMap()->NumMyElements();
+  const int* mysnodegids = i_data().SNodeRowMap()->MyGlobalElements();
 
   if (nummysnodes != nummyndof) FOUR_C_THROW("Dimension mismatch");
 
@@ -99,7 +99,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
     Node* cnode = dynamic_cast<Node*>(node);
     if (not cnode) FOUR_C_THROW("Dynamic cast failed!");
 
-    FOUR_C_ASSERT(cnode->Owner() == Inter().Comm().MyPID(), "Node ownership inconsistency!");
+    FOUR_C_ASSERT(cnode->Owner() == inter().Comm().MyPID(), "Node ownership inconsistency!");
 
     // get the corresponding normal dof gid
     const int rowId = myndofs[i];
@@ -129,12 +129,12 @@ template <typename assemble_policy>
 void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Add_Var_A_GG(
     Epetra_Vector& sl_force_g, const Epetra_Vector& cnVec) const
 {
-  Epetra_Vector sl_force_g_col(*IData().SDofColMap(), true);
+  Epetra_Vector sl_force_g_col(*i_data().SDofColMap(), true);
   bool isfilled = false;
 
   // loop over all active augmented slave nodes of the interface
-  const int nummyanodes = IData().ActiveNodes()->NumMyElements();
-  const int* myanodegids = IData().ActiveNodes()->MyGlobalElements();
+  const int nummyanodes = i_data().ActiveNodes()->NumMyElements();
+  const int* myanodegids = i_data().ActiveNodes()->MyGlobalElements();
 
   for (int i = 0; i < nummyanodes; ++i)
   {
@@ -155,13 +155,13 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Add_Va
   // did any processor add contributions?
   int lfilled = (isfilled ? 1 : 0);
   int gfilled = 0;
-  Inter().Comm().MaxAll(&lfilled, &gfilled, 1);
+  inter().Comm().MaxAll(&lfilled, &gfilled, 1);
 
   // collect data
   if (gfilled > 0)
   {
-    Epetra_Vector sl_force_g_row(*IData().SDofRowMap());
-    Epetra_Export exCol2Row(*IData().SDofColMap(), *IData().SDofRowMap());
+    Epetra_Vector sl_force_g_row(*i_data().SDofRowMap());
+    Epetra_Export exCol2Row(*i_data().SDofColMap(), *i_data().SDofRowMap());
 
     int err = sl_force_g_row.Export(sl_force_g_col, exCol2Row, Add);
     if (err) FOUR_C_THROW("Export failed with error code %d.", err);
@@ -177,12 +177,12 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<
     assemble_policy>::assemble_sl_force_lm_inactive(Epetra_Vector& sl_force_lm_inactive,
     const Epetra_Vector& cnVec, const double inactive_scale) const
 {
-  Epetra_Vector sl_force_lmi_col(*IData().SDofColMap(), true);
+  Epetra_Vector sl_force_lmi_col(*i_data().SDofColMap(), true);
   bool isfilled = false;
 
   // loop over all inactive augmented slave nodes of the interface
-  const int nummyinodes = IData().InActiveNodes()->NumMyElements();
-  const int* myinodegids = IData().InActiveNodes()->MyGlobalElements();
+  const int nummyinodes = i_data().InActiveNodes()->NumMyElements();
+  const int* myinodegids = i_data().InActiveNodes()->MyGlobalElements();
 
   for (int i = 0; i < nummyinodes; ++i)
   {
@@ -205,13 +205,13 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<
   // did any processor add contributions?
   int lfilled = (isfilled ? 1 : 0);
   int gfilled = 0;
-  Inter().Comm().MaxAll(&lfilled, &gfilled, 1);
+  inter().Comm().MaxAll(&lfilled, &gfilled, 1);
 
   // collect data
   if (gfilled > 0)
   {
-    Epetra_Vector sl_force_lmi_row(*IData().SDofRowMap());
-    Epetra_Export exCol2Row(*IData().SDofColMap(), *IData().SDofRowMap());
+    Epetra_Vector sl_force_lmi_row(*i_data().SDofRowMap());
+    Epetra_Export exCol2Row(*i_data().SDofColMap(), *i_data().SDofRowMap());
 
     int err = sl_force_lmi_row.Export(sl_force_lmi_col, exCol2Row, Add);
     if (err) FOUR_C_THROW("Export failed with error code %d.", err);
@@ -240,8 +240,8 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<
     const Epetra_Vector& cnVec, const double inactive_scale) const
 {
   // loop over all active augmented slave nodes of the interface
-  const int nummyinodes = IData().InActiveNodes()->NumMyElements();
-  const int* myinodegids = IData().InActiveNodes()->MyGlobalElements();
+  const int nummyinodes = i_data().InActiveNodes()->NumMyElements();
+  const int* myinodegids = i_data().InActiveNodes()->MyGlobalElements();
 
   for (int i = 0; i < nummyinodes; ++i)
   {
@@ -276,8 +276,8 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::assemb
 {
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
-  const int nummyanodes = IData().ActiveNodes()->NumMyElements();
-  const int* myanodegids = IData().ActiveNodes()->MyGlobalElements();
+  const int nummyanodes = i_data().ActiveNodes()->NumMyElements();
+  const int* myanodegids = i_data().ActiveNodes()->MyGlobalElements();
 
   for (int i = 0; i < nummyanodes; ++i)
   {
@@ -325,8 +325,8 @@ void CONTACT::AUG::STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrategy<
     const Epetra_Vector& cnVec) const
 {
   // loop over all active augmented slave nodes of the interface
-  const int nummyanodes = this->IData().ActiveNodes()->NumMyElements();
-  const int* myanodegids = this->IData().ActiveNodes()->MyGlobalElements();
+  const int nummyanodes = this->i_data().ActiveNodes()->NumMyElements();
+  const int* myanodegids = this->i_data().ActiveNodes()->MyGlobalElements();
 
   for (int i = 0; i < nummyanodes; ++i)
   {
@@ -401,8 +401,8 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::assemb
     CORE::LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const
 {
   // loop over all active augmented slave nodes of the interface
-  const int nummyanodes = IData().ActiveNodes()->NumMyElements();
-  const int* myanodegids = IData().ActiveNodes()->MyGlobalElements();
+  const int nummyanodes = i_data().ActiveNodes()->NumMyElements();
+  const int* myanodegids = i_data().ActiveNodes()->MyGlobalElements();
 
   for (int i = 0; i < nummyanodes; ++i)
   {
@@ -527,11 +527,11 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<
     const enum MapType map_type) const
 {
   // loop over all active augmented slave nodes of the interface
-  const Epetra_Map& snode_rowmap = this->SlNodeRowMap(map_type);
+  const Epetra_Map& snode_rowmap = this->sl_node_row_map(map_type);
   const int nummynodes = snode_rowmap.NumMyElements();
   const int* mynodegids = snode_rowmap.MyGlobalElements();
 
-  const Epetra_Map& ndof_rowmap = this->SlNDofRowMap(map_type);
+  const Epetra_Map& ndof_rowmap = this->sl_n_dof_row_map(map_type);
   if (not ndof_rowmap.PointSameAs(snode_rowmap)) FOUR_C_THROW("Map mismatch!");
 
   for (int i = 0; i < nummynodes; ++i)

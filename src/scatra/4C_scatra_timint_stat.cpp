@@ -144,7 +144,7 @@ void SCATRA::TimIntStationary::add_neumann_to_residual()
 /*----------------------------------------------------------------------*
  | AVM3-based scale separation                                 vg 03/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::AVM3Separation()
+void SCATRA::TimIntStationary::av_m3_separation()
 {
   // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
@@ -219,10 +219,10 @@ void SCATRA::TimIntStationary::Update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::WriteRestart() const
+void SCATRA::TimIntStationary::write_restart() const
 {
   // call base class routine
-  ScaTraTimIntImpl::WriteRestart();
+  ScaTraTimIntImpl::write_restart();
 
   // This feature enables starting a time-dependent simulation from
   // a non-trivial steady-state solution that was calculated before.

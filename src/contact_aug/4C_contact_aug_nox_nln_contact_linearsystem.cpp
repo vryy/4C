@@ -65,7 +65,7 @@ NOX::NLN::CONTACT::LinearSystem::LinearSystem(Teuchos::ParameterList& printParam
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::LINALG::SolverParams NOX::NLN::CONTACT::LinearSystem::SetSolverOptions(
+CORE::LINALG::SolverParams NOX::NLN::CONTACT::LinearSystem::set_solver_options(
     Teuchos::ParameterList& p, Teuchos::RCP<CORE::LINALG::Solver>& solverPtr,
     const NOX::NLN::SolutionType& solverType)
 {
@@ -186,7 +186,7 @@ void NOX::NLN::CONTACT::LinearSystem::complete_solution_after_solve(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::NLN::SolutionType NOX::NLN::CONTACT::LinearSystem::GetActiveLinSolver(
+NOX::NLN::SolutionType NOX::NLN::CONTACT::LinearSystem::get_active_lin_solver(
     const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers,
     Teuchos::RCP<CORE::LINALG::Solver>& currSolver)
 {

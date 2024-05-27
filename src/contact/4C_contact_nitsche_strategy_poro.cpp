@@ -34,7 +34,7 @@ void CONTACT::NitscheStrategyPoro::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector
   CONTACT::NitscheStrategy::ApplyForceStiffCmt(dis, kt, f, step, iter, predictor);
 
   // Evaluation for all interfaces
-  fp_ = CreateRhsBlockPtr(CONTACT::VecBlockType::porofluid);
+  fp_ = create_rhs_block_ptr(CONTACT::VecBlockType::porofluid);
   kpp_ = create_matrix_block_ptr(CONTACT::MatBlockType::porofluid_porofluid);
   kpd_ = create_matrix_block_ptr(CONTACT::MatBlockType::porofluid_displ);
   kdp_ = create_matrix_block_ptr(CONTACT::MatBlockType::displ_porofluid);
@@ -120,7 +120,7 @@ void CONTACT::NitscheStrategyPoro::SetParentState(
     CONTACT::NitscheStrategy::SetParentState(statename, vec);
 }
 
-Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategyPoro::SetupRhsBlockVec(
+Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategyPoro::setup_rhs_block_vec(
     const enum CONTACT::VecBlockType& bt) const
 {
   switch (bt)
@@ -129,7 +129,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategyPoro::SetupRhsBlockVec(
       return Teuchos::rcp(
           new Epetra_FEVector(*GLOBAL::Problem::Instance()->GetDis("porofluid")->dof_row_map()));
     default:
-      return CONTACT::NitscheStrategy::SetupRhsBlockVec(bt);
+      return CONTACT::NitscheStrategy::setup_rhs_block_vec(bt);
   }
 }
 
@@ -147,7 +147,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategyPoro::GetRhsBlockPtr(
   }
 }
 
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategyPoro::SetupMatrixBlockPtr(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategyPoro::setup_matrix_block_ptr(
     const enum CONTACT::MatBlockType& bt)
 {
   switch (bt)
@@ -164,7 +164,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategyPoro::SetupMatr
               *GLOBAL::Problem::Instance()->GetDis("porofluid")->dof_row_map()),
           100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
     default:
-      return CONTACT::NitscheStrategy::SetupMatrixBlockPtr(bt);
+      return CONTACT::NitscheStrategy::setup_matrix_block_ptr(bt);
   }
 }
 

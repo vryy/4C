@@ -29,7 +29,7 @@ MAT::PAR::NewmanMultiScale::NewmanMultiScale(Teuchos::RCP<CORE::MAT::PAR::Materi
 /*--------------------------------------------------------------------*
  | create instance of Newman multi-scale material          fang 07/17 |
  *--------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::NewmanMultiScale::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::NewmanMultiScale::create_material()
 {
   return Teuchos::rcp(new MAT::NewmanMultiScale(this));
 }

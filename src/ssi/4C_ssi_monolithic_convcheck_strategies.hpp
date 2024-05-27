@@ -83,14 +83,14 @@ namespace SSI
     //! \param incnorm  (out) L2 norm of increment
     //! \param resnorm  (out) L2 norm of residual
     //! \param dofnorm  (out) L2 norm of state
-    void CheckL2Norm(double& incnorm, double& resnorm, double& dofnorm) const;
+    void check_l2_norm(double& incnorm, double& resnorm, double& dofnorm) const;
 
     //! decide, if Newton loop should be exited, if converged or maximum number of steps are reached
     //!
     //! \param ssi_mono   ssi time integration
     //! \param converged  convergence of Newton loop
     //! \return  decision on exit
-    bool ComputeExit(const SSI::SsiMono& ssi_mono, bool converged) const;
+    bool compute_exit(const SSI::SsiMono& ssi_mono, bool converged) const;
 
     //! maximum number of Newton-Raphson iteration steps
     const int itermax_;

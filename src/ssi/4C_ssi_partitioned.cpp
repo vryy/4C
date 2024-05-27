@@ -47,7 +47,7 @@ void SSI::SSIPart::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
         "degrees of freedom!");
   }
 
-  if (IsScaTraManifold()) FOUR_C_THROW("Manifold not implemented for partitioned SSI");
+  if (is_sca_tra_manifold()) FOUR_C_THROW("Manifold not implemented for partitioned SSI");
 }
 
 /*----------------------------------------------------------------------*/

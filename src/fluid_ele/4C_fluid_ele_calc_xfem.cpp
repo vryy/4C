@@ -826,7 +826,7 @@ namespace DRT
       CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
       CORE::LINALG::Matrix<nsd_, nen_> egridv(true);
 
-      if (ele->IsAle()) my::GetGridDispVelALE(dis, lm, edispnp, egridv);
+      if (ele->IsAle()) my::get_grid_disp_vel_ale(dis, lm, edispnp, egridv);
       // add displacement when fluid nodes move in the ALE case
       if (ele->IsAle()) my::xyze_ += edispnp;
 
@@ -1079,20 +1079,20 @@ namespace DRT
             Teuchos::RCP<CORE::GEO::CUT::Position> pos =
                 CORE::GEO::CUT::PositionFactory::build_position<nsd_, distype>(my::xyze_, x_gp_lin);
             pos->Compute();
-            pos->LocalCoordinates(rst);
+            pos->local_coordinates(rst);
 
             //        if (!levelset_cut)
             //        {
             //          // project gaussian point from linearized interface to warped side (get/set
             //          local side coordinates in SideImpl) CORE::LINALG::Matrix<2,1> xi_side(true);
             //
-            //          //          side_impl[sid]->ProjectOnSide(x_gp_lin, x_side, xi_side);
-            //          si->ProjectOnSide(x_gp_lin, x_side, xi_side);
+            //          //          side_impl[sid]->project_on_side(x_gp_lin, x_side, xi_side);
+            //          si->project_on_side(x_gp_lin, x_side, xi_side);
             //        }
             //        else x_side = x_gp_lin;
 
 
-            // TODO unify ProjectOnSide and Evaluate for different spatial dimensions of boundary
+            // TODO unify project_on_side and Evaluate for different spatial dimensions of boundary
             // slave element and volumetric slave element
             if (is_mesh_coupling_side)
             {
@@ -1100,7 +1100,7 @@ namespace DRT
               // coordinates in SideImpl)
               CORE::LINALG::Matrix<3, 1> xi_side(true);
               // project on boundary element
-              si->ProjectOnSide(x_gp_lin, x_side, xi_side);
+              si->project_on_side(x_gp_lin, x_side, xi_side);
 
               if (cond_type == INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID)
                 ci->Evaluate(x_side);  // evaluate embedded element's shape functions at gauss-point
@@ -1358,7 +1358,7 @@ namespace DRT
       CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
       CORE::LINALG::Matrix<nsd_, nen_> egridv(true);
 
-      if (ele->IsAle()) my::GetGridDispVelALE(dis, lm, edispnp, egridv);
+      if (ele->IsAle()) my::get_grid_disp_vel_ale(dis, lm, edispnp, egridv);
 
 
       // ---------------------------------------------------------------------
@@ -1860,9 +1860,9 @@ namespace DRT
             Teuchos::RCP<CORE::GEO::CUT::Position> pos =
                 CORE::GEO::CUT::PositionFactory::build_position<nsd_, distype>(my::xyze_, x_gp_lin);
             pos->Compute();
-            pos->LocalCoordinates(rst);
+            pos->local_coordinates(rst);
 
-            // TODO unify ProjectOnSide and Evaluate for different spatial dimensions of boundary
+            // TODO unify project_on_side and Evaluate for different spatial dimensions of boundary
             // slave element and volumetric slave element
             if (is_mesh_coupling_side)
             {
@@ -1870,7 +1870,7 @@ namespace DRT
               // coordinates in SideImpl)
               CORE::LINALG::Matrix<3, 1> xi_side(true);
               // project on boundary element
-              si->ProjectOnSide(x_gp_lin, x_side, xi_side);
+              si->project_on_side(x_gp_lin, x_side, xi_side);
 
               if (averaging_strategy == INPAR::XFEM::Embedded_Sided or
                   averaging_strategy == INPAR::XFEM::Mean)
@@ -3231,7 +3231,7 @@ namespace DRT
       my::edispnp_.Clear();
       my::egridv_.Clear();
 
-      if (ele->IsAle()) my::GetGridDispVelALE(dis, lm, my::edispnp_, my::egridv_);
+      if (ele->IsAle()) my::get_grid_disp_vel_ale(dis, lm, my::edispnp_, my::egridv_);
 
 
       // ---------------------------------------------------------------------
@@ -3672,7 +3672,7 @@ namespace DRT
                     CORE::GEO::CUT::PositionFactory::build_position<nsd_, distype>(
                         my::xyze_, x_ref);
                 pos->Compute();
-                pos->LocalCoordinates(rst_);
+                pos->local_coordinates(rst_);
               }
               else  // compute the local coordiante based on the current position
               {
@@ -3681,7 +3681,7 @@ namespace DRT
                     CORE::GEO::CUT::PositionFactory::build_position<nsd_, distype>(
                         my::xyze_, x_gp_lin_);
                 pos->Compute();
-                pos->LocalCoordinates(rst_);
+                pos->local_coordinates(rst_);
               }
             }
 
@@ -3693,7 +3693,7 @@ namespace DRT
               CORE::LINALG::Matrix<3, 1> xi_side;
 
               // project on boundary element
-              si->ProjectOnSide(x_gp_lin_, x_side_, xi_side);
+              si->project_on_side(x_gp_lin_, x_side_, xi_side);
 
               if (non_xfluid_coupling)
                 ci->Evaluate(x_side_, rst_slave);  // evaluate embedded element's shape functions at
@@ -4614,7 +4614,7 @@ namespace DRT
       // Get material from FluidEleCalc routine.
       // If non-constant density or viscosity wants to be calculated on the different sides. A
       // review over how the scalar variables are set at the surface should be made.
-      my::GetMaterialParams(material, my::evelaf_, my::epreaf_, my::epream_, my::escaaf_,
+      my::get_material_params(material, my::evelaf_, my::epreaf_, my::epream_, my::escaaf_,
           my::escaam_, my::escabofoaf_, thermpressaf, thermpressam, thermpressdtaf, thermpressdtam,
           vol, densam, densaf, densn, viscaf, viscn, gamma);
 

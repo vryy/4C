@@ -596,7 +596,7 @@ void CORE::GEO::CutWizard::run_cut(
   }
 
   //----------------------------------------------------------
-  // Cut Part II: Intersection (4/6 Cut_Intersection)
+  // Cut Part II: intersection (4/6 Cut_Intersection)
   {
     const double t_start = Teuchos::Time::wallTime();
 
@@ -810,7 +810,7 @@ CORE::GEO::CUT::SideHandle* CORE::GEO::CutWizard::get_side(int sid)
 
 CORE::GEO::CUT::SideHandle* CORE::GEO::CutWizard::GetCutSide(int sid)
 {
-  if (intersection_ == Teuchos::null) FOUR_C_THROW("No Intersection object available!");
+  if (intersection_ == Teuchos::null) FOUR_C_THROW("No intersection object available!");
   Teuchos::RCP<CORE::GEO::CUT::MeshIntersection> meshintersection =
       Teuchos::rcp_dynamic_cast<CORE::GEO::CUT::MeshIntersection>(intersection_);
   if (meshintersection == Teuchos::null) FOUR_C_THROW("Cast to MeshIntersection failed!");
@@ -843,7 +843,7 @@ void CORE::GEO::CutWizard::update_boundary_cell_coords(Teuchos::RCP<DRT::Discret
     Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid)
 {
   if (cutterdis == Teuchos::null)
-    FOUR_C_THROW("cannot add mesh cutting sides for invalid cutter Discretization!");
+    FOUR_C_THROW("cannot add mesh cutting sides for invalid cutter discretization!");
 
   std::vector<int> lm;
   std::vector<double> mydisp;
@@ -930,7 +930,7 @@ void CORE::GEO::CutWizard::update_boundary_cell_coords(Teuchos::RCP<DRT::Discret
           for (std::size_t bcpoint = 0; bcpoint < bc->Points().size(); ++bcpoint)
           {
             // get local coord on sidehandle
-            CORE::LINALG::Matrix<2, 1> xsi = sh->LocalCoordinates(bc->Points()[bcpoint]);
+            CORE::LINALG::Matrix<2, 1> xsi = sh->local_coordinates(bc->Points()[bcpoint]);
 
             // eval shape function
             CORE::LINALG::Matrix<4, 1> funct;

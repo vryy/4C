@@ -119,10 +119,10 @@ namespace FLD
 
    private:
     /// initialize all state members based on the merged fluid dof-rowmap
-    void InitStateVectors();
+    void init_state_vectors();
 
     /// initialize the system matrix of the intersected fluid
-    void InitSystemMatrix();
+    void init_system_matrix();
 
     /// embedded fluid dof-map
     Teuchos::RCP<const Epetra_Map> embfluiddofrowmap_;

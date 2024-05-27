@@ -61,17 +61,17 @@ namespace DRT
       void set_internal_variables_for_mat_and_rhs() override;
 
       //! get the material parameters
-      void GetMaterialParams(const DRT::Element* ele,  //!< the element we are dealing with
-          std::vector<double>& densn,                  //!< density at t_(n)
-          std::vector<double>& densnp,                 //!< density at t_(n+1) or t_(n+alpha_F)
-          std::vector<double>& densam,                 //!< density at t_(n+alpha_M)
-          double& visc,                                //!< fluid viscosity
-          const int iquad = -1                         //!< id of current gauss point (default = -1)
+      void get_material_params(const DRT::Element* ele,  //!< the element we are dealing with
+          std::vector<double>& densn,                    //!< density at t_(n)
+          std::vector<double>& densnp,                   //!< density at t_(n+1) or t_(n+alpha_F)
+          std::vector<double>& densam,                   //!< density at t_(n+alpha_M)
+          double& visc,                                  //!< fluid viscosity
+          const int iquad = -1  //!< id of current gauss point (default = -1)
           ) override;
 
 
       //! evaluate material
-      void Materials(
+      void materials(
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
@@ -83,15 +83,15 @@ namespace DRT
 
 
       //! Get right hand side including reaction bodyforce term
-      void GetRhsInt(double& rhsint,  //!< rhs containing bodyforce at Gauss point
-          const double densnp,        //!< density at t_(n+1)
-          const int k                 //!< index of current scalar
+      void get_rhs_int(double& rhsint,  //!< rhs containing bodyforce at Gauss point
+          const double densnp,          //!< density at t_(n+1)
+          const int k                   //!< index of current scalar
           ) override;
 
 
       //! calculation of reactive element matrix
-      void CalcMatReact(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                                          //!< index of current scalar
+      void calc_mat_react(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                                            //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double
               timetaufac,  //!< domain-integration factor times time-integration factor times tau
@@ -115,10 +115,10 @@ namespace DRT
       CORE::LINALG::Matrix<nen_, 1> funct_elementcenter_;
 
       //! get current Gauss-point coordinates
-      virtual const double* GetGpCoord() const { return gpcoord_; }
+      virtual const double* get_gp_coord() const { return gpcoord_; }
 
       //! get reaction manager for advanced reaction
-      Teuchos::RCP<ScaTraEleReaManagerAdvReac> ReaManager()
+      Teuchos::RCP<ScaTraEleReaManagerAdvReac> rea_manager()
       {
         return Teuchos::rcp_static_cast<ScaTraEleReaManagerAdvReac>(my::reamanager_);
       };

@@ -250,7 +250,7 @@ namespace CORE::Conditions
     \return void
 
     */
-    void AddConnectivity(std::map<int, std::vector<int>> &midtosid, const int pbcid);
+    void add_connectivity(std::map<int, std::vector<int>> &midtosid, const int pbcid);
 
     //@}
 
@@ -307,7 +307,7 @@ namespace CORE::Conditions
      \return void
 
     */
-    void BalanceLoad();
+    void balance_load();
 
     //@}
 

@@ -50,13 +50,13 @@ namespace SCATRA
     void write_problem_specific_output(Teuchos::RCP<Epetra_Vector> interpolatedPhi) override;
 
     //! adapt material
-    void PackMaterial() override;
+    void pack_material() override;
 
     //! adapt material
-    void UnpackMaterial() override;
+    void unpack_material() override;
 
     //! project material field
-    void ProjectMaterial() override;
+    void project_material() override;
 
     //! read restart
     void read_restart(

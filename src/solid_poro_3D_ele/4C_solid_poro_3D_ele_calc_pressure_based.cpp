@@ -153,7 +153,7 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlinear_
 }
 
 template <CORE::FE::CellType celltype>
-void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::CouplingPoroelast(
+void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_poroelast(
     const DRT::Element& ele, MAT::StructPoro& porostructmat, MAT::FluidPoroMultiPhase& porofluidmat,
     const INPAR::STR::KinemType& kinematictype, const DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, Teuchos::ParameterList& params,
@@ -209,7 +209,7 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::CouplingPoroelast(
               nummultifluiddofpernode, numfluidphases, fluidmultiphase_phiAtGP, porofluidmat);
 
           double porosity =
-              ComputePorosity<celltype>(porostructmat, params, solidpressure, volchange, gp);
+              compute_porosity<celltype>(porostructmat, params, solidpressure, volchange, gp);
 
           recalculate_sol_pressure_deriv(fluidmultiphase_phiAtGP, nummultifluiddofpernode,
               numfluidphases, numvolfrac, solidpressure, porosity, solidpressurederiv);

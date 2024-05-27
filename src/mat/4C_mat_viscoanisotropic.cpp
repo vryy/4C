@@ -47,7 +47,7 @@ MAT::PAR::ViscoAnisotropic::ViscoAnisotropic(Teuchos::RCP<CORE::MAT::PAR::Materi
 }
 
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ViscoAnisotropic::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ViscoAnisotropic::create_material()
 {
   return Teuchos::rcp(new MAT::ViscoAnisotropic(this));
 }

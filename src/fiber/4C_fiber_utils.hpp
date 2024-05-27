@@ -89,7 +89,7 @@ namespace DRT
       /*!
        * \brief Check whether all nodes of the element have fibers.
        *
-       * \tparam distype Discretization type
+       * \tparam distype discretization type
        * \param nodes Pointer to the nodes of the element
        * \return true All nodes have fibers
        * \return false At least one one does not have a fiber

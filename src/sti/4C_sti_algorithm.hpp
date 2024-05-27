@@ -120,14 +120,14 @@ namespace STI
     void modify_field_parameters_for_thermo_field();
 
     //! output solution to screen and files
-    void Output() override;
+    void output() override;
 
     //! evaluate time step using Newton-Raphson iteration (monolithic algorithm) or outer coupling
     //! iteration (partitioned algorithm)
     virtual void solve() = 0;
 
     //! update scatra and thermo fields after time step evaluation
-    void Update() override;
+    void update() override;
   };  // class Algorithm : public ADAPTER::AlgorithmBase
 }  // namespace STI
 FOUR_C_NAMESPACE_CLOSE

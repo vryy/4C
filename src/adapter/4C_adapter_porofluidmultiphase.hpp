@@ -78,7 +78,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const = 0;
 
     /// direct access to discretization
-    virtual Teuchos::RCP<DRT::Discretization> Discretization() const = 0;
+    virtual Teuchos::RCP<DRT::Discretization> discretization() const = 0;
 
     //! apply moving mesh data
     virtual void ApplyMeshMovement(
@@ -87,7 +87,7 @@ namespace ADAPTER
 
     //! set convective velocity field (+ pressure and acceleration field as
     //! well as fine-scale velocity field, if required)
-    virtual void SetVelocityField(Teuchos::RCP<const Epetra_Vector> vel  //!< velocity vector
+    virtual void set_velocity_field(Teuchos::RCP<const Epetra_Vector> vel  //!< velocity vector
         ) = 0;
 
     //! set state on discretization

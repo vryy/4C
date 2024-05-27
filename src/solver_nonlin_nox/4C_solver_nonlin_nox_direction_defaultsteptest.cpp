@@ -29,10 +29,10 @@ bool NOX::NLN::Direction::Test::VolumeChange::checkTest(
   compute_element_volumes(dir, grp);
 
   gnum_bad_eles_ = 0;
-  identifyBadElements(grp, gnum_bad_eles_);
+  identify_bad_elements(grp, gnum_bad_eles_);
   compute_primal_direction_measures(dir, grp);
 
-  return isAccepted();
+  return is_accepted();
 }
 
 /*----------------------------------------------------------------------------*
@@ -46,14 +46,14 @@ bool NOX::NLN::Direction::Test::VolumeChange::initAndCheckTest(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::Direction::Test::VolumeChange::isAccepted()
+bool NOX::NLN::Direction::Test::VolumeChange::is_accepted()
 {
   utils_->out() << '\n'
                 << ::NOX::Utils::fill(40, '=') << "\n"
                 << "Direction::Test::VolumeChange::" << __FUNCTION__ << "\n";
 
   const bool isaccepted =
-      ((is_valid_direction_length() or is_valid_element_volumes()) and isPositiveDefinite());
+      ((is_valid_direction_length() or is_valid_element_volumes()) and is_positive_definite());
 
   utils_->out() << ::NOX::Utils::fill(40, '=') << "\n\n";
 
@@ -104,13 +104,13 @@ void NOX::NLN::Direction::Test::VolumeChange::compute_primal_direction_measures(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Direction::Test::VolumeChange::identifyBadElements(
+void NOX::NLN::Direction::Test::VolumeChange::identify_bad_elements(
     ::NOX::Abstract::Group& grp, int& gnew_num_bad_eles)
 {
   NOX::NLN::Group& nln_grp = dynamic_cast<NOX::NLN::Group&>(grp);
   const Epetra_Comm& comm = ref_ele_vols_->Map().Comm();
 
-  gnew_num_bad_eles = fillMyBadDofs(nln_grp);
+  gnew_num_bad_eles = fill_my_bad_dofs(nln_grp);
 
   int gnum_bad_dofs = 0;
   int lnum_bad_dofs = my_bad_dofs_.size();
@@ -132,7 +132,7 @@ Teuchos::RCP<Epetra_Vector> NOX::NLN::Direction::Test::VolumeChange::getCurrentD
 Teuchos::RCP<Epetra_Vector> NOX::NLN::Direction::Test::VolumeChange::getCurrentDiagonal(
     const NOX::NLN::Group& grp) const
 {
-  Teuchos::RCP<Epetra_Vector> diagonal = getEmptyDiagonal(grp);
+  Teuchos::RCP<Epetra_Vector> diagonal = get_empty_diagonal(grp);
   fill_diagonal_at_bad_dofs(*diagonal);
 
   return diagonal;
@@ -154,7 +154,7 @@ void NOX::NLN::Direction::Test::VolumeChange::fill_diagonal_at_bad_dofs(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> NOX::NLN::Direction::Test::VolumeChange::getEmptyDiagonal(
+Teuchos::RCP<Epetra_Vector> NOX::NLN::Direction::Test::VolumeChange::get_empty_diagonal(
     const NOX::NLN::Group& grp) const
 {
   const Epetra_Map& jac_rmap = grp.getJacobianRangeMap(0, 0);
@@ -165,7 +165,7 @@ Teuchos::RCP<Epetra_Vector> NOX::NLN::Direction::Test::VolumeChange::getEmptyDia
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int NOX::NLN::Direction::Test::VolumeChange::fillMyBadDofs(NOX::NLN::Group& grp)
+int NOX::NLN::Direction::Test::VolumeChange::fill_my_bad_dofs(NOX::NLN::Group& grp)
 {
   const unsigned num_my_eles = ref_ele_vols_->Map().NumMyElements();
   const int* my_egids = ref_ele_vols_->Map().MyGlobalElements();
@@ -232,7 +232,7 @@ bool NOX::NLN::Direction::Test::VolumeChange::is_valid_direction_length() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::Direction::Test::VolumeChange::isPositiveDefinite() const
+bool NOX::NLN::Direction::Test::VolumeChange::is_positive_definite() const
 {
   const double fac = 10 * std::numeric_limits<double>::epsilon();
   const bool isposdef = dirres_ > fac * dirdir_;

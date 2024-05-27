@@ -76,7 +76,7 @@ void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_scatra_structu
       "action", SCATRA::Action::calc_scatra_mono_odblock_mesh, eleparams);
 
   // add state vectors to scalar transport discretization
-  ScaTraField()->add_time_integration_specific_vectors();
+  sca_tra_field()->add_time_integration_specific_vectors();
 
   // create strategy for assembly of scatra-structure matrix block
   CORE::FE::AssembleStrategy strategyscatrastructure(
@@ -89,7 +89,7 @@ void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_scatra_structu
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // assemble scatra-structure matrix block
-  ScaTraField()->Discretization()->Evaluate(eleparams, strategyscatrastructure);
+  sca_tra_field()->discretization()->Evaluate(eleparams, strategyscatrastructure);
 }
 
 /*-----------------------------------------------------------------------------------*
@@ -127,7 +127,7 @@ void SSI::ScatraManifoldStructureOffDiagCoupling::
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // assemble scatra-structure matrix block
-  scatra_manifold_->Discretization()->Evaluate(eleparams, strategyscatrastructure);
+  scatra_manifold_->discretization()->Evaluate(eleparams, strategyscatrastructure);
 }
 
 /*-----------------------------------------------------------------------------------*
@@ -138,7 +138,7 @@ void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_scatra_structu
   // slave and master matrix for evaluation of conditions
   Teuchos::RCP<CORE::LINALG::SparseOperator> slavematrix(Teuchos::null);
   Teuchos::RCP<CORE::LINALG::SparseOperator> mastermatrix(Teuchos::null);
-  switch (ScaTraField()->MatrixType())
+  switch (sca_tra_field()->MatrixType())
   {
     case CORE::LINALG::MatrixType::block_condition:
     case CORE::LINALG::MatrixType::block_condition_dof:
@@ -198,13 +198,13 @@ void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_structure_scat
   // set time
   eleparams.set<double>("total time", structure_->Time());
   // set numscatradofspernode
-  eleparams.set<int>("numscatradofspernode", ScaTraField()->NumDofPerNode());
+  eleparams.set<int>("numscatradofspernode", sca_tra_field()->NumDofPerNode());
 
   // remove state vectors from structure discretization
-  structure_->Discretization()->ClearState();
+  structure_->discretization()->ClearState();
 
   // set the current displacement state vector
-  structure_->Discretization()->set_state("displacement", structure_->Dispnp());
+  structure_->discretization()->set_state("displacement", structure_->Dispnp());
 
   // create strategy for assembly of structure-scatra matrix block
   CORE::FE::AssembleStrategy strategystructurescatra(
@@ -217,7 +217,7 @@ void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_structure_scat
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // assemble structure-scatra matrix block
-  structure_->Discretization()->Evaluate(eleparams, strategystructurescatra);
+  structure_->discretization()->Evaluate(eleparams, strategystructurescatra);
 
   // need to scale structurescatrablock_ with 'timefac' (e.g. with theta for OST-scheme) to get
   // correct implementation
@@ -234,12 +234,12 @@ void SSI::ScatraStructureOffDiagCoupling::
         Teuchos::RCP<CORE::LINALG::SparseOperator>& mastermatrix)
 {
   mastermatrix->Zero();
-  switch (ScaTraField()->MatrixType())
+  switch (sca_tra_field()->MatrixType())
   {
     case CORE::LINALG::MatrixType::block_condition:
     case CORE::LINALG::MatrixType::block_condition_dof:
     {
-      const int numberscatrablocks = ScaTraField()->BlockMaps()->NumMaps();
+      const int numberscatrablocks = sca_tra_field()->BlockMaps()->NumMaps();
 
       // cast master and slave matrix
       auto blockslavematrix =
@@ -272,11 +272,11 @@ void SSI::ScatraStructureOffDiagCoupling::
       }
 
       // finalize auxiliary system matrix
-      mastermatrixsparse->Complete(*FullMapStructure(), *ScaTraField()->dof_row_map());
+      mastermatrixsparse->Complete(*full_map_structure(), *sca_tra_field()->dof_row_map());
 
       // split auxiliary system matrix and assemble into scatra-structure matrix block
       auto mastermatrix_split = mastermatrixsparse->Split<CORE::LINALG::DefaultBlockMatrixStrategy>(
-          *block_map_structure_, *ScaTraField()->BlockMaps());
+          *block_map_structure_, *sca_tra_field()->BlockMaps());
       mastermatrix_split->Complete();
       blockmastermatrix->Add(*mastermatrix_split, false, 1.0, 1.0);
 
@@ -338,7 +338,7 @@ void SSI::ScatraStructureOffDiagCoupling::
       "differentiationtype", SCATRA::DifferentiationType::disp, condparams);
 
   // add state vectors to scalar transport discretization
-  ScaTraField()->add_time_integration_specific_vectors();
+  sca_tra_field()->add_time_integration_specific_vectors();
 
   // set up necessary matrices
   Teuchos::RCP<CORE::LINALG::SparseOperator>
@@ -348,7 +348,7 @@ void SSI::ScatraStructureOffDiagCoupling::
   Teuchos::RCP<CORE::LINALG::SparseOperator>
       scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_matrix;
 
-  if (ScaTraField()->MatrixType() == CORE::LINALG::MatrixType::sparse)
+  if (sca_tra_field()->MatrixType() == CORE::LINALG::MatrixType::sparse)
   {
     scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix =
         Teuchos::rcp(new CORE::LINALG::SparseMatrix(
@@ -395,13 +395,13 @@ void SSI::ScatraStructureOffDiagCoupling::
       meshtying_strategy_s2i_->set_condition_specific_sca_tra_parameters(
           *kinetics_slave_cond.second);
       // evaluate the condition
-      ScaTraField()->Discretization()->evaluate_condition(
+      sca_tra_field()->discretization()->evaluate_condition(
           condparams, strategyscatras2istructure, "S2IKinetics", kinetics_slave_cond.first);
     }
   }
 
   // finalize scatra-structure matrix block
-  switch (ScaTraField()->MatrixType())
+  switch (sca_tra_field()->MatrixType())
   {
     case CORE::LINALG::MatrixType::sparse:
     {
@@ -511,7 +511,7 @@ void SSI::ScatraStructureOffDiagCoupling::
         // old slave dofs from input
         auto slave_map = slave_slave_transformation->SlaveDofMap();
 
-        for (int iblock = 0; iblock < ScaTraField()->BlockMaps()->NumMaps(); ++iblock)
+        for (int iblock = 0; iblock < sca_tra_field()->BlockMaps()->NumMaps(); ++iblock)
         {
           auto scatra_slave_flux_structure_slave_dofs_on_scatra_slave_iblock =
               scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix_block->Matrix(
@@ -526,7 +526,7 @@ void SSI::ScatraStructureOffDiagCoupling::
                   iblock, 0);
 
           auto scatra_block_mapi =
-              CORE::LINALG::IntersectMap(*ScaTraField()->BlockMaps()->Map(iblock),
+              CORE::LINALG::IntersectMap(*sca_tra_field()->BlockMaps()->Map(iblock),
                   *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap());
 
           CORE::LINALG::MatrixLogicalSplitAndTransform()(
@@ -553,11 +553,11 @@ void SSI::ScatraStructureOffDiagCoupling::
       }
 
       // finalize auxiliary system matrix
-      mastermatrixsparse->Complete(*FullMapStructure(), *ScaTraField()->dof_row_map());
+      mastermatrixsparse->Complete(*full_map_structure(), *sca_tra_field()->dof_row_map());
 
       // split auxiliary system matrix and assemble into scatra-structure matrix block
       auto mastermatrix_split = mastermatrixsparse->Split<CORE::LINALG::DefaultBlockMatrixStrategy>(
-          *block_map_structure_, *ScaTraField()->BlockMaps());
+          *block_map_structure_, *sca_tra_field()->BlockMaps());
       mastermatrix_split->Complete();
       mastermatrix_block->Add(*mastermatrix_split, false, 1.0, 1.0);
 
@@ -592,10 +592,10 @@ void SSI::ScatraStructureOffDiagCoupling::
       "differentiationtype", SCATRA::DifferentiationType::disp, condparams);
 
   // add state vectors to scalar transport discretization
-  ScaTraField()->add_time_integration_specific_vectors();
+  sca_tra_field()->add_time_integration_specific_vectors();
 
   Teuchos::RCP<CORE::LINALG::SparseOperator> evaluate_matrix;
-  if (ScaTraField()->MatrixType() == CORE::LINALG::MatrixType::sparse)
+  if (sca_tra_field()->MatrixType() == CORE::LINALG::MatrixType::sparse)
   {
     evaluate_matrix = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
         *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap(), 27, false, true));
@@ -628,13 +628,13 @@ void SSI::ScatraStructureOffDiagCoupling::
       meshtying_strategy_s2i_->set_condition_specific_sca_tra_parameters(
           *kinetics_slave_cond.second);
       // evaluate the condition
-      ScaTraField()->Discretization()->evaluate_condition(
+      sca_tra_field()->discretization()->evaluate_condition(
           condparams, strategyscatrastructures2i, "S2IKinetics", kinetics_slave_cond.first);
     }
   }
 
   // finalize scatra-structure matrix block
-  switch (ScaTraField()->MatrixType())
+  switch (sca_tra_field()->MatrixType())
   {
     case CORE::LINALG::MatrixType::block_condition:
     case CORE::LINALG::MatrixType::block_condition_dof:
@@ -659,13 +659,13 @@ void SSI::ScatraStructureOffDiagCoupling::
         // old slave dofs from input
         auto slave_map = slave_slave_transformation->SlaveDofMap();
 
-        for (int iblock = 0; iblock < ScaTraField()->BlockMaps()->NumMaps(); ++iblock)
+        for (int iblock = 0; iblock < sca_tra_field()->BlockMaps()->NumMaps(); ++iblock)
         {
           auto evaluate_iblock = evaluate_matrix_block->Matrix(iblock, 0);
           auto slave_iblock = slavematrix_block->Matrix(iblock, 0);
 
           auto scatra_slave_block_mapi =
-              CORE::LINALG::IntersectMap(*ScaTraField()->BlockMaps()->Map(iblock),
+              CORE::LINALG::IntersectMap(*sca_tra_field()->BlockMaps()->Map(iblock),
                   *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap());
 
           CORE::LINALG::MatrixLogicalSplitAndTransform()(evaluate_iblock, *scatra_slave_block_mapi,
@@ -742,7 +742,7 @@ void SSI::ScatraStructureOffDiagCouplingSSTI::evaluate_off_diag_block_structure_
       structurescatradomain);
 
   // finalize structure-scatra matrix block
-  switch (ScaTraField()->MatrixType())
+  switch (sca_tra_field()->MatrixType())
   {
     case CORE::LINALG::MatrixType::block_condition:
     case CORE::LINALG::MatrixType::block_condition_dof:
@@ -753,7 +753,7 @@ void SSI::ScatraStructureOffDiagCouplingSSTI::evaluate_off_diag_block_structure_
 
     case CORE::LINALG::MatrixType::sparse:
     {
-      structurescatradomain->Complete(*full_map_scatra_, *FullMapStructure());
+      structurescatradomain->Complete(*full_map_scatra_, *full_map_structure());
       break;
     }
 

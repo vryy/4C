@@ -78,7 +78,7 @@ CONTACT::AUG::Interface::Interface(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::Setup()
+void CONTACT::AUG::Interface::setup()
 {
   if (interface_data_.is_setup()) return;
 
@@ -241,7 +241,7 @@ void CONTACT::AUG::Interface::Initialize()
   CONTACT::Interface::Initialize();
 
   // setup member variables (has to be done only once)
-  Setup();
+  setup();
 
   // *** Reset all augmented quantities *********************************
   // loop over all slave nodes to reset stuff (standard column map)
@@ -392,7 +392,7 @@ void CONTACT::AUG::Interface::evaluate_nodal_normals() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::ExportNodalNormals() const
+void CONTACT::AUG::Interface::export_nodal_normals() const
 {
   TEUCHOS_FUNC_TIME_MONITOR(CONTACT_FUNC_NAME);
 
@@ -582,7 +582,7 @@ void CONTACT::AUG::Interface::eval_active_contributions(
   // set active slave node map of this interface and start the
   // coupling evaluation
   cparams_ptr->Set<Epetra_Map>(activenodes_.get(), 1);
-  EvaluateCoupling(*interface_data_.SActiveEleColMap(), nullptr, cparams_ptr);
+  evaluate_coupling(*interface_data_.SActiveEleColMap(), nullptr, cparams_ptr);
   cparams_ptr->ClearEntry(CORE::GEN::AnyDataContainer::DataType::any, 1);
 }
 

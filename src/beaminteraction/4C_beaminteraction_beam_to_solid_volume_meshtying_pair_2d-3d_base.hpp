@@ -82,7 +82,7 @@ namespace BEAMINTERACTION
      */
     inline Teuchos::RCP<
         GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<double, beam, solid>>
-    CastGeometryPair() const
+    cast_geometry_pair() const
     {
       return Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::
               GeometryPairLineToVolumeGaussPointProjectionCrossSection<double, beam, solid>>(
@@ -96,7 +96,7 @@ namespace BEAMINTERACTION
      * @param reference (in) If the triad in the reference or current configuration should be
      * returned
      */
-    virtual void GetTriadAtXiDouble(
+    virtual void get_triad_at_xi_double(
         const double xi, CORE::LINALG::Matrix<3, 3, double>& triad, const bool reference) const = 0;
   };
 }  // namespace BEAMINTERACTION

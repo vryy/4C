@@ -48,7 +48,7 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate action
-      int EvaluateAction(DRT::FaceElement* ele,             //!< boundary element
+      int evaluate_action(DRT::FaceElement* ele,            //!< boundary element
           Teuchos::ParameterList& params,                   //!< parameter list
           DRT::Discretization& discretization,              //!< discretization
           SCATRA::BoundaryAction action,                    //!< action
@@ -116,16 +116,16 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1_epetra);
 
       //! calculate cell voltage
-      void CalcCellVoltage(const DRT::Element* ele,  //!< the element we are dealing with
-          Teuchos::ParameterList& params,            //!< parameter list
-          DRT::Discretization& discretization,       //!< discretization
-          DRT::Element::LocationArray& la,           //!< location array
+      void calc_cell_voltage(const DRT::Element* ele,  //!< the element we are dealing with
+          Teuchos::ParameterList& params,              //!< parameter list
+          DRT::Discretization& discretization,         //!< discretization
+          DRT::Element::LocationArray& la,             //!< location array
           CORE::LINALG::SerialDenseVector&
               scalars  //!< result vector for scalar integrals to be computed
       );
 
       //! extract valence of species k from element material
-      virtual double GetValence(
+      virtual double get_valence(
           const Teuchos::RCP<const CORE::MAT::Material>& material,  //! element material
           const int k                                               //! species number
       ) const = 0;

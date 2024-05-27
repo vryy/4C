@@ -38,7 +38,7 @@ namespace MAT
       const double density_;
       //@}
 
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
     };
 
     class LinElast1DGrowth : public LinElast1D
@@ -61,7 +61,7 @@ namespace MAT
       const bool amount_prop_growth_;
       //@}
 
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
     };
   }  // namespace PAR
 

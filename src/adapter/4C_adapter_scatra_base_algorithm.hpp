@@ -97,7 +97,7 @@ namespace ADAPTER
     bool is_init() const { return isinit_; };
 
     //! check if \ref Setup() was called
-    void CheckIsSetup() const;
+    void check_is_setup() const;
 
     //! check if \ref Init() was called
     void check_is_init() const;

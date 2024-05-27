@@ -57,7 +57,7 @@ namespace SCATRA
     //! get time integration of micro problem
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> MicroScaTraField();
 
-    void NonlinearSolve() override;
+    void nonlinear_solve() override;
 
     void check_and_write_output_and_restart() override;
 

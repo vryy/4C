@@ -37,9 +37,9 @@ ADAPTER::FBIFluidMB::FBIFluidMB(const Teuchos::ParameterList& prbdyn, std::strin
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> ADAPTER::FBIFluidMB::Discretization()
+Teuchos::RCP<DRT::Discretization> ADAPTER::FBIFluidMB::discretization()
 {
-  return fluid_field()->Discretization();
+  return fluid_field()->discretization();
 }
 
 
@@ -77,7 +77,7 @@ double ADAPTER::FBIFluidMB::read_restart(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIFluidMB::NonlinearSolve(
+void ADAPTER::FBIFluidMB::nonlinear_solve(
     Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel)
 {
   fluid_field()->Solve();

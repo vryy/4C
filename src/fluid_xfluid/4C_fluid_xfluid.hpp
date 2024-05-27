@@ -296,7 +296,7 @@ namespace FLD
     void SetItemax(int itemax) override { params_->set<int>("max nonlin iter steps", itemax); }
 
     /// scale the residual (inverse of the weighting of the quantities w.r.t the new timestep)
-    double ResidualScaling() const override
+    double residual_scaling() const override
     {
       if (TimIntScheme() == INPAR::FLUID::timeint_stationary)
         return 1.0;
@@ -334,7 +334,7 @@ namespace FLD
     \brief velocity required for evaluation of related quantites required on element level
 
     */
-    Teuchos::RCP<const Epetra_Vector> EvaluationVel() override { return Teuchos::null; }
+    Teuchos::RCP<const Epetra_Vector> evaluation_vel() override { return Teuchos::null; }
 
 
     virtual void CreateInitialState();
@@ -343,7 +343,7 @@ namespace FLD
 
     void UpdateGridv() override;
 
-    /// Get xFluid Background Discretization
+    /// Get xFluid Background discretization
     Teuchos::RCP<DRT::DiscretizationXFEM> DiscretisationXFEM() { return xdiscret_; }
 
     /// Get XFEM Condition Manager
@@ -369,18 +369,18 @@ namespace FLD
 
    protected:
     /// (pseudo-)timeloop finished?
-    bool NotFinished() override;
+    bool not_finished() override;
 
     /// create a new state class object
-    virtual void CreateState();
+    virtual void create_state();
 
     /// destroy state class' data (free memory of matrices, vectors ... )
-    virtual void DestroyState();
+    virtual void destroy_state();
 
     /// get a new state class
-    virtual Teuchos::RCP<FLD::XFluidState> GetNewState();
+    virtual Teuchos::RCP<FLD::XFluidState> get_new_state();
 
-    void ExtractNodeVectors(Teuchos::RCP<DRT::DiscretizationXFEM> dis,
+    void extract_node_vectors(Teuchos::RCP<DRT::DiscretizationXFEM> dis,
         std::map<int, CORE::LINALG::Matrix<3, 1>>& nodevecmap,
         Teuchos::RCP<Epetra_Vector> dispnp_col);
 
@@ -417,7 +417,7 @@ namespace FLD
         const double presrestol, const double presinctol) override;
 
     /// Update velocity and pressure by increment
-    virtual void UpdateByIncrement();
+    virtual void update_by_increment();
 
     void set_old_part_of_righthandside() override;
 
@@ -580,10 +580,10 @@ namespace FLD
 
 
     /// set xfluid input parameters (read from list)
-    void SetXFluidParams();
+    void set_x_fluid_params();
 
     /// check xfluid input parameters for consistency
-    void CheckXFluidParams() const;
+    void check_x_fluid_params() const;
 
     /// print stabilization params to screen
     void print_stabilization_details() const override;
@@ -620,13 +620,13 @@ namespace FLD
     /// initialize vectors and flags for turbulence approach
     void set_general_turbulence_parameters() override;
 
-    void ExplicitPredictor() override;
+    void explicit_predictor() override;
 
     void predict_tang_vel_consist_acc() override;
 
     void update_iter_incrementally(Teuchos::RCP<const Epetra_Vector> vel) override;
 
-    void ComputeErrorNorms(Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_dom_norms,
+    void compute_error_norms(Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_dom_norms,
         Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_interf_norms,
         Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_stab_norms);
 
@@ -649,7 +649,7 @@ namespace FLD
     void gen_alpha_update_acceleration() override;
 
     /// return type of enforcing interface conditions
-    INPAR::XFEM::CouplingMethod CouplingMethod() const { return coupling_method_; }
+    INPAR::XFEM::CouplingMethod coupling_method() const { return coupling_method_; }
 
     //@}
 

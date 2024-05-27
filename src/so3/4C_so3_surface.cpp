@@ -182,7 +182,7 @@ int DRT::ELEMENTS::StructuralSurface::NumLine() const
 }
 
 /*------------------------------------------------------------------------*
- |  Set Discretization Type of the Surface Element              ager 12/16|
+ |  Set discretization Type of the Surface Element              ager 12/16|
  *-----------------------------------------------------------------------*/
 void DRT::ELEMENTS::StructuralSurface::set_distype()
 {

@@ -30,7 +30,7 @@ namespace CONSTRAINTS
     \brief Standard Constructor
     */
     MPConstraint3Penalty(
-        Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
+        Teuchos::RCP<DRT::Discretization> discr,  ///< discretization constraint lives on
         const std::string& CondName               ///< Name of condition to create constraint from
     );
 

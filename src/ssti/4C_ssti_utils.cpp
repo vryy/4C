@@ -41,7 +41,7 @@ SSTI::SSTIMaps::SSTIMaps(const SSTI::SSTIMono& ssti_mono_algorithm)
   partial_maps[ssti_mono_algorithm.GetProblemPosition(Subproblem::scalar_transport)] =
       Teuchos::rcp(new Epetra_Map(*ssti_mono_algorithm.ScaTraField()->dof_row_map()));
   partial_maps[ssti_mono_algorithm.GetProblemPosition(Subproblem::structure)] =
-      Teuchos::rcp(new Epetra_Map(*ssti_mono_algorithm.StructureField()->dof_row_map()));
+      Teuchos::rcp(new Epetra_Map(*ssti_mono_algorithm.structure_field()->dof_row_map()));
   partial_maps[ssti_mono_algorithm.GetProblemPosition(Subproblem::thermo)] =
       Teuchos::rcp(new Epetra_Map(*ssti_mono_algorithm.ThermoField()->dof_row_map()));
   Teuchos::RCP<const Epetra_Map> temp_map =
@@ -55,9 +55,9 @@ SSTI::SSTIMaps::SSTIMaps(const SSTI::SSTIMono& ssti_mono_algorithm)
 
   // initialize map extractors associated with blocks of subproblems
   block_map_structure_ = Teuchos::rcp(
-      new CORE::LINALG::MultiMapExtractor(*ssti_mono_algorithm.StructureField()->dof_row_map(),
+      new CORE::LINALG::MultiMapExtractor(*ssti_mono_algorithm.structure_field()->dof_row_map(),
           std::vector<Teuchos::RCP<const Epetra_Map>>(
-              1, ssti_mono_algorithm.StructureField()->dof_row_map())));
+              1, ssti_mono_algorithm.structure_field()->dof_row_map())));
   switch (ssti_mono_algorithm.ScaTraField()->MatrixType())
   {
     case CORE::LINALG::MatrixType::sparse:
@@ -214,7 +214,7 @@ SSTI::SSTIMapsMono::SSTIMapsMono(const SSTI::SSTIMono& ssti_mono_algorithm)
       maps_systemmatrix[block_positions_structure.at(0)] = BlockMapStructure()->FullMap();
 
       for (int imap = 0; imap < static_cast<int>(block_positions_thermo.size()); ++imap)
-        maps_systemmatrix[block_positions_thermo.at(imap)] = BlockMapThermo()->Map(imap);
+        maps_systemmatrix[block_positions_thermo.at(imap)] = block_map_thermo()->Map(imap);
 
       // initialize map extractor associated with blocks of global system matrix
       block_map_system_matrix_ = Teuchos::rcp(
@@ -283,25 +283,25 @@ SSTI::SSTIMatrices::SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono
           setup_block_matrix(ssti_maps_mono->BlockMapScatra(), ssti_maps_mono->BlockMapStructure());
       structurescatradomain_ =
           setup_block_matrix(ssti_maps_mono->BlockMapStructure(), ssti_maps_mono->BlockMapScatra());
-      structurethermodomain_ =
-          setup_block_matrix(ssti_maps_mono->BlockMapStructure(), ssti_maps_mono->BlockMapThermo());
-      thermostructuredomain_ =
-          setup_block_matrix(ssti_maps_mono->BlockMapThermo(), ssti_maps_mono->BlockMapStructure());
+      structurethermodomain_ = setup_block_matrix(
+          ssti_maps_mono->BlockMapStructure(), ssti_maps_mono->block_map_thermo());
+      thermostructuredomain_ = setup_block_matrix(
+          ssti_maps_mono->block_map_thermo(), ssti_maps_mono->BlockMapStructure());
       scatrathermodomain_ =
-          setup_block_matrix(ssti_maps_mono->BlockMapScatra(), ssti_maps_mono->BlockMapThermo());
+          setup_block_matrix(ssti_maps_mono->BlockMapScatra(), ssti_maps_mono->block_map_thermo());
       thermoscatradomain_ =
-          setup_block_matrix(ssti_maps_mono->BlockMapThermo(), ssti_maps_mono->BlockMapScatra());
+          setup_block_matrix(ssti_maps_mono->block_map_thermo(), ssti_maps_mono->BlockMapScatra());
 
       if (interfacemeshtying_)
       {
         scatrastructureinterface_ = setup_block_matrix(
             ssti_maps_mono->BlockMapScatra(), ssti_maps_mono->BlockMapStructure());
         thermostructureinterface_ = setup_block_matrix(
-            ssti_maps_mono->BlockMapThermo(), ssti_maps_mono->BlockMapStructure());
-        scatrathermointerface_ =
-            setup_block_matrix(ssti_maps_mono->BlockMapScatra(), ssti_maps_mono->BlockMapThermo());
-        thermoscatrainterface_ =
-            setup_block_matrix(ssti_maps_mono->BlockMapThermo(), ssti_maps_mono->BlockMapScatra());
+            ssti_maps_mono->block_map_thermo(), ssti_maps_mono->BlockMapStructure());
+        scatrathermointerface_ = setup_block_matrix(
+            ssti_maps_mono->BlockMapScatra(), ssti_maps_mono->block_map_thermo());
+        thermoscatrainterface_ = setup_block_matrix(
+            ssti_maps_mono->block_map_thermo(), ssti_maps_mono->BlockMapScatra());
       }
       break;
     }
@@ -310,18 +310,18 @@ SSTI::SSTIMatrices::SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono
       scatrastructuredomain_ = setup_sparse_matrix(ssti_maps_mono->BlockMapScatra()->FullMap());
       structurescatradomain_ = setup_sparse_matrix(ssti_maps_mono->BlockMapStructure()->FullMap());
       structurethermodomain_ = setup_sparse_matrix(ssti_maps_mono->BlockMapStructure()->FullMap());
-      thermostructuredomain_ = setup_sparse_matrix(ssti_maps_mono->BlockMapThermo()->FullMap());
+      thermostructuredomain_ = setup_sparse_matrix(ssti_maps_mono->block_map_thermo()->FullMap());
       scatrathermodomain_ = setup_sparse_matrix(ssti_maps_mono->BlockMapScatra()->FullMap());
-      thermoscatradomain_ = setup_sparse_matrix(ssti_maps_mono->BlockMapThermo()->FullMap());
+      thermoscatradomain_ = setup_sparse_matrix(ssti_maps_mono->block_map_thermo()->FullMap());
 
       if (interfacemeshtying_)
       {
         scatrastructureinterface_ =
             setup_sparse_matrix(ssti_maps_mono->BlockMapScatra()->FullMap());
         thermostructureinterface_ =
-            setup_sparse_matrix(ssti_maps_mono->BlockMapThermo()->FullMap());
+            setup_sparse_matrix(ssti_maps_mono->block_map_thermo()->FullMap());
         scatrathermointerface_ = setup_sparse_matrix(ssti_maps_mono->BlockMapScatra()->FullMap());
-        thermoscatrainterface_ = setup_sparse_matrix(ssti_maps_mono->BlockMapThermo()->FullMap());
+        thermoscatrainterface_ = setup_sparse_matrix(ssti_maps_mono->block_map_thermo()->FullMap());
       }
       break;
     }
@@ -384,27 +384,27 @@ void SSTI::SSTIMatrices::complete_coupling_matrices()
     {
       scatrastructuredomain_->Complete(*ssti_maps_mono_->BlockMapStructure()->FullMap(),
           *ssti_maps_mono_->BlockMapScatra()->FullMap());
-      scatrathermodomain_->Complete(*ssti_maps_mono_->BlockMapThermo()->FullMap(),
+      scatrathermodomain_->Complete(*ssti_maps_mono_->block_map_thermo()->FullMap(),
           *ssti_maps_mono_->BlockMapScatra()->FullMap());
       structurescatradomain_->Complete(*ssti_maps_mono_->BlockMapScatra()->FullMap(),
           *ssti_maps_mono_->BlockMapStructure()->FullMap());
-      structurethermodomain_->Complete(*ssti_maps_mono_->BlockMapThermo()->FullMap(),
+      structurethermodomain_->Complete(*ssti_maps_mono_->block_map_thermo()->FullMap(),
           *ssti_maps_mono_->BlockMapStructure()->FullMap());
       thermoscatradomain_->Complete(*ssti_maps_mono_->BlockMapScatra()->FullMap(),
-          *ssti_maps_mono_->BlockMapThermo()->FullMap());
+          *ssti_maps_mono_->block_map_thermo()->FullMap());
       thermostructuredomain_->Complete(*ssti_maps_mono_->BlockMapStructure()->FullMap(),
-          *ssti_maps_mono_->BlockMapThermo()->FullMap());
+          *ssti_maps_mono_->block_map_thermo()->FullMap());
 
       if (interfacemeshtying_)
       {
         scatrastructureinterface_->Complete(*ssti_maps_mono_->BlockMapStructure()->FullMap(),
             *ssti_maps_mono_->BlockMapScatra()->FullMap());
-        scatrathermointerface_->Complete(*ssti_maps_mono_->BlockMapThermo()->FullMap(),
+        scatrathermointerface_->Complete(*ssti_maps_mono_->block_map_thermo()->FullMap(),
             *ssti_maps_mono_->BlockMapScatra()->FullMap());
         thermoscatrainterface_->Complete(*ssti_maps_mono_->BlockMapScatra()->FullMap(),
-            *ssti_maps_mono_->BlockMapThermo()->FullMap());
+            *ssti_maps_mono_->block_map_thermo()->FullMap());
         thermostructureinterface_->Complete(*ssti_maps_mono_->BlockMapStructure()->FullMap(),
-            *ssti_maps_mono_->BlockMapThermo()->FullMap());
+            *ssti_maps_mono_->block_map_thermo()->FullMap());
       }
       break;
     }
@@ -527,7 +527,7 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
 
   // compute L2 norm of structural state vector
   double structuredofnorm(0.0);
-  ssti_mono.StructureField()->Dispnp()->Norm2(&structuredofnorm);
+  ssti_mono.structure_field()->Dispnp()->Norm2(&structuredofnorm);
 
   // compute L2 norm of structural residual vector
   double structureresnorm(0.0);
@@ -680,11 +680,12 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-std::map<std::string, std::string> SSTI::SSTIScatraStructureCloneStrategy::ConditionsToCopy() const
+std::map<std::string, std::string> SSTI::SSTIScatraStructureCloneStrategy::conditions_to_copy()
+    const
 {
   // call base class
   std::map<std::string, std::string> conditions_to_copy =
-      SSI::ScatraStructureCloneStrategy::ConditionsToCopy();
+      SSI::ScatraStructureCloneStrategy::conditions_to_copy();
 
   conditions_to_copy.insert({"ThermoDirichlet", "ThermoDirichlet"});
   conditions_to_copy.insert({"ThermoPointNeumann", "ThermoPointNeumann"});
@@ -700,7 +701,7 @@ std::map<std::string, std::string> SSTI::SSTIScatraStructureCloneStrategy::Condi
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSTI::SSTIScatraStructureCloneStrategy::SetElementData(
+void SSTI::SSTIScatraStructureCloneStrategy::set_element_data(
     Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbsdis)
 {
   // We need to set material and possibly other things to complete element setup.
@@ -748,11 +749,11 @@ void SSTI::SSTIScatraStructureCloneStrategy::SetElementData(
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-std::map<std::string, std::string> SSTI::SSTIScatraThermoCloneStrategy::ConditionsToCopy() const
+std::map<std::string, std::string> SSTI::SSTIScatraThermoCloneStrategy::conditions_to_copy() const
 {
   // call base class
   std::map<std::string, std::string> conditions_to_copy =
-      STI::ScatraThermoCloneStrategy::ConditionsToCopy();
+      STI::ScatraThermoCloneStrategy::conditions_to_copy();
 
   conditions_to_copy.insert({"Meshtying3DomainIntersection", "Meshtying3DomainIntersection"});
   conditions_to_copy.insert({"SSTIInterfaceMeshtying", "S2IMeshtying"});

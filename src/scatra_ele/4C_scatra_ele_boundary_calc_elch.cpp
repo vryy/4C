@@ -40,7 +40,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::ScaTraEleBoundaryCal
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateAction(
+int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::evaluate_action(
     DRT::FaceElement* ele,                            //!< boundary element
     Teuchos::ParameterList& params,                   //!< parameter list
     DRT::Discretization& discretization,              //!< discretization
@@ -65,14 +65,14 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateAction(
 
     case SCATRA::BoundaryAction::calc_elch_cell_voltage:
     {
-      CalcCellVoltage(ele, params, discretization, la, elevec1_epetra);
+      calc_cell_voltage(ele, params, discretization, la, elevec1_epetra);
 
       break;
     }
 
     default:
     {
-      my::EvaluateAction(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
+      my::evaluate_action(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
           elevec1_epetra, elevec2_epetra, elevec3_epetra);
 
       break;
@@ -98,10 +98,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_elch_bound
 )
 {
   // state and history variables at element nodes
-  my::ExtractNodeValues(discretization, la);
+  my::extract_node_values(discretization, la);
   std::vector<CORE::LINALG::Matrix<nen_, 1>> ehist(
       my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
-  my::ExtractNodeValues(ehist, discretization, la, "hist");
+  my::extract_node_values(ehist, discretization, la, "hist");
 
   // get current condition
   Teuchos::RCP<CORE::Conditions::Condition> cond =
@@ -196,7 +196,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_elch_bound
     // extract local values from the global vector
     std::vector<CORE::LINALG::Matrix<nen_, 1>> ephidtnp(
         my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
-    my::ExtractNodeValues(ephidtnp, discretization, la, "phidtnp");
+    my::extract_node_values(ephidtnp, discretization, la, "phidtnp");
 
     if (not is_stationary)
     {
@@ -234,7 +234,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_nernst_lin
   if (kinetics == INPAR::ELCH::nernst)
   {
     // extract local values from the global vector
-    my::ExtractNodeValues(discretization, la);
+    my::extract_node_values(discretization, la);
 
     // access parameters of the condition
     auto pot0 = cond->parameters().Get<double>("pot");
@@ -322,7 +322,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_nernst_lin
  | calculate cell voltage                                    fang 01/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcCellVoltage(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_cell_voltage(
     const DRT::Element* ele,                  //!< the element we are dealing with
     Teuchos::ParameterList& params,           //!< parameter list
     DRT::Discretization& discretization,      //!< discretization
@@ -331,7 +331,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcCellVoltage
 )
 {
   // extract local nodal values of electric potential from global state vector
-  my::ExtractNodeValues(discretization, la);
+  my::extract_node_values(discretization, la);
 
   // initialize variables for electric potential and domain integrals
   double intpotential(0.);
@@ -412,7 +412,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::evaluate_elch_b
     fns *= stoich[k];
 
     // get valence of the single reactant
-    const double valence_k = GetValence(material, k);
+    const double valence_k = get_valence(material, k);
 
     /*----------------------------------------------------------------------*
      |               start loop over integration points                     |

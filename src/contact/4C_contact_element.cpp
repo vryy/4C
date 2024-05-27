@@ -195,7 +195,7 @@ void CONTACT::Element::deriv_normal_at_xi(double* xi, int& i,
   double geta[3];
 
   // get shape function values and derivatives at xi
-  EvaluateShape(xi, val, deriv, nnodes);
+  evaluate_shape(xi, val, deriv, nnodes);
 
   // get local element basis vectors
   Metrics(xi, gxi, geta);
@@ -255,7 +255,7 @@ void CONTACT::Element::OldUnitNormalAtXi(
   CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
 
   // get shape function values and derivatives at xi
-  EvaluateShape(xi, val, deriv, nnodes);
+  evaluate_shape(xi, val, deriv, nnodes);
 
   n_old.Clear();
   d_n_old_dxi.Clear();

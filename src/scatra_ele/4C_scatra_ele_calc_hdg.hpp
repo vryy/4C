@@ -125,7 +125,7 @@ namespace DRT
       ScaTraEleCalcHDG(const int numdofpernode, const int numscal, const std::string& disname);
 
       //! get the material parameters
-      virtual void GetMaterialParams(DRT::Element* ele  //!< the element we are dealing with
+      virtual void get_material_params(DRT::Element* ele  //!< the element we are dealing with
       );
 
       //! get the material parameters before first timestep
@@ -133,7 +133,7 @@ namespace DRT
       );
 
       //! evaluate material
-      virtual void Materials(
+      virtual void materials(
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           CORE::LINALG::SerialDenseMatrix& difftensor,             //!< diffusion tensor
@@ -146,7 +146,7 @@ namespace DRT
       };
 
       //! evaluate material before first timestep
-      virtual void PrepareMaterials(DRT::Element* ele,  //!< the element we are dealing with
+      virtual void prepare_materials(DRT::Element* ele,  //!< the element we are dealing with
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>>
@@ -177,19 +177,20 @@ namespace DRT
       CORE::LINALG::SerialDenseVector interiorPhinp_;
 
       //! get time step
-      double Dt() { return local_solver_->scatraparatimint_->Dt(); }
+      double dt() { return local_solver_->scatraparatimint_->Dt(); }
 
 
 
       //! update time dependent material
-      virtual void TimeUpdateMaterial(const DRT::Element* ele  //!< the element we are dealing with
+      virtual void time_update_material(
+          const DRT::Element* ele  //!< the element we are dealing with
       )
       {
         return;
       };
 
       //! element initialization at the first time step
-      void ElementInit(DRT::Element* ele);
+      void element_init(DRT::Element* ele);
 
       /*========================================================================*/
       //! @name dofs and nodes

@@ -32,7 +32,7 @@ MAT::PAR::LubricationLawConstant::LubricationLawConstant(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::LubricationLawConstant::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::LubricationLawConstant::create_material()
 {
   return Teuchos::null;
 }
@@ -69,7 +69,7 @@ MAT::PAR::LubricationLawBarus::LubricationLawBarus(Teuchos::RCP<CORE::MAT::PAR::
 }
 
 // Create material instance of matching type with my parameters
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::LubricationLawBarus::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::LubricationLawBarus::create_material()
 {
   return Teuchos::null;
 }
@@ -109,7 +109,7 @@ MAT::PAR::LubricationLawRoeland::LubricationLawRoeland(
 }
 
 // Create material instance of matching type with my parameters
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::LubricationLawRoeland::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::LubricationLawRoeland::create_material()
 {
   return Teuchos::null;
 }

@@ -71,17 +71,17 @@ void FS3I::PartFpS3I1Wc::Setup()
   FS3I::PartFPS3I::Setup();
 
   // add proxy of fluid degrees of freedom to scatra discretization
-  if (scatravec_[0]->ScaTraField()->Discretization()->AddDofSet(
-          fpsi_->fluid_field()->Discretization()->GetDofSetProxy()) != 1)
+  if (scatravec_[0]->ScaTraField()->discretization()->AddDofSet(
+          fpsi_->fluid_field()->discretization()->GetDofSetProxy()) != 1)
     FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
 
   // check if scatra field has 2 discretizations, so that coupling is possible
-  if (scatravec_[1]->ScaTraField()->Discretization()->AddDofSet(
-          fpsi_->poro_field()->StructureField()->Discretization()->GetDofSetProxy()) != 1)
+  if (scatravec_[1]->ScaTraField()->discretization()->AddDofSet(
+          fpsi_->poro_field()->structure_field()->discretization()->GetDofSetProxy()) != 1)
     FOUR_C_THROW("unexpected dof sets in structure field");
   // check if scatra field has 3 discretizations, so that coupling is possible
-  if (scatravec_[1]->ScaTraField()->Discretization()->AddDofSet(
-          fpsi_->poro_field()->fluid_field()->Discretization()->GetDofSetProxy()) != 2)
+  if (scatravec_[1]->ScaTraField()->discretization()->AddDofSet(
+          fpsi_->poro_field()->fluid_field()->discretization()->GetDofSetProxy()) != 2)
     FOUR_C_THROW("unexpected dof sets in structure field");
 
   // Note: in the scatra fields we have now the following dof-sets:
@@ -101,7 +101,7 @@ void FS3I::PartFpS3I1Wc::Setup()
 void FS3I::PartFpS3I1Wc::Timeloop()
 {
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   // write FPSI solution into scatra field
   SetFPSISolution();
@@ -118,7 +118,7 @@ void FS3I::PartFpS3I1Wc::Timeloop()
     DoFPSIStep();  // TODO: One could think about skipping the very costly FSI/FPSI calculation for
                    // the case that it is stationary at some point (Thon)
     SetFPSISolution();  // write FPSI solution into scatra field
-    DoScatraStep();
+    do_scatra_step();
   }
 }
 
@@ -134,15 +134,15 @@ void FS3I::PartFpS3I1Wc::DoFPSIStep()
 
   constexpr bool force_prepare = false;
   fpsi_->prepare_output(force_prepare);
-  fpsi_->Update();
-  fpsi_->Output();
+  fpsi_->update();
+  fpsi_->output();
 }
 
 
 /*----------------------------------------------------------------------*
  |  Scatra step                                           hemmler 07/14 |
  *----------------------------------------------------------------------*/
-void FS3I::PartFpS3I1Wc::DoScatraStep()
+void FS3I::PartFpS3I1Wc::do_scatra_step()
 {
   if (Comm().MyPID() == 0)
   {
@@ -175,7 +175,7 @@ void FS3I::PartFpS3I1Wc::DoScatraStep()
 void FS3I::PartFpS3I1Wc::prepare_time_step()
 {
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   // prepare time step for both fluid- and poro-based scatra field
   for (unsigned i = 0; i < scatravec_.size(); ++i)

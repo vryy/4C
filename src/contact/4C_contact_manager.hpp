@@ -78,21 +78,21 @@ namespace CONTACT
     case are the current Lagrange multiplier values and the current
     active set status of each slave node.
 
-    \param output (in): IO::Discretization writer for restart
+    \param output (in): IO::discretization writer for restart
     \param forcedrestart (in): Force writing of restart data?
     */
-    void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart = false) final;
+    void write_restart(IO::DiscretizationWriter& output, bool forcedrestart = false) final;
 
     /*!
     \brief Read restart information for contact
 
-    This method has the inverse functionality of WriteRestart, as
+    This method has the inverse functionality of write_restart, as
     it reads the activetoggle / lmold vectors and stores the restart
     status into each slave node. Moreover, all global maps concerning
     the active set and the old mortar matrices D,M are rebuilt based
     on the restart information.
 
-    \param reader (in): IO::Discretization reader for restart
+    \param reader (in): IO::discretization reader for restart
     \param dis (in)   : global dof displacement vector
     \param zero (in)  : global dof zero vector
 
@@ -103,7 +103,7 @@ namespace CONTACT
     /*!
     \brief Write interface quantities for postprocessing
 
-    \param output (in): IO::Discretization writer for restart
+    \param output (in): IO::discretization writer for restart
 
     */
     void postprocess_quantities(IO::DiscretizationWriter& output) final;

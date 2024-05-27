@@ -98,7 +98,7 @@ void WEAR::WearInterface::FDCheckGapDeriv()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -202,7 +202,7 @@ void WEAR::WearInterface::FDCheckGapDeriv()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -355,7 +355,7 @@ void WEAR::WearInterface::FDCheckGapDeriv_W()
 
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -498,7 +498,7 @@ void WEAR::WearInterface::FDCheckDerivE_D(CORE::LINALG::SparseMatrix& linedis)
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -627,7 +627,7 @@ void WEAR::WearInterface::FDCheckDerivE_D(CORE::LINALG::SparseMatrix& linedis)
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -813,7 +813,7 @@ void WEAR::WearInterface::fd_check_deriv_e_d_master(CORE::LINALG::SparseMatrix& 
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -942,7 +942,7 @@ void WEAR::WearInterface::fd_check_deriv_e_d_master(CORE::LINALG::SparseMatrix& 
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -1132,7 +1132,7 @@ void WEAR::WearInterface::FDCheckDerivT_D(CORE::LINALG::SparseMatrix& lintdis)
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -1323,7 +1323,7 @@ void WEAR::WearInterface::fd_check_deriv_t_d_master(CORE::LINALG::SparseMatrix& 
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -1814,7 +1814,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(CORE::LINALG::SparseMatrix& linslipLM
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -2053,7 +2053,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(CORE::LINALG::SparseMatrix& linslipLM
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -2281,7 +2281,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(CORE::LINALG::SparseMatrix& linslipLM
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -2563,7 +2563,7 @@ void WEAR::WearInterface::FDCheckMortarTDeriv()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -2645,7 +2645,7 @@ void WEAR::WearInterface::FDCheckMortarTDeriv()
   Initialize();
 
   // compute element areas
-  SetElementAreas();
+  set_element_areas();
 
   // *******************************************************************
   // contents of Evaluate()
@@ -2733,7 +2733,7 @@ void WEAR::WearInterface::fd_check_mortar_t_master_deriv()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -2847,7 +2847,7 @@ void WEAR::WearInterface::fd_check_mortar_t_master_deriv()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -2929,7 +2929,7 @@ void WEAR::WearInterface::fd_check_mortar_t_master_deriv()
   Initialize();
 
   // compute element areas
-  SetElementAreas();
+  set_element_areas();
 
   // *******************************************************************
   // contents of Evaluate()
@@ -3017,7 +3017,7 @@ void WEAR::WearInterface::FDCheckMortarEDeriv()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -3099,7 +3099,7 @@ void WEAR::WearInterface::FDCheckMortarEDeriv()
   Initialize();
 
   // compute element areas
-  SetElementAreas();
+  set_element_areas();
 
   // *******************************************************************
   // contents of Evaluate()
@@ -3187,7 +3187,7 @@ void WEAR::WearInterface::fd_check_mortar_e_master_deriv()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -3302,7 +3302,7 @@ void WEAR::WearInterface::fd_check_mortar_e_master_deriv()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -3384,7 +3384,7 @@ void WEAR::WearInterface::fd_check_mortar_e_master_deriv()
   Initialize();
 
   // compute element areas
-  SetElementAreas();
+  set_element_areas();
 
   // *******************************************************************
   // contents of Evaluate()
@@ -3458,7 +3458,7 @@ void WEAR::WearInterface::FDCheckWearDerivLm()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -3612,7 +3612,7 @@ void WEAR::WearInterface::FDCheckWearDeriv()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -3712,7 +3712,7 @@ void WEAR::WearInterface::FDCheckWearDeriv()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()

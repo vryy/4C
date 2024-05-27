@@ -67,7 +67,7 @@ void CONTACT::STRATEGY::Factory::read_and_check_input(Teuchos::ParameterList& pa
 {
   check_init();
   // console output at the beginning
-  if (Comm().MyPID() == 0)
+  if (comm().MyPID() == 0)
   {
     std::cout << "Checking contact input parameters...........";
     fflush(stdout);
@@ -235,7 +235,7 @@ void CONTACT::STRATEGY::Factory::read_and_check_input(Teuchos::ParameterList& pa
   // ---------------------------------------------------------------------
   // warnings
   // ---------------------------------------------------------------------
-  if (Comm().MyPID() == 0)
+  if (comm().MyPID() == 0)
   {
     if (mortar.get<double>("SEARCH_PARAM") == 0.0)
       std::cout << ("Warning: Contact search called without inflation of bounding volumes\n")
@@ -311,7 +311,7 @@ void CONTACT::STRATEGY::Factory::read_and_check_input(Teuchos::ParameterList& pa
 
     // check for self contact
     std::vector<CORE::Conditions::Condition*> contactConditions(0);
-    Discret().GetCondition("Mortar", contactConditions);
+    discret().GetCondition("Mortar", contactConditions);
     bool self = false;
 
     for (const auto& condition : contactConditions)
@@ -576,7 +576,7 @@ void CONTACT::STRATEGY::Factory::read_and_check_input(Teuchos::ParameterList& pa
     {
       double timestep = GLOBAL::Problem::Instance()->TSIDynamicParams().get<double>("TIMESTEP");
       // rauch 01/16
-      if (Comm().MyPID() == 0)
+      if (comm().MyPID() == 0)
       {
         std::cout << "\n \n  Warning: CONTACT::STRATEGY::Factory::read_and_check_input() reads "
                      "TIMESTEP = "
@@ -679,11 +679,11 @@ void CONTACT::STRATEGY::Factory::read_and_check_input(Teuchos::ParameterList& pa
   }
 
   // no parallel redistribution in the serial case
-  if (Comm().NumProc() == 1)
+  if (comm().NumProc() == 1)
     params.sublist("PARALLEL REDISTRIBUTION").set<std::string>("PARALLEL_REDIST", "None");
 
   // console output at the end
-  if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
+  if (comm().MyPID() == 0) std::cout << "done!" << std::endl;
 
   // set dimension
   params.set<int>("DIMENSION", dim);
@@ -696,7 +696,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     bool& poromaster) const
 {
   // start building interfaces
-  if (Comm().MyPID() == 0)
+  if (comm().MyPID() == 0)
   {
     std::cout << "Building contact interface(s)..............." << std::endl;
     fflush(stdout);
@@ -704,17 +704,17 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
 
   // Vector that solely contains solid-to-solid contact pairs
   std::vector<std::vector<CORE::Conditions::Condition*>> ccond_grps(0);
-  CONTACT::UTILS::GetContactConditionGroups(ccond_grps, Discret());
+  CONTACT::UTILS::GetContactConditionGroups(ccond_grps, discret());
 
   std::set<const DRT::Node*> dbc_slave_nodes;
   std::set<const DRT::Element*> dbc_slave_eles;
   CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes_and_elements(
-      Discret(), ccond_grps, dbc_slave_nodes, dbc_slave_eles);
+      discret(), ccond_grps, dbc_slave_nodes, dbc_slave_eles);
 
   // maximum dof number in discretization
   // later we want to create NEW Lagrange multiplier degrees of
   // freedom, which of course must not overlap with displacement dofs
-  int maxdof = Discret().dof_row_map()->MaxAllGID();
+  int maxdof = discret().dof_row_map()->MaxAllGID();
 
   // get input par.
   auto stype = CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY");
@@ -877,10 +877,10 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     // ------------------------------------------------------------------------
     // create the desired interface object
     // ------------------------------------------------------------------------
-    const auto& discret = Teuchos::rcp<const DRT::Discretization>(&Discret(), false);
+    const auto& non_owning_discret = Teuchos::rcp<const DRT::Discretization>(&discret(), false);
 
-    Teuchos::RCP<CONTACT::Interface> newinterface = CreateInterface(groupid1, Comm(), Dim(),
-        icparams, isself[0], discret, Teuchos::null, contactconstitutivelaw_id);
+    Teuchos::RCP<CONTACT::Interface> newinterface = CreateInterface(groupid1, comm(), dim(),
+        icparams, isself[0], non_owning_discret, Teuchos::null, contactconstitutivelaw_id);
     interfaces.push_back(newinterface);
 
     // get it again
@@ -904,8 +904,8 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
       for (int gid : *nodeids)
       {
         // do only nodes that I have in my discretization
-        if (!Discret().HaveGlobalNode(gid)) continue;
-        DRT::Node* node = Discret().gNode(gid);
+        if (!discret().HaveGlobalNode(gid)) continue;
+        DRT::Node* node = discret().gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
         if (node->NumElement() == 0)
@@ -958,17 +958,17 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
         {
           Teuchos::RCP<CONTACT::FriNode> cnode =
               Teuchos::rcp(new CONTACT::FriNode(node->Id(), node->X(), node->Owner(),
-                  Discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive, friplus));
+                  discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive, friplus));
           //-------------------
           // get nurbs weight!
           if (nurbs)
           {
-            PrepareNURBSNode(node, cnode);
+            prepare_nurbs_node(node, cnode);
           }
 
           // get edge and corner information:
           std::vector<CORE::Conditions::Condition*> contactCornerConditions(0);
-          Discret().GetCondition("mrtrcorner", contactCornerConditions);
+          discret().GetCondition("mrtrcorner", contactCornerConditions);
           for (auto& condition : contactCornerConditions)
           {
             if (condition->ContainsNode(node->Id()))
@@ -977,7 +977,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
             }
           }
           std::vector<CORE::Conditions::Condition*> contactEdgeConditions(0);
-          Discret().GetCondition("mrtredge", contactEdgeConditions);
+          discret().GetCondition("mrtredge", contactEdgeConditions);
           for (auto& condition : contactEdgeConditions)
           {
             if (condition->ContainsNode(node->Id()))
@@ -988,7 +988,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
 
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
           std::vector<CORE::Conditions::Condition*> contactSymConditions(0);
-          Discret().GetCondition("mrtrsym", contactSymConditions);
+          discret().GetCondition("mrtrsym", contactSymConditions);
 
           for (auto& condition : contactSymConditions)
           {
@@ -1021,26 +1021,26 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
           if (mircolaw == true)
           {
             cnode = Teuchos::rcp(new CONTACT::RoughNode(node->Id(), node->X(), node->Owner(),
-                Discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive,
+                discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive,
                 hurstexponentfunction, initialtopologystddeviationfunction, resolution,
                 randomtopologyflag, randomseedflag, randomgeneratorseed));
           }
           else
           {
             cnode = Teuchos::rcp(new CONTACT::Node(node->Id(), node->X(), node->Owner(),
-                Discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive));
+                discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive));
           }
 
           //-------------------
           // get nurbs weight!
           if (nurbs)
           {
-            PrepareNURBSNode(node, cnode);
+            prepare_nurbs_node(node, cnode);
           }
 
           // get edge and corner information:
           std::vector<CORE::Conditions::Condition*> contactCornerConditions(0);
-          Discret().GetCondition("mrtrcorner", contactCornerConditions);
+          discret().GetCondition("mrtrcorner", contactCornerConditions);
           for (auto& condition : contactCornerConditions)
           {
             if (condition->ContainsNode(node->Id()))
@@ -1049,7 +1049,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
             }
           }
           std::vector<CORE::Conditions::Condition*> contactEdgeConditions(0);
-          Discret().GetCondition("mrtredge", contactEdgeConditions);
+          discret().GetCondition("mrtredge", contactEdgeConditions);
           for (auto& condition : contactEdgeConditions)
           {
             if (condition->ContainsNode(node->Id()))
@@ -1060,7 +1060,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
 
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
           std::vector<CORE::Conditions::Condition*> contactSymConditions(0);
-          Discret().GetCondition("mrtrsym", contactSymConditions);
+          discret().GetCondition("mrtrsym", contactSymConditions);
 
           for (auto& condition : contactSymConditions)
           {
@@ -1117,10 +1117,10 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
       int lsize = 0;
       std::map<int, Teuchos::RCP<DRT::Element>>::iterator fool;
       for (fool = currele.begin(); fool != currele.end(); ++fool)
-        if (fool->second->Owner() == Comm().MyPID()) ++lsize;
+        if (fool->second->Owner() == comm().MyPID()) ++lsize;
 
       int gsize = 0;
-      Comm().SumAll(&lsize, &gsize, 1);
+      comm().SumAll(&lsize, &gsize, 1);
 
       bool nurbs = false;
       if (currele.size() > 0) nurbs = CORE::FE::IsNurbsDisType(currele.begin()->second->Shape());
@@ -1144,17 +1144,15 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
         Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(ele->Id() + ggsize,
             ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), isslave[j], nurbs));
 
-        if (isporo) set_poro_parent_element(slavetype, mastertype, cele, ele, Discret());
+        if (isporo) set_poro_parent_element(slavetype, mastertype, cele, ele, discret());
 
         if (algo == INPAR::MORTAR::algorithm_gpts)
         {
-          const auto* discret = dynamic_cast<const DRT::Discretization*>(&Discret());
-          if (discret == nullptr) FOUR_C_THROW("Dynamic cast failed!");
           Teuchos::RCP<DRT::FaceElement> faceele =
               Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
           if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
           if (faceele->parent_element() == nullptr) FOUR_C_THROW("face parent does not exist");
-          if (discret->ElementColMap()->LID(faceele->parent_element()->Id()) == -1)
+          if (discret().ElementColMap()->LID(faceele->parent_element()->Id()) == -1)
             FOUR_C_THROW("vol dis does not have parent ele");
           cele->set_parent_master_element(faceele->parent_element(), faceele->FaceParentNumber());
         }
@@ -1163,7 +1161,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
         // get knotvector, normal factor and zero-size information for nurbs
         if (nurbs)
         {
-          PrepareNURBSElement(Discret(), ele, cele);
+          prepare_nurbs_element(discret(), ele, cele);
         }
 
         interface->add_element(cele);
@@ -1184,7 +1182,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
   if (not isanyselfcontact) fully_overlapping_interfaces(interfaces);
 
   // finish the interface creation
-  if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
+  if (comm().MyPID() == 0) std::cout << "done!" << std::endl;
 }
 
 /*----------------------------------------------------------------------------*
@@ -1295,7 +1293,7 @@ int CONTACT::STRATEGY::Factory::identify_full_subset(
     else if (is_fullsubmap != ref_map->MyGID(mysubgids[i]))
     {
       if (throw_if_partial_subset_on_proc)
-        FOUR_C_THROW("Partial sub-map detected on proc #%d!", Comm().MyPID());
+        FOUR_C_THROW("Partial sub-map detected on proc #%d!", comm().MyPID());
       is_fullsubmap = false;
     }
   }
@@ -1305,9 +1303,9 @@ int CONTACT::STRATEGY::Factory::identify_full_subset(
   int lfullsubmap = static_cast<int>(is_fullsubmap);
   int gfullsubmap = 0;
 
-  Comm().SumAll(&lfullsubmap, &gfullsubmap, 1);
+  comm().SumAll(&lfullsubmap, &gfullsubmap, 1);
 
-  return (gfullsubmap == Comm().NumProc() ? sub_id : -1);
+  return (gfullsubmap == comm().NumProc() ? sub_id : -1);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1556,7 +1554,7 @@ void CONTACT::STRATEGY::Factory::find_poro_interface_types(bool& poromaster, boo
   // constellations
   // s-s, p-s, s-p, p-p
   // wait for all processors to determine if they have poro or structural master or slave elements
-  Comm().Barrier();
+  comm().Barrier();
   /* FixMe Should become possible for scoped enumeration with C++11,
    * till then we use the shown workaround.
    *  enum MORTAR::Element::PhysicalType slaveTypeList[Comm().NumProc()];
@@ -1564,15 +1562,15 @@ void CONTACT::STRATEGY::Factory::find_poro_interface_types(bool& poromaster, boo
    *  Comm().GatherAll(static_cast<int*>(&slavetype),static_cast<int*>(slaveTypeList.data()),1);
    *  Comm().GatherAll(static_cast<int*>(&mastertype),static_cast<int*>(masterTypeList.data()),1);
    */
-  std::vector<int> slaveTypeList(Comm().NumProc());
-  std::vector<int> masterTypeList(Comm().NumProc());
+  std::vector<int> slaveTypeList(comm().NumProc());
+  std::vector<int> masterTypeList(comm().NumProc());
   int int_slavetype = static_cast<int>(slavetype);
   int int_mastertype = static_cast<int>(mastertype);
-  Comm().GatherAll(&int_slavetype, slaveTypeList.data(), 1);
-  Comm().GatherAll(&int_mastertype, masterTypeList.data(), 1);
-  Comm().Barrier();
+  comm().GatherAll(&int_slavetype, slaveTypeList.data(), 1);
+  comm().GatherAll(&int_mastertype, masterTypeList.data(), 1);
+  comm().Barrier();
 
-  for (int i = 0; i < Comm().NumProc(); ++i)
+  for (int i = 0; i < comm().NumProc(); ++i)
   {
     switch (slaveTypeList[i])
     {
@@ -1609,7 +1607,7 @@ void CONTACT::STRATEGY::Factory::find_poro_interface_types(bool& poromaster, boo
     }
   }
 
-  for (int i = 0; i < Comm().NumProc(); ++i)
+  for (int i = 0; i < comm().NumProc(); ++i)
   {
     switch (masterTypeList[i])
     {
@@ -1659,7 +1657,7 @@ Teuchos::RCP<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrateg
   Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr = Teuchos::null;
 
   return BuildStrategy(stype, params, poroslave, poromaster, dof_offset, interfaces,
-      Discret().dof_row_map(), Discret().NodeRowMap(), Dim(), CommPtr(), data_ptr,
+      discret().dof_row_map(), discret().NodeRowMap(), dim(), comm_ptr(), data_ptr,
       cparams_interface);
 }
 
@@ -1842,7 +1840,7 @@ void CONTACT::STRATEGY::Factory::Print(
     const Teuchos::ParameterList& params) const
 {
   // print friction information of interfaces
-  if (Comm().MyPID() == 0)
+  if (comm().MyPID() == 0)
   {
     // get input parameter
     auto ftype = CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(params, "FRICTION");
@@ -1868,7 +1866,7 @@ void CONTACT::STRATEGY::Factory::Print(
   // print initial parallel redistribution
   for (const auto& interface : interfaces) interface->print_parallel_distribution();
 
-  if (Comm().MyPID() == 0)
+  if (comm().MyPID() == 0)
   {
     PrintStrategyBanner(strategy_ptr->Type());
   }
@@ -2126,11 +2124,11 @@ void CONTACT::STRATEGY::Factory::set_parameters_for_contact_condition(
     const int conditiongroupid, Teuchos::ParameterList& contactinterfaceparameters) const
 {
   // add parameters if we have SSI contact
-  if (Discret().GetCondition("SSIInterfaceContact") != nullptr)
+  if (discret().GetCondition("SSIInterfaceContact") != nullptr)
   {
     // get the scatra-scatra interface coupling condition
     std::vector<CORE::Conditions::Condition*> s2ikinetics_conditions;
-    Discret().GetCondition("S2IKinetics", s2ikinetics_conditions);
+    discret().GetCondition("S2IKinetics", s2ikinetics_conditions);
 
     // create a sublist which is filled and added to the contact interface parameters
     auto& s2icouplingparameters = contactinterfaceparameters.sublist("ContactS2ICoupling");

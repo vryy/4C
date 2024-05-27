@@ -114,7 +114,7 @@ void POROELASTSCATRA::PoroScatraBase::TestResults(const Epetra_Comm& comm)
 {
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
-  problem->AddFieldTest(poro_->StructureField()->CreateFieldTest());
+  problem->AddFieldTest(poro_->structure_field()->CreateFieldTest());
   problem->AddFieldTest(poro_->fluid_field()->CreateFieldTest());
   problem->AddFieldTest(scatra_->create_sca_tra_field_test());
   problem->TestAll(comm);
@@ -158,13 +158,13 @@ void POROELASTSCATRA::PoroScatraBase::SetScatraSolution()
   }
 
   // porous structure
-  poro_->StructureField()->Discretization()->set_state(2, "scalar", phinp_s);
-  poro_->StructureField()->Discretization()->set_state(2, "scalarn", phin_s);
+  poro_->structure_field()->discretization()->set_state(2, "scalar", phinp_s);
+  poro_->structure_field()->discretization()->set_state(2, "scalarn", phin_s);
 
   // porous fluid
   poro_->fluid_field()->SetIterScalarFields(phinp_f, phin_f, phidtnp,
-      // scatra_->ScaTraField()->Discretization()
-      poro_->fluid_field()->Discretization(), 2);
+      // scatra_->ScaTraField()->discretization()
+      poro_->fluid_field()->discretization(), 2);
 }
 
 /*----------------------------------------------------------------------*
@@ -186,11 +186,11 @@ void POROELASTSCATRA::PoroScatraBase::set_velocity_fields()
     velnp = volcoupl_fluidscatra_->apply_vector_mapping21(poro_->fluid_field()->Velnp());
   }
 
-  scatra_->ScaTraField()->SetVelocityField(convel,  // convective vel.
-      Teuchos::null,                                // acceleration
-      velnp,                                        // velocity
-      Teuchos::null,                                // fsvel
-      true                                          // set pressure
+  scatra_->ScaTraField()->set_velocity_field(convel,  // convective vel.
+      Teuchos::null,                                  // acceleration
+      velnp,                                          // velocity
+      Teuchos::null,                                  // fsvel
+      true                                            // set pressure
   );
 }
 
@@ -216,14 +216,14 @@ void POROELASTSCATRA::PoroScatraBase::set_mesh_disp()
 
   if (matchinggrid_)
   {
-    sdispnp = StructureField()->Dispnp();
+    sdispnp = structure_field()->Dispnp();
   }
   else
   {
-    sdispnp = volcoupl_structurescatra_->apply_vector_mapping21(StructureField()->Dispnp());
+    sdispnp = volcoupl_structurescatra_->apply_vector_mapping21(structure_field()->Dispnp());
   }
 
-  scatra_->ScaTraField()->Discretization()->set_state(1, "displacement", sdispnp);
+  scatra_->ScaTraField()->discretization()->set_state(1, "displacement", sdispnp);
 }
 
 /*----------------------------------------------------------------------*

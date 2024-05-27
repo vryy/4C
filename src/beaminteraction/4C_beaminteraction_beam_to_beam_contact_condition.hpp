@@ -71,7 +71,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Check if a ID is in a condition.
      */
-    inline static bool IdIsInCondition(const std::set<int>& id_set, const int id)
+    inline static bool id_is_in_condition(const std::set<int>& id_set, const int id)
     {
       return id_set.find(id) != id_set.end();
     }

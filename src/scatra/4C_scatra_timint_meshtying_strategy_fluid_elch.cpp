@@ -44,7 +44,7 @@ void SCATRA::MeshtyingStrategyFluidElch::InitMeshtying()
   return;
 }
 
-void SCATRA::MeshtyingStrategyFluidElch::SetupMeshtying()
+void SCATRA::MeshtyingStrategyFluidElch::setup_meshtying()
 {
   // safety check
   if (scatratimint_->NumScal() < 1)
@@ -59,7 +59,7 @@ void SCATRA::MeshtyingStrategyFluidElch::SetupMeshtying()
   if (CORE::UTILS::IntegralValue<int>(*(elch_tim_int()->ElchParameterList()), "ONLYPOTENTIAL"))
     for (int i = 0; i < scatratimint_->NumScal(); ++i) coupleddof[i] = 0;
 
-  meshtying_->SetupMeshtying(coupleddof);
+  meshtying_->setup_meshtying(coupleddof);
 }
 
 /*------------------------------------------------------------------------*

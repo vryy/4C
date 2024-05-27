@@ -88,9 +88,9 @@ namespace
       anisotropy_.SetGaussPointFibers(gpFibers_);
     }
 
-    [[nodiscard]] int GetGaussPoint() const { return std::get<1>(GetParam()); }
+    [[nodiscard]] int get_gauss_point() const { return std::get<1>(GetParam()); }
 
-    [[nodiscard]] int GetFiberId() const { return std::get<0>(GetParam()); }
+    [[nodiscard]] int get_fiber_id() const { return std::get<0>(GetParam()); }
 
     MAT::Anisotropy anisotropy_;
     std::unique_ptr<MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension> anisotropyExtension_;
@@ -102,25 +102,25 @@ namespace
 
   TEST_P(CoupAnisoExpoAnisotropyExtensionGaussPointFiberTest, GetScalarProduct)
   {
-    EXPECT_NEAR(anisotropyExtension_->GetScalarProduct(GetGaussPoint()), 1.0, 1e-10);
+    EXPECT_NEAR(anisotropyExtension_->GetScalarProduct(get_gauss_point()), 1.0, 1e-10);
   }
 
   TEST_P(CoupAnisoExpoAnisotropyExtensionGaussPointFiberTest, GetFiber)
   {
-    FOUR_C_EXPECT_NEAR(anisotropyExtension_->GetFiber(GetGaussPoint()),
-        gpFibers_[GetGaussPoint()][GetFiberId() - 1], 1e-10);
+    FOUR_C_EXPECT_NEAR(anisotropyExtension_->GetFiber(get_gauss_point()),
+        gpFibers_[get_gauss_point()][get_fiber_id() - 1], 1e-10);
   }
 
   TEST_P(CoupAnisoExpoAnisotropyExtensionGaussPointFiberTest, GetStructuralTensor)
   {
-    FOUR_C_EXPECT_NEAR(anisotropyExtension_->GetStructuralTensor(GetGaussPoint()),
-        gpTensors_[GetGaussPoint()][GetFiberId() - 1], 1e-10);
+    FOUR_C_EXPECT_NEAR(anisotropyExtension_->GetStructuralTensor(get_gauss_point()),
+        gpTensors_[get_gauss_point()][get_fiber_id() - 1], 1e-10);
   }
 
   TEST_P(CoupAnisoExpoAnisotropyExtensionGaussPointFiberTest, GetStructuralTensorStress)
   {
-    FOUR_C_EXPECT_NEAR(anisotropyExtension_->get_structural_tensor_stress(GetGaussPoint()),
-        gpTensors_stress_[GetGaussPoint()][GetFiberId() - 1], 1e-10);
+    FOUR_C_EXPECT_NEAR(anisotropyExtension_->get_structural_tensor_stress(get_gauss_point()),
+        gpTensors_stress_[get_gauss_point()][get_fiber_id() - 1], 1e-10);
   }
 
   INSTANTIATE_TEST_SUITE_P(GaussPoints, CoupAnisoExpoAnisotropyExtensionGaussPointFiberTest,

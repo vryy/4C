@@ -570,7 +570,7 @@ void DRT::ELEMENTS::Beam3k::set_up_reference_geometry_wk(
     // calculate the length of the element via Newton iteration
     CORE::LINALG::Matrix<12, 1> pos_ref_centerline;
     add_ref_values_disp_centerline<2, 2>(pos_ref_centerline);
-    length_ = CalcReflength<2, 2>(pos_ref_centerline);
+    length_ = calc_reflength<2, 2>(pos_ref_centerline);
 
     // Matrices to store the function values of the Lagrange shape functions used to interpolate
     // theta
@@ -780,7 +780,7 @@ void DRT::ELEMENTS::Beam3k::set_up_reference_geometry_sk(
     // calculate the length of the element via Newton iteration
     CORE::LINALG::Matrix<12, 1> disp_refe_centerline;
     add_ref_values_disp_centerline<2, 2>(disp_refe_centerline);
-    length_ = CalcReflength<2, 2>(disp_refe_centerline);
+    length_ = calc_reflength<2, 2>(disp_refe_centerline);
 
     // Matrices to store the function values of the Lagrange shape functions used to interpolate
     // theta
@@ -1009,7 +1009,7 @@ void DRT::ELEMENTS::Beam3k::GetPosAtXi(
         disp.size());
   }
 
-  Beam3Base::GetPosAtXi<2, 2>(pos, xi, disp_totlag_centerline);
+  Beam3Base::get_pos_at_xi<2, 2>(pos, xi, disp_totlag_centerline);
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -1980,7 +1980,7 @@ void DRT::ELEMENTS::Beam3k::calc_velocity(
       velocity_dofvec, N_i, velocity_test);
 
   // get time step size
-  const double dt = ParamsInterface().GetDeltaTime();
+  const double dt = params_interface().GetDeltaTime();
 
   CORE::LINALG::Matrix<3, 1> diff(true);
 

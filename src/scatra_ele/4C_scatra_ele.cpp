@@ -247,7 +247,7 @@ int DRT::ELEMENTS::TransportType::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to Transport element failed");
-    actele->Initialize();
+    actele->initialize();
   }
   return 0;
 }
@@ -705,7 +705,7 @@ void DRT::ELEMENTS::Transport ::SetImplType(const INPAR::SCATRA::ImplType implty
 /*----------------------------------------------------------------------*
  |  init the element                                        vuong08/16 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Transport::Initialize()
+int DRT::ELEMENTS::Transport::initialize()
 {
   Teuchos::RCP<CORE::MAT::Material> mat = Material();
   // for now, we only need to do something in case of reactions (for the initialization of functions

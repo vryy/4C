@@ -60,9 +60,9 @@ namespace FLD
       virtual ~FluidImpedanceWrapper() = default;
 
       /*!
-        \brief Wrapper for FluidImpedacnceBc::UseBlockMatrix
+        \brief Wrapper for FluidImpedacnceBc::use_block_matrix
       */
-      void UseBlockMatrix(Teuchos::RCP<std::set<int>> condelements,
+      void use_block_matrix(Teuchos::RCP<std::set<int>> condelements,
           const CORE::LINALG::MultiMapExtractor& domainmaps,
           const CORE::LINALG::MultiMapExtractor& rangemaps, bool splitmatrix);
 
@@ -79,9 +79,9 @@ namespace FLD
       void time_update_impedances(const double time);
 
       /*!
-      \brief Wrapper for FluidImpedacnceBc::WriteRestart
+      \brief Wrapper for FluidImpedacnceBc::write_restart
       */
-      void WriteRestart(IO::DiscretizationWriter& output);
+      void write_restart(IO::DiscretizationWriter& output);
 
       /*!
       \brief Wrapper for FluidImpedacnceBc::read_restart
@@ -135,7 +135,7 @@ namespace FLD
       /*!
       \brief Split linearization matrix to a BlockSparseMatrixBase
       */
-      void UseBlockMatrix(Teuchos::RCP<std::set<int>> condelements,
+      void use_block_matrix(Teuchos::RCP<std::set<int>> condelements,
           const CORE::LINALG::MultiMapExtractor& domainmaps,
           const CORE::LINALG::MultiMapExtractor& rangemaps, bool splitmatrix);
 
@@ -143,7 +143,7 @@ namespace FLD
         \brief compute and store flow rate of all previous
         time steps belonging to one cycle
       */
-      void FlowRateCalculation(const int condid);
+      void flow_rate_calculation(const int condid);
 
       /*!
         \brief compute convolution integral and apply pressure
@@ -156,12 +156,12 @@ namespace FLD
       /*!
         \brief Update flowrate and pressure vector
       */
-      void TimeUpdateImpedance(const double time, const int condid);
+      void time_update_impedance(const double time, const int condid);
 
       /*!
       \brief write flowrates_ and flowratespos_ to result files
       */
-      void WriteRestart(IO::DiscretizationWriter& output, const int condnum);
+      void write_restart(IO::DiscretizationWriter& output, const int condnum);
 
       /*!
       \brief read flowrates_ and flowratespos_

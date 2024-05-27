@@ -52,9 +52,9 @@ namespace ALE
 
      protected:
       /// determine element type string and whether element is copied or not
-      bool DetermineEleType(DRT::Element* actele,  ///< current element
-          const bool ismyele,                      ///< true if element belongs to my proc
-          std::vector<std::string>& eletype        ///< element type
+      bool determine_ele_type(DRT::Element* actele,  ///< current element
+          const bool ismyele,                        ///< true if element belongs to my proc
+          std::vector<std::string>& eletype          ///< element type
       );
 
       /*! \brief Set element-specific data (material etc.)
@@ -63,7 +63,7 @@ namespace ALE
        *  setup. This is again really ugly as we have to extract the actual
        *  element type in order to access the material property.
        */
-      void SetElementData(
+      void set_element_data(
           Teuchos::RCP<DRT::Element> newele,  ///< newly created element where data has to be set
           DRT::Element* oldele,               ///< existing element, that has been cloned
           const int matid,                    ///< ID of material law
@@ -71,10 +71,10 @@ namespace ALE
       );
 
       /// returns conditions names to be copied (source and target name)
-      std::map<std::string, std::string> ConditionsToCopy() const;
+      std::map<std::string, std::string> conditions_to_copy() const;
 
       /// check for correct material
-      void CheckMaterialType(const int matid);
+      void check_material_type(const int matid);
 
      private:
     };  // class AleCloneStrategy

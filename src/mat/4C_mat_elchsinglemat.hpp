@@ -76,7 +76,7 @@ namespace MAT
       explicit ElchSingleMat(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       //! check whether number of parameters is consistent with curve number
-      void CheckProvidedParams(int functnr, const std::vector<double>& functparams);
+      void check_provided_params(int functnr, const std::vector<double>& functparams);
     };  // class MAT::PAR::ElchSingleMat
   }     // namespace PAR
 
@@ -136,7 +136,7 @@ namespace MAT
         double concentration, double temperature) const;
 
     //! compute conductivity accounting for concentration and temperature dependence
-    double ComputeConductivity(double concentration, double temperature) const;
+    double compute_conductivity(double concentration, double temperature) const;
 
     //! compute concentration dependent conductivity according to function number
     double compute_conductivity_concentration_dependent(double concentration) const;
@@ -219,7 +219,7 @@ namespace MAT
     };
 
     //! return parameters for conductivity
-    const std::vector<double>& ConductivityParams() const
+    const std::vector<double>& conductivity_params() const
     {
       return dynamic_cast<MAT::PAR::ElchSingleMat*>(Parameter())->conductivity_params_;
     };
@@ -237,7 +237,7 @@ namespace MAT
     //! \param scalar       scalar value to insert into function
     //! \param functparams  constants that define the functions
     //! \return             function evaluated at value of scalar
-    double EvalPreDefinedFunct(
+    double eval_pre_defined_funct(
         int functnr, double scalar, const std::vector<double>& functparams) const;
 
     //! evaluate first derivative of predefined function of any scalar (e.g. concentration,

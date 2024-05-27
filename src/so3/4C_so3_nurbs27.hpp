@@ -210,7 +210,7 @@ namespace DRT
               at the level of the total system of equations. Purely internal
               element dofs that are condensed internally should NOT be considered.
         */
-        int NumDofPerElement() const override { return 0; }
+        int num_dof_per_element() const override { return 0; }
 
         /*!
         \brief Print this element
@@ -283,7 +283,7 @@ namespace DRT
 
          \return void
          */
-        void CalcSTCMatrix(CORE::LINALG::Matrix<81, 81>& elemat1,
+        void do_calc_stc_matrix(CORE::LINALG::Matrix<81, 81>& elemat1,
             const INPAR::STR::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
             DRT::Discretization& discretization, bool do_inverse);
 
@@ -322,7 +322,7 @@ namespace DRT
 
         //! init the inverse of the jacobian and its determinant in
         //! the material configuration
-        virtual void InitJacobianMapping(DRT::Discretization& dis);
+        virtual void init_jacobian_mapping(DRT::Discretization& dis);
 
         //! Calculate nonlinear stiffness and mass matrix
         virtual void sonurbs27_nlnstiffmass(std::vector<int>& lm,  ///< location matrix
@@ -346,7 +346,7 @@ namespace DRT
         std::vector<double> sonurbs27_gpweights();
 
         //! calculate internal energy
-        double CalcIntEnergy(DRT::Discretization& discretization, std::vector<double>& disp,
+        double calc_int_energy(DRT::Discretization& discretization, std::vector<double>& disp,
             Teuchos::ParameterList& params);
 
         //! Lump mass matrix (bborn 07/08)

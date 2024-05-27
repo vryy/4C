@@ -57,13 +57,13 @@ namespace ART
     void prepare_time_step() override;
 
     /// setup Dirichlet Boundary conditions
-    void ApplyDirichletBC();
+    void apply_dirichlet_bc();
 
     /// reset artery diameter of previous time step
     void reset_artery_diam_previous_time_step();
 
     //! Apply Neumann boundary conditions
-    void ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>& neumann_loads  //!< Neumann loads
+    void apply_neumann_bc(const Teuchos::RCP<Epetra_Vector>& neumann_loads  //!< Neumann loads
     );
 
     /// add neumann BC to residual

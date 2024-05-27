@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_Mixed(const int myrank, const int sweeps,
+double FSI::OverlappingBlockMatrixFSIAMG::richardson_bgs_mixed(const int myrank, const int sweeps,
     const double damp, std::vector<int>& blocksweeps, std::vector<double>& blockdamps,
     const bool sisamg, const bool fisamg, const bool aisamg, AnalyzeBest& sbest, AnalyzeBest& fbest,
     AnalyzeBest& abest, MLAPI::MultiVector& sy, MLAPI::MultiVector& fy, MLAPI::MultiVector& ay,
@@ -96,10 +96,10 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_Mixed(const int myrank, 
       sz = 0.0;
 
       if (sisamg)
-        RichardsonV("(s)", myrank, blocksweeps[0], blockdamps[0], sbest.Sweeps(), sbest.Damp(), Ass,
-            sbest.S(), Pss, Rss, 0, sbest.Nlevel(), sz, stmpf, true, false, true);
+        richardson_v("(s)", myrank, blocksweeps[0], blockdamps[0], sbest.Sweeps(), sbest.Damp(),
+            Ass, sbest.S(), Pss, Rss, 0, sbest.Nlevel(), sz, stmpf, true, false, true);
       else
-        RichardsonMixed("(s)", myrank, 0, blocksweeps[0], blockdamps[0], Ass[0], Matrix(0, 0),
+        richardson_mixed("(s)", myrank, 0, blocksweeps[0], blockdamps[0], Ass[0], Matrix(0, 0),
             structuresolver_, sz, stmpf, const_cast<int&>(srun_), true, false, true);
 
       sy.Update(damp, sz, 1.0);
@@ -117,10 +117,10 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_Mixed(const int myrank, 
       az = 0.0;
 
       if (aisamg)
-        RichardsonV("(a)", myrank, blocksweeps[2], blockdamps[2], abest.Sweeps(), abest.Damp(), Aaa,
-            abest.S(), Paa, Raa, 0, abest.Nlevel(), az, atmpf, true, false, true);
+        richardson_v("(a)", myrank, blocksweeps[2], blockdamps[2], abest.Sweeps(), abest.Damp(),
+            Aaa, abest.S(), Paa, Raa, 0, abest.Nlevel(), az, atmpf, true, false, true);
       else
-        RichardsonMixed("(a)", myrank, 0, blocksweeps[2], blockdamps[2], Aaa[0], Matrix(2, 2),
+        richardson_mixed("(a)", myrank, 0, blocksweeps[2], blockdamps[2], Aaa[0], Matrix(2, 2),
             alesolver_, az, atmpf, const_cast<int&>(arun_), true, false, true);
 
       ay.Update(damp, az, 1.0);
@@ -136,10 +136,10 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_Mixed(const int myrank, 
       fz = 0.0;
 
       if (fisamg)
-        RichardsonV("(f)", myrank, blocksweeps[1], blockdamps[1], fbest.Sweeps(), fbest.Damp(), Aff,
-            fbest.S(), Pff, Rff, 0, fbest.Nlevel(), fz, ftmpf, true, false, true);
+        richardson_v("(f)", myrank, blocksweeps[1], blockdamps[1], fbest.Sweeps(), fbest.Damp(),
+            Aff, fbest.S(), Pff, Rff, 0, fbest.Nlevel(), fz, ftmpf, true, false, true);
       else
-        RichardsonMixed("(f)", myrank, 0, blocksweeps[1], blockdamps[1], Aff[0], Matrix(1, 1),
+        richardson_mixed("(f)", myrank, 0, blocksweeps[1], blockdamps[1], Aff[0], Matrix(1, 1),
             fluidsolver_, fz, ftmpf, const_cast<int&>(frun_), true, false, true);
 
       fy.Update(damp, fz, 1.0);
@@ -174,14 +174,14 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_Mixed(const int myrank, 
     rinf = std::max(srinf, arinf);
     rinf = std::max(rinf, frinf);
 
-    double rl2rate = Rate(myrank, t, rl2, initrl2,
+    double rl2rate = rate(myrank, t, rl2, initrl2,
         stmpf.GetGlobalLength() + atmpf.GetGlobalLength() + ftmpf.GetGlobalLength());
-    double rinfrate = Rate(myrank, t, rinf, initrinf,
+    double rinfrate = rate(myrank, t, rinf, initrinf,
         stmpf.GetGlobalLength() + atmpf.GetGlobalLength() + ftmpf.GetGlobalLength());
 
     if (!myrank && !silent)
       printf(
-          "RichardsonBGS_Mixed  (level %2d) r0 %10.5e rl_2 %10.5e rinf0 %10.5e rinf %10.5e t "
+          "richardson_bgs_mixed  (level %2d) r0 %10.5e rl_2 %10.5e rinf0 %10.5e rinf %10.5e t "
           "%10.5e damp %10.5e sweeps %2d l2rate %10.5e rinfrate %10.5e\n",
           0, initrl2, rl2, initrinf, rinf, t, damp, sweeps, rl2rate, rinfrate);
     rl2rate = std::max(rl2rate, rinfrate);
@@ -196,9 +196,9 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_Mixed(const int myrank, 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double FSI::OverlappingBlockMatrixFSIAMG::RichardsonMixed(const std::string field, const int myrank,
-    const int level, const int sweeps, const double damp, const MLAPI::Operator& A,
-    const CORE::LINALG::SparseMatrix& matrix,
+double FSI::OverlappingBlockMatrixFSIAMG::richardson_mixed(const std::string field,
+    const int myrank, const int level, const int sweeps, const double damp,
+    const MLAPI::Operator& A, const CORE::LINALG::SparseMatrix& matrix,
     const Teuchos::RCP<CORE::LINALG::Preconditioner>& solver, MLAPI::MultiVector& x,
     const MLAPI::MultiVector& f, int& run, bool initiguesszero, bool analysis, bool silent) const
 {
@@ -256,12 +256,12 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonMixed(const std::string fiel
     rl2 = r.Norm2();
     rinf = r.NormInf();
     double t = timer.totalElapsedTime(true);
-    double rl2rate = Rate(myrank, t, rl2, initrl2, r.GetGlobalLength());
-    double rinfrate = Rate(myrank, t, rinf, initrinf, r.GetGlobalLength());
+    double rl2rate = rate(myrank, t, rl2, initrl2, r.GetGlobalLength());
+    double rinfrate = rate(myrank, t, rinf, initrinf, r.GetGlobalLength());
 
     if (!myrank && !silent)
       printf(
-          "RichardsonMixed %s  (level %2d) r0 %10.5e rl_2 %10.5e t %10.5e damp %10.5e sweeps %2d "
+          "richardson_mixed %s  (level %2d) r0 %10.5e rl_2 %10.5e t %10.5e damp %10.5e sweeps %2d "
           "l2rate %10.5e\n",
           field.c_str(), level, initrl2, rl2, t, damp, sweeps, rl2rate);
     rl2rate = std::max(rl2rate, rinfrate);
@@ -275,7 +275,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonMixed(const std::string fiel
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double FSI::OverlappingBlockMatrixFSIAMG::RichardsonS(const std::string field, const int myrank,
+double FSI::OverlappingBlockMatrixFSIAMG::richardson_s(const std::string field, const int myrank,
     const int level, const int sweeps, const double damp, const MLAPI::Operator& A,
     const MLAPI::InverseOperator& S, MLAPI::MultiVector& x, const MLAPI::MultiVector& f,
     bool initiguesszero, bool analysis, bool silent) const
@@ -319,8 +319,8 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonS(const std::string field, c
     rl2 = r.Norm2();
     rinf = r.NormInf();
     double t = timer.totalElapsedTime(true);
-    double rl2rate = Rate(myrank, t, rl2, initrl2, r.GetGlobalLength());
-    double rinfrate = Rate(myrank, t, rinf, initrinf, r.GetGlobalLength());
+    double rl2rate = rate(myrank, t, rl2, initrl2, r.GetGlobalLength());
+    double rinfrate = rate(myrank, t, rinf, initrinf, r.GetGlobalLength());
     if (!myrank && !silent)
       printf(
           "RichardsonS %s      (level %2d) r0 %10.5e rl_2 %10.5e t %10.5e damp %10.5e sweeps %2d "

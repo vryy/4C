@@ -39,7 +39,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
 
   if (IsParamsInterface())
   {
-    act = ParamsInterface().GetActionType();
+    act = params_interface().GetActionType();
   }
   else  // Todo remove as soon as old structural time integration is gone
   {

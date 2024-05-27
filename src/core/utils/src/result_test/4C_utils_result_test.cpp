@@ -59,7 +59,7 @@ void CORE::UTILS::ResultTest::TestSpecial(
  \date 06/04
  */
 /*----------------------------------------------------------------------*/
-int CORE::UTILS::ResultTest::CompareValues(
+int CORE::UTILS::ResultTest::compare_values(
     double actresult, std::string type, INPUT::LineDefinition& res)
 {
   int gid;

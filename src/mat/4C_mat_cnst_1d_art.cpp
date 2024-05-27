@@ -59,7 +59,7 @@ MAT::PAR::Cnst1dArt::Cnst1dArt(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
         "wrong type of diameter law for artery material, only CONSTANT and BY_FUNCTION are valid");
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Cnst1dArt::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Cnst1dArt::create_material()
 {
   return Teuchos::rcp(new MAT::Cnst1dArt(this));
 }

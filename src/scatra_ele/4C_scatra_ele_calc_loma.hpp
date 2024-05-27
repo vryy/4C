@@ -51,7 +51,7 @@ namespace DRT
       static ScaTraEleCalcLoma<distype>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
-      int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
+      int evaluate_action(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -65,7 +65,7 @@ namespace DRT
       /*========================================================================*/
 
       //! evaluate material
-      void Materials(
+      void materials(
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
@@ -170,9 +170,9 @@ namespace DRT
       /*========================================================================*/
 
       //! compute rhs containing bodyforce
-      void GetRhsInt(double& rhsint,  //!< rhs containing bodyforce at Gauss point
-          const double densnp,        //!< density at t_(n+1)
-          const int k                 //!< index of current scalar
+      void get_rhs_int(double& rhsint,  //!< rhs containing bodyforce at Gauss point
+          const double densnp,          //!< density at t_(n+1)
+          const int k                   //!< index of current scalar
           ) override;
 
       //! calculation of convective element matrix: add conservative contributions
@@ -212,7 +212,7 @@ namespace DRT
           DRT::Discretization& discretization, DRT::Element::LocationArray& la) override;
 
       //! get density at integration point
-      double GetDensity(const DRT::Element* ele, Teuchos::RCP<const CORE::MAT::Material> material,
+      double get_density(const DRT::Element* ele, Teuchos::RCP<const CORE::MAT::Material> material,
           Teuchos::ParameterList& params, const double tempnp) override;
 
       //! calculate viscous part of subgrid-scale velocity

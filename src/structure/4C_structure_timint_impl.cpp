@@ -337,7 +337,7 @@ void STR::TimIntImpl::prepare_time_step()
 {
   // safety checks
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   // update end time \f$t_{n+1}\f$ of this time step to cope with time step size adaptivity
   SetTimen((*time_)[0] + (*dt_)[0]);
@@ -355,7 +355,7 @@ void STR::TimIntImpl::Predict()
 {
   // safety checks
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   // things that need to be done before Predict
   PrePredict();
@@ -414,7 +414,7 @@ void STR::TimIntImpl::Predict()
   }
 
   // apply Dirichlet BCs
-  ApplyDirichletBC(timen_, disn_, veln_, accn_, false);
+  apply_dirichlet_bc(timen_, disn_, veln_, accn_, false);
 
   // create parameter list to hand in boolean flag indicating that this a predictor
   Teuchos::ParameterList params;
@@ -481,7 +481,7 @@ void STR::TimIntImpl::Predict()
 
 
   // output
-  PrintPredictor();
+  print_predictor();
 
   // enjoy your meal
   return;
@@ -495,7 +495,7 @@ void STR::TimIntImpl::prepare_partition_step()
   iter_ = 0;
 
   // apply Dirichlet BCs
-  ApplyDirichletBC(timen_, disn_, veln_, accn_, false);
+  apply_dirichlet_bc(timen_, disn_, veln_, accn_, false);
 
   // create parameter list to hand in boolean flag indicating that this a predictor
   Teuchos::ParameterList params;
@@ -543,7 +543,7 @@ void STR::TimIntImpl::prepare_partition_step()
 
 
   // output
-  PrintPredictor();
+  print_predictor();
 
   // enjoy your meal
   return;
@@ -611,7 +611,7 @@ void STR::TimIntImpl::predict_tang_dis_consist_vel_acc()
   dbcinc->Update(1.0, *(*dis_)(0), 0.0);
 
   // get Dirichlet values at t_{n+1}
-  ApplyDirichletBC(timen_, dbcinc, Teuchos::null, Teuchos::null, false);
+  apply_dirichlet_bc(timen_, dbcinc, Teuchos::null, Teuchos::null, false);
 
   // subtract the displacements of the last converged step
   // DBC-DOFs hold increments of current step
@@ -659,11 +659,11 @@ void STR::TimIntImpl::predict_tang_dis_consist_vel_acc()
   // apply Dirichlet BCs to system of equations
   disi_->PutScalar(0.0);
   stiff_->Complete();
-  if (GetLocSysTrafo() != Teuchos::null)
+  if (get_loc_sys_trafo() != Teuchos::null)
   {
     CORE::LINALG::apply_dirichlet_to_system(
-        *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_, *GetLocSysTrafo(),
-        *zeros_, *(dbcmaps_->CondMap()));
+        *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
+        *get_loc_sys_trafo(), *zeros_, *(dbcmaps_->CondMap()));
   }
   else
   {
@@ -1389,7 +1389,7 @@ INPAR::STR::ConvergenceStatus STR::TimIntImpl::Solve()
 {
   // safety check
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   // things to be done before solving
   PreSolve();
@@ -1448,7 +1448,7 @@ INPAR::STR::ConvergenceStatus STR::TimIntImpl::Solve()
   // since it is possible that the nonlinear solution fails only on some procs
   // we need to communicate the error
   int lnonlin_error = nonlin_error;
-  Discretization()->Comm().MaxAll(&lnonlin_error, &nonlin_error, 1);
+  discretization()->Comm().MaxAll(&lnonlin_error, &nonlin_error, 1);
 
   INPAR::STR::ConvergenceStatus status = static_cast<INPAR::STR::ConvergenceStatus>(nonlin_error);
 
@@ -1507,11 +1507,11 @@ int STR::TimIntImpl::NewtonFull()
 
     // apply Dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
-    if (GetLocSysTrafo() != Teuchos::null)
+    if (get_loc_sys_trafo() != Teuchos::null)
     {
       CORE::LINALG::apply_dirichlet_to_system(
           *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
-          *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
+          *get_loc_sys_trafo(), *zeros_, *(dbcmaps_->CondMap()));
     }
     else
     {
@@ -2094,11 +2094,11 @@ int STR::TimIntImpl::LsSolveNewtonStep()
 
   // apply Dirichlet BCs to system of equations
   disi_->PutScalar(0.0);  // Useful? depends on solver and more
-  if (GetLocSysTrafo() != Teuchos::null)
+  if (get_loc_sys_trafo() != Teuchos::null)
   {
     CORE::LINALG::apply_dirichlet_to_system(
-        *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_, *GetLocSysTrafo(),
-        *zeros_, *(dbcmaps_->CondMap()));
+        *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
+        *get_loc_sys_trafo(), *zeros_, *(dbcmaps_->CondMap()));
   }
   else
   {
@@ -2513,11 +2513,11 @@ int STR::TimIntImpl::uzawa_linear_newton_full()
 
       // apply Dirichlet BCs to system of equations
       disi_->PutScalar(0.0);  // Useful? depends on solver and more
-      if (GetLocSysTrafo() != Teuchos::null)
+      if (get_loc_sys_trafo() != Teuchos::null)
       {
         CORE::LINALG::apply_dirichlet_to_system(
             *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
-            *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
+            *get_loc_sys_trafo(), *zeros_, *(dbcmaps_->CondMap()));
       }
       else
       {
@@ -2702,11 +2702,11 @@ int STR::TimIntImpl::uzawa_linear_newton_full()
 
       // apply Dirichlet BCs to system of equations
       disi_->PutScalar(0.0);  // Useful? depends on solver and more
-      if (GetLocSysTrafo() != Teuchos::null)
+      if (get_loc_sys_trafo() != Teuchos::null)
       {
         CORE::LINALG::apply_dirichlet_to_system(
             *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
-            *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
+            *get_loc_sys_trafo(), *zeros_, *(dbcmaps_->CondMap()));
       }
       else
       {
@@ -3362,11 +3362,11 @@ int STR::TimIntImpl::PTC()
 
     // apply Dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
-    if (GetLocSysTrafo() != Teuchos::null)
+    if (get_loc_sys_trafo() != Teuchos::null)
     {
       CORE::LINALG::apply_dirichlet_to_system(
           *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
-          *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
+          *get_loc_sys_trafo(), *zeros_, *(dbcmaps_->CondMap()));
     }
     else
     {
@@ -3599,7 +3599,7 @@ void STR::TimIntImpl::update_iter_incrementally(
 /*----------------------------------------------------------------------*/
 /* print to screen
  * lw 12/07 */
-void STR::TimIntImpl::PrintPredictor()
+void STR::TimIntImpl::print_predictor()
 {
   // only master processor
   if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
@@ -4089,13 +4089,13 @@ void STR::TimIntImpl::PrintStep()
   // print out (only on master CPU)
   if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
   {
-    PrintStepText(stdout);
+    print_step_text(stdout);
   }
 }
 
 /*----------------------------------------------------------------------*/
 /* print step summary */
-void STR::TimIntImpl::PrintStepText(FILE* ofile)
+void STR::TimIntImpl::print_step_text(FILE* ofile)
 {
   // open outstd::stringstream
   std::ostringstream oss;
@@ -4181,11 +4181,11 @@ void STR::TimIntImpl::prepare_system_for_newton_solve(const bool preparejacobian
   // apply Dirichlet BCs to system of equations
   if (preparejacobian)
   {
-    if (GetLocSysTrafo() != Teuchos::null)
+    if (get_loc_sys_trafo() != Teuchos::null)
     {
       CORE::LINALG::apply_dirichlet_to_system(
           *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
-          *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
+          *get_loc_sys_trafo(), *zeros_, *(dbcmaps_->CondMap()));
     }
     else
       CORE::LINALG::apply_dirichlet_to_system(
@@ -4198,7 +4198,8 @@ void STR::TimIntImpl::prepare_system_for_newton_solve(const bool preparejacobian
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::TimIntImpl::UseBlockMatrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
+void STR::TimIntImpl::use_block_matrix(
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
     Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps)
 {
   // (re)allocate system matrix

@@ -120,7 +120,7 @@ void SSI::SSIBase::Setup()
 
   // set up scalar transport field
   ScaTraField()->Setup();
-  if (IsScaTraManifold()) ScaTraManifold()->Setup();
+  if (is_sca_tra_manifold()) ScaTraManifold()->Setup();
 
   // only relevant for new structural time integration
   // only if adapter base has not already been set up outside
@@ -166,13 +166,13 @@ void SSI::SSIBase::Setup()
     // do not do so, in case the wrapper has already been set from outside
     if (structure_ == Teuchos::null)
       structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::SSIStructureWrapper>(
-          struct_adapterbase_ptr_->StructureField());
+          struct_adapterbase_ptr_->structure_field());
 
     if (structure_ == Teuchos::null)
     {
       FOUR_C_THROW(
           "No valid pointer to ADAPTER::SSIStructureWrapper !\n"
-          "Either cast failed, or no valid wrapper was set using SetStructureWrapper(...) !");
+          "Either cast failed, or no valid wrapper was set using set_structure_wrapper(...) !");
     }
   }
 
@@ -183,8 +183,8 @@ void SSI::SSIBase::Setup()
   if (is_s2_i_kinetics_with_pseudo_contact())
   {
     auto dummy_stress_state =
-        Teuchos::rcp(new Epetra_Vector(*StructureField()->Discretization()->dof_row_map(2), true));
-    ssicoupling_->set_mechanical_stress_state(*ScaTraField()->Discretization(), dummy_stress_state,
+        Teuchos::rcp(new Epetra_Vector(*structure_field()->discretization()->dof_row_map(2), true));
+    ssicoupling_->set_mechanical_stress_state(*ScaTraField()->discretization(), dummy_stress_state,
         ScaTraField()->nds_two_tensor_quantity());
   }
 
@@ -196,13 +196,13 @@ void SSI::SSIBase::Setup()
 
   // set up materials
   ssicoupling_->assign_material_pointers(
-      structure_->Discretization(), ScaTraField()->Discretization());
+      structure_->discretization(), ScaTraField()->discretization());
 
   // set up scatra-scatra interface coupling
   if (ssi_interface_meshtying())
   {
     ssi_structure_meshtying_ = Teuchos::rcp(new SSI::UTILS::SSIMeshTying(
-        "ssi_interface_meshtying", structure_->Discretization(), true, true));
+        "ssi_interface_meshtying", structure_->discretization(), true, true));
 
     // extract meshtying strategy for scatra-scatra interface coupling on scatra discretization
     meshtying_strategy_s2i_ =
@@ -251,7 +251,7 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
     scatradis->fill_complete();
 
     // create discretization for scatra manifold based on SSISurfaceManifold condition
-    if (IsScaTraManifold())
+    if (is_sca_tra_manifold())
     {
       auto scatra_manifold_dis = problem->GetDis("scatra_manifold");
       CORE::FE::CloneDiscretizationFromCondition<SSI::ScatraStructureCloneStrategyManifold>(
@@ -342,7 +342,7 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
     // this is actually only needed for copying TRANSPORT DIRICHLET/NEUMANN CONDITIONS
     // as standard DIRICHLET/NEUMANN CONDITIONS
     SSI::ScatraStructureCloneStrategy clonestrategy;
-    const auto conditions_to_copy = clonestrategy.ConditionsToCopy();
+    const auto conditions_to_copy = clonestrategy.conditions_to_copy();
     CORE::FE::DiscretizationCreatorBase creator;
     creator.CopyConditions(*scatradis, *scatradis, conditions_to_copy);
 
@@ -383,7 +383,7 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struc
   {
     // check for ssi coupling condition
     std::vector<CORE::Conditions::Condition*> ssicoupling;
-    scatra_integrator->Discretization()->GetCondition("SSICoupling", ssicoupling);
+    scatra_integrator->discretization()->GetCondition("SSICoupling", ssicoupling);
     const bool havessicoupling = (ssicoupling.size() > 0);
 
     if (havessicoupling and (fieldcoupling_ != INPAR::SSI::FieldCoupling::boundary_nonmatch and
@@ -409,7 +409,7 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struc
             "risk.");
       }
     }
-    if (IsScaTraManifold() and fieldcoupling_ != INPAR::SSI::FieldCoupling::volumeboundary_match)
+    if (is_sca_tra_manifold() and fieldcoupling_ != INPAR::SSI::FieldCoupling::volumeboundary_match)
       FOUR_C_THROW("Solving manifolds only in combination with matching volumes and boundaries");
   }
 
@@ -458,14 +458,14 @@ void SSI::SSIBase::read_restart(int restart)
     if (not restartfromstructure)  // standard restart
     {
       ScaTraField()->read_restart(restart);
-      if (IsScaTraManifold()) ScaTraManifold()->read_restart(restart);
+      if (is_sca_tra_manifold()) ScaTraManifold()->read_restart(restart);
     }
     else  // restart from structure simulation
     {
       // Since there is no restart output for the scatra field available, we only have to fix the
       // time and step counter
       ScaTraField()->SetTimeStep(structure_->TimeOld(), restart);
-      if (IsScaTraManifold()) ScaTraManifold()->SetTimeStep(structure_->TimeOld(), restart);
+      if (is_sca_tra_manifold()) ScaTraManifold()->SetTimeStep(structure_->TimeOld(), restart);
     }
 
     SetTimeStep(structure_->TimeOld(), restart);
@@ -474,7 +474,7 @@ void SSI::SSIBase::read_restart(int restart)
   // Material pointers to other field were deleted during read_restart().
   // They need to be reset.
   ssicoupling_->assign_material_pointers(
-      structure_->Discretization(), ScaTraField()->Discretization());
+      structure_->discretization(), ScaTraField()->discretization());
 }
 
 /*----------------------------------------------------------------------*/
@@ -485,7 +485,7 @@ void SSI::SSIBase::TestResults(const Epetra_Comm& comm) const
 
   problem->AddFieldTest(structure_->CreateFieldTest());
   problem->AddFieldTest(ScaTraBaseAlgorithm()->create_sca_tra_field_test());
-  if (IsScaTraManifold())
+  if (is_sca_tra_manifold())
     problem->AddFieldTest(sca_tra_manifold_base_algorithm()->create_sca_tra_field_test());
   problem->AddFieldTest(Teuchos::rcp(new SSI::SSIResultTest(Teuchos::rcp(this, false))));
   problem->TestAll(comm);
@@ -493,12 +493,12 @@ void SSI::SSIBase::TestResults(const Epetra_Comm& comm) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::SetStructSolution(Teuchos::RCP<const Epetra_Vector> disp,
+void SSI::SSIBase::set_struct_solution(Teuchos::RCP<const Epetra_Vector> disp,
     Teuchos::RCP<const Epetra_Vector> vel, const bool set_mechanical_stress)
 {
   // safety checks
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   set_mesh_disp(disp);
   set_velocity_fields(vel);
@@ -513,9 +513,9 @@ void SSI::SSIBase::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) cons
 {
   // safety checks
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
-  ssicoupling_->SetScalarField(*StructureField()->Discretization(), phi, 1);
+  ssicoupling_->SetScalarField(*structure_field()->discretization(), phi, 1);
 }
 
 /*----------------------------------------------------------------------*/
@@ -524,9 +524,9 @@ void SSI::SSIBase::set_micro_scatra_solution(Teuchos::RCP<const Epetra_Vector> p
 {
   // safety checks
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
-  ssicoupling_->SetScalarFieldMicro(*StructureField()->Discretization(), phi, 2);
+  ssicoupling_->SetScalarFieldMicro(*structure_field()->discretization(), phi, 2);
 }
 
 /*----------------------------------------------------------------------*/
@@ -544,7 +544,7 @@ void SSI::SSIBase::evaluate_and_set_temperature_field()
     temperature_vector_->PutScalar(temperature);
 
     // set temperature vector to structure discretization
-    ssicoupling_->SetTemperatureField(*structure_->Discretization(), temperature_vector_);
+    ssicoupling_->SetTemperatureField(*structure_->discretization(), temperature_vector_);
   }
 }
 
@@ -554,10 +554,10 @@ void SSI::SSIBase::set_velocity_fields(Teuchos::RCP<const Epetra_Vector> vel)
 {
   // safety checks
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   ssicoupling_->set_velocity_fields(ScaTraBaseAlgorithm(), zeros_structure_, vel);
-  if (IsScaTraManifold())
+  if (is_sca_tra_manifold())
     ssicoupling_->set_velocity_fields(sca_tra_manifold_base_algorithm(), zeros_structure_, vel);
 }
 
@@ -567,9 +567,9 @@ void SSI::SSIBase::set_mechanical_stress_state(
     Teuchos::RCP<const Epetra_Vector> mechanical_stress_state) const
 {
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
-  ssicoupling_->set_mechanical_stress_state(*ScaTraField()->Discretization(),
+  ssicoupling_->set_mechanical_stress_state(*ScaTraField()->discretization(),
       mechanical_stress_state, ScaTraField()->nds_two_tensor_quantity());
 }
 
@@ -579,10 +579,10 @@ void SSI::SSIBase::set_mesh_disp(Teuchos::RCP<const Epetra_Vector> disp)
 {
   // safety checks
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   ssicoupling_->set_mesh_disp(ScaTraBaseAlgorithm(), disp);
-  if (IsScaTraManifold()) ssicoupling_->set_mesh_disp(sca_tra_manifold_base_algorithm(), disp);
+  if (is_sca_tra_manifold()) ssicoupling_->set_mesh_disp(sca_tra_manifold_base_algorithm(), disp);
 }
 
 /*----------------------------------------------------------------------*/
@@ -612,9 +612,9 @@ void SSI::SSIBase::check_ssi_flags() const
 /*----------------------------------------------------------------------*/
 void SSI::SSIBase::set_dt_from_sca_tra_to_structure()
 {
-  StructureField()->set_dt(ScaTraField()->Dt());
-  StructureField()->SetTimen(ScaTraField()->Time());
-  StructureField()->post_update();
+  structure_field()->set_dt(ScaTraField()->Dt());
+  structure_field()->SetTimen(ScaTraField()->Time());
+  structure_field()->post_update();
 }
 
 /*----------------------------------------------------------------------*/
@@ -635,7 +635,7 @@ void SSI::SSIBase::set_dt_from_sca_tra_to_ssi()
 
   // set values for other fields
   set_dt_from_sca_tra_to_structure();
-  if (IsScaTraManifold()) set_dt_from_sca_tra_to_manifold();
+  if (is_sca_tra_manifold()) set_dt_from_sca_tra_to_manifold();
 }
 
 /*----------------------------------------------------------------------*/
@@ -646,7 +646,7 @@ void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
 
   auto structdis = problem->GetDis("structure");
   auto scatradis = problem->GetDis("scatra");
-  if (redistribution_type == SSI::RedistributionType::match and !IsScaTraManifold())
+  if (redistribution_type == SSI::RedistributionType::match and !is_sca_tra_manifold())
   {
     // first we bin the scatra discretization
     std::vector<Teuchos::RCP<DRT::Discretization>> dis;
@@ -726,7 +726,7 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
       auto structure = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(
           *structtimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis));
       structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::SSIStructureWrapper>(
-          structure->StructureField(), true);
+          structure->structure_field(), true);
       if (structure_ == Teuchos::null)
         FOUR_C_THROW("cast from ADAPTER::Structure to ADAPTER::SSIStructureWrapper failed");
     }
@@ -750,7 +750,7 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
   ScaTraBaseAlgorithm()->Init();
 
   // create and initialize scatra base algorithm for manifolds
-  if (IsScaTraManifold())
+  if (is_sca_tra_manifold())
   {
     scatra_manifold_base_algorithm_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
         *scatratimeparams,
@@ -897,7 +897,7 @@ void SSI::SSIBase::SetupSystem()
 {
   if (ssiinterfacemeshtying_)
     ssi_structure_mesh_tying()->check_slave_side_has_dirichlet_conditions(
-        StructureField()->GetDBCMapExtractor()->CondMap());
+        structure_field()->GetDBCMapExtractor()->CondMap());
 }
 
 /*---------------------------------------------------------------------------------*

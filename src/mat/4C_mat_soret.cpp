@@ -26,7 +26,7 @@ MAT::PAR::Soret::Soret(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
 /*------------------------------------------------------------------*
  | create instance of Soret material                     fang 06/15 |
  *------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Soret::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Soret::create_material()
 {
   return Teuchos::rcp(new MAT::Soret(this));
 }

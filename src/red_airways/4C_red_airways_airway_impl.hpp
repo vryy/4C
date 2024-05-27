@@ -90,7 +90,7 @@ namespace DRT
           DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material) = 0;
 
-      virtual void UpdateScatra(RedAirway* ele, Teuchos::ParameterList& params,
+      virtual void update_scatra(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material) = 0;
 
@@ -241,7 +241,7 @@ namespace DRT
           DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material) override;
 
-      void UpdateScatra(RedAirway* ele, Teuchos::ParameterList& params,
+      void update_scatra(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material) override;
 

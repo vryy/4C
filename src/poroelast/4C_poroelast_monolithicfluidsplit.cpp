@@ -49,7 +49,7 @@ void POROELAST::MonolithicFluidSplit::SetupSystem()
     // create combined map
     std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
 
-    vecSpaces.push_back(StructureField()->dof_row_map());
+    vecSpaces.push_back(structure_field()->dof_row_map());
 #ifdef FLUIDSPLITAMG
     vecSpaces.push_back(fluid_field()->dof_row_map());
 #else
@@ -66,11 +66,11 @@ void POROELAST::MonolithicFluidSplit::SetupSystem()
   }
 
   // Switch fluid to interface split block matrix
-  fluid_field()->UseBlockMatrix(true);
+  fluid_field()->use_block_matrix(true);
 
   setup_coupling_and_matrices();
 
-  BuildCombinedDBCMap();
+  build_combined_dbc_map();
 
   SetupEquilibration();
 }
@@ -83,7 +83,7 @@ void POROELAST::MonolithicFluidSplit::setup_rhs(bool firstcall)
   rhs_ = Teuchos::rcp(new Epetra_Vector(*dof_row_map(), true));
 
   setup_vector(
-      *rhs_, StructureField()->RHS(), fluid_field()->RHS(), fluid_field()->ResidualScaling());
+      *rhs_, structure_field()->RHS(), fluid_field()->RHS(), fluid_field()->residual_scaling());
 
   if (firstcall and evaluateinterface_)
   {
@@ -92,7 +92,7 @@ void POROELAST::MonolithicFluidSplit::setup_rhs(bool firstcall)
 
     // get time integration parameters of structure an fluid time integrators
     // to enable consistent time integration among the fields
-    double stiparam = StructureField()->TimIntParam();
+    double stiparam = structure_field()->TimIntParam();
     double ftiparam = fluid_field()->TimIntParam();
 
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blockf = fluid_field()->BlockSystemMatrix();
@@ -106,7 +106,7 @@ void POROELAST::MonolithicFluidSplit::setup_rhs(bool firstcall)
 
     Teuchos::RCP<Epetra_Vector> fveln = fluid_field()->extract_interface_veln();
     double timescale = fluid_field()->TimeScaling();
-    double scale = fluid_field()->ResidualScaling();
+    double scale = fluid_field()->residual_scaling();
 
     Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(fig.RowMap()));
 
@@ -127,7 +127,7 @@ void POROELAST::MonolithicFluidSplit::setup_rhs(bool firstcall)
         (1.0 - stiparam) / (1.0 - ftiparam));  // scale 'rhs' due to consistent time integration
 
     rhs = fluid_to_structure_at_interface(rhs);
-    rhs = StructureField()->Interface()->InsertFSICondVector(rhs);
+    rhs = structure_field()->Interface()->InsertFSICondVector(rhs);
 
     Extractor()->AddVector(*rhs, 0, *rhs_);  // add structure contributions to 'f'
 
@@ -136,7 +136,7 @@ void POROELAST::MonolithicFluidSplit::setup_rhs(bool firstcall)
     kig.Apply(*fveln, *rhs);
     rhs->Scale(timescale * Dt());
 
-    rhs = StructureField()->Interface()->InsertOtherVector(rhs);
+    rhs = structure_field()->Interface()->InsertOtherVector(rhs);
 
     Extractor()->AddVector(*rhs, 0, *rhs_);  // add structure contributions to 'f'
 
@@ -145,7 +145,7 @@ void POROELAST::MonolithicFluidSplit::setup_rhs(bool firstcall)
     kgg.Apply(*fveln, *rhs);
     rhs->Scale(timescale * Dt());
 
-    rhs = StructureField()->Interface()->InsertFSICondVector(rhs);
+    rhs = structure_field()->Interface()->InsertFSICondVector(rhs);
 
     Extractor()->AddVector(*rhs, 0, *rhs_);  // add structure contributions to 'f'
   }
@@ -159,7 +159,7 @@ void POROELAST::MonolithicFluidSplit::setup_system_matrix(CORE::LINALG::BlockSpa
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicFluidSplit::setup_system_matrix");
 
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> s = StructureField()->SystemMatrix();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> s = structure_field()->SystemMatrix();
   if (s == Teuchos::null) FOUR_C_THROW("expect structure matrix");
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> f = fluid_field()->BlockSystemMatrix();
   if (f == Teuchos::null) FOUR_C_THROW("expect fluid block matrix");
@@ -185,7 +185,7 @@ void POROELAST::MonolithicFluidSplit::setup_system_matrix(CORE::LINALG::BlockSpa
   if (k_sf == Teuchos::null) FOUR_C_THROW("expect coupling block matrix");
 
   // call the element and calculate the matrix block
-  ApplyStrCouplMatrix(k_sf);
+  apply_str_coupl_matrix(k_sf);
 
   /*----------------------------------------------------------------------*/
   // fluid part k_fs ( (3n+1)x3n )
@@ -282,7 +282,8 @@ void POROELAST::MonolithicFluidSplit::extract_field_vectors(Teuchos::RCP<const E
   // process fluid unknowns
   if (evaluateinterface_)
   {
-    Teuchos::RCP<const Epetra_Vector> scx = StructureField()->Interface()->ExtractFSICondVector(sx);
+    Teuchos::RCP<const Epetra_Vector> scx =
+        structure_field()->Interface()->ExtractFSICondVector(sx);
 
     Teuchos::RCP<Epetra_Vector> fcx = structure_to_fluid_at_interface(scx);
     Teuchos::RCP<const Epetra_Vector> fox = Extractor()->ExtractVector(x, 1);
@@ -305,7 +306,7 @@ void POROELAST::MonolithicFluidSplit::extract_field_vectors(Teuchos::RCP<const E
     fx = f;
 
     // Store field vectors to know them later on as previous quantities
-    Teuchos::RCP<Epetra_Vector> sox = StructureField()->Interface()->ExtractOtherVector(sx);
+    Teuchos::RCP<Epetra_Vector> sox = structure_field()->Interface()->ExtractOtherVector(sx);
     if (solipre_ != Teuchos::null)
       ddiinc_->Update(1.0, *sox, -1.0, *solipre_, 0.0);  // compute current iteration increment
     else

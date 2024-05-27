@@ -179,7 +179,7 @@ namespace STR
           std::vector<INPAR::STR::ModelType>& constraint_models) const;
 
       //! calculate norm in Get*Norms functions
-      double CalculateNorm(Teuchos::RCP<Epetra_Vector> quantity,
+      double calculate_norm(Teuchos::RCP<Epetra_Vector> quantity,
           const ::NOX::Abstract::Vector::NormType type, const bool isscaled) const;
 
      protected:
@@ -198,7 +198,7 @@ namespace STR
       Teuchos::RCP<STR::Integrator> int_ptr_;
 
       Teuchos::RCP<STR::Dbc> dbc_ptr_;
-    };  // class NoxInterface
+    };  // class nox_interface
   }     // namespace TIMINT
 }  // namespace STR
 

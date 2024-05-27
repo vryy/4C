@@ -164,22 +164,22 @@ namespace DRT
     virtual ~Discretization() = default;
 
     /**
-     * The Discretization is a heavy object that should not be copied (accidentally).
+     * The discretization is a heavy object that should not be copied (accidentally).
      */
     Discretization(const DRT::Discretization&) = delete;
 
     /**
-     * The Discretization is a heavy object that should not be copied (accidentally).
+     * The discretization is a heavy object that should not be copied (accidentally).
      */
     Discretization operator=(const Discretization&) = delete;
 
     /**
-     * Moving a Discretization is not supported.
+     * Moving a discretization is not supported.
      */
     Discretization(DRT::Discretization&&) = delete;
 
     /**
-     * Moving a Discretization is not supported.
+     * Moving a discretization is not supported.
      */
     Discretization operator=(Discretization&&) = delete;
 
@@ -782,7 +782,7 @@ namespace DRT
     */
     [[nodiscard]] virtual DRT::Element* lRowElement(int lid) const
     {
-      FOUR_C_ASSERT(Filled(), "Discretization not Filled().");
+      FOUR_C_ASSERT(Filled(), "discretization not Filled().");
       return elerowptr_[lid];
     }
 
@@ -797,7 +797,7 @@ namespace DRT
     */
     virtual DRT::Element* lColElement(int lid) const
     {
-      FOUR_C_ASSERT(Filled(), "Discretization not Filled().");
+      FOUR_C_ASSERT(Filled(), "discretization not Filled().");
       return elecolptr_[lid];
     }
 
@@ -812,7 +812,7 @@ namespace DRT
      */
     [[nodiscard]] auto MyRowElementRange() const
     {
-      FOUR_C_ASSERT(Filled(), "Discretization not Filled().");
+      FOUR_C_ASSERT(Filled(), "discretization not Filled().");
       return std_20::ranges::views::all(elerowptr_);
     }
 
@@ -821,7 +821,7 @@ namespace DRT
      */
     [[nodiscard]] auto MyColElementRange() const
     {
-      FOUR_C_ASSERT(Filled(), "Discretization not Filled().");
+      FOUR_C_ASSERT(Filled(), "discretization not Filled().");
       return std_20::ranges::views::all(elecolptr_);
     }
 
@@ -857,7 +857,7 @@ namespace DRT
     */
     [[nodiscard]] virtual DRT::Node* lRowNode(int lid) const
     {
-      FOUR_C_ASSERT(Filled(), "Discretization not Filled().");
+      FOUR_C_ASSERT(Filled(), "discretization not Filled().");
       return noderowptr_[lid];
     }
 
@@ -872,21 +872,21 @@ namespace DRT
     */
     virtual DRT::Node* lColNode(int lid) const
     {
-      FOUR_C_ASSERT(Filled(), "Discretization not Filled().");
+      FOUR_C_ASSERT(Filled(), "discretization not Filled().");
       return nodecolptr_[lid];
     }
 
 
     [[nodiscard]] auto MyRowNodeRange() const
     {
-      FOUR_C_ASSERT(Filled(), "Discretization not Filled().");
+      FOUR_C_ASSERT(Filled(), "discretization not Filled().");
       return std_20::ranges::views::all(noderowptr_);
     }
 
 
     [[nodiscard]] auto MyColNodeRange() const
     {
-      FOUR_C_ASSERT(Filled(), "Discretization not Filled().");
+      FOUR_C_ASSERT(Filled(), "discretization not Filled().");
       return std_20::ranges::views::all(nodecolptr_);
     }
 
@@ -1456,7 +1456,7 @@ namespace DRT
     coordinate vector. The user can specify a node rowmap to calculate the coordinate vector on.
     The map has to be a submap of the overall full node rowmap of this discretization.
 
-    \pre Discretization does have to be fill_complete().
+    \pre discretization does have to be fill_complete().
 
     @param[in] noderowmap Map representing the nodal distribution of the discretization (can be a
                submap of the full node rowmap returned from NodeRowMap())
@@ -1665,7 +1665,7 @@ namespace DRT
     virtual void Evaluate(Teuchos::ParameterList& params, CORE::FE::AssembleStrategy& strategy);
 
     /**
-     * Loop over all elements of the Discretization and perform the given @p element_action. In
+     * Loop over all elements of the discretization and perform the given @p element_action. In
      * contrast to the other overloads of Evaluate(), this function allows to perform any local
      * action on an Element that can be encoded within the passed function object @p element_action.
      * This is very useful for one-off actions, that one does not want to implement inside the
@@ -1801,7 +1801,7 @@ namespace DRT
     \param dbcmapextractor (out): Map extractor containing maps for the DOFs subjected to
                                   Dirichlet boundary conditions and the remaining/free DOFs
     */
-    virtual void EvaluateDirichlet(Teuchos::ParameterList& params,
+    virtual void evaluate_dirichlet(Teuchos::ParameterList& params,
         Teuchos::RCP<Epetra_Vector> systemvector, Teuchos::RCP<Epetra_Vector> systemvectord,
         Teuchos::RCP<Epetra_Vector> systemvectordd, Teuchos::RCP<Epetra_IntVector> toggle,
         Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmapextractor = Teuchos::null) const;
@@ -2018,7 +2018,7 @@ namespace DRT
     \brief Assign degrees of freedom to discretization (Filled()==true prerequisite)
 
     Assign nodes and elements their no. of degrees of freedom as aquired
-    by Element::NumDofPerNode and Element::NumDofPerElement.
+    by Element::NumDofPerNode and Element::num_dof_per_element.
     Number degrees of freedom (dofs) ascending according to global node numbers
     followed by global element numbers
 
@@ -2145,16 +2145,16 @@ namespace DRT
     */
     // set protected to be accessible from derived class DRT::MESHFREE::MeshfreeDiscretization
     // (nis) Jan12
-    virtual void Reset(bool killdofs, bool killcond);
-    virtual void Reset() { this->Reset(true, true); }
+    virtual void reset(bool killdofs, bool killcond);
+    virtual void reset() { this->reset(true, true); }
 
     /*!
     \brief Initialize element routines
 
-    \note InitializeElements might be called more then once!
+    \note initialize_elements might be called more then once!
 
     */
-    virtual void InitializeElements();
+    virtual void initialize_elements();
 
     /*!
     \brief Build the geometry for boundary conditions
@@ -2188,7 +2188,7 @@ namespace DRT
      *
      *  \author h.kue
      *  \date 09/07    */
-    virtual void AssignGlobalIDs(const Epetra_Comm& comm,
+    virtual void assign_global_i_ds(const Epetra_Comm& comm,
         const std::map<std::vector<int>, Teuchos::RCP<DRT::Element>>& elementmap,
         std::map<int, Teuchos::RCP<DRT::Element>>& finalgeometry);
 

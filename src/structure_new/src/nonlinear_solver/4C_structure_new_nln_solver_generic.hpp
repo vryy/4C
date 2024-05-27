@@ -84,7 +84,7 @@ namespace STR
          *  The nox group has to be initialized in one of the derived Setup() routines beforehand.
          */
         ::NOX::Abstract::Group& SolutionGroup();
-        const ::NOX::Abstract::Group& GetSolutionGroup() const;
+        const ::NOX::Abstract::Group& get_solution_group() const;
 
         //! Get the number of nonlinear iterations
         virtual int GetNumNlnIterations() const = 0;
@@ -106,82 +106,82 @@ namespace STR
         void check_init() const { FOUR_C_ASSERT(is_init(), "You have to call Init() first!"); }
 
         //! Returns the global state data container pointer
-        Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> DataGlobalStatePtr()
+        Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> data_global_state_ptr()
         {
           check_init();
           return gstate_ptr_;
         }
 
         //! Returns the global state data container (read-only)
-        const STR::TIMINT::BaseDataGlobalState& DataGlobalState() const
+        const STR::TIMINT::BaseDataGlobalState& data_global_state() const
         {
           check_init();
           return *gstate_ptr_;
         }
 
         //! Returns the global state data container (read and write)
-        STR::TIMINT::BaseDataGlobalState& DataGlobalState()
+        STR::TIMINT::BaseDataGlobalState& data_global_state()
         {
           check_init();
           return *gstate_ptr_;
         }
 
         //! Returns the structural dynamics data container pointer
-        Teuchos::RCP<STR::TIMINT::BaseDataSDyn> DataSDynPtr()
+        Teuchos::RCP<STR::TIMINT::BaseDataSDyn> data_s_dyn_ptr()
         {
           check_init();
           return sdyn_ptr_;
         }
 
         //! Returns the structural dynamics data container (read-only)
-        const STR::TIMINT::BaseDataSDyn& DataSDyn() const
+        const STR::TIMINT::BaseDataSDyn& data_s_dyn() const
         {
           check_init();
           return *sdyn_ptr_;
         }
 
         //! Returns the structural dynamics data container (read and write)
-        STR::TIMINT::BaseDataSDyn& DataSDyn()
+        STR::TIMINT::BaseDataSDyn& data_s_dyn()
         {
           check_init();
           return *sdyn_ptr_;
         }
 
         //! Returns the non-linear solver implicit time integration interface pointer
-        Teuchos::RCP<STR::TIMINT::NoxInterface> NoxInterfacePtr()
+        Teuchos::RCP<STR::TIMINT::NoxInterface> nox_interface_ptr()
         {
           check_init();
           return noxinterface_ptr_;
         }
 
         //! Returns the non-linear solver implicit time integration interface (read-only)
-        const STR::TIMINT::NoxInterface& NoxInterface() const
+        const STR::TIMINT::NoxInterface& nox_interface() const
         {
           check_init();
           return *noxinterface_ptr_;
         }
 
         //! Returns the non-linear solver implicit time integration interface (read and write)
-        STR::TIMINT::NoxInterface& NoxInterface()
+        STR::TIMINT::NoxInterface& nox_interface()
         {
           check_init();
           return *noxinterface_ptr_;
         }
 
-        STR::Integrator& Integrator()
+        STR::Integrator& integrator()
         {
           check_init();
           return *int_ptr_;
         }
 
-        const STR::Integrator& Integrator() const
+        const STR::Integrator& integrator() const
         {
           check_init();
           return *int_ptr_;
         }
 
         //! Returns the underlying time integration strategy
-        const STR::TIMINT::Base& TimInt() const
+        const STR::TIMINT::Base& tim_int() const
         {
           check_init();
           return *timint_ptr_;
@@ -190,8 +190,8 @@ namespace STR
         /*! returns the nox group (pointer) (only for internal use)
          *
          *  The nox group has to be initialized in one of the derived Setup() routines. */
-        ::NOX::Abstract::Group& Group();
-        Teuchos::RCP<::NOX::Abstract::Group>& GroupPtr();
+        ::NOX::Abstract::Group& group();
+        Teuchos::RCP<::NOX::Abstract::Group>& group_ptr();
 
        protected:
         //! init flag

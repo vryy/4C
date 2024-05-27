@@ -1,5 +1,5 @@
 /*! \file
-\brief Nullspace computation for a Discretization
+\brief Nullspace computation for a discretization
 \level 0
 */
 

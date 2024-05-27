@@ -56,15 +56,15 @@ ADAPTER::CouplingEhlMortar::CouplingEhlMortar(int spatial_dimension,
 /*----------------------------------------------------------------------*
  |  read mortar condition                                               |
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingEhlMortar::ReadMortarCondition(Teuchos::RCP<DRT::Discretization> masterdis,
+void ADAPTER::CouplingEhlMortar::read_mortar_condition(Teuchos::RCP<DRT::Discretization> masterdis,
     Teuchos::RCP<DRT::Discretization> slavedis, std::vector<int> coupleddof,
     const std::string& couplingcond, Teuchos::ParameterList& input,
     std::map<int, DRT::Node*>& mastergnodes, std::map<int, DRT::Node*>& slavegnodes,
     std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
     std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements)
 {
-  ADAPTER::CouplingNonLinMortar::ReadMortarCondition(masterdis, slavedis, coupleddof, couplingcond,
-      input, mastergnodes, slavegnodes, masterelements, slaveelements);
+  ADAPTER::CouplingNonLinMortar::read_mortar_condition(masterdis, slavedis, coupleddof,
+      couplingcond, input, mastergnodes, slavegnodes, masterelements, slaveelements);
 
   input.set<int>("PROBTYPE", INPAR::CONTACT::ehl);
 }
@@ -127,7 +127,7 @@ void ADAPTER::CouplingEhlMortar::Integrate(Teuchos::RCP<const Epetra_Vector> dis
 
   // init internal data
   interface_->Initialize();
-  interface_->SetElementAreas();
+  interface_->set_element_areas();
   // call interface evaluate (d,m,gap...)
   interface_->Evaluate();
 
@@ -138,11 +138,11 @@ void ADAPTER::CouplingEhlMortar::Integrate(Teuchos::RCP<const Epetra_Vector> dis
   D_->Complete();
   M_->Complete(*masterdofrowmap_, *slavedofrowmap_);
   N_->Complete(*smdofrowmap_, *slavedofrowmap_);
-  AssembleRealGap();
+  assemble_real_gap();
   assemble_real_gap_deriv();
-  AssembleNormals();
+  assemble_normals();
   assemble_normals_deriv();
-  AssembleSurfGrad();
+  assemble_surf_grad();
   assemble_interface_velocities(dt);
 
   // save that state as the last evaluated one
@@ -734,7 +734,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> ADAPTER::CouplingEhlMortar::AssembleEHL
   return MLinEHL;
 }
 
-void ADAPTER::CouplingEhlMortar::AssembleNormals()
+void ADAPTER::CouplingEhlMortar::assemble_normals()
 {
   normals_ = Teuchos::rcp(new Epetra_Vector(*SlaveDofMap(), true));
 
@@ -769,7 +769,7 @@ void ADAPTER::CouplingEhlMortar::assemble_normals_deriv()
   Nderiv_->Complete();
 }
 
-void ADAPTER::CouplingEhlMortar::AssembleRealGap()
+void ADAPTER::CouplingEhlMortar::assemble_real_gap()
 {
   nodal_gap_ = Teuchos::rcp(new Epetra_Vector(*slavenoderowmap_, true));
 
@@ -946,7 +946,7 @@ void ADAPTER::CouplingEhlMortar::assemble_interface_velocities(const double dt)
   avTangVel_deriv_->Scale(1. / dt);
 }
 
-void ADAPTER::CouplingEhlMortar::AssembleSurfGrad()
+void ADAPTER::CouplingEhlMortar::assemble_surf_grad()
 {
   SurfGrad_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
       *slavedofrowmap_, 81, false, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
@@ -1112,7 +1112,7 @@ void ADAPTER::CouplingEhlMortar::create_active_slip_toggle(Teuchos::RCP<Epetra_V
   }
 }
 
-void ADAPTER::CouplingEhlMortar::WriteRestart(IO::DiscretizationWriter& output)
+void ADAPTER::CouplingEhlMortar::write_restart(IO::DiscretizationWriter& output)
 {
   if (!contact_regularization_) return;
 

@@ -170,7 +170,7 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Get the rotational GIDs for the beam and surface.
-     * @param discret (in) Discretization.
+     * @param discret (in) discretization.
      * @param gid_surface (out) GIDs for the surface that influence the rotation.
      * @param gid_rot (out) Rotational GIDs for the beam
      */

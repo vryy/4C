@@ -55,28 +55,28 @@ class PostVtkWriter : public PostWriterBase
 
  protected:
   //! Return the opening xml tag for this writer type
-  virtual const std::string& WriterOpeningTag() const = 0;
+  virtual const std::string& writer_opening_tag() const = 0;
 
   //! Return the parallel opening xml tag for this writer type
-  virtual const std::string& WriterPOpeningTag() const = 0;
+  virtual const std::string& writer_p_opening_tag() const = 0;
 
   //! Return a vector of parallel piece tags for each file
-  virtual const std::vector<std::string>& WriterPPieceTags() const = 0;
+  virtual const std::vector<std::string>& writer_p_piece_tags() const = 0;
 
   //! Give every writer a chance to do preparations before writing
-  virtual void WriterPrepTimestep() = 0;
+  virtual void writer_prep_timestep() = 0;
 
   //! Return the parallel file suffix including the dot for this file type
-  virtual const std::string& WriterPSuffix() const = 0;
+  virtual const std::string& writer_p_suffix() const = 0;
 
   //! Return the string of this writer type
-  virtual const std::string& WriterString() const = 0;
+  virtual const std::string& writer_string() const = 0;
 
   //! Return the file suffix including the dot for this file type
-  virtual const std::string& WriterSuffix() const = 0;
+  virtual const std::string& writer_suffix() const = 0;
 
   //! Write a single result step
-  virtual void WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<Epetra_Vector>& data,
+  virtual void write_dof_result_step(std::ofstream& file, const Teuchos::RCP<Epetra_Vector>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf, const int from,
       const bool fillzeros) = 0;
@@ -93,7 +93,7 @@ class PostVtkWriter : public PostWriterBase
       const int from) override = 0;
 
   //! write the geometry of one time step
-  virtual void WriteGeo() = 0;
+  virtual void write_geo() = 0;
 
   /*!
    \brief write one time step of a result
@@ -145,17 +145,17 @@ class PostVtkWriter : public PostWriterBase
 
 
   //! write the solution data collected in the given vector
-  virtual void WriteSolutionVector(const std::vector<double>& solution, const int ncomponents,
+  virtual void write_solution_vector(const std::vector<double>& solution, const int ncomponents,
       const std::string& name, std::ofstream& file) const;
 
   //! write prologue of the VTK file
-  virtual void WriteVtkHeader();
+  virtual void write_vtk_header();
 
   //! write epilogue of the VTK file
-  virtual void WriteVtkFooter();
+  virtual void write_vtk_footer();
 
   //! write a master file for VTK that collects links to all time steps
-  virtual void WriteVtkMasterFile(const std::vector<std::pair<double, std::string>>& filenames,
+  virtual void write_vtk_master_file(const std::vector<std::pair<double, std::string>>& filenames,
       const std::string& dirname) const;
 
   //! writes debug output as long as this filter is incomplete (TODO MK: should go away at some

@@ -290,7 +290,7 @@ void STR::NLN::CreateConstraintInterfaces(NOX::NLN::CONSTRAINT::ReqInterfaceMap&
         STR::MODELEVALUATOR::Generic& model = integrator.Evaluator(INPAR::STR::model_contact);
         STR::MODELEVALUATOR::Contact& contact_model =
             dynamic_cast<STR::MODELEVALUATOR::Contact&>(model);
-        iconstr[NOX::NLN::sol_contact] = contact_model.StrategyPtr()->NoxInterfacePtr();
+        iconstr[NOX::NLN::sol_contact] = contact_model.StrategyPtr()->nox_interface_ptr();
         break;
       }
       case NOX::NLN::sol_meshtying:
@@ -298,7 +298,7 @@ void STR::NLN::CreateConstraintInterfaces(NOX::NLN::CONSTRAINT::ReqInterfaceMap&
         STR::MODELEVALUATOR::Generic& model = integrator.Evaluator(INPAR::STR::model_meshtying);
         STR::MODELEVALUATOR::Meshtying& mt_model =
             dynamic_cast<STR::MODELEVALUATOR::Meshtying&>(model);
-        iconstr[NOX::NLN::sol_meshtying] = mt_model.StrategyPtr()->NoxInterfacePtr();
+        iconstr[NOX::NLN::sol_meshtying] = mt_model.StrategyPtr()->nox_interface_ptr();
         break;
       }
       case NOX::NLN::sol_lag_pen_constraint:
@@ -307,7 +307,7 @@ void STR::NLN::CreateConstraintInterfaces(NOX::NLN::CONSTRAINT::ReqInterfaceMap&
             integrator.Evaluator(INPAR::STR::model_lag_pen_constraint);
         STR::MODELEVALUATOR::LagPenConstraint& lagpenconstraint_model =
             dynamic_cast<STR::MODELEVALUATOR::LagPenConstraint&>(model);
-        iconstr[NOX::NLN::sol_lag_pen_constraint] = lagpenconstraint_model.NoxInterfacePtr();
+        iconstr[NOX::NLN::sol_lag_pen_constraint] = lagpenconstraint_model.nox_interface_ptr();
         break;
       }
       default:

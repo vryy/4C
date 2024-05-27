@@ -141,7 +141,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Setup()
 
 
   // check if varying diameter is used
-  if (contdis_->Name() == "porofluid") SetVaryingDiamFlag();
+  if (contdis_->Name() == "porofluid") set_varying_diam_flag();
 }
 
 /*----------------------------------------------------------------------*
@@ -281,7 +281,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
   // output
   int total_numactive_pairs = 0;
   numactive_pairs = static_cast<int>(coupl_elepairs_.size());
-  Comm().SumAll(&numactive_pairs, &total_numactive_pairs, 1);
+  comm().SumAll(&numactive_pairs, &total_numactive_pairs, 1);
 
 
   if (myrank_ == 0)
@@ -374,7 +374,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::create_cou
   // output
   int total_numactive_pairs = 0;
   numactive_pairs = static_cast<int>(coupl_elepairs_.size());
-  Comm().SumAll(&numactive_pairs, &total_numactive_pairs, 1);
+  comm().SumAll(&numactive_pairs, &total_numactive_pairs, 1);
 
 
   if (myrank_ == 0)
@@ -390,7 +390,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::create_cou
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetVaryingDiamFlag()
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::set_varying_diam_flag()
 {
   int has_varying_diam = 0;
   // check all column elements if one of them uses the diameter law by function
@@ -413,7 +413,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetVarying
 
   // sum over all procs.
   int sum_has_varying_diam = 0;
-  Comm().SumAll(&has_varying_diam, &sum_has_varying_diam, 1);
+  comm().SumAll(&has_varying_diam, &sum_has_varying_diam, 1);
   // if one has a varying diameter set the flag to true
   if (sum_has_varying_diam > 0) has_varying_diam_ = true;
 }

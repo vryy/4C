@@ -46,7 +46,7 @@ MAT::PAR::AaAraghavanvorpDamage::AaAraghavanvorpDamage(
 }
 
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::AaAraghavanvorpDamage::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::AaAraghavanvorpDamage::create_material()
 {
   return Teuchos::rcp(new MAT::AaAraghavanvorpDamage(this));
 }

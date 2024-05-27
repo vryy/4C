@@ -427,7 +427,7 @@ bool DRT::ELEMENTS::SoHex8::VisData(const std::string& name, std::vector<double>
 }
 
 // Compute nodal fibers and call post setup routine of the materials
-void DRT::ELEMENTS::SoHex8::MaterialPostSetup(Teuchos::ParameterList& params)
+void DRT::ELEMENTS::SoHex8::material_post_setup(Teuchos::ParameterList& params)
 {
   if (DRT::FIBER::UTILS::HaveNodalFibers<CORE::FE::CellType::hex8>(Nodes()))
   {
@@ -450,7 +450,7 @@ void DRT::ELEMENTS::SoHex8::MaterialPostSetup(Teuchos::ParameterList& params)
   }
 
   // Call super post setup
-  SoBase::MaterialPostSetup(params);
+  SoBase::material_post_setup(params);
 
   // Cleanup ParameterList to not carry all fibers the whole simulation
   // do not throw an error if key does not exist.

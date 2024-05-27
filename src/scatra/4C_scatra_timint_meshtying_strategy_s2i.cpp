@@ -327,13 +327,13 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
           if (not slaveonly_)
           {
-            scatratimint_->Discretization()->evaluate_condition(condparams, islavematrix_,
+            scatratimint_->discretization()->evaluate_condition(condparams, islavematrix_,
                 imastermatrix_, islaveresidual_, Teuchos::null, Teuchos::null, "S2IKinetics",
                 kinetics_slave_cond.second->parameters().Get<int>("ConditionID"));
           }
           else
           {
-            scatratimint_->Discretization()->evaluate_condition(condparams, islavematrix_,
+            scatratimint_->discretization()->evaluate_condition(condparams, islavematrix_,
                 Teuchos::null, islaveresidual_, Teuchos::null, Teuchos::null, "S2IKinetics",
                 kinetics_slave_cond.second->parameters().Get<int>("ConditionID"));
           }
@@ -379,7 +379,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           // In case the interface linearizations and residuals are evaluated on slave side only,
           // we now apply a standard meshtying algorithm to condense out the slave-side degrees of
           // freedom.
-          else if (!scatratimint_->Discretization()->GetCondition("PointCoupling"))
+          else if (!scatratimint_->discretization()->GetCondition("PointCoupling"))
           {
             // initialize temporary matrix for slave-side rows of system matrix
             CORE::LINALG::SparseMatrix systemmatrixrowsslave(*icoup_->SlaveDofMap(), 81);
@@ -533,7 +533,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
       // In case the interface linearizations and residuals are evaluated on slave side only,
       // we now apply a standard meshtying algorithm to condense out the slave-side degrees of
       // freedom.
-      else if (!scatratimint_->Discretization()->GetCondition("PointCoupling"))
+      else if (!scatratimint_->discretization()->GetCondition("PointCoupling"))
       {
         // initialize temporary vector for slave-side entries of residual vector
         Teuchos::RCP<Epetra_Vector> residualslave =
@@ -874,7 +874,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
   }
   // extract boundary conditions for scatra-scatra interface layer growth
   std::vector<CORE::Conditions::Condition*> s2icoupling_growth_conditions;
-  scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth", s2icoupling_growth_conditions);
+  scatratimint_->discretization()->GetCondition("S2IKineticsGrowth", s2icoupling_growth_conditions);
 
   // evaluate scatra-scatra interface layer growth
   if (s2icoupling_growth_conditions.size())
@@ -901,7 +901,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
         // collect condition specific data and store to scatra boundary parameter class
         set_condition_specific_sca_tra_parameters(*s2icoupling_growth_conditions[0]);
         // evaluate the condition
-        scatratimint_->Discretization()->evaluate_condition(conditionparams, islavematrix_,
+        scatratimint_->discretization()->evaluate_condition(conditionparams, islavematrix_,
             imastermatrix_, islaveresidual_, Teuchos::null, Teuchos::null, "S2IKineticsGrowth");
 
         // finalize interface matrices
@@ -1001,15 +1001,15 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
         if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic)
         {
           // extract map associated with scalar transport degrees of freedom
-          const Epetra_Map& dofrowmap_scatra = *scatratimint_->Discretization()->dof_row_map();
+          const Epetra_Map& dofrowmap_scatra = *scatratimint_->discretization()->dof_row_map();
 
           // extract map associated with scatra-scatra interface layer thicknesses
-          const Epetra_Map& dofrowmap_growth = *scatratimint_->Discretization()->dof_row_map(2);
+          const Epetra_Map& dofrowmap_growth = *scatratimint_->discretization()->dof_row_map(2);
 
           // extract ID of boundary condition for scatra-scatra interface layer growth
           // the corresponding boundary condition for scatra-scatra interface coupling is expected
           // to have the same ID
-          const int condid = scatratimint_->Discretization()
+          const int condid = scatratimint_->discretization()
                                  ->GetCondition("S2IKineticsGrowth")
                                  ->parameters()
                                  .Get<int>("ConditionID");
@@ -1062,7 +1062,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                     // collect condition specific data and store to scatra boundary parameter class
                     set_condition_specific_sca_tra_parameters(*kinetics_slave_cond);
 
-                    scatratimint_->Discretization()->evaluate_condition(
+                    scatratimint_->discretization()->evaluate_condition(
                         condparams, strategy, "S2IKinetics", condid);
                   }
                 }
@@ -1087,12 +1087,12 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 // evaluate off-diagonal linearizations arising from scatra-scatra interface layer
                 // growth
                 auto* s2i_coupling_growth_cond =
-                    scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth");
+                    scatratimint_->discretization()->GetCondition("S2IKineticsGrowth");
 
                 // collect condition specific data and store to scatra boundary parameter class
                 set_condition_specific_sca_tra_parameters(*s2i_coupling_growth_cond);
 
-                scatratimint_->Discretization()->evaluate_condition(
+                scatratimint_->discretization()->evaluate_condition(
                     condparams, strategy, "S2IKineticsGrowth", condid);
 
                 // finalize auxiliary matrix block
@@ -1144,7 +1144,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                     "action", SCATRA::BoundaryAction::calc_s2icoupling_growthscatra, condparams);
 
                 // evaluate off-diagonal linearizations
-                scatratimint_->Discretization()->evaluate_condition(
+                scatratimint_->discretization()->evaluate_condition(
                     condparams, strategy, "S2IKineticsGrowth", condid);
 
                 // finalize auxiliary matrix blocks
@@ -1196,7 +1196,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
                 // evaluate off-diagonal linearizations arising from scatra-scatra interface
                 // coupling
-                scatratimint_->Discretization()->evaluate_condition(
+                scatratimint_->discretization()->evaluate_condition(
                     condparams, strategy, "S2IKinetics", condid);
 
                 // finalize auxiliary matrix block
@@ -1224,7 +1224,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
                 // evaluate off-diagonal linearizations arising from scatra-scatra interface layer
                 // growth
-                scatratimint_->Discretization()->evaluate_condition(
+                scatratimint_->discretization()->evaluate_condition(
                     condparams, strategy, "S2IKineticsGrowth", condid);
 
                 // derive linearizations of master fluxes associated with scatra-scatra interface
@@ -1276,7 +1276,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                     "action", SCATRA::BoundaryAction::calc_s2icoupling_growthscatra, condparams);
 
                 // evaluate off-diagonal linearizations
-                scatratimint_->Discretization()->evaluate_condition(
+                scatratimint_->discretization()->evaluate_condition(
                     condparams, strategy, "S2IKineticsGrowth", condid);
 
                 // finalize auxiliary matrix blocks
@@ -1342,10 +1342,10 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 "action", SCATRA::BoundaryAction::calc_s2icoupling_growthgrowth, condparams);
 
             // set history vector associated with discrete scatra-scatra interface layer thicknesses
-            scatratimint_->Discretization()->set_state(2, "growthhist", growthhist_);
+            scatratimint_->discretization()->set_state(2, "growthhist", growthhist_);
 
             // evaluate main-diagonal linearizations and corresponding residuals
-            scatratimint_->Discretization()->evaluate_condition(
+            scatratimint_->discretization()->evaluate_condition(
                 condparams, strategy, "S2IKineticsGrowth", condid);
 
             // finalize global matrix block
@@ -1397,7 +1397,7 @@ void SCATRA::MeshtyingStrategyS2I::evaluate_and_assemble_capacitive_contribution
       // collect condition specific data and store to scatra boundary parameter class
       set_condition_specific_sca_tra_parameters(*kinetics_slave_cond_cap.second);
 
-      scatratimint_->Discretization()->evaluate_condition(capcondparas, islavematrix_,
+      scatratimint_->discretization()->evaluate_condition(capcondparas, islavematrix_,
           imasterslavematrix_, islaveresidual_, imasterresidual_on_slave_side, Teuchos::null,
           "S2IKinetics", kinetics_slave_cond_cap.second->parameters().Get<int>("ConditionID"));
     }
@@ -1912,16 +1912,16 @@ void SCATRA::MeshtyingStrategyS2I::init_conv_check_strategy()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
+void SCATRA::MeshtyingStrategyS2I::setup_meshtying()
 {
   // extract scatra-scatra coupling conditions from discretization
   std::vector<CORE::Conditions::Condition*> s2imeshtying_conditions(0, nullptr);
-  scatratimint_->Discretization()->GetCondition("S2IMeshtying", s2imeshtying_conditions);
+  scatratimint_->discretization()->GetCondition("S2IMeshtying", s2imeshtying_conditions);
   std::vector<CORE::Conditions::Condition*> s2ikinetics_conditions(0, nullptr);
-  scatratimint_->Discretization()->GetCondition("S2IKinetics", s2ikinetics_conditions);
+  scatratimint_->discretization()->GetCondition("S2IKinetics", s2ikinetics_conditions);
   kinetics_conditions_meshtying_slaveside_.clear();
   master_conditions_.clear();
-  runtime_csvwriter_.emplace(scatratimint_->Discretization()->Comm().MyPID(),
+  runtime_csvwriter_.emplace(scatratimint_->discretization()->Comm().MyPID(),
       *scatratimint_->DiscWriter()->Output(), "kinetics_interface_flux");
 
   for (auto* s2imeshtying_cond : s2imeshtying_conditions)
@@ -2020,7 +2020,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       // overwrite IDs of master-side scatra-scatra interface coupling conditions with the value -1
       // to prevent them from being evaluated when calling evaluate_condition on the discretization
       // TODO: this is somewhat unclean, because changing the conditions, makes calling
-      // SetupMeshtying() twice invalid (which should not be necessary, but conceptually possible)
+      // setup_meshtying() twice invalid (which should not be necessary, but conceptually possible)
       for (auto& mastercondition : master_conditions_)
         mastercondition.second->parameters().Add("ConditionID", -1);
 
@@ -2056,14 +2056,14 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           if (kinetics_condition->parameters().Get<int>("kinetic model") !=
               static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
           {
-            DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->Discretization(),
+            DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
                 *kinetics_condition->GetNodes(), islavenodegidvec);
 
             auto mastercondition = master_conditions_.find(kineticsID);
             if (mastercondition == master_conditions_.end())
               FOUR_C_THROW("Could not find master condition");
 
-            DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->Discretization(),
+            DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
                 *mastercondition->second->GetNodes(), imasternodegidvec);
 
             islavenodegidvec_cond.push_back(islavenodegidvec);
@@ -2071,8 +2071,8 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           }
         }
 
-        icoup_->setup_coupling(*(scatratimint_->Discretization()),
-            *(scatratimint_->Discretization()), imasternodegidvec_cond, islavenodegidvec_cond,
+        icoup_->setup_coupling(*(scatratimint_->discretization()),
+            *(scatratimint_->discretization()), imasternodegidvec_cond, islavenodegidvec_cond,
             num_dof_per_condition, true, 1.0e-8);
       }
       else
@@ -2095,14 +2095,14 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           if (kinetics_condition->parameters().Get<int>("kinetic model") !=
               static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
           {
-            DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->Discretization(),
+            DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
                 *kinetics_condition->GetNodes(), islavenodegidset);
 
             auto mastercondition = master_conditions_.find(kineticsID);
             if (mastercondition == master_conditions_.end())
               FOUR_C_THROW("Could not find master condition");
             else
-              DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->Discretization(),
+              DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
                   *mastercondition->second->GetNodes(), imasternodegidset);
           }
         }
@@ -2110,8 +2110,8 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
         std::vector<int> islavenodegidvec(islavenodegidset.begin(), islavenodegidset.end());
         std::vector<int> imasternodegidvec(imasternodegidset.begin(), imasternodegidset.end());
 
-        icoup_->setup_coupling(*(scatratimint_->Discretization()),
-            *(scatratimint_->Discretization()), imasternodegidvec, islavenodegidvec,
+        icoup_->setup_coupling(*(scatratimint_->discretization()),
+            *(scatratimint_->discretization()), imasternodegidvec, islavenodegidvec,
             num_dof_per_condition, true, 1.0e-8);
       }
 
@@ -2119,13 +2119,13 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       auto ifullmap = CORE::LINALG::MergeMap(icoup_->SlaveDofMap(), icoup_->MasterDofMap());
       std::vector<Teuchos::RCP<const Epetra_Map>> imaps;
       imaps.emplace_back(
-          CORE::LINALG::SplitMap(*(scatratimint_->Discretization()->dof_row_map()), *ifullmap));
+          CORE::LINALG::SplitMap(*(scatratimint_->discretization()->dof_row_map()), *ifullmap));
       imaps.emplace_back(icoup_->SlaveDofMap());
       imaps.emplace_back(icoup_->MasterDofMap());
 
       // initialize global map extractor
       interfacemaps_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(
-          *(scatratimint_->Discretization()->dof_row_map()), imaps));
+          *(scatratimint_->discretization()->dof_row_map()), imaps));
       interfacemaps_->check_for_valid_map_extractor();
 
       // initialize interface vector
@@ -2133,11 +2133,11 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       // initialize it with the full dof_row_map of the discretization to make it work for parallel
       // computations.
       islavephidtnp_ =
-          CORE::LINALG::CreateVector(*(scatratimint_->Discretization()->dof_row_map()), false);
+          CORE::LINALG::CreateVector(*(scatratimint_->discretization()->dof_row_map()), false);
       imasterphidt_on_slave_side_np_ =
-          CORE::LINALG::CreateVector(*(scatratimint_->Discretization()->dof_row_map()), false);
+          CORE::LINALG::CreateVector(*(scatratimint_->discretization()->dof_row_map()), false);
       imasterphi_on_slave_side_np_ =
-          CORE::LINALG::CreateVector(*(scatratimint_->Discretization()->dof_row_map()), false);
+          CORE::LINALG::CreateVector(*(scatratimint_->discretization()->dof_row_map()), false);
 
       // initialize auxiliary system matrices and associated transformation operators
       islavematrix_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(icoup_->SlaveDofMap()), 81));
@@ -2179,15 +2179,15 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 
       // initialize empty interface maps
       Teuchos::RCP<Epetra_Map> imastermap =
-          Teuchos::rcp(new Epetra_Map(0, 0, scatratimint_->Discretization()->Comm()));
+          Teuchos::rcp(new Epetra_Map(0, 0, scatratimint_->discretization()->Comm()));
       Teuchos::RCP<Epetra_Map> islavemap =
-          Teuchos::rcp(new Epetra_Map(0, 0, scatratimint_->Discretization()->Comm()));
+          Teuchos::rcp(new Epetra_Map(0, 0, scatratimint_->discretization()->Comm()));
       Teuchos::RCP<Epetra_Map> ifullmap =
-          Teuchos::rcp(new Epetra_Map(0, 0, scatratimint_->Discretization()->Comm()));
+          Teuchos::rcp(new Epetra_Map(0, 0, scatratimint_->discretization()->Comm()));
       if (imortarredistribution_)
       {
-        imastermap_ = Teuchos::rcp(new Epetra_Map(0, 0, scatratimint_->Discretization()->Comm()));
-        islavemap_ = Teuchos::rcp(new Epetra_Map(0, 0, scatratimint_->Discretization()->Comm()));
+        imastermap_ = Teuchos::rcp(new Epetra_Map(0, 0, scatratimint_->discretization()->Comm()));
+        islavemap_ = Teuchos::rcp(new Epetra_Map(0, 0, scatratimint_->discretization()->Comm()));
       }
 
       // loop over all slave-side scatra-scatra interface coupling conditions
@@ -2214,9 +2214,9 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
         std::vector<CORE::Conditions::Condition*> slavecondition(1, kinetics_slave_cond.second);
 
         // fill maps
-        CORE::Conditions::FindConditionObjects(*scatratimint_->Discretization(), masternodes,
+        CORE::Conditions::FindConditionObjects(*scatratimint_->discretization(), masternodes,
             mastergnodes, masterelements, mastercondition);
-        CORE::Conditions::FindConditionObjects(*scatratimint_->Discretization(), slavenodes,
+        CORE::Conditions::FindConditionObjects(*scatratimint_->discretization(), slavenodes,
             slavegnodes, slaveelements, slavecondition);
 
         // initialize mortar coupling adapter
@@ -2227,9 +2227,9 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
                 GLOBAL::Problem::Instance()->spatial_approximation_type()));
         CORE::ADAPTER::CouplingMortar& icoupmortar = *icoupmortar_[condid];
         std::vector<int> coupleddof(scatratimint_->NumDofPerNode(), 1);
-        icoupmortar.SetupInterface(scatratimint_->Discretization(), scatratimint_->Discretization(),
-            coupleddof, mastergnodes, slavegnodes, masterelements, slaveelements,
-            scatratimint_->Discretization()->Comm());
+        icoupmortar.setup_interface(scatratimint_->discretization(),
+            scatratimint_->discretization(), coupleddof, mastergnodes, slavegnodes, masterelements,
+            slaveelements, scatratimint_->discretization()->Comm());
 
         // extract mortar interface
         MORTAR::Interface& interface = *icoupmortar.Interface();
@@ -2470,13 +2470,13 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       // generate interior and interface maps
       std::vector<Teuchos::RCP<const Epetra_Map>> imaps;
       imaps.emplace_back(
-          CORE::LINALG::SplitMap(*(scatratimint_->Discretization()->dof_row_map()), *ifullmap));
+          CORE::LINALG::SplitMap(*(scatratimint_->discretization()->dof_row_map()), *ifullmap));
       imaps.emplace_back(islavemap);
       imaps.emplace_back(imastermap);
 
       // initialize global map extractor
       interfacemaps_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(
-          *(scatratimint_->Discretization()->dof_row_map()), imaps));
+          *(scatratimint_->discretization()->dof_row_map()), imaps));
       interfacemaps_->check_for_valid_map_extractor();
 
       if (couplingtype_ == INPAR::S2I::coupling_mortar_standard or
@@ -2614,7 +2614,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
             case INPAR::S2I::coupling_mortar_saddlepoint_bubnov:
             {
               // determine number of Lagrange multiplier dofs owned by each processor
-              const Epetra_Comm& comm(scatratimint_->Discretization()->Comm());
+              const Epetra_Comm& comm(scatratimint_->discretization()->Comm());
               const int numproc(comm.NumProc());
               const int mypid(comm.MyPID());
               std::vector<int> localnumlmdof(numproc, 0);
@@ -2648,9 +2648,9 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 
               // initialize extended map extractor
               Teuchos::RCP<Epetra_Map> extendedmap = CORE::LINALG::MergeMap(
-                  *(scatratimint_->Discretization()->dof_row_map()), *lmdofrowmap, false);
+                  *(scatratimint_->discretization()->dof_row_map()), *lmdofrowmap, false);
               extendedmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(
-                  *extendedmap, lmdofrowmap, scatratimint_->Discretization()->dof_row_map()));
+                  *extendedmap, lmdofrowmap, scatratimint_->discretization()->dof_row_map()));
               extendedmaps_->check_for_valid_map_extractor();
 
               // transform range map of mortar matrices D and M from slave-side dofrowmap to
@@ -2734,7 +2734,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 
   // extract boundary condition for scatra-scatra interface layer growth
   const CORE::Conditions::Condition* const condition =
-      scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth");
+      scatratimint_->discretization()->GetCondition("S2IKineticsGrowth");
 
   // setup evaluation of scatra-scatra interface layer growth if applicable
   if (condition)
@@ -2755,7 +2755,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
         if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic)
         {
           // initialize extended map extractor
-          const Epetra_Map* const dofrowmap_scatra = scatratimint_->Discretization()->dof_row_map();
+          const Epetra_Map* const dofrowmap_scatra = scatratimint_->discretization()->dof_row_map();
           extendedmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(
               *CORE::LINALG::MergeMap(*dofrowmap_scatra, *dofrowmap_growth, false),
               scatratimint_->dof_row_map(2), dofrowmap_scatra));
@@ -2859,18 +2859,18 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
         {
           // extract global ID of current node
           // process only nodes stored by current processor
-          if (scatratimint_->Discretization()->HaveGlobalNode(nodegid))
+          if (scatratimint_->discretization()->HaveGlobalNode(nodegid))
           {
             // extract current node
-            const DRT::Node* const node = scatratimint_->Discretization()->gNode(nodegid);
+            const DRT::Node* const node = scatratimint_->discretization()->gNode(nodegid);
 
             // process only nodes owned by current processor
-            if (node->Owner() == scatratimint_->Discretization()->Comm().MyPID())
+            if (node->Owner() == scatratimint_->discretization()->Comm().MyPID())
             {
               // extract local ID of scatra-scatra interface layer thickness variable associated
               // with current node
-              const int doflid_growth = scatratimint_->Discretization()->dof_row_map(2)->LID(
-                  scatratimint_->Discretization()->Dof(2, node, 0));
+              const int doflid_growth = scatratimint_->discretization()->dof_row_map(2)->LID(
+                  scatratimint_->discretization()->Dof(2, node, 0));
               if (doflid_growth < 0)
               {
                 FOUR_C_THROW(
@@ -2908,8 +2908,8 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic
               ? extendedmaps_->FullMap()
               : Teuchos::rcp(
-                    new const Epetra_Map(*scatratimint_->Discretization()->dof_row_map()))));
-}  // SCATRA::meshtying_strategy_s2_i::SetupMeshtying
+                    new const Epetra_Map(*scatratimint_->discretization()->dof_row_map()))));
+}  // SCATRA::meshtying_strategy_s2_i::setup_meshtying
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -2966,7 +2966,7 @@ void SCATRA::MeshtyingStrategyS2I::set_condition_specific_sca_tra_parameters(
   write_s2_i_kinetics_specific_sca_tra_parameters_to_parameter_list(s2icondition, conditionparams);
 
   // call standard loop over elements
-  scatratimint_->Discretization()->Evaluate(
+  scatratimint_->discretization()->Evaluate(
       conditionparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
@@ -3156,7 +3156,7 @@ void SCATRA::MeshtyingStrategyS2I::SetOldPartOfRHS() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::WriteRestart() const
+void SCATRA::MeshtyingStrategyS2I::write_restart() const
 {
   // only relevant for monolithic or semi-implicit evaluation of scatra-scatra interface layer
   // growth
@@ -3189,10 +3189,10 @@ void SCATRA::MeshtyingStrategyS2I::read_restart(
     Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
     if (input == Teuchos::null)
       reader = Teuchos::rcp(new IO::DiscretizationReader(
-          scatratimint_->Discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step));
+          scatratimint_->discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step));
     else
       reader =
-          Teuchos::rcp(new IO::DiscretizationReader(scatratimint_->Discretization(), input, step));
+          Teuchos::rcp(new IO::DiscretizationReader(scatratimint_->discretization(), input, step));
 
     // read state vector of discrete scatra-scatra interface layer thicknesses
     reader->ReadVector(growthn_, "growthn");
@@ -3234,11 +3234,11 @@ void SCATRA::MeshtyingStrategyS2I::Output() const
     // for proper output, initialize target state vector of discrete scatra-scatra interface layer
     // thicknesses based on map of row nodes
     const Teuchos::RCP<Epetra_Vector> intlayerthickness =
-        Teuchos::rcp(new Epetra_Vector(*scatratimint_->Discretization()->NodeRowMap(), true));
+        Teuchos::rcp(new Epetra_Vector(*scatratimint_->discretization()->NodeRowMap(), true));
 
     // extract boundary condition for scatra-scatra interface layer growth
     const CORE::Conditions::Condition* const condition =
-        scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth");
+        scatratimint_->discretization()->GetCondition("S2IKineticsGrowth");
 
     // extract nodal cloud from condition
     const std::vector<int>* nodegids = condition->GetNodes();
@@ -3248,22 +3248,22 @@ void SCATRA::MeshtyingStrategyS2I::Output() const
     {
       // extract global ID of current node
       // process only nodes stored by current processor
-      if (scatratimint_->Discretization()->HaveGlobalNode(nodegid))
+      if (scatratimint_->discretization()->HaveGlobalNode(nodegid))
       {
         // extract current node
-        const DRT::Node* const node = scatratimint_->Discretization()->gNode(nodegid);
+        const DRT::Node* const node = scatratimint_->discretization()->gNode(nodegid);
 
         // process only nodes owned by current processor
-        if (node->Owner() == scatratimint_->Discretization()->Comm().MyPID())
+        if (node->Owner() == scatratimint_->discretization()->Comm().MyPID())
         {
           // extract local ID of current node
-          const int nodelid = scatratimint_->Discretization()->NodeRowMap()->LID(nodegid);
+          const int nodelid = scatratimint_->discretization()->NodeRowMap()->LID(nodegid);
           if (nodelid < 0) FOUR_C_THROW("Couldn't extract local node ID!");
 
           // extract local ID of scatra-scatra interface layer thickness variable associated with
           // current node
-          const int doflid_growth = scatratimint_->Discretization()->dof_row_map(2)->LID(
-              scatratimint_->Discretization()->Dof(2, node, 0));
+          const int doflid_growth = scatratimint_->discretization()->dof_row_map(2)->LID(
+              scatratimint_->discretization()->Dof(2, node, 0));
           if (doflid_growth < 0)
             FOUR_C_THROW(
                 "Couldn't extract local ID of scatra-scatra interface layer thickness variable!");
@@ -3287,7 +3287,7 @@ void SCATRA::MeshtyingStrategyS2I::OutputInterfaceFlux() const
 {
   add_time_integration_specific_vectors();
   std::vector<CORE::Conditions::Condition*> s2ikinetics_conditions(0, nullptr);
-  scatratimint_->Discretization()->GetCondition("S2IKinetics", s2ikinetics_conditions);
+  scatratimint_->discretization()->GetCondition("S2IKinetics", s2ikinetics_conditions);
 
   std::map<std::string, std::vector<double>> output_data;
 
@@ -3307,7 +3307,7 @@ void SCATRA::MeshtyingStrategyS2I::OutputInterfaceFlux() const
         CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
             "action", SCATRA::BoundaryAction::calc_s2icoupling_flux, condparams);
 
-        scatratimint_->Discretization()->EvaluateScalars(
+        scatratimint_->discretization()->EvaluateScalars(
             condparams, s2i_flux, "S2IKinetics", condition_id);
       }
 
@@ -3319,7 +3319,7 @@ void SCATRA::MeshtyingStrategyS2I::OutputInterfaceFlux() const
             "action", SCATRA::BoundaryAction::calc_boundary_integral, condparams);
 
         // compute value of boundary integral
-        scatratimint_->Discretization()->EvaluateScalars(
+        scatratimint_->discretization()->EvaluateScalars(
             condparams, boundaryint_vector, "S2IKinetics", condition_id);
       }
 
@@ -3342,7 +3342,7 @@ void SCATRA::MeshtyingStrategyS2I::OutputInterfaceFlux() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::ExplicitPredictor() const
+void SCATRA::MeshtyingStrategyS2I::explicit_predictor() const
 {
   // only relevant for monolithic evaluation of scatra-scatra interface layer growth
   if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic)
@@ -3396,17 +3396,17 @@ void SCATRA::MeshtyingStrategyS2I::add_time_integration_specific_vectors() const
     interfacemaps_->InsertVector(
         icoup_->MasterToSlave(interfacemaps_->ExtractVector(*(scatratimint_->Phiafnp()), 2)), 1,
         imasterphi_on_slave_side_np_);
-    scatratimint_->Discretization()->set_state("imasterphinp", imasterphi_on_slave_side_np_);
+    scatratimint_->discretization()->set_state("imasterphinp", imasterphi_on_slave_side_np_);
 
     if (has_capacitive_contributions_)
     {
       interfacemaps_->InsertVector(
           interfacemaps_->ExtractVector(*(scatratimint_->Phidtnp()), 1), 1, islavephidtnp_);
-      scatratimint_->Discretization()->set_state("islavephidtnp", islavephidtnp_);
+      scatratimint_->discretization()->set_state("islavephidtnp", islavephidtnp_);
       interfacemaps_->InsertVector(
           icoup_->MasterToSlave(interfacemaps_->ExtractVector(*(scatratimint_->Phidtnp()), 2)), 1,
           imasterphidt_on_slave_side_np_);
-      scatratimint_->Discretization()->set_state("imasterphidtnp", imasterphidt_on_slave_side_np_);
+      scatratimint_->discretization()->set_state("imasterphidtnp", imasterphidt_on_slave_side_np_);
     }
   }
 
@@ -3421,13 +3421,13 @@ void SCATRA::MeshtyingStrategyS2I::add_time_integration_specific_vectors() const
                                                                                : growthn_;
 
     // set state vector
-    scatratimint_->Discretization()->set_state(2, "growth", growth);
+    scatratimint_->discretization()->set_state(2, "growth", growth);
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::ComputeTimeStepSize(double& dt)
+void SCATRA::MeshtyingStrategyS2I::compute_time_step_size(double& dt)
 {
   // not implemented for standard scalar transport
   if (intlayergrowth_timestep_ > 0.)
@@ -3447,7 +3447,7 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
 
   // extract boundary conditions for scatra-scatra interface layer growth
   std::vector<Teuchos::RCP<CORE::Conditions::Condition>> conditions;
-  scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth", conditions);
+  scatratimint_->discretization()->GetCondition("S2IKineticsGrowth", conditions);
 
   // initialize scatra-scatra interface layer growth
   if (conditions.size())
@@ -3490,12 +3490,12 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
     // provide scalar transport discretization with additional dofset for scatra-scatra interface
     // layer thickness
     const Teuchos::RCP<Epetra_IntVector> numdofpernode =
-        Teuchos::rcp(new Epetra_IntVector(*scatratimint_->Discretization()->NodeColMap()));
-    for (int inode = 0; inode < scatratimint_->Discretization()->NumMyColNodes(); ++inode)
+        Teuchos::rcp(new Epetra_IntVector(*scatratimint_->discretization()->NodeColMap()));
+    for (int inode = 0; inode < scatratimint_->discretization()->NumMyColNodes(); ++inode)
     {
       // add one degree of freedom for scatra-scatra interface layer growth to current node if
       // applicable
-      if (scatratimint_->Discretization()->lColNode(inode)->GetCondition("S2IKineticsGrowth"))
+      if (scatratimint_->discretization()->lColNode(inode)->GetCondition("S2IKineticsGrowth"))
         (*numdofpernode)[inode] = 1;
     }
 
@@ -3503,7 +3503,7 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
     Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofset =
         Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
             numdofpernode, Teuchos::null, Teuchos::null, true));
-    if (scatratimint_->Discretization()->AddDofSet(dofset) != ++number_dofsets)
+    if (scatratimint_->discretization()->AddDofSet(dofset) != ++number_dofsets)
       FOUR_C_THROW("Scalar transport discretization exhibits invalid number of dofsets!");
     scatratimint_->set_number_of_dof_set_growth(number_dofsets);
 
@@ -3523,7 +3523,7 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
       }
       extendedsolver_ = Teuchos::rcp(
           new CORE::LINALG::Solver(GLOBAL::Problem::Instance()->SolverParams(extendedsolver),
-              scatratimint_->Discretization()->Comm()));
+              scatratimint_->discretization()->Comm()));
     }
   }  // initialize scatra-scatra interface layer growth
 
@@ -3545,7 +3545,7 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
           "Adaptive time stepping for scatra-scatra interface layer growth requires "
           "ADAPTIVE_TIMESTEPPING flag to be set!");
     }
-    if (not scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth"))
+    if (not scatratimint_->discretization()->GetCondition("S2IKineticsGrowth"))
     {
       FOUR_C_THROW(
           "Adaptive time stepping for scatra-scatra interface layer growth requires corresponding "
@@ -3902,7 +3902,7 @@ void SCATRA::MeshtyingStrategyS2I::fd_check(
     const Teuchos::RCP<Epetra_Vector>& extendedresidual) const
 {
   // initial screen output
-  if (scatratimint_->Discretization()->Comm().MyPID() == 0)
+  if (scatratimint_->discretization()->Comm().MyPID() == 0)
   {
     std::cout << std::endl
               << "FINITE DIFFERENCE CHECK FOR EXTENDED SYSTEM MATRIX INVOLVING SCATRA-SCATRA "
@@ -3943,7 +3943,7 @@ void SCATRA::MeshtyingStrategyS2I::fd_check(
     // check whether current column index is a valid global column index and continue loop if not
     int collid(sysmat_original.ColMap().LID(colgid));
     int maxcollid(-1);
-    scatratimint_->Discretization()->Comm().MaxAll(&collid, &maxcollid, 1);
+    scatratimint_->discretization()->Comm().MaxAll(&collid, &maxcollid, 1);
     if (maxcollid < 0) continue;
 
     // fill global state vector with original state variables
@@ -4061,14 +4061,14 @@ void SCATRA::MeshtyingStrategyS2I::fd_check(
 
   // communicate tracking variables
   int counterglobal(0);
-  scatratimint_->Discretization()->Comm().SumAll(&counter, &counterglobal, 1);
+  scatratimint_->discretization()->Comm().SumAll(&counter, &counterglobal, 1);
   double maxabserrglobal(0.);
-  scatratimint_->Discretization()->Comm().MaxAll(&maxabserr, &maxabserrglobal, 1);
+  scatratimint_->discretization()->Comm().MaxAll(&maxabserr, &maxabserrglobal, 1);
   double maxrelerrglobal(0.);
-  scatratimint_->Discretization()->Comm().MaxAll(&maxrelerr, &maxrelerrglobal, 1);
+  scatratimint_->discretization()->Comm().MaxAll(&maxrelerr, &maxrelerrglobal, 1);
 
   // final screen output
-  if (scatratimint_->Discretization()->Comm().MyPID() == 0)
+  if (scatratimint_->discretization()->Comm().MyPID() == 0)
   {
     if (counterglobal)
     {
@@ -4196,7 +4196,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::evaluate_nts(const DRT::Discret
         FOUR_C_THROW("Cannot access scatra-scatra interface coupling condition!");
 
       // extract nodal state variables associated with slave and master elements
-      ExtractNodeValues(idiscret, la_slave, la_master);
+      extract_node_values(idiscret, la_slave, la_master);
 
       // evaluate and assemble interface linearizations and residuals
       evaluate_condition_nts(*condition, slavenode, lumpedarea, slaveelement, masterelement,
@@ -4272,19 +4272,19 @@ SCATRA::MortarCellCalc<distypeS, distypeM>::MortarCellCalc(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void SCATRA::MortarCellCalc<distypeS, distypeM>::ExtractNodeValues(
+void SCATRA::MortarCellCalc<distypeS, distypeM>::extract_node_values(
     const DRT::Discretization& idiscret, DRT::Element::LocationArray& la_slave,
     DRT::Element::LocationArray& la_master)
 {
   // extract nodal state variables associated with mortar integration cell
-  ExtractNodeValues(ephinp_slave_, ephinp_master_, idiscret, la_slave, la_master);
+  extract_node_values(ephinp_slave_, ephinp_master_, idiscret, la_slave, la_master);
 }
 
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void SCATRA::MortarCellCalc<distypeS, distypeM>::ExtractNodeValues(
+void SCATRA::MortarCellCalc<distypeS, distypeM>::extract_node_values(
     CORE::LINALG::Matrix<nen_slave_, 1>& estate_slave, const DRT::Discretization& idiscret,
     DRT::Element::LocationArray& la_slave, const std::string& statename, const int& nds) const
 {
@@ -4303,7 +4303,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::ExtractNodeValues(
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void SCATRA::MortarCellCalc<distypeS, distypeM>::ExtractNodeValues(
+void SCATRA::MortarCellCalc<distypeS, distypeM>::extract_node_values(
     std::vector<CORE::LINALG::Matrix<nen_slave_, 1>>& estate_slave,
     std::vector<CORE::LINALG::Matrix<nen_master_, 1>>& estate_master,
     const DRT::Discretization& idiscret, DRT::Element::LocationArray& la_slave,
@@ -4626,7 +4626,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::evaluate_condition(
     CORE::LINALG::SerialDenseVector& r_s, CORE::LINALG::SerialDenseVector& r_m)
 {
   // extract nodal state variables associated with slave and master elements
-  ExtractNodeValues(idiscret, la_slave, la_master);
+  extract_node_values(idiscret, la_slave, la_master);
 
   // safety check
   if (numdofpernode_slave_ != 1 or numdofpernode_master_ != 1)

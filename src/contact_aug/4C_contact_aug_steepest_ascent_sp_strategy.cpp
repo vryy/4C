@@ -37,30 +37,30 @@ CONTACT::AUG::STEEPESTASCENT_SP::Strategy::Strategy(
     : CONTACT::AUG::Strategy(
           data_ptr, dof_row_map, NodeRowMap, params, interfaces, dim, comm, maxdof)
 {
-  Data().init_sub_data_container(INPAR::CONTACT::solution_steepest_ascent_sp);
+  data().init_sub_data_container(INPAR::CONTACT::solution_steepest_ascent_sp);
   const Teuchos::ParameterList& sa_params =
       Params().sublist("AUGMENTED", true).sublist("STEEPESTASCENT", true);
 
-  Data().SaData().set_penalty_correction_parameter(sa_params.get<double>("CORRECTION_PARAMETER"));
+  data().SaData().set_penalty_correction_parameter(sa_params.get<double>("CORRECTION_PARAMETER"));
 
-  Data().SaData().set_penalty_decrease_correction_parameter(
+  data().SaData().set_penalty_decrease_correction_parameter(
       sa_params.get<double>("DECREASE_CORRECTION_PARAMETER"));
 
-  Data().SaData().lagrange_multiplier_func_ptr() = Teuchos::rcp(new LagrangeMultiplierFunction());
+  data().SaData().lagrange_multiplier_func_ptr() = Teuchos::rcp(new LagrangeMultiplierFunction());
 
-  Data().SaData().PenaltyUpdatePtr() = Teuchos::rcp(PenaltyUpdate::Create(sa_params));
+  data().SaData().PenaltyUpdatePtr() = Teuchos::rcp(PenaltyUpdate::Create(sa_params));
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::EvalStrContactRHS()
+void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::eval_str_contact_rhs()
 {
   if (!IsInContact() and !WasInContact() and !was_in_contact_last_time_step())
   {
-    Data().StrContactRhsPtr() = Teuchos::null;
+    data().StrContactRhsPtr() = Teuchos::null;
     return;
   }
-  Data().StrContactRhsPtr() = Teuchos::rcp(new Epetra_Vector(*ProblemDofs(), true));
+  data().StrContactRhsPtr() = Teuchos::rcp(new Epetra_Vector(*ProblemDofs(), true));
 
 
   // For self contact, slave and master sets may have changed,
@@ -72,13 +72,13 @@ void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::EvalStrContactRHS()
   // --- add contact force terms ----------------------------------------------
   // *** Slave side ***
   Epetra_Vector augfs_exp(*ProblemDofs());
-  CORE::LINALG::Export(Data().SlForceLm(), augfs_exp);
-  Data().StrContactRhs().Scale(-1.0, augfs_exp);
+  CORE::LINALG::Export(data().SlForceLm(), augfs_exp);
+  data().StrContactRhs().Scale(-1.0, augfs_exp);
 
   // Master side
   Epetra_Vector augfm_exp(*ProblemDofs());
-  CORE::LINALG::Export(Data().MaForceLm(), augfm_exp);
-  CATCH_EPETRA_ERROR(Data().StrContactRhs().Update(-1.0, augfm_exp, 1.0));
+  CORE::LINALG::Export(data().MaForceLm(), augfm_exp);
+  CATCH_EPETRA_ERROR(data().StrContactRhs().Update(-1.0, augfm_exp, 1.0));
 
   return;
 }
@@ -91,7 +91,7 @@ void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::post_setup(bool redistributed, b
 
   if (init)
   {
-    Data().SaData().PenaltyUpdate().Init(this, &Data());
+    data().SaData().PenaltyUpdate().Init(this, &data());
 
 #ifdef LAGRANGE_FUNC
     Data().SaData().lagrange_multiplier_func().Init(this, Data());
@@ -146,12 +146,12 @@ void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::set_penalty_update_state(
       corrtype != NOX::NLN::CorrectionType::vague)
     return;
 
-  Data().SaData().PenaltyUpdate().set_state(cparams, xold, dir);
+  data().SaData().PenaltyUpdate().set_state(cparams, xold, dir);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::RunPostIterate(
+void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::run_post_iterate(
     const CONTACT::ParamsInterface& cparams)
 {
   IO::cout(IO::debug) << std::string(40, '*') << "\n";
@@ -163,23 +163,23 @@ void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::RunPostIterate(
   IO::cout(IO::debug) << std::string(40, '*') << "\n";
 
   if (cparams.IsDefaultStep() or cparams.get_number_of_modified_newton_corrections() == 0)
-    UpdateCn(cparams);
+    update_cn(cparams);
   else
-    DecreaseCn(cparams);
+    decrease_cn(cparams);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::UpdateCn(const CONTACT::ParamsInterface& cparams)
+void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::update_cn(const CONTACT::ParamsInterface& cparams)
 {
-  Data().SaData().PenaltyUpdate().Update(cparams);
+  data().SaData().PenaltyUpdate().Update(cparams);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::DecreaseCn(const CONTACT::ParamsInterface& cparams)
+void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::decrease_cn(const CONTACT::ParamsInterface& cparams)
 {
-  Data().SaData().PenaltyUpdate().Decrease(cparams);
+  data().SaData().PenaltyUpdate().Decrease(cparams);
 }
 
 /*----------------------------------------------------------------------------*
@@ -207,10 +207,10 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::STEEPESTASCENT_SP::Strategy::get_kzz_d
     const
 {
   Teuchos::RCP<Epetra_Vector> active_mod_vec =
-      Teuchos::rcp(new Epetra_Vector(*Data().KappaVecPtr()));
-  CATCH_EPETRA_ERROR(active_mod_vec->ReplaceMap(*Data().g_active_n_dof_row_map_ptr()));
+      Teuchos::rcp(new Epetra_Vector(*data().KappaVecPtr()));
+  CATCH_EPETRA_ERROR(active_mod_vec->ReplaceMap(*data().g_active_n_dof_row_map_ptr()));
 
-  MultiplyElementwise(*Data().CnPtr(), *Data().g_active_node_row_map_ptr(), *active_mod_vec, true);
+  MultiplyElementwise(*data().CnPtr(), *data().g_active_node_row_map_ptr(), *active_mod_vec, true);
 
   return active_mod_vec;
 }

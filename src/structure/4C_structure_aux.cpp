@@ -76,7 +76,7 @@ void STR::MapExtractor::Setup(
   mcs.AddSelector(
       Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "AleWear", 0, ndim)));
   mcs.AddSelector(
-      Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "FPSICoupling", 0, ndim)));
+      Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "fpsi_coupling", 0, ndim)));
   mcs.AddSelector(
       Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "IMMERSEDCoupling", 0, ndim)));
   mcs.AddSelector(
@@ -100,7 +100,7 @@ Teuchos::RCP<std::set<int>> STR::MapExtractor::conditioned_element_map(
   Teuchos::RCP<std::set<int>> condelements4 =
       CORE::Conditions::conditioned_element_map(dis, "AleWear");
   Teuchos::RCP<std::set<int>> condelements5 =
-      CORE::Conditions::conditioned_element_map(dis, "FPSICoupling");
+      CORE::Conditions::conditioned_element_map(dis, "fpsi_coupling");
   Teuchos::RCP<std::set<int>> condelements6 =
       CORE::Conditions::conditioned_element_map(dis, "IMMERSEDCoupling");
   Teuchos::RCP<std::set<int>> condelements7 =

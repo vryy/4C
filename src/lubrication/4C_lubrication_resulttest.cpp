@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 LUBRICATION::ResultTest::ResultTest(Teuchos::RCP<TimIntImpl> lubrication)
     : CORE::UTILS::ResultTest("LUBRICATION"),
-      dis_(lubrication->Discretization()),
+      dis_(lubrication->discretization()),
       mysol_(lubrication->Prenp()),
       mynumiter_(lubrication->IterNum())
 {
@@ -67,9 +67,9 @@ void LUBRICATION::ResultTest::test_node(INPUT::LineDefinition& res, int& nerr, i
       res.ExtractString("QUANTITY", quantity);
 
       // get result to be tested
-      const double result = ResultNode(quantity, actnode);
+      const double result = result_node(quantity, actnode);
 
-      nerr += CompareValues(result, "NODE", res);
+      nerr += compare_values(result, "NODE", res);
       test_count++;
     }
   }
@@ -81,7 +81,7 @@ void LUBRICATION::ResultTest::test_node(INPUT::LineDefinition& res, int& nerr, i
 /*----------------------------------------------------------------------*
  | get nodal result to be tested                            wirtz 11/15 |
  *----------------------------------------------------------------------*/
-double LUBRICATION::ResultTest::ResultNode(
+double LUBRICATION::ResultTest::result_node(
     const std::string quantity,  //! name of quantity to be tested
     DRT::Node* node              //! node carrying the result to be tested
 ) const
@@ -119,7 +119,7 @@ void LUBRICATION::ResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr,
     const double result = result_special(quantity);
 
     // compare values
-    const int err = CompareValues(result, "SPECIAL", res);
+    const int err = compare_values(result, "SPECIAL", res);
     nerr += err;
     test_count++;
   }

@@ -239,7 +239,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       // AVM3 separation for incremental solver: get fine-scale part of scalar
       if (incremental_ and (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
                                turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales))
-        AVM3Separation();
+        av_m3_separation();
 
       // add element parameters according to time-integration scheme
       // we want to have an incremental solver!!
@@ -255,7 +255,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       }
 
       // scaling to get true residual vector for all time integration schemes
-      trueresidual_->Update(ResidualScaling(), *residual_, 0.0);
+      trueresidual_->Update(residual_scaling(), *residual_, 0.0);
 
       // undo potential changes
       set_element_time_parameter();
@@ -587,9 +587,9 @@ void SCATRA::ScaTraTimIntImpl::calc_initial_time_derivative()
   // evaluate Dirichlet and Neumann boundary conditions at time t = 0 to ensure consistent
   // computation of initial time derivative vector Dirichlet boundary conditions should be
   // consistent with initial field
-  ApplyDirichletBC(time_, phinp_, Teuchos::null);
+  apply_dirichlet_bc(time_, phinp_, Teuchos::null);
   compute_intermediate_values();
-  ApplyNeumannBC(neumann_loads_);
+  apply_neumann_bc(neumann_loads_);
 
   // In most cases, the history vector is entirely zero at this point, since this routine is called
   // before the first time step. However, in levelset simulations with reinitialization, this
@@ -655,7 +655,7 @@ void SCATRA::ScaTraTimIntImpl::calc_initial_time_derivative()
   // and it is still not clear how to handle these cases. One should have a closer look
   // at this problem and try to activate the following line of code at some point.
 
-  // ApplyDirichletBC(time_,Teuchos::null,phidtnp_);
+  // apply_dirichlet_bc(time_,Teuchos::null,phidtnp_);
 
   // copy solution
   phidtn_->Update(1.0, *phidtnp_, 0.0);
@@ -1138,7 +1138,7 @@ void SCATRA::ScaTraTimIntImpl::output_nonlin_solver_stats(
 /*----------------------------------------------------------------------*
  | write state vectors to Gmsh postprocessing files        henke   12/09|
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::OutputToGmsh(const int step, const double time) const
+void SCATRA::ScaTraTimIntImpl::output_to_gmsh(const int step, const double time) const
 {
   // turn on/off screen output for writing process of Gmsh postprocessing file
   const bool screen_out = true;
@@ -1193,22 +1193,22 @@ void SCATRA::ScaTraTimIntImpl::OutputToGmsh(const int step, const double time) c
   }
   gmshfilecontent.close();
   if (screen_out) std::cout << " done" << std::endl;
-}  // ScaTraTimIntImpl::OutputToGmsh
+}  // ScaTraTimIntImpl::output_to_gmsh
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::WriteRestart() const
+void SCATRA::ScaTraTimIntImpl::write_restart() const
 {
   // output restart information associated with mesh tying strategy
-  strategy_->WriteRestart();
+  strategy_->write_restart();
 }
 
 
 /*----------------------------------------------------------------------*
  |  write mass / heat flux vector to BINIO                   gjb   08/08|
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::OutputFlux(Teuchos::RCP<Epetra_MultiVector> flux,  //!< flux vector
+void SCATRA::ScaTraTimIntImpl::output_flux(Teuchos::RCP<Epetra_MultiVector> flux,  //!< flux vector
     const std::string& fluxtype  //!< flux type ("domain" or "boundary")
 )
 {
@@ -1356,7 +1356,7 @@ void SCATRA::ScaTraTimIntImpl::OutputIntegrReac(const int num)
 /*----------------------------------------------------------------------*
  |  prepare AVM3-based scale separation                        vg 10/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
+void SCATRA::ScaTraTimIntImpl::av_m3_preparation()
 {
   // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
@@ -1408,7 +1408,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
     }
 
     // get toggle vector for Dirchlet boundary conditions
-    const Teuchos::RCP<const Epetra_Vector> dbct = DirichletToggle();
+    const Teuchos::RCP<const Epetra_Vector> dbct = dirichlet_toggle();
 
     // get nullspace parameters
     double* nullspace = mlparams.get("null space: vectors", (double*)nullptr);
@@ -1454,12 +1454,12 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
       // Mnsv_ = CORE::LINALG::Multiply(*Sep_,true,*Mnsv_,false);
     }
   }
-}  // ScaTraTimIntImpl::AVM3Preparation
+}  // ScaTraTimIntImpl::av_m3_preparation
 
 /*----------------------------------------------------------------------*
  |  scaling of AVM3-based subgrid-diffusivity matrix           vg 10/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::AVM3Scaling(Teuchos::ParameterList& eleparams)
+void SCATRA::ScaTraTimIntImpl::av_m3_scaling(Teuchos::ParameterList& eleparams)
 {
   // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
@@ -1499,7 +1499,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Scaling(Teuchos::ParameterList& eleparams)
  | construct toggle vector for Dirichlet dofs                  gjb 11/08|
  | assures backward compatibility for avm3 solver; should go away once  |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> SCATRA::ScaTraTimIntImpl::DirichletToggle()
+Teuchos::RCP<const Epetra_Vector> SCATRA::ScaTraTimIntImpl::dirichlet_toggle()
 {
   if (dbcmaps_ == Teuchos::null) FOUR_C_THROW("Dirichlet map has not been allocated");
   Teuchos::RCP<Epetra_Vector> dirichones =
@@ -1509,7 +1509,7 @@ Teuchos::RCP<const Epetra_Vector> SCATRA::ScaTraTimIntImpl::DirichletToggle()
       CORE::LINALG::CreateVector(*(discret_->dof_row_map()), true);
   dbcmaps_->InsertCondVector(dirichones, dirichtoggle);
   return dirichtoggle;
-}  // ScaTraTimIntImpl::DirichletToggle
+}  // ScaTraTimIntImpl::dirichlet_toggle
 
 
 /*========================================================================*/
@@ -1690,17 +1690,17 @@ void SCATRA::ScaTraTimIntImpl::calc_intermediate_solution()
         std::cout << "|" << std::endl;
       }
 
-      // turn off forcing in NonlinearSolve()
+      // turn off forcing in nonlinear_solve()
       homisoturb_forcing_->ActivateForcing(false);
 
-      // temporary store velnp_ since it will be modified in NonlinearSolve()
+      // temporary store velnp_ since it will be modified in nonlinear_solve()
       const Epetra_Map* dofrowmap = discret_->dof_row_map();
       Teuchos::RCP<Epetra_Vector> tmp = CORE::LINALG::CreateVector(*dofrowmap, true);
       tmp->Update(1.0, *phinp_, 0.0);
 
       // compute intermediate solution without forcing
       forcing_->PutScalar(0.0);  // just to be sure
-      NonlinearSolve();
+      nonlinear_solve();
 
       // calculate required forcing
       homisoturb_forcing_->CalculateForcing(step_);
@@ -2339,10 +2339,10 @@ void SCATRA::ScaTraTimIntImpl::evaluate_error_compared_to_analytical_sol()
  | do explicit predictor step to obtain better starting value for Newton-Raphson iteration   fang
  01/17 |
  *------------------------------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ExplicitPredictor() const
+void SCATRA::ScaTraTimIntImpl::explicit_predictor() const
 {
   // predict discrete solution variables associated with meshtying strategy
-  strategy_->ExplicitPredictor();
+  strategy_->explicit_predictor();
 }
 
 
@@ -2384,9 +2384,9 @@ void SCATRA::ScaTraTimIntImpl::perform_aitken_relaxation(
  *--------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::ApplyBCToSystem()
 {
-  ApplyDirichletBC(time_, phinp_, Teuchos::null);
+  apply_dirichlet_bc(time_, phinp_, Teuchos::null);
   compute_intermediate_values();
-  ApplyNeumannBC(neumann_loads_);
+  apply_neumann_bc(neumann_loads_);
 }
 
 /*--------------------------------------------------------------------------*
@@ -2411,7 +2411,7 @@ void SCATRA::ScaTraTimIntImpl::evaluate_initial_time_derivative(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyBase::PrepareEvaluate(
+void SCATRA::OutputScalarsStrategyBase::prepare_evaluate(
     const ScaTraTimIntImpl* const scatratimint, Teuchos::ParameterList& eleparams)
 {
   const Teuchos::RCP<DRT::Discretization>& discret = scatratimint->discret_;
@@ -2428,7 +2428,7 @@ void SCATRA::OutputScalarsStrategyBase::PrepareEvaluate(
 
 /*----------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyBase::PrintHeaderToScreen(const std::string& dis_name)
+void SCATRA::OutputScalarsStrategyBase::print_header_to_screen(const std::string& dis_name)
 {
   if (myrank_ == 0)
   {
@@ -2466,15 +2466,15 @@ void SCATRA::OutputScalarsStrategyBase::output_total_and_mean_scalars(
     const ScaTraTimIntImpl* const scatratimint, const int num)
 {
   // evaluate domain/condition integrals
-  EvaluateIntegrals(scatratimint);
+  evaluate_integrals(scatratimint);
 
   // print evaluated data to screen
-  PrintHeaderToScreen(scatratimint->discret_->Name());
-  PrintToScreen();
+  print_header_to_screen(scatratimint->discret_->Name());
+  print_to_screen();
   finalize_screen_output();
 
   // write evaluated data to file
-  const auto output_data = PrepareCSVOutput();
+  const auto output_data = prepare_csv_output();
 
   runtime_csvwriter_->WriteDataToFile(scatratimint->Time(), scatratimint->Step(), output_data);
 }
@@ -2494,7 +2494,7 @@ void SCATRA::OutputScalarsStrategyBase::Init(const ScaTraTimIntImpl* const scatr
   std::string filename("");
   if (scatratimint->ScatraParameterList()->isParameter("output_file_name_discretization") and
       scatratimint->ScatraParameterList()->get<bool>("output_file_name_discretization"))
-    filename = scatratimint->Discretization()->Name() + "_scalarvalues";
+    filename = scatratimint->discretization()->Name() + "_scalarvalues";
   else
     filename = "scalarvalues";
 
@@ -2548,7 +2548,7 @@ void SCATRA::OutputScalarsStrategyDomain::init_strategy_specific(
 
 /*----------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyDomain::PrintToScreen()
+void SCATRA::OutputScalarsStrategyDomain::print_to_screen()
 {
   if (myrank_ == 0)
   {
@@ -2577,7 +2577,7 @@ void SCATRA::OutputScalarsStrategyDomain::PrintToScreen()
 
 /*----------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------*/
-std::map<std::string, std::vector<double>> SCATRA::OutputScalarsStrategyDomain::PrepareCSVOutput()
+std::map<std::string, std::vector<double>> SCATRA::OutputScalarsStrategyDomain::prepare_csv_output()
 {
   FOUR_C_ASSERT(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
   std::map<std::string, std::vector<double>> output_data;
@@ -2603,13 +2603,13 @@ std::map<std::string, std::vector<double>> SCATRA::OutputScalarsStrategyDomain::
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyDomain::EvaluateIntegrals(
+void SCATRA::OutputScalarsStrategyDomain::evaluate_integrals(
     const ScaTraTimIntImpl* const scatratimint)
 {
   Teuchos::ParameterList eleparams;
 
   // fill parameter list and set states in discretization
-  PrepareEvaluate(scatratimint, eleparams);
+  prepare_evaluate(scatratimint, eleparams);
 
   // initialize result vector
   // first components = scalar integrals, last component = domain integral
@@ -2722,8 +2722,8 @@ void SCATRA::OutputScalarsStrategyCondition::init_strategy_specific(
 void SCATRA::OutputDomainIntegralStrategy::Init(const ScaTraTimIntImpl* const scatratimint)
 {
   // extract conditions for calculation of total and mean values of transported scalars
-  scatratimint->Discretization()->GetCondition("DomainIntegral", conditionsdomain_);
-  scatratimint->Discretization()->GetCondition("BoundaryIntegral", conditionsboundary_);
+  scatratimint->discretization()->GetCondition("DomainIntegral", conditionsdomain_);
+  scatratimint->discretization()->GetCondition("BoundaryIntegral", conditionsboundary_);
 
   if (conditionsdomain_.empty() && conditionsboundary_.empty())
   {
@@ -2740,7 +2740,7 @@ void SCATRA::OutputDomainIntegralStrategy::Init(const ScaTraTimIntImpl* const sc
 
 /*----------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyCondition::PrintToScreen()
+void SCATRA::OutputScalarsStrategyCondition::print_to_screen()
 {
   if (myrank_ == 0)
   {
@@ -2777,7 +2777,7 @@ void SCATRA::OutputScalarsStrategyCondition::PrintToScreen()
 /*----------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------*/
 std::map<std::string, std::vector<double>>
-SCATRA::OutputScalarsStrategyCondition::PrepareCSVOutput()
+SCATRA::OutputScalarsStrategyCondition::prepare_csv_output()
 {
   std::map<std::string, std::vector<double>> output_data;
 
@@ -2846,7 +2846,7 @@ void SCATRA::OutputDomainIntegralStrategy::evaluate_integrals_and_print_results(
 
   // extract conditions for computation of domain or boundary integrals
   std::vector<CORE::Conditions::Condition*> conditions;
-  Teuchos::RCP<DRT::Discretization> discret = scatratimint->Discretization();
+  Teuchos::RCP<DRT::Discretization> discret = scatratimint->discretization();
   const int myrank = discret->Comm().MyPID();
   discret->GetCondition(condstring, conditions);
 
@@ -2912,13 +2912,13 @@ void SCATRA::OutputDomainIntegralStrategy::evaluate_integrals_and_print_results(
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegrals(
+void SCATRA::OutputScalarsStrategyCondition::evaluate_integrals(
     const ScaTraTimIntImpl* const scatratimint)
 {
   Teuchos::ParameterList eleparams;
 
   // fill parameter list and set states in discretization
-  PrepareEvaluate(scatratimint, eleparams);
+  prepare_evaluate(scatratimint, eleparams);
 
   // evaluate scalar integrals and domain integral for each subdomain
   for (auto* condition : conditions_)
@@ -2974,20 +2974,20 @@ void SCATRA::OutputScalarsStrategyDomainAndCondition::init_strategy_specific(
 
 /*----------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyDomainAndCondition::PrintToScreen()
+void SCATRA::OutputScalarsStrategyDomainAndCondition::print_to_screen()
 {
-  OutputScalarsStrategyCondition::PrintToScreen();
-  OutputScalarsStrategyDomain::PrintToScreen();
+  OutputScalarsStrategyCondition::print_to_screen();
+  OutputScalarsStrategyDomain::print_to_screen();
 }
 
 /*----------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------*/
 std::map<std::string, std::vector<double>>
-SCATRA::OutputScalarsStrategyDomainAndCondition::PrepareCSVOutput()
+SCATRA::OutputScalarsStrategyDomainAndCondition::prepare_csv_output()
 {
   std::map<std::string, std::vector<double>> output_data;
-  auto output_data_condition = OutputScalarsStrategyCondition::PrepareCSVOutput();
-  auto output_data_domain = OutputScalarsStrategyDomain::PrepareCSVOutput();
+  auto output_data_condition = OutputScalarsStrategyCondition::prepare_csv_output();
+  auto output_data_domain = OutputScalarsStrategyDomain::prepare_csv_output();
 
   // merge both maps
   output_data.merge(output_data_condition);
@@ -2998,12 +2998,12 @@ SCATRA::OutputScalarsStrategyDomainAndCondition::PrepareCSVOutput()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyDomainAndCondition::EvaluateIntegrals(
+void SCATRA::OutputScalarsStrategyDomainAndCondition::evaluate_integrals(
     const ScaTraTimIntImpl* const scatratimint)
 {
   // call base classes
-  OutputScalarsStrategyCondition::EvaluateIntegrals(scatratimint);
-  OutputScalarsStrategyDomain::EvaluateIntegrals(scatratimint);
+  OutputScalarsStrategyCondition::evaluate_integrals(scatratimint);
+  OutputScalarsStrategyDomain::evaluate_integrals(scatratimint);
 }
 
 
@@ -3016,7 +3016,7 @@ void SCATRA::OutputScalarsStrategyDomainAndCondition::EvaluateIntegrals(
 void SCATRA::ScalarHandler::Setup(const ScaTraTimIntImpl* const scatratimint)
 {
   // save reference to discretization for convenience
-  const Teuchos::RCP<DRT::Discretization>& discret = scatratimint->Discretization();
+  const Teuchos::RCP<DRT::Discretization>& discret = scatratimint->discretization();
 
   // initialize set of all number of dofs per node on this proc
   std::set<int> mynumdofpernode;
@@ -3061,7 +3061,7 @@ int SCATRA::ScalarHandler::num_dof_per_node_in_condition(
     const CORE::Conditions::Condition& condition,
     const Teuchos::RCP<const DRT::Discretization>& discret) const
 {
-  CheckIsSetup();
+  check_is_setup();
 
   // get all nodes in condition
   const std::vector<int>* nodegids = condition.GetNodes();
@@ -3124,7 +3124,7 @@ int SCATRA::ScalarHandler::num_dof_per_node_in_condition(
  *-------------------------------------------------------------------------*/
 int SCATRA::ScalarHandler::NumDofPerNode() const
 {
-  CheckIsSetup();
+  check_is_setup();
 
   if (not equalnumdof_)
   {
@@ -3138,7 +3138,7 @@ int SCATRA::ScalarHandler::NumDofPerNode() const
 /*-----------------------------------------------------------------------------*
  |  check if class is set up                                       rauch 09/16 |
  *-----------------------------------------------------------------------------*/
-void SCATRA::ScalarHandler::CheckIsSetup() const
+void SCATRA::ScalarHandler::check_is_setup() const
 {
   if (not issetup_) FOUR_C_THROW("ScalarHanlder is not set up. Call Setup() first.");
 }

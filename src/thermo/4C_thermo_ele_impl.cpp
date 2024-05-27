@@ -2992,7 +2992,7 @@ double DRT::ELEMENTS::TemperImpl<distype>::calculate_char_ele_length() const
   // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
   const double vol = fac_;
 
-  // as shown in CalcCharEleLength() in ScaTraImpl
+  // as shown in calc_char_ele_length() in ScaTraImpl
   // c) cubic/square root of element volume/area or element length (3-/2-/1-D)
   // cast dimension to a double varible -> pow()
 

@@ -64,7 +64,7 @@ DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::ScaTraEleCalcAniso(
  |  evaluate single material  (protected)                    ehrl 11/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::Materials(
+void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::materials(
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -75,7 +75,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::Materials(
 )
 {
   if (material->MaterialType() == CORE::Materials::m_scatra_aniso)
-    MatScaTraAniso(material, k, densn, densnp, densam, visc, iquad);
+    mat_sca_tra_aniso(material, k, densn, densnp, densam, visc, iquad);
   else
     FOUR_C_THROW("Material type is not supported");
 
@@ -87,7 +87,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::Materials(
  |  Material ScaTra                                          ehrl 11/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::MatScaTraAniso(
+void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::mat_sca_tra_aniso(
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -137,7 +137,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::calc_rhs_diff(
  |  calculation of diffusive element matrix                ehrl 11/13 |
  *--------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::CalcMatDiff(
+void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::calc_mat_diff(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac)
 {
   for (unsigned vi = 0; vi < nen_; ++vi)

@@ -68,7 +68,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
     };  // class myocard
   }     // namespace PAR
@@ -136,7 +136,7 @@ namespace MAT
     //@}
 
     /// Unpack Material for adaptive methods
-    virtual void UnpackMaterial(const std::vector<char>& data);
+    virtual void unpack_material(const std::vector<char>& data);
 
     /// init material
     void SetGP(int gp) { params_->num_gp = gp; };

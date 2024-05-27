@@ -65,46 +65,46 @@ class MonWriter
       PostProblem& problem, std::string& infieldtype, std::string tempgradtype, int node);
 
  protected:
-  virtual PostField* GetFieldPtr(PostProblem& problem) = 0;
+  virtual PostField* get_field_ptr(PostProblem& problem) = 0;
 
-  virtual void CheckInfieldType(std::string& infieldtype) = 0;
+  virtual void check_infield_type(std::string& infieldtype) = 0;
 
-  virtual void FieldError(int node) = 0;
+  virtual void field_error(int node) = 0;
 
   virtual void write_header(std::ofstream& outfile) = 0;
 
-  virtual void WriteTableHead(std::ofstream& outfile, int dim) = 0;
+  virtual void write_table_head(std::ofstream& outfile, int dim) = 0;
 
-  virtual void WriteResult(
+  virtual void write_result(
       std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim) = 0;
 
-  void WriteMonStrFile(const std::string& filename, PostProblem& problem, std::string& infieldtype,
-      const std::string strname, const std::string strtype, std::vector<std::string> groupnames,
-      int node);
+  void write_mon_str_file(const std::string& filename, PostProblem& problem,
+      std::string& infieldtype, const std::string strname, const std::string strtype,
+      std::vector<std::string> groupnames, int node);
 
-  virtual void WriteStrTableHead(
+  virtual void write_str_table_head(
       std::ofstream& outfile, const std::string strname, const std::string strtype, const int dim)
   {
     FOUR_C_THROW("Not impl.");
   }
 
-  virtual void WriteStrResults(std::ofstream& outfile, PostProblem& problem, PostResult& result,
+  virtual void write_str_results(std::ofstream& outfile, PostProblem& problem, PostResult& result,
       std::vector<int>& gdof, int dim, std::string strtype, std::string groupname, const int node)
   {
     FOUR_C_THROW("Not impl.");
   }
 
-  void WriteMonThrFile(const std::string& filename, PostProblem& problem, std::string& infieldtype,
-      const std::string thrname, const std::string thrtype, std::vector<std::string> groupnames,
-      int node);
+  void write_mon_thr_file(const std::string& filename, PostProblem& problem,
+      std::string& infieldtype, const std::string thrname, const std::string thrtype,
+      std::vector<std::string> groupnames, int node);
 
-  virtual void WriteThrTableHead(
+  virtual void write_thr_table_head(
       std::ofstream& outfile, const std::string thrname, const std::string thrtype, const int dim)
   {
     FOUR_C_THROW("Not impl.");
   }
 
-  virtual void WriteThrResults(std::ofstream& outfile, PostProblem& problem, PostResult& result,
+  virtual void write_thr_results(std::ofstream& outfile, PostProblem& problem, PostResult& result,
       std::vector<int>& gdof, int dim, std::string thrtype, std::string groupname, const int node)
   {
     FOUR_C_THROW("Not impl.");
@@ -136,7 +136,7 @@ class FieldMonWriter : public MonWriter
   }
 
  protected:
-  PostField* GetFieldPtr(PostProblem& problem) override;
+  PostField* get_field_ptr(PostProblem& problem) override;
 
  private:
 };  // end of class FieldMonWriter
@@ -156,15 +156,15 @@ class FluidMonWriter : public FieldMonWriter
   }
 
  protected:
-  void CheckInfieldType(std::string& infieldtype) override;
+  void check_infield_type(std::string& infieldtype) override;
 
-  void FieldError(int node) override;
+  void field_error(int node) override;
 
   void write_header(std::ofstream& outfile) override;
 
-  void WriteTableHead(std::ofstream& outfile, int dim) override;
+  void write_table_head(std::ofstream& outfile, int dim) override;
 
-  void WriteResult(
+  void write_result(
       std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim) override;
 
  private:
@@ -184,15 +184,15 @@ class RedAirwayMonWriter : public FieldMonWriter
   }
 
  protected:
-  void CheckInfieldType(std::string& infieldtype) override;
+  void check_infield_type(std::string& infieldtype) override;
 
-  void FieldError(int node) override;
+  void field_error(int node) override;
 
   void write_header(std::ofstream& outfile) override;
 
-  void WriteTableHead(std::ofstream& outfile, int dim) override;
+  void write_table_head(std::ofstream& outfile, int dim) override;
 
-  void WriteResult(
+  void write_result(
       std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim) override;
 
  private:
@@ -212,25 +212,25 @@ class StructMonWriter : public FieldMonWriter
   }
 
  protected:
-  void CheckInfieldType(std::string& infieldtype) override;
+  void check_infield_type(std::string& infieldtype) override;
 
-  void FieldError(int node) override;
+  void field_error(int node) override;
 
   void write_header(std::ofstream& outfile) override;
 
-  void WriteTableHead(std::ofstream& outfile, int dim) override;
+  void write_table_head(std::ofstream& outfile, int dim) override;
 
-  void WriteResult(
+  void write_result(
       std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim) override;
 
-  void WriteStrTableHead(std::ofstream& outfile, const std::string strname,
+  void write_str_table_head(std::ofstream& outfile, const std::string strname,
       const std::string strtype, const int dim) override;
 
-  void WriteStrResults(std::ofstream& outfile, PostProblem& problem, PostResult& result,
+  void write_str_results(std::ofstream& outfile, PostProblem& problem, PostResult& result,
       std::vector<int>& gdof, int dim, std::string strtype, std::string groupname,
       const int node) override;
 
-  void WriteStrResult(std::ofstream& file, PostField*& field, PostResult& result,
+  void write_str_result(std::ofstream& file, PostField*& field, PostResult& result,
       const std::string groupname, const std::string name, const int numdf, const int node) const;
 
  private:
@@ -251,15 +251,15 @@ class AleMonWriter : public FieldMonWriter
   }
 
  protected:
-  void CheckInfieldType(std::string& infieldtype) override;
+  void check_infield_type(std::string& infieldtype) override;
 
-  void FieldError(int node) override;
+  void field_error(int node) override;
 
   void write_header(std::ofstream& outfile) override;
 
-  void WriteTableHead(std::ofstream& outfile, int dim) override;
+  void write_table_head(std::ofstream& outfile, int dim) override;
 
-  void WriteResult(
+  void write_result(
       std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim) override;
 
  private:
@@ -279,17 +279,17 @@ class ScatraMonWriter : public FieldMonWriter
   }
 
  protected:
-  void CheckInfieldType(std::string& infieldtype) override;
+  void check_infield_type(std::string& infieldtype) override;
 
-  void FieldError(int node) override;
+  void field_error(int node) override;
 
   void write_header(std::ofstream& outfile) override;
 
-  void WriteTableHead(std::ofstream& outfile, int dim) override;
+  void write_table_head(std::ofstream& outfile, int dim) override;
 
-  PostField* GetFieldPtr(PostProblem& problem) override;
+  PostField* get_field_ptr(PostProblem& problem) override;
 
-  void WriteResult(
+  void write_result(
       std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim) override;
 
  private:
@@ -309,25 +309,25 @@ class ThermoMonWriter : public FieldMonWriter
   }
 
  protected:
-  void CheckInfieldType(std::string& infieldtype) override;
+  void check_infield_type(std::string& infieldtype) override;
 
-  void FieldError(int node) override;
+  void field_error(int node) override;
 
   void write_header(std::ofstream& outfile) override;
 
-  void WriteTableHead(std::ofstream& outfile, int dim) override;
+  void write_table_head(std::ofstream& outfile, int dim) override;
 
-  void WriteResult(
+  void write_result(
       std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim) override;
 
-  void WriteThrTableHead(std::ofstream& outfile, const std::string thrname,
+  void write_thr_table_head(std::ofstream& outfile, const std::string thrname,
       const std::string thrtype, const int dim) override;
 
-  void WriteThrResults(std::ofstream& outfile, PostProblem& problem, PostResult& result,
+  void write_thr_results(std::ofstream& outfile, PostProblem& problem, PostResult& result,
       std::vector<int>& gdof, int dim, std::string thrtype, std::string groupname,
       const int node) override;
 
-  void WriteThrResult(std::ofstream& file, PostField*& field, PostResult& result,
+  void write_thr_result(std::ofstream& file, PostField*& field, PostResult& result,
       const std::string groupname, const std::string name, const int dim, const int node) const;
 
  private:
@@ -348,15 +348,15 @@ class FsiFluidMonWriter : public FluidMonWriter
   }
 
  protected:
-  void CheckInfieldType(std::string& infieldtype) override{};
+  void check_infield_type(std::string& infieldtype) override{};
 
-  PostField* GetFieldPtr(PostProblem& problem) override;
+  PostField* get_field_ptr(PostProblem& problem) override;
 
   void write_header(std::ofstream& outfile) override;
 
-  void WriteTableHead(std::ofstream& outfile, int dim) override;
+  void write_table_head(std::ofstream& outfile, int dim) override;
 
-  void WriteResult(
+  void write_result(
       std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim) override;
 
  private:
@@ -377,15 +377,15 @@ class FsiStructMonWriter : public StructMonWriter
   }
 
  protected:
-  void CheckInfieldType(std::string& infieldtype) override{};
+  void check_infield_type(std::string& infieldtype) override{};
 
-  PostField* GetFieldPtr(PostProblem& problem) override;
+  PostField* get_field_ptr(PostProblem& problem) override;
 
   void write_header(std::ofstream& outfile) override;
 
-  void WriteTableHead(std::ofstream& outfile, int dim) override;
+  void write_table_head(std::ofstream& outfile, int dim) override;
 
-  void WriteResult(
+  void write_result(
       std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim) override;
 
  private:
@@ -406,9 +406,9 @@ class FsiAleMonWriter : public AleMonWriter
   }
 
  protected:
-  void CheckInfieldType(std::string& infieldtype) override{};
+  void check_infield_type(std::string& infieldtype) override{};
 
-  PostField* GetFieldPtr(PostProblem& problem) override;
+  PostField* get_field_ptr(PostProblem& problem) override;
 
   void write_header(std::ofstream& outfile) override;
 
@@ -430,9 +430,9 @@ class TsiStructMonWriter : public StructMonWriter
   }
 
  protected:
-  void CheckInfieldType(std::string& infieldtype) override{};
+  void check_infield_type(std::string& infieldtype) override{};
 
-  PostField* GetFieldPtr(PostProblem& problem) override;
+  PostField* get_field_ptr(PostProblem& problem) override;
 
   void write_header(std::ofstream& outfile) override;
 
@@ -453,9 +453,9 @@ class TsiThermoMonWriter : public ThermoMonWriter
   }
 
  protected:
-  void CheckInfieldType(std::string& infieldtype) override{};
+  void check_infield_type(std::string& infieldtype) override{};
 
-  PostField* GetFieldPtr(PostProblem& problem) override;
+  PostField* get_field_ptr(PostProblem& problem) override;
 
   void write_header(std::ofstream& outfile) override;
 
@@ -481,19 +481,19 @@ class PoroFluidMultiMonWriter : public FieldMonWriter
 
  protected:
   //! check if infieldtype is correct
-  void CheckInfieldType(std::string& infieldtype) override;
+  void check_infield_type(std::string& infieldtype) override;
 
   //! print out error
-  void FieldError(int node) override;
+  void field_error(int node) override;
 
   //! write header into output file
   void write_header(std::ofstream& outfile) override;
 
   //! write table head into output file
-  void WriteTableHead(std::ofstream& outfile, int dim) override;
+  void write_table_head(std::ofstream& outfile, int dim) override;
 
   //! write result into output file
-  void WriteResult(
+  void write_result(
       std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim) override;
 
  private:
@@ -521,7 +521,7 @@ class PoroMultiElastScatraFluidMonWriter : public PoroFluidMultiMonWriter
 
  protected:
   //! get pointer to field
-  PostField* GetFieldPtr(PostProblem& problem) override;
+  PostField* get_field_ptr(PostProblem& problem) override;
 
   //! write header into output file
   void write_header(std::ofstream& outfile) override;
@@ -547,7 +547,7 @@ class PoroMultiElastScatraScatraMonWriter : public ScatraMonWriter
 
  protected:
   //! get pointer to field
-  PostField* GetFieldPtr(PostProblem& problem) override;
+  PostField* get_field_ptr(PostProblem& problem) override;
 
   //! write header into output file
   void write_header(std::ofstream& outfile) override;
@@ -574,7 +574,7 @@ class PoroMultiElastScatraArteryScatraMonWriter : public ScatraMonWriter
 
  protected:
   //! get pointer to field
-  PostField* GetFieldPtr(PostProblem& problem) override;
+  PostField* get_field_ptr(PostProblem& problem) override;
 
   //! write header into output file
   void write_header(std::ofstream& outfile) override;

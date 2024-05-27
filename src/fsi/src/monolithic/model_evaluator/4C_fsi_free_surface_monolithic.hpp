@@ -85,10 +85,10 @@ namespace FSI
 
    protected:
     /// (symmetric) Gauss-Seidel block preconditioner
-    virtual void SGS(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const = 0;
+    virtual void sgs(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const = 0;
 
     /// merge block matrix for direct solve
-    void MergeSolve(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
+    void merge_solve(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
 
     /// Richardson iteration on one block using the given flags
     static void local_block_richardson(Teuchos::RCP<CORE::LINALG::Preconditioner> solver,
@@ -155,7 +155,7 @@ namespace FSI
 
    protected:
     /// symmetric Gauss-Seidel block preconditioner
-    void SGS(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
+    void sgs(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     /// split is in structural matrix, interface equations belong to fluid block
     bool structuresplit_;
@@ -197,24 +197,24 @@ namespace FSI
     void prepare_time_step() override;
 
     /// take current results for converged and save for next time step
-    void Update() override;
+    void update() override;
 
     /// write output
-    void Output() override;
+    void output() override;
 
     //@}
 
     //! @name Transfer helpers
 
-    virtual Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> ale_to_fluid(Teuchos::RCP<Epetra_Vector> iv) const;
 
-    virtual Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> ale_to_fluid(Teuchos::RCP<const Epetra_Vector> iv) const;
 
     //@}
 
-    CORE::ADAPTER::Coupling& FluidAleCoupling();
+    CORE::ADAPTER::Coupling& fluid_ale_coupling();
 
-    const CORE::ADAPTER::Coupling& FluidAleCoupling() const;
+    const CORE::ADAPTER::Coupling& fluid_ale_coupling() const;
 
    private:
     /// coupling of fluid and ale
@@ -324,7 +324,7 @@ namespace FSI
     //! @name Access methods for subclasses
 
     /// output utility
-    Teuchos::RCP<::NOX::Utils> Utils() const { return utils_; }
+    Teuchos::RCP<::NOX::Utils> utils() const { return utils_; }
 
     /// full monolithic dof row map
     Teuchos::RCP<const Epetra_Map> dof_row_map() const { return blockrowdofmap_.FullMap(); }
@@ -338,18 +338,18 @@ namespace FSI
     void set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
 
     /// extractor to communicate between full monolithic map and block maps
-    const CORE::LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
+    const CORE::LINALG::MultiMapExtractor& extractor() const { return blockrowdofmap_; }
 
     //@}
 
     /// flags passed to NOX
-    Teuchos::ParameterList& NOXParameterList() { return noxparameterlist_; }
+    Teuchos::ParameterList& nox_parameter_list() { return noxparameterlist_; }
 
     /// setup list with default parameters
     void set_default_parameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
 
     /// add a status test to be used for adaptive linear solver convergence
-    void AddStatusTest(Teuchos::RCP<NOX::FSI::AdaptiveNewtonNormF> test)
+    void add_status_test(Teuchos::RCP<NOX::FSI::AdaptiveNewtonNormF> test)
     {
       statustests_.push_back(test);
     }

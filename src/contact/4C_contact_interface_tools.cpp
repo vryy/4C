@@ -1048,7 +1048,7 @@ void CONTACT::Interface::FDCheckNormalDeriv()
     Initialize();
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // now finally get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(i / dim);
@@ -1076,7 +1076,7 @@ void CONTACT::Interface::FDCheckNormalDeriv()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // compute finite difference derivative
     for (int k = 0; k < snodecolmapbound_->NumMyElements(); ++k)
@@ -1239,7 +1239,7 @@ void CONTACT::Interface::FDCheckNormalDeriv()
   Initialize();
 
   // compute element areas
-  SetElementAreas();
+  set_element_areas();
 
   // contents of Evaluate()
   Evaluate();
@@ -1315,7 +1315,7 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
     Initialize();
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     evaluate_search_binarytree();
 
@@ -1345,9 +1345,9 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
-    EvaluateCPPNormals();
+    evaluate_cpp_normals();
 
     // compute finite difference derivative
     for (int k = 0; k < snodecolmapbound_->NumMyElements(); ++k)
@@ -1526,7 +1526,7 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
     Initialize();
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     evaluate_search_binarytree();
 
@@ -1556,9 +1556,9 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
-    EvaluateCPPNormals();
+    evaluate_cpp_normals();
 
     // compute finite difference derivative
     for (int k = 0; k < snodecolmapbound_->NumMyElements(); ++k)
@@ -1728,7 +1728,7 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
   Initialize();
 
   // compute element areas
-  SetElementAreas();
+  set_element_areas();
 
   // contents of Evaluate()
   Evaluate();
@@ -1812,7 +1812,7 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -1919,7 +1919,7 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -1997,7 +1997,7 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
   Initialize();
 
   // compute element areas
-  SetElementAreas();
+  set_element_areas();
 
   // *******************************************************************
   // contents of Evaluate()
@@ -2081,7 +2081,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -2187,7 +2187,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -2264,7 +2264,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
   Initialize();
 
   // compute element areas
-  SetElementAreas();
+  set_element_areas();
 
   // *******************************************************************
   // contents of Evaluate()
@@ -2339,7 +2339,7 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_txi()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -2437,7 +2437,7 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_txi()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -2573,7 +2573,7 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_teta()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -2671,7 +2671,7 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_teta()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -2861,7 +2861,7 @@ void CONTACT::Interface::FDCheckAlphaDeriv()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -3013,7 +3013,7 @@ void CONTACT::Interface::FDCheckAlphaDeriv()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -3192,7 +3192,7 @@ void CONTACT::Interface::FDCheckGapDerivLTL()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -3347,7 +3347,7 @@ void CONTACT::Interface::FDCheckGapDerivLTL()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -3574,7 +3574,7 @@ void CONTACT::Interface::FDCheckJumpDerivLTL()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -3729,7 +3729,7 @@ void CONTACT::Interface::FDCheckJumpDerivLTL()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -3996,7 +3996,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -4147,7 +4147,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -4380,7 +4380,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -4582,7 +4582,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -4755,7 +4755,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
   // CSegs().Shape(0,0);
 
   // compute element areas
-  SetElementAreas();
+  set_element_areas();
 
   // *******************************************************************
   // contents of Evaluate()
@@ -4951,7 +4951,7 @@ void CONTACT::Interface::FDCheckStickDeriv(
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -5165,7 +5165,7 @@ void CONTACT::Interface::FDCheckStickDeriv(
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -5735,7 +5735,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -5974,7 +5974,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -6273,7 +6273,7 @@ void CONTACT::Interface::fd_check_penalty_trac_nor()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // Evaluate
     Evaluate();
@@ -6380,7 +6380,7 @@ void CONTACT::Interface::fd_check_penalty_trac_nor()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // Evaluate
     Evaluate();
@@ -6460,7 +6460,7 @@ void CONTACT::Interface::fd_check_penalty_trac_nor()
   Initialize();
 
   // compute element areas
-  SetElementAreas();
+  set_element_areas();
 
   // *******************************************************************
   // contents of Evaluate()
@@ -6644,7 +6644,7 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -6863,7 +6863,7 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
     }
 
     // compute element areas
-    SetElementAreas();
+    set_element_areas();
 
     // *******************************************************************
     // contents of Evaluate()

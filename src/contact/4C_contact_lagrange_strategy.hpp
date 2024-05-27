@@ -124,7 +124,7 @@ namespace CONTACT
      * \note The search direction \c dir in general differs from the actual step since the step
      * length can be differ from 1.0.
      * */
-    void RunPostComputeX(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
+    void run_post_compute_x(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
         const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
 
     /*! \brief Return the desired matrix block pointer (read-only)
@@ -182,10 +182,10 @@ namespace CONTACT
         const NOX::NLN::Group& grp) override;
 
     //! The contributions to the structural right-hand-side block are calculated.
-    virtual void EvalStrContactRHS();
+    virtual void eval_str_contact_rhs();
 
     //! Assemble contact contributions to the rhs
-    virtual void AssembleContactRHS();
+    virtual void assemble_contact_rhs();
 
     //! Assemble all contact contributions
     virtual void assemble_all_contact_terms();
@@ -302,7 +302,7 @@ namespace CONTACT
      *
      * \param cparams (in): parameter interface between the contact objects and the structural time
      * integration*/
-    void EvalForceStiff(CONTACT::ParamsInterface& cparams) override;
+    void eval_force_stiff(CONTACT::ParamsInterface& cparams) override;
 
     /*! \brief Run at the beginning of the Evaluate() routine
      *         set force evaluation flag
@@ -343,7 +343,7 @@ namespace CONTACT
      *
      *  \param cparams (in): parameter interface between the contact objects and the structural time
      * integration*/
-    void EvalForce(CONTACT::ParamsInterface& cparams) override;
+    void eval_force(CONTACT::ParamsInterface& cparams) override;
 
     /*!
     \brief Update active set and check for convergence
@@ -462,10 +462,10 @@ namespace CONTACT
 
    protected:
     //! derived
-    std::vector<Teuchos::RCP<CONTACT::Interface>>& Interfaces() override { return interface_; }
+    std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces() override { return interface_; }
 
     //! derived
-    const std::vector<Teuchos::RCP<CONTACT::Interface>>& Interfaces() const override
+    const std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces() const override
     {
       return interface_;
     }

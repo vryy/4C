@@ -127,8 +127,8 @@ void scatra_dyn(int restart)
 
       // allow TRANSPORT conditions, too
       // NOTE: we can not use the conditions given by 'conditions_to_copy =
-      // clonestrategy.ConditionsToCopy()' since we than may have some scatra condition twice. So we
-      // only copy the Dirichlet and Neumann conditions:
+      // clonestrategy.conditions_to_copy()' since we than may have some scatra condition twice. So
+      // we only copy the Dirichlet and Neumann conditions:
       const std::map<std::string, std::string> conditions_to_copy = {
           {"TransportDirichlet", "Dirichlet"}, {"TransportPointNeumann", "PointNeumann"},
           {"TransportLineNeumann", "LineNeumann"}, {"TransportSurfaceNeumann", "SurfaceNeumann"},
@@ -165,10 +165,10 @@ void scatra_dyn(int restart)
       if (restart) scatraonly->ScaTraField()->read_restart(restart);
 
       // set initial velocity field
-      // note: The order read_restart() before SetVelocityField() is important here!!
-      // for time-dependent velocity fields, SetVelocityField() is additionally called in each
+      // note: The order read_restart() before set_velocity_field() is important here!!
+      // for time-dependent velocity fields, set_velocity_field() is additionally called in each
       // prepare_time_step()-call
-      scatraonly->ScaTraField()->SetVelocityField();
+      scatraonly->ScaTraField()->set_velocity_field();
 
       // set external force
       if (scatraonly->ScaTraField()->HasExternalForce())
@@ -235,7 +235,7 @@ void scatra_dyn(int restart)
       {
         // allow TRANSPORT conditions, too
         SCATRA::ScatraFluidCloneStrategy clonestrategy;
-        const auto conditions_to_copy = clonestrategy.ConditionsToCopy();
+        const auto conditions_to_copy = clonestrategy.conditions_to_copy();
         CORE::FE::DiscretizationCreatorBase creator;
         creator.CopyConditions(*scatradis, *scatradis, conditions_to_copy);
 

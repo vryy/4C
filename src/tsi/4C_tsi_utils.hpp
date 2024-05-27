@@ -44,18 +44,18 @@ namespace TSI
 
      protected:
       //! determine element type std::string and whether element is copied or not
-      bool DetermineEleType(
+      bool determine_ele_type(
           DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
 
       //! set element-specific data (material etc.)
-      void SetElementData(Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid,
-          const bool isnurbs);
+      void set_element_data(Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele,
+          const int matid, const bool isnurbs);
 
       //! returns conditions names to be copied (source and target name)
-      std::map<std::string, std::string> ConditionsToCopy() const;
+      std::map<std::string, std::string> conditions_to_copy() const;
 
       //! check for correct material
-      void CheckMaterialType(const int matid);
+      void check_material_type(const int matid);
 
      private:
     };  // class ThermoStructureCloneStrategy

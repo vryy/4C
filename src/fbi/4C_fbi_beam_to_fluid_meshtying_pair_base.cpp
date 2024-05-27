@@ -113,7 +113,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::pre_evaluate()
   // Call pre_evaluate on the geometry Pair.
   if (!this->meshtying_is_evaluated_)
   {
-    this->CastGeometryPair()->pre_evaluate(ele1poscur_, ele2poscur_, this->line_to_3D_segments_);
+    this->cast_geometry_pair()->pre_evaluate(ele1poscur_, ele2poscur_, this->line_to_3D_segments_);
   }
 }
 

@@ -65,14 +65,14 @@ namespace FSI
      *
      * \returns interface force
      */
-    Teuchos::RCP<Epetra_Vector> FluidOp(
+    Teuchos::RCP<Epetra_Vector> fluid_op(
         Teuchos::RCP<Epetra_Vector> idisp, const FillType fillFlag) final;
 
 
     void extract_previous_interface_solution() override;
 
     /// structure to ale mapping
-    Teuchos::RCP<Epetra_Vector> StuctureToAle(Teuchos::RCP<Epetra_Vector> iv) const;
+    Teuchos::RCP<Epetra_Vector> stucture_to_ale(Teuchos::RCP<Epetra_Vector> iv) const;
 
     /// structure to ale mapping
     Teuchos::RCP<Epetra_Vector> structure_to_ale(Teuchos::RCP<const Epetra_Vector> iv) const;

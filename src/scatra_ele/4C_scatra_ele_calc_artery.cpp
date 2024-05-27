@@ -79,7 +79,7 @@ int DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::SetupCalc(
  |  evaluate single material  (protected)              kremheller 04/18 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::Materials(
+void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::materials(
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -216,7 +216,7 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::extract_element_and_n
   // call routine for calculation of body force in element nodes
   // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
   // ---------------------------------------------------------------------
-  my::BodyForce(ele);
+  my::body_force(ele);
   //--------------------------------------------------------------------------------
   // further node-based source terms not given via Neumann volume condition
   // i.e., set special body force for homogeneous isotropic turbulence
@@ -229,7 +229,7 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::extract_element_and_n
  |  in convective form (OD fluid)                              kremheller 05/18 |
  *-----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::CalcMatConvODFluid(
+void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::calc_mat_conv_od_fluid(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodefluid,
     const double timefacfac, const double densnp, const CORE::LINALG::Matrix<nsd_, 1>& gradphi)
 {

@@ -55,11 +55,11 @@ namespace FPSI
     class MapExtractor;
   }
 
-  class FPSICoupling
+  class FpsiCoupling
   {
    public:
     // ctor
-    explicit FPSICoupling(Teuchos::RCP<POROELAST::Monolithic> poro,
+    explicit FpsiCoupling(Teuchos::RCP<POROELAST::Monolithic> poro,
         Teuchos::RCP<ADAPTER::Fluid> fluid, Teuchos::RCP<ADAPTER::AleFpsiWrapper> ale,
         Teuchos::RCP<std::map<int, int>> Fluid_PoroFluid_InterfaceMap,
         Teuchos::RCP<std::map<int, int>> PoroFluid_Fluid_InterfaceMap);
@@ -256,7 +256,7 @@ namespace FPSI
 
     // hydraulic conductivity (needed for coupling in case of probtype fps3i)
     double conductivity_;
-  };  // FPSICoupling
+  };  // fpsi_coupling
 }  // namespace FPSI
 
 FOUR_C_NAMESPACE_CLOSE

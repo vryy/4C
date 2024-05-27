@@ -75,14 +75,14 @@ namespace STR::MODELEVALUATOR
 
     void ResetStepState() override {}
 
-    void RunPostComputeX(
+    void run_post_compute_x(
         const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override
     {
     }
 
-    void RunPostIterate(const ::NOX::Solver::Generic& solver) override {}
+    void run_post_iterate(const ::NOX::Solver::Generic& solver) override {}
 
-    void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
+    void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
         const NOX::NLN::Group& curr_grp) override
     {
     }
@@ -98,7 +98,7 @@ namespace STR::MODELEVALUATOR
 
     void UpdateStepState(const double& timefac_n) override {}
 
-    void WriteRestart(
+    void write_restart(
         IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override
     {
     }

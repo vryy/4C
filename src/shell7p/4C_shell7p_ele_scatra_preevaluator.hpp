@@ -44,7 +44,7 @@ namespace DRT::ELEMENTS::SHELL
    * @p element with the discretization type known at compile time.
    *
    *
-   * @tparam distype : Discretization type known at compile time
+   * @tparam distype : discretization type known at compile time
    *
    * @param ele  (in) : Reference to the element
    * @param discretization (in) : Reference to the discretization

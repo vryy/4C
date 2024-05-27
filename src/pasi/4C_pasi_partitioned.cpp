@@ -90,7 +90,7 @@ void PASI::PartitionedAlgo::read_restart(int restartstep)
   extract_interface_states();
 
   // set interface states
-  SetInterfaceStates(intfdispnp_, intfvelnp_, intfaccnp_);
+  set_interface_states(intfdispnp_, intfvelnp_, intfaccnp_);
 }
 
 void PASI::PartitionedAlgo::TestResults(const Epetra_Comm& comm)
@@ -119,37 +119,37 @@ void PASI::PartitionedAlgo::prepare_time_step(bool printheader)
   increment_time_and_step();
 
   // print header
-  if (printheader) PrintHeader();
+  if (printheader) print_header();
 
   // prepare time step of structure field and particle algorithm
   structurefield_->prepare_time_step();
   particlealgorithm_->prepare_time_step(false);
 }
 
-void PASI::PartitionedAlgo::PreEvaluateTimeStep()
+void PASI::PartitionedAlgo::pre_evaluate_time_step()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::PreEvaluateTimeStep");
+  TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::pre_evaluate_time_step");
 
   // pre evaluate time step
-  particlealgorithm_->PreEvaluateTimeStep();
+  particlealgorithm_->pre_evaluate_time_step();
 }
 
-void PASI::PartitionedAlgo::StructStep()
+void PASI::PartitionedAlgo::struct_step()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::StructStep");
 
-  if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
+  if ((Comm().MyPID() == 0) and print_screen_evry() and (Step() % print_screen_evry() == 0))
     printf("-------------------- STRUCTURE SOLVER --------------------\n");
 
   // integrate structural time step
   structurefield_->Solve();
 }
 
-void PASI::PartitionedAlgo::ParticleStep()
+void PASI::PartitionedAlgo::particle_step()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::ParticleStep");
+  TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::particle_step");
 
-  if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
+  if ((Comm().MyPID() == 0) and print_screen_evry() and (Step() % print_screen_evry() == 0))
     printf("-------------------- PARTICLE SOLVER ---------------------\n");
 
   // integrate time step
@@ -173,10 +173,10 @@ void PASI::PartitionedAlgo::extract_interface_states()
   intfaccnp_ = interface_->ExtractPASICondVector(structurefield_->Accnp());
 }
 
-void PASI::PartitionedAlgo::SetInterfaceStates(Teuchos::RCP<const Epetra_Vector> intfdispnp,
+void PASI::PartitionedAlgo::set_interface_states(Teuchos::RCP<const Epetra_Vector> intfdispnp,
     Teuchos::RCP<const Epetra_Vector> intfvelnp, Teuchos::RCP<const Epetra_Vector> intfaccnp)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::SetInterfaceStates");
+  TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::set_interface_states");
 
   // get interface to particle wall handler
   std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface =
@@ -203,7 +203,7 @@ void PASI::PartitionedAlgo::SetInterfaceStates(Teuchos::RCP<const Epetra_Vector>
   CORE::LINALG::Export(*walldatastate->GetDispCol(), *walldatastate->GetDispRow());
 
   // print norm of interface displacement to the screen
-  if (PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
+  if (print_screen_evry() and (Step() % print_screen_evry() == 0))
   {
     double normintfdisp(0.0);
     intfdispnp->Norm2(&normintfdisp);
@@ -212,7 +212,7 @@ void PASI::PartitionedAlgo::SetInterfaceStates(Teuchos::RCP<const Epetra_Vector>
   }
 }
 
-void PASI::PartitionedAlgo::StructOutput()
+void PASI::PartitionedAlgo::struct_output()
 {
   // calculate stresses, strains, energies
   constexpr bool force_prepare = false;
@@ -225,13 +225,13 @@ void PASI::PartitionedAlgo::StructOutput()
   structurefield_->Output();
 }
 
-void PASI::PartitionedAlgo::ParticleOutput()
+void PASI::PartitionedAlgo::particle_output()
 {
   // write output
   particlealgorithm_->WriteOutput();
 
   // write restart information
-  particlealgorithm_->WriteRestart();
+  particlealgorithm_->write_restart();
 }
 
 void PASI::PartitionedAlgo::init_structure_field()
@@ -297,7 +297,7 @@ void PASI::PartitionedAlgo::build_structure_model_evaluator()
 
     // get wrapper and cast it to specific type
     structurefield_ = Teuchos::rcp_dynamic_cast<ADAPTER::PASIStructureWrapper>(
-        struct_adapterbase_ptr_->StructureField());
+        struct_adapterbase_ptr_->structure_field());
 
     if (structurefield_ == Teuchos::null)
       FOUR_C_THROW("No valid pointer to ADAPTER::PASIStructureWrapper set!");

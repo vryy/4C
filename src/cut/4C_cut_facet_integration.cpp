@@ -86,7 +86,7 @@ void CORE::GEO::CUT::FacetIntegration::is_clockwise(
         CORE::LINALG::Matrix<3, 1> glo, loc;
 
         for (int nodno = 0; nodno < 3; nodno++) glo(nodno, 0) = x1[nodno];
-        elem1_->LocalCoordinates(glo, loc);
+        elem1_->local_coordinates(glo, loc);
 
         pt_local[0] = loc(0, 0);
         pt_local[1] = loc(1, 0);
@@ -125,7 +125,7 @@ void CORE::GEO::CUT::FacetIntegration::is_clockwise(
 #ifdef LOCAL
       phi_deriv1 = elem1_->get_level_set_gradient_at_local_coords_in_local_coords(coord);
 #else
-      phi_deriv1 = elem1_->GetLevelSetGradient(coord);
+      phi_deriv1 = elem1_->get_level_set_gradient(coord);
 #endif
 
       dotProduct = eqn_plane[0] * phi_deriv1[0] + eqn_plane[1] * phi_deriv1[1] +
@@ -189,7 +189,7 @@ void CORE::GEO::CUT::FacetIntegration::is_clockwise(
       }
     }
 #else
-    elem1_->ElementCenter(elecen);
+    elem1_->element_center(elecen);
 #endif
 
     //-----
@@ -587,7 +587,7 @@ void CORE::GEO::CUT::FacetIntegration::divergence_integration_rule(
       CORE::GEO::CUT::OUTPUT::GmshTriSideDump(file, bcell->Points());
 
     CORE::LINALG::Matrix<3, 1> midpt;
-    bcell->ElementCenter(midpt);
+    bcell->element_center(midpt);
     CORE::GEO::CUT::OUTPUT::GmshVector(
         file, midpt, CORE::GEO::CUT::OUTPUT::GetEqOfPlane(bcell->Points()), true);
 #endif
@@ -864,7 +864,7 @@ void CORE::GEO::CUT::FacetIntegration::divergence_integration_rule_new(
 
         midpt.Scale(1.0 / (*k).size());
 
-        //        bcell->ElementCenter(midpt);
+        //        bcell->element_center(midpt);
         CORE::GEO::CUT::OUTPUT::GmshTriSideDump(file, *k);
         CORE::GEO::CUT::OUTPUT::GmshVector(
             file, midpt, CORE::GEO::CUT::OUTPUT::GetEqOfPlane(*k), true);
@@ -873,7 +873,7 @@ void CORE::GEO::CUT::FacetIntegration::divergence_integration_rule_new(
     else
     {
       CORE::LINALG::Matrix<3, 1> midpt(true);
-      bcell->ElementCenter(midpt);
+      bcell->element_center(midpt);
       CORE::GEO::CUT::OUTPUT::GmshTriSideDump(file, bcell->Points());
       CORE::GEO::CUT::OUTPUT::GmshVector(
           file, midpt, CORE::GEO::CUT::OUTPUT::GetEqOfPlane(bcell->Points()), true);
@@ -946,7 +946,7 @@ void CORE::GEO::CUT::FacetIntegration::generate_divergence_cells_new(bool diverg
     CORE::LINALG::Matrix<3, 1> cornersLocMatrix;
     CORE::LINALG::Matrix<3, 1> cornersGloMatrix((*j)->X());
 
-    elem1_->LocalCoordinates(cornersGloMatrix, cornersLocMatrix);
+    elem1_->local_coordinates(cornersGloMatrix, cornersLocMatrix);
 
     std::vector<double> cornerLocal(3);
     cornerLocal[0] = cornersLocMatrix(0, 0);

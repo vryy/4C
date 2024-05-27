@@ -185,7 +185,7 @@ namespace MAT
      * \param gp Gauss point. Use FiberAnisotropyExtension::GPDEFAULT in case of element fibers
      * \param fibers Vector of all fibers
      */
-    void SetFibers(int gp, const std::array<CORE::LINALG::Matrix<3, 1>, numfib>& fibers);
+    void set_fibers(int gp, const std::array<CORE::LINALG::Matrix<3, 1>, numfib>& fibers);
 
     /*!
      * \brief Set all fibers of the element
@@ -193,7 +193,7 @@ namespace MAT
      * \param fibers The first index are the Gauss points, the second index the fibers. In case of
      * element fiebers, the first vector should only contain one element.
      */
-    void SetFibers(const std::vector<std::array<CORE::LINALG::Matrix<3, 1>, numfib>>& fibers);
+    void set_fibers(const std::vector<std::array<CORE::LINALG::Matrix<3, 1>, numfib>>& fibers);
 
     /*!
      * \brief Method that compute all structural tensors. Should be executed after a change of the
@@ -224,7 +224,7 @@ namespace MAT
     /*!
      * \brief Method that will be called of the fibers are initialized.
      */
-    virtual void OnFibersInitialized()
+    virtual void on_fibers_initialized()
     {
       // do nothing in the default case
     }
@@ -234,14 +234,14 @@ namespace MAT
      *
      * \param location
      */
-    void SetFiberLocation(FiberLocation location);
+    void set_fiber_location(FiberLocation location);
 
     /*!
      * \brief Returns the location where the fibers are stored (elemet/node)
      *
      * \return FiberLocation
      */
-    virtual FiberLocation GetFiberLocation() const { return fiber_location_; }
+    virtual FiberLocation get_fiber_location() const { return fiber_location_; }
 
     /*!
      * \brief This method will be called by MAT::Anisotropy if element and Gauss point fibers are
@@ -257,7 +257,7 @@ namespace MAT
     void on_global_element_data_initialized() override
     {
       const bool initialized = do_element_fiber_initialization();
-      if (initialized) OnFibersInitialized();
+      if (initialized) on_fibers_initialized();
     }
 
     /*!
@@ -267,7 +267,7 @@ namespace MAT
     void on_global_gp_data_initialized() override
     {
       const bool initialized = do_gp_fiber_initialization();
-      if (initialized) OnFibersInitialized();
+      if (initialized) on_fibers_initialized();
     }
     /// \}
 

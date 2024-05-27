@@ -67,7 +67,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::ScaTraEleBoundaryCal
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::EvaluateAction(
+int DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::evaluate_action(
     DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     SCATRA::BoundaryAction action, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -88,7 +88,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::EvaluateAction(
 
     default:
     {
-      my::EvaluateAction(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
+      my::evaluate_action(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
           elevec1_epetra, elevec2_epetra, elevec3_epetra);
 
       break;
@@ -189,7 +189,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::calc_loma_therm
  | calculate Neumann inflow boundary conditions              fang 02/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::NeumannInflow(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::neumann_inflow(
     const DRT::FaceElement* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs)
@@ -198,17 +198,17 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::NeumannInflow(
   thermpress_ = params.get<double>("thermodynamic pressure");
 
   // call base class routine
-  my::NeumannInflow(ele, params, discretization, la, emat, erhs);
+  my::neumann_inflow(ele, params, discretization, la, emat, erhs);
 
   return;
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::NeumannInflow
+}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::neumann_inflow
 
 
 /*----------------------------------------------------------------------*
  | get density at integration point                          fang 02/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::GetDensity(
+double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::get_density(
     Teuchos::RCP<const CORE::MAT::Material> material,
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp, const int k)
 {

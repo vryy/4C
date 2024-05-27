@@ -202,7 +202,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ShapeDerivatives() = 0;
 
     /// direct access to discretization
-    virtual const Teuchos::RCP<DRT::Discretization>& Discretization() = 0;
+    virtual const Teuchos::RCP<DRT::Discretization>& discretization() = 0;
 
     /// direct access to dofset
     virtual Teuchos::RCP<const CORE::Dofsets::DofSet> DofSet() = 0;
@@ -227,10 +227,10 @@ namespace ADAPTER
         const Teuchos::RCP<const Epetra_Vector> contributing_vector) = 0;
 
     /// expand dirichlet dbc set by provided map containing dofs to add
-    virtual void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd) = 0;
+    virtual void add_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoadd) = 0;
 
     /// contract dirichlet set by provided map containing dofs to remove
-    virtual void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove) = 0;
+    virtual void remove_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoremove) = 0;
 
     ///  set scalar fields within outer iteration loop
     virtual void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
@@ -250,7 +250,7 @@ namespace ADAPTER
         Teuchos::RCP<DRT::Discretization> scatradis, const int whichscalar = -1) = 0;
 
     /// set velocity field (separate computation)
-    virtual void SetVelocityField(Teuchos::RCP<const Epetra_Vector> velnp) = 0;
+    virtual void set_velocity_field(Teuchos::RCP<const Epetra_Vector> velnp) = 0;
 
     /// provide access to the turbulence statistic manager
     virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> turbulence_statistic_manager() = 0;
@@ -444,9 +444,9 @@ namespace ADAPTER
     /// the mesh map contains all velocity dofs that are covered by an ALE node
     virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int nds_master = 0) = 0;
 
-    /// Use ResidualScaling() to convert the implemented fluid residual to an actual force with unit
-    /// Newton [N]
-    virtual double ResidualScaling() const = 0;
+    /// Use residual_scaling() to convert the implemented fluid residual to an actual force with
+    /// unit Newton [N]
+    virtual double residual_scaling() const = 0;
 
     /// Velocity-displacement conversion at the fsi interface
     /*! Time integration of the fsi interface reads:
@@ -563,7 +563,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<Epetra_Vector> integrate_interface_shape() = 0;
 
     /// switch fluid field to block matrix
-    virtual void UseBlockMatrix(bool splitmatrix) = 0;
+    virtual void use_block_matrix(bool splitmatrix) = 0;
 
     /// create result test for encapulated fluid algorithm
     virtual Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() = 0;

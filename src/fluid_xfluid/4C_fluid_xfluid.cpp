@@ -177,10 +177,10 @@ void FLD::XFluid::Init(bool createinitialstate)
   // -------------------------------------------------------------------
 
   // read xfluid input parameters from list
-  SetXFluidParams();
+  set_x_fluid_params();
 
   // check xfluid input parameter combination for consistency & valid choices
-  CheckXFluidParams();
+  check_x_fluid_params();
 
   // set element time parameter as ghost penalty solve are called already in the Init for
   // SetInitialFlowField
@@ -334,7 +334,7 @@ void FLD::XFluid::setup_fluid_discretization()
 /*----------------------------------------------------------------------*
  |  set all xfluid parameters                              schott 02/15 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::SetXFluidParams()
+void FLD::XFluid::set_x_fluid_params()
 {
   omtheta_ = 1.0 - theta_;
 
@@ -569,14 +569,14 @@ void FLD::XFluid::CreateInitialState()
 
   // ---------------------------------------------------------------------
   // create the initial state class
-  CreateState();
+  create_state();
 }
 
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::XFluid::CreateState()
+void FLD::XFluid::create_state()
 {
   discret_->Comm().Barrier();
   TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::CreateState");
@@ -588,8 +588,8 @@ void FLD::XFluid::CreateState()
   if (evaluate_cut_)
   {
     staten_ = Teuchos::null;
-    DestroyState();
-    state_ = GetNewState();
+    destroy_state();
+    state_ = get_new_state();
   }
   else
   {
@@ -613,7 +613,7 @@ void FLD::XFluid::CreateState()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::XFluid::DestroyState()
+void FLD::XFluid::destroy_state()
 {
   if (state_ != Teuchos::null and state_.strong_count() > 1)
     FOUR_C_THROW(
@@ -633,7 +633,7 @@ void FLD::XFluid::DestroyState()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<FLD::XFluidState> FLD::XFluid::GetNewState()
+Teuchos::RCP<FLD::XFluidState> FLD::XFluid::get_new_state()
 {
   if (state_ != Teuchos::null)
     FOUR_C_THROW("please destroy the old state-class before creating a new one!");
@@ -661,7 +661,7 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluid::GetNewState()
       std::map<int, CORE::LINALG::Matrix<3, 1>> currinterfacepositions;
 
       // compute the current boundary position
-      ExtractNodeVectors(xdiscret_, currinterfacepositions, dispnpcol);
+      extract_node_vectors(xdiscret_, currinterfacepositions, dispnpcol);
       output_service_->gmsh_output_discretization(eval_eos_, step_, &currinterfacepositions);
     }
     else
@@ -698,7 +698,7 @@ void FLD::XFluid::update_ale_state_vectors(Teuchos::RCP<FLD::XFluidState> state)
   }
 }
 
-void FLD::XFluid::ExtractNodeVectors(Teuchos::RCP<DRT::DiscretizationXFEM> dis,
+void FLD::XFluid::extract_node_vectors(Teuchos::RCP<DRT::DiscretizationXFEM> dis,
     std::map<int, CORE::LINALG::Matrix<3, 1>>& nodevecmap, Teuchos::RCP<Epetra_Vector> dispnp_col)
 {
   nodevecmap.clear();
@@ -816,7 +816,7 @@ void FLD::XFluid::assemble_mat_and_rhs(int itnum)
     // scaling to get true residual vector
     // negative sign to get forces acting on structural side
     // additional residual-scaling to remove the theta*dt-scaling
-    state_->trueresidual_->Update(-1.0 * ResidualScaling(), *state_->residual_, 0.0);
+    state_->trueresidual_->Update(-1.0 * residual_scaling(), *state_->residual_, 0.0);
   }
 
   //-------------------------------------------------------------------------------
@@ -1155,14 +1155,14 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
               TEUCHOS_FUNC_TIME_MONITOR(
                   "FLD::XFluid::XFluidState::Evaluate 2) interface (only evaluate)");
 
-              if (CouplingMethod() == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
-                  CouplingMethod() == INPAR::XFEM::Hybrid_LM_viscous_stress)
+              if (coupling_method() == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
+                  coupling_method() == INPAR::XFEM::Hybrid_LM_viscous_stress)
                 impl->element_xfem_interface_hybrid_lm(ele, *discret_, la[0].lm_,
                     condition_manager_, intpoints_sets[set_counter], bcells, bintpoints,
                     patchcouplm, side_coupling, eleparams, mat, strategy.Elematrix1(),
                     strategy.Elevector1(), C_ss, cells);
 
-              if (CouplingMethod() == INPAR::XFEM::Nitsche)
+              if (coupling_method() == INPAR::XFEM::Nitsche)
                 impl->element_xfem_interface_nit(ele, *discret_, la[0].lm_, condition_manager_,
                     bcells, bintpoints, patchcouplm, eleparams, matptr_m, matptr_s,
                     strategy.Elematrix1(), strategy.Elevector1(), cells, side_coupling, C_ss,
@@ -1725,7 +1725,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluid::evaluate_error_compared_to_analyt
     Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_stab_norms =
         Teuchos::rcp(new CORE::LINALG::SerialDenseVector(num_stab_norms));
 
-    ComputeErrorNorms(glob_dom_norms, glob_interf_norms, glob_stab_norms);
+    compute_error_norms(glob_dom_norms, glob_interf_norms, glob_stab_norms);
 
     // standard domain errors
     double dom_err_vel_L2 =
@@ -1925,7 +1925,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluid::evaluate_error_compared_to_analyt
   return Teuchos::null;
 }
 
-void FLD::XFluid::ComputeErrorNorms(Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_dom_norms,
+void FLD::XFluid::compute_error_norms(Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_dom_norms,
     Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_interf_norms,
     Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_stab_norms)
 {
@@ -2043,9 +2043,9 @@ void FLD::XFluid::ComputeErrorNorms(Teuchos::RCP<CORE::LINALG::SerialDenseVector
           e->boundary_cell_gauss_points_lin(
               bcells, bintpoints, GetCutWizard()->get_bc_cubaturedegree());
 
-          if (CouplingMethod() == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
-              CouplingMethod() == INPAR::XFEM::Hybrid_LM_viscous_stress or
-              CouplingMethod() == INPAR::XFEM::Nitsche)
+          if (coupling_method() == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
+              coupling_method() == INPAR::XFEM::Hybrid_LM_viscous_stress or
+              coupling_method() == INPAR::XFEM::Nitsche)
           {
             impl->compute_error_interface(ele, *discret_, la[0].lm_, condition_manager_, mat,
                 ele_interf_norms, bcells, bintpoints, cells, *params_);
@@ -2094,7 +2094,7 @@ void FLD::XFluid::ComputeErrorNorms(Teuchos::RCP<CORE::LINALG::SerialDenseVector
 /*----------------------------------------------------------------------*
  |  check xfluid input parameters/ safety checks           schott 05/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::CheckXFluidParams() const
+void FLD::XFluid::check_x_fluid_params() const
 {
   // ----------------------------------------------------------------------
   // check XFLUID DYNAMIC/GENERAL parameter list
@@ -2224,7 +2224,7 @@ void FLD::XFluid::print_time_step_info()
 /*----------------------------------------------------------------------*
  |  Timeloop()                                             schott 02/15 |
  *----------------------------------------------------------------------*/
-bool FLD::XFluid::NotFinished()
+bool FLD::XFluid::not_finished()
 {
   // -------------------------------------------------------------------
   //                    stop criterium for timeloop
@@ -2352,7 +2352,7 @@ void FLD::XFluid::DoPredictor()
   {
     if (predictor_ != "TangVel")
     {
-      ExplicitPredictor();
+      explicit_predictor();
     }
     else
     {
@@ -2547,7 +2547,7 @@ void FLD::XFluid::Solve()
     // -------------------------------------------------------------------
     // update velocity and pressure values by increments
     // -------------------------------------------------------------------
-    UpdateByIncrement();
+    update_by_increment();
 
     // -------------------------------------------------------------------
     // For af-generalized-alpha: update accelerations
@@ -3272,7 +3272,7 @@ void FLD::XFluid::cut_and_set_state_vectors()
   // create new state class object
   // state_it_ has been increased by one now
   // performs cut at current interface position and creates new vectors and a new system-matrix
-  CreateState();
+  create_state();
 
 
   //----------------------------------------------------------------
@@ -4763,7 +4763,7 @@ void FLD::XFluid::set_dirichlet_neumann_bc()
   discret_->set_state("velaf", state_->velnp_);
   // predicted dirichlet values
   // velnp then also holds prescribed new dirichlet values
-  discret_->EvaluateDirichlet(
+  discret_->evaluate_dirichlet(
       eleparams, state_->velnp_, Teuchos::null, Teuchos::null, Teuchos::null, state_->dbcmaps_);
 
   discret_->ClearState();
@@ -4792,7 +4792,7 @@ void FLD::XFluid::assemble_mat_and_rhs() {}
 /*----------------------------------------------------------------------*
  * Explicit predictor                                   rasthofer 12/13 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::ExplicitPredictor()
+void FLD::XFluid::explicit_predictor()
 {
   if (discret_->Comm().MyPID() == 0)
   {
@@ -4962,7 +4962,7 @@ void FLD::XFluid::predict_tang_vel_consist_acc()
 
   // predicted Dirichlet values
   // velnp_ then also holds prescribed new dirichlet values
-  discret_->EvaluateDirichlet(
+  discret_->evaluate_dirichlet(
       eleparams, state_->velnp_, Teuchos::null, Teuchos::null, Teuchos::null);
 
   // subtract the displacements of the last converged step
@@ -5298,7 +5298,7 @@ void FLD::XFluid::UpdateGridv()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::XFluid::UpdateByIncrement()
+void FLD::XFluid::update_by_increment()
 {
   state_->Velnp()->Update(1.0, *state_->IncVel(), 1.0);
   double f_norm = 0;

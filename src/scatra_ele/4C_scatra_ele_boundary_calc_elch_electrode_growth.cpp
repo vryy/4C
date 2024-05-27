@@ -67,10 +67,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
-  ExtractNodeValues(discretization, la);
+  extract_node_values(discretization, la);
   std::vector<CORE::LINALG::Matrix<nen_, 1>> emasterphinp(
       my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
-  my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
+  my::extract_node_values(emasterphinp, discretization, la, "imasterphinp");
 
   if (my::scatraparamsboundary_->ConditionType() != CORE::Conditions::S2IKineticsGrowth)
     FOUR_C_THROW("Received illegal condition type!");
@@ -151,8 +151,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::EvaluateS2ICoupling(
-    const DRT::FaceElement* ele, Teuchos::ParameterList& params,
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
+    probdim>::evaluate_s2_i_coupling(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& eslavematrix, CORE::LINALG::SerialDenseMatrix& emastermatrix,
     CORE::LINALG::SerialDenseVector& eslaveresidual)
@@ -170,10 +170,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
-  ExtractNodeValues(discretization, la);
+  extract_node_values(discretization, la);
   std::vector<CORE::LINALG::Matrix<nen_, 1>> emasterphinp(
       my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
-  my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
+  my::extract_node_values(emasterphinp, discretization, la, "imasterphinp");
 
   // extract condition type
   const CORE::Conditions::ConditionType& s2iconditiontype =
@@ -358,7 +358,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::EvaluateAction(
+int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::evaluate_action(
     DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     SCATRA::BoundaryAction action, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -398,7 +398,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::E
 
     default:
     {
-      myelch::EvaluateAction(ele, params, discretization, action, la, elemat1_epetra,
+      myelch::evaluate_action(ele, params, discretization, action, la, elemat1_epetra,
           elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
       break;
     }
@@ -422,10 +422,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
-  ExtractNodeValues(discretization, la);
+  extract_node_values(discretization, la);
   std::vector<CORE::LINALG::Matrix<nen_, 1>> emasterphinp(
       my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
-  my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
+  my::extract_node_values(emasterphinp, discretization, la, "imasterphinp");
 
   // extract condition type
   const CORE::Conditions::ConditionType& s2iconditiontype =
@@ -606,10 +606,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
-  ExtractNodeValues(discretization, la);
+  extract_node_values(discretization, la);
   std::vector<CORE::LINALG::Matrix<nen_, 1>> emasterphinp(
       my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
-  my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
+  my::extract_node_values(emasterphinp, discretization, la, "imasterphinp");
 
   if (my::scatraparamsboundary_->ConditionType() != CORE::Conditions::S2IKineticsGrowth)
     FOUR_C_THROW("Received illegal condition type!");
@@ -719,12 +719,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
-  ExtractNodeValues(discretization, la);
+  extract_node_values(discretization, la);
   std::vector<CORE::LINALG::Matrix<nen_, 1>> emasterphinp(
       my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
   CORE::LINALG::Matrix<nen_, 1> eslavegrowthhist(true);
-  my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
-  my::ExtractNodeValues(
+  my::extract_node_values(emasterphinp, discretization, la, "imasterphinp");
+  my::extract_node_values(
       eslavegrowthhist, discretization, la, "growthhist", my::scatraparams_->NdsGrowth());
 
   if (my::scatraparamsboundary_->ConditionType() != CORE::Conditions::S2IKineticsGrowth)
@@ -830,14 +830,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::ExtractNodeValues(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::extract_node_values(
     const DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
   // call base class routine
-  my::ExtractNodeValues(discretization, la);
+  my::extract_node_values(discretization, la);
 
   // extract nodal growth variables associated with boundary element
-  my::ExtractNodeValues(egrowth_, discretization, la, "growth", my::scatraparams_->NdsGrowth());
+  my::extract_node_values(egrowth_, discretization, la, "growth", my::scatraparams_->NdsGrowth());
 }
 
 // template classes

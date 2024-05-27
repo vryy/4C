@@ -66,7 +66,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Evaluate(DRT::Element* e
 |  calculate system matrix and rhs (public)                 ehrl  08/08|
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Sysmat(
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::sysmat(
     DRT::Element* ele,                          ///< the element whose matrix is calculated
     CORE::LINALG::SerialDenseMatrix& emat,      ///< element matrix to calculate
     CORE::LINALG::SerialDenseVector& erhs,      ///< element rhs to calculate
@@ -102,7 +102,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Sysmat(
     set_internal_variables_for_mat_and_rhs();
 
     // material parameters at element center
-    GetMaterialParams(ele, densn, densnp, densam, visc);
+    get_material_params(ele, densn, densnp, densam, visc);
 
     if (not my::scatrapara_->TauGP()) prepare_stabilization(tau, tauderpot, densnp, vol);
   }
@@ -123,7 +123,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Sysmat(
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
-    if (my::scatrapara_->MatGP()) GetMaterialParams(ele, densn, densnp, densam, visc, iquad);
+    if (my::scatrapara_->MatGP()) get_material_params(ele, densn, densnp, densam, visc, iquad);
 
     //-------------------------------------------------------------------------------------
     // calculate stabilization parameters (one per transported scalar) at integration point
@@ -149,10 +149,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Sysmat(
       // if not constant, and for temperature equation of a reactive
       // equation system, the reaction-rate term
       double rhsint(0.0);
-      my::GetRhsInt(rhsint, densnp[k], k);
+      my::get_rhs_int(rhsint, densnp[k], k);
 
       // Compute element matrix and rhs
-      CalcMatAndRhs(emat, erhs, k, fac, timefacfac, rhsfac, taufac, timetaufac, rhstaufac,
+      calc_mat_and_rhs(emat, erhs, k, fac, timefacfac, rhsfac, taufac, timetaufac, rhstaufac,
           tauderpot[k], rhsint);
     }  // end loop over scalar
 
@@ -166,7 +166,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Sysmat(
 |  CalcMat: Potential equation ENC                                       ehrl  02/14|
 *-----------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcMatPotEquENC(
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_mat_pot_equ_enc(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
     const int k,                            //!< index of current scalar
     const double fac,                       //!< domain-integration factor
@@ -193,7 +193,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcMatPotEquENC(
  |  CalcRhs: Potential equation ENC                                         ehrl 11/13 |
  *-------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcRhsPotEquENC(
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_rhs_pot_equ_enc(
     CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
     const int k,                            //!< index of current scalar
     const double fac,                       //!< domain-integration factor

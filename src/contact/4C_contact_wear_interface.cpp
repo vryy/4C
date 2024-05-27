@@ -156,12 +156,12 @@ void WEAR::WearInterface::AssembleTE(
         double val = colcurr->second;
 
         // do not assemble zeros into m matrix
-        if (WearShapeFcn() == INPAR::WEAR::wear_shape_standard)
+        if (wear_shape_fcn() == INPAR::WEAR::wear_shape_standard)
         {
           if (abs(val) > 1.0e-12) eglobal.Assemble(val, row, col);
           ++k;
         }
-        else if (WearShapeFcn() == INPAR::WEAR::wear_shape_dual)
+        else if (wear_shape_fcn() == INPAR::WEAR::wear_shape_dual)
         {
           if (col == row)
             if (abs(val) > 1.0e-12) eglobal.Assemble(val, row, col);
@@ -264,12 +264,12 @@ void WEAR::WearInterface::AssembleTE_Master(
         double val = colcurr->second;
 
         // do not assemble zeros into m matrix
-        if (WearShapeFcn() == INPAR::WEAR::wear_shape_standard)
+        if (wear_shape_fcn() == INPAR::WEAR::wear_shape_standard)
         {
           if (abs(val) > 1.0e-12) eglobal.FEAssemble(val, row, col);
           ++k;
         }
-        else if (WearShapeFcn() == INPAR::WEAR::wear_shape_dual)
+        else if (wear_shape_fcn() == INPAR::WEAR::wear_shape_dual)
         {
           if (col == row)
             if (abs(val) > 1.0e-12) eglobal.FEAssemble(val, row, col);
@@ -921,10 +921,10 @@ void WEAR::WearInterface::evaluate_nodal_normals() const
 /*----------------------------------------------------------------------*
  |  export nodal normals (public)                            farah 11/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::ExportNodalNormals() const
+void WEAR::WearInterface::export_nodal_normals() const
 {
   // call contact function
-  CONTACT::Interface::ExportNodalNormals();
+  CONTACT::Interface::export_nodal_normals();
 
   std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>> triad;
 
@@ -4138,7 +4138,7 @@ void WEAR::WearInterface::SplitMasterDofs()
 /*----------------------------------------------------------------------*
  |  compute element areas (public)                           farah 02/16|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::SetElementAreas()
+void WEAR::WearInterface::set_element_areas()
 {
   //**********************************************************************
   // In general, it is sufficient to compute element areas only for
@@ -4162,7 +4162,7 @@ void WEAR::WearInterface::SetElementAreas()
   else
   {
     // refer call back to base class version
-    MORTAR::Interface::SetElementAreas();
+    MORTAR::Interface::set_element_areas();
   }
 
   return;

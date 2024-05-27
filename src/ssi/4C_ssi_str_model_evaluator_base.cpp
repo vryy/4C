@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 void STR::MODELEVALUATOR::BaseSSI::determine_stress_strain()
 {
   // extract raw data for element-wise stresses
-  const std::vector<char>& stressdata = EvalData().StressData();
+  const std::vector<char>& stressdata = eval_data().StressData();
 
   // initialize map for element-wise stresses
   const auto stresses =
@@ -37,7 +37,7 @@ void STR::MODELEVALUATOR::BaseSSI::determine_stress_strain()
   std::vector<char>::size_type position(0);
 
   // loop over all row elements
-  for (int i = 0; i < Discret().ElementRowMap()->NumMyElements(); ++i)
+  for (int i = 0; i < discret().ElementRowMap()->NumMyElements(); ++i)
   {
     // initialize matrix for stresses associated with current element
     const auto stresses_ele = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
@@ -46,35 +46,35 @@ void STR::MODELEVALUATOR::BaseSSI::determine_stress_strain()
     CORE::COMM::ParObject::ExtractfromPack(position, stressdata, *stresses_ele);
 
     // store stresses
-    (*stresses)[Discret().ElementRowMap()->GID(i)] = stresses_ele;
+    (*stresses)[discret().ElementRowMap()->GID(i)] = stresses_ele;
   }
 
   // export map to column format
   CORE::COMM::Exporter exporter(
-      *Discret().ElementRowMap(), *Discret().ElementColMap(), Discret().Comm());
+      *discret().ElementRowMap(), *discret().ElementColMap(), discret().Comm());
   exporter.Export(*stresses);
 
   // prepare nodal stress vectors
-  Epetra_MultiVector nodal_stresses_source(*Discret().NodeRowMap(), 6);
+  Epetra_MultiVector nodal_stresses_source(*discret().NodeRowMap(), 6);
 
-  Discret().Evaluate(
+  discret().Evaluate(
       [&](DRT::Element& ele)
       {
         CORE::FE::ExtrapolateGaussPointQuantityToNodes(
-            ele, *stresses->at(ele.Id()), Discret(), nodal_stresses_source);
+            ele, *stresses->at(ele.Id()), discret(), nodal_stresses_source);
       });
 
-  const auto* nodegids = Discret().NodeRowMap();
+  const auto* nodegids = discret().NodeRowMap();
   for (int i = 0; i < nodegids->NumMyElements(); ++i)
   {
     const int nodegid = nodegids->GID(i);
 
     // extract lid of node as multi-vector is sorted according to the node ids
-    const DRT::Node* const node = Discret().gNode(nodegid);
-    const int nodelid = Discret().NodeRowMap()->LID(nodegid);
+    const DRT::Node* const node = discret().gNode(nodegid);
+    const int nodelid = discret().NodeRowMap()->LID(nodegid);
 
     // extract dof lid of first degree of freedom associated with current node in second nodeset
-    const int dofgid_epetra = Discret().Dof(2, node, 0);
+    const int dofgid_epetra = discret().Dof(2, node, 0);
     const int doflid_epetra = mechanical_stress_state_->Map().LID(dofgid_epetra);
     if (doflid_epetra < 0) FOUR_C_THROW("Local ID not found in epetra vector!");
 
@@ -102,8 +102,8 @@ void STR::MODELEVALUATOR::BaseSSI::Setup()
   // check initialization
   check_init();
 
-  if (Discret().NumDofSets() - 1 == 2)
-    mechanical_stress_state_ = Teuchos::rcp(new Epetra_Vector(*Discret().dof_row_map(2), true));
+  if (discret().NumDofSets() - 1 == 2)
+    mechanical_stress_state_ = Teuchos::rcp(new Epetra_Vector(*discret().dof_row_map(2), true));
 
   // set flag
   issetup_ = true;

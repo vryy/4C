@@ -53,7 +53,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
 
   if (IsParamsInterface())
   {
-    act = ParamsInterface().GetActionType();
+    act = params_interface().GetActionType();
   }
   else
   {
@@ -323,11 +323,11 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       INPAR::STR::StrainType iostrain = INPAR::STR::strain_none;
       if (IsParamsInterface())
       {
-        stressdata = StrParamsInterface().StressDataPtr();
-        straindata = StrParamsInterface().StrainDataPtr();
+        stressdata = str_params_interface().StressDataPtr();
+        straindata = str_params_interface().StrainDataPtr();
 
-        iostress = StrParamsInterface().GetStressOutputType();
-        iostrain = StrParamsInterface().GetStrainOutputType();
+        iostress = str_params_interface().GetStressOutputType();
+        iostrain = str_params_interface().GetStrainOutputType();
       }
       else
       {
@@ -396,7 +396,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       // determine energies
-      Energy(params, lm, mydisp, &elevec1, actmat);
+      energy(params, lm, mydisp, &elevec1, actmat);
       break;
     }
     //==================================================================================
@@ -656,7 +656,7 @@ int DRT::ELEMENTS::Wall1::evaluate_neumann(Teuchos::ParameterList& params,
   // check total time
   double time = -1.0;
   if (IsParamsInterface())
-    time = ParamsInterface().GetTotalTime();
+    time = params_interface().GetTotalTime();
   else
     time = params.get("total time", -1.0);
 
@@ -799,7 +799,7 @@ void DRT::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm, const std::vec
   CORE::LINALG::SerialDenseMatrix* alpha = nullptr;
   CORE::LINALG::SerialDenseMatrix* eas_inc = nullptr;
   // get access to the interface parameters
-  const double step_length = StrParamsInterface().GetStepLength();
+  const double step_length = str_params_interface().GetStepLength();
 
   // have eas?
   if (iseas_)
@@ -814,14 +814,14 @@ void DRT::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm, const std::vec
 
   /* if it is a default step, we have to recover the condensed
    * solution vectors */
-  if (StrParamsInterface().IsDefaultStep())
+  if (str_params_interface().IsDefaultStep())
   {
     /* recovery of the enhanced assumed strain increment and
      * update of the eas dofs. */
     if (iseas_)
     {
       // first, store the eas state of the previous accepted Newton step
-      StrParamsInterface().sum_into_my_previous_sol_norm(
+      str_params_interface().sum_into_my_previous_sol_norm(
           NOX::NLN::StatusTest::quantity_eas, w1_neas(), (*alpha)[0], Owner());
 
       // get stored EAS history
@@ -868,7 +868,7 @@ void DRT::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm, const std::vec
   // Check if the eas incr is tested and if yes, calculate the element
   // contribution to the norm
   if (iseas_)
-    StrParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas, w1_neas(),
+    str_params_interface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas, w1_neas(),
         (*eas_inc)[0], (*alpha)[0], step_length, Owner());
 
   // the element internal stuff should be up-to-date for now...
@@ -1166,7 +1166,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
         case INPAR::STR::stress_cauchy:
         {
           if (elestress == nullptr) FOUR_C_THROW("no stress data available");
-          StressCauchy(ip, F_tot(0, 0), F_tot(1, 1), F_tot(0, 2), F_tot(1, 2), stress, elestress);
+          stress_cauchy(ip, F_tot(0, 0), F_tot(1, 1), F_tot(0, 2), F_tot(1, 2), stress, elestress);
         }
         break;
         case INPAR::STR::stress_none:
@@ -1227,7 +1227,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
         case INPAR::STR::stress_cauchy:
         {
           if (elestress == nullptr) FOUR_C_THROW("no stress data available");
-          StressCauchy(ip, F[0], F[1], F[2], F[3], stress, elestress);
+          stress_cauchy(ip, F[0], F[1], F[2], F[3], stress, elestress);
         }
         break;
         case INPAR::STR::stress_none:
@@ -1458,7 +1458,7 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
       case INPAR::STR::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("no stress data available");
-        StressCauchy(ip, F[0], F[1], F[2], F[3], stress, elestress);
+        stress_cauchy(ip, F[0], F[1], F[2], F[3], stress, elestress);
       }
       break;
       case INPAR::STR::stress_none:
@@ -1801,7 +1801,7 @@ void DRT::ELEMENTS::Wall1::w1_lumpmass(CORE::LINALG::SerialDenseMatrix* emass)
 /*-----------------------------------------------------------------------------*
 | deliver Cauchy stress                                             bborn 08/08|
 *-----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::StressCauchy(const int ip, const double& F11, const double& F22,
+void DRT::ELEMENTS::Wall1::stress_cauchy(const int ip, const double& F11, const double& F22,
     const double& F12, const double& F21, const CORE::LINALG::SerialDenseMatrix& stress,
     CORE::LINALG::SerialDenseMatrix* elestress)
 {
@@ -1834,13 +1834,13 @@ void DRT::ELEMENTS::Wall1::StressCauchy(const int ip, const double& F11, const d
   (*elestress)(ip, 1) = cauchystress(1, 1);
   (*elestress)(ip, 2) = 0.0;
   (*elestress)(ip, 3) = cauchystress(0, 1);
-}  // StressCauchy
+}  // stress_cauchy
 
 
 /*-----------------------------------------------------------------------------*
 | deliver Cauchy stress                                             bborn 08/08|
 *-----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::Energy(Teuchos::ParameterList& params, const std::vector<int>& lm,
+void DRT::ELEMENTS::Wall1::energy(Teuchos::ParameterList& params, const std::vector<int>& lm,
     const std::vector<double>& dis, CORE::LINALG::SerialDenseVector* energies,
     Teuchos::RCP<const CORE::MAT::Material> material)
 {
@@ -1960,13 +1960,13 @@ void DRT::ELEMENTS::Wall1::Energy(Teuchos::ParameterList& params, const std::vec
       w1_call_defgrad_tot(Fenhv, Fm, Fuv, Ev);  // at t_{n}
     }
 
-    internal_energy += fac * EnergyInternal(material, params, Ev, ip);
+    internal_energy += fac * energy_internal(material, params, Ev, ip);
   }  // end loop Gauss points
 
 
   if (IsParamsInterface())  // new structural time integration
   {
-    StrParamsInterface().add_contribution_to_energy_type(internal_energy, STR::internal_energy);
+    str_params_interface().add_contribution_to_energy_type(internal_energy, STR::internal_energy);
   }
   else if (energies)  // old structural time integration
   {

@@ -196,10 +196,10 @@ void SCATRA::TimIntGenAlpha::set_old_part_of_righthandside()
 /*----------------------------------------------------------------------*
  | perform an explicit predictor step                          vg 11/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::ExplicitPredictor() const
+void SCATRA::TimIntGenAlpha::explicit_predictor() const
 {
   // call base class routine
-  ScaTraTimIntImpl::ExplicitPredictor();
+  ScaTraTimIntImpl::explicit_predictor();
 
   // constant predictor
   phinp_->Update(1.0, *phin_, 0.0);
@@ -237,7 +237,7 @@ void SCATRA::TimIntGenAlpha::add_neumann_to_residual()
 /*----------------------------------------------------------------------*
  | AVM3-based scale separation                                 vg 03/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::AVM3Separation()
+void SCATRA::TimIntGenAlpha::av_m3_separation()
 {
   // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
@@ -268,7 +268,7 @@ void SCATRA::TimIntGenAlpha::dynamic_computation_of_cs()
     // compute averaged values for LkMk and MkMk
     if (DynSmag_ != Teuchos::null)
     {
-      const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
+      const Teuchos::RCP<const Epetra_Vector> dirichtoggle = dirichlet_toggle();
       DynSmag_->apply_filter_for_dynamic_computation_of_prt(
           phiaf_, 0.0, dirichtoggle, *extraparams_, NdsVel());
     }
@@ -286,7 +286,7 @@ void SCATRA::TimIntGenAlpha::dynamic_computation_of_cv()
 {
   if (turbmodel_ == INPAR::FLUID::dynamic_vreman)
   {
-    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
+    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = dirichlet_toggle();
     Vrem_->apply_filter_for_dynamic_computation_of_dt(
         phiaf_, 0.0, dirichtoggle, *extraparams_, NdsVel());
   }
@@ -336,7 +336,7 @@ void SCATRA::TimIntGenAlpha::compute_time_derivative()
   // Such an inconsistency can cause different results for
   // our different Gen. Alpha formulations (linear_full <-> linear_incremental).
   // We don't want this to happen.
-  // ApplyDirichletBC(time_,Teuchos::null,phidtnp_);
+  // apply_dirichlet_bc(time_,Teuchos::null,phidtnp_);
 }
 
 
@@ -378,10 +378,10 @@ void SCATRA::TimIntGenAlpha::Update()
 /*----------------------------------------------------------------------*
  | write additional data required for restart                  vg 11/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::WriteRestart() const
+void SCATRA::TimIntGenAlpha::write_restart() const
 {
   // call base class routine
-  ScaTraTimIntImpl::WriteRestart();
+  ScaTraTimIntImpl::write_restart();
 
   // additional state vectors that are needed for generalized-alpha restart
   output_->WriteVector("phidtnp", phidtnp_);
@@ -424,7 +424,7 @@ void SCATRA::TimIntGenAlpha::read_restart(const int step, Teuchos::RCP<IO::Input
 
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
       turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
-    AVM3Preparation();
+    av_m3_preparation();
 }
 
 

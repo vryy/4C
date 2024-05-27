@@ -34,38 +34,38 @@ void SCATRA::ScaTraResultTest::test_node(INPUT::LineDefinition& res, int& nerr, 
   // care for the case of multiple discretizations of the same field type
   std::string dis;
   res.ExtractString("DIS", dis);
-  if (dis != scatratimint_->Discretization()->Name()) return;
+  if (dis != scatratimint_->discretization()->Name()) return;
 
   int node;
   res.ExtractInt("NODE", node);
   node -= 1;
 
-  int havenode(scatratimint_->Discretization()->HaveGlobalNode(node));
+  int havenode(scatratimint_->discretization()->HaveGlobalNode(node));
   int isnodeofanybody(0);
-  scatratimint_->Discretization()->Comm().SumAll(&havenode, &isnodeofanybody, 1);
+  scatratimint_->discretization()->Comm().SumAll(&havenode, &isnodeofanybody, 1);
 
   if (isnodeofanybody == 0)
   {
     FOUR_C_THROW("Node %d does not belong to discretization %s", node + 1,
-        scatratimint_->Discretization()->Name().c_str());
+        scatratimint_->discretization()->Name().c_str());
   }
   else
   {
-    if (scatratimint_->Discretization()->HaveGlobalNode(node))
+    if (scatratimint_->discretization()->HaveGlobalNode(node))
     {
-      DRT::Node* actnode = scatratimint_->Discretization()->gNode(node);
+      DRT::Node* actnode = scatratimint_->discretization()->gNode(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
-      if (actnode->Owner() != scatratimint_->Discretization()->Comm().MyPID()) return;
+      if (actnode->Owner() != scatratimint_->discretization()->Comm().MyPID()) return;
 
       // extract name of quantity to be tested
       std::string quantity;
       res.ExtractString("QUANTITY", quantity);
 
       // get result to be tested
-      const double result = ResultNode(quantity, actnode);
+      const double result = result_node(quantity, actnode);
 
-      nerr += CompareValues(result, "NODE", res);
+      nerr += compare_values(result, "NODE", res);
       test_count++;
     }
   }
@@ -77,7 +77,7 @@ void SCATRA::ScaTraResultTest::test_node(INPUT::LineDefinition& res, int& nerr, 
 /*----------------------------------------------------------------------*
  | get nodal result to be tested                             fang 03/15 |
  *----------------------------------------------------------------------*/
-double SCATRA::ScaTraResultTest::ResultNode(
+double SCATRA::ScaTraResultTest::result_node(
     const std::string quantity,  //! name of quantity to be tested
     DRT::Node* node              //! node carrying the result to be tested
 ) const
@@ -91,7 +91,7 @@ double SCATRA::ScaTraResultTest::ResultNode(
   // test result value of single scalar field
   if (quantity == "phi")
     result =
-        (*scatratimint_->Phinp())[phinpmap.LID(scatratimint_->Discretization()->Dof(0, node, 0))];
+        (*scatratimint_->Phinp())[phinpmap.LID(scatratimint_->discretization()->Dof(0, node, 0))];
 
   // test result value for a system of scalars
   else if (!quantity.compare(0, 3, "phi"))
@@ -103,12 +103,12 @@ double SCATRA::ScaTraResultTest::ResultNode(
 
     // safety checks
     if (locator == k_string.c_str()) FOUR_C_THROW("Couldn't read species ID!");
-    if (scatratimint_->Discretization()->NumDof(0, node) <= k)
+    if (scatratimint_->discretization()->NumDof(0, node) <= k)
       FOUR_C_THROW("Species ID is larger than number of DOFs of node!");
 
     // extract result
     result =
-        (*scatratimint_->Phinp())[phinpmap.LID(scatratimint_->Discretization()->Dof(0, node, k))];
+        (*scatratimint_->Phinp())[phinpmap.LID(scatratimint_->discretization()->Dof(0, node, k))];
   }
 
   // test domain or boundary flux
@@ -125,7 +125,7 @@ double SCATRA::ScaTraResultTest::ResultNode(
 
     // safety checks
     if (locator == suffix.c_str()) FOUR_C_THROW("Couldn't read species ID!");
-    if (scatratimint_->Discretization()->NumDof(0, node) <= k)
+    if (scatratimint_->discretization()->NumDof(0, node) <= k)
       FOUR_C_THROW("Species ID is larger than number of DOFs of node!");
 
     // read spatial dimension
@@ -146,31 +146,31 @@ double SCATRA::ScaTraResultTest::ResultNode(
     // extract result
     if (!quantity.compare(0, 12, "flux_domain_"))
       result = ((*scatratimint_->FluxDomain())[dim])[phinpmap.LID(
-          scatratimint_->Discretization()->Dof(0, node, k))];
+          scatratimint_->discretization()->Dof(0, node, k))];
     else
       result = ((*scatratimint_->FluxBoundary())[dim])[phinpmap.LID(
-          scatratimint_->Discretization()->Dof(0, node, k))];
+          scatratimint_->discretization()->Dof(0, node, k))];
   }
 
   // test result values for biofilm growth (scatra structure and scatra fluid)
   else if (quantity == "scstr_growth_displx")
     result = ((*scatratimint_->StrGrowth())[0])[phinpmap.LID(
-        scatratimint_->Discretization()->Dof(0, node, 0))];
+        scatratimint_->discretization()->Dof(0, node, 0))];
   else if (quantity == "scstr_growth_disply")
     result = ((*scatratimint_->StrGrowth())[1])[phinpmap.LID(
-        scatratimint_->Discretization()->Dof(0, node, 0))];
+        scatratimint_->discretization()->Dof(0, node, 0))];
   else if (quantity == "scstr_growth_displz")
     result = ((*scatratimint_->StrGrowth())[2])[phinpmap.LID(
-        scatratimint_->Discretization()->Dof(0, node, 0))];
+        scatratimint_->discretization()->Dof(0, node, 0))];
   else if (quantity == "scfld_growth_displx")
     result = ((*scatratimint_->FldGrowth())[0])[phinpmap.LID(
-        scatratimint_->Discretization()->Dof(0, node, 0))];
+        scatratimint_->discretization()->Dof(0, node, 0))];
   else if (quantity == "scfld_growth_disply")
     result = ((*scatratimint_->FldGrowth())[1])[phinpmap.LID(
-        scatratimint_->Discretization()->Dof(0, node, 0))];
+        scatratimint_->discretization()->Dof(0, node, 0))];
   else if (quantity == "scfld_growth_displz")
     result = ((*scatratimint_->FldGrowth())[2])[phinpmap.LID(
-        scatratimint_->Discretization()->Dof(0, node, 0))];
+        scatratimint_->discretization()->Dof(0, node, 0))];
 
   // test scatra-scatra interface layer thickness
   else if (quantity == "s2ilayerthickness")
@@ -211,8 +211,8 @@ double SCATRA::ScaTraResultTest::ResultNode(
           "Couldn't extract state vector of discrete scatra-scatra interface layer thicknesses!");
 
     // extract result
-    result = (*s2igrowthvec)[scatratimint_->Discretization()->dof_row_map(2)->LID(
-        scatratimint_->Discretization()->Dof(2, node, 0))];
+    result = (*s2igrowthvec)[scatratimint_->discretization()->dof_row_map(2)->LID(
+        scatratimint_->discretization()->Dof(2, node, 0))];
   }
 
   // catch unknown quantity strings
@@ -231,7 +231,7 @@ void SCATRA::ScaTraResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr
   // make sure that quantity is tested only on specified discretization
   std::string disname;
   res.ExtractString("DIS", disname);
-  if (disname == scatratimint_->Discretization()->Name())
+  if (disname == scatratimint_->discretization()->Name())
   {
     // extract name of quantity to be tested
     std::string quantity;
@@ -241,9 +241,9 @@ void SCATRA::ScaTraResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr
     const double result = result_special(quantity);
 
     // compare values on first processor
-    if (scatratimint_->Discretization()->Comm().MyPID() == 0)
+    if (scatratimint_->discretization()->Comm().MyPID() == 0)
     {
-      const int err = CompareValues(result, "SPECIAL", res);
+      const int err = compare_values(result, "SPECIAL", res);
       nerr += err;
       test_count++;
     }
@@ -404,7 +404,7 @@ double SCATRA::ScaTraResultTest::result_special(
     const int proc_num = std::stoi(proc_string);
 
     // extract processor ID
-    if (proc_num >= scatratimint_->Discretization()->Comm().NumProc())
+    if (proc_num >= scatratimint_->discretization()->Comm().NumProc())
       FOUR_C_THROW("Invalid processor ID!");
 
     // extract scatra-scatra interface meshtying strategy class
@@ -416,7 +416,7 @@ double SCATRA::ScaTraResultTest::result_special(
     // extract number of degrees of freedom owned by specified processor at specified scatra-scatra
     // coupling interface
     result = strategy->mortar_discretization(interface_num).dof_row_map()->NumMyElements();
-    scatratimint_->Discretization()->Comm().Broadcast(&result, 1, proc_num);
+    scatratimint_->discretization()->Comm().Broadcast(&result, 1, proc_num);
   }
 
   // test relaxation parameters for partitioned simulations

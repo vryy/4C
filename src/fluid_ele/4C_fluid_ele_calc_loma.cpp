@@ -94,7 +94,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(DRT::ELEMENTS::Fluid* 
   CORE::LINALG::Matrix<nsd_, nen_> ebofoaf(true);
   CORE::LINALG::Matrix<nsd_, nen_> eprescpgaf(true);
   CORE::LINALG::Matrix<nen_, 1> escabofoaf(true);
-  my::BodyForce(ele, ebofoaf, eprescpgaf, escabofoaf);
+  my::body_force(ele, ebofoaf, eprescpgaf, escabofoaf);
 
   // ---------------------------------------------------------------------
   // get all general state vectors: velocity/pressure, scalar,
@@ -253,7 +253,8 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(Teuchos::ParameterList
   // remember the layer of averaging for the dynamic Smagorinsky model
   int nlayer = 0;
 
-  my::GetTurbulenceParams(turbmodelparams, Cs_delta_sq, Ci_delta_sq, nlayer, CsDeltaSq, CiDeltaSq);
+  my::get_turbulence_params(
+      turbmodelparams, Cs_delta_sq, Ci_delta_sq, nlayer, CsDeltaSq, CiDeltaSq);
 
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix
@@ -306,7 +307,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
   // get material parameters at element center
   if (not my::fldpara_->MatGp() or not my::fldpara_->TauGp())
   {
-    my::GetMaterialParams(material, evelaf, epreaf, epream, escaaf, escaam, escabofoaf,
+    my::get_material_params(material, evelaf, epreaf, epream, escaaf, escaam, escabofoaf,
         thermpressaf, thermpressam, thermpressdtaf, thermpressdtam, vol);
 
     // calculate all-scale subgrid viscosity at element center
@@ -315,7 +316,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
         my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or
         my::fldpara_->TurbModAction() == INPAR::FLUID::vreman)
     {
-      my::CalcSubgrVisc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
+      my::calc_subgr_visc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
       // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
       my::visceff_ += my::sgvisc_;
     }
@@ -331,7 +332,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
     if (isale) my::convvelint_.Multiply(-1.0, egridv, my::funct_, 1.0);
 
     // calculate stabilization parameters at element center
-    my::CalcStabParameter(vol);
+    my::calc_stab_parameter(vol);
   }
 
   //------------------------------------------------------------------------
@@ -360,7 +361,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
     // get material parameters at integration point
     if (my::fldpara_->MatGp())
     {
-      my::GetMaterialParams(material, evelaf, epreaf, epream, escaaf, escaam, escabofoaf,
+      my::get_material_params(material, evelaf, epreaf, epream, escaaf, escaam, escabofoaf,
           thermpressaf, thermpressam, thermpressdtaf, thermpressdtam, vol);
       // calculate all-scale or fine-scale subgrid viscosity at integration point
       my::visceff_ = my::visc_;
@@ -368,21 +369,21 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
           my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or
           my::fldpara_->TurbModAction() == INPAR::FLUID::vreman)
       {
-        my::CalcSubgrVisc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
+        my::calc_subgr_visc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
         // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
         my::visceff_ += my::sgvisc_;
       }
     }
 
     // calculate stabilization parameter at integration point
-    if (my::fldpara_->TauGp()) my::CalcStabParameter(vol);
+    if (my::fldpara_->TauGp()) my::calc_stab_parameter(vol);
 
     // evaluation of convective operator
     my::conv_c_.MultiplyTN(my::derxy_, my::convvelint_);
 
     // compute additional Galerkin terms on right-hand side of continuity equation
     // -> different for generalized-alpha and other time-integration schemes
-    my::ComputeGalRHSContEq(eveln, escaaf, escaam, escadtam, isale);
+    my::compute_gal_rhs_cont_eq(eveln, escaaf, escaam, escadtam, isale);
 
     // compute subgrid-scale part of scalar
     // -> different for generalized-alpha and other time-integration schemes
@@ -464,7 +465,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
 
       // compute viscous term from previous iteration
       if (my::is_higher_order_ele_)
-        my::CalcDivEps(evelaf, eveln);
+        my::calc_div_eps(evelaf, eveln);
       else
         my::visc_old_.Clear();
 

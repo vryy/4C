@@ -63,9 +63,9 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
   thermo_->Setup();
 
   // check maps from scatra and thermo discretizations
-  if (scatra_->ScaTraField()->Discretization()->dof_row_map()->NumGlobalElements() == 0)
+  if (scatra_->ScaTraField()->discretization()->dof_row_map()->NumGlobalElements() == 0)
     FOUR_C_THROW("Scatra discretization does not have any degrees of freedom!");
-  if (thermo_->ScaTraField()->Discretization()->dof_row_map()->NumGlobalElements() == 0)
+  if (thermo_->ScaTraField()->discretization()->dof_row_map()->NumGlobalElements() == 0)
     FOUR_C_THROW("Thermo discretization does not have any degrees of freedom!");
 
   // additional safety check
@@ -114,7 +114,7 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
 
         // extract scatra-scatra interface mesh tying conditions
         std::vector<CORE::Conditions::Condition*> conditions;
-        scatra_->ScaTraField()->Discretization()->GetCondition("S2IMeshtying", conditions);
+        scatra_->ScaTraField()->discretization()->GetCondition("S2IMeshtying", conditions);
 
         // loop over all conditions
         for (auto& condition : conditions)
@@ -199,7 +199,7 @@ void STI::Algorithm::modify_field_parameters_for_thermo_field()
 
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
-void STI::Algorithm::Output()
+void STI::Algorithm::output()
 {
   // output scatra field
   scatra_->ScaTraField()->check_and_write_output_and_restart();
@@ -216,8 +216,8 @@ void STI::Algorithm::prepare_time_step()
   increment_time_and_step();
 
   // provide scatra and thermo fields with velocities
-  scatra_->ScaTraField()->SetVelocityField();
-  thermo_->ScaTraField()->SetVelocityField();
+  scatra_->ScaTraField()->set_velocity_field();
+  thermo_->ScaTraField()->set_velocity_field();
 
   // pass thermo degrees of freedom to scatra discretization for preparation of first time step
   // (calculation of initial time derivatives etc.)
@@ -283,10 +283,10 @@ void STI::Algorithm::TimeLoop()
           static_cast<int>(iter_), dtnonlinsolve, Step(), Comm());
 
     // update scatra and thermo fields
-    Update();
+    update();
 
     // output solution to screen and files
-    Output();
+    output();
   }  // while(NotFinished())
 }  // STI::Algorithm::TimeLoop()
 
@@ -295,7 +295,7 @@ void STI::Algorithm::TimeLoop()
 void STI::Algorithm::transfer_scatra_to_thermo(const Teuchos::RCP<const Epetra_Vector> scatra) const
 {
   // pass scatra degrees of freedom to thermo discretization
-  thermo_->ScaTraField()->Discretization()->set_state(2, "scatra", scatra);
+  thermo_->ScaTraField()->discretization()->set_state(2, "scatra", scatra);
 
   // transfer state vector for evaluation of scatra-scatra interface mesh tying
   if (thermo_->ScaTraField()->S2IMeshtying())
@@ -306,12 +306,12 @@ void STI::Algorithm::transfer_scatra_to_thermo(const Teuchos::RCP<const Epetra_V
       {
         // pass master-side scatra degrees of freedom to thermo discretization
         const Teuchos::RCP<Epetra_Vector> imasterphinp = CORE::LINALG::CreateVector(
-            *scatra_->ScaTraField()->Discretization()->dof_row_map(), true);
+            *scatra_->ScaTraField()->discretization()->dof_row_map(), true);
         strategyscatra_->InterfaceMaps()->InsertVector(
             strategyscatra_->CouplingAdapter()->MasterToSlave(
                 strategyscatra_->InterfaceMaps()->ExtractVector(*scatra, 2)),
             1, imasterphinp);
-        thermo_->ScaTraField()->Discretization()->set_state(2, "imasterscatra", imasterphinp);
+        thermo_->ScaTraField()->discretization()->set_state(2, "imasterscatra", imasterphinp);
 
         break;
       }
@@ -320,7 +320,7 @@ void STI::Algorithm::transfer_scatra_to_thermo(const Teuchos::RCP<const Epetra_V
       {
         // extract scatra-scatra interface mesh tying conditions
         std::vector<CORE::Conditions::Condition*> conditions;
-        thermo_->ScaTraField()->Discretization()->GetCondition("S2IMeshtying", conditions);
+        thermo_->ScaTraField()->discretization()->GetCondition("S2IMeshtying", conditions);
 
         // loop over all conditions
         for (auto& condition : conditions)
@@ -359,7 +359,7 @@ void STI::Algorithm::transfer_scatra_to_thermo(const Teuchos::RCP<const Epetra_V
 void STI::Algorithm::transfer_thermo_to_scatra(const Teuchos::RCP<const Epetra_Vector> thermo) const
 {
   // pass thermo degrees of freedom to scatra discretization
-  scatra_->ScaTraField()->Discretization()->set_state(2, "thermo", thermo);
+  scatra_->ScaTraField()->discretization()->set_state(2, "thermo", thermo);
 
   // transfer state vector for evaluation of scatra-scatra interface mesh tying
   if (scatra_->ScaTraField()->S2IMeshtying() and
@@ -367,7 +367,7 @@ void STI::Algorithm::transfer_thermo_to_scatra(const Teuchos::RCP<const Epetra_V
   {
     // extract scatra-scatra interface mesh tying conditions
     std::vector<CORE::Conditions::Condition*> conditions;
-    scatra_->ScaTraField()->Discretization()->GetCondition("S2IMeshtying", conditions);
+    scatra_->ScaTraField()->discretization()->GetCondition("S2IMeshtying", conditions);
 
     // loop over all conditions
     for (auto& condition : conditions)
@@ -394,7 +394,7 @@ void STI::Algorithm::transfer_thermo_to_scatra(const Teuchos::RCP<const Epetra_V
 
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
-void STI::Algorithm::Update()
+void STI::Algorithm::update()
 {
   // update scatra field
   scatra_->ScaTraField()->Update();

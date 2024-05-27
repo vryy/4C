@@ -84,10 +84,10 @@ namespace ADAPTER
     virtual void prepare_time_step() = 0;
 
     //! update time step and print to screen
-    virtual void UpdateAndOutput() = 0;
+    virtual void update_and_output() = 0;
 
     /// set structure solution on scatra field
-    virtual void SetStructSolution(
+    virtual void set_struct_solution(
         Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<const Epetra_Vector> vel) = 0;
 
     /// set scatra solution on fluid field
@@ -145,7 +145,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const = 0;
 
     //! get structure field
-    virtual const Teuchos::RCP<ADAPTER::Structure>& StructureField() = 0;
+    virtual const Teuchos::RCP<ADAPTER::Structure>& structure_field() = 0;
 
     //! get fluid field
     virtual const Teuchos::RCP<ADAPTER::PoroFluidMultiphaseWrapper>& fluid_field() = 0;

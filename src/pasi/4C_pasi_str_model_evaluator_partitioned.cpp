@@ -33,7 +33,7 @@ STR::MODELEVALUATOR::PartitionedPASI::PartitionedPASI()
 void STR::MODELEVALUATOR::PartitionedPASI::Setup()
 {
   // pasi interface force at t_{n+1}
-  interface_force_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*GState().dof_row_map(), true));
+  interface_force_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*g_state().dof_row_map(), true));
 
   // set flag
   issetup_ = true;

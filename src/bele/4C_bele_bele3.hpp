@@ -125,7 +125,7 @@ namespace DRT
       //! @name Access methods
 
       int NumDofPerNode(const DRT::Node&) const override { return numdofpernode_; }
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
       void Print(std::ostream& os) const override;
       DRT::ElementType& ElementType() const override { return Bele3Type::Instance(); }
 
@@ -339,7 +339,7 @@ namespace DRT
       */
       int NumDofPerNode(const DRT::Node&) const override { return numdofpernode_; }
 
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       void Print(std::ostream& os) const override;
 

@@ -47,7 +47,7 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// nonlinear solve
-    void NonlinearSolve(
+    void nonlinear_solve(
         Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel) override;
 
     /// relaxation solve

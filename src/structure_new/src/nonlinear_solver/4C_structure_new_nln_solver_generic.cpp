@@ -57,7 +57,7 @@ void STR::NLN::SOLVER::Generic::Init(const Teuchos::RCP<STR::TIMINT::BaseDataGlo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Abstract::Group>& STR::NLN::SOLVER::Generic::GroupPtr()
+Teuchos::RCP<::NOX::Abstract::Group>& STR::NLN::SOLVER::Generic::group_ptr()
 {
   check_init();
 
@@ -66,7 +66,7 @@ Teuchos::RCP<::NOX::Abstract::Group>& STR::NLN::SOLVER::Generic::GroupPtr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::Abstract::Group& STR::NLN::SOLVER::Generic::Group()
+::NOX::Abstract::Group& STR::NLN::SOLVER::Generic::group()
 {
   check_init();
   FOUR_C_ASSERT(!group_ptr_.is_null(), "The group pointer should be initialized beforehand!");
@@ -75,11 +75,11 @@ Teuchos::RCP<::NOX::Abstract::Group>& STR::NLN::SOLVER::Generic::GroupPtr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::Abstract::Group& STR::NLN::SOLVER::Generic::SolutionGroup() { return Group(); }
+::NOX::Abstract::Group& STR::NLN::SOLVER::Generic::SolutionGroup() { return group(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const ::NOX::Abstract::Group& STR::NLN::SOLVER::Generic::GetSolutionGroup() const
+const ::NOX::Abstract::Group& STR::NLN::SOLVER::Generic::get_solution_group() const
 {
   check_init_setup();
   FOUR_C_ASSERT(!group_ptr_.is_null(), "The group pointer should be initialized beforehand!");

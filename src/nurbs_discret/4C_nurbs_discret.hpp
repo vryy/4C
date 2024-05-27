@@ -181,7 +181,7 @@ namespace DRT
        *      start to build and solve the least squares problem
        *
        *  \author hiermeier, vuong \date 01/17 */
-      void Evaluate(const DRT::Discretization& discret, double time,
+      void evaluate(const DRT::Discretization& discret, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, DbcInfo& info,
           Teuchos::RCP<std::set<int>>* dbcgids) const override;
 

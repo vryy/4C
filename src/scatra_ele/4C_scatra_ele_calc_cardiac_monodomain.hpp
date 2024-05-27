@@ -48,7 +48,7 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate the element
-      int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
+      int evaluate_action(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -66,7 +66,7 @@ namespace DRT
           DRT::Discretization& discretization, DRT::Element::LocationArray& la) override;
 
       //! evaluate material
-      void Materials(
+      void materials(
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
@@ -77,7 +77,7 @@ namespace DRT
           ) override;
 
       //! material ScaTra
-      void MatMyocard(
+      void mat_myocard(
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
@@ -88,7 +88,7 @@ namespace DRT
       );
 
       //! calculate matrix and rhs for ep
-      void Sysmat(DRT::Element* ele,                  ///< the element whose matrix is calculated
+      void sysmat(DRT::Element* ele,                  ///< the element whose matrix is calculated
           CORE::LINALG::SerialDenseMatrix& emat,      ///< element matrix to calculate
           CORE::LINALG::SerialDenseVector& erhs,      ///< element rhs to calculate
           CORE::LINALG::SerialDenseVector& subgrdiff  ///< subgrid-diff.-scaling vector

@@ -59,7 +59,7 @@ namespace ADAPTER
     Teuchos::RCP<STR::MODELEVALUATOR::PartitionedSSI> ssi_model_evaluator_;
 
     /// access the fsi model evaluator
-    Teuchos::RCP<STR::MODELEVALUATOR::PartitionedSSI> SSIModelEvaluator()
+    Teuchos::RCP<STR::MODELEVALUATOR::PartitionedSSI> ssi_model_evaluator()
     {
       return ssi_model_evaluator_;
     };

@@ -76,7 +76,7 @@ int DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Evaluate(Artery* ele,
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
   // ---------------------------------------------------------------------
-  Sysmat(ele, discretization, la, elemat1, elevec1, mat);
+  sysmat(ele, discretization, la, elemat1, elevec1, mat);
 
   return 0;
 }
@@ -96,7 +96,7 @@ int DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::EvaluateService(Artery* ele,
   switch (action)
   {
     case ARTERY::calc_flow_pressurebased:
-      EvaluateFlow(ele, discretization, la, elevec1_epetra, mat);
+      evaluate_flow(ele, discretization, la, elevec1_epetra, mat);
       break;
     default:
       FOUR_C_THROW("Unkown type of action %d for Artery (PressureBased formulation)", action);
@@ -116,7 +116,7 @@ int DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::ScatraEvaluate(Artery* ele,
 {
   FOUR_C_THROW(
       "not implemented by pressure-based formulation, should be done by cloned "
-      "ScaTra-Discretization");
+      "ScaTra-discretization");
 
   return 0;
 }
@@ -124,7 +124,7 @@ int DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::ScatraEvaluate(Artery* ele,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Sysmat(Artery* ele,
+void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::sysmat(Artery* ele,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::Matrix<my::iel_, my::iel_>& sysmat, CORE::LINALG::Matrix<my::iel_, 1>& rhs,
     Teuchos::RCP<const CORE::MAT::Material> material)
@@ -145,7 +145,7 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Sysmat(Artery* ele,
   CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<my::iel_, 1>>(*pressnp, mypress, la[0].lm_);
 
   // calculate the element length
-  const double L = CalculateEleLength(ele, discretization, la);
+  const double L = calculate_ele_length(ele, discretization, la);
 
   // check here, if we really have an artery !!
   if (material->MaterialType() != CORE::Materials::m_cnst_art)
@@ -209,7 +209,7 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Sysmat(Artery* ele,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::EvaluateFlow(Artery* ele,
+void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::evaluate_flow(Artery* ele,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseVector& flowVec, Teuchos::RCP<const CORE::MAT::Material> material)
 {
@@ -222,7 +222,7 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::EvaluateFlow(Artery* ele,
   CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<my::iel_, 1>>(*pressnp, mypress, la[0].lm_);
 
   // calculate the element length
-  const double L = CalculateEleLength(ele, discretization, la);
+  const double L = calculate_ele_length(ele, discretization, la);
 
   // check here, if we really have an artery !!
   if (material->MaterialType() != CORE::Materials::m_cnst_art)
@@ -247,7 +247,7 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::EvaluateFlow(Artery* ele,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-double DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::CalculateEleLength(
+double DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::calculate_ele_length(
     Artery* ele, DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
   double length;
@@ -263,7 +263,7 @@ double DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::CalculateEleLength(
     length = std::accumulate(seglengths.begin(), seglengths.end(), 0.0);
   }
   else
-    length = my::CalculateEleLength(ele);
+    length = my::calculate_ele_length(ele);
 
   return length;
 }

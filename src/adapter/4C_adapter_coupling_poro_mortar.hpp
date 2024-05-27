@@ -84,7 +84,7 @@ namespace ADAPTER
     \brief Read Mortar Condition
 
     */
-    void ReadMortarCondition(Teuchos::RCP<DRT::Discretization> masterdis,
+    void read_mortar_condition(Teuchos::RCP<DRT::Discretization> masterdis,
         Teuchos::RCP<DRT::Discretization> slavedis, std::vector<int> coupleddof,
         const std::string& couplingcond, Teuchos::ParameterList& input,
         std::map<int, DRT::Node*>& mastergnodes, std::map<int, DRT::Node*>& slavegnodes,
@@ -95,7 +95,7 @@ namespace ADAPTER
     \brief Add Mortar Elments
 
     */
-    void AddMortarElements(Teuchos::RCP<DRT::Discretization> masterdis,
+    void add_mortar_elements(Teuchos::RCP<DRT::Discretization> masterdis,
         Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::ParameterList& input,
         std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
         std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements,
@@ -106,14 +106,14 @@ namespace ADAPTER
            store maps as internal variable and do parallel redist.
 
     */
-    void CompleteInterface(Teuchos::RCP<DRT::Discretization> masterdis,
+    void complete_interface(Teuchos::RCP<DRT::Discretization> masterdis,
         Teuchos::RCP<CONTACT::Interface>& interface) override;
 
     /*!
     \brief create strategy object if required
 
     */
-    void CreateStrategy(Teuchos::RCP<DRT::Discretization> masterdis,
+    void create_strategy(Teuchos::RCP<DRT::Discretization> masterdis,
         Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::ParameterList& input,
         int numcoupleddof) override;
 

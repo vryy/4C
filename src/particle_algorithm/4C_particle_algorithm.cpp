@@ -195,7 +195,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Timeloop()
     prepare_time_step();
 
     // pre evaluate time step
-    PreEvaluateTimeStep();
+    pre_evaluate_time_step();
 
     // integrate time step
     IntegrateTimeStep();
@@ -207,11 +207,11 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Timeloop()
     WriteOutput();
 
     // write restart information
-    WriteRestart();
+    write_restart();
   }
 }
 
-void PARTICLEALGORITHM::ParticleAlgorithm::prepare_time_step(bool print_header)
+void PARTICLEALGORITHM::ParticleAlgorithm::prepare_time_step(bool do_print_header)
 {
   // increment time and step
   increment_time_and_step();
@@ -223,7 +223,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::prepare_time_step(bool print_header)
   set_current_step_size();
 
   // print header
-  if (print_header) PrintHeader();
+  if (do_print_header) print_header();
 
   // update result and restart control flags
   writeresultsthisstep_ = (writeresultsevery_ and (Step() % writeresultsevery_ == 0));
@@ -233,10 +233,10 @@ void PARTICLEALGORITHM::ParticleAlgorithm::prepare_time_step(bool print_header)
   set_current_write_result_flag();
 }
 
-void PARTICLEALGORITHM::ParticleAlgorithm::PreEvaluateTimeStep()
+void PARTICLEALGORITHM::ParticleAlgorithm::pre_evaluate_time_step()
 {
   // pre evaluate time step
-  if (particleinteraction_) particleinteraction_->PreEvaluateTimeStep();
+  if (particleinteraction_) particleinteraction_->pre_evaluate_time_step();
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::IntegrateTimeStep()
@@ -300,24 +300,24 @@ void PARTICLEALGORITHM::ParticleAlgorithm::WriteOutput() const
   }
 }
 
-void PARTICLEALGORITHM::ParticleAlgorithm::WriteRestart() const
+void PARTICLEALGORITHM::ParticleAlgorithm::write_restart() const
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::ParticleAlgorithm::WriteRestart");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::ParticleAlgorithm::write_restart");
 
   // write restart step
   if (writerestartthisstep_)
   {
     // write restart of particle engine
-    particleengine_->WriteRestart(Step(), Time());
+    particleengine_->write_restart(Step(), Time());
 
     // write restart of rigid body handler
-    if (particlerigidbody_) particlerigidbody_->WriteRestart();
+    if (particlerigidbody_) particlerigidbody_->write_restart();
 
     // write restart of particle interaction handler
-    if (particleinteraction_) particleinteraction_->WriteRestart();
+    if (particleinteraction_) particleinteraction_->write_restart();
 
     // write restart of wall handler
-    if (particlewall_) particlewall_->WriteRestart(Step(), Time());
+    if (particlewall_) particlewall_->write_restart(Step(), Time());
 
     // short screen output
     if (myrank_ == 0)
@@ -654,7 +654,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::setup_initial_states()
   // evaluate consistent initial states
   {
     // pre evaluate time step
-    PreEvaluateTimeStep();
+    pre_evaluate_time_step();
 
     // update connectivity
     update_connectivity();

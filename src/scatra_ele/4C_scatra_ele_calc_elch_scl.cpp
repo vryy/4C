@@ -80,7 +80,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::ScaTraEleCalcElchScl(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-double DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcFreeCharge(
+double DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::calc_free_charge(
     const double concentration)
 {
   return diff_manager()->GetValence(0) * myelch::elchparams_->Faraday() *
@@ -98,7 +98,7 @@ double DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::calc_free_charge_d
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatPotCoulomb(
+void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::calc_mat_pot_coulomb(
     CORE::LINALG::SerialDenseMatrix& emat, const double fac, const double invf,
     const double scalefac, const CORE::LINALG::Matrix<my::nsd_, 1>& gradpot, const double epsilon)
 {
@@ -121,7 +121,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatPotCoulomb(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcRhsPotCoulomb(
+void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::calc_rhs_pot_coulomb(
     CORE::LINALG::SerialDenseVector& erhs, const double fac, const double invf,
     const double cond_invperm, const CORE::LINALG::Matrix<my::nsd_, 1>& gradpot,
     const double epsilon)
@@ -139,7 +139,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcRhsPotCoulomb(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatPotSrc(
+void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::calc_mat_pot_src(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac, const double invf,
     const double cond_invperm, const double z_k_F)
 {
@@ -156,7 +156,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatPotSrc(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcRhsPotSrc(
+void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::calc_rhs_pot_src(
     CORE::LINALG::SerialDenseVector& erhs, const int k, const double fac, const double invf,
     const double cond_invperm, const double q_F)
 {
@@ -170,7 +170,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcRhsPotSrc(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcRhsDiffCur(
+void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::calc_rhs_diff_cur(
     CORE::LINALG::SerialDenseVector& erhs, const double rhsfac, const std::vector<double>& invfval,
     const std::vector<CORE::LINALG::Matrix<my::nsd_, 1>>& gradphi)
 {
@@ -194,7 +194,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcRhsDiffCur(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatDiffCur(
+void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::calc_mat_diff_cur(
     CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac,
     const std::vector<double>& invfval,
     const std::vector<CORE::LINALG::Matrix<my::nsd_, 1>>& gradphi)
@@ -228,7 +228,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatDiffCur(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatAndRhs(
+void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::calc_mat_and_rhs(
     CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs, const int k,
     const double fac, const double timefacfac, const double rhsfac, const double taufac,
     const double timetaufac, const double rhstaufac, CORE::LINALG::Matrix<my::nen_, 1>& tauderpot,
@@ -238,7 +238,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatAndRhs(
   // 1) element matrix: instationary terms
   //----------------------------------------------------------------
   if (not my::scatraparatimint_->IsStationary())
-    my::CalcMatMass(emat, k, fac, diff_manager()->GetPhasePoro(0));
+    my::calc_mat_mass(emat, k, fac, diff_manager()->GetPhasePoro(0));
   //----------------------------------------------------------------
   // 2) element matrix: stationary terms of ion-transport equation
   //----------------------------------------------------------------
@@ -248,17 +248,17 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatAndRhs(
   if (not diffcondparams_->CurSolVar())
   {
     // i)  constant diffusion coefficient
-    my::CalcMatDiff(emat, k, timefacfac * diff_manager()->GetPhasePoroTort(0));
+    my::calc_mat_diff(emat, k, timefacfac * diff_manager()->GetPhasePoroTort(0));
 
     // ii) concentration depending diffusion coefficient
-    mydiffcond::CalcMatDiffCoeffLin(
+    mydiffcond::calc_mat_diff_coeff_lin(
         emat, k, timefacfac, var_manager()->GradPhi(k), diff_manager()->GetPhasePoroTort(0));
 
 
     // 2d) electrical conduction term (transport equation)
     //     i)  conduction term + ohmic overpotential
     //         (w_k, - t_k kappa nabla phi /(z_k F)) , transference number: const., unity
-    mydiffcond::CalcMatCondOhm(
+    mydiffcond::calc_mat_cond_ohm(
         emat, k, timefacfac, diff_manager()->InvFVal(k), var_manager()->GradPot());
   }
   // equation for current is solved independently: our case!!!
@@ -266,7 +266,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatAndRhs(
   // dc/dt + nabla N = 0
   {
     // current term (with current as a solution variable)
-    mydiffcond::CalcMatCond(
+    mydiffcond::calc_mat_cond(
         emat, k, timefacfac, diff_manager()->InvFVal(k), var_manager()->CurInt());
   }
 
@@ -280,13 +280,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatAndRhs(
   //-----------------------------------------------------------------------
   if (my::scatraparatimint_->IsIncremental() and not my::scatraparatimint_->IsStationary())
   {
-    my::CalcRHSLinMass(
+    my::calc_rhs_lin_mass(
         erhs, k, rhsfac, fac, diff_manager()->GetPhasePoro(0), diff_manager()->GetPhasePoro(0));
   }
 
   // adaption of rhs with respect to time integration: no sources
   // Evaluation at Gauss Points before spatial integration
-  my::ComputeRhsInt(rhsint, mydiffcond ::diff_manager()->GetPhasePoro(0),
+  my::compute_rhs_int(rhsint, mydiffcond ::diff_manager()->GetPhasePoro(0),
       diff_manager()->GetPhasePoro(0), var_manager()->Hist(k));
 
   // add RHS and history contribution
@@ -300,7 +300,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatAndRhs(
 
     // electrical conduction term (transport equation)
     // equation for current is inserted in the mass transport equation
-    mydiffcond::CalcRhsCondOhm(
+    mydiffcond::calc_rhs_cond_ohm(
         erhs, k, rhsfac, diff_manager()->InvFVal(k), var_manager()->GradPot());
   }
   // equation for current is solved independently: free current density!
@@ -308,7 +308,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatAndRhs(
   else if (diffcondparams_->CurSolVar())
   {
     // curint: current density at GP, InvFVal(k): 1/(z_k F)
-    mydiffcond::CalcRhsCond(erhs, k, rhsfac, diff_manager()->InvFVal(k), var_manager()->CurInt());
+    mydiffcond::calc_rhs_cond(erhs, k, rhsfac, diff_manager()->InvFVal(k), var_manager()->CurInt());
   }
 }
 
@@ -327,12 +327,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::calc_mat_and_rhs_out
     // 3c) Laplace equation: nabla^2 Phi + sum (F z_k c_k) = 0
 
     // i) eps nabla^2 Phi = 0: Matrix
-    CalcMatPotCoulomb(emat, timefacfac, var_manager()->InvF(),
+    calc_mat_pot_coulomb(emat, timefacfac, var_manager()->InvF(),
         diff_manager()->GetCond() / diff_manager()->GetPermittivity(), var_manager()->GradPot(),
         diff_manager()->GetPermittivity());
 
     //  RHS
-    CalcRhsPotCoulomb(erhs, rhsfac, var_manager()->InvF(),
+    calc_rhs_pot_coulomb(erhs, rhsfac, var_manager()->InvF(),
         diff_manager()->GetCond() / diff_manager()->GetPermittivity(), var_manager()->GradPot(),
         diff_manager()->GetPermittivity());
 
@@ -341,13 +341,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::calc_mat_and_rhs_out
     // set this to zero (only laplace equation zero charge) ==> linear function
     for (int k = 0; k < my::numscal_; ++k)
     {
-      CalcMatPotSrc(emat, k, timefacfac, var_manager()->InvF(),
+      calc_mat_pot_src(emat, k, timefacfac, var_manager()->InvF(),
           diff_manager()->GetCond() / diff_manager()->GetPermittivity(),
           calc_free_charge_der_conc());
 
-      CalcRhsPotSrc(erhs, k, rhsfac, var_manager()->InvF(),
+      calc_rhs_pot_src(erhs, k, rhsfac, var_manager()->InvF(),
           diff_manager()->GetCond() / diff_manager()->GetPermittivity(),
-          CalcFreeCharge(var_manager()->Phinp(k)));
+          calc_free_charge(var_manager()->Phinp(k)));
     }
   }
 
@@ -362,34 +362,35 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::calc_mat_and_rhs_out
 
     // matrix terms
     // (xsi_i,Di)
-    mydiffcond::CalcMatCurEquCur(emat, timefacfac, var_manager()->InvF());
+    mydiffcond::calc_mat_cur_equ_cur(emat, timefacfac, var_manager()->InvF());
 
     // (xsi, -D(kappa phi))
-    mydiffcond::CalcMatCurEquOhm(emat, timefacfac, var_manager()->InvF(), var_manager()->GradPot());
+    mydiffcond::calc_mat_cur_equ_ohm(
+        emat, timefacfac, var_manager()->InvF(), var_manager()->GradPot());
 
     // (xsi, -D(z_k F D (c) nabla c)
-    CalcMatDiffCur(emat, timefacfac, diff_manager()->InvFVal(), var_manager()->GradPhi());
+    calc_mat_diff_cur(emat, timefacfac, diff_manager()->InvFVal(), var_manager()->GradPhi());
 
     // (xsi_i,Di): stays the same
-    mydiffcond::CalcRhsCurEquCur(erhs, rhsfac, var_manager()->InvF(), var_manager()->CurInt());
+    mydiffcond::calc_rhs_cur_equ_cur(erhs, rhsfac, var_manager()->InvF(), var_manager()->CurInt());
 
     // (xsi, -D(kappa phi)): stays the same, but local version of conductivity
-    mydiffcond::CalcRhsCurEquOhm(erhs, rhsfac, var_manager()->InvF(), var_manager()->GradPot());
+    mydiffcond::calc_rhs_cur_equ_ohm(erhs, rhsfac, var_manager()->InvF(), var_manager()->GradPot());
 
     // (xsi, - D(z_k F D(c) nabla c)
-    CalcRhsDiffCur(erhs, rhsfac, diff_manager()->InvFVal(), var_manager()->GradPhi());
+    calc_rhs_diff_cur(erhs, rhsfac, diff_manager()->InvFVal(), var_manager()->GradPhi());
 
     //------------------------------------------------------------------------------------------
     // 3)   governing equation for the electric potential field and current (incl. rhs-terms)
     //------------------------------------------------------------------------------------------
 
     // i) eps nabla^2 Phi = 0: Matrix
-    CalcMatPotCoulomb(emat, timefacfac, var_manager()->InvF(),
+    calc_mat_pot_coulomb(emat, timefacfac, var_manager()->InvF(),
         diff_manager()->GetCond() / diff_manager()->GetPermittivity(), var_manager()->GradPot(),
         diff_manager()->GetPermittivity());
 
     //  RHS
-    CalcRhsPotCoulomb(erhs, rhsfac, var_manager()->InvF(),
+    calc_rhs_pot_coulomb(erhs, rhsfac, var_manager()->InvF(),
         diff_manager()->GetCond() / diff_manager()->GetPermittivity(), var_manager()->GradPot(),
         diff_manager()->GetPermittivity());
     // ii) -sum (F z_k c_k) = 0
@@ -397,13 +398,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::calc_mat_and_rhs_out
     // set this to zero (only laplace equation zero charge) ==> linear function
     for (int k = 0; k < my::numscal_; ++k)
     {
-      CalcMatPotSrc(emat, k, timefacfac, var_manager()->InvF(),
+      calc_mat_pot_src(emat, k, timefacfac, var_manager()->InvF(),
           diff_manager()->GetCond() / diff_manager()->GetPermittivity(),
           calc_free_charge_der_conc());
 
-      CalcRhsPotSrc(erhs, k, rhsfac, var_manager()->InvF(),
+      calc_rhs_pot_src(erhs, k, rhsfac, var_manager()->InvF(),
           diff_manager()->GetCond() / diff_manager()->GetPermittivity(),
-          CalcFreeCharge(var_manager()->Phinp(k)));
+          calc_free_charge(var_manager()->Phinp(k)));
     }
   }
 }
@@ -411,7 +412,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::calc_mat_and_rhs_out
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::GetMaterialParams(
+void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::get_material_params(
     const DRT::Element* ele, std::vector<double>& densn, std::vector<double>& densnp,
     std::vector<double>& densam, double& visc, const int iquad)
 {
@@ -421,7 +422,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::GetMaterialParams(
   // evaluate electrolyte material
   if (material->MaterialType() == CORE::Materials::m_elchmat)
   {
-    Utils()->MatElchMat(material, var_manager()->Phinp(), var_manager()->Temperature(),
+    utils()->MatElchMat(material, var_manager()->Phinp(), var_manager()->Temperature(),
         diff_manager(), diffcondmat_);
   }
   else

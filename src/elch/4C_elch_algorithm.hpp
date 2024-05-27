@@ -45,7 +45,7 @@ namespace ELCH
     void prepare_time_loop() override;
 
     /// print scatra solver type to screen
-    void PrintScaTraSolver() override;
+    void print_sca_tra_solver() override;
 
     /// convergence check for natural convection solver
     bool convergence_check(int natconvitnum, int natconvitmax, double natconvittol) override;

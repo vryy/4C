@@ -37,7 +37,7 @@ namespace DRT
      the stiffness matrixes of a porous fluid problem are evaluated. OD means
      off diagonal, indicating linearizations with respect to structural degrees of freedom,
      that will be assembled into off diagonal entries in the global system matrix.
-     The terms are eventually evaluated in the GaussPointLoop.. methods
+     The terms are eventually evaluated in the gauss_point_loop.. methods
 
      This a calculation class implemented as a singleton, like all calc classes in fluid
      (see comments on base classes for more details). In short this means that on instance
@@ -228,7 +228,7 @@ namespace DRT
         dependent terms) \param material           (i) fluid material \param intpoints          (i)
         Gaussian integration points
       */
-      virtual void GaussPointLoopP1OD(Teuchos::ParameterList& params,
+      virtual void gauss_point_loop_p1_od(Teuchos::ParameterList& params,
           const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
           const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
           const CORE::LINALG::Matrix<nsd_, nen_>& evelnp,
@@ -303,7 +303,7 @@ namespace DRT
         jacobian determinant \param dphi_dpp       (o) second derivative of porosity gradient w.r.t.
         fluid pressure \param save           (i) flag for saving porosity within structure material
       */
-      void ComputePorosity(Teuchos::ParameterList& params, const double& press, const double& J,
+      void compute_porosity(Teuchos::ParameterList& params, const double& press, const double& J,
           const int& gp, const CORE::LINALG::Matrix<nen_, 1>& shapfct,
           const CORE::LINALG::Matrix<nen_, 1>* myporosity, double& porosity, double* dphi_dp,
           double* dphi_dJ, double* dphi_dJdp, double* dphi_dJJ, double* dphi_dpp,
@@ -364,7 +364,7 @@ namespace DRT
           CORE::LINALG::Matrix<nsd_, nen_ * nsd_>& dgradphi_dus) override;
 
       //! Compute element matrix entries: PSPG
-      void PSPG(
+      void pspg(
           CORE::LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u,  //!< block (weighting function q x u)
           CORE::LINALG::Matrix<nen_, nen_>& ppmat,             //!< block (weighting function q x p)
           CORE::LINALG::Matrix<nen_, 1>& preforce,             //!< rhs forces pressure
@@ -381,8 +381,8 @@ namespace DRT
           ) override;
 
       //! Compute element matrix entries: reactive stabilization
-      void ReacStab(CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>&
-                        estif_u,                               //!< block (weighting function v x u)
+      void reac_stab(CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>&
+                         estif_u,                              //!< block (weighting function v x u)
           CORE::LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v,  //!< block (weighting function v x p)
           CORE::LINALG::Matrix<nsd_, nen_>& velforce,          //!< rhs forces velocity
           CORE::LINALG::Matrix<nsd_ * nsd_, nen_>&
@@ -396,7 +396,7 @@ namespace DRT
           const double& fac3            //!< factor for residual in current subgrid velocities
           ) override;
 
-      int ComputeVolume(Teuchos::ParameterList& params,
+      int compute_volume(Teuchos::ParameterList& params,
           DRT::ELEMENTS::Fluid* ele,                //!< current fluid element
           DRT::Discretization& discretization,      //!< fluid discretization
           std::vector<int>& lm,                     //!< location vector for DOF management

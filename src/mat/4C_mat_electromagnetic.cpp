@@ -38,7 +38,7 @@ MAT::PAR::ElectromagneticMat::ElectromagneticMat(Teuchos::RCP<CORE::MAT::PAR::Ma
   return;
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ElectromagneticMat::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ElectromagneticMat::create_material()
 {
   return Teuchos::rcp(new MAT::ElectromagneticMat(this));
 }

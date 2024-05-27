@@ -91,7 +91,7 @@ namespace CORE::GEO
         f << "\n\n";
       }
 
-      void Intersection(plain_side_set& sides)
+      void intersection(plain_side_set& sides)
       {
         plain_side_set intersection;
         std::set_intersection(cut_sides_.begin(), cut_sides_.end(), sides.begin(), sides.end(),

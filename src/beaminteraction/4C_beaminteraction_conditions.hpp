@@ -93,7 +93,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Set the displacement state.
      *
-     * @param discret (in) Discretization.
+     * @param discret (in) discretization.
      * @param beaminteraction_data_state (in) Datastate of the beaminteraction model evaluator.
      */
     virtual void set_state(const Teuchos::RCP<const DRT::Discretization>& discret,
@@ -104,7 +104,7 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Setup geometry data.
-     * @param discret (in) Discretization.
+     * @param discret (in) discretization.
      */
     virtual void Setup(const Teuchos::RCP<const DRT::Discretization>& discret);
 
@@ -121,7 +121,7 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Create the indirect assembly manager for this condition.
-     * @param discret (in) Discretization.
+     * @param discret (in) discretization.
      * @return Pointer to created assembly manager.
      */
     virtual Teuchos::RCP<SUBMODELEVALUATOR::BeamContactAssemblyManager>
@@ -175,7 +175,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Set the displacement state.
      *
-     * @param discret (in) Discretization.
+     * @param discret (in) discretization.
      * @param beaminteraction_data_state (in) Datastate of the beaminteraction model evaluator.
      */
     virtual void set_state(const Teuchos::RCP<const DRT::Discretization>& discret,
@@ -184,7 +184,7 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Setup data in the conditions.
-     * @param discret (in) Discretization.
+     * @param discret (in) discretization.
      */
     virtual void Setup(const Teuchos::RCP<const DRT::Discretization>& discret);
 
@@ -207,7 +207,7 @@ namespace BEAMINTERACTION
 
     /**
      * Create all needed indirect assembly managers.
-     * @param discret (in) Discretization.
+     * @param discret (in) discretization.
      * @param assembly_managers (in/out) Pointer to assembly manager vector from the beam
      * interaction submodel evaluator.
      */

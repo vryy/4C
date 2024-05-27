@@ -167,17 +167,17 @@ namespace BEAMINTERACTION
     void check_init_setup() const;
 
     //! get Gauss rule to be used
-    CORE::FE::GaussRule1D GetGaussRule() const;
+    CORE::FE::GaussRule1D get_gauss_rule() const;
 
     /*!
     \brief Set first element
     */
-    inline void SetElement1(DRT::Element const* element1) { element1_ = element1; };
+    inline void set_element1(DRT::Element const* element1) { element1_ = element1; };
 
     /*!
     \brief Set second element
     */
-    inline void SetElement2(DRT::Element const* element2) { element2_ = element2; };
+    inline void set_element2(DRT::Element const* element2) { element2_ = element2; };
 
     //@}
 

@@ -21,7 +21,7 @@ namespace
   class StdCxx20RangesViewsAll : public testing::Test
   {
    protected:
-    [[nodiscard]] Container Fill() const { return Container{1, 2, 3, 4, 5}; }
+    [[nodiscard]] Container fill() const { return Container{1, 2, 3, 4, 5}; }
   };
 
 
@@ -30,7 +30,7 @@ namespace
 
   TYPED_TEST(StdCxx20RangesViewsAll, testIterator)
   {
-    TypeParam container = this->Fill();
+    TypeParam container = this->fill();
     int counter = 0;
 
     for (const auto element : std_20::ranges::views::all(container))
@@ -44,7 +44,7 @@ namespace
 
   TYPED_TEST(StdCxx20RangesViewsAll, testEleAccess)
   {
-    const TypeParam container = this->Fill();
+    const TypeParam container = this->fill();
     int sum_of_elements = 0;
 
     for (const auto element : std_20::ranges::views::all(container))
@@ -57,7 +57,7 @@ namespace
 
   TYPED_TEST(StdCxx20RangesViewsAll, testEleManipulation)
   {
-    TypeParam container = this->Fill();
+    TypeParam container = this->fill();
 
     for (auto &element : std_20::ranges::views::all(container))
     {

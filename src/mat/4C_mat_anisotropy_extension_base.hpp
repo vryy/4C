@@ -74,13 +74,13 @@ namespace MAT
      *
      * \return Teuchos::RCP<Anisotropy>& Reference to the anisotropy
      */
-    Teuchos::RCP<Anisotropy>& GetAnisotropy() { return anisotropy_; }
+    Teuchos::RCP<Anisotropy>& get_anisotropy() { return anisotropy_; }
     /*!
      * \brief Returns the reference to the anisotropy
      *
      * \return Teuchos::RCP<Anisotropy>& Reference to the anisotropy
      */
-    const Teuchos::RCP<Anisotropy>& GetAnisotropy() const { return anisotropy_; }
+    const Teuchos::RCP<Anisotropy>& get_anisotropy() const { return anisotropy_; }
 
    private:
     /*!

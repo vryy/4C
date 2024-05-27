@@ -28,7 +28,7 @@ StruResultTest::StruResultTest(STR::TimInt& tintegrator)
   dis_ = tintegrator.Dis();
   vel_ = tintegrator.Vel();
   acc_ = tintegrator.Acc();
-  strudisc_ = tintegrator.Discretization();
+  strudisc_ = tintegrator.discretization();
 
   if (tintegrator.DispMat() != Teuchos::null)
     dism_ = tintegrator.Dismat();
@@ -173,7 +173,7 @@ void StruResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_
         FOUR_C_THROW("Quantity '%s' not supported in structure testing", position.c_str());
 
       // compare values
-      const int err = CompareValues(result, "NODE", res);
+      const int err = compare_values(result, "NODE", res);
       nerr += err;
       test_count++;
     }
@@ -194,7 +194,7 @@ void StruResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int& tes
   // compare values on one processor only, as they are the same everywhere
   if (strudisc_->Comm().MyPID() == 0)
   {
-    const int err = CompareValues(result, "SPECIAL", res);
+    const int err = compare_values(result, "SPECIAL", res);
     nerr += err;
     test_count++;
   }

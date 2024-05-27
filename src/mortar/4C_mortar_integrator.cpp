@@ -323,7 +323,7 @@ MORTAR::IntegratorCalc<distypeS, distypeM>::IntegratorCalc(const Teuchos::Parame
       shapefcn_(CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(params, "LM_SHAPEFCN")),
       lmquadtype_(CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(params, "LM_QUAD"))
 {
-  InitializeGP();
+  initialize_gp();
 }
 
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
@@ -345,7 +345,7 @@ MORTAR::IntegratorCalc<distypeS, distypeM>* MORTAR::IntegratorCalc<distypeS, dis
  |  Initialize gauss points                                   popp 06/09|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void MORTAR::IntegratorCalc<distypeS, distypeM>::InitializeGP()
+void MORTAR::IntegratorCalc<distypeS, distypeM>::initialize_gp()
 {
   // get numgp (for element-based integration)
   int numgp = imortar_.get<int>("NUMGP_PER_DIM");
@@ -1312,8 +1312,8 @@ MORTAR::IntegratorCalc<distypeS, distypeM>::IntegrateMmod2D(MORTAR::Element& sel
     }
 
     // evaluate trace space shape functions (on both elements)
-    sele.EvaluateShape(sxi, sval, sderiv, nrow);
-    mele.EvaluateShape(mxi, mval, mderiv, ncol);
+    sele.evaluate_shape(sxi, sval, sderiv, nrow);
+    mele.evaluate_shape(mxi, mval, mderiv, ncol);
 
     // build the delta function of slave side shape functions
     double deltasval = sval[0] - sval[1];

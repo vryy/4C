@@ -75,8 +75,8 @@ void FSI::Algorithm::Setup()
     adapterbase_ptr_->Init(fsidyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
     adapterbase_ptr_->register_model_evaluator("Partitioned Coupling Model", fsi_model_ptr);
     adapterbase_ptr_->Setup();
-    structure_ =
-        Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(adapterbase_ptr_->StructureField());
+    structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(
+        adapterbase_ptr_->structure_field());
 
     // set pointer in FSIStructureWrapper
     structure_->set_model_evaluator_ptr(
@@ -99,7 +99,7 @@ void FSI::Algorithm::Setup()
         new ADAPTER::StructureBaseAlgorithm(GLOBAL::Problem::Instance()->FSIDynamicParams(),
             const_cast<Teuchos::ParameterList&>(sdyn), structdis));
     structure_ =
-        Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->StructureField());
+        Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->structure_field());
     structure_->Setup();
 
     if (structure_ == Teuchos::null)
@@ -127,7 +127,7 @@ void FSI::Algorithm::Setup()
 /*----------------------------------------------------------------------*/
 void FSI::Algorithm::read_restart(int step)
 {
-  StructureField()->read_restart(step);
+  structure_field()->read_restart(step);
   double time = MBFluidField()->read_restart(step);
   SetTimeStep(time, step);
 }
@@ -139,18 +139,18 @@ void FSI::Algorithm::prepare_time_step()
 {
   increment_time_and_step();
 
-  PrintHeader();
+  print_header();
 
-  StructureField()->prepare_time_step();
+  structure_field()->prepare_time_step();
   MBFluidField()->prepare_time_step();
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Algorithm::Update()
+void FSI::Algorithm::update()
 {
-  StructureField()->Update();
+  structure_field()->Update();
   MBFluidField()->Update();
 }
 
@@ -159,26 +159,26 @@ void FSI::Algorithm::Update()
 /*----------------------------------------------------------------------*/
 void FSI::Algorithm::prepare_output(bool force_prepare)
 {
-  StructureField()->prepare_output(force_prepare);
+  structure_field()->prepare_output(force_prepare);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Algorithm::Output()
+void FSI::Algorithm::output()
 {
   // Note: The order is important here! In here control file entries are
   // written. And these entries define the order in which the filters handle
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
-  StructureField()->Output();
+  structure_field()->Output();
   MBFluidField()->Output();
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Algorithm::StructToFluid(Teuchos::RCP<Epetra_Vector> iv)
+Teuchos::RCP<Epetra_Vector> FSI::Algorithm::struct_to_fluid(Teuchos::RCP<Epetra_Vector> iv)
 {
   return coupsf_->MasterToSlave(iv);
 }
@@ -186,7 +186,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Algorithm::StructToFluid(Teuchos::RCP<Epetra_Ve
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Algorithm::FluidToStruct(Teuchos::RCP<Epetra_Vector> iv)
+Teuchos::RCP<Epetra_Vector> FSI::Algorithm::fluid_to_struct(Teuchos::RCP<Epetra_Vector> iv)
 {
   return coupsf_->SlaveToMaster(iv);
 }
@@ -204,7 +204,7 @@ const CORE::ADAPTER::Coupling& FSI::Algorithm::structure_fluid_coupling() const 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Algorithm::StructToFluid(
+Teuchos::RCP<Epetra_Vector> FSI::Algorithm::struct_to_fluid(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupsf_->MasterToSlave(iv);
@@ -213,7 +213,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Algorithm::StructToFluid(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Algorithm::FluidToStruct(
+Teuchos::RCP<Epetra_Vector> FSI::Algorithm::fluid_to_struct(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupsf_->SlaveToMaster(iv);

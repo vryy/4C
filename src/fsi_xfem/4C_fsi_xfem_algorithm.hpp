@@ -102,10 +102,10 @@ namespace FSI
     virtual void prepare_output(bool force_prepare);
 
     //! take current results for converged and save for next time step
-    void Update() override;
+    void update() override;
 
     //! write output
-    void Output() override = 0;
+    void output() override = 0;
 
     //@}
 

@@ -17,7 +17,7 @@ void CONTACT::NitscheStrategySsiElch::Integrate(const CONTACT::ParamsInterface& 
 {
   CONTACT::NitscheStrategy::Integrate(cparams);
 
-  fs_ = CreateRhsBlockPtr(CONTACT::VecBlockType::elch);
+  fs_ = create_rhs_block_ptr(CONTACT::VecBlockType::elch);
   kss_ = create_matrix_block_ptr(CONTACT::MatBlockType::elch_elch);
   ksd_ = create_matrix_block_ptr(CONTACT::MatBlockType::elch_displ);
   kds_ = create_matrix_block_ptr(CONTACT::MatBlockType::displ_elch);

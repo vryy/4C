@@ -32,7 +32,7 @@ namespace MAT
 
 
       //! create material
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
       //! return porosity
       double Porosity() const { return porosity_; };

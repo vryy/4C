@@ -172,7 +172,7 @@ namespace GEOMETRYPAIR
      * @param (in) element_data_surface
      * @return Maximum distance between the first 3 nodes.
      */
-    double GetSurfaceSize(const ElementData<surface, scalar_type>& element_data_surface) const;
+    double get_surface_size(const ElementData<surface, scalar_type>& element_data_surface) const;
 
     /**
      * \brief Get number of faces for this surface and create a vector with the indices of the

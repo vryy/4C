@@ -30,7 +30,7 @@ EHL::Partitioned::Partitioned(const Epetra_Comm& comm,
     : Base(comm, globaltimeparams, lubricationparams, structparams, struct_disname,
           lubrication_disname),
       preincnp_(CORE::LINALG::CreateVector(
-          *lubrication_->LubricationField()->Discretization()->dof_row_map(0), true)),
+          *lubrication_->LubricationField()->discretization()->dof_row_map(0), true)),
       dispincnp_(CORE::LINALG::CreateVector(*structure_->dof_row_map(0), true))
 {
   // call the EHL parameter lists
@@ -63,7 +63,7 @@ void EHL::Partitioned::Timeloop()
 
     outer_loop();
 
-    UpdateAndOutput();
+    update_and_output();
   }
 }
 
@@ -74,9 +74,9 @@ void EHL::Partitioned::Timeloop()
 void EHL::Partitioned::prepare_time_step()
 {
   increment_time_and_step();
-  PrintHeader();
+  print_header();
 
-  SetStructSolution(structure_->Dispn());
+  set_struct_solution(structure_->Dispn());
   structure_->prepare_time_step();
   //  set_lubrication_solution(lubrication_->LubricationField()->Quantity()); // todo: what quantity
   lubrication_->LubricationField()->prepare_time_step();
@@ -113,11 +113,11 @@ void EHL::Partitioned::outer_loop()
     do_struct_step();
 
     // set mesh displacement, velocity fields and film thickness
-    SetStructSolution(structure_->Dispnp());
+    set_struct_solution(structure_->Dispnp());
 
     // solve lubrication equation and calculate the resulting traction, which will be applied on the
     // solids
-    DoLubricationStep();
+    do_lubrication_step();
     // LubricationEvaluateSolveIterUpdate();
 
     // check convergence for all fields and stop iteration loop if
@@ -132,7 +132,7 @@ void EHL::Partitioned::outer_loop()
 /*----------------------------------------------------------------------*
  | constructor                                              wirtz 12/15 |
  *----------------------------------------------------------------------*/
-void EHL::Partitioned::UpdateAndOutput()
+void EHL::Partitioned::update_and_output()
 {
   constexpr bool force_prepare = false;
   structure_->prepare_output(force_prepare);
@@ -165,7 +165,7 @@ void EHL::Partitioned::do_struct_step()
 /*----------------------------------------------------------------------*
  | solve Lubrication field                                  wirtz 12/15 |
  *----------------------------------------------------------------------*/
-void EHL::Partitioned::DoLubricationStep()
+void EHL::Partitioned::do_lubrication_step()
 {
   if (Comm().MyPID() == 0)
   {

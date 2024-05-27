@@ -157,7 +157,7 @@ namespace BEAMINTERACTION
       virtual void ResetStepState() = 0;
 
       //! \brief write model specific restart
-      virtual void WriteRestart(
+      virtual void write_restart(
           IO::DiscretizationWriter& ia_writer, IO::DiscretizationWriter& bin_writer) const = 0;
 
       /*! \brief read model specific restart information
@@ -177,7 +177,7 @@ namespace BEAMINTERACTION
        *  \param solver (in) : reference to the non-linear nox solver object (read-only)
        *
        *  \author grill, hiermeier \date 10/17 */
-      virtual void RunPostIterate(const ::NOX::Solver::Generic& solver) = 0;
+      virtual void run_post_iterate(const ::NOX::Solver::Generic& solver) = 0;
 
       //! reset routine for model evlaluator
       virtual void init_submodel_dependencies(

@@ -52,7 +52,7 @@ namespace CONTACT
 
        protected:
         // un-do changes from the base class
-        void EvalStrContactRHS() override { AUG::Strategy::EvalStrContactRHS(); }
+        void eval_str_contact_rhs() override { AUG::Strategy::eval_str_contact_rhs(); }
 
         /// derived
         Teuchos::RCP<const Epetra_Vector> get_rhs_block_ptr_for_norm_check(

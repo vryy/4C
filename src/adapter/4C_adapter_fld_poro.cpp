@@ -36,7 +36,7 @@ ADAPTER::FluidPoro::FluidPoro(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discr
 
   if (fluid_ == Teuchos::null) FOUR_C_THROW("Failed to create the underlying fluid adapter");
 
-  Discretization()->GetCondition("NoPenetration", nopencond_);
+  discretization()->GetCondition("no_penetration", nopencond_);
 }
 
 /*======================================================================*/
@@ -47,11 +47,11 @@ void ADAPTER::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector
     Teuchos::RCP<Epetra_Vector> condVector, Teuchos::RCP<std::set<int>> condIDs,
     POROELAST::Coupltype coupltype)
 {
-  if (!(Discretization()->Filled())) FOUR_C_THROW("fill_complete() was not called");
-  if (!Discretization()->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
+  if (!(discretization()->Filled())) FOUR_C_THROW("fill_complete() was not called");
+  if (!discretization()->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
-  Discretization()->set_state(0, "dispnp", Dispnp());
-  Discretization()->set_state(0, "scaaf", Scaaf());
+  discretization()->set_state(0, "dispnp", Dispnp());
+  discretization()->set_state(0, "scaaf", Scaaf());
 
   Teuchos::ParameterList params;
 
@@ -62,7 +62,7 @@ void ADAPTER::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector
     // first, find out which dofs will be constraint
     params.set<int>("action", FLD::no_penetrationIDs);
     params.set<int>("Physical Type", INPAR::FLUID::poro);
-    Discretization()->evaluate_condition(params, condVector, "NoPenetration");
+    discretization()->evaluate_condition(params, condVector, "no_penetration");
 
     // write global IDs of dofs on which the no penetration condition is applied (can vary in time
     // and iteration)
@@ -101,16 +101,16 @@ void ADAPTER::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector
         ConstraintMatrix,                        // fluid matrix
         Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
-    Discretization()->set_state(0, "condVector", condVector);
+    discretization()->set_state(0, "condVector", condVector);
 
-    Discretization()->evaluate_condition(params, fluidstrategy, "NoPenetration");
+    discretization()->evaluate_condition(params, fluidstrategy, "no_penetration");
   }
   else if (coupltype == POROELAST::fluidstructure)
   {
-    Discretization()->set_state(0, "velnp", Velnp());
-    Discretization()->set_state(0, "gridv", GridVel());
+    discretization()->set_state(0, "velnp", Velnp());
+    discretization()->set_state(0, "gridv", GridVel());
 
-    Discretization()->set_state(0, "condVector", condVector);
+    discretization()->set_state(0, "condVector", condVector);
 
     // set action for elements
     params.set<int>("action", FLD::no_penetration);
@@ -127,12 +127,12 @@ void ADAPTER::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector
         Cond_RHS, Teuchos::null, Teuchos::null);
 
     // evaluate the fluid-mechanical system matrix on the fluid element
-    Discretization()->evaluate_condition(params, couplstrategy, "NoPenetration");
+    discretization()->evaluate_condition(params, couplstrategy, "no_penetration");
   }
   else
     FOUR_C_THROW("unknown coupling type for no penetration BC");
 
-  Discretization()->ClearState();
+  discretization()->ClearState();
 
   return;
 }
@@ -164,7 +164,7 @@ void ADAPTER::FluidPoro::Output(const int step, const double time)
   else
   {
     // print info to screen
-    if (fluid_field()->Discretization()->Comm().MyPID() == 0)
+    if (fluid_field()->discretization()->Comm().MyPID() == 0)
       std::cout << "\n   Write EXTRA FLUID Output Step=" << step << " Time=" << time << " ...   \n"
                 << std::endl;
 

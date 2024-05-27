@@ -29,7 +29,7 @@ namespace MAT
 
 
       //! create instance of Newman multi-scale material
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
       //! electronic conductivity
       double electronic_cond() const { return electronic_cond_; }

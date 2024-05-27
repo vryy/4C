@@ -836,7 +836,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
         CORE::LINALG::SerialDenseVector stdval(nnodes, true);
         CORE::LINALG::SerialDenseMatrix stdderiv(nnodes, dim, true);
         CORE::LINALG::SerialDenseVector checkval(nnodes, true);
-        EvaluateShape(xi, stdval, stdderiv, nnodes);
+        evaluate_shape(xi, stdval, stdderiv, nnodes);
         CORE::LINALG::SerialDenseMatrix& ae = *(MoData().DualShape());
 
         for (int i = 0; i < num_node(); ++i)
@@ -910,7 +910,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
 
         // evaluate dual shape functions at loc. coord. xi
         // need standard shape functions at xi first
-        EvaluateShape(xi, val, deriv, nnodes);
+        evaluate_shape(xi, val, deriv, nnodes);
 
         // dimension
         int dim = 2;
@@ -963,7 +963,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
         for (int i = 0; i < integrator.nGP(); ++i)
         {
           double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-          EvaluateShape(gpc, val, deriv, nnodes);
+          evaluate_shape(gpc, val, deriv, nnodes);
           detg = Jacobian(gpc);
 
           for (int j = 0; j < nnodes; ++j)
@@ -992,7 +992,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
 
       // evaluate dual shape functions at loc. coord. xi
       // need standard shape functions at xi first
-      EvaluateShape(xi, val, deriv, nnodes);
+      evaluate_shape(xi, val, deriv, nnodes);
 
       // dimension
       const int dim = 2;
@@ -1044,7 +1044,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
         for (int i = 0; i < integrator.nGP(); ++i)
         {
           double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-          EvaluateShape(gpc, val, deriv, nnodes);
+          evaluate_shape(gpc, val, deriv, nnodes);
           detg = Jacobian(gpc);
 
           for (int j = 0; j < nnodes; ++j)
@@ -1068,7 +1068,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
 
       // evaluate dual shape functions at loc. coord. xi
       // need standard shape functions at xi first
-      EvaluateShape(xi, val, deriv, nnodes);
+      evaluate_shape(xi, val, deriv, nnodes);
 
       // check whether this is a 1D or 2D mortar element
       int dim = 1;
@@ -1219,7 +1219,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
         for (int i = 0; i < integrator.nGP(); ++i)
         {
           double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-          EvaluateShape(gpc, valquad, derivquad, nnodes, true);
+          evaluate_shape(gpc, valquad, derivquad, nnodes, true);
           detg = Jacobian(gpc);
 
           for (int j = 0; j < nnodes; ++j)
@@ -1244,7 +1244,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       }
 
       // evaluate dual shape functions at loc. coord. xi
-      EvaluateShape(xi, valquad, derivquad, nnodes, true);
+      evaluate_shape(xi, valquad, derivquad, nnodes, true);
       val.putScalar(0.0);
       deriv.putScalar(0.0);
 
@@ -1295,7 +1295,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
         for (int i = 0; i < integrator.nGP(); ++i)
         {
           double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-          EvaluateShape(gpc, valquad, derivquad, nnodes, true);
+          evaluate_shape(gpc, valquad, derivquad, nnodes, true);
           detg = Jacobian(gpc);
 
           for (int j = 0; j < nnodes; ++j)
@@ -1320,7 +1320,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       }
 
       // evaluate dual shape functions at loc. coord. xi
-      EvaluateShape(xi, valquad, derivquad, nnodes, true);
+      evaluate_shape(xi, valquad, derivquad, nnodes, true);
       val.putScalar(0.0);
       deriv.putScalar(0.0);
 
@@ -1370,7 +1370,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
         for (int i = 0; i < integrator.nGP(); ++i)
         {
           double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-          EvaluateShape(gpc, valquad, derivquad, nnodes, true);
+          evaluate_shape(gpc, valquad, derivquad, nnodes, true);
           detg = Jacobian(gpc);
 
           for (int j = 0; j < nnodes; ++j)
@@ -1395,7 +1395,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       }
 
       // evaluate dual shape functions at loc. coord. xi
-      EvaluateShape(xi, valquad, derivquad, nnodes, true);
+      evaluate_shape(xi, valquad, derivquad, nnodes, true);
       val.putScalar(0.0);
       deriv.putScalar(0.0);
 
@@ -1871,10 +1871,10 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
 /*----------------------------------------------------------------------*
  |  Evaluate displacement shape functions                     popp 01/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseVector& val,
+bool MORTAR::Element::evaluate_shape(const double* xi, CORE::LINALG::SerialDenseVector& val,
     CORE::LINALG::SerialDenseMatrix& deriv, const int valdim, bool dualquad)
 {
-  if (!xi) FOUR_C_THROW("EvaluateShape called with xi=nullptr");
+  if (!xi) FOUR_C_THROW("evaluate_shape called with xi=nullptr");
 
   // get node number and node pointers
   DRT::Node** mynodes = Nodes();
@@ -1894,14 +1894,14 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
     // 2D linear case (2noded line element)
     case CORE::FE::CellType::line2:
     {
-      if (valdim != 2) FOUR_C_THROW("Inconsistency in EvaluateShape");
+      if (valdim != 2) FOUR_C_THROW("Inconsistency in evaluate_shape");
       ShapeFunctions(MORTAR::Element::lin1D, xi, val, deriv);
       break;
     }
       // 2D quadratic case (3noded line element)
     case CORE::FE::CellType::line3:
     {
-      if (valdim != 3) FOUR_C_THROW("Inconsistency in EvaluateShape");
+      if (valdim != 3) FOUR_C_THROW("Inconsistency in evaluate_shape");
 
       if (dualquad && !bound)
         FOUR_C_THROW(
@@ -1916,21 +1916,21 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
       // 3D linear case (3noded triangular element)
     case CORE::FE::CellType::tri3:
     {
-      if (valdim != 3) FOUR_C_THROW("Inconsistency in EvaluateShape");
+      if (valdim != 3) FOUR_C_THROW("Inconsistency in evaluate_shape");
       ShapeFunctions(MORTAR::Element::lin2D, xi, val, deriv);
       break;
     }
       // 3D bilinear case (4noded quadrilateral element)
     case CORE::FE::CellType::quad4:
     {
-      if (valdim != 4) FOUR_C_THROW("Inconsistency in EvaluateShape");
+      if (valdim != 4) FOUR_C_THROW("Inconsistency in evaluate_shape");
       ShapeFunctions(MORTAR::Element::bilin2D, xi, val, deriv);
       break;
     }
       // 3D quadratic case (6noded triangular element)
     case CORE::FE::CellType::tri6:
     {
-      if (valdim != 6) FOUR_C_THROW("Inconsistency in EvaluateShape");
+      if (valdim != 6) FOUR_C_THROW("Inconsistency in evaluate_shape");
       if (dualquad && !bound)
         ShapeFunctions(MORTAR::Element::quad2D_modified, xi, val, deriv);
       else if (dualquad && bound)
@@ -1942,7 +1942,7 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
       // 3D serendipity case (8noded quadrilateral element)
     case CORE::FE::CellType::quad8:
     {
-      if (valdim != 8) FOUR_C_THROW("Inconsistency in EvaluateShape");
+      if (valdim != 8) FOUR_C_THROW("Inconsistency in evaluate_shape");
       if (dualquad && !bound)
         ShapeFunctions(MORTAR::Element::serendipity2D_modified, xi, val, deriv);
       else if (dualquad && bound)
@@ -1954,7 +1954,7 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
       // 3D biquadratic case (9noded quadrilateral element)
     case CORE::FE::CellType::quad9:
     {
-      if (valdim != 9) FOUR_C_THROW("Inconsistency in EvaluateShape");
+      if (valdim != 9) FOUR_C_THROW("Inconsistency in evaluate_shape");
       if (dualquad && !bound)
         ShapeFunctions(MORTAR::Element::biquad2D_modified, xi, val, deriv);
       else if (dualquad && bound)
@@ -1971,7 +1971,7 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
       // 1D -- nurbs2
     case CORE::FE::CellType::nurbs2:
     {
-      if (valdim != 2) FOUR_C_THROW("Inconsistency in EvaluateShape");
+      if (valdim != 2) FOUR_C_THROW("Inconsistency in evaluate_shape");
 
       CORE::LINALG::SerialDenseVector weights(num_node());
       for (int inode = 0; inode < num_node(); ++inode)
@@ -1990,7 +1990,7 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
       // 1D -- nurbs3
     case CORE::FE::CellType::nurbs3:
     {
-      if (valdim != 3) FOUR_C_THROW("Inconsistency in EvaluateShape");
+      if (valdim != 3) FOUR_C_THROW("Inconsistency in evaluate_shape");
 
       CORE::LINALG::SerialDenseVector weights(num_node());
       for (int inode = 0; inode < num_node(); ++inode)
@@ -2010,7 +2010,7 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
       // 2D -- nurbs4
     case CORE::FE::CellType::nurbs4:
     {
-      if (valdim != 4) FOUR_C_THROW("Inconsistency in EvaluateShape");
+      if (valdim != 4) FOUR_C_THROW("Inconsistency in evaluate_shape");
 
       CORE::LINALG::SerialDenseVector weights(num_node());
       for (int inode = 0; inode < num_node(); ++inode)
@@ -2034,7 +2034,7 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
       // 2D -- nurbs9
     case CORE::FE::CellType::nurbs9:
     {
-      if (valdim != 9) FOUR_C_THROW("Inconsistency in EvaluateShape");
+      if (valdim != 9) FOUR_C_THROW("Inconsistency in evaluate_shape");
 
       CORE::LINALG::SerialDenseVector weights(num_node());
       for (int inode = 0; inode < num_node(); ++inode)
@@ -2051,7 +2051,7 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (deriv.numCols() != 2 || deriv.numRows() != num_node())
-        FOUR_C_THROW("Inconsistency in EvaluateShape");
+        FOUR_C_THROW("Inconsistency in evaluate_shape");
 #endif
 
       // copy entries for to be conform with the mortar code!
@@ -2064,7 +2064,7 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
       // unknown case
     default:
     {
-      FOUR_C_THROW("EvaluateShape called for unknown MORTAR::Element type");
+      FOUR_C_THROW("evaluate_shape called for unknown MORTAR::Element type");
       break;
     }
   }
@@ -2098,7 +2098,7 @@ bool MORTAR::Element::evaluate_shape_lag_mult(const INPAR::MORTAR::ShapeFcn& lmt
     // 2D linear case (2noded line element)
     case CORE::FE::CellType::line2:
     {
-      if (valdim != 2) FOUR_C_THROW("Inconsistency in EvaluateShape");
+      if (valdim != 2) FOUR_C_THROW("Inconsistency in evaluate_shape");
 
       if (dual)
         ShapeFunctions(MORTAR::Element::lindual1D, xi, val, deriv);
@@ -2110,7 +2110,7 @@ bool MORTAR::Element::evaluate_shape_lag_mult(const INPAR::MORTAR::ShapeFcn& lmt
       // 2D quadratic case (3noded line element)
     case CORE::FE::CellType::line3:
     {
-      if (valdim != 3) FOUR_C_THROW("Inconsistency in EvaluateShape");
+      if (valdim != 3) FOUR_C_THROW("Inconsistency in evaluate_shape");
 
       if (dual)
         ShapeFunctions(MORTAR::Element::quaddual1D, xi, val, deriv);
@@ -2169,7 +2169,7 @@ bool MORTAR::Element::evaluate_shape_lag_mult(const INPAR::MORTAR::ShapeFcn& lmt
       if (dual)
         FOUR_C_THROW("no dual shape functions provided for nurbs!");
       else
-        EvaluateShape(xi, val, deriv, valdim);
+        evaluate_shape(xi, val, deriv, valdim);
 
       break;
     }
@@ -2194,7 +2194,7 @@ bool MORTAR::Element::evaluate_shape_lag_mult(const INPAR::MORTAR::ShapeFcn& lmt
           for (int i = 0; i < integrator.nGP(); ++i)
           {
             double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-            EvaluateShape(gpc, val, deriv, nnodes);
+            evaluate_shape(gpc, val, deriv, nnodes);
             detg = Jacobian(gpc);
 
             for (int j = 0; j < nnodes; ++j)
@@ -2218,7 +2218,7 @@ bool MORTAR::Element::evaluate_shape_lag_mult(const INPAR::MORTAR::ShapeFcn& lmt
 
         // evaluate dual shape functions at loc. coord. xi
         // need standard shape functions at xi first
-        EvaluateShape(xi, val, deriv, nnodes);
+        evaluate_shape(xi, val, deriv, nnodes);
 
         // check whether this is a 1D or 2D mortar element
         const int dim = 1;
@@ -2238,7 +2238,7 @@ bool MORTAR::Element::evaluate_shape_lag_mult(const INPAR::MORTAR::ShapeFcn& lmt
         deriv = derivtemp;
       }
       else
-        EvaluateShape(xi, val, deriv, valdim);
+        evaluate_shape(xi, val, deriv, valdim);
 
       break;
     }
@@ -2250,7 +2250,7 @@ bool MORTAR::Element::evaluate_shape_lag_mult(const INPAR::MORTAR::ShapeFcn& lmt
       if (dual)
         FOUR_C_THROW("no dual shape functions provided for nurbs!");
       else
-        EvaluateShape(xi, val, deriv, valdim);
+        evaluate_shape(xi, val, deriv, valdim);
 
       break;
     }
@@ -2261,7 +2261,7 @@ bool MORTAR::Element::evaluate_shape_lag_mult(const INPAR::MORTAR::ShapeFcn& lmt
       if (dual)
         FOUR_C_THROW("no dual shape functions provided for nurbs!");
       else
-        EvaluateShape(xi, val, deriv, valdim);
+        evaluate_shape(xi, val, deriv, valdim);
 
       break;
     }
@@ -2287,7 +2287,7 @@ bool MORTAR::Element::evaluate_shape_lag_mult(const INPAR::MORTAR::ShapeFcn& lmt
           for (int i = 0; i < integrator.nGP(); ++i)
           {
             double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-            EvaluateShape(gpc, val, deriv, nnodes);
+            evaluate_shape(gpc, val, deriv, nnodes);
             detg = Jacobian(gpc);
 
             for (int j = 0; j < nnodes; ++j)
@@ -2311,7 +2311,7 @@ bool MORTAR::Element::evaluate_shape_lag_mult(const INPAR::MORTAR::ShapeFcn& lmt
 
         // evaluate dual shape functions at loc. coord. xi
         // need standard shape functions at xi first
-        EvaluateShape(xi, val, deriv, nnodes);
+        evaluate_shape(xi, val, deriv, nnodes);
 
         // check whether this is a 1D or 2D mortar element
         const int dim = 2;
@@ -2332,7 +2332,7 @@ bool MORTAR::Element::evaluate_shape_lag_mult(const INPAR::MORTAR::ShapeFcn& lmt
         deriv = derivtemp;
       }
       else
-        EvaluateShape(xi, val, deriv, valdim);
+        evaluate_shape(xi, val, deriv, valdim);
 
       break;
     }
@@ -2793,7 +2793,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
         for (int i = 0; i < integrator.nGP(); ++i)
         {
           double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-          EvaluateShape(gpc, val, deriv, nnodes);
+          evaluate_shape(gpc, val, deriv, nnodes);
           detg = Jacobian(gpc);
 
           // directional derivative of Jacobian
@@ -2901,7 +2901,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
        for (int i=0;i<integrator.nGP();++i)
        {
        double gpc1[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
-       EvaluateShape(gpc1, val1, deriv1, nnodes);
+       evaluate_shape(gpc1, val1, deriv1, nnodes);
        detg = Jacobian(gpc1);
 
        for (int j=0;j<nnodes;++j)
@@ -2988,7 +2988,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
         for (int i = 0; i < integrator.nGP(); ++i)
         {
           double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-          EvaluateShape(gpc, val, deriv, nnodes, true);
+          evaluate_shape(gpc, val, deriv, nnodes, true);
           detg = Jacobian(gpc);
 
           // directional derivative of Jacobian
@@ -3129,7 +3129,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
         for (int i = 0; i < integrator.nGP(); ++i)
         {
           double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-          EvaluateShape(gpc, val, deriv, nnodes);
+          evaluate_shape(gpc, val, deriv, nnodes);
           detg = Jacobian(gpc);
 
           // directional derivative of Jacobian
@@ -3241,7 +3241,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
        for (int i=0;i<integrator.nGP();++i)
        {
        double gpc1[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
-       EvaluateShape(gpc1, val1, deriv1, nnodes);
+       evaluate_shape(gpc1, val1, deriv1, nnodes);
        detg = Jacobian(gpc1);
 
        for (int j=0;j<nnodes;++j)
@@ -3329,7 +3329,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
         for (int i = 0; i < integrator.nGP(); ++i)
         {
           double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-          EvaluateShape(gpc, val, deriv, nnodes, true);
+          evaluate_shape(gpc, val, deriv, nnodes, true);
           detg = Jacobian(gpc);
 
           // directional derivative of Jacobian
@@ -3439,7 +3439,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
        for (int i=0;i<integrator.nGP();++i)
        {
        double gpc1[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
-       EvaluateShape(gpc1, val1, deriv1, nnodes, true);
+       evaluate_shape(gpc1, val1, deriv1, nnodes, true);
        detg = Jacobian(gpc1);
 
        for (int j=0;j<nnodes;++j)
@@ -3526,7 +3526,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
         for (int i = 0; i < integrator.nGP(); ++i)
         {
           double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-          EvaluateShape(gpc, val, deriv, nnodes, true);
+          evaluate_shape(gpc, val, deriv, nnodes, true);
           detg = Jacobian(gpc);
 
           // directional derivative of Jacobian
@@ -3630,7 +3630,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
         //          for (int i=0;i<integrator.nGP();++i)
         //          {
         //            double gpc1[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
-        //            EvaluateShape(gpc1, val1, deriv1, nnodes, true);
+        //            evaluate_shape(gpc1, val1, deriv1, nnodes, true);
         //            detg = Jacobian(gpc1);
         //
         //            for (int j=0;j<nnodes;++j)
@@ -4095,7 +4095,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
         for (int i = 0; i < integrator.nGP(); ++i)
         {
           double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-          EvaluateShape(gpc, val, deriv, nnodes, true);
+          evaluate_shape(gpc, val, deriv, nnodes, true);
           detg = Jacobian(gpc);
 
           // directional derivative of Jacobian
@@ -4237,7 +4237,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
         for (int i = 0; i < integrator.nGP(); ++i)
         {
           double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-          EvaluateShape(gpc, val, deriv, nnodes, true);
+          evaluate_shape(gpc, val, deriv, nnodes, true);
           detg = Jacobian(gpc);
 
           // directional derivative of Jacobian
@@ -4531,7 +4531,7 @@ bool MORTAR::Element::evaluate2nd_deriv_shape(
       // 1D -- nurbs2
     case CORE::FE::CellType::nurbs2:
     {
-      if (valdim != 2) FOUR_C_THROW("Inconsistency in EvaluateShape");
+      if (valdim != 2) FOUR_C_THROW("Inconsistency in evaluate_shape");
 
       CORE::LINALG::SerialDenseVector weights(num_node());
       for (int inode = 0; inode < num_node(); ++inode)
@@ -4553,7 +4553,7 @@ bool MORTAR::Element::evaluate2nd_deriv_shape(
       // 1D -- nurbs3
     case CORE::FE::CellType::nurbs3:
     {
-      if (valdim != 3) FOUR_C_THROW("Inconsistency in EvaluateShape");
+      if (valdim != 3) FOUR_C_THROW("Inconsistency in evaluate_shape");
 
       CORE::LINALG::SerialDenseVector weights(3);
       for (int inode = 0; inode < 3; ++inode)
@@ -4576,7 +4576,7 @@ bool MORTAR::Element::evaluate2nd_deriv_shape(
       // 2D -- nurbs4
     case CORE::FE::CellType::nurbs4:
     {
-      if (valdim != 4) FOUR_C_THROW("Inconsistency in EvaluateShape");
+      if (valdim != 4) FOUR_C_THROW("Inconsistency in evaluate_shape");
 
       CORE::LINALG::SerialDenseVector weights(num_node());
       for (int inode = 0; inode < num_node(); ++inode)
@@ -4603,7 +4603,7 @@ bool MORTAR::Element::evaluate2nd_deriv_shape(
       // 2D -- nurbs8
     case CORE::FE::CellType::nurbs8:
     {
-      if (valdim != 8) FOUR_C_THROW("Inconsistency in EvaluateShape");
+      if (valdim != 8) FOUR_C_THROW("Inconsistency in evaluate_shape");
 
       CORE::LINALG::SerialDenseVector weights(num_node());
       for (int inode = 0; inode < num_node(); ++inode)
@@ -4630,7 +4630,7 @@ bool MORTAR::Element::evaluate2nd_deriv_shape(
       // 2D -- nurbs9
     case CORE::FE::CellType::nurbs9:
     {
-      if (valdim != 9) FOUR_C_THROW("Inconsistency in EvaluateShape");
+      if (valdim != 9) FOUR_C_THROW("Inconsistency in evaluate_shape");
 
       CORE::LINALG::SerialDenseVector weights(num_node());
       for (int inode = 0; inode < num_node(); ++inode)

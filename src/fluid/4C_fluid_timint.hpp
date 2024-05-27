@@ -196,7 +196,7 @@ namespace FLD
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    const Teuchos::RCP<DRT::Discretization>& Discretization() override { return discret_; }
+    const Teuchos::RCP<DRT::Discretization>& discretization() override { return discret_; }
     Teuchos::RCP<const CORE::Dofsets::DofSet> DofSet() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
@@ -306,7 +306,7 @@ namespace FLD
     }
 
     /// scaling factor needed to convert the residual to real forces
-    double ResidualScaling() const override = 0;
+    double residual_scaling() const override = 0;
 
     double TimeScaling() const override
     {
@@ -553,7 +553,7 @@ namespace FLD
       return Teuchos::null;
     }
 
-    void UseBlockMatrix(bool splitmatrix) override
+    void use_block_matrix(bool splitmatrix) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
@@ -622,14 +622,14 @@ namespace FLD
     }
 
     /// expand dirichlet set
-    void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd) override
+    void add_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoadd) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
     };
 
     /// contract dirichlet set
-    void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove) override
+    void remove_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoremove) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
@@ -661,7 +661,7 @@ namespace FLD
     }
 
     /// set velocity field (separate computation)
-    void SetVelocityField(Teuchos::RCP<const Epetra_Vector> velnp) override
+    void set_velocity_field(Teuchos::RCP<const Epetra_Vector> velnp) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;

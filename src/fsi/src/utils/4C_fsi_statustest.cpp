@@ -40,7 +40,7 @@ NOX::FSI::GenericNormF::GenericNormF(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double NOX::FSI::GenericNormF::computeNorm(const Epetra_Vector& v)
+double NOX::FSI::GenericNormF::compute_norm(const Epetra_Vector& v)
 {
   int n = v.GlobalLength();
   double norm;
@@ -87,7 +87,7 @@ double NOX::FSI::GenericNormF::computeNorm(const Epetra_Vector& v)
   }
   else
   {
-    norm_f_ = computeNorm(problem.getSolutionGroup());
+    norm_f_ = compute_norm(problem.getSolutionGroup());
     if ((norm_f_ != -1) and (norm_f_ < true_tolerance_))
     {
       status_ = ::NOX::StatusTest::Converged;
@@ -170,7 +170,7 @@ NOX::FSI::PartialNormF::PartialNormF(std::string name,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double NOX::FSI::PartialNormF::computeNorm(const ::NOX::Abstract::Group& grp)
+double NOX::FSI::PartialNormF::compute_norm(const ::NOX::Abstract::Group& grp)
 {
   if (!grp.isF()) return -1.0;
 
@@ -183,11 +183,11 @@ double NOX::FSI::PartialNormF::computeNorm(const ::NOX::Abstract::Group& grp)
 
   Teuchos::RCP<Epetra_Vector> v = extractor_.ExtractVector(f.getEpetraVector(), blocknum_);
 
-  double norm = FSI::GenericNormF::computeNorm(*v);
+  double norm = FSI::GenericNormF::compute_norm(*v);
 
-  if (Newton() != Teuchos::null)
+  if (newton() != Teuchos::null)
   {
-    Newton()->Residual(norm, Tolerance());
+    newton()->Residual(norm, tolerance());
   }
 
   return norm;
@@ -212,7 +212,7 @@ NOX::FSI::PartialSumNormF::PartialSumNormF(std::string name,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double NOX::FSI::PartialSumNormF::computeNorm(const ::NOX::Abstract::Group& grp)
+double NOX::FSI::PartialSumNormF::compute_norm(const ::NOX::Abstract::Group& grp)
 {
   if (!grp.isF()) return -1.0;
 
@@ -229,11 +229,11 @@ double NOX::FSI::PartialSumNormF::computeNorm(const ::NOX::Abstract::Group& grp)
   Teuchos::RCP<Epetra_Vector> v = converter_->SrcToDst(v2);
   v->Update(scale1_, *v1, scale2_);
 
-  double norm = FSI::GenericNormF::computeNorm(*v);
+  double norm = FSI::GenericNormF::compute_norm(*v);
 
-  if (Newton() != Teuchos::null)
+  if (newton() != Teuchos::null)
   {
-    Newton()->Residual(norm, Tolerance());
+    newton()->Residual(norm, tolerance());
   }
 
   return norm;
@@ -306,7 +306,7 @@ NOX::FSI::GenericNormUpdate::GenericNormUpdate(std::string name, double tol, Sca
 
   update_vector_ptr_->update(1.0, curSoln, -1.0, oldSoln, 0.0);
 
-  computeNorm(
+  compute_norm(
       Teuchos::rcp_dynamic_cast<::NOX::Epetra::Vector>(update_vector_ptr_)->getEpetraVector());
 
   status_ =
@@ -317,7 +317,7 @@ NOX::FSI::GenericNormUpdate::GenericNormUpdate(std::string name, double tol, Sca
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double NOX::FSI::GenericNormUpdate::computeNorm(const Epetra_Vector& v)
+double NOX::FSI::GenericNormUpdate::compute_norm(const Epetra_Vector& v)
 {
   ::NOX::Epetra::Vector vec(v);
   int n = (scale_type_ == Scaled) ? vec.length() : 0;
@@ -414,9 +414,9 @@ NOX::FSI::PartialNormUpdate::PartialNormUpdate(std::string name,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double NOX::FSI::PartialNormUpdate::computeNorm(const Epetra_Vector& v)
+double NOX::FSI::PartialNormUpdate::compute_norm(const Epetra_Vector& v)
 {
-  return FSI::GenericNormUpdate::computeNorm(*extractor_.ExtractVector(v, blocknum_));
+  return FSI::GenericNormUpdate::compute_norm(*extractor_.ExtractVector(v, blocknum_));
 }
 
 

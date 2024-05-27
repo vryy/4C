@@ -180,7 +180,7 @@ namespace STR
         const std::vector<INPAR::STR::ModelType>& constraint_models, const Epetra_Vector& x,
         Epetra_Vector& f, const double& timefac_np) const;
 
-    bool CorrectParameters(const enum NOX::NLN::CorrectionType type) const;
+    bool correct_parameters(const enum NOX::NLN::CorrectionType type) const;
 
     /*! \brief Remove any condensed contributions from the structural right-hand side
      *
@@ -320,7 +320,7 @@ namespace STR
     void ResetStates(const Epetra_Vector& x, bool setstate, Vector& me_vec) const;
 
     //! Write current restart
-    void WriteRestart(IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const;
+    void write_restart(IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const;
 
     //! Read restart information
     void read_restart(IO::DiscretizationReader& ioreader);
@@ -332,7 +332,7 @@ namespace STR
     const STR::TIMINT::BaseDataGlobalState& GetGlobalState() const;
 
     //! return global state pointer (read and write access of the data)
-    const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& GlobalStatePtr();
+    const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& global_state_ptr();
 
     //! return pointer to the underlying time integrator (read-only)
     const Teuchos::RCP<const STR::TIMINT::Base>& GetTimIntPtr() const;
@@ -356,7 +356,7 @@ namespace STR
     void UpdateStepElement();
 
     //! Compute the residual by difference of {n+1} and {n} state
-    void UpdateResidual();
+    void update_residual();
 
     //! calculation of stresses and strains
     void determine_stress_strain();
@@ -396,19 +396,19 @@ namespace STR
     /*! \brief Recover the current state
      *
      * Necessary for condensed systems, e.g. EAS, dual mortar, etc.*/
-    void RunPostComputeX(const Epetra_Vector& xold, const Epetra_Vector& dir, const double& step,
+    void run_post_compute_x(const Epetra_Vector& xold, const Epetra_Vector& dir, const double& step,
         const Epetra_Vector& xnew, const bool isdefaultstep) const;
 
     /*! \brief Executed before the solution vector is going to be updated
      *
      *  \author hiermeier \date 03/17 */
-    void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable, const double& step,
-        const NOX::NLN::Group& curr_grp, const bool isdefaultstep) const;
+    void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
+        const double& step, const NOX::NLN::Group& curr_grp, const bool isdefaultstep) const;
 
     /*! \brief Executed at the end of the ::NOX::Solver::Step() (f.k.a. Iterate()) method
      *
      *  \author hiermeier \date 03/17 */
-    void RunPostIterate(const ::NOX::Solver::Generic& solver, const double step,
+    void run_post_iterate(const ::NOX::Solver::Generic& solver, const double step,
         const bool isdefaultstep, const int num_corrs) const;
 
     /*! \brief Executed at the beginning of the ::NOX::Solver::solve() method

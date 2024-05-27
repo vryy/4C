@@ -55,7 +55,7 @@ namespace INPAR
       penalty
     };
 
-    /// Discretization approach for beam to fluid meshtying.
+    /// discretization approach for beam to fluid meshtying.
     enum class BeamToFluidDiscretization
     {
       none,                    //< Default value

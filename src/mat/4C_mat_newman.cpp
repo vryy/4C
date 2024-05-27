@@ -42,12 +42,12 @@ MAT::PAR::Newman::Newman(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
         thermfacparanum_, thermfacpara_.size());
 
   // check if number of provided parameter is valid for a the chosen predefined function
-  CheckProvidedParams(transnrcurve_, transnrpara_);
-  CheckProvidedParams(thermfaccurve_, thermfacpara_);
+  check_provided_params(transnrcurve_, transnrpara_);
+  check_provided_params(thermfaccurve_, thermfacpara_);
 }
 
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Newman::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Newman::create_material()
 {
   return Teuchos::rcp(new MAT::Newman(this));
 }
@@ -132,9 +132,9 @@ double MAT::Newman::compute_transference_number(const double cint) const
   double trans = 0.0;
 
   if (trans_nr_curve() < 0)
-    trans = EvalPreDefinedFunct(trans_nr_curve(), cint, trans_nr_params());
+    trans = eval_pre_defined_funct(trans_nr_curve(), cint, trans_nr_params());
   else if (trans_nr_curve() == 0)
-    trans = EvalPreDefinedFunct(-1, cint, trans_nr_params());
+    trans = eval_pre_defined_funct(-1, cint, trans_nr_params());
   else
     trans = GLOBAL::Problem::Instance()
                 ->FunctionById<CORE::UTILS::FunctionOfTime>(trans_nr_curve() - 1)
@@ -168,7 +168,7 @@ double MAT::Newman::ComputeThermFac(const double cint) const
   double therm = 0.0;
 
   if (therm_fac_curve() < 0)
-    therm = EvalPreDefinedFunct(therm_fac_curve(), cint, therm_fac_params());
+    therm = eval_pre_defined_funct(therm_fac_curve(), cint, therm_fac_params());
   else if (therm_fac_curve() == 0)
     // thermodynamic factor has to be one if not defined
     therm = 1.0;

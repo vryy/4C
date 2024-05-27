@@ -46,21 +46,21 @@ MAT::PAR::LubricationMat::LubricationMat(Teuchos::RCP<CORE::MAT::PAR::Material> 
     case CORE::Materials::m_lubrication_law_constant:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::LubricationLawConstant(curmat));
+        curmat->set_parameter(new MAT::PAR::LubricationLawConstant(curmat));
       lubricationlaw_ = static_cast<MAT::PAR::LubricationLaw*>(curmat->Parameter());
       break;
     }
     case CORE::Materials::m_lubrication_law_barus:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::LubricationLawBarus(curmat));
+        curmat->set_parameter(new MAT::PAR::LubricationLawBarus(curmat));
       lubricationlaw_ = static_cast<MAT::PAR::LubricationLaw*>(curmat->Parameter());
       break;
     }
     case CORE::Materials::m_lubrication_law_roeland:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::LubricationLawRoeland(curmat));
+        curmat->set_parameter(new MAT::PAR::LubricationLawRoeland(curmat));
       lubricationlaw_ = static_cast<MAT::PAR::LubricationLaw*>(curmat->Parameter());
       break;
     }
@@ -71,7 +71,7 @@ MAT::PAR::LubricationMat::LubricationMat(Teuchos::RCP<CORE::MAT::PAR::Material> 
 }
 
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::LubricationMat::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::LubricationMat::create_material()
 {
   return Teuchos::rcp(new MAT::LubricationMat(this));
 }

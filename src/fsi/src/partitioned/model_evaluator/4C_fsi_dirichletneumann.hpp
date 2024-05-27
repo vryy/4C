@@ -47,8 +47,8 @@ namespace FSI
    * the independent parallel distribution of the fields complicates the
    * exchange of coupling information. Therefore three instances of the
    * Coupling class are used that couple those fields. On top of these
-   * there are helper methods StructToAle(), StructToFluid(),
-   * FluidToStruct() and AleToFluid() to easily exchange distributed
+   * there are helper methods StructToAle(), struct_to_fluid(),
+   * fluid_to_struct() and AleToFluid() to easily exchange distributed
    * interface vectors between fields.
    */
   class DirichletNeumann : public Partitioned
@@ -85,7 +85,7 @@ namespace FSI
      * \param[in, out] F residual vector
      * \param[in] fillFlag Type of evaluation in computeF() (cf. NOX documentation for details)
      */
-    void FSIOp(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag) override;
+    void fsi_op(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag) override;
 
     /** \brief interface fluid operator
      * \param[in] icoup kinematic interface variable
@@ -93,7 +93,7 @@ namespace FSI
      *
      * \returns interface force
      */
-    Teuchos::RCP<Epetra_Vector> FluidOp(
+    Teuchos::RCP<Epetra_Vector> fluid_op(
         Teuchos::RCP<Epetra_Vector> icoup, const FillType fillFlag) override = 0;
 
     /** \brief interface structural operator
@@ -102,7 +102,7 @@ namespace FSI
      *
      * \returns kinematic interface variable
      */
-    Teuchos::RCP<Epetra_Vector> StructOp(
+    Teuchos::RCP<Epetra_Vector> struct_op(
         Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag) override = 0;
 
     Teuchos::RCP<Epetra_Vector> initial_guess() override = 0;

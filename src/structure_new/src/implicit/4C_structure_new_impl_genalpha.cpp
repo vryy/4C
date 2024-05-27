@@ -57,7 +57,7 @@ void STR::IMPLICIT::GenAlpha::Setup()
   Generic::Setup();
 
   const STR::TIMINT::GenAlphaDataSDyn& genalpha_sdyn =
-      dynamic_cast<const STR::TIMINT::GenAlphaDataSDyn&>(TimInt().GetDataSDyn());
+      dynamic_cast<const STR::TIMINT::GenAlphaDataSDyn&>(tim_int().GetDataSDyn());
 
   // ---------------------------------------------------------------------------
   // setup time integration parameters
@@ -65,7 +65,7 @@ void STR::IMPLICIT::GenAlpha::Setup()
   set_time_integration_coefficients(coeffs_);
 
   // sanity checks and some screen output
-  if (GlobalState().GetMyRank() == 0)
+  if (global_state().GetMyRank() == 0)
   {
     if (rhoinf_ > 0.0) std::cout << "   rho = " << rhoinf_ << std::endl;
     // beta
@@ -110,22 +110,22 @@ void STR::IMPLICIT::GenAlpha::Setup()
   // setup mid-point vectors
   // ---------------------------------------------------------------------------
   const_vel_acc_update_ptr_ =
-      Teuchos::rcp(new Epetra_MultiVector(*GlobalState().DofRowMapView(), 2, true));
+      Teuchos::rcp(new Epetra_MultiVector(*global_state().DofRowMapView(), 2, true));
 
   // ---------------------------------------------------------------------------
   // setup pointers to the force vectors of the global state data container
   // ---------------------------------------------------------------------------
-  finertian_ptr_ = GlobalState().GetFinertialN();
-  finertianp_ptr_ = GlobalState().GetFinertialNp();
+  finertian_ptr_ = global_state().GetFinertialN();
+  finertianp_ptr_ = global_state().GetFinertialNp();
 
-  fviscon_ptr_ = GlobalState().GetFviscoN();
-  fvisconp_ptr_ = GlobalState().GetFviscoNp();
+  fviscon_ptr_ = global_state().GetFviscoN();
+  fvisconp_ptr_ = global_state().GetFviscoNp();
 
   // -------------------------------------------------------------------
   // set initial displacement
   // -------------------------------------------------------------------
   set_initial_displacement(
-      TimInt().GetDataSDyn().GetInitialDisp(), TimInt().GetDataSDyn().StartFuncNo());
+      tim_int().GetDataSDyn().GetInitialDisp(), tim_int().GetDataSDyn().StartFuncNo());
 
   // Has to be set before the post_setup() routine is called!
   issetup_ = true;
@@ -141,14 +141,14 @@ void STR::IMPLICIT::GenAlpha::post_setup()
   // check for applicability of classical GenAlpha scheme
   // ---------------------------------------------------------------------------
   // set the constant parameters for the element evaluation
-  if (TimInt().GetDataSDyn().GetMassLinType() == INPAR::STR::ml_rotations)
+  if (tim_int().GetDataSDyn().GetMassLinType() == INPAR::STR::ml_rotations)
   {
     FOUR_C_THROW(
         "MASSLIN=ml_rotations is not supported by classical GenAlpha! "
         "Choose GenAlphaLieGroup instead!");
   }
 
-  if (not SDyn().NeglectInertia())
+  if (not s_dyn().NeglectInertia())
   {
     equilibrate_initial_state();
   }
@@ -165,7 +165,7 @@ void STR::IMPLICIT::GenAlpha::set_time_integration_coefficients(Coefficients& co
   }
 
   const STR::TIMINT::GenAlphaDataSDyn& genalpha_sdyn =
-      dynamic_cast<const STR::TIMINT::GenAlphaDataSDyn&>(TimInt().GetDataSDyn());
+      dynamic_cast<const STR::TIMINT::GenAlphaDataSDyn&>(tim_int().GetDataSDyn());
 
   // get a copy of the input parameters
   coeffs.beta_ = genalpha_sdyn.GetBeta();
@@ -184,17 +184,17 @@ void STR::IMPLICIT::GenAlpha::set_time_integration_coefficients(Coefficients& co
 double STR::IMPLICIT::GenAlpha::GetModelValue(const Epetra_Vector& x)
 {
   // --- kinetic energy increment
-  Teuchos::RCP<const Epetra_Vector> accnp_ptr = GlobalState().GetAccNp();
+  Teuchos::RCP<const Epetra_Vector> accnp_ptr = global_state().GetAccNp();
   const Epetra_Vector& accnp = *accnp_ptr;
 
-  Teuchos::RCP<const Epetra_Vector> accn_ptr = GlobalState().GetAccN();
+  Teuchos::RCP<const Epetra_Vector> accn_ptr = global_state().GetAccN();
   const Epetra_Vector& accn = *accn_ptr;
 
   Epetra_Vector accm(accnp);
   accm.Update(alpham_, accn, 1.0 - alpham_);
 
-  const double dt = (*GlobalState().GetDeltaTime())[0];
-  Teuchos::RCP<const CORE::LINALG::SparseOperator> mass_ptr = GlobalState().GetMassMatrix();
+  const double dt = (*global_state().GetDeltaTime())[0];
+  Teuchos::RCP<const CORE::LINALG::SparseOperator> mass_ptr = global_state().GetMassMatrix();
   const CORE::LINALG::SparseMatrix& mass =
       dynamic_cast<const CORE::LINALG::SparseMatrix&>(*mass_ptr);
   Epetra_Vector tmp(mass.RangeMap(), true);
@@ -210,7 +210,7 @@ double STR::IMPLICIT::GenAlpha::GetModelValue(const Epetra_Vector& x)
   STR::MODELEVALUATOR::Structure& str_model =
       dynamic_cast<STR::MODELEVALUATOR::Structure&>(Evaluator(INPAR::STR::model_structure));
 
-  Teuchos::RCP<const Epetra_Vector> disnp_ptr = GlobalState().ExtractDisplEntries(x);
+  Teuchos::RCP<const Epetra_Vector> disnp_ptr = global_state().ExtractDisplEntries(x);
   const Epetra_Vector& disnp = *disnp_ptr;
 
   const double af_np = 1.0 - alphaf_;
@@ -219,7 +219,7 @@ double STR::IMPLICIT::GenAlpha::GetModelValue(const Epetra_Vector& x)
 
   // --- external energy
   double ext_energy_np = 0.0;
-  GlobalState().GetFextNp()->Dot(disnp, &ext_energy_np);
+  global_state().GetFextNp()->Dot(disnp, &ext_energy_np);
   ext_energy_np *= af_np;
 
   // --- old contributions
@@ -228,7 +228,7 @@ double STR::IMPLICIT::GenAlpha::GetModelValue(const Epetra_Vector& x)
   // the contact forces as well! See UpdateStepState in the different
   // model evaluator classes.
   double disNp_forcesN = 0.0;
-  GlobalState().GetFstructureOld()->Dot(disnp, &disNp_forcesN);
+  global_state().GetFstructureOld()->Dot(disnp, &disNp_forcesN);
 
   const double total = kin_energy_incr + int_energy_np + disNp_forcesN - ext_energy_np;
 
@@ -255,23 +255,23 @@ void STR::IMPLICIT::GenAlpha::set_state(const Epetra_Vector& x)
 
   update_constant_state_contributions();
 
-  const double& dt = (*GlobalState().GetDeltaTime())[0];
+  const double& dt = (*global_state().GetDeltaTime())[0];
   // ---------------------------------------------------------------------------
   // new end-point displacements
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().ExtractDisplEntries(x);
-  GlobalState().GetDisNp()->Scale(1.0, *disnp_ptr);
+  Teuchos::RCP<Epetra_Vector> disnp_ptr = global_state().ExtractDisplEntries(x);
+  global_state().GetDisNp()->Scale(1.0, *disnp_ptr);
 
   // ---------------------------------------------------------------------------
   // new end-point velocities
   // ---------------------------------------------------------------------------
-  GlobalState().GetVelNp()->Update(
+  global_state().GetVelNp()->Update(
       1.0, *(*const_vel_acc_update_ptr_)(0), gamma_ / (beta_ * dt), *disnp_ptr, 0.0);
 
   // ---------------------------------------------------------------------------
   // new end-point accelerations
   // ---------------------------------------------------------------------------
-  GlobalState().GetAccNp()->Update(
+  global_state().GetAccNp()->Update(
       1.0, *(*const_vel_acc_update_ptr_)(1), 1.0 / (beta_ * dt * dt), *disnp_ptr, 0.0);
 }
 
@@ -279,23 +279,23 @@ void STR::IMPLICIT::GenAlpha::set_state(const Epetra_Vector& x)
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::GenAlpha::update_constant_state_contributions()
 {
-  const double& dt = (*GlobalState().GetDeltaTime())[0];
+  const double& dt = (*global_state().GetDeltaTime())[0];
 
   // ---------------------------------------------------------------------------
   // velocity
   // ---------------------------------------------------------------------------
-  (*const_vel_acc_update_ptr_)(0)->Scale((beta_ - gamma_) / beta_, *GlobalState().GetVelN());
+  (*const_vel_acc_update_ptr_)(0)->Scale((beta_ - gamma_) / beta_, *global_state().GetVelN());
   (*const_vel_acc_update_ptr_)(0)->Update(
-      (2.0 * beta_ - gamma_) * dt / (2.0 * beta_), *GlobalState().GetAccN(), 1.0);
-  (*const_vel_acc_update_ptr_)(0)->Update(-gamma_ / (beta_ * dt), *GlobalState().GetDisN(), 1.0);
+      (2.0 * beta_ - gamma_) * dt / (2.0 * beta_), *global_state().GetAccN(), 1.0);
+  (*const_vel_acc_update_ptr_)(0)->Update(-gamma_ / (beta_ * dt), *global_state().GetDisN(), 1.0);
 
   // ---------------------------------------------------------------------------
   // acceleration
   // ---------------------------------------------------------------------------
   (*const_vel_acc_update_ptr_)(1)->Scale(
-      (2.0 * beta_ - 1.0) / (2.0 * beta_), *GlobalState().GetAccN());
-  (*const_vel_acc_update_ptr_)(1)->Update(-1.0 / (beta_ * dt), *GlobalState().GetVelN(), 1.0);
-  (*const_vel_acc_update_ptr_)(1)->Update(-1.0 / (beta_ * dt * dt), *GlobalState().GetDisN(), 1.0);
+      (2.0 * beta_ - 1.0) / (2.0 * beta_), *global_state().GetAccN());
+  (*const_vel_acc_update_ptr_)(1)->Update(-1.0 / (beta_ * dt), *global_state().GetVelN(), 1.0);
+  (*const_vel_acc_update_ptr_)(1)->Update(-1.0 / (beta_ * dt * dt), *global_state().GetDisN(), 1.0);
 }
 
 /*----------------------------------------------------------------------------*
@@ -308,7 +308,7 @@ bool STR::IMPLICIT::GenAlpha::ApplyForce(const Epetra_Vector& x, Epetra_Vector& 
   // evaluate the different model types (static case) at t_{n+1}^{i}
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
-  ResetEvalParams();
+  reset_eval_params();
   return ModelEval().ApplyForce(x, f, 1.0 - GetIntParam());
 }
 
@@ -322,7 +322,7 @@ bool STR::IMPLICIT::GenAlpha::ApplyStiff(const Epetra_Vector& x, CORE::LINALG::S
   // evaluate the different model types (static case) at t_{n+1}^{i}
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
-  ResetEvalParams();
+  reset_eval_params();
   const bool ok = ModelEval().ApplyStiff(x, jac, 1.0 - GetIntParam());
 
   if (not ok) return ok;
@@ -342,7 +342,7 @@ bool STR::IMPLICIT::GenAlpha::ApplyForceStiff(
   // evaluate the different model types (static case) at t_{n+1}^{i}
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
-  ResetEvalParams();
+  reset_eval_params();
   const bool ok = ModelEval().ApplyForceStiff(x, f, jac, 1.0 - GetIntParam());
 
   if (not ok) return ok;
@@ -391,19 +391,19 @@ void STR::IMPLICIT::GenAlpha::add_visco_mass_contributions(Epetra_Vector& f) con
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::GenAlpha::add_visco_mass_contributions(CORE::LINALG::SparseOperator& jac) const
 {
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptr = GlobalState().ExtractDisplBlock(jac);
-  const double& dt = (*GlobalState().GetDeltaTime())[0];
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptr = global_state().ExtractDisplBlock(jac);
+  const double& dt = (*global_state().GetDeltaTime())[0];
   // add inertial contributions and scale the structural stiffness block
-  stiff_ptr->Add(*GlobalState().GetMassMatrix(), false, (1.0 - alpham_) / (beta_ * dt * dt), 1.0);
+  stiff_ptr->Add(*global_state().GetMassMatrix(), false, (1.0 - alpham_) / (beta_ * dt * dt), 1.0);
   // add Rayleigh damping contributions
-  if (TimInt().GetDataSDyn().GetDampingType() == INPAR::STR::damp_rayleigh)
+  if (tim_int().GetDataSDyn().GetDampingType() == INPAR::STR::damp_rayleigh)
     stiff_ptr->Add(
-        *GlobalState().GetDampMatrix(), false, (1.0 - alphaf_) * gamma_ / (beta_ * dt), 1.0);
+        *global_state().GetDampMatrix(), false, (1.0 - alphaf_) * gamma_ / (beta_ * dt), 1.0);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlpha::WriteRestart(
+void STR::IMPLICIT::GenAlpha::write_restart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
@@ -411,7 +411,7 @@ void STR::IMPLICIT::GenAlpha::WriteRestart(
   iowriter.WriteVector("finert", finertian_ptr_);
   iowriter.WriteVector("fvisco", fviscon_ptr_);
 
-  ModelEval().WriteRestart(iowriter, forced_writerestart);
+  ModelEval().write_restart(iowriter, forced_writerestart);
 }
 
 /*----------------------------------------------------------------------------*
@@ -465,7 +465,7 @@ void STR::IMPLICIT::GenAlpha::UpdateStepState()
   // ---------------------------------------------------------------------------
   // new at t_{n+1} -> t_n
   //    finertial_{n} := finertial_{n+1}
-  finertian_ptr_->Scale(1.0, *GlobalState().GetFinertialNp());
+  finertian_ptr_->Scale(1.0, *global_state().GetFinertialNp());
   // new at t_{n+1} -> t_n
   //    fviscous_{n} := fviscous_{n+1}
   fviscon_ptr_->Scale(1.0, *fvisconp_ptr_);
@@ -494,10 +494,10 @@ void STR::IMPLICIT::GenAlpha::predict_const_dis_consist_vel_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
   check_init_setup();
-  Teuchos::RCP<const Epetra_Vector> disn = GlobalState().GetDisN();
-  Teuchos::RCP<const Epetra_Vector> veln = GlobalState().GetVelN();
-  Teuchos::RCP<const Epetra_Vector> accn = GlobalState().GetAccN();
-  const double& dt = (*GlobalState().GetDeltaTime())[0];
+  Teuchos::RCP<const Epetra_Vector> disn = global_state().GetDisN();
+  Teuchos::RCP<const Epetra_Vector> veln = global_state().GetVelN();
+  Teuchos::RCP<const Epetra_Vector> accn = global_state().GetAccN();
+  const double& dt = (*global_state().GetDeltaTime())[0];
 
   // constant predictor: displacement in domain
   disnp.Scale(1.0, *disn);
@@ -527,10 +527,10 @@ bool STR::IMPLICIT::GenAlpha::predict_const_vel_consist_acc(
    * acceleration. The corresponding accelerations are calculated in the
    * equilibrate_initial_state() routine. */
 
-  Teuchos::RCP<const Epetra_Vector> disn = GlobalState().GetDisN();
-  Teuchos::RCP<const Epetra_Vector> veln = GlobalState().GetVelN();
-  Teuchos::RCP<const Epetra_Vector> accn = GlobalState().GetAccN();
-  const double& dt = (*GlobalState().GetDeltaTime())[0];
+  Teuchos::RCP<const Epetra_Vector> disn = global_state().GetDisN();
+  Teuchos::RCP<const Epetra_Vector> veln = global_state().GetVelN();
+  Teuchos::RCP<const Epetra_Vector> accn = global_state().GetAccN();
+  const double& dt = (*global_state().GetDeltaTime())[0];
 
   // extrapolated displacements based upon constant velocities
   // d_{n+1} = d_{n} + dt * v_{n}
@@ -560,10 +560,10 @@ bool STR::IMPLICIT::GenAlpha::PredictConstAcc(
    * acceleration. The corresponding accelerations are calculated in the
    * equilibrate_initial_state() routine. */
 
-  Teuchos::RCP<const Epetra_Vector> disn = GlobalState().GetDisN();
-  Teuchos::RCP<const Epetra_Vector> veln = GlobalState().GetVelN();
-  Teuchos::RCP<const Epetra_Vector> accn = GlobalState().GetAccN();
-  const double& dt = (*GlobalState().GetDeltaTime())[0];
+  Teuchos::RCP<const Epetra_Vector> disn = global_state().GetDisN();
+  Teuchos::RCP<const Epetra_Vector> veln = global_state().GetVelN();
+  Teuchos::RCP<const Epetra_Vector> accn = global_state().GetAccN();
+  const double& dt = (*global_state().GetDeltaTime())[0];
 
   // extrapolated displacements based upon constant accelerations
   // d_{n+1} = d_{n} + dt * v_{n} + dt^2 / 2 * a_{n}
@@ -582,13 +582,13 @@ bool STR::IMPLICIT::GenAlpha::PredictConstAcc(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlpha::ResetEvalParams()
+void STR::IMPLICIT::GenAlpha::reset_eval_params()
 {
   // call base class
-  STR::IMPLICIT::Generic::ResetEvalParams();
+  STR::IMPLICIT::Generic::reset_eval_params();
 
   // set the time step dependent parameters for the element evaluation
-  const double& dt = (*GlobalState().GetDeltaTime())[0];
+  const double& dt = (*global_state().GetDeltaTime())[0];
   double timeintfac_dis = beta_ * dt * dt;
   double timeintfac_vel = gamma_ * dt;
 

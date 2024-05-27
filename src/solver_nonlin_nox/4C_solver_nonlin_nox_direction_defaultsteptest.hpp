@@ -89,7 +89,7 @@ namespace NOX
            *  modifications as long all entries on the primal diagonal are modified.
            *
            *  \author hiermeier */
-          bool isAccepted();
+          bool is_accepted();
 
           /// reset class members and perform the default check
           bool initAndCheckTest(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp) override;
@@ -125,7 +125,7 @@ namespace NOX
            *  positive definite. To say that, the criterion must hold for ALL vectors
            *  beside the zero vector. However, since we are only interested in the current
            *  direction this test seems to be sufficient. */
-          bool isPositiveDefinite() const;
+          bool is_positive_definite() const;
 
           /// compute scalar quality quantities based on the primal search direction
           void compute_primal_direction_measures(
@@ -136,13 +136,13 @@ namespace NOX
               ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp);
 
           /// detected bad elements based on the user-defined criteria
-          void identifyBadElements(::NOX::Abstract::Group& grp, int& gnew_num_bad_eles);
+          void identify_bad_elements(::NOX::Abstract::Group& grp, int& gnew_num_bad_eles);
 
           /// fill my bad dofs set and return the number of newly bad elements
-          int fillMyBadDofs(NOX::NLN::Group& grp);
+          int fill_my_bad_dofs(NOX::NLN::Group& grp);
 
           /// return an empty diagonal vector
-          Teuchos::RCP<Epetra_Vector> getEmptyDiagonal(const NOX::NLN::Group& grp) const;
+          Teuchos::RCP<Epetra_Vector> get_empty_diagonal(const NOX::NLN::Group& grp) const;
 
           /// fill the diagonal vector at all dofs of bad elements
           void fill_diagonal_at_bad_dofs(Epetra_Vector& diagonal) const;

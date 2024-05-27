@@ -69,7 +69,7 @@ MAT::PAR::ThermoPlasticLinElast::ThermoPlasticLinElast(
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       dano 08/11 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ThermoPlasticLinElast::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ThermoPlasticLinElast::create_material()
 {
   return Teuchos::rcp(new MAT::ThermoPlasticLinElast(this));
 }
@@ -97,7 +97,7 @@ MAT::ThermoPlasticLinElast::ThermoPlasticLinElast() : params_(nullptr) {}
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 08/11 |
- | called in ReadMaterials --> CreateMaterial                           |
+ | called in ReadMaterials --> create_material                           |
  *----------------------------------------------------------------------*/
 MAT::ThermoPlasticLinElast::ThermoPlasticLinElast(MAT::PAR::ThermoPlasticLinElast* params)
     : params_(params), plastic_step_(false)

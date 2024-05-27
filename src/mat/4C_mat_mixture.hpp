@@ -52,7 +52,7 @@ namespace MAT
 
       /// @}
 
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
     };
   }  // namespace PAR
 

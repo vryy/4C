@@ -98,10 +98,10 @@ namespace STR
 
        protected:
         //! Reset the non-linear solver parameters and variables
-        virtual void ResetParams();
+        virtual void reset_params();
 
         //! Convert the final nox status into a structural status
-        enum INPAR::STR::ConvergenceStatus ConvertFinalStatus(
+        enum INPAR::STR::ConvergenceStatus convert_final_status(
             const ::NOX::StatusTest::StatusType& finalstatus) const;
 
        protected:

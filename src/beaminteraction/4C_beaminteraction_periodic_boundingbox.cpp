@@ -603,7 +603,7 @@ void CORE::GEO::MESHFREE::BoundingBox::ApplyDirichlet(double timen)
 
   // disn_ then also holds prescribed new Dirichlet displacements
   boxdiscret_->ClearState();
-  boxdiscret_->EvaluateDirichlet(
+  boxdiscret_->evaluate_dirichlet(
       p, disn_row_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   boxdiscret_->ClearState();
 

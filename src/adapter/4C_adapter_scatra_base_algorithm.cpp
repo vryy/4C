@@ -530,7 +530,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Setup()
   // get the parameter list
   auto scatradyn = scatra_->ScatraParameterList();
   // get the discretization
-  auto discret = scatra_->Discretization();
+  auto discret = scatra_->discretization();
 
   // -------------------------------------------------------------------
   // what's the current problem type?
@@ -593,7 +593,7 @@ Teuchos::RCP<CORE::UTILS::ResultTest> ADAPTER::ScaTraBaseAlgorithm::create_sca_t
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::ScaTraBaseAlgorithm::CheckIsSetup() const
+void ADAPTER::ScaTraBaseAlgorithm::check_is_setup() const
 {
   if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
 }

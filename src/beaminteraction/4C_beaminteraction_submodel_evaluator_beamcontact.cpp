@@ -613,7 +613,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::ResetStepState() { check_i
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteRestart(
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_restart(
     IO::DiscretizationWriter& ia_writer, IO::DiscretizationWriter& bin_writer) const
 {
   // empty
@@ -646,7 +646,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::PostReadRestart()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::RunPostIterate(
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::run_post_iterate(
     const ::NOX::Solver::Generic& solver)
 {
   check_init_setup();
@@ -719,7 +719,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_half_interaction_dista
       dynamic_cast<const Epetra_MpiComm*>(&(Discret().Comm()))->Comm());
 
   // i) beam to beam contact
-  if (HaveContactType(BINSTRATEGY::UTILS::Beam))
+  if (have_contact_type(BINSTRATEGY::UTILS::Beam))
   {
     // safety factor
     globalmax_beam_ia_distance *= safe_fac;
@@ -735,7 +735,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_half_interaction_dista
   }
 
   // ii) beam to sphere contact
-  if (HaveContactType(BINSTRATEGY::UTILS::RigidSphere))
+  if (have_contact_type(BINSTRATEGY::UTILS::RigidSphere))
   {
     // loop over all spheres
     double curr_ia_dist = 0.0;
@@ -771,7 +771,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_half_interaction_dista
   }
 
   // iii) beam to solid contact
-  if (HaveContactType(BINSTRATEGY::UTILS::Solid))
+  if (have_contact_type(BINSTRATEGY::UTILS::Solid))
   {
     FOUR_C_THROW("Not yet implemented for beam to solid contact");
   }
@@ -779,7 +779,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_half_interaction_dista
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::HaveContactType(
+bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::have_contact_type(
     BINSTRATEGY::UTILS::BinContentType const& contacttype) const
 {
   check_init();

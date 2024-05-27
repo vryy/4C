@@ -273,7 +273,7 @@ void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::setup_structu
   }  // if distr_type_vonmisesfisher
 
   // zero out small entries
-  const double tol = GetResidualTol();
+  const double tol = get_residual_tol();
   for (unsigned i = 0; i < structural_tensor_stress.numRows(); ++i)
     if (abs(structural_tensor_stress(i)) < tol) structural_tensor_stress(i) = 0.0;
 
@@ -318,7 +318,7 @@ void MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic::setup
   CORE::LINALG::VOIGT::Stresses::VectorToMatrix(structural_tensor_stress, structural_tensor);
 }
 
-double MAT::ELASTIC::StructuralTensorStrategyBase::GetResidualTol()
+double MAT::ELASTIC::StructuralTensorStrategyBase::get_residual_tol()
 {
   double restol = -1.0;
   GLOBAL::Problem* gprob = GLOBAL::Problem::Instance();

@@ -26,10 +26,10 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-std::map<std::string, std::string> ALE::UTILS::AleCloneStrategy::ConditionsToCopy() const
+std::map<std::string, std::string> ALE::UTILS::AleCloneStrategy::conditions_to_copy() const
 {
   return {{"ALEDirichlet", "Dirichlet"}, {"FSICoupling", "FSICoupling"},
-      {"FPSICoupling", "FPSICoupling"}, {"FREESURFCoupling", "FREESURFCoupling"},
+      {"fpsi_coupling", "fpsi_coupling"}, {"FREESURFCoupling", "FREESURFCoupling"},
       {"ALEUPDATECoupling", "ALEUPDATECoupling"}, {"StructAleCoupling", "StructAleCoupling"},
       {"LinePeriodic", "LinePeriodic"}, {"SurfacePeriodic", "SurfacePeriodic"},
       {"ElchBoundaryKinetics", "ElchBoundaryKinetics"},
@@ -40,7 +40,7 @@ std::map<std::string, std::string> ALE::UTILS::AleCloneStrategy::ConditionsToCop
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::UTILS::AleCloneStrategy::CheckMaterialType(const int matid)
+void ALE::UTILS::AleCloneStrategy::check_material_type(const int matid)
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
@@ -52,7 +52,7 @@ void ALE::UTILS::AleCloneStrategy::CheckMaterialType(const int matid)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::UTILS::AleCloneStrategy::SetElementData(
+void ALE::UTILS::AleCloneStrategy::set_element_data(
     Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool nurbsdis)
 {
   if (nurbsdis == false)
@@ -104,7 +104,7 @@ void ALE::UTILS::AleCloneStrategy::SetElementData(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-bool ALE::UTILS::AleCloneStrategy::DetermineEleType(
+bool ALE::UTILS::AleCloneStrategy::determine_ele_type(
     DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   bool cloneit = true;

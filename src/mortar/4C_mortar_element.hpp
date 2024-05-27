@@ -480,7 +480,7 @@ namespace MORTAR
     independent of the nodes.
 
     */
-    int NumDofPerElement() const override { return 0; }
+    int num_dof_per_element() const override { return 0; }
 
     /*!
     \brief Print this element
@@ -785,7 +785,7 @@ namespace MORTAR
     /*!
     \brief Compute length/area of the element and its derivative
     */
-    virtual double ComputeAreaDeriv(CORE::GEN::Pairedvector<int, double>& area_deriv);
+    virtual double compute_area_deriv(CORE::GEN::Pairedvector<int, double>& area_deriv);
 
     /*!
     \brief A repository for all kinds of 1D/2D shape functions
@@ -805,21 +805,21 @@ namespace MORTAR
     /*!
     \brief Evaluate displacement shape functions and derivatives
     */
-    virtual bool EvaluateShape(const double* xi, CORE::LINALG::SerialDenseVector& val,
+    virtual bool evaluate_shape(const double* xi, CORE::LINALG::SerialDenseVector& val,
         CORE::LINALG::SerialDenseMatrix& deriv, const int valdim, bool dualquad3d = false);
 
     /*! \brief Evaluate displacement shape functions and derivatives
      *
      *  \author hiermeier \date 03/17 */
     template <unsigned elenumnode, unsigned eledim>
-    inline bool EvaluateShape(const double* xi, CORE::LINALG::Matrix<elenumnode, 1>& val,
+    inline bool evaluate_shape(const double* xi, CORE::LINALG::Matrix<elenumnode, 1>& val,
         CORE::LINALG::Matrix<elenumnode, eledim>& deriv, unsigned valdim = elenumnode,
         bool dualquad3d = false)
     {
       CORE::LINALG::SerialDenseVector sdv_val(Teuchos::View, val.A(), elenumnode);
       CORE::LINALG::SerialDenseMatrix sdm_deriv(
           Teuchos::View, deriv.A(), elenumnode, elenumnode, eledim);
-      return EvaluateShape(xi, sdv_val, sdm_deriv, valdim, dualquad3d);
+      return evaluate_shape(xi, sdv_val, sdm_deriv, valdim, dualquad3d);
     }
 
     /*!

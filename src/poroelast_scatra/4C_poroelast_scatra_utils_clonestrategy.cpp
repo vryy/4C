@@ -152,7 +152,7 @@ INPAR::SCATRA::ImplType POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::GetImpl
     return ADAPTER::GetScaTraImplType(ele);
 }
 
-bool POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::DetermineEleType(
+bool POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::determine_ele_type(
     DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // clone elements based on poro or scatra elements
@@ -168,7 +168,7 @@ bool POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::DetermineEleType(
 }
 
 
-void POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::SetElementData(
+void POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::set_element_data(
     Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbsdis)
 {
   // We need to set material and possibly other things to complete element setup.
@@ -205,7 +205,7 @@ void POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::SetElementData(
 }
 
 std::map<std::string, std::string>
-POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::ConditionsToCopy() const
+POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::conditions_to_copy() const
 {
   return {{"TransportDirichlet", "Dirichlet"}, {"TransportPointNeumann", "PointNeumann"},
       {"TransportLineNeumann", "LineNeumann"}, {"TransportSurfaceNeumann", "SurfaceNeumann"},
@@ -219,7 +219,7 @@ POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::ConditionsToCopy() const
       {"ArtScatraCouplConNodeToPoint", "ArtScatraCouplConNodeToPoint"}};
 }
 
-void POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::CheckMaterialType(const int matid)
+void POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::check_material_type(const int matid)
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
@@ -232,7 +232,7 @@ void POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::CheckMaterialType(const in
     FOUR_C_THROW("Material with ID %d is not admissible for scalar transport elements", matid);
 }
 
-bool POROELASTSCATRA::UTILS::PoroelastCloneStrategyforScatraElements::DetermineEleType(
+bool POROELASTSCATRA::UTILS::PoroelastCloneStrategyforScatraElements::determine_ele_type(
     DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // clone the element only if it is a poro or scatra element (we support submeshes here)

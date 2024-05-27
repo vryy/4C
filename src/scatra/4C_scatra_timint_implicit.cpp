@@ -266,7 +266,7 @@ void SCATRA::ScaTraTimIntImpl::Init()
   // -----------------------------------------------------------------------
   // determine number of degrees of freedom and transported scalars per node
   // -----------------------------------------------------------------------
-  CreateScalarHandler();
+  create_scalar_handler();
 
   // -------------------------------------------------------------------
   // check compatibility of boundary conditions
@@ -296,7 +296,7 @@ void SCATRA::ScaTraTimIntImpl::Init()
         "'linear_incremental'!");
   }
 
-  SCATRAUTILS::CheckConsistencyOfS2IConditions(Discretization());
+  SCATRAUTILS::CheckConsistencyOfS2IConditions(discretization());
 
   // create strategy
   create_meshtying_strategy();
@@ -331,7 +331,7 @@ void SCATRA::ScaTraTimIntImpl::Setup()
   else
     scalarhandler_->Setup(this);
 
-  // setup splitter (needed to solve initialization problems before SetupMeshtying())
+  // setup splitter (needed to solve initialization problems before setup_meshtying())
   SetupSplitter();
 
   // setup the matrix block maps and the meshtying strategy
@@ -347,11 +347,11 @@ void SCATRA::ScaTraTimIntImpl::Setup()
     sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(discret_->dof_row_map()), 27));
   }
   else
-    sysmat_ = InitSystemMatrix();
+    sysmat_ = init_system_matrix();
 
   // for some special meshtying cases we need to override the information with the information from
   // the meshtying strategy, in such a case the meshtying strategy implements the method below
-  if (strategy_->system_matrix_initialization_needed()) sysmat_ = strategy_->InitSystemMatrix();
+  if (strategy_->system_matrix_initialization_needed()) sysmat_ = strategy_->init_system_matrix();
 
   // -------------------------------------------------------------------
   // create vectors containing problem variables
@@ -400,7 +400,7 @@ void SCATRA::ScaTraTimIntImpl::Setup()
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time", time_);
-    discret_->EvaluateDirichlet(
+    discret_->evaluate_dirichlet(
         eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0);  // just in case of change
   }
@@ -1107,8 +1107,8 @@ void SCATRA::ScaTraTimIntImpl::prepare_time_step()
   // -------------------------------------------------------------------
   // TODO: Dirichlet auch im Fall von genalpha phinp
   // Neumann(n + alpha_f)
-  ApplyDirichletBC(time_, phinp_, Teuchos::null);
-  ApplyNeumannBC(neumann_loads_);
+  apply_dirichlet_bc(time_, phinp_, Teuchos::null);
+  apply_neumann_bc(neumann_loads_);
 
   // By definition: Applying DC on the slave side of an internal interface is not allowed
   //                since it leads to an over-constraint system
@@ -1123,7 +1123,7 @@ void SCATRA::ScaTraTimIntImpl::prepare_time_step()
   // -------------------------------------------------------------------
   //     update velocity field if given by function (it might depend on time)
   // -------------------------------------------------------------------
-  if (velocity_field_type_ == INPAR::SCATRA::velocity_function) SetVelocityField();
+  if (velocity_field_type_ == INPAR::SCATRA::velocity_function) set_velocity_field();
 
   // -------------------------------------------------------------------
   //     update external force given by function (it might depend on time)
@@ -1136,7 +1136,7 @@ void SCATRA::ScaTraTimIntImpl::prepare_time_step()
   if ((step_ == 1 or (turbinflow_ and step_ == numinflowsteps_ + 1)) and
       (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
           turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales))
-    AVM3Preparation();
+    av_m3_preparation();
 
   // -------------------------------------------------------------------
   // compute values at intermediate time steps (only for gen.-alpha)
@@ -1173,10 +1173,10 @@ void SCATRA::ScaTraTimIntImpl::prepare_first_time_step()
     if (NdsVel() != -1)  // if some velocity field has been set
     {
       // TODO: Restructure enforcement of Dirichlet boundary conditions on phin_
-      // A clean solution would incorporate ApplyDirichletBC(...) into
+      // A clean solution would incorporate apply_dirichlet_bc(...) into
       // calc_initial_time_derivative(). However, this would make a number of test cases fail. We
       // should have a closer look at this problem and fix it eventually.
-      ApplyDirichletBC(time_, phin_, Teuchos::null);
+      apply_dirichlet_bc(time_, phin_, Teuchos::null);
       calc_initial_time_derivative();
     }
 
@@ -1203,7 +1203,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareLinearSolve()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetVelocityField()
+void SCATRA::ScaTraTimIntImpl::set_velocity_field()
 {
   // safety check
   if (NdsVel() >= discret_->NumDofSets()) FOUR_C_THROW("Too few dofsets on scatra discretization!");
@@ -1429,7 +1429,7 @@ void SCATRA::ScaTraTimIntImpl::set_mean_concentration(Teuchos::RCP<const Epetra_
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetVelocityField(Teuchos::RCP<const Epetra_Vector> convvel,
+void SCATRA::ScaTraTimIntImpl::set_velocity_field(Teuchos::RCP<const Epetra_Vector> convvel,
     Teuchos::RCP<const Epetra_Vector> acc, Teuchos::RCP<const Epetra_Vector> vel,
     Teuchos::RCP<const Epetra_Vector> fsvel, const bool setpressure)
 {
@@ -1443,7 +1443,7 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(Teuchos::RCP<const Epetra_Vector
 
   if (velocity_field_type_ != INPAR::SCATRA::velocity_Navier_Stokes)
     FOUR_C_THROW(
-        "Wrong SetVelocityField() called for velocity field type %d!", velocity_field_type_);
+        "Wrong set_velocity_field() called for velocity field type %d!", velocity_field_type_);
 
   if (NdsVel() >= discret_->NumDofSets()) FOUR_C_THROW("Too few dofsets on scatra discretization!");
 
@@ -1492,7 +1492,7 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop()
 {
   // safety checks
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   // time measurement: time loop
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:  + time loop");
@@ -1554,7 +1554,7 @@ void SCATRA::ScaTraTimIntImpl::Solve()
 {
   // safety checks
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   // -----------------------------------------------------------------
   // intermediate solution step for homogeneous isotropic turbulence
@@ -1575,7 +1575,7 @@ void SCATRA::ScaTraTimIntImpl::Solve()
 
     case INPAR::SCATRA::solvertype_nonlinear:
     {
-      NonlinearSolve();
+      nonlinear_solve();
       break;
     }
 
@@ -1662,7 +1662,7 @@ void SCATRA::ScaTraTimIntImpl::check_and_write_output_and_restart()
   if (IsResultStep()) WriteResult();
 
   // add restart data
-  if (IsRestartStep()) WriteRestart();
+  if (IsRestartStep()) write_restart();
 }
 
 /*----------------------------------------------------------------------*
@@ -1679,7 +1679,7 @@ void SCATRA::ScaTraTimIntImpl::WriteResult()
   output_state();
 
   // write output to Gmsh postprocessing files
-  if (outputgmsh_) OutputToGmsh(step_, time_);
+  if (outputgmsh_) output_to_gmsh(step_, time_);
 
   // write flux vector field (only writing, calculation was done during Update() call)
   if (calcflux_domain_ != INPAR::SCATRA::flux_none or
@@ -1692,8 +1692,8 @@ void SCATRA::ScaTraTimIntImpl::WriteResult()
         (calcflux_boundary_ != INPAR::SCATRA::flux_none and flux_boundary_ == Teuchos::null))
       CalcFlux(true);
 
-    if (calcflux_domain_ != INPAR::SCATRA::flux_none) OutputFlux(flux_domain_, "domain");
-    if (calcflux_boundary_ != INPAR::SCATRA::flux_none) OutputFlux(flux_boundary_, "boundary");
+    if (calcflux_domain_ != INPAR::SCATRA::flux_none) output_flux(flux_domain_, "domain");
+    if (calcflux_boundary_ != INPAR::SCATRA::flux_none) output_flux(flux_boundary_, "boundary");
   }
 
   // write mean values of scalar(s)
@@ -2391,7 +2391,7 @@ void SCATRA::ScaTraTimIntImpl::create_meshtying_strategy()
 
 /*----------------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::CreateScalarHandler()
+void SCATRA::ScaTraTimIntImpl::create_scalar_handler()
 {
   scalarhandler_ = Teuchos::rcp(new ScalarHandler());
 }
@@ -2436,7 +2436,7 @@ void SCATRA::ScaTraTimIntImpl::apply_dirichlet_to_system()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ApplyDirichletBC(
+void SCATRA::ScaTraTimIntImpl::apply_dirichlet_bc(
     const double time, Teuchos::RCP<Epetra_Vector> phinp, Teuchos::RCP<Epetra_Vector> phidt)
 {
   // time measurement: apply Dirichlet conditions
@@ -2449,16 +2449,16 @@ void SCATRA::ScaTraTimIntImpl::ApplyDirichletBC(
 
   // predicted Dirichlet values
   // \c  phinp then also holds prescribed new Dirichlet values
-  discret_->EvaluateDirichlet(p, phinp, phidt, Teuchos::null, Teuchos::null, dbcmaps_);
+  discret_->evaluate_dirichlet(p, phinp, phidt, Teuchos::null, Teuchos::null, dbcmaps_);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ScalingAndNeumann()
+void SCATRA::ScaTraTimIntImpl::scaling_and_neumann()
 {
   // scaling to get true residual vector for all time integration schemes
   // in incremental case: boundary flux values can be computed from trueresidual
-  if (incremental_) trueresidual_->Update(ResidualScaling(), *residual_, 0.0);
+  if (incremental_) trueresidual_->Update(residual_scaling(), *residual_, 0.0);
 
   // add Neumann b.c. scaled with a factor due to time discretization
   add_neumann_to_residual();
@@ -2473,7 +2473,7 @@ void SCATRA::ScaTraTimIntImpl::ScalingAndNeumann()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>& neumann_loads)
+void SCATRA::ScaTraTimIntImpl::apply_neumann_bc(const Teuchos::RCP<Epetra_Vector>& neumann_loads)
 {
   // prepare load vector
   neumann_loads->PutScalar(0.0);
@@ -2560,7 +2560,7 @@ void SCATRA::ScaTraTimIntImpl::assemble_mat_and_rhs()
 {
   // safety check
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   // time measurement: element calls
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + element calls");
@@ -2605,7 +2605,7 @@ void SCATRA::ScaTraTimIntImpl::assemble_mat_and_rhs()
   if (incremental_ and step_ > 0 and
       (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
           turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales))
-    AVM3Separation();
+    av_m3_separation();
 
   // add state vectors according to time-integration scheme
   add_time_integration_specific_vectors();
@@ -2646,10 +2646,10 @@ void SCATRA::ScaTraTimIntImpl::assemble_mat_and_rhs()
 
   // AVM3 scaling for non-incremental solver: scaling of normalized AVM3-based
   // fine-scale subgrid-diffusivity matrix by subgrid diffusivity
-  if (not incremental_ and fssgd_ != INPAR::SCATRA::fssugrdiff_no) AVM3Scaling(eleparams);
+  if (not incremental_ and fssgd_ != INPAR::SCATRA::fssugrdiff_no) av_m3_scaling(eleparams);
 
   // potential residual scaling and potential addition of Neumann terms
-  ScalingAndNeumann();  // TODO: do we have to call this function twice??
+  scaling_and_neumann();  // TODO: do we have to call this function twice??
 
   // evaluate solution-depending additional models
   evaluate_additional_solution_depending_models(sysmat_, residual_);
@@ -2671,7 +2671,7 @@ void SCATRA::ScaTraTimIntImpl::linear_solve()
 {
   // safety checks
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   // output to screen
   print_time_step_info();
@@ -2744,11 +2744,11 @@ void SCATRA::ScaTraTimIntImpl::linear_solve()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
+void SCATRA::ScaTraTimIntImpl::nonlinear_solve()
 {
   // safety checks
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   // time measurement: nonlinear iteration
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:   + nonlin. iteration/lin. solve");
@@ -2776,7 +2776,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   {
     // explicit predictor + recovery of DBC values
     auto phinp_dirich = dbcmaps_->ExtractCondVector(phinp_);
-    ExplicitPredictor();
+    explicit_predictor();
     dbcmaps_->InsertCondVector(phinp_dirich, phinp_);
   }
 
@@ -2808,7 +2808,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
     }
 
     // abort nonlinear iteration if desired
-    if (strategy_->AbortNonlinIter(*this, actresidual)) break;
+    if (strategy_->abort_nonlin_iter(*this, actresidual)) break;
 
     // initialize increment vector
     increment_->PutScalar(0.0);
@@ -2902,14 +2902,14 @@ void SCATRA::ScaTraTimIntImpl::nonlinear_multi_scale_solve()
       phinp_ = phinp;
 
       // solve macro-scale problem
-      NonlinearSolve();
+      nonlinear_solve();
     }
 
     // solve macro scale first and micro scale second
     else if (solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_microtomacro)
     {
       // solve macro-scale problem
-      NonlinearSolve();
+      nonlinear_solve();
 
       // solve micro-scale problems
       nonlinear_micro_scale_solve();
@@ -3091,7 +3091,7 @@ void SCATRA::ScaTraTimIntImpl::adapt_time_step_size()
     double dt(params_->get<double>("TIMESTEP"));
 
     // reduce time step size if necessary
-    ComputeTimeStepSize(dt);
+    compute_time_step_size(dt);
 
     // adapt time step size if necessary
     if (dt < dta_ or dt > dta_)
@@ -3116,14 +3116,14 @@ void SCATRA::ScaTraTimIntImpl::adapt_time_step_size()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ComputeTimeStepSize(double& dt)
+void SCATRA::ScaTraTimIntImpl::compute_time_step_size(double& dt)
 {
-  strategy_->ComputeTimeStepSize(dt);
+  strategy_->compute_time_step_size(dt);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd)
+void SCATRA::ScaTraTimIntImpl::add_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoadd)
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
   condmaps.push_back(maptoadd);
@@ -3142,7 +3142,7 @@ void SCATRA::ScaTraTimIntImpl::add_time_integration_specific_vectors(bool forced
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove)
+void SCATRA::ScaTraTimIntImpl::remove_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoremove)
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> othermaps;
   othermaps.push_back(maptoremove);
@@ -3453,7 +3453,7 @@ void SCATRA::ScaTraTimIntImpl::check_is_init() const
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::CheckIsSetup() const
+void SCATRA::ScaTraTimIntImpl::check_is_setup() const
 {
   if (not is_setup()) FOUR_C_THROW("ScaTraTimIntImpl is not set up. Call Setup() first.");
 }
@@ -3577,7 +3577,7 @@ void SCATRA::ScaTraTimIntImpl::setup_matrix_block_maps_and_meshtying()
     case CORE::LINALG::MatrixType::sparse:
     {
       // only setup the meshtying in this case, as matrix has no block structure
-      strategy_->SetupMeshtying();
+      strategy_->setup_meshtying();
 
       break;
     }
@@ -3593,9 +3593,9 @@ void SCATRA::ScaTraTimIntImpl::setup_matrix_block_maps_and_meshtying()
       setup_matrix_block_maps();
 
       // setup the meshtying
-      strategy_->SetupMeshtying();
+      strategy_->setup_meshtying();
 
-      // do some post setup matrix block map operations after the call to SetupMeshtying, as they
+      // do some post setup matrix block map operations after the call to setup_meshtying, as they
       // rely on the fact that the interface maps have already been built
       post_setup_matrix_block_maps();
 
@@ -3611,7 +3611,7 @@ void SCATRA::ScaTraTimIntImpl::setup_matrix_block_maps_and_meshtying()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseOperator> SCATRA::ScaTraTimIntImpl::InitSystemMatrix() const
+Teuchos::RCP<CORE::LINALG::SparseOperator> SCATRA::ScaTraTimIntImpl::init_system_matrix() const
 {
   Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix(Teuchos::null);
 
@@ -3727,10 +3727,10 @@ void SCATRA::ScaTraTimIntImpl::calc_mean_micro_concentration()
 
   // loop over all element and search for nodes that are on elements with 2 dof on one side and 3
   // dofs at the other side
-  for (int ele_lid = 0; ele_lid < Discretization()->ElementRowMap()->NumMyElements(); ++ele_lid)
+  for (int ele_lid = 0; ele_lid < discretization()->ElementRowMap()->NumMyElements(); ++ele_lid)
   {
-    const int ele_gid = Discretization()->ElementRowMap()->GID(ele_lid);
-    auto* ele = Discretization()->gElement(ele_gid);
+    const int ele_gid = discretization()->ElementRowMap()->GID(ele_lid);
+    auto* ele = discretization()->gElement(ele_gid);
 
     for (auto mat_id = 0; mat_id < ele->NumMaterial(); ++mat_id)
     {
@@ -3747,9 +3747,9 @@ void SCATRA::ScaTraTimIntImpl::calc_mean_micro_concentration()
         for (int inode = 0; inode < ele->num_node(); ++inode)
         {
           if (num_dof_element == 3)
-            DRT::UTILS::AddOwnedNodeGID(*Discretization(), nodes[inode]->Id(), multiscale_nodes);
+            DRT::UTILS::AddOwnedNodeGID(*discretization(), nodes[inode]->Id(), multiscale_nodes);
           else if (num_dof_element == 2)
-            DRT::UTILS::AddOwnedNodeGID(*Discretization(), nodes[inode]->Id(), other_nodes);
+            DRT::UTILS::AddOwnedNodeGID(*discretization(), nodes[inode]->Id(), other_nodes);
           else
             FOUR_C_THROW("Only 2 or 3 dofs per element supported");
         }
@@ -3775,8 +3775,8 @@ void SCATRA::ScaTraTimIntImpl::calc_mean_micro_concentration()
   std::vector<int> hybrid_dofs;
   for (int hybrid_node_gid : hybrid_nodes)
   {
-    auto* hybrid_node = Discretization()->gNode(hybrid_node_gid);
-    auto dofs = Discretization()->Dof(2, hybrid_node);
+    auto* hybrid_node = discretization()->gNode(hybrid_node_gid);
+    auto dofs = discretization()->Dof(2, hybrid_node);
     for (int dof : dofs) hybrid_dofs.emplace_back(dof);
   }
 

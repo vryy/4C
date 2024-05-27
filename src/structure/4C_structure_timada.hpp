@@ -306,7 +306,7 @@ namespace STR
     TimAda(const TimAda& old);
 
     //! A revolutionary routine to get --well-- the sign of a number.
-    static int Sign(const double number  //!< a real number
+    static int sign(const double number  //!< a real number
     )
     {
       return (number == 0.0) ? 0 : (number > 0.0) ? +1 : -1;

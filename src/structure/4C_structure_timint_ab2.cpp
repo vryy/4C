@@ -113,7 +113,7 @@ int STR::TimIntAB2::IntegrateStep()
 {
   // safety checks
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   // things to be done before integrating
   PreSolve();
@@ -139,7 +139,7 @@ int STR::TimIntAB2::IntegrateStep()
   // *********** time measurement ***********
 
   // apply Dirichlet BCs
-  ApplyDirichletBC(timen_, disn_, veln_, Teuchos::null, false);
+  apply_dirichlet_bc(timen_, disn_, veln_, Teuchos::null, false);
 
   // initialise stiffness matrix to zero
   stiff_->Zero();
@@ -246,7 +246,7 @@ int STR::TimIntAB2::IntegrateStep()
   }
 
   // apply Dirichlet BCs on accelerations
-  ApplyDirichletBC(timen_, Teuchos::null, Teuchos::null, accn_, false);
+  apply_dirichlet_bc(timen_, Teuchos::null, Teuchos::null, accn_, false);
 
   // *********** time measurement ***********
   dtsolve_ = timer_->wallTime() - dtcpu;

@@ -37,11 +37,11 @@ void MAT::CylinderCoordinateSystemAnisotropyExtension::UnpackAnisotropy(
 
 void MAT::CylinderCoordinateSystemAnisotropyExtension::on_global_data_initialized()
 {
-  if (GetAnisotropy()->has_gp_cylinder_coordinate_system())
+  if (get_anisotropy()->has_gp_cylinder_coordinate_system())
   {
     cosy_location_ = CosyLocation::GPCosy;
   }
-  else if (GetAnisotropy()->has_element_cylinder_coordinate_system())
+  else if (get_anisotropy()->has_element_cylinder_coordinate_system())
   {
     cosy_location_ = CosyLocation::ElementCosy;
   }
@@ -71,10 +71,10 @@ MAT::CylinderCoordinateSystemAnisotropyExtension::get_cylinder_coordinate_system
 
   if (cosy_location_ == CosyLocation::ElementCosy)
   {
-    return GetAnisotropy()->get_element_cylinder_coordinate_system();
+    return get_anisotropy()->get_element_cylinder_coordinate_system();
   }
 
-  return GetAnisotropy()->get_gp_cylinder_coordinate_system(gp);
+  return get_anisotropy()->get_gp_cylinder_coordinate_system(gp);
 }
 
 Teuchos::RCP<MAT::CoordinateSystemProvider>

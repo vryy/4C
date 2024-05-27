@@ -66,10 +66,10 @@ void SCATRA::TimIntCardiacMonodomainOST::Update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainOST::WriteRestart() const
+void SCATRA::TimIntCardiacMonodomainOST::write_restart() const
 {
   // Call function from baseclass
-  TimIntOneStepTheta::WriteRestart();
+  TimIntOneStepTheta::write_restart();
 
   // Cardiac Monodomain specific
   output_->WriteMesh(
@@ -162,10 +162,10 @@ void SCATRA::TimIntCardiacMonodomainBDF2::Update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainBDF2::WriteRestart() const
+void SCATRA::TimIntCardiacMonodomainBDF2::write_restart() const
 {
   // Call function from baseclass
-  TimIntBDF2::WriteRestart();
+  TimIntBDF2::write_restart();
 
   // Cardiac Monodomain specific
   output_->WriteMesh(
@@ -247,10 +247,10 @@ void SCATRA::TimIntCardiacMonodomainGenAlpha::Update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainGenAlpha::WriteRestart() const
+void SCATRA::TimIntCardiacMonodomainGenAlpha::write_restart() const
 {
   // Call function from baseclass
-  TimIntGenAlpha::WriteRestart();
+  TimIntGenAlpha::write_restart();
 
   // Cardiac Monodomain specific
   output_->WriteMesh(

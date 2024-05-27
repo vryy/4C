@@ -36,7 +36,7 @@ namespace DRT
 
 
       //! evaluate action
-      int EvaluateAction(DRT::FaceElement* ele, Teuchos::ParameterList& params,
+      int evaluate_action(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, SCATRA::BoundaryAction action,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -54,12 +54,12 @@ namespace DRT
           DRT::Discretization& discretization, DRT::Element::LocationArray& la);
 
       //! calculate Neumann inflow boundary conditions
-      void NeumannInflow(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
+      void neumann_inflow(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs) override;
 
       //! get density at integration point
-      double GetDensity(Teuchos::RCP<const CORE::MAT::Material> material,
+      double get_density(Teuchos::RCP<const CORE::MAT::Material> material,
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp, const int k) override;
 
       //! integral of normal diffusive flux and velocity over boundary surface

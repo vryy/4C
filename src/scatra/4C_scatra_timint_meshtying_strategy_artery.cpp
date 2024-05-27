@@ -69,10 +69,10 @@ void SCATRA::MeshtyingStrategyArtery::InitMeshtying()
   set_artery_scatra_time_integrator(art_scatra->ScaTraField());
 
   // get the two discretizations
-  artscatradis_ = artscatratimint_->Discretization();
-  scatradis_ = scatratimint_->Discretization();
+  artscatradis_ = artscatratimint_->discretization();
+  scatradis_ = scatratimint_->discretization();
 
-  if (scatratimint_->Discretization()->Comm().MyPID() == 0)
+  if (scatratimint_->discretization()->Comm().MyPID() == 0)
   {
     std::cout << "\n";
     std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
@@ -114,7 +114,7 @@ void SCATRA::MeshtyingStrategyArtery::InitMeshtying()
 /*----------------------------------------------------------------------*
  | setup                                               kremheller 04/18 |
  *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyArtery::SetupMeshtying()
+void SCATRA::MeshtyingStrategyArtery::setup_meshtying()
 {
   // Initialize rhs vector
   rhs_ = Teuchos::rcp(new Epetra_Vector(*arttoscatracoupling_->FullMap(), true));

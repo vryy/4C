@@ -94,7 +94,7 @@ namespace FLD
     \brief Setup meshtying
 
     */
-    void SetupMeshtying() override;
+    void setup_meshtying() override;
 
     /*!
     \brief update configuration and output to file/screen
@@ -110,7 +110,7 @@ namespace FLD
         Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> res) override;
 
     /// prepare AVM3-based scale separation
-    void AVM3Preparation() override;
+    void av_m3_preparation() override;
 
     /// prepare time step
     void prepare_time_step() override;

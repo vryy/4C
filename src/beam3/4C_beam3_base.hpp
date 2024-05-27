@@ -409,7 +409,7 @@ namespace DRT
        *
        *  \author hiermeier
        *  \date 04/16 */
-      inline STR::ELEMENTS::ParamsInterface& ParamsInterface() const
+      inline STR::ELEMENTS::ParamsInterface& params_interface() const
       {
         if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;
@@ -453,7 +453,7 @@ namespace DRT
        * their contact interaction, Technical University of Munich, Germany, 2016", chapter 3.2.2.2
        */
       template <unsigned int nnode, unsigned int vpernode>
-      double CalcReflength(
+      double calc_reflength(
           const CORE::LINALG::Matrix<3 * vpernode * nnode, 1, double>& disp_refe_centerline)
       {
         CORE::LINALG::Matrix<3, 1> tempvec(true);
@@ -494,14 +494,14 @@ namespace DRT
        * values (\ref update_disp_totlag or \ref add_ref_values_disp_centerline).
        */
       template <unsigned int nnode, unsigned int vpernode, typename T>
-      void GetPosAtXi(CORE::LINALG::Matrix<3, 1, T>& r, const double& xi,
+      void get_pos_at_xi(CORE::LINALG::Matrix<3, 1, T>& r, const double& xi,
           const CORE::LINALG::Matrix<3 * nnode * vpernode, 1, T>& disp_totlag) const
       {
         CORE::LINALG::Matrix<1, vpernode * nnode, T> N_i;
 
         DRT::UTILS::BEAM::EvaluateShapeFunctionsAtXi<nnode, vpernode>(
             xi, N_i, Shape(), RefLength());
-        Calc_r<nnode, vpernode, T>(disp_totlag, N_i, r);
+        calc_r<nnode, vpernode, T>(disp_totlag, N_i, r);
       }
 
       /** \brief compute beam centerline position vector at position \xi in element parameter space
@@ -510,7 +510,7 @@ namespace DRT
        *  \author grill
        *  \date 03/16 */
       template <unsigned int nnode, unsigned int vpernode, typename T>
-      void Calc_r(const CORE::LINALG::Matrix<3 * vpernode * nnode, 1, T>& disp_totlag_centerline,
+      void calc_r(const CORE::LINALG::Matrix<3 * vpernode * nnode, 1, T>& disp_totlag_centerline,
           const CORE::LINALG::Matrix<1, vpernode * nnode, double>& funct,
           CORE::LINALG::Matrix<3, 1, T>& r) const
       {
@@ -525,7 +525,7 @@ namespace DRT
        *  \author grill
        *  \date 03/16 */
       template <unsigned int nnode, unsigned int vpernode, typename T>
-      void Calc_r_xi(const CORE::LINALG::Matrix<3 * vpernode * nnode, 1, T>& disp_totlag_centerline,
+      void calc_r_xi(const CORE::LINALG::Matrix<3 * vpernode * nnode, 1, T>& disp_totlag_centerline,
           const CORE::LINALG::Matrix<1, vpernode * nnode, double>& deriv,
           CORE::LINALG::Matrix<3, 1, T>& r_xi) const
       {
@@ -541,11 +541,11 @@ namespace DRT
        *  \author grill
        *  \date 03/16 */
       template <unsigned int nnode, unsigned int vpernode, typename T>
-      void Calc_r_s(const CORE::LINALG::Matrix<3 * vpernode * nnode, 1, T>& disp_totlag_centerline,
+      void calc_r_s(const CORE::LINALG::Matrix<3 * vpernode * nnode, 1, T>& disp_totlag_centerline,
           const CORE::LINALG::Matrix<1, vpernode * nnode, double>& deriv, const double& jacobi,
           CORE::LINALG::Matrix<3, 1, T>& r_s) const
       {
-        Calc_r_xi<nnode, vpernode, T>(disp_totlag_centerline, deriv, r_s);
+        calc_r_xi<nnode, vpernode, T>(disp_totlag_centerline, deriv, r_s);
 
         /* at this point we have computed derivative with respect to the element parameter \xi \in
          * [-1;1]; as we want derivative with respect to the reference arc-length parameter s, we
@@ -555,7 +555,7 @@ namespace DRT
 
       /** \brief get applied beam material law object
        */
-      MAT::BeamMaterial& GetBeamMaterial() const;
+      MAT::BeamMaterial& get_beam_material() const;
 
 
       /** \brief get elasto(plastic) beam material law object
@@ -691,7 +691,7 @@ namespace DRT
       /**
        * \brief Get the bounding volume of the element for geometric search
        *
-       * @param discret Discretization of the respective field
+       * @param discret discretization of the respective field
        * @param result_data_dofbased Result data vector used for extracting positions
        * @return bounding volume of the respective element
        */

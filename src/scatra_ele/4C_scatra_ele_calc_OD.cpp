@@ -75,14 +75,14 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateActionOD(DRT::Elemen
   {
     case SCATRA::Action::calc_scatra_mono_odblock_mesh:
     {
-      SysmatODMesh(ele, elemat1_epetra, nsd_);
+      sysmat_od_mesh(ele, elemat1_epetra, nsd_);
 
       break;
     }
 
     case SCATRA::Action::calc_scatra_mono_odblock_fluid:
     {
-      SysmatODFluid(ele, elemat1_epetra, nsd_ + 1);
+      sysmat_od_fluid(ele, elemat1_epetra, nsd_ + 1);
 
       break;
     }
@@ -102,7 +102,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateActionOD(DRT::Elemen
 |  calculate system matrix and rhs (public)                 vuong 08/14|
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODMesh(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat_od_mesh(
     DRT::Element* ele,                      ///< the element those matrix is calculated
     CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix to calculate
     const int ndofpernodemesh               ///< number of DOF of mesh displacement field
@@ -132,7 +132,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODMesh(
   {
     set_internal_variables_for_mat_and_rhs();
 
-    GetMaterialParams(ele, densn, densnp, densam, visc);
+    get_material_params(ele, densn, densnp, densam, visc);
   }
 
   //----------------------------------------------------------------------
@@ -158,18 +158,18 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODMesh(
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
-    if (scatrapara_->MatGP()) GetMaterialParams(ele, densn, densnp, densam, visc, iquad);
+    if (scatrapara_->MatGP()) get_material_params(ele, densn, densnp, densam, visc, iquad);
 
     // velocity divergence required for conservative form
     double vdiv(0.0);
-    if (scatrapara_->IsConservative()) GetDivergence(vdiv, evelnp_);
+    if (scatrapara_->IsConservative()) get_divergence(vdiv, evelnp_);
 
     //------------------------------------------------dJ/dd = dJ/dF : dF/dd = J * F^-T . N_{\psi} =
     // J * N_x
     // J denotes the determinant of the Jacobian of the mapping between current and parameter space,
     // i.e. det(dx/ds)
     static CORE::LINALG::Matrix<1, nsd_ * nen_> dJ_dmesh(false);
-    CalcDJDMesh(dJ_dmesh);
+    calc_djd_mesh(dJ_dmesh);
     const double J = xjm_.Determinant();
 
     // loop all scalars
@@ -184,7 +184,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODMesh(
       // if not constant, and for temperature equation of a reactive
       // equation system, the reaction-rate term
       double rhsint(0.0);
-      GetRhsInt(rhsint, densnp[k], k);
+      get_rhs_int(rhsint, densnp[k], k);
 
 
       // subgrid-scale convective term
@@ -197,7 +197,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODMesh(
 
       // compute residual of scalar transport equation and
       // subgrid-scale part of scalar
-      CalcStrongResidual(k, scatrares, densam[k], densnp[k], rea_phi, rhsint, tau[k]);
+      calc_strong_residual(k, scatrares, densam[k], densnp[k], rea_phi, rhsint, tau[k]);
 
       double rhsfac = scatraparatimint_->TimeFacRhs() * fac;
 
@@ -206,12 +206,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODMesh(
       //----------------------------------------------------------------
 
       if (scatraparatimint_->IsIncremental() and not scatraparatimint_->IsStationary())
-        CalcLinMassODMesh(emat, k, ndofpernodemesh, rhsfac, fac, densam[k], densnp[k],
+        calc_lin_mass_od_mesh(emat, k, ndofpernodemesh, rhsfac, fac, densam[k], densnp[k],
             scatravarmanager_->Phinp(k), scatravarmanager_->Hist(k), J, dJ_dmesh);
 
       // the order of the following three functions is important
       // and must not be changed
-      ComputeRhsInt(rhsint, densam[k], densnp[k], scatravarmanager_->Hist(k));
+      compute_rhs_int(rhsint, densam[k], densnp[k], scatravarmanager_->Hist(k));
 
       // diffusive part used in stabilization terms
       CORE::LINALG::Matrix<nen_, 1> diff(true);
@@ -237,22 +237,22 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODMesh(
       //----------------------------------------------------------------
       if (not scatrapara_->IsConservative())
       {
-        CalcConvODMesh(emat, k, ndofpernodemesh, fac, rhsfac, densnp[k], J,
+        calc_conv_od_mesh(emat, k, ndofpernodemesh, fac, rhsfac, densnp[k], J,
             scatravarmanager_->GradPhi(k), scatravarmanager_->ConVel(k));
       }
       else
-        CalcConvConsODMesh(emat, k, fac, scatraparatimint_->TimeFac() * fac, densnp[k], J);
+        calc_conv_cons_od_mesh(emat, k, fac, scatraparatimint_->TimeFac() * fac, densnp[k], J);
 
       //----------------------------------------------------------------
       // standard Galerkin terms  --  diffusive term
       //----------------------------------------------------------------
-      CalcDiffODMesh(emat, k, ndofpernodemesh, diffmanager_->GetIsotropicDiff(k), fac, rhsfac, J,
+      calc_diff_od_mesh(emat, k, ndofpernodemesh, diffmanager_->GetIsotropicDiff(k), fac, rhsfac, J,
           scatravarmanager_->GradPhi(k), scatravarmanager_->ConVel(k), dJ_dmesh);
 
       //----------------------------------------------------------------
       // standard Galerkin terms  -- "shapederivatives" reactive term
       //----------------------------------------------------------------
-      CalcReactODMesh(emat, k, ndofpernodemesh, rhsfac, rea_phi, J, dJ_dmesh);
+      calc_react_od_mesh(emat, k, ndofpernodemesh, rhsfac, rea_phi, J, dJ_dmesh);
 
     }  // end loop all scalars
 
@@ -263,7 +263,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODMesh(
 |  calculate system matrix and rhs (public)                 vuong 08/14|
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODFluid(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat_od_fluid(
     DRT::Element* ele,                      ///< the element those matrix is calculated
     CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix to calculate
     const int numdofpernode_fluid           ///< number of DOF of fluid field
@@ -293,7 +293,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODFluid(
   {
     set_internal_variables_for_mat_and_rhs();
 
-    GetMaterialParams(ele, densn, densnp, densam, visc);
+    get_material_params(ele, densn, densnp, densam, visc);
   }
 
   //----------------------------------------------------------------------
@@ -319,11 +319,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODFluid(
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
-    if (scatrapara_->MatGP()) GetMaterialParams(ele, densn, densnp, densam, visc, iquad);
+    if (scatrapara_->MatGP()) get_material_params(ele, densn, densnp, densam, visc, iquad);
 
     // velocity divergence required for conservative form
     double vdiv(0.0);
-    if (scatrapara_->IsConservative()) GetDivergence(vdiv, evelnp_);
+    if (scatrapara_->IsConservative()) get_divergence(vdiv, evelnp_);
 
     // loop all scalars
     for (int k = 0; k < numscal_; ++k)  // deal with a system of transported scalars
@@ -337,7 +337,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODFluid(
       // if not constant, and for temperature equation of a reactive
       // equation system, the reaction-rate term
       double rhsint(0.0);
-      GetRhsInt(rhsint, densnp[k], k);
+      get_rhs_int(rhsint, densnp[k], k);
 
       const double timefacfac = scatraparatimint_->TimeFac() * fac;
 
@@ -346,10 +346,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODFluid(
       //----------------------------------------------------------------
 
       if (scatraparatimint_->IsIncremental() and not scatraparatimint_->IsStationary())
-        CalcLinMassODFluid(emat, k, numdofpernode_fluid, timefacfac, fac, densam[k], densnp[k],
+        calc_lin_mass_od_fluid(emat, k, numdofpernode_fluid, timefacfac, fac, densam[k], densnp[k],
             scatravarmanager_->Phinp(k), scatravarmanager_->Hist(k));
 
-      ComputeRhsInt(rhsint, densam[k], densnp[k], scatravarmanager_->Hist(k));
+      compute_rhs_int(rhsint, densam[k], densnp[k], scatravarmanager_->Hist(k));
 
       //----------------------------------------------------------------
       // standard Galerkin transient, old part of rhs and bodyforce term
@@ -360,7 +360,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODFluid(
       // standard Galerkin terms - convective term
       //----------------------------------------------------------------
       // calculation of convective element matrix in convective form
-      CalcMatConvODFluid(
+      calc_mat_conv_od_fluid(
           emat, k, numdofpernode_fluid, timefacfac, densnp[k], scatravarmanager_->GradPhi(k));
 
       // add conservative contributions
@@ -371,12 +371,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODFluid(
       //----------------------------------------------------------------
       // standard Galerkin terms  --  diffusive term
       //----------------------------------------------------------------
-      CalcDiffODFluid(emat, k, numdofpernode_fluid, timefacfac, scatravarmanager_->GradPhi(k));
+      calc_diff_od_fluid(emat, k, numdofpernode_fluid, timefacfac, scatravarmanager_->GradPhi(k));
 
       //----------------------------------------------------------------
       // standard Galerkin terms  -- "shapederivatives" reactive term
       //----------------------------------------------------------------
-      CalcReactODFluid(emat, k, numdofpernode_fluid, timefacfac, rea_phi);
+      calc_react_od_fluid(emat, k, numdofpernode_fluid, timefacfac, rea_phi);
 
     }  // end loop all scalars
 
@@ -389,7 +389,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODFluid(
  |  in convective form (OD fluid)                                   vuong 08/14 |
  *-----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatConvODFluid(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_conv_od_fluid(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodefluid,
     const double timefacfac, const double densnp, const CORE::LINALG::Matrix<nsd_, 1>& gradphi)
 {
@@ -438,7 +438,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_conv_add_cons_od_f
  |  calculation of linearized mass (OD mesh)             vuong 08/14 |
  *--------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcLinMassODMesh(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_lin_mass_od_mesh(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
     const double rhsfac, const double fac, const double densam, const double densnp,
     const double phinp, const double hist, const double J,
@@ -498,7 +498,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hist_and_source_od_mes
  |  standard Galerkin convective term (OD mesh)            vuong 08/14 |
  *---------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcConvODMesh(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_conv_od_mesh(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double fac,
     const double rhsfac, const double densnp, const double J,
     const CORE::LINALG::Matrix<nsd_, 1>& gradphi, const CORE::LINALG::Matrix<nsd_, 1>& convelint)
@@ -533,7 +533,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcConvODMesh(
  | standard Galerkin convective term in conservative form (OD mesh)   fang 08/17 |
  *-------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcConvConsODMesh(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_conv_cons_od_mesh(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
     const int k,                            //!< species index
     const double fac,                       //!< domain-integration factor
@@ -744,7 +744,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::apply_shape_derivs_conv(
  |  standard Galerkin diffusive term (OD mesh)   vuong 08/14 |
  *---------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDiffODMesh(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_diff_od_mesh(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
     const double diffcoeff, const double fac, const double rhsfac, const double J,
     const CORE::LINALG::Matrix<nsd_, 1>& gradphi, const CORE::LINALG::Matrix<nsd_, 1>& convelint,
@@ -941,7 +941,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDiffODMesh(
  |  standard Galerkin reactive term (OD mesh)              vuong 08/14 |
  *---------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcReactODMesh(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_react_od_mesh(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
     const double rhsfac, const double rea_phi, const double J,
     const CORE::LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh)
@@ -971,7 +971,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcReactODMesh(
  |  calculation of linearized mass (OD fluid)        kremheller 07/17 |
  *--------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcLinMassODFluid(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_lin_mass_od_fluid(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
     const double rhsfac, const double fac, const double densam, const double densnp,
     const double phinp, const double hist)
@@ -992,7 +992,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hist_and_source_od_flu
  |  standard Galerkin reactive term (OD fluid)  kremheller 07/17     |
  *----------------------------------------------------------------   */
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcReactODFluid(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_react_od_fluid(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
     const double rhsfac, const double rea_phi)
 {
@@ -1002,7 +1002,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcReactODFluid(
  |  standard Galerkin diffusive term (OD fluid)  kremheller 07/17    |
  *----------------------------------------------------------------   */
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDiffODFluid(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_diff_od_fluid(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element current to be filled
     const int k,                            //!< index of current scalar
     const int ndofpernodemesh,              //!< number of dofs per node of ale element
@@ -1015,7 +1015,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDiffODFluid(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDJDMesh(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_djd_mesh(
     CORE::LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh)
 {
   const double J = xjm_.Determinant();

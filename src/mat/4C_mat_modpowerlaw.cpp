@@ -30,7 +30,7 @@ MAT::PAR::ModPowerLaw::ModPowerLaw(Teuchos::RCP<CORE::MAT::PAR::Material> matdat
 }
 
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ModPowerLaw::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ModPowerLaw::create_material()
 {
   return Teuchos::rcp(new MAT::ModPowerLaw(this));
 }

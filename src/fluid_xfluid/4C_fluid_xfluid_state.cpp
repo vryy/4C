@@ -132,8 +132,8 @@ FLD::XFluidState::XFluidState(const Teuchos::RCP<XFEM::ConditionManager>& condit
       wizard_(wizard),
       condition_manager_(condition_manager)
 {
-  InitSystemMatrix();
-  InitStateVectors();
+  init_system_matrix();
+  init_state_vectors();
 
   init_coupling_matrices_and_rhs();
 }
@@ -142,7 +142,7 @@ FLD::XFluidState::XFluidState(const Teuchos::RCP<XFEM::ConditionManager>& condit
  |  Initialize (coupling) matrices & rhs-vectors
  |                                                         kruse 08/14
  *----------------------------------------------------------------------*/
-void FLD::XFluidState::InitSystemMatrix()
+void FLD::XFluidState::init_system_matrix()
 {
   // create an EpetraFECrs matrix that does communication for non-local rows and columns
   // * this enables to do the evaluate loop over just row elements instead of col elements
@@ -177,7 +177,7 @@ void FLD::XFluidState::InitSystemMatrix()
 /*----------------------------------------------------------------------*
  |  Initialize state vectors                                kruse 08/14 |
  *----------------------------------------------------------------------*/
-void FLD::XFluidState::InitStateVectors()
+void FLD::XFluidState::init_state_vectors()
 {
   // Vectors passed to the element
   // -----------------------------
@@ -365,7 +365,7 @@ void FLD::XFluidState::SetupMapExtractors(
   eleparams.set("total time", time);
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
   dbcmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor());
-  xfluiddiscret->EvaluateDirichlet(
+  xfluiddiscret->evaluate_dirichlet(
       eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
 
   zeros_->PutScalar(0.0);

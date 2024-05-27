@@ -283,7 +283,7 @@ MAT::PAR::MuscleGiantesio::MuscleGiantesio(Teuchos::RCP<CORE::MAT::PAR::Material
   if (density_ < 0.0) FOUR_C_THROW("DENS should be positive");
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MuscleGiantesio::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MuscleGiantesio::create_material()
 {
   return Teuchos::rcp(new MAT::MuscleGiantesio(this));
 }

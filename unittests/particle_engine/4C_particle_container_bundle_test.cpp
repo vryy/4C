@@ -56,17 +56,17 @@ namespace
 
         // first particle
         globalid = 1;
-        particle = createTestParticle({1.20, 0.70, 2.10}, {0.1}, {0.12});
+        particle = create_test_particle({1.20, 0.70, 2.10}, {0.1}, {0.12});
         container->AddParticle(index, globalid, particle);
 
         // second particle
         globalid = 2;
-        particle = createTestParticle({-1.05, 12.6, -8.54}, {0.5}, {12.34});
+        particle = create_test_particle({-1.05, 12.6, -8.54}, {0.5}, {12.34});
         container->AddParticle(index, globalid, particle);
 
         // third particle
         globalid = 3;
-        particle = createTestParticle({-5.02, 2.26, -7.4}, {0.2}, {2.9});
+        particle = create_test_particle({-5.02, 2.26, -7.4}, {0.2}, {2.9});
         container->AddParticle(index, globalid, particle);
       }
 
@@ -78,12 +78,12 @@ namespace
 
         // first particle
         globalid = 4;
-        particle = createTestParticle({2.20, -0.52, 1.10}, {0.8}, {3.12});
+        particle = create_test_particle({2.20, -0.52, 1.10}, {0.8}, {3.12});
         container->AddParticle(index, globalid, particle);
 
         // second particle
         globalid = 5;
-        particle = createTestParticle({-16.08, 1.46, -3.54}, {1.4}, {1.4});
+        particle = create_test_particle({-16.08, 1.46, -3.54}, {1.4}, {1.4});
         container->AddParticle(index, globalid, particle);
       }
 
@@ -95,22 +95,22 @@ namespace
 
         // first particle
         globalid = 6;
-        particle = createTestParticle({0.24, -1.71, -2.15}, {1.91}, {2.2});
+        particle = create_test_particle({0.24, -1.71, -2.15}, {1.91}, {2.2});
         container->AddParticle(index, globalid, particle);
 
         // second particle
         globalid = 7;
-        particle = createTestParticle({-1.15, 2.6, 7.24}, {0.4}, {1.2});
+        particle = create_test_particle({-1.15, 2.6, 7.24}, {0.4}, {1.2});
         container->AddParticle(index, globalid, particle);
 
         // third particle
         globalid = 8;
-        particle = createTestParticle({5.12, 4.26, -3.4}, {1.1}, {0.2});
+        particle = create_test_particle({5.12, 4.26, -3.4}, {1.1}, {0.2});
         container->AddParticle(index, globalid, particle);
       }
     }
 
-    PARTICLEENGINE::ParticleStates createTestParticle(
+    PARTICLEENGINE::ParticleStates create_test_particle(
         std::vector<double> pos, std::vector<double> mass, std::vector<double> rad)
     {
       PARTICLEENGINE::ParticleStates particle;
@@ -170,15 +170,15 @@ namespace
       SCOPED_TRACE("Particle " + std::to_string(index));
       if (index == 0)
       {
-        particle_reference = createTestParticle({1.20, 0.70, 2.10}, {0.1}, {0.24});
+        particle_reference = create_test_particle({1.20, 0.70, 2.10}, {0.1}, {0.24});
       }
       else if (index == 1)
       {
-        particle_reference = createTestParticle({-1.05, 12.6, -8.54}, {0.5}, {24.68});
+        particle_reference = create_test_particle({-1.05, 12.6, -8.54}, {0.5}, {24.68});
       }
       else if (index == 2)
       {
-        particle_reference = createTestParticle({-5.02, 2.26, -7.4}, {0.2}, {5.8});
+        particle_reference = create_test_particle({-5.02, 2.26, -7.4}, {0.2}, {5.8});
       }
 
       container->GetParticle(index, globalid, particle);
@@ -209,15 +209,15 @@ namespace
       SCOPED_TRACE("Particle " + std::to_string(index));
       if (index == 0)
       {
-        particle_reference = createTestParticle({1.20, 0.70, 2.10}, {0.1}, {0.34});
+        particle_reference = create_test_particle({1.20, 0.70, 2.10}, {0.1}, {0.34});
       }
       else if (index == 1)
       {
-        particle_reference = createTestParticle({-1.05, 12.6, -8.54}, {0.5}, {25.18});
+        particle_reference = create_test_particle({-1.05, 12.6, -8.54}, {0.5}, {25.18});
       }
       else if (index == 2)
       {
-        particle_reference = createTestParticle({-5.02, 2.26, -7.4}, {0.2}, {6.0});
+        particle_reference = create_test_particle({-5.02, 2.26, -7.4}, {0.2}, {6.0});
       }
 
       container->GetParticle(index, globalid, particle);
@@ -250,15 +250,15 @@ namespace
       SCOPED_TRACE("Particle " + std::to_string(index));
       if (index == 0)
       {
-        particle_reference = createTestParticle({0.24, -1.71, -2.15}, mass, {2.2});
+        particle_reference = create_test_particle({0.24, -1.71, -2.15}, mass, {2.2});
       }
       else if (index == 1)
       {
-        particle_reference = createTestParticle({-1.15, 2.6, 7.24}, mass, {1.2});
+        particle_reference = create_test_particle({-1.15, 2.6, 7.24}, mass, {1.2});
       }
       else if (index == 2)
       {
-        particle_reference = createTestParticle({5.12, 4.26, -3.4}, mass, {0.2});
+        particle_reference = create_test_particle({5.12, 4.26, -3.4}, mass, {0.2});
       }
 
       container->GetParticle(index, globalid, particle);
@@ -291,15 +291,15 @@ namespace
       SCOPED_TRACE("Particle " + std::to_string(index));
       if (index == 0)
       {
-        particle_reference = createTestParticle({0.24, -1.71, -2.15}, mass, {2.2});
+        particle_reference = create_test_particle({0.24, -1.71, -2.15}, mass, {2.2});
       }
       else if (index == 1)
       {
-        particle_reference = createTestParticle({-1.15, 2.6, 7.24}, mass, {1.2});
+        particle_reference = create_test_particle({-1.15, 2.6, 7.24}, mass, {1.2});
       }
       else if (index == 2)
       {
-        particle_reference = createTestParticle({5.12, 4.26, -3.4}, mass, {0.2});
+        particle_reference = create_test_particle({5.12, 4.26, -3.4}, mass, {0.2});
       }
 
       container->GetParticle(index, globalid, particle);
@@ -330,15 +330,15 @@ namespace
       SCOPED_TRACE("Phase1, Particle " + std::to_string(index));
       if (index == 0)
       {
-        particle_reference = createTestParticle({1.20, 0.70, 2.10}, {0.2}, {0.12});
+        particle_reference = create_test_particle({1.20, 0.70, 2.10}, {0.2}, {0.12});
       }
       else if (index == 1)
       {
-        particle_reference = createTestParticle({-1.05, 12.6, -8.54}, {1.0}, {12.34});
+        particle_reference = create_test_particle({-1.05, 12.6, -8.54}, {1.0}, {12.34});
       }
       else if (index == 2)
       {
-        particle_reference = createTestParticle({-5.02, 2.26, -7.4}, {0.4}, {2.9});
+        particle_reference = create_test_particle({-5.02, 2.26, -7.4}, {0.4}, {2.9});
       }
 
       container->GetParticle(index, globalid, particle);
@@ -356,15 +356,15 @@ namespace
       SCOPED_TRACE("Phase2, Particle " + std::to_string(index));
       if (index == 0)
       {
-        particle_reference = createTestParticle({0.24, -1.71, -2.15}, {3.82}, {2.2});
+        particle_reference = create_test_particle({0.24, -1.71, -2.15}, {3.82}, {2.2});
       }
       else if (index == 1)
       {
-        particle_reference = createTestParticle({-1.15, 2.6, 7.24}, {0.8}, {1.2});
+        particle_reference = create_test_particle({-1.15, 2.6, 7.24}, {0.8}, {1.2});
       }
       else if (index == 2)
       {
-        particle_reference = createTestParticle({5.12, 4.26, -3.4}, {2.2}, {0.2});
+        particle_reference = create_test_particle({5.12, 4.26, -3.4}, {2.2}, {0.2});
       }
 
       container->GetParticle(index, globalid, particle);
@@ -396,15 +396,15 @@ namespace
       SCOPED_TRACE("Phase1, Particle " + std::to_string(index));
       if (index == 0)
       {
-        particle_reference = createTestParticle({1.20, 0.70, 2.10}, {0.32}, {0.12});
+        particle_reference = create_test_particle({1.20, 0.70, 2.10}, {0.32}, {0.12});
       }
       else if (index == 1)
       {
-        particle_reference = createTestParticle({-1.05, 12.6, -8.54}, {13.34}, {12.34});
+        particle_reference = create_test_particle({-1.05, 12.6, -8.54}, {13.34}, {12.34});
       }
       else if (index == 2)
       {
-        particle_reference = createTestParticle({-5.02, 2.26, -7.4}, {3.3}, {2.9});
+        particle_reference = create_test_particle({-5.02, 2.26, -7.4}, {3.3}, {2.9});
       }
 
       container->GetParticle(index, globalid, particle);
@@ -422,15 +422,15 @@ namespace
       SCOPED_TRACE("Phase2, Particle " + std::to_string(index));
       if (index == 0)
       {
-        particle_reference = createTestParticle({0.24, -1.71, -2.15}, {6.02}, {2.2});
+        particle_reference = create_test_particle({0.24, -1.71, -2.15}, {6.02}, {2.2});
       }
       else if (index == 1)
       {
-        particle_reference = createTestParticle({-1.15, 2.6, 7.24}, {2.0}, {1.2});
+        particle_reference = create_test_particle({-1.15, 2.6, 7.24}, {2.0}, {1.2});
       }
       else if (index == 2)
       {
-        particle_reference = createTestParticle({5.12, 4.26, -3.4}, {2.4}, {0.2});
+        particle_reference = create_test_particle({5.12, 4.26, -3.4}, {2.4}, {0.2});
       }
 
       container->GetParticle(index, globalid, particle);
@@ -463,15 +463,15 @@ namespace
       SCOPED_TRACE("Phase1, Particle " + std::to_string(index));
       if (index == 0)
       {
-        particle_reference = createTestParticle({1.20, 0.70, 2.10}, mass, {0.12});
+        particle_reference = create_test_particle({1.20, 0.70, 2.10}, mass, {0.12});
       }
       else if (index == 1)
       {
-        particle_reference = createTestParticle({-1.05, 12.6, -8.54}, mass, {12.34});
+        particle_reference = create_test_particle({-1.05, 12.6, -8.54}, mass, {12.34});
       }
       else if (index == 2)
       {
-        particle_reference = createTestParticle({-5.02, 2.26, -7.4}, mass, {2.9});
+        particle_reference = create_test_particle({-5.02, 2.26, -7.4}, mass, {2.9});
       }
 
       container->GetParticle(index, globalid, particle);
@@ -489,15 +489,15 @@ namespace
       SCOPED_TRACE("Phase2, Particle " + std::to_string(index));
       if (index == 0)
       {
-        particle_reference = createTestParticle({0.24, -1.71, -2.15}, mass, {2.2});
+        particle_reference = create_test_particle({0.24, -1.71, -2.15}, mass, {2.2});
       }
       else if (index == 1)
       {
-        particle_reference = createTestParticle({-1.15, 2.6, 7.24}, mass, {1.2});
+        particle_reference = create_test_particle({-1.15, 2.6, 7.24}, mass, {1.2});
       }
       else if (index == 2)
       {
-        particle_reference = createTestParticle({5.12, 4.26, -3.4}, mass, {0.2});
+        particle_reference = create_test_particle({5.12, 4.26, -3.4}, mass, {0.2});
       }
 
       container->GetParticle(index, globalid, particle);
@@ -530,15 +530,15 @@ namespace
       SCOPED_TRACE("Phase1, Particle " + std::to_string(index));
       if (index == 0)
       {
-        particle_reference = createTestParticle({1.20, 0.70, 2.10}, mass, {0.12});
+        particle_reference = create_test_particle({1.20, 0.70, 2.10}, mass, {0.12});
       }
       else if (index == 1)
       {
-        particle_reference = createTestParticle({-1.05, 12.6, -8.54}, mass, {12.34});
+        particle_reference = create_test_particle({-1.05, 12.6, -8.54}, mass, {12.34});
       }
       else if (index == 2)
       {
-        particle_reference = createTestParticle({-5.02, 2.26, -7.4}, mass, {2.9});
+        particle_reference = create_test_particle({-5.02, 2.26, -7.4}, mass, {2.9});
       }
 
       container->GetParticle(index, globalid, particle);
@@ -556,15 +556,15 @@ namespace
       SCOPED_TRACE("Phase2, Particle " + std::to_string(index));
       if (index == 0)
       {
-        particle_reference = createTestParticle({0.24, -1.71, -2.15}, mass, {2.2});
+        particle_reference = create_test_particle({0.24, -1.71, -2.15}, mass, {2.2});
       }
       else if (index == 1)
       {
-        particle_reference = createTestParticle({-1.15, 2.6, 7.24}, mass, {1.2});
+        particle_reference = create_test_particle({-1.15, 2.6, 7.24}, mass, {1.2});
       }
       else if (index == 2)
       {
-        particle_reference = createTestParticle({5.12, 4.26, -3.4}, mass, {0.2});
+        particle_reference = create_test_particle({5.12, 4.26, -3.4}, mass, {0.2});
       }
 
       container->GetParticle(index, globalid, particle);

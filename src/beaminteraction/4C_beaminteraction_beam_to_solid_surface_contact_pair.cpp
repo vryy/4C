@@ -51,7 +51,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair.
-  this->CastGeometryPair()->Evaluate(
+  this->cast_geometry_pair()->Evaluate(
       this->ele1pos_, this->face_element_->GetFaceElementData(), this->line_to_3D_segments_);
 
   // If there are no intersection segments, no contact terms will be assembled.
@@ -78,7 +78,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
   scalar_type beam_segmentation_factor = 0.0;
 
   // GIDs of the pair and the force vector acting on the pair.
-  const std::vector<int> pair_gid = this->GetPairGID(*discret);
+  const std::vector<int> pair_gid = this->get_pair_gid(*discret);
 
   // Integrate over segments.
   for (unsigned int i_segment = 0; i_segment < n_segments; i_segment++)
@@ -192,7 +192,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<scalar_type, beam,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair.
-  this->CastGeometryPair()->Evaluate(
+  this->cast_geometry_pair()->Evaluate(
       this->ele1pos_, this->face_element_->GetFaceElementData(), this->line_to_3D_segments_);
 
   // If there are no intersection segments, no contact terms will be assembled.
@@ -216,7 +216,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<scalar_type, beam,
   scalar_type beam_segmentation_factor = 0.0;
 
   // GIDs of the pair and the force vector acting on the pair.
-  const std::vector<int> pair_gid = this->GetPairGID(*discret);
+  const std::vector<int> pair_gid = this->get_pair_gid(*discret);
 
   // Integrate over segments.
   for (unsigned int i_segment = 0; i_segment < n_segments; i_segment++)

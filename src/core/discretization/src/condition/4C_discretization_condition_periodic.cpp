@@ -120,7 +120,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::update_dofs_for_periodic_boun
       // eventually  optimally distribute the nodes --- up to
       // now, a periodic boundary condition might remove all nodes from a
       // proc ...
-      BalanceLoad();
+      balance_load();
     }
     // time measurement --- this causes the TimeMonitor tm0 to stop here
     //                                              (call of destructor)
@@ -562,7 +562,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
           // of all previously processed periodic boundary conditions.
           // Redistribute the nodes (rownodes+ghosting)
           // Assign the same degrees of freedom to coupled nodes
-          AddConnectivity(midtosid, num);
+          add_connectivity(midtosid, num);
 
           // time measurement --- this causes the TimeMonitor tm4 to stop here
           tm4_ref_ = Teuchos::null;
@@ -670,7 +670,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::create_node_coupling_for_sing
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-void CORE::Conditions::PeriodicBoundaryConditions::AddConnectivity(
+void CORE::Conditions::PeriodicBoundaryConditions::add_connectivity(
     std::map<int, std::vector<int>>& midtosid, const int pbcid)
 {
   // the "inverse" mapping of allcoupled(row/col)nodes
@@ -916,7 +916,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::AddConnectivity(
   }
 
   return;
-}  // CORE::Conditions::PeriodicBoundaryConditions::AddConnectivity
+}  // CORE::Conditions::PeriodicBoundaryConditions::add_connectivity
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1363,7 +1363,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CORE::Conditions::PeriodicBoundaryConditions::BalanceLoad()
+void CORE::Conditions::PeriodicBoundaryConditions::balance_load()
 {
   if (discret_->Comm().NumProc() > 1)
   {

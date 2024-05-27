@@ -62,7 +62,7 @@ namespace CONTACT
             This is where the distinction between methods should be,
             i.e. mortar, augmented, gpts,...
      */
-    void IntegrateGP_2D(MORTAR::Element& sele, MORTAR::Element& mele,
+    void integrate_gp_2_d(MORTAR::Element& sele, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -78,7 +78,7 @@ namespace CONTACT
             This is where the distinction between methods should be,
             i.e. mortar, augmented, gpts,...
      */
-    void IntegrateGP_3D(MORTAR::Element& sele, MORTAR::Element& mele,
+    void integrate_gp_3_d(MORTAR::Element& sele, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -110,7 +110,7 @@ namespace CONTACT
         CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseVector>& deriv_adjoint_test_T);
 
     template <int dim>
-    void IntegrateTest(const double fac, MORTAR::Element& ele,
+    void integrate_test(const double fac, MORTAR::Element& ele,
         const CORE::LINALG::SerialDenseVector& shape, const CORE::LINALG::SerialDenseMatrix& deriv,
         const std::vector<CORE::GEN::Pairedvector<int, double>>& dxi, const double jac,
         const CORE::GEN::Pairedvector<int, double>& jacintcellmap, const double wgt,
@@ -152,7 +152,7 @@ namespace CONTACT
         CORE::LINALG::Matrix<dim, 1>& pxsi, CORE::LINALG::Matrix<dim, dim>& derivtrafo);
 
     template <int dim>
-    void SoEleCauchy(MORTAR::Element& moEle, double* boundary_gpcoord,
+    void so_ele_cauchy(MORTAR::Element& moEle, double* boundary_gpcoord,
         std::vector<CORE::GEN::Pairedvector<int, double>> boundary_gpcoord_lin, const double gp_wgt,
         const CORE::LINALG::Matrix<dim, 1>& normal,
         std::vector<CORE::GEN::Pairedvector<int, double>>& normal_deriv,

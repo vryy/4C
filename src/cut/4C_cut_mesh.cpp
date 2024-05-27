@@ -398,7 +398,7 @@ CORE::GEO::CUT::Facet* CORE::GEO::CUT::Mesh::NewFacet(
   for (++i; i != points.end(); ++i)
   {
     Point* p = *i;
-    p->Intersection(facets);
+    p->intersection(facets);
     if (facets.size() == 0)
     {
       break;
@@ -2331,7 +2331,7 @@ void CORE::GEO::CUT::Mesh::dump_gmsh_volume_cells(std::string name)
 
           file << "){";
 
-          std::vector<double> normal = ele->GetLevelSetGradient(
+          std::vector<double> normal = ele->get_level_set_gradient(
               facet_triang_midpoint_coord);  // facet->GetLevelSetFacetNormal(ele);
           file << normal[0] << "," << normal[1] << "," << normal[2];
 

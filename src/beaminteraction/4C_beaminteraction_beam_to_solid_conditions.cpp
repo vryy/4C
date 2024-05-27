@@ -62,7 +62,7 @@ bool BEAMINTERACTION::BeamToSolidCondition::IdsInCondition(
     const int id_line, const int id_other) const
 {
   if (line_ids_.find(id_line) != line_ids_.end())
-    if (IdInOther(id_other)) return true;
+    if (id_in_other(id_other)) return true;
   return false;
 }
 
@@ -322,13 +322,14 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::create_contact_pair_intern
 BEAMINTERACTION::BeamToSolidConditionSurface::BeamToSolidConditionSurface(
     const Teuchos::RCP<const CORE::Conditions::Condition>& condition_line,
     const Teuchos::RCP<const CORE::Conditions::Condition>& condition_other,
-    const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params, const bool is_mesh_tying)
+    const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params,
+    const bool is_mesh_tying_in)
     : BeamToSolidCondition(condition_line, condition_other, beam_to_solid_params),
-      is_mesh_tying_(is_mesh_tying)
+      is_mesh_tying_(is_mesh_tying_in)
 {
   // Get the input parameter list that will be passed to the geometry pair.
   std::string condition_name;
-  if (IsMeshTying())
+  if (is_mesh_tying())
     condition_name = "BEAM TO SOLID SURFACE MESHTYING";
   else
     condition_name = "BEAM TO SOLID SURFACE CONTACT";
@@ -389,7 +390,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::Setup(
   int fad_order = 0;
   if (condition_contact_pairs_.size() > 0)
   {
-    if (IsMeshTying())
+    if (is_mesh_tying())
     {
       fad_order = condition_contact_pairs_[0]
                       ->Params()
@@ -491,7 +492,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::set_state(
 {
   // For contact we reset the evaluation data in each iteration (we don't call Clear() here, since
   // we want to keep the contact pairs).
-  if (IsContact())
+  if (is_contact())
   {
     auto line_to_other_evaluation_data =
         Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::LineTo3DEvaluationData>(
@@ -532,7 +533,7 @@ BEAMINTERACTION::BeamToSolidConditionSurface::create_contact_pair_internal(
     FOUR_C_THROW("Could not cast to GEOMETRYPAIR::LineToSurfaceEvaluationData.");
   auto surface_normal_strategy = line_to_surface_evaluation_data->get_surface_normal_strategy();
 
-  if (IsMeshTying())
+  if (is_mesh_tying())
   {
     // Create beam-to-surface pairs for mesh tying.
     auto beam_to_surface_params =

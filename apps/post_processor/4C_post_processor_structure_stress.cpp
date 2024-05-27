@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void StructureFilter::PostStress(const std::string groupname, const std::string stresstype)
+void StructureFilter::post_stress(const std::string groupname, const std::string stresstype)
 {
   PostField* field = writer_->GetField();
   PostResult result = PostResult(field);
@@ -38,7 +38,7 @@ void StructureFilter::PostStress(const std::string groupname, const std::string 
 
   if (stresstype == "ndxyz")
   {
-    WriteStress(groupname, result, nodebased);
+    write_stress(groupname, result, nodebased);
   }
 
   //-------------------------------------------------------------------------
@@ -47,7 +47,7 @@ void StructureFilter::PostStress(const std::string groupname, const std::string 
 
   else if (stresstype == "cxyz")
   {
-    WriteStress(groupname, result, elementbased);
+    write_stress(groupname, result, elementbased);
   }
 
   //-----------------------------------------------------------------------------------
@@ -56,32 +56,32 @@ void StructureFilter::PostStress(const std::string groupname, const std::string 
 
   else if (stresstype == "cxyz_ndxyz")
   {
-    WriteStress(groupname, result, nodebased);
+    write_stress(groupname, result, nodebased);
 
     // reset result for postprocessing and output of element center stresses
     PostResult resultelestress = PostResult(field);
     resultelestress.next_result();
-    WriteStress(groupname, resultelestress, elementbased);
+    write_stress(groupname, resultelestress, elementbased);
   }
 
   else if (stresstype == "nd123")
   {
-    WriteEigenStress(groupname, result, nodebased);
+    write_eigen_stress(groupname, result, nodebased);
   }
 
   else if (stresstype == "c123")
   {
-    WriteEigenStress(groupname, result, elementbased);
+    write_eigen_stress(groupname, result, elementbased);
   }
 
   else if (stresstype == "c123_nd123")
   {
-    WriteEigenStress(groupname, result, nodebased);
+    write_eigen_stress(groupname, result, nodebased);
 
     // reset result for postprocessing and output of element center stresses
     PostResult resultelestress = PostResult(field);
     resultelestress.next_result();
-    WriteEigenStress(groupname, resultelestress, elementbased);
+    write_eigen_stress(groupname, resultelestress, elementbased);
   }
 
   else
@@ -261,7 +261,7 @@ struct WriteNodalMembraneThicknessStep : public SpecialFieldInterface
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void StructureFilter::WriteStress(
+void StructureFilter::write_stress(
     const std::string groupname, PostResult& result, const ResultType stresskind)
 {
   std::string name;
@@ -608,7 +608,7 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void StructureFilter::WriteEigenStress(
+void StructureFilter::write_eigen_stress(
     const std::string groupname, PostResult& result, const ResultType stresskind)
 {
   std::vector<std::string> name(6);

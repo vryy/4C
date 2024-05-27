@@ -73,7 +73,7 @@ namespace FSI
 
    protected:
     /// symmetric Gauss-Seidel block preconditioner
-    void SGS(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
+    void sgs(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     Teuchos::RCP<LungSchurComplement> StructSchur_;
     Teuchos::RCP<LungSchurComplement> FluidSchur_;

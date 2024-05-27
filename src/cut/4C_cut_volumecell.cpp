@@ -662,7 +662,7 @@ std::string CORE::GEO::CUT::VolumeCell::IsThisPointInside(Point* pt)
 std::string CORE::GEO::CUT::VolumeCell::IsThisPointInside(CORE::LINALG::Matrix<3, 1>& xglo)
 {
   CORE::LINALG::Matrix<3, 1> xloc;
-  element_->LocalCoordinates(xglo, xloc);
+  element_->local_coordinates(xglo, xloc);
 
   const CORE::GEO::CUT::Point::PointPosition posi = Position();
   if (posi == 0) FOUR_C_THROW("undefined position for the volumecell");
@@ -1042,7 +1042,7 @@ Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::VolumeCell::create_projected
     CORE::GEO::CUT::Point* p = cpoints[i];
     CORE::LINALG::Matrix<3, 1> xg, xi;
     p->Coordinates(xg.A());
-    element_->LocalCoordinates(xg, xi);
+    element_->local_coordinates(xg, xi);
     std::copy(xi.A(), xi.A() + 3, &xie(0, i));
   }
 
@@ -1211,7 +1211,7 @@ void CORE::GEO::CUT::VolumeCell::generate_boundary_cells(Mesh& mesh,
           xeLocal(1, 0) = bcellgaus_pts_[i][1];
           xeLocal(2, 0) = bcellgaus_pts_[i][2];
 
-          elem->GlobalCoordinates(xeLocal, xeGlobal);
+          elem->global_coordinates(xeLocal, xeGlobal);
 
           cgp->Append(xeGlobal, bcellweights_(i) * jaco);
         }
@@ -1301,7 +1301,7 @@ void CORE::GEO::CUT::VolumeCell::generate_boundary_cells_level_set_side(Mesh& me
 
       CORE::LINALG::Matrix<3, 1> ls_coord(tri_temp[1]->X());
       const std::vector<double> fac_ls_normal =
-          elem->GetLevelSetGradient(ls_coord);  // fac->GetLevelSetFacetNormal(elem);
+          elem->get_level_set_gradient(ls_coord);  // fac->GetLevelSetFacetNormal(elem);
       double dotProduct = fac_tri_normal[0] * fac_ls_normal[0] +
                           fac_tri_normal[1] * fac_ls_normal[1] +
                           fac_tri_normal[2] * fac_ls_normal[2];
@@ -1358,7 +1358,7 @@ void CORE::GEO::CUT::VolumeCell::generate_boundary_cells_level_set_side(Mesh& me
 
     CORE::LINALG::Matrix<3, 1> ls_coord(tri_temp[1]->X());
     const std::vector<double> fac_ls_normal =
-        elem->GetLevelSetGradient(ls_coord);  // fac->GetLevelSetFacetNormal(elem);
+        elem->get_level_set_gradient(ls_coord);  // fac->GetLevelSetFacetNormal(elem);
     double dotProduct = fac_tri_normal[0] * fac_ls_normal[0] +
                         fac_tri_normal[1] * fac_ls_normal[1] + fac_tri_normal[2] * fac_ls_normal[2];
     if (posi == CORE::GEO::CUT::Point::outside)
@@ -1721,7 +1721,7 @@ bool CORE::GEO::CUT::VolumeCell::set_position_cut_side_based()
       // STEP 1: Get centroid of the parent element
       //-----
       CORE::LINALG::Matrix<3, 1> elecen;
-      parent_element()->ElementCenter(elecen);
+      parent_element()->element_center(elecen);
 
       //-----
       // STEP 2: Get geometric center point of the facet

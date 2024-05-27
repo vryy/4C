@@ -56,7 +56,7 @@ namespace ADAPTER
     //! @name Misc
 
     /// direct access to discretization
-    virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
+    virtual Teuchos::RCP<DRT::Discretization> discretization() = 0;
 
     virtual const Teuchos::RCP<ADAPTER::Fluid>& fluid_field() = 0;
 
@@ -90,7 +90,7 @@ namespace ADAPTER
     //! @name Solver calls
 
     /// nonlinear solve
-    virtual void NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp = Teuchos::null,
+    virtual void nonlinear_solve(Teuchos::RCP<Epetra_Vector> idisp = Teuchos::null,
         Teuchos::RCP<Epetra_Vector> ivel = Teuchos::null) = 0;
 
     /// nonlinear solve

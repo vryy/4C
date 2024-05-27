@@ -31,7 +31,7 @@ namespace STR
       //! constructor
       PreStress();
 
-      void WriteRestart(
+      void write_restart(
           IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       void UpdateStepState() override;

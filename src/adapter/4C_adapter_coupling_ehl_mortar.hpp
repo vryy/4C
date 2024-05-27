@@ -63,7 +63,7 @@ namespace ADAPTER
     \brief Read Mortar Condition
 
     */
-    void ReadMortarCondition(Teuchos::RCP<DRT::Discretization> masterdis,
+    void read_mortar_condition(Teuchos::RCP<DRT::Discretization> masterdis,
         Teuchos::RCP<DRT::Discretization> slavedis, std::vector<int> coupleddof,
         const std::string& couplingcond, Teuchos::ParameterList& input,
         std::map<int, DRT::Node*>& mastergnodes, std::map<int, DRT::Node*>& slavegnodes,
@@ -105,7 +105,7 @@ namespace ADAPTER
     Teuchos::RCP<CORE::LINALG::SparseMatrix> assemble_surf_grad_deriv(
         const Teuchos::RCP<const Epetra_Vector> x);
 
-    virtual void WriteRestart(IO::DiscretizationWriter& output);
+    virtual void write_restart(IO::DiscretizationWriter& output);
     virtual void read_restart(IO::DiscretizationReader& reader);
     void create_active_slip_toggle(Teuchos::RCP<Epetra_Vector>* active,
         Teuchos::RCP<Epetra_Vector>* slip, Teuchos::RCP<Epetra_Vector>* active_old = nullptr);
@@ -181,15 +181,15 @@ namespace ADAPTER
     //@{
 
     /// real (not weighted) gap
-    void AssembleRealGap();
+    void assemble_real_gap();
     /// real (not weighted) gap derivative wrt displacements
     void assemble_real_gap_deriv();
     /// slave sided nodal normals
-    void AssembleNormals();
+    void assemble_normals();
     /// slave sided nodal normals, derivative wrt displacements
     void assemble_normals_deriv();
     /// slave sided tangential gradient operator
-    void AssembleSurfGrad();
+    void assemble_surf_grad();
     /// relative and average tangential velocities and their derivatives
     void assemble_interface_velocities(const double dt);
     //@}

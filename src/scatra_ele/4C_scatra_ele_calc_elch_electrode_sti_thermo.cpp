@@ -55,19 +55,19 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::extract_elemen
  | get material parameters                                   fang 11/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::GetMaterialParams(
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::get_material_params(
     const DRT::Element* ele, std::vector<double>& densn, std::vector<double>& densnp,
     std::vector<double>& densam, double& visc, const int iquad)
 {
-  // Set GP values to MatElectrode
-  myelectrode::Utils()->MatElectrode(
+  // Set GP values to mat_electrode
+  myelectrode::utils()->mat_electrode(
       ele->Material(), var_manager()->Phinp(0), var_manager()->Temp(), myelectrode::diff_manager());
 
   // get parameters of secondary, thermodynamic electrolyte material
   Teuchos::RCP<const CORE::MAT::Material> material = ele->Material(1);
   materialtype_ = material->MaterialType();
   if (materialtype_ == CORE::Materials::m_soret) mythermo::mat_soret(material);
-}  // DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::GetMaterialParams
+}  // DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::get_material_params
 
 
 /*--------------------------------------------------------------------------*
@@ -75,24 +75,24 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::GetMaterialPar
  *--------------------------------------------------------------------------*/
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::CalcMatAndRhs(
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::calc_mat_and_rhs(
     CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs, const int k,
     const double fac, const double timefacfac, const double rhsfac, const double taufac,
     const double timetaufac, const double rhstaufac, CORE::LINALG::Matrix<nen_, 1>& tauderpot,
     double& rhsint)
 {
   // call base class routine for isothermal problems
-  myelectrode::CalcMatAndRhs(
+  myelectrode::calc_mat_and_rhs(
       emat, erhs, k, fac, timefacfac, rhsfac, taufac, timetaufac, rhstaufac, tauderpot, rhsint);
 
   if (materialtype_ == CORE::Materials::m_soret)
   {
     // matrix and vector contributions arising from additional, thermodynamic term for Soret effect
-    mythermo::CalcMatSoret(emat, timefacfac, var_manager()->Phinp(0),
+    mythermo::calc_mat_soret(emat, timefacfac, var_manager()->Phinp(0),
         myelectrode::diff_manager()->GetIsotropicDiff(0),
         myelectrode::diff_manager()->get_conc_deriv_iso_diff_coef(0, 0), var_manager()->Temp(),
         var_manager()->GradTemp(), my::funct_, my::derxy_);
-    mythermo::CalcRHSSoret(erhs, var_manager()->Phinp(0),
+    mythermo::calc_rhs_soret(erhs, var_manager()->Phinp(0),
         myelectrode::diff_manager()->GetIsotropicDiff(0), rhsfac, var_manager()->Temp(),
         var_manager()->GradTemp(), my::derxy_);
   }
@@ -163,11 +163,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::sysmat_od_scat
     // evaluate material parameters at current integration point
     double dummy(0.);
     std::vector<double> dummyvec(my::numscal_, 0.);
-    GetMaterialParams(ele, dummyvec, dummyvec, dummyvec, dummy, iquad);
+    get_material_params(ele, dummyvec, dummyvec, dummyvec, dummy, iquad);
 
     // calculating the off diagonal for the temperature derivative of concentration and electric
     // potential
-    mythermo::CalcMatDiffThermoOD(emat, my::numdofpernode_, timefacfac, var_manager()->InvF(),
+    mythermo::calc_mat_diff_thermo_od(emat, my::numdofpernode_, timefacfac, var_manager()->InvF(),
         var_manager()->GradPhi(0), var_manager()->GradPot(),
         myelectrode::diff_manager()->get_temp_deriv_iso_diff_coef(0, 0),
         myelectrode::diff_manager()->GetTempDerivCond(0), my::funct_, my::derxy_, 1.);
@@ -176,7 +176,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::sysmat_od_scat
     {
       // provide element matrix with linearizations of Soret term in discrete scatra residuals
       // w.r.t. thermo dofs
-      mythermo::CalcMatSoretOD(emat, timefacfac, var_manager()->Phinp(0),
+      mythermo::calc_mat_soret_od(emat, timefacfac, var_manager()->Phinp(0),
           myelectrode::diff_manager()->GetIsotropicDiff(0), var_manager()->Temp(),
           var_manager()->GradTemp(), my::funct_, my::derxy_);
     }

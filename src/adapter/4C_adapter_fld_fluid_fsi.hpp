@@ -138,7 +138,7 @@ namespace ADAPTER
 
     Teuchos::RCP<Epetra_Vector> integrate_interface_shape() override;
 
-    void UseBlockMatrix(bool splitmatrix) override;
+    void use_block_matrix(bool splitmatrix) override;
 
     /*! \brief Project the velocity field into a divergence free subspace
      *
@@ -218,7 +218,7 @@ namespace ADAPTER
 
    protected:
     /// create conditioned dof-map extractor for the fluid
-    virtual void SetupInterface(const int nds_master = 0);
+    virtual void setup_interface(const int nds_master = 0);
 
     /*! \brief Build inner velocity map
      *
@@ -227,7 +227,7 @@ namespace ADAPTER
      *
      *  We use only velocity DOFs and only those without Dirichlet constraint.
      */
-    void BuildInnerVelMap();
+    void build_inner_vel_map();
 
     /// A casted pointer to the fluid itself
     Teuchos::RCP<FLD::FluidImplicitTimeInt> fluidimpl_;

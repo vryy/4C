@@ -55,7 +55,7 @@ namespace STR
           const std::vector<INPAR::STR::ModelType>* without_these_models = nullptr) const override;
 
       //! (derived)
-      void WriteRestart(
+      void write_restart(
           IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! (derived)
@@ -150,7 +150,7 @@ namespace STR
       void add_visco_mass_contributions(CORE::LINALG::SparseOperator& jac) const override{};
 
       //! reset the time step dependent parameters for the element evaluation [derived]
-      void ResetEvalParams() override;
+      void reset_eval_params() override;
     };
   }  // namespace IMPLICIT
 }  // namespace STR

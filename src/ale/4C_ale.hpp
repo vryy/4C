@@ -135,7 +135,7 @@ namespace ALE
      * CORE::LINALG object. Evaluate has to be called separately.
      *
      */
-    void CreateSystemMatrix(
+    void create_system_matrix(
         Teuchos::RCP<const ALE::UTILS::MapExtractor> interface = Teuchos::null  //!< interface
         ) override;
 
@@ -272,7 +272,7 @@ namespace ALE
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override;
 
     /// direct access to discretization
-    Teuchos::RCP<const DRT::Discretization> Discretization() const override { return discret_; }
+    Teuchos::RCP<const DRT::Discretization> discretization() const override { return discret_; }
 
     /// writing access to discretization
     Teuchos::RCP<DRT::Discretization> write_access_discretization() override { return discret_; }
@@ -309,7 +309,7 @@ namespace ALE
     }
 
     //! Return (rotatory) transformation matrix of local co-ordinate systems
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetLocSysTrafo() const;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> get_loc_sys_trafo() const;
 
     //! Update slave dofs for multifield simulations with ale
     void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& a) override;
@@ -318,7 +318,7 @@ namespace ALE
     Teuchos::RCP<CORE::Conditions::LocsysManager> LocsysManager() override { return locsysman_; }
 
     //! Apply Dirichlet boundary conditions on provided state vectors
-    void ApplyDirichletBC(Teuchos::ParameterList& params,
+    void apply_dirichlet_bc(Teuchos::ParameterList& params,
         Teuchos::RCP<Epetra_Vector> systemvector,    //!< (may be Teuchos::null)
         Teuchos::RCP<Epetra_Vector> systemvectord,   //!< (may be Teuchos::null)
         Teuchos::RCP<Epetra_Vector> systemvectordd,  //!< (may be Teuchos::null)
@@ -343,10 +343,10 @@ namespace ALE
 
    protected:
     //! Read parameter list
-    const Teuchos::ParameterList& Params() const { return *params_; }
+    const Teuchos::ParameterList& params() const { return *params_; }
 
     //! write access to residual
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessResidual() const { return residual_; }
+    virtual Teuchos::RCP<Epetra_Vector> write_access_residual() const { return residual_; }
 
    private:
     virtual bool update_sys_mat_every_step() const { return true; }
@@ -526,7 +526,7 @@ namespace ALE
     //! Constructor
     AleLinear(Teuchos::RCP<DRT::Discretization> actdis,  ///< pointer to discretization
         Teuchos::RCP<CORE::LINALG::Solver> solver,       ///< linear solver
-        Teuchos::RCP<Teuchos::ParameterList> params,     ///< parameter list
+        Teuchos::RCP<Teuchos::ParameterList> params_in,  ///< parameter list
         Teuchos::RCP<IO::DiscretizationWriter> output    ///< output writing
     );
 

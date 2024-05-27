@@ -67,7 +67,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
 {
   if (!material_post_setup_)
   {
-    std::visit([&](auto& interface) { interface->MaterialPostSetup(*this, *SolidMaterial()); },
+    std::visit([&](auto& interface) { interface->material_post_setup(*this, *SolidMaterial()); },
         solid_calc_variant_);
     material_post_setup_ = true;
   }
@@ -79,7 +79,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
       [&]()
       {
         if (IsParamsInterface())
-          return ParamsInterface().GetActionType();
+          return params_interface().GetActionType();
         else
           return String2ActionType(params.get<std::string>("action", "none"));
       });
@@ -201,7 +201,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
       if (IsParamsInterface())
       {
         // new structural time integration
-        ParamsInterface().add_contribution_to_energy_type(int_energy, STR::internal_energy);
+        params_interface().add_contribution_to_energy_type(int_energy, STR::internal_energy);
       }
       else
       {
@@ -219,7 +219,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
           [&](auto& interface)
           {
             interface->initialize_gauss_point_data_output(
-                *this, *SolidMaterial(), *ParamsInterface().gauss_point_data_output_manager_ptr());
+                *this, *SolidMaterial(), *params_interface().gauss_point_data_output_manager_ptr());
           },
           solid_calc_variant_);
 
@@ -231,7 +231,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
           [&](auto& interface)
           {
             interface->evaluate_gauss_point_data_output(
-                *this, *SolidMaterial(), *ParamsInterface().gauss_point_data_output_manager_ptr());
+                *this, *SolidMaterial(), *params_interface().gauss_point_data_output_manager_ptr());
           },
           solid_calc_variant_);
 
@@ -268,7 +268,7 @@ int DRT::ELEMENTS::Solid::evaluate_neumann(Teuchos::ParameterList& params,
       [&]()
       {
         if (IsParamsInterface())
-          return ParamsInterface().GetTotalTime();
+          return params_interface().GetTotalTime();
         else
           return params.get("total time", -1.0);
       });

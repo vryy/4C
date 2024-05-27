@@ -51,14 +51,14 @@ void MAT::FiberAnisotropyExtension<numfib>::compute_structural_tensors()
 }
 
 template <unsigned int numfib>
-void MAT::FiberAnisotropyExtension<numfib>::SetFibers(
+void MAT::FiberAnisotropyExtension<numfib>::set_fibers(
     int gp, const std::array<CORE::LINALG::Matrix<3, 1>, numfib>& fibers)
 {
-  if (gp >= GetAnisotropy()->get_number_of_gauss_points())
+  if (gp >= get_anisotropy()->get_number_of_gauss_points())
   {
     FOUR_C_THROW(
         "The current Gauss point %i is out of range of the expected number of Gauss points %i.", gp,
-        GetAnisotropy()->get_number_of_gauss_points());
+        get_anisotropy()->get_number_of_gauss_points());
   }
 
   if (fibers_.empty())
@@ -76,11 +76,11 @@ void MAT::FiberAnisotropyExtension<numfib>::SetFibers(
   compute_needed_structural_tensors();
 
   // Call the notifier method
-  OnFibersInitialized();
+  on_fibers_initialized();
 }
 
 template <unsigned int numfib>
-void MAT::FiberAnisotropyExtension<numfib>::SetFibers(
+void MAT::FiberAnisotropyExtension<numfib>::set_fibers(
     const std::vector<std::array<CORE::LINALG::Matrix<3, 1>, numfib>>& fibers)
 {
   fibers_ = fibers;
@@ -89,7 +89,7 @@ void MAT::FiberAnisotropyExtension<numfib>::SetFibers(
   compute_needed_structural_tensors();
 
   // Call the notifier method
-  OnFibersInitialized();
+  on_fibers_initialized();
 }
 
 template <unsigned int numfib>
@@ -193,7 +193,7 @@ void MAT::FiberAnisotropyExtension<numfib>::UnpackAnisotropy(
 }
 
 template <unsigned int numfib>
-void MAT::FiberAnisotropyExtension<numfib>::SetFiberLocation(FiberLocation location)
+void MAT::FiberAnisotropyExtension<numfib>::set_fiber_location(FiberLocation location)
 {
   fiber_location_ = location;
 }
@@ -217,7 +217,7 @@ int MAT::FiberAnisotropyExtension<numfib>::GetFibersPerElement() const
     return 1;
   }
 
-  return GetAnisotropy()->get_number_of_gauss_points();
+  return get_anisotropy()->get_number_of_gauss_points();
 }
 
 // explicit instatiations of template classes

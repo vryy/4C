@@ -101,7 +101,7 @@ void ELEMAG::ElemagTimeInt::Init()
     eleparams.set("total time", time_);
 
     // Evaluation of the dirichlet conditions (why is it here and also later?)
-    discret_->EvaluateDirichlet(
+    discret_->evaluate_dirichlet(
         eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0);
 
@@ -736,7 +736,7 @@ void ELEMAG::ElemagTimeInt::apply_dirichlet_to_system(bool resonly)
   TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
   Teuchos::ParameterList params;
   params.set<double>("total time", time_);
-  discret_->EvaluateDirichlet(
+  discret_->evaluate_dirichlet(
       params, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   if (resonly)
     CORE::LINALG::apply_dirichlet_to_system(*residual_, *zeros_, *(dbcmaps_->CondMap()));
@@ -984,7 +984,7 @@ void ELEMAG::ElemagTimeInt::Output()
 
   if (uprestart_ != 0 && step_ % uprestart_ == 0)
   {
-    WriteRestart();
+    write_restart();
   }
 
   return;
@@ -994,14 +994,14 @@ void ELEMAG::ElemagTimeInt::Output()
 /*----------------------------------------------------------------------*
  |  Write restart vectors (public)                     berardocco 11/18 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::WriteRestart()
+void ELEMAG::ElemagTimeInt::write_restart()
 {
   if (myrank_ == 0) std::cout << "======= Restart written in step " << step_ << std::endl;
 
   output_->WriteVector("traceRestart", trace);
 
   // write internal field for which we need to create and fill the corresponding vectors
-  // since this requires some effort, the WriteRestart method should not be used excessively!
+  // since this requires some effort, the write_restart method should not be used excessively!
   Teuchos::RCP<Epetra_Vector> intVar = Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map(1))));
   Teuchos::RCP<Epetra_Vector> intVarnm =
       Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map(1))));
@@ -1026,7 +1026,7 @@ void ELEMAG::ElemagTimeInt::WriteRestart()
   discret_->ClearState(true);
 
   return;
-}  // WriteRestart
+}  // write_restart
 
 
 /*----------------------------------------------------------------------*
@@ -1121,10 +1121,10 @@ void ELEMAG::ElemagTimeInt::SpySysmat(std::ostream &out)
 /*----------------------------------------------------------------------*
  |  Return discretization (public)                     berardocco 08/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> ELEMAG::ElemagTimeInt::Discretization()
+Teuchos::RCP<DRT::Discretization> ELEMAG::ElemagTimeInt::discretization()
 {
   return discret_;
-}  // Discretization
+}  // discretization
 
 /*----------------------------------------------------------------------*
  |  Create test field (public)                         berardocco 08/18 |

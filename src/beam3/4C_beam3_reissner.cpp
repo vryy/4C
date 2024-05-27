@@ -871,7 +871,7 @@ void DRT::ELEMENTS::Beam3r::set_up_reference_geometry(
       }
     }
 
-    reflength_ = CalcReflength<nnodecl, vpernode>(pos_ref_centerline);
+    reflength_ = calc_reflength<nnodecl, vpernode>(pos_ref_centerline);
 
     /************************ Compute quantities required for elasticity
      ***********************************
@@ -934,7 +934,7 @@ void DRT::ELEMENTS::Beam3r::set_up_reference_geometry(
     // Loop through all GPs for under-integration and calculate jacobi determinants at the GPs
     for (int numgp = 0; numgp < gausspoints_elast_force.nquad; ++numgp)
     {
-      Calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
+      calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
 
       // Store Jacobi determinant at this Gauss point for under-integration
       jacobi_gp_elastf_[numgp] = dr0dxi.Norm2();
@@ -1002,7 +1002,7 @@ void DRT::ELEMENTS::Beam3r::set_up_reference_geometry(
     // Loop through all GPs for under-integration and calculate jacobi determinants at the GPs
     for (int numgp = 0; numgp < gausspoints_elast_moment.nquad; numgp++)
     {
-      Calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
+      calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
 
       // Store Jacobi determinant at this Gauss point
       jacobi_gp_elastm_[numgp] = dr0dxi.Norm2();
@@ -1060,8 +1060,8 @@ void DRT::ELEMENTS::Beam3r::set_up_reference_geometry(
     // Loop through all GPs for exact integration and compute initial jacobi determinant
     for (int numgp = 0; numgp < gausspoints_inertia.nquad; numgp++)
     {
-      Calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
-      Calc_r<nnodecl, vpernode, double>(pos_ref_centerline, H_i[numgp], r0);
+      calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
+      calc_r<nnodecl, vpernode, double>(pos_ref_centerline, H_i[numgp], r0);
 
       // Store Jacobi determinant at this Gauss point
       jacobi_gp_mass_[numgp] = dr0dxi.Norm2();
@@ -1118,7 +1118,7 @@ void DRT::ELEMENTS::Beam3r::set_up_reference_geometry(
     // Loop through all GPs
     for (int numgp = 0; numgp < gausspoints_damp_stoch.nquad; numgp++)
     {
-      Calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
+      calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
 
       // Store Jacobi determinant at this Gauss point
       jacobi_gp_dampstoch_[numgp] = dr0dxi.Norm2();
@@ -1153,7 +1153,7 @@ void DRT::ELEMENTS::Beam3r::set_up_reference_geometry(
     // Loop through all GPs
     for (int numgp = 0; numgp < gausspoints_neumann.nquad; numgp++)
     {
-      Calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
+      calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
 
       // Store Jacobi determinant at this Gauss point
       jacobi_gp_neumannline_[numgp] = dr0dxi.Norm2();
@@ -1194,13 +1194,13 @@ void DRT::ELEMENTS::Beam3r::GetPosAtXi(
       {
         CORE::LINALG::Matrix<12, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
         add_ref_values_disp_centerline<2, 2, double>(disp_totlag_centerline_fixedsize);
-        Beam3Base::GetPosAtXi<2, 2, double>(pos, xi, disp_totlag_centerline_fixedsize);
+        Beam3Base::get_pos_at_xi<2, 2, double>(pos, xi, disp_totlag_centerline_fixedsize);
       }
       else
       {
         CORE::LINALG::Matrix<6, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
         add_ref_values_disp_centerline<2, 1, double>(disp_totlag_centerline_fixedsize);
-        Beam3Base::GetPosAtXi<2, 1, double>(pos, xi, disp_totlag_centerline_fixedsize);
+        Beam3Base::get_pos_at_xi<2, 1, double>(pos, xi, disp_totlag_centerline_fixedsize);
       }
       break;
     }
@@ -1208,21 +1208,21 @@ void DRT::ELEMENTS::Beam3r::GetPosAtXi(
     {
       CORE::LINALG::Matrix<9, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
       add_ref_values_disp_centerline<3, 1, double>(disp_totlag_centerline_fixedsize);
-      Beam3Base::GetPosAtXi<3, 1, double>(pos, xi, disp_totlag_centerline_fixedsize);
+      Beam3Base::get_pos_at_xi<3, 1, double>(pos, xi, disp_totlag_centerline_fixedsize);
       break;
     }
     case 4:
     {
       CORE::LINALG::Matrix<12, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
       add_ref_values_disp_centerline<4, 1, double>(disp_totlag_centerline_fixedsize);
-      Beam3Base::GetPosAtXi<4, 1, double>(pos, xi, disp_totlag_centerline_fixedsize);
+      Beam3Base::get_pos_at_xi<4, 1, double>(pos, xi, disp_totlag_centerline_fixedsize);
       break;
     }
     case 5:
     {
       CORE::LINALG::Matrix<15, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
       add_ref_values_disp_centerline<5, 1, double>(disp_totlag_centerline_fixedsize);
-      Beam3Base::GetPosAtXi<5, 1, double>(pos, xi, disp_totlag_centerline_fixedsize);
+      Beam3Base::get_pos_at_xi<5, 1, double>(pos, xi, disp_totlag_centerline_fixedsize);
       break;
     }
     default:

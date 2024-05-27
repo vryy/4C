@@ -24,7 +24,7 @@ DRT::ELEMENTS::ArteryEleCalc<distype>::ArteryEleCalc(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-double DRT::ELEMENTS::ArteryEleCalc<distype>::CalculateEleLength(Artery* ele)
+double DRT::ELEMENTS::ArteryEleCalc<distype>::calculate_ele_length(Artery* ele)
 {
   // get node coordinates and number of elements per node
   DRT::Node** nodes = ele->Nodes();

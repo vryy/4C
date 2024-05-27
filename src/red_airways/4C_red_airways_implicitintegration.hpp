@@ -246,7 +246,7 @@ namespace AIRWAY
     {
       return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(massmat_);
     }
-    Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
+    Teuchos::RCP<DRT::Discretization> discretization() { return discret_; }
 
     double Dt() const { return dta_; }
     double Time() const { return time_; }

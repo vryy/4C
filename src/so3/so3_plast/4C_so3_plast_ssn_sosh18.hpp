@@ -82,7 +82,7 @@ namespace DRT
       {
         return SoSh18::NumDofPerNode(node);
       }
-      int NumDofPerElement() const override { return SoSh18::NumDofPerElement(); }
+      int num_dof_per_element() const override { return SoSh18::num_dof_per_element(); }
       void VisNames(std::map<std::string, int>& names) override { return SoSh18::VisNames(names); }
       bool VisData(const std::string& name, std::vector<double>& data) override
       {

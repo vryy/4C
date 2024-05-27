@@ -40,7 +40,7 @@ void STR::IMPLICIT::Generic::Setup()
   // ---------------------------------------------------------------------------
   // set the new pre/post operator for the nox nln group in the parameter list
   // ---------------------------------------------------------------------------
-  Teuchos::ParameterList& p_grp_opt = SDyn().GetNoxParams().sublist("Group Options");
+  Teuchos::ParameterList& p_grp_opt = s_dyn().GetNoxParams().sublist("Group Options");
 
   // create the new generic pre/post operator
   Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> prepost_generic_ptr =
@@ -56,7 +56,7 @@ void STR::IMPLICIT::Generic::Setup()
   // ---------------------------------------------------------------------------
   // set the new pre/post operator for the nox nln solver in the parameter list
   // ---------------------------------------------------------------------------
-  Teuchos::ParameterList& p_sol_opt = SDyn().GetNoxParams().sublist("Solver Options");
+  Teuchos::ParameterList& p_sol_opt = s_dyn().GetNoxParams().sublist("Solver Options");
 
   NOX::NLN::AUX::AddToPrePostOpVector(p_sol_opt, prepost_generic_ptr);
 
@@ -77,13 +77,13 @@ const bool& STR::IMPLICIT::Generic::IsPredictorState() const { return ispredicto
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::ParameterList& STR::IMPLICIT::Generic::GetNoxParams() { return SDyn().GetNoxParams(); }
+Teuchos::ParameterList& STR::IMPLICIT::Generic::GetNoxParams() { return s_dyn().GetNoxParams(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double STR::IMPLICIT::Generic::get_default_step_length() const
 {
-  const Teuchos::ParameterList& p_nox = TimInt().GetDataSDyn().GetNoxParams();
+  const Teuchos::ParameterList& p_nox = tim_int().GetDataSDyn().GetNoxParams();
   const std::string& nln_solver = p_nox.get<std::string>("Nonlinear Solver");
   // The pseudo transient implementation holds also a line search object!
   if (nln_solver == "Line Search Based" or nln_solver == "Pseudo Transient")
@@ -99,11 +99,11 @@ double STR::IMPLICIT::Generic::get_default_step_length() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Generic::ResetEvalParams()
+void STR::IMPLICIT::Generic::reset_eval_params()
 {
   // set the time step dependent parameters for the element evaluation
-  EvalData().SetTotalTime(GlobalState().GetTimeNp());
-  EvalData().SetDeltaTime((*GlobalState().GetDeltaTime())[0]);
+  EvalData().SetTotalTime(global_state().GetTimeNp());
+  EvalData().SetDeltaTime((*global_state().GetDeltaTime())[0]);
   EvalData().SetIsTolerateError(true);
 }
 
@@ -111,7 +111,7 @@ void STR::IMPLICIT::Generic::ResetEvalParams()
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::Generic::print_jacobian_in_matlab_format(const NOX::NLN::Group& curr_grp) const
 {
-  const STR::TIMINT::Implicit& timint_impl = dynamic_cast<const STR::TIMINT::Implicit&>(TimInt());
+  const STR::TIMINT::Implicit& timint_impl = dynamic_cast<const STR::TIMINT::Implicit&>(tim_int());
 
   timint_impl.print_jacobian_in_matlab_format(curr_grp);
 }
@@ -124,7 +124,7 @@ bool STR::IMPLICIT::Generic::apply_correction_system(const enum NOX::NLN::Correc
 {
   check_init_setup();
 
-  ResetEvalParams();
+  reset_eval_params();
 
   EvalData().SetCorrectionType(type);
 
@@ -167,7 +167,7 @@ bool STR::IMPLICIT::Generic::apply_correction_system(const enum NOX::NLN::Correc
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::Generic::ConditionNumber(const NOX::NLN::Group& grp) const
 {
-  const STR::TIMINT::Implicit& timint_impl = dynamic_cast<const STR::TIMINT::Implicit&>(TimInt());
+  const STR::TIMINT::Implicit& timint_impl = dynamic_cast<const STR::TIMINT::Implicit&>(tim_int());
 
   timint_impl.compute_condition_number(grp);
 }
@@ -183,7 +183,7 @@ void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPreComputeX(const NOX::NLN::Grou
   Epetra_Vector& dir_mutable = const_cast<Epetra_Vector&>(dir);
 
   const bool isdefaultstep = (step == default_step_);
-  impl_.ModelEval().RunPreComputeX(xold, dir_mutable, step, curr_grp, isdefaultstep);
+  impl_.ModelEval().run_pre_compute_x(xold, dir_mutable, step, curr_grp, isdefaultstep);
 }
 
 /*----------------------------------------------------------------------------*
@@ -198,7 +198,7 @@ void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPostComputeX(const NOX::NLN::Gro
       dynamic_cast<const ::NOX::Epetra::Vector&>(curr_grp.getX()).getEpetraVector();
 
   bool isdefaultstep = (step == default_step_);
-  impl_.ModelEval().RunPostComputeX(xold, dir, step, xnew, isdefaultstep);
+  impl_.ModelEval().run_post_compute_x(xold, dir, step, xnew, isdefaultstep);
 }
 
 /*----------------------------------------------------------------------------*
@@ -209,7 +209,7 @@ void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPostIterate(const ::NOX::Solver:
   const bool isdefaultstep = get_step(step, solver);
   const int num_corrs = get_number_of_modified_newton_corrections(solver);
 
-  impl_.ModelEval().RunPostIterate(solver, step, isdefaultstep, num_corrs);
+  impl_.ModelEval().run_post_iterate(solver, step, isdefaultstep, num_corrs);
 }
 
 /*----------------------------------------------------------------------------*

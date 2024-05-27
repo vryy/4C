@@ -83,7 +83,7 @@ FSI::MonolithicBase::MonolithicBase(
 /*----------------------------------------------------------------------------*/
 void FSI::MonolithicBase::read_restart(int step)
 {
-  StructureField()->read_restart(step);
+  structure_field()->read_restart(step);
   fluid_field()->read_restart(step);
   ale_field()->read_restart(step);
 
@@ -105,7 +105,8 @@ void FSI::MonolithicBase::create_structure_time_integrator(
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
       Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(
           timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
-  structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->StructureField());
+  structure_ =
+      Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->structure_field());
   structure_->Setup();
 
   if (structure_ == Teuchos::null)
@@ -149,22 +150,22 @@ void FSI::MonolithicBase::create_fluid_and_ale_time_integrator(
 void FSI::MonolithicBase::prepare_time_step()
 {
   increment_time_and_step();
-  if (verbosity_ >= INPAR::FSI::verbosity_low) PrintHeader();
+  if (verbosity_ >= INPAR::FSI::verbosity_low) print_header();
   prepare_time_step_preconditioner();
   prepare_time_step_fields();
 
   // Note: it's important to first prepare the single fields and than the fsi problem
-  PrepareTimeStepFSI();
+  prepare_time_step_fsi();
 
   return;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::MonolithicBase::PrepareTimeStepFSI()
+void FSI::MonolithicBase::prepare_time_step_fsi()
 {
-  ddgpred_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->extract_interface_dispnp()));
-  ddgpred_->Update(-1.0, *StructureField()->extract_interface_dispn(), 1.0);
+  ddgpred_ = Teuchos::rcp(new Epetra_Vector(*structure_field()->extract_interface_dispnp()));
+  ddgpred_->Update(-1.0, *structure_field()->extract_interface_dispn(), 1.0);
 
   return;
 }
@@ -173,7 +174,7 @@ void FSI::MonolithicBase::PrepareTimeStepFSI()
 /*----------------------------------------------------------------------------*/
 void FSI::MonolithicBase::prepare_time_step_fields()
 {
-  StructureField()->prepare_time_step();
+  structure_field()->prepare_time_step();
   fluid_field()->prepare_time_step();
   ale_field()->prepare_time_step();
 
@@ -184,67 +185,70 @@ void FSI::MonolithicBase::prepare_time_step_fields()
 /*----------------------------------------------------------------------------*/
 void FSI::MonolithicBase::prepare_output(bool force_prepare)
 {
-  StructureField()->prepare_output(force_prepare);
+  structure_field()->prepare_output(force_prepare);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::MonolithicBase::Output()
+void FSI::MonolithicBase::output()
 {
   /* Note: The order is important here! In here control file entries are
    * written. And these entries define the order in which the filters handle
    * the Discretizations, which in turn defines the dof number ordering of the
    * Discretizations.
    */
-  StructureField()->Output();
+  structure_field()->Output();
   fluid_field()->Output();
   ale_field()->Output();
 
-  if (StructureField()->get_constraint_manager()->HaveMonitor())
+  if (structure_field()->get_constraint_manager()->HaveMonitor())
   {
-    StructureField()->get_constraint_manager()->compute_monitor_values(StructureField()->Dispnp());
-    if (Comm().MyPID() == 0) StructureField()->get_constraint_manager()->PrintMonitorValues();
+    structure_field()->get_constraint_manager()->compute_monitor_values(
+        structure_field()->Dispnp());
+    if (Comm().MyPID() == 0) structure_field()->get_constraint_manager()->PrintMonitorValues();
   }
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToAle(Teuchos::RCP<Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::struct_to_ale(Teuchos::RCP<Epetra_Vector> iv) const
 {
   return coupsa_->MasterToSlave(iv);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToStruct(Teuchos::RCP<Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::ale_to_struct(Teuchos::RCP<Epetra_Vector> iv) const
 {
   return coupsa_->SlaveToMaster(iv);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToFluid(Teuchos::RCP<Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::struct_to_fluid(
+    Teuchos::RCP<Epetra_Vector> iv) const
 {
   return coupsf_->MasterToSlave(iv);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::fluid_to_struct(
+    Teuchos::RCP<Epetra_Vector> iv) const
 {
   return coupsf_->SlaveToMaster(iv);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluid(Teuchos::RCP<Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::ale_to_fluid(Teuchos::RCP<Epetra_Vector> iv) const
 {
   return coupfa_->SlaveToMaster(iv);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::FluidToAleInterface(
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::fluid_to_ale_interface(
     Teuchos::RCP<Epetra_Vector> iv) const
 {
   return icoupfa_->MasterToSlave(iv);
@@ -252,7 +256,7 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::FluidToAleInterface(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluidInterface(
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::ale_to_fluid_interface(
     Teuchos::RCP<Epetra_Vector> iv) const
 {
   return icoupfa_->SlaveToMaster(iv);
@@ -260,7 +264,7 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluidInterface(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToAle(
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::struct_to_ale(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupsa_->MasterToSlave(iv);
@@ -268,7 +272,7 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToAle(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToStruct(
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::ale_to_struct(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupsa_->SlaveToMaster(iv);
@@ -276,7 +280,7 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToStruct(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToFluid(
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::struct_to_fluid(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupsf_->MasterToSlave(iv);
@@ -284,7 +288,7 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToFluid(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::FluidToStruct(
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::fluid_to_struct(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupsf_->SlaveToMaster(iv);
@@ -292,7 +296,7 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::FluidToStruct(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluid(
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::ale_to_fluid(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupfa_->SlaveToMaster(iv);
@@ -300,7 +304,7 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluid(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::FluidToAleInterface(
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::fluid_to_ale_interface(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return icoupfa_->MasterToSlave(iv);
@@ -308,7 +312,7 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::FluidToAleInterface(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluidInterface(
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::ale_to_fluid_interface(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return icoupfa_->SlaveToMaster(iv);
@@ -329,8 +333,8 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
   // enable debugging
   if (CORE::UTILS::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") == 1)
   {
-    sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(StructureField()->Discretization()));
-    // fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(fluid_field()->Discretization()));
+    sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(structure_field()->discretization()));
+    // fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(fluid_field()->discretization()));
   }
 
   // write iterations-file
@@ -371,25 +375,25 @@ void FSI::Monolithic::SetupSystem()
 
   CORE::ADAPTER::Coupling& coupsf = structure_fluid_coupling();
   CORE::ADAPTER::Coupling& coupsa = structure_ale_coupling();
-  CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  CORE::ADAPTER::Coupling& coupfa = fluid_ale_coupling();
   CORE::ADAPTER::Coupling& icoupfa = interface_fluid_ale_coupling();
 
   // structure to fluid
 
-  coupsf.setup_condition_coupling(*StructureField()->Discretization(),
-      StructureField()->Interface()->FSICondMap(), *fluid_field()->Discretization(),
+  coupsf.setup_condition_coupling(*structure_field()->discretization(),
+      structure_field()->Interface()->FSICondMap(), *fluid_field()->discretization(),
       fluid_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
   // structure to ale
 
-  coupsa.setup_condition_coupling(*StructureField()->Discretization(),
-      StructureField()->Interface()->FSICondMap(), *ale_field()->Discretization(),
+  coupsa.setup_condition_coupling(*structure_field()->discretization(),
+      structure_field()->Interface()->FSICondMap(), *ale_field()->discretization(),
       ale_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
   // fluid to ale at the interface
 
-  icoupfa.setup_condition_coupling(*fluid_field()->Discretization(),
-      fluid_field()->Interface()->FSICondMap(), *ale_field()->Discretization(),
+  icoupfa.setup_condition_coupling(*fluid_field()->discretization(),
+      fluid_field()->Interface()->FSICondMap(), *ale_field()->discretization(),
       ale_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
   // In the following we assume that both couplings find the same dof
@@ -403,10 +407,10 @@ void FSI::Monolithic::SetupSystem()
     FOUR_C_THROW("No nodes in matching FSI interface. Empty FSI coupling condition?");
 
   // the fluid-ale coupling always matches
-  const Epetra_Map* fluidnodemap = fluid_field()->Discretization()->NodeRowMap();
-  const Epetra_Map* alenodemap = ale_field()->Discretization()->NodeRowMap();
+  const Epetra_Map* fluidnodemap = fluid_field()->discretization()->NodeRowMap();
+  const Epetra_Map* alenodemap = ale_field()->discretization()->NodeRowMap();
 
-  coupfa.setup_coupling(*fluid_field()->Discretization(), *ale_field()->Discretization(),
+  coupfa.setup_coupling(*fluid_field()->discretization(), *ale_field()->discretization(),
       *fluidnodemap, *alenodemap, ndim);
 
   fluid_field()->SetMeshMap(coupfa.MasterDofMap());
@@ -450,8 +454,8 @@ void FSI::Monolithic::timeloop_const_dt(
     TimeStep(interface);
     constexpr bool force_prepare = false;
     prepare_output(force_prepare);
-    Update();
-    Output();
+    update();
+    output();
   }
 
   return;
@@ -462,10 +466,10 @@ void FSI::Monolithic::timeloop_const_dt(
 void FSI::Monolithic::PrepareTimeloop()
 {
   // make sure we didn't destroy the maps before we entered the timeloop
-  Extractor().check_for_valid_map_extractor();
+  extractor().check_for_valid_map_extractor();
 
   // Get the top level parameter list
-  Teuchos::ParameterList& nlParams = NOXParameterList();
+  Teuchos::ParameterList& nlParams = nox_parameter_list();
 
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
   printParams.set("MyPID", Comm().MyPID());
@@ -533,7 +537,7 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<::NOX::Epetra::Interface::Requ
   TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::TimeStep");
 
   // Get the top level parameter list
-  Teuchos::ParameterList& nlParams = NOXParameterList();
+  Teuchos::ParameterList& nlParams = nox_parameter_list();
 
   // sublists
 
@@ -684,20 +688,20 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<::NOX::Epetra::Interface::Requ
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::Update()
+void FSI::Monolithic::update()
 {
   const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   bool timeadapton =
       CORE::UTILS::IntegralValue<int>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
 
   if (not timeadapton)
-    StructureField()->Update();  // constant dt
+    structure_field()->Update();  // constant dt
   else
   {
-    StructureField()->Update(Time());  // variable/adaptive dt
+    structure_field()->Update(Time());  // variable/adaptive dt
 
-    if (IsAdaStructure())
-      Teuchos::rcp_dynamic_cast<ADAPTER::StructureFSITimIntAda>(StructureField(), true)
+    if (is_ada_structure())
+      Teuchos::rcp_dynamic_cast<ADAPTER::StructureFSITimIntAda>(structure_field(), true)
           ->UpdateStepSize(Dt());
   }
 
@@ -824,7 +828,7 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   // check whether all fields have the same time step size
-  CheckIfDtsSame();
+  check_if_dts_same();
 #endif
 
   Teuchos::RCP<const Epetra_Vector> sx;
@@ -838,7 +842,7 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
     if (sdbg_ != Teuchos::null)
     {
       sdbg_->NewIteration();
-      sdbg_->WriteVector("x", *StructureField()->Interface()->ExtractFSICondVector(sx));
+      sdbg_->WriteVector("x", *structure_field()->Interface()->ExtractFSICondVector(sx));
     }
   }
 
@@ -847,34 +851,34 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
   // only. But the Jacobian is stored internally and will be returned
   // later on without looking at x again!
 
-  if (verbosity_ >= INPAR::FSI::verbosity_medium) Utils()->out() << "\nEvaluate elements\n";
+  if (verbosity_ >= INPAR::FSI::verbosity_medium) utils()->out() << "\nEvaluate elements\n";
 
   {
     Teuchos::Time ts("structure", true);
-    StructureField()->Evaluate(sx);
+    structure_field()->Evaluate(sx);
     if (verbosity_ >= INPAR::FSI::verbosity_medium)
-      Utils()->out() << "structure: " << ts.totalElapsedTime(true) << " sec\n";
+      utils()->out() << "structure: " << ts.totalElapsedTime(true) << " sec\n";
   }
 
   {
     Teuchos::Time ta("ale", true);
     ale_field()->Evaluate(ax);
     if (verbosity_ >= INPAR::FSI::verbosity_medium)
-      Utils()->out() << "ale      : " << ta.totalElapsedTime(true) << " sec\n";
+      utils()->out() << "ale      : " << ta.totalElapsedTime(true) << " sec\n";
   }
 
   // transfer the current ale mesh positions to the fluid field
-  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(ale_field()->Dispnp());
+  Teuchos::RCP<Epetra_Vector> fluiddisp = ale_to_fluid(ale_field()->Dispnp());
   fluid_field()->apply_mesh_displacement(fluiddisp);
 
   {
     Teuchos::Time tf("fluid", true);
     fluid_field()->Evaluate(fx);
     if (verbosity_ >= INPAR::FSI::verbosity_medium)
-      Utils()->out() << "fluid    : " << tf.totalElapsedTime(true) << " sec\n";
+      utils()->out() << "fluid    : " << tf.totalElapsedTime(true) << " sec\n";
   }
 
-  if (verbosity_ >= INPAR::FSI::verbosity_medium) Utils()->out() << "\n";
+  if (verbosity_ >= INPAR::FSI::verbosity_medium) utils()->out() << "\n";
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1047,7 +1051,7 @@ void FSI::Monolithic::initial_guess(Teuchos::RCP<Epetra_Vector> initial_guess)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::initial_guess");
 
-  combine_field_vectors(*initial_guess, StructureField()->initial_guess(),
+  combine_field_vectors(*initial_guess, structure_field()->initial_guess(),
       fluid_field()->initial_guess(), ale_field()->initial_guess(), true);
 }
 
@@ -1056,9 +1060,9 @@ void FSI::Monolithic::initial_guess(Teuchos::RCP<Epetra_Vector> initial_guess)
 void FSI::Monolithic::combine_field_vectors(Epetra_Vector& v, Teuchos::RCP<const Epetra_Vector> sv,
     Teuchos::RCP<const Epetra_Vector> fv, Teuchos::RCP<const Epetra_Vector> av)
 {
-  Extractor().AddVector(*sv, 0, v);
-  Extractor().AddVector(*fv, 1, v);
-  Extractor().AddVector(*av, 2, v);
+  extractor().AddVector(*sv, 0, v);
+  extractor().AddVector(*fv, 1, v);
+  extractor().AddVector(*av, 2, v);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1142,7 +1146,7 @@ void FSI::BlockMonolithic::prepare_time_step_preconditioner()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::BlockMonolithic::CreateSystemMatrix(
+void FSI::BlockMonolithic::create_system_matrix(
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>& mat, bool structuresplit)
 {
   const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
@@ -1207,7 +1211,7 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
   {
     case INPAR::FSI::PreconditionedKrylov:
     {
-      mat = Teuchos::rcp(new OverlappingBlockMatrixFSIAMG(Extractor(), *StructureField(),
+      mat = Teuchos::rcp(new OverlappingBlockMatrixFSIAMG(extractor(), *structure_field(),
           *fluid_field(), *ale_field(), structuresplit,
           CORE::UTILS::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"), blocksmoother, schuromega,
           pcomega, pciter, spcomega, spciter, fpcomega, fpciter, apcomega, apciter,
@@ -1217,7 +1221,7 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
     }
     case INPAR::FSI::HybridSchwarz:
     {
-      mat = Teuchos::rcp(new OverlappingBlockMatrixHybridSchwarz(Extractor(), *StructureField(),
+      mat = Teuchos::rcp(new OverlappingBlockMatrixHybridSchwarz(extractor(), *structure_field(),
           *fluid_field(), *ale_field(), structuresplit,
           CORE::UTILS::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"), blocksmoother, schuromega,
           pcomega, pciter, spcomega, spciter, fpcomega, fpciter, apcomega, apciter,
@@ -1229,7 +1233,7 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
     {
       mat = Teuchos::rcp(
           new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
-              Extractor(), Extractor(), 81, false, true));
+              extractor(), extractor(), 81, false, true));
       break;
     }
     default:
@@ -1297,10 +1301,10 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
           // nullspace on correct map
           // solver->Params().sublist("Inverse1").set<Teuchos::RCP<Epetra_Map>>("null space: map",
           // Teuchos::rcp(new Epetra_Map(SystemMatrix()->Matrix(0,0).RowMap())));
-          StructureField()->Discretization()->compute_null_space_if_necessary(
+          structure_field()->discretization()->compute_null_space_if_necessary(
               solver->Params().sublist("Inverse1"));
           CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Structure",
-              *StructureField()->Discretization()->dof_row_map(),
+              *structure_field()->discretization()->dof_row_map(),
               SystemMatrix()->Matrix(0, 0).EpetraMatrix()->RowMap(),
               solver->Params().sublist("Inverse1"));
 
@@ -1309,10 +1313,10 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
           // nullspace on correct map
           // solver->Params().sublist("Inverse2").set<Teuchos::RCP<Epetra_Map>>("null space: map",
           // Teuchos::rcp(new Epetra_Map(SystemMatrix()->Matrix(1,1).RowMap())));
-          fluid_field()->Discretization()->compute_null_space_if_necessary(
+          fluid_field()->discretization()->compute_null_space_if_necessary(
               solver->Params().sublist("Inverse2"));
           CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Fluid",
-              *fluid_field()->Discretization()->dof_row_map(),
+              *fluid_field()->discretization()->dof_row_map(),
               SystemMatrix()->Matrix(1, 1).EpetraMatrix()->RowMap(),
               solver->Params().sublist("Inverse2"));
 
@@ -1322,10 +1326,10 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
           // solver->Params().sublist("Inverse3").set<Teuchos::RCP<Epetra_Map>>("null space: map",
           // Teuchos::rcp(new Epetra_Map(SystemMatrix()->Matrix(2,2).RowMap()))); we have to cast
           // the const on the ale discretization away!
-          const_cast<DRT::Discretization&>(*(ale_field()->Discretization()))
+          const_cast<DRT::Discretization&>(*(ale_field()->discretization()))
               .compute_null_space_if_necessary(solver->Params().sublist("Inverse3"));
           CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Ale",
-              *ale_field()->Discretization()->dof_row_map(),
+              *ale_field()->discretization()->dof_row_map(),
               SystemMatrix()->Matrix(2, 2).EpetraMatrix()->RowMap(),
               solver->Params().sublist("Inverse3"));
 

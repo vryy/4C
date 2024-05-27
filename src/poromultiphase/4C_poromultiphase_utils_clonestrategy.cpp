@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  | define conditions to copy to the cloned discretization    vuong 08/16 |
  *----------------------------------------------------------------------*/
 std::map<std::string, std::string>
-POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::ConditionsToCopy() const
+POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::conditions_to_copy() const
 {
   return {{"PoroDirichlet", "Dirichlet"}, {"PoroPointNeumann", "PointNeumann"},
       {"PoroLineNeumann", "LineNeumann"}, {"PoroSurfaceNeumann", "SurfaceNeumann"},
@@ -36,7 +36,7 @@ POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::ConditionsToCopy() cons
 /*----------------------------------------------------------------------*
  | check for correct material                               vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::CheckMaterialType(const int matid)
+void POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::check_material_type(const int matid)
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
@@ -51,7 +51,7 @@ void POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::CheckMaterialType(
 /*----------------------------------------------------------------------*
  | set element-specific data (material etc.)                 vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::SetElementData(
+void POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::set_element_data(
     Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbsdis)
 {
   // We need to set material and possibly other things to complete element setup.
@@ -77,7 +77,7 @@ void POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::SetElementData(
 /*----------------------------------------------------------------------*
  | determine whether element is copied or not               vuong 08/16 |
  *----------------------------------------------------------------------*/
-bool POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::DetermineEleType(
+bool POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::determine_ele_type(
     DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // note: ismyele, actele remain unused here! Used only for ALE creation

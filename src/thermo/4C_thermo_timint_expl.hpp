@@ -145,7 +145,7 @@ namespace THR
     void PrintStep() override;
 
     //! The text for summary print, see #PrintStep
-    void PrintStepText(FILE* ofile  //!< output file handle
+    void print_step_text(FILE* ofile  //!< output file handle
     );
 
     //@}

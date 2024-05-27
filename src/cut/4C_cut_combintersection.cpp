@@ -20,7 +20,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------*
- * constructur for Combined Intersection class (Levelset and Mesh intersection in one class)
+ * constructur for Combined intersection class (Levelset and Mesh intersection in one class)
  *-----------------------------------------------------------------------------------------*/
 
 CORE::GEO::CUT::CombIntersection::CombIntersection(int myrank)

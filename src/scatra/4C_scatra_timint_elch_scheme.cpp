@@ -60,12 +60,12 @@ void SCATRA::ScaTraTimIntElchOST::pre_calc_initial_potential_field()
 {
   // evaluate Dirichlet boundary conditions at time t=0
   // the values should match your initial field at the boundary!
-  ApplyDirichletBC(time_, phin_, Teuchos::null);
-  ApplyDirichletBC(time_, phinp_, Teuchos::null);
+  apply_dirichlet_bc(time_, phin_, Teuchos::null);
+  apply_dirichlet_bc(time_, phinp_, Teuchos::null);
   compute_intermediate_values();
 
   // evaluate Neumann boundary conditions at time t = 0
-  ApplyNeumannBC(neumann_loads_);
+  apply_neumann_bc(neumann_loads_);
 
   // standard general element parameters without stabilization
   set_element_general_parameters(true);
@@ -92,13 +92,13 @@ void SCATRA::ScaTraTimIntElchOST::post_calc_initial_potential_field()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::WriteRestart() const
+void SCATRA::ScaTraTimIntElchOST::write_restart() const
 {
   // output restart information associated with one-step-theta time integration scheme
-  TimIntOneStepTheta::WriteRestart();
+  TimIntOneStepTheta::write_restart();
 
   // output restart information associated with electrochemistry
-  ScaTraTimIntElch::WriteRestart();
+  ScaTraTimIntElch::write_restart();
 
   // write additional restart data for galvanostatic applications or simulations including a double
   // layer formulation
@@ -159,7 +159,7 @@ void SCATRA::ScaTraTimIntElchOST::read_restart(const int step, Teuchos::RCP<IO::
     reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, input, step));
 
   // Initialize Nernst-BC
-  InitNernstBC();
+  init_nernst_bc();
 
   if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
@@ -243,10 +243,10 @@ void SCATRA::ScaTraTimIntElchOST::electrode_kinetics_time_update()
 /*----------------------------------------------------------------------*
  | explicit predictor for nonlinear solver                   fang 10/15 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::ExplicitPredictor() const
+void SCATRA::ScaTraTimIntElchOST::explicit_predictor() const
 {
   // call base class routine
-  TimIntOneStepTheta::ExplicitPredictor();
+  TimIntOneStepTheta::explicit_predictor();
 
   // for the electric potential we just use the old values from the previous time step
   splitter_->InsertCondVector(splitter_->ExtractCondVector(phin_), phinp_);
@@ -374,21 +374,21 @@ void SCATRA::ScaTraTimIntElchBDF2::Setup()
  *-----------------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElchBDF2::pre_calc_initial_potential_field()
 {
-  ApplyDirichletBC(time_, phin_, Teuchos::null);
-  ApplyDirichletBC(time_, phinp_, Teuchos::null);
-  ApplyNeumannBC(neumann_loads_);
+  apply_dirichlet_bc(time_, phin_, Teuchos::null);
+  apply_dirichlet_bc(time_, phinp_, Teuchos::null);
+  apply_neumann_bc(neumann_loads_);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchBDF2::WriteRestart() const
+void SCATRA::ScaTraTimIntElchBDF2::write_restart() const
 {
   // output restart information associated with BDF2 time integration scheme
-  TimIntBDF2::WriteRestart();
+  TimIntBDF2::write_restart();
 
   // output restart information associated with electrochemistry
-  ScaTraTimIntElch::WriteRestart();
+  ScaTraTimIntElch::write_restart();
 
   // write additional restart data for galvanostatic applications
   if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
@@ -444,7 +444,7 @@ void SCATRA::ScaTraTimIntElchBDF2::read_restart(
     reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, input, step));
 
   // Initialize Nernst-BC
-  InitNernstBC();
+  init_nernst_bc();
 
   // restart for galvanostatic applications
   if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
@@ -649,12 +649,12 @@ void SCATRA::ScaTraTimIntElchGenAlpha::pre_calc_initial_potential_field()
 {
   // evaluate Dirichlet boundary conditions at time t = 0
   // the values should match your initial field at the boundary!
-  ApplyDirichletBC(time_, phin_, Teuchos::null);
-  ApplyDirichletBC(time_, phinp_, Teuchos::null);
+  apply_dirichlet_bc(time_, phin_, Teuchos::null);
+  apply_dirichlet_bc(time_, phinp_, Teuchos::null);
   compute_intermediate_values();
 
   // evaluate Neumann boundary conditions at time t = 0
-  ApplyNeumannBC(neumann_loads_);
+  apply_neumann_bc(neumann_loads_);
 
   // for calculation of initial electric potential field, we have to switch off all stabilization
   // and turbulence modeling terms standard general element parameter without stabilization
@@ -684,13 +684,13 @@ void SCATRA::ScaTraTimIntElchGenAlpha::post_calc_initial_potential_field()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchGenAlpha::WriteRestart() const
+void SCATRA::ScaTraTimIntElchGenAlpha::write_restart() const
 {
   // output restart information associated with generalized-alpha time integration scheme
-  TimIntGenAlpha::WriteRestart();
+  TimIntGenAlpha::write_restart();
 
   // output restart information associated with electrochemistry
-  ScaTraTimIntElch::WriteRestart();
+  ScaTraTimIntElch::write_restart();
 
   // write additional restart data for galvanostatic applications
   if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
@@ -738,7 +738,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::read_restart(
     reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, input, step));
 
   // Initialize Nernst-BC
-  InitNernstBC();
+  init_nernst_bc();
 
   if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
@@ -914,21 +914,21 @@ void SCATRA::ScaTraTimIntElchStationary::Setup()
  *---------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElchStationary::pre_calc_initial_potential_field()
 {
-  ApplyDirichletBC(time_, phin_, Teuchos::null);
-  ApplyDirichletBC(time_, phinp_, Teuchos::null);
-  ApplyNeumannBC(neumann_loads_);
+  apply_dirichlet_bc(time_, phin_, Teuchos::null);
+  apply_dirichlet_bc(time_, phinp_, Teuchos::null);
+  apply_neumann_bc(neumann_loads_);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchStationary::WriteRestart() const
+void SCATRA::ScaTraTimIntElchStationary::write_restart() const
 {
   // output restart information associated with stationary time integration scheme
-  TimIntStationary::WriteRestart();
+  TimIntStationary::write_restart();
 
   // output restart information associated with electrochemistry
-  ScaTraTimIntElch::WriteRestart();
+  ScaTraTimIntElch::write_restart();
 
   // write additional restart data for galvanostatic applications
   if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
@@ -972,7 +972,7 @@ void SCATRA::ScaTraTimIntElchStationary::read_restart(
     reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, input, step));
 
   // Initialize Nernst-BC
-  InitNernstBC();
+  init_nernst_bc();
 
   // restart for galvanostatic applications
   if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
@@ -1085,12 +1085,12 @@ void SCATRA::ScaTraTimIntElchSCLOST::pre_calc_initial_potential_field()
 {
   // evaluate Dirichlet boundary conditions at time t=0
   // the values should match your initial field at the boundary!
-  ApplyDirichletBC(time_, phin_, Teuchos::null);
-  ApplyDirichletBC(time_, phinp_, Teuchos::null);
+  apply_dirichlet_bc(time_, phin_, Teuchos::null);
+  apply_dirichlet_bc(time_, phinp_, Teuchos::null);
   compute_intermediate_values();
 
   // evaluate Neumann boundary conditions at time t = 0
-  ApplyNeumannBC(neumann_loads_);
+  apply_neumann_bc(neumann_loads_);
 
   // standard general element parameters without stabilization
   set_element_general_parameters(true);
@@ -1117,13 +1117,13 @@ void SCATRA::ScaTraTimIntElchSCLOST::post_calc_initial_potential_field()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchSCLOST::WriteRestart() const
+void SCATRA::ScaTraTimIntElchSCLOST::write_restart() const
 {
   // output restart information associated with one-step-theta time integration scheme
-  TimIntOneStepTheta::WriteRestart();
+  TimIntOneStepTheta::write_restart();
 
   // output restart information associated with electrochemistry
-  ScaTraTimIntElchSCL::WriteRestart();
+  ScaTraTimIntElchSCL::write_restart();
 }
 
 
@@ -1147,10 +1147,10 @@ void SCATRA::ScaTraTimIntElchSCLOST::Update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchSCLOST::ExplicitPredictor() const
+void SCATRA::ScaTraTimIntElchSCLOST::explicit_predictor() const
 {
   // call base class routine
-  TimIntOneStepTheta::ExplicitPredictor();
+  TimIntOneStepTheta::explicit_predictor();
 
   // for the electric potential we just use the old values from the previous time step
   splitter_->InsertCondVector(splitter_->ExtractCondVector(phin_), phinp_);

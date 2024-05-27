@@ -63,7 +63,7 @@ namespace FSI
    protected:
     /// time update
     /// recover the Lagrange multiplier and relax ALE (if requested)
-    void Update() override;
+    void update() override;
 
     /// start a new time step
     void prepare_time_step() override;
@@ -72,10 +72,10 @@ namespace FSI
     void prepare_time_step_preconditioner() override{};
 
     /// output of fluid, structure & ALE-quantities and Lagrange multiplier
-    void Output() override = 0;
+    void output() override = 0;
 
     /// Evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    void Evaluate(
+    void evaluate(
         Teuchos::RCP<const Epetra_Vector> step_increment  ///< increment between time step n and n+1
     );
 
@@ -99,10 +99,10 @@ namespace FSI
     virtual void create_combined_dof_row_map() = 0;
 
     /// Newton Raphson
-    virtual void Newton();
+    virtual void newton();
 
     /// test for convergence
-    bool Converged();
+    bool converged();
 
     /// compute the residual and incremental norms required for convergence check
     virtual void build_convergence_norms() = 0;
@@ -177,7 +177,7 @@ namespace FSI
     void set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
 
     /// extractor to communicate between full monolithic map and block maps
-    const CORE::LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
+    const CORE::LINALG::MultiMapExtractor& extractor() const { return blockrowdofmap_; }
 
     /// setup list with default parameters
     void set_default_parameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);

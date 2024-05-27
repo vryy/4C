@@ -29,7 +29,7 @@ THR::ResultTest::ResultTest(TimInt& tintegrator) : CORE::UTILS::ResultTest("THER
   temp_ = tintegrator.Temp();
   rate_ = tintegrator.Rate();
   flux_ = tintegrator.Freact();
-  thrdisc_ = tintegrator.Discretization();
+  thrdisc_ = tintegrator.discretization();
 }
 
 /*----------------------------------------------------------------------*
@@ -111,7 +111,7 @@ void THR::ResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test
         FOUR_C_THROW("Quantity '%s' not supported in thermo testing", position.c_str());
 
       // compare values
-      const int err = CompareValues(result, "NODE", res);
+      const int err = compare_values(result, "NODE", res);
       nerr += err;
       test_count++;
     }

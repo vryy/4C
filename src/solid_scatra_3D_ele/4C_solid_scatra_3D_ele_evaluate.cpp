@@ -22,7 +22,7 @@ int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
 {
   if (!material_post_setup_)
   {
-    std::visit([&](auto& interface) { interface->MaterialPostSetup(*this, SolidMaterial()); },
+    std::visit([&](auto& interface) { interface->material_post_setup(*this, SolidMaterial()); },
         solid_scatra_calc_variant_);
     material_post_setup_ = true;
   }
@@ -34,7 +34,7 @@ int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
       [&]()
       {
         if (IsParamsInterface())
-          return ParamsInterface().GetActionType();
+          return params_interface().GetActionType();
         else
           return String2ActionType(params.get<std::string>("action", "none"));
       });
@@ -137,7 +137,7 @@ int DRT::ELEMENTS::SolidScatra::evaluate_neumann(Teuchos::ParameterList& params,
       [&]()
       {
         if (IsParamsInterface())
-          return ParamsInterface().GetTotalTime();
+          return params_interface().GetTotalTime();
         else
           return params.get("total time", -1.0);
       });

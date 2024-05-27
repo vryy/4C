@@ -106,7 +106,7 @@ namespace SCATRA
 
     void post_calc_initial_time_derivative() override;
 
-    void WriteRestart() const override;
+    void write_restart() const override;
 
    protected:
     void set_element_time_parameter(bool forcedincrementalsolver = false) const override;
@@ -117,11 +117,11 @@ namespace SCATRA
 
     void set_old_part_of_righthandside() override;
 
-    void ExplicitPredictor() const override;
+    void explicit_predictor() const override;
 
     void add_neumann_to_residual() override;
 
-    void AVM3Separation() override;
+    void av_m3_separation() override;
 
     void dynamic_computation_of_cs() override;
 
@@ -129,7 +129,7 @@ namespace SCATRA
 
     void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override;
 
-    double ResidualScaling() const override { return 1.0 / (dta_ * theta_); }
+    double residual_scaling() const override { return 1.0 / (dta_ * theta_); }
 
     /// time factor for one-step-theta/BDF2 time integration
     double theta_;

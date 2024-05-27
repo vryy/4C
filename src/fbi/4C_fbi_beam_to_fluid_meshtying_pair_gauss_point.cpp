@@ -43,7 +43,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
   // Call Evaluate on the geometry Pair
   if (!this->meshtying_is_evaluated_)
   {
-    this->CastGeometryPair()->Evaluate(
+    this->cast_geometry_pair()->Evaluate(
         this->ele1poscur_, this->ele2poscur_, this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }

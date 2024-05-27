@@ -41,7 +41,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const STR::MapExtractor> Interface() const { return interface_; }
 
     /// switch structure field to block matrix in fsi simulations
-    virtual void UseBlockMatrix();
+    virtual void use_block_matrix();
 
     /// linear structure solve with just a interface load
     ///
@@ -97,7 +97,7 @@ namespace ADAPTER
     int predictor_;
 
     /// access the fsi model evaluator
-    Teuchos::RCP<STR::MODELEVALUATOR::PartitionedFSI> FSIModelEvaluator();
+    Teuchos::RCP<STR::MODELEVALUATOR::PartitionedFSI> fsi_model_evaluator();
 
    private:
     /// The structural model evaluator object.

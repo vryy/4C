@@ -50,28 +50,28 @@ class PostVtiWriter : public PostVtkWriter
 
  protected:
   //! Return the opening xml tag for this writer type
-  const std::string& WriterOpeningTag() const override;
+  const std::string& writer_opening_tag() const override;
 
   //! Return the parallel opening xml tag for this writer type
-  const std::string& WriterPOpeningTag() const override;
+  const std::string& writer_p_opening_tag() const override;
 
   //! Return a vector of parallel piece tags for each file
-  const std::vector<std::string>& WriterPPieceTags() const override;
+  const std::vector<std::string>& writer_p_piece_tags() const override;
 
   //! Give every writer a chance to do preparations before writing
-  void WriterPrepTimestep() override;
+  void writer_prep_timestep() override;
 
   //! Return the parallel file suffix including the dot for this file type
-  const std::string& WriterPSuffix() const override;
+  const std::string& writer_p_suffix() const override;
 
   //! Return the string of this writer type
-  const std::string& WriterString() const override;
+  const std::string& writer_string() const override;
 
   //! Return the file suffix including the dot for this file type
-  const std::string& WriterSuffix() const override;
+  const std::string& writer_suffix() const override;
 
   //! Write a single result step
-  void WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<Epetra_Vector>& data,
+  void write_dof_result_step(std::ofstream& file, const Teuchos::RCP<Epetra_Vector>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf, const int from,
       const bool fillzeros) override;
@@ -88,7 +88,7 @@ class PostVtiWriter : public PostVtkWriter
       const int from) override;
 
   //! write the geometry of one time step
-  void WriteGeo() override;
+  void write_geo() override;
 
   //! origin of the ImageData-grid
   double origin_[3];

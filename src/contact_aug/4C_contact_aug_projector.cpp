@@ -241,7 +241,7 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
     if (not rhs_gp(rhs_, x_ref_, n_ref_, target_ele, tar_coords_, target_xi, alpha))
     {
       DebugPolicy::writeVector(std::cout, probdim, rhs_.A(), "Rhs (failed)");
-      //      std::cout << "ShapeFunction evaluation failed @ [" << txi(0,0) << ", " <<
+      //      std::cout << "shape_function evaluation failed @ [" << txi(0,0) << ", " <<
       //          txi(1,0) << "]" << std::endl;
       iter_ = MORTARMAXITER;
       break;

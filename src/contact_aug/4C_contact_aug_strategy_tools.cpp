@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AUG::Strategy::AugFDCheckGlobal(CONTACT::ParamsInterface& cparams)
+void CONTACT::AUG::Strategy::aug_fd_check_global(CONTACT::ParamsInterface& cparams)
 {
   // *** linearization w.r.t. displ. *********************************
 #ifdef CONTACTFD_DLMGAPLINMATRIX
@@ -181,8 +181,8 @@ void CONTACT::AUG::Strategy::FdDebug::Evaluate(
     do_perturbation(gid, dof);
 
     // Update matrix and rhs
-    for (auto& iptr : strat_->Interfaces()) iptr->SetElementAreas();
-    strat_->EvalForceStiff(cparams);
+    for (auto& iptr : strat_->interfaces()) iptr->set_element_areas();
+    strat_->eval_force_stiff(cparams);
 
     // loop over all rows of the updated right hand side vector
     // and save the values in a new matrix
@@ -198,8 +198,8 @@ void CONTACT::AUG::Strategy::FdDebug::Evaluate(
     undo_perturbation(gid, dof);
 
     // Update matrix and rhs
-    for (auto& iptr : strat_->Interfaces()) iptr->SetElementAreas();
-    strat_->EvalForceStiff(cparams);
+    for (auto& iptr : strat_->interfaces()) iptr->set_element_areas();
+    strat_->eval_force_stiff(cparams);
 
     std::cout << "done!" << std::endl;
   }
@@ -352,7 +352,7 @@ DRT::Node* CONTACT::AUG::Strategy::FdDebug::find_i_node(const int gid) const
   DRT::Node* node = nullptr;
 
   // do the finite difference step
-  for (auto& interface : strat_->Interfaces())
+  for (auto& interface : strat_->interfaces())
   {
     node = interface->Discret().gNode(gid);
     if (node) return node;

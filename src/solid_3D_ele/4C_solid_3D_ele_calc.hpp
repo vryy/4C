@@ -72,7 +72,7 @@ namespace DRT::ELEMENTS
 
     void Setup(MAT::So3Material& solid_material, INPUT::LineDefinition* linedef);
 
-    void MaterialPostSetup(const DRT::Element& ele, MAT::So3Material& solid_material);
+    void material_post_setup(const DRT::Element& ele, MAT::So3Material& solid_material);
 
     void evaluate_nonlinear_force_stiffness_mass(const DRT::Element& ele,
         MAT::So3Material& solid_material, const DRT::Discretization& discretization,

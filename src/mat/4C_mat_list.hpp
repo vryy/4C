@@ -36,7 +36,7 @@ namespace MAT
       MatList(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
       /// @name material parameters
       //@{
@@ -47,7 +47,7 @@ namespace MAT
       /// provide access to material by its ID
       Teuchos::RCP<CORE::MAT::Material> MaterialById(const int id) const;
 
-      std::map<int, Teuchos::RCP<CORE::MAT::Material>>* MaterialMapWrite() { return &mat_; }
+      std::map<int, Teuchos::RCP<CORE::MAT::Material>>* material_map_write() { return &mat_; }
 
       /// length of material list
       const int nummat_;
@@ -156,13 +156,13 @@ namespace MAT
 
    protected:
     /// return pointer to the materials map, which has read-only access.
-    const std::map<int, Teuchos::RCP<CORE::MAT::Material>>* MaterialMapRead() const
+    const std::map<int, Teuchos::RCP<CORE::MAT::Material>>* material_map_read() const
     {
       return &mat_;
     }
 
     /// return pointer to the materials map, which has read and write access.
-    std::map<int, Teuchos::RCP<CORE::MAT::Material>>* MaterialMapWrite() { return &mat_; }
+    std::map<int, Teuchos::RCP<CORE::MAT::Material>>* material_map_write() { return &mat_; }
 
    private:
     /// setup of material map

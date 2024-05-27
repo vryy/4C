@@ -21,7 +21,7 @@ CORE::MAT::PAR::Parameter::Parameter(Teuchos::RCP<const CORE::MAT::PAR::Material
 {
 }
 
-void CORE::MAT::PAR::Parameter::SetParameter(
+void CORE::MAT::PAR::Parameter::set_parameter(
     int parametername, Teuchos::RCP<Epetra_Vector> myparameter)
 {
   // security check
@@ -60,7 +60,7 @@ void CORE::MAT::PAR::Parameter::SetParameter(
   }
 }
 
-void CORE::MAT::PAR::Parameter::SetParameter(int parametername, const double val, const int eleGID)
+void CORE::MAT::PAR::Parameter::set_parameter(int parametername, const double val, const int eleGID)
 {
   // check if we own this element
   Teuchos::RCP<Epetra_Vector> fool = matparams_.at(parametername);

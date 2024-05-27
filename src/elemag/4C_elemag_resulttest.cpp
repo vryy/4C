@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 ELEMAG::ElemagResultTest::ElemagResultTest(ElemagTimeInt& elemagalgo)
     : CORE::UTILS::ResultTest("ELECTROMAGNETIC")
 {
-  dis_ = elemagalgo.Discretization();
+  dis_ = elemagalgo.discretization();
   // mysol_ = CORE::LINALG::CreateVector(*(dis_->NodeRowMap()), true);
   error_ = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(4));
   error_ = elemagalgo.compute_error();
@@ -141,7 +141,7 @@ void ELEMAG::ElemagResultTest::test_node(INPUT::LineDefinition& res, int& nerr, 
             variable.c_str());
       }
 
-      nerr += CompareValues(result, "NODE", res);
+      nerr += compare_values(result, "NODE", res);
       test_count++;
     }
   }

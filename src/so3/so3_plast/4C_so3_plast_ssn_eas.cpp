@@ -74,7 +74,7 @@ void DRT::ELEMENTS::So3Plast<distype>::eas_init()
  |  setup EAS data (private)                                seitz 04/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::EasSetup()
+void DRT::ELEMENTS::So3Plast<distype>::eas_setup()
 {
   /* evaluation of EAS variables (which are constant for the following):
   ** -> M defining interpolation of enhanced strains alpha, evaluated at GPs
@@ -87,52 +87,52 @@ void DRT::ELEMENTS::So3Plast<distype>::EasSetup()
   // later, invert the transposed to map from local to global
   // see literature for details (e.g. Andelfinger)
   // it is based on the voigt notation for strains: xx,yy,zz,xy,yz,xz
-  SetT0invT()(0, 0) = Jac_0()(0, 0) * Jac_0()(0, 0);
-  SetT0invT()(1, 0) = Jac_0()(1, 0) * Jac_0()(1, 0);
-  SetT0invT()(2, 0) = Jac_0()(2, 0) * Jac_0()(2, 0);
-  SetT0invT()(3, 0) = 2. * Jac_0()(0, 0) * Jac_0()(1, 0);
-  SetT0invT()(4, 0) = 2. * Jac_0()(1, 0) * Jac_0()(2, 0);
-  SetT0invT()(5, 0) = 2. * Jac_0()(0, 0) * Jac_0()(2, 0);
+  set_t0inv_t()(0, 0) = jac_0()(0, 0) * jac_0()(0, 0);
+  set_t0inv_t()(1, 0) = jac_0()(1, 0) * jac_0()(1, 0);
+  set_t0inv_t()(2, 0) = jac_0()(2, 0) * jac_0()(2, 0);
+  set_t0inv_t()(3, 0) = 2. * jac_0()(0, 0) * jac_0()(1, 0);
+  set_t0inv_t()(4, 0) = 2. * jac_0()(1, 0) * jac_0()(2, 0);
+  set_t0inv_t()(5, 0) = 2. * jac_0()(0, 0) * jac_0()(2, 0);
 
-  SetT0invT()(0, 1) = Jac_0()(0, 1) * Jac_0()(0, 1);
-  SetT0invT()(1, 1) = Jac_0()(1, 1) * Jac_0()(1, 1);
-  SetT0invT()(2, 1) = Jac_0()(2, 1) * Jac_0()(2, 1);
-  SetT0invT()(3, 1) = 2. * Jac_0()(0, 1) * Jac_0()(1, 1);
-  SetT0invT()(4, 1) = 2. * Jac_0()(1, 1) * Jac_0()(2, 1);
-  SetT0invT()(5, 1) = 2. * Jac_0()(0, 1) * Jac_0()(2, 1);
+  set_t0inv_t()(0, 1) = jac_0()(0, 1) * jac_0()(0, 1);
+  set_t0inv_t()(1, 1) = jac_0()(1, 1) * jac_0()(1, 1);
+  set_t0inv_t()(2, 1) = jac_0()(2, 1) * jac_0()(2, 1);
+  set_t0inv_t()(3, 1) = 2. * jac_0()(0, 1) * jac_0()(1, 1);
+  set_t0inv_t()(4, 1) = 2. * jac_0()(1, 1) * jac_0()(2, 1);
+  set_t0inv_t()(5, 1) = 2. * jac_0()(0, 1) * jac_0()(2, 1);
 
-  SetT0invT()(0, 2) = Jac_0()(0, 2) * Jac_0()(0, 2);
-  SetT0invT()(1, 2) = Jac_0()(1, 2) * Jac_0()(1, 2);
-  SetT0invT()(2, 2) = Jac_0()(2, 2) * Jac_0()(2, 2);
-  SetT0invT()(3, 2) = 2. * Jac_0()(0, 2) * Jac_0()(1, 2);
-  SetT0invT()(4, 2) = 2. * Jac_0()(1, 2) * Jac_0()(2, 2);
-  SetT0invT()(5, 2) = 2. * Jac_0()(0, 2) * Jac_0()(2, 2);
+  set_t0inv_t()(0, 2) = jac_0()(0, 2) * jac_0()(0, 2);
+  set_t0inv_t()(1, 2) = jac_0()(1, 2) * jac_0()(1, 2);
+  set_t0inv_t()(2, 2) = jac_0()(2, 2) * jac_0()(2, 2);
+  set_t0inv_t()(3, 2) = 2. * jac_0()(0, 2) * jac_0()(1, 2);
+  set_t0inv_t()(4, 2) = 2. * jac_0()(1, 2) * jac_0()(2, 2);
+  set_t0inv_t()(5, 2) = 2. * jac_0()(0, 2) * jac_0()(2, 2);
 
-  SetT0invT()(0, 3) = Jac_0()(0, 0) * Jac_0()(0, 1);
-  SetT0invT()(1, 3) = Jac_0()(1, 0) * Jac_0()(1, 1);
-  SetT0invT()(2, 3) = Jac_0()(2, 0) * Jac_0()(2, 1);
-  SetT0invT()(3, 3) = Jac_0()(0, 0) * Jac_0()(1, 1) + Jac_0()(1, 0) * Jac_0()(0, 1);
-  SetT0invT()(4, 3) = Jac_0()(1, 0) * Jac_0()(2, 1) + Jac_0()(2, 0) * Jac_0()(1, 1);
-  SetT0invT()(5, 3) = Jac_0()(0, 0) * Jac_0()(2, 1) + Jac_0()(2, 0) * Jac_0()(0, 1);
+  set_t0inv_t()(0, 3) = jac_0()(0, 0) * jac_0()(0, 1);
+  set_t0inv_t()(1, 3) = jac_0()(1, 0) * jac_0()(1, 1);
+  set_t0inv_t()(2, 3) = jac_0()(2, 0) * jac_0()(2, 1);
+  set_t0inv_t()(3, 3) = jac_0()(0, 0) * jac_0()(1, 1) + jac_0()(1, 0) * jac_0()(0, 1);
+  set_t0inv_t()(4, 3) = jac_0()(1, 0) * jac_0()(2, 1) + jac_0()(2, 0) * jac_0()(1, 1);
+  set_t0inv_t()(5, 3) = jac_0()(0, 0) * jac_0()(2, 1) + jac_0()(2, 0) * jac_0()(0, 1);
 
 
-  SetT0invT()(0, 4) = Jac_0()(0, 1) * Jac_0()(0, 2);
-  SetT0invT()(1, 4) = Jac_0()(1, 1) * Jac_0()(1, 2);
-  SetT0invT()(2, 4) = Jac_0()(2, 1) * Jac_0()(2, 2);
-  SetT0invT()(3, 4) = Jac_0()(0, 1) * Jac_0()(1, 2) + Jac_0()(1, 1) * Jac_0()(0, 2);
-  SetT0invT()(4, 4) = Jac_0()(1, 1) * Jac_0()(2, 2) + Jac_0()(2, 1) * Jac_0()(1, 2);
-  SetT0invT()(5, 4) = Jac_0()(0, 1) * Jac_0()(2, 2) + Jac_0()(2, 1) * Jac_0()(0, 2);
+  set_t0inv_t()(0, 4) = jac_0()(0, 1) * jac_0()(0, 2);
+  set_t0inv_t()(1, 4) = jac_0()(1, 1) * jac_0()(1, 2);
+  set_t0inv_t()(2, 4) = jac_0()(2, 1) * jac_0()(2, 2);
+  set_t0inv_t()(3, 4) = jac_0()(0, 1) * jac_0()(1, 2) + jac_0()(1, 1) * jac_0()(0, 2);
+  set_t0inv_t()(4, 4) = jac_0()(1, 1) * jac_0()(2, 2) + jac_0()(2, 1) * jac_0()(1, 2);
+  set_t0inv_t()(5, 4) = jac_0()(0, 1) * jac_0()(2, 2) + jac_0()(2, 1) * jac_0()(0, 2);
 
-  SetT0invT()(0, 5) = Jac_0()(0, 0) * Jac_0()(0, 2);
-  SetT0invT()(1, 5) = Jac_0()(1, 0) * Jac_0()(1, 2);
-  SetT0invT()(2, 5) = Jac_0()(2, 0) * Jac_0()(2, 2);
-  SetT0invT()(3, 5) = Jac_0()(0, 0) * Jac_0()(1, 2) + Jac_0()(1, 0) * Jac_0()(0, 2);
-  SetT0invT()(4, 5) = Jac_0()(1, 0) * Jac_0()(2, 2) + Jac_0()(2, 0) * Jac_0()(1, 2);
-  SetT0invT()(5, 5) = Jac_0()(0, 0) * Jac_0()(2, 2) + Jac_0()(2, 0) * Jac_0()(0, 2);
+  set_t0inv_t()(0, 5) = jac_0()(0, 0) * jac_0()(0, 2);
+  set_t0inv_t()(1, 5) = jac_0()(1, 0) * jac_0()(1, 2);
+  set_t0inv_t()(2, 5) = jac_0()(2, 0) * jac_0()(2, 2);
+  set_t0inv_t()(3, 5) = jac_0()(0, 0) * jac_0()(1, 2) + jac_0()(1, 0) * jac_0()(0, 2);
+  set_t0inv_t()(4, 5) = jac_0()(1, 0) * jac_0()(2, 2) + jac_0()(2, 0) * jac_0()(1, 2);
+  set_t0inv_t()(5, 5) = jac_0()(0, 0) * jac_0()(2, 2) + jac_0()(2, 0) * jac_0()(0, 2);
 
   // now evaluate T0^{-T} with solver
   CORE::LINALG::FixedSizeSerialDenseSolver<numstr_, numstr_, 1> solve_for_inverseT0;
-  solve_for_inverseT0.SetMatrix(SetT0invT());
+  solve_for_inverseT0.SetMatrix(set_t0inv_t());
   int err2 = solve_for_inverseT0.Factor();
   int err = solve_for_inverseT0.Invert();
   if ((err != 0) || (err2 != 0)) FOUR_C_THROW("Inversion of T0inv (Jacobian0) failed");
@@ -153,12 +153,12 @@ template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3Plast<distype>::calc_consistent_defgrd()
 {
   static CORE::LINALG::Matrix<numstr_, 1> glstrain_mod(false);
-  glstrain_mod(0) = 0.5 * (RCG()(0, 0) - 1.0);
-  glstrain_mod(1) = 0.5 * (RCG()(1, 1) - 1.0);
-  glstrain_mod(2) = 0.5 * (RCG()(2, 2) - 1.0);
-  glstrain_mod(3) = RCG()(0, 1);
-  glstrain_mod(4) = RCG()(1, 2);
-  glstrain_mod(5) = RCG()(2, 0);
+  glstrain_mod(0) = 0.5 * (rcg()(0, 0) - 1.0);
+  glstrain_mod(1) = 0.5 * (rcg()(1, 1) - 1.0);
+  glstrain_mod(2) = 0.5 * (rcg()(2, 2) - 1.0);
+  glstrain_mod(3) = rcg()(0, 1);
+  glstrain_mod(4) = rcg()(1, 2);
+  glstrain_mod(5) = rcg()(2, 0);
 
   CORE::LINALG::Matrix<3, 3> R;       // rotation tensor
   CORE::LINALG::Matrix<3, 3> U_mod;   // modified right stretch tensor
@@ -187,7 +187,7 @@ void DRT::ELEMENTS::So3Plast<distype>::calc_consistent_defgrd()
   // ******************************************************************
   // calculate displacement-based right stretch tensor
   // ******************************************************************
-  U_disp.MultiplyTN(Defgrd(), Defgrd());
+  U_disp.MultiplyTN(defgrd(), defgrd());
 
   CORE::LINALG::SYEV(U_disp, EW, U_disp);
   for (int i = 0; i < 3; ++i) EW(i, i) = sqrt(EW(i, i));
@@ -199,15 +199,15 @@ void DRT::ELEMENTS::So3Plast<distype>::calc_consistent_defgrd()
   // compose consistent deformation gradient
   // ******************************************************************
   U_disp.Invert();
-  R.Multiply(Defgrd(), U_disp);
-  SetDefgrdMod().Multiply(R, U_mod);
+  R.Multiply(defgrd(), U_disp);
+  set_defgrd_mod().Multiply(R, U_mod);
 
   // you're done here
   return;
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::EasShape(const int gp)
+void DRT::ELEMENTS::So3Plast<distype>::eas_shape(const int gp)
 {
   std::vector<CORE::LINALG::SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
   // build EAS interpolation matrix M, evaluated at the 8 GPs of so_hex8
@@ -336,24 +336,24 @@ void DRT::ELEMENTS::So3Plast<distype>::EasShape(const int gp)
     FOUR_C_THROW("this EAS type not yet implemented");
 
   // transform EAS shape functions from parameter space to actual space
-  SetM_eas().shape(numstr_, neas_);
-  SetM_eas().putScalar(0.0);
+  set_m_eas().shape(numstr_, neas_);
+  set_m_eas().putScalar(0.0);
   switch (eastype_)
   {
     case soh8p_easfull:
       CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_, numstr_,
           PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easfull>::neas>(
-          SetM_eas().values(), DetJac_0() / DetJ(), T0invT().A(), (M_GP->at(gp)).values());
+          set_m_eas().values(), det_jac_0() / det_j(), t0inv_t().A(), (M_GP->at(gp)).values());
       break;
     case soh8p_easmild:
       CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_, numstr_,
           PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas>(
-          SetM_eas().values(), DetJac_0() / DetJ(), T0invT().A(), (M_GP->at(gp)).values());
+          set_m_eas().values(), det_jac_0() / det_j(), t0inv_t().A(), (M_GP->at(gp)).values());
       break;
     case soh8p_eassosh8:
       CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_, numstr_,
           PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas>(
-          SetM_eas().values(), DetJac_0() / DetJ(), T0invT().A(), (M_GP->at(gp)).values());
+          set_m_eas().values(), det_jac_0() / det_j(), t0inv_t().A(), (M_GP->at(gp)).values());
       break;
     case soh8p_easnone:
       break;
@@ -364,33 +364,33 @@ void DRT::ELEMENTS::So3Plast<distype>::EasShape(const int gp)
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::EasEnhanceStrains()
+void DRT::ELEMENTS::So3Plast<distype>::eas_enhance_strains()
 {
   // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
   static CORE::LINALG::Matrix<numstr_, 1> total_glstrain(false);
-  total_glstrain(0) = 0.5 * (RCG()(0, 0) - 1.0);
-  total_glstrain(1) = 0.5 * (RCG()(1, 1) - 1.0);
-  total_glstrain(2) = 0.5 * (RCG()(2, 2) - 1.0);
-  total_glstrain(3) = RCG()(0, 1);
-  total_glstrain(4) = RCG()(1, 2);
-  total_glstrain(5) = RCG()(2, 0);
+  total_glstrain(0) = 0.5 * (rcg()(0, 0) - 1.0);
+  total_glstrain(1) = 0.5 * (rcg()(1, 1) - 1.0);
+  total_glstrain(2) = 0.5 * (rcg()(2, 2) - 1.0);
+  total_glstrain(3) = rcg()(0, 1);
+  total_glstrain(4) = rcg()(1, 2);
+  total_glstrain(5) = rcg()(2, 0);
   // add enhanced strains = M . alpha to GL strains to "unlock" element
   switch (eastype_)
   {
     case soh8p_easfull:
       CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_,
           PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easfull>::neas, 1>(
-          1.0, total_glstrain.A(), 1.0, M_eas().values(), alpha_eas_->values());
+          1.0, total_glstrain.A(), 1.0, m_eas().values(), alpha_eas_->values());
       break;
     case soh8p_easmild:
       CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_,
           PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, 1>(
-          1.0, total_glstrain.A(), 1.0, M_eas().values(), alpha_eas_->values());
+          1.0, total_glstrain.A(), 1.0, m_eas().values(), alpha_eas_->values());
       break;
     case soh8p_eassosh8:
       CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_,
           PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas, 1>(
-          1.0, total_glstrain.A(), 1.0, M_eas().values(), alpha_eas_->values());
+          1.0, total_glstrain.A(), 1.0, m_eas().values(), alpha_eas_->values());
       break;
     case soh8p_easnone:
       break;
@@ -399,10 +399,10 @@ void DRT::ELEMENTS::So3Plast<distype>::EasEnhanceStrains()
       break;
   }
 
-  for (int i = 0; i < nsd_; ++i) SetRCG()(i, i) = 2. * total_glstrain(i) + 1.;
-  SetRCG()(0, 1) = SetRCG()(1, 0) = total_glstrain(3);
-  SetRCG()(2, 1) = SetRCG()(1, 2) = total_glstrain(4);
-  SetRCG()(0, 2) = SetRCG()(2, 0) = total_glstrain(5);
+  for (int i = 0; i < nsd_; ++i) set_rcg()(i, i) = 2. * total_glstrain(i) + 1.;
+  set_rcg()(0, 1) = set_rcg()(1, 0) = total_glstrain(3);
+  set_rcg()(2, 1) = set_rcg()(1, 2) = total_glstrain(4);
+  set_rcg()(0, 2) = set_rcg()(2, 0) = total_glstrain(5);
 
   // calculate deformation gradient consistent with modified GL strain tensor
   calc_consistent_defgrd();

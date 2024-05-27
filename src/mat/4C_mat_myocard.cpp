@@ -44,7 +44,7 @@ MAT::PAR::Myocard::Myocard(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
 {
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Myocard::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Myocard::create_material()
 {
   return Teuchos::rcp(new MAT::Myocard(this));
 }
@@ -192,9 +192,9 @@ void MAT::Myocard::Unpack(const std::vector<char>& data)
 }
 
 /*----------------------------------------------------------------------*
- |  UnpackMaterial                                       hoermann 12/16 |
+ |  unpack_material                                       hoermann 12/16 |
  *----------------------------------------------------------------------*/
-void MAT::Myocard::UnpackMaterial(const std::vector<char>& data)
+void MAT::Myocard::unpack_material(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 

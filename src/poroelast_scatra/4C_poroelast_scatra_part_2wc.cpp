@@ -25,7 +25,7 @@ POROELASTSCATRA::PoroScatraPart2WC::PoroScatraPart2WC(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : PoroScatraPart(comm, timeparams),
       scaincnp_(Teuchos::rcp(new Epetra_Vector(*(ScaTraField()->Phinp())))),
-      structincnp_(Teuchos::rcp(new Epetra_Vector(*(poro_field()->StructureField()()->Dispnp())))),
+      structincnp_(Teuchos::rcp(new Epetra_Vector(*(poro_field()->structure_field()()->Dispnp())))),
       fluidincnp_(Teuchos::rcp(new Epetra_Vector(*(poro_field()->fluid_field()()->Velnp()))))
 {
   if (comm.MyPID() == 0) std::cout << "\n Create PoroScatraPart2WC algorithm ... \n" << std::endl;
@@ -41,7 +41,7 @@ POROELASTSCATRA::PoroScatraPart2WC::PoroScatraPart2WC(
  *----------------------------------------------------------------------*/
 void POROELASTSCATRA::PoroScatraPart2WC::Timeloop()
 {
-  // InitialCalculations();
+  // initial_calculations();
 
   while (NotFinished())
   {
@@ -51,9 +51,9 @@ void POROELASTSCATRA::PoroScatraPart2WC::Timeloop()
 
     prepare_output();
 
-    Update();
+    update();
 
-    Output();
+    output();
   }
 }
 
@@ -74,8 +74,8 @@ void POROELASTSCATRA::PoroScatraPart2WC::read_restart(int restart)
 
     // in case of submeshes, we need to rebuild the subproxies, also (they are reset during restart)
     if (poro_field()->HasSubmeshes())
-      replace_dof_sets(StructureField()->Discretization(), fluid_field()->Discretization(),
-          ScaTraField()->Discretization());
+      replace_dof_sets(structure_field()->discretization(), fluid_field()->discretization(),
+          ScaTraField()->discretization());
 
     // the variables need to be set on other field
     SetScatraSolution();
@@ -87,8 +87,8 @@ void POROELASTSCATRA::PoroScatraPart2WC::read_restart(int restart)
 
     // in case of submeshes, we need to rebuild the subproxies, also (they are reset during restart)
     if (poro_field()->HasSubmeshes())
-      replace_dof_sets(StructureField()->Discretization(), fluid_field()->Discretization(),
-          ScaTraField()->Discretization());
+      replace_dof_sets(structure_field()->discretization(), fluid_field()->discretization(),
+          ScaTraField()->discretization());
 
     SetTimeStep(poro_field()->Time(), restart);
 
@@ -97,9 +97,9 @@ void POROELASTSCATRA::PoroScatraPart2WC::read_restart(int restart)
       // Material pointers to other field were deleted during read_restart().
       // They need to be reset.
       POROELAST::UTILS::SetMaterialPointersMatchingGrid(
-          poro_field()->StructureField()->Discretization(), ScaTraField()->Discretization());
+          poro_field()->structure_field()->discretization(), ScaTraField()->discretization());
       POROELAST::UTILS::SetMaterialPointersMatchingGrid(
-          poro_field()->fluid_field()->Discretization(), ScaTraField()->Discretization());
+          poro_field()->fluid_field()->discretization(), ScaTraField()->discretization());
     }
   }
 }
@@ -121,7 +121,7 @@ void POROELASTSCATRA::PoroScatraPart2WC::DoPoroStep()
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraPart2WC::DoScatraStep()
+void POROELASTSCATRA::PoroScatraPart2WC::do_scatra_step()
 {
   if (Comm().MyPID() == 0)
   {
@@ -143,7 +143,7 @@ void POROELASTSCATRA::PoroScatraPart2WC::prepare_time_step(bool printheader)
   // keep them in sync!
   increment_time_and_step();
 
-  if (printheader) PrintHeader();
+  if (printheader) print_header();
 
   SetPoroSolution();
   ScaTraField()->prepare_time_step();
@@ -168,7 +168,7 @@ void POROELASTSCATRA::PoroScatraPart2WC::prepare_output()
 /*----------------------------------------------------------------------*
  |                                                   rauch/vuong 04/15  |
  *----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraPart2WC::Update()
+void POROELASTSCATRA::PoroScatraPart2WC::update()
 {
   poro_field()->Update();
   ScaTraField()->Update();
@@ -179,7 +179,7 @@ void POROELASTSCATRA::PoroScatraPart2WC::Update()
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraPart2WC::Output()
+void POROELASTSCATRA::PoroScatraPart2WC::output()
 {
   poro_field()->Output();
   ScaTraField()->check_and_write_output_and_restart();
@@ -207,7 +207,7 @@ void POROELASTSCATRA::PoroScatraPart2WC::Solve()
     // store scalar from first solution for convergence check (like in
     // elch_algorithm: use current values)
     scaincnp_->Update(1.0, *ScaTraField()->Phinp(), 0.0);
-    structincnp_->Update(1.0, *poro_field()->StructureField()->Dispnp(), 0.0);
+    structincnp_->Update(1.0, *poro_field()->structure_field()->Dispnp(), 0.0);
     fluidincnp_->Update(1.0, *poro_field()->fluid_field()->Velnp(), 0.0);
 
     // set structure-based scalar transport values
@@ -220,7 +220,7 @@ void POROELASTSCATRA::PoroScatraPart2WC::Solve()
     SetPoroSolution();
 
     // solve scalar transport equation
-    DoScatraStep();
+    do_scatra_step();
     // scatra_evaluate_solve_iter_update();
 
     // check convergence for all fields and stop iteration loop if
@@ -255,14 +255,14 @@ bool POROELASTSCATRA::PoroScatraPart2WC::convergence_check(int itnum)
   // build the current scalar increment Inc T^{i+1}
   // \f Delta T^{k+1} = Inc T^{k+1} = T^{k+1} - T^{k}  \f
   scaincnp_->Update(1.0, *(ScaTraField()->Phinp()), -1.0);
-  structincnp_->Update(1.0, *(poro_field()->StructureField()->Dispnp()), -1.0);
+  structincnp_->Update(1.0, *(poro_field()->structure_field()->Dispnp()), -1.0);
   fluidincnp_->Update(1.0, *(poro_field()->fluid_field()->Velnp()), -1.0);
 
   // build the L2-norm of the scalar increment and the scalar
   scaincnp_->Norm2(&scaincnorm_L2);
   ScaTraField()->Phinp()->Norm2(&scanorm_L2);
   structincnp_->Norm2(&dispincnorm_L2);
-  poro_field()->StructureField()->Dispnp()->Norm2(&dispnorm_L2);
+  poro_field()->structure_field()->Dispnp()->Norm2(&dispnorm_L2);
   fluidincnp_->Norm2(&fluidincnorm_L2);
   poro_field()->fluid_field()->Velnp()->Norm2(&fluidnorm_L2);
 

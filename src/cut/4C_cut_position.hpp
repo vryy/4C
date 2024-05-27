@@ -149,7 +149,7 @@ namespace CORE::GEO
 
       /** \brief Default Compute method
        *
-       *  \param tol (in)        : User defined tolerance for the WithinLimits check.
+       *  \param tol (in)        : User defined tolerance for the within_limits check.
        *  \param allow_dist (in) : If TRUE, the method allows an offset in normal direction,
        *                           otherwise the higher-dimensional point \c px_ has to lie
        *                           on the lower dimensional element. */
@@ -164,12 +164,12 @@ namespace CORE::GEO
 
       /*! \brief Return the local coordinates of the given point \c px_ */
       template <class T>
-      void LocalCoordinates(T& rst)
+      void local_coordinates(T& rst)
       {
         if (rst.M() < Dim())
           FOUR_C_THROW(
               "rst has the wrong row number! ( DIM = %d ( rst.M() = %d < DIM ) )", Dim(), rst.M());
-        LocalCoordinates(rst.A());
+        local_coordinates(rst.A());
 
         std::fill(rst.A() + Dim(), rst.A() + rst.M(), 0.0);
       }
@@ -191,24 +191,24 @@ namespace CORE::GEO
        *  a signed scalar distance value, what is not possible in this
        *  special case.
        *
-       *  \param distance (in) : access calculated distance value(s)
+       *  \param d (in) : access calculated distance value(s)
        *
        *  \author hiermeier \date 01/17 */
       template <class T>
-      void Distance(T& distance) const
+      void Distance(T& d) const
       {
-        if (distance.M() < (ProbDim() - Dim()))
+        if (d.M() < (ProbDim() - Dim()))
           FOUR_C_THROW(
               "The distance vector has the wrong row number! "
               "( DIM = %d ( rst.M() = %d < DIM ) )",
-              Dim(), distance.M());
+              Dim(), d.M());
 
-        Distance(distance.A());
+        distance(d.A());
       }
 
-      bool WithinLimits() const { return WithinLimitsTol(POSITIONTOL); }
+      bool within_limits() const { return WithinLimitsTol(POSITIONTOL); }
       virtual bool WithinLimitsTol(const double& Tol) const { return WithinLimitsTol(Tol, false); }
-      bool WithinLimits(const bool& allow_dist) const
+      bool within_limits(const bool& allow_dist) const
       {
         return WithinLimitsTol(POSITIONTOL, allow_dist);
       }
@@ -220,9 +220,9 @@ namespace CORE::GEO
 
      protected:
       /*! \brief Return the local coordinates of the given point \c px_ */
-      virtual void LocalCoordinates(double* rst) = 0;
+      virtual void local_coordinates(double* rst) = 0;
 
-      virtual void Distance(double* distance) const = 0;
+      virtual void distance(double* distance) const = 0;
 
       /*! \brief Scaling and shifting of the input nodal positions and the location
        *         of the point \c px_
@@ -231,7 +231,7 @@ namespace CORE::GEO
        *  are converted into the corresponding range of the natural coordinate
        *  system of the element. This also gives the proper initial choice for
        *  the Newton scheme to find the local coordinate system. */
-      virtual void ScaleAndShift() = 0;
+      virtual void scale_and_shift() = 0;
     };  // class Position
 
     /*----------------------------------------------------------------------------*/
@@ -272,7 +272,7 @@ namespace CORE::GEO
             compute_tolerance_(-1.0),
             bbside_(Teuchos::null)
       {
-        ScaleAndShift();
+        scale_and_shift();
         construct_bounding_box();
       }
 
@@ -298,7 +298,7 @@ namespace CORE::GEO
        *  \param rst: local coordinates.
        *
        *  \author hiermeier */
-      void LocalCoordinates(double* rst) override
+      void local_coordinates(double* rst) override
       {
         if (pos_status_ != position_valid)
         {
@@ -312,7 +312,7 @@ namespace CORE::GEO
         std::copy(xsi_.A(), xsi_.A() + xsi_.M(), rst);
       }
 
-      void Distance(double* distance) const override = 0;
+      void distance(double* distance) const override = 0;
 
       bool Compute(const double& tol) override = 0;
 
@@ -337,7 +337,7 @@ namespace CORE::GEO
        *  are converted into the corresponding range of the natural coordinate
        *  system of the element. This leads to a  proper initial choice for
        *  the Newton scheme to find the local coordinate system. */
-      void ScaleAndShift() override
+      void scale_and_shift() override
       {
         GetElementScale<probdim>(xyze_, scale_);
 
@@ -413,14 +413,14 @@ namespace CORE::GEO
       /* Don't call any of these methods directly! Use the base class public
        * methods, instead. */
      protected:
-      void Distance(double* distance) const override
+      void distance(double* distance) const override
       {
         FOUR_C_THROW("Unsupported for the standard case!");
       }
 
       /** \brief Compute method for the standard case with user defined tolerance
        *
-       *  \param Tol (in)        : User defined tolerance for the WithinLimits check.
+       *  \param Tol (in)        : User defined tolerance for the within_limits check.
        *  \param allow_dist (in) : If TRUE, the method allows an offset in normal direction,
        *                           otherwise the higher-dimensional point \c px_ has to lie
        *                           on the lower dimensional element. */
@@ -435,7 +435,7 @@ namespace CORE::GEO
 
       bool WithinLimitsTol(const double& Tol) const override
       {
-        return KERNEL::WithinLimits<eletype>(this->xsi_, Tol);
+        return KERNEL::within_limits<eletype>(this->xsi_, Tol);
       }
     };  // class ComputePosition
 
@@ -464,7 +464,7 @@ namespace CORE::GEO
      protected:
       /** \brief Default Compute method for the embedded case
        *
-       *  \param Tol (in)        : User defined tolerance for the WithinLimits check.
+       *  \param Tol (in)        : User defined tolerance for the within_limits check.
        *  \param allow_dist (in) : If TRUE, the method allows an offset in normal direction,
        *                           otherwise the higher-dimensional point \c px_ has to lie
        *                           on the lower dimensional element. */
@@ -495,7 +495,7 @@ namespace CORE::GEO
         }
       }
 
-      void Distance(double* distance) const override
+      void distance(double* distance) const override
       {
         if (this->pos_status_ < Position::position_distance_valid)
         {

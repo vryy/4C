@@ -50,7 +50,7 @@ namespace FLD
     \brief do explicit predictor step to start nonlinear iteration from
            a better initial value
     */
-    void ExplicitPredictor() override;
+    void explicit_predictor() override;
 
     /*!
     \brief Set custom parameters in the respective time integration class (Loma, RedModels...)

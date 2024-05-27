@@ -60,7 +60,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::Init(
 
   // initialize increment vectors
   scaincnp_ = Teuchos::rcp(
-      new Epetra_Vector(*(ScatraAlgo()->ScaTraField()->Discretization()->dof_row_map())));
+      new Epetra_Vector(*(ScatraAlgo()->ScaTraField()->discretization()->dof_row_map())));
   structincnp_ = Teuchos::rcp(new Epetra_Vector(*(poro_field()->StructDofRowMap())));
   fluidincnp_ = (Teuchos::rcp(new Epetra_Vector(*(poro_field()->FluidDofRowMap()))));
   if (artery_coupling_active_)
@@ -87,7 +87,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::SetupSolver()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::DoPoroStep()
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::do_poro_step()
 {
   // Newton-Raphson iteration
   poro_field()->TimeStep();
@@ -95,7 +95,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::DoPoroStep()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::DoScatraStep()
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::do_scatra_step()
 {
   if (Comm().MyPID() == 0)
   {
@@ -125,9 +125,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::print_header_p
     std::cout << "* PARTITIONED OUTER ITERATION LOOP ----- MULTIPORO  <-------> SCATRA         "
               << "                                                                 *\n";
     std::cout << "* STEP: " << std::setw(5) << std::setprecision(4) << std::scientific << Step()
-              << "/" << std::setw(5) << std::setprecision(4) << std::scientific << NStep()
+              << "/" << std::setw(5) << std::setprecision(4) << std::scientific << n_step()
               << ", Time: " << std::setw(11) << std::setprecision(4) << std::scientific << Time()
-              << "/" << std::setw(11) << std::setprecision(4) << std::scientific << MaxTime()
+              << "/" << std::setw(11) << std::setprecision(4) << std::scientific << max_time()
               << ", Dt: " << std::setw(11) << std::setprecision(4) << std::scientific << Dt()
               << "                                                                           *"
               << std::endl;
@@ -329,13 +329,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWayNested::Solve()
     SetScatraSolution();
 
     // solve structural system
-    DoPoroStep();
+    do_poro_step();
 
     // set mesh displacement and velocity fields
     SetPoroSolution();
 
     // solve scalar transport equation
-    DoScatraStep();
+    do_scatra_step();
 
     // check convergence for all fields and stop iteration loop if
     // convergence is achieved overall
@@ -387,8 +387,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWaySequential::Solv
 
     // 1) set scatra and structure solution (on fluid field)
     SetScatraSolution();
-    poro_field()->SetStructSolution(
-        poro_field()->StructureField()->Dispnp(), poro_field()->StructureField()->Velnp());
+    poro_field()->set_struct_solution(
+        poro_field()->structure_field()->Dispnp(), poro_field()->structure_field()->Velnp());
 
     // 2) solve fluid
     poro_field()->fluid_field()->Solve();
@@ -400,13 +400,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWaySequential::Solv
     poro_field()->set_relaxed_fluid_solution();
 
     // 5) solve structure
-    poro_field()->StructureField()->Solve();
+    poro_field()->structure_field()->Solve();
 
     // 6) set mesh displacement and velocity fields on ScaTra
     SetPoroSolution();
 
     // 7) solve scalar transport equation
-    DoScatraStep();
+    do_scatra_step();
 
     // check convergence for all fields and stop iteration loop if
     // convergence is achieved overall

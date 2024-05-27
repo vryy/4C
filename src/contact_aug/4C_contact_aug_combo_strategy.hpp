@@ -202,10 +202,10 @@ namespace CONTACT
       /// @{
 
       /// Get the set of currently active interfaces
-      std::vector<Teuchos::RCP<CONTACT::Interface>>& Interfaces() override;
+      std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces() override;
 
       /// Get the set of currently active interfaces
-      const std::vector<Teuchos::RCP<CONTACT::Interface>>& Interfaces() const override;
+      const std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces() const override;
 
       /// function wrapper
       void compute_contact_stresses() final;
@@ -218,35 +218,35 @@ namespace CONTACT
       /** \brief function wrapper: Compute force terms
        *
        *  \author hiermeier \date 03/17 */
-      void EvalForce(CONTACT::ParamsInterface& cparams) override;
+      void eval_force(CONTACT::ParamsInterface& cparams) override;
 
       /** \brief function wrapper: Compute force and stiffness terms
        *
        *  \author hiermeier \date 03/17 */
-      void EvalForceStiff(CONTACT::ParamsInterface& cparams) override;
+      void eval_force_stiff(CONTACT::ParamsInterface& cparams) override;
 
       /// function wrapper
       void eval_static_constraint_rhs(CONTACT::ParamsInterface& cparams) override;
 
       /// function wrapper
-      void RunPreEvaluate(CONTACT::ParamsInterface& cparams) override;
+      void run_pre_evaluate(CONTACT::ParamsInterface& cparams) override;
 
       /// function wrapper
-      void RunPostEvaluate(CONTACT::ParamsInterface& cparams) override;
+      void run_post_evaluate(CONTACT::ParamsInterface& cparams) override;
 
       /// function wrapper
-      void RunPreSolve(const Teuchos::RCP<const Epetra_Vector>& curr_disp,
+      void run_pre_solve(const Teuchos::RCP<const Epetra_Vector>& curr_disp,
           const CONTACT::ParamsInterface& cparams) override;
 
       /// function wrapper
-      void RunPostIterate(const CONTACT::ParamsInterface& cparams) override;
+      void run_post_iterate(const CONTACT::ParamsInterface& cparams) override;
 
       /// function wrapper
-      void RunPreComputeX(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
+      void run_pre_compute_x(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
           Epetra_Vector& dir_mutable) override;
 
       /// function wrapper
-      void RunPostComputeX(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
+      void run_post_compute_x(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
           const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
 
       /// function wrapper
@@ -258,7 +258,7 @@ namespace CONTACT
       void remove_condensed_contributions_from_rhs(Epetra_Vector& str_rhs) const override;
 
       /// function wrapper
-      void CorrectParameters(
+      void correct_parameters(
           CONTACT::ParamsInterface& cparams, const NOX::NLN::CorrectionType type) override;
 
       /// function wrapper
@@ -285,7 +285,7 @@ namespace CONTACT
       /// run after EvalForce
       void run_post_eval_force(CONTACT::ParamsInterface& cparams);
 
-      /// run after EvalForceStiff
+      /// run after eval_force_stiff
       void run_post_eval_force_stiff(CONTACT::ParamsInterface& cparams);
 
       /// run after EvalStaticConstraontRHS
@@ -322,7 +322,7 @@ namespace CONTACT
       };
       void Recover(Teuchos::RCP<Epetra_Vector> disi) override
       {
-        FOUR_C_THROW("Deprecated function call! Replaced by RunPostComputeX().");
+        FOUR_C_THROW("Deprecated function call! Replaced by run_post_compute_x().");
       };
       //! @}
 
@@ -468,10 +468,10 @@ namespace CONTACT
 
      protected:
       /// find the id corresponding to \c sol_type
-      unsigned FindId(INPAR::CONTACT::SolvingStrategy sol_type) const;
+      unsigned find_id(INPAR::CONTACT::SolvingStrategy sol_type) const;
 
       /// detect strategy types of the wrapped strategies
-      void GetStrategyTypes(
+      void get_strategy_types(
           const plain_strategy_set& strategies, plain_strattype_set& strat_types) const;
 
      protected:

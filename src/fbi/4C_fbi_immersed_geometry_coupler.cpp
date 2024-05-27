@@ -131,7 +131,7 @@ Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIGeometryCoupler::Search(
 // todo Needs to be adapted as soon as problems can contain beam and general structure nodes
 void FBI::FBIGeometryCoupler::ExtendBeamGhosting(DRT::Discretization& discretization)
 {
-  // CORE::REBALANCE::GhostDiscretizationOnAllProcs(structure_->Discretization());
+  // CORE::REBALANCE::GhostDiscretizationOnAllProcs(structure_->discretization());
   std::vector<int> allproc(discretization.Comm().NumProc());
   for (int i = 0; i < discretization.Comm().NumProc(); ++i) allproc[i] = i;
 

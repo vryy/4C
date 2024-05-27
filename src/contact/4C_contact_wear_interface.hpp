@@ -303,7 +303,7 @@ namespace WEAR
     Derived version!
 
     */
-    void SetElementAreas() final;
+    void set_element_areas() final;
 
     /*!
     \brief Evaluate nodal normals
@@ -316,7 +316,7 @@ namespace WEAR
     \brief Evaluate nodal normals
 
     */
-    void ExportNodalNormals() const final;
+    void export_nodal_normals() const final;
 
     /*!
     \brief Update interface Wear variable sets
@@ -424,7 +424,7 @@ namespace WEAR
     \brief Get type of wear shapefnct
 
     */
-    INPAR::WEAR::WearShape WearShapeFcn()
+    INPAR::WEAR::WearShape wear_shape_fcn()
     {
       return CORE::UTILS::IntegralValue<INPAR::WEAR::WearShape>(imortar_, "WEAR_SHAPEFCN");
     }

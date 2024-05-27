@@ -110,10 +110,10 @@ void XFEM::CouplingBase::Init()
   SetCouplingDofsets();
 
   // set the name of the coupling object to allow access from outside via the name
-  SetCouplingName();
+  set_coupling_name();
 
   // set list of conditions that will be copied to the new cutter discretization
-  SetConditionsToCopy();
+  set_conditions_to_copy();
 
   // create a cutter discretization from conditioned nodes of the given coupling discretization or
   // simply clone the discretization
@@ -155,10 +155,10 @@ void XFEM::CouplingBase::Setup()
   // ---------------------------------------------------------------------------
 
   // initialize state vectors according to cutter discretization
-  InitStateVectors();
+  init_state_vectors();
 
   // prepare the output writer for the cutter discretization
-  PrepareCutterOutput();
+  prepare_cutter_output();
 
   // do condition specific setup
   do_condition_specific_setup();
@@ -490,7 +490,7 @@ void XFEM::CouplingBase::evaluate_dirichlet_function(CORE::LINALG::Matrix<3, 1>&
 {
   std::vector<double> final_values(3, 0.0);
 
-  EvaluateFunction(final_values, x.A(), cond, time);
+  evaluate_function(final_values, x.A(), cond, time);
 
   ivel(0, 0) = final_values[0];
   ivel(1, 0) = final_values[1];
@@ -510,7 +510,7 @@ void XFEM::CouplingBase::evaluate_neumann_function(CORE::LINALG::Matrix<3, 1>& i
     FOUR_C_THROW("Unknown Neumann condition");
   //---------------------------------------
 
-  EvaluateFunction(final_values, x.A(), cond, time);
+  evaluate_function(final_values, x.A(), cond, time);
 
   itraction(0, 0) = final_values[0];
   itraction(1, 0) = final_values[1];
@@ -530,12 +530,12 @@ void XFEM::CouplingBase::evaluate_neumann_function(CORE::LINALG::Matrix<6, 1>& i
     FOUR_C_THROW("Unknown Neumann condition");
   //---------------------------------------
 
-  EvaluateFunction(final_values, x.A(), cond, time);
+  evaluate_function(final_values, x.A(), cond, time);
 
   for (unsigned i = 0; i < 6; ++i) itraction(i, 0) = final_values[i];
 }
 
-void XFEM::CouplingBase::EvaluateFunction(std::vector<double>& final_values, const double* x,
+void XFEM::CouplingBase::evaluate_function(std::vector<double>& final_values, const double* x,
     const CORE::Conditions::Condition* cond, const double time)
 {
   if (cond == nullptr) FOUR_C_THROW("invalid condition");

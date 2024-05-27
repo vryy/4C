@@ -403,7 +403,7 @@ void fsi_immersed_drt()
 
   // create result tests for single fields
   GLOBAL::Problem::Instance()->AddFieldTest(fsi->MBFluidField()->CreateFieldTest());
-  GLOBAL::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(fsi->structure_field()->CreateFieldTest());
 
   // do the actual testing
   GLOBAL::Problem::Instance()->TestAll(comm);
@@ -658,7 +658,7 @@ void fsi_ale_drt()
       // create result tests for single fields
       GLOBAL::Problem::Instance()->AddFieldTest(fsi->ale_field()->CreateFieldTest());
       GLOBAL::Problem::Instance()->AddFieldTest(fsi->fluid_field()->CreateFieldTest());
-      GLOBAL::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+      GLOBAL::Problem::Instance()->AddFieldTest(fsi->structure_field()->CreateFieldTest());
 
       // create fsi specific result test
       Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi, fsidyn));
@@ -703,7 +703,7 @@ void fsi_ale_drt()
 
       // create result tests for single fields
       GLOBAL::Problem::Instance()->AddFieldTest(fsi->fluid_field()->CreateFieldTest());
-      GLOBAL::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+      GLOBAL::Problem::Instance()->AddFieldTest(fsi->structure_field()->CreateFieldTest());
 
       // create fsi specific result test
       Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi, fsidyn));
@@ -747,7 +747,7 @@ void fsi_ale_drt()
 
       // create result tests for single fields
       GLOBAL::Problem::Instance()->AddFieldTest(fsi->MBFluidField()->CreateFieldTest());
-      GLOBAL::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+      GLOBAL::Problem::Instance()->AddFieldTest(fsi->structure_field()->CreateFieldTest());
 
       // do the actual testing
       GLOBAL::Problem::Instance()->TestAll(comm);
@@ -797,7 +797,7 @@ void xfsi_drt()
   if (ale)
   {
     aledis = problem->GetDis("ale");
-    if (aledis == Teuchos::null) FOUR_C_THROW("XFSI DYNAMIC: ALE Discretization empty!!!");
+    if (aledis == Teuchos::null) FOUR_C_THROW("XFSI DYNAMIC: ALE discretization empty!!!");
 
     aledis->fill_complete(true, true, true);
 
@@ -900,7 +900,7 @@ void xfsi_drt()
       fsi->Timeloop(fsi);
 
       GLOBAL::Problem::Instance()->AddFieldTest(fsi->MBFluidField()->CreateFieldTest());
-      GLOBAL::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+      GLOBAL::Problem::Instance()->AddFieldTest(fsi->structure_field()->CreateFieldTest());
       GLOBAL::Problem::Instance()->TestAll(comm);
 
       break;
@@ -946,7 +946,7 @@ void xfpsi_drt()
   if (ale)
   {
     aledis = problem->GetDis("ale");
-    if (aledis == Teuchos::null) FOUR_C_THROW("Ale Discretization empty!");
+    if (aledis == Teuchos::null) FOUR_C_THROW("Ale discretization empty!");
 
     aledis->fill_complete(true, true, true);
 

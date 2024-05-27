@@ -49,7 +49,7 @@ namespace CORE::MAT::PAR
     /// This function is called by the material factory MAT::Factory.
     /// To circumvent more than this single major switch of material type to
     /// object, #params_ are allocated externally.
-    inline void SetParameter(CORE::MAT::PAR::Parameter* matparam)
+    inline void set_parameter(CORE::MAT::PAR::Parameter* matparam)
     {
       params_ = Teuchos::rcp(matparam);
     }

@@ -47,12 +47,12 @@ void FSI::FluidXFEMAlgorithm::Timeloop()
                 << std::endl;
 
 
-    while (NotFinished())
+    while (not_finished())
     {
       prepare_time_step();
-      Solve();
-      Update();
-      Output();
+      solve();
+      update();
+      output();
     }
   }
 }
@@ -79,16 +79,16 @@ void FSI::FluidXFEMAlgorithm::prepare_time_step()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidXFEMAlgorithm::Solve() { MBFluidField()->NonlinearSolve(); }
+void FSI::FluidXFEMAlgorithm::solve() { MBFluidField()->nonlinear_solve(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidXFEMAlgorithm::Update() { MBFluidField()->Update(); }
+void FSI::FluidXFEMAlgorithm::update() { MBFluidField()->Update(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidXFEMAlgorithm::Output() { MBFluidField()->Output(); }
+void FSI::FluidXFEMAlgorithm::output() { MBFluidField()->Output(); }
 
 FOUR_C_NAMESPACE_CLOSE

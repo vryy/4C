@@ -31,7 +31,7 @@ ADAPTER::FBIStructureWrapper::FBIStructureWrapper(Teuchos::RCP<Structure> struct
     FOUR_C_THROW("Prestressing for fluid-beam interaction not tested yet.");
   }
   eletypeextractor_ = Teuchos::rcp(new BEAMINTERACTION::UTILS::MapExtractor);
-  BEAMINTERACTION::UTILS::SetupEleTypeMapExtractor(structure_->Discretization(), eletypeextractor_);
+  BEAMINTERACTION::UTILS::SetupEleTypeMapExtractor(structure_->discretization(), eletypeextractor_);
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -102,7 +102,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIStructureWrapper::extract_interface_disp
 // Apply interface forces
 void ADAPTER::FBIStructureWrapper::apply_interface_forces(Teuchos::RCP<Epetra_Vector> iforce)
 {
-  FSIModelEvaluator()->get_interface_force_np_ptr()->Update(
+  fsi_model_evaluator()->get_interface_force_np_ptr()->Update(
       1.0, *iforce, 0.0);  // todo This has to be changed for mixed structure
   return;
 }
@@ -111,7 +111,7 @@ void ADAPTER::FBIStructureWrapper::apply_interface_forces(Teuchos::RCP<Epetra_Ve
 /*----------------------------------------------------------------------*/
 void ADAPTER::FBIStructureWrapper::setup_multi_map_extractor()
 {
-  FSIModelEvaluator()->setup_multi_map_extractor();
+  fsi_model_evaluator()->setup_multi_map_extractor();
 }
 
 /*----------------------------------------------------------------------*/
@@ -119,7 +119,7 @@ void ADAPTER::FBIStructureWrapper::setup_multi_map_extractor()
 
 Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> ADAPTER::FBIStructureWrapper::GetIOData()
 {
-  return FSIModelEvaluator()->GetInOutput().get_runtime_output_params();
+  return fsi_model_evaluator()->GetInOutput().get_runtime_output_params();
 }
 
 FOUR_C_NAMESPACE_CLOSE

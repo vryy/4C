@@ -60,7 +60,7 @@ CONTACT::Integrator::Integrator(
       integrationtype_(CORE::UTILS::IntegralValue<INPAR::MORTAR::IntType>(imortar_, "INTTYPE"))
 {
   // init gp
-  InitializeGP(eletype);
+  initialize_gp(eletype);
 
   // wear specific
   if (wearlaw_ != INPAR::WEAR::wear_none)
@@ -202,7 +202,7 @@ bool CONTACT::Integrator::BoundarySegmCheck2D(
 /*----------------------------------------------------------------------*
  |  Initialize gauss points                                   popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::Integrator::InitializeGP(CORE::FE::CellType eletype)
+void CONTACT::Integrator::initialize_gp(CORE::FE::CellType eletype)
 {
   //**********************************************************************
   // Create integration points according to eletype!
@@ -614,12 +614,12 @@ void CONTACT::Integrator::integrate_deriv_segment2_d(MORTAR::Element& sele, doub
   // *********************************************************************
 
   // explicitly defined shape function type needed
-  if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
+  if (shape_fcn() == INPAR::MORTAR::shape_undefined)
     FOUR_C_THROW("integrate_deriv_segment2_d called without specific shape function defined!");
 
   // Petrov-Galerkin approach for LM not yet implemented for quadratic FE
   if (sele.Shape() == CORE::FE::CellType::line3 &&
-      ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+      shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
     FOUR_C_THROW("Petrov-Galerkin approach not yet implemented for 2-D quadratic FE interpolation");
 
   // check for problem dimension
@@ -658,7 +658,7 @@ void CONTACT::Integrator::integrate_deriv_segment2_d(MORTAR::Element& sele, doub
   // this is the case for dual linear Lagrange multipliers on line3 elements
   bool linlm = false;
   bool dualquad = false;
-  if (LagMultQuad() == INPAR::MORTAR::lagmult_lin && sele.Shape() == CORE::FE::CellType::line3)
+  if (lag_mult_quad() == INPAR::MORTAR::lagmult_lin && sele.Shape() == CORE::FE::CellType::line3)
   {
     linlm = true;
     if (shapefcn_ == INPAR::MORTAR::shape_dual) dualquad = true;
@@ -667,8 +667,8 @@ void CONTACT::Integrator::integrate_deriv_segment2_d(MORTAR::Element& sele, doub
   // prepare directional derivative of dual shape functions
   CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix> dualmap(
       2 * nrow, 0, CORE::LINALG::SerialDenseMatrix(nrow, nrow));
-  if ((ShapeFcn() == INPAR::MORTAR::shape_dual ||
-          ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
+  if ((shape_fcn() == INPAR::MORTAR::shape_dual ||
+          shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
       (sele.Shape() == CORE::FE::CellType::line3 || sele.Shape() == CORE::FE::CellType::nurbs3 ||
           sele.MoData().DerivDualShape() != Teuchos::null))
     sele.DerivShapeDual(dualmap);
@@ -772,16 +772,16 @@ void CONTACT::Integrator::integrate_deriv_segment2_d(MORTAR::Element& sele, doub
     }
 
     // evaluate Lagrange multiplier shape functions (on slave element)
-    if (LagMultQuad() == INPAR::MORTAR::lagmult_const)
-      sele.evaluate_shape_lag_mult_const(ShapeFcn(), sxi, lmval, lmderiv, nrow);
+    if (lag_mult_quad() == INPAR::MORTAR::lagmult_const)
+      sele.evaluate_shape_lag_mult_const(shape_fcn(), sxi, lmval, lmderiv, nrow);
     else if (linlm)
-      sele.evaluate_shape_lag_mult_lin(ShapeFcn(), sxi, lmval, lmderiv, nrow);
+      sele.evaluate_shape_lag_mult_lin(shape_fcn(), sxi, lmval, lmderiv, nrow);
     else
-      sele.evaluate_shape_lag_mult(ShapeFcn(), sxi, lmval, lmderiv, nrow);
+      sele.evaluate_shape_lag_mult(shape_fcn(), sxi, lmval, lmderiv, nrow);
 
     // evaluate trace space shape functions (on both elements)
-    sele.EvaluateShape(sxi, sval, sderiv, nrow, dualquad);
-    mele.EvaluateShape(mxi, mval, mderiv, ncol, false);
+    sele.evaluate_shape(sxi, sval, sderiv, nrow, dualquad);
+    mele.evaluate_shape(mxi, mval, mderiv, ncol, false);
 
     // evaluate the two slave side Jacobians
     double dxdsxi = sele.Jacobian(sxi);
@@ -844,15 +844,16 @@ void CONTACT::Integrator::integrate_deriv_segment2_d(MORTAR::Element& sele, doub
       // -> standard quadratic functions instead of only linear functions
       CORE::LINALG::SerialDenseVector svalgap(nrow);
       CORE::LINALG::SerialDenseMatrix sderivgap(nrow, 1);
-      sele.EvaluateShape(sxi, svalgap, sderivgap, nrow);
+      sele.evaluate_shape(sxi, svalgap, sderivgap, nrow);
 
-      Gap_2D(sele, mele, svalgap, mval, sderivgap, mderiv, &gap, gpn, dsxigp, dmxigp, dgapgp,
+      gap_2_d(sele, mele, svalgap, mval, sderivgap, mderiv, &gap, gpn, dsxigp, dmxigp, dgapgp,
           dnmap_unit);
     }
     else
-      Gap_2D(sele, mele, sval, mval, sderiv, mderiv, &gap, gpn, dsxigp, dmxigp, dgapgp, dnmap_unit);
+      gap_2_d(
+          sele, mele, sval, mval, sderiv, mderiv, &gap, gpn, dsxigp, dmxigp, dgapgp, dnmap_unit);
 
-    IntegrateGP_2D(sele, mele, sval, lmval, mval, sderiv, mderiv, lmderiv, dualmap, wgt, jac,
+    integrate_gp_2_d(sele, mele, sval, lmval, mval, sderiv, mderiv, lmderiv, dualmap, wgt, jac,
         derivjac, gpn, dnmap_unit, gap, dgapgp, sxi, mxi, dsxigp, dmxigp);
 
   }  // gp-loop
@@ -1449,11 +1450,11 @@ void CONTACT::Integrator::IntegrateDerivEle3D(MORTAR::Element& sele,
     const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   // explicitly defined shape function type needed
-  if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
+  if (shape_fcn() == INPAR::MORTAR::shape_undefined)
     FOUR_C_THROW("IntegrateDerivEle3D called without specific shape function defined!");
 
   // Petrov-Galerkin approach for LM not yet implemented
-  if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin &&
+  if (shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin &&
       sele.Shape() != CORE::FE::CellType::nurbs9)
     FOUR_C_THROW("Petrov-Galerkin approach not yet implemented for 3-D quadratic FE interpolation");
 
@@ -1485,18 +1486,18 @@ void CONTACT::Integrator::IntegrateDerivEle3D(MORTAR::Element& sele,
   // this is necessary for all slave element types except tri3
   CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix> dualmap(
       nrow * ndof, 0, CORE::LINALG::SerialDenseMatrix(nrow, nrow));
-  if ((ShapeFcn() == INPAR::MORTAR::shape_dual ||
-          ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
+  if ((shape_fcn() == INPAR::MORTAR::shape_dual ||
+          shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
       (sele.Shape() != CORE::FE::CellType::tri3 ||
           sele.MoData().DerivDualShape() != Teuchos::null) &&
-      LagMultQuad() != INPAR::MORTAR::lagmult_const)
+      lag_mult_quad() != INPAR::MORTAR::lagmult_const)
     sele.DerivShapeDual(dualmap);
 
   // check whether quadratic elements with linear interpolation are present
   bool linlm = false;
-  if ((ShapeFcn() == INPAR::MORTAR::shape_dual ||
-          ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-      (LagMultQuad() == INPAR::MORTAR::lagmult_lin) &&
+  if ((shape_fcn() == INPAR::MORTAR::shape_dual ||
+          shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
+      (lag_mult_quad() == INPAR::MORTAR::lagmult_lin) &&
       (sele.Shape() == CORE::FE::CellType::quad8 || sele.Shape() == CORE::FE::CellType::tri6))
     linlm = true;
 
@@ -1548,15 +1549,15 @@ void CONTACT::Integrator::IntegrateDerivEle3D(MORTAR::Element& sele,
       bool is_on_mele = true;
 
       // evaluate Lagrange multiplier shape functions (on slave element)
-      if (LagMultQuad() == INPAR::MORTAR::lagmult_const)
-        sele.evaluate_shape_lag_mult_const(ShapeFcn(), sxi, lmval, lmderiv, nrow);
-      else if (LagMultQuad() == INPAR::MORTAR::lagmult_lin)
-        sele.evaluate_shape_lag_mult_lin(ShapeFcn(), sxi, lmval, lmderiv, nrow);
+      if (lag_mult_quad() == INPAR::MORTAR::lagmult_const)
+        sele.evaluate_shape_lag_mult_const(shape_fcn(), sxi, lmval, lmderiv, nrow);
+      else if (lag_mult_quad() == INPAR::MORTAR::lagmult_lin)
+        sele.evaluate_shape_lag_mult_lin(shape_fcn(), sxi, lmval, lmderiv, nrow);
       else
-        sele.evaluate_shape_lag_mult(ShapeFcn(), sxi, lmval, lmderiv, nrow);
+        sele.evaluate_shape_lag_mult(shape_fcn(), sxi, lmval, lmderiv, nrow);
 
       // evaluate trace space shape functions (on both elements)
-      sele.EvaluateShape(sxi, sval, sderiv, nrow, linlm);
+      sele.evaluate_shape(sxi, sval, sderiv, nrow, linlm);
 
       // evaluate the two Jacobians (int. cell and slave element)
       double jacslave = sele.Jacobian(sxi);
@@ -1610,7 +1611,7 @@ void CONTACT::Integrator::IntegrateDerivEle3D(MORTAR::Element& sele,
           iter_proj += 1;
 
           // get mval
-          meles[nummaster]->EvaluateShape(mxi, mval, mderiv, nmnode);
+          meles[nummaster]->evaluate_shape(mxi, mval, mderiv, nmnode);
 
           // evaluate the GP slave coordinate derivatives
           std::vector<CORE::GEN::Pairedvector<int, double>> dsxigp(2, 0);
@@ -1636,19 +1637,19 @@ void CONTACT::Integrator::IntegrateDerivEle3D(MORTAR::Element& sele,
             // -> standard quadratic functions instead of only linear functions
             CORE::LINALG::SerialDenseVector svalgap(nrow);
             CORE::LINALG::SerialDenseMatrix sderivgap(nrow, 2, true);
-            sele.EvaluateShape(sxi, svalgap, sderivgap, nrow);
+            sele.evaluate_shape(sxi, svalgap, sderivgap, nrow);
 
-            Gap_3D(sele, *meles[nummaster], svalgap, mval, sderivgap, mderiv, &gap, gpn, dsxigp,
+            gap_3_d(sele, *meles[nummaster], svalgap, mval, sderivgap, mderiv, &gap, gpn, dsxigp,
                 dmxigp, dgapgp, dnmap_unit);
           }
           else
-            Gap_3D(sele, *meles[nummaster], sval, mval, sderiv, mderiv, &gap, gpn, dsxigp, dmxigp,
+            gap_3_d(sele, *meles[nummaster], sval, mval, sderiv, mderiv, &gap, gpn, dsxigp, dmxigp,
                 dgapgp, dnmap_unit);
 
           if (algo_ == INPAR::MORTAR::algorithm_mortar)
             dynamic_cast<CONTACT::Element&>(sele).PrepareMderiv(meles, nummaster);
 
-          IntegrateGP_3D(sele, *meles[nummaster], sval, lmval, mval, sderiv, mderiv, lmderiv,
+          integrate_gp_3_d(sele, *meles[nummaster], sval, lmval, mval, sderiv, mderiv, lmderiv,
               dualmap, wgt, jacslave, jacslavemap, gpn, dnmap_unit, gap, dgapgp, sxi, mxi, dsxigp,
               dmxigp);
 
@@ -1710,7 +1711,7 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane(MORTAR::Element& sel
     const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   // explicitly defined shape function type needed
-  if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
+  if (shape_fcn() == INPAR::MORTAR::shape_undefined)
     FOUR_C_THROW(
         "integrate_deriv_cell3_d_aux_plane called without specific shape function defined!");
 
@@ -1778,8 +1779,8 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane(MORTAR::Element& sel
   // this is necessary for all slave element types except tri3
   CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix> dualmap(
       (nrow + ncol) * ndof, 0, CORE::LINALG::SerialDenseMatrix(nrow, nrow));
-  if ((ShapeFcn() == INPAR::MORTAR::shape_dual ||
-          ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
+  if ((shape_fcn() == INPAR::MORTAR::shape_dual ||
+          shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
       (sele.Shape() != CORE::FE::CellType::tri3 || sele.MoData().DerivDualShape() != Teuchos::null))
     sele.DerivShapeDual(dualmap);
 
@@ -1872,19 +1873,19 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane(MORTAR::Element& sel
     }
 
     // evaluate Lagrange multiplier shape functions (on slave element)
-    sele.evaluate_shape_lag_mult(ShapeFcn(), sxi, lmval, lmderiv, nrow);
-    sele.evaluate_shape_lag_mult(ShapeFcn(), sxi, lmvalScale, lmderivScale, nrow, false);
+    sele.evaluate_shape_lag_mult(shape_fcn(), sxi, lmval, lmderiv, nrow);
+    sele.evaluate_shape_lag_mult(shape_fcn(), sxi, lmvalScale, lmderivScale, nrow, false);
 
     // evaluate trace space shape functions (on both elements)
-    sele.EvaluateShape(sxi, sval, sderiv, nrow);
-    mele.EvaluateShape(mxi, mval, mderiv, ncol);
+    sele.evaluate_shape(sxi, sval, sderiv, nrow);
+    mele.evaluate_shape(mxi, mval, mderiv, ncol);
 
     // evaluate linearizations *******************************************
 
     // evaluate global GP coordinate derivative
     static CORE::LINALG::Matrix<3, 1> svalcell;
     static CORE::LINALG::Matrix<3, 2> sderivcell;
-    cell->EvaluateShape(eta, svalcell, sderivcell);
+    cell->evaluate_shape(eta, svalcell, sderivcell);
 
     CORE::GEN::Pairedvector<int, CORE::LINALG::Matrix<3, 1>> lingp((nrow + ncol) * ndof);
 
@@ -1911,7 +1912,7 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane(MORTAR::Element& sel
     double gap = 0.0;
     std::vector<CORE::GEN::Pairedvector<int, double>> dnmap_unit(
         3, linsize);  // deriv of x,y and z comp. of gpn (unit)
-    Gap_3D(sele, mele, sval, mval, sderiv, mderiv, &gap, gpn, dsxigp, dmxigp, dgapgp, dnmap_unit);
+    gap_3_d(sele, mele, sval, mval, sderiv, mderiv, &gap, gpn, dsxigp, dmxigp, dgapgp, dnmap_unit);
 
     // integrate for area scaling:
     for (int i = 0; i < sele.num_node(); ++i)
@@ -1924,12 +1925,12 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane(MORTAR::Element& sel
     // evaluate at GP and lin char. quantities
     //**********************************************************************
     if (!nonsmoothselfcontactsurface_)
-      IntegrateGP_3D(sele, mele, sval, lmval, mval, sderiv, mderiv, lmderiv, dualmap, wgt, jac,
+      integrate_gp_3_d(sele, mele, sval, lmval, mval, sderiv, mderiv, lmderiv, dualmap, wgt, jac,
           jacintcellmap, gpn, dnmap_unit, gap, dgapgp, sxi, mxi, dsxigp, dmxigp);
     // for non-smooth (self) contact surfaces we do not use the smoothed normal, but instead we use
     // the normal that is already used for the projection
     else
-      IntegrateGP_3D(sele, mele, sval, lmval, mval, sderiv, mderiv, lmderiv, dualmap, wgt, jac,
+      integrate_gp_3_d(sele, mele, sval, lmval, mval, sderiv, mderiv, lmderiv, dualmap, wgt, jac,
           jacintcellmap, cell->Auxn(), cell->get_deriv_auxn(), gap, dgapgp, sxi, mxi, dsxigp,
           dmxigp);
 
@@ -1949,7 +1950,7 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane_stl(MORTAR::Element&
     const Epetra_Comm& comm)
 {
   // explicitly defined shape function type needed
-  if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
+  if (shape_fcn() == INPAR::MORTAR::shape_undefined)
     FOUR_C_THROW(
         "integrate_deriv_cell3_d_aux_plane called without specific shape function defined!");
 
@@ -1992,8 +1993,8 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane_stl(MORTAR::Element&
   // this is necessary for all slave element types except tri3
   CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix> dualmap(
       (nrow + ncolL) * ndof, 0, CORE::LINALG::SerialDenseMatrix(nrow, nrow));
-  if ((ShapeFcn() == INPAR::MORTAR::shape_dual ||
-          ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
+  if ((shape_fcn() == INPAR::MORTAR::shape_dual ||
+          shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
       (lele.Shape() != CORE::FE::CellType::line2 ||
           sele.MoData().DerivDualShape() != Teuchos::null))
     sele.DerivShapeDual(dualmap);
@@ -2123,18 +2124,18 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane_stl(MORTAR::Element&
       FOUR_C_THROW("invalid local id of line ele");
 
     // evaluate Lagrange multiplier shape functions (on slave element)
-    sele.evaluate_shape_lag_mult(ShapeFcn(), sxi, lmval, lmderiv, nrow);
+    sele.evaluate_shape_lag_mult(shape_fcn(), sxi, lmval, lmderiv, nrow);
 
     // evaluate trace space shape functions (on both elements)
-    sele.EvaluateShape(sxi, sval, sderiv, nrow);
-    lele.EvaluateShape(lxi, mval, mderiv, ncolL);
+    sele.evaluate_shape(sxi, sval, sderiv, nrow);
+    lele.evaluate_shape(lxi, mval, mderiv, ncolL);
 
     // evaluate linearizations *******************************************
 
     // evaluate global GP coordinate derivative
     static CORE::LINALG::Matrix<3, 1> svalcell;
     static CORE::LINALG::Matrix<3, 2> sderivcell;
-    cell->EvaluateShape(eta, svalcell, sderivcell);
+    cell->evaluate_shape(eta, svalcell, sderivcell);
 
     CORE::GEN::Pairedvector<int, CORE::LINALG::Matrix<3, 1>> lingp(100 * (nrow + ncolP) * ndof);
 
@@ -2370,7 +2371,7 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane_stl(MORTAR::Element&
 
       double prod = 0.0;
       // Petrov-Galerkin approach (dual LM for D/M but standard LM for gap)
-      if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) prod = sval[j] * gap * jac * wgt;
+      if (shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin) prod = sval[j] * gap * jac * wgt;
       // usual standard or dual LM approach
       else
         prod = lmval[j] * gap * jac * wgt;
@@ -2398,7 +2399,7 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane_stl(MORTAR::Element&
           dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivGlts();
 
       // switch if Petrov-Galerkin approach for LM is applied
-      if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+      if (shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
       {
         // (1) Lin(Phi) - does not exist here for Petrov-Galerkin approach
 
@@ -2447,8 +2448,8 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane_stl(MORTAR::Element&
 
     // integrate D and M matrix
     // dual shape functions
-    if (ShapeFcn() == INPAR::MORTAR::shape_dual ||
-        ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+    if (shape_fcn() == INPAR::MORTAR::shape_dual ||
+        shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
     {
       for (int j = 0; j < nrow; ++j)
       {
@@ -2502,8 +2503,8 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane_stl(MORTAR::Element&
       }
     }
 
-    if (ShapeFcn() == INPAR::MORTAR::shape_dual ||
-        ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+    if (shape_fcn() == INPAR::MORTAR::shape_dual ||
+        shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
     {
       // integrate LinD
       for (int j = 0; j < nrow; ++j)
@@ -2701,7 +2702,7 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane_lts(MORTAR::Element&
     const Epetra_Comm& comm)
 {
   // explicitly defined shape function type needed
-  if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
+  if (shape_fcn() == INPAR::MORTAR::shape_undefined)
     FOUR_C_THROW(
         "integrate_deriv_cell3_d_aux_plane called without specific shape function defined!");
 
@@ -2746,8 +2747,8 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane_lts(MORTAR::Element&
   // this is necessary for all slave element types except tri3
   CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix> dualmap(
       (nrowL + ncol) * ndof, 0, CORE::LINALG::SerialDenseMatrix(nrowL, nrowL));
-  if ((ShapeFcn() == INPAR::MORTAR::shape_dual ||
-          ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
+  if ((shape_fcn() == INPAR::MORTAR::shape_dual ||
+          shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
       (lsele.Shape() != CORE::FE::CellType::line2 ||
           sele.MoData().DerivDualShape() != Teuchos::null))
     sele.DerivShapeDual(dualmap);
@@ -2901,18 +2902,18 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane_lts(MORTAR::Element&
       FOUR_C_THROW("invalid local id of line ele");
 
     // evaluate Lagrange multiplier shape functions (on slave element)
-    lsele.evaluate_shape_lag_mult(ShapeFcn(), lxi, lmval, lmderiv, nrowL);
+    lsele.evaluate_shape_lag_mult(shape_fcn(), lxi, lmval, lmderiv, nrowL);
 
     // evaluate trace space shape functions (on both elements)
-    lsele.EvaluateShape(lxi, sval, sderiv, nrowL);
-    mele.EvaluateShape(mxi, mval, mderiv, ncol);
+    lsele.evaluate_shape(lxi, sval, sderiv, nrowL);
+    mele.evaluate_shape(mxi, mval, mderiv, ncol);
 
     // evaluate linearizations *******************************************
 
     // evaluate global GP coordinate derivative
     static CORE::LINALG::Matrix<3, 1> svalcell;
     static CORE::LINALG::Matrix<3, 2> sderivcell;
-    cell->EvaluateShape(eta, svalcell, sderivcell);
+    cell->evaluate_shape(eta, svalcell, sderivcell);
 
     CORE::GEN::Pairedvector<int, CORE::LINALG::Matrix<3, 1>> lingp((nrowS + ncol) * ndof + linsize);
 
@@ -3136,7 +3137,7 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane_lts(MORTAR::Element&
 
       double prod = 0.0;
       // Petrov-Galerkin approach (dual LM for D/M but standard LM for gap)
-      if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) prod = sval[j] * gap * jac * wgt;
+      if (shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin) prod = sval[j] * gap * jac * wgt;
       // usual standard or dual LM approach
       else
         prod = lmval[j] * gap * jac * wgt;
@@ -3166,7 +3167,7 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane_lts(MORTAR::Element&
           dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivGlts();
 
       // switch if Petrov-Galerkin approach for LM is applied
-      if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+      if (shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
       {
         // (1) Lin(Phi) - does not exist here for Petrov-Galerkin approach
 
@@ -3215,8 +3216,8 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane_lts(MORTAR::Element&
     //--------------------------------------------------------
     // integrate D and M matrix
     // dual shape functions
-    if (ShapeFcn() == INPAR::MORTAR::shape_dual ||
-        ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+    if (shape_fcn() == INPAR::MORTAR::shape_dual ||
+        shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
     {
       bool bound = false;
       for (int j = 0; j < nrowL; ++j)
@@ -3352,8 +3353,8 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane_lts(MORTAR::Element&
     }
 
     // dual shape functions
-    if (ShapeFcn() == INPAR::MORTAR::shape_dual ||
-        ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+    if (shape_fcn() == INPAR::MORTAR::shape_dual ||
+        shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
     {
       bool bound = false;
       for (int j = 0; j < nrowL; ++j)
@@ -3732,15 +3733,15 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane_quad(MORTAR::Element
     Teuchos::RCP<MORTAR::IntCell> cell, double* auxn)
 {
   // get LMtype
-  INPAR::MORTAR::LagMultQuad lmtype = LagMultQuad();
+  INPAR::MORTAR::LagMultQuad lmtype = lag_mult_quad();
 
   // explicitly defined shape function type needed
-  if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
+  if (shape_fcn() == INPAR::MORTAR::shape_undefined)
     FOUR_C_THROW(
         "integrate_deriv_cell3_d_aux_plane_quad called without specific shape function defined!");
 
   // Petrov-Galerkin approach for LM not yet implemented
-  if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin &&
+  if (shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin &&
       sele.Shape() != CORE::FE::CellType::nurbs9)
     FOUR_C_THROW("Petrov-Galerkin approach not yet implemented for 3-D quadratic FE interpolation");
 
@@ -3823,11 +3824,11 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane_quad(MORTAR::Element
   bool duallin = false;
   CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix> dualmap(
       (nrow + ncol) * ndof, 0, CORE::LINALG::SerialDenseMatrix(nrow, nrow));
-  if ((ShapeFcn() == INPAR::MORTAR::shape_dual ||
-          ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
+  if ((shape_fcn() == INPAR::MORTAR::shape_dual ||
+          shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
       (sele.Shape() != CORE::FE::CellType::tri3 ||
           sele.MoData().DerivDualShape() != Teuchos::null) &&
-      LagMultQuad() != INPAR::MORTAR::lagmult_const)
+      lag_mult_quad() != INPAR::MORTAR::lagmult_const)
   {
     duallin = true;
     sele.DerivShapeDual(dualmap);
@@ -3848,8 +3849,8 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane_quad(MORTAR::Element
   // check whether quadratic element with linear interpolation is present
   bool dualquad3d = false;
   bool linlm = false;
-  if ((ShapeFcn() == INPAR::MORTAR::shape_dual ||
-          ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
+  if ((shape_fcn() == INPAR::MORTAR::shape_dual ||
+          shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
       (lmtype == INPAR::MORTAR::lagmult_quad || lmtype == INPAR::MORTAR::lagmult_lin) &&
       (sele.Shape() == CORE::FE::CellType::quad8 || sele.Shape() == CORE::FE::CellType::tri6))
   {
@@ -4029,20 +4030,20 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane_quad(MORTAR::Element
     }
 
     // evaluate Lagrange multiplier shape functions (on slave element)
-    if (LagMultQuad() == INPAR::MORTAR::lagmult_const)
-      sele.evaluate_shape_lag_mult_const(ShapeFcn(), sxi, lmval, lmderiv, nrow);
+    if (lag_mult_quad() == INPAR::MORTAR::lagmult_const)
+      sele.evaluate_shape_lag_mult_const(shape_fcn(), sxi, lmval, lmderiv, nrow);
     else if (bound)
-      sele.evaluate_shape_lag_mult(ShapeFcn(), psxi, lmval, lmderiv, nrow);
+      sele.evaluate_shape_lag_mult(shape_fcn(), psxi, lmval, lmderiv, nrow);
     else
     {
-      sele.evaluate_shape_lag_mult(ShapeFcn(), psxi, lmval, lmderiv, nrow);
-      sintele.evaluate_shape_lag_mult(ShapeFcn(), sxi, lmintval, lmintderiv, nintrow, false);
+      sele.evaluate_shape_lag_mult(shape_fcn(), psxi, lmval, lmderiv, nrow);
+      sintele.evaluate_shape_lag_mult(shape_fcn(), sxi, lmintval, lmintderiv, nintrow, false);
     }
 
     // evaluate trace space shape functions (on both elements)
-    sele.EvaluateShape(psxi, sval, sderiv, nrow, linlm);
-    if (dualquad3d) sele.EvaluateShape(psxi, svalmod, sderivmod, nrow, true);
-    mele.EvaluateShape(pmxi, mval, mderiv, ncol);
+    sele.evaluate_shape(psxi, sval, sderiv, nrow, linlm);
+    if (dualquad3d) sele.evaluate_shape(psxi, svalmod, sderivmod, nrow, true);
+    mele.evaluate_shape(pmxi, mval, mderiv, ncol);
 
     // evaluate 2nd deriv of trace space shape functions (on slave element)
     sele.evaluate2nd_deriv_shape(psxi, ssecderiv, nrow);
@@ -4050,7 +4051,7 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane_quad(MORTAR::Element
     // evaluate global GP coordinate derivative
     CORE::LINALG::Matrix<3, 1> svalcell;
     CORE::LINALG::Matrix<3, 2> sderivcell;
-    cell->EvaluateShape(eta, svalcell, sderivcell);
+    cell->evaluate_shape(eta, svalcell, sderivcell);
 
     CORE::GEN::Pairedvector<int, CORE::LINALG::Matrix<3, 1>> lingp((nrow + ncol) * ndof);
 
@@ -4110,18 +4111,18 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane_quad(MORTAR::Element
     if (algo_ == INPAR::MORTAR::algorithm_gpts ||
         (lmtype == INPAR::MORTAR::lagmult_const && algo_ == INPAR::MORTAR::algorithm_mortar))
     {
-      Gap_3D(
+      gap_3_d(
           sele, mele, sval, mval, sderiv, mderiv, &gap, gpn, dpsxigp, dpmxigp, dgapgp, dnmap_unit);
-      IntegrateGP_3D(sele, mele, sval, lmval, mval, sderiv, mderiv, lmderiv, dualmap, wgt, jac,
+      integrate_gp_3_d(sele, mele, sval, lmval, mval, sderiv, mderiv, lmderiv, dualmap, wgt, jac,
           jacintcellmap, gpn, dnmap_unit, gap, dgapgp, psxi, pmxi, dpsxigp, dpmxigp);
     }
     // special treatment for quadratic elements
     else
     {
       // integrate and lin gp gap
-      if (ShapeFcn() == INPAR::MORTAR::shape_standard && lmtype == INPAR::MORTAR::lagmult_pwlin)
+      if (shape_fcn() == INPAR::MORTAR::shape_standard && lmtype == INPAR::MORTAR::lagmult_pwlin)
       {
-        GP_3D_G_Quad_pwlin(sele, sintele, mele, sval, mval, lmintval, scoord, mcoord, sderiv,
+        gp_3_d_g_quad_pwlin(sele, sintele, mele, sval, mval, lmintval, scoord, mcoord, sderiv,
             mderiv, &gap, gpn, &lengthn, jac, wgt, dsxigp, dmxigp, dgapgp, dnmap_unit);
       }
       else
@@ -4132,16 +4133,16 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane_quad(MORTAR::Element
           // -> standard quadratic functions instead of only linear functions
           CORE::LINALG::SerialDenseVector svalgap(nrow);
           CORE::LINALG::SerialDenseMatrix sderivgap(nrow, 2, true);
-          sele.EvaluateShape(psxi, svalgap, sderivgap, nrow);
+          sele.evaluate_shape(psxi, svalgap, sderivgap, nrow);
 
-          Gap_3D(sele, mele, svalgap, mval, sderivgap, mderiv, &gap, gpn, dpsxigp, dpmxigp, dgapgp,
+          gap_3_d(sele, mele, svalgap, mval, sderivgap, mderiv, &gap, gpn, dpsxigp, dpmxigp, dgapgp,
               dnmap_unit);
         }
         else
-          Gap_3D(sele, mele, sval, mval, sderiv, mderiv, &gap, gpn, dpsxigp, dpmxigp, dgapgp,
+          gap_3_d(sele, mele, sval, mval, sderiv, mderiv, &gap, gpn, dpsxigp, dpmxigp, dgapgp,
               dnmap_unit);
 
-        GP_3D_wGap(sele, sval, lmval, &gap, jac, wgt, true);
+        gp_3_d_w_gap(sele, sval, lmval, &gap, jac, wgt, true);
       }
 
       // compute cell D/M matrix *******************************************
@@ -4153,16 +4154,16 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane_quad(MORTAR::Element
       //*******************************
       // std. wear for all wear-algorithm types
       if (wear)
-        GP_3D_Wear(sele, mele, sval, sderiv, mval, mderiv, lmval, lmderiv, lagmult, gpn, jac, wgt,
+        gp_3_d_wear(sele, mele, sval, sderiv, mval, mderiv, lmval, lmderiv, lagmult, gpn, jac, wgt,
             jumpval, &wearval, dsliptmatrixgp, dweargp, dsxigp, dmxigp, dnmap_unit, dualmap);
 
       // integrate T and E matrix for discr. wear
-      if (WearType() == INPAR::WEAR::wear_primvar) GP_TE(sele, lmval, sval, jac, wgt, jumpval);
+      if (wear_type() == INPAR::WEAR::wear_primvar) gp_te(sele, lmval, sval, jac, wgt, jumpval);
 
       //********************************************************************
       // compute cell linearization
       //********************************************************************
-      if (ShapeFcn() == INPAR::MORTAR::shape_standard && lmtype == INPAR::MORTAR::lagmult_pwlin)
+      if (shape_fcn() == INPAR::MORTAR::shape_standard && lmtype == INPAR::MORTAR::lagmult_pwlin)
       {
         for (int iter = 0; iter < nintrow; ++iter)
         {
@@ -4178,18 +4179,18 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane_quad(MORTAR::Element
       else
       {
         // Lin DM
-        GP_3D_DM_Quad_Lin(duallin, sele, mele, sval, svalmod, mval, lmval, sderiv, mderiv, lmderiv,
+        gp_3_d_dm_quad_lin(duallin, sele, mele, sval, svalmod, mval, lmval, sderiv, mderiv, lmderiv,
             wgt, jac, dpsxigp, dpmxigp, jacintcellmap, dualmap, dualquad3d);
 
         for (int iter = 0; iter < nrow; ++iter)
         {
           // Lin gap
-          GP_3D_G_Quad_Lin(iter, sele, mele, sval, svalmod, lmval, sderiv, lmderiv, gap, gpn, jac,
+          gp_3_d_g_quad_lin(iter, sele, mele, sval, svalmod, lmval, sderiv, lmderiv, gap, gpn, jac,
               wgt, duallin, dgapgp, jacintcellmap, dpsxigp, dualmap, dualquad3d);
 
           // Lin wear matrices T and E for discr. wear
-          if (WearType() == INPAR::WEAR::wear_primvar)
-            GP_3D_TE_Lin(iter, sele, sval, lmval, sderiv, lmderiv, jac, wgt, jumpval, dsxigp,
+          if (wear_type() == INPAR::WEAR::wear_primvar)
+            gp_3_d_te_lin(iter, sele, sval, lmval, sderiv, lmderiv, jac, wgt, jumpval, dsxigp,
                 jacintcellmap, dsliptmatrixgp, dualmap);
         }
       }
@@ -4225,12 +4226,12 @@ void CONTACT::Integrator::IntegrateDerivEle2D(MORTAR::Element& sele,
   // *********************************************************************
 
   // explicitly defined shape function type needed
-  if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
+  if (shape_fcn() == INPAR::MORTAR::shape_undefined)
     FOUR_C_THROW("IntegrateDerivEle2D called without specific shape function defined!");
 
   // Petrov-Galerkin approach for LM not yet implemented for quadratic FE
   if (sele.Shape() == CORE::FE::CellType::line3 &&
-      ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+      shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
     FOUR_C_THROW("Petrov-Galerkin approach not yet implemented for 2-D quadratic FE interpolation");
 
   // check for problem dimension
@@ -4284,8 +4285,8 @@ void CONTACT::Integrator::IntegrateDerivEle2D(MORTAR::Element& sele,
   // this is only necessary for quadratic dual shape functions in 2D
   CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix> dualmap(
       nrow * ndof, 0, CORE::LINALG::SerialDenseMatrix(nrow, nrow));
-  if ((ShapeFcn() == INPAR::MORTAR::shape_dual ||
-          ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
+  if ((shape_fcn() == INPAR::MORTAR::shape_dual ||
+          shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
       (sele.Shape() == CORE::FE::CellType::line3 ||
           sele.MoData().DerivDualShape() != Teuchos::null ||
           sele.Shape() == CORE::FE::CellType::nurbs3))
@@ -4304,10 +4305,10 @@ void CONTACT::Integrator::IntegrateDerivEle2D(MORTAR::Element& sele,
   // this is the case for dual linear Lagrange multipliers on line3 elements
   bool linlm = false;
   bool dualquad = false;
-  if (LagMultQuad() == INPAR::MORTAR::lagmult_lin && sele.Shape() == CORE::FE::CellType::line3)
+  if (lag_mult_quad() == INPAR::MORTAR::lagmult_lin && sele.Shape() == CORE::FE::CellType::line3)
   {
     linlm = true;
-    if (ShapeFcn() == INPAR::MORTAR::shape_dual) dualquad = true;
+    if (shape_fcn() == INPAR::MORTAR::shape_dual) dualquad = true;
   }
 
   // get numerical integration type
@@ -4348,15 +4349,15 @@ void CONTACT::Integrator::IntegrateDerivEle2D(MORTAR::Element& sele,
       double dxdsxi = sele.Jacobian(sxi);
 
       // evaluate Lagrange multiplier shape functions (on slave element)
-      if (LagMultQuad() == INPAR::MORTAR::lagmult_const)
-        sele.evaluate_shape_lag_mult_const(ShapeFcn(), sxi, lmval, lmderiv, nrow);
+      if (lag_mult_quad() == INPAR::MORTAR::lagmult_const)
+        sele.evaluate_shape_lag_mult_const(shape_fcn(), sxi, lmval, lmderiv, nrow);
       else if (linlm)
-        sele.evaluate_shape_lag_mult_lin(ShapeFcn(), sxi, lmval, lmderiv, nrow);
+        sele.evaluate_shape_lag_mult_lin(shape_fcn(), sxi, lmval, lmderiv, nrow);
       else
-        sele.evaluate_shape_lag_mult(ShapeFcn(), sxi, lmval, lmderiv, nrow);
+        sele.evaluate_shape_lag_mult(shape_fcn(), sxi, lmval, lmderiv, nrow);
 
       // evaluate trace space shape functions
-      sele.EvaluateShape(sxi, sval, sderiv, nrow, dualquad);
+      sele.evaluate_shape(sxi, sval, sderiv, nrow, dualquad);
 
       //****************************************************************************************************************
       //                loop over all Master Elements
@@ -4385,7 +4386,7 @@ void CONTACT::Integrator::IntegrateDerivEle2D(MORTAR::Element& sele,
           meles[nummaster]->GetNodalCoords(mcoord);
 
           // evaluate trace space shape functions
-          meles[nummaster]->EvaluateShape(mxi, mval, mderiv, ncol, false);
+          meles[nummaster]->evaluate_shape(mxi, mval, mderiv, ncol, false);
 
           // get directional derivatives of sxia, sxib, mxia, mxib --> derivatives of mxia/mxib not
           // required
@@ -4430,17 +4431,17 @@ void CONTACT::Integrator::IntegrateDerivEle2D(MORTAR::Element& sele,
             // -> standard quadratic functions instead of only linear functions
             CORE::LINALG::SerialDenseVector svalgap(nrow);
             CORE::LINALG::SerialDenseMatrix sderivgap(nrow, 1);
-            sele.EvaluateShape(sxi, svalgap, sderivgap, nrow);
+            sele.evaluate_shape(sxi, svalgap, sderivgap, nrow);
 
-            Gap_2D(sele, *meles[nummaster], svalgap, mval, sderivgap, mderiv, &gap, gpn, dsxigp,
+            gap_2_d(sele, *meles[nummaster], svalgap, mval, sderivgap, mderiv, &gap, gpn, dsxigp,
                 dmxigp, dgapgp, dnmap_unit);
           }
           else
-            Gap_2D(sele, *meles[nummaster], sval, mval, sderiv, mderiv, &gap, gpn, dsxigp, dmxigp,
+            gap_2_d(sele, *meles[nummaster], sval, mval, sderiv, mderiv, &gap, gpn, dsxigp, dmxigp,
                 dgapgp, dnmap_unit);
 
           // integrate and lin gp gap
-          IntegrateGP_2D(sele, *meles[nummaster], sval, lmval, mval, sderiv, mderiv, lmderiv,
+          integrate_gp_2_d(sele, *meles[nummaster], sval, lmval, mval, sderiv, mderiv, lmderiv,
               dualmap, wgt, dxdsxi, derivjac, gpn, dnmap_unit, gap, dgapgp, sxi, mxi, dsxigp,
               dmxigp);
         }
@@ -4461,7 +4462,7 @@ void CONTACT::Integrator::IntegrateD(MORTAR::Element& sele, const Epetra_Comm& c
   // *********************************************************************
 
   // explicitly defined shape function type needed
-  if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
+  if (shape_fcn() == INPAR::MORTAR::shape_undefined)
     FOUR_C_THROW("IntegrateD called without specific shape function defined!");
 
   // *********************************************************************
@@ -4546,7 +4547,7 @@ void CONTACT::Integrator::IntegrateD(MORTAR::Element& sele, const Epetra_Comm& c
     sele.evaluate_shape_lag_mult(INPAR::MORTAR::shape_dual, sxi, lmval, lmderiv, nrow);
 
     // evaluate trace space shape functions
-    sele.EvaluateShape(sxi, sval, sderiv, nrow, false);
+    sele.evaluate_shape(sxi, sval, sderiv, nrow, false);
 
     //**********************************************************************
     // evaluate at GP and lin char. quantities
@@ -4686,7 +4687,7 @@ void CONTACT::Integrator::integrate_kappa_penalty_lts(MORTAR::Element& ele)
     double wgt = Weight(gp);
 
     // evaluate shape functions
-    ele.evaluate_shape_lag_mult(ShapeFcn(), eta, val, deriv, nrow);
+    ele.evaluate_shape_lag_mult(shape_fcn(), eta, val, deriv, nrow);
 
     // evaluate the Jacobian det
     const double jac = ele.Jacobian(eta);
@@ -4717,7 +4718,7 @@ void CONTACT::Integrator::integrate_kappa_penalty(MORTAR::Element& sele, double*
     Teuchos::RCP<CORE::LINALG::SerialDenseVector> gseg)
 {
   // explicitly defined shape function type needed
-  if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
+  if (shape_fcn() == INPAR::MORTAR::shape_undefined)
     FOUR_C_THROW("integrate_kappa_penalty called without specific shape function defined!");
 
   // check input data
@@ -4762,9 +4763,9 @@ void CONTACT::Integrator::integrate_kappa_penalty(MORTAR::Element& sele, double*
 
     // evaluate shape functions
     if (bound)
-      sele.evaluate_shape_lag_mult_lin(ShapeFcn(), eta, val, deriv, nrow);
+      sele.evaluate_shape_lag_mult_lin(shape_fcn(), eta, val, deriv, nrow);
     else
-      sele.evaluate_shape_lag_mult(ShapeFcn(), eta, val, deriv, nrow);
+      sele.evaluate_shape_lag_mult(shape_fcn(), eta, val, deriv, nrow);
 
     // evaluate the Jacobian det
     const double jac = sele.Jacobian(eta);
@@ -4792,10 +4793,10 @@ void CONTACT::Integrator::integrate_kappa_penalty(MORTAR::Element& sele,
     Teuchos::RCP<CORE::LINALG::SerialDenseVector> gseg)
 {
   // get LMtype
-  INPAR::MORTAR::LagMultQuad lmtype = LagMultQuad();
+  INPAR::MORTAR::LagMultQuad lmtype = lag_mult_quad();
 
   // explicitly defined shape function type needed
-  if (ShapeFcn() != INPAR::MORTAR::shape_standard)
+  if (shape_fcn() != INPAR::MORTAR::shape_standard)
     FOUR_C_THROW("integrate_kappa_penalty -> you should not be here!");
 
   // check input data
@@ -4840,8 +4841,8 @@ void CONTACT::Integrator::integrate_kappa_penalty(MORTAR::Element& sele,
     // sintele.MapToParent(eta,psxi); //old way of doing it via affine map... wrong (popp 05/2016)
 
     // evaluate shape functions
-    sele.EvaluateShape(psxi, val, deriv, nrow);
-    sintele.EvaluateShape(eta, intval, intderiv, nintrow);
+    sele.evaluate_shape(psxi, val, deriv, nrow);
+    sintele.evaluate_shape(eta, intval, intderiv, nintrow);
 
     // evaluate the Jacobian det
     const double jac = sintele.Jacobian(eta);
@@ -4917,10 +4918,10 @@ void CONTACT::Integrator::DerivXiAB2D(MORTAR::Element& sele, double& sxia, doubl
   CORE::LINALG::SerialDenseMatrix derivmxia(nummnode, 1);
   CORE::LINALG::SerialDenseMatrix derivmxib(nummnode, 1);
 
-  sele.EvaluateShape(psxia, valsxia, derivsxia, numsnode, false);
-  sele.EvaluateShape(psxib, valsxib, derivsxib, numsnode, false);
-  mele.EvaluateShape(pmxia, valmxia, derivmxia, nummnode, false);
-  mele.EvaluateShape(pmxib, valmxib, derivmxib, nummnode, false);
+  sele.evaluate_shape(psxia, valsxia, derivsxia, numsnode, false);
+  sele.evaluate_shape(psxib, valsxib, derivsxib, numsnode, false);
+  mele.evaluate_shape(pmxia, valmxia, derivmxia, nummnode, false);
+  mele.evaluate_shape(pmxib, valmxib, derivmxib, nummnode, false);
 
   // prepare linearizations
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
@@ -5293,8 +5294,8 @@ void CONTACT::Integrator::deriv_xi_g_p2_d(MORTAR::Element& sele, MORTAR::Element
   CORE::LINALG::SerialDenseMatrix derivsxigp(numsnode, 1);
   CORE::LINALG::SerialDenseMatrix derivmxigp(nummnode, 1);
 
-  sele.EvaluateShape(psxigp, valsxigp, derivsxigp, numsnode, false);
-  mele.EvaluateShape(pmxigp, valmxigp, derivmxigp, nummnode, false);
+  sele.evaluate_shape(psxigp, valsxigp, derivsxigp, numsnode, false);
+  mele.evaluate_shape(pmxigp, valmxigp, derivmxigp, nummnode, false);
 
   // we also need the GP slave coordinates + normal
   std::array<double, 3> sgpn = {0.0, 0.0, 0.0};
@@ -5484,8 +5485,8 @@ void CONTACT::Integrator::DerivXiGP3D(MORTAR::Element& sele, MORTAR::Element& me
   CORE::LINALG::SerialDenseMatrix derivsxigp(numsnode, 2, true);
   CORE::LINALG::SerialDenseMatrix derivmxigp(nummnode, 2, true);
 
-  sele.EvaluateShape(sxigp, valsxigp, derivsxigp, numsnode);
-  mele.EvaluateShape(mxigp, valmxigp, derivmxigp, nummnode);
+  sele.evaluate_shape(sxigp, valsxigp, derivsxigp, numsnode);
+  mele.evaluate_shape(mxigp, valmxigp, derivmxigp, nummnode);
 
   // we also need the GP slave coordinates + normal
   std::array<double, 3> sgpn = {0.0, 0.0, 0.0};
@@ -5657,7 +5658,7 @@ void CONTACT::Integrator::DerivXiGP3DAuxPlane(MORTAR::Element& ele, double* xigp
   // we also need shape function derivs at the GP
   CORE::LINALG::SerialDenseVector valxigp(numnode);
   CORE::LINALG::SerialDenseMatrix derivxigp(numnode, 2, true);
-  ele.EvaluateShape(xigp, valxigp, derivxigp, numnode);
+  ele.evaluate_shape(xigp, valxigp, derivxigp, numnode);
 
   // build 3x3 factor matrix L
   CORE::LINALG::Matrix<3, 3> lmatrix(true);
@@ -5752,7 +5753,7 @@ void CONTACT::Integrator::DerivXiGP3DAuxPlane(MORTAR::Element& ele, double* xigp
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::Integrator::IntegrateGP_3D(MORTAR::Element& sele, MORTAR::Element& mele,
+void CONTACT::Integrator::integrate_gp_3_d(MORTAR::Element& sele, MORTAR::Element& mele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
     CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -5772,9 +5773,9 @@ void CONTACT::Integrator::IntegrateGP_3D(MORTAR::Element& sele, MORTAR::Element&
       bool quad = sele.IsQuad();
 
       // weighted gap
-      GP_3D_wGap(sele, sval, lmval, &gap, jac, wgt, quad);
+      gp_3_d_w_gap(sele, sval, lmval, &gap, jac, wgt, quad);
       for (int j = 0; j < sele.num_node(); ++j)
-        GP_G_Lin(j, sele, mele, sval, mval, lmval, sderiv, lmderiv, gap, normal, jac, wgt,
+        gp_g_lin(j, sele, mele, sval, mval, lmval, sderiv, lmderiv, gap, normal, jac, wgt,
             deriv_gap, derivjac, derivsxi, dualmap);
 
       // check bound
@@ -5788,12 +5789,12 @@ void CONTACT::Integrator::IntegrateGP_3D(MORTAR::Element& sele, MORTAR::Element&
       // compute segment D/M linearization
       if (bound)
       {
-        GP_3D_DM_Lin_bound(sele, mele, sval, mval, lmval, sderiv, lmderiv, mderiv, jac, wgt,
+        gp_3_d_dm_lin_bound(sele, mele, sval, mval, lmval, sderiv, lmderiv, mderiv, jac, wgt,
             derivjac, derivsxi, derivmxi, dualmap);
       }
       else
       {
-        GP_3D_DM_Lin(sele, mele, sval, mval, lmval, sderiv, mderiv, lmderiv, wgt, jac, derivsxi,
+        gp_3_d_dm_lin(sele, mele, sval, mval, lmval, sderiv, mderiv, lmderiv, wgt, jac, derivsxi,
             derivmxi, derivjac, dualmap);
       }
 
@@ -5809,12 +5810,12 @@ void CONTACT::Integrator::IntegrateGP_3D(MORTAR::Element& sele, MORTAR::Element&
             2, ((mele.num_node() * Dim()) + linsize));  // deriv. of slip for slipincr (xi, eta)
 
         // Creating the WEIGHTED tangential relative slip increment (non-objective)
-        GP_3D_SlipIncr(sele, mele, sval, mval, lmval, sderiv, mderiv, jac, wgt, jumpvalv, derivsxi,
-            derivmxi, dslipgp);
+        gp_3_d_slip_incr(sele, mele, sval, mval, lmval, sderiv, mderiv, jac, wgt, jumpvalv,
+            derivsxi, derivmxi, dslipgp);
         // Lin weighted slip
         for (int iter = 0; iter < sele.num_node(); ++iter)
-          GP_3D_SlipIncr_Lin(iter, sele, sval, lmval, sderiv, lmderiv, jac, wgt, jumpvalv, derivjac,
-              dslipgp, derivsxi, dualmap);
+          gp_3_d_slip_incr_lin(iter, sele, sval, lmval, sderiv, lmderiv, jac, wgt, jumpvalv,
+              derivjac, dslipgp, derivsxi, dualmap);
       }
 
       //*******************************
@@ -5837,47 +5838,47 @@ void CONTACT::Integrator::IntegrateGP_3D(MORTAR::Element& sele, MORTAR::Element&
             Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(3, sele.num_node()));
         sele.GetNodalLagMult(*lagmult);
 
-        GP_3D_Wear(sele, mele, sval, sderiv, mval, mderiv, lmval, lmderiv, lagmult, normal, jac,
+        gp_3_d_wear(sele, mele, sval, sderiv, mval, mderiv, lmval, lmderiv, lagmult, normal, jac,
             wgt, jumpval, &wearval, dsliptmatrixgp, dweargp, derivsxi, derivmxi, dnmap_unit,
             dualmap);
 
-        if (WearType() == INPAR::WEAR::wear_intstate and wearimpl_ == true)
+        if (wear_type() == INPAR::WEAR::wear_intstate and wearimpl_ == true)
           for (int j = 0; j < sele.num_node(); ++j)
-            GP_3D_Wear_Lin(j, sele, sval, lmval, sderiv, lmderiv, jac, normal, wgt, wearval,
+            gp_3_d_wear_lin(j, sele, sval, lmval, sderiv, lmderiv, jac, normal, wgt, wearval,
                 jumpval, dweargp, derivjac, derivsxi, dualmap);
 
         // integrate T and E matrix for discr. wear
-        if (WearType() == INPAR::WEAR::wear_primvar) GP_TE(sele, lmval, sval, jac, wgt, jumpval);
+        if (wear_type() == INPAR::WEAR::wear_primvar) gp_te(sele, lmval, sval, jac, wgt, jumpval);
 
         // both-sided discr wear specific stuff
-        if (WearSide() == INPAR::WEAR::wear_both and WearType() == INPAR::WEAR::wear_primvar)
+        if (wear_side() == INPAR::WEAR::wear_both and wear_type() == INPAR::WEAR::wear_primvar)
         {
           CORE::LINALG::SerialDenseVector lm2val(mele.num_node());
           CORE::LINALG::SerialDenseMatrix lm2deriv(mele.num_node(), Dim() - 1, true);
-          mele.evaluate_shape_lag_mult(ShapeFcn(), mxi, lm2val, lm2deriv, mele.num_node());
+          mele.evaluate_shape_lag_mult(shape_fcn(), mxi, lm2val, lm2deriv, mele.num_node());
 
-          GP_TE_Master(sele, mele, lmval, lm2val, mval, jac, wgt, jumpval, Comm_);
+          gp_te_master(sele, mele, lmval, lm2val, mval, jac, wgt, jumpval, Comm_);
         }
 
         // both-sided wear specific stuff
-        if (WearSide() == INPAR::WEAR::wear_both and WearType() == INPAR::WEAR::wear_intstate)
+        if (wear_side() == INPAR::WEAR::wear_both and wear_type() == INPAR::WEAR::wear_intstate)
         {
           CORE::LINALG::SerialDenseVector lm2val(mele.num_node());
           CORE::LINALG::SerialDenseMatrix lm2deriv(mele.num_node(), 2, true);
-          mele.evaluate_shape_lag_mult(ShapeFcn(), mxi, lm2val, lm2deriv, mele.num_node());
+          mele.evaluate_shape_lag_mult(shape_fcn(), mxi, lm2val, lm2deriv, mele.num_node());
 
-          GP_D2(sele, mele, lm2val, mval, jac, wgt, Comm_);
+          gp_d2(sele, mele, lm2val, mval, jac, wgt, Comm_);
         }
 
         // Lin wear matrices T and E for discr. wear
-        if (wearimpl_ == true and WearType() == INPAR::WEAR::wear_primvar)
+        if (wearimpl_ == true and wear_type() == INPAR::WEAR::wear_primvar)
           for (int j = 0; j < sele.num_node(); ++j)
-            GP_3D_TE_Lin(j, sele, sval, lmval, sderiv, lmderiv, jac, wgt, jumpval, derivsxi,
+            gp_3_d_te_lin(j, sele, sval, lmval, sderiv, lmderiv, jac, wgt, jumpval, derivsxi,
                 derivjac, dsliptmatrixgp, dualmap);
 
 
 
-        if (WearSide() == INPAR::WEAR::wear_both and WearType() == INPAR::WEAR::wear_primvar and
+        if (wear_side() == INPAR::WEAR::wear_both and wear_type() == INPAR::WEAR::wear_primvar and
             wearimpl_ == true)
         {
           CORE::LINALG::SerialDenseVector lm2val(mele.num_node());
@@ -5885,11 +5886,11 @@ void CONTACT::Integrator::IntegrateGP_3D(MORTAR::Element& sele, MORTAR::Element&
           CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix> dual2map(
               (sele.num_node() + mele.num_node()) * Dim(), 0,
               CORE::LINALG::SerialDenseMatrix(mele.num_node(), mele.num_node()));
-          mele.evaluate_shape_lag_mult(ShapeFcn(), mxi, lm2val, lm2deriv, mele.num_node());
+          mele.evaluate_shape_lag_mult(shape_fcn(), mxi, lm2val, lm2deriv, mele.num_node());
           mele.DerivShapeDual(dual2map);
 
           for (int iter = 0; iter < mele.num_node(); ++iter)
-            GP_3D_TE_Master_Lin(iter, sele, mele, sval, mval, lmval, lm2val, sderiv, mderiv,
+            gp_3_d_te_master_lin(iter, sele, mele, sval, mval, lmval, lm2val, sderiv, mderiv,
                 lmderiv, lm2deriv, jac, wgt, jumpval, derivsxi, derivmxi, derivjac, dsliptmatrixgp,
                 dualmap, dual2map, Comm_);
         }
@@ -5911,11 +5912,11 @@ void CONTACT::Integrator::IntegrateGP_3D(MORTAR::Element& sele, MORTAR::Element&
         std::map<int, double> dvelncoupgp;   // velocity ncoup lin. without lm and jac.
         std::map<int, double> dpresncoupgp;  // pressure ncoup lin. without lm and jac.
 
-        GP_NCOUP_DERIV(sele, mele, sval, mval, lmval, sderiv, mderiv, &ncoup, normal, jac, wgt, sxi,
+        gp_ncoup_deriv(sele, mele, sval, mval, lmval, sderiv, mderiv, &ncoup, normal, jac, wgt, sxi,
             derivsxi, derivmxi, dncoupgp, dvelncoupgp, dpresncoupgp, dnmap_unit, false);
         // Lin ncoup condition
         for (int j = 0; j < sele.num_node(); ++j)
-          GP_NCOUP_LIN(j, sele, mele, sval, mval, lmval, sderiv, lmderiv, ncoup, normal, jac, wgt,
+          gp_ncoup_lin(j, sele, mele, sval, mval, lmval, sderiv, lmderiv, ncoup, normal, jac, wgt,
               dncoupgp, dvelncoupgp, dpresncoupgp, derivjac, derivsxi, derivmxi, dualmap);
       }
       break;
@@ -5931,7 +5932,7 @@ void CONTACT::Integrator::IntegrateGP_3D(MORTAR::Element& sele, MORTAR::Element&
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::Integrator::IntegrateGP_2D(MORTAR::Element& sele, MORTAR::Element& mele,
+void CONTACT::Integrator::integrate_gp_2_d(MORTAR::Element& sele, MORTAR::Element& mele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
     CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -5964,16 +5965,17 @@ void CONTACT::Integrator::IntegrateGP_2D(MORTAR::Element& sele, MORTAR::Element&
 
       // decide whether linear LM are used for quadratic FE here
       bool linlm = false;
-      if (LagMultQuad() == INPAR::MORTAR::lagmult_lin && sele.Shape() == CORE::FE::CellType::line3)
+      if (lag_mult_quad() == INPAR::MORTAR::lagmult_lin &&
+          sele.Shape() == CORE::FE::CellType::line3)
       {
         bound = false;  // crosspoints and linear LM NOT at the same time!!!!
         linlm = true;
       }
 
       // weighted gap
-      GP_2D_wGap(sele, sval, lmval, &gap, jac, wgt);
+      gp_2_d_w_gap(sele, sval, lmval, &gap, jac, wgt);
       for (int j = 0; j < sval.numRows(); ++j)
-        GP_2D_G_Lin(j, sele, mele, sval, mval, lmval, sderiv, lmderiv, gap, normal, jac, wgt,
+        gp_2_d_g_lin(j, sele, mele, sval, mval, lmval, sderiv, lmderiv, gap, normal, jac, wgt,
             deriv_gap, derivjac, derivsxi, dualmap);
 
       // integrate D and M matrix
@@ -5982,7 +5984,7 @@ void CONTACT::Integrator::IntegrateGP_2D(MORTAR::Element& sele, MORTAR::Element&
       // compute segment D/M linearization  -- bound
       if (bound)
       {
-        GP_2D_DM_Lin_bound(sele, mele, sval, mval, lmval, sderiv, mderiv, lmderiv, jac, wgt,
+        gp_2_d_dm_lin_bound(sele, mele, sval, mval, lmval, sderiv, mderiv, lmderiv, jac, wgt,
             derivjac, derivsxi, derivmxi, dualmap);
       }
       else
@@ -5990,8 +5992,8 @@ void CONTACT::Integrator::IntegrateGP_2D(MORTAR::Element& sele, MORTAR::Element&
         // D/M linearization
         for (int j = 0; j < sval.numRows(); ++j)
         {
-          GP_2D_DM_Lin(j, bound, linlm, sele, mele, sval, mval, lmval, sderiv, mderiv, lmderiv, jac,
-              wgt, derivsxi, derivmxi, derivjac, dualmap);
+          gp_2_d_dm_lin(j, bound, linlm, sele, mele, sval, mval, lmval, sderiv, mderiv, lmderiv,
+              jac, wgt, derivsxi, derivmxi, derivjac, dualmap);
         }
       }
 
@@ -6007,11 +6009,11 @@ void CONTACT::Integrator::IntegrateGP_2D(MORTAR::Element& sele, MORTAR::Element&
         CORE::GEN::Pairedvector<int, double> dslipgp(
             linsize + Dim() * mele.num_node());  // deriv. of slip for slipincr
 
-        GP_2D_SlipIncr(sele, mele, sval, mval, lmval, sderiv, mderiv, jac, wgt, &jumpvalv, derivsxi,
-            derivmxi, dslipgp, linsize);
+        gp_2_d_slip_incr(sele, mele, sval, mval, lmval, sderiv, mderiv, jac, wgt, &jumpvalv,
+            derivsxi, derivmxi, dslipgp, linsize);
 
         for (int iter = 0; iter < sele.num_node(); ++iter)
-          GP_2D_SlipIncr_Lin(iter, sele, sval, lmval, sderiv, lmderiv, jac, wgt, &jumpvalv,
+          gp_2_d_slip_incr_lin(iter, sele, sval, lmval, sderiv, lmderiv, jac, wgt, &jumpvalv,
               derivsxi, dslipgp, derivjac, dualmap);
       }
 
@@ -6036,46 +6038,46 @@ void CONTACT::Integrator::IntegrateGP_2D(MORTAR::Element& sele, MORTAR::Element&
             linsize + Dim() * mele.num_node());  // wear lin without weighting and jac
 
         // std. wear for all wear-algorithm types
-        GP_2D_Wear(sele, mele, sval, sderiv, mval, mderiv, lmval, lmderiv, lagmult, normal, jac,
+        gp_2_d_wear(sele, mele, sval, sderiv, mval, mderiv, lmval, lmderiv, lagmult, normal, jac,
             wgt, &jumpval, &wearval, dsliptmatrixgp, dweargp, derivsxi, derivmxi, dnmap_unit,
             dualmap);
 
         // integrate T and E matrix for discr. wear
-        if (WearType() == INPAR::WEAR::wear_primvar) GP_TE(sele, lmval, sval, jac, wgt, &jumpval);
+        if (wear_type() == INPAR::WEAR::wear_primvar) gp_te(sele, lmval, sval, jac, wgt, &jumpval);
 
         // both-sided discr wear specific stuff
-        if (WearSide() == INPAR::WEAR::wear_both and WearType() == INPAR::WEAR::wear_primvar)
+        if (wear_side() == INPAR::WEAR::wear_both and wear_type() == INPAR::WEAR::wear_primvar)
         {
           CORE::LINALG::SerialDenseVector lm2val(mele.num_node());
           CORE::LINALG::SerialDenseMatrix lm2deriv(mele.num_node(), Dim() - 1, true);
-          mele.evaluate_shape_lag_mult(ShapeFcn(), mxi, lm2val, lm2deriv, mele.num_node());
+          mele.evaluate_shape_lag_mult(shape_fcn(), mxi, lm2val, lm2deriv, mele.num_node());
 
-          GP_TE_Master(sele, mele, lmval, lm2val, mval, jac, wgt, &jumpval, Comm_);
+          gp_te_master(sele, mele, lmval, lm2val, mval, jac, wgt, &jumpval, Comm_);
         }
 
         // both-sided map wear specific stuff
-        if (WearSide() == INPAR::WEAR::wear_both and WearType() == INPAR::WEAR::wear_intstate)
+        if (wear_side() == INPAR::WEAR::wear_both and wear_type() == INPAR::WEAR::wear_intstate)
         {
           CORE::LINALG::SerialDenseVector lm2val(mele.num_node());
           CORE::LINALG::SerialDenseMatrix lm2deriv(mele.num_node(), 2, true);
-          mele.evaluate_shape_lag_mult(ShapeFcn(), mxi, lm2val, lm2deriv, mele.num_node());
+          mele.evaluate_shape_lag_mult(shape_fcn(), mxi, lm2val, lm2deriv, mele.num_node());
 
-          GP_D2(sele, mele, lm2val, mval, jac, wgt, Comm_);
+          gp_d2(sele, mele, lm2val, mval, jac, wgt, Comm_);
         }
 
         // Lin wear for impl. alg.
-        if (wearimpl_ == true and WearType() == INPAR::WEAR::wear_intstate)
+        if (wearimpl_ == true and wear_type() == INPAR::WEAR::wear_intstate)
           for (int j = 0; j < sele.num_node(); ++j)
-            GP_2D_Wear_Lin(j, sele, sval, lmval, sderiv, lmderiv, jac, normal, wgt, wearval,
+            gp_2_d_wear_lin(j, sele, sval, lmval, sderiv, lmderiv, jac, normal, wgt, wearval,
                 &jumpval, dweargp, derivjac, derivsxi, dualmap);
 
         // Lin wear T and E matrix
-        if (wearimpl_ == true and WearType() == INPAR::WEAR::wear_primvar)
+        if (wearimpl_ == true and wear_type() == INPAR::WEAR::wear_primvar)
           for (int j = 0; j < sele.num_node(); ++j)
-            GP_2D_TE_Lin(j, sele, sval, lmval, sderiv, lmderiv, jac, wgt, &jumpval, derivsxi,
+            gp_2_d_te_lin(j, sele, sval, lmval, sderiv, lmderiv, jac, wgt, &jumpval, derivsxi,
                 derivjac, dsliptmatrixgp, dualmap);
 
-        if (WearSide() == INPAR::WEAR::wear_both and WearType() == INPAR::WEAR::wear_primvar and
+        if (wear_side() == INPAR::WEAR::wear_both and wear_type() == INPAR::WEAR::wear_primvar and
             wearimpl_ == true)
         {
           CORE::LINALG::SerialDenseVector lm2val(mele.num_node());
@@ -6083,11 +6085,11 @@ void CONTACT::Integrator::IntegrateGP_2D(MORTAR::Element& sele, MORTAR::Element&
           CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix> dual2map(
               (sele.num_node() + mele.num_node()) * Dim(), 0,
               CORE::LINALG::SerialDenseMatrix(mele.num_node(), mele.num_node()));
-          mele.evaluate_shape_lag_mult(ShapeFcn(), mxi, lm2val, lm2deriv, mele.num_node());
+          mele.evaluate_shape_lag_mult(shape_fcn(), mxi, lm2val, lm2deriv, mele.num_node());
           mele.DerivShapeDual(dual2map);
 
           for (int iter = 0; iter < mele.num_node(); ++iter)
-            GP_3D_TE_Master_Lin(iter, sele, mele, sval, mval, lmval, lm2val, sderiv, mderiv,
+            gp_3_d_te_master_lin(iter, sele, mele, sval, mval, lmval, lm2val, sderiv, mderiv,
                 lmderiv, lm2deriv, jac, wgt, &jumpval, derivsxi, derivmxi, derivjac, dsliptmatrixgp,
                 dualmap, dual2map, Comm_);
         }
@@ -6109,11 +6111,11 @@ void CONTACT::Integrator::IntegrateGP_2D(MORTAR::Element& sele, MORTAR::Element&
         std::map<int, double> dvelncoupgp;   // velocity ncoup lin. without lm and jac.
         std::map<int, double> dpresncoupgp;  // pressure ncoup lin. without lm and jac.
 
-        GP_NCOUP_DERIV(sele, mele, sval, mval, lmval, sderiv, mderiv, &ncoup, normal, jac, wgt, sxi,
+        gp_ncoup_deriv(sele, mele, sval, mval, lmval, sderiv, mderiv, &ncoup, normal, jac, wgt, sxi,
             derivsxi, derivmxi, dncoupgp, dvelncoupgp, dpresncoupgp, dnmap_unit, false);
         // Lin ncoup condition
         for (int j = 0; j < sele.num_node(); ++j)
-          GP_NCOUP_LIN(j, sele, mele, sval, mval, lmval, sderiv, lmderiv, ncoup, normal, jac, wgt,
+          gp_ncoup_lin(j, sele, mele, sval, mval, lmval, sderiv, lmderiv, ncoup, normal, jac, wgt,
               dncoupgp, dvelncoupgp, dpresncoupgp, derivjac, derivsxi, derivmxi, dualmap);
       }
 
@@ -6158,9 +6160,9 @@ void CONTACT::Integrator::gp_dm(MORTAR::Element& sele, MORTAR::Element& mele,
 
   // compute segment D/M matrix ****************************************
   // dual shape functions without locally linear Lagrange multipliers
-  if ((ShapeFcn() == INPAR::MORTAR::shape_dual ||
-          ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-      LagMultQuad() != INPAR::MORTAR::lagmult_lin)
+  if ((shape_fcn() == INPAR::MORTAR::shape_dual ||
+          shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
+      lag_mult_quad() != INPAR::MORTAR::lagmult_lin)
   {
     for (int j = 0; j < nrow; ++j)
     {
@@ -6273,12 +6275,12 @@ void CONTACT::Integrator::gp_dm(MORTAR::Element& sele, MORTAR::Element& mele,
         double prod = lmval[j] * sval[k] * jac * wgt;
         if (abs(prod) > MORTARINTTOL)
         {
-          if ((ShapeFcn() == INPAR::MORTAR::shape_standard && snode->IsOnBoundorCE()) ||
-              ((ShapeFcn() == INPAR::MORTAR::shape_dual ||
-                   ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
+          if ((shape_fcn() == INPAR::MORTAR::shape_standard && snode->IsOnBoundorCE()) ||
+              ((shape_fcn() == INPAR::MORTAR::shape_dual ||
+                   shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
                   snode->IsOnBound()))
           {
-            if (ShapeFcn() == INPAR::MORTAR::shape_standard && nonsmooth_)
+            if (shape_fcn() == INPAR::MORTAR::shape_standard && nonsmooth_)
             {
               if (snode->IsOnBound() and !snode->IsOnCornerEdge())
               {
@@ -6293,9 +6295,9 @@ void CONTACT::Integrator::gp_dm(MORTAR::Element& sele, MORTAR::Element& mele,
             }
             // this still needs to be checked for dual shape functions with locally linear Lagrange
             // multipliers
-            else if ((ShapeFcn() == INPAR::MORTAR::shape_dual ||
-                         ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-                     LagMultQuad() == INPAR::MORTAR::lagmult_lin && nonsmooth_)
+            else if ((shape_fcn() == INPAR::MORTAR::shape_dual ||
+                         shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
+                     lag_mult_quad() == INPAR::MORTAR::lagmult_lin && nonsmooth_)
               FOUR_C_THROW(
                   "dual shape functions with locally linear Lagrange multipliers in "
                   "combination non-smooth approach still needs to be checked!");
@@ -6337,13 +6339,13 @@ void inline CONTACT::Integrator::gp_3_d_dm_quad(MORTAR::Element& sele, MORTAR::E
 
   // CASE 1/2: Standard LM shape functions and quadratic, linear or constant interpolation
   // CASE 5: dual LM shape functions and linear interpolation
-  if ((ShapeFcn() == INPAR::MORTAR::shape_standard &&
-          (LagMultQuad() == INPAR::MORTAR::lagmult_quad ||
-              LagMultQuad() == INPAR::MORTAR::lagmult_lin ||
-              LagMultQuad() == INPAR::MORTAR::lagmult_const)) ||
-      ((ShapeFcn() == INPAR::MORTAR::shape_dual ||
-           ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-          LagMultQuad() == INPAR::MORTAR::lagmult_lin))
+  if ((shape_fcn() == INPAR::MORTAR::shape_standard &&
+          (lag_mult_quad() == INPAR::MORTAR::lagmult_quad ||
+              lag_mult_quad() == INPAR::MORTAR::lagmult_lin ||
+              lag_mult_quad() == INPAR::MORTAR::lagmult_const)) ||
+      ((shape_fcn() == INPAR::MORTAR::shape_dual ||
+           shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
+          lag_mult_quad() == INPAR::MORTAR::lagmult_lin))
   {
     // compute all mseg and dseg matrix entries
     // loop over Lagrange multiplier dofs j
@@ -6389,8 +6391,8 @@ void inline CONTACT::Integrator::gp_3_d_dm_quad(MORTAR::Element& sele, MORTAR::E
     }
   }
   // CASE 3: Standard LM shape functions and piecewise linear interpolation
-  else if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
-           LagMultQuad() == INPAR::MORTAR::lagmult_pwlin)
+  else if (shape_fcn() == INPAR::MORTAR::shape_standard &&
+           lag_mult_quad() == INPAR::MORTAR::lagmult_pwlin)
   {
     // compute all mseg and dseg matrix entries
     // loop over Lagrange multiplier dofs j
@@ -6437,10 +6439,10 @@ void inline CONTACT::Integrator::gp_3_d_dm_quad(MORTAR::Element& sele, MORTAR::E
   }
 
   // CASE 4: Dual LM shape functions and quadratic or constant interpolation
-  else if ((ShapeFcn() == INPAR::MORTAR::shape_dual ||
-               ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-           (LagMultQuad() == INPAR::MORTAR::lagmult_quad ||
-               LagMultQuad() == INPAR::MORTAR::lagmult_const))
+  else if ((shape_fcn() == INPAR::MORTAR::shape_dual ||
+               shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
+           (lag_mult_quad() == INPAR::MORTAR::lagmult_quad ||
+               lag_mult_quad() == INPAR::MORTAR::lagmult_const))
   {
     // compute all mseg and dseg matrix entries
     // loop over Lagrange multiplier dofs j
@@ -6478,7 +6480,7 @@ void inline CONTACT::Integrator::gp_3_d_dm_quad(MORTAR::Element& sele, MORTAR::E
 /*----------------------------------------------------------------------*
  |  Compute entries for weighted Gap at GP                   farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::Integrator::GP_2D_wGap(MORTAR::Element& sele,
+void inline CONTACT::Integrator::gp_2_d_w_gap(MORTAR::Element& sele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval, double* gap,
     double& jac, double& wgt)
 {
@@ -6496,7 +6498,7 @@ void inline CONTACT::Integrator::GP_2D_wGap(MORTAR::Element& sele,
 
     double prod = 0.0;
     // Petrov-Galerkin approach (dual LM for D/M but standard LM for gap)
-    if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) prod = sval[j] * gap[0] * jac * wgt;
+    if (shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin) prod = sval[j] * gap[0] * jac * wgt;
     // usual standard or dual LM approach
     else
       prod = lmval[j] * gap[0] * jac * wgt;
@@ -6516,7 +6518,7 @@ void inline CONTACT::Integrator::GP_2D_wGap(MORTAR::Element& sele,
 /*----------------------------------------------------------------------*
  |  Compute entries for weighted Gap at GP                   farah 09/13|
  *----------------------------------------------------------------------*/
-void CONTACT::Integrator::GP_3D_wGap(MORTAR::Element& sele, CORE::LINALG::SerialDenseVector& sval,
+void CONTACT::Integrator::gp_3_d_w_gap(MORTAR::Element& sele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& lmval, double* gap, double& jac, double& wgt, bool quadratic,
     int nintrow)
 {
@@ -6538,7 +6540,7 @@ void CONTACT::Integrator::GP_3D_wGap(MORTAR::Element& sele, CORE::LINALG::Serial
 
       double prod = 0.0;
       // Petrov-Galerkin approach (dual LM for D/M but standard LM for gap)
-      if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) prod = sval[j] * gap[0] * jac * wgt;
+      if (shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin) prod = sval[j] * gap[0] * jac * wgt;
       // usual standard or dual LM approach
       else
         prod = lmval[j] * gap[0] * jac * wgt;
@@ -6555,10 +6557,10 @@ void CONTACT::Integrator::GP_3D_wGap(MORTAR::Element& sele, CORE::LINALG::Serial
   {
     // compute cell gap vector *******************************************
     // CASE 1/2: Standard LM shape functions and quadratic or linear interpolation
-    if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
-        (LagMultQuad() == INPAR::MORTAR::lagmult_quad ||
-            LagMultQuad() == INPAR::MORTAR::lagmult_lin ||
-            LagMultQuad() == INPAR::MORTAR::lagmult_const))
+    if (shape_fcn() == INPAR::MORTAR::shape_standard &&
+        (lag_mult_quad() == INPAR::MORTAR::lagmult_quad ||
+            lag_mult_quad() == INPAR::MORTAR::lagmult_lin ||
+            lag_mult_quad() == INPAR::MORTAR::lagmult_const))
     {
       for (int j = 0; j < nrow; ++j)
       {
@@ -6576,8 +6578,8 @@ void CONTACT::Integrator::GP_3D_wGap(MORTAR::Element& sele, CORE::LINALG::Serial
 
     // CASE 3: Standard LM shape functions and piecewise linear interpolation
     // Attention:  for this case, lmval represents lmintval !!!
-    else if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
-             LagMultQuad() == INPAR::MORTAR::lagmult_pwlin)
+    else if (shape_fcn() == INPAR::MORTAR::shape_standard &&
+             lag_mult_quad() == INPAR::MORTAR::lagmult_pwlin)
     {
       if (nintrow == 0) FOUR_C_THROW("ERROR!");
 
@@ -6596,11 +6598,11 @@ void CONTACT::Integrator::GP_3D_wGap(MORTAR::Element& sele, CORE::LINALG::Serial
     }
 
     // CASE 4: Dual LM shape functions and quadratic, linear or constant interpolation
-    else if ((ShapeFcn() == INPAR::MORTAR::shape_dual ||
-                 ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-             (LagMultQuad() == INPAR::MORTAR::lagmult_quad ||
-                 LagMultQuad() == INPAR::MORTAR::lagmult_lin ||
-                 LagMultQuad() == INPAR::MORTAR::lagmult_const))
+    else if ((shape_fcn() == INPAR::MORTAR::shape_dual ||
+                 shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
+             (lag_mult_quad() == INPAR::MORTAR::lagmult_quad ||
+                 lag_mult_quad() == INPAR::MORTAR::lagmult_lin ||
+                 lag_mult_quad() == INPAR::MORTAR::lagmult_const))
     {
       for (int j = 0; j < nrow; ++j)
       {
@@ -6610,7 +6612,7 @@ void CONTACT::Integrator::GP_3D_wGap(MORTAR::Element& sele, CORE::LINALG::Serial
 
         double prod = 0.0;
         // Petrov-Galerkin approach (dual LM for D/M but standard LM for gap)
-        if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) prod = sval[j] * gap[0] * jac * wgt;
+        if (shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin) prod = sval[j] * gap[0] * jac * wgt;
         // usual standard or dual LM approach
         else
           prod = lmval[j] * gap[0] * jac * wgt;
@@ -6630,7 +6632,7 @@ void CONTACT::Integrator::GP_3D_wGap(MORTAR::Element& sele, CORE::LINALG::Serial
   return;
 }
 
-void CONTACT::Integrator::Gap_3D(MORTAR::Element& sele, MORTAR::Element& mele,
+void CONTACT::Integrator::gap_3_d(MORTAR::Element& sele, MORTAR::Element& mele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& mval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv, double* gap,
     double* gpn, std::vector<CORE::GEN::Pairedvector<int, double>>& dsxigp,
@@ -6661,7 +6663,7 @@ void CONTACT::Integrator::Gap_3D(MORTAR::Element& sele, MORTAR::Element& mele,
     gpn[1] += sval[i] * mymrtrnode->MoData().n()[1];
     gpn[2] += sval[i] * mymrtrnode->MoData().n()[2];
 
-    if (WearType() == INPAR::WEAR::wear_primvar)
+    if (wear_type() == INPAR::WEAR::wear_primvar)
     {
       FriNode* myfricnode = dynamic_cast<FriNode*>(mymrtrnode);
       sgpx[0] += sval[i] * (sele.GetNodalCoords(0, i) -
@@ -6682,7 +6684,7 @@ void CONTACT::Integrator::Gap_3D(MORTAR::Element& sele, MORTAR::Element& mele,
   // build interpolation of master GP coordinates
   for (int i = 0; i < ncol; ++i)
   {
-    if (WearSide() == INPAR::WEAR::wear_both and WearType() == INPAR::WEAR::wear_primvar)
+    if (wear_side() == INPAR::WEAR::wear_both and wear_type() == INPAR::WEAR::wear_primvar)
     {
       FriNode* masternode = dynamic_cast<FriNode*>(mnodes[i]);
 
@@ -6820,7 +6822,7 @@ void CONTACT::Integrator::Gap_3D(MORTAR::Element& sele, MORTAR::Element& mele,
 
   // for wear as own discretization
   // lin slave nodes
-  if (WearType() == INPAR::WEAR::wear_primvar)
+  if (wear_type() == INPAR::WEAR::wear_primvar)
   {
     for (int z = 0; z < nrow; ++z)
     {
@@ -6880,7 +6882,7 @@ void CONTACT::Integrator::Gap_3D(MORTAR::Element& sele, MORTAR::Element& mele,
   }
 
   //        MASTER
-  if (WearSide() == INPAR::WEAR::wear_both and WearType() == INPAR::WEAR::wear_primvar)
+  if (wear_side() == INPAR::WEAR::wear_both and wear_type() == INPAR::WEAR::wear_primvar)
   {
     for (int z = 0; z < ncol; ++z)
     {
@@ -6943,7 +6945,7 @@ void CONTACT::Integrator::Gap_3D(MORTAR::Element& sele, MORTAR::Element& mele,
   return;
 }
 
-void CONTACT::Integrator::Gap_2D(MORTAR::Element& sele, MORTAR::Element& mele,
+void CONTACT::Integrator::gap_2_d(MORTAR::Element& sele, MORTAR::Element& mele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& mval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv, double* gap,
     double* gpn, std::vector<CORE::GEN::Pairedvector<int, double>>& dsxigp,
@@ -6987,7 +6989,7 @@ void CONTACT::Integrator::Gap_2D(MORTAR::Element& sele, MORTAR::Element& mele,
     gpn[0] += sval[i] * mymrtrnode->MoData().n()[0];
     gpn[1] += sval[i] * mymrtrnode->MoData().n()[1];
 
-    if (WearType() == INPAR::WEAR::wear_primvar)
+    if (wear_type() == INPAR::WEAR::wear_primvar)
     {
       FriNode* myfricnode = dynamic_cast<FriNode*>(mymrtrnode);
       double w = myfricnode->WearData().wcurr()[0] + myfricnode->WearData().waccu()[0];
@@ -7004,7 +7006,7 @@ void CONTACT::Integrator::Gap_2D(MORTAR::Element& sele, MORTAR::Element& mele,
   // build interpolation of master GP coordinates
   for (int i = 0; i < ncol; ++i)
   {
-    if (WearSide() == INPAR::WEAR::wear_both and WearType() == INPAR::WEAR::wear_primvar)
+    if (wear_side() == INPAR::WEAR::wear_both and wear_type() == INPAR::WEAR::wear_primvar)
     {
       FriNode* mymrtrnodeM = dynamic_cast<FriNode*>(mnodes[i]);
       double w = mymrtrnodeM->WearData().wcurr()[0] + mymrtrnodeM->WearData().waccu()[0];
@@ -7091,7 +7093,7 @@ void CONTACT::Integrator::Gap_2D(MORTAR::Element& sele, MORTAR::Element& mele,
 
   // for wear as own discretization
   // slave nodes
-  if (WearType() == INPAR::WEAR::wear_primvar)
+  if (wear_type() == INPAR::WEAR::wear_primvar)
   {
     for (int z = 0; z < nrow; ++z)
     {
@@ -7130,7 +7132,7 @@ void CONTACT::Integrator::Gap_2D(MORTAR::Element& sele, MORTAR::Element& mele,
 
   // **************************************************
   // master nodes
-  if (WearSide() == INPAR::WEAR::wear_both and WearType() == INPAR::WEAR::wear_primvar)
+  if (wear_side() == INPAR::WEAR::wear_both and wear_type() == INPAR::WEAR::wear_primvar)
   {
     for (int z = 0; z < ncol; ++z)
     {
@@ -7175,7 +7177,7 @@ void CONTACT::Integrator::Gap_2D(MORTAR::Element& sele, MORTAR::Element& mele,
 /*----------------------------------------------------------------------*
  |  Compute entries for weighted Gap at GP                   farah 12/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::Integrator::GP_3D_G_Quad_pwlin(MORTAR::Element& sele,
+void inline CONTACT::Integrator::gp_3_d_g_quad_pwlin(MORTAR::Element& sele,
     MORTAR::IntElement& sintele, MORTAR::Element& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmintval,
     CORE::LINALG::SerialDenseMatrix& scoord, CORE::LINALG::SerialDenseMatrix& mcoord,
@@ -7212,7 +7214,7 @@ void inline CONTACT::Integrator::GP_3D_G_Quad_pwlin(MORTAR::Element& sele,
     gpn[1] += sval[i] * mymrtrnode->MoData().n()[1];
     gpn[2] += sval[i] * mymrtrnode->MoData().n()[2];
 
-    if (WearType() == INPAR::WEAR::wear_primvar)
+    if (wear_type() == INPAR::WEAR::wear_primvar)
     {
       FriNode* myfrinode = dynamic_cast<FriNode*>(snodes[i]);
       sgpx[0] += sval[i] *
@@ -7233,7 +7235,7 @@ void inline CONTACT::Integrator::GP_3D_G_Quad_pwlin(MORTAR::Element& sele,
   // build interpolation of master GP coordinates
   for (int i = 0; i < ncol; ++i)
   {
-    if (WearSide() == INPAR::WEAR::wear_both and WearType() == INPAR::WEAR::wear_primvar)
+    if (wear_side() == INPAR::WEAR::wear_both and wear_type() == INPAR::WEAR::wear_primvar)
     {
       FriNode* masternode = dynamic_cast<FriNode*>(mnodes[i]);
 
@@ -7266,7 +7268,8 @@ void inline CONTACT::Integrator::GP_3D_G_Quad_pwlin(MORTAR::Element& sele,
   // **************************
   // CASE 3: Standard LM shape functions and piecewise linear interpolation
   // Attention:  for this case, lmval represents lmintval !!!
-  if (ShapeFcn() == INPAR::MORTAR::shape_standard && LagMultQuad() == INPAR::MORTAR::lagmult_pwlin)
+  if (shape_fcn() == INPAR::MORTAR::shape_standard &&
+      lag_mult_quad() == INPAR::MORTAR::lagmult_pwlin)
   {
     for (int j = 0; j < nintrow; ++j)
     {
@@ -7384,7 +7387,7 @@ void inline CONTACT::Integrator::GP_3D_G_Quad_pwlin(MORTAR::Element& sele,
 
   // for wear as own discretization
   // lin slave nodes
-  if (WearType() == INPAR::WEAR::wear_primvar)
+  if (wear_type() == INPAR::WEAR::wear_primvar)
   {
     for (int z = 0; z < nrow; ++z)
     {
@@ -7432,7 +7435,7 @@ void inline CONTACT::Integrator::GP_3D_G_Quad_pwlin(MORTAR::Element& sele,
   }
 
   //        MASTER
-  if (WearSide() == INPAR::WEAR::wear_both and WearType() == INPAR::WEAR::wear_primvar)
+  if (wear_side() == INPAR::WEAR::wear_both and wear_type() == INPAR::WEAR::wear_primvar)
   {
     for (int z = 0; z < ncol; ++z)
     {
@@ -7487,7 +7490,7 @@ void inline CONTACT::Integrator::GP_3D_G_Quad_pwlin(MORTAR::Element& sele,
 /*----------------------------------------------------------------------*
  |  Do lin. entries for weighted Gap at GP                   farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::Integrator::GP_2D_G_Lin(int& iter, MORTAR::Element& sele,
+void inline CONTACT::Integrator::gp_2_d_g_lin(int& iter, MORTAR::Element& sele,
     MORTAR::Element& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& gap,
@@ -7514,7 +7517,7 @@ void inline CONTACT::Integrator::GP_2D_G_Lin(int& iter, MORTAR::Element& sele,
   std::map<int, double>& dgmap = dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivG();
 
   // switch if Petrov-Galerkin approach for LM is applied
-  if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+  if (shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
   {
     // (1) Lin(Phi) - does not exist in gap for Petrov-Galerkin interpolation
     // as std shape functions are used here
@@ -7537,7 +7540,7 @@ void inline CONTACT::Integrator::GP_2D_G_Lin(int& iter, MORTAR::Element& sele,
   else
   {
     // (1) Lin(Phi) - dual shape functions
-    if (ShapeFcn() == INPAR::MORTAR::shape_dual)
+    if (shape_fcn() == INPAR::MORTAR::shape_dual)
     {
       for (int m = 0; m < nrow; ++m)
       {
@@ -7566,7 +7569,7 @@ void inline CONTACT::Integrator::GP_2D_G_Lin(int& iter, MORTAR::Element& sele,
   //****************************************************************
   // LIN WEAR W.R.T. LM
   //****************************************************************
-  if (WearType() == INPAR::WEAR::wear_primvar)
+  if (wear_type() == INPAR::WEAR::wear_primvar)
   {
     // get master element nodes themselves
     const int ncol = mele.num_node();
@@ -7582,7 +7585,7 @@ void inline CONTACT::Integrator::GP_2D_G_Lin(int& iter, MORTAR::Element& sele,
             jac * wgt * lmval[iter] * (gpn[z] * sval[bl] * wearnode->MoData().n()[z]);
     }
 
-    if (WearSide() == INPAR::WEAR::wear_both)
+    if (wear_side() == INPAR::WEAR::wear_both)
     {
       for (int bl = 0; bl < ncol; ++bl)
       {
@@ -7620,7 +7623,8 @@ void inline CONTACT::Integrator::gp_3_d_g_quad_pwlin_lin(int& iter, MORTAR::IntE
   double fac = 0.0;
 
   // CASE 3: Standard LM shape functions and piecewise linear interpolation
-  if (ShapeFcn() == INPAR::MORTAR::shape_standard && LagMultQuad() == INPAR::MORTAR::lagmult_pwlin)
+  if (shape_fcn() == INPAR::MORTAR::shape_standard &&
+      lag_mult_quad() == INPAR::MORTAR::lagmult_pwlin)
   {
     // get the corresponding map as a reference
     std::map<int, double>& dgmap = dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivG();
@@ -7654,7 +7658,7 @@ void inline CONTACT::Integrator::gp_3_d_g_quad_pwlin_lin(int& iter, MORTAR::IntE
 /*----------------------------------------------------------------------*
  |  Do lin. entries for weighted Gap at GP                   farah 12/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::Integrator::GP_3D_G_Quad_Lin(int& iter, MORTAR::Element& sele,
+void inline CONTACT::Integrator::gp_3_d_g_quad_lin(int& iter, MORTAR::Element& sele,
     MORTAR::Element& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& svalmod, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& gap,
@@ -7679,8 +7683,9 @@ void inline CONTACT::Integrator::GP_3D_G_Quad_Lin(int& iter, MORTAR::Element& se
 
   // compute cell gap linearization ************************************
   // CASE 1/2: Standard LM shape functions and quadratic or linear interpolation
-  if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
-      (LagMultQuad() == INPAR::MORTAR::lagmult_quad || LagMultQuad() == INPAR::MORTAR::lagmult_lin))
+  if (shape_fcn() == INPAR::MORTAR::shape_standard &&
+      (lag_mult_quad() == INPAR::MORTAR::lagmult_quad ||
+          lag_mult_quad() == INPAR::MORTAR::lagmult_lin))
   {
     // get the corresponding map as a reference
     std::map<int, double>& dgmap = dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivG();
@@ -7708,15 +7713,15 @@ void inline CONTACT::Integrator::GP_3D_G_Quad_Lin(int& iter, MORTAR::Element& se
   }
 
   // CASE 4: Dual LM shape functions and quadratic or linear interpolation
-  else if ((ShapeFcn() == INPAR::MORTAR::shape_dual ||
-               ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-           (LagMultQuad() == INPAR::MORTAR::lagmult_quad ||
-               LagMultQuad() == INPAR::MORTAR::lagmult_lin))
+  else if ((shape_fcn() == INPAR::MORTAR::shape_dual ||
+               shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
+           (lag_mult_quad() == INPAR::MORTAR::lagmult_quad ||
+               lag_mult_quad() == INPAR::MORTAR::lagmult_lin))
   {
     // get the corresponding map as a reference
     std::map<int, double>& dgmap = dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivG();
 
-    if (ShapeFcn() == INPAR::MORTAR::shape_dual)
+    if (shape_fcn() == INPAR::MORTAR::shape_dual)
     {
       // (1) Lin(Phi) - dual shape functions
       if (duallin)
@@ -7753,7 +7758,7 @@ void inline CONTACT::Integrator::GP_3D_G_Quad_Lin(int& iter, MORTAR::Element& se
       for (_CI p = jacintcellmap.begin(); p != jacintcellmap.end(); ++p)
         dgmap[p->first] += fac * (p->second);
     }
-    else if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+    else if (shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
     {
       // (1) Lin(Phi) - dual shape functions
 
@@ -7783,7 +7788,7 @@ void inline CONTACT::Integrator::GP_3D_G_Quad_Lin(int& iter, MORTAR::Element& se
 /*----------------------------------------------------------------------*
  |  Do lin. entries for weighted Gap at GP                   farah 09/13|
  *----------------------------------------------------------------------*/
-void CONTACT::Integrator::GP_G_Lin(int& iter, MORTAR::Element& sele, MORTAR::Element& mele,
+void CONTACT::Integrator::gp_g_lin(int& iter, MORTAR::Element& sele, MORTAR::Element& mele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& mval,
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseMatrix& sderiv,
     CORE::LINALG::SerialDenseMatrix& lmderiv, double& gap, double* gpn, double& jac, double& wgt,
@@ -7813,7 +7818,7 @@ void CONTACT::Integrator::GP_G_Lin(int& iter, MORTAR::Element& sele, MORTAR::Ele
   std::map<int, double>& dgmap = dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivG();
 
   // switch if Petrov-Galerkin approach for LM is applied
-  if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+  if (shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
   {
     // (1) Lin(Phi) - does not exist here for Petrov-Galerkin approach
 
@@ -7870,7 +7875,7 @@ void CONTACT::Integrator::GP_G_Lin(int& iter, MORTAR::Element& sele, MORTAR::Ele
   //****************************************************************
   // LIN WEAR W.R.T. W
   //****************************************************************
-  if (WearType() == INPAR::WEAR::wear_primvar)
+  if (wear_type() == INPAR::WEAR::wear_primvar)
   {
     std::map<int, double>& dgwmmap = dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivGW();
 
@@ -7882,7 +7887,7 @@ void CONTACT::Integrator::GP_G_Lin(int& iter, MORTAR::Element& sele, MORTAR::Ele
             jac * wgt * lmval[iter] * (gpn[z] * sval[bl] * wearnode->MoData().n()[z]);
     }
 
-    if (WearSide() == INPAR::WEAR::wear_both)
+    if (wear_side() == INPAR::WEAR::wear_both)
     {
       for (int bl = 0; bl < ncol; ++bl)
       {
@@ -7901,7 +7906,7 @@ void CONTACT::Integrator::GP_G_Lin(int& iter, MORTAR::Element& sele, MORTAR::Ele
 /*----------------------------------------------------------------------*
  |  Compute entries for bound DM                             farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::Integrator::GP_3D_DM_Lin_bound(MORTAR::Element& sele, MORTAR::Element& mele,
+void CONTACT::Integrator::gp_3_d_dm_lin_bound(MORTAR::Element& sele, MORTAR::Element& mele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& mval,
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseMatrix& sderiv,
     CORE::LINALG::SerialDenseMatrix& lmderiv, CORE::LINALG::SerialDenseMatrix& mderiv, double& jac,
@@ -7919,7 +7924,7 @@ void CONTACT::Integrator::GP_3D_DM_Lin_bound(MORTAR::Element& sele, MORTAR::Elem
   // map iterator
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
 
-  if (ShapeFcn() == INPAR::MORTAR::shape_standard)
+  if (shape_fcn() == INPAR::MORTAR::shape_standard)
   {
     // integrate LinD
     for (int j = 0; j < nrow; ++j)
@@ -8066,8 +8071,8 @@ void CONTACT::Integrator::GP_3D_DM_Lin_bound(MORTAR::Element& sele, MORTAR::Elem
     }
   }
   //--------------------------------------------------------
-  else if (ShapeFcn() == INPAR::MORTAR::shape_dual ||
-           ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+  else if (shape_fcn() == INPAR::MORTAR::shape_dual ||
+           shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
   {
     // integrate LinD
     for (int j = 0; j < nrow; ++j)
@@ -8253,7 +8258,7 @@ void CONTACT::Integrator::GP_3D_DM_Lin_bound(MORTAR::Element& sele, MORTAR::Elem
 /*----------------------------------------------------------------------*
  |  Compute entries for weighted Gap at GP                   farah 07/16|
  *----------------------------------------------------------------------*/
-void inline CONTACT::Integrator::GP_2D_DM_Lin_bound(MORTAR::Element& sele, MORTAR::Element& mele,
+void inline CONTACT::Integrator::gp_2_d_dm_lin_bound(MORTAR::Element& sele, MORTAR::Element& mele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& mval,
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseMatrix& sderiv,
     CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& jac,
@@ -8271,7 +8276,7 @@ void inline CONTACT::Integrator::GP_2D_DM_Lin_bound(MORTAR::Element& sele, MORTA
   // map iterator
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
 
-  if (ShapeFcn() == INPAR::MORTAR::shape_standard)
+  if (shape_fcn() == INPAR::MORTAR::shape_standard)
   {
     // integrate LinD
     for (int j = 0; j < nrow; ++j)
@@ -8401,8 +8406,8 @@ void inline CONTACT::Integrator::GP_2D_DM_Lin_bound(MORTAR::Element& sele, MORTA
     }
   }
   //--------------------------------------------------------
-  else if (ShapeFcn() == INPAR::MORTAR::shape_dual ||
-           ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+  else if (shape_fcn() == INPAR::MORTAR::shape_dual ||
+           shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
   {
     // integrate LinD
     for (int j = 0; j < nrow; ++j)
@@ -8572,7 +8577,7 @@ void inline CONTACT::Integrator::GP_2D_DM_Lin_bound(MORTAR::Element& sele, MORTA
 /*----------------------------------------------------------------------*
  |  Lin D and M matrix entries at GP                         farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::Integrator::GP_2D_DM_Ele_Lin(int& iter, bool& bound, MORTAR::Element& sele,
+void inline CONTACT::Integrator::gp_2_d_dm_ele_lin(int& iter, bool& bound, MORTAR::Element& sele,
     MORTAR::Element& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& mderiv, double& dxdsxi, double& wgt,
@@ -8598,7 +8603,7 @@ void inline CONTACT::Integrator::GP_2D_DM_Ele_Lin(int& iter, bool& bound, MORTAR
   const int sgid = mymrtrnode->Id();
 
   // standard shape functions
-  if (ShapeFcn() == INPAR::MORTAR::shape_standard)
+  if (shape_fcn() == INPAR::MORTAR::shape_standard)
   {
     // integrate LinM
     for (int k = 0; k < ncol; ++k)
@@ -8659,8 +8664,8 @@ void inline CONTACT::Integrator::GP_2D_DM_Ele_Lin(int& iter, bool& bound, MORTAR
   }
 
   // dual shape functions
-  else if (ShapeFcn() == INPAR::MORTAR::shape_dual ||
-           ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+  else if (shape_fcn() == INPAR::MORTAR::shape_dual ||
+           shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
   {
     // get the D-map as a reference
     std::map<int, double>& ddmap_jk =
@@ -8720,7 +8725,7 @@ void inline CONTACT::Integrator::GP_2D_DM_Ele_Lin(int& iter, bool& bound, MORTAR
 /*----------------------------------------------------------------------*
  |  Lin D and M matrix entries at GP                         farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::Integrator::GP_2D_DM_Lin(int& iter, bool& bound, bool& linlm,
+void inline CONTACT::Integrator::gp_2_d_dm_lin(int& iter, bool& bound, bool& linlm,
     MORTAR::Element& sele, MORTAR::Element& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv,
@@ -8863,7 +8868,7 @@ void inline CONTACT::Integrator::GP_2D_DM_Lin(int& iter, bool& bound, bool& linl
     int sgid = mymrtrnode->Id();
 
     // standard shape functions
-    if (ShapeFcn() == INPAR::MORTAR::shape_standard)
+    if (shape_fcn() == INPAR::MORTAR::shape_standard)
     {
       // integrate LinM
       for (int k = 0; k < ncol; ++k)
@@ -8927,8 +8932,8 @@ void inline CONTACT::Integrator::GP_2D_DM_Lin(int& iter, bool& bound, bool& linl
     }
 
     // dual shape functions
-    else if (ShapeFcn() == INPAR::MORTAR::shape_dual ||
-             ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+    else if (shape_fcn() == INPAR::MORTAR::shape_dual ||
+             shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
     {
       // get the D-map as a reference
       std::map<int, double>& ddmap_jk =
@@ -9101,7 +9106,7 @@ void inline CONTACT::Integrator::gp_3_d_dm_quad_pwlin_lin(int& iter, MORTAR::Ele
 /*----------------------------------------------------------------------*
  |  Lin D and M matrix entries at GP                         farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::Integrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::Element& sele,
+void inline CONTACT::Integrator::gp_3_d_dm_quad_lin(bool& duallin, MORTAR::Element& sele,
     MORTAR::Element& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& svalmod, CORE::LINALG::SerialDenseVector& mval,
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseMatrix& sderiv,
@@ -9128,7 +9133,8 @@ void inline CONTACT::Integrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::Elemen
 
   // compute cell D/M linearization ************************************
   // CASE 1: Standard LM shape functions and quadratic interpolation
-  if (ShapeFcn() == INPAR::MORTAR::shape_standard && LagMultQuad() == INPAR::MORTAR::lagmult_quad)
+  if (shape_fcn() == INPAR::MORTAR::shape_standard &&
+      lag_mult_quad() == INPAR::MORTAR::lagmult_quad)
   {
     static double fac1 = 0.;
     static double fac2 = 0.;
@@ -9197,10 +9203,10 @@ void inline CONTACT::Integrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::Elemen
   // CASE 2: Standard LM shape functions and linear interpolation
   // CASE 5: dual LM shape functions and linear interpolation
   // (this has to be treated seperately here for LinDM because of bound)
-  else if ((ShapeFcn() == INPAR::MORTAR::shape_standard ||
-               ShapeFcn() == INPAR::MORTAR::shape_dual ||
-               ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-           LagMultQuad() == INPAR::MORTAR::lagmult_lin)
+  else if ((shape_fcn() == INPAR::MORTAR::shape_standard ||
+               shape_fcn() == INPAR::MORTAR::shape_dual ||
+               shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
+           lag_mult_quad() == INPAR::MORTAR::lagmult_lin)
   {
     // integrate LinD
     for (int j = 0; j < nrow; ++j)
@@ -9380,9 +9386,9 @@ void inline CONTACT::Integrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::Elemen
     }
   }
   // CASE 4: Dual LM shape functions and quadratic interpolation
-  else if ((ShapeFcn() == INPAR::MORTAR::shape_dual ||
-               ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-           LagMultQuad() == INPAR::MORTAR::lagmult_quad)
+  else if ((shape_fcn() == INPAR::MORTAR::shape_dual ||
+               shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
+           lag_mult_quad() == INPAR::MORTAR::lagmult_quad)
   {
     double fac = 0.;
     // (1) Lin(Phi) - dual shape functions
@@ -9469,7 +9475,7 @@ void inline CONTACT::Integrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::Elemen
 /*----------------------------------------------------------------------*
  |  Lin D and M matrix entries at GP                         farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::Integrator::GP_3D_DM_Lin(MORTAR::Element& sele, MORTAR::Element& mele,
+void inline CONTACT::Integrator::gp_3_d_dm_lin(MORTAR::Element& sele, MORTAR::Element& mele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& mval,
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseMatrix& sderiv,
     CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& wgt,
@@ -9485,7 +9491,7 @@ void inline CONTACT::Integrator::GP_3D_DM_Lin(MORTAR::Element& sele, MORTAR::Ele
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
 
   // standard shape functions
-  if (ShapeFcn() == INPAR::MORTAR::shape_standard)
+  if (shape_fcn() == INPAR::MORTAR::shape_standard)
   {
     // integrate LinM
     // (1) Lin(Phi) - dual shape functions
@@ -9551,8 +9557,8 @@ void inline CONTACT::Integrator::GP_3D_DM_Lin(MORTAR::Element& sele, MORTAR::Ele
   }
 
   // dual shape functions
-  else if (ShapeFcn() == INPAR::MORTAR::shape_dual ||
-           ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+  else if (shape_fcn() == INPAR::MORTAR::shape_dual ||
+           shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
   {
     double fac = 0.;
 
@@ -9633,7 +9639,7 @@ void inline CONTACT::Integrator::GP_3D_DM_Lin(MORTAR::Element& sele, MORTAR::Ele
 /*----------------------------------------------------------------------*
  |  Compute entries for D2 matrix at GP                      farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::Integrator::GP_D2(MORTAR::Element& sele, MORTAR::Element& mele,
+void inline CONTACT::Integrator::gp_d2(MORTAR::Element& sele, MORTAR::Element& mele,
     CORE::LINALG::SerialDenseVector& lm2val, CORE::LINALG::SerialDenseVector& m2val, double& jac,
     double& wgt, const Epetra_Comm& comm)
 {
@@ -9644,7 +9650,8 @@ void inline CONTACT::Integrator::GP_D2(MORTAR::Element& sele, MORTAR::Element& m
   DRT::Node** mnodes = mele.Nodes();
   if (!mnodes) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
 
-  if (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+  if (shape_fcn() == INPAR::MORTAR::shape_dual ||
+      shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
   {
     for (int j = 0; j < ncol; ++j)
     {
@@ -9690,7 +9697,7 @@ void inline CONTACT::Integrator::GP_D2(MORTAR::Element& sele, MORTAR::Element& m
 /*----------------------------------------------------------------------*
  |  Compute wear at GP (for expl/impl algor.)                farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::Integrator::GP_2D_Wear(MORTAR::Element& sele, MORTAR::Element& mele,
+void inline CONTACT::Integrator::gp_2_d_wear(MORTAR::Element& sele, MORTAR::Element& mele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseMatrix& sderiv,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -9790,7 +9797,7 @@ void inline CONTACT::Integrator::GP_2D_Wear(MORTAR::Element& sele, MORTAR::Eleme
   // product
   // use non-abs value for implicit-wear algorithm
   // just for simple linear. maybe we change this in future
-  if (wearimpl_ and WearType() != INPAR::WEAR::wear_primvar)
+  if (wearimpl_ and wear_type() != INPAR::WEAR::wear_primvar)
     wearval[0] = (wearval[0]) * abs(jumpval[0]);
   else
     wearval[0] = abs(wearval[0]) * abs(jumpval[0]);
@@ -9802,7 +9809,7 @@ void inline CONTACT::Integrator::GP_2D_Wear(MORTAR::Element& sele, MORTAR::Eleme
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(snodes[j]);
 
     double prod = 0.0;
-    if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+    if (shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
       prod = sval[j] * wearval[0] * jac * wgt;
     else
       prod = lmval[j] * wearval[0] * jac * wgt;
@@ -9814,7 +9821,7 @@ void inline CONTACT::Integrator::GP_2D_Wear(MORTAR::Element& sele, MORTAR::Eleme
   //****************************************************************
   //   linearization for implicit algorithms
   //****************************************************************
-  if (wearimpl_ || WearType() == INPAR::WEAR::wear_primvar)
+  if (wearimpl_ || wear_type() == INPAR::WEAR::wear_primvar)
   {
     // evaluate the GP wear function derivatives
     CORE::GEN::Pairedvector<int, double> ddualgp_x(ndof * ncol + linsize);
@@ -10023,7 +10030,7 @@ void inline CONTACT::Integrator::GP_2D_Wear(MORTAR::Element& sele, MORTAR::Eleme
 /*----------------------------------------------------------------------*
  |  Compute wear at GP (for expl/impl algor.)                farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::Integrator::GP_3D_Wear(MORTAR::Element& sele, MORTAR::Element& mele,
+void inline CONTACT::Integrator::gp_3_d_wear(MORTAR::Element& sele, MORTAR::Element& mele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseMatrix& sderiv,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -10144,7 +10151,7 @@ void inline CONTACT::Integrator::GP_3D_Wear(MORTAR::Element& sele, MORTAR::Eleme
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(snodes[j]);
 
     double prod = 0.0;
-    if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+    if (shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
       prod = sval[j] * wearval[0] * jac * wgt;
     else
       prod = lmval[j] * wearval[0] * jac * wgt;
@@ -10154,7 +10161,7 @@ void inline CONTACT::Integrator::GP_3D_Wear(MORTAR::Element& sele, MORTAR::Eleme
   }
 
   // linearization without lm weighting and jac.
-  if (wearimpl_ or WearType() == INPAR::WEAR::wear_primvar)
+  if (wearimpl_ or wear_type() == INPAR::WEAR::wear_primvar)
   {
     int linsize = 0;
     for (int i = 0; i < nrow; ++i)
@@ -10310,7 +10317,7 @@ void inline CONTACT::Integrator::GP_3D_Wear(MORTAR::Element& sele, MORTAR::Eleme
 
     // slip lin. for discrete wear
     // u/abs(u) * lin tang * jump
-    if (WearType() == INPAR::WEAR::wear_primvar)
+    if (wear_type() == INPAR::WEAR::wear_primvar)
     {
       for (_CI p = dt0.begin(); p != dt0.end(); ++p)
         dsliptmatrixgp[p->first] += absx * (p->second) * jumptan(0, 0);
@@ -10453,7 +10460,7 @@ void inline CONTACT::Integrator::GP_3D_Wear(MORTAR::Element& sele, MORTAR::Eleme
 
     // slip lin. for discrete wear
     // u/abs(u) * tang * lin jump
-    if (WearType() == INPAR::WEAR::wear_primvar)
+    if (wear_type() == INPAR::WEAR::wear_primvar)
     {
       for (_CI p = lintan0.begin(); p != lintan0.end(); ++p)
         dsliptmatrixgp[p->first] += absx * (p->second) * jumptan(0, 0);
@@ -10473,7 +10480,7 @@ void inline CONTACT::Integrator::GP_3D_Wear(MORTAR::Element& sele, MORTAR::Eleme
 /*----------------------------------------------------------------------*
  |  Compute entries for E and T matrix at GP (Slave)         farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::Integrator::GP_TE(MORTAR::Element& sele,
+void inline CONTACT::Integrator::gp_te(MORTAR::Element& sele,
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& sval, double& jac,
     double& wgt, double* jumpval)
 {
@@ -10483,7 +10490,7 @@ void inline CONTACT::Integrator::GP_TE(MORTAR::Element& sele,
 
   int nrow = sele.num_node();
 
-  if (WearShapeFcn() == INPAR::WEAR::wear_shape_standard)
+  if (wear_shape_fcn() == INPAR::WEAR::wear_shape_standard)
   {
     for (int k = 0; k < nrow; ++k)
     {
@@ -10505,7 +10512,7 @@ void inline CONTACT::Integrator::GP_TE(MORTAR::Element& sele,
       }
     }
   }
-  else if (WearShapeFcn() == INPAR::WEAR::wear_shape_dual)
+  else if (wear_shape_fcn() == INPAR::WEAR::wear_shape_dual)
   {
     for (int k = 0; k < nrow; ++k)
     {
@@ -10540,7 +10547,7 @@ void inline CONTACT::Integrator::GP_TE(MORTAR::Element& sele,
 /*----------------------------------------------------------------------*
  |  Compute entries for E and T matrix at GP (Master)        farah 11/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::Integrator::GP_TE_Master(MORTAR::Element& sele, MORTAR::Element& mele,
+void inline CONTACT::Integrator::gp_te_master(MORTAR::Element& sele, MORTAR::Element& mele,
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& lm2val,
     CORE::LINALG::SerialDenseVector& mval, double& jac, double& wgt, double* jumpval,
     const Epetra_Comm& comm)
@@ -10561,7 +10568,7 @@ void inline CONTACT::Integrator::GP_TE_Master(MORTAR::Element& sele, MORTAR::Ele
   int nrow = mele.num_node();
   int ncol = sele.num_node();
 
-  if (WearShapeFcn() == INPAR::WEAR::wear_shape_standard)
+  if (wear_shape_fcn() == INPAR::WEAR::wear_shape_standard)
   {
     for (int k = 0; k < nrow; ++k)
     {
@@ -10590,7 +10597,7 @@ void inline CONTACT::Integrator::GP_TE_Master(MORTAR::Element& sele, MORTAR::Ele
       }
     }
   }
-  else if (WearShapeFcn() == INPAR::WEAR::wear_shape_dual)
+  else if (wear_shape_fcn() == INPAR::WEAR::wear_shape_dual)
   {
     for (int k = 0; k < nrow; ++k)
     {
@@ -10628,7 +10635,7 @@ void inline CONTACT::Integrator::GP_TE_Master(MORTAR::Element& sele, MORTAR::Ele
 /*----------------------------------------------------------------------*
  |  Compute lin for T and E matrix -- discr. wear            farah 11/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::Integrator::GP_2D_TE_Master_Lin(int& iter,  // like k
+void inline CONTACT::Integrator::gp_2_d_te_master_lin(int& iter,  // like k
     MORTAR::Element& sele, MORTAR::Element& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -10660,7 +10667,7 @@ void inline CONTACT::Integrator::GP_2D_TE_Master_Lin(int& iter,  // like k
   MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mnodes[iter]);
   if (!mymrtrnode) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
 
-  if (WearShapeFcn() == INPAR::WEAR::wear_shape_standard)
+  if (wear_shape_fcn() == INPAR::WEAR::wear_shape_standard)
   {
     // integrate LinT
     for (int j = 0; j < nrow; ++j)
@@ -10752,7 +10759,7 @@ void inline CONTACT::Integrator::GP_2D_TE_Master_Lin(int& iter,  // like k
       for (_CI p = dsxigp.begin(); p != dsxigp.end(); ++p) emmap_jk[p->first] += fac * (p->second);
     }  // end integrate linE
   }
-  else if (WearShapeFcn() ==
+  else if (wear_shape_fcn() ==
            INPAR::WEAR::wear_shape_dual)  //******************************************
   {
     FOUR_C_THROW("Chosen shapefunctions 'wear_shape_dual' not supported!");
@@ -10766,7 +10773,7 @@ void inline CONTACT::Integrator::GP_2D_TE_Master_Lin(int& iter,  // like k
 /*----------------------------------------------------------------------*
  |  Compute lin for T and E matrix -- discr. wear            farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::Integrator::GP_2D_TE_Lin(int& iter, MORTAR::Element& sele,
+void inline CONTACT::Integrator::gp_2_d_te_lin(int& iter, MORTAR::Element& sele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& jac,
     double& wgt, double* jumpval, const std::vector<CORE::GEN::Pairedvector<int, double>>& dsxigp,
@@ -10786,7 +10793,7 @@ void inline CONTACT::Integrator::GP_2D_TE_Lin(int& iter, MORTAR::Element& sele,
   MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(snodes[iter]);
   if (!mymrtrnode) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
 
-  if (WearShapeFcn() == INPAR::WEAR::wear_shape_standard)
+  if (wear_shape_fcn() == INPAR::WEAR::wear_shape_standard)
   {
     // integrate LinT
     for (int j = 0; j < nrow; ++j)
@@ -10864,7 +10871,7 @@ void inline CONTACT::Integrator::GP_2D_TE_Lin(int& iter, MORTAR::Element& sele,
         emmap_jk[p->first] += fac * (p->second);
     }  // end integrate linE
   }
-  else if (WearShapeFcn() ==
+  else if (wear_shape_fcn() ==
            INPAR::WEAR::wear_shape_dual)  //******************************************
   {
     // integrate LinT
@@ -10967,7 +10974,7 @@ void inline CONTACT::Integrator::GP_2D_TE_Lin(int& iter, MORTAR::Element& sele,
 /*----------------------------------------------------------------------*
  |  Compute lin for T and E matrix -- discr. wear            farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::Integrator::GP_3D_TE_Lin(int& iter, MORTAR::Element& sele,
+void inline CONTACT::Integrator::gp_3_d_te_lin(int& iter, MORTAR::Element& sele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& jac,
     double& wgt, double* jumpval, const std::vector<CORE::GEN::Pairedvector<int, double>>& dsxigp,
@@ -10987,7 +10994,7 @@ void inline CONTACT::Integrator::GP_3D_TE_Lin(int& iter, MORTAR::Element& sele,
   MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(snodes[iter]);
   if (!mymrtrnode) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
 
-  if (WearShapeFcn() == INPAR::WEAR::wear_shape_standard)
+  if (wear_shape_fcn() == INPAR::WEAR::wear_shape_standard)
   {
     // integrate LinT
     for (int j = 0; j < nrow; ++j)
@@ -11081,7 +11088,7 @@ void inline CONTACT::Integrator::GP_3D_TE_Lin(int& iter, MORTAR::Element& sele,
 
     }  // end integrate linE
   }
-  else if (WearShapeFcn() == INPAR::WEAR::wear_shape_dual)
+  else if (wear_shape_fcn() == INPAR::WEAR::wear_shape_dual)
   {
     // integrate LinT
     for (int j = 0; j < nrow; ++j)
@@ -11213,7 +11220,7 @@ void inline CONTACT::Integrator::GP_3D_TE_Lin(int& iter, MORTAR::Element& sele,
 /*----------------------------------------------------------------------*
  |  Compute lin for T and E matrix -- discr. wear (master)   farah 11/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::Integrator::GP_3D_TE_Master_Lin(int& iter, MORTAR::Element& sele,
+void inline CONTACT::Integrator::gp_3_d_te_master_lin(int& iter, MORTAR::Element& sele,
     MORTAR::Element& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseVector& lm2val, CORE::LINALG::SerialDenseMatrix& sderiv,
@@ -11242,7 +11249,7 @@ void inline CONTACT::Integrator::GP_3D_TE_Master_Lin(int& iter, MORTAR::Element&
   MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mnodes[iter]);
   if (!mymrtrnode) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
 
-  if (WearShapeFcn() == INPAR::WEAR::wear_shape_standard)
+  if (wear_shape_fcn() == INPAR::WEAR::wear_shape_standard)
   {
     // integrate LinT
     for (int j = 0; j < nrow; ++j)
@@ -11330,7 +11337,7 @@ void inline CONTACT::Integrator::GP_3D_TE_Master_Lin(int& iter, MORTAR::Element&
   //------------------------------------------------------------
   //------------------------------------------------------------
   //------------------------------------------------------------
-  else if (WearShapeFcn() == INPAR::WEAR::wear_shape_dual)
+  else if (wear_shape_fcn() == INPAR::WEAR::wear_shape_dual)
   {
     // integrate LinT
     for (int j = 0; j < nrow; ++j)
@@ -11454,7 +11461,7 @@ void inline CONTACT::Integrator::GP_3D_TE_Master_Lin(int& iter, MORTAR::Element&
 /*----------------------------------------------------------------------*
  |  Compute entries for weighted slip increment at GP        farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::Integrator::GP_2D_SlipIncr(MORTAR::Element& sele, MORTAR::Element& mele,
+void inline CONTACT::Integrator::gp_2_d_slip_incr(MORTAR::Element& sele, MORTAR::Element& mele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& mval,
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseMatrix& sderiv,
     CORE::LINALG::SerialDenseMatrix& mderiv, double& jac, double& wgt, double* jumpvalv,
@@ -11625,7 +11632,7 @@ void inline CONTACT::Integrator::GP_2D_SlipIncr(MORTAR::Element& sele, MORTAR::E
 /*----------------------------------------------------------------------*
  |  Compute entries for slip increment at GP                 farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::Integrator::GP_3D_SlipIncr(MORTAR::Element& sele, MORTAR::Element& mele,
+void inline CONTACT::Integrator::gp_3_d_slip_incr(MORTAR::Element& sele, MORTAR::Element& mele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& mval,
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseMatrix& sderiv,
     CORE::LINALG::SerialDenseMatrix& mderiv, double& jac, double& wgt, double* jumpvalv,
@@ -12004,7 +12011,7 @@ void inline CONTACT::Integrator::GP_3D_SlipIncr(MORTAR::Element& sele, MORTAR::E
 /*----------------------------------------------------------------------*
  |  Compute slipincr lin at GP                               farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::Integrator::GP_2D_SlipIncr_Lin(int& iter, MORTAR::Element& sele,
+void inline CONTACT::Integrator::gp_2_d_slip_incr_lin(int& iter, MORTAR::Element& sele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& jac,
     double& wgt, double* jumpvalv, const std::vector<CORE::GEN::Pairedvector<int, double>>& dsxigp,
@@ -12027,7 +12034,7 @@ void inline CONTACT::Integrator::GP_2D_SlipIncr_Lin(int& iter, MORTAR::Element& 
   std::map<int, double>& djumpmap = snode->FriData().GetDerivVarJump()[0];
 
   // (1) Lin(Phi) - dual shape functions
-  if (ShapeFcn() == INPAR::MORTAR::shape_dual)
+  if (shape_fcn() == INPAR::MORTAR::shape_dual)
   {
     for (int m = 0; m < nrow; ++m)
     {
@@ -12058,7 +12065,7 @@ void inline CONTACT::Integrator::GP_2D_SlipIncr_Lin(int& iter, MORTAR::Element& 
 /*----------------------------------------------------------------------*
  |  Compute slipincr lin at   GP                             farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::Integrator::GP_3D_SlipIncr_Lin(int& iter, MORTAR::Element& sele,
+void inline CONTACT::Integrator::gp_3_d_slip_incr_lin(int& iter, MORTAR::Element& sele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& jac,
     double& wgt, double* jumpvalv, const CORE::GEN::Pairedvector<int, double>& jacintcellmap,
@@ -12085,7 +12092,7 @@ void inline CONTACT::Integrator::GP_3D_SlipIncr_Lin(int& iter, MORTAR::Element& 
   double fac2 = 0.0;
 
   // (1) Lin(Phi) - dual shape functions
-  if (ShapeFcn() == INPAR::MORTAR::shape_dual)
+  if (shape_fcn() == INPAR::MORTAR::shape_dual)
   {
     for (int m = 0; m < nrow; ++m)
     {
@@ -12141,7 +12148,7 @@ void inline CONTACT::Integrator::GP_3D_SlipIncr_Lin(int& iter, MORTAR::Element& 
 /*----------------------------------------------------------------------*
  |  Lin wear for impl. algor.                                farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::Integrator::GP_2D_Wear_Lin(int& iter, MORTAR::Element& sele,
+void inline CONTACT::Integrator::gp_2_d_wear_lin(int& iter, MORTAR::Element& sele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& jac,
     double* gpn, double& wgt, double& wearval, double* jumpval,
@@ -12165,7 +12172,7 @@ void inline CONTACT::Integrator::GP_2D_Wear_Lin(int& iter, MORTAR::Element& sele
 
   std::map<int, double>& dwmap = cnode->Data().GetDerivW();
 
-  if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+  if (shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
   {
     // (1) Lin(Phi) - dual shape functions resulting from weighting the wear
     // we use std. shape functions for shape_petrovgalerkin
@@ -12186,7 +12193,7 @@ void inline CONTACT::Integrator::GP_2D_Wear_Lin(int& iter, MORTAR::Element& sele
   else  // no petrov_galerkin
   {
     // (1) Lin(Phi) - dual shape functions resulting from weighting the wear
-    if (ShapeFcn() == INPAR::MORTAR::shape_dual)
+    if (shape_fcn() == INPAR::MORTAR::shape_dual)
     {
       for (int m = 0; m < nrow; ++m)
       {
@@ -12221,7 +12228,7 @@ void inline CONTACT::Integrator::GP_2D_Wear_Lin(int& iter, MORTAR::Element& sele
   {
     MORTAR::Node* wearnode = dynamic_cast<MORTAR::Node*>(snodes[bl]);
 
-    if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+    if (shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
     {
       dwlmmap[wearnode->Dofs()[0]] +=
           wcoeff * sval[iter] * jac * wgt * abs(jumpval[0]) * gpn[0] * lmval[bl];
@@ -12243,7 +12250,7 @@ void inline CONTACT::Integrator::GP_2D_Wear_Lin(int& iter, MORTAR::Element& sele
 /*----------------------------------------------------------------------*
  |  Lin wear for impl. algor.                                farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::Integrator::GP_3D_Wear_Lin(int& iter, MORTAR::Element& sele,
+void inline CONTACT::Integrator::gp_3_d_wear_lin(int& iter, MORTAR::Element& sele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& jac,
     double* gpn, double& wgt, double& wearval, double* jumpval,
@@ -12266,7 +12273,7 @@ void inline CONTACT::Integrator::GP_3D_Wear_Lin(int& iter, MORTAR::Element& sele
   // get the corresponding map as a reference
   std::map<int, double>& dwmap = cnode->Data().GetDerivW();
 
-  if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+  if (shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
   {
     // (1) Lin(Phi) - dual shape functions resulting from weighting the wear
     // --
@@ -12290,7 +12297,7 @@ void inline CONTACT::Integrator::GP_3D_Wear_Lin(int& iter, MORTAR::Element& sele
   else  // no pg
   {
     // (1) Lin(Phi) - dual shape functions resulting from weighting the wear
-    if (ShapeFcn() == INPAR::MORTAR::shape_dual)
+    if (shape_fcn() == INPAR::MORTAR::shape_dual)
     {
       for (int m = 0; m < nrow; ++m)
       {
@@ -12329,7 +12336,7 @@ void inline CONTACT::Integrator::GP_3D_Wear_Lin(int& iter, MORTAR::Element& sele
   {
     MORTAR::Node* wearnode = dynamic_cast<MORTAR::Node*>(snodes[bl]);
 
-    if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+    if (shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
     {
       dwlmmap[wearnode->Dofs()[0]] +=
           wearcoeff_ * sval[iter] * jac * wgt * abs(jumpval[0]) * gpn[0] * lmval[bl];
@@ -12356,7 +12363,7 @@ void inline CONTACT::Integrator::GP_3D_Wear_Lin(int& iter, MORTAR::Element& sele
 /*----------------------------------------------------------------------*
  |  Compute entries for poro normal coupling condition      07/14 ager  |
  *----------------------------------------------------------------------*/
-void inline CONTACT::Integrator::GP_NCOUP_DERIV(MORTAR::Element& sele, MORTAR::Element& mele,
+void inline CONTACT::Integrator::gp_ncoup_deriv(MORTAR::Element& sele, MORTAR::Element& mele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& mval,
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseMatrix& sderiv,
     CORE::LINALG::SerialDenseMatrix& mderiv, double* ncoup, double* gpn, double& jac, double& wgt,
@@ -12518,7 +12525,7 @@ void inline CONTACT::Integrator::GP_NCOUP_DERIV(MORTAR::Element& sele, MORTAR::E
 
       double prod = 0.0;
       // Petrov-Galerkin approach (dual LM for D/M but standard LM for normal coupling)
-      if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) prod = sval[j] * ncoup[0] * jac * wgt;
+      if (shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin) prod = sval[j] * ncoup[0] * jac * wgt;
       // usual standard or dual LM approach
       else
         prod = lmval[j] * ncoup[0] * jac * wgt;
@@ -12707,7 +12714,7 @@ void inline CONTACT::Integrator::GP_NCOUP_DERIV(MORTAR::Element& sele, MORTAR::E
  |  Do lin. entries for weighted normal coupling condition at GP     ager 06/14|
  |  modified by h.Willmann 2015                                                |
  *----------------------------------------------------------------------------*/
-void inline CONTACT::Integrator::GP_NCOUP_LIN(int& iter, MORTAR::Element& sele,
+void inline CONTACT::Integrator::gp_ncoup_lin(int& iter, MORTAR::Element& sele,
     MORTAR::Element& mele, CORE::LINALG::SerialDenseVector& sval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -12731,7 +12738,7 @@ void inline CONTACT::Integrator::GP_NCOUP_LIN(int& iter, MORTAR::Element& sele,
   // DRT::Node** mnodes = mele.Nodes();
 
   CONTACT::Node* mymrtrnode = dynamic_cast<CONTACT::Node*>(snodes[iter]);
-  if (!mymrtrnode) FOUR_C_THROW("CONTACT::Integrator::GP_NCOUP_LIN: mymrtnode: Null pointer!");
+  if (!mymrtrnode) FOUR_C_THROW("CONTACT::Integrator::gp_ncoup_lin: mymrtnode: Null pointer!");
 
   double fac = 0.0;
 
@@ -12742,7 +12749,7 @@ void inline CONTACT::Integrator::GP_NCOUP_LIN(int& iter, MORTAR::Element& sele,
   // meshtying conditions share the same input lines
   //(for contact they still share the input lines but shape_petrovgalerkin is allowed for
   // skeleton/structural contact) shape_petrovgalerkin
-  if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+  if (shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
   {
     // (1) Lin(Phi) - does not exist here for Petrov-Galerkin approach
 
@@ -12808,7 +12815,7 @@ void inline CONTACT::Integrator::GP_NCOUP_LIN(int& iter, MORTAR::Element& sele,
   // get the corresponding map as a reference
   std::map<int, double>& dvelncoupmap = mymrtrnode->PoroData().GetVelDerivnCoup();
   // switch if Petrov-Galerkin approach for LM is applied
-  if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+  if (shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
   {
     // (3) Lin(g) - normal coupling condition function
     fac = wgt * sval[iter] * jac;
@@ -12831,7 +12838,7 @@ void inline CONTACT::Integrator::GP_NCOUP_LIN(int& iter, MORTAR::Element& sele,
   // get the corresponding map as a reference
   std::map<int, double>& dpresncoupmap = mymrtrnode->PoroData().GetPresDerivnCoup();
   // switch if Petrov-Galerkin approach for LM is applied
-  if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+  if (shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
   {
     // (3) Lin(g) - normal coupling condition function
     fac = wgt * sval[iter] * jac;

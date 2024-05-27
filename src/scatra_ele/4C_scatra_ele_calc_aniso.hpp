@@ -54,7 +54,7 @@ namespace DRT
       /*========================================================================*/
 
       //! evaluate material
-      void Materials(
+      void materials(
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
@@ -65,7 +65,7 @@ namespace DRT
           ) override;
 
       //! material ScaTra
-      void MatScaTraAniso(
+      void mat_sca_tra_aniso(
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
@@ -127,8 +127,8 @@ namespace DRT
       };
 
       //! calculation of diffusive element matrix
-      void CalcMatDiff(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                                         //!< index of current scalar
+      void calc_mat_diff(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                                           //!< index of current scalar
           const double timefacfac  //!< domain-integration factor times time-integration factor
           ) override;
 

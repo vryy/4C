@@ -136,7 +136,7 @@ void ADAPTER::StructureTimeAda::setup_time_ada()
     timeinitial_ = stm_->TimeOld();
     timestepinitial_ = stm_->StepOld();
     IO::DiscretizationReader ioreader(
-        stm_->Discretization(), GLOBAL::Problem::Instance()->InputControlFile(), timestepinitial_);
+        stm_->discretization(), GLOBAL::Problem::Instance()->InputControlFile(), timestepinitial_);
     stepsizepre_ = ioreader.ReadDouble("next_delta_time");
     time_ = timeinitial_;
 
@@ -154,7 +154,7 @@ void ADAPTER::StructureTimeAda::setup_time_ada()
 void ADAPTER::StructureTimeAda::read_restart(int step)
 {
   setup_time_ada();
-  SetupAuxiliar();
+  setup_auxiliar();
 }
 
 /*----------------------------------------------------------------------*/
@@ -164,7 +164,7 @@ int ADAPTER::StructureTimeAda::Integrate()
   // error checking variables
   INPAR::STR::ConvergenceStatus convergencestatus = INPAR::STR::conv_success;
 
-  int myrank = stm_->Discretization()->Comm().MyPID();
+  int myrank = stm_->discretization()->Comm().MyPID();
 
   // finalize initialization
   // (only relevant if an auxiliary time integrator is used)
@@ -366,7 +366,7 @@ void ADAPTER::StructureTimeAda::size_for_output()
 /* Output action */
 void ADAPTER::StructureTimeAda::Output(bool forced_writerestart)
 {
-  STR::TIMINT::BaseDataIO& dataio = stm_->DataIO();
+  STR::TIMINT::BaseDataIO& dataio = stm_->data_io();
   Teuchos::RCP<IO::DiscretizationWriter> output_ptr = dataio.GetOutputPtr();
 
   StructureWrapper::Output(forced_writerestart);
@@ -378,7 +378,7 @@ void ADAPTER::StructureTimeAda::Output(bool forced_writerestart)
 void ADAPTER::StructureTimeAda::evaluate_local_error_dis()
 {
   const STR::TIMINT::Base& sti = *stm_;
-  const auto& gstate = sti.DataGlobalState();
+  const auto& gstate = sti.data_global_state();
 
   if (MethodAdaptDis() == ada_orderequal)
   {
@@ -409,7 +409,7 @@ void ADAPTER::StructureTimeAda::indicate(bool& accepted, double& stpsiznew)
   accepted = (norm < errtol_);
 
   // debug
-  int myrank = stm_->Discretization()->Comm().MyPID();
+  int myrank = stm_->discretization()->Comm().MyPID();
   if (myrank == 0)
   {
     std::cout << "LocErrNorm " << std::scientific << norm << ", LocErrTol " << errtol_
@@ -449,7 +449,7 @@ double ADAPTER::StructureTimeAda::calculate_dt(const double norm)
     sizrat = sizeratiomax_ / sizeratioscale_;
 
   // debug
-  int myrank = stm_->Discretization()->Comm().MyPID();
+  int myrank = stm_->discretization()->Comm().MyPID();
   if (myrank == 0)
   {
     printf("sizrat %g, stepsize %g, stepsizepre %g\n", sizrat, stepsize_, stepsizepre_);
@@ -543,7 +543,7 @@ void ADAPTER::StructureTimeAda::update_period()
 INPAR::STR::ConvergenceStatus ADAPTER::StructureTimeAda::PerformErrorAction(
     const INPAR::STR::DivContAct& action, double& stepsizenew)
 {
-  int myrank = stm_->Discretization()->Comm().MyPID();
+  int myrank = stm_->discretization()->Comm().MyPID();
 
   // here we handle how we deal with a failed Newton-Raphson, basically:
   // + stop -> error

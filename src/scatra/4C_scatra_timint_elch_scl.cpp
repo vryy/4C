@@ -99,15 +99,15 @@ void SCATRA::ScaTraTimIntElchSCL::Setup()
   micro_timint_->Init();
 
   auto dofset_vel = Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(3, 0, 0, true));
-  if (micro_timint_->ScaTraField()->Discretization()->AddDofSet(dofset_vel) != 1)
+  if (micro_timint_->ScaTraField()->discretization()->AddDofSet(dofset_vel) != 1)
     FOUR_C_THROW("unexpected number of dofsets in the scatra micro discretization");
   MicroScaTraField()->set_number_of_dof_set_velocity(1);
 
-  MicroScaTraField()->Discretization()->fill_complete();
+  MicroScaTraField()->discretization()->fill_complete();
 
   redistribute_micro_discretization();
 
-  MicroScaTraField()->SetVelocityField();
+  MicroScaTraField()->set_velocity_field();
 
   micro_timint_->Setup();
 
@@ -188,7 +188,7 @@ void SCATRA::ScaTraTimIntElchSCL::Setup()
       blocksmootherparamsscatra.sublist("Belos Parameters");
       blocksmootherparamsscatra.sublist("MueLu Parameters");
 
-      Discretization()->compute_null_space_if_necessary(blocksmootherparamsscatra);
+      discretization()->compute_null_space_if_necessary(blocksmootherparamsscatra);
 
       std::ostringstream microblockstr;
       microblockstr << 2;
@@ -196,7 +196,7 @@ void SCATRA::ScaTraTimIntElchSCL::Setup()
           solver_elch_scl_->Params().sublist("Inverse" + microblockstr.str());
       blocksmootherparamsmicro.sublist("Belos Parameters");
       blocksmootherparamsmicro.sublist("MueLu Parameters");
-      MicroScaTraField()->Discretization()->compute_null_space_if_necessary(
+      MicroScaTraField()->discretization()->compute_null_space_if_necessary(
           blocksmootherparamsmicro);
 
       break;
@@ -252,11 +252,11 @@ void SCATRA::ScaTraTimIntElchSCL::check_and_write_output_and_restart()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchSCL::NonlinearSolve()
+void SCATRA::ScaTraTimIntElchSCL::nonlinear_solve()
 {
   // safety checks
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   // time measurement: nonlinear iteration
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:   + nonlin. iteration/lin. solve");
@@ -452,10 +452,10 @@ void SCATRA::ScaTraTimIntElchSCL::write_coupling_to_csv(
           file.close();
         }
 
-        if (DRT::UTILS::IsNodeGIDOnThisProc(*MicroScaTraField()->Discretization(), mirco_node_gid))
+        if (DRT::UTILS::IsNodeGIDOnThisProc(*MicroScaTraField()->discretization(), mirco_node_gid))
         {
           const auto& micro_coords =
-              MicroScaTraField()->Discretization()->gNode(mirco_node_gid)->X();
+              MicroScaTraField()->discretization()->gNode(mirco_node_gid)->X();
 
           file.open(file_name_coords, std::fstream::app);
           file << std::setprecision(16) << std::scientific;
@@ -591,12 +591,12 @@ void SCATRA::ScaTraTimIntElchSCL::setup_coupling()
 {
   TEUCHOS_FUNC_TIME_MONITOR("SCL: setup");
 
-  auto microdis = MicroScaTraField()->Discretization();
+  auto microdis = MicroScaTraField()->discretization();
   const auto& comm = microdis->Comm();
 
   // get coupling conditions
   std::vector<CORE::Conditions::Condition*> macro_coupling_conditions;
-  Discretization()->GetCondition("S2ISCLCoupling", macro_coupling_conditions);
+  discretization()->GetCondition("S2ISCLCoupling", macro_coupling_conditions);
 
   // get all slave and master nodes on this proc from macro coupling condition
   std::vector<int> my_macro_slave_node_gids;
@@ -1049,7 +1049,7 @@ void SCATRA::ScaTraTimIntElchSCL::update_iter_micro_macro()
  *----------------------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElchSCL::redistribute_micro_discretization()
 {
-  auto micro_dis = MicroScaTraField()->Discretization();
+  auto micro_dis = MicroScaTraField()->discretization();
   const int min_node_gid = micro_dis->NodeRowMap()->MinAllGID();
   const int num_nodes = micro_dis->NodeRowMap()->NumGlobalElements();
   const int num_proc = micro_dis->Comm().NumProc();

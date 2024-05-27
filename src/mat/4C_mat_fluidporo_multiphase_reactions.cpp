@@ -52,12 +52,12 @@ MAT::PAR::FluidPoroMultiPhaseReactions::FluidPoroMultiPhaseReactions(
             "TOTALNUMDOF in MAT_FluidPoroSingleReaction does not correspond to NUMMAT in "
             "MAT_FluidPoroMultiPhaseReactions");
 
-      MaterialMapWrite()->insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(reacid, mat));
+      material_map_write()->insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(reacid, mat));
     }
   }
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FluidPoroMultiPhaseReactions::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FluidPoroMultiPhaseReactions::create_material()
 {
   return Teuchos::rcp(new MAT::FluidPoroMultiPhaseReactions(this));
 }
@@ -112,7 +112,7 @@ void MAT::FluidPoroMultiPhaseReactions::setup_mat_map()
     const int reacid = *m;
     Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(reacid);
     if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
-    MaterialMapWrite()->insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(reacid, mat));
+    material_map_write()->insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(reacid, mat));
   }
   return;
 }

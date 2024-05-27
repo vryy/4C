@@ -114,7 +114,7 @@ int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Evaluate(DRT::Element* 
   // calculate element coefficient matrix and rhs
   //--------------------------------------------------------------------------------
 
-  Sysmat(ele, elemat1_epetra, elevec1_epetra);
+  sysmat(ele, elemat1_epetra, elevec1_epetra);
 
   return 0;
 }
@@ -153,7 +153,7 @@ int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateEHLMon(DRT::Ele
   // calculate element off-diagonal-matrix for height linearization in monolithic EHL
   //--------------------------------------------------------------------------------
 
-  MatrixforEHLMon(ele, elemat1_epetra, elemat2_epetra);
+  matrixfor_ehl_mon(ele, elemat1_epetra, elemat2_epetra);
 
   return 0;
 }
@@ -325,7 +325,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::extract_element_and_no
 |  calculate system matrix and rhs (public)                 wirtz 10/15 |
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Sysmat(
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::sysmat(
     DRT::Element* ele,                      ///< the element whose matrix is calculated
     CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix to calculate
     CORE::LINALG::SerialDenseVector& erhs   ///< element rhs to calculate
@@ -374,7 +374,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Sysmat(
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
-    GetMaterialParams(ele, densn, densnp, densam, visc, dvisc, iquad);
+    get_material_params(ele, densn, densnp, densam, visc, dvisc, iquad);
 
     // integration factors
     const double timefacfac = fac;  // works only for stationary problems!
@@ -402,44 +402,44 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Sysmat(
 
       // 1) element matrix
       // 1.1) calculation of Poiseuille contribution of element matrix -> Kpp
-      CalcMatPsl(emat, timefacfac, visc, heightint, pflowfac_);
+      calc_mat_psl(emat, timefacfac, visc, heightint, pflowfac_);
       // CalcMatPDVis(emat,timefacfac,visc, heightint_);
       // 2) rhs matrix
       // 2.0) calculation of shear contribution to RHS matrix
-      CalcRhsShear(erhs, rhsfac, relvel, sflowfac_);
+      calc_rhs_shear(erhs, rhsfac, relvel, sflowfac_);
 
       // 2.1) calculation of Poiseuille contribution of rhs matrix
 
-      CalcRhsPsl(erhs, rhsfac, visc, heightint, pflowfac_);
+      calc_rhs_psl(erhs, rhsfac, visc, heightint, pflowfac_);
     }
     else
     {
       // 1) element matrix
       // 1.1) calculation of Poiseuille contribution of element matrix
 
-      CalcMatPsl(emat, timefacfac, visc, heightint);
+      calc_mat_psl(emat, timefacfac, visc, heightint);
 
       // 1.2) calculation of Poiseuille-Pressure-dependent-viscosity contribution of element matrix
 
-      CalcMatPslVis(emat, timefacfac, visc, heightint, dvisc);
+      calc_mat_psl_vis(emat, timefacfac, visc, heightint, dvisc);
 
       // 2) rhs matrix
       // 2.1) calculation of Poiseuille contribution of rhs matrix
 
-      CalcRhsPsl(erhs, rhsfac, visc, heightint);
+      calc_rhs_psl(erhs, rhsfac, visc, heightint);
     }
     // 2.2) calculation of Wedge contribution of rhs matrix
 
-    CalcRhsWdg(erhs, rhsfac, heightint, avrvel);
+    calc_rhs_wdg(erhs, rhsfac, heightint, avrvel);
 
     // 2.3) calculation of squeeze contribution to RHS matrix
-    if (lubricationpara_->AddSqz()) CalcRhsSqz(erhs, rhsfac, heightdotint);
+    if (lubricationpara_->AddSqz()) calc_rhs_sqz(erhs, rhsfac, heightdotint);
 
   }  // end loop Gauss points
 }
 
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::MatrixforEHLMon(
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::matrixfor_ehl_mon(
     DRT::Element* ele,  ///< the element whose matrix is calculated
     CORE::LINALG::SerialDenseMatrix& ematheight, CORE::LINALG::SerialDenseMatrix& ematvel)
 {
@@ -482,7 +482,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::MatrixforEHLMon(
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
-    GetMaterialParams(ele, densn, densnp, densam, visc, dvisc, iquad);
+    get_material_params(ele, densn, densnp, densam, visc, dvisc, iquad);
 
     const CORE::LINALG::Matrix<nsd_, 1>& gradpre = lubricationvarmanager_->GradPre();
     const double roughness = lubricationpara_->RoughnessDeviation();
@@ -668,7 +668,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_s_flow_fac_at_int
  |  get the material constants  (private)                     wirtz 10/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::GetMaterialParams(
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::get_material_params(
     const DRT::Element* ele,  //!< the element we are dealing with
     double& densn,            //!< density at t_(n)
     double& densnp,           //!< density at t_(n+1) or t_(n+alpha_F)
@@ -681,16 +681,16 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::GetMaterialParams(
   // get the material
   Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
 
-  Materials(material, densn, densnp, densam, visc, dvisc, iquad);
+  materials(material, densn, densnp, densam, visc, dvisc, iquad);
 
   return;
-}  // LubricationEleCalc::GetMaterialParams
+}  // LubricationEleCalc::get_material_params
 
 /*----------------------------------------------------------------------*
  |  evaluate single material  (protected)                   wirtz 10/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Materials(
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::materials(
     const Teuchos::RCP<CORE::MAT::Material> material,  //!< pointer to current material
     double& densn,                                     //!< density at t_(n)
     double& densnp,                                    //!< density at t_(n+1) or t_(n+alpha_F)
@@ -704,7 +704,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Materials(
   switch (material->MaterialType())
   {
     case CORE::Materials::m_lubrication:
-      MatLubrication(material, densn, densnp, densam, visc, dvisc, iquad);
+      mat_lubrication(material, densn, densnp, densam, visc, dvisc, iquad);
       break;
     default:
       FOUR_C_THROW("Material type %i is not supported", material->MaterialType());
@@ -717,7 +717,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Materials(
  |  Material Lubrication                                    wirtz 10/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::MatLubrication(
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::mat_lubrication(
     const Teuchos::RCP<CORE::MAT::Material> material,  //!< pointer to current material
     double& densn,                                     //!< density at t_(n)
     double& densnp,                                    //!< density at t_(n+1) or t_(n+alpha_F)
@@ -742,7 +742,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::MatLubrication(
 
   // viscmanager_->SetIsotropicVisc(visc);
   return;
-}  // LubricationEleCalc<distype>::MatLubrication
+}  // LubricationEleCalc<distype>::mat_lubrication
 
 /*------------------------------------------------------------------- *
  |  calculate linearization of the Laplacian (weak form)
@@ -823,7 +823,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::get_laplacian_weak_for
  |  calculation of Poiseuille element matrix
  *--------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcMatPsl(
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_mat_psl(
     CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac, const double viscosity,
     const double height)
 {
@@ -845,7 +845,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcMatPsl(
  | contribution of pressure dependent viscosity                    |
  *-----------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcMatPslVis(
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_mat_psl_vis(
     CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac, const double viscosity,
     const double height, const double dviscosity_dp)
 {
@@ -873,7 +873,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcMatPslVis(
  |  calculation of Poiseuille element matrix           Faraji  02/19  |
  *--------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcMatPsl(
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_mat_psl(
     CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac, const double viscosity,
     const double height, const CORE::LINALG::Matrix<nsd_, 1> pflowfac)
 {
@@ -898,7 +898,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcMatPsl(
  |  calculation of Poiseuille rhs matrix
  *--------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsPsl(
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_rhs_psl(
     CORE::LINALG::SerialDenseVector& erhs, const double rhsfac, const double viscosity,
     const double height)
 {
@@ -920,7 +920,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsPsl(
  |  calculation of Poiseuille rhs matrix              Faraji   02/19  |
  *--------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsPsl(
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_rhs_psl(
     CORE::LINALG::SerialDenseVector& erhs, const double rhsfac, const double viscosity,
     const double height, const CORE::LINALG::Matrix<nsd_, 1> pflowfac)
 {
@@ -944,7 +944,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsPsl(
  |  calculation of Wedge rhs matrix
  *--------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsWdg(
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_rhs_wdg(
     CORE::LINALG::SerialDenseVector& erhs, const double rhsfac, const double height,
     const CORE::LINALG::Matrix<nsd_, 1> velocity)
 {
@@ -968,7 +968,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsWdg(
  |  calculation of Squeeze rhs matrix                         Faraji  |
  *--------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsSqz(
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_rhs_sqz(
     CORE::LINALG::SerialDenseVector& erhs, const double rhsfac, const double heightdot)
 {
   if (!lubricationpara_->AddSqz()) FOUR_C_THROW("You chosed NOT to add the squeeze term! WATCHOUT");
@@ -986,7 +986,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsSqz(
  |  calculation of shear rhs matrix                     Faraji 02/19  |
  *--------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsShear(
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_rhs_shear(
     CORE::LINALG::SerialDenseVector& erhs, const double rhsfac,
     const CORE::LINALG::Matrix<nsd_, 1> velocity, const double sflowfac)
 {
@@ -1224,7 +1224,7 @@ int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateService(DRT::El
   const LUBRICATION::Action action = CORE::UTILS::GetAsEnum<LUBRICATION::Action>(params, "action");
 
   // evaluate action
-  EvaluateAction(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
+  evaluate_action(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
       elevec1_epetra, elevec2_epetra, elevec3_epetra);
 
   return 0;
@@ -1234,7 +1234,7 @@ int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateService(DRT::El
  | evaluate action                                          wirtz 10/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateAction(DRT::Element* ele,
+int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::evaluate_action(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const LUBRICATION::Action& action, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -1275,7 +1275,7 @@ int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateAction(DRT::Ele
       CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*prenp, eprenp_, lm);
 
       // calculate pressures and domain integral
-      CalculatePressures(ele, elevec1_epetra, inverting);
+      calculate_pressures(ele, elevec1_epetra, inverting);
 
       break;
     }
@@ -1412,7 +1412,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::cal_error_compared_to_
 |  calculate pressure(s) and domain integral               wirtz 10/15 |
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalculatePressures(
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calculate_pressures(
     const DRT::Element* ele, CORE::LINALG::SerialDenseVector& pressures, const bool inverting)
 {
   // integration points and weights
@@ -1451,7 +1451,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalculatePressures(
   }  // loop over integration points
 
   return;
-}  // LubricationEleCalc::CalculatePressures
+}  // LubricationEleCalc::calculate_pressures
 
 // template classes
 

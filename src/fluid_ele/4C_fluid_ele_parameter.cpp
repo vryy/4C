@@ -560,7 +560,7 @@ void DRT::ELEMENTS::FluidEleParameter::set_element_turbulence_parameters(
 
       // In the case of dynamic Smagorinsky:
       // Cs_ is calculated from Cs_sqrt_delta to compare it with the standard
-      // it is stored in Cs_ after its calculation in CalcSubgrVisc
+      // it is stored in Cs_ after its calculation in calc_subgr_visc
       Cs_ = 0.0;
       Cs_averaged_ =
           CORE::UTILS::IntegralValue<int>(turbmodelparamssgvisc, "C_SMAGORINSKY_AVERAGED");

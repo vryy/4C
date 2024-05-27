@@ -151,7 +151,7 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      inline int NumDofPerElement() const override { return 0; }
+      inline int num_dof_per_element() const override { return 0; }
 
       /*!
       \brief Print this element
@@ -363,8 +363,8 @@ namespace DRT
       \brief Submethod to compute interfacial area and its first and second
              derivatives w.r.t. the displacements (this is needed for surface energy problems)
       */
-      void ComputeAreaDeriv(const CORE::LINALG::SerialDenseMatrix& x,  ///< spatial configuration
-          const int numnode,                                           ///< number of nodes
+      void compute_area_deriv(const CORE::LINALG::SerialDenseMatrix& x,  ///< spatial configuration
+          const int numnode,                                             ///< number of nodes
           const int ndof,  ///< number of degrees of freedom
           double& A,       ///< area
           const Teuchos::RCP<CORE::LINALG::SerialDenseVector>& Adiff,  ///< first derivative
@@ -385,7 +385,7 @@ namespace DRT
 
       /// Submethod to compute normal vectors at nodes (for reference configuration) which can be
       /// assembled (i.e., added) to obtain averaged nodal normal vectors
-      void BuildNormalsAtNodes(CORE::LINALG::SerialDenseVector& nodenormals,
+      void build_normals_at_nodes(CORE::LINALG::SerialDenseVector& nodenormals,
           const std::vector<double>& mydisp, bool refconfig);
 
       //! Submethod to compute surface porosity
@@ -396,7 +396,7 @@ namespace DRT
       //! Private Constructor to be called from StructuralSurfaceType
       explicit StructuralSurface(int id, int owner);
 
-      //! Set Discretization Type of the Surface Element
+      //! Set discretization Type of the Surface Element
       void set_distype();
 
       //! Set Gaussrule dependent on shape of the structural surface

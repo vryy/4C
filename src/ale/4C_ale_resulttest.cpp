@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 ALE::AleResultTest::AleResultTest(ALE::Ale& ale)
-    : CORE::UTILS::ResultTest("ALE"), aledis_(ale.Discretization()), dispnp_(ale.Dispnp())
+    : CORE::UTILS::ResultTest("ALE"), aledis_(ale.discretization()), dispnp_(ale.Dispnp())
 {
 }
 
@@ -77,7 +77,7 @@ void ALE::AleResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& t
         FOUR_C_THROW("Quantity '%s' not supported in ALE testing", position.c_str());
       }
 
-      nerr += CompareValues(result, "NODE", res);
+      nerr += compare_values(result, "NODE", res);
       test_count++;
     }
   }

@@ -28,15 +28,15 @@ ADAPTER::PASIStructureWrapper::PASIStructureWrapper(Teuchos::RCP<Structure> stru
   // set-up PASI interface
   interface_ = Teuchos::rcp(new STR::MapExtractor);
 
-  interface_->Setup(*Discretization(), *Discretization()->dof_row_map());
+  interface_->Setup(*discretization(), *discretization()->dof_row_map());
 }
 
 void ADAPTER::PASIStructureWrapper::ApplyInterfaceForce(Teuchos::RCP<const Epetra_Vector> intfforce)
 {
-  PASIModelEvaluator()->get_interface_force_np_ptr()->PutScalar(0.0);
+  pasi_model_evaluator()->get_interface_force_np_ptr()->PutScalar(0.0);
 
   if (intfforce != Teuchos::null)
-    interface_->AddPASICondVector(intfforce, PASIModelEvaluator()->get_interface_force_np_ptr());
+    interface_->AddPASICondVector(intfforce, pasi_model_evaluator()->get_interface_force_np_ptr());
 }
 
 FOUR_C_NAMESPACE_CLOSE

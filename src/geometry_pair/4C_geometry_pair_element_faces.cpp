@@ -588,7 +588,7 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
   {
     for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
       xi_surface(i_dim) = nodal_coordinates(i_dim, i_node);
-    XiFaceToXiVolume(xi_surface, xi_volume);
+    xi_face_to_xi_volume(xi_surface, xi_volume);
 
     EvaluatePosition<surface>(xi_surface, surface_position, r_surface);
     EvaluatePosition<volume>(xi_volume, volume_position, r_volume);
@@ -635,7 +635,7 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
  */
 template <typename surface, typename scalar_type, typename volume>
 void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
-    volume>::XiFaceToXiVolume(const CORE::LINALG::Matrix<2, 1, double>& xi_face,
+    volume>::xi_face_to_xi_volume(const CORE::LINALG::Matrix<2, 1, double>& xi_face,
     CORE::LINALG::Matrix<3, 1, double>& xi_volume) const
 {
   xi_volume(face_to_volume_coordinate_axis_map_(0)) =

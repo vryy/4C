@@ -154,7 +154,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::MeshInitialization
   //**********************************************************************
   // fill Xmaster first
   Teuchos::RCP<Epetra_Vector> Xmaster = CORE::LINALG::CreateVector(*gmdofrowmap_, true);
-  AssembleCoords("master", true, Xmaster);
+  assemble_coords("master", true, Xmaster);
 
   //**********************************************************************
   // (2) solve for modified slave positions on global level

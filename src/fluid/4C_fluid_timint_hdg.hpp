@@ -52,7 +52,7 @@ namespace FLD
     \brief do explicit predictor step to start nonlinear iteration from
            a better initial value
     */
-    void ExplicitPredictor() override;
+    void explicit_predictor() override;
 
     /*!
     \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
@@ -187,7 +187,7 @@ namespace FLD
     \brief Initialize forcing
 
     */
-    void InitForcing() override;
+    void init_forcing() override;
 
    private:
     ///< Print stabilization details to screen. Do nothing here because we do not use stabilization

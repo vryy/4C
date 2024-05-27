@@ -117,7 +117,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
       // !brief enum for mapping between material parameter and entry in the matparams_ vector
       enum Matparamnames

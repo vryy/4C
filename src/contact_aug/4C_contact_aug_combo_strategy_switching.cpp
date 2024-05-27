@@ -52,12 +52,12 @@ CONTACT::AUG::ComboStrategy::Switching::Switching(
     ComboStrategy& combo, const Teuchos::ParameterList& p_combo)
     : combo_(combo), strat_types_(0)
 {
-  GetStrategyTypes(combo_.strategies_, strat_types_);
+  get_strategy_types(combo_.strategies_, strat_types_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::Switching::GetStrategyTypes(
+void CONTACT::AUG::ComboStrategy::Switching::get_strategy_types(
     const plain_strategy_set& strategies, plain_strattype_set& strat_types) const
 {
   for (plain_strategy_set::const_iterator cit = strategies.begin(); cit != strategies.end(); ++cit)
@@ -89,12 +89,12 @@ void CONTACT::AUG::ComboStrategy::Switching::GetStrategyTypes(
 unsigned CONTACT::AUG::ComboStrategy::Switching::Id(
     enum INPAR::CONTACT::SolvingStrategy sol_type) const
 {
-  return FindId(sol_type);
+  return find_id(sol_type);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-unsigned CONTACT::AUG::ComboStrategy::Switching::FindId(
+unsigned CONTACT::AUG::ComboStrategy::Switching::find_id(
     INPAR::CONTACT::SolvingStrategy sol_type) const
 {
   unsigned id = 0;
@@ -128,11 +128,11 @@ CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::PreAsymptoticSwitching(
 
   const enum INPAR::CONTACT::SolvingStrategy preasymptotic =
       CORE::UTILS::IntegralValue<enum INPAR::CONTACT::SolvingStrategy>(p_combo, "STRATEGY_0");
-  preasymptotic_id_ = FindId(preasymptotic);
+  preasymptotic_id_ = find_id(preasymptotic);
 
   const enum INPAR::CONTACT::SolvingStrategy asymptotic =
       CORE::UTILS::IntegralValue<enum INPAR::CONTACT::SolvingStrategy>(p_combo, "STRATEGY_1");
-  asymptotic_id_ = FindId(asymptotic);
+  asymptotic_id_ = find_id(asymptotic);
 }
 
 /*----------------------------------------------------------------------------*
@@ -362,7 +362,7 @@ void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::get_global_sl_ma_activ
 
   Teuchos::RCP<Epetra_Map> imap = Teuchos::null;
 
-  for (const Teuchos::RCP<CONTACT::Interface>& cit : combo_.get().Interfaces())
+  for (const Teuchos::RCP<CONTACT::Interface>& cit : combo_.get().interfaces())
   {
     const CONTACT::AUG::Interface& interface = dynamic_cast<AUG::Interface&>(*cit);
 
@@ -437,7 +437,7 @@ bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::check_penetration(std:
 double CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::get_penetration_bound() const
 {
   double penbound = 1.0e12;
-  for (const Teuchos::RCP<CONTACT::Interface>& cit : combo_.Interfaces())
+  for (const Teuchos::RCP<CONTACT::Interface>& cit : combo_.interfaces())
   {
     const CONTACT::AUG::Interface& interface = dynamic_cast<CONTACT::AUG::Interface&>(*cit);
     penbound = std::min(penbound, interface.PenetrationBound());

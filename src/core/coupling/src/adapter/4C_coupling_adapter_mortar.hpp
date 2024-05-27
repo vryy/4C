@@ -102,7 +102,7 @@ feel free to write your own tailored Setup() method.
      * meshtying
      *  - ALE discretization is Teuchos::null in case of sliding ALE or fluid/scatra meshtying
      */
-    void SetupInterface(
+    void setup_interface(
         const Teuchos::RCP<DRT::Discretization>& masterdis,  ///< master discretization
         const Teuchos::RCP<DRT::Discretization>& slavedis,   ///< slave discretization
         const std::vector<int>& coupleddof,  ///< vector defining coupled degrees of freedom
@@ -287,7 +287,7 @@ feel free to write your own tailored Setup() method.
 
    protected:
     /// Create mortar projection operator \f$P=D{^1}M\f$
-    virtual void CreateP();
+    virtual void create_p();
 
     /*! \brief Check if slave dofs have Dirichlet constraints
      *

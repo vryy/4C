@@ -42,13 +42,13 @@ void FPSI::FpsiBase::redistribute_interface()
         FPSI_UTILS->get_poro_fluid_fluid_interface_map();
 
     FPSI_UTILS->redistribute_interface(problem->GetDis("fluid"), problem->GetDis("porofluid"),
-        "FPSICoupling", *PoroFluid_Fluid_InterfaceMap);
+        "fpsi_coupling", *PoroFluid_Fluid_InterfaceMap);
     FPSI_UTILS->redistribute_interface(problem->GetDis("ale"), problem->GetDis("porofluid"),
-        "FPSICoupling", *PoroFluid_Fluid_InterfaceMap);
+        "fpsi_coupling", *PoroFluid_Fluid_InterfaceMap);
     FPSI_UTILS->redistribute_interface(problem->GetDis("porofluid"), problem->GetDis("fluid"),
-        "FPSICoupling", *Fluid_PoroFluid_InterfaceMap);
+        "fpsi_coupling", *Fluid_PoroFluid_InterfaceMap);
     FPSI_UTILS->redistribute_interface(problem->GetDis("structure"), problem->GetDis("fluid"),
-        "FPSICoupling", *Fluid_PoroFluid_InterfaceMap);
+        "fpsi_coupling", *Fluid_PoroFluid_InterfaceMap);
 
     // Material pointers need to be reset after redistribution.
     POROELAST::UTILS::SetMaterialPointersMatchingGrid(

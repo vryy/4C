@@ -43,17 +43,17 @@ void STR::EXPLICIT::CentrDiff::Setup()
   // ---------------------------------------------------------------------------
   // setup pointers to the force vectors of the global state data container
   // ---------------------------------------------------------------------------
-  finertian_ptr_ = GlobalState().GetFinertialN();
-  finertianp_ptr_ = GlobalState().GetFinertialNp();
+  finertian_ptr_ = global_state().GetFinertialN();
+  finertianp_ptr_ = global_state().GetFinertialNp();
 
-  fviscon_ptr_ = GlobalState().GetFviscoN();
-  fvisconp_ptr_ = GlobalState().GetFviscoNp();
+  fviscon_ptr_ = global_state().GetFviscoN();
+  fvisconp_ptr_ = global_state().GetFviscoNp();
 
   // -------------------------------------------------------------------
   // set initial displacement
   // -------------------------------------------------------------------
   set_initial_displacement(
-      TimInt().GetDataSDyn().GetInitialDisp(), TimInt().GetDataSDyn().StartFuncNo());
+      tim_int().GetDataSDyn().GetInitialDisp(), tim_int().GetDataSDyn().StartFuncNo());
 
   // Has to be set before the post_setup() routine is called!
   issetup_ = true;
@@ -73,7 +73,7 @@ void STR::EXPLICIT::CentrDiff::set_state(const Epetra_Vector& x)
 {
   check_init_setup();
 
-  const double dt = (*GlobalState().GetDeltaTime())[0];
+  const double dt = (*global_state().GetDeltaTime())[0];
   const double dthalf = dt / 2.0;
 
   ModelEval().ResetStepState();
@@ -81,25 +81,25 @@ void STR::EXPLICIT::CentrDiff::set_state(const Epetra_Vector& x)
   // ---------------------------------------------------------------------------
   // new end-point acceleration
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Vector> accnp_ptr = GlobalState().ExtractDisplEntries(x);
-  GlobalState().GetAccNp()->Scale(1.0, *accnp_ptr);
+  Teuchos::RCP<Epetra_Vector> accnp_ptr = global_state().ExtractDisplEntries(x);
+  global_state().GetAccNp()->Scale(1.0, *accnp_ptr);
 
   // ---------------------------------------------------------------------------
   // new half-point velocities
   // ---------------------------------------------------------------------------
-  GlobalState().GetVelNp()->Update(1.0, *GlobalState().GetVelN(), 0.0);
-  GlobalState().GetVelNp()->Update(dthalf, *GlobalState().GetAccN(), 1.0);
+  global_state().GetVelNp()->Update(1.0, *global_state().GetVelN(), 0.0);
+  global_state().GetVelNp()->Update(dthalf, *global_state().GetAccN(), 1.0);
 
   // ---------------------------------------------------------------------------
   // new end-point displacements
   // ---------------------------------------------------------------------------
-  GlobalState().GetDisNp()->Update(1.0, *GlobalState().GetDisN(), 0.0);
-  GlobalState().GetDisNp()->Update(dt, *GlobalState().GetVelNp(), 1.0);
+  global_state().GetDisNp()->Update(1.0, *global_state().GetDisN(), 0.0);
+  global_state().GetDisNp()->Update(dt, *global_state().GetVelNp(), 1.0);
 
   // ---------------------------------------------------------------------------
   // update the elemental state
   // ---------------------------------------------------------------------------
-  ModelEval().UpdateResidual();
+  ModelEval().update_residual();
   ModelEval().RunRecover();
 }
 
@@ -115,14 +115,14 @@ void STR::EXPLICIT::CentrDiff::add_visco_mass_contributions(Epetra_Vector& f) co
  *----------------------------------------------------------------------------*/
 void STR::EXPLICIT::CentrDiff::add_visco_mass_contributions(CORE::LINALG::SparseOperator& jac) const
 {
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptr = GlobalState().ExtractDisplBlock(jac);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptr = global_state().ExtractDisplBlock(jac);
   // set mass matrix
-  stiff_ptr->Add(*GlobalState().GetMassMatrix(), false, 1.0, 0.0);
+  stiff_ptr->Add(*global_state().GetMassMatrix(), false, 1.0, 0.0);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::CentrDiff::WriteRestart(
+void STR::EXPLICIT::CentrDiff::write_restart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
@@ -130,7 +130,7 @@ void STR::EXPLICIT::CentrDiff::WriteRestart(
   iowriter.WriteVector("finert", finertian_ptr_);
   iowriter.WriteVector("fvisco", fviscon_ptr_);
 
-  ModelEval().WriteRestart(iowriter, forced_writerestart);
+  ModelEval().write_restart(iowriter, forced_writerestart);
 }
 
 /*----------------------------------------------------------------------------*
@@ -151,7 +151,7 @@ void STR::EXPLICIT::CentrDiff::UpdateStepState()
 {
   check_init_setup();
 
-  const double dt = (*GlobalState().GetDeltaTime())[0];
+  const double dt = (*global_state().GetDeltaTime())[0];
   const double dthalf = dt / 2.0;
 
   // ---------------------------------------------------------------------------
@@ -165,9 +165,9 @@ void STR::EXPLICIT::CentrDiff::UpdateStepState()
   fviscon_ptr_->Scale(1.0, *fvisconp_ptr_);
 
   // recompute the velocity to account for new acceleration
-  GlobalState().GetVelNp()->Update(1.0, *GlobalState().GetVelN(), 0.0);
-  GlobalState().GetVelNp()->Update(dthalf, *GlobalState().GetAccN(), 1.0);
-  GlobalState().GetVelNp()->Update(dthalf, *GlobalState().GetAccNp(), 1.0);
+  global_state().GetVelNp()->Update(1.0, *global_state().GetVelN(), 0.0);
+  global_state().GetVelNp()->Update(dthalf, *global_state().GetAccN(), 1.0);
+  global_state().GetVelNp()->Update(dthalf, *global_state().GetAccNp(), 1.0);
 
   // ---------------------------------------------------------------------------
   // update model specific variables

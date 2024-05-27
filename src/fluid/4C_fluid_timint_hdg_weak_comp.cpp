@@ -175,7 +175,7 @@ void FLD::TimIntHDGWeakComp::SetTheta()
 /*----------------------------------------------------------------------*
  * Explicit predictor                                     laspina 08/19 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntHDGWeakComp::ExplicitPredictor()
+void FLD::TimIntHDGWeakComp::explicit_predictor()
 {
   if (predictor_ == "steady_state")
   {

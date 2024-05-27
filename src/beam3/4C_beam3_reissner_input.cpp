@@ -76,7 +76,7 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(
   CORE::FE::IntegrationPoints1D gausspoints_force(MyGaussRule(res_elastic_force));
   CORE::FE::IntegrationPoints1D gausspoints_moment(MyGaussRule(res_elastic_moment));
 
-  GetBeamMaterial().Setup(gausspoints_force.NumPoints(), gausspoints_moment.NumPoints());
+  get_beam_material().Setup(gausspoints_force.NumPoints(), gausspoints_moment.NumPoints());
 
   return true;
 }

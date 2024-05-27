@@ -181,7 +181,7 @@ void ADAPTER::StructureBaseAlgorithmNew::setup_tim_int()
   Teuchos::RCP<std::set<enum INPAR::STR::ModelType>> modeltypes =
       Teuchos::rcp(new std::set<enum INPAR::STR::ModelType>());
   modeltypes->insert(INPAR::STR::model_structure);
-  SetModelTypes(*modeltypes);
+  set_model_types(*modeltypes);
 
   // ---------------------------------------------------------------------------
   // Setup a element technology set by checking
@@ -200,7 +200,7 @@ void ADAPTER::StructureBaseAlgorithmNew::setup_tim_int()
   Teuchos::RCP<Teuchos::ParameterList> time_adaptivity_params =
       Teuchos::rcp(new Teuchos::ParameterList(sdyn_->sublist("TIMEADAPTIVITY")));
   Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::rcp(new Teuchos::ParameterList());
-  SetParams(*ioflags, *xparams, *time_adaptivity_params);
+  set_params(*ioflags, *xparams, *time_adaptivity_params);
 
   // ---------------------------------------------------------------------------
   // Setup and create model specific linear solvers
@@ -262,7 +262,7 @@ void ADAPTER::StructureBaseAlgorithmNew::setup_tim_int()
   // initialize/setup the global state data container
   // ---------------------------------------------------------------------------
   Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> dataglobalstate = Teuchos::null;
-  SetGlobalState(dataglobalstate, datasdyn);
+  set_global_state(dataglobalstate, datasdyn);
 
   // ---------------------------------------------------------------------------
   // in case of non-additive rotation (pseudo-)vector DOFs:
@@ -293,13 +293,13 @@ void ADAPTER::StructureBaseAlgorithmNew::setup_tim_int()
   // ---------------------------------------------------------------------------
   // Create wrapper for the time integration strategy
   // ---------------------------------------------------------------------------
-  SetStructureWrapper(*ioflags, *sdyn_, *xparams, *time_adaptivity_params, ti_strategy);
+  set_structure_wrapper(*ioflags, *sdyn_, *xparams, *time_adaptivity_params, ti_strategy);
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
+void ADAPTER::StructureBaseAlgorithmNew::set_model_types(
     std::set<enum INPAR::STR::ModelType>& modeltypes) const
 {
   if (not is_init()) FOUR_C_THROW("You have to call Init() first!");
@@ -633,7 +633,7 @@ void ADAPTER::StructureBaseAlgorithmNew::detect_element_technologies(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithmNew::SetParams(Teuchos::ParameterList& ioflags,
+void ADAPTER::StructureBaseAlgorithmNew::set_params(Teuchos::ParameterList& ioflags,
     Teuchos::ParameterList& xparams, Teuchos::ParameterList& time_adaptivity_params)
 {
   // get the problem instance and the problem type
@@ -757,7 +757,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetParams(Teuchos::ParameterList& iofla
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithmNew::SetGlobalState(
+void ADAPTER::StructureBaseAlgorithmNew::set_global_state(
     Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& dataglobalstate,
     const Teuchos::RCP<const STR::TIMINT::BaseDataSDyn>& datasdyn)
 {
@@ -787,9 +787,9 @@ void ADAPTER::StructureBaseAlgorithmNew::set_time_integration_strategy(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithmNew::SetStructureWrapper(const Teuchos::ParameterList& ioflags,
-    const Teuchos::ParameterList& sdyn, const Teuchos::ParameterList& xparams,
-    const Teuchos::ParameterList& time_adaptivity_params,
+void ADAPTER::StructureBaseAlgorithmNew::set_structure_wrapper(
+    const Teuchos::ParameterList& ioflags, const Teuchos::ParameterList& sdyn,
+    const Teuchos::ParameterList& xparams, const Teuchos::ParameterList& time_adaptivity_params,
     Teuchos::RCP<STR::TIMINT::Base> ti_strategy)
 {
   // try to firstly create the adaptive wrapper
@@ -797,7 +797,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetStructureWrapper(const Teuchos::Para
     str_wrapper_ = ADAPTER::StructureTimeAda::Create(time_adaptivity_params, ti_strategy);
 
   // if no adaptive wrapper was found, we try to create a standard one
-  if (str_wrapper_.is_null()) CreateWrapper(ti_strategy);
+  if (str_wrapper_.is_null()) create_wrapper(ti_strategy);
 
   if (str_wrapper_.is_null()) FOUR_C_THROW("No proper time integration found!");
 }
@@ -805,7 +805,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetStructureWrapper(const Teuchos::Para
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT::Base> ti_strategy)
+void ADAPTER::StructureBaseAlgorithmNew::create_wrapper(Teuchos::RCP<STR::TIMINT::Base> ti_strategy)
 {
   // get the problem instance and the problem type
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();

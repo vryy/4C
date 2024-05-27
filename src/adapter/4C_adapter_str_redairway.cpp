@@ -27,7 +27,7 @@ ADAPTER::StructureRedAirway::StructureRedAirway(Teuchos::RCP<Structure> stru)
   // first get all Neumann conditions on structure
 
   std::vector<CORE::Conditions::Condition*> surfneumcond;
-  Discretization()->GetCondition("SurfaceNeumann", surfneumcond);
+  discretization()->GetCondition("SurfaceNeumann", surfneumcond);
   unsigned int numneumcond = surfneumcond.size();
   if (numneumcond == 0) FOUR_C_THROW("no Neumann conditions on structure");
 
@@ -48,7 +48,7 @@ ADAPTER::StructureRedAirway::StructureRedAirway(Teuchos::RCP<Structure> stru)
   unsigned int numcond = tmp.size();
   if (numcond == 0) FOUR_C_THROW("no coupling conditions found");
   coupmap_ =
-      Teuchos::rcp(new Epetra_Map(tmp.size(), tmp.size(), tmp.data(), 0, Discretization()->Comm()));
+      Teuchos::rcp(new Epetra_Map(tmp.size(), tmp.size(), tmp.data(), 0, discretization()->Comm()));
 }
 
 
@@ -71,14 +71,14 @@ void ADAPTER::StructureRedAirway::SetPressure(Teuchos::RCP<Epetra_Vector> couppr
 /*======================================================================*/
 void ADAPTER::StructureRedAirway::CalcVol(std::map<int, double>& V)
 {
-  if (!(Discretization()->Filled())) FOUR_C_THROW("fill_complete() was not called");
+  if (!(discretization()->Filled())) FOUR_C_THROW("fill_complete() was not called");
 
   Teuchos::ParameterList params;
   params.set("action", "calc_struct_constrvol");
 
   // set displacements
-  Discretization()->ClearState();
-  Discretization()->set_state("displacement", Dispnp());
+  discretization()->ClearState();
+  discretization()->set_state("displacement", Dispnp());
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
@@ -109,13 +109,13 @@ void ADAPTER::StructureRedAirway::CalcVol(std::map<int, double>& V)
       std::vector<int> lm;
       std::vector<int> lmowner;
       std::vector<int> lmstride;
-      curr->second->LocationVector(*Discretization(), lm, lmowner, lmstride);
+      curr->second->LocationVector(*discretization(), lm, lmowner, lmstride);
 
       // reshape element matrices and vectors and init to zero
       elevector3.size(1);
 
       // call the element specific evaluate method
-      int err = curr->second->Evaluate(params, *Discretization(), lm, elematrix1, elematrix2,
+      int err = curr->second->Evaluate(params, *discretization(), lm, elematrix1, elematrix2,
           elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("error while evaluating elements");
 
@@ -123,7 +123,7 @@ void ADAPTER::StructureRedAirway::CalcVol(std::map<int, double>& V)
       tmp += elevector3[0];
     }
     double vol = 0.;
-    Discretization()->Comm().SumAll(&tmp, &vol, 1);
+    discretization()->Comm().SumAll(&tmp, &vol, 1);
     if (vol < 0.0) vol *= -1.0;
     V[condID] = vol;
   }
@@ -135,7 +135,7 @@ void ADAPTER::StructureRedAirway::InitVol()
 {
   CalcVol(vn_);
 
-  if (Discretization()->Comm().MyPID() == 0)
+  if (discretization()->Comm().MyPID() == 0)
   {
     std::cout << "------------------------ Initial tissue volumes ----------------------"
               << std::endl;

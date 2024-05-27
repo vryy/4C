@@ -46,15 +46,15 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Setup()
 {
   check_init();
 
-  Teuchos::RCP<DRT::Discretization> dis = DiscretPtr();
+  Teuchos::RCP<DRT::Discretization> dis = discret_ptr();
 
   // setup the displacement pointer
-  disnp_ptr_ = GState().GetDisNp();
+  disnp_ptr_ = g_state().GetDisNp();
 
   // contributions of 0D model to structural rhs and stiffness
-  fstructcardio_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMapView()));
+  fstructcardio_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*g_state().DofRowMapView()));
   stiff_cardio_ptr_ =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*g_state().DofRowMapView(), 81, true, true));
 
   Teuchos::ParameterList solvparams;
   CORE::UTILS::AddEnumClassToParameterList<CORE::LINEAR_SOLVER::SolverType>(
@@ -82,7 +82,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Reset(const Epetra_Vector& x)
   check_init_setup();
 
   // update the structural displacement vector
-  disnp_ptr_ = GState().GetDisNp();
+  disnp_ptr_ = g_state().GetDisNp();
 
   fstructcardio_np_ptr_->PutScalar(0.0);
   stiff_cardio_ptr_->Zero();
@@ -96,9 +96,9 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::evaluate_force()
 {
   check_init_setup();
 
-  double time_np = GState().GetTimeNp();
+  double time_np = g_state().GetTimeNp();
   Teuchos::ParameterList pcardvasc0d;
-  pcardvasc0d.set("time_step_size", (*GState().GetDeltaTime())[0]);
+  pcardvasc0d.set("time_step_size", (*g_state().GetDeltaTime())[0]);
 
   // only forces are evaluated!
   cardvasc0dman_->evaluate_force_stiff(
@@ -113,9 +113,9 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::evaluate_stiff()
 {
   check_init_setup();
 
-  double time_np = GState().GetTimeNp();
+  double time_np = g_state().GetTimeNp();
   Teuchos::ParameterList pcardvasc0d;
-  pcardvasc0d.set("time_step_size", (*GState().GetDeltaTime())[0]);
+  pcardvasc0d.set("time_step_size", (*g_state().GetDeltaTime())[0]);
 
   // only stiffnesses are evaluated!
   cardvasc0dman_->evaluate_force_stiff(
@@ -132,9 +132,9 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::evaluate_force_stiff()
 {
   check_init_setup();
 
-  double time_np = GState().GetTimeNp();
+  double time_np = g_state().GetTimeNp();
   Teuchos::ParameterList pcardvasc0d;
-  pcardvasc0d.set("time_step_size", (*GState().GetDeltaTime())[0]);
+  pcardvasc0d.set("time_step_size", (*g_state().GetDeltaTime())[0]);
 
   cardvasc0dman_->evaluate_force_stiff(
       time_np, disnp_ptr_, fstructcardio_np_ptr_, stiff_cardio_ptr_, pcardvasc0d);
@@ -210,7 +210,7 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::assemble_jacobian(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::WriteRestart(
+void STR::MODELEVALUATOR::Cardiovascular0D::write_restart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   iowriter.WriteVector("cv0d_df_np", cardvasc0dman_->Get0D_df_np());
@@ -226,7 +226,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::WriteRestart(
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Cardiovascular0D::read_restart(IO::DiscretizationReader& ioreader)
 {
-  double time_n = GState().GetTimeN();
+  double time_n = g_state().GetTimeN();
   cardvasc0dman_->read_restart(ioreader, time_n);
 
   return;
@@ -234,13 +234,13 @@ void STR::MODELEVALUATOR::Cardiovascular0D::read_restart(IO::DiscretizationReade
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::RunPostComputeX(
+void STR::MODELEVALUATOR::Cardiovascular0D::run_post_compute_x(
     const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
   check_init_setup();
 
   Teuchos::RCP<Epetra_Vector> cv0d_incr =
-      GState().ExtractModelEntries(INPAR::STR::model_cardiovascular0d, dir);
+      g_state().ExtractModelEntries(INPAR::STR::model_cardiovascular0d, dir);
 
   cardvasc0dman_->UpdateCv0DDof(cv0d_incr);
 
@@ -252,17 +252,17 @@ void STR::MODELEVALUATOR::Cardiovascular0D::RunPostComputeX(
 void STR::MODELEVALUATOR::Cardiovascular0D::UpdateStepState(const double& timefac_n)
 {
   // only update 0D model at the end of the time step!
-  if (EvalData().GetTotalTime() == GState().GetTimeNp()) cardvasc0dman_->UpdateTimeStep();
+  if (eval_data().GetTotalTime() == g_state().GetTimeNp()) cardvasc0dman_->UpdateTimeStep();
 
   // only print state variables after a finished time step, not when we're
   // in the equilibriate initial state routine
-  if (EvalData().GetTotalTime() == GState().GetTimeNp()) cardvasc0dman_->PrintPresFlux(false);
+  if (eval_data().GetTotalTime() == g_state().GetTimeNp()) cardvasc0dman_->PrintPresFlux(false);
 
   // add the 0D cardiovascular force contributions to the old structural
   // residual state vector
   if (not fstructcardio_np_ptr_.is_null())
   {
-    Teuchos::RCP<Epetra_Vector>& fstructold_ptr = GState().GetFstructureOld();
+    Teuchos::RCP<Epetra_Vector>& fstructold_ptr = g_state().GetFstructureOld();
     fstructold_ptr->Update(timefac_n, *fstructcardio_np_ptr_, 1.0);
   }
 

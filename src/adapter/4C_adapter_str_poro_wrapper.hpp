@@ -53,9 +53,9 @@ namespace ADAPTER
     }
 
     /// direct access to discretization
-    virtual Teuchos::RCP<DRT::Discretization> Discretization()
+    virtual Teuchos::RCP<DRT::Discretization> discretization()
     {
-      return structure_->Discretization();
+      return structure_->discretization();
     }
 
     /// return time integration factor
@@ -118,8 +118,8 @@ namespace ADAPTER
     //! return poro poro_field
     const Teuchos::RCP<POROELAST::Monolithic>& poro_field();
 
-    //! return poro StructureField
-    const Teuchos::RCP<FSIStructureWrapper>& StructureField();
+    //! return poro structure_field
+    const Teuchos::RCP<FSIStructureWrapper>& structure_field();
 
     //! return poro fluid_field
     const Teuchos::RCP<ADAPTER::FluidPoro>& fluid_field();

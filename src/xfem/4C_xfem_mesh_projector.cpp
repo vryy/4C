@@ -352,7 +352,7 @@ bool XFEM::MeshProjector::check_position_and_project(const DRT::Element* src_ele
   {
     // node position in covering element's local coordinates
     CORE::LINALG::Matrix<3, 1> xsi;
-    pos->LocalCoordinates(xsi);
+    pos->local_coordinates(xsi);
 
     // Evaluate elements shape function at this point and fill values
     CORE::LINALG::SerialDenseVector shp(src_numnodes);

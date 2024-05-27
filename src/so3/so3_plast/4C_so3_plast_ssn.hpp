@@ -135,7 +135,7 @@ namespace DRT
       int NumDofPerNode(const DRT::Node& node) const override { return nsd_; };
 
       //! Get number of degrees of freedom of this element
-      int NumDofPerElement() const override { return 0; };
+      int num_dof_per_element() const override { return 0; };
 
       //@}
 
@@ -271,7 +271,7 @@ namespace DRT
 
       //! init the inverse of the jacobian and its determinant in the material
       //! configuration
-      virtual void InitJacobianMapping();
+      virtual void init_jacobian_mapping();
 
       // get parameter list from ssn_plast_manager
       virtual void ReadParameterList(Teuchos::RCP<Teuchos::ParameterList> plparams);
@@ -291,7 +291,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dT, const double* concentration,
           double* d_cauchyndir_dc) override;
 
-      void HeatFlux(const std::vector<double>& temp, const std::vector<double>& disp,
+      void HeatFlux(const std::vector<double>& temperature, const std::vector<double>& disp,
           const CORE::LINALG::Matrix<nsd_, 1>& xi, const CORE::LINALG::Matrix<nsd_, 1>& n,
           double& q, CORE::LINALG::SerialDenseMatrix* dq_dT, CORE::LINALG::SerialDenseMatrix* dq_dd,
           CORE::LINALG::Matrix<nsd_, 1>* dq_dn, CORE::LINALG::Matrix<nsd_, 1>* dq_dpxi,
@@ -343,7 +343,7 @@ namespace DRT
       //! Calculate nonlinear stiffness and mass matrix with condensed plastic matrices
       virtual void nln_stiffmass(std::vector<double>& disp,  // current displacements
           std::vector<double>& vel,                          // current velocities
-          std::vector<double>& temp,                         // current temperatures
+          std::vector<double>& temperature,                  // current temperatures
           CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>*
               stiffmatrix,  // element stiffness matrix
           CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>*
@@ -357,8 +357,8 @@ namespace DRT
       );
 
       //! Calculate the coupling matrix K_dT for monolithic TSI
-      virtual void nln_kdT_tsi(CORE::LINALG::Matrix<numdofperelement_, nen_>*
-                                   k_dT,  //!< (o): mechanical thermal stiffness term at current gp
+      virtual void nln_kd_t_tsi(CORE::LINALG::Matrix<numdofperelement_, nen_>*
+                                    k_dT,  //!< (o): mechanical thermal stiffness term at current gp
           Teuchos::ParameterList& params);
 
       // Add plastic increment of converged state to plastic history for nonlinear kinematics
@@ -384,13 +384,13 @@ namespace DRT
       virtual void eas_init();
 
       //! setup EAS for each evaluation
-      virtual void EasSetup();
+      virtual void eas_setup();
 
       // evaluate EAS shape functions
-      virtual void EasShape(const int gp);
+      virtual void eas_shape(const int gp);
 
       //! add eas strains to GL strains
-      virtual void EasEnhanceStrains();
+      virtual void eas_enhance_strains();
 
 
       //! @name plasticity related stuff
@@ -418,7 +418,7 @@ namespace DRT
        *         spin is linearized and solved for.
        */
       template <int spintype>
-      void CondensePlasticity(const CORE::LINALG::Matrix<nsd_, nsd_>& defgrd,
+      void condense_plasticity(const CORE::LINALG::Matrix<nsd_, nsd_>& defgrd,
           const CORE::LINALG::Matrix<nsd_, nsd_>& deltaLp,
           const CORE::LINALG::Matrix<numstr_, numdofperelement_>& bop,
           const CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ,
@@ -435,26 +435,26 @@ namespace DRT
       void recover_plasticity_and_eas(const CORE::LINALG::Matrix<numdofperelement_, 1>* res_d,
           const CORE::LINALG::Matrix<nen_, 1>* res_t = nullptr);
 
-      void RecoverEAS(const CORE::LINALG::Matrix<numdofperelement_, 1>* res_d,
+      void recover_eas(const CORE::LINALG::Matrix<numdofperelement_, 1>* res_d,
           const CORE::LINALG::Matrix<nen_, 1>* res_T = nullptr);
 
       template <int spintype>
-      void RecoverPlasticity(const CORE::LINALG::Matrix<numdofperelement_, 1>* res_d, const int gp,
+      void recover_plasticity(const CORE::LINALG::Matrix<numdofperelement_, 1>* res_d, const int gp,
           const double* res_t = nullptr);
 
-      void ReduceEasStep(const double new_step_length, const double old_step_length);
+      void reduce_eas_step(const double new_step_length, const double old_step_length);
       void reduce_plasticity_step(
           const double new_step_length, const double old_step_length, const int gp);
 
-      virtual void BuildDeltaLp(const int gp);
+      virtual void build_delta_lp(const int gp);
 
       /*! \brief Return if plastic spin is solved for.
        */
-      virtual bool HavePlasticSpin();
+      virtual bool have_plastic_spin();
 
 
       //! calculate internal elastic energy
-      double CalcIntEnergy(
+      double calc_int_energy(
           std::vector<double>& disp, std::vector<double>& temp, Teuchos::ParameterList& params);
 
       //@}
@@ -585,28 +585,28 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dT,
           CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dT);
 
-      virtual void OutputStrains(const int gp,
+      virtual void output_strains(const int gp,
           const INPAR::STR::StrainType iostrain,                 // strain output option
           CORE::LINALG::Matrix<numgpt_post, numstr_>* elestrain  // strains at GP
       );
 
-      virtual void OutputStress(const int gp,
+      virtual void output_stress(const int gp,
           const INPAR::STR::StressType iostress,                 // strain output option
           CORE::LINALG::Matrix<numgpt_post, numstr_>* elestress  // strains at GP
       );
 
-      virtual void Kinematics(const int gp = -1);
+      virtual void kinematics(const int gp = -1);
 
-      virtual void IntegrateMassMatrix(
+      virtual void integrate_mass_matrix(
           const int gp, CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>& mass);
 
       virtual void integrate_stiff_matrix(const int gp,
           CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>& stiff,
           CORE::LINALG::SerialDenseMatrix& Kda);
 
-      virtual void IntegrateForce(const int gp, CORE::LINALG::Matrix<numdofperelement_, 1>& force);
+      virtual void integrate_force(const int gp, CORE::LINALG::Matrix<numdofperelement_, 1>& force);
 
-      virtual void IntegrateThermoGp(const int gp, CORE::LINALG::SerialDenseVector& dHda);
+      virtual void integrate_thermo_gp(const int gp, CORE::LINALG::SerialDenseVector& dHda);
 
 
       // algoirthmic parameters
@@ -719,7 +719,7 @@ namespace DRT
       static std::pair<bool, CORE::LINALG::Matrix<nen_, 1>> weights_;
       static std::pair<bool, std::vector<CORE::LINALG::SerialDenseVector>> knots_;
 
-      virtual void InvalidGpData()
+      virtual void invalid_gp_data()
       {
         shapefunct_.first = false;
         deriv_.first = false;
@@ -741,7 +741,7 @@ namespace DRT
         cmat_.first = false;
       }
 
-      void InvalidEleData()
+      void invalid_ele_data()
       {
         xrefe_.first = false;
         xcurr_.first = false;
@@ -757,31 +757,31 @@ namespace DRT
         knots_.first = false;
       }
 
-      inline const CORE::LINALG::Matrix<nen_, 1>& Weights() const
+      inline const CORE::LINALG::Matrix<nen_, 1>& weights() const
       {
         FOUR_C_ASSERT(weights_.first, "weights_ not valid");
         return weights_.second;
       }
-      inline CORE::LINALG::Matrix<nen_, 1>& SetWeights()
+      inline CORE::LINALG::Matrix<nen_, 1>& set_weights()
       {
         weights_.first = true;
         return weights_.second;
       }
 
-      inline const std::vector<CORE::LINALG::SerialDenseVector>& Knots() const
+      inline const std::vector<CORE::LINALG::SerialDenseVector>& knots() const
       {
         FOUR_C_ASSERT(knots_.first, "weights_ not valid");
         return knots_.second;
       }
-      inline std::vector<CORE::LINALG::SerialDenseVector>& SetKnots()
+      inline std::vector<CORE::LINALG::SerialDenseVector>& set_knots()
       {
         knots_.first = true;
         return knots_.second;
       }
 
-      void FillPositionArrays(const std::vector<double>& disp,  // current displacements
-          const std::vector<double>& vel,                       // current velocities
-          const std::vector<double>& temp                       // current temperatures
+      void fill_position_arrays(const std::vector<double>& disp,  // current displacements
+          const std::vector<double>& vel,                         // current velocities
+          const std::vector<double>& temp                         // current temperatures
       )
       {
         for (int i = 0; i < nen_; ++i)
@@ -800,42 +800,42 @@ namespace DRT
         if (!temp.empty()) etemp_.first = true;
       }
 
-      inline const CORE::LINALG::Matrix<nen_, nsd_>& Xrefe()
+      inline const CORE::LINALG::Matrix<nen_, nsd_>& xrefe()
       {
         FOUR_C_ASSERT(xrefe_.first == true, "xrefe not valid");
         return xrefe_.second;
       }
 
-      inline const CORE::LINALG::Matrix<nen_, nsd_>& Xcurr()
+      inline const CORE::LINALG::Matrix<nen_, nsd_>& xcurr()
       {
         FOUR_C_ASSERT(xcurr_.first, "xcurr_ not valid");
         return xcurr_.second;
       }
 
-      inline const CORE::LINALG::Matrix<nen_, nsd_>& XcurrRate()
+      inline const CORE::LINALG::Matrix<nen_, nsd_>& xcurr_rate()
       {
         FOUR_C_ASSERT(xcurr_rate_.first, "xcurr_rate_ not valid");
         return xcurr_rate_.second;
       }
 
-      inline const CORE::LINALG::Matrix<nen_, 1>& Temp()
+      inline const CORE::LINALG::Matrix<nen_, 1>& temp()
       {
         FOUR_C_ASSERT(etemp_.first, "etemp not valid");
         return etemp_.second;
       }
 
-      inline const CORE::LINALG::Matrix<nen_, 1>& ShapeFunction() const
+      inline const CORE::LINALG::Matrix<nen_, 1>& shape_function() const
       {
         FOUR_C_ASSERT(shapefunct_.first, "shape function not valid");
         return shapefunct_.second;
       }
-      inline CORE::LINALG::Matrix<nen_, 1>& SetShapeFunction()
+      inline CORE::LINALG::Matrix<nen_, 1>& set_shape_function()
       {
         shapefunct_.first = true;
         return shapefunct_.second;
       }
 
-      inline const CORE::LINALG::Matrix<nsd_, nen_>& DerivShapeFunction() const
+      inline const CORE::LINALG::Matrix<nsd_, nen_>& deriv_shape_function() const
       {
         FOUR_C_ASSERT(deriv_.first, "deriv shape function not valid");
         return deriv_.second;
@@ -857,100 +857,100 @@ namespace DRT
         return N_XYZ_.second;
       }
 
-      inline const CORE::LINALG::Matrix<nsd_, nsd_>& InvJ() const
+      inline const CORE::LINALG::Matrix<nsd_, nsd_>& inv_j() const
       {
         FOUR_C_ASSERT(invJ_.first, "invJ_ not valid");
         return invJ_.second;
       }
-      inline CORE::LINALG::Matrix<nsd_, nsd_>& SetInvJ()
+      inline CORE::LINALG::Matrix<nsd_, nsd_>& set_inv_j()
       {
         invJ_.first = true;
         return invJ_.second;
       }
 
-      inline const double& DetJ() const
+      inline const double& det_j() const
       {
         FOUR_C_ASSERT(detJ_.first, "detJ_ not valid");
         return detJ_.second;
       }
-      inline double& SetDetJ()
+      inline double& set_det_j()
       {
         detJ_.first = true;
         return detJ_.second;
       }
 
-      inline const CORE::LINALG::Matrix<nsd_, nsd_>& Defgrd() const
+      inline const CORE::LINALG::Matrix<nsd_, nsd_>& defgrd() const
       {
         FOUR_C_ASSERT(defgrd_.first, "defgrd_ not valid");
         return defgrd_.second;
       }
-      inline CORE::LINALG::Matrix<nsd_, nsd_>& SetDefgrd()
+      inline CORE::LINALG::Matrix<nsd_, nsd_>& set_defgrd()
       {
         defgrd_.first = true;
         return defgrd_.second;
       }
 
-      inline const CORE::LINALG::Matrix<nsd_, nsd_>& DefgrdMod() const
+      inline const CORE::LINALG::Matrix<nsd_, nsd_>& defgrd_mod() const
       {
         FOUR_C_ASSERT(defgrd_mod_.first, "defgrd_mod_ not valid");
         return defgrd_mod_.second;
       }
-      inline CORE::LINALG::Matrix<nsd_, nsd_>& SetDefgrdMod()
+      inline CORE::LINALG::Matrix<nsd_, nsd_>& set_defgrd_mod()
       {
         defgrd_mod_.first = true;
         return defgrd_mod_.second;
       }
 
-      inline const CORE::LINALG::Matrix<nsd_, nsd_>& RCG() const
+      inline const CORE::LINALG::Matrix<nsd_, nsd_>& rcg() const
       {
         FOUR_C_ASSERT(rcg_.first, "rcg_ not valid");
         return rcg_.second;
       }
-      inline CORE::LINALG::Matrix<nsd_, nsd_>& SetRCG()
+      inline CORE::LINALG::Matrix<nsd_, nsd_>& set_rcg()
       {
         rcg_.first = true;
         return rcg_.second;
       }
 
-      inline const CORE::LINALG::Matrix<nsd_, nsd_>& DeltaLp() const
+      inline const CORE::LINALG::Matrix<nsd_, nsd_>& delta_lp() const
       {
         FOUR_C_ASSERT(delta_Lp_.first, "delta_Lp_ not valid");
         return delta_Lp_.second;
       }
-      inline CORE::LINALG::Matrix<nsd_, nsd_>& SetDeltaLp()
+      inline CORE::LINALG::Matrix<nsd_, nsd_>& set_delta_lp()
       {
         delta_Lp_.first = true;
         return delta_Lp_.second;
       }
 
-      inline const CORE::LINALG::Matrix<numstr_, numdofperelement_>& Bop() const
+      inline const CORE::LINALG::Matrix<numstr_, numdofperelement_>& bop() const
       {
         FOUR_C_ASSERT(bop_.first, "bop_ not valid");
         return bop_.second;
       }
-      inline CORE::LINALG::Matrix<numstr_, numdofperelement_>& SetBop()
+      inline CORE::LINALG::Matrix<numstr_, numdofperelement_>& set_bop()
       {
         bop_.first = true;
         return bop_.second;
       }
 
-      inline const CORE::LINALG::Matrix<numstr_, 1>& PK2() const
+      inline const CORE::LINALG::Matrix<numstr_, 1>& p_k2() const
       {
         FOUR_C_ASSERT(pk2_.first, "pk2_ not valid");
         return pk2_.second;
       }
-      inline CORE::LINALG::Matrix<numstr_, 1>& SetPK2()
+      inline CORE::LINALG::Matrix<numstr_, 1>& set_p_k2()
       {
         pk2_.first = true;
         return pk2_.second;
       }
 
-      inline const CORE::LINALG::Matrix<numstr_, numstr_>& Cmat() const
+      inline const CORE::LINALG::Matrix<numstr_, numstr_>& cmat() const
       {
         FOUR_C_ASSERT(cmat_.first, "cmat_ not valid");
         return cmat_.second;
       }
-      inline CORE::LINALG::Matrix<numstr_, numstr_>& SetCmat()
+      inline CORE::LINALG::Matrix<numstr_, numstr_>& set_cmat()
       {
         cmat_.first = true;
         return cmat_.second;
@@ -967,178 +967,178 @@ namespace DRT
         return N_XYZ_0_.second;
       }
 
-      inline const double& DetF() const
+      inline const double& det_f() const
       {
         FOUR_C_ASSERT(detF_.first, "detF_ not valid");
         return detF_.second;
       }
-      inline double& SetDetF()
+      inline double& set_det_f()
       {
         detF_.first = true;
         return detF_.second;
       }
 
-      inline const double& DetF_0() const
+      inline const double& det_f_0() const
       {
         FOUR_C_ASSERT(detF_0_.first, "detF_0_ not valid");
         return detF_0_.second;
       }
-      inline double& SetDetF_0()
+      inline double& set_det_f_0()
       {
         detF_0_.first = true;
         return detF_0_.second;
       }
 
-      inline const CORE::LINALG::Matrix<nsd_, nsd_>& InvDefgrd() const
+      inline const CORE::LINALG::Matrix<nsd_, nsd_>& inv_defgrd() const
       {
         FOUR_C_ASSERT(inv_defgrd_.first, "inv_defgrd_ not valid");
         return inv_defgrd_.second;
       }
-      inline CORE::LINALG::Matrix<nsd_, nsd_>& SetInvDefgrd()
+      inline CORE::LINALG::Matrix<nsd_, nsd_>& set_inv_defgrd()
       {
         inv_defgrd_.first = true;
         return inv_defgrd_.second;
       }
 
-      inline const CORE::LINALG::Matrix<nsd_, nsd_>& InvDefgrd_0() const
+      inline const CORE::LINALG::Matrix<nsd_, nsd_>& inv_defgrd_0() const
       {
         FOUR_C_ASSERT(inv_defgrd_0_.first, "inv_defgrd_0_ not valid");
         return inv_defgrd_0_.second;
       }
-      inline CORE::LINALG::Matrix<nsd_, nsd_>& SetInvDefgrd_0()
+      inline CORE::LINALG::Matrix<nsd_, nsd_>& set_inv_defgrd_0()
       {
         inv_defgrd_0_.first = true;
         return inv_defgrd_0_.second;
       }
 
-      inline const CORE::LINALG::Matrix<nsd_, nsd_>& Jac_0() const
+      inline const CORE::LINALG::Matrix<nsd_, nsd_>& jac_0() const
       {
         FOUR_C_ASSERT(jac_0_.first, "jac_0_ not valid");
         return jac_0_.second;
       }
-      inline CORE::LINALG::Matrix<nsd_, nsd_>& SetJac_0()
+      inline CORE::LINALG::Matrix<nsd_, nsd_>& set_jac_0()
       {
         jac_0_.first = true;
         return jac_0_.second;
       }
 
-      inline const double& DetJac_0() const
+      inline const double& det_jac_0() const
       {
         FOUR_C_ASSERT(det_jac_0_.first, "det_jac_0_ not valid");
         return det_jac_0_.second;
       }
-      inline double& SetDetJac_0()
+      inline double& set_det_jac_0()
       {
         det_jac_0_.first = true;
         return det_jac_0_.second;
       }
 
-      inline const CORE::LINALG::Matrix<numstr_, 1>& RCGvec() const
+      inline const CORE::LINALG::Matrix<numstr_, 1>& rc_gvec() const
       {
         FOUR_C_ASSERT(rcg_vec_.first, "rcg_vec_ not valid");
         return rcg_vec_.second;
       }
-      inline CORE::LINALG::Matrix<numstr_, 1>& SetRCGvec()
+      inline CORE::LINALG::Matrix<numstr_, 1>& set_rc_gvec()
       {
         rcg_vec_.first = true;
         return rcg_vec_.second;
       }
 
-      inline const double& FbarFac() const
+      inline const double& fbar_fac() const
       {
         FOUR_C_ASSERT(f_bar_fac_.first, "f_bar_fac_ not valid");
         return f_bar_fac_.second;
       }
-      inline double& SetFbarFac()
+      inline double& set_fbar_fac()
       {
         f_bar_fac_.first = true;
         return f_bar_fac_.second;
       }
 
-      inline const CORE::LINALG::Matrix<numdofperelement_, 1>& Htensor() const
+      inline const CORE::LINALG::Matrix<numdofperelement_, 1>& htensor() const
       {
         FOUR_C_ASSERT(htensor_.first, "htensor_ not valid");
         return htensor_.second;
       }
-      inline CORE::LINALG::Matrix<numdofperelement_, 1>& SetHtensor()
+      inline CORE::LINALG::Matrix<numdofperelement_, 1>& set_htensor()
       {
         htensor_.first = true;
         return htensor_.second;
       }
 
-      void EvaluateCenter()
+      void evaluate_center()
       {
         // element coordinate derivatives at centroid
         static CORE::LINALG::Matrix<nsd_, nen_> N_rst_0(false);
         CORE::FE::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, CORE::FE::CellType::hex8);
 
         // inverse jacobian matrix at centroid
-        SetJac_0().Multiply(N_rst_0, Xrefe());
+        set_jac_0().Multiply(N_rst_0, xrefe());
         static CORE::LINALG::Matrix<nsd_, nsd_> invJ_0;
-        SetDetJac_0() = invJ_0.Invert(Jac_0());
+        set_det_jac_0() = invJ_0.Invert(jac_0());
         // material derivatives at centroid
         set_deriv_shape_function_xyz_0().Multiply(invJ_0, N_rst_0);
 
         // deformation gradient and its determinant at centroid
         static CORE::LINALG::Matrix<3, 3> defgrd_0(false);
-        defgrd_0.MultiplyTT(Xcurr(), deriv_shape_function_xyz_0());
-        SetDetF_0() = SetInvDefgrd_0().Invert(defgrd_0);
+        defgrd_0.MultiplyTT(xcurr(), deriv_shape_function_xyz_0());
+        set_det_f_0() = set_inv_defgrd_0().Invert(defgrd_0);
       }
 
-      void SetupFbarGp()
+      void setup_fbar_gp()
       {
-        if (DetF() < 0. || DetF_0() < 0.) FOUR_C_THROW("element distortion too large");
-        SetFbarFac() = pow(DetF_0() / DetF(), 1. / 3.);
-        SetDefgrdMod().Update(SetFbarFac(), Defgrd());
-        SetHtensor().Clear();
+        if (det_f() < 0. || det_f_0() < 0.) FOUR_C_THROW("element distortion too large");
+        set_fbar_fac() = pow(det_f_0() / det_f(), 1. / 3.);
+        set_defgrd_mod().Update(set_fbar_fac(), defgrd());
+        set_htensor().Clear();
 
         for (int n = 0; n < numdofperelement_; n++)
           for (int i = 0; i < 3; i++)
-            SetHtensor()(n) += InvDefgrd_0()(i, n % 3) * deriv_shape_function_xyz_0()(i, n / 3) -
-                               InvDefgrd()(i, n % 3) * deriv_shape_function_xyz()(i, n / 3);
+            set_htensor()(n) += inv_defgrd_0()(i, n % 3) * deriv_shape_function_xyz_0()(i, n / 3) -
+                                inv_defgrd()(i, n % 3) * deriv_shape_function_xyz()(i, n / 3);
       }
 
-      inline const CORE::LINALG::Matrix<numstr_, numstr_>& T0invT() const
+      inline const CORE::LINALG::Matrix<numstr_, numstr_>& t0inv_t() const
       {
         FOUR_C_ASSERT(T0invT_.first, "T0invT_ not valid");
         return T0invT_.second;
       }
-      inline CORE::LINALG::Matrix<numstr_, numstr_>& SetT0invT()
+      inline CORE::LINALG::Matrix<numstr_, numstr_>& set_t0inv_t()
       {
         T0invT_.first = true;
         return T0invT_.second;
       }
 
-      inline const CORE::LINALG::SerialDenseMatrix& M_eas() const
+      inline const CORE::LINALG::SerialDenseMatrix& m_eas() const
       {
         FOUR_C_ASSERT(M_eas_.first, "M_eas_ not valid");
         return M_eas_.second;
       }
-      inline CORE::LINALG::SerialDenseMatrix& SetM_eas()
+      inline CORE::LINALG::SerialDenseMatrix& set_m_eas()
       {
         M_eas_.first = true;
         return M_eas_.second;
       }
 
-      inline void EvaluateShape(const CORE::LINALG::Matrix<3, 1>& xi)
+      inline void evaluate_shape(const CORE::LINALG::Matrix<3, 1>& xi)
       {
         if (distype == CORE::FE::CellType::nurbs27)
           CORE::FE::NURBS::nurbs_get_3D_funct_deriv(
-              SetShapeFunction(), set_deriv_shape_function(), xi, Knots(), Weights(), distype);
+              set_shape_function(), set_deriv_shape_function(), xi, knots(), weights(), distype);
         else
-          CORE::FE::shape_function<distype>(xi, SetShapeFunction());
+          CORE::FE::shape_function<distype>(xi, set_shape_function());
       }
 
-      inline void EvaluateShapeDeriv(const CORE::LINALG::Matrix<3, 1>& xi)
+      inline void evaluate_shape_deriv(const CORE::LINALG::Matrix<3, 1>& xi)
       {
         if (distype == CORE::FE::CellType::nurbs27)
           CORE::FE::NURBS::nurbs_get_3D_funct_deriv(
-              SetShapeFunction(), set_deriv_shape_function(), xi, Knots(), Weights(), distype);
+              set_shape_function(), set_deriv_shape_function(), xi, knots(), weights(), distype);
         else
           CORE::FE::shape_function_deriv1<distype>(xi, set_deriv_shape_function());
       }
 
-      void GetNurbsEleInfo(DRT::Discretization* dis = nullptr);
+      void get_nurbs_ele_info(DRT::Discretization* dis = nullptr);
 
 
     };  // class So3Plast

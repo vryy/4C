@@ -51,7 +51,7 @@ namespace SCATRA
     virtual ~ConvCheckStrategyBase() = default;
 
     //! perform convergence check for Newton-Raphson iteration
-    virtual bool AbortNonlinIter(
+    virtual bool abort_nonlin_iter(
         const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
         double& actresidual                    //!< return maximum current residual value
     ) const = 0;
@@ -106,7 +106,7 @@ namespace SCATRA
 
 
     //! perform convergence check for Newton-Raphson iteration
-    bool AbortNonlinIter(
+    bool abort_nonlin_iter(
         const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
         double& actresidual                    //!< return maximum current residual value
     ) const override;
@@ -140,7 +140,7 @@ namespace SCATRA
 
 
     //! perform convergence check for Newton-Raphson iteration
-    bool AbortNonlinIter(
+    bool abort_nonlin_iter(
         const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
         double& actresidual                    //!< return maximum current residual value
     ) const override;
@@ -170,7 +170,7 @@ namespace SCATRA
 
 
     //! perform convergence check for Newton-Raphson iteration
-    bool AbortNonlinIter(
+    bool abort_nonlin_iter(
         const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
         double& actresidual                    //!< return maximum current residual value
     ) const override;
@@ -200,7 +200,7 @@ namespace SCATRA
 
 
     //! perform convergence check for Newton-Raphson iteration
-    bool AbortNonlinIter(
+    bool abort_nonlin_iter(
         const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
         double& actresidual                    //!< return maximum current residual value
     ) const override;
@@ -230,7 +230,7 @@ namespace SCATRA
 
 
     //! perform convergence check for Newton-Raphson iteration
-    bool AbortNonlinIter(
+    bool abort_nonlin_iter(
         const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
         double& actresidual                    //!< return maximum current residual value
     ) const override;
@@ -260,7 +260,7 @@ namespace SCATRA
 
 
     //! perform convergence check for Newton-Raphson iteration
-    bool AbortNonlinIter(
+    bool abort_nonlin_iter(
         const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
         double& actresidual                    //!< return maximum current residual value
     ) const override;
@@ -295,7 +295,7 @@ namespace SCATRA
 
 
     //! perform convergence check for Newton-Raphson iteration
-    bool AbortNonlinIter(
+    bool abort_nonlin_iter(
         const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
         double& actresidual                    //!< return maximum current residual value
     ) const override;
@@ -326,7 +326,7 @@ namespace SCATRA
 
 
     //! perform convergence check for Newton-Raphson iteration
-    bool AbortNonlinIter(
+    bool abort_nonlin_iter(
         const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
         double& actresidual                    //!< return maximum current residual value
     ) const override;

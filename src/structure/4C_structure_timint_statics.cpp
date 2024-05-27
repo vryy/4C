@@ -458,11 +458,11 @@ void STR::TimIntStatics::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter
 
 /*---------------------------------------------------------------*/
 /* Apply Dirichlet boundary conditions on provided state vectors */
-void STR::TimIntStatics::ApplyDirichletBC(const double time, Teuchos::RCP<Epetra_Vector> dis,
+void STR::TimIntStatics::apply_dirichlet_bc(const double time, Teuchos::RCP<Epetra_Vector> dis,
     Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> acc, bool recreatemap)
 {
-  // call base ApplyDirichletBC
-  STR::TimInt::ApplyDirichletBC(time, dis, vel, acc, recreatemap);
+  // call base apply_dirichlet_bc
+  STR::TimInt::apply_dirichlet_bc(time, dis, vel, acc, recreatemap);
 
   // statics: set velocities and accelerations to zero
   if (vel != Teuchos::null) vel->PutScalar(0.0);

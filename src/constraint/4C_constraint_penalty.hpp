@@ -37,7 +37,7 @@ namespace CONSTRAINTS
     */
 
     ConstraintPenalty(
-        Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
+        Teuchos::RCP<DRT::Discretization> discr,  ///< discretization constraint lives on
         const std::string& conditionname          ///< Name of condition to create constraints from
     );
 

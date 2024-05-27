@@ -106,7 +106,7 @@ namespace ART
       /*!
       \Solve the write the results of an artery
       */
-      void Write(Teuchos::RCP<DRT::Discretization> discret, Teuchos::ParameterList& params,
+      void write(Teuchos::RCP<DRT::Discretization> discret, Teuchos::ParameterList& params,
           const std::vector<int>* nodes);
 
 

@@ -30,9 +30,9 @@ ADAPTER::FluidImmersed::FluidImmersed(const Teuchos::ParameterList& prbdyn, std:
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> ADAPTER::FluidImmersed::Discretization()
+Teuchos::RCP<DRT::Discretization> ADAPTER::FluidImmersed::discretization()
 {
-  return fluid_field()->Discretization();
+  return fluid_field()->discretization();
 }
 
 
@@ -70,7 +70,7 @@ double ADAPTER::FluidImmersed::read_restart(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidImmersed::NonlinearSolve(
+void ADAPTER::FluidImmersed::nonlinear_solve(
     Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel)
 {
   fluid_field()->Solve();
@@ -132,16 +132,16 @@ Teuchos::RCP<CORE::UTILS::ResultTest> ADAPTER::FluidImmersed::CreateFieldTest()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidImmersed::AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd)
+void ADAPTER::FluidImmersed::add_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoadd)
 {
-  fluid_field()->AddDirichCond(maptoadd);
+  fluid_field()->add_dirich_cond(maptoadd);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidImmersed::RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove)
+void ADAPTER::FluidImmersed::remove_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoremove)
 {
-  fluid_field()->RemoveDirichCond(maptoremove);
+  fluid_field()->remove_dirich_cond(maptoremove);
 }
 
 FOUR_C_NAMESPACE_CLOSE

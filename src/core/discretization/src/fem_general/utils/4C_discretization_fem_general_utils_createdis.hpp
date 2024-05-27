@@ -206,11 +206,11 @@ namespace CORE::FE
       }
 
       // we get the element maps almost for free
-      targetelerowmap_ = CreateMap(roweleset_, *targetdis);
-      targetelecolmap_ = CreateMap(coleleset_, *targetdis);
+      targetelerowmap_ = create_map(roweleset_, *targetdis);
+      targetelecolmap_ = create_map(coleleset_, *targetdis);
       // we get the node maps almost for free
-      targetnoderowmap_ = CreateMap(rownodeset_, *targetdis);
-      targetnodecolmap_ = CreateMap(colnodeset_, *targetdis);
+      targetnoderowmap_ = create_map(rownodeset_, *targetdis);
+      targetnodecolmap_ = create_map(colnodeset_, *targetdis);
 
       // copy selected conditions to the new discretization
       for (const auto& cond_name : conditions_to_copy)
@@ -230,27 +230,27 @@ namespace CORE::FE
       numeleskips_++;
 
       // call Redistribute, fill_complete etc.
-      Finalize(sourcedis, *targetdis);
+      finalize(sourcedis, *targetdis);
 
       return targetdis;
     };  // create_discretization_from_condition without material
 
    protected:
     //! construct row nodes for cloned target discretization
-    void CreateNodes(const DRT::Discretization& sourcedis, DRT::Discretization& targetdis,
+    void create_nodes(const DRT::Discretization& sourcedis, DRT::Discretization& targetdis,
         const std::set<int>& rownodeset, const std::set<int>& colnodeset, const bool isnurbsdis,
         const bool buildimmersednode) const;
 
     //! construct and return Epetra_Map
-    Teuchos::RCP<Epetra_Map> CreateMap(
+    Teuchos::RCP<Epetra_Map> create_map(
         std::set<int>& gidset, const DRT::Discretization& targetdis) const;
 
     //! do some checks
-    void InitialChecks(
+    void initial_checks(
         const DRT::Discretization& sourcedis, const DRT::Discretization& targetdis) const;
 
     //! export target nodes and elements and perform some checks
-    void Finalize(const DRT::Discretization& sourcedis, DRT::Discretization& targetdis) const;
+    void finalize(const DRT::Discretization& sourcedis, DRT::Discretization& targetdis) const;
 
    protected:
     //! set of row nodes
@@ -318,7 +318,7 @@ namespace CORE::FE
       // as defined in the input file section "--CLONING MATERIAL MAP"
 
       // check and analyze source discretization (sorcedis must be filled!)
-      InitialChecks(*sourcedis, *targetdis);
+      initial_checks(*sourcedis, *targetdis);
 
       // We have to find out all the material ids of the source discretization.
       // All cloned elements will receive the same material with the provided matid.
@@ -367,25 +367,25 @@ namespace CORE::FE
       bool buildimmersednode(inode != nullptr);
 
       // check and analyze source discretization
-      InitialChecks(*sourcedis, *targetdis);
+      initial_checks(*sourcedis, *targetdis);
       analyze_source_dis(sourcedis, eletype_, rownodeset_, colnodeset_, roweleset_, coleleset_);
 
       // do the node business
-      CreateNodes(*sourcedis, *targetdis, rownodeset_, colnodeset_, isnurbsdis, buildimmersednode);
-      targetnoderowmap_ = CreateMap(rownodeset_, *targetdis);
-      targetnodecolmap_ = CreateMap(colnodeset_, *targetdis);
+      create_nodes(*sourcedis, *targetdis, rownodeset_, colnodeset_, isnurbsdis, buildimmersednode);
+      targetnoderowmap_ = create_map(rownodeset_, *targetdis);
+      targetnodecolmap_ = create_map(colnodeset_, *targetdis);
 
       // create elements
       create_elements(sourcedis, targetdis, matmap, isnurbsdis);
-      targetelerowmap_ = CreateMap(roweleset_, *targetdis);
-      targetelecolmap_ = CreateMap(coleleset_, *targetdis);
+      targetelerowmap_ = create_map(roweleset_, *targetdis);
+      targetelecolmap_ = create_map(coleleset_, *targetdis);
 
       // copy desired conditions from source to target discretization
-      const auto conditions_to_copy = CloneStrategy::ConditionsToCopy();
+      const auto conditions_to_copy = CloneStrategy::conditions_to_copy();
       CopyConditions(*sourcedis, *targetdis, conditions_to_copy);
 
       // call Redistribute, fill_complete etc.
-      Finalize(*sourcedis, *targetdis);
+      finalize(*sourcedis, *targetdis);
     };  // create_matching_discretization
 
     /// method for cloning a new discretization from an existing condition using the actual
@@ -400,7 +400,7 @@ namespace CORE::FE
     )
     {
       // check and analyze source and target discretization
-      InitialChecks(sourcedis, targetdis);
+      initial_checks(sourcedis, targetdis);
 
       std::vector<CORE::Conditions::Condition*>::const_iterator cit;
       for (cit = conds.begin(); cit != conds.end(); ++cit)
@@ -429,7 +429,7 @@ namespace CORE::FE
     )
     {
       // check and analyze source discretization
-      InitialChecks(sourcedis, targetdis);
+      initial_checks(sourcedis, targetdis);
       std::map<int, Teuchos::RCP<DRT::Element>> sourceelements;
       CORE::Conditions::FindConditionObjects(sourcedis, sourceelements, condname);
 
@@ -462,21 +462,21 @@ namespace CORE::FE
           sourcedis, sourceelements, eletype_, rownodeset_, colnodeset_, roweleset_, coleleset_);
 
       // do the node business
-      CreateNodes(sourcedis, targetdis, rownodeset_, colnodeset_, isnurbsdis, buildimmersednode);
-      targetnoderowmap_ = CreateMap(rownodeset_, targetdis);
-      targetnodecolmap_ = CreateMap(colnodeset_, targetdis);
+      create_nodes(sourcedis, targetdis, rownodeset_, colnodeset_, isnurbsdis, buildimmersednode);
+      targetnoderowmap_ = create_map(rownodeset_, targetdis);
+      targetnodecolmap_ = create_map(colnodeset_, targetdis);
 
       // create elements
       create_elements_from_condition(sourceelements, targetdis, matmap, isnurbsdis);
-      targetelerowmap_ = CreateMap(roweleset_, targetdis);
-      targetelecolmap_ = CreateMap(coleleset_, targetdis);
+      targetelerowmap_ = create_map(roweleset_, targetdis);
+      targetelecolmap_ = create_map(coleleset_, targetdis);
 
       // copy desired conditions from source to target discretization
-      const auto conditions_to_copy = CloneStrategy::ConditionsToCopy();
+      const auto conditions_to_copy = CloneStrategy::conditions_to_copy();
       CopyConditions(sourcedis, targetdis, conditions_to_copy);
 
       // call Redistribute, fill_complete etc.
-      Finalize(sourcedis, targetdis);
+      finalize(sourcedis, targetdis);
     };  // create_matching_discretization_from_condition with material
 
     /// get element type std::strings and global id's and nodes from source discretization
@@ -498,7 +498,7 @@ namespace CORE::FE
 
         // we get the element type std::string and a boolean if this element
         // is considered! (see submeshes for Fluid-ALE case!)
-        if (CloneStrategy::DetermineEleType(actele, ismyele, eletype))
+        if (CloneStrategy::determine_ele_type(actele, ismyele, eletype))
         {
           // we make sure, that the cloned discretization
           // has the same parallel distribution as the
@@ -543,7 +543,7 @@ namespace CORE::FE
 
         // we get the element type std::string and a boolean if this element
         // is considered! (see submeshes for Fluid-ALE case!)
-        if (CloneStrategy::DetermineEleType(&(*actele), ismyele, eletype))
+        if (CloneStrategy::determine_ele_type(&(*actele), ismyele, eletype))
         {
           // we make sure, that the cloned discretization
           // has the same parallel distribution as the
@@ -599,7 +599,7 @@ namespace CORE::FE
       for (std::map<int, int>::iterator mapit = matmap.begin(); mapit != matmap.end(); ++mapit)
       {
         int target_id = mapit->second;
-        CloneStrategy::CheckMaterialType(target_id);
+        CloneStrategy::check_material_type(target_id);
       }
 
       // prepare some variables we need
@@ -669,7 +669,7 @@ namespace CORE::FE
         if (mat_iter != matmap.end())
         {
           int tar_matid = mat_iter->second;
-          CloneStrategy::SetElementData(newele, sourceele, tar_matid, isnurbsdis);
+          CloneStrategy::set_element_data(newele, sourceele, tar_matid, isnurbsdis);
 
           // add new element to discretization
           targetdis->add_element(newele);
@@ -698,7 +698,7 @@ namespace CORE::FE
            ++mapit)
       {
         int target_id = mapit->second;
-        CloneStrategy::CheckMaterialType(target_id);
+        CloneStrategy::check_material_type(target_id);
       }
 
       // prepare some variables we need
@@ -794,7 +794,7 @@ namespace CORE::FE
         if (mat_iter != matmap.end())
         {
           int tar_matid = mat_iter->second;
-          CloneStrategy::SetElementData(newele, sourceele, tar_matid, isnurbsdis);
+          CloneStrategy::set_element_data(newele, sourceele, tar_matid, isnurbsdis);
 
           // add new element to discretization
           targetdis.add_element(newele);

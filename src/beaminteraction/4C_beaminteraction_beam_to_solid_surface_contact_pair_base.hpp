@@ -113,14 +113,14 @@ namespace BEAMINTERACTION
      * @return RPC with the type of geometry pair for this beam contact pair.
      */
     Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, beam, surface>>
-    CastGeometryPair() const;
+    cast_geometry_pair() const;
 
     /**
      * \brief Get the GIDs of the pair, i.e. first the beam GIDs and then the pair GIDs.
-     * @param discret (in) Discretization.
+     * @param discret (in) discretization.
      * @return Vector with the GIDs of this pair.
      */
-    std::vector<int> GetPairGID(const DRT::Discretization& discret) const;
+    std::vector<int> get_pair_gid(const DRT::Discretization& discret) const;
 
    protected:
     //! Pointer to the face element object which manages the positions on the surface, including the

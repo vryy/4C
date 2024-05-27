@@ -909,11 +909,11 @@ void CORE::ADAPTER::Coupling::setup_coupling_matrices(const Epetra_Map& shiftedm
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map>& CORE::ADAPTER::Coupling::MaDofMapPtr() { return masterdofmap_; }
+Teuchos::RCP<const Epetra_Map>& CORE::ADAPTER::Coupling::ma_dof_map_ptr() { return masterdofmap_; }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Epetra_Map& CORE::ADAPTER::Coupling::MaDofMap() const
+const Epetra_Map& CORE::ADAPTER::Coupling::ma_dof_map() const
 {
   if (masterdofmap_.is_null())
     FOUR_C_THROW("The masterdofmap_ has not been initialized correctly!");
@@ -922,14 +922,14 @@ const Epetra_Map& CORE::ADAPTER::Coupling::MaDofMap() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map>& CORE::ADAPTER::Coupling::PermutedMaDofMapPtr()
+Teuchos::RCP<const Epetra_Map>& CORE::ADAPTER::Coupling::permuted_ma_dof_map_ptr()
 {
   return permmasterdofmap_;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Epetra_Map& CORE::ADAPTER::Coupling::PermutedMaDofMap() const
+const Epetra_Map& CORE::ADAPTER::Coupling::permuted_ma_dof_map() const
 {
   if (permmasterdofmap_.is_null())
     FOUR_C_THROW("The permmasterdofmap_ has not been initialized correctly!");
@@ -938,11 +938,11 @@ const Epetra_Map& CORE::ADAPTER::Coupling::PermutedMaDofMap() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map>& CORE::ADAPTER::Coupling::SlDofMapPtr() { return slavedofmap_; }
+Teuchos::RCP<const Epetra_Map>& CORE::ADAPTER::Coupling::sl_dof_map_ptr() { return slavedofmap_; }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Epetra_Map& CORE::ADAPTER::Coupling::SlDofMap() const
+const Epetra_Map& CORE::ADAPTER::Coupling::sl_dof_map() const
 {
   if (slavedofmap_.is_null()) FOUR_C_THROW("The slavedofmap_ has not been initialized correctly!");
   return *slavedofmap_;
@@ -950,14 +950,14 @@ const Epetra_Map& CORE::ADAPTER::Coupling::SlDofMap() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map>& CORE::ADAPTER::Coupling::PermutedSlDofMapPtr()
+Teuchos::RCP<const Epetra_Map>& CORE::ADAPTER::Coupling::permuted_sl_dof_map_ptr()
 {
   return permslavedofmap_;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Epetra_Map& CORE::ADAPTER::Coupling::PermutedSlDofMap() const
+const Epetra_Map& CORE::ADAPTER::Coupling::permuted_sl_dof_map() const
 {
   if (permslavedofmap_.is_null())
     FOUR_C_THROW("The permslavedofmap_ has not been initialized correctly!");
@@ -966,11 +966,11 @@ const Epetra_Map& CORE::ADAPTER::Coupling::PermutedSlDofMap() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Export>& CORE::ADAPTER::Coupling::MaExporterPtr() { return masterexport_; }
+Teuchos::RCP<Epetra_Export>& CORE::ADAPTER::Coupling::ma_exporter_ptr() { return masterexport_; }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Epetra_Export& CORE::ADAPTER::Coupling::MaExporter() const
+const Epetra_Export& CORE::ADAPTER::Coupling::ma_exporter() const
 {
   if (masterexport_.is_null())
     FOUR_C_THROW("The masterexport_ has not been initialized correctly!");
@@ -979,11 +979,11 @@ const Epetra_Export& CORE::ADAPTER::Coupling::MaExporter() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Export>& CORE::ADAPTER::Coupling::SlExporterPtr() { return slaveexport_; }
+Teuchos::RCP<Epetra_Export>& CORE::ADAPTER::Coupling::sl_exporter_ptr() { return slaveexport_; }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Epetra_Export& CORE::ADAPTER::Coupling::SlExporter() const
+const Epetra_Export& CORE::ADAPTER::Coupling::sl_exporter() const
 {
   if (slaveexport_.is_null()) FOUR_C_THROW("The slaveexport_ has not been initialized correctly!");
   return *slaveexport_;

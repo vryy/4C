@@ -53,7 +53,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
   {
-    this->CastGeometryPair()->Evaluate(this->ele1posref_,
+    this->cast_geometry_pair()->Evaluate(this->ele1posref_,
         this->face_element_->get_face_reference_element_data(), this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
@@ -102,7 +102,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
       segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
 
       // Get the Gauss point contribution to the coupling potential.
-      coupling_vector = this->EvaluateCoupling(projected_gauss_point);
+      coupling_vector = this->evaluate_coupling(projected_gauss_point);
       GEOMETRYPAIR::EvaluatePosition<mortar>(projected_gauss_point.GetEta(), q_lambda, lambda);
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
         potential += coupling_vector(i_dim) * lambda(i_dim) *
@@ -111,7 +111,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
   }
 
   // Get the pair GIDs.
-  std::vector<int> pair_gid = this->GetPairGID(discret);
+  std::vector<int> pair_gid = this->get_pair_gid(discret);
 
   // Add the terms to the global stiffness matrix.
   if (stiffness_matrix != Teuchos::null)
@@ -136,7 +136,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
   {
-    this->CastGeometryPair()->Evaluate(this->ele1posref_,
+    this->cast_geometry_pair()->Evaluate(this->ele1posref_,
         this->face_element_->get_face_reference_element_data(), this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
@@ -191,7 +191,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
 
       // Get the constraint vector. This is the coupling potentials variation w.r.t the discrete
       // Lagrange multiplier DOFs.
-      coupling_vector = this->EvaluateCoupling(projected_gauss_point);
+      coupling_vector = this->evaluate_coupling(projected_gauss_point);
       for (unsigned int i_mortar_node = 0; i_mortar_node < mortar::n_nodes_; i_mortar_node++)
         for (unsigned int i_mortar_val = 0; i_mortar_val < mortar::n_val_; i_mortar_val++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)

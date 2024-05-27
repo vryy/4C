@@ -53,7 +53,7 @@ namespace SSI
     void do_struct_step() override;
 
     //! perform one time step of scatra field
-    void DoScatraStep() override;
+    void do_scatra_step() override;
 
     // Flag for reading scatra result from restart files
     bool isscatrafromfile_;

@@ -42,30 +42,30 @@ void STR::EXPLICIT::AdamsBashforth2::Setup()
   // ---------------------------------------------------------------------------
   // setup pointers to the force vectors of the global state data container
   // ---------------------------------------------------------------------------
-  finertian_ptr_ = GlobalState().GetFinertialN();
-  finertianp_ptr_ = GlobalState().GetFinertialNp();
+  finertian_ptr_ = global_state().GetFinertialN();
+  finertianp_ptr_ = global_state().GetFinertialNp();
 
-  fviscon_ptr_ = GlobalState().GetFviscoN();
-  fvisconp_ptr_ = GlobalState().GetFviscoNp();
+  fviscon_ptr_ = global_state().GetFviscoN();
+  fvisconp_ptr_ = global_state().GetFviscoNp();
 
   // ---------------------------------------------------------------------------
   // resizing of multi-step quantities
   // ---------------------------------------------------------------------------
-  GlobalState().GetMultiTime()->Resize(-1, 0, true);
-  GlobalState().GetDeltaTime()->Resize(-1, 0, true);
-  GlobalState().GetMultiDis()->Resize(-1, 0, GlobalState().DofRowMapView(), true);
-  GlobalState().GetMultiVel()->Resize(-1, 0, GlobalState().DofRowMapView(), true);
-  GlobalState().GetMultiAcc()->Resize(-1, 0, GlobalState().DofRowMapView(), true);
+  global_state().GetMultiTime()->Resize(-1, 0, true);
+  global_state().GetDeltaTime()->Resize(-1, 0, true);
+  global_state().GetMultiDis()->Resize(-1, 0, global_state().DofRowMapView(), true);
+  global_state().GetMultiVel()->Resize(-1, 0, global_state().DofRowMapView(), true);
+  global_state().GetMultiAcc()->Resize(-1, 0, global_state().DofRowMapView(), true);
 
   // here we initialized the dt of previous steps in the database, since a resize is performed
-  const double dt = (*GlobalState().GetDeltaTime())[0];
-  GlobalState().GetDeltaTime()->UpdateSteps(dt);
+  const double dt = (*global_state().GetDeltaTime())[0];
+  global_state().GetDeltaTime()->UpdateSteps(dt);
 
   // -------------------------------------------------------------------
   // set initial displacement
   // -------------------------------------------------------------------
   set_initial_displacement(
-      TimInt().GetDataSDyn().GetInitialDisp(), TimInt().GetDataSDyn().StartFuncNo());
+      tim_int().GetDataSDyn().GetInitialDisp(), tim_int().GetDataSDyn().StartFuncNo());
 
   // Has to be set before the post_setup() routine is called!
   issetup_ = true;
@@ -85,35 +85,35 @@ void STR::EXPLICIT::AdamsBashforth2::set_state(const Epetra_Vector& x)
 {
   check_init_setup();
 
-  const double dt = (*GlobalState().GetDeltaTime())[0];
-  const double dto = (*GlobalState().GetDeltaTime())[-1];
+  const double dt = (*global_state().GetDeltaTime())[0];
+  const double dto = (*global_state().GetDeltaTime())[-1];
   const double dta = (2.0 * dt * dto + dt * dt) / (2.0 * dto);
   const double dtb = -(dt * dt) / (2.0 * dto);
 
   // ---------------------------------------------------------------------------
   // new end-point acceleration
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Vector> accnp_ptr = GlobalState().ExtractDisplEntries(x);
-  GlobalState().GetAccNp()->Scale(1.0, *accnp_ptr);
+  Teuchos::RCP<Epetra_Vector> accnp_ptr = global_state().ExtractDisplEntries(x);
+  global_state().GetAccNp()->Scale(1.0, *accnp_ptr);
 
   // ---------------------------------------------------------------------------
   // new end-point velocities
   // ---------------------------------------------------------------------------
-  GlobalState().GetVelNp()->Update(1.0, (*(GlobalState().GetMultiVel()))[0], 0.0);
-  GlobalState().GetVelNp()->Update(
-      dta, (*(GlobalState().GetMultiAcc()))[0], dtb, (*(GlobalState().GetMultiAcc()))[-1], 1.0);
+  global_state().GetVelNp()->Update(1.0, (*(global_state().GetMultiVel()))[0], 0.0);
+  global_state().GetVelNp()->Update(
+      dta, (*(global_state().GetMultiAcc()))[0], dtb, (*(global_state().GetMultiAcc()))[-1], 1.0);
 
   // ---------------------------------------------------------------------------
   // new end-point displacements
   // ---------------------------------------------------------------------------
-  GlobalState().GetDisNp()->Update(1.0, (*(GlobalState().GetMultiDis()))[0], 0.0);
-  GlobalState().GetDisNp()->Update(
-      dta, (*(GlobalState().GetMultiVel()))[0], dtb, (*(GlobalState().GetMultiVel()))[-1], 1.0);
+  global_state().GetDisNp()->Update(1.0, (*(global_state().GetMultiDis()))[0], 0.0);
+  global_state().GetDisNp()->Update(
+      dta, (*(global_state().GetMultiVel()))[0], dtb, (*(global_state().GetMultiVel()))[-1], 1.0);
 
   // ---------------------------------------------------------------------------
   // update the elemental state
   // ---------------------------------------------------------------------------
-  ModelEval().UpdateResidual();
+  ModelEval().update_residual();
   ModelEval().RunRecover();
 }
 
@@ -130,14 +130,14 @@ void STR::EXPLICIT::AdamsBashforth2::add_visco_mass_contributions(Epetra_Vector&
 void STR::EXPLICIT::AdamsBashforth2::add_visco_mass_contributions(
     CORE::LINALG::SparseOperator& jac) const
 {
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptr = GlobalState().ExtractDisplBlock(jac);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptr = global_state().ExtractDisplBlock(jac);
   // set mass matrix
-  stiff_ptr->Add(*GlobalState().GetMassMatrix(), false, 1.0, 0.0);
+  stiff_ptr->Add(*global_state().GetMassMatrix(), false, 1.0, 0.0);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::AdamsBashforth2::WriteRestart(
+void STR::EXPLICIT::AdamsBashforth2::write_restart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
@@ -145,7 +145,7 @@ void STR::EXPLICIT::AdamsBashforth2::WriteRestart(
   iowriter.WriteVector("finert", finertian_ptr_);
   iowriter.WriteVector("fvisco", fviscon_ptr_);
 
-  ModelEval().WriteRestart(iowriter, forced_writerestart);
+  ModelEval().write_restart(iowriter, forced_writerestart);
 }
 
 /*----------------------------------------------------------------------------*
@@ -186,8 +186,8 @@ void STR::EXPLICIT::AdamsBashforth2::UpdateStepState()
  *----------------------------------------------------------------------------*/
 double STR::EXPLICIT::AdamsBashforth2::method_lin_err_coeff_dis() const
 {
-  const double dt = (*GlobalState().GetDeltaTime())[0];
-  const double dto = (*GlobalState().GetDeltaTime())[-1];
+  const double dt = (*global_state().GetDeltaTime())[0];
+  const double dto = (*global_state().GetDeltaTime())[-1];
   return (2. * dt + 3. * dto) / (12. * dt);
 }
 

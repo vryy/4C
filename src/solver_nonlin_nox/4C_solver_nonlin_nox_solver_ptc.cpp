@@ -138,7 +138,7 @@ void NOX::NLN::Solver::PseudoTransient::reset(const ::NOX::Abstract::Vector& ini
  *----------------------------------------------------------------------*/
 void NOX::NLN::Solver::PseudoTransient::create_scaling_operator()
 {
-  if (IsScalingOperator()) return;
+  if (is_scaling_operator()) return;
 
   switch (scaleOpType_)
   {
@@ -810,7 +810,7 @@ void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::run_post_compute_jacobian(
             "Something strange happened: The jacobian has not the "
             "operator type defined in the linear system object!");
 
-      modifyJacobian(*jacPtr);
+      modify_jacobian(*jacPtr);
 
       break;
     }
@@ -836,7 +836,7 @@ void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::run_post_compute_fand_jaco
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::modifyJacobian(
+void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::modify_jacobian(
     CORE::LINALG::SparseMatrix& jac)
 {
   // get the inverse pseudo time step

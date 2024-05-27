@@ -166,10 +166,10 @@ void SCATRA::TimIntBDF2::set_old_part_of_righthandside()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntBDF2::ExplicitPredictor() const
+void SCATRA::TimIntBDF2::explicit_predictor() const
 {
   // call base class routine
-  ScaTraTimIntImpl::ExplicitPredictor();
+  ScaTraTimIntImpl::explicit_predictor();
 
   if (step_ > 1) phinp_->Update(-1.0, *phinm_, 2.0);
   // for step == 1 phinp_ is already correctly initialized with the
@@ -185,7 +185,7 @@ void SCATRA::TimIntBDF2::add_neumann_to_residual()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntBDF2::AVM3Separation()
+void SCATRA::TimIntBDF2::av_m3_separation()
 {
   // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
@@ -205,7 +205,7 @@ void SCATRA::TimIntBDF2::dynamic_computation_of_cs()
   {
     // perform filtering and computation of Prt
     // compute averaged values for LkMk and MkMk
-    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
+    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = dirichlet_toggle();
     DynSmag_->apply_filter_for_dynamic_computation_of_prt(
         phinp_, 0.0, dirichtoggle, *extraparams_, NdsVel());
   }
@@ -217,7 +217,7 @@ void SCATRA::TimIntBDF2::dynamic_computation_of_cv()
 {
   if (turbmodel_ == INPAR::FLUID::dynamic_vreman)
   {
-    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
+    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = dirichlet_toggle();
     Vrem_->apply_filter_for_dynamic_computation_of_dt(
         phinp_, 0.0, dirichtoggle, *extraparams_, NdsVel());
   }
@@ -261,7 +261,7 @@ void SCATRA::TimIntBDF2::compute_time_derivative()
   // However, we do not want to break the linear relationship
   // as stated above. We do not want to set Dirichlet values for
   // dependent values like phidtnp_. This turned out to be inconsistent.
-  // ApplyDirichletBC(time_,Teuchos::null,phidtnp_);
+  // apply_dirichlet_bc(time_,Teuchos::null,phidtnp_);
 }
 
 /*----------------------------------------------------------------------*
@@ -289,10 +289,10 @@ void SCATRA::TimIntBDF2::Update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntBDF2::WriteRestart() const
+void SCATRA::TimIntBDF2::write_restart() const
 {
   // call base class routine
-  ScaTraTimIntImpl::WriteRestart();
+  ScaTraTimIntImpl::write_restart();
 
   // additional state vectors that are needed for BDF2 restart
   output_->WriteVector("phin", phin_);
@@ -330,7 +330,7 @@ void SCATRA::TimIntBDF2::read_restart(const int step, Teuchos::RCP<IO::InputCont
 
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
       turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
-    AVM3Preparation();
+    av_m3_preparation();
 }
 
 FOUR_C_NAMESPACE_CLOSE

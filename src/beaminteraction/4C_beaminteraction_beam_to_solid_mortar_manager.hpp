@@ -201,7 +201,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Throw an error if the global maps were not build.
      */
-    inline void CheckGlobalMaps() const
+    inline void check_global_maps() const
     {
       if (!is_global_maps_build_)
         FOUR_C_THROW("Global maps are not build in BeamToSolidMortarManager!");
@@ -210,7 +210,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Throw an error if the local maps were not build.
      */
-    inline void CheckLocalMaps() const
+    inline void check_local_maps() const
     {
       if (!is_local_maps_build_)
         FOUR_C_THROW("Local maps are not build in BeamToSolidMortarManager!");
@@ -224,7 +224,7 @@ namespace BEAMINTERACTION
      *
      * @return Inverted global_kappa_ vector.
      */
-    Teuchos::RCP<Epetra_Vector> PenaltyInvertKappa() const;
+    Teuchos::RCP<Epetra_Vector> penalty_invert_kappa() const;
 
    private:
     //! Flag if setup was called.

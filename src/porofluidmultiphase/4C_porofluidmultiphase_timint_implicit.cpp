@@ -236,11 +236,11 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time", time_);
-    discret_->EvaluateDirichlet(
+    discret_->evaluate_dirichlet(
         eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
-    discret_->EvaluateDirichlet(
+    discret_->evaluate_dirichlet(
         eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_with_volfracpress_);
-    discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null,
+    discret_->evaluate_dirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null,
         dbcmaps_starting_condition_);
     zeros_->PutScalar(0.0);  // just in case of change
   }
@@ -415,8 +415,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::prepare_time_step()
   // -------------------------------------------------------------------
   // TODO: Dirichlet auch im Fall von genalpha prenp
   // Neumann(n + alpha_f)
-  ApplyDirichletBC(time_, phinp_, Teuchos::null);
-  ApplyNeumannBC(neumann_loads_);
+  apply_dirichlet_bc(time_, phinp_, Teuchos::null);
+  apply_neumann_bc(neumann_loads_);
 
   // volume fraction pressure specific stuff
   evaluate_valid_volume_frac_press_and_spec();
@@ -424,7 +424,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::prepare_time_step()
 
   if (time_ <= starting_dbc_time_end_)
   {
-    ApplyStartingDBC();
+    apply_starting_dbc();
   }
 
   // do the same also for meshtying
@@ -444,7 +444,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::prepare_first_time_step()
     if (nds_vel_ != -1 || !isale_)  // if some velocity field has been set
     {
       // TODO: Restructure enforcement of Dirichlet boundary conditions on phin_
-      ApplyDirichletBC(time_, phin_, Teuchos::null);
+      apply_dirichlet_bc(time_, phin_, Teuchos::null);
       calc_initial_time_derivative();
     }
     // if initial velocity field has not been set here, the initial time derivative of phi will be
@@ -513,7 +513,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Solve()
   // -----------------------------------------------------------------
   //                    always solve nonlinear equation
   // -----------------------------------------------------------------
-  NonlinearSolve();
+  nonlinear_solve();
 
   // reconstruct pressures and saturations
   reconstruct_pressures_and_saturations();
@@ -575,7 +575,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Output()
   TEUCHOS_FUNC_TIME_MONITOR("POROFLUIDMULTIPHASE:    + output of solution");
 
   // solution output and potentially restart data and/or flux data
-  if (DoOutput())
+  if (do_output())
   {
     // do the same for the strategy
     strategy_->Output();
@@ -595,7 +595,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Output()
 
     // reconstruct porosity for output; porosity is only needed for output and does not have to be
     // transferred between fields
-    if (output_porosity_) ReconstructPorosity();
+    if (output_porosity_) reconstruct_porosity();
 
     if (output_phase_velocities_) calculate_phase_velocities();
 
@@ -660,7 +660,7 @@ Teuchos::RCP<const Epetra_Vector> POROFLUIDMULTIPHASE::TimIntImpl::ArteryPoroflu
 /*----------------------------------------------------------------------*
  | evaluate Dirichlet boundary conditions at t_{n+1}        vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntImpl::ApplyDirichletBC(
+void POROFLUIDMULTIPHASE::TimIntImpl::apply_dirichlet_bc(
     const double time, Teuchos::RCP<Epetra_Vector> prenp, Teuchos::RCP<Epetra_Vector> predt)
 {
   // time measurement: apply Dirichlet conditions
@@ -673,33 +673,33 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ApplyDirichletBC(
   // predicted Dirichlet values
   // \c  prenp then also holds prescribed new Dirichlet values
   discret_->ClearState();
-  discret_->EvaluateDirichlet(p, prenp, predt, Teuchos::null, Teuchos::null, dbcmaps_);
+  discret_->evaluate_dirichlet(p, prenp, predt, Teuchos::null, Teuchos::null, dbcmaps_);
   discret_->ClearState();
 
   return;
-}  // POROFLUIDMULTIPHASE::TimIntImpl::ApplyDirichletBC
+}  // POROFLUIDMULTIPHASE::TimIntImpl::apply_dirichlet_bc
 
 
 /*----------------------------------------------------------------------*
  | contains the residual scaling and addition of Neumann terms          |
  |                                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntImpl::ScalingAndNeumann()
+void POROFLUIDMULTIPHASE::TimIntImpl::scaling_and_neumann()
 {
   // scaling to get true residual vector for all time integration schemes
-  trueresidual_->Update(ResidualScaling(), *residual_, 0.0);
+  trueresidual_->Update(residual_scaling(), *residual_, 0.0);
 
   // add Neumann b.c. scaled with a factor due to time discretization
   add_neumann_to_residual();
 
   return;
-}  // TimIntImpl::ScalingAndNeumann
+}  // TimIntImpl::scaling_and_neumann
 
 
 /*----------------------------------------------------------------------*
  | evaluate Neumann boundary conditions                     vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntImpl::ApplyNeumannBC(
+void POROFLUIDMULTIPHASE::TimIntImpl::apply_neumann_bc(
     const Teuchos::RCP<Epetra_Vector>& neumann_loads  //!< Neumann loads
 )
 {
@@ -722,7 +722,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ApplyNeumannBC(
   discret_->ClearState();
 
   return;
-}  // POROFLUIDMULTIPHASE::TimIntImpl::ApplyNeumannBC
+}  // POROFLUIDMULTIPHASE::TimIntImpl::apply_neumann_bc
 
 
 /*----------------------------------------------------------------------*
@@ -762,7 +762,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::assemble_mat_and_rhs()
   discret_->ClearState();
 
   // potential residual scaling and potential addition of Neumann terms
-  ScalingAndNeumann();
+  scaling_and_neumann();
 
   // finalize assembly of system matrix
   sysmat_->Complete();
@@ -885,7 +885,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::apply_additional_dbc_for_vol_frac_press()
   return;
 }
 
-void POROFLUIDMULTIPHASE::TimIntImpl::ApplyStartingDBC()
+void POROFLUIDMULTIPHASE::TimIntImpl::apply_starting_dbc()
 {
   const auto& elecolmap = *discret_->ElementColMap();
   std::vector<int> dirichlet_dofs(0);
@@ -1033,13 +1033,13 @@ void POROFLUIDMULTIPHASE::TimIntImpl::assemble_fluid_scatra_coupling_mat(
 /*----------------------------------------------------------------------*
  | contains the nonlinear iteration loop                    vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntImpl::NonlinearSolve()
+void POROFLUIDMULTIPHASE::TimIntImpl::nonlinear_solve()
 {
   // time measurement: nonlinear iteration
   TEUCHOS_FUNC_TIME_MONITOR("POROFLUIDMULTIPHASE:   + nonlin. iteration/lin. solve");
 
   // out to screen
-  PrintHeader();
+  print_header();
   print_time_step_info();
 
   // print header of convergence table to screen
@@ -1064,7 +1064,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::NonlinearSolve()
     Evaluate();
 
     // abort nonlinear iteration if desired
-    if (AbortNonlinIter(iternum_, itemax_, abstolres, actresidual)) break;
+    if (abort_nonlin_iter(iternum_, itemax_, abstolres, actresidual)) break;
 
     // initialize increment vector
     increment_->PutScalar(0.0);
@@ -1077,7 +1077,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::NonlinearSolve()
   }  // nonlinear iteration
 
   return;
-}  // TimIntImpl::NonlinearSolve
+}  // TimIntImpl::nonlinear_solve
 
 /*--------------------------------------------------------------------------*
  | solve linear system of equations                        kremheller 04/18 |
@@ -1115,7 +1115,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::linear_solve(
 /*----------------------------------------------------------------------*
  | check if to stop the nonlinear iteration                 vuong 08/16 |
  *----------------------------------------------------------------------*/
-bool POROFLUIDMULTIPHASE::TimIntImpl::AbortNonlinIter(
+bool POROFLUIDMULTIPHASE::TimIntImpl::abort_nonlin_iter(
     const int itnum, const int itemax, const double abstolres, double& actresidual)
 {
   //----------------------------------------------------- compute norms
@@ -1220,12 +1220,12 @@ bool POROFLUIDMULTIPHASE::TimIntImpl::AbortNonlinIter(
       FOUR_C_THROW("calculated vector norm is INF.");
 
   return false;
-}  // TimIntImpl::AbortNonlinIter
+}  // TimIntImpl::abort_nonlin_iter
 
 /*----------------------------------------------------------------------*
  | Print Header to screen                              kremheller 05/17 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntImpl::PrintHeader()
+void POROFLUIDMULTIPHASE::TimIntImpl::print_header()
 {
   if (myrank_ == 0)
   {
@@ -1381,7 +1381,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::calculate_phase_velocities()
 /*----------------------------------------------------------------------------*
  | reconstruct porosity from current solution                kremheller 04/17 |
  *---------------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructPorosity()
+void POROFLUIDMULTIPHASE::TimIntImpl::reconstruct_porosity()
 {
   // time measurement: reconstruction of porosity
   TEUCHOS_FUNC_TIME_MONITOR("POROFLUIDMULTIPHASE:    + reconstruct porosity");
@@ -1891,7 +1891,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::UpdateIter(const Teuchos::RCP<const Epetra
 /*----------------------------------------------------------------------*
  | set convective velocity field                            vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntImpl::SetVelocityField(
+void POROFLUIDMULTIPHASE::TimIntImpl::set_velocity_field(
     Teuchos::RCP<const Epetra_Vector> vel  //!< velocity vector
 )
 {
@@ -1919,7 +1919,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::SetVelocityField(
 
   return;
 
-}  // TimIntImpl::SetVelocityField
+}  // TimIntImpl::set_velocity_field
 
 /*----------------------------------------------------------------------*
  | set state on discretization                                          |
@@ -2069,9 +2069,9 @@ void POROFLUIDMULTIPHASE::TimIntImpl::calc_initial_time_derivative()
   // evaluate Dirichlet and Neumann boundary conditions at time t = 0 to ensure consistent
   // computation of initial time derivative vector Dirichlet boundary conditions should be
   // consistent with initial field
-  ApplyDirichletBC(time_, phinp_, Teuchos::null);
+  apply_dirichlet_bc(time_, phinp_, Teuchos::null);
   compute_intermediate_values();
-  ApplyNeumannBC(neumann_loads_);
+  apply_neumann_bc(neumann_loads_);
 
   // create and fill parameter list for elements
   Teuchos::ParameterList eleparams;
@@ -2089,12 +2089,12 @@ void POROFLUIDMULTIPHASE::TimIntImpl::calc_initial_time_derivative()
   discret_->ClearState();
 
   // potential residual scaling and potential addition of Neumann terms
-  ScalingAndNeumann();
+  scaling_and_neumann();
 
   // We have to Scale the system matrix consistently
   // TODO: this is kind of a hack, does it work for other schemes than one-step theta??
-  // sysmat_->Scale(1.0/ResidualScaling());
-  residual_->Scale(ResidualScaling());
+  // sysmat_->Scale(1.0/residual_scaling());
+  residual_->Scale(residual_scaling());
 
   // finalize assembly of system matrix
   sysmat_->Complete();

@@ -1180,7 +1180,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
           Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
 
       // call submethod
-      ComputeAreaDeriv(xscurr, num_node(), numdim * num_node(), elearea, Adiff, Adiff2);
+      compute_area_deriv(xscurr, num_node(), numdim * num_node(), elearea, Adiff, Adiff2);
       // store result
       elevector3[0] = elearea;
     }
@@ -1205,7 +1205,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
           Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
 
       // call submethod
-      ComputeAreaDeriv(xscurr, num_node(), numdim * num_node(), elearea, Adiff, Adiff2);
+      compute_area_deriv(xscurr, num_node(), numdim * num_node(), elearea, Adiff, Adiff2);
       // update elematrices and elevectors
       elevector1 = *Adiff;
       elevector1.scale(-1.0);
@@ -1243,7 +1243,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
     {
       // dummy vector
       std::vector<double> dummy(lm.size());
-      BuildNormalsAtNodes(elevector1, dummy, true);
+      build_normals_at_nodes(elevector1, dummy, true);
     }
     break;
     case calc_cur_nodal_normals:
@@ -1252,7 +1252,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
-      BuildNormalsAtNodes(elevector1, mydisp, false);
+      build_normals_at_nodes(elevector1, mydisp, false);
     }
     break;
     case calc_cur_normal_at_point:
@@ -1732,7 +1732,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       if (rtype == refsurfnormal)
       {
         std::vector<double> dummy(lm.size());  // dummy vector - we only want the reference normals!
-        BuildNormalsAtNodes(elevector2, dummy, true);
+        build_normals_at_nodes(elevector2, dummy, true);
 
         // norm of nodal subvectors of element normal vector
         CORE::LINALG::SerialDenseVector norm_refnormal_sq;
@@ -2250,7 +2250,7 @@ void DRT::ELEMENTS::StructuralSurface::compute_vol_deriv(const CORE::LINALG::Ser
  * Compute surface area and its first and second derivatives    lw 05/08*
  * with respect to the displacements                                    *
  * ---------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const CORE::LINALG::SerialDenseMatrix& x,
+void DRT::ELEMENTS::StructuralSurface::compute_area_deriv(const CORE::LINALG::SerialDenseMatrix& x,
     const int numnode, const int ndof, double& A,
     const Teuchos::RCP<CORE::LINALG::SerialDenseVector>& Adiff,
     const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Adiff2)
@@ -2386,7 +2386,7 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const CORE::LINALG::Seri
 }
 
 
-void DRT::ELEMENTS::StructuralSurface::BuildNormalsAtNodes(
+void DRT::ELEMENTS::StructuralSurface::build_normals_at_nodes(
     CORE::LINALG::SerialDenseVector& nodenormals, const std::vector<double>& mydisp, bool refconfig)
 {
   const int numnode = num_node();

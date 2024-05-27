@@ -39,8 +39,8 @@ namespace CORE::Conditions
    * A condition is mainly used to realize boundary conditions. Parameters for the condition
    * are stored in a InputParameterContainer.
    * The condition can additionally store a discretization of the condition which is
-   * driven by the Discretization class that is evaluating this condition.
-   * The Discretization class is therefore a friend of the Condition and has access to
+   * driven by the discretization class that is evaluating this condition.
+   * The discretization class is therefore a friend of the Condition and has access to
    * the protected methods dealing with the discretization of this condition.
    */
   class Condition
@@ -49,7 +49,7 @@ namespace CORE::Conditions
     //! @name Enums and Friends
 
     /*!
-    \brief Discretization is a friend of the condition to have access
+    \brief discretization is a friend of the condition to have access
            to the private methods that would otherwise have to be public.
 
     */
@@ -195,9 +195,9 @@ namespace CORE::Conditions
     The geometry description consists of elements that are capable to
     perform the necessary operations on the condition (e.g. integrate a Neumann BC
     along a line). The matching nodes are taken from the
-    underlying discretization itself. Also, it is actually the Discretization class
+    underlying discretization itself. Also, it is actually the discretization class
     that drives this process, so do not add elements yourself to the condition, let
-    the Discretization do it for you.
+    the discretization do it for you.
 
     \param geom (in): Map of elements describing the geometry.
                       A deep copy of the map is made and stored.

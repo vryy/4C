@@ -70,14 +70,14 @@ namespace ADAPTER
     virtual void do_algorithm_specific_init(){};
 
     /// provide access to algorithm parameters
-    virtual const Teuchos::ParameterList& AlgoParameters() { return params_; }
+    virtual const Teuchos::ParameterList& algo_parameters() { return params_; }
 
     /// interpolate fluid quantity to a scatra one (e.g. via volmortar)
-    Teuchos::RCP<const Epetra_Vector> FluidToScatra(
+    Teuchos::RCP<const Epetra_Vector> fluid_to_scatra(
         const Teuchos::RCP<const Epetra_Vector> fluidvector) const;
 
     /// interpolate scatra quantity to a fluid one (e.g. via volmortar)
-    Teuchos::RCP<const Epetra_Vector> ScatraToFluid(
+    Teuchos::RCP<const Epetra_Vector> scatra_to_fluid(
         const Teuchos::RCP<const Epetra_Vector> scatravector) const;
 
    private:
@@ -111,7 +111,7 @@ namespace ADAPTER
     bool is_init() { return isinit_; };
 
     //! check if \ref Setup() was called
-    void CheckIsSetup()
+    void check_is_setup()
     {
       if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
     };

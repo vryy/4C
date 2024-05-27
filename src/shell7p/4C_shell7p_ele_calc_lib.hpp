@@ -166,7 +166,7 @@ namespace DRT::ELEMENTS::SHELL
    * @brief Returns the optimal gauss integration rule based on the element discretization type
    */
   template <CORE::FE::CellType distype>
-  constexpr auto GetGaussRule()
+  constexpr auto get_gauss_rule()
   {
     return DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
   }
@@ -1239,7 +1239,7 @@ namespace DRT::ELEMENTS::SHELL
    * transverse shear locking. The choice of coordinates depends on the discretization types of the
    * element. Here, they are chosen such that the points lie on the middle of each edge.
    *
-   * @tparam distype : Discretization type
+   * @tparam distype : discretization type
    * @params qp (in) :  Index of collocation point
    */
   template <CORE::FE::CellType distype>

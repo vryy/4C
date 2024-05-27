@@ -90,7 +90,7 @@ namespace CONTACT
      *                             \boldsymbol{t}}{\mathrm{d} s} \f]
      */
     template <int dim>
-    void SoEleCauchyStruct(MORTAR::Element& mortar_ele, double* gp_coord,
+    void so_ele_cauchy_struct(MORTAR::Element& mortar_ele, double* gp_coord,
         const std::vector<CORE::GEN::Pairedvector<int, double>>& d_gp_coord_dd, double gp_wgt,
         const CORE::LINALG::Matrix<dim, 1>& gp_normal,
         const std::vector<CORE::GEN::Pairedvector<int, double>>& d_gp_normal_dd,
@@ -100,7 +100,7 @@ namespace CONTACT
         CORE::LINALG::SerialDenseMatrix* d_sigma_nt_ds);
 
    private:
-    void IntegrateGP_2D(MORTAR::Element& sele, MORTAR::Element& mele,
+    void integrate_gp_2_d(MORTAR::Element& sele, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -111,7 +111,7 @@ namespace CONTACT
         std::vector<CORE::GEN::Pairedvector<int, double>>& derivsxi,
         std::vector<CORE::GEN::Pairedvector<int, double>>& derivmxi) override;
 
-    void IntegrateGP_3D(MORTAR::Element& sele, MORTAR::Element& mele,
+    void integrate_gp_3_d(MORTAR::Element& sele, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -181,7 +181,7 @@ namespace CONTACT
      *                             \boldsymbol{t}}{\mathrm{d} s} \f]
      */
     template <int dim>
-    void SoEleCauchy(MORTAR::Element& mortar_ele, double* gp_coord,
+    void so_ele_cauchy(MORTAR::Element& mortar_ele, double* gp_coord,
         const std::vector<CORE::GEN::Pairedvector<int, double>>& d_gp_coord_dd, double gp_wgt,
         const CORE::LINALG::Matrix<dim, 1>& gp_normal,
         const std::vector<CORE::GEN::Pairedvector<int, double>>& d_gp_normal_dd,
@@ -210,7 +210,7 @@ namespace CONTACT
      * @param[in] d_normal_dd    directional derivative of normal
      */
     template <int dim>
-    void IntegrateTest(double fac, MORTAR::Element& ele,
+    void integrate_test(double fac, MORTAR::Element& ele,
         const CORE::LINALG::SerialDenseVector& shape,
         const CORE::LINALG::SerialDenseMatrix& shape_deriv,
         const std::vector<CORE::GEN::Pairedvector<int, double>>& d_xi_dd, double jac,

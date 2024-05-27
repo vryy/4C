@@ -97,7 +97,7 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::add_discretization_n
     const std::string& data_name, const Teuchos::RCP<const Epetra_MultiVector>& vector)
 {
   if (discret_ == Teuchos::null || node_gid_map_ == Teuchos::null)
-    FOUR_C_THROW("Discretization or node GID map is not set!");
+    FOUR_C_THROW("discretization or node GID map is not set!");
 
   // Extract the vector according to the GIDs needed on this rank.
   Teuchos::RCP<Epetra_Vector> vector_extract =

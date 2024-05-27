@@ -32,7 +32,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
   Deriv1stVecMap d_non_unit_normal(probdim);
 
-  Deriv1st_Jacobian(
+  deriv1st_jacobian(
       ele, xi, sderiv, stau, nodal_dofs, unit_normal, length_n_inv, d_non_unit_normal);
 }
 
@@ -41,7 +41,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
     class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
-    IntPolicy>::EvaluatorDeriv1stOnly::Deriv1st_Jacobian(MORTAR::Element& ele, const double* xi,
+    IntPolicy>::EvaluatorDeriv1stOnly::deriv1st_jacobian(MORTAR::Element& ele, const double* xi,
     const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
     const CORE::LINALG::Matrix<3, 2>& stau,
     CORE::LINALG::Matrix<probdim, my::SLAVENUMNODE, int>& nodal_dofs,
@@ -64,7 +64,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
   // jacobian determinant: 1-st order derivative
   // 1-st int: 1-st paired vector key corresponds to varied dof GID
   Deriv1stMap& deriv1st_jac = this->parent_.derivjac_;
-  this->parent_.IntPolicy::Deriv1st_Jacobian(unit_normal, d_non_unit_normal, deriv1st_jac);
+  this->parent_.IntPolicy::deriv1st_jacobian(unit_normal, d_non_unit_normal, deriv1st_jac);
 }
 
 /*----------------------------------------------------------------------------*
@@ -84,7 +84,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
   Deriv1stVecMap d_non_unit_normal(probdim);
 
-  base_type::Deriv1st_Jacobian(
+  base_type::deriv1st_jacobian(
       ele, xi, sderiv, stau, nodal_dofs, unit_normal, length_n_inv, d_non_unit_normal);
 
   Deriv2ndMap& deriv2nd_jac = this->parent_.deriv2ndjac_;
@@ -106,7 +106,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 {
   CORE::LINALG::Matrix<probdim, probdim> lmat_inv(false);
 
-  Deriv1st_MXiGP(sele, mele, sxi, mxi, alpha, sval, mval, mderiv, mtau, lmat_inv);
+  deriv1st_m_xi_gp(sele, mele, sxi, mxi, alpha, sval, mval, mderiv, mtau, lmat_inv);
 }
 
 /*----------------------------------------------------------------------------*
@@ -114,8 +114,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
     class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
-    IntPolicy>::EvaluatorDeriv1stOnly::Deriv1st_MXiGP(MORTAR::Element& sele, MORTAR::Element& mele,
-    const double* sxi, const double* mxi, const double alpha,
+    IntPolicy>::EvaluatorDeriv1stOnly::deriv1st_m_xi_gp(MORTAR::Element& sele,
+    MORTAR::Element& mele, const double* sxi, const double* mxi, const double alpha,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
     const CORE::LINALG::Matrix<my::MASTERNUMNODE, 1>& mval,
     const CORE::LINALG::Matrix<my::MASTERDIM, my::MASTERNUMNODE>& mderiv,
@@ -128,7 +128,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
   Deriv1stVecMap& d_mxigp = this->parent_.dmxigp_;
   Deriv1stMap& d_alpha = this->parent_.dalpha_;
-  this->parent_.IntPolicy::Deriv1st_MXiGP(
+  this->parent_.IntPolicy::deriv1st_m_xi_gp(
       lmat_inv, sele, mele, sval, mval, alpha, d_mxigp, d_alpha);
 }
 
@@ -146,7 +146,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 {
   CORE::LINALG::Matrix<probdim, probdim> lmat_inv(false);
 
-  base_type::Deriv1st_MXiGP(sele, mele, sxi, mxi, alpha, sval, mval, mderiv, mtau, lmat_inv);
+  base_type::deriv1st_m_xi_gp(sele, mele, sxi, mxi, alpha, sval, mval, mderiv, mtau, lmat_inv);
 
   Deriv1stVecMap& d_mxigp = this->parent_.dmxigp_;
   Deriv1stMap& d_alpha = this->parent_.dalpha_;

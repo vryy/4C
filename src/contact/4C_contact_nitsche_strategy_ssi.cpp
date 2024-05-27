@@ -23,7 +23,7 @@ void CONTACT::NitscheStrategySsi::Integrate(const CONTACT::ParamsInterface& cpar
 {
   CONTACT::NitscheStrategy::Integrate(cparams);
 
-  fs_ = CreateRhsBlockPtr(CONTACT::VecBlockType::scatra);
+  fs_ = create_rhs_block_ptr(CONTACT::VecBlockType::scatra);
   kss_ = create_matrix_block_ptr(CONTACT::MatBlockType::scatra_scatra);
   ksd_ = create_matrix_block_ptr(CONTACT::MatBlockType::scatra_displ);
   kds_ = create_matrix_block_ptr(CONTACT::MatBlockType::displ_scatra);
@@ -154,7 +154,7 @@ void CONTACT::NitscheStrategySsi::SetParentState(
 
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategySsi::SetupRhsBlockVec(
+Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategySsi::setup_rhs_block_vec(
     const enum CONTACT::VecBlockType& bt) const
 {
   switch (bt)
@@ -164,7 +164,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategySsi::SetupRhsBlockVec(
       return Teuchos::rcp(
           new Epetra_FEVector(*GLOBAL::Problem::Instance()->GetDis("scatra")->dof_row_map()));
     default:
-      return CONTACT::NitscheStrategy::SetupRhsBlockVec(bt);
+      return CONTACT::NitscheStrategy::setup_rhs_block_vec(bt);
   }
 }
 
@@ -187,7 +187,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategySsi::GetRhsBlockPtr(
 
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategySsi::SetupMatrixBlockPtr(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategySsi::setup_matrix_block_ptr(
     const enum CONTACT::MatBlockType& bt)
 {
   switch (bt)
@@ -207,7 +207,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategySsi::SetupMatri
               *GLOBAL::Problem::Instance()->GetDis("scatra")->dof_row_map()),
           100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
     default:
-      return CONTACT::NitscheStrategy::SetupMatrixBlockPtr(bt);
+      return CONTACT::NitscheStrategy::setup_matrix_block_ptr(bt);
   }
 }
 

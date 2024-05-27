@@ -28,7 +28,7 @@ namespace
   /*!
    * @brief Evaluates the enhanced strains scalar increment alpha
    *
-   * @tparam distype : Discretization type
+   * @tparam distype : discretization type
    * @param old_eas_data (in) : EAS iteration data
    * @param neas (in) : Number of EAS parameter
    * @param residual (in) : Residual displacement increment
@@ -60,7 +60,7 @@ namespace
    *
    *  Function needs to be called for every gaussian point
    *
-   * @tparam distype : Discretization type
+   * @tparam distype : discretization type
    * @param stress_enh (in) : An object holding the enhanced stress resultants
    * @param M (in) : EAS shapefunctions
    * @param Bop (in) : B-operator matrix
@@ -98,7 +98,7 @@ template <CORE::FE::CellType distype>
 DRT::ELEMENTS::Shell7pEleCalcEas<distype>::Shell7pEleCalcEas()
     : DRT::ELEMENTS::Shell7pEleCalcInterface::Shell7pEleCalcInterface(),
       intpoints_midsurface_(
-          SHELL::CreateGaussIntegrationPoints<distype>(SHELL::GetGaussRule<distype>()))
+          SHELL::CreateGaussIntegrationPoints<distype>(SHELL::get_gauss_rule<distype>()))
 {
   old_step_length_ = 0.0;
   cur_thickness_.resize(intpoints_midsurface_.NumPoints(), shell_data_.thickness);
@@ -175,7 +175,7 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::Unpack(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::MaterialPostSetup(
+void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::material_post_setup(
     DRT::Element& ele, MAT::So3Material& solid_material)
 {
   // element/nodal wise defined data

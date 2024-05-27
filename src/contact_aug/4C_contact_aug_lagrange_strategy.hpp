@@ -44,7 +44,7 @@ namespace CONTACT
         }
 
        protected:
-        double InactiveScaleFactor() const override { return 1.0; }
+        double inactive_scale_factor() const override { return 1.0; }
 
         /** \brief Assemble the structural contact rhs [derived]
          *
@@ -52,7 +52,7 @@ namespace CONTACT
          *  forces are considered.
          *
          *  \author hiermeier \date 03/17 */
-        void EvalStrContactRHS() override;
+        void eval_str_contact_rhs() override;
 
       };  // class Strategy
     }     // namespace LAGRANGE

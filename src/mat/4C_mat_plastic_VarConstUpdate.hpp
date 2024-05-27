@@ -55,7 +55,7 @@ namespace MAT
       ) const;
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
       //@}
 
     };  // class PlasticElastHyper
@@ -298,7 +298,7 @@ namespace MAT
     }
 
    protected:
-    virtual void EvaluateNCP(const CORE::LINALG::Matrix<3, 3>* mStr,
+    virtual void evaluate_ncp(const CORE::LINALG::Matrix<3, 3>* mStr,
         const CORE::LINALG::Matrix<6, 6>* dMdC, const CORE::LINALG::Matrix<6, 9>* dMdFpinv,
         const CORE::LINALG::Matrix<6, 9>* dPK2dFpinv, const CORE::LINALG::Matrix<3, 3>* deltaDp,
         const int gp, const double temp, CORE::LINALG::Matrix<6, 1>* NCP,
@@ -311,7 +311,7 @@ namespace MAT
     }
 
 
-    virtual void EvaluateNCPandSpin(const CORE::LINALG::Matrix<3, 3>* mStr,
+    virtual void evaluate_nc_pand_spin(const CORE::LINALG::Matrix<3, 3>* mStr,
         const CORE::LINALG::Matrix<6, 6>* dMdC, const CORE::LINALG::Matrix<6, 9>* dMdFpinv,
         const CORE::LINALG::Matrix<6, 9>* dPK2dFpinv, const CORE::LINALG::Matrix<3, 3>* deltaLp,
         const int gp, CORE::LINALG::Matrix<9, 1>* NCP, CORE::LINALG::Matrix<9, 6>* dNCPdC,
@@ -323,26 +323,26 @@ namespace MAT
 
 
 
-    virtual void EvalDceDlp(const CORE::LINALG::Matrix<3, 3> fpi,
+    virtual void eval_dce_dlp(const CORE::LINALG::Matrix<3, 3> fpi,
         const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<6, 6> Dexp,
         const CORE::LINALG::Matrix<3, 3> cetrial, const CORE::LINALG::Matrix<3, 3> explp,
         CORE::LINALG::Matrix<6, 6>& dceDdeltalp, CORE::LINALG::Matrix<9, 6>& dFpiDdeltaDp);
 
 
 
-    virtual void EvaluateRHS(const int gp, const CORE::LINALG::Matrix<3, 3> dLp,
+    virtual void evaluate_rhs(const int gp, const CORE::LINALG::Matrix<3, 3> dLp,
         const CORE::LINALG::Matrix<3, 3> defgrd, CORE::LINALG::Matrix<6, 1>& eeOut,
         CORE::LINALG::Matrix<5, 1>& rhs, CORE::LINALG::Matrix<5, 1>& rhsElast,
         CORE::LINALG::Matrix<6, 6>& dcedlp, CORE::LINALG::Matrix<9, 6>& dFpiDdeltaDp,
         Teuchos::ParameterList& params, const int eleGID);
 
 
-    virtual void YieldFunction(const double last_ai, const double norm_dLp,
+    virtual void yield_function(const double last_ai, const double norm_dLp,
         const CORE::LINALG::Matrix<3, 3> ExpEqui, const CORE::LINALG::Matrix<3, 3> cetr,
         const CORE::LINALG::Matrix<6, 1> str, double* yieldFunc,
         CORE::LINALG::Matrix<3, 3>& devMandelStr, CORE::LINALG::Matrix<3, 3>& MandelStr);
 
-    virtual void CompElastQuant(const CORE::LINALG::Matrix<3, 3>* defgrd,
+    virtual void comp_elast_quant(const CORE::LINALG::Matrix<3, 3>* defgrd,
         const CORE::LINALG::Matrix<3, 3> fpi, const CORE::LINALG::Matrix<3, 3> MatExp,
         CORE::LINALG::Matrix<3, 3>* cetrial, CORE::LINALG::Matrix<6, 1>* Ee);
 
@@ -372,14 +372,14 @@ namespace MAT
         CORE::LINALG::Matrix<3, 3>& FpiCe, CORE::LINALG::Matrix<9, 1>& CFpiCe,
         CORE::LINALG::Matrix<6, 1>& CpiCCpi);
 
-    virtual void Dpk2dFpi(int gp, int eleGID, const CORE::LINALG::Matrix<3, 3>* defgrd,
+    virtual void dpk2d_fpi(int gp, int eleGID, const CORE::LINALG::Matrix<3, 3>* defgrd,
         const CORE::LINALG::Matrix<3, 3>* fpi, CORE::LINALG::Matrix<6, 9>& dPK2dFpinvIsoprinc);
 
-    virtual void DpsiplastDalphaiso(const double norm_dLp, const double last_alphaiso,
+    virtual void dpsiplast_dalphaiso(const double norm_dLp, const double last_alphaiso,
         const double isoHardMod, const double initYield, const double infYield,
         const double expIsoHard, double* dpsiplastdalphaiso);
 
-    virtual void Ce2ndDeriv(const CORE::LINALG::Matrix<3, 3>* defgrd,
+    virtual void ce2nd_deriv(const CORE::LINALG::Matrix<3, 3>* defgrd,
         const CORE::LINALG::Matrix<3, 3> fpi, const CORE::LINALG::Matrix<3, 3> dLp,
         CORE::LINALG::Matrix<6, 6>* DDceDdLpDdLpVoigt);
 

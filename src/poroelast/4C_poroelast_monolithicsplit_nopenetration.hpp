@@ -67,7 +67,7 @@ namespace POROELAST
     //! @name Apply current field state to system
 
     //! Evaluate mechanical-fluid system matrix
-    void ApplyStrCouplMatrix(
+    void apply_str_coupl_matrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator> k_sf  //!< mechanical-fluid stiffness matrix
         ) override;
 

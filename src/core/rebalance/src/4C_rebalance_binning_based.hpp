@@ -98,7 +98,7 @@ namespace CORE::REBALANCE
   a new vector with column map is allocated and the supplied vector is exported to it and
   returned.
 
-  \note The very same functionality is used in Discretization::set_state()!
+  \note The very same functionality is used in discretization::set_state()!
 
   \param name (in): discretization
   \param state (in): vector of some data  */

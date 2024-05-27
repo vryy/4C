@@ -40,12 +40,12 @@ FSI::FluidAleAlgorithm::FluidAleAlgorithm(const Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 void FSI::FluidAleAlgorithm::Timeloop()
 {
-  while (NotFinished())
+  while (not_finished())
   {
     prepare_time_step();
-    Solve();
-    Update();
-    Output();
+    solve();
+    update();
+    output();
   }
 }
 
@@ -76,16 +76,16 @@ void FSI::FluidAleAlgorithm::prepare_time_step()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidAleAlgorithm::Solve() { MBFluidField()->NonlinearSolve(); }
+void FSI::FluidAleAlgorithm::solve() { MBFluidField()->nonlinear_solve(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidAleAlgorithm::Update() { MBFluidField()->Update(); }
+void FSI::FluidAleAlgorithm::update() { MBFluidField()->Update(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidAleAlgorithm::Output() { MBFluidField()->Output(); }
+void FSI::FluidAleAlgorithm::output() { MBFluidField()->Output(); }
 
 FOUR_C_NAMESPACE_CLOSE

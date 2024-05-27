@@ -39,7 +39,7 @@ namespace
       container->Add("XI", 1.);
       container->Add("ETABAR", 1.);
       container->Add("MAXITER", 50);
-      container->SetParameter(new MAT::PAR::PlasticDruckerPrager(container));
+      container->set_parameter(new MAT::PAR::PlasticDruckerPrager(container));
       GLOBAL::Problem& problem = (*GLOBAL::Problem::Instance());
       problem.Materials()->SetReadFromProblem(0);
       problem.Materials()->Insert(1, container);

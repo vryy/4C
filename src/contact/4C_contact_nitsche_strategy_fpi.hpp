@@ -77,7 +77,7 @@ namespace CONTACT
 
    protected:
     //! Update search tree and normals
-    void DoContactSearch();
+    void do_contact_search();
 
    private:
     //! Nitsche normal penalty parameter

@@ -197,7 +197,7 @@ bool DRT::ELEMENTS::So3Poro<so3_ele, distype>::ReadElement(
   so3_ele::ReadElement(eletype, eledistype, linedef);
 
   // setup poro material
-  Teuchos::RCP<MAT::StructPoro> poromat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
+  Teuchos::RCP<MAT::StructPoro> poromat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(material());
   if (poromat == Teuchos::null) FOUR_C_THROW("no poro material assigned to poro element!");
   poromat->PoroSetup(numgpt_, linedef);
 
@@ -295,13 +295,13 @@ inline DRT::Node** DRT::ELEMENTS::So3Poro<so3_ele, distype>::Nodes()
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-inline Teuchos::RCP<CORE::MAT::Material> DRT::ELEMENTS::So3Poro<so3_ele, distype>::Material() const
+inline Teuchos::RCP<CORE::MAT::Material> DRT::ELEMENTS::So3Poro<so3_ele, distype>::material() const
 {
   return so3_ele::Material();
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-inline int DRT::ELEMENTS::So3Poro<so3_ele, distype>::Id() const
+inline int DRT::ELEMENTS::So3Poro<so3_ele, distype>::id() const
 {
   return so3_ele::Id();
 }

@@ -34,7 +34,7 @@ MAT::PAR::ArrheniusSpec::ArrheniusSpec(Teuchos::RCP<CORE::MAT::PAR::Material> ma
 {
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ArrheniusSpec::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ArrheniusSpec::create_material()
 {
   return Teuchos::rcp(new MAT::ArrheniusSpec(this));
 }

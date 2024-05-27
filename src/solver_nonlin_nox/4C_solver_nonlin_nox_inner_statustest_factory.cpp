@@ -55,13 +55,13 @@ NOX::NLN::INNER::StatusTest::Factory::build_inner_status_tests(Teuchos::Paramete
   }
 
   if (test_type == "Combo")
-    status_test = this->BuildComboTest(p, u, tagged_tests);
+    status_test = this->build_combo_test(p, u, tagged_tests);
   else if (test_type == "Armijo")
-    status_test = this->BuildArmijoTest(p, u);
+    status_test = this->build_armijo_test(p, u);
   else if (test_type == "Filter")
-    status_test = this->BuildFilterTest(p, u);
+    status_test = this->build_filter_test(p, u);
   else if (test_type == "UpperBound")
-    status_test = this->BuildUpperBoundTest(p, u);
+    status_test = this->build_upper_bound_test(p, u);
   else if (test_type == "VolumeChange")
     status_test = this->build_volume_change_test(p, u);
   // supported StatusTests of the NOX::StatusTest classes for the inner check
@@ -77,7 +77,7 @@ NOX::NLN::INNER::StatusTest::Factory::build_inner_status_tests(Teuchos::Paramete
     throw_error("build_inner_status_tests()", msg.str());
   }
 
-  this->CheckAndTagTest(p, status_test, tagged_tests);
+  this->check_and_tag_test(p, status_test, tagged_tests);
 
   return status_test;
 }
@@ -85,7 +85,7 @@ NOX::NLN::INNER::StatusTest::Factory::build_inner_status_tests(Teuchos::Paramete
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
-NOX::NLN::INNER::StatusTest::Factory::BuildArmijoTest(
+NOX::NLN::INNER::StatusTest::Factory::build_armijo_test(
     Teuchos::ParameterList& p, const ::NOX::Utils& u) const
 {
   // ------------------------------------------
@@ -124,7 +124,7 @@ NOX::NLN::INNER::StatusTest::Factory::BuildArmijoTest(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
-NOX::NLN::INNER::StatusTest::Factory::BuildFilterTest(
+NOX::NLN::INNER::StatusTest::Factory::build_filter_test(
     Teuchos::ParameterList& p, const ::NOX::Utils& u) const
 {
   FilterParams fparams;
@@ -176,7 +176,7 @@ NOX::NLN::INNER::StatusTest::Factory::BuildFilterTest(
   }
 
   // build internal Armijo test
-  fparams.armijo_ = BuildArmijoTest(p.sublist("Filter-Armijo"), u);
+  fparams.armijo_ = build_armijo_test(p.sublist("Filter-Armijo"), u);
 
   // blocking parameters
   {
@@ -206,7 +206,7 @@ NOX::NLN::INNER::StatusTest::Factory::BuildFilterTest(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
-NOX::NLN::INNER::StatusTest::Factory::BuildUpperBoundTest(
+NOX::NLN::INNER::StatusTest::Factory::build_upper_bound_test(
     Teuchos::ParameterList& p, const ::NOX::Utils& u) const
 {
   // Get upper bound as specified in xml file
@@ -255,7 +255,7 @@ NOX::NLN::INNER::StatusTest::Factory::BuildUpperBoundTest(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
-NOX::NLN::INNER::StatusTest::Factory::BuildComboTest(Teuchos::ParameterList& p,
+NOX::NLN::INNER::StatusTest::Factory::build_combo_test(Teuchos::ParameterList& p,
     const ::NOX::Utils& u,
     std::map<std::string, Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>>* tagged_tests) const
 {
@@ -296,7 +296,7 @@ NOX::NLN::INNER::StatusTest::Factory::BuildComboTest(Teuchos::ParameterList& p,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::INNER::StatusTest::Factory::CheckAndTagTest(const Teuchos::ParameterList& p,
+bool NOX::NLN::INNER::StatusTest::Factory::check_and_tag_test(const Teuchos::ParameterList& p,
     const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& test,
     std::map<std::string, Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>>* tagged_tests) const
 {

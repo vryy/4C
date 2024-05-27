@@ -208,7 +208,7 @@ namespace DRT
       void update_jacobian_mapping(
           const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress) override;
       // compute defgrd in all gp for given disp
-      void DefGradient(const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix& gpdefgrd,
+      void def_gradient(const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix& gpdefgrd,
           DRT::ELEMENTS::PreStress& prestress) override;
 
       //! Calculate nonlinear stiffness and mass matrix
@@ -231,12 +231,12 @@ namespace DRT
           const INPAR::STR::StrainType ioplstrain);  ///< strain output option
 
       //! Update history variables at the end of time step (inelastic deformation) (braeu 07/16)
-      void Update_element(std::vector<double>& disp,      // current displacements
+      void update_element(std::vector<double>& disp,      // current displacements
           Teuchos::ParameterList& params,                 // algorithmic parameters e.g. time
           const Teuchos::RCP<CORE::MAT::Material>& mat);  // material
 
       //! init the inverse of the jacobian and its determinant in the material configuration
-      void InitJacobianMapping() override;
+      void init_jacobian_mapping() override;
 
      private:
       std::string get_element_type_string() const { return "SOLIDH8FBAR"; }

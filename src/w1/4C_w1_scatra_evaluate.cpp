@@ -74,7 +74,7 @@ void DRT::ELEMENTS::Wall1Scatra::pre_evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Wall1Scatra::MyEvaluate(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Wall1Scatra::my_evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -103,7 +103,7 @@ int DRT::ELEMENTS::Wall1Scatra::Evaluate(Teuchos::ParameterList& params,
 
   if (IsParamsInterface())
   {
-    act = ParamsInterface().GetActionType();
+    act = params_interface().GetActionType();
   }
   else
   {
@@ -164,7 +164,7 @@ int DRT::ELEMENTS::Wall1Scatra::Evaluate(Teuchos::ParameterList& params,
       Wall1::Evaluate(params, discretization, la[0].lm_, elemat1_epetra, elemat2_epetra,
           elevec1_epetra, elevec2_epetra, elevec3_epetra);
 
-      MyEvaluate(params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra,
+      my_evaluate(params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra,
           elevec2_epetra, elevec3_epetra);
 
       break;

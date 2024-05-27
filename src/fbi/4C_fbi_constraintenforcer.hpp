@@ -68,8 +68,8 @@ namespace ADAPTER
    * (partitioned) algorithm.
    *
    * The interface to the outside world is just a Setup and Evaluate routine, as well as the
-   * FluidToStruct() and StructToFluid() routines, which only return one vector, as customary for
-   * the FSI::DirichletNeumann algorithm. Everything else, like contributions to the stiffness
+   * fluid_to_struct() and struct_to_fluid() routines, which only return one vector, as customary
+   * for the FSI::DirichletNeumann algorithm. Everything else, like contributions to the stiffness
    * matrix of the fluid, it provides by calling internal functions. To make this possible, the
    * constraint enforcer need information on the two field.
    *
@@ -170,12 +170,12 @@ namespace ADAPTER
      * \param[in] pairids a map relating all beam element ids to a set of fluid
      * elements ids which they potentially cut
      */
-    void CreatePairs(Teuchos::RCP<std::map<int, std::vector<int>>> pairids);
+    void create_pairs(Teuchos::RCP<std::map<int, std::vector<int>>> pairids);
 
     /**
      * \brief Resets the state, i.e. the velocity of all interaction pairs
      */
-    void ResetAllPairStates();
+    void reset_all_pair_states();
 
     /**
      * \brief Extracts current element dofs that are needed for the computations on pair level
@@ -245,16 +245,16 @@ namespace ADAPTER
     };
 
     /// Get function for the fluid field #fluid_
-    Teuchos::RCP<ADAPTER::FluidMovingBoundary> GetFluid() const { return fluid_; };
+    Teuchos::RCP<ADAPTER::FluidMovingBoundary> get_fluid() const { return fluid_; };
 
     /// Get function for the structure and the fluid discretization in the vector #discretizations_
-    std::vector<Teuchos::RCP<DRT::Discretization>> GetDiscretizations() const
+    std::vector<Teuchos::RCP<DRT::Discretization>> get_discretizations() const
     {
       return discretizations_;
     }
 
     /// Get function for the bridge object #bridge_
-    Teuchos::RCP<ADAPTER::FBIConstraintBridge> Bridge() const { return bridge_; };
+    Teuchos::RCP<ADAPTER::FBIConstraintBridge> bridge() const { return bridge_; };
 
     /// Get map extractor to split fluid velocity and pressure values
     Teuchos::RCP<const CORE::LINALG::MapExtractor> get_velocity_pressure_splitter() const

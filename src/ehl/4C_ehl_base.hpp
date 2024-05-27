@@ -61,10 +61,10 @@ namespace EHL
     void read_restart(int restart) override;
 
     //! access to structural field
-    const Teuchos::RCP<ADAPTER::Structure>& StructureField() { return structure_; }
+    const Teuchos::RCP<ADAPTER::Structure>& structure_field() { return structure_; }
 
     /// set structure solution on lubrication field
-    void SetStructSolution(Teuchos::RCP<const Epetra_Vector> disp);
+    void set_struct_solution(Teuchos::RCP<const Epetra_Vector> disp);
 
     /// set lubrication solution on structure field
     void set_lubrication_solution(Teuchos::RCP<const Epetra_Vector> pressure);
@@ -73,13 +73,13 @@ namespace EHL
     Teuchos::RCP<Epetra_Vector> EvaluateFluidForce(Teuchos::RCP<const Epetra_Vector> pressure);
 
    protected:
-    void AddPressureForce(
+    void add_pressure_force(
         Teuchos::RCP<Epetra_Vector> slaveiforce, Teuchos::RCP<Epetra_Vector> masteriforce);
 
-    void AddPoiseuilleForce(
+    void add_poiseuille_force(
         Teuchos::RCP<Epetra_Vector> slaveiforce, Teuchos::RCP<Epetra_Vector> masteriforce);
 
-    void AddCouetteForce(
+    void add_couette_force(
         Teuchos::RCP<Epetra_Vector> slaveiforce, Teuchos::RCP<Epetra_Vector> masteriforce);
 
     /// underlying structure of the EHL problem
@@ -126,14 +126,14 @@ namespace EHL
         const std::string struct_disname, const std::string lubrication_disname);
 
     //! take current results for converged and save for next time step
-    void Update() override;
+    void update() override;
 
     //! write output
-    virtual void Output(bool forced_writerestart = false);
+    virtual void output(bool forced_writerestart = false);
     Teuchos::RCP<Epetra_Vector> inf_gap_toggle_lub_;
 
     /// velocity calculation given the displacements
-    Teuchos::RCP<Epetra_Vector> CalcVelocity(Teuchos::RCP<const Epetra_Vector> dispnp);
+    Teuchos::RCP<Epetra_Vector> calc_velocity(Teuchos::RCP<const Epetra_Vector> dispnp);
 
    private:
     /// setup discretizations and dofsets

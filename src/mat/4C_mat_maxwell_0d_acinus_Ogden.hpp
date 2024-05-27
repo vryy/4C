@@ -39,7 +39,7 @@ namespace MAT
       Maxwell0dAcinusOgden(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
       /// enum for mapping between material parameter and entry in the matparams_ vector
       enum Matparamnames

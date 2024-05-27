@@ -55,7 +55,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::ScaTraEleBoundaryC
  | evaluate action                                           fang 08/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::EvaluateAction(
+int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_action(
     DRT::FaceElement* ele,                            //!< boundary element
     Teuchos::ParameterList& params,                   //!< parameter list
     DRT::Discretization& discretization,              //!< discretization
@@ -81,7 +81,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::EvaluateAction
 
     default:
     {
-      myelch::EvaluateAction(ele, params, discretization, action, la, elemat1_epetra,
+      myelch::evaluate_action(ele, params, discretization, action, la, elemat1_epetra,
           elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
 
       break;
@@ -89,7 +89,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::EvaluateAction
   }  // switch action
 
   return 0;
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::EvaluateAction
+}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_action
 
 
 /*----------------------------------------------------------------------*
@@ -113,7 +113,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_neuma
       for (int k = 0; k < my::numscal_; ++k)
       {
         // get valence
-        const double valence_k = GetValence(ele->parent_element()->Material(), k);
+        const double valence_k = get_valence(ele->parent_element()->Material(), k);
 
         for (int vi = 0; vi < nen_; ++vi)
           elevec1[vi * my::numdofpernode_ + my::numscal_] +=
@@ -244,7 +244,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_elch
  | extract valence of species k from element material                       fang 02/15 |
  *-------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::GetValence(
+double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::get_valence(
     const Teuchos::RCP<const CORE::MAT::Material>& material,  // element material
     const int k                                               // species number
 ) const

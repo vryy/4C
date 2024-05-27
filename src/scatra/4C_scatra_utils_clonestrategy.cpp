@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::map<std::string, std::string> SCATRA::ScatraFluidCloneStrategy::ConditionsToCopy() const
+std::map<std::string, std::string> SCATRA::ScatraFluidCloneStrategy::conditions_to_copy() const
 {
   return {{"TransportDirichlet", "Dirichlet"}, {"TransportPointNeumann", "PointNeumann"},
       {"TransportLineNeumann", "LineNeumann"}, {"TransportSurfaceNeumann", "SurfaceNeumann"},
@@ -46,7 +46,7 @@ std::map<std::string, std::string> SCATRA::ScatraFluidCloneStrategy::ConditionsT
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScatraFluidCloneStrategy::CheckMaterialType(const int matid)
+void SCATRA::ScatraFluidCloneStrategy::check_material_type(const int matid)
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
@@ -69,7 +69,7 @@ void SCATRA::ScatraFluidCloneStrategy::CheckMaterialType(const int matid)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScatraFluidCloneStrategy::SetElementData(
+void SCATRA::ScatraFluidCloneStrategy::set_element_data(
     Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbsdis)
 {
   // We need to set material and possibly other things to complete element setup.
@@ -93,7 +93,7 @@ void SCATRA::ScatraFluidCloneStrategy::SetElementData(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool SCATRA::ScatraFluidCloneStrategy::DetermineEleType(
+bool SCATRA::ScatraFluidCloneStrategy::determine_ele_type(
     DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // note: ismyele, actele remain unused here! Used only for ALE creation
@@ -108,7 +108,7 @@ bool SCATRA::ScatraFluidCloneStrategy::DetermineEleType(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::map<std::string, std::string> SCATRA::ScatraReactionCloneStrategy::ConditionsToCopy() const
+std::map<std::string, std::string> SCATRA::ScatraReactionCloneStrategy::conditions_to_copy() const
 {
   return {{"TransportDirichlet", "Dirichlet"}, {"TransportPointNeumann", "PointNeumann"},
       {"TransportLineNeumann", "LineNeumann"}, {"TransportSurfaceNeumann", "SurfaceNeumann"},
@@ -124,7 +124,7 @@ std::map<std::string, std::string> SCATRA::ScatraReactionCloneStrategy::Conditio
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScatraReactionCloneStrategy::CheckMaterialType(const int matid)
+void SCATRA::ScatraReactionCloneStrategy::check_material_type(const int matid)
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
@@ -138,7 +138,7 @@ void SCATRA::ScatraReactionCloneStrategy::CheckMaterialType(const int matid)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScatraReactionCloneStrategy::SetElementData(
+void SCATRA::ScatraReactionCloneStrategy::set_element_data(
     Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbsdis)
 {
   // We need to set material and possibly other things to complete element setup.
@@ -162,7 +162,7 @@ void SCATRA::ScatraReactionCloneStrategy::SetElementData(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool SCATRA::ScatraReactionCloneStrategy::DetermineEleType(
+bool SCATRA::ScatraReactionCloneStrategy::determine_ele_type(
     DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // note: ismyele, actele remain unused here! Used only for ALE creation

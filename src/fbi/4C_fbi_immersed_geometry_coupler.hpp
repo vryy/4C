@@ -155,13 +155,13 @@ namespace FBI
         Teuchos::RCP<const Epetra_Vector> disp) const;
 
     /// Get function for the fludi positions
-    virtual Teuchos::RCP<const std::map<int, CORE::LINALG::Matrix<3, 1>>> GetFluidPositions()
+    virtual Teuchos::RCP<const std::map<int, CORE::LINALG::Matrix<3, 1>>> get_fluid_positions()
         const final
     {
       return fluidpositions_;
     };
     /// Get function for the beam positions
-    virtual Teuchos::RCP<const std::map<int, CORE::LINALG::Matrix<3, 1>>> GetBeamPositions()
+    virtual Teuchos::RCP<const std::map<int, CORE::LINALG::Matrix<3, 1>>> get_beam_positions()
         const final
     {
       return beampositions_;

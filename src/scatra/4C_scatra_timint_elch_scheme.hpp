@@ -49,11 +49,11 @@ namespace SCATRA
     void post_calc_initial_potential_field() override;
 
    protected:
-    void WriteRestart() const override;
+    void write_restart() const override;
 
     void electrode_kinetics_time_update() override;
 
-    void ExplicitPredictor() const override;
+    void explicit_predictor() const override;
 
     void compute_time_deriv_pot0(const bool init) override;
 
@@ -90,11 +90,11 @@ namespace SCATRA
 
     void electrode_kinetics_time_update() override{};
 
-    void ExplicitPredictor() const override;
+    void explicit_predictor() const override;
 
     void set_old_part_of_righthandside() override;
 
-    void WriteRestart() const override;
+    void write_restart() const override;
   };
 
 
@@ -122,7 +122,7 @@ namespace SCATRA
     void post_calc_initial_potential_field() override{};
 
    protected:
-    void WriteRestart() const override;
+    void write_restart() const override;
 
     void electrode_kinetics_time_update() override;
 
@@ -156,7 +156,7 @@ namespace SCATRA
     void post_calc_initial_potential_field() override;
 
    protected:
-    void WriteRestart() const override;
+    void write_restart() const override;
 
     void electrode_kinetics_time_update() override;
 
@@ -188,7 +188,7 @@ namespace SCATRA
     void post_calc_initial_potential_field() override{};
 
    protected:
-    void WriteRestart() const override;
+    void write_restart() const override;
 
     void electrode_kinetics_time_update() override
     {

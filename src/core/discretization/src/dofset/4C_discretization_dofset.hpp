@@ -39,13 +39,13 @@ namespace DRT
 
 \note This is an internal class of the discretization module that one
 should not need to touch on an ordinary day. It is here to support the
-Discretization class. Everyday use should happen via the
-Discretization class only.
+discretization class. Everyday use should happen via the
+discretization class only.
 
 <h3>Purpose</h3>
 
 This class represents one set of degrees of freedom for the
-Discretization class in the usual parallel fashion. That is there is a
+discretization class in the usual parallel fashion. That is there is a
 dof_row_map() and a DofColMap() that return the maps of the global FE
 system of equation in row and column setting respectively. These maps
 are used by the algorithm's Epetra_Vector classes among others.
@@ -293,7 +293,7 @@ namespace CORE::Dofsets
     /*!
     \brief Assign dof numbers using all elements and nodes of the discretization.
 
-    @param[in] dis Discretization of a mortar interface
+    @param[in] dis discretization of a mortar interface
     @param[in] dspos Position of DOfSet inside its discretization
     @param[in] start User-defined offset for DOF numbering [currently not supported]
 
@@ -343,14 +343,14 @@ namespace CORE::Dofsets
     }
 
     /// get number of element dofs for this element
-    virtual int NumDofPerElement(const DRT::Element& element) const
+    virtual int num_dof_per_element(const DRT::Element& element) const
     {
-      return element.NumDofPerElement();
+      return element.num_dof_per_element();
     }
 
-    virtual int NumDofPerFace(const DRT::Element& element, int face) const
+    virtual int num_dof_per_face(const DRT::Element& element, int face) const
     {
-      return element.NumDofPerFace(face);
+      return element.num_dof_per_face(face);
     }
 
     /// Get Reserved Max Number Dofs per Node

@@ -295,7 +295,7 @@ int DRT::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
 
       // build def gradient for every gauss point
       CORE::LINALG::SerialDenseMatrix gpdefgrd(NUMGPT_SOP5 + 1, 9);
-      DefGradient(mydisp, gpdefgrd, *prestress_);
+      def_gradient(mydisp, gpdefgrd, *prestress_);
 
       // update deformation gradient and put back to storage
       CORE::LINALG::Matrix<3, 3> deltaF;
@@ -500,7 +500,7 @@ int DRT::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)           seitz 03/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoPyramid5fbar::InitJacobianMapping()
+void DRT::ELEMENTS::SoPyramid5fbar::init_jacobian_mapping()
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs = sop5_derivs();
   CORE::LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xrefe;
@@ -563,7 +563,7 @@ int DRT::ELEMENTS::SoPyramid5fbar::evaluate_neumann(Teuchos::ParameterList& para
       [&]()
       {
         if (IsParamsInterface())
-          return StrParamsInterface().GetTotalTime();
+          return str_params_interface().GetTotalTime();
         else
           return params.get("total time", -1.0);
       });
@@ -1258,8 +1258,8 @@ void DRT::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // locat
         double timintfac_vel = 0.0;
         if (IsParamsInterface())
         {
-          timintfac_dis = StrParamsInterface().GetTimIntFactorDisp();
-          timintfac_vel = StrParamsInterface().GetTimIntFactorVel();
+          timintfac_dis = str_params_interface().GetTimIntFactorDisp();
+          timintfac_vel = str_params_interface().GetTimIntFactorVel();
         }
         else
         {
@@ -1356,7 +1356,7 @@ int DRT::ELEMENTS::SoPyramid5fbarType::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoPyramid5fbar*>(dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_pyramid5fbar* failed");
-    actele->InitJacobianMapping();
+    actele->init_jacobian_mapping();
   }
   return 0;
 }
@@ -1365,7 +1365,7 @@ int DRT::ELEMENTS::SoPyramid5fbarType::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  | compute def gradient at every gaussian point (protected) seitz 03/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoPyramid5fbar::DefGradient(const std::vector<double>& disp,
+void DRT::ELEMENTS::SoPyramid5fbar::def_gradient(const std::vector<double>& disp,
     CORE::LINALG::SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs = sop5_derivs();

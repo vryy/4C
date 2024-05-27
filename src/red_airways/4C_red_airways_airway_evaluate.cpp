@@ -162,7 +162,7 @@ int DRT::ELEMENTS::RedAirway::Evaluate(Teuchos::ParameterList& params,
     break;
     case update_scatra:
     {
-      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->UpdateScatra(
+      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->update_scatra(
           this, params, discretization, lm, mat);
     }
     break;
@@ -206,7 +206,7 @@ int DRT::ELEMENTS::RedAirway::evaluate_neumann(Teuchos::ParameterList& params,
  |                                                                      |
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::RedAirway::EvaluateDirichlet(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::RedAirway::evaluate_dirichlet(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1)
 {

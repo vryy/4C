@@ -107,7 +107,7 @@ namespace DRT::ELEMENTS
 
     [[nodiscard]] int NumDofPerNode(const DRT::Node& node) const override { return node_dof_; }
 
-    [[nodiscard]] int NumDofPerElement() const override { return 0; }
+    [[nodiscard]] int num_dof_per_element() const override { return 0; }
 
 
     [[nodiscard]] DRT::ELEMENTS::Shell7p* parent_element() const

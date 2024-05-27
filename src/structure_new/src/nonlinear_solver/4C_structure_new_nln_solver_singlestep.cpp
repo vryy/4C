@@ -46,7 +46,7 @@ void STR::NLN::SOLVER::SingleStep::set_single_step_params()
 
   // get the nox parameter list and set the necessary parameters for a
   // full Newton solution procedure
-  Teuchos::ParameterList& p = DataSDyn().GetNoxParams();
+  Teuchos::ParameterList& p = data_s_dyn().GetNoxParams();
   set_single_step_params(p);
 
   // ---------------------------------------------------------------------------
@@ -55,11 +55,11 @@ void STR::NLN::SOLVER::SingleStep::set_single_step_params()
   /* This is only necessary for the special case, that you use no xml-file for
    * the definition of your convergence tests, but you use the dat-file instead.
    */
-  if (not IsXMLStatusTestFile(DataSDyn().GetNoxParams().sublist("Status Test")))
+  if (not IsXMLStatusTestFile(data_s_dyn().GetNoxParams().sublist("Status Test")))
   {
     std::set<enum NOX::NLN::StatusTest::QuantityType> qtypes;
-    CreateQuantityTypes(qtypes, DataSDyn());
-    SetStatusTestParams(DataSDyn().GetNoxParams().sublist("Status Test"), DataSDyn(), qtypes);
+    CreateQuantityTypes(qtypes, data_s_dyn());
+    SetStatusTestParams(data_s_dyn().GetNoxParams().sublist("Status Test"), data_s_dyn(), qtypes);
   }
 }
 
@@ -98,7 +98,7 @@ void STR::NLN::SOLVER::SingleStep::set_single_step_params(Teuchos::ParameterList
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::SingleStep::ResetParams()
+void STR::NLN::SOLVER::SingleStep::reset_params()
 {
   set_single_step_params(nlnglobaldata_->GetNlnParameterList());
 }
@@ -110,9 +110,9 @@ enum INPAR::STR::ConvergenceStatus STR::NLN::SOLVER::SingleStep::Solve()
 {
   check_init_setup();
 
-  auto& nln_group = dynamic_cast<NOX::NLN::Group&>(Group());
+  auto& nln_group = dynamic_cast<NOX::NLN::Group&>(group());
 
-  const auto& x_epetra = dynamic_cast<const ::NOX::Epetra::Vector&>(Group().getX());
+  const auto& x_epetra = dynamic_cast<const ::NOX::Epetra::Vector&>(group().getX());
 
   nln_group.setIsValidNewton(true);  // to circumvent the check in ::NOX::Solver::SingleStep
   nln_group.setIsValidRHS(false);    // force to compute the RHS
@@ -122,11 +122,11 @@ enum INPAR::STR::ConvergenceStatus STR::NLN::SOLVER::SingleStep::Solve()
   ::NOX::StatusTest::StatusType stepstatus = nlnsolver_->solve();
 
   // copy the solution group into the class variable
-  Group() = nlnsolver_->getSolutionGroup();
+  group() = nlnsolver_->getSolutionGroup();
 
-  Integrator().set_state(x_epetra.getEpetraVector());
+  integrator().set_state(x_epetra.getEpetraVector());
 
-  return ConvertFinalStatus(stepstatus);
+  return convert_final_status(stepstatus);
 }
 
 FOUR_C_NAMESPACE_CLOSE

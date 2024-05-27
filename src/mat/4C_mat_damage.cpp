@@ -69,7 +69,7 @@ MAT::PAR::Damage::Damage(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       dano 02/12 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Damage::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Damage::create_material()
 {
   return Teuchos::rcp(new MAT::Damage(this));
 }

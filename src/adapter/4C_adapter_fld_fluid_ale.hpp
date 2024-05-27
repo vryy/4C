@@ -56,7 +56,7 @@ namespace ADAPTER
     const Teuchos::RCP<ADAPTER::AleFluidWrapper>& ale_field() const { return ale_; }
 
     /// discretization
-    Teuchos::RCP<DRT::Discretization> Discretization() override;
+    Teuchos::RCP<DRT::Discretization> discretization() override;
 
     /// fluid interface
     Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const override
@@ -77,7 +77,7 @@ namespace ADAPTER
     double read_restart(int step  ///< step number to restart from
         ) override;
 
-    void NonlinearSolve(
+    void nonlinear_solve(
         Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel) override;
 
     virtual void nonlinear_solve_vol_coupl(Teuchos::RCP<Epetra_Vector> idisp,
@@ -105,22 +105,22 @@ namespace ADAPTER
     //@{
 
     /// field transform
-    virtual Teuchos::RCP<Epetra_Vector> AleToFluidField(
+    virtual Teuchos::RCP<Epetra_Vector> ale_to_fluid_field(
         Teuchos::RCP<Epetra_Vector> iv  ///< ALE vector (to be converted)
     ) const;
 
     /// field transform
-    virtual Teuchos::RCP<Epetra_Vector> AleToFluidField(
+    virtual Teuchos::RCP<Epetra_Vector> ale_to_fluid_field(
         Teuchos::RCP<const Epetra_Vector> iv  ///< ALE vector (to be converted)
     ) const;
 
     /// interface transform
-    virtual Teuchos::RCP<Epetra_Vector> FluidToAle(
+    virtual Teuchos::RCP<Epetra_Vector> fluid_to_ale(
         Teuchos::RCP<Epetra_Vector> iv  ///< Fluid vector (to be converted)
     ) const;
 
     /// interface transform
-    virtual Teuchos::RCP<Epetra_Vector> FluidToAle(
+    virtual Teuchos::RCP<Epetra_Vector> fluid_to_ale(
         Teuchos::RCP<const Epetra_Vector> iv  ///< Fluid vector (to be converted)
     ) const;
 

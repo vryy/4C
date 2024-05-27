@@ -48,7 +48,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::Update() { return; }
 void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::initialize_linear_solver(
     Teuchos::RCP<CORE::LINALG::Solver> solver)
 {
-  porofluidmultitimint_->Discretization()->compute_null_space_if_necessary(solver->Params());
+  porofluidmultitimint_->discretization()->compute_null_space_if_necessary(solver->Params());
 }
 
 /*--------------------------------------------------------------------------*

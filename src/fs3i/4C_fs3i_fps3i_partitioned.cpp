@@ -104,7 +104,7 @@ void FS3I::PartFPS3I::Init()
 
   Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::Instance();
 
-  // ##################    2.- Creation of Poroelastic + Fluid problem. (Discretization called
+  // ##################    2.- Creation of Poroelastic + Fluid problem. (discretization called
   //  inside)     //##################
   Teuchos::RCP<FPSI::FpsiBase> fpsi_algo = Teuchos::null;
 
@@ -126,7 +126,7 @@ void FS3I::PartFPS3I::Init()
         "and the parameter PARITIONED is set to 'monolithic'. ");
   }
 
-  // ##################      3. Discretization of Scatra problem       //##################
+  // ##################      3. discretization of Scatra problem       //##################
   problem->GetDis("scatra1")->fill_complete();
   problem->GetDis("scatra2")->fill_complete();
 
@@ -334,7 +334,7 @@ void FS3I::PartFPS3I::Setup()
   CheckFS3IInputs();
 
   // in case of FPS3I we have to handle the conductivity, too
-  Teuchos::RCP<DRT::Discretization> dis = scatravec_[0]->ScaTraField()->Discretization();
+  Teuchos::RCP<DRT::Discretization> dis = scatravec_[0]->ScaTraField()->discretization();
   std::vector<CORE::Conditions::Condition*> coupcond;
   dis->GetCondition("ScaTraCoupling", coupcond);
   double myconduct = coupcond[0]->parameters().Get<double>(
@@ -432,7 +432,7 @@ void FS3I::PartFPS3I::SetupSystem()
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
     const int numscal = currscatra->ScaTraField()->NumScal();
-    Teuchos::RCP<DRT::Discretization> currdis = currscatra->ScaTraField()->Discretization();
+    Teuchos::RCP<DRT::Discretization> currdis = currscatra->ScaTraField()->discretization();
     Teuchos::RCP<CORE::LINALG::MultiMapExtractor> mapex =
         Teuchos::rcp(new CORE::LINALG::MultiMapExtractor());
     CORE::Conditions::MultiConditionSelector mcs;
@@ -442,8 +442,8 @@ void FS3I::PartFPS3I::SetupSystem()
     scatrafieldexvec_.push_back(mapex);
   }
 
-  scatracoup_->setup_condition_coupling(*(scatravec_[0]->ScaTraField()->Discretization()),
-      scatrafieldexvec_[0]->Map(1), *(scatravec_[1]->ScaTraField()->Discretization()),
+  scatracoup_->setup_condition_coupling(*(scatravec_[0]->ScaTraField()->discretization()),
+      scatrafieldexvec_[0]->Map(1), *(scatravec_[1]->ScaTraField()->discretization()),
       scatrafieldexvec_[1]->Map(1), "ScaTraCoupling",
       scatravec_[0]
           ->ScaTraField()
@@ -486,7 +486,7 @@ void FS3I::PartFPS3I::SetupSystem()
           Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(scatraglobalex_->Map(i)), 27, false, true));
       scatracoupmat_.push_back(scatracoupmat);
 
-      const Epetra_Map* dofrowmap = scatravec_[i]->ScaTraField()->Discretization()->dof_row_map();
+      const Epetra_Map* dofrowmap = scatravec_[i]->ScaTraField()->discretization()->dof_row_map();
       Teuchos::RCP<Epetra_Vector> zeros = CORE::LINALG::CreateVector(*dofrowmap, true);
       scatrazeros_.push_back(zeros);
     }
@@ -504,7 +504,7 @@ void FS3I::PartFPS3I::SetupSystem()
   check_interface_dirichlet_bc();
   // scatra solver
   Teuchos::RCP<DRT::Discretization> firstscatradis =
-      (scatravec_[0])->ScaTraField()->Discretization();
+      (scatravec_[0])->ScaTraField()->discretization();
 #ifdef SCATRABLOCKMATRIXMERGE
   Teuchos::RCP<Teuchos::ParameterList> scatrasolvparams = Teuchos::rcp(new Teuchos::ParameterList);
   CORE::UTILS::AddEnumClassToParameterList<CORE::LINEAR_SOLVER::SolverType>(
@@ -557,11 +557,11 @@ void FS3I::PartFPS3I::SetupSystem()
       "Inverse2", GLOBAL::Problem::Instance()->SolverParams(linsolver2number));
   (scatravec_[0])
       ->ScaTraField()
-      ->Discretization()
+      ->discretization()
       ->compute_null_space_if_necessary(scatrasolver_->Params().sublist("Inverse1"));
   (scatravec_[1])
       ->ScaTraField()
-      ->Discretization()
+      ->discretization()
       ->compute_null_space_if_necessary(scatrasolver_->Params().sublist("Inverse2"));
 
 #endif
@@ -575,7 +575,7 @@ void FS3I::PartFPS3I::TestResults(const Epetra_Comm& comm)
 {
   GLOBAL::Problem::Instance()->AddFieldTest(fpsi_->fluid_field()->CreateFieldTest());
 
-  fpsi_->poro_field()->StructureField()->CreateFieldTest();
+  fpsi_->poro_field()->structure_field()->CreateFieldTest();
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
@@ -593,7 +593,7 @@ void FS3I::PartFPS3I::SetFPSISolution()
   // we clear every state, including the states of the secondary dof sets
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
-    scatravec_[i]->ScaTraField()->Discretization()->ClearState(true);
+    scatravec_[i]->ScaTraField()->discretization()->ClearState(true);
     // we have to manually clear this since this can not be saved directly in the
     // primary dof set (because it is cleared in between)
     scatravec_[i]->ScaTraField()->clear_external_concentrations();
@@ -612,7 +612,7 @@ void FS3I::PartFPS3I::SetFPSISolution()
 // only needed for two-way coupling; at the moment function is not used
 void FS3I::PartFPS3I::set_struct_scatra_solution()
 {
-  fpsi_->poro_field()->StructureField()->Discretization()->set_state(
+  fpsi_->poro_field()->structure_field()->discretization()->set_state(
       1, "scalarfield", (scatravec_[1])->ScaTraField()->Phinp());
 }
 
@@ -626,7 +626,7 @@ void FS3I::PartFPS3I::set_mesh_disp()
   scatravec_[0]->ScaTraField()->ApplyMeshMovement(fpsi_->fluid_field()->Dispnp());
 
   // Poro field
-  scatravec_[1]->ScaTraField()->ApplyMeshMovement(fpsi_->poro_field()->StructureField()->Dispnp());
+  scatravec_[1]->ScaTraField()->ApplyMeshMovement(fpsi_->poro_field()->structure_field()->Dispnp());
 }
 
 
@@ -646,7 +646,7 @@ void FS3I::PartFPS3I::set_velocity_fields()
       for (unsigned i = 0; i < scatravec_.size(); ++i)
       {
         Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-        scatra->ScaTraField()->SetVelocityField();
+        scatra->ScaTraField()->set_velocity_field();
       }
       break;
     }
@@ -659,7 +659,7 @@ void FS3I::PartFPS3I::set_velocity_fields()
       for (unsigned i = 0; i < scatravec_.size(); ++i)
       {
         Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-        scatra->ScaTraField()->SetVelocityField(convel[i], Teuchos::null, vel[i], Teuchos::null);
+        scatra->ScaTraField()->set_velocity_field(convel[i], Teuchos::null, vel[i], Teuchos::null);
       }
       break;
     }

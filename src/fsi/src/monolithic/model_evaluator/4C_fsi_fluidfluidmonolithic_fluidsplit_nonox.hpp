@@ -76,7 +76,7 @@ namespace FSI
     Teuchos::RCP<Epetra_Map> combined_dbc_map() override;
 
     /// Newton loop
-    void Newton() override;
+    void newton() override;
 
     //! Extract the three field vectors from a given composed vector
     //!
@@ -105,7 +105,7 @@ namespace FSI
     void read_restart(int step) override;
 
     /// output of fluid, structure & ALE-quantities and Lagrange multiplier
-    void Output() override;
+    void output() override;
 
     /*!
      * In case of a change in the fluid DOF row maps during the Newton loop (full Newton approach),

@@ -23,20 +23,20 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-std::map<std::string, std::string> POROELAST::UTILS::PoroelastCloneStrategy::ConditionsToCopy()
+std::map<std::string, std::string> POROELAST::UTILS::PoroelastCloneStrategy::conditions_to_copy()
     const
 {
   return {{"PoroDirichlet", "Dirichlet"}, {"PoroPointNeumann", "PointNeumann"},
       {"PoroLineNeumann", "LineNeumann"}, {"PoroSurfaceNeumann", "SurfaceNeumann"},
-      {"PoroVolumeNeumann", "VolumeNeumann"}, {"NoPenetration", "NoPenetration"},
+      {"PoroVolumeNeumann", "VolumeNeumann"}, {"no_penetration", "no_penetration"},
       {"PoroPartInt", "PoroPartInt"}, {"PoroCoupling", "PoroCoupling"},
-      {"FSICoupling", "FSICoupling"}, {"FPSICoupling", "FPSICoupling"},
+      {"FSICoupling", "FSICoupling"}, {"fpsi_coupling", "fpsi_coupling"},
       {"PoroPresInt", "PoroPresInt"}, {"Mortar", "Mortar"}, {"SurfFlowRate", "SurfFlowRate"},
       {"LineFlowRate", "LineFlowRate"}, {"ImmersedSearchbox", "ImmersedSearchbox"},
       {"XFEMSurfFPIMono", "XFEMSurfFPIMono"}, {"FluidNeumannInflow", "FluidNeumannInflow"}};
 }
 
-void POROELAST::UTILS::PoroelastCloneStrategy::CheckMaterialType(const int matid)
+void POROELAST::UTILS::PoroelastCloneStrategy::check_material_type(const int matid)
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
@@ -46,7 +46,7 @@ void POROELAST::UTILS::PoroelastCloneStrategy::CheckMaterialType(const int matid
     FOUR_C_THROW("Material with ID %d is not admissible for fluid poroelasticity elements", matid);
 }
 
-void POROELAST::UTILS::PoroelastCloneStrategy::SetElementData(
+void POROELAST::UTILS::PoroelastCloneStrategy::set_element_data(
     Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbs)
 {
   // We need to set material and possibly other things to complete element setup.
@@ -178,7 +178,7 @@ void POROELAST::UTILS::PoroelastCloneStrategy::set_anisotropic_permeability_noda
   // Do nothing.
 }
 
-bool POROELAST::UTILS::PoroelastCloneStrategy::DetermineEleType(
+bool POROELAST::UTILS::PoroelastCloneStrategy::determine_ele_type(
     DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // clone the element only if it is a poro element (we support submeshes here)

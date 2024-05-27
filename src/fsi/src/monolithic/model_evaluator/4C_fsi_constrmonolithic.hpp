@@ -90,9 +90,9 @@ namespace FSI
      *  6 available norms are useful. Each of these three norms delivers a new
      *  time step size. Select the minimum of these three as the new time step size.
      */
-    double SelectDtErrorBased() const override
+    double select_dt_error_based() const override
     {
-      FOUR_C_THROW("SelectDtErrorBased() not implemented, yet!");
+      FOUR_C_THROW("select_dt_error_based() not implemented, yet!");
       return 0.0;
     }
 
@@ -101,7 +101,7 @@ namespace FSI
      *  In case that the local truncation error is small enough, the time step is
      *  accepted.
      */
-    bool SetAccepted() const override
+    bool set_accepted() const override
     {
       FOUR_C_THROW("SetAccepted() not implemented, yet!");
       return false;
@@ -130,7 +130,7 @@ namespace FSI
 
    protected:
     /// create the composed system matrix
-    void CreateSystemMatrix(bool structuresplit);
+    void create_system_matrix(bool structuresplit);
 
     /// setup solver for global block system
     Teuchos::RCP<::NOX::Epetra::LinearSystem> create_linear_system(Teuchos::ParameterList& nlParams,

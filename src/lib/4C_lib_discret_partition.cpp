@@ -51,7 +51,7 @@ void DRT::Discretization::ExportRowNodes(const Epetra_Map& newmap, bool killdofs
   for (curr = node_.begin(); curr != node_.end(); ++curr) curr->second->SetOwner(myrank);
 
   // maps and pointers are no longer correct and need rebuilding
-  Reset(killdofs, killcond);
+  reset(killdofs, killcond);
 }
 
 /*----------------------------------------------------------------------*
@@ -88,7 +88,7 @@ void DRT::Discretization::ExportColumnNodes(const Epetra_Map& newmap, bool killd
   exporter.Export(node_);
 
   // maps and pointers are no longer correct and need rebuilding
-  Reset(killdofs, killcond);
+  reset(killdofs, killcond);
 }
 
 /*----------------------------------------------------------------------*
@@ -196,7 +196,7 @@ void DRT::Discretization::proc_zero_distribute_elements_to_all(
     for (int i = 0; i < size; ++i) exporter.Wait(request[i]);
 
   Comm().Barrier();  // I feel better this way ;-)
-  Reset();
+  reset();
 }
 
 /*----------------------------------------------------------------------*
@@ -206,7 +206,7 @@ void DRT::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& target)
   const int myrank = Comm().MyPID();
 
   // proc 0 looks for nodes that are to be distributed
-  Reset();
+  reset();
   build_node_row_map();
   const Epetra_Map& oldmap = *noderowmap_;
   int size = oldmap.NumMyElements();
@@ -311,7 +311,7 @@ void DRT::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& target)
     for (int i = 0; i < size; ++i) exporter.Wait(request[i]);
 
   Comm().Barrier();  // feel better this way ;-)
-  Reset();
+  reset();
 }
 
 /*----------------------------------------------------------------------*
@@ -345,7 +345,7 @@ void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap, bool killd
   for (curr = element_.begin(); curr != element_.end(); ++curr) curr->second->SetOwner(myrank);
 
   // maps and pointers are no longer correct and need rebuilding
-  Reset(killdofs, killcond);
+  reset(killdofs, killcond);
 }
 
 /*----------------------------------------------------------------------*
@@ -382,7 +382,7 @@ void DRT::Discretization::export_column_elements(
   exporter.Export(element_);
 
   // maps and pointers are no longer correct and need rebuilding
-  Reset(killdofs, killcond);
+  reset(killdofs, killcond);
 }
 
 /*----------------------------------------------------------------------*

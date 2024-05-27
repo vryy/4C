@@ -267,7 +267,7 @@ namespace DRT
       /// \note Element degrees of freedom mentioned here are dofs that are visible
       /// at the level of the total system of equations. Purely internal
       /// element dofs that are condensed internally should NOT be considered.
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       /// Set ANS type
       void SetANS(const AnsType& newans  ///< ANS to set
@@ -895,7 +895,7 @@ namespace DRT
       //@}
 
       //! Calculate the STC matrix
-      virtual void CalcSTCMatrix(CORE::LINALG::Matrix<NUMDOF_, NUMDOF_>& elemat1,
+      virtual void do_calc_stc_matrix(CORE::LINALG::Matrix<NUMDOF_, NUMDOF_>& elemat1,
           const INPAR::STR::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
           DRT::Discretization& discretization, bool calcinverse);
 

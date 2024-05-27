@@ -176,7 +176,7 @@ namespace DRT
           const CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ, const int gp) override;
 
       //! Evaluate all ANS related data at the ANS sampling points
-      void Anssetup(const CORE::LINALG::Matrix<nen_, nsd_>& xrefe,  ///< material element coords
+      void anssetup(const CORE::LINALG::Matrix<nen_, nsd_>& xrefe,  ///< material element coords
           const CORE::LINALG::Matrix<nen_, nsd_>& xcurr,            ///< current element coords
           std::vector<CORE::LINALG::Matrix<nsd_, nen_>>**
               deriv_sp,  ///< derivs eval. at all sampling points
@@ -186,10 +186,10 @@ namespace DRT
           CORE::LINALG::Matrix<num_ans * num_sp, numdofperelement_>& B_ans_loc);  ///< modified B
 
       //! Evaluate transformation matrix T (parameter->material) at gp
-      void EvaluateT(const CORE::LINALG::Matrix<nsd_, nsd_>& jac,  ///< actual jacobian
-          CORE::LINALG::Matrix<numstr_, numstr_>& TinvT);          ///< T^{-T}
+      void evaluate_t(const CORE::LINALG::Matrix<nsd_, nsd_>& jac,  ///< actual jacobian
+          CORE::LINALG::Matrix<numstr_, numstr_>& TinvT);           ///< T^{-T}
 
-      void AnsStrains(const int gp,
+      void ans_strains(const int gp,
           std::vector<CORE::LINALG::Matrix<nsd_, nsd_>>& jac_sps,  // jac at all sampling points
           std::vector<CORE::LINALG::Matrix<nsd_, nsd_>>&
               jac_cur_sps  // current jac at all sampling points
@@ -204,61 +204,61 @@ namespace DRT
       );
 
       //! Re-initialize EAS data, needed for sosh8 morphing
-      void ReInitEas(const DRT::ELEMENTS::So3PlastEasType EASType);
+      void re_init_eas(const DRT::ELEMENTS::So3PlastEasType EASType);
 
-      void InvalidGpData() override
+      void invalid_gp_data() override
       {
-        So3Plast<CORE::FE::CellType::hex8>::InvalidGpData();
+        So3Plast<CORE::FE::CellType::hex8>::invalid_gp_data();
         jac_refe_.first = false;
         jac_curr_.first = false;
         TinvT_.first = false;
       }
 
-      void InvalidEleData()
+      void invalid_ele_data()
       {
-        So3Plast<CORE::FE::CellType::hex8>::InvalidEleData();
+        So3Plast<CORE::FE::CellType::hex8>::invalid_ele_data();
         B_ans_loc_.first = false;
       }
 
-      const CORE::LINALG::Matrix<nsd_, nsd_>& Jac_curr() const
+      const CORE::LINALG::Matrix<nsd_, nsd_>& jac_curr() const
       {
         if (jac_curr_.first == false) FOUR_C_THROW("jac_curr_ not valid");
         return jac_curr_.second;
       }
-      CORE::LINALG::Matrix<nsd_, nsd_>& SetJac_curr()
+      CORE::LINALG::Matrix<nsd_, nsd_>& set_jac_curr()
       {
         jac_curr_.first = true;
         return jac_curr_.second;
       }
 
-      const CORE::LINALG::Matrix<nsd_, nsd_>& Jac_refe() const
+      const CORE::LINALG::Matrix<nsd_, nsd_>& jac_refe() const
       {
         if (jac_refe_.first == false) FOUR_C_THROW("jac_refe_ not valid");
         return jac_refe_.second;
       }
-      CORE::LINALG::Matrix<nsd_, nsd_>& SetJac_refe()
+      CORE::LINALG::Matrix<nsd_, nsd_>& set_jac_refe()
       {
         jac_refe_.first = true;
         return jac_refe_.second;
       }
 
-      const CORE::LINALG::Matrix<num_ans * num_sp, numdofperelement_>& B_ans_loc() const
+      const CORE::LINALG::Matrix<num_ans * num_sp, numdofperelement_>& b_ans_loc() const
       {
         if (B_ans_loc_.first == false) FOUR_C_THROW("B_ans_loc_ not valid");
         return B_ans_loc_.second;
       }
-      CORE::LINALG::Matrix<num_ans * num_sp, numdofperelement_>& SetB_ans_loc()
+      CORE::LINALG::Matrix<num_ans * num_sp, numdofperelement_>& set_b_ans_loc()
       {
         B_ans_loc_.first = true;
         return B_ans_loc_.second;
       }
 
-      const CORE::LINALG::Matrix<numstr_, numstr_>& TinvT() const
+      const CORE::LINALG::Matrix<numstr_, numstr_>& tinv_t() const
       {
         if (TinvT_.first == false) FOUR_C_THROW("TinvT_ not valid");
         return TinvT_.second;
       }
-      CORE::LINALG::Matrix<numstr_, numstr_>& SetTinvT()
+      CORE::LINALG::Matrix<numstr_, numstr_>& set_tinv_t()
       {
         TinvT_.first = true;
         return TinvT_.second;

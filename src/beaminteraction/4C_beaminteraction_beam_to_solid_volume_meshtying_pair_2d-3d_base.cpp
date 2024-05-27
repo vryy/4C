@@ -54,7 +54,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<beam,
   {
     const auto eta = integration_point.GetEta();
     CORE::LINALG::Matrix<3, 3, double> triad;
-    GetTriadAtXiDouble(eta, triad, reference);
+    get_triad_at_xi_double(eta, triad, reference);
     CORE::LINALG::Matrix<3, 1, double> r_cross_section_ref, r_cross_section_cur;
     r_cross_section_ref(0) = 0.0;
     r_cross_section_ref(1) = integration_point.GetEtaCrossSection()(0);

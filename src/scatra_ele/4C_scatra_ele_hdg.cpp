@@ -242,9 +242,9 @@ void DRT::ELEMENTS::ScaTraHDG::Unpack(const std::vector<char>& data)
 }
 
 /*----------------------------------------------------------------------*
- |  PackMaterial data (public)                           hoermann 12/16 |
+ |  pack_material data (public)                           hoermann 12/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDG::PackMaterial(CORE::COMM::PackBuffer& data) const
+void DRT::ELEMENTS::ScaTraHDG::pack_material(CORE::COMM::PackBuffer& data) const
 {
   // add material
   if (Material() != Teuchos::null)
@@ -259,14 +259,14 @@ void DRT::ELEMENTS::ScaTraHDG::PackMaterial(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  UnPackMaterial data (public)                         hoermann 12/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDG::UnpackMaterial(const std::vector<char>& data) const
+void DRT::ELEMENTS::ScaTraHDG::unpack_material(const std::vector<char>& data) const
 {
   Teuchos::RCP<CORE::MAT::Material> mat = Material();
   if (mat->MaterialType() == CORE::Materials::m_myocard)
   {
     // Note: We need to do a dynamic_cast here
     Teuchos::RCP<MAT::Myocard> actmat = Teuchos::rcp_dynamic_cast<MAT::Myocard>(mat);
-    actmat->UnpackMaterial(data);
+    actmat->unpack_material(data);
   }
   else
     FOUR_C_THROW("No material defined to unpack!");
@@ -275,7 +275,7 @@ void DRT::ELEMENTS::ScaTraHDG::UnpackMaterial(const std::vector<char>& data) con
 /*----------------------------------------------------------------------*
  |  init the element                                     hoermann 12/16 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ScaTraHDG::Initialize()
+int DRT::ELEMENTS::ScaTraHDG::initialize()
 {
   Teuchos::RCP<CORE::MAT::Material> mat = Material();
   // for now, we only need to do something in case of reactions (for the initialization of functions
@@ -750,7 +750,7 @@ DRT::ELEMENTS::ScaTraHDGIntFace::ScaTraHDGIntFace(int id,  ///< element id
     degree_old_ = parent_master->DegreeOld();
   }
 
-  SetLocalTrafoMap(localtrafomap);
+  set_local_trafo_map(localtrafomap);
 
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);

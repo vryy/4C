@@ -34,11 +34,11 @@ void poro_scatra_drt()
       POROELASTSCATRA::UTILS::PoroelastCloneStrategyforScatraElements,
       POROELASTSCATRA::UTILS::PoroScatraCloneStrategy>();
 
-  // 3.- Creation of Poroelastic + Scalar_Transport problem. (Discretization called inside)
+  // 3.- Creation of Poroelastic + Scalar_Transport problem. (discretization called inside)
   Teuchos::RCP<POROELASTSCATRA::PoroScatraBase> poro_scatra =
       POROELASTSCATRA::UTILS::CreatePoroScatraAlgorithm(poroscatradynparams, comm);
 
-  // 3.1- Read restart if needed. (Discretization called inside)
+  // 3.1- Read restart if needed. (discretization called inside)
   const int restart = problem->Restart();
   poro_scatra->read_restart(restart);
 

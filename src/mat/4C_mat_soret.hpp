@@ -28,7 +28,7 @@ namespace MAT
 
 
       //! create instance of Soret material
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
       //! return Soret coefficient
       double SoretCoefficient() const { return soretcoefficient_; };

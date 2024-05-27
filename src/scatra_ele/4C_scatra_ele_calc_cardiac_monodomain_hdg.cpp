@@ -80,7 +80,7 @@ DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Instance(
  |  prepare material parameter                           hoermann 11/16 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::PrepareMaterialsAll(
+void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::prepare_materials_all(
     DRT::Element* ele,                                       //!< the element we are dealing with
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
@@ -148,16 +148,16 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
  |  prepare material parameter                           hoermann 01/11 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::PrepareMaterials(
+void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::prepare_materials(
     DRT::Element* ele,                                       //!< the element we are dealing with
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor)
 {
   if (distype == CORE::FE::CellType::tet4 or distype == CORE::FE::CellType::tet10)
-    PrepareMaterialsTet(ele, material, k, difftensor);
+    prepare_materials_tet(ele, material, k, difftensor);
   else
-    PrepareMaterialsAll(ele, material, k, difftensor);
+    prepare_materials_all(ele, material, k, difftensor);
 
   return;
 }
@@ -166,7 +166,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
  |  prepare material parameter                           hoermann 01/11 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::PrepareMaterialsTet(
+void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::prepare_materials_tet(
     DRT::Element* ele,                                       //!< the element we are dealing with
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
@@ -194,7 +194,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
     actmat->reset_diffusion_tensor();
 
     const CORE::FE::IntPointsAndWeights<CORE::FE::dim<distype>> intpoints(
-        SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(2 * hdgele->Degree()));
+        SCATRA::DisTypeToMatGaussRule<distype>::get_gauss_rule(2 * hdgele->Degree()));
     const std::size_t numgp = intpoints.IP().nquad;
 
     std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1>> shapefcns(numgp);
@@ -237,14 +237,14 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
  |  evaluate single material  (protected)                hoermann 09/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Materials(
+void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::materials(
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     CORE::LINALG::SerialDenseMatrix& difftensor, CORE::LINALG::SerialDenseVector& ivecn,
     CORE::LINALG::SerialDenseVector& ivecnp, CORE::LINALG::SerialDenseMatrix& ivecnpderiv)
 {
   if (material->MaterialType() == CORE::Materials::m_myocard)
-    MatMyocard(material, k, difftensor, ivecn, ivecnp, ivecnpderiv);
+    mat_myocard(material, k, difftensor, ivecn, ivecnp, ivecnpderiv);
   else
     FOUR_C_THROW("Material type is not supported");
 
@@ -256,7 +256,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Materia
  |  Material ScaTra                                      hoermann 09/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyocard(
+void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::mat_myocard(
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     CORE::LINALG::SerialDenseMatrix& difftensor, CORE::LINALG::SerialDenseVector& ivecn,
@@ -292,7 +292,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyoc
     else
       deg = 3 * this->shapes_->degree_;
     const CORE::FE::IntPointsAndWeights<CORE::FE::dim<distype>> intpoints(
-        SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(deg));
+        SCATRA::DisTypeToMatGaussRule<distype>::get_gauss_rule(deg));
     nqpoints = intpoints.IP().nquad;
 
     if (nqpoints != actmat->GetNumberOfGP())
@@ -381,11 +381,11 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyoc
 
     if (!this->scatrapara_->SemiImplicit())
     {
-      imatgpnpderiv = actmat->ReaCoeffDeriv(phinpgp, this->Dt(), q);
+      imatgpnpderiv = actmat->ReaCoeffDeriv(phinpgp, this->dt(), q);
     }
 
-    imatgpn = actmat->ReaCoeffN(phingp, this->Dt(), q);
-    imatgpnp = actmat->ReaCoeff(phinpgp, this->Dt(), q);
+    imatgpn = actmat->ReaCoeffN(phingp, this->dt(), q);
+    imatgpnp = actmat->ReaCoeff(phinpgp, this->dt(), q);
 
     // loop over shape functions
     for (unsigned int i = 0; i < this->shapes_->ndofs_; ++i)
@@ -411,7 +411,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyoc
  |  Material Time Update                                 hoermann 09/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::TimeUpdateMaterial(
+void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::time_update_material(
     const DRT::Element* ele  //!< the element we are dealing with
 )
 {
@@ -680,9 +680,9 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::project_
     degold = 3 * hdgele->DegreeOld();
 
   const CORE::FE::IntPointsAndWeights<CORE::FE::dim<distype>> intpoints_old(
-      SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(degold));
+      SCATRA::DisTypeToMatGaussRule<distype>::get_gauss_rule(degold));
   const CORE::FE::IntPointsAndWeights<CORE::FE::dim<distype>> intpoints(
-      SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(deg));
+      SCATRA::DisTypeToMatGaussRule<distype>::get_gauss_rule(deg));
 
 
   std::vector<CORE::LINALG::SerialDenseVector> shape_gp_old(intpoints_old.IP().nquad);

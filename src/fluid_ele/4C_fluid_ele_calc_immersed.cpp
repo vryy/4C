@@ -346,7 +346,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_velocit
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::LinGalMomResU(
+void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::lin_gal_mom_res_u(
     CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, const double& timefacfac)
 {
   /*
@@ -368,7 +368,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::LinGalMomResU(
 
 
   // convective form of momentum residual
-  my::LinGalMomResU(lin_resM_Du, timefacfac);
+  my::lin_gal_mom_res_u(lin_resM_Du, timefacfac);
 
   // add conservative terms for covered fluid integration points
   const double timefacfac_densaf = timefacfac * my::densaf_;
@@ -443,7 +443,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::inertia_convection_reaction_g
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ContinuityGalPart(
+void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::continuity_gal_part(
     CORE::LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, CORE::LINALG::Matrix<nen_, 1>& preforce,
     const double& timefacfac, const double& timefacfacpre, const double& rhsfac)
 {

@@ -791,9 +791,9 @@ namespace FLD
                 }
 
                 // interpolate spectrum to wave number
-                double E_n = Interpolate(k, (*wavenumbers_)[rr_k - 1], (*wavenumbers_)[rr_k],
+                double E_n = interpolate(k, (*wavenumbers_)[rr_k - 1], (*wavenumbers_)[rr_k],
                     (*energyspectrum_n_)[rr_k - 1], (*energyspectrum_n_)[rr_k]);
-                double E_np = Interpolate(k, (*wavenumbers_)[rr_k - 1], (*wavenumbers_)[rr_k],
+                double E_np = interpolate(k, (*wavenumbers_)[rr_k - 1], (*wavenumbers_)[rr_k],
                     (*energyspectrum_np_)[rr_k - 1], (*energyspectrum_np_)[rr_k]);
 
                 // get position in fac-vector
@@ -1635,9 +1635,9 @@ namespace FLD
                 }
 
                 // interpolate spectrum to wave number
-                double E_n = Interpolate(k, (*wavenumbers_)[rr_k - 1], (*wavenumbers_)[rr_k],
+                double E_n = interpolate(k, (*wavenumbers_)[rr_k - 1], (*wavenumbers_)[rr_k],
                     (*energyspectrum_n_)[rr_k - 1], (*energyspectrum_n_)[rr_k]);
-                double E_np = Interpolate(k, (*wavenumbers_)[rr_k - 1], (*wavenumbers_)[rr_k],
+                double E_np = interpolate(k, (*wavenumbers_)[rr_k - 1], (*wavenumbers_)[rr_k],
                     (*energyspectrum_np_)[rr_k - 1], (*energyspectrum_np_)[rr_k]);
 
                 // get position in fac-vector

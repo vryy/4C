@@ -182,12 +182,12 @@ namespace IO
     DiscretizationReader();
 
     /// find control file entry to given time step
-    void FindResultGroup(int step, MAP* file);
+    void find_result_group(int step, MAP* file);
 
     /// access the Epetra_Comm object
-    virtual const Epetra_Comm& Comm() const;
+    virtual const Epetra_Comm& comm() const;
 
-    MAP* RestartStepMap() { return restart_step_; }
+    MAP* restart_step_map() { return restart_step_; }
 
    private:
     /// find control file entry to given time step
@@ -412,7 +412,7 @@ namespace IO
     DiscretizationWriter();
 
     /// access the Epetra_Comm object
-    virtual const Epetra_Comm& Comm() const;
+    virtual const Epetra_Comm& comm() const;
 
     /*!
       \brief write a knotvector for a nurbs discretisation
@@ -420,13 +420,13 @@ namespace IO
       \author gammi
       \date 06/08
     */
-    void WriteKnotvector() const;
+    void write_knotvector() const;
 
     //! open new mesh file
-    virtual void CreateMeshFile(const int step);
+    virtual void create_mesh_file(const int step);
 
     //! open new result file
-    virtual void CreateResultFile(const int step);
+    virtual void create_result_file(const int step);
 
     //! my discretization
     Teuchos::RCP<DRT::Discretization> dis_;

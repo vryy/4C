@@ -46,7 +46,7 @@ void ADAPTER::AlgorithmBase::SetTimeStep(const double time, const int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::AlgorithmBase::PrintHeader()
+void ADAPTER::AlgorithmBase::print_header()
 {
   if (Comm().MyPID() == 0 and printscreen_ and (step_ % printscreen_ == 0))
   {

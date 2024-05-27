@@ -375,7 +375,7 @@ void CONTACT::TSIInterface::assemble_dual_mass_lumped(
       if (!coele) FOUR_C_THROW("this should be a contact element");
 
       CORE::GEN::Pairedvector<int, double> derivArea(coele->num_node() * Dim());
-      double area = coele->ComputeAreaDeriv(derivArea);
+      double area = coele->compute_area_deriv(derivArea);
 
       dualMassGlobal.FEAssemble(area, conode->Dofs()[0], conode->Dofs()[0]);
 

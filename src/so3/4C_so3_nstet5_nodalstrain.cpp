@@ -58,10 +58,10 @@ void DRT::ELEMENTS::NStet5Type::element_deformation_gradient(DRT::Discretization
     for (int k = 0; k < 4; ++k)  // subelement k
     {
       for (int i = 0; i < 4; ++i)
-        for (int j = 0; j < 3; ++j) disp(i, j) = subdisp(e->SubLM(k)[i], j);
+        for (int j = 0; j < 3; ++j) disp(i, j) = subdisp(e->sub_lm(k)[i], j);
 
-      e->SubF(k) = e->BuildF(disp, e->SubNxyz(k));
-      double J = e->SubF(k).Determinant();
+      e->sub_f(k) = e->build_f(disp, e->sub_nxyz(k));
+      double J = e->sub_f(k).Determinant();
       if (J <= 0.0)
         FOUR_C_THROW("det(F) of Element %d / Subelement %d %10.5e <= 0 !!\n", e->Id(), k, J);
     }  // for (int k=0; k<4; ++k)
@@ -457,11 +457,11 @@ void DRT::ELEMENTS::NStet5Type::nodal_integration(CORE::LINALG::SerialDenseMatri
       //     CORE::LINALG::Matrix<3,3> F(false);
       //     CORE::LINALG::Matrix<3,3,FADFAD> tF(true);
       //     F = ele->BuildF(eledispmat,ele->SubNxyz(subeleid));
-      CORE::LINALG::Matrix<3, 3> F = ele->SubF(subeleid);
+      CORE::LINALG::Matrix<3, 3> F = ele->sub_f(subeleid);
       //     tF = t_build_f(teledispmat,ele->SubNxyz(subeleid));
 
       // add 1/3 of subelement material volume to this node
-      const double V = ele->SubV(subeleid) / 3.0;
+      const double V = ele->sub_v(subeleid) / 3.0;
       Vnode += V;
 
       // add to nodal deformation gradient
@@ -494,11 +494,11 @@ void DRT::ELEMENTS::NStet5Type::nodal_integration(CORE::LINALG::SerialDenseMatri
     for (unsigned j = 0; j < subele.size(); ++j)
     {
       const int subeleid = subele[j];
-      double V = actele->SubV(subeleid) / 3;
+      double V = actele->sub_v(subeleid) / 3;
       V = V / Vnode;
 
       // get derivatives with respect to X
-      const CORE::LINALG::Matrix<4, 3>& nxyz = actele->SubNxyz(subeleid);
+      const CORE::LINALG::Matrix<4, 3>& nxyz = actele->sub_nxyz(subeleid);
       for (int k = 0; k < 4; ++k)
       {
         for (int l = 0; l < 3; ++l)
@@ -607,7 +607,7 @@ void DRT::ELEMENTS::NStet5Type::nodal_integration(CORE::LINALG::SerialDenseMatri
       // volume of that element assigned to node L
       double V = 0.0;
       for (unsigned j = 0; j < adjsubele[actele->Id()].size(); ++j)
-        V += (actele->SubV(adjsubele[actele->Id()][j]) / 3.0);
+        V += (actele->sub_v(adjsubele[actele->Id()][j]) / 3.0);
       // material of the element
       Teuchos::RCP<CORE::MAT::Material> mat = actele->Material();
       // EleGID is set to -1 errorcheck is performed in

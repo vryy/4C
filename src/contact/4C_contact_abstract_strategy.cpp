@@ -215,7 +215,7 @@ CONTACT::AbstractStrategy::AbstractStrategy(
   unbalanceNumSlaveElements_.clear();
 
   // build the NOX::NLN::CONSTRAINT::Interface::Required object
-  noxinterface_ptr_ = Teuchos::rcp(new CONTACT::NoxInterface());
+  noxinterface_ptr_ = Teuchos::rcp(new CONTACT::NoxInterface);
   noxinterface_ptr_->Init(Teuchos::rcp(this, false));
   noxinterface_ptr_->Setup();
 
@@ -421,7 +421,7 @@ bool CONTACT::AbstractStrategy::redistribute_with_safe_ghosting(
       is_update_of_ghosting_necessary(ghosting_strategy, first_time_step);
 
   // Prepare for extending the ghosting
-  ivel_.resize(Interfaces().size(), 0.0);  // initialize to zero for non-binning strategies
+  ivel_.resize(interfaces().size(), 0.0);  // initialize to zero for non-binning strategies
   if (ghosting_strategy == INPAR::MORTAR::ExtendGhosting::binning)
     calc_mean_velocity_for_binning(velocity);
 
@@ -433,8 +433,8 @@ bool CONTACT::AbstractStrategy::redistribute_with_safe_ghosting(
   }
 
   // Update parallel distribution and ghosting of all interfaces
-  for (std::size_t i = 0; i < Interfaces().size(); ++i)
-    Interfaces()[i]->update_parallel_layout_and_data_structures(
+  for (std::size_t i = 0; i < interfaces().size(); ++i)
+    interfaces()[i]->update_parallel_layout_and_data_structures(
         perform_rebalancing, enforce_ghosting_update, maxdof_, ivel_[i]);
 
   // Re-setup strategy to update internal map objects
@@ -469,7 +469,7 @@ bool CONTACT::AbstractStrategy::redistribute_contact_old(
   const double t_start = Teuchos::Time::wallTime();
 
   // Prepare for extending the ghosting
-  ivel_.resize(Interfaces().size(), 0.0);  // initialize to zero for non-binning strategies
+  ivel_.resize(interfaces().size(), 0.0);  // initialize to zero for non-binning strategies
   if (Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
           Params().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY") ==
       INPAR::MORTAR::ExtendGhosting::binning)
@@ -481,21 +481,21 @@ bool CONTACT::AbstractStrategy::redistribute_contact_old(
   set_state(MORTAR::state_old_displacement, *dis);
 
   // parallel redistribution of all interfaces
-  for (int i = 0; i < (int)Interfaces().size(); ++i)
+  for (int i = 0; i < (int)interfaces().size(); ++i)
   {
     // redistribute optimally among procs
-    Interfaces()[i]->Redistribute();
+    interfaces()[i]->Redistribute();
 
     // call fill complete again
-    Interfaces()[i]->fill_complete(true, maxdof_, ivel_[i]);
+    interfaces()[i]->fill_complete(true, maxdof_, ivel_[i]);
 
     // print new parallel distribution
     if (Comm().MyPID() == 0)
       std::cout << "Interface parallel distribution after rebalancing:" << std::endl;
-    Interfaces()[i]->print_parallel_distribution();
+    interfaces()[i]->print_parallel_distribution();
 
     // re-create binary search tree
-    Interfaces()[i]->CreateSearchTree();
+    interfaces()[i]->CreateSearchTree();
   }
 
   // re-setup strategy with redistributed=TRUE, init=FALSE
@@ -522,8 +522,8 @@ void CONTACT::AbstractStrategy::Setup(bool redistributed, bool init)
     // set potential global self contact status
     // (this is TRUE if at least one contact interface is a self contact interface)
     bool selfcontact = false;
-    for (unsigned i = 0; i < Interfaces().size(); ++i)
-      if (Interfaces()[i]->SelfContact()) selfcontact = true;
+    for (unsigned i = 0; i < interfaces().size(); ++i)
+      if (interfaces()[i]->SelfContact()) selfcontact = true;
 
     if (selfcontact) isselfcontact_ = true;
   }
@@ -570,14 +570,14 @@ void CONTACT::AbstractStrategy::Setup(bool redistributed, bool init)
   int offset_if = 0;
 
   // merge interface maps to global maps
-  for (int i = 0; i < (int)Interfaces().size(); ++i)
+  for (int i = 0; i < (int)interfaces().size(); ++i)
   {
     // build Lagrange multiplier dof map
     if (IsSelfContact())
     {
       if (redistributed) FOUR_C_THROW("SELF-CONTACT: Parallel redistribution is not supported!");
 
-      Interface& inter = *Interfaces()[i];
+      Interface& inter = *interfaces()[i];
       Teuchos::RCP<const Epetra_Map> refdofrowmap = Teuchos::null;
       if (inter.SelfContact())
         refdofrowmap = CORE::LINALG::MergeMap(inter.SlaveRowDofs(), inter.MasterRowDofs());
@@ -585,7 +585,7 @@ void CONTACT::AbstractStrategy::Setup(bool redistributed, bool init)
         refdofrowmap = inter.SlaveRowDofs();
 
       Teuchos::RCP<Epetra_Map> selfcontact_lmmap =
-          Interfaces()[i]->UpdateLagMultSets(offset_if, redistributed, *refdofrowmap);
+          interfaces()[i]->UpdateLagMultSets(offset_if, redistributed, *refdofrowmap);
 
       Teuchos::RCP<Epetra_Map>& gsc_refdofmap_ptr = data().g_self_contact_ref_dof_row_map_ptr();
       Teuchos::RCP<Epetra_Map>& gsc_lmdofmap_ptr = data().g_self_contact_lm_dof_row_map_ptr();
@@ -597,50 +597,50 @@ void CONTACT::AbstractStrategy::Setup(bool redistributed, bool init)
     }
     else
     {
-      Interfaces()[i]->UpdateLagMultSets(offset_if, redistributed);
-      const int loffset_interface = Interfaces()[i]->LagMultDofs()->NumGlobalElements();
+      interfaces()[i]->UpdateLagMultSets(offset_if, redistributed);
+      const int loffset_interface = interfaces()[i]->LagMultDofs()->NumGlobalElements();
       if (loffset_interface > 0) offset_if += loffset_interface;
     }
 
     // merge interface master, slave maps to global master, slave map
-    gsnoderowmap_ = CORE::LINALG::MergeMap(SlRowNodesPtr(), Interfaces()[i]->SlaveRowNodes());
-    gmnoderowmap_ = CORE::LINALG::MergeMap(MaRowNodesPtr(), Interfaces()[i]->MasterRowNodes());
-    gsdofrowmap_ = CORE::LINALG::MergeMap(SlDoFRowMapPtr(true), Interfaces()[i]->SlaveRowDofs());
-    gmdofrowmap_ = CORE::LINALG::MergeMap(gmdofrowmap_, Interfaces()[i]->MasterRowDofs());
+    gsnoderowmap_ = CORE::LINALG::MergeMap(SlRowNodesPtr(), interfaces()[i]->SlaveRowNodes());
+    gmnoderowmap_ = CORE::LINALG::MergeMap(MaRowNodesPtr(), interfaces()[i]->MasterRowNodes());
+    gsdofrowmap_ = CORE::LINALG::MergeMap(SlDoFRowMapPtr(true), interfaces()[i]->SlaveRowDofs());
+    gmdofrowmap_ = CORE::LINALG::MergeMap(gmdofrowmap_, interfaces()[i]->MasterRowDofs());
 
     // merge active sets and slip sets of all interfaces
     // (these maps are NOT allowed to be overlapping !!!)
-    Interfaces()[i]->BuildActiveSet(init);
-    gactivenodes_ = CORE::LINALG::MergeMap(gactivenodes_, Interfaces()[i]->ActiveNodes(), false);
-    gactivedofs_ = CORE::LINALG::MergeMap(gactivedofs_, Interfaces()[i]->ActiveDofs(), false);
+    interfaces()[i]->BuildActiveSet(init);
+    gactivenodes_ = CORE::LINALG::MergeMap(gactivenodes_, interfaces()[i]->ActiveNodes(), false);
+    gactivedofs_ = CORE::LINALG::MergeMap(gactivedofs_, interfaces()[i]->ActiveDofs(), false);
 
     ginactivenodes_ =
-        CORE::LINALG::MergeMap(ginactivenodes_, Interfaces()[i]->InActiveNodes(), false);
-    ginactivedofs_ = CORE::LINALG::MergeMap(ginactivedofs_, Interfaces()[i]->InActiveDofs(), false);
+        CORE::LINALG::MergeMap(ginactivenodes_, interfaces()[i]->InActiveNodes(), false);
+    ginactivedofs_ = CORE::LINALG::MergeMap(ginactivedofs_, interfaces()[i]->InActiveDofs(), false);
 
-    gactiven_ = CORE::LINALG::MergeMap(gactiven_, Interfaces()[i]->ActiveNDofs(), false);
-    gactivet_ = CORE::LINALG::MergeMap(gactivet_, Interfaces()[i]->ActiveTDofs(), false);
+    gactiven_ = CORE::LINALG::MergeMap(gactiven_, interfaces()[i]->ActiveNDofs(), false);
+    gactivet_ = CORE::LINALG::MergeMap(gactivet_, interfaces()[i]->ActiveTDofs(), false);
 
     // store initial element col map for binning strategy
     initial_elecolmap_.push_back(
-        Teuchos::rcp<Epetra_Map>(new Epetra_Map(*Interfaces()[i]->Discret().ElementColMap())));
+        Teuchos::rcp<Epetra_Map>(new Epetra_Map(*interfaces()[i]->Discret().ElementColMap())));
 
     // ****************************************************
     // friction
     // ****************************************************
     if (friction_)
     {
-      gslipnodes_ = CORE::LINALG::MergeMap(gslipnodes_, Interfaces()[i]->SlipNodes(), false);
-      gslipdofs_ = CORE::LINALG::MergeMap(gslipdofs_, Interfaces()[i]->SlipDofs(), false);
-      gslipt_ = CORE::LINALG::MergeMap(gslipt_, Interfaces()[i]->SlipTDofs(), false);
+      gslipnodes_ = CORE::LINALG::MergeMap(gslipnodes_, interfaces()[i]->SlipNodes(), false);
+      gslipdofs_ = CORE::LINALG::MergeMap(gslipdofs_, interfaces()[i]->SlipDofs(), false);
+      gslipt_ = CORE::LINALG::MergeMap(gslipt_, interfaces()[i]->SlipTDofs(), false);
     }
 
     // define maps for nonsmooth case
     if (CORE::UTILS::IntegralValue<int>(Params(), "NONSMOOTH_GEOMETRIES"))
     {
-      gsdofVertex_ = CORE::LINALG::MergeMap(gsdofVertex_, Interfaces()[i]->SdofVertexRowmap());
-      gsdofEdge_ = CORE::LINALG::MergeMap(gsdofEdge_, Interfaces()[i]->SdofEdgeRowmap());
-      gsdofSurf_ = CORE::LINALG::MergeMap(gsdofSurf_, Interfaces()[i]->SdofSurfRowmap());
+      gsdofVertex_ = CORE::LINALG::MergeMap(gsdofVertex_, interfaces()[i]->SdofVertexRowmap());
+      gsdofEdge_ = CORE::LINALG::MergeMap(gsdofEdge_, interfaces()[i]->SdofEdgeRowmap());
+      gsdofSurf_ = CORE::LINALG::MergeMap(gsdofSurf_, interfaces()[i]->SdofSurfRowmap());
     }
   }
 
@@ -788,8 +788,8 @@ void CONTACT::AbstractStrategy::Setup(bool redistributed, bool init)
       CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
   if ((shapefcn == INPAR::MORTAR::shape_dual || shapefcn == INPAR::MORTAR::shape_petrovgalerkin) &&
       (Dim() == 3 || (Dim() == 2 && lagmultquad == INPAR::MORTAR::lagmult_lin)))
-    for (int i = 0; i < (int)Interfaces().size(); ++i)
-      dualquadslavetrafo_ += Interfaces()[i]->Quadslave();
+    for (int i = 0; i < (int)interfaces().size(); ++i)
+      dualquadslavetrafo_ += interfaces()[i]->Quadslave();
 
   //----------------------------------------------------------------------
   // IF SO, COMPUTE TRAFO MATRIX AND ITS INVERSE
@@ -814,8 +814,8 @@ void CONTACT::AbstractStrategy::Setup(bool redistributed, bool init)
     std::set<int> donebefore;
 
     // for all interfaces
-    for (int i = 0; i < (int)Interfaces().size(); ++i)
-      Interfaces()[i]->AssembleTrafo(*trafo_, *invtrafo_, donebefore);
+    for (int i = 0; i < (int)interfaces().size(); ++i)
+      interfaces()[i]->AssembleTrafo(*trafo_, *invtrafo_, donebefore);
 
     // fill_complete() transformation matrices
     trafo_->Complete();
@@ -844,8 +844,8 @@ void CONTACT::AbstractStrategy::Setup(bool redistributed, bool init)
     // redistribution of slave and master sides)
     if (ParRedist())
     {
-      for (std::size_t i = 0; i < Interfaces().size(); ++i)
-        Interfaces()[i]->store_unredistributed_maps();
+      for (std::size_t i = 0; i < interfaces().size(); ++i)
+        interfaces()[i]->store_unredistributed_maps();
       if (LMDoFRowMapPtr(true) != Teuchos::null)
         pglmdofrowmap_ = Teuchos::rcp(new Epetra_Map(LMDoFRowMap(true)));
       pgsdofrowmap_ = Teuchos::rcp(new Epetra_Map(SlDoFRowMap(true)));
@@ -876,7 +876,7 @@ Teuchos::RCP<Epetra_Map> CONTACT::AbstractStrategy::create_deterministic_lm_dof_
     // find slid of the interface map
     unsigned interface_id = 0;
     int interface_slid = -1;
-    for (auto cit = Interfaces().begin(); cit != Interfaces().end(); ++cit, ++interface_id)
+    for (auto cit = interfaces().begin(); cit != interfaces().end(); ++cit, ++interface_id)
     {
       const Interface& interface = **cit;
       Teuchos::RCP<const Epetra_Map> sdof_map = interface.SlaveRowDofs();
@@ -892,7 +892,7 @@ Teuchos::RCP<Epetra_Map> CONTACT::AbstractStrategy::create_deterministic_lm_dof_
           sgid, Comm().MyPID());
 
     // get the corresponding Lagrange Multiplier GID
-    const int interface_lmgid = Interfaces()[interface_id]->LagMultDofs()->GID(interface_slid);
+    const int interface_lmgid = interfaces()[interface_id]->LagMultDofs()->GID(interface_slid);
     if (interface_lmgid == -1)
       FOUR_C_THROW(
           "Couldn't find the corresponding Lagrange multiplier GID! "
@@ -1046,7 +1046,7 @@ void CONTACT::AbstractStrategy::set_state(
     case MORTAR::state_old_displacement:
     {
       // set state on interfaces
-      for (int i = 0; i < (int)Interfaces().size(); ++i) Interfaces()[i]->set_state(statetype, vec);
+      for (int i = 0; i < (int)interfaces().size(); ++i) interfaces()[i]->set_state(statetype, vec);
       break;
     }
     default:
@@ -1078,20 +1078,20 @@ void CONTACT::AbstractStrategy::update_global_self_contact_state()
 
   // setup global slave / master Epetra_Maps
   // (this is done by looping over all interfaces and merging)
-  for (int i = 0; i < (int)Interfaces().size(); ++i)
+  for (int i = 0; i < (int)interfaces().size(); ++i)
   {
     // build Lagrange multiplier dof map
-    Interfaces()[i]->update_self_contact_lag_mult_set(GSelfContactLmMap(), *gsmdofrowmap_);
+    interfaces()[i]->update_self_contact_lag_mult_set(g_self_contact_lm_map(), *gsmdofrowmap_);
 
     // merge interface Lagrange multiplier dof maps to global LM dof map
-    glmdofrowmap_ = CORE::LINALG::MergeMap(LMDoFRowMapPtr(true), Interfaces()[i]->LagMultDofs());
+    glmdofrowmap_ = CORE::LINALG::MergeMap(LMDoFRowMapPtr(true), interfaces()[i]->LagMultDofs());
     offset_if = LMDoFRowMap(true).NumGlobalElements();
     if (offset_if < 0) offset_if = 0;
 
     // merge interface master, slave maps to global master, slave map
-    gsnoderowmap_ = CORE::LINALG::MergeMap(SlRowNodesPtr(), Interfaces()[i]->SlaveRowNodes());
-    gsdofrowmap_ = CORE::LINALG::MergeMap(SlDoFRowMapPtr(true), Interfaces()[i]->SlaveRowDofs());
-    gmdofrowmap_ = CORE::LINALG::MergeMap(gmdofrowmap_, Interfaces()[i]->MasterRowDofs());
+    gsnoderowmap_ = CORE::LINALG::MergeMap(SlRowNodesPtr(), interfaces()[i]->SlaveRowNodes());
+    gsdofrowmap_ = CORE::LINALG::MergeMap(SlDoFRowMapPtr(true), interfaces()[i]->SlaveRowDofs());
+    gmdofrowmap_ = CORE::LINALG::MergeMap(gmdofrowmap_, interfaces()[i]->MasterRowDofs());
   }
 
   Teuchos::RCP<Epetra_Vector> tmp_ptr = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_, true));
@@ -1144,7 +1144,7 @@ void CONTACT::AbstractStrategy::calc_mean_velocity_for_binning(const Epetra_Vect
   ivel_.resize(0);
 
   // create vector of interface velocities
-  for (const auto& interface : Interfaces())
+  for (const auto& interface : interfaces())
   {
     Teuchos::RCP<Epetra_Vector> interfaceVelocity =
         Teuchos::rcp(new Epetra_Vector(*interface->Discret().dof_row_map()));
@@ -1180,36 +1180,36 @@ void CONTACT::AbstractStrategy::InitEvalInterface(
           mortarParallelRedistParams, "GHOSTING_STRATEGY");
 
   // Evaluation for all interfaces
-  for (int i = 0; i < (int)Interfaces().size(); ++i)
+  for (int i = 0; i < (int)interfaces().size(); ++i)
   {
     // initialize / reset interfaces
-    Interfaces()[i]->Initialize();
+    interfaces()[i]->Initialize();
 
     // store required integration time
-    inttime_ += Interfaces()[i]->Inttime();
+    inttime_ += interfaces()[i]->Inttime();
 
     switch (extendghosting)
     {
       case INPAR::MORTAR::ExtendGhosting::roundrobin:
       {
         // first perform rrloop to detect the required ghosting
-        Interfaces()[i]->round_robin_detect_ghosting();
+        interfaces()[i]->round_robin_detect_ghosting();
 
         // second step --> evaluate
-        Interfaces()[i]->Evaluate(0, step_, iter_);
+        interfaces()[i]->Evaluate(0, step_, iter_);
         break;
       }
       case INPAR::MORTAR::ExtendGhosting::binning:
       {
         // required master elements are already ghosted (preparestepcontact) !!!
         // call evaluation
-        Interfaces()[i]->Evaluate(0, step_, iter_);
+        interfaces()[i]->Evaluate(0, step_, iter_);
         break;
       }
       case INPAR::MORTAR::ExtendGhosting::redundant_all:
       case INPAR::MORTAR::ExtendGhosting::redundant_master:
       {
-        Interfaces()[i]->Evaluate(0, step_, iter_);
+        interfaces()[i]->Evaluate(0, step_, iter_);
         break;
       }
     }
@@ -1287,10 +1287,10 @@ void CONTACT::AbstractStrategy::update_parallel_distribution_status(const double
 
   // collect information about participation in coupling evaluation
   // and in parallel distribution of the individual interfaces
-  std::vector<int> numloadele((int)Interfaces().size());
-  std::vector<int> numcrowele((int)Interfaces().size());
-  for (int i = 0; i < (int)Interfaces().size(); ++i)
-    Interfaces()[i]->collect_distribution_data(numloadele[i], numcrowele[i]);
+  std::vector<int> numloadele((int)interfaces().size());
+  std::vector<int> numcrowele((int)interfaces().size());
+  for (int i = 0; i < (int)interfaces().size(); ++i)
+    interfaces()[i]->collect_distribution_data(numloadele[i], numcrowele[i]);
 
   // time measurement (on each processor)
   double t_end_for_minall = my_total_time;
@@ -1326,7 +1326,7 @@ void CONTACT::AbstractStrategy::update_parallel_distribution_status(const double
 
   // obtain info whether there is an unbalance in element distribution
   bool eleunbalance = false;
-  for (int i = 0; i < (int)Interfaces().size(); ++i)
+  for (int i = 0; i < (int)interfaces().size(); ++i)
   {
     // find out how many close slave elements in total
     int totrowele = 0;
@@ -1438,11 +1438,11 @@ void CONTACT::AbstractStrategy::InitMortar()
 void CONTACT::AbstractStrategy::AssembleMortar()
 {
   // for all interfaces
-  for (int i = 0; i < (int)Interfaces().size(); ++i)
+  for (int i = 0; i < (int)interfaces().size(); ++i)
   {
     // assemble D-, M-matrix and g-vector, store them globally
-    Interfaces()[i]->AssembleDM(*dmatrix_, *mmatrix_);
-    Interfaces()[i]->AssembleG(*g_);
+    interfaces()[i]->AssembleDM(*dmatrix_, *mmatrix_);
+    interfaces()[i]->AssembleG(*g_);
 
 #ifdef CONTACTFDNORMAL
     // FD check of normal derivatives
@@ -1497,7 +1497,7 @@ void CONTACT::AbstractStrategy::evaluate_reference_state()
   if (initcontactbygap)
   {
     // merge interface maps to global maps
-    for (const auto& interface : Interfaces())
+    for (const auto& interface : interfaces())
     {
       // merge active sets and slip sets of all interfaces
       // (these maps are NOT allowed to be overlapping !!!)
@@ -1536,13 +1536,13 @@ void CONTACT::AbstractStrategy::evaluate_reference_state()
     store_nodal_quantities(MORTAR::StrategyBase::activeold);
 
     // store D and M to old ones
-    StoreDM("old");
+    store_dm("old");
 
     // store nodal entries from D and M to old ones
-    StoreToOld(MORTAR::StrategyBase::dm);
+    store_to_old(MORTAR::StrategyBase::dm);
 
     // store nodal normals
-    StoreToOld(MORTAR::StrategyBase::n_old);
+    store_to_old(MORTAR::StrategyBase::n_old);
 
     // transform dold_ in the case of dual quadratic 3d
     if (Dualquadslavetrafo())
@@ -1586,7 +1586,7 @@ void CONTACT::AbstractStrategy::EvaluateRelMov()
   // vector of slave coordinates xs
   Teuchos::RCP<Epetra_Vector> xsmod = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
 
-  for (int i = 0; i < (int)Interfaces().size(); ++i) Interfaces()[i]->AssembleSlaveCoord(xsmod);
+  for (int i = 0; i < (int)interfaces().size(); ++i) interfaces()[i]->AssembleSlaveCoord(xsmod);
 
   // in case of 3D dual quadratic case, slave coordinates xs are modified
   if (Dualquadslavetrafo()) invtrafo_->Apply(*xsmod, *xsmod);
@@ -1603,8 +1603,8 @@ void CONTACT::AbstractStrategy::EvaluateRelMov()
   // do the evaluation on the interface
   // loop over all slave row nodes on the current interface
   if (CORE::UTILS::IntegralValue<int>(Params(), "GP_SLIP_INCR") == false)
-    for (int i = 0; i < (int)Interfaces().size(); ++i)
-      Interfaces()[i]->EvaluateRelMov(xsmod, dmatrixmod_, doldmod_);
+    for (int i = 0; i < (int)interfaces().size(); ++i)
+      interfaces()[i]->EvaluateRelMov(xsmod, dmatrixmod_, doldmod_);
 
   return;
 }
@@ -1631,10 +1631,10 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AbstractStrategy::EvaluateNorm
     Teuchos::RCP<Epetra_Vector> dis)
 {
   // set displacement state and evaluate nodal normals
-  for (int i = 0; i < (int)Interfaces().size(); ++i)
+  for (int i = 0; i < (int)interfaces().size(); ++i)
   {
-    Interfaces()[i]->set_state(MORTAR::state_new_displacement, *dis);
-    Interfaces()[i]->evaluate_nodal_normals();
+    interfaces()[i]->set_state(MORTAR::state_new_displacement, *dis);
+    interfaces()[i]->evaluate_nodal_normals();
   }
 
   // create empty global matrix
@@ -1643,7 +1643,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AbstractStrategy::EvaluateNorm
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(SlRowNodes(), 3));
 
   // assemble nodal normals
-  for (int i = 0; i < (int)Interfaces().size(); ++i) Interfaces()[i]->AssembleNormals(*normals);
+  for (int i = 0; i < (int)interfaces().size(); ++i) interfaces()[i]->assemble_normals(*normals);
 
   // complete global matrix
   // (rectangular: rows=snodes, cols=sdofs)
@@ -1658,7 +1658,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AbstractStrategy::EvaluateNorm
 void CONTACT::AbstractStrategy::store_nodal_quantities(MORTAR::StrategyBase::QuantityType type)
 {
   // loop over all interfaces
-  for (int i = 0; i < (int)Interfaces().size(); ++i)
+  for (int i = 0; i < (int)interfaces().size(); ++i)
   {
     // get global quantity to be stored in nodes
     Teuchos::RCP<Epetra_Vector> vectorglobal = Teuchos::null;
@@ -1698,13 +1698,13 @@ void CONTACT::AbstractStrategy::store_nodal_quantities(MORTAR::StrategyBase::Qua
     Teuchos::RCP<Epetra_Map> sdofmap, snodemap;
     if (type == MORTAR::StrategyBase::lmupdate or type == MORTAR::StrategyBase::lmcurrent)
     {
-      sdofmap = Interfaces()[i]->SlaveColDofs();
-      snodemap = Interfaces()[i]->SlaveColNodes();
+      sdofmap = interfaces()[i]->SlaveColDofs();
+      snodemap = interfaces()[i]->SlaveColNodes();
     }
     else
     {
-      sdofmap = Interfaces()[i]->SlaveRowDofs();
-      snodemap = Interfaces()[i]->SlaveRowNodes();
+      sdofmap = interfaces()[i]->SlaveRowDofs();
+      snodemap = interfaces()[i]->SlaveRowNodes();
     }
 
     // export global quantity to current interface slave dof map (column or row)
@@ -1717,7 +1717,7 @@ void CONTACT::AbstractStrategy::store_nodal_quantities(MORTAR::StrategyBase::Qua
     for (int j = 0; j < snodemap->NumMyElements(); ++j)
     {
       int gid = snodemap->GID(j);
-      DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
+      DRT::Node* node = interfaces()[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
@@ -1798,13 +1798,13 @@ void CONTACT::AbstractStrategy::compute_contact_stresses()
   stresstangential_ = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
 
   // loop over all interfaces
-  for (int i = 0; i < (int)Interfaces().size(); ++i)
+  for (int i = 0; i < (int)interfaces().size(); ++i)
   {
     // loop over all slave row nodes on the current interface
-    for (int j = 0; j < Interfaces()[i]->SlaveRowNodes()->NumMyElements(); ++j)
+    for (int j = 0; j < interfaces()[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
-      int gid = Interfaces()[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
+      int gid = interfaces()[i]->SlaveRowNodes()->GID(j);
+      DRT::Node* node = interfaces()[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
@@ -1861,13 +1861,13 @@ void CONTACT::AbstractStrategy::store_dirichlet_status(
     Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps)
 {
   // loop over all interfaces
-  for (unsigned i = 0; i < Interfaces().size(); ++i)
+  for (unsigned i = 0; i < interfaces().size(); ++i)
   {
     // loop over all slave row nodes on the current interface
-    for (int j = 0; j < Interfaces()[i]->SlaveRowNodes()->NumMyElements(); ++j)
+    for (int j = 0; j < interfaces()[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
-      int gid = Interfaces()[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
+      int gid = interfaces()[i]->SlaveRowNodes()->GID(j);
+      DRT::Node* node = interfaces()[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
@@ -1907,7 +1907,7 @@ void CONTACT::AbstractStrategy::store_dirichlet_status(
 /*----------------------------------------------------------------------*
  |  Store D and M last coverged step <-> current step         popp 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::StoreDM(const std::string& state)
+void CONTACT::AbstractStrategy::store_dm(const std::string& state)
 {
   // store Dold and Mold matrix in D and M
   if (state == "current")
@@ -1936,10 +1936,10 @@ void CONTACT::AbstractStrategy::StoreDM(const std::string& state)
 /*----------------------------------------------------------------------*
  | Store nodal quant. to old ones (last conv. time step)  gitterle 02/09|
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::StoreToOld(MORTAR::StrategyBase::QuantityType type)
+void CONTACT::AbstractStrategy::store_to_old(MORTAR::StrategyBase::QuantityType type)
 {
   // loop over all interfaces
-  for (int i = 0; i < (int)Interfaces().size(); ++i) Interfaces()[i]->StoreToOld(type);
+  for (int i = 0; i < (int)interfaces().size(); ++i) interfaces()[i]->StoreToOld(type);
 
   return;
 }
@@ -1956,7 +1956,7 @@ void CONTACT::AbstractStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
 
   zold_->Scale(1.0, *z_);
   store_nodal_quantities(MORTAR::StrategyBase::lmold);
-  StoreDM("old");
+  store_dm("old");
 
   // store contact state to contact nodes (active or inactive)
   store_nodal_quantities(MORTAR::StrategyBase::activeold);
@@ -1992,10 +1992,10 @@ void CONTACT::AbstractStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
     store_nodal_quantities(MORTAR::StrategyBase::slipold);
 
     // store nodal entries of D and M to old ones
-    StoreToOld(MORTAR::StrategyBase::dm);
+    store_to_old(MORTAR::StrategyBase::dm);
 
     // store nodal entries form penalty contact tractions to old ones
-    StoreToOld(MORTAR::StrategyBase::pentrac);
+    store_to_old(MORTAR::StrategyBase::pentrac);
   }
 
   return;
@@ -2020,13 +2020,13 @@ void CONTACT::AbstractStrategy::DoWriteRestart(
   }
 
   // loop over all interfaces
-  for (int i = 0; i < (int)Interfaces().size(); ++i)
+  for (int i = 0; i < (int)interfaces().size(); ++i)
   {
     // loop over all slave nodes on the current interface
-    for (int j = 0; j < Interfaces()[i]->SlaveRowNodes()->NumMyElements(); ++j)
+    for (int j = 0; j < interfaces()[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
-      int gid = Interfaces()[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
+      int gid = interfaces()[i]->SlaveRowNodes()->GID(j);
+      DRT::Node* node = interfaces()[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
       int dof = (activetoggle->Map()).LID(gid);
@@ -2115,17 +2115,17 @@ void CONTACT::AbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader,
 
   // store restart information on active set and slip set
   // into nodes, therefore first loop over all interfaces
-  for (int i = 0; i < (int)Interfaces().size(); ++i)
+  for (int i = 0; i < (int)interfaces().size(); ++i)
   {
     // loop over all slave nodes on the current interface
-    for (int j = 0; j < (Interfaces()[i]->SlaveRowNodes())->NumMyElements(); ++j)
+    for (int j = 0; j < (interfaces()[i]->SlaveRowNodes())->NumMyElements(); ++j)
     {
-      int gid = (Interfaces()[i]->SlaveRowNodes())->GID(j);
+      int gid = (interfaces()[i]->SlaveRowNodes())->GID(j);
       int dof = (activetoggle->Map()).LID(gid);
 
       if ((*activetoggle)[dof] == 1)
       {
-        DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
+        DRT::Node* node = interfaces()[i]->Discret().gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         Node* cnode = dynamic_cast<Node*>(node);
 
@@ -2170,12 +2170,12 @@ void CONTACT::AbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader,
   }
 
   // store restart Mortar quantities
-  StoreDM("old");
+  store_dm("old");
 
   if (friction_)
   {
     store_nodal_quantities(MORTAR::StrategyBase::activeold);
-    StoreToOld(MORTAR::StrategyBase::dm);
+    store_to_old(MORTAR::StrategyBase::dm);
   }
 
   // (re)setup active global Epetra_Maps
@@ -2189,18 +2189,18 @@ void CONTACT::AbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader,
 
   // update active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
-  for (int i = 0; i < (int)Interfaces().size(); ++i)
+  for (int i = 0; i < (int)interfaces().size(); ++i)
   {
-    Interfaces()[i]->BuildActiveSet();
-    gactivenodes_ = CORE::LINALG::MergeMap(gactivenodes_, Interfaces()[i]->ActiveNodes(), false);
-    gactivedofs_ = CORE::LINALG::MergeMap(gactivedofs_, Interfaces()[i]->ActiveDofs(), false);
-    gactiven_ = CORE::LINALG::MergeMap(gactiven_, Interfaces()[i]->ActiveNDofs(), false);
-    gactivet_ = CORE::LINALG::MergeMap(gactivet_, Interfaces()[i]->ActiveTDofs(), false);
+    interfaces()[i]->BuildActiveSet();
+    gactivenodes_ = CORE::LINALG::MergeMap(gactivenodes_, interfaces()[i]->ActiveNodes(), false);
+    gactivedofs_ = CORE::LINALG::MergeMap(gactivedofs_, interfaces()[i]->ActiveDofs(), false);
+    gactiven_ = CORE::LINALG::MergeMap(gactiven_, interfaces()[i]->ActiveNDofs(), false);
+    gactivet_ = CORE::LINALG::MergeMap(gactivet_, interfaces()[i]->ActiveTDofs(), false);
     if (friction_)
     {
-      gslipnodes_ = CORE::LINALG::MergeMap(gslipnodes_, Interfaces()[i]->SlipNodes(), false);
-      gslipdofs_ = CORE::LINALG::MergeMap(gslipdofs_, Interfaces()[i]->SlipDofs(), false);
-      gslipt_ = CORE::LINALG::MergeMap(gslipt_, Interfaces()[i]->SlipTDofs(), false);
+      gslipnodes_ = CORE::LINALG::MergeMap(gslipnodes_, interfaces()[i]->SlipNodes(), false);
+      gslipdofs_ = CORE::LINALG::MergeMap(gslipdofs_, interfaces()[i]->SlipDofs(), false);
+      gslipt_ = CORE::LINALG::MergeMap(gslipt_, interfaces()[i]->SlipTDofs(), false);
     }
   }
 
@@ -2283,13 +2283,13 @@ void CONTACT::AbstractStrategy::InterfaceForces(bool output)
   Teuchos::RCP<Epetra_Vector> gapmaster = Teuchos::rcp(new Epetra_Vector(mmatrix_->DomainMap()));
 
   // loop over all interfaces
-  for (int i = 0; i < (int)Interfaces().size(); ++i)
+  for (int i = 0; i < (int)interfaces().size(); ++i)
   {
     // loop over all slave nodes on the current interface
-    for (int j = 0; j < Interfaces()[i]->SlaveRowNodes()->NumMyElements(); ++j)
+    for (int j = 0; j < interfaces()[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
-      int gid = Interfaces()[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
+      int gid = interfaces()[i]->SlaveRowNodes()->GID(j);
+      DRT::Node* node = interfaces()[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
@@ -2327,10 +2327,10 @@ void CONTACT::AbstractStrategy::InterfaceForces(bool output)
     }
 
     // loop over all master nodes on the current interface
-    for (int j = 0; j < Interfaces()[i]->MasterRowNodes()->NumMyElements(); ++j)
+    for (int j = 0; j < interfaces()[i]->MasterRowNodes()->NumMyElements(); ++j)
     {
-      int gid = Interfaces()[i]->MasterRowNodes()->GID(j);
-      DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
+      int gid = interfaces()[i]->MasterRowNodes()->GID(j);
+      DRT::Node* node = interfaces()[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
@@ -2379,13 +2379,13 @@ void CONTACT::AbstractStrategy::InterfaceForces(bool output)
 
   // again, for alternative moment: lambda x gap
   // loop over all interfaces
-  for (int i = 0; i < (int)Interfaces().size(); ++i)
+  for (int i = 0; i < (int)interfaces().size(); ++i)
   {
     // loop over all slave nodes on the current interface
-    for (int j = 0; j < Interfaces()[i]->SlaveRowNodes()->NumMyElements(); ++j)
+    for (int j = 0; j < interfaces()[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
-      int gid = Interfaces()[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
+      int gid = interfaces()[i]->SlaveRowNodes()->GID(j);
+      DRT::Node* node = interfaces()[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
@@ -2492,13 +2492,13 @@ void CONTACT::AbstractStrategy::Print(std::ostream& os) const
   if (Comm().MyPID() == 0)
   {
     os << "--------------------------------- CONTACT::AbstractStrategy\n"
-       << "Contact interfaces: " << (int)Interfaces().size() << std::endl
+       << "Contact interfaces: " << (int)interfaces().size() << std::endl
        << "-------------------------------------------------------------\n";
   }
   Comm().Barrier();
-  for (int i = 0; i < (int)Interfaces().size(); ++i)
+  for (int i = 0; i < (int)interfaces().size(); ++i)
   {
-    std::cout << *(Interfaces()[i]);
+    std::cout << *(interfaces()[i]);
   }
   Comm().Barrier();
 
@@ -2837,13 +2837,13 @@ void CONTACT::AbstractStrategy::PrintActiveSet() const
   bool nonsmooth = CORE::UTILS::IntegralValue<int>(Params(), "NONSMOOTH_GEOMETRIES");
 
   // loop over all interfaces
-  for (int i = 0; i < (int)Interfaces().size(); ++i)
+  for (int i = 0; i < (int)interfaces().size(); ++i)
   {
     // loop over all slave nodes on the current interface
-    for (int j = 0; j < Interfaces()[i]->SlaveRowNodes()->NumMyElements(); ++j)
+    for (int j = 0; j < interfaces()[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
-      int gid = Interfaces()[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
+      int gid = interfaces()[i]->SlaveRowNodes()->GID(j);
+      DRT::Node* node = interfaces()[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
       // increase active counters
@@ -2919,7 +2919,7 @@ void CONTACT::AbstractStrategy::PrintActiveSet() const
 void CONTACT::AbstractStrategy::VisualizeGmsh(const int step, const int iter)
 {
   // visualization with gmsh
-  for (int i = 0; i < (int)Interfaces().size(); ++i) Interfaces()[i]->VisualizeGmsh(step, iter);
+  for (int i = 0; i < (int)interfaces().size(); ++i) interfaces()[i]->VisualizeGmsh(step, iter);
 }
 
 /*----------------------------------------------------------------------*
@@ -2973,7 +2973,7 @@ void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
     // -------------------------------------------------------------------
     case MORTAR::eval_force:
     {
-      EvalForce(cparams);
+      eval_force(cparams);
       break;
     }
     // -------------------------------------------------------------------
@@ -2981,7 +2981,7 @@ void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
     // -------------------------------------------------------------------
     case MORTAR::eval_force_stiff:
     {
-      EvalForceStiff(cparams);
+      eval_force_stiff(cparams);
       break;
     }
     // -------------------------------------------------------------------
@@ -2989,7 +2989,7 @@ void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
     // -------------------------------------------------------------------
     case MORTAR::eval_run_pre_evaluate:
     {
-      RunPreEvaluate(cparams);
+      run_pre_evaluate(cparams);
       break;
     }
     // -------------------------------------------------------------------
@@ -2997,7 +2997,7 @@ void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
     // -------------------------------------------------------------------
     case MORTAR::eval_run_post_evaluate:
     {
-      RunPostEvaluate(cparams);
+      run_post_evaluate(cparams);
       break;
     }
     // -------------------------------------------------------------------
@@ -3042,7 +3042,7 @@ void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
       const Teuchos::RCP<const Epetra_Vector>& xnew_ptr = (*eval_vec)[2];
       if (xnew_ptr.is_null() or !xnew_ptr.is_valid_ptr()) FOUR_C_THROW("xnew_ptr is undefined!");
 
-      RunPostComputeX(cparams, *xold_ptr, *dir_ptr, *xnew_ptr);
+      run_post_compute_x(cparams, *xold_ptr, *dir_ptr, *xnew_ptr);
 
       break;
     }
@@ -3071,13 +3071,13 @@ void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
       const Teuchos::RCP<Epetra_Vector>& dir_mutable_ptr = eval_vec_mutable->front();
       if (dir_mutable_ptr.is_null()) FOUR_C_THROW("Missing dir_mutable vector!");
 
-      RunPreComputeX(cparams, *xold_ptr, *dir_mutable_ptr);
+      run_pre_compute_x(cparams, *xold_ptr, *dir_mutable_ptr);
 
       break;
     }
     case MORTAR::eval_run_post_iterate:
     {
-      RunPostIterate(cparams);
+      run_post_iterate(cparams);
 
       break;
     }
@@ -3096,7 +3096,7 @@ void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
     {
       const NOX::NLN::CorrectionType* type = cparams.Get<const NOX::NLN::CorrectionType>(0);
 
-      CorrectParameters(cparams, *type);
+      correct_parameters(cparams, *type);
 
       break;
     }
@@ -3134,7 +3134,7 @@ void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
             " of 1!");
 
       const Teuchos::RCP<const Epetra_Vector>& curr_disp = eval_vec->front();
-      RunPreSolve(curr_disp, cparams);
+      run_pre_solve(curr_disp, cparams);
 
       break;
     }
@@ -3155,7 +3155,7 @@ void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
+void CONTACT::AbstractStrategy::eval_force(CONTACT::ParamsInterface& cparams)
 {
   FOUR_C_THROW(
       "Not yet implemented! See the CONTACT::AUG::Strategy for an "
@@ -3164,7 +3164,7 @@ void CONTACT::AbstractStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::EvalForceStiff(CONTACT::ParamsInterface& cparams)
+void CONTACT::AbstractStrategy::eval_force_stiff(CONTACT::ParamsInterface& cparams)
 {
   FOUR_C_THROW(
       "Not yet implemented! See the CONTACT::AUG::Strategy for an "
@@ -3190,7 +3190,7 @@ void CONTACT::AbstractStrategy::remove_condensed_contributions_from_rhs(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::RunPreEvaluate(CONTACT::ParamsInterface& cparams)
+void CONTACT::AbstractStrategy::run_pre_evaluate(CONTACT::ParamsInterface& cparams)
 {
   /* Not yet implemented! See the CONTACT::AUG framework for an
    * example. */
@@ -3198,7 +3198,7 @@ void CONTACT::AbstractStrategy::RunPreEvaluate(CONTACT::ParamsInterface& cparams
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::RunPostEvaluate(CONTACT::ParamsInterface& cparams)
+void CONTACT::AbstractStrategy::run_post_evaluate(CONTACT::ParamsInterface& cparams)
 {
   /* Not yet implemented! See the CONTACT::AUG::ComboStrategy for an
    * example. */
@@ -3206,7 +3206,7 @@ void CONTACT::AbstractStrategy::RunPostEvaluate(CONTACT::ParamsInterface& cparam
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::RunPostComputeX(const CONTACT::ParamsInterface& cparams,
+void CONTACT::AbstractStrategy::run_post_compute_x(const CONTACT::ParamsInterface& cparams,
     const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
   FOUR_C_THROW(
@@ -3216,7 +3216,7 @@ void CONTACT::AbstractStrategy::RunPostComputeX(const CONTACT::ParamsInterface& 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::RunPreComputeX(
+void CONTACT::AbstractStrategy::run_pre_compute_x(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold, Epetra_Vector& dir_mutable)
 {
   // do nothing
@@ -3225,7 +3225,7 @@ void CONTACT::AbstractStrategy::RunPreComputeX(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::RunPostIterate(const CONTACT::ParamsInterface& cparams)
+void CONTACT::AbstractStrategy::run_post_iterate(const CONTACT::ParamsInterface& cparams)
 {
   // do nothing
   return;
@@ -3233,7 +3233,7 @@ void CONTACT::AbstractStrategy::RunPostIterate(const CONTACT::ParamsInterface& c
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::RunPreSolve(
+void CONTACT::AbstractStrategy::run_pre_solve(
     const Teuchos::RCP<const Epetra_Vector>& curr_disp, const CONTACT::ParamsInterface& cparams)
 {
   // do nothing
@@ -3270,7 +3270,7 @@ void CONTACT::AbstractStrategy::reset_lagrange_multipliers(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::CorrectParameters(
+void CONTACT::AbstractStrategy::correct_parameters(
     CONTACT::ParamsInterface& cparams, const NOX::NLN::CorrectionType type)
 {
   /* do nothing */
@@ -3420,7 +3420,7 @@ void CONTACT::AbstractStrategy::postprocess_quantities_per_interface(
     outputParams->set<RCP<const Epetra_Vector>>("tancontactstress", stresstangential_);
   }
 
-  for (auto& interface : Interfaces()) interface->postprocess_quantities(*outputParams);
+  for (auto& interface : interfaces()) interface->postprocess_quantities(*outputParams);
 }
 
 /*----------------------------------------------------------------------*

@@ -79,7 +79,7 @@ DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ScaTraEleCalcLoma(
  |  evaluate single loma material  (protected)                vg 12/13  |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::Materials(
+void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::materials(
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -609,7 +609,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::mat_thermo_st_venant_kirchhoff(
 
   // compute velocity divergence required for reaction coefficient
   // double vdiv(0.0);
-  // GetDivergence(vdiv,evelnp_);
+  // get_divergence(vdiv,evelnp_);
 
   // compute reaction coefficient
   // (divided by density due to later multiplication by density in CalMatAndRHS)
@@ -677,7 +677,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::mat_yoghurt(
 
     // compute rate of strain
     double rateofstrain = -1.0e30;
-    rateofstrain = this->GetStrainRate(my::evelnp_);
+    rateofstrain = this->get_strain_rate(my::evelnp_);
 
     // compute viscosity for Yoghurt-like flows according to Afonso et al. (2003)
     visc = actmat->ComputeViscosity(rateofstrain, tempnp);
@@ -691,7 +691,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::mat_yoghurt(
  | compute rhs containing bodyforce                                 ehrl 11/13 |
  *-----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetRhsInt(
+void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::get_rhs_int(
     double& rhsint,       //!< rhs containing bodyforce at Gauss point
     const double densnp,  //!< density at t_(n+1)
     const int k           //!< index of current scalar

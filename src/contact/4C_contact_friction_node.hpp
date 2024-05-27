@@ -376,7 +376,7 @@ namespace CONTACT
     //! @name Enums and Friends
 
     /*!
-     \brief The Discretization is a friend of FriNode
+     \brief The discretization is a friend of FriNode
      */
     friend class DRT::Discretization;
 

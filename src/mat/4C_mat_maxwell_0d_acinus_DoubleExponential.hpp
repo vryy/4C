@@ -39,7 +39,7 @@ namespace MAT
       Maxwell0dAcinusDoubleExponential(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
     };  // class Maxwell_0d_acinus_DoubleExponential
   }     // namespace PAR

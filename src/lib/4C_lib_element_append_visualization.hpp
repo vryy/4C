@@ -28,7 +28,7 @@ namespace DRT::ELEMENTS
    * \brief Add the element geometry visualization for elements that use Lagrange shape functions
    *
    * @param ele (in) Element
-   * @param discret (in) Discretization
+   * @param discret (in) discretization
    * @param cell_types (in/out) cell type data vector
    * @param point_coordinates (in/out) point coordinates for the representation of this element
    * @return Number of added points
@@ -111,7 +111,7 @@ namespace DRT::ELEMENTS
    * \brief Add the element geometry visualization for elements that use NURBS shape functions
    *
    * @param ele (in) Element
-   * @param discret (in) Discretization
+   * @param discret (in) discretization
    * @param cell_types (in/out) cell type data vector
    * @param point_coordinates (in/out) point coordinates for the representation of this element
    * @return Number of added points
@@ -209,7 +209,7 @@ namespace DRT::ELEMENTS
    * that use Lagrange shape functions.
    *
    * @param ele (in) Element
-   * @param discret (in) Discretization
+   * @param discret (in) discretization
    * @param result_data_dofbased (in) Global vector with results
    * @param result_num_dofs_per_node (in/out) Number of scalar values per point.
    * @param read_result_data_from_dofindex (in) Starting DOF index for the nodal DOFs. This is
@@ -259,7 +259,7 @@ namespace DRT::ELEMENTS
    * that use second-order NURBS shape functions.
    *
    * @param ele (in) Element
-   * @param discret (in) Discretization
+   * @param discret (in) discretization
    * @param result_data_dofbased (in) Global vector with results
    * @param read_result_data_from_dofindex (in) Starting DOF index for the nodal DOFs. This is
    * used if not all nodal DOFs should be output, e.g., velocity or pressure in fluid.
@@ -337,7 +337,7 @@ namespace DRT::ELEMENTS
    * that use NURBS shape functions.
    *
    * @param ele (in) Element
-   * @param discret (in) Discretization
+   * @param discret (in) discretization
    * @param result_data_dofbased (in) Global vector with results
    * @param result_num_dofs_per_node (in/out) Number of scalar values per point.
    * @param read_result_data_from_dofindex (in) Starting DOF index for the nodal DOFs. This is

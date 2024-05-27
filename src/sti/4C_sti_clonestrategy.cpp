@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
-void STI::ScatraThermoCloneStrategy::CheckMaterialType(const int matid)
+void STI::ScatraThermoCloneStrategy::check_material_type(const int matid)
 {
   // check whether material with specified ID is compatible with cloned element or not
   switch (GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type())
@@ -38,7 +38,7 @@ void STI::ScatraThermoCloneStrategy::CheckMaterialType(const int matid)
 
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
-std::map<std::string, std::string> STI::ScatraThermoCloneStrategy::ConditionsToCopy() const
+std::map<std::string, std::string> STI::ScatraThermoCloneStrategy::conditions_to_copy() const
 {
   return {{"PointThermoCoupling", "PointCoupling"}, {"S2IKinetics", "S2IKinetics"},
       {"S2IMeshtying", "S2IMeshtying"}, {"ScaTraFluxCalc", "ScaTraFluxCalc"},
@@ -46,11 +46,11 @@ std::map<std::string, std::string> STI::ScatraThermoCloneStrategy::ConditionsToC
       {"ThermoLineNeumann", "LineNeumann"}, {"ThermoSurfaceNeumann", "SurfaceNeumann"},
       {"ThermoVolumeNeumann", "VolumeNeumann"}, {"ThermoInitfield", "Initfield"},
       {"ThermoRobin", "TransportRobin"}, {"ScatraPartitioning", "ScatraPartitioning"}};
-}  // STI::ScatraThermoCloneStrategy::ConditionsToCopy()
+}  // STI::ScatraThermoCloneStrategy::conditions_to_copy()
 
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
-bool STI::ScatraThermoCloneStrategy::DetermineEleType(
+bool STI::ScatraThermoCloneStrategy::determine_ele_type(
     DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // set type of cloned element to transport type
@@ -58,11 +58,11 @@ bool STI::ScatraThermoCloneStrategy::DetermineEleType(
 
   // element should always be cloned
   return true;
-}  // STI::ScatraThermoCloneStrategy::DetermineEleType
+}  // STI::ScatraThermoCloneStrategy::determine_ele_type
 
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
-void STI::ScatraThermoCloneStrategy::SetElementData(
+void STI::ScatraThermoCloneStrategy::set_element_data(
     Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbs)
 {
   // cast pointers to current element on source discretization and to current cloned element on

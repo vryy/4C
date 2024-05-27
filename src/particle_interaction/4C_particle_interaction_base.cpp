@@ -59,7 +59,7 @@ void PARTICLEINTERACTION::ParticleInteractionBase::Setup(
   gravity_.resize(3, 0.0);
 }
 
-void PARTICLEINTERACTION::ParticleInteractionBase::WriteRestart() const
+void PARTICLEINTERACTION::ParticleInteractionBase::write_restart() const
 {
   // nothing to do
 }
@@ -152,7 +152,7 @@ void PARTICLEINTERACTION::ParticleInteractionBase::init_particle_interaction_wri
   particleinteractionwriter_->Init();
 }
 
-double PARTICLEINTERACTION::ParticleInteractionBase::MaxParticleRadius() const
+double PARTICLEINTERACTION::ParticleInteractionBase::max_particle_radius() const
 {
   // init value of maximum radius
   double maxrad = 0.0;

@@ -76,16 +76,16 @@ namespace POROMULTIPHASESCATRA
 
    protected:
     //! Setup Newton-Raphson iteration
-    void SetupNewton();
+    void setup_newton();
 
     //! Setup full map
-    virtual void SetupMaps();
+    virtual void setup_maps();
 
     //! Setup monolithic rhs-vector
     virtual void setup_rhs();
 
     //! build the combined dirichletbcmap
-    virtual void BuildCombinedDBCMap();
+    virtual void build_combined_dbc_map();
 
     //! build the block null spaces
     virtual void build_block_null_spaces();
@@ -98,7 +98,7 @@ namespace POROMULTIPHASESCATRA
     Teuchos::RCP<const Epetra_Map> dof_row_map();
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> iterinc);
+    virtual void evaluate(Teuchos::RCP<const Epetra_Vector> iterinc);
 
     //! extract the field vectors from a given composed vector x.
     /*!
@@ -137,28 +137,28 @@ namespace POROMULTIPHASESCATRA
     virtual void setup_system_matrix();
 
     //! print header
-    void PrintHeader();
+    void print_header();
 
     //! solve linear system of equations
     void linear_solve();
 
     //! convergence check
-    bool Converged();
+    bool converged();
 
     //! build norms
     virtual void build_convergence_norms();
 
     //! output
-    void NewtonOutput();
+    void newton_output();
 
     //! check for convergence
-    void NewtonErrorCheck();
+    void newton_error_check();
 
     //! update the single fields after convergence
     void update_fields_after_convergence();
 
     //! update the scatra field
-    virtual void UpdateScatra(Teuchos::RCP<const Epetra_Vector> scatrainc);
+    virtual void update_scatra(Teuchos::RCP<const Epetra_Vector> scatrainc);
 
     //! return structure fluid coupling sparse matrix
     Teuchos::RCP<CORE::LINALG::SparseMatrix> poro_fluid_scatra_coupling_matrix();
@@ -170,7 +170,7 @@ namespace POROMULTIPHASESCATRA
     Teuchos::RCP<CORE::LINALG::SparseMatrix> scatra_poro_fluid_coupling_matrix();
 
     //! evaluate scatra field
-    virtual void EvaluateScatra();
+    virtual void evaluate_scatra();
 
     //! evaluate porofluid-scatra coupling sparse matrix
     void apply_poro_fluid_scatra_coupl_matrix(Teuchos::RCP<CORE::LINALG::SparseOperator> k_pfs);
@@ -303,10 +303,10 @@ namespace POROMULTIPHASESCATRA
 
    private:
     // Setup full map
-    void SetupMaps() override;
+    void setup_maps() override;
 
     // update the scatra field
-    void UpdateScatra(Teuchos::RCP<const Epetra_Vector> scatrainc) override;
+    void update_scatra(Teuchos::RCP<const Epetra_Vector> scatrainc) override;
 
     //! extract the field vectors from a given composed vector x.
     /*!
@@ -328,10 +328,10 @@ namespace POROMULTIPHASESCATRA
     void setup_rhs() override;
 
     //! evaluate scatra field
-    void EvaluateScatra() override;
+    void evaluate_scatra() override;
 
     //! build the combined dirichletbcmap
-    void BuildCombinedDBCMap() override;
+    void build_combined_dbc_map() override;
 
     /// setup
     void SetupSystem() override;

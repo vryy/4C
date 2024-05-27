@@ -178,7 +178,7 @@ void CORE::GEO::CUT::SimpleFacetGraph2D::CreateVolumeCells(
   }
 
   // finally add the volumes to volume cells set
-  AddToVolumeCells(mesh, element, volumes, cells);
+  add_to_volume_cells(mesh, element, volumes, cells);
 }
 
 FOUR_C_NAMESPACE_CLOSE

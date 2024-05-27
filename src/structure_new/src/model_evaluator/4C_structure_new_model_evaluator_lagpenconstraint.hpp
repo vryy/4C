@@ -74,7 +74,7 @@ namespace STR
           CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
 
       //! derived
-      void WriteRestart(
+      void write_restart(
           IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! derived
@@ -84,18 +84,18 @@ namespace STR
       void Predict(const INPAR::STR::PredEnum& pred_type) override { return; };
 
       //! derived
-      void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
+      void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
           const NOX::NLN::Group& curr_grp) override
       {
         return;
       };
 
       //! derived
-      void RunPostComputeX(
+      void run_post_compute_x(
           const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
 
       //! derived
-      void RunPostIterate(const ::NOX::Solver::Generic& solver) override { return; };
+      void run_post_iterate(const ::NOX::Solver::Generic& solver) override { return; };
 
       //! derived
       void UpdateStepState(const double& timefac_n) override;
@@ -133,15 +133,15 @@ namespace STR
       const Teuchos::RCP<CONSTRAINTS::ConstrManager>& StrategyPtr();
 
       //! Return the NOX::NLN::CONSTRAINT::Interface::Required member object
-      const Teuchos::RCP<LAGPENCONSTRAINT::NoxInterface>& NoxInterfacePtr();
+      const Teuchos::RCP<LAGPENCONSTRAINT::NoxInterface>& nox_interface_ptr();
 
       //! Return the NOX::NLN::CONSTRAINT::Interface::Preconditioner member object
       const Teuchos::RCP<LAGPENCONSTRAINT::NoxInterfacePrec>& NoxInterfacePrecPtr();
 
      protected:
       //! Returns the underlying contact strategy object
-      CONSTRAINTS::ConstrManager& Strategy();
-      const CONSTRAINTS::ConstrManager& Strategy() const;
+      CONSTRAINTS::ConstrManager& strategy();
+      const CONSTRAINTS::ConstrManager& strategy() const;
 
      private:
       //! all constraint instances

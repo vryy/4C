@@ -282,7 +282,7 @@ namespace DRT
        *
        *  \author hiermeier
        *  \date 04/16 */
-      inline DRT::ELEMENTS::ParamsInterface& ParamsInterface()
+      inline DRT::ELEMENTS::ParamsInterface& params_interface()
       {
         if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;
@@ -292,7 +292,7 @@ namespace DRT
        *
        *  \author vuong
        *  \date 11/16 */
-      STR::ELEMENTS::ParamsInterface& StrParamsInterface();
+      STR::ELEMENTS::ParamsInterface& str_params_interface();
 
       /** \brief error handling for structural elements
        *
@@ -302,7 +302,7 @@ namespace DRT
 
      protected:
       /*!
-       * \brief This method executes the MaterialPostSetup if not already executed.
+       * \brief This method executes the material_post_setup if not already executed.
        *
        * This method should be placed in the Evaluate call. It will internally check, whether the
        * material post_setup() routine was already called in if not, it invokes this call directly.
@@ -317,7 +317,7 @@ namespace DRT
        * It can be used to pass information from the element to the materials after everything
        * is set up. For a simple element, the ParameterList is passed unchanged to the materials.
        */
-      virtual void MaterialPostSetup(Teuchos::ParameterList& params);
+      virtual void material_post_setup(Teuchos::ParameterList& params);
 
       //! kinematic type
       INPAR::STR::KinemType kintype_;

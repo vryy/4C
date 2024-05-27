@@ -79,8 +79,8 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINAL
   rhs_ = CORE::LINALG::CreateVector(*dofrowmap, true);
   zeros_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
-  eledetjac_ = CORE::LINALG::CreateVector(*Discretization()->ElementRowMap(), true);
-  elequality_ = CORE::LINALG::CreateVector(*Discretization()->ElementRowMap(), true);
+  eledetjac_ = CORE::LINALG::CreateVector(*discretization()->ElementRowMap(), true);
+  elequality_ = CORE::LINALG::CreateVector(*discretization()->ElementRowMap(), true);
 
   // -------------------------------------------------------------------
   // set initial displacement
@@ -120,7 +120,7 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINAL
     }
   }
 
-  CreateSystemMatrix();
+  create_system_matrix();
 }
 
 /*----------------------------------------------------------------------------*
@@ -179,7 +179,7 @@ void ALE::Ale::set_initial_displacement(const INPAR::ALE::InitialDisp init, cons
 }
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::Ale::CreateSystemMatrix(Teuchos::RCP<const ALE::UTILS::MapExtractor> interface)
+void ALE::Ale::create_system_matrix(Teuchos::RCP<const ALE::UTILS::MapExtractor> interface)
 {
   if (msht_ != INPAR::ALE::no_meshtying)
   {
@@ -251,11 +251,11 @@ void ALE::Ale::Evaluate(
     Teuchos::RCP<Epetra_Vector> dispnp_local = Teuchos::rcp(new Epetra_Vector(*(zeros_)));
     LocsysManager()->RotateGlobalToLocal(dispnp_local);
 
-    if (GetLocSysTrafo() != Teuchos::null)
+    if (get_loc_sys_trafo() != Teuchos::null)
     {
       CORE::LINALG::apply_dirichlet_to_system(
           *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(sysmat_), *disi_, *residual_,
-          *GetLocSysTrafo(), *dispnp_local, *(dbcmaps_[dbc_type]->CondMap()));
+          *get_loc_sys_trafo(), *dispnp_local, *(dbcmaps_[dbc_type]->CondMap()));
     }
     else
     {
@@ -537,7 +537,7 @@ void ALE::Ale::prepare_time_step()
   eleparams.set("delta time", dt_);
 
   // Apply Dirichlet boundary conditions on provided state vector
-  ALE::Ale::ApplyDirichletBC(eleparams, dispnp_, Teuchos::null, Teuchos::null, false);
+  ALE::Ale::apply_dirichlet_bc(eleparams, dispnp_, Teuchos::null, Teuchos::null, false);
 
   return;
 }
@@ -622,7 +622,7 @@ void ALE::Ale::SetupDBCMapEx(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type,
     case ALE::UTILS::MapExtractor::dbc_set_std:
       dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std] =
           Teuchos::rcp(new CORE::LINALG::MapExtractor());
-      ApplyDirichletBC(eleparams, dispnp_, Teuchos::null, Teuchos::null, true);
+      apply_dirichlet_bc(eleparams, dispnp_, Teuchos::null, Teuchos::null, true);
       break;
     case ALE::UTILS::MapExtractor::dbc_set_x_ff:
     {
@@ -676,7 +676,7 @@ Teuchos::RCP<CORE::UTILS::ResultTest> ALE::Ale::CreateFieldTest()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::Ale::ApplyDirichletBC(Teuchos::ParameterList& params,
+void ALE::Ale::apply_dirichlet_bc(Teuchos::ParameterList& params,
     Teuchos::RCP<Epetra_Vector> systemvector, Teuchos::RCP<Epetra_Vector> systemvectord,
     Teuchos::RCP<Epetra_Vector> systemvectordd, bool recreatemap)
 {
@@ -694,12 +694,12 @@ void ALE::Ale::ApplyDirichletBC(Teuchos::ParameterList& params,
   discret_->ClearState();
   if (recreatemap)
   {
-    discret_->EvaluateDirichlet(params, systemvector, systemvectord, systemvectordd, Teuchos::null,
+    discret_->evaluate_dirichlet(params, systemvector, systemvectord, systemvectordd, Teuchos::null,
         dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]);
   }
   else
   {
-    discret_->EvaluateDirichlet(
+    discret_->evaluate_dirichlet(
         params, systemvector, systemvectord, systemvectordd, Teuchos::null, Teuchos::null);
   }
   discret_->ClearState();
@@ -758,7 +758,7 @@ void ALE::Ale::set_dt(const double dtnew)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<const CORE::LINALG::SparseMatrix> ALE::Ale::GetLocSysTrafo() const
+Teuchos::RCP<const CORE::LINALG::SparseMatrix> ALE::Ale::get_loc_sys_trafo() const
 {
   if (locsysman_ != Teuchos::null) return locsysman_->Trafo();
 
@@ -788,18 +788,18 @@ bool ALE::Ale::evaluate_element_quality()
     discret_->ClearState();
     discret_->set_state("dispnp", dispnp_);
 
-    for (int i = 0; i < Discretization()->NumMyRowElements(); ++i)
+    for (int i = 0; i < discretization()->NumMyRowElements(); ++i)
     {
       DRT::Element* actele;
-      actele = Discretization()->lRowElement(i);
+      actele = discretization()->lRowElement(i);
 
       // list to define routines at elementlevel
       Teuchos::ParameterList eleparams;
       eleparams.set("action", "calc_jacobian_determinant");
 
       // initialize element vectors
-      DRT::Element::LocationArray la(Discretization()->NumDofSets());
-      actele->LocationVector(*Discretization(), la, false);
+      DRT::Element::LocationArray la(discretization()->NumDofSets());
+      actele->LocationVector(*discretization(), la, false);
 
       // only two entries per element necessary (detJ and quality measure)
       CORE::LINALG::SerialDenseMatrix elematrix1;
@@ -845,13 +845,11 @@ bool ALE::Ale::evaluate_element_quality()
 
 /*----------------------------------------------------------------------------*/
 ALE::AleLinear::AleLinear(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params_in,
     Teuchos::RCP<IO::DiscretizationWriter> output)
-    : Ale(actdis, solver, params, output), validsysmat_(false), updateeverystep_(false)
+    : Ale(actdis, solver, params_in, output), validsysmat_(false), updateeverystep_(false)
 {
-  updateeverystep_ = CORE::UTILS::IntegralValue<bool>(Params(), "UPDATEMATRIX");
-
-  return;
+  updateeverystep_ = CORE::UTILS::IntegralValue<bool>(params(), "UPDATEMATRIX");
 }
 
 /*----------------------------------------------------------------------------*/
@@ -884,9 +882,9 @@ void ALE::AleLinear::evaluate_elements()
     validsysmat_ = true;
   }
   else if (not SystemMatrix().is_null())
-    SystemMatrix()->Apply(*Dispnp(), *WriteAccessResidual());
+    SystemMatrix()->Apply(*Dispnp(), *write_access_residual());
   else if (not BlockSystemMatrix().is_null())
-    BlockSystemMatrix()->Apply(*Dispnp(), *WriteAccessResidual());
+    BlockSystemMatrix()->Apply(*Dispnp(), *write_access_residual());
   else
     FOUR_C_THROW("Can't compute residual for linear ALE.");
 

@@ -23,14 +23,14 @@ namespace CORE::Dofsets
 {
   /*! \brief Proxy to a DofSet that does not own dofs itself
 
-    As the Discretization handles DofSets a little implicit, a DofSetProxy is
+    As the discretization handles DofSets a little implicit, a DofSetProxy is
     needed to change the DofSet behaviour. We need a DofSet that
 
     - returns dof numbers owned by a different DofSet
     - does not reset those dof numbers
     - does not assign dof numbers itself
 
-    The DofSetProxy is meant to be used as secondary DofSet in a Discretization
+    The DofSetProxy is meant to be used as secondary DofSet in a discretization
     if there are two fully volumetric coupled Discretizations with
     matching nodes. Think of Structure-Thermo coupling.
 

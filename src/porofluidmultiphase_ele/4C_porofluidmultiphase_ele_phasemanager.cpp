@@ -352,7 +352,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::Setup(
 void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::EvaluateGPState(
     double J, const VariableManagerMinAccess& varmanager, const int matnum)
 {
-  CheckIsSetup();
+  check_is_setup();
 
   if (isevaluated_ == true) FOUR_C_THROW("state has already been set!");
 
@@ -608,7 +608,7 @@ bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::IncompressibleSolid() co
  *----------------------------------------------------------------------*/
 double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::Density(int phasenum) const
 {
-  CheckIsSetup();
+  check_is_setup();
 
   return density_[phasenum];
 }
@@ -618,7 +618,7 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::Density(int phasenum) 
  *---------------------------------------------------------------------------*/
 double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::VolFracDensity(int volfracnum) const
 {
-  CheckIsSetup();
+  check_is_setup();
 
   return volfracdensity_[volfracnum];
 }
@@ -887,7 +887,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::EvaluateGPSt
   j_ = J;
 
   // use structure material to evaluate porosity
-  structmat->ComputePorosity(params, phasemanager_->SolidPressure(), J, -1, porosity_,
+  structmat->compute_porosity(params, phasemanager_->SolidPressure(), J, -1, porosity_,
       &dporosity_dp_, &dporosity_dj_, nullptr, nullptr, nullptr, false);
 
   // Note:
@@ -1291,7 +1291,7 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::ReacDeriv(
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::NumScal() const
 {
-  phasemanager_->CheckIsSetup();
+  phasemanager_->check_is_setup();
   return numscal_;
 }
 
@@ -1489,7 +1489,7 @@ template <int nsd>
 bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::has_constant_rel_permeability(
     int phasenum) const
 {
-  CheckIsSetup();
+  check_is_setup();
 
   return constrelpermeability_[phasenum];
 }
@@ -1522,7 +1522,7 @@ template <int nsd>
 bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::has_constant_dyn_viscosity(
     int phasenum) const
 {
-  CheckIsSetup();
+  check_is_setup();
 
   return constdynviscosity_[phasenum];
 }
@@ -1585,7 +1585,7 @@ template <int nsd>
 bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<
     nsd>::has_constant_dyn_viscosity_vol_frac_pressure(int volfracpressnum) const
 {
-  CheckIsSetup();
+  check_is_setup();
 
   return constdynviscosityvolfracpress_[volfracpressnum];
 }

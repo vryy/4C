@@ -40,7 +40,7 @@ namespace ADAPTER
     const Teuchos::RCP<ADAPTER::Fluid>& fluid_field() override { return fluid_; }
 
     /// return the boundary discretization that matches the structure discretization
-    Teuchos::RCP<DRT::Discretization> Discretization() override;
+    Teuchos::RCP<DRT::Discretization> discretization() override;
 
     /// return the boundary discretization that matches the structure discretization
     Teuchos::RCP<DRT::Discretization> boundary_discretization();
@@ -77,7 +77,7 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// nonlinear solve
-    void NonlinearSolve(
+    void nonlinear_solve(
         Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel) override;
 
     /// relaxation solve

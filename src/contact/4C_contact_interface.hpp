@@ -739,7 +739,7 @@ namespace CONTACT
     Derived version!
 
     */
-    void SetElementAreas() override;
+    void set_element_areas() override;
 
     /*!
     \brief Export nodal normals
@@ -751,7 +751,7 @@ namespace CONTACT
     Derived version!
 
     */
-    void ExportNodalNormals() const override;
+    void export_nodal_normals() const override;
 
     /*!
     \brief Binary tree search algorithm for potentially coupling slave /
@@ -781,7 +781,7 @@ namespace CONTACT
     \brief evaluate coupling terms for lts coupling + lin
 
     */
-    void EvaluateLTS() final;
+    void evaluate_lts() final;
 
     /*!
     \brief evaluate coupling terms for lts coupling + lin
@@ -799,13 +799,13 @@ namespace CONTACT
     \brief evaluate coupling terms for ltl coupling + lin
 
     */
-    void EvaluateLTL() final;
+    void evaluate_ltl() final;
 
     /*!
     \brief evaluate coupling terms for stl coupling + lin
 
     */
-    void EvaluateSTL() final;
+    void evaluate_stl() final;
 
     /*!
     \brief Integrate penalty scaling factor \f$\kappa\f$ on slave element
@@ -1384,7 +1384,7 @@ namespace CONTACT
     Derived version!
 
     */
-    virtual void SetCPPNormal(MORTAR::Node& snode, double* normal,
+    virtual void set_cpp_normal(MORTAR::Node& snode, double* normal,
         std::vector<CORE::GEN::Pairedvector<int, double>>& normallin);
 
     /*!
@@ -1403,14 +1403,14 @@ namespace CONTACT
     Derived version!
 
     */
-    void EvaluateCoupling(const Epetra_Map& selecolmap, const Epetra_Map* snoderowmap,
+    void evaluate_coupling(const Epetra_Map& selecolmap, const Epetra_Map* snoderowmap,
         const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) final;
 
     /*!
     \brief Evaluate segment-to-segment coupling (mortar...)
 
     */
-    void EvaluateSTS(const Epetra_Map& selecolmap,
+    void evaluate_sts(const Epetra_Map& selecolmap,
         const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) final;
 
     /*!
@@ -1423,7 +1423,7 @@ namespace CONTACT
     \brief evaluate cpp normals on slave side based on averaged normal field on master side
 
     */
-    virtual void EvaluateCPPNormals();
+    virtual void evaluate_cpp_normals();
 
     /*!
     \brief do calculations which are required after contact term evaluation:
@@ -1438,22 +1438,24 @@ namespace CONTACT
     \brief Compute cpp normal based on averaged nodal normal field on master side.
 
     */
-    virtual double ComputeCPPNormal(MORTAR::Node& mrtrnode, std::vector<MORTAR::Element*> meles,
+    virtual double compute_cpp_normal(MORTAR::Node& mrtrnode, std::vector<MORTAR::Element*> meles,
         double* normal, std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin);
 
     /*!
     \brief 2D routine for cpp normal
 
     */
-    virtual double ComputeCPPNormal2D(MORTAR::Node& mrtrnode, std::vector<MORTAR::Element*> meles,
-        double* normal, std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin);
+    virtual double compute_cpp_normal2_d(MORTAR::Node& mrtrnode,
+        std::vector<MORTAR::Element*> meles, double* normal,
+        std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin);
 
     /*!
     \brief 3D routine for cpp normal
 
     */
-    virtual double ComputeCPPNormal3D(MORTAR::Node& mrtrnode, std::vector<MORTAR::Element*> meles,
-        double* normal, std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin);
+    virtual double compute_cpp_normal3_d(MORTAR::Node& mrtrnode,
+        std::vector<MORTAR::Element*> meles, double* normal,
+        std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin);
 
     /*!
     \brief Compute normal between slave and master node
@@ -1473,71 +1475,71 @@ namespace CONTACT
     \brief Compute scaling factors for transition between nts, mortar etc.
 
     */
-    virtual void ComputeScaling();
+    virtual void compute_scaling();
 
     /*!
     \brief 2D version of scaling computation
 
     */
-    virtual void ComputeScalingLTL();
+    virtual void compute_scaling_ltl();
 
     /*!
     \brief Set new cn and ct values (global interface vector)
 
     */
-    virtual void SetCnCtValues(const int& iter);  // newton step
+    virtual void set_cn_ct_values(const int& iter);  // newton step
 
     /*!
     \brief Routine scale between nts, mortar, lts etc. This is required for non-smooth
            contact geometries
 
     */
-    virtual void ScaleTerms();
+    virtual void scale_terms();
 
     /*!
     \brief LTL version of scaling routine
 
     */
-    virtual void ScaleTermsLTL();
+    virtual void scale_terms_ltl();
 
     /*!
     \brief Routine to scale nodal normals between nodal averaged normal and cpp normal
 
     */
-    virtual void ScaleNormals();
+    virtual void scale_normals();
 
     /*!
     \brief 2D version of nodal normal scaling
 
     */
-    virtual void ScaleNormals2D();
+    virtual void scale_normals2_d();
 
     /*!
     \brief 3D version of nodal normal scaling
 
     */
-    virtual void ScaleNormals3D();
+    virtual void scale_normals3_d();
 
     /*!
     \brief Routine which stores entries from nts algorithm into mortar nodes to reuse
            standard assemble functions
 
     */
-    virtual void StoreNTSvalues();
+    virtual void store_nt_svalues();
 
     /*!
     \brief Routine which stores entries from lts algorithm into mortar nodes to reuse
            standard assemble functions
 
     */
-    virtual void StoreLTSvalues();
+    virtual void store_lt_svalues();
 
     /*!
     \brief Routine which stores entries from ltl algorithm into mortar nodes to reuse
            standard assemble functions
 
     */
-    virtual void StoreLTLvalues();
+    virtual void store_lt_lvalues();
 
     /*!
     \brief These functions are not properly implemented/used!!!!

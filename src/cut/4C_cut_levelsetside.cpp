@@ -192,22 +192,22 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::find_ambiguous_cut_lines(
           bool connect01and23;
 
           edge_points[0]->Coordinates(&coords0(0, 0));
-          std::vector<double> grad_phi0 = element->GetLevelSetGradient(coords0);
+          std::vector<double> grad_phi0 = element->get_level_set_gradient(coords0);
 
           CORE::LINALG::Matrix<3, 1> coords1;
           edge_points[1]->Coordinates(&coords1(0, 0));
-          std::vector<double> grad_phi1 = element->GetLevelSetGradient(coords1);
+          std::vector<double> grad_phi1 = element->get_level_set_gradient(coords1);
 
           double dotProduct01 = grad_phi0[0] * grad_phi1[0] + grad_phi0[1] * grad_phi1[1] +
                                 grad_phi0[2] * grad_phi1[2];
 
           CORE::LINALG::Matrix<3, 1> coords2;
           edge_points[2]->Coordinates(&coords2(0, 0));
-          std::vector<double> grad_phi2 = element->GetLevelSetGradient(coords2);
+          std::vector<double> grad_phi2 = element->get_level_set_gradient(coords2);
 
           CORE::LINALG::Matrix<3, 1> coords3;
           edge_points[3]->Coordinates(&coords3(0, 0));
-          std::vector<double> grad_phi3 = element->GetLevelSetGradient(coords3);
+          std::vector<double> grad_phi3 = element->get_level_set_gradient(coords3);
 
           double dotProduct23 = grad_phi2[0] * grad_phi3[0] + grad_phi2[1] * grad_phi3[1] +
                                 grad_phi2[2] * grad_phi3[2];

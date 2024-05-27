@@ -472,7 +472,7 @@ int DRT::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
         FOUR_C_THROW("To scale or not to scale, that's the querry!");
       else
       {
-        CalcSTCMatrix(
+        do_calc_stc_matrix(
             elemat1, stc_scaling, params.get<int>("stc_layer"), lm, discretization, false);
       }
     }
@@ -484,7 +484,8 @@ int DRT::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
         FOUR_C_THROW("To scale or not to scale, that's the query!");
       else
       {
-        CalcSTCMatrix(elemat1, stc_scaling, params.get<int>("stc_layer"), lm, discretization, true);
+        do_calc_stc_matrix(
+            elemat1, stc_scaling, params.get<int>("stc_layer"), lm, discretization, true);
       }
     }
     break;
@@ -880,7 +881,7 @@ void DRT::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  // lo
     // transformation from local (parameter) element space to global(material) space
     // with famous 'T'-matrix already used for EAS but now evaluated at each gp
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> TinvT;
-    sosh8_evaluateT(jac, TinvT);
+    sosh8_evaluate_t(jac, TinvT);
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDISP_> bop;
     bop.Multiply(TinvT, bop_loc);
 
@@ -2294,7 +2295,7 @@ double DRT::ELEMENTS::SoSh8p8::shear_mod() const
   return 0;
 }
 
-void DRT::ELEMENTS::SoSh8p8::CalcSTCMatrix(CORE::LINALG::Matrix<NUMDOF_, NUMDOF_>& elemat1,
+void DRT::ELEMENTS::SoSh8p8::do_calc_stc_matrix(CORE::LINALG::Matrix<NUMDOF_, NUMDOF_>& elemat1,
     const INPAR::STR::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
     DRT::Discretization& discretization, bool calcinverse)
 {
@@ -2686,7 +2687,7 @@ int DRT::ELEMENTS::SoSh8p8Type::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoSh8p8*>(dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_sh8p8* failed");
-    actele->InitJacobianMapping();  // this sets #invJ_ in So_hex8
+    actele->init_jacobian_mapping();  // this sets #invJ_ in So_hex8
   }
 
   // **************** debug printout ot gmesh **********************************

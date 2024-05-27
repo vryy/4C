@@ -263,7 +263,7 @@ namespace CONSTRAINTS
     Teuchos::RCP<Epetra_Vector> GetRefBaseValues() const { return refbasevalues_; }
 
     //! switch constraint matrix to block matrix
-    void UseBlockMatrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
+    void use_block_matrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
         Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps);
 
 
@@ -345,7 +345,7 @@ namespace CONSTRAINTS
     bool is_init() { return isinit_; };
 
     //! check if \ref Setup() was called
-    void CheckIsSetup()
+    void check_is_setup()
     {
       if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
     };

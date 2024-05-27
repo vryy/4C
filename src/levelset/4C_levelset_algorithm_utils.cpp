@@ -31,10 +31,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | initialize or update velocity field                  rasthofer 03/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::SetVelocityField(bool init)
+void SCATRA::LevelSetAlgorithm::set_velocity_field(bool init)
 {
   // call function of base class
-  ScaTraTimIntImpl::SetVelocityField();
+  ScaTraTimIntImpl::set_velocity_field();
 
   // note: This function is only called from the level-set dyn. This is ok, since
   //       we only want to initialize conveln_ at the beginning of the simulation.
@@ -47,12 +47,12 @@ void SCATRA::LevelSetAlgorithm::SetVelocityField(bool init)
  | set convective velocity field (+ pressure and acceleration field as  |
  | well as fine-scale velocity field, if required)      rasthofer 11/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::SetVelocityField(Teuchos::RCP<const Epetra_Vector> convvel,
+void SCATRA::LevelSetAlgorithm::set_velocity_field(Teuchos::RCP<const Epetra_Vector> convvel,
     Teuchos::RCP<const Epetra_Vector> acc, Teuchos::RCP<const Epetra_Vector> vel,
     Teuchos::RCP<const Epetra_Vector> fsvel, bool setpressure, bool init)
 {
   // call routine of base class
-  ScaTraTimIntImpl::SetVelocityField(convvel, acc, vel, fsvel, setpressure);
+  ScaTraTimIntImpl::set_velocity_field(convvel, acc, vel, fsvel, setpressure);
 
   // manipulate velocity field away from the interface
   if (extract_interface_vel_) manipulate_fluid_field_for_gfunc();
@@ -595,7 +595,7 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
           if (doflid < 0)
             FOUR_C_THROW("Proc %d: Cannot find gid=%d in Epetra_Vector", myrank_, dofgid);
 
-          if (plusDomain((*phinpcol)[doflid]) == false)
+          if (plus_domain((*phinpcol)[doflid]) == false)
             gotnegativephi = true;
           else
             gotpositivephi = true;

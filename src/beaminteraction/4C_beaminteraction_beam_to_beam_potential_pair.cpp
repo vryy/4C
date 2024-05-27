@@ -71,8 +71,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Setu
   {
     // interchange order, i.e., role of elements
     DRT::Element const* tmp_ele_ptr = Element1();
-    SetElement1(Element2());
-    SetElement2(tmp_ele_ptr);
+    set_element1(Element2());
+    set_element2(tmp_ele_ptr);
   }
 
   // get initial length of beam elements
@@ -212,7 +212,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   const unsigned int num_integration_segments = Params()->number_integration_segments();
 
   // Set Gauss integration rule applied in each integration segment
-  CORE::FE::GaussRule1D gaussrule = GetGaussRule();
+  CORE::FE::GaussRule1D gaussrule = get_gauss_rule();
 
   // Get Gauss points (gp) for integration
   CORE::FE::IntegrationPoints1D gausspoints(gaussrule);
@@ -591,7 +591,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   const unsigned int num_integration_segments = Params()->number_integration_segments();
 
   // Set Gauss integration rule applied in each integration segment
-  CORE::FE::GaussRule1D gaussrule = GetGaussRule();
+  CORE::FE::GaussRule1D gaussrule = get_gauss_rule();
 
   // Get Gauss points (gp) for integration
   CORE::FE::IntegrationPoints1D gausspoints(gaussrule);
@@ -1100,7 +1100,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   const unsigned int num_integration_segments = Params()->number_integration_segments();
 
   // Set Gauss integration rule applied in each integration segment
-  CORE::FE::GaussRule1D gaussrule = GetGaussRule();
+  CORE::FE::GaussRule1D gaussrule = get_gauss_rule();
 
   // Get Gauss points (gp) for integration
   CORE::FE::IntegrationPoints1D gausspoints(gaussrule);
