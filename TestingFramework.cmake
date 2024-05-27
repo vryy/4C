@@ -1,4 +1,4 @@
-###------------------------------------------------------------------ Test definitions
+###------------------------------------------------------------------ Helper Functions
 
 # define this test (name_of_test) as a "setup fixture" (named name_of_fixture). Other tests may
 # add a dependency on such a setup fixture through the require_fixture() function. CTest will
@@ -9,38 +9,38 @@
 # and a test for a restart, or between an initial simulation and a post-processing test.
 function(define_setup_fixture name_of_test name_of_fixture)
   set_tests_properties(${name_of_test} PROPERTIES FIXTURES_SETUP ${name_of_fixture})
-endfunction(define_setup_fixture)
+endfunction()
 
 # add a required test (name_of_required_test) to this test (name_of_test). The required
 # test must be defined through define_setup_fixture() as "setup fixture". For more details on why
 # these functions are needed, have a look at the documentation of define_setup_fixture().
 function(require_fixture name_of_test name_of_required_test)
   set_tests_properties(${name_of_test} PROPERTIES FIXTURES_REQUIRED "${name_of_required_test}")
-endfunction(require_fixture)
+endfunction()
 
 function(set_environment name_of_test)
   set_tests_properties(${name_of_test} PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}")
-endfunction(set_environment)
+endfunction()
 
 # set fail expressions to this test (name_of_test)
 function(set_fail_expression name_of_test)
   set_tests_properties(${name_of_test} PROPERTIES FAIL_REGULAR_EXPRESSION "ERROR:; ERROR ;Error ")
-endfunction(set_fail_expression)
+endfunction()
 
 # set label to this test (name_of_test)
 function(set_label name_of_test label)
   set_tests_properties(${name_of_test} PROPERTIES LABELS ${label})
-endfunction(set_label)
+endfunction()
 
 # set number of processors (num_proc) to this test (name_of_test)
 function(set_processors name_of_test num_proc)
   set_tests_properties(${name_of_test} PROPERTIES PROCESSORS ${num_proc})
-endfunction(set_processors)
+endfunction()
 
 # set this test(name_of_test) to run in serial
 function(set_run_serial name_of_test)
   set_tests_properties(${name_of_test} PROPERTIES RUN_SERIAL TRUE)
-endfunction(set_run_serial)
+endfunction()
 
 # set timeout to this test (name_of_test). Optional, set timeout value
 function(set_timeout name_of_test)
@@ -49,7 +49,7 @@ function(set_timeout name_of_test)
   else()
     set_tests_properties(${name_of_test} PROPERTIES TIMEOUT ${ARGN})
   endif()
-endfunction(set_timeout)
+endfunction()
 
 # add test with options
 function(_add_test_with_options)
@@ -106,11 +106,12 @@ function(_add_test_with_options)
 
 endfunction()
 
-# 4C Test - run simulation with .dat file
+###------------------------------------------------------------------ 4C Test
+# Run simulation with .dat file
 # Usage in TestingFrameworkListOfTests.cmake: "four_c_test(<input_file> optional: NP <> RESTART_STEP <> TIMEOUT <> OMP_THREADS <> POST_ENSIGHT_STRUCTURE <> LABEL <>)"
 
 # TEST_FILE:              must equal the name of a .dat file in directory tests/input_files; without ".dat".
-#                         If two files are provided the second input file is restartet based on the results of the first input file.
+#                         If two files are provided the second input file is restarted based on the results of the first input file.
 
 # optional:
 # NP:                     Number of processors the test should use. Fallback to 1 if not specified.
@@ -342,15 +343,12 @@ function(four_c_test)
 
 endfunction()
 
-# The macros defined in this section can be used in the file 'TestingFrameworkListOfTests.cmake' to define tests
-
-###########
-# NESTED PARALLELISM
+###------------------------------------------------------------------ Nested Parallelism
 # Usage in TestingFrameworkListOfTests.cmake: "four_c_test_nested_parallelism(<name_of_input_file_1> <name_of_input_file_2> <restart_step>)"
 # <name_of_input_file_1>: must equal the name of a .dat file in directory tests/input_files for the first test; without ".dat". This test will be executed using 1 process.
 # <name_of_input_file_2>: must equal the name of a .dat file in directory tests/input_files for the second test; without ".dat". This test will be executed using 2 processes.
 # <restart_step>: number of restart step; <""> indicates no restart
-macro(four_c_test_nested_parallelism name_of_input_file_1 name_of_input_file_2 restart_step)
+function(four_c_test_nested_parallelism name_of_input_file_1 name_of_input_file_2 restart_step)
   set(test_directory ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file_1})
 
   add_test(
@@ -377,16 +375,16 @@ macro(four_c_test_nested_parallelism name_of_input_file_1 name_of_input_file_2 r
       ${name_of_input_file_1}-nestedPar-restart "${name_of_input_file_1}-nestedPar-p3;test_cleanup"
       )
     set_processors(${name_of_input_file_1}-nestedPar-restart 3)
-  endif(${restart_step})
-endmacro(four_c_test_nested_parallelism)
+  endif()
+endfunction()
 
-###########
-# FRAMEWORK TESTS - testing the whole framework: pre_exodus, 4C, and post-filter
+###------------------------------------------------------------------ Framework Tests
+# Testing the whole framework: pre_exodus, 4C, and post-filter
 # Usage in TestingFrameworkListOfTests.cmake: "four_c_test_framework(<name_of_input_file> <num_proc> <xml_filename>)"
 # <name_of_input_file>: must equal the name of a .e/.bc/.head file in directory tests/framework-test
 # <num_proc>: number of processors the test should use
 # <xml_filename>: copy any xml-file to the build directory. May also be ""
-macro(four_c_test_framework name_of_input_file num_proc xml_filename)
+function(four_c_test_framework name_of_input_file num_proc xml_filename)
   set(name_of_test ${name_of_input_file}-p${num_proc}-fw)
   set(test_directory framework_test_output/${name_of_input_file})
 
@@ -402,7 +400,7 @@ macro(four_c_test_framework name_of_input_file num_proc xml_filename)
   else()
     # no-op command to do nothing
     set(RUNCOPYXML :)
-  endif(NOT ${xml_filename} STREQUAL "")
+  endif()
 
   set(RUNFOURC
       ${MPIEXEC_EXECUTABLE}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}>\ ${test_directory}/xxx.dat\ ${test_directory}/xxx
@@ -423,13 +421,12 @@ macro(four_c_test_framework name_of_input_file num_proc xml_filename)
   set_fail_expression(${name_of_test})
   set_processors(${name_of_test} ${num_proc})
   set_timeout(${name_of_test})
-endmacro(four_c_test_framework)
+endfunction()
 
-###########
-# CUT TESTS
+###------------------------------------------------------------------ Cut Tests
 # Usage in TestingFrameworkListOfTests.cmake: "four_c_test_cut_test(<num_proc>)"
 # <num_proc>: number of processors the test should use
-macro(four_c_test_cut_test num_proc)
+function(four_c_test_cut_test num_proc)
   set(name_of_test test-p${num_proc}-cut)
   set(test_directory ${PROJECT_BINARY_DIR}/framework_test_output/cut_test_p${num_proc})
 
@@ -449,14 +446,14 @@ macro(four_c_test_cut_test num_proc)
   set_fail_expression(${name_of_test})
   set_processors(${name_of_test} ${num_proc})
   set_timeout(${name_of_test})
-endmacro(four_c_test_cut_test)
+endfunction()
 
-###########
-# PREPROCESSING TEST - generate default header file and test pre_exo with it
+###------------------------------------------------------------------ Preprocessing Test
+# Generate default header file and test pre_exo with it
 # Usage in TestingFrameworkListOfTests.cmake: "four_c_test_pre_processing(<name_of_input_file> <num_proc>)"
 # <name_of_input_file>: must equal the name of .e/.bc/.head file in tests/pre_processing_test
 # <num_proc>: number of processors the test should use
-macro(four_c_test_pre_processing name_of_input_file num_proc)
+function(four_c_test_pre_processing name_of_input_file num_proc)
   set(name_of_test ${name_of_input_file}-p${num_proc}-pre_processing)
   set(test_directory ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}-p${num_proc})
 
@@ -478,10 +475,10 @@ macro(four_c_test_pre_processing name_of_input_file num_proc)
   set_fail_expression(${name_of_test})
   set_processors(${name_of_test} ${num_proc})
   set_timeout(${name_of_test})
-endmacro(four_c_test_pre_processing)
+endfunction()
 
-###########
-# POSTPROCESSING TEST - run ensight postprocessor on previous test
+###------------------------------------------------------------------ Postprocessing Test
+# Run ensight postprocessor on previous test
 # CAUTION: This tests bases on results of a previous simulation/test
 # Usage in TestingFrameworkListOfTests.cmake: "four_c_test_post_processing(<name_of_input_file> <num_proc> <stresstype> <straintype> <startstep> <optional: identifier> <optional: field>"
 # <name_of_input_file>: must equal the name of a .dat file from a previous tests
@@ -492,7 +489,7 @@ endmacro(four_c_test_pre_processing)
 # <startstep>: start post processing at this step
 # <optional: identifier>: additional identifier that can be added to the test name
 # <optional: field>: additional field name that can be added to the test name
-macro(
+function(
   four_c_test_post_processing
   name_of_input_file
   num_proc
@@ -543,10 +540,10 @@ macro(
 
   # Set "RUN_SERIAL TRUE" because result files can only be read by one process.
   set_run_serial(${name_of_test})
-endmacro(four_c_test_post_processing)
+endfunction()
 
-###########
-# COMPARE ABSOLUTE - compare arbitrary result csv file to corresponding reference file with absolute difference
+###------------------------------------------------------------------ Compare absolute
+# Compare arbitrary result csv file to corresponding reference file with absolute difference
 # Implementation can be found in 'utilities/diff_with_tolerance.py'
 # CAUTION: This tests bases on results of a previous simulation/test
 # Usage in TestingFrameworkListOfTests.cmake: "four_c_test_result_file_abs(<name_of_input_file> <num_proc> <filetag> <resultfilename> <referencefilename> <tolerance>)"
@@ -557,7 +554,7 @@ endmacro(four_c_test_post_processing)
 # <resultfilename>: file that should be compared
 # <referencefilename>: file to compare with
 # <tolerance>: difference the values in <resultfilename> may have to the values in <referencefilename>
-macro(
+function(
   four_c_test_result_file_abs
   name_of_input_file
   num_proc
@@ -588,10 +585,10 @@ macro(
     )
   set_processors(${name_of_test} 1)
   set_timeout(${name_of_test})
-endmacro(four_c_test_result_file_abs)
+endfunction()
 
-###########
-# COMPARE RELATIVE - compare arbitrary result csv file to corresponding reference file with relative difference
+###------------------------------------------------------------------ Compare Relative
+# Compare arbitrary result csv file to corresponding reference file with relative difference
 # Implementation can be found in 'utilities/diff_with_tolerance.py'
 # CAUTION: This tests bases on results of a previous simulation/test
 # Usage in TestingFrameworkListOfTests.cmake: "four_c_test_result_file_rel(<name_of_input_file> <num_proc> <filetag> <resultfilename> <referencefilename> <tolerance>)"
@@ -603,7 +600,7 @@ endmacro(four_c_test_result_file_abs)
 # <referencefilename>: file to compare with
 # <tolerance>: difference the values in <resultfilename> may have to the values in <referencefilename>
 # <min_val>: minimum value of denominator for calculation of relative difference
-macro(
+function(
   four_c_test_result_file_rel
   name_of_input_file
   num_proc
@@ -632,10 +629,10 @@ macro(
   require_fixture(${name_of_test} "${name_of_input_file}-p${num_proc_base_run};test_cleanup")
   set_processors(${name_of_test} 1)
   set_timeout(${name_of_test})
-endmacro(four_c_test_result_file_rel)
+endfunction()
 
-###########
-# COMPARE VTK - compare XML formatted .vtk result data set referenced by .pvd files to corresponding reference files
+###------------------------------------------------------------------ Compare VTK
+# Compare XML formatted .vtk result data set referenced by .pvd files to corresponding reference files
 # CAUTION: This tests bases on results of a previous simulation/test
 # Implementation can be found in '/tests/output_test/vtk_compare.py'
 # Usage in TestingFrameworkListOfTests.cmake: "four_c_test_vtk(<name_of_input_file> <num_proc> <filetag> <pvd_referencefilename> <tolerance> <optional: time_steps>)"
@@ -645,7 +642,7 @@ endmacro(four_c_test_result_file_rel)
 # <pvd_referencefilename>: file to compare with
 # <tolerance>: difference the values may have
 # <optional: time_steps>: time steps when to compare
-macro(
+function(
   four_c_test_vtk
   name_of_test
   name_of_input_file
@@ -685,7 +682,7 @@ macro(
     )
   set_processors(${name_of_test}-p${num_proc_base_run} 1)
   set_timeout(${name_of_test}-p${num_proc_base_run})
-endmacro(four_c_test_vtk)
+endfunction()
 
 ###------------------------------------------------------------------ List of tests
 include(TestingFrameworkListOfTests.cmake)
