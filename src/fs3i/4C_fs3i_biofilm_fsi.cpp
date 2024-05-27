@@ -25,6 +25,7 @@
 #include "4C_ale_utils_clonestrategy.hpp"
 #include "4C_ale_utils_mapextractor.hpp"
 #include "4C_coupling_adapter.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_discretization_geometry_update_material_config.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fs3i_biofilm_fsi_utils.hpp"
@@ -33,7 +34,6 @@
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_gmsh.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 #include "4C_structure_aux.hpp"
@@ -84,8 +84,8 @@ void FS3I::BiofilmFSI::Init()
 
   if (structaledis->NumGlobalNodes() == 0)
   {
-    Teuchos::RCP<DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleCloneStrategy>> alecreator =
-        Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleCloneStrategy>());
+    Teuchos::RCP<CORE::FE::DiscretizationCreator<ALE::UTILS::AleCloneStrategy>> alecreator =
+        Teuchos::rcp(new CORE::FE::DiscretizationCreator<ALE::UTILS::AleCloneStrategy>());
     alecreator->create_matching_discretization(structdis, structaledis, 11);
     structaledis->fill_complete();
   }

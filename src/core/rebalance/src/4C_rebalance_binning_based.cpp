@@ -13,9 +13,9 @@
 
 #include "4C_binstrategy.hpp"
 #include "4C_coupling_matchingoctree.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_lib_node.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -354,8 +354,8 @@ void CORE::REBALANCE::MatchElementDistributionOfMatchingConditionedElements(
     // fill condition discretization by cloning scatra discretization
     Teuchos::RCP<DRT::Discretization> dis_from_template_condition;
 
-    Teuchos::RCP<DRT::UTILS::DiscretizationCreatorBase> discreator =
-        Teuchos::rcp(new DRT::UTILS::DiscretizationCreatorBase());
+    Teuchos::RCP<CORE::FE::DiscretizationCreatorBase> discreator =
+        Teuchos::rcp(new CORE::FE::DiscretizationCreatorBase());
     std::vector<std::string> conditions_to_copy(0);
     dis_from_template_condition = discreator->create_matching_discretization_from_condition(
         dis_template,        ///< discretization with condition

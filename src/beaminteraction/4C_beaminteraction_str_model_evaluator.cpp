@@ -24,12 +24,12 @@
 #include "4C_beaminteraction_submodel_evaluator_generic.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_beam_to_solid.hpp"
 #include "4C_inpar_beamcontact.hpp"
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
@@ -110,8 +110,8 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // solving is done. Therefore the maps of our initial discretization don't
   // change, i.e. there is no need to rebuild the global state.
   // -------------------------------------------------------------------------
-  Teuchos::RCP<DRT::UTILS::DiscretizationCreatorBase> discloner =
-      Teuchos::rcp(new DRT::UTILS::DiscretizationCreatorBase());
+  Teuchos::RCP<CORE::FE::DiscretizationCreatorBase> discloner =
+      Teuchos::rcp(new CORE::FE::DiscretizationCreatorBase());
   ia_discret_ = discloner->create_matching_discretization(
       discret_ptr_, "ia_structure", true, true, false, true);
   // create discretization writer

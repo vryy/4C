@@ -14,6 +14,7 @@
 #include "4C_contact_constitutivelaw_bundle.hpp"
 #include "4C_contact_constitutivelaw_constitutivelaw_definition.hpp"
 #include "4C_discretization_dofset_independent.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_global_legacy_module.hpp"
 #include "4C_inpar_validconditions.hpp"
 #include "4C_inpar_validcontactconstitutivelaw.hpp"
@@ -29,7 +30,6 @@
 #include "4C_lib_discret_hdg.hpp"
 #include "4C_lib_discret_xfem.hpp"
 #include "4C_lib_discret_xwall.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_mat_elchmat.hpp"
 #include "4C_mat_elchphase.hpp"
 #include "4C_mat_micromaterial.hpp"
@@ -2100,7 +2100,7 @@ void GLOBAL::ReadContactConstitutiveLaws(GLOBAL::Problem& problem, INPUT::DatFil
 /*----------------------------------------------------------------------*/
 void GLOBAL::ReadCloningMaterialMap(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
 {
-  INPUT::Lines lines = DRT::UTILS::ValidCloningMaterialMapLines();
+  INPUT::Lines lines = CORE::FE::ValidCloningMaterialMapLines();
 
   // perform the actual reading and extract the input parameters
   std::vector<INPUT::LineDefinition> input_line_vec = lines.Read(reader);

@@ -14,6 +14,7 @@
 #include "4C_comm_utils.hpp"
 #include "4C_discretization_dofset_independent.hpp"
 #include "4C_discretization_dofset_predefineddofnumber.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_elemag_ele.hpp"
 #include "4C_elemag_timeint.hpp"
 #include "4C_elemag_utils_clonestrategy.hpp"
@@ -23,7 +24,6 @@
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_lib_discret_hdg.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_scatra_timint_stat.hpp"
 #include "4C_scatra_timint_stat_hdg.hpp"
@@ -188,7 +188,7 @@ void electromagnetics_drt()
 
           scatradis->fill_complete();
 
-          DRT::UTILS::CloneDiscretization<
+          CORE::FE::CloneDiscretization<
               ELEMAG::UTILS::ScatraCloneStrategy<CORE::FE::ShapeFunctionType::hdg>>(
               elemagdishdg, scatradis, GLOBAL::Problem::Instance()->CloningMaterialMap());
         }
@@ -197,7 +197,7 @@ void electromagnetics_drt()
           scatradis = Teuchos::rcp(new DRT::Discretization((std::string) "scatra", newcomm));
           scatradis->fill_complete();
 
-          DRT::UTILS::CloneDiscretization<
+          CORE::FE::CloneDiscretization<
               ELEMAG::UTILS::ScatraCloneStrategy<CORE::FE::ShapeFunctionType::polynomial>>(
               elemagdishdg, scatradis, GLOBAL::Problem::Instance()->CloningMaterialMap());
         }

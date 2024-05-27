@@ -15,13 +15,13 @@
 
 #include "4C_comm_utils.hpp"
 #include "4C_create_rtdfiles_utils.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_validconditions.hpp"
 #include "4C_inpar_validcontactconstitutivelaw.hpp"
 #include "4C_inpar_validmaterials.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_lib_elementdefinition.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_function.hpp"
 

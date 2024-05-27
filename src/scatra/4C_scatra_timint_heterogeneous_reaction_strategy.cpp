@@ -11,9 +11,9 @@
 
 #include "4C_discretization_dofset_gidbased_wrapper.hpp"
 #include "4C_discretization_dofset_merged_wrapper.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_rebalance_print.hpp"
@@ -108,7 +108,7 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
   // create scatra elements if the scatra discretization is empty
   {
     // fill scatra discretization by cloning fluid discretization
-    DRT::UTILS::CloneDiscretizationFromCondition<SCATRA::ScatraReactionCloneStrategy>(*scatradis,
+    CORE::FE::CloneDiscretizationFromCondition<SCATRA::ScatraReactionCloneStrategy>(*scatradis,
         *discret_, "ScatraHeteroReactionSlave", GLOBAL::Problem::Instance()->CloningMaterialMap());
 
     // set implementation type of cloned scatra elements

@@ -12,9 +12,9 @@
 #include "4C_red_airways_implicitintegration.hpp"
 
 #include "4C_discretization_condition_utils.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"

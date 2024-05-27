@@ -10,12 +10,12 @@
 #include "4C_adapter_fld_fluid_fsi.hpp"
 #include "4C_adapter_str_fsiwrapper.hpp"
 #include "4C_coupling_adapter.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_fsi_monolithic.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_utils_createdis.hpp"
 
 #include <sstream>
 
@@ -26,8 +26,8 @@ FOUR_C_NAMESPACE_OPEN
 FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<DRT::Discretization> dis) : itnum_(-1)
 {
   std::vector<std::string> conditions_to_copy = {"FSICoupling"};
-  Teuchos::RCP<DRT::UTILS::DiscretizationCreatorBase> discreator =
-      Teuchos::rcp(new DRT::UTILS::DiscretizationCreatorBase());
+  Teuchos::RCP<CORE::FE::DiscretizationCreatorBase> discreator =
+      Teuchos::rcp(new CORE::FE::DiscretizationCreatorBase());
   dis_ = discreator->create_matching_discretization_from_condition(
       *dis, "FSICoupling", "boundary", "BELE3_3", conditions_to_copy);
 

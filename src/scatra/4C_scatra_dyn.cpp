@@ -12,8 +12,8 @@
 
 #include "4C_adapter_scatra_base_algorithm.hpp"
 #include "4C_discretization_dofset_predefineddofnumber.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_scatra_algorithm.hpp"
 #include "4C_scatra_ele.hpp"
@@ -134,7 +134,7 @@ void scatra_dyn(int restart)
           {"TransportLineNeumann", "LineNeumann"}, {"TransportSurfaceNeumann", "SurfaceNeumann"},
           {"TransportVolumeNeumann", "VolumeNeumann"}};
 
-      DRT::UTILS::DiscretizationCreatorBase creator;
+      CORE::FE::DiscretizationCreatorBase creator;
       creator.CopyConditions(*scatradis, *scatradis, conditions_to_copy);
 
       // finalize discretization
@@ -190,7 +190,7 @@ void scatra_dyn(int restart)
       if (fieldcoupling == INPAR::SCATRA::coupling_match)
       {
         // fill scatra discretization by cloning fluid discretization
-        DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(
+        CORE::FE::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(
             fluiddis, scatradis, GLOBAL::Problem::Instance()->CloningMaterialMap());
 
         // set implementation type of cloned scatra elements
@@ -236,7 +236,7 @@ void scatra_dyn(int restart)
         // allow TRANSPORT conditions, too
         SCATRA::ScatraFluidCloneStrategy clonestrategy;
         const auto conditions_to_copy = clonestrategy.ConditionsToCopy();
-        DRT::UTILS::DiscretizationCreatorBase creator;
+        CORE::FE::DiscretizationCreatorBase creator;
         creator.CopyConditions(*scatradis, *scatradis, conditions_to_copy);
 
         // build the element and node maps

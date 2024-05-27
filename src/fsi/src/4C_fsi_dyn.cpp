@@ -26,6 +26,7 @@
 #include "4C_discretization_condition_selector.hpp"
 #include "4C_discretization_condition_utils.hpp"
 #include "4C_discretization_dofset_fixed_size.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_fluid_xfluid.hpp"
 #include "4C_fluid_xfluid_fluid.hpp"
 #include "4C_fsi_constrmonolithic_fluidsplit.hpp"
@@ -59,7 +60,6 @@
 #include "4C_inpar_fbi.hpp"
 #include "4C_inpar_fsi.hpp"
 #include "4C_lib_discret_xfem.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_poroelast_utils_clonestrategy.hpp"
 #include "4C_poroelast_utils_setup.hpp"
@@ -109,7 +109,7 @@ void fluid_ale_drt()
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes() == 0)
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+    CORE::FE::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
         fluiddis, aledis, GLOBAL::Problem::Instance()->CloningMaterialMap());
     aledis->fill_complete();
     // setup material in every ALE element
@@ -164,7 +164,7 @@ void fluid_xfem_drt()
     // create ale elements if the ale discretization is empty
     if (aledis->NumGlobalNodes() == 0)
     {
-      DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+      CORE::FE::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
           problem->GetDis("fluid"), aledis, GLOBAL::Problem::Instance()->CloningMaterialMap());
       aledis->fill_complete();
       // setup material in every ALE element
@@ -257,7 +257,7 @@ void fluid_freesurf_drt()
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes() == 0)
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+    CORE::FE::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
         fluiddis, aledis, GLOBAL::Problem::Instance()->CloningMaterialMap());
     aledis->fill_complete();
     // setup material in every ALE element
@@ -453,7 +453,7 @@ void fsi_ale_drt()
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes() == 0)  // empty ale discretization
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+    CORE::FE::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
         fluiddis, aledis, GLOBAL::Problem::Instance()->CloningMaterialMap());
     aledis->fill_complete();
     // setup material in every ALE element
@@ -804,7 +804,7 @@ void xfsi_drt()
     // Create ALE elements if the ale discretization is empty
     if (aledis->NumGlobalNodes() == 0)  // ALE discretization still empty
     {
-      DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+      CORE::FE::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
           fluiddis, aledis, GLOBAL::Problem::Instance()->CloningMaterialMap());
       aledis->fill_complete();
       // setup material in every ALE element
@@ -953,7 +953,7 @@ void xfpsi_drt()
     // 3.- Create ALE elements if the ale discretization is empty
     if (aledis->NumGlobalNodes() == 0)  // ALE discretization still empty
     {
-      DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+      CORE::FE::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
           fluiddis, aledis, GLOBAL::Problem::Instance()->CloningMaterialMap());
       aledis->fill_complete();
       // setup material in every ALE element

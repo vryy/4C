@@ -13,8 +13,8 @@
 
 #include "4C_adapter_lubrication.hpp"
 #include "4C_discretization_dofset_predefineddofnumber.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_lubrication_timint_implicit.hpp"
 
 FOUR_C_NAMESPACE_OPEN

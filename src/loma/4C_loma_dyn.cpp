@@ -13,9 +13,9 @@
 #include "4C_loma_dyn.hpp"
 
 #include "4C_discretization_dofset_predefineddofnumber.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_validparameters.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_loma_algorithm.hpp"
 #include "4C_scatra_ele.hpp"
 #include "4C_scatra_timint_implicit.hpp"
@@ -140,7 +140,7 @@ void loma_dyn(int restart)
       if (scatradis->NumGlobalNodes() == 0)
       {
         // fill scatra discretization by cloning fluid discretization
-        DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(
+        CORE::FE::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(
             fluiddis, scatradis, GLOBAL::Problem::Instance()->CloningMaterialMap());
 
         // set implementation type of cloned scatra elements to loma

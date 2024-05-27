@@ -13,6 +13,7 @@ between the xfluid class and the cut-library
 
 #include "4C_discretization_dofset_transparent_independent.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_boundary_parent_calc.hpp"
@@ -21,7 +22,6 @@ between the xfluid class and the cut-library
 #include "4C_io_control.hpp"
 #include "4C_io_gmsh.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -113,8 +113,8 @@ void XFEM::MeshCoupling::create_cutter_dis_from_condition(std::string suffix)
 
   //--------------------------------
   // create the new cutter discretization form the conditioned coupling discretization
-  Teuchos::RCP<DRT::UTILS::DiscretizationCreatorBase> discreator =
-      Teuchos::rcp(new DRT::UTILS::DiscretizationCreatorBase());
+  Teuchos::RCP<CORE::FE::DiscretizationCreatorBase> discreator =
+      Teuchos::rcp(new CORE::FE::DiscretizationCreatorBase());
   cutter_dis_ = discreator->create_matching_discretization_from_condition(
       *cond_dis_,      ///< discretization with condition
       cond_name_,      ///< name of the condition, by which the derived discretization is identified

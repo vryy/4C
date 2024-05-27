@@ -11,11 +11,12 @@
 #include "4C_create_rtdfiles_utils.hpp"
 
 #include "4C_discretization_fem_general_cell_type_traits.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_global_legacy_module.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_io_utils_reader.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_utils_exceptions.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
@@ -278,7 +279,7 @@ namespace RTD
     // adding the section for the CLONING MATERIAL MAP
     WriteLinktarget(stream, "cloningmaterialsreference");
     write_header(stream, 0, "Cloning material reference");
-    const INPUT::Lines lines = DRT::UTILS::ValidCloningMaterialMapLines();
+    const INPUT::Lines lines = CORE::FE::ValidCloningMaterialMapLines();
     std::stringstream cloningMatStream;
     lines.Print(cloningMatStream);
     const std::vector<std::string> cloningMatList = DRT::UTILS::Split(cloningMatStream.str(), "\n");

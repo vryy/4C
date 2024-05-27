@@ -10,8 +10,8 @@
 
 #include "4C_art_net_utils.hpp"
 #include "4C_discretization_dofset_predefineddofnumber.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_poroelast_scatra_utils_clonestrategy.hpp"
 #include "4C_poroelast_utils.hpp"
 #include "4C_poroelast_utils_clonestrategy.hpp"
@@ -158,7 +158,7 @@ std::map<int, std::set<int>> POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAn
   Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis(scatra_disname);
 
   // fill scatra discretization by cloning structure discretization
-  DRT::UTILS::CloneDiscretization<POROELASTSCATRA::UTILS::PoroScatraCloneStrategy>(
+  CORE::FE::CloneDiscretization<POROELASTSCATRA::UTILS::PoroScatraCloneStrategy>(
       structdis, scatradis, GLOBAL::Problem::Instance()->CloningMaterialMap());
   scatradis->fill_complete();
 
@@ -194,7 +194,7 @@ std::map<int, std::set<int>> POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAn
     if (!artdis->Filled()) FOUR_C_THROW("artery discretization should be filled at this point");
 
     // fill artery scatra discretization by cloning artery discretization
-    DRT::UTILS::CloneDiscretization<ART::ArteryScatraCloneStrategy>(
+    CORE::FE::CloneDiscretization<ART::ArteryScatraCloneStrategy>(
         artdis, artscatradis, GLOBAL::Problem::Instance()->CloningMaterialMap());
     artscatradis->fill_complete();
 

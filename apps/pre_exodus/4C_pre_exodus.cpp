@@ -20,6 +20,7 @@ its parameters and conditions.
 #include "4C_config.hpp"
 
 #include "4C_comm_utils.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_global_legacy_module.hpp"
 #include "4C_inpar_validconditions.hpp"
@@ -27,7 +28,6 @@ its parameters and conditions.
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io_condition_definition.hpp"
 #include "4C_lib_elementdefinition.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_pre_exodus_readbc.hpp"
 #include "4C_pre_exodus_reader.hpp"
 #include "4C_pre_exodus_validate.hpp"
@@ -343,7 +343,7 @@ int main(int argc, char** argv)
       }
 
       // print cloning material map default lines (right after the materials)
-      INPUT::Lines lines = DRT::UTILS::ValidCloningMaterialMapLines();
+      INPUT::Lines lines = CORE::FE::ValidCloningMaterialMapLines();
       lines.Print(defaulthead);
 
       // print spatial functions

@@ -15,8 +15,8 @@
 
 #include "4C_discretization_dofset_gidbased_wrapper.hpp"
 #include "4C_discretization_dofset_predefineddofnumber.hpp"
+#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_utils_createdis.hpp"
 #include "4C_poroelast_scatra_utils.hpp"
 #include "4C_poroelast_scatra_utils_clonestrategy.hpp"
 #include "4C_poroelast_utils_setup.hpp"
@@ -57,7 +57,7 @@ namespace POROELASTSCATRA
       if (scatradis->NumGlobalNodes() == 0)
       {
         // fill scatra discretization by cloning structure discretization
-        DRT::UTILS::CloneDiscretization<PoroScatraCloneStrategy>(
+        CORE::FE::CloneDiscretization<PoroScatraCloneStrategy>(
             structdis, scatradis, GLOBAL::Problem::Instance()->CloningMaterialMap());
         scatradis->fill_complete();
 
