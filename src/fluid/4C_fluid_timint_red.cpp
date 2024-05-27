@@ -12,12 +12,12 @@
 #include "4C_fluid_timint_red.hpp"
 
 #include "4C_adapter_art_net.hpp"
+#include "4C_discretization_condition_locsys.hpp"
 #include "4C_fluid_coupling_red_models.hpp"
 #include "4C_fluid_meshtying.hpp"
 #include "4C_fluid_volumetric_surfaceFlow_condition.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_locsys.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 
 FOUR_C_NAMESPACE_OPEN

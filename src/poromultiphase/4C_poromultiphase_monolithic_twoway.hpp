@@ -36,13 +36,10 @@ namespace CORE::LINEAR_SOLVER
   enum class SolverType;
 }
 
-namespace DRT
+namespace CORE::Conditions
 {
-  namespace UTILS
-  {
-    class LocsysManager;
-  }
-}  // namespace DRT
+  class LocsysManager;
+}
 
 namespace POROMULTIPHASE
 {
@@ -283,7 +280,7 @@ namespace POROMULTIPHASE
     double dtele_;               //!< time for element evaluation + build-up of system matrix
 
     //! Dirichlet BCs with local co-ordinate system
-    Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
+    Teuchos::RCP<CORE::Conditions::LocsysManager> locsysman_;
 
     //! flag for finite difference check
     INPAR::POROMULTIPHASE::FdCheck fdcheck_;

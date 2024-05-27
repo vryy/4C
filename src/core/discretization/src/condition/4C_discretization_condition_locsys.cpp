@@ -11,11 +11,10 @@ vectors and matrices.
 */
 /*----------------------------------------------------------------------------*/
 
-#include "4C_lib_locsys.hpp"
+#include "4C_discretization_condition_locsys.hpp"
 
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_fem_general_largerotations.hpp"
-#include "4C_global_data.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -28,12 +27,9 @@ FOUR_C_NAMESPACE_OPEN
 /*-------------------------------------------------------------------*
  |  ctor (public)                                         meier 06/13|
  *-------------------------------------------------------------------*/
-DRT::UTILS::LocsysManager::LocsysManager(DRT::Discretization& discret)
-    : discret_(discret), dim_(-1), numlocsys_(-1), locsysfunct_(false)
+CORE::Conditions::LocsysManager::LocsysManager(DRT::Discretization& discret, const int dim)
+    : discret_(discret), dim_(dim), numlocsys_(-1), locsysfunct_(false)
 {
-  // get problem dimension (2D or 3D) and store into dim_
-  dim_ = GLOBAL::Problem::Instance()->NDim();
-
   if (Dim() != 2 && Dim() != 3) FOUR_C_THROW("Locsys problem must be 2D or 3D");
 
   // get node row layout of discretization
@@ -72,8 +68,9 @@ DRT::UTILS::LocsysManager::LocsysManager(DRT::Discretization& discret)
 
 /*-------------------------------------------------------------------*
  *-------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::Update(
-    const double time, std::vector<Teuchos::RCP<Epetra_Vector>> nodenormals)
+void CORE::Conditions::LocsysManager::Update(const double time,
+    std::vector<Teuchos::RCP<Epetra_Vector>> nodenormals,
+    const CORE::UTILS::FunctionManager& function_manager)
 {
   nodenormals_ = std::move(nodenormals);
   // IMPORTANT NOTE:
@@ -229,18 +226,16 @@ void DRT::UTILS::LocsysManager::Update(
                   for (int dim = 0; dim < Dim(); ++dim) currPos[dim] = xp[dim] + currDisp[dim];
 
                   // Evaluate function with current node position
-                  functfac =
-                      (GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
-                           (*funct)[j] - 1))
-                          .Evaluate(currPos.data(), time, j);
+                  functfac = (function_manager.FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
+                                  (*funct)[j] - 1))
+                                 .Evaluate(currPos.data(), time, j);
                 }
                 else
                 {
                   // Evaluate function with reference node position
-                  functfac =
-                      (GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
-                           (*funct)[j] - 1))
-                          .Evaluate(node->X().data(), time, j);
+                  functfac = (function_manager.FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
+                                  (*funct)[j] - 1))
+                                 .Evaluate(node->X().data(), time, j);
                 }
               }
               currotangle(j) = (*rotangle)[j] * functfac;
@@ -442,11 +437,12 @@ void DRT::UTILS::LocsysManager::Update(
 /*----------------------------------------------------------------------*
  |  print manager (public)                                   meier 06/13|
  *----------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::Print() const
+void CORE::Conditions::LocsysManager::Print() const
 {
   if (Comm().MyPID() == 0)
   {
-    IO::cout << "\n-------------------------------------DRT::UTILS::LocsysManager" << IO::endl;
+    IO::cout << "\n-------------------------------------CORE::Conditions::LocsysManager"
+             << IO::endl;
     for (int i = 0; i < NumLocsys(); ++i)
     {
       IO::cout << "*  *  *  *  *  *  *  *  *  *  *  *  *Locsys entity ID: "
@@ -470,13 +466,13 @@ void DRT::UTILS::LocsysManager::Print() const
 /*----------------------------------------------------------------------*
  |  Get the communicator                                                |
  *----------------------------------------------------------------------*/
-inline const Epetra_Comm& DRT::UTILS::LocsysManager::Comm() const { return discret_.Comm(); }
+inline const Epetra_Comm& CORE::Conditions::LocsysManager::Comm() const { return discret_.Comm(); }
 
 
 /*----------------------------------------------------------------------*
  |  Transform system global -> local (public)                 popp 09/08|
  *----------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::RotateGlobalToLocal(
+void CORE::Conditions::LocsysManager::RotateGlobalToLocal(
     Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat, Teuchos::RCP<Epetra_Vector> rhs) const
 {
   // transform rhs vector
@@ -493,7 +489,7 @@ void DRT::UTILS::LocsysManager::RotateGlobalToLocal(
 /*----------------------------------------------------------------------*
  |  Transform system matrix global -> local (public)       mueller 05/10|
  *----------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::RotateGlobalToLocal(
+void CORE::Conditions::LocsysManager::RotateGlobalToLocal(
     Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat) const
 {
   // selective multiplication from left
@@ -507,7 +503,7 @@ void DRT::UTILS::LocsysManager::RotateGlobalToLocal(
 /*----------------------------------------------------------------------*
  |  Transform vector global -> local (public)                 popp 09/08|
  *----------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::RotateGlobalToLocal(
+void CORE::Conditions::LocsysManager::RotateGlobalToLocal(
     Teuchos::RCP<Epetra_Vector> vec, bool offset) const
 {
   // y = trafo_ . x  with x = vec
@@ -518,7 +514,7 @@ void DRT::UTILS::LocsysManager::RotateGlobalToLocal(
 /*----------------------------------------------------------------------*
  |  Transform result + system local -> global (public)        popp 09/08|
  *----------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> result,
+void CORE::Conditions::LocsysManager::RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> result,
     Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat, Teuchos::RCP<Epetra_Vector> rhs) const
 {
   // transform result
@@ -544,7 +540,7 @@ void DRT::UTILS::LocsysManager::RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> 
 /*----------------------------------------------------------------------*
  |  Transform vector local -> global (public)                 popp 09/08|
  *----------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::RotateLocalToGlobal(
+void CORE::Conditions::LocsysManager::RotateLocalToGlobal(
     Teuchos::RCP<Epetra_Vector> vec, bool offset) const
 {
   Epetra_Vector tmp(*vec);
@@ -553,7 +549,7 @@ void DRT::UTILS::LocsysManager::RotateLocalToGlobal(
 /*----------------------------------------------------------------------*
  |  Transform matrix local -> global (public)              mueller 05/10|
  *----------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::RotateLocalToGlobal(
+void CORE::Conditions::LocsysManager::RotateLocalToGlobal(
     Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat) const
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> temp2 =
@@ -566,7 +562,7 @@ void DRT::UTILS::LocsysManager::RotateLocalToGlobal(
  |  Calculate rotation vector for (mass-consistent) normal              |
  |  system for a given locsys condition                       hahn 07/14|
  *----------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::calc_rotation_vector_for_normal_system(
+void CORE::Conditions::LocsysManager::calc_rotation_vector_for_normal_system(
     int numLocsysCond, double time)
 {
   // Take care for "negative times", where no information about dispnp_ is available

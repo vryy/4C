@@ -18,6 +18,7 @@
 #include "4C_constraint_solver.hpp"
 #include "4C_constraint_springdashpot_manager.hpp"
 #include "4C_contact_meshtying_contact_bridge.hpp"
+#include "4C_discretization_condition_locsys.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_beamcontact.hpp"
 #include "4C_inpar_contact.hpp"
@@ -27,7 +28,6 @@
 #include "4C_io_gmsh.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_lib_discret_faces.hpp"
-#include "4C_lib_locsys.hpp"
 #include "4C_lib_utils_discret.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_multiply.hpp"
@@ -279,10 +279,11 @@ void STR::TimInt::Setup()
     discret_->GetCondition("Locsys", locsysconditions);
     if (locsysconditions.size())
     {
-      locsysman_ = Teuchos::rcp(new DRT::UTILS::LocsysManager(*discret_));
+      locsysman_ = Teuchos::rcp(
+          new CORE::Conditions::LocsysManager(*discret_, GLOBAL::Problem::Instance()->NDim()));
       // in case we have no time dependent locsys conditions in our problem,
       // this is the only time where the whole setup routine is conducted.
-      locsysman_->Update(-1.0, {});
+      locsysman_->Update(-1.0, {}, GLOBAL::Problem::Instance()->FunctionManager());
     }
   }
 

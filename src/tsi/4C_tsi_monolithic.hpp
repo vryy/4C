@@ -43,13 +43,10 @@ namespace CORE::LINALG
   class Solver;
 }  // namespace CORE::LINALG
 
-namespace DRT
+namespace CORE::Conditions
 {
-  namespace UTILS
-  {
-    class LocsysManager;
-  }
-}  // namespace DRT
+  class LocsysManager;
+}
 
 namespace ADAPTER
 {
@@ -401,7 +398,7 @@ namespace TSI
     Teuchos::RCP<const Epetra_Vector> vel_;
 
     //! Dirichlet BCs with local co-ordinate system
-    Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
+    Teuchos::RCP<CORE::Conditions::LocsysManager> locsysman_;
 
     //@}
 

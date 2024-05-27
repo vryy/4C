@@ -50,11 +50,6 @@ namespace DRT
   class Discretization;
   class DiscretizationFaces;
   class ResultTest;
-
-  namespace UTILS
-  {
-    class LocsysManager;
-  }
 }  // namespace DRT
 namespace IO
 {
@@ -69,6 +64,12 @@ namespace CORE::LINALG
   class BlockSparseMatrixBase;
   class SparseOperator;
 }  // namespace CORE::LINALG
+
+namespace CORE::Conditions
+{
+  class LocsysManager;
+}
+
 
 namespace ADAPTER
 {
@@ -698,7 +699,7 @@ namespace FLD
     virtual Teuchos::RCP<const Epetra_Vector> InvDirichlet();
 
     //! Return locsys manager
-    virtual Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() { return locsysman_; }
+    virtual Teuchos::RCP<CORE::Conditions::LocsysManager> LocsysManager() { return locsysman_; }
 
     //! Return wss manager
     virtual Teuchos::RCP<FLD::UTILS::StressManager> StressManager() { return stressmanager_; }
@@ -1366,7 +1367,7 @@ namespace FLD
     //@}
 
     //! Dirichlet BCs with local co-ordinate system
-    Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
+    Teuchos::RCP<CORE::Conditions::LocsysManager> locsysman_;
 
     /// windkessel (outflow) boundaries
     Teuchos::RCP<UTILS::FluidImpedanceWrapper> impedancebc_;

@@ -74,7 +74,7 @@ namespace ADAPTER
     }
 
     //! access to locsys manager
-    Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() override
+    Teuchos::RCP<CORE::Conditions::LocsysManager> LocsysManager() override
     {
       return ale_->LocsysManager();
     }

@@ -203,7 +203,7 @@ Teuchos::RCP<const CORE::LINALG::MapExtractor> STR::TIMINT::Base::GetDBCMapExtra
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::UTILS::LocsysManager> STR::TIMINT::Base::LocsysManager()
+Teuchos::RCP<CORE::Conditions::LocsysManager> STR::TIMINT::Base::LocsysManager()
 {
   check_init_setup();
   return dbc_ptr_->LocSysManagerPtr();

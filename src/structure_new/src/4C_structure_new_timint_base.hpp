@@ -134,7 +134,7 @@ namespace STR
       [[nodiscard]] Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const;
 
       //! Return locsys manager
-      Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() override;
+      Teuchos::RCP<CORE::Conditions::LocsysManager> LocsysManager() override;
 
       //! Return the desired model evaluator (read-only)
       [[nodiscard]] const STR::MODELEVALUATOR::Generic& ModelEvaluator(

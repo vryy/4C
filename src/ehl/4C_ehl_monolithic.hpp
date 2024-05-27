@@ -40,13 +40,11 @@ namespace CORE::LINALG
   class Solver;
 }  // namespace CORE::LINALG
 
-namespace DRT
+namespace CORE::Conditions
 {
-  namespace UTILS
-  {
-    class LocsysManager;
-  }
-}  // namespace DRT
+  class LocsysManager;
+}
+
 
 namespace FSI
 {

@@ -29,10 +29,6 @@ namespace DRT
 {
   class Discretization;
   class ResultTest;
-  namespace UTILS
-  {
-    class LocsysManager;
-  }
 }  // namespace DRT
 
 namespace IO
@@ -49,6 +45,11 @@ namespace CORE::LINALG
   class MultiMapExtractor;
   class Preconditioner;
 }  // namespace CORE::LINALG
+
+namespace CORE::Conditions
+{
+  class LocsysManager;
+}
 
 namespace TIMINT
 {
@@ -105,7 +106,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() = 0;
 
     // access to locsys manager
-    virtual Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() = 0;
+    virtual Teuchos::RCP<CORE::Conditions::LocsysManager> LocsysManager() = 0;
 
     //! direct access to discretization
     virtual Teuchos::RCP<const DRT::Discretization> Discretization() const = 0;

@@ -43,12 +43,6 @@ namespace DRT
 {
   class Discretization;
   class DiscretizationFaces;
-
-  namespace UTILS
-  {
-    class LocsysManager;
-    class PlastSsnManager;
-  }  // namespace UTILS
 }  // namespace DRT
 
 namespace UTILS
@@ -77,6 +71,11 @@ namespace CORE::LINALG
   class SparseOperator;
   class BlockSparseMatrixBase;
 }  // namespace CORE::LINALG
+
+namespace CORE::Conditions
+{
+  class LocsysManager;
+}
 
 namespace IO
 {
@@ -872,7 +871,7 @@ namespace STR
     Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetLocSysTrafo() const;
 
     //! Return locsys manager
-    Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() override { return locsysman_; }
+    Teuchos::RCP<CORE::Conditions::LocsysManager> LocsysManager() override { return locsysman_; }
 
     //@}
 
@@ -1130,7 +1129,7 @@ namespace STR
     Teuchos::RCP<CONTACT::Beam3cmanager> beamcman_;
 
     //! Dirichlet BCs with local co-ordinate system
-    Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
+    Teuchos::RCP<CORE::Conditions::LocsysManager> locsysman_;
 
     //! Map to differentiate pressure and displacement/velocity DOFs
     Teuchos::RCP<CORE::LINALG::MapExtractor> pressure_;

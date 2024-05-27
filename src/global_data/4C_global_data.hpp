@@ -572,6 +572,8 @@ namespace GLOBAL
      */
     void SetFunctionManager(CORE::UTILS::FunctionManager&& function_manager);
 
+    const CORE::UTILS::FunctionManager& FunctionManager() const { return functionmanager_; }
+
    private:
     /// private default constructor to disallow creation of instances
     Problem();

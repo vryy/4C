@@ -10,7 +10,7 @@
 #include "4C_ssi_monolithic_dbc_handler.hpp"
 
 #include "4C_adapter_str_ssiwrapper.hpp"
-#include "4C_lib_locsys.hpp"
+#include "4C_discretization_condition_locsys.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
@@ -135,7 +135,7 @@ void SSI::DBCHandlerBase::apply_structure_dbc_to_system_matrix(
 void SSI::DBCHandlerSparse::apply_structure_dbc_with_loc_sys_rotation_to_system_matrix(
     Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix,
     const Teuchos::RCP<const Epetra_Map>& dbcmap_structure,
-    Teuchos::RCP<const DRT::UTILS::LocsysManager> locsysmanager_structure)
+    Teuchos::RCP<const CORE::Conditions::LocsysManager> locsysmanager_structure)
 
 {
   auto systemmatrix_sparse = CORE::LINALG::CastToSparseMatrixAndCheckSuccess(system_matrix);
@@ -165,7 +165,7 @@ void SSI::DBCHandlerSparse::apply_structure_dbc_with_loc_sys_rotation_to_system_
 void SSI::DBCHandlerBlock::apply_structure_dbc_with_loc_sys_rotation_to_system_matrix(
     Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix,
     const Teuchos::RCP<const Epetra_Map>& dbcmap_structure,
-    Teuchos::RCP<const DRT::UTILS::LocsysManager> locsysmanager_structure)
+    Teuchos::RCP<const CORE::Conditions::LocsysManager> locsysmanager_structure)
 {
   auto systemmatrix_block = CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(system_matrix);
 

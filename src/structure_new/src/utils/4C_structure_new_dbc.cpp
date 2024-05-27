@@ -11,8 +11,9 @@
 
 #include "4C_structure_new_dbc.hpp"
 
+#include "4C_discretization_condition_locsys.hpp"
+#include "4C_global_data.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_locsys.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
@@ -82,10 +83,11 @@ void STR::Dbc::Setup()
   discret_ptr_->GetCondition("Locsys", locsysconditions);
   if (locsysconditions.size())
   {
-    locsysman_ptr_ = Teuchos::rcp(new DRT::UTILS::LocsysManager(*discret_ptr_));
+    locsysman_ptr_ = Teuchos::rcp(
+        new CORE::Conditions::LocsysManager(*discret_ptr_, GLOBAL::Problem::Instance()->NDim()));
     // in case we have no time dependent locsys conditions in our problem,
     // this is the only time where the whole setup routine is conducted.
-    locsysman_ptr_->Update(-1.0, {});
+    locsysman_ptr_->Update(-1.0, {}, GLOBAL::Problem::Instance()->FunctionManager());
     islocsys_ = true;
   }
 
@@ -154,7 +156,7 @@ void STR::Dbc::UpdateLocSysManager()
   if (!IsLocSys()) return;
 
   DiscretPtr()->set_state("dispnp", GState().GetDisNp());
-  locsysman_ptr_->Update(GState().GetTimeNp(), {});
+  locsysman_ptr_->Update(GState().GetTimeNp(), {}, GLOBAL::Problem::Instance()->FunctionManager());
   DiscretPtr()->ClearState();
 }
 
@@ -424,7 +426,7 @@ Teuchos::RCP<const CORE::LINALG::MapExtractor> STR::Dbc::GetDBCMapExtractor() co
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::UTILS::LocsysManager> STR::Dbc::LocSysManagerPtr()
+Teuchos::RCP<CORE::Conditions::LocsysManager> STR::Dbc::LocSysManagerPtr()
 {
   check_init_setup();
   return locsysman_ptr_;
