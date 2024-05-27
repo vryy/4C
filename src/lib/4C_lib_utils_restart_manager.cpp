@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of helper methods for namespace DRT
+\brief Utility to write restart information based on a wall time interval
 
 \level 0
 
@@ -11,22 +11,26 @@
 
 #include "4C_lib_utils_restart_manager.hpp"
 
-#include "4C_discretization_fem_general_element_center.hpp"
-#include "4C_global_data.hpp"
-#include "4C_io_control.hpp"
-#include "4C_lib_discret.hpp"
-#include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_Comm.h>
-#include <Epetra_FEVector.h>
-
+#include <chrono>
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace
+{
+  double walltime_in_seconds()
+  {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+               std::chrono::high_resolution_clock::now().time_since_epoch())
+               .count() *
+           1.0e-3;
+  }
+}  // namespace
+
 
 DRT::UTILS::RestartManager::RestartManager()
-    : startwalltime_(GLOBAL::Problem::Walltime()),
+    : startwalltime_(walltime_in_seconds()),
       restartevrytime_(-1.0),
       restartcounter_(0),
       lastacceptedstep_(-1),
@@ -69,7 +73,7 @@ bool DRT::UTILS::RestartManager::Restart(const int step, const Epetra_Comm& comm
     int restarttime = 0;
     if (comm.MyPID() == 0)
     {
-      const double elapsedtime = GLOBAL::Problem::Walltime() - startwalltime_;
+      const double elapsedtime = walltime_in_seconds() - startwalltime_;
       const bool walltimerestart = (int)(elapsedtime / restartevrytime_) > restartcounter_;
 
       if (step > 0 and (((restartevrystep_ > 0) and (step % restartevrystep_ == 0)) or
@@ -93,7 +97,6 @@ void DRT::UTILS::RestartManager::restart_signal_handler(
     int signal_number, siginfo_t* signal_information, void* ignored)
 {
   signal_ = signal_information->si_signo;
-  return;
 }
 
 volatile int DRT::UTILS::RestartManager::signal_;

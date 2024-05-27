@@ -125,20 +125,6 @@ int GLOBAL::Problem::NDim() const
   return sizeparams.get<int>("DIM");
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-double GLOBAL::Problem::Walltime()
-{
-  const std::chrono::time_point<std::chrono::high_resolution_clock> now =
-      std::chrono::high_resolution_clock::now();
-
-  return std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count() *
-         1.0e-3;
-}
-
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 const Teuchos::ParameterList& GLOBAL::Problem::SolverParams(int solverNr) const

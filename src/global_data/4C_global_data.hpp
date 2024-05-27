@@ -195,10 +195,6 @@ namespace GLOBAL
     /// number of space dimensions (as specified in the input file)
     int NDim() const;
 
-    /// current wall time in seconds with micro second precision
-    static double Walltime();
-
-
     //! Return type of the basis function encoded as enum
     CORE::FE::ShapeFunctionType spatial_approximation_type() const { return shapefuntype_; }
 

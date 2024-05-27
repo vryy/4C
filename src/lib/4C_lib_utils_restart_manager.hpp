@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of helper methods for namespace DRT
+\brief Utility to write restart information based on a wall time interval
 
 \level 0
 
@@ -14,14 +14,9 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_element.hpp"
-#include "4C_lib_node.hpp"
-#include "4C_linalg_serialdensematrix.hpp"
-#include "4C_linalg_serialdensevector.hpp"
-
+#include <Epetra_Comm.h>
 #include <signal.h>
 #include <stdio.h>
-#include <Teuchos_RCP.hpp>
 
 #include <random>
 
@@ -61,7 +56,7 @@ namespace DRT
       static void restart_signal_handler(
           int signal_number, siginfo_t* signal_information, void* ignored);
 
-     protected:
+     private:
       /// @name wall time parameters
       //@{
 
