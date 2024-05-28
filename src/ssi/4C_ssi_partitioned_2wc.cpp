@@ -11,10 +11,12 @@
 
 #include "4C_adapter_scatra_base_algorithm.hpp"
 #include "4C_adapter_str_ssiwrapper.hpp"
+#include "4C_contact_nitsche_strategy_ssi.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_scatra_ele.hpp"
 #include "4C_scatra_timint_implicit.hpp"
+#include "4C_structure_new_model_evaluator_data.hpp"
 
 #include <Teuchos_Time.hpp>
 
@@ -242,6 +244,14 @@ void SSI::SSIPart2WC::update_and_output()
 {
   constexpr bool force_prepare = false;
   structure_field()->prepare_output(force_prepare);
+
+  if (SSIInterfaceContact())
+  {
+    // re-evaluate the contact to re-obtain the displ state
+    const auto& model_eval = structure_field()->ModelEvaluator(INPAR::STR::model_structure);
+    const auto& cparams = model_eval.EvalData().ContactPtr();
+    nitsche_strategy_ssi()->Integrate(*cparams);
+  }
 
   structure_field()->Update();
   ScaTraField()->Update();

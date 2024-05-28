@@ -101,6 +101,12 @@ namespace FLD
   class Vreman;
 }  // namespace FLD
 
+// forward declaration
+namespace CONTACT
+{
+  class NitscheStrategySsi;
+}  // namespace CONTACT
+
 namespace SCATRA
 {
   class HomIsoTurbScalarForcing;
@@ -353,6 +359,12 @@ namespace SCATRA
     void set_macro_micro_rea_coeff(const double macro_micro_rea_coeff)
     {
       macro_micro_rea_coeff_ = macro_micro_rea_coeff;
+    }
+
+    //! set the Nitsche contact strategy that contributes to the RHS
+    void SetNitscheContactStrategy(Teuchos::RCP<CONTACT::NitscheStrategySsi> strategy_ptr)
+    {
+      contact_strategy_nitsche_ = strategy_ptr;
     }
 
     //! create result test for scalar transport field
@@ -1588,6 +1600,14 @@ namespace SCATRA
 
     //! flag for printing out integral values of reaction
     const bool outintegrreac_;
+
+    //! @name Nitsche contact stuff
+    //@{
+
+    //! nitsche contact strategy
+    Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_strategy_nitsche_;
+
+    //@}
 
    private:
     /*========================================================================*/
