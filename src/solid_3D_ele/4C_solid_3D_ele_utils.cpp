@@ -142,6 +142,28 @@ DRT::ELEMENTS::PrestressTechnology STR::UTILS::READELEMENT::ReadPrestressTechnol
   FOUR_C_THROW("unrecognized prestress technology type %s", type.c_str());
 }
 
+DRT::ELEMENTS::SolidElementProperties STR::UTILS::READELEMENT::ReadSolidElementProperties(
+    INPUT::LineDefinition* linedef)
+{
+  DRT::ELEMENTS::SolidElementProperties solid_properties{};
+  // element technology
+  if (linedef->HaveNamed("TECH"))
+  {
+    solid_properties.element_technology = STR::UTILS::READELEMENT::ReadElementTechnology(linedef);
+  }
+
+  // prestress technology
+  if (linedef->HaveNamed("PRESTRESS_TECH"))
+  {
+    solid_properties.prestress_technology =
+        STR::UTILS::READELEMENT::ReadPrestressTechnology(linedef);
+  }
+  // kinematic type
+  solid_properties.kintype = STR::UTILS::READELEMENT::ReadElementKinematicType(linedef);
+
+  return solid_properties;
+}
+
 void STR::UTILS::NodalBlockInformationSolid(
     CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {

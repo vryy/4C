@@ -24,24 +24,6 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  template <typename Function>
-  auto KinemTypeSwitch(INPAR::STR::KinemType kinem_type, Function fct)
-  {
-    switch (kinem_type)
-    {
-      case INPAR::STR::KinemType::linear:
-        return fct(std::integral_constant<INPAR::STR::KinemType, INPAR::STR::KinemType::linear>{});
-      case INPAR::STR::KinemType::nonlinearTotLag:
-        return fct(std::integral_constant<INPAR::STR::KinemType,
-            INPAR::STR::KinemType::nonlinearTotLag>{});
-      case INPAR::STR::KinemType::vague:
-        return fct(std::integral_constant<INPAR::STR::KinemType, INPAR::STR::KinemType::vague>{});
-    }
-
-    FOUR_C_THROW("Your kinematic type is unknown: %d", kinem_type);
-  }
-
-
   /*!
    * @brief A template class that is taking different element formulation switches as template
    * parameter. If implemented, the struct defines the type of the solid evaluation.
@@ -138,23 +120,6 @@ namespace
   {
     using type = DRT::ELEMENTS::SolidEleCalc<celltype, DRT::ELEMENTS::MulfFormulation<celltype>>;
   };
-
-  /*!
-   * @brief A struct that determines whether we have implemented a solid calculation formulation
-   *
-   * The member variable value is true if the first template parameter is a valid type
-   *
-   * @tparam typename : Template parameter that may be a valid type or not
-   */
-  template <typename, typename = void>
-  struct HaveFormulation : std::false_type
-  {
-  };
-
-  template <typename T>
-  struct HaveFormulation<T, std::void_t<typename T::type>> : std::true_type
-  {
-  };
 }  // namespace
 
 DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
@@ -165,7 +130,7 @@ DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
   return CORE::FE::CellTypeSwitch<DETAILS::ImplementedSolidCellTypes>(celltype,
       [&](auto celltype_t)
       {
-        return KinemTypeSwitch(element_properties.kintype,
+        return switch_kinematic_type(element_properties.kintype,
             [&](auto kinemtype_t)
             {
               return ElementTechnologySwitch(element_properties.element_technology,
@@ -178,8 +143,8 @@ DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
                           constexpr INPAR::STR::KinemType kinemtype_c = kinemtype_t();
                           constexpr ElementTechnology eletech_c = eletech_t();
                           constexpr PrestressTechnology prestress_tech_c = prestress_tech_t();
-                          if constexpr (HaveFormulation<SolidCalculationFormulation<celltype_c,
-                                            kinemtype_c, eletech_c, prestress_tech_c>>::value)
+                          if constexpr (is_valid_type<SolidCalculationFormulation<celltype_c,
+                                            kinemtype_c, eletech_c, prestress_tech_c>>)
                           {
                             return typename SolidCalculationFormulation<celltype_c, kinemtype_c,
                                 eletech_c, prestress_tech_c>::type();

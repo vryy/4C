@@ -27,6 +27,7 @@ namespace
         .AddNamedInt("MAT")
         .AddNamedString("KINEM")
         .AddNamedString("TYPE")
+        .add_optional_named_string("PRESTRESS_TECH")
         .add_optional_named_double_vector("RAD", 3)
         .add_optional_named_double_vector("AXI", 3)
         .add_optional_named_double_vector("CIR", 3)
@@ -46,7 +47,9 @@ void DRT::ELEMENTS::SolidScatraType::setup_element_definition(
   std::map<std::string, INPUT::LineDefinition>& defsgeneral = definitions["SOLIDSCATRA"];
 
   defsgeneral[CORE::FE::CellTypeToString(CORE::FE::CellType::hex8)] =
-      GetDefaultLineDefinitionBuilder<CORE::FE::CellType::hex8>().Build();
+      GetDefaultLineDefinitionBuilder<CORE::FE::CellType::hex8>()
+          .add_optional_named_string("TECH")
+          .Build();
 
   defsgeneral[CORE::FE::CellTypeToString(CORE::FE::CellType::hex27)] =
       GetDefaultLineDefinitionBuilder<CORE::FE::CellType::hex27>().Build();
@@ -146,7 +149,10 @@ bool DRT::ELEMENTS::SolidScatra::ReadElement(
   // read scalar transport implementation type
   properties_.impltype = ReadScatraImplType(*linedef);
 
-  solid_scatra_calc_variant_ = CreateSolidScatraCalculationInterface(celltype_);
+
+  properties_.solid = STR::UTILS::READELEMENT::ReadSolidElementProperties(linedef);
+
+  solid_scatra_calc_variant_ = CreateSolidScatraCalculationInterface(celltype_, properties_.solid);
 
   // setup solid material
   std::visit([&](auto& solid_scatra) { solid_scatra->Setup(SolidMaterial(), linedef); },
@@ -166,8 +172,7 @@ void DRT::ELEMENTS::SolidScatra::Pack(CORE::COMM::PackBuffer& data) const
   CORE::Elements::Element::Pack(data);
 
   AddtoPack(data, (int)celltype_);
-
-  AddtoPack(data, properties_.impltype);
+  AddToPack(data, properties_);
 
   data.AddtoPack(material_post_setup_);
 
@@ -188,12 +193,12 @@ void DRT::ELEMENTS::SolidScatra::Unpack(const std::vector<char>& data)
 
   celltype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
 
-  properties_.impltype = static_cast<INPAR::SCATRA::ImplType>(ExtractInt(position, data));
+  ExtractFromPack(position, data, properties_);
 
   CORE::COMM::ParObject::ExtractfromPack(position, data, material_post_setup_);
 
   // reset solid and scatra interfaces
-  solid_scatra_calc_variant_ = CreateSolidScatraCalculationInterface(celltype_);
+  solid_scatra_calc_variant_ = CreateSolidScatraCalculationInterface(celltype_, properties_.solid);
 
   DRT::ELEMENTS::Unpack(solid_scatra_calc_variant_, position, data);
 
