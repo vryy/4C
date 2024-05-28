@@ -64,17 +64,17 @@ FSI::MortarMonolithicFluidSplitSaddlePoint::MortarMonolithicFluidSplitSaddlePoin
   {
     //      std::cout << "Slave interface nodes with Dirichlet boundary condition "
     //                "(input file numbering):" << std::endl;
-    //      for (int i=0; i < (int)fluid_field()->Discretization()->NumMyRowNodes(); i++)
+    //      for (int i=0; i < (int)fluid_field()->discretization()->NumMyRowNodes(); i++)
     //      {
     //        // get all nodes and add them
-    //        int gid = fluid_field()->Discretization()->NodeRowMap()->GID(i);
+    //        int gid = fluid_field()->discretization()->NodeRowMap()->GID(i);
 
     //        // do only nodes that I have in my discretization
-    //        if (!fluid_field()->Discretization()->NodeColMap()->MyGID(gid)) continue;
-    //        DRT::Node* node = fluid_field()->Discretization()->gNode(gid);
+    //        if (!fluid_field()->discretization()->NodeColMap()->MyGID(gid)) continue;
+    //        DRT::Node* node = fluid_field()->discretization()->gNode(gid);
     //        if (!node) FOUR_C_THROW("Cannot find node with gid %",gid);
 
-    //        std::vector<int> nodedofs = fluid_field()->Discretization()->Dof(node);
+    //        std::vector<int> nodedofs = fluid_field()->discretization()->Dof(node);
 
     //        for (int j=0; j < (int)nodedofs.size(); j++)
     //        {
@@ -194,7 +194,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::SetupSystem()
   {
     const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
 
-    set_default_parameters(fsidyn, NOXParameterList());
+    set_default_parameters(fsidyn, nox_parameter_list());
 
     // we use non-matching meshes at the interface
     // mortar with: structure = master, fluid = slave
@@ -211,22 +211,22 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::SetupSystem()
      */
     std::vector<int> coupleddof(ndim, 1);
 
-    coupling_solid_fluid_mortar_->Setup(StructureField()->Discretization(),
-        fluid_field()->Discretization(), ale_field()->write_access_discretization(), coupleddof,
+    coupling_solid_fluid_mortar_->Setup(structure_field()->discretization(),
+        fluid_field()->discretization(), ale_field()->write_access_discretization(), coupleddof,
         "FSICoupling", comm_, true);
 
     // fluid to ale at the interface
-    interface_coup_fluid_ale.setup_condition_coupling(*fluid_field()->Discretization(),
-        fluid_field()->Interface()->FSICondMap(), *ale_field()->Discretization(),
+    interface_coup_fluid_ale.setup_condition_coupling(*fluid_field()->discretization(),
+        fluid_field()->Interface()->FSICondMap(), *ale_field()->discretization(),
         ale_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
-    CORE::ADAPTER::Coupling& coup_fluid_ale = FluidAleCoupling();
+    CORE::ADAPTER::Coupling& coup_fluid_ale = fluid_ale_coupling();
 
     // the fluid-ale coupling always matches
-    const Epetra_Map* fluidnodemap = fluid_field()->Discretization()->NodeRowMap();
-    const Epetra_Map* alenodemap = ale_field()->Discretization()->NodeRowMap();
+    const Epetra_Map* fluidnodemap = fluid_field()->discretization()->NodeRowMap();
+    const Epetra_Map* alenodemap = ale_field()->discretization()->NodeRowMap();
 
-    coup_fluid_ale.setup_coupling(*fluid_field()->Discretization(), *ale_field()->Discretization(),
+    coup_fluid_ale.setup_coupling(*fluid_field()->discretization(), *ale_field()->discretization(),
         *fluidnodemap, *alenodemap, ndim);
 
     fluid_field()->SetMeshMap(coup_fluid_ale.MasterDofMap());
@@ -235,10 +235,10 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::SetupSystem()
 
     /*------------------------------------------------------------------------*/
     // Switch fluid to interface split block matrix
-    fluid_field()->UseBlockMatrix(true);
+    fluid_field()->use_block_matrix(true);
 
     // build ale system matrix in splitted system
-    ale_field()->CreateSystemMatrix(ale_field()->Interface());
+    ale_field()->create_system_matrix(ale_field()->Interface());
 
     aleresidual_ = Teuchos::rcp(new Epetra_Vector(*ale_field()->Interface()->OtherMap()));
 
@@ -253,7 +253,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::SetupSystem()
       pcdbg_ = Teuchos::rcp(new UTILS::MonolithicDebugWriter(*this));
     }
 
-    CreateSystemMatrix();
+    create_system_matrix();
 
     notsetup_ = false;
   }
@@ -293,7 +293,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::create_lagrange_multiplier_dof_
 void FSI::MortarMonolithicFluidSplitSaddlePoint::create_combined_dof_row_map()
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
-  vecSpaces.push_back(StructureField()->dof_row_map());
+  vecSpaces.push_back(structure_field()->dof_row_map());
   vecSpaces.push_back(fluid_field()->dof_row_map());
   vecSpaces.push_back(ale_field()->Interface()->OtherMap());
   vecSpaces.push_back(lag_mult_dof_map_);
@@ -306,9 +306,9 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::create_combined_dof_row_map()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MortarMonolithicFluidSplitSaddlePoint::CreateSystemMatrix()
+void FSI::MortarMonolithicFluidSplitSaddlePoint::create_system_matrix()
 {
-  FSI::BlockMonolithic::CreateSystemMatrix(systemmatrix_, false);
+  FSI::BlockMonolithic::create_system_matrix(systemmatrix_, false);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -352,22 +352,22 @@ FSI::MortarMonolithicFluidSplitSaddlePoint::create_status_test(
 
   // create Norm-objects for each norm that has to be tested
   Teuchos::RCP<NOX::FSI::PartialNormF> structureDisp_L2 = Teuchos::rcp(new NOX::FSI::PartialNormF(
-      "DISPL residual", Extractor(), 0, nlParams.get<double>("Tol dis res L2"),
+      "DISPL residual", extractor(), 0, nlParams.get<double>("Tol dis res L2"),
       ::NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled));
   Teuchos::RCP<NOX::FSI::PartialNormF> structureDisp_inf = Teuchos::rcp(new NOX::FSI::PartialNormF(
-      "DISPL residual", Extractor(), 0, nlParams.get<double>("Tol dis res Inf"),
+      "DISPL residual", extractor(), 0, nlParams.get<double>("Tol dis res Inf"),
       ::NOX::Abstract::Vector::MaxNorm, NOX::FSI::PartialNormF::Unscaled));
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> structureDispUpdate_L2 =
-      Teuchos::rcp(new NOX::FSI::PartialNormUpdate("DISPL update", Extractor(), 0,
+      Teuchos::rcp(new NOX::FSI::PartialNormUpdate("DISPL update", extractor(), 0,
           nlParams.get<double>("Tol dis inc L2"), ::NOX::Abstract::Vector::TwoNorm,
           NOX::FSI::PartialNormUpdate::Scaled));
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> structureDispUpdate_inf =
-      Teuchos::rcp(new NOX::FSI::PartialNormUpdate("DISPL update", Extractor(), 0,
+      Teuchos::rcp(new NOX::FSI::PartialNormUpdate("DISPL update", extractor(), 0,
           nlParams.get<double>("Tol dis inc Inf"), ::NOX::Abstract::Vector::MaxNorm,
           NOX::FSI::PartialNormUpdate::Unscaled));
 
   // tests needed to adapt relative tolerance of the linear solver
-  AddStatusTest(structureDisp_L2);
+  add_status_test(structureDisp_L2);
 
   // add norm-tests to structural displacement ::NOX::StatusTest::Combo
   structcombo->addStatusTest(structureDisp_L2);
@@ -409,7 +409,7 @@ FSI::MortarMonolithicFluidSplitSaddlePoint::create_status_test(
           NOX::FSI::PartialNormUpdate::Unscaled));
 
   // tests needed to adapt relative tolerance of the linear solver
-  AddStatusTest(innerFluidVel_L2);
+  add_status_test(innerFluidVel_L2);
 
   // add norm-tests to fluid velocity ::NOX::StatusTest::Combo
   fluidvelcombo->addStatusTest(innerFluidVel_L2);
@@ -451,7 +451,7 @@ FSI::MortarMonolithicFluidSplitSaddlePoint::create_status_test(
           NOX::FSI::PartialNormUpdate::Unscaled));
 
   // tests needed to adapt relative tolerance of the linear solver
-  AddStatusTest(fluidPress_L2);
+  add_status_test(fluidPress_L2);
 
   // add norm-tests to fluid pressure ::NOX::StatusTest::Combo
   fluidpresscombo->addStatusTest(fluidPress_L2);
@@ -472,22 +472,22 @@ FSI::MortarMonolithicFluidSplitSaddlePoint::create_status_test(
 
   // create Norm-objects for each norm that has to be tested
   Teuchos::RCP<NOX::FSI::PartialNormF> lag_mult_L2 = Teuchos::rcp(new NOX::FSI::PartialNormF(
-      "LAGMULT residual", Extractor(), 3, nlParams.get<double>("Tol fsi res L2"),
+      "LAGMULT residual", extractor(), 3, nlParams.get<double>("Tol fsi res L2"),
       ::NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled));
   Teuchos::RCP<NOX::FSI::PartialNormF> lag_mult_inf = Teuchos::rcp(new NOX::FSI::PartialNormF(
-      "LAGMULT residual", Extractor(), 3, nlParams.get<double>("Tol fsi res Inf"),
+      "LAGMULT residual", extractor(), 3, nlParams.get<double>("Tol fsi res Inf"),
       ::NOX::Abstract::Vector::MaxNorm, NOX::FSI::PartialNormF::Unscaled));
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> lag_mult_update_L2 =
-      Teuchos::rcp(new NOX::FSI::PartialNormUpdate("LAGMULT update", Extractor(), 3,
+      Teuchos::rcp(new NOX::FSI::PartialNormUpdate("LAGMULT update", extractor(), 3,
           nlParams.get<double>("Tol fsi inc L2"), ::NOX::Abstract::Vector::TwoNorm,
           NOX::FSI::PartialNormUpdate::Scaled));
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> lag_mult_update_inf =
-      Teuchos::rcp(new NOX::FSI::PartialNormUpdate("LAGMULT update", Extractor(), 3,
+      Teuchos::rcp(new NOX::FSI::PartialNormUpdate("LAGMULT update", extractor(), 3,
           nlParams.get<double>("Tol fsi inc Inf"), ::NOX::Abstract::Vector::MaxNorm,
           NOX::FSI::PartialNormUpdate::Unscaled));
 
   // tests needed to adapt relative tolerance of the linear solver
-  AddStatusTest(lag_mult_L2);
+  add_status_test(lag_mult_L2);
 
   // add norm-tests to structural displacement ::NOX::StatusTest::Combo
   lag_mult_combo->addStatusTest(lag_mult_L2);
@@ -520,7 +520,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_dbc_map_extractor()
 
   // Merge Dirichlet maps of structure, fluid and ALE to global FSI Dirichlet map
   std::vector<Teuchos::RCP<const Epetra_Map>> dbcmaps;
-  dbcmaps.push_back(StructureField()->GetDBCMapExtractor()->CondMap());
+  dbcmaps.push_back(structure_field()->GetDBCMapExtractor()->CondMap());
   dbcmaps.push_back(fluid_field()->GetDBCMapExtractor()->CondMap());
   dbcmaps.push_back(aleintersectionmap);
 
@@ -549,7 +549,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::initial_guess(
   Teuchos::RCP<const Epetra_Vector> lag_mult_initial_guess =
       Teuchos::rcp(new Epetra_Vector(*lag_mult_dof_map_, true));
 
-  combine_field_vectors(*initial_guess, StructureField()->initial_guess(),
+  combine_field_vectors(*initial_guess, structure_field()->initial_guess(),
       fluid_field()->initial_guess(), ale_field()->initial_guess(), lag_mult_initial_guess, true);
 }
 
@@ -566,17 +566,17 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::combine_field_vectors(Epetra_Ve
     Teuchos::RCP<const Epetra_Vector> ale_other_vector =
         ale_field()->Interface()->ExtractOtherVector(ale_vector);
 
-    Extractor().AddVector(*solid_vector, 0, f);
-    Extractor().AddVector(*fluid_vector, 1, f);
-    Extractor().AddVector(*ale_other_vector, 2, f);
-    Extractor().AddVector(*lag_mult_vector, 3, f);
+    extractor().AddVector(*solid_vector, 0, f);
+    extractor().AddVector(*fluid_vector, 1, f);
+    extractor().AddVector(*ale_other_vector, 2, f);
+    extractor().AddVector(*lag_mult_vector, 3, f);
   }
   else
   {
-    Extractor().AddVector(*solid_vector, 0, f);
-    Extractor().AddVector(*fluid_vector, 1, f);
-    Extractor().AddVector(*ale_vector, 2, f);
-    Extractor().AddVector(*lag_mult_vector, 3, f);
+    extractor().AddVector(*solid_vector, 0, f);
+    extractor().AddVector(*fluid_vector, 1, f);
+    extractor().AddVector(*ale_vector, 2, f);
+    extractor().AddVector(*lag_mult_vector, 3, f);
   }
 }
 
@@ -586,7 +586,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_residual(Epetra_Vecto
 {
   // get single field residuals
   Teuchos::RCP<const Epetra_Vector> solid_single_field_rhs_vector =
-      Teuchos::rcp(new Epetra_Vector(*StructureField()->RHS()));
+      Teuchos::rcp(new Epetra_Vector(*structure_field()->RHS()));
   Teuchos::RCP<const Epetra_Vector> fluid_single_field_rhs_vector =
       Teuchos::rcp(new Epetra_Vector(*fluid_field()->RHS()));
   Teuchos::RCP<const Epetra_Vector> ale_single_field_rhs_vector =
@@ -599,7 +599,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_residual(Epetra_Vecto
       ale_single_field_rhs_vector, lag_mult_rhs_vector, true);
 
   // add additional ale residual to avoid incremental ale errors
-  Extractor().AddVector(*aleresidual_, 2, f);
+  extractor().AddVector(*aleresidual_, 2, f);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -608,9 +608,9 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_lambda(Epetra_Vector&
 {
   // get time integration parameters of structure and fluid time integrators
   // to enable consistent time integration among the fields
-  const double solid_time_int_param = StructureField()->TimIntParam();
+  const double solid_time_int_param = structure_field()->TimIntParam();
   const double fluid_time_int_param = fluid_field()->TimIntParam();
-  const double fluid_res_scale = fluid_field()->ResidualScaling();
+  const double fluid_res_scale = fluid_field()->residual_scaling();
 
   // get the mortar structure to fluid coupling matrix M
   const Teuchos::RCP<CORE::LINALG::SparseMatrix> mortar_m =
@@ -638,15 +638,15 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_lambda(Epetra_Vector&
   mortar_d_transf->Multiply(true, *lag_mult_old_, *lag_mult_old_rhs_fluid_interf);
 
   Teuchos::RCP<Epetra_Vector> lag_mult_old_rhs_struc_interf_full =
-      StructureField()->Interface()->InsertFSICondVector(lag_mult_old_rhs_struc_interf);
+      structure_field()->Interface()->InsertFSICondVector(lag_mult_old_rhs_struc_interf);
   Teuchos::RCP<Epetra_Vector> lag_mult_old_rhs_fluid_interf_full =
       fluid_field()->Interface()->InsertFSICondVector(lag_mult_old_rhs_fluid_interf);
 
   lag_mult_old_rhs_fluid_interf_full->Scale(-1.0 / fluid_res_scale);
 
   // add lagrange multiplier
-  Extractor().AddVector(*lag_mult_old_rhs_struc_interf_full, 0, f);
-  Extractor().AddVector(*lag_mult_old_rhs_fluid_interf_full, 1, f);
+  extractor().AddVector(*lag_mult_old_rhs_struc_interf_full, 0, f);
+  extractor().AddVector(*lag_mult_old_rhs_fluid_interf_full, 1, f);
 
   // helper variables
   Teuchos::RCP<Epetra_Vector> lag_mult_step_increment_rhs_struc_interf =
@@ -660,7 +660,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_lambda(Epetra_Vector&
       true, *lag_mult_step_increment, *lag_mult_step_increment_rhs_fluid_interf);
 
   Teuchos::RCP<Epetra_Vector> lag_mult_step_increment_rhs_struc_interf_full =
-      StructureField()->Interface()->InsertFSICondVector(lag_mult_step_increment_rhs_struc_interf);
+      structure_field()->Interface()->InsertFSICondVector(lag_mult_step_increment_rhs_struc_interf);
   Teuchos::RCP<Epetra_Vector> lag_mult_step_increment_rhs_fluid_interf_full =
       fluid_field()->Interface()->InsertFSICondVector(lag_mult_step_increment_rhs_fluid_interf);
 
@@ -669,8 +669,8 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_lambda(Epetra_Vector&
       -1.0 * (1. - fluid_time_int_param) / fluid_res_scale);
 
   // add lagrange multiplier
-  Extractor().AddVector(*lag_mult_step_increment_rhs_struc_interf_full, 0, f);
-  Extractor().AddVector(*lag_mult_step_increment_rhs_fluid_interf_full, 1, f);
+  extractor().AddVector(*lag_mult_step_increment_rhs_struc_interf_full, 0, f);
+  extractor().AddVector(*lag_mult_step_increment_rhs_fluid_interf_full, 1, f);
 }
 
 
@@ -730,7 +730,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_firstiter(Epetra_Vect
 
     rhs = fluid_field()->Interface()->InsertOtherVector(rhs);
 
-    Extractor().AddVector(*rhs, 1, f);
+    extractor().AddVector(*rhs, 1, f);
   }
   // ----------end of term 1
   // ----------end of inner fluid DOFs
@@ -753,7 +753,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_firstiter(Epetra_Vect
     rhs->Scale(Dt());
     rhs = fluid_field()->Interface()->InsertFSICondVector(rhs);
 
-    Extractor().AddVector(*rhs, 1, f);
+    extractor().AddVector(*rhs, 1, f);
   }
   // ----------end of term 1
   // ----------end of interface fluid DOFs
@@ -771,7 +771,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_firstiter(Epetra_Vect
   ale_inner_interf.Apply(*fluid_veln, *rhs);
   rhs->Scale(-1. * Dt());
 
-  Extractor().AddVector(*rhs, 2, f);
+  extractor().AddVector(*rhs, 2, f);
   // ----------end of term 1
   // ----------end of inner ALE DOFs
 
@@ -791,7 +791,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_firstiter(Epetra_Vect
   mortar_d_transf->Apply(*fluid_veln, *rhs);
   rhs->Scale(Dt());
 
-  Extractor().AddVector(*rhs, 3, f);
+  extractor().AddVector(*rhs, 3, f);
   // ----------end of term 1
 
   // ----------addressing term 2
@@ -800,7 +800,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_firstiter(Epetra_Vect
   mortar_m_transf->Apply(*ddgpred_, *rhs);
   rhs->Scale(-1.);
 
-  Extractor().AddVector(*rhs, 3, f);
+  extractor().AddVector(*rhs, 3, f);
   // ----------end of term 2
   // ----------end of lagrange multiplier
 }
@@ -822,9 +822,9 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
 
   // get time integration parameters of structure and fluid time integrators
   // to enable consistent time integration among the fields
-  const double solid_time_int_param = StructureField()->TimIntParam();
+  const double solid_time_int_param = structure_field()->TimIntParam();
   const double fluid_time_int_param = fluid_field()->TimIntParam();
-  const double fluid_res_scale = fluid_field()->ResidualScaling();
+  const double fluid_res_scale = fluid_field()->residual_scaling();
 
   // time scaling factor for fluid
   const double fluid_timescale = fluid_field()->TimeScaling();
@@ -834,7 +834,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
       fluid_field()->ShapeDerivatives();
 
   // get single field block matrices
-  const Teuchos::RCP<CORE::LINALG::SparseMatrix> solidblock = StructureField()->SystemMatrix();
+  const Teuchos::RCP<CORE::LINALG::SparseMatrix> solidblock = structure_field()->SystemMatrix();
   const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> fluidblock =
       fluid_field()->BlockSystemMatrix();
   const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> aleblock =
@@ -920,7 +920,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
   // add optional fluid linearization with respect to mesh motion block
   if (fluid_shape_deriv != Teuchos::null)
   {
-    const CORE::ADAPTER::Coupling& coup_fluid_ale = FluidAleCoupling();
+    const CORE::ADAPTER::Coupling& coup_fluid_ale = fluid_ale_coupling();
 
     // extract submatrices
     CORE::LINALG::SparseMatrix& fluid_mesh_inner_inner = fluid_shape_deriv->Matrix(0, 0);
@@ -1008,14 +1008,14 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::scale_system(
       FOUR_C_THROW("ale scaling failed");
 
     // do scaling of structure and ale rhs vectors
-    Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b, 0);
-    Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b, 2);
+    Teuchos::RCP<Epetra_Vector> sx = extractor().ExtractVector(b, 0);
+    Teuchos::RCP<Epetra_Vector> ax = extractor().ExtractVector(b, 2);
 
     if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
-    Extractor().InsertVector(*sx, 0, b);
-    Extractor().InsertVector(*ax, 2, b);
+    extractor().InsertVector(*sx, 0, b);
+    extractor().InsertVector(*ax, 2, b);
   }
 }
 
@@ -1032,23 +1032,23 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::unscale_solution(
 
   if (scaling_infnorm)
   {
-    Teuchos::RCP<Epetra_Vector> sy = Extractor().ExtractVector(x, 0);
-    Teuchos::RCP<Epetra_Vector> ay = Extractor().ExtractVector(x, 2);
+    Teuchos::RCP<Epetra_Vector> sy = extractor().ExtractVector(x, 0);
+    Teuchos::RCP<Epetra_Vector> ay = extractor().ExtractVector(x, 2);
 
     if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) FOUR_C_THROW("ale scaling failed");
 
-    Extractor().InsertVector(*sy, 0, x);
-    Extractor().InsertVector(*ay, 2, x);
+    extractor().InsertVector(*sy, 0, x);
+    extractor().InsertVector(*ay, 2, x);
 
-    Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b, 0);
-    Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b, 2);
+    Teuchos::RCP<Epetra_Vector> sx = extractor().ExtractVector(b, 0);
+    Teuchos::RCP<Epetra_Vector> ax = extractor().ExtractVector(b, 2);
 
     if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
-    Extractor().InsertVector(*sx, 0, b);
-    Extractor().InsertVector(*ax, 2, b);
+    extractor().InsertVector(*sx, 0, b);
+    extractor().InsertVector(*ax, 2, b);
 
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0, 0).EpetraMatrix();
     srowsum_->Reciprocal(*srowsum_);
@@ -1079,15 +1079,15 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::unscale_solution(
   mat.Apply(x, r);
   r.Update(1., b, 1.);
 
-  Teuchos::RCP<Epetra_Vector> sr = Extractor().ExtractVector(r, 0);
-  Teuchos::RCP<Epetra_Vector> fr = Extractor().ExtractVector(r, 1);
-  Teuchos::RCP<Epetra_Vector> ar = Extractor().ExtractVector(r, 2);
-  Teuchos::RCP<Epetra_Vector> lmr = Extractor().ExtractVector(r, 3);
+  Teuchos::RCP<Epetra_Vector> sr = extractor().ExtractVector(r, 0);
+  Teuchos::RCP<Epetra_Vector> fr = extractor().ExtractVector(r, 1);
+  Teuchos::RCP<Epetra_Vector> ar = extractor().ExtractVector(r, 2);
+  Teuchos::RCP<Epetra_Vector> lmr = extractor().ExtractVector(r, 3);
 
   // increment additional ale residual
   aleresidual_->Update(-1., *ar, 0.);
 
-  std::ios_base::fmtflags flags = Utils()->out().flags();
+  std::ios_base::fmtflags flags = utils()->out().flags();
 
   double n, ns, nf, na, nlm;
   r.Norm2(&n);
@@ -1095,7 +1095,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::unscale_solution(
   fr->Norm2(&nf);
   ar->Norm2(&na);
   lmr->Norm2(&nlm);
-  Utils()->out() << std::scientific << "\nlinear solver quality:\n"
+  utils()->out() << std::scientific << "\nlinear solver quality:\n"
                  << "L_2-norms:\n"
                  << "   |r|=" << n << "   |rs|=" << ns << "   |rf|=" << nf << "   |ra|=" << na
                  << "   |rlm|=" << nlm << "\n";
@@ -1104,11 +1104,11 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::unscale_solution(
   fr->NormInf(&nf);
   ar->NormInf(&na);
   lmr->NormInf(&nlm);
-  Utils()->out() << "L_inf-norms:\n"
+  utils()->out() << "L_inf-norms:\n"
                  << "   |r|=" << n << "   |rs|=" << ns << "   |rf|=" << nf << "   |ra|=" << na
                  << "   |rlm|=" << nlm << "\n";
 
-  Utils()->out().flags(flags);
+  utils()->out().flags(flags);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1120,7 +1120,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::Evaluate(
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   // check whether all fields have the same time step size
-  CheckIfDtsSame();
+  check_if_dts_same();
 #endif
 
   Teuchos::RCP<const Epetra_Vector> sx;
@@ -1138,31 +1138,31 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::Evaluate(
   // only. But the Jacobian is stored internally and will be returned
   // later on without looking at x again!
 
-  if (verbosity_ >= INPAR::FSI::verbosity_medium) Utils()->out() << "\nEvaluate elements\n";
+  if (verbosity_ >= INPAR::FSI::verbosity_medium) utils()->out() << "\nEvaluate elements\n";
 
   {
     Teuchos::Time ts("structure", true);
-    StructureField()->Evaluate(sx);
+    structure_field()->Evaluate(sx);
     if (verbosity_ >= INPAR::FSI::verbosity_medium)
-      Utils()->out() << "structure           : " << ts.totalElapsedTime(true) << " sec\n";
+      utils()->out() << "structure           : " << ts.totalElapsedTime(true) << " sec\n";
   }
 
   {
     Teuchos::Time ta("ale", true);
     ale_field()->Evaluate(ax);
     if (verbosity_ >= INPAR::FSI::verbosity_medium)
-      Utils()->out() << "ale                 : " << ta.totalElapsedTime(true) << " sec\n";
+      utils()->out() << "ale                 : " << ta.totalElapsedTime(true) << " sec\n";
   }
 
   // transfer the current ale mesh positions to the fluid field
-  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(ale_field()->Dispnp());
+  Teuchos::RCP<Epetra_Vector> fluiddisp = ale_to_fluid(ale_field()->Dispnp());
   fluid_field()->apply_mesh_displacement(fluiddisp);
 
   {
     Teuchos::Time tf("fluid", true);
     fluid_field()->Evaluate(fx);
     if (verbosity_ >= INPAR::FSI::verbosity_medium)
-      Utils()->out() << "fluid                : " << tf.totalElapsedTime(true) << " sec\n";
+      utils()->out() << "fluid                : " << tf.totalElapsedTime(true) << " sec\n";
   }
 
   {
@@ -1171,11 +1171,11 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::Evaluate(
       Teuchos::Time tlm("lag_mult", true);
       lag_mult_->Update(1.0, *lag_mult_old_, 1.0, *lagx, 0.0);
       if (verbosity_ >= INPAR::FSI::verbosity_medium)
-        Utils()->out() << "Lagrange multiplier: " << tlm.totalElapsedTime(true) << " sec\n";
+        utils()->out() << "Lagrange multiplier: " << tlm.totalElapsedTime(true) << " sec\n";
     }
   }
 
-  if (verbosity_ >= INPAR::FSI::verbosity_medium) Utils()->out() << "\n";
+  if (verbosity_ >= INPAR::FSI::verbosity_medium) utils()->out() << "\n";
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1207,51 +1207,51 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::extract_field_vectors(
   // ---------------------------------------------------------------------------
   // process structure unknowns
   // ---------------------------------------------------------------------------
-  sx = Extractor().ExtractVector(x, 0);
+  sx = extractor().ExtractVector(x, 0);
   // extract structure solution increment from NOX increment
 
   // ---------------------------------------------------------------------------
   // process fluid unknowns
   // ---------------------------------------------------------------------------
   // extract fluid solution increment from NOX increment
-  fx = Extractor().ExtractVector(x, 1);
+  fx = extractor().ExtractVector(x, 1);
 
   // ---------------------------------------------------------------------------
   // process ale unknowns
   // ---------------------------------------------------------------------------
   // extract inner ALE solution increment from NOX increment
-  Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x, 2);
+  Teuchos::RCP<const Epetra_Vector> aox = extractor().ExtractVector(x, 2);
 
   // convert fluid interface velocities into ALE interface displacements
   Teuchos::RCP<Epetra_Vector> fcx = fluid_field()->Interface()->ExtractFSICondVector(fx);
   fluid_field()->velocity_to_displacement(fcx);
-  Teuchos::RCP<Epetra_Vector> acx = FluidToAleInterface(fcx);
+  Teuchos::RCP<Epetra_Vector> acx = fluid_to_ale_interface(fcx);
 
   // put inner and interface ALE solution increments together
   Teuchos::RCP<Epetra_Vector> a = ale_field()->Interface()->InsertOtherVector(aox);
   ale_field()->Interface()->InsertFSICondVector(acx, a);
 
-  lagx = Extractor().ExtractVector(x, 3);
+  lagx = extractor().ExtractVector(x, 3);
 
   ax = a;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::MortarMonolithicFluidSplitSaddlePoint::Update()
+void FSI::MortarMonolithicFluidSplitSaddlePoint::update()
 {
   // save Lagrange multiplier for the next time step
   lag_mult_old_->Update(1.0, *lag_mult_, 0.0);
 
   // call Update()-routine in base class to handle the single fields
-  FSI::BlockMonolithic::Update();
+  FSI::BlockMonolithic::update();
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::MortarMonolithicFluidSplitSaddlePoint::Output()
+void FSI::MortarMonolithicFluidSplitSaddlePoint::output()
 {
-  StructureField()->Output();
+  structure_field()->Output();
   fluid_field()->Output();
 
   // output Lagrange multiplier
@@ -1259,10 +1259,11 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::Output()
 
   ale_field()->Output();
 
-  if (StructureField()->get_constraint_manager()->HaveMonitor())
+  if (structure_field()->get_constraint_manager()->HaveMonitor())
   {
-    StructureField()->get_constraint_manager()->compute_monitor_values(StructureField()->Dispnp());
-    if (comm_.MyPID() == 0) StructureField()->get_constraint_manager()->PrintMonitorValues();
+    structure_field()->get_constraint_manager()->compute_monitor_values(
+        structure_field()->Dispnp());
+    if (comm_.MyPID() == 0) structure_field()->get_constraint_manager()->PrintMonitorValues();
   }
 }
 
@@ -1288,14 +1289,14 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::OutputLambda()
 /*----------------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplitSaddlePoint::read_restart(int step)
 {
-  StructureField()->read_restart(step);
+  structure_field()->read_restart(step);
   fluid_field()->read_restart(step);
 
   // read Lagrange multiplier into fluid map
   Teuchos::RCP<Epetra_Vector> lambdafull =
       Teuchos::rcp(new Epetra_Vector(*fluid_field()->dof_row_map(), true));
   IO::DiscretizationReader reader = IO::DiscretizationReader(
-      fluid_field()->Discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
+      fluid_field()->discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
   reader.ReadVector(lambdafull, "fsilambda");
   auto lag_mult_old_on_fluid_map = fluid_field()->Interface()->ExtractFSICondVector(lambdafull);
 
@@ -1316,21 +1317,21 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::read_restart(int step)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-double FSI::MortarMonolithicFluidSplitSaddlePoint::SelectDtErrorBased() const
+double FSI::MortarMonolithicFluidSplitSaddlePoint::select_dt_error_based() const
 {
   // get time step size suggestions
-  const double dtstr = GetAdaStrDt();          // based on all structure DOFs
-  const double dtstrfsi = GetAdaStrFSIDt();    // based on structure FSI DOFs
-  const double dtflinner = GetAdaFlInnerDt();  // based on inner fluid DOFs
+  const double dtstr = get_ada_str_dt();           // based on all structure DOFs
+  const double dtstrfsi = get_ada_str_fsi_dt();    // based on structure FSI DOFs
+  const double dtflinner = get_ada_fl_inner_dt();  // based on inner fluid DOFs
 
   double dt = Dt();
 
   // select time step size based on error estimation
-  if (IsAdaStructure() and IsAdaFluid())
+  if (is_ada_structure() and is_ada_fluid())
     dt = std::min(std::min(dtstr, dtstrfsi), dtflinner);
-  else if (IsAdaStructure() and (not IsAdaFluid()))
+  else if (is_ada_structure() and (not is_ada_fluid()))
     dt = std::min(dtstr, dtstrfsi);
-  else if ((not IsAdaStructure()) and IsAdaFluid())
+  else if ((not is_ada_structure()) and is_ada_fluid())
     dt = dtflinner;
   else
   {
@@ -1342,23 +1343,23 @@ double FSI::MortarMonolithicFluidSplitSaddlePoint::SelectDtErrorBased() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-bool FSI::MortarMonolithicFluidSplitSaddlePoint::SetAccepted() const
+bool FSI::MortarMonolithicFluidSplitSaddlePoint::set_accepted() const
 {
   // get error norms
-  const double strnorm = GetAdaStrnorm();          // based on all structure DOFs
-  const double strfsinorm = GetAdaStrFSInorm();    // based on structure FSI DOFs
-  const double flinnernorm = GetAdaFlInnerNorm();  // based on inner fluid DOFs
+  const double strnorm = get_ada_strnorm();            // based on all structure DOFs
+  const double strfsinorm = get_ada_str_fs_inorm();    // based on structure FSI DOFs
+  const double flinnernorm = get_ada_fl_inner_norm();  // based on inner fluid DOFs
 
   bool accepted = std::max(strnorm, strfsinorm) < errtolstr_ and flinnernorm < errtolfl_;
 
   // in case error estimation in the fluid field is turned off:
-  if (not IsAdaFluid()) accepted = std::max(strnorm, strfsinorm) < errtolstr_;
+  if (not is_ada_fluid()) accepted = std::max(strnorm, strfsinorm) < errtolstr_;
 
   // in case error estimation in the structure field is turned off:
-  if (not IsAdaStructure()) accepted = flinnernorm < errtolfl_;
+  if (not is_ada_structure()) accepted = flinnernorm < errtolfl_;
 
   // no error based time adaptivity
-  if ((not IsAdaStructure()) and (not IsAdaFluid())) accepted = true;
+  if ((not is_ada_structure()) and (not is_ada_fluid())) accepted = true;
 
   return accepted;
 }

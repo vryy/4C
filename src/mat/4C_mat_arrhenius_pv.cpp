@@ -39,7 +39,7 @@ MAT::PAR::ArrheniusPV::ArrheniusPV(Teuchos::RCP<CORE::MAT::PAR::Material> matdat
 {
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ArrheniusPV::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ArrheniusPV::create_material()
 {
   return Teuchos::rcp(new MAT::ArrheniusPV(this));
 }

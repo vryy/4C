@@ -199,7 +199,7 @@ namespace LUBRICATION
     bool IsIncremental() { return incremental_; }
 
     //! return discretization
-    Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
+    Teuchos::RCP<DRT::Discretization> discretization() { return discret_; }
 
     //! output solution and restart data to file
     virtual void Output(const int num = 0);
@@ -270,39 +270,39 @@ namespace LUBRICATION
     /*--- calculate and update -----------------------------------------------*/
 
     //! Apply Dirichlet boundary conditions on provided state vector
-    void ApplyDirichletBC(const double time,  //!< evaluation time
-        Teuchos::RCP<Epetra_Vector> prenp,    //!< pressure (may be = null)
-        Teuchos::RCP<Epetra_Vector> predt     //!< first time derivative (may be = null)
+    void apply_dirichlet_bc(const double time,  //!< evaluation time
+        Teuchos::RCP<Epetra_Vector> prenp,      //!< pressure (may be = null)
+        Teuchos::RCP<Epetra_Vector> predt       //!< first time derivative (may be = null)
     );
 
     //! potential residual scaling and potential addition of Neumann terms
-    void ScalingAndNeumann();
+    void scaling_and_neumann();
 
     //! add actual Neumann loads multipl. with time factor to the residual
     virtual void add_neumann_to_residual() = 0;
 
     //! Apply Neumann boundary conditions
-    void ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>& neumann_loads  //!< Neumann loads
+    void apply_neumann_bc(const Teuchos::RCP<Epetra_Vector>& neumann_loads  //!< Neumann loads
     );
 
     //! call elements to calculate system matrix and rhs and assemble
     virtual void assemble_mat_and_rhs();
 
     //! return the right time-scaling-factor for the true residual
-    virtual double ResidualScaling() const = 0;
+    virtual double residual_scaling() const = 0;
 
     //! penalty term to ensure positive pressures (cavitation)
     virtual void add_cavitation_penalty();
 
     //! contains the nonlinear iteration loop
-    virtual void NonlinearSolve();
+    virtual void nonlinear_solve();
 
     //! check convergence (or divergence) of nonlinear iteration
-    bool AbortNonlinIter(const int itnum,  //!< current value of iteration step counter
-        const int itemax,                  //!< maximum number of iteration steps
-        const double ittol,                //!< relative tolerance for increments
-        const double abstolres,            //!< absolute tolerance for the residual norm
-        double& actresidual                //!< return value of the current residual
+    bool abort_nonlin_iter(const int itnum,  //!< current value of iteration step counter
+        const int itemax,                    //!< maximum number of iteration steps
+        const double ittol,                  //!< relative tolerance for increments
+        const double abstolres,              //!< absolute tolerance for the residual norm
+        double& actresidual                  //!< return value of the current residual
     );
 
     //! Calculate problem specific norm
@@ -312,13 +312,13 @@ namespace LUBRICATION
     /*--- query and output ---------------------------------------------------*/
 
     //! is output needed for the current time step?
-    bool DoOutput() { return ((step_ % upres_ == 0) or (step_ % uprestart_ == 0)); };
+    bool do_output() { return ((step_ % upres_ == 0) or (step_ % uprestart_ == 0)); };
 
     //! write state vectors prenp to BINIO
     virtual void output_state();
 
     //! write state vectors prenp to Gmsh postprocessing files
-    void OutputToGmsh(const int step, const double time) const;
+    void output_to_gmsh(const int step, const double time) const;
 
     //! print header of convergence table to screen
     virtual void print_convergence_header();

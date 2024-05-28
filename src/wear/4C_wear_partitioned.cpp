@@ -62,8 +62,8 @@ WEAR::Partitioned::Partitioned(const Epetra_Comm& comm) : Algorithm(comm)
   const int ndim = GLOBAL::Problem::Instance()->NDim();
 
   // create ale-struct coupling
-  const Epetra_Map* structdofmap = StructureField()->Discretization()->NodeRowMap();
-  const Epetra_Map* aledofmap = ale_field().Discretization()->NodeRowMap();
+  const Epetra_Map* structdofmap = structure_field()->discretization()->NodeRowMap();
+  const Epetra_Map* aledofmap = ale_field().discretization()->NodeRowMap();
 
   if (CORE::UTILS::IntegralValue<bool>(GLOBAL::Problem::Instance()->WearParams(), "MATCHINGGRID"))
   {
@@ -71,7 +71,7 @@ WEAR::Partitioned::Partitioned(const Epetra_Comm& comm) : Algorithm(comm)
     // error !!!
     coupalestru_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
     Teuchos::rcp_dynamic_cast<CORE::ADAPTER::Coupling>(coupalestru_)
-        ->setup_coupling(*ale_field().Discretization(), *StructureField()->Discretization(),
+        ->setup_coupling(*ale_field().discretization(), *structure_field()->discretization(),
             *aledofmap, *structdofmap, ndim);
   }
   else
@@ -104,8 +104,8 @@ WEAR::Partitioned::Partitioned(const Epetra_Comm& comm) : Algorithm(comm)
 
   // create interface coupling
   coupstrualei_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  coupstrualei_->setup_condition_coupling(*StructureField()->Discretization(),
-      StructureField()->Interface()->AleWearCondMap(), *ale_field().Discretization(),
+  coupstrualei_->setup_condition_coupling(*structure_field()->discretization(),
+      structure_field()->Interface()->AleWearCondMap(), *ale_field().discretization(),
       ale_field().Interface()->Map(ale_field().Interface()->cond_ale_wear), "AleWear", ndim);
 
   // initialize intern variables for wear
@@ -167,7 +167,7 @@ void WEAR::Partitioned::time_loop_iter_stagg()
 {
   // counter and print header
   increment_time_and_step();
-  PrintHeader();
+  print_header();
 
   // prepare time step for both fields
   prepare_time_step();
@@ -195,7 +195,7 @@ void WEAR::Partitioned::time_loop_iter_stagg()
   while (converged == false)
   {
     // 1. solution
-    StructureField()->Solve();
+    structure_field()->Solve();
 
     // 2. wear as interface displacements in ale dofs
     Teuchos::RCP<Epetra_Vector> idisale_s, idisale_m;
@@ -230,10 +230,10 @@ void WEAR::Partitioned::time_loop_iter_stagg()
   }  // end nonlin loop
 
   // update for structure and ale
-  Update();
+  update();
 
   // output for structure and ale
-  Output();
+  output();
 
   return;
 }
@@ -250,7 +250,7 @@ void WEAR::Partitioned::time_loop_stagg(bool alestep)
 
   // counter and print header
   increment_time_and_step();
-  PrintHeader();
+  print_header();
 
   // prepare time step for both fields
   prepare_time_step();
@@ -261,7 +261,7 @@ void WEAR::Partitioned::time_loop_stagg(bool alestep)
   /********************************************************************/
 
   // solution
-  StructureField()->Solve();
+  structure_field()->Solve();
 
   if (alestep)
   {
@@ -312,10 +312,10 @@ void WEAR::Partitioned::time_loop_stagg(bool alestep)
   /********************************************************************/
 
   // update for structure and ale
-  Update();
+  update();
 
   // output for structure and ale
-  Output();
+  output();
 
   return;
 }
@@ -365,7 +365,7 @@ bool WEAR::Partitioned::convergence_check(int iter)
 void WEAR::Partitioned::prepare_time_step()
 {
   // predict and solve structural system
-  StructureField()->prepare_time_step();
+  structure_field()->prepare_time_step();
 
   // prepare ale output: increase time step
   ale_field().prepare_time_step();
@@ -377,10 +377,10 @@ void WEAR::Partitioned::prepare_time_step()
 /*----------------------------------------------------------------------*
  | update ale and structure                                 farah 11/13 |
  *---------------------------------------------------------------- ------*/
-void WEAR::Partitioned::Update()
+void WEAR::Partitioned::update()
 {
   // update at time step
-  StructureField()->Update();
+  structure_field()->Update();
 
   // update
   ale_field().Update();
@@ -401,7 +401,7 @@ void WEAR::Partitioned::update_spat_conf()
 
   // get structure dispnp vector
   Teuchos::RCP<Epetra_Vector> dispnp =
-      StructureField()->WriteAccessDispnp();  // change to ExtractDispn() for overlap
+      structure_field()->WriteAccessDispnp();  // change to ExtractDispn() for overlap
 
   // get info about wear conf
   INPAR::WEAR::WearShapeEvo wconf = CORE::UTILS::IntegralValue<INPAR::WEAR::WearShapeEvo>(
@@ -419,21 +419,21 @@ void WEAR::Partitioned::update_spat_conf()
   else if (wconf == INPAR::WEAR::wear_se_mat)
   {
     // set state
-    (StructureField()->Discretization())->set_state(0, "displacement", dispnp);
+    (structure_field()->discretization())->set_state(0, "displacement", dispnp);
 
     // set state
-    (StructureField()->Discretization())
-        ->set_state(0, "material_displacement", StructureField()->DispMat());
+    (structure_field()->discretization())
+        ->set_state(0, "material_displacement", structure_field()->DispMat());
 
     // loop over all row nodes to fill graph
-    for (int k = 0; k < StructureField()->Discretization()->NumMyRowNodes(); ++k)
+    for (int k = 0; k < structure_field()->discretization()->NumMyRowNodes(); ++k)
     {
-      int gid = StructureField()->Discretization()->NodeRowMap()->GID(k);
-      DRT::Node* node = StructureField()->Discretization()->gNode(gid);
+      int gid = structure_field()->discretization()->NodeRowMap()->GID(k);
+      DRT::Node* node = structure_field()->discretization()->gNode(gid);
       DRT::Element** ElementPtr = node->Elements();
       int numelement = node->NumElement();
 
-      const int numdof = StructureField()->Discretization()->NumDof(node);
+      const int numdof = structure_field()->discretization()->NumDof(node);
 
       // create Xmat for 3D problems
       std::vector<double> Xspatial(numdof);
@@ -441,9 +441,9 @@ void WEAR::Partitioned::update_spat_conf()
 
       for (int dof = 0; dof < numdof; ++dof)
       {
-        int dofgid = StructureField()->Discretization()->Dof(node, dof);
+        int dofgid = structure_field()->discretization()->Dof(node, dof);
         int doflid = (dispnp->Map()).LID(dofgid);
-        Xmat[dof] = node->X()[dof] + (*StructureField()->DispMat())[doflid];
+        Xmat[dof] = node->X()[dof] + (*structure_field()->DispMat())[doflid];
       }
 
       // create updated  Xspatial --> via nonlinear interpolation between nodes (like gp projection)
@@ -452,7 +452,7 @@ void WEAR::Partitioned::update_spat_conf()
       // store in dispmat
       for (int dof = 0; dof < numdof; ++dof)
       {
-        int dofgid = StructureField()->Discretization()->Dof(node, dof);
+        int dofgid = structure_field()->discretization()->Dof(node, dof);
         int doflid = (dispnp->Map()).LID(dofgid);
         (*dispnp)[doflid] = Xspatial[dof] - node->X()[dof];
       }
@@ -470,14 +470,14 @@ void WEAR::Partitioned::update_spat_conf()
 /*----------------------------------------------------------------------*
  | output ale and structure                                 farah 11/13 |
  *----------------------------------------------------------------------*/
-void WEAR::Partitioned::Output()
+void WEAR::Partitioned::output()
 {
   // calculate stresses, strains, energies
   constexpr bool force_prepare = false;
-  StructureField()->prepare_output(force_prepare);
+  structure_field()->prepare_output(force_prepare);
 
   // write strcture output to screen and files
-  StructureField()->Output();
+  structure_field()->Output();
 
   // output ale
   ale_field().Output();
@@ -496,7 +496,7 @@ void WEAR::Partitioned::disp_coupling(Teuchos::RCP<Epetra_Vector>& disinterface)
   // Teuchos::RCP<Epetra_Vector> aledofs = Teuchos::rcp(new
   // Epetra_Vector(*ale_field().Interface()->Map(ale_field().Interface()->cond_ale_wear)),true);
   Teuchos::RCP<Epetra_Vector> strudofs =
-      Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->AleWearCondMap()), true);
+      Teuchos::rcp(new Epetra_Vector(*structure_field()->Interface()->AleWearCondMap()), true);
 
   // change the parallel distribution from mortar interface to structure
   CORE::LINALG::Export(*disinterface, *strudofs);
@@ -656,13 +656,13 @@ void WEAR::Partitioned::wear_spatial_master_map(
     cstrategy.MMatrix()->Multiply(true, *disinterface_s, *wear_master);
 
     // 1. set state to material displacement state
-    winterface->set_state(MORTAR::state_new_displacement, *StructureField()->WriteAccessDispnp());
+    winterface->set_state(MORTAR::state_new_displacement, *structure_field()->WriteAccessDispnp());
 
     // 2. initialize
     winterface->Initialize();
 
     // 3. calc N and areas
-    winterface->SetElementAreas();
+    winterface->set_element_areas();
     winterface->evaluate_nodal_normals();
 
     // 6. init data container for d2 mat
@@ -1010,13 +1010,13 @@ void WEAR::Partitioned::wear_pull_back_slave(Teuchos::RCP<Epetra_Vector>& disint
 
     // call material interfaces and evaluate!
     // 1. set state to material displacement state
-    interfacesMat_[m]->set_state(MORTAR::state_new_displacement, *StructureField()->DispMat());
+    interfacesMat_[m]->set_state(MORTAR::state_new_displacement, *structure_field()->DispMat());
 
     // 2. initialize
     interfacesMat_[m]->Initialize();
 
     // 3. calc N and areas
-    interfacesMat_[m]->SetElementAreas();
+    interfacesMat_[m]->set_element_areas();
     interfacesMat_[m]->evaluate_nodal_normals();
 
     // 4. calc -w*N
@@ -1191,13 +1191,13 @@ void WEAR::Partitioned::wear_pull_back_master(Teuchos::RCP<Epetra_Vector>& disin
 
     // call material interfaces and evaluate!
     // 1. set state to material displacement state
-    winterfaceMat->set_state(MORTAR::state_new_displacement, *StructureField()->DispMat());
+    winterfaceMat->set_state(MORTAR::state_new_displacement, *structure_field()->DispMat());
 
     // 2. initialize
     winterfaceMat->Initialize();
 
     // 3. calc N and areas
-    winterfaceMat->SetElementAreas();
+    winterfaceMat->set_element_areas();
     winterfaceMat->evaluate_nodal_normals();
 
     // 4. calc -w*N
@@ -1410,17 +1410,17 @@ void WEAR::Partitioned::update_mat_conf()
 
   // vector of current spatial displacements
   Teuchos::RCP<const Epetra_Vector> dispnp =
-      StructureField()->Dispnp();  // change to ExtractDispn() for overlap
+      structure_field()->Dispnp();  // change to ExtractDispn() for overlap
 
   // material displacements
   Teuchos::RCP<Epetra_Vector> dismat = Teuchos::rcp(new Epetra_Vector(dispnp->Map()), true);
 
   // set state
-  (StructureField()->Discretization())->set_state(0, "displacement", dispnp);
+  (structure_field()->discretization())->set_state(0, "displacement", dispnp);
 
   // set state
-  (StructureField()->Discretization())
-      ->set_state(0, "material_displacement", StructureField()->DispMat());
+  (structure_field()->discretization())
+      ->set_state(0, "material_displacement", structure_field()->DispMat());
 
   // get info about wear conf
   INPAR::WEAR::WearShapeEvo wconf = CORE::UTILS::IntegralValue<INPAR::WEAR::WearShapeEvo>(
@@ -1457,14 +1457,14 @@ void WEAR::Partitioned::update_mat_conf()
     if (err != 0) FOUR_C_THROW("update wrong!");
 
     // loop over all row nodes to fill graph
-    for (int k = 0; k < StructureField()->Discretization()->NumMyRowNodes(); ++k)
+    for (int k = 0; k < structure_field()->discretization()->NumMyRowNodes(); ++k)
     {
-      int gid = StructureField()->Discretization()->NodeRowMap()->GID(k);
-      DRT::Node* node = StructureField()->Discretization()->gNode(gid);
+      int gid = structure_field()->discretization()->NodeRowMap()->GID(k);
+      DRT::Node* node = structure_field()->discretization()->gNode(gid);
       DRT::Element** ElementPtr = node->Elements();
       int numelement = node->NumElement();
 
-      const int numdof = StructureField()->Discretization()->NumDof(node);
+      const int numdof = structure_field()->discretization()->NumDof(node);
 
       // create Xmat for 3D problems
       std::vector<double> XMat(numdof);
@@ -1472,7 +1472,7 @@ void WEAR::Partitioned::update_mat_conf()
 
       for (int dof = 0; dof < numdof; ++dof)
       {
-        int dofgid = StructureField()->Discretization()->Dof(node, dof);
+        int dofgid = structure_field()->discretization()->Dof(node, dof);
         int doflid = (dispnp->Map()).LID(dofgid);
         XMesh[dof] = node->X()[dof] + (*dispnp)[doflid] + (*disalenp)[doflid];
       }
@@ -1483,7 +1483,7 @@ void WEAR::Partitioned::update_mat_conf()
       // store in dispmat
       for (int dof = 0; dof < numdof; ++dof)
       {
-        int dofgid = StructureField()->Discretization()->Dof(node, dof);
+        int dofgid = structure_field()->discretization()->Dof(node, dof);
         int doflid = (dispnp->Map()).LID(dofgid);
         (*dismat)[doflid] = XMat[dof] - node->X()[dof];
       }
@@ -1492,7 +1492,7 @@ void WEAR::Partitioned::update_mat_conf()
 
   // apply material displacements to structural field
   // if advection map is not succesful --> use old xmat
-  StructureField()->ApplyDisMat(dismat);
+  structure_field()->ApplyDisMat(dismat);
 
   // bye
   return;
@@ -1538,9 +1538,9 @@ void WEAR::Partitioned::advection_map(double* Xtarget,  // out
 
   // get state
   Teuchos::RCP<const Epetra_Vector> dispsource =
-      (StructureField()->Discretization())->GetState(sourceconf);
+      (structure_field()->discretization())->GetState(sourceconf);
   Teuchos::RCP<const Epetra_Vector> disptarget =
-      (StructureField()->Discretization())->GetState(targetconf);
+      (structure_field()->discretization())->GetState(targetconf);
 
   // loop over adjacent elements
   for (int jele = 0; jele < numelements; jele++)
@@ -1550,7 +1550,7 @@ void WEAR::Partitioned::advection_map(double* Xtarget,  // out
 
     // get element location vector, dirichlet flags and ownerships
     DRT::Element::LocationArray la(1);
-    actele->LocationVector(*(StructureField()->Discretization()), la, false);
+    actele->LocationVector(*(structure_field()->discretization()), la, false);
 
     if (ndim == 2)
     {
@@ -1646,7 +1646,7 @@ void WEAR::Partitioned::advection_map(double* Xtarget,  // out
 
   // get element location vector, dirichlet flags and ownerships
   DRT::Element::LocationArray la(1);
-  actele->LocationVector(*(StructureField()->Discretization()), la, false);
+  actele->LocationVector(*(structure_field()->discretization()), la, false);
 
   if (ndim == 2)
   {
@@ -1713,7 +1713,7 @@ void WEAR::Partitioned::ale_step(Teuchos::RCP<Epetra_Vector> idisale_global)
   if (wconf == INPAR::WEAR::wear_se_sp)
   {
     //    Teuchos::RCP<Epetra_Vector> dispnpstru = structure_to_ale(
-    //        StructureField()->Dispnp());
+    //        structure_field()->Dispnp());
     //
     //    FS3I::Biofilm::UTILS::updateMaterialConfigWithALE_Disp(
     //        ale_field().write_access_discretization(),
@@ -1730,7 +1730,7 @@ void WEAR::Partitioned::ale_step(Teuchos::RCP<Epetra_Vector> idisale_global)
     //    ale_field().WriteAccessDispnp()->Update(1.0, *(dispnpstru), 1.0);
 
 
-    Teuchos::RCP<Epetra_Vector> dispnpstru = structure_to_ale(StructureField()->Dispnp());
+    Teuchos::RCP<Epetra_Vector> dispnpstru = structure_to_ale(structure_field()->Dispnp());
 
     ale_field().WriteAccessDispnp()->Update(1.0, *(dispnpstru), 0.0);
 
@@ -1801,9 +1801,9 @@ Teuchos::RCP<Epetra_Vector> WEAR::Partitioned::structure_to_ale(
  *----------------------------------------------------------------------*/
 void WEAR::Partitioned::read_restart(int step)
 {
-  StructureField()->read_restart(step);
+  structure_field()->read_restart(step);
   ale_field().read_restart(step);
-  SetTimeStep(StructureField()->TimeOld(), step);
+  SetTimeStep(structure_field()->TimeOld(), step);
 
   return;
 }

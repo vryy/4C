@@ -42,7 +42,7 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::extract_element_and_node_values
  w.r.t. scatra dofs   fang 11/15 |
  *------------------------------------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcMatSoret(
+void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::calc_mat_soret(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
     const double& timefacfac,      //!< domain integration factor times time integration factor
     const double& conc,            //!< concentration
@@ -82,7 +82,7 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcMatSoret(
  w.r.t. thermo dofs   fang 11/15 |
  *------------------------------------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcMatSoretOD(
+void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::calc_mat_soret_od(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
     const double& timefacfac,     //!< time integration factor times domain integration factor
     const double& concentration,  //!< concentration
@@ -124,7 +124,7 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcMatSoretOD(
  residuals   fang 11/15 |
  *--------------------------------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcRHSSoret(
+void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::calc_rhs_soret(
     CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
     const double& rhsfac,     //!< domain integration factor times time integration factor for
                               //!< right-hand side vector
@@ -190,7 +190,7 @@ DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::ScaTraEleSTIThermo(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcMatDiffThermoOD(
+void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::calc_mat_diff_thermo_od(
     CORE::LINALG::SerialDenseMatrix& emat, const int& numdofpernode, const double& timefacfac,
     const double& invF, const CORE::LINALG::Matrix<nsd_, 1>& gradconc,
     const CORE::LINALG::Matrix<nsd_, 1>& gradpot, const double& tempderivisodiffcoef,

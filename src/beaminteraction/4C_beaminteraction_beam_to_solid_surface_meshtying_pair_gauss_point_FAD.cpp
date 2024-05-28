@@ -43,7 +43,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<scalar_type, 
   // Call Evaluate on the geometry Pair. Only do this once for mesh tying.
   if (!this->meshtying_is_evaluated_)
   {
-    this->CastGeometryPair()->Evaluate(this->ele1posref_,
+    this->cast_geometry_pair()->Evaluate(this->ele1posref_,
         this->face_element_->get_face_reference_element_data(), this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
@@ -52,10 +52,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<scalar_type, 
   if (this->line_to_3D_segments_.size() == 0) return;
 
   // Get the penalty potential.
-  scalar_type potential = this->GetPenaltyPotential();
+  scalar_type potential = this->get_penalty_potential();
 
   // Get the pair GIDs.
-  std::vector<int> pair_gid = this->GetPairGID(*discret);
+  std::vector<int> pair_gid = this->get_pair_gid(*discret);
 
   // If given, assemble force terms into the global vector.
   if (force_vector != Teuchos::null)

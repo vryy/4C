@@ -64,7 +64,7 @@ int DRT::ELEMENTS::SoHex27::Evaluate(Teuchos::ParameterList& params,
   else if (action == "calc_struct_internalforce")
     act = SoHex27::calc_struct_internalforce;
   else if (IsParamsInterface() &&
-           ParamsInterface().GetActionType() == ELEMENTS::struct_calc_internalinertiaforce)
+           params_interface().GetActionType() == ELEMENTS::struct_calc_internalinertiaforce)
     act = SoHex27::calc_struct_internalinertiaforce;
   else if (action == "calc_struct_linstiffmass")
     act = SoHex27::calc_struct_linstiffmass;
@@ -357,7 +357,7 @@ int DRT::ELEMENTS::SoHex27::Evaluate(Teuchos::ParameterList& params,
 
       // build incremental def gradient for every gauss point
       CORE::LINALG::SerialDenseMatrix gpdefgrd(NUMGPT_SOH27, 9);
-      DefGradient(mydisp, gpdefgrd, *prestress_);
+      def_gradient(mydisp, gpdefgrd, *prestress_);
 
       // update deformation gradient and put back to storage
       CORE::LINALG::Matrix<3, 3> deltaF;
@@ -483,7 +483,7 @@ int DRT::ELEMENTS::SoHex27::Evaluate(Teuchos::ParameterList& params,
 
       if (IsParamsInterface())  // new structural time integration
       {
-        StrParamsInterface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
+        str_params_interface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
       }
       else  // old structural time integration
       {
@@ -537,7 +537,7 @@ int DRT::ELEMENTS::SoHex27::evaluate_neumann(Teuchos::ParameterList& params,
       [&]()
       {
         if (IsParamsInterface())
-          return StrParamsInterface().GetTotalTime();
+          return str_params_interface().GetTotalTime();
         else
           return params.get("total time", -1.0);
       });
@@ -636,7 +636,7 @@ int DRT::ELEMENTS::SoHex27::evaluate_neumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)                       |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex27::InitJacobianMapping()
+void DRT::ELEMENTS::SoHex27::init_jacobian_mapping()
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs =
       soh27_derivs();
@@ -1403,8 +1403,8 @@ void DRT::ELEMENTS::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locati
         double timintfac_vel = 0.0;
         if (IsParamsInterface())
         {
-          timintfac_dis = StrParamsInterface().GetTimIntFactorDisp();
-          timintfac_vel = StrParamsInterface().GetTimIntFactorVel();
+          timintfac_dis = str_params_interface().GetTimIntFactorDisp();
+          timintfac_vel = str_params_interface().GetTimIntFactorVel();
         }
         else
         {
@@ -1617,7 +1617,7 @@ int DRT::ELEMENTS::SoHex27Type::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoHex27*>(dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_hex27* failed");
-    actele->InitJacobianMapping();
+    actele->init_jacobian_mapping();
   }
   return 0;
 }
@@ -1625,7 +1625,7 @@ int DRT::ELEMENTS::SoHex27Type::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  compute def gradient at every gaussian point (protected)            |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex27::DefGradient(const std::vector<double>& disp,
+void DRT::ELEMENTS::SoHex27::def_gradient(const std::vector<double>& disp,
     CORE::LINALG::SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs =

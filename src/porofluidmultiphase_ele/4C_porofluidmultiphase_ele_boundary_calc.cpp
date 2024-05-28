@@ -66,7 +66,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::PoroFluidMultiPhaseE
  | setup element evaluation                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::SetupCalc(
+int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::setup_calc(
     DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization)
 {
   // get node coordinates (we have a nsd_+1 dimensional domain!)
@@ -88,7 +88,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Evaluate(DRT::El
   //--------------------------------------------------------------------------------
   // preparations for element
   //--------------------------------------------------------------------------------
-  if (SetupCalc(ele, params, discretization) == -1) return 0;
+  if (setup_calc(ele, params, discretization) == -1) return 0;
 
   //--------------------------------------------------------------------------------
   // extract element based or nodal values
@@ -99,7 +99,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Evaluate(DRT::El
   const POROFLUIDMULTIPHASE::BoundaryAction action =
       CORE::UTILS::GetAsEnum<POROFLUIDMULTIPHASE::BoundaryAction>(params, "action");
   // evaluate action
-  EvaluateAction(ele, params, discretization, action, la, elemat, elevec);
+  evaluate_action(ele, params, discretization, action, la, elemat, elevec);
 
   return 0;
 }
@@ -144,7 +144,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::extract_element
  * Action type: Evaluate                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateAction(DRT::Element* ele,
+int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_action(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     POROFLUIDMULTIPHASE::BoundaryAction action, DRT::Element::LocationArray& la,
     std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,

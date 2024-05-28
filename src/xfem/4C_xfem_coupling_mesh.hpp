@@ -98,7 +98,7 @@ namespace XFEM
 
     virtual void Output(const int step, const double time, const bool write_restart_data);
 
-    void PrepareCutterOutput() override;
+    void prepare_cutter_output() override;
 
     virtual void LiftDrag(const int step, const double time) const {};
 
@@ -166,9 +166,9 @@ namespace XFEM
    protected:
     void set_cutter_discretization() override;
 
-    void SetConditionsToCopy() override;
+    void set_conditions_to_copy() override;
 
-    void InitStateVectors() override;
+    void init_state_vectors() override;
 
     //------------------------------- vectors -----------------------------
     // TODO: these vectors are not required for Neumann and WDBC conditions, derive class
@@ -528,7 +528,7 @@ namespace XFEM
     void get_condition_by_robin_id(const std::vector<CORE::Conditions::Condition*>& mycond,
         const int coupling_id, std::vector<CORE::Conditions::Condition*>& mynewcond);
 
-    void CreateRobinIdMap(const std::vector<CORE::Conditions::Condition*>& conditions_NS,
+    void create_robin_id_map(const std::vector<CORE::Conditions::Condition*>& conditions_NS,
         const std::vector<CORE::Conditions::Condition*>& conditions_robin,
         const std::string& robin_id_name,
         std::map<int, CORE::Conditions::Condition*>& conditionsmap_robin);
@@ -668,7 +668,7 @@ namespace XFEM
     //! face element via solving a local eigenvalue problem
     void estimate_nitsche_trace_max_eigenvalue(DRT::Element* ele) override;
 
-    void InitStateVectors() override;
+    void init_state_vectors() override;
 
     bool HasMovingInterface() override { return true; }
 

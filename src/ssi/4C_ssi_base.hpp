@@ -175,7 +175,7 @@ namespace SSI
     void read_restart(int restart) override;
 
     //! access to structural field
-    const Teuchos::RCP<ADAPTER::SSIStructureWrapper>& StructureField() const { return structure_; }
+    const Teuchos::RCP<ADAPTER::SSIStructureWrapper>& structure_field() const { return structure_; }
 
     /// pointer to the underlying structure problem base algorithm
     Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> structure_base_algorithm() const
@@ -202,7 +202,7 @@ namespace SSI
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraManifold() const;
 
     /// set structure solution on other fields
-    void SetStructSolution(Teuchos::RCP<const Epetra_Vector> disp,
+    void set_struct_solution(Teuchos::RCP<const Epetra_Vector> disp,
         Teuchos::RCP<const Epetra_Vector> vel, bool set_mechanical_stress);
 
     /// set scatra solution on other fields
@@ -230,7 +230,7 @@ namespace SSI
     bool is_elch_sca_tra_tim_int_type() const;
 
     //! solve additional scatra field on manifolds
-    bool IsScaTraManifold() const { return is_scatra_manifold_; }
+    bool is_sca_tra_manifold() const { return is_scatra_manifold_; }
 
     //! activate mesh tying between overlapping manifold fields
     bool is_sca_tra_manifold_meshtying() const { return is_manifold_meshtying_; }
@@ -252,7 +252,7 @@ namespace SSI
     bool use_old_structure_time_int() const { return use_old_structure_; }
 
     //! check if \ref Setup() was called
-    void CheckIsSetup() const
+    void check_is_setup() const
     {
       if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
     }
@@ -292,10 +292,10 @@ namespace SSI
     virtual void setup_model_evaluator();
 
     //! macro-micro scatra problem?
-    bool MacroScale() const { return macro_scale_; }
+    bool macro_scale() const { return macro_scale_; }
 
     //! different time step size between scatra field and structure field
-    bool DiffTimeStepSize() const { return diff_time_step_size_; }
+    bool diff_time_step_size() const { return diff_time_step_size_; }
 
    private:
     /*!

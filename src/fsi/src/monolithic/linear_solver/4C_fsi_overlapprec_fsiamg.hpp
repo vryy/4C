@@ -61,19 +61,19 @@ namespace FSI
 
    protected:
     /// symmetric Gauss-Seidel block preconditioner
-    void SGS(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
+    void sgs(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     /// do list for MLAPI smoother
-    void SelectMLAPISmoother(std::string& type, const int level, Teuchos::ParameterList& subp,
+    void select_mlapi_smoother(std::string& type, const int level, Teuchos::ParameterList& subp,
         Teuchos::ParameterList& p, Teuchos::ParameterList& pushlist);
 
     /// wrap ILU smoother from ML
-    void WrapILUSmoother(
+    void wrap_ilu_smoother(
         ML* ml, MLAPI::Operator& A, MLAPI::LoadBalanceInverseOperator& S, const int level);
 
 
     /// generic Vcycle that works on all fields
-    virtual void Vcycle(const int level, const int nlevel, MLAPI::MultiVector& z,
+    virtual void vcycle(const int level, const int nlevel, MLAPI::MultiVector& z,
         const MLAPI::MultiVector& b, const std::vector<MLAPI::Operator>& A,
         const std::vector<Teuchos::RCP<MLAPI::InverseOperator>>& S,
         const std::vector<MLAPI::Operator>& P, const std::vector<MLAPI::Operator>& R,
@@ -81,7 +81,7 @@ namespace FSI
 
 
     /// FSIAMG multigrid with explicit coarse off-diagonals
-    virtual void ExplicitBlockVcycle(const int level, const int nlevel, MLAPI::MultiVector& mlsy,
+    virtual void explicit_block_vcycle(const int level, const int nlevel, MLAPI::MultiVector& mlsy,
         MLAPI::MultiVector& mlfy, MLAPI::MultiVector& mlay, const MLAPI::MultiVector& mlsx,
         const MLAPI::MultiVector& mlfx, const MLAPI::MultiVector& mlax) const;
 
@@ -101,15 +101,15 @@ namespace FSI
 
 
     /// triple matrix product with fine level operator only
-    void RAPfine(MLAPI::Operator& RAP, const MLAPI::Operator& R, Teuchos::RCP<Epetra_CrsMatrix> A,
+    void ra_pfine(MLAPI::Operator& RAP, const MLAPI::Operator& R, Teuchos::RCP<Epetra_CrsMatrix> A,
         const MLAPI::Operator& P);
 
     /// triple matrix product with coarse level operators
-    void RAPcoarse(MLAPI::Operator& RAP, const MLAPI::Operator& R, const MLAPI::Operator& A,
+    void ra_pcoarse(MLAPI::Operator& RAP, const MLAPI::Operator& R, const MLAPI::Operator& A,
         const MLAPI::Operator& P);
 
     /// build off-diagonal coupling blocks for FSIAMG
-    void RAPoffdiagonals();
+    void ra_poffdiagonals();
 
     /// build Schur Complement operator from fluid block
     void schur_complement_operator(MLAPI::Operator& Schur, MLAPI::Operator& Ass,
@@ -161,7 +161,7 @@ namespace FSI
     };
 
     //! Compute rate of residual reduction
-    double Rate(const int myrank, double t, double r, double initr, double l) const
+    double rate(const int myrank, double t, double r, double initr, double l) const
     {
       // r /= sqrt(l); initr /= sqrt(l);
       double linrate = t * (r / initr);
@@ -181,13 +181,13 @@ namespace FSI
 
 
     //! a single field single level Richardson iteration with smoother
-    double RichardsonS(const std::string field, const int myrank, const int level, const int sweeps,
-        const double damp, const MLAPI::Operator& A, const MLAPI::InverseOperator& S,
-        MLAPI::MultiVector& x, const MLAPI::MultiVector& f, bool initiguesszero = false,
-        bool analysis = false, bool silent = true) const;
+    double richardson_s(const std::string field, const int myrank, const int level,
+        const int sweeps, const double damp, const MLAPI::Operator& A,
+        const MLAPI::InverseOperator& S, MLAPI::MultiVector& x, const MLAPI::MultiVector& f,
+        bool initiguesszero = false, bool analysis = false, bool silent = true) const;
 
     //! a non-Trilinos preconditioner Richardson
-    double RichardsonMixed(const std::string field, const int myrank, const int level,
+    double richardson_mixed(const std::string field, const int myrank, const int level,
         const int sweeps, const double damp, const MLAPI::Operator& A,
         const CORE::LINALG::SparseMatrix& matrix,
         const Teuchos::RCP<CORE::LINALG::Preconditioner>& solver, MLAPI::MultiVector& x,
@@ -196,7 +196,7 @@ namespace FSI
 
 
     //! a single field V cycle analysis Richardson iteration
-    double RichardsonV(const std::string field, const int myrank, int sweeps, const double damp,
+    double richardson_v(const std::string field, const int myrank, int sweeps, const double damp,
         std::vector<int>& levelsweeps, std::vector<double>& leveldamps,
         std::vector<MLAPI::Operator>& A, std::vector<Teuchos::RCP<MLAPI::InverseOperator>>& S,
         std::vector<MLAPI::Operator>& P, std::vector<MLAPI::Operator>& R, const int level,
@@ -204,7 +204,7 @@ namespace FSI
         bool initiguesszero = false, bool analysis = false, bool silent = false) const;
 
     //! a single field V cycle
-    void Vcycle(const std::string field, const int myrank, std::vector<int>& sweeps,
+    void vcycle(const std::string field, const int myrank, std::vector<int>& sweeps,
         std::vector<double>& damps, const int level, const int nlevel, MLAPI::MultiVector& z,
         const MLAPI::MultiVector& b, const std::vector<MLAPI::Operator>& A,
         const std::vector<Teuchos::RCP<MLAPI::InverseOperator>>& S,
@@ -215,7 +215,7 @@ namespace FSI
     /*! BGS(AMG) Richardson iteration with Block Gauss Seidel (BGS)
      *  and V cycle (V) for individual fields
      */
-    double RichardsonBGS_V(const int myrank, const int sweeps, const double damp,
+    double richardson_bgs_v(const int myrank, const int sweeps, const double damp,
         std::vector<int>& blocksweeps, std::vector<double>& blockdamps, AnalyzeBest& sbest,
         AnalyzeBest& fbest, AnalyzeBest& abest, MLAPI::MultiVector& sy, MLAPI::MultiVector& fy,
         MLAPI::MultiVector& ay, const MLAPI::MultiVector& sf, const MLAPI::MultiVector& ff,
@@ -231,7 +231,7 @@ namespace FSI
     /*! BGS(AMG) Richardson iteration with Block Gauss Seidel (BGS)
      *  and V cycle (V) or other for individual fields
      */
-    double RichardsonBGS_Mixed(const int myrank, const int sweeps, const double damp,
+    double richardson_bgs_mixed(const int myrank, const int sweeps, const double damp,
         std::vector<int>& blocksweeps, std::vector<double>& blockdamps, const bool sisamg,
         const bool fisamg, const bool aisamg, AnalyzeBest& sbest, AnalyzeBest& fbest,
         AnalyzeBest& abest, MLAPI::MultiVector& sy, MLAPI::MultiVector& fy, MLAPI::MultiVector& ay,
@@ -249,13 +249,13 @@ namespace FSI
     //!{
 
     //! Does solid use AMG?
-    inline const bool& SisAMG() const { return sisml_; }
+    inline const bool& sis_amg() const { return sisml_; }
 
     //! Does fluid use AMG?
-    inline const bool& FisAMG() const { return fisml_; }
+    inline const bool& fis_amg() const { return fisml_; }
 
     //! Does ALE use AMG?
-    inline const bool& AisAMG() const { return aisml_; }
+    inline const bool& ais_amg() const { return aisml_; }
     //@}
 
     bool sisml_;  ///< solid uses AMG (true/false)

@@ -46,7 +46,7 @@ MAT::PAR::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       dano 02/12 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ThermoStVenantKirchhoff::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ThermoStVenantKirchhoff::create_material()
 {
   return Teuchos::rcp(new MAT::ThermoStVenantKirchhoff(this));
 }

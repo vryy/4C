@@ -37,7 +37,7 @@ POROELAST::MonolithicStructureSplit::MonolithicStructureSplit(const Epetra_Comm&
   cfigtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
 
   // Recovering of Lagrange multiplier happens on structure field
-  lambda_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap()));
+  lambda_ = Teuchos::rcp(new Epetra_Vector(*structure_field()->Interface()->FSICondMap()));
 }
 
 void POROELAST::MonolithicStructureSplit::SetupSystem()
@@ -46,7 +46,7 @@ void POROELAST::MonolithicStructureSplit::SetupSystem()
     // create combined map
     std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
 
-    vecSpaces.push_back(StructureField()->Interface()->OtherMap());
+    vecSpaces.push_back(structure_field()->Interface()->OtherMap());
     vecSpaces.push_back(fluid_field()->dof_row_map());
 
     if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No structure equation. Panic.");
@@ -59,11 +59,11 @@ void POROELAST::MonolithicStructureSplit::SetupSystem()
   }
 
   // Use splitted structure matrix
-  StructureField()->UseBlockMatrix();
+  structure_field()->use_block_matrix();
 
   setup_coupling_and_matrices();
 
-  BuildCombinedDBCMap();
+  build_combined_dbc_map();
 
   SetupEquilibration();
 }
@@ -76,12 +76,12 @@ void POROELAST::MonolithicStructureSplit::setup_rhs(bool firstcall)
   rhs_ = Teuchos::rcp(new Epetra_Vector(*dof_row_map(), true));
 
   setup_vector(
-      *rhs_, StructureField()->RHS(), fluid_field()->RHS(), fluid_field()->ResidualScaling());
+      *rhs_, structure_field()->RHS(), fluid_field()->RHS(), fluid_field()->residual_scaling());
 
   // store interface force onto the structure to know it in the next time step as previous force
   // in order to recover the Lagrange multiplier
   // fgpre_ = fgcur_;
-  fgcur_ = StructureField()->Interface()->ExtractFSICondVector(StructureField()->RHS());
+  fgcur_ = structure_field()->Interface()->ExtractFSICondVector(structure_field()->RHS());
 }
 
 void POROELAST::MonolithicStructureSplit::setup_system_matrix(
@@ -89,7 +89,7 @@ void POROELAST::MonolithicStructureSplit::setup_system_matrix(
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicStructureSplit::setup_system_matrix");
 
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> s = StructureField()->BlockSystemMatrix();
+  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> s = structure_field()->BlockSystemMatrix();
   if (s == Teuchos::null) FOUR_C_THROW("expect structure block matrix");
   Teuchos::RCP<CORE::LINALG::SparseMatrix> f = fluid_field()->SystemMatrix();
   if (f == Teuchos::null) FOUR_C_THROW("expect fluid matrix");
@@ -112,7 +112,7 @@ void POROELAST::MonolithicStructureSplit::setup_system_matrix(
   if (k_sf == Teuchos::null) FOUR_C_THROW("expect coupling block matrix");
 
   // call the element and calculate the matrix block
-  ApplyStrCouplMatrix(k_sf);
+  apply_str_coupl_matrix(k_sf);
 
   /*----------------------------------------------------------------------*/
   // fluid part k_fs ( (3n+1)x3n )
@@ -135,12 +135,12 @@ void POROELAST::MonolithicStructureSplit::setup_system_matrix(
   /*----------------------------------------------------------------------*/
   if (evaluateinterface_)
   {
-    double scale = fluid_field()->ResidualScaling();
+    double scale = fluid_field()->residual_scaling();
     double timescale = fluid_field()->TimeScaling();
 
     // get time integration parameters of structure an fluid time integrators
     // to enable consistent time integration among the fields
-    double stiparam = StructureField()->TimIntParam();
+    double stiparam = structure_field()->TimIntParam();
     double ftiparam = fluid_field()->TimIntParam();
 
     (*sigtransform_)(s->FullRowMap(), s->FullColMap(), s->Matrix(0, 1), 1. / timescale,
@@ -203,17 +203,17 @@ void POROELAST::MonolithicStructureSplit::setup_vector(Epetra_Vector& f,
 {
   // extract the inner and boundary dofs of all three fields
 
-  Teuchos::RCP<Epetra_Vector> sov = StructureField()->Interface()->ExtractOtherVector(sv);
+  Teuchos::RCP<Epetra_Vector> sov = structure_field()->Interface()->ExtractOtherVector(sv);
 
   if (fluidscale != 0.0)
   {
     // get time integration parameters of structure an fluid time integrators
     // to enable consistent time integration among the fields
-    double stiparam = StructureField()->TimIntParam();
+    double stiparam = structure_field()->TimIntParam();
     double ftiparam = fluid_field()->TimIntParam();
 
     // add fluid interface values to structure vector
-    Teuchos::RCP<Epetra_Vector> scv = StructureField()->Interface()->ExtractFSICondVector(sv);
+    Teuchos::RCP<Epetra_Vector> scv = structure_field()->Interface()->ExtractFSICondVector(sv);
     Teuchos::RCP<Epetra_Vector> modfv =
         fluid_field()->Interface()->InsertFSICondVector(structure_to_fluid_at_interface(scv));
     modfv->Update(1.0, *fv, (1.0 - ftiparam) / ((1.0 - stiparam) * fluidscale));
@@ -254,12 +254,12 @@ void POROELAST::MonolithicStructureSplit::extract_field_vectors(Teuchos::RCP<con
     Teuchos::RCP<Epetra_Vector> scx = fluid_to_structure_at_interface(fcx);
     Teuchos::RCP<const Epetra_Vector> sox = Extractor()->ExtractVector(x, 0);
 
-    Teuchos::RCP<Epetra_Vector> s = StructureField()->Interface()->InsertOtherVector(sox);
-    StructureField()->Interface()->InsertFSICondVector(scx, s);
+    Teuchos::RCP<Epetra_Vector> s = structure_field()->Interface()->InsertOtherVector(sox);
+    structure_field()->Interface()->InsertFSICondVector(scx, s);
 
     auto zeros = Teuchos::rcp(new const Epetra_Vector(s->Map(), true));
     CORE::LINALG::apply_dirichlet_to_system(
-        *s, *zeros, *(StructureField()->GetDBCMapExtractor()->CondMap()));
+        *s, *zeros, *(structure_field()->GetDBCMapExtractor()->CondMap()));
 
     sx = s;
 
@@ -299,30 +299,30 @@ void POROELAST::MonolithicStructureSplit::recover_lagrange_multiplier_after_time
   {
     // get time integration parameter of structural time integrator
     // to enable consistent time integration among the fields
-    double stiparam = StructureField()->TimIntParam();
+    double stiparam = structure_field()->TimIntParam();
     double timescale = fluid_field()->TimeScaling();
 
     // store the product S_{\GammaI} \Delta d_I^{n+1} in here
     Teuchos::RCP<Epetra_Vector> sgiddi =
-        CORE::LINALG::CreateVector(*StructureField()->Interface()->FSICondMap(), true);
+        CORE::LINALG::CreateVector(*structure_field()->Interface()->FSICondMap(), true);
     // compute the above mentioned product
     sgicur_->Multiply(false, *ddiinc_, *sgiddi);
 
     // store the product C_{\GammaI} \Delta u_I^{n+1} in here
     Teuchos::RCP<Epetra_Vector> fgiddi =
-        CORE::LINALG::CreateVector(*StructureField()->Interface()->FSICondMap(), true);
+        CORE::LINALG::CreateVector(*structure_field()->Interface()->FSICondMap(), true);
     // compute the above mentioned product
     cgicur_->Multiply(false, *duiinc_, *fgiddi);
 
     // store the product S_{\Gamma\Gamma} \Delta d_\Gamma^{n+1} in here
     Teuchos::RCP<Epetra_Vector> sggddg =
-        CORE::LINALG::CreateVector(*StructureField()->Interface()->FSICondMap(), true);
+        CORE::LINALG::CreateVector(*structure_field()->Interface()->FSICondMap(), true);
     // compute the above mentioned product
     sggcur_->Multiply(false, *ddginc_, *sggddg);
 
     // store the prodcut C_{\Gamma\Gamma} \Delta u_\Gamma^{n+1} in here
     Teuchos::RCP<Epetra_Vector> cggddg =
-        CORE::LINALG::CreateVector(*StructureField()->Interface()->FSICondMap(), true);
+        CORE::LINALG::CreateVector(*structure_field()->Interface()->FSICondMap(), true);
     // compute the above mentioned product
     cggcur_->Multiply(false, *ddginc_, *cggddg);
     cggddg->Scale(timescale);

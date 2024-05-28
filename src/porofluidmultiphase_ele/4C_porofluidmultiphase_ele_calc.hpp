@@ -99,11 +99,11 @@ namespace DRT
       /*========================================================================*/
 
       /// Setup element evaluation
-      virtual int SetupCalc(DRT::Element* ele, DRT::Discretization& discretization,
+      virtual int setup_calc(DRT::Element* ele, DRT::Discretization& discretization,
           const POROFLUIDMULTIPHASE::Action& action);
 
       //! evaluate action
-      virtual int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
+      virtual int evaluate_action(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const POROFLUIDMULTIPHASE::Action& action,
           DRT::Element::LocationArray& la, std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
           std::vector<CORE::LINALG::SerialDenseVector*>& elevec);
@@ -119,7 +119,7 @@ namespace DRT
           DRT::Element* ele  ///< the element whose matrix is calculated
       );
 
-      void GaussPointLoop(
+      void gauss_point_loop(
           const CORE::FE::IntPointsAndWeights<nsd_>& intpoints,   ///< integration points
           DRT::Element* ele,                                      //!< current element
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
@@ -150,7 +150,7 @@ namespace DRT
       );
 
       //! calculate matrix and rhs. Here the whole thing is hidden.
-      void GaussPointLoop(DRT::Element* ele,                      //!< current element
+      void gauss_point_loop(DRT::Element* ele,                    //!< current element
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<CORE::LINALG::SerialDenseVector*>&
               elevec,                           //!< element rhs vectors to calculate
@@ -199,11 +199,11 @@ namespace DRT
       );
 
       /*========================================================================*/
-      //! @name routines for additional element evaluations (called from EvaluateAction)
+      //! @name routines for additional element evaluations (called from evaluate_action)
       /*========================================================================*/
 
       //! loop over nodes and evaluate element
-      void NodeLoop(DRT::Element* ele,                            //!< current element
+      void node_loop(DRT::Element* ele,                           //!< current element
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<CORE::LINALG::SerialDenseVector*>&
               elevec,                           //!< element rhs vectors to calculate
@@ -213,7 +213,7 @@ namespace DRT
       );
 
       //! evaluate just the element
-      void EvaluateOnlyElement(DRT::Element* ele,                 //!< current element
+      void evaluate_only_element(DRT::Element* ele,               //!< current element
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<CORE::LINALG::SerialDenseVector*>&
               elevec,                           //!< element rhs vectors to calculate

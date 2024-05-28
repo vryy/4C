@@ -166,7 +166,7 @@ void CORE::REBALANCE::GhostDiscretizationOnAllProcs(
 }  // CORE::REBALANCE::GhostDiscretizationOnAllProcs
 
 /*---------------------------------------------------------------------*
-|  Rebalance Nodes Matching Template Discretization     rauch 09/16    |
+|  Rebalance Nodes Matching Template discretization     rauch 09/16    |
 *----------------------------------------------------------------------*/
 void CORE::REBALANCE::MatchNodalDistributionOfMatchingDiscretizations(
     DRT::Discretization& dis_template, DRT::Discretization& dis_to_rebalance)
@@ -225,7 +225,7 @@ void CORE::REBALANCE::MatchNodalDistributionOfMatchingDiscretizations(
 
 
 /*---------------------------------------------------------------------*
-|  Rebalance Elements Matching Template Discretization     rauch 09/16 |
+|  Rebalance Elements Matching Template discretization     rauch 09/16 |
 *----------------------------------------------------------------------*/
 void CORE::REBALANCE::MatchElementDistributionOfMatchingDiscretizations(
     DRT::Discretization& dis_template, DRT::Discretization& dis_to_rebalance)

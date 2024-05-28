@@ -66,7 +66,7 @@ namespace FS3I
 
     Teuchos::RCP<Epetra_Vector> FluidToAle(Teuchos::RCP<Epetra_Vector> iv) const;
 
-    Teuchos::RCP<Epetra_Vector> AleToFluidField(Teuchos::RCP<Epetra_Vector> iv) const;
+    Teuchos::RCP<Epetra_Vector> ale_to_fluid_field(Teuchos::RCP<Epetra_Vector> iv) const;
 
     /// field transform
     virtual Teuchos::RCP<Epetra_Vector> AleToStructField(Teuchos::RCP<Epetra_Vector> iv) const;
@@ -87,7 +87,7 @@ namespace FS3I
     /// solve structure-ale
     virtual void StructAleSolve();
 
-    void UpdateAndOutput();
+    void update_and_output();
 
     const Epetra_Comm& Comm() { return comm_; }
 

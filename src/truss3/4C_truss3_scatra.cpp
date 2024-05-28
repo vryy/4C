@@ -256,8 +256,8 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(
       INPAR::STR::StressType iostress;
       if (IsParamsInterface())
       {
-        stressdata = ParamsInterface().StressDataPtr();
-        iostress = ParamsInterface().GetStressOutputType();
+        stressdata = params_interface().StressDataPtr();
+        iostress = params_interface().GetStressOutputType();
       }
       else
       {
@@ -405,7 +405,7 @@ void DRT::ELEMENTS::Truss3Scatra::prep_calc_internal_force_stiff_tot_lag_sca_tra
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3Scatra::Energy(
+void DRT::ELEMENTS::Truss3Scatra::energy(
     const std::map<std::string, std::vector<double>>& ele_state, Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& intenergy)
 {
@@ -418,7 +418,7 @@ void DRT::ELEMENTS::Truss3Scatra::Energy(
   {
     case CORE::Materials::m_linelast1D:
     {
-      Truss3::Energy(ele_state, params, intenergy);
+      Truss3::energy(ele_state, params, intenergy);
       break;
     }
     case CORE::Materials::m_linelast1D_growth:
@@ -435,7 +435,7 @@ void DRT::ELEMENTS::Truss3Scatra::Energy(
       const auto* growth_mat = static_cast<const MAT::LinElast1DGrowth*>(Material().get());
 
       // get Gauss rule
-      auto gauss_points = CORE::FE::IntegrationPoints1D(MyGaussRule(2, gaussexactintegration));
+      auto gauss_points = CORE::FE::IntegrationPoints1D(my_gauss_rule(2, gaussexactintegration));
 
       // internal energy
       for (int j = 0; j < gauss_points.nquad; ++j)

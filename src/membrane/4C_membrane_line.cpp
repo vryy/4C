@@ -126,7 +126,7 @@ template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::MembraneLine<distype>::Print(std::ostream& os) const
 {
   os << "MembraneLine ";
-  os << " Discretization type: "
+  os << " discretization type: "
      << CORE::FE::CellTypeToString(CORE::FE::DisTypeToFaceShapeType<distype>::shape).c_str();
   Element::Print(os);
   return;

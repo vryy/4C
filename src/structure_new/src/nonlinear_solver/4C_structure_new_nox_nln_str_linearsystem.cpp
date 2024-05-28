@@ -84,8 +84,9 @@ NOX::NLN::STR::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::LINALG::SolverParams NOX::NLN::STR::LinearSystem::SetSolverOptions(Teuchos::ParameterList& p,
-    Teuchos::RCP<CORE::LINALG::Solver>& solverPtr, const NOX::NLN::SolutionType& solverType)
+CORE::LINALG::SolverParams NOX::NLN::STR::LinearSystem::set_solver_options(
+    Teuchos::ParameterList& p, Teuchos::RCP<CORE::LINALG::Solver>& solverPtr,
+    const NOX::NLN::SolutionType& solverType)
 {
   CORE::LINALG::SolverParams solver_params;
   bool isAdaptiveControl = p.get<bool>("Adaptive Control");
@@ -106,7 +107,7 @@ CORE::LINALG::SolverParams NOX::NLN::STR::LinearSystem::SetSolverOptions(Teuchos
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::NLN::SolutionType NOX::NLN::STR::LinearSystem::GetActiveLinSolver(
+NOX::NLN::SolutionType NOX::NLN::STR::LinearSystem::get_active_lin_solver(
     const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers,
     Teuchos::RCP<CORE::LINALG::Solver>& currSolver)
 {

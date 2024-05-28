@@ -65,14 +65,14 @@ namespace NOX
 
          protected:
           //! Check whether or not it is safe to add a to this list of tests.
-          bool isSafe(Generic& a);
+          bool is_safe(Generic& a);
 
           /// OR-combination
-          void orOp(const Interface::Required& interface, const ::NOX::Solver::Generic& solver,
+          void or_op(const Interface::Required& interface, const ::NOX::Solver::Generic& solver,
               const ::NOX::Abstract::Group& grp, ::NOX::StatusTest::CheckType checkType);
 
           /// AND-combination
-          void andOp(const Interface::Required& interface, const ::NOX::Solver::Generic& solver,
+          void and_op(const Interface::Required& interface, const ::NOX::Solver::Generic& solver,
               const ::NOX::Abstract::Group& grp, ::NOX::StatusTest::CheckType checkType);
 
          protected:

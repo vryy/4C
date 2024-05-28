@@ -86,7 +86,7 @@ namespace SSI
         const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 
     //! return contact nitsche strategy for ssi problems
-    Teuchos::RCP<CONTACT::NitscheStrategySsi> NitscheStrategySsi() const
+    Teuchos::RCP<CONTACT::NitscheStrategySsi> nitsche_strategy_ssi() const
     {
       return contact_strategy_nitsche_;
     }
@@ -177,7 +177,7 @@ namespace SSI
     void complete_subproblem_matrices();
 
     //! distribute solution to all other fields
-    //! \param restore_velocity   restore velocity when StructureField()->set_state() is called
+    //! \param restore_velocity   restore velocity when structure_field()->set_state() is called
     void distribute_solution_all_fields(bool restore_velocity = false);
 
     //! evaluate all off-diagonal matrix contributions
@@ -204,7 +204,7 @@ namespace SSI
      */
     bool is_uncomplete_of_matrices_necessary_for_mesh_tying() const;
 
-    void Output() override;
+    void output() override;
 
     //! do everything, that has to be done once before first time step
     void prepare_time_loop();
@@ -238,7 +238,7 @@ namespace SSI
     //! evaluate time step using Newton-Raphson iteration
     void newton_loop();
 
-    void Update() override;
+    void update() override;
 
     //! update ScaTra state within Newton iteration
     void update_iter_sca_tra();

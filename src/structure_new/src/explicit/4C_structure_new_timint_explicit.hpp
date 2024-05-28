@@ -78,7 +78,7 @@ namespace STR
 
       Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override;
 
-      void UseBlockMatrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
+      void use_block_matrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
           Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps) override;
 
       ///@}
@@ -105,13 +105,13 @@ namespace STR
       //@}
 
      protected:
-      STR::EXPLICIT::Generic& ExplInt()
+      STR::EXPLICIT::Generic& expl_int()
       {
         check_init_setup();
         return *explint_ptr_;
       };
 
-      STR::NLN::SOLVER::Generic& NlnSolver()
+      STR::NLN::SOLVER::Generic& nln_solver()
       {
         check_init_setup();
         return *nlnsolver_ptr_;

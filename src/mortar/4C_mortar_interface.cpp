@@ -311,7 +311,7 @@ void MORTAR::Interface::Print(std::ostream& os) const
   if (Comm().MyPID() == 0)
   {
     os << "\nMortar Interface Id " << id_ << std::endl;
-    os << "Mortar Interface Discretization:" << std::endl;
+    os << "Mortar Interface discretization:" << std::endl;
   }
   os << Discret();
 }
@@ -406,7 +406,7 @@ void MORTAR::Interface::print_parallel_distribution() const
     if (myrank == 0)
     {
       std::cout << std::endl;
-      std::cout << "  Discretization: " << Discret().Name() << std::endl;
+      std::cout << "  discretization: " << Discret().Name() << std::endl;
 
       // Compute and print statistics
       {
@@ -1740,7 +1740,7 @@ void MORTAR::Interface::update_master_slave_node_maps(
       Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mcb.size(), mcb.data(), 0, Comm()));
 
   // build exporter
-  interface_data_->SlExporterPtr() =
+  interface_data_->sl_exporter_ptr() =
       Teuchos::rcp(new CORE::COMM::Exporter(*snoderowmapbound_, *snodecolmapbound_, Comm()));
 }
 
@@ -2015,7 +2015,7 @@ void MORTAR::Interface::set_state(const enum StateType& statetype, const Epetra_
       }
 
       // compute element areas
-      SetElementAreas();
+      set_element_areas();
       break;
     }
     case state_lagrange_multiplier:
@@ -2091,7 +2091,7 @@ void MORTAR::Interface::set_state(const enum StateType& statetype, const Epetra_
 /*----------------------------------------------------------------------*
  |  compute element areas (public)                            popp 11/07|
  *----------------------------------------------------------------------*/
-void MORTAR::Interface::SetElementAreas()
+void MORTAR::Interface::set_element_areas()
 {
   // loop over all elements to set current element length / area
   // (use standard slave column map)
@@ -2147,7 +2147,7 @@ void MORTAR::Interface::EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::IntCel
   // export nodal normals to slave node column map
   // this call is very expensive and the computation
   // time scales directly with the proc number !
-  ExportNodalNormals();
+  export_nodal_normals();
 
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
@@ -2186,7 +2186,7 @@ void MORTAR::Interface::EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::IntCel
         MORTAR::Coupling3d coup(*idiscret_, dim_, false, imortar_, *selement, *melement);
 
         // do coupling
-        coup.EvaluateCoupling();
+        coup.evaluate_coupling();
 
         // set sele and mele id and push into global vector
         for (auto& coupcell : coup.Cells())
@@ -2230,7 +2230,7 @@ void MORTAR::Interface::Evaluate(
   pre_evaluate(step, iter);
 
   // evaluation routine for coupling
-  EvaluateCoupling(*selecolmap_, snoderowmap_.get(), mparams_ptr);
+  evaluate_coupling(*selecolmap_, snoderowmap_.get(), mparams_ptr);
 
   // do some post operations. nothing happens for standard cases...
   post_evaluate(step, iter);
@@ -2249,7 +2249,7 @@ void MORTAR::Interface::Evaluate(
 /*----------------------------------------------------------------------*
  |  protected evaluate routine                               farah 02/16|
  *----------------------------------------------------------------------*/
-void MORTAR::Interface::EvaluateCoupling(const Epetra_Map& selecolmap,
+void MORTAR::Interface::evaluate_coupling(const Epetra_Map& selecolmap,
     const Epetra_Map* snoderowmap, const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // decide which type of coupling should be evaluated
@@ -2271,7 +2271,7 @@ void MORTAR::Interface::EvaluateCoupling(const Epetra_Map& selecolmap,
       // 3) compute directional derivative of M and g and store into nodes
       //    (only for contact setting)
       //********************************************************************
-      MORTAR::Interface::EvaluateSTS(selecolmap, mparams_ptr);
+      MORTAR::Interface::evaluate_sts(selecolmap, mparams_ptr);
       break;
     }
     //*********************************
@@ -2285,7 +2285,7 @@ void MORTAR::Interface::EvaluateCoupling(const Epetra_Map& selecolmap,
       // 3) compute directional derivative of D + M and g and store into nodes
       //    (only for contact setting)
       //********************************************************************
-      EvaluateSTL();
+      evaluate_stl();
       break;
     }
     //*********************************
@@ -2299,7 +2299,7 @@ void MORTAR::Interface::EvaluateCoupling(const Epetra_Map& selecolmap,
       // 3) compute directional derivative of D + M and g and store into nodes
       //    (only for contact setting)
       //********************************************************************
-      EvaluateLTS();
+      evaluate_lts();
       break;
     }
     //*********************************
@@ -2313,7 +2313,7 @@ void MORTAR::Interface::EvaluateCoupling(const Epetra_Map& selecolmap,
       // 3) compute directional derivative of entries and store into nodes
       //    (only for contact setting)
       //********************************************************************
-      EvaluateLTL();
+      evaluate_ltl();
       break;
     }
     //*********************************
@@ -2353,7 +2353,7 @@ void MORTAR::Interface::EvaluateCoupling(const Epetra_Map& selecolmap,
 /*----------------------------------------------------------------------*
  |  evaluate coupling type segment-to-segment coupl          farah 02/16|
  *----------------------------------------------------------------------*/
-void MORTAR::Interface::EvaluateSTS(
+void MORTAR::Interface::evaluate_sts(
     const Epetra_Map& selecolmap, const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   TEUCHOS_FUNC_TIME_MONITOR("MORTAR::Interface::EvaluateSTS");
@@ -2427,7 +2427,7 @@ void MORTAR::Interface::evaluate_nts()
 /*----------------------------------------------------------------------*
  |  evaluate coupling type line-to-segment coupl             farah 07/16|
  *----------------------------------------------------------------------*/
-void MORTAR::Interface::EvaluateLTS()
+void MORTAR::Interface::evaluate_lts()
 {
   FOUR_C_THROW("Line -to-segment is not available for meshtying problems.");
 }
@@ -2435,7 +2435,7 @@ void MORTAR::Interface::EvaluateLTS()
 /*----------------------------------------------------------------------*
  |  evaluate coupling type line-to-line coupl                farah 07/16|
  *----------------------------------------------------------------------*/
-void MORTAR::Interface::EvaluateLTL()
+void MORTAR::Interface::evaluate_ltl()
 {
   FOUR_C_THROW("Line-to-line is not available for meshtying problems.");
 }
@@ -2443,7 +2443,7 @@ void MORTAR::Interface::EvaluateLTL()
 /*----------------------------------------------------------------------*
  |  evaluate coupling type segment-to-line coupl             farah 07/16|
  *----------------------------------------------------------------------*/
-void MORTAR::Interface::EvaluateSTL()
+void MORTAR::Interface::evaluate_stl()
 {
   FOUR_C_THROW("Segment-to-line is not available for meshtying problems.");
 }
@@ -2502,7 +2502,7 @@ void MORTAR::Interface::pre_evaluate(const int& step, const int& iter)
   // export nodal normals to slave node column map
   // this call is very expensive and the computation
   // time scales directly with the proc number !
-  ExportNodalNormals();
+  export_nodal_normals();
 }
 
 
@@ -2603,7 +2603,7 @@ void MORTAR::Interface::FindMEles(Node& mrtrnode, std::vector<MORTAR::Element*>&
 /*----------------------------------------------------------------------*
  |  find mnodes to snode                                    farah 01/16 |
  *----------------------------------------------------------------------*/
-void MORTAR::Interface::FindMNodes(
+void MORTAR::Interface::find_m_nodes(
     Node& mrtrnode, std::vector<MORTAR::Element*>& meles, std::vector<Node*>& mnodes)
 {
   // clear vector
@@ -2672,7 +2672,7 @@ void MORTAR::Interface::evaluate_nodal_normals(std::map<int, std::vector<double>
 /*----------------------------------------------------------------------*
  |  export nodal normals (public)                             popp 11/10|
  *----------------------------------------------------------------------*/
-void MORTAR::Interface::ExportNodalNormals() const
+void MORTAR::Interface::export_nodal_normals() const
 {
   // create empty data objects
   std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>> triad;
@@ -3038,7 +3038,7 @@ bool MORTAR::Interface::evaluate_search_binarytree()
 bool MORTAR::Interface::MortarCoupling(MORTAR::Element* sele, std::vector<MORTAR::Element*> mele,
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
-  PreMortarCoupling(sele, mele, mparams_ptr);
+  pre_mortar_coupling(sele, mele, mparams_ptr);
 
   // check if quadratic interpolation is involved
   bool quadratic = false;
@@ -3060,7 +3060,7 @@ bool MORTAR::Interface::MortarCoupling(MORTAR::Element* sele, std::vector<MORTAR
 
     // create Coupling2dManager and evaluate
     MORTAR::Coupling2dManager(Discret(), Dim(), quadratic, interface_params(), sele, mele)
-        .EvaluateCoupling(mparams_ptr);
+        .evaluate_coupling(mparams_ptr);
   }
   // ************************************************************** 3D ***
   else if (Dim() == 3)
@@ -3070,7 +3070,7 @@ bool MORTAR::Interface::MortarCoupling(MORTAR::Element* sele, std::vector<MORTAR
     {
       // create Coupling3dManager and evaluate
       MORTAR::Coupling3dManager(Discret(), Dim(), false, interface_params(), sele, mele)
-          .EvaluateCoupling(mparams_ptr);
+          .evaluate_coupling(mparams_ptr);
     }
 
     // ************************************************** quadratic 3D ***
@@ -3078,14 +3078,14 @@ bool MORTAR::Interface::MortarCoupling(MORTAR::Element* sele, std::vector<MORTAR
     {
       // create Coupling3dQuadManager and evaluate
       MORTAR::Coupling3dQuadManager(Discret(), Dim(), false, interface_params(), sele, mele)
-          .EvaluateCoupling(mparams_ptr);
+          .evaluate_coupling(mparams_ptr);
     }  // quadratic
   }    // 3D
   else
     FOUR_C_THROW("Dimension for Mortar coupling must be either 2D or 3D.");
   // *********************************************************************
 
-  PostMortarCoupling(sele, mele, mparams_ptr);
+  post_mortar_coupling(sele, mele, mparams_ptr);
 
   return true;
 }
@@ -3093,7 +3093,7 @@ bool MORTAR::Interface::MortarCoupling(MORTAR::Element* sele, std::vector<MORTAR
 /*----------------------------------------------------------------------*
  | Split MORTAR::Elements->IntElements for 3D quad. coupling    popp 03/09|
  *----------------------------------------------------------------------*/
-bool MORTAR::Interface::SplitIntElements(
+bool MORTAR::Interface::split_int_elements(
     MORTAR::Element& ele, std::vector<Teuchos::RCP<MORTAR::IntElement>>& auxele)
 {
   // *********************************************************************
@@ -3340,7 +3340,7 @@ bool MORTAR::Interface::SplitIntElements(
 
   // ********************************************************* invalid ***
   else
-    FOUR_C_THROW("SplitIntElements called for unknown element shape!");
+    FOUR_C_THROW("split_int_elements called for unknown element shape!");
 
   // *********************************************************************
 
@@ -3564,7 +3564,7 @@ void MORTAR::Interface::AssembleDM(
 /*----------------------------------------------------------------------*
  |  Assemble matrix of normals                                popp 10/11|
  *----------------------------------------------------------------------*/
-void MORTAR::Interface::AssembleNormals(CORE::LINALG::SparseMatrix& nglobal)
+void MORTAR::Interface::assemble_normals(CORE::LINALG::SparseMatrix& nglobal)
 {
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
@@ -4265,7 +4265,7 @@ void MORTAR::Interface::postprocess_quantities(const Teuchos::ParameterList& out
     requiredEntries.emplace_back("slave forces");
     requiredEntries.emplace_back("master forces");
 
-    CheckOutputList(outputParams, requiredEntries);
+    check_output_list(outputParams, requiredEntries);
   }
 
   // Get the discretization writer and get ready for writing
@@ -4373,7 +4373,7 @@ void MORTAR::Interface::postprocess_quantities(const Teuchos::ParameterList& out
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool MORTAR::Interface::CheckOutputList(
+bool MORTAR::Interface::check_output_list(
     const Teuchos::ParameterList& outParams, const std::vector<std::string>& requiredEntries) const
 {
   // Check for each required parameter entry if it exists

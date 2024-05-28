@@ -51,7 +51,7 @@ ADAPTER::CouplingPoroMortar::CouplingPoroMortar(int spatial_dimension,
 /*----------------------------------------------------------------------*
  |  Read Mortar Condition                                     ager 10/15|
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingPoroMortar::ReadMortarCondition(Teuchos::RCP<DRT::Discretization> masterdis,
+void ADAPTER::CouplingPoroMortar::read_mortar_condition(Teuchos::RCP<DRT::Discretization> masterdis,
     Teuchos::RCP<DRT::Discretization> slavedis, std::vector<int> coupleddof,
     const std::string& couplingcond, Teuchos::ParameterList& input,
     std::map<int, DRT::Node*>& mastergnodes, std::map<int, DRT::Node*>& slavegnodes,
@@ -59,7 +59,7 @@ void ADAPTER::CouplingPoroMortar::ReadMortarCondition(Teuchos::RCP<DRT::Discreti
     std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements)
 {
   // Call Base Class
-  CouplingNonLinMortar::ReadMortarCondition(masterdis, slavedis, coupleddof, couplingcond, input,
+  CouplingNonLinMortar::read_mortar_condition(masterdis, slavedis, coupleddof, couplingcond, input,
       mastergnodes, slavegnodes, masterelements, slaveelements);
 
   // Set Problem Type to Poro
@@ -91,7 +91,7 @@ void ADAPTER::CouplingPoroMortar::ReadMortarCondition(Teuchos::RCP<DRT::Discreti
 /*----------------------------------------------------------------------*
  |  Add Mortar Elements                                        ager 10/15|
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretization> masterdis,
+void ADAPTER::CouplingPoroMortar::add_mortar_elements(Teuchos::RCP<DRT::Discretization> masterdis,
     Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::ParameterList& input,
     std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
     std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements,
@@ -257,7 +257,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
 /*----------------------------------------------------------------------*
  |  read mortar condition                                    Ager 02/16 |
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingPoroMortar::CreateStrategy(Teuchos::RCP<DRT::Discretization> masterdis,
+void ADAPTER::CouplingPoroMortar::create_strategy(Teuchos::RCP<DRT::Discretization> masterdis,
     Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::ParameterList& input, int numcoupleddof)
 {
   // poro lagrange strategy:
@@ -366,7 +366,7 @@ void ADAPTER::CouplingPoroMortar::CreateStrategy(Teuchos::RCP<DRT::Discretizatio
 /*----------------------------------------------------------------------*
  |  complete interface (also print and parallel redist.)      Ager 02/16|
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingPoroMortar::CompleteInterface(
+void ADAPTER::CouplingPoroMortar::complete_interface(
     Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<CONTACT::Interface>& interface)
 {
   // finalize the contact interface construction

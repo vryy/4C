@@ -48,10 +48,10 @@ namespace ADAPTER
       return fpsiinterface_;
     }
 
-    void SetupInterface(const int nds_master = 0) override;
+    void setup_interface(const int nds_master = 0) override;
 
-    void UseBlockMatrix(bool splitmatrix) override;
-    virtual void UseBlockMatrix(
+    void use_block_matrix(bool splitmatrix) override;
+    virtual void use_block_matrix(
         bool splitmatrix, Teuchos::RCP<FPSI::UTILS::MapExtractor> const& shapederivSplitter);
 
    protected:

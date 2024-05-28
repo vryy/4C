@@ -46,7 +46,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector* force_vector,
           CORE::LINALG::SerialDenseMatrix* stiffness_matrix);
 
-      void CouplingPoroelast(const DRT::Element& ele, MAT::StructPoro& porostructmat,
+      void coupling_poroelast(const DRT::Element& ele, MAT::StructPoro& porostructmat,
           MAT::FluidPoroMultiPhase& porofluidmat, const INPAR::STR::KinemType& kinematictype,
           const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& stiffness_matrix);

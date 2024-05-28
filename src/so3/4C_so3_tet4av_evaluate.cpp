@@ -210,7 +210,7 @@ int DRT::ELEMENTS::SoTet4av::evaluate_neumann(Teuchos::ParameterList& params,
       [&]()
       {
         if (IsParamsInterface())
-          return StrParamsInterface().GetTotalTime();
+          return str_params_interface().GetTotalTime();
         else
           return params.get("total time", -1.0);
       });
@@ -305,7 +305,7 @@ int DRT::ELEMENTS::SoTet4av::evaluate_neumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping and integration       seitz 03/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoTet4av::InitJacobianMapping()
+void DRT::ELEMENTS::SoTet4av::init_jacobian_mapping()
 {
   CORE::LINALG::Matrix<NUMNOD_SOTET4av, NUMDIM_SOTET4av> xrefe;
   DRT::Node** nodes = Nodes();
@@ -607,7 +607,7 @@ int DRT::ELEMENTS::SoTet4avType::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoTet4av*>(dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_tet4av* failed");
-    actele->InitJacobianMapping();
+    actele->init_jacobian_mapping();
   }
   return 0;
 }

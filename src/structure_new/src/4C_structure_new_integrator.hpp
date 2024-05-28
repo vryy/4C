@@ -206,8 +206,11 @@ namespace STR
 
     /*! write restart information of the different time integration schemes
      *  and model evaluators */
-    void WriteRestart(IO::DiscretizationWriter& iowriter) const { WriteRestart(iowriter, false); };
-    virtual void WriteRestart(
+    void write_restart(IO::DiscretizationWriter& iowriter) const
+    {
+      write_restart(iowriter, false);
+    };
+    virtual void write_restart(
         IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const = 0;
 
     /*! read restart information of the different time integration schemes
@@ -367,25 +370,25 @@ namespace STR
     bool current_state_is_equilibrium(const double& tol);
 
     //! Return the structural dynamic data container
-    STR::TIMINT::BaseDataSDyn& SDyn();
+    STR::TIMINT::BaseDataSDyn& s_dyn();
 
     //! Return the structural dynamic data container (read-only)
-    const STR::TIMINT::BaseDataSDyn& SDyn() const;
+    const STR::TIMINT::BaseDataSDyn& s_dyn() const;
 
     //! Return the global state data container
-    STR::TIMINT::BaseDataGlobalState& GlobalState();
+    STR::TIMINT::BaseDataGlobalState& global_state();
 
     //! Return the global state data container (read-only)
-    const STR::TIMINT::BaseDataGlobalState& GlobalState() const;
+    const STR::TIMINT::BaseDataGlobalState& global_state() const;
 
     //! Return the Dirichlet boundary condition object
-    STR::Dbc& Dbc();
+    STR::Dbc& dbc();
 
     //! Return the time integration strategy object (read-only)
-    const STR::TIMINT::Base& TimInt() const;
+    const STR::TIMINT::Base& tim_int() const;
 
     //! reset the time step dependent parameters for the element evaluation
-    virtual void ResetEvalParams(){};
+    virtual void reset_eval_params(){};
 
     double get_condensed_global_norm(const enum NOX::NLN::StatusTest::QuantityType& qtype,
         const enum ::NOX::Abstract::Vector::NormType& normtype, double& mynorm) const;

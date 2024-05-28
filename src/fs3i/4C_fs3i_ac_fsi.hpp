@@ -288,7 +288,7 @@ namespace FS3I
     Teuchos::RCP<const Epetra_Vector> GetMeanValue(const std::string type) const;
 
     /// Write restart of mean manager
-    void WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> fluidwriter) const;
+    void write_restart(Teuchos::RCP<IO::DiscretizationWriter> fluidwriter) const;
 
     /// Read restart of mean manager
     void read_restart(IO::DiscretizationReader& fluidreader);

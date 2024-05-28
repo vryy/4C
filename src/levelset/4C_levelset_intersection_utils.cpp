@@ -36,7 +36,7 @@ SCATRA::LEVELSET::Intersection::Intersection()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void SCATRA::LEVELSET::Intersection::Reset()
+void SCATRA::LEVELSET::Intersection::reset()
 {
   volumeplus_ = 0.0;
   volumeminus_ = 0.0;
@@ -52,28 +52,28 @@ void SCATRA::LEVELSET::Intersection::CaptureZeroLevelSet(
     std::map<int, CORE::GEO::BoundaryIntCells>& elementBoundaryIntCells)
 {
   // reset, just to be sure
-  Reset();
+  reset();
   volumedomainminus = 0.0;
   volumedomainplus = 0.0;
   zerosurface = 0.0;
   elementBoundaryIntCells.clear();
 
   // herein the actual capturing happens
-  GetZeroLevelSet(*phi, *scatradis, elementBoundaryIntCells);
+  get_zero_level_set(*phi, *scatradis, elementBoundaryIntCells);
 
   // collect contributions from all procs and store in respective variables
-  scatradis->Comm().SumAll(&VolumePlus(), &volumedomainplus, 1);
-  scatradis->Comm().SumAll(&VolumeMinus(), &volumedomainminus, 1);
-  scatradis->Comm().SumAll(&Surface(), &zerosurface, 1);
+  scatradis->Comm().SumAll(&volume_plus(), &volumedomainplus, 1);
+  scatradis->Comm().SumAll(&volume_minus(), &volumedomainminus, 1);
+  scatradis->Comm().SumAll(&surface(), &zerosurface, 1);
 
   // export also interface to all procs
-  ExportInterface(elementBoundaryIntCells, scatradis->Comm());
+  export_interface(elementBoundaryIntCells, scatradis->Comm());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <typename T>
-void SCATRA::LEVELSET::Intersection::GetZeroLevelSet(const Epetra_Vector& phi,
+void SCATRA::LEVELSET::Intersection::get_zero_level_set(const Epetra_Vector& phi,
     const DRT::Discretization& scatradis, std::map<int, T>& elementBoundaryIntCells,
     bool cut_screenoutput)
 {
@@ -99,7 +99,7 @@ void SCATRA::LEVELSET::Intersection::GetZeroLevelSet(const Epetra_Vector& phi,
     CORE::LINALG::SerialDenseMatrix xyze;
     std::vector<double> phi_nodes;
     std::vector<int> nids;
-    PrepareCut(ele, scatradis, *phicol, xyze, phi_nodes, nids);
+    prepare_cut(ele, scatradis, *phicol, xyze, phi_nodes, nids);
 
     // check if this element is cut, according to its level-set values
     // -> add it to 'levelset'
@@ -110,7 +110,7 @@ void SCATRA::LEVELSET::Intersection::GetZeroLevelSet(const Epetra_Vector& phi,
     // ------------------------------------------------------------------------
     // call CORE::GEO::Cut algorithm and process cut data
     // ------------------------------------------------------------------------
-    CORE::GEO::CUT::ElementHandle* ehandle = Cut(levelset, xyze, phi_nodes, cut_screenoutput);
+    CORE::GEO::CUT::ElementHandle* ehandle = cut(levelset, xyze, phi_nodes, cut_screenoutput);
 
     // =========================================================
     // cell is in contact with the interface (cut or touched)
@@ -119,7 +119,7 @@ void SCATRA::LEVELSET::Intersection::GetZeroLevelSet(const Epetra_Vector& phi,
     {
       CORE::GEO::CUT::plain_element_set cuteles;
 
-      CollectCutEles(*ehandle, cuteles, distype);
+      collect_cut_eles(*ehandle, cuteles, distype);
 
       // ----------------------------------------------------------------------
       // get zero level-set contour
@@ -136,9 +136,9 @@ void SCATRA::LEVELSET::Intersection::GetZeroLevelSet(const Epetra_Vector& phi,
       // it is sufficient to check the first node, since the element entirely
       // lies within the plus or minus domain
       if (phi_nodes[0] > 0.0)
-        VolumePlus() += elevol;
+        volume_plus() += elevol;
       else
-        VolumeMinus() += elevol;
+        volume_minus() += elevol;
     }
 
     // store interface of element
@@ -169,9 +169,9 @@ void SCATRA::LEVELSET::Intersection::get_zero_level_set_contour(
     {
       CORE::GEO::CUT::VolumeCell* volcell = *ivolcell;
       const CORE::GEO::CUT::Point::PointPosition vol_pos = volcell->Position();
-      if (IsPointPosition(vol_pos))
+      if (is_point_position(vol_pos))
       {
-        AddToVolume(vol_pos, volcell->Volume());
+        add_to_volume(vol_pos, volcell->Volume());
         // get boundary integration cells for this volume cell
         // we consider only the cells for one position, otherwise we would have the boundary
         // cells twice
@@ -183,12 +183,12 @@ void SCATRA::LEVELSET::Intersection::get_zero_level_set_contour(
 
           add_to_boundary_int_cells_per_ele(xyze, *bcell, distype);
 
-          Surface() += bcell->Area();
+          surface() += bcell->Area();
         }
       }
       else
       {
-        AddToVolume(vol_pos, volcell->Volume());
+        add_to_volume(vol_pos, volcell->Volume());
       }
     }
   }
@@ -243,16 +243,16 @@ void SCATRA::LEVELSET::Intersection::check_boundary_cell_type(CORE::FE::CellType
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void SCATRA::LEVELSET::Intersection::AddToVolume(
+void SCATRA::LEVELSET::Intersection::add_to_volume(
     CORE::GEO::CUT::Point::PointPosition pos, double vol)
 {
   switch (pos)
   {
     case CORE::GEO::CUT::Point::outside:
-      VolumePlus() += vol;
+      volume_plus() += vol;
       break;
     case CORE::GEO::CUT::Point::inside:
-      VolumeMinus() += vol;
+      volume_minus() += vol;
       break;
     default:
       /* do nothing for the undecided case */
@@ -262,7 +262,7 @@ void SCATRA::LEVELSET::Intersection::AddToVolume(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void SCATRA::LEVELSET::Intersection::CollectCutEles(CORE::GEO::CUT::ElementHandle& ehandle,
+void SCATRA::LEVELSET::Intersection::collect_cut_eles(CORE::GEO::CUT::ElementHandle& ehandle,
     CORE::GEO::CUT::plain_element_set& cuteles, CORE::FE::CellType distype) const
 {
   ehandle.CollectElements(cuteles);
@@ -291,7 +291,7 @@ void SCATRA::LEVELSET::Intersection::CollectCutEles(CORE::GEO::CUT::ElementHandl
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void SCATRA::LEVELSET::Intersection::PrepareCut(const DRT::Element* ele,
+void SCATRA::LEVELSET::Intersection::prepare_cut(const DRT::Element* ele,
     const DRT::Discretization& scatradis, const Epetra_Vector& phicol,
     CORE::LINALG::SerialDenseMatrix& xyze, std::vector<double>& phi_nodes,
     std::vector<int>& node_ids) const
@@ -352,7 +352,7 @@ void SCATRA::LEVELSET::Intersection::PrepareCut(const DRT::Element* ele,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::ElementHandle* SCATRA::LEVELSET::Intersection::Cut(
+CORE::GEO::CUT::ElementHandle* SCATRA::LEVELSET::Intersection::cut(
     CORE::GEO::CUT::LevelSetIntersection& levelset, const CORE::LINALG::SerialDenseMatrix& xyze,
     const std::vector<double>& phi_nodes, bool cut_screenoutput) const
 {
@@ -376,7 +376,7 @@ CORE::GEO::CUT::ElementHandle* SCATRA::LEVELSET::Intersection::Cut(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool SCATRA::LEVELSET::Intersection::IsPointPosition(
+bool SCATRA::LEVELSET::Intersection::is_point_position(
     const CORE::GEO::CUT::Point::PointPosition& curr_pos,
     const std::vector<CORE::GEO::CUT::Point::PointPosition>& desired_pos) const
 {
@@ -393,7 +393,7 @@ bool SCATRA::LEVELSET::Intersection::IsPointPosition(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 const std::vector<CORE::GEO::CUT::Point::PointPosition>&
-SCATRA::LEVELSET::Intersection::DesiredPositions()
+SCATRA::LEVELSET::Intersection::desired_positions()
 {
   if (desired_positions_.empty()) desired_positions_.push_back(CORE::GEO::CUT::Point::outside);
   return desired_positions_;
@@ -410,7 +410,7 @@ void SCATRA::LEVELSET::Intersection::SetDesiredPositions(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void SCATRA::LEVELSET::Intersection::ExportInterface(
+void SCATRA::LEVELSET::Intersection::export_interface(
     std::map<int, CORE::GEO::BoundaryIntCells>& myinterface, const Epetra_Comm& comm)
 {
   //-------------------------------
@@ -607,10 +607,10 @@ void SCATRA::LEVELSET::Intersection::unpack_boundary_int_cells(
 }
 
 
-template void SCATRA::LEVELSET::Intersection::GetZeroLevelSet<CORE::GEO::BoundaryIntCells>(
+template void SCATRA::LEVELSET::Intersection::get_zero_level_set<CORE::GEO::BoundaryIntCells>(
     const Epetra_Vector& phi, const DRT::Discretization& scatradis,
     std::map<int, CORE::GEO::BoundaryIntCells>& elementBoundaryIntCells, bool cut_screenoutput);
-template void SCATRA::LEVELSET::Intersection::GetZeroLevelSet<CORE::GEO::BoundaryIntCellPtrs>(
+template void SCATRA::LEVELSET::Intersection::get_zero_level_set<CORE::GEO::BoundaryIntCellPtrs>(
     const Epetra_Vector& phi, const DRT::Discretization& scatradis,
     std::map<int, CORE::GEO::BoundaryIntCellPtrs>& elementBoundaryIntCells, bool cut_screenoutput);
 

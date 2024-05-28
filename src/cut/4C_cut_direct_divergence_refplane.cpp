@@ -373,7 +373,7 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::is_all_projected_corners_in
         (RefPlaneEqn[3] - RefPlaneEqn[1] * coo(1, 0) - RefPlaneEqn[2] * coo(2, 0)) / RefPlaneEqn[0];
 
     // get the local coordinates of the projected point
-    elem1_->LocalCoordinates(xyz_proj, rst_proj);
+    elem1_->local_coordinates(xyz_proj, rst_proj);
 
     // Check whether the local coordinate of the projected point is within the specified limits
     if (std::abs(rst_proj(0, 0)) > 1.0 + tol or std::abs(rst_proj(1, 0)) > 1.0 + tol or

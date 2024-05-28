@@ -58,20 +58,20 @@ namespace ELCH
     void prepare_time_step() override;
 
     /// solve Navier-Stokes and ALE for current time step
-    void SolveFluidAle();
+    void solve_fluid_ale();
 
     /// solve transport equations for current time step
-    void SolveScaTra();
+    void solve_sca_tra();
 
     /// compute interface displacement and velocity
     void compute_interface_vectors(
         Teuchos::RCP<Epetra_Vector> idispnp_, Teuchos::RCP<Epetra_Vector> iveln_);
 
     /// take current results for converged and save for next time step
-    void Update() override;
+    void update() override;
 
     /// write output
-    void Output() override;
+    void output() override;
 
    private:
     bool pseudotransient_;

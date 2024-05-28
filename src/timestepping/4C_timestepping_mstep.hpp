@@ -58,24 +58,24 @@ namespace TIMESTEPPING
     STATE& operator[](const int step  //!< inquiry step
     )
     {
-      if (not StepExists(step)) FOUR_C_THROW("Step %d is not admissible", step);
-      return state_[IndexByStep(step)];
+      if (not step_exists(step)) FOUR_C_THROW("Step %d is not admissible", step);
+      return state_[index_by_step(step)];
     }
 
     //! Access state object by time step index (read-only)
     const STATE& operator[](const int step  //!< inquiry step
     ) const
     {
-      if (not StepExists(step)) FOUR_C_THROW("Step %d is not admissible", step);
-      return state_[IndexByStep(step)];
+      if (not step_exists(step)) FOUR_C_THROW("Step %d is not admissible", step);
+      return state_[index_by_step(step)];
     }
 
     //! Access state object by time step index and wrap into Teuchos::RCP
     Teuchos::RCP<STATE> operator()(const int step  //!< inquiry step
     )
     {
-      if (not StepExists(step)) FOUR_C_THROW("Step %d is not admissible", step);
-      return Teuchos::rcp<STATE>(&(state_[IndexByStep(step)]), false);
+      if (not step_exists(step)) FOUR_C_THROW("Step %d is not admissible", step);
+      return Teuchos::rcp<STATE>(&(state_[index_by_step(step)]), false);
     }
 
     //@}
@@ -120,8 +120,8 @@ namespace TIMESTEPPING
     //@{
 
     //! Check sanity prior resize
-    bool ResizeSane(const int steppast,  //!< lower index bound
-        const int stepfuture             //!< higher index bound, >= lower bound
+    bool resize_sane(const int steppast,  //!< lower index bound
+        const int stepfuture              //!< higher index bound, >= lower bound
     )
     {
       bool sane = true;
@@ -136,32 +136,32 @@ namespace TIMESTEPPING
     }
 
     //! Determine whether step lies in given bounds
-    bool StepExists(const int step  //!< inquired step
+    bool step_exists(const int step  //!< inquired step
     ) const
     {
       return ((step >= steppast_) and (step <= stepfuture_));
     }
 
     //! determine whether index lies in given bounds
-    bool IndexExists(const int index  //!< inquired index
+    bool index_exists(const int index  //!< inquired index
     ) const
     {
       return ((index >= 0) and (index < (int)state_.size()));
     }
 
     //! Map step number to vector index
-    int StepByIndex(const int index  //!< vector index
+    int step_by_index(const int index  //!< vector index
     )
     {
       return index + steppast_;
     }
 
     //! Map vector index to step
-    int IndexByStep(const int step  //!< step number
+    int index_by_step(const int step  //!< step number
     ) const
     {
       int index = step - steppast_;
-      FOUR_C_ASSERT(IndexExists(index), "step is not permissible!");
+      FOUR_C_ASSERT(index_exists(index), "step is not permissible!");
       return (unsigned)index;
     }
 
@@ -221,7 +221,7 @@ namespace TIMESTEPPING
     {
       // check this
       {
-        bool sane = MStepBase::ResizeSane(steppast, stepfuture);
+        bool sane = MStepBase::resize_sane(steppast, stepfuture);
         if (not sane) FOUR_C_THROW("Sanity check not passed.");
       }
 
@@ -247,7 +247,7 @@ namespace TIMESTEPPING
     //! Set entry at #step to #value
     void SetStep(const int step, const STATE value)
     {
-      MStepBase::state_.at(MStepBase::IndexByStep(step)) = value;
+      MStepBase::state_.at(MStepBase::index_by_step(step)) = value;
     }
 
     /*! \brief Update multi-step state
@@ -321,7 +321,7 @@ namespace TIMESTEPPING
     {
       // check this
       {
-        bool sane = MStepBase::ResizeSane(steppast, stepfuture);
+        bool sane = MStepBase::resize_sane(steppast, stepfuture);
         if (not sane) FOUR_C_THROW("Sanity check not passed.");
       }
 

@@ -288,7 +288,7 @@ void CONTACT::Interface::update_master_slave_sets()
 /*----------------------------------------------------------------------*
  |  create and fill cn vector                                farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::SetCnCtValues(const int& iter)
+void CONTACT::Interface::set_cn_ct_values(const int& iter)
 {
   // get cn from the input file
   const double cn = interface_params().get<double>("SEMI_SMOOTH_CN");
@@ -1385,7 +1385,7 @@ void CONTACT::Interface::Initialize()
     }
 
     // just do poro contact relevant stuff!
-    if (InterfaceData().IsPoro())
+    if (interface_data().IsPoro())
     {
       cnode->PoroData().GetnCoup() = 0.0;
       cnode->PoroData().GetDerivnCoup().clear();
@@ -1458,7 +1458,7 @@ void CONTACT::Interface::Initialize()
 /*----------------------------------------------------------------------*
  |  compute element areas (public)                            popp 11/07|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::SetElementAreas()
+void CONTACT::Interface::set_element_areas()
 {
   //**********************************************************************
   // In general, it is sufficient to compute element areas only for
@@ -1483,7 +1483,7 @@ void CONTACT::Interface::SetElementAreas()
   else
   {
     // refer call back to base class version
-    MORTAR::Interface::SetElementAreas();
+    MORTAR::Interface::set_element_areas();
   }
 
   return;
@@ -1521,13 +1521,13 @@ void CONTACT::Interface::pre_evaluate(const int& step, const int& iter)
 #endif  // #ifdef MORTARGMSHCELLS
 
   // set global vector of cn values
-  SetCnCtValues(iter);
+  set_cn_ct_values(iter);
 
   // cpp normals or averaged normal field?
   if (CORE::UTILS::IntegralValue<int>(interface_params(), "CPP_NORMALS"))
   {
     // evaluate cpp nodal normals on slave side
-    EvaluateCPPNormals();
+    evaluate_cpp_normals();
   }
   else
   {
@@ -1537,7 +1537,7 @@ void CONTACT::Interface::pre_evaluate(const int& step, const int& iter)
     // export nodal normals to slave node column map
     // this call is very expensive and the computation
     // time scales directly with the proc number !
-    ExportNodalNormals();
+    export_nodal_normals();
   }
 
   // set condition specific parameters needed for evaluation
@@ -1545,7 +1545,7 @@ void CONTACT::Interface::pre_evaluate(const int& step, const int& iter)
 
   // compute scaling between coupling types
   //  if(nonSmoothContact_)
-  //    ComputeScaling();
+  //    compute_scaling();
 
   // bye bye
   return;
@@ -1555,7 +1555,7 @@ void CONTACT::Interface::pre_evaluate(const int& step, const int& iter)
 /*----------------------------------------------------------------------*
  |  store nts values into sts data container for assembly   farah 07/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::StoreNTSvalues()
+void CONTACT::Interface::store_nt_svalues()
 {
   // create iterators for data types
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
@@ -1651,7 +1651,7 @@ void CONTACT::Interface::StoreNTSvalues()
 /*----------------------------------------------------------------------*
  |  store lts values into sts data container for assembly   farah 07/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::StoreLTSvalues()
+void CONTACT::Interface::store_lt_svalues()
 {
   // create iterators for data types
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
@@ -1796,9 +1796,9 @@ void CONTACT::Interface::StoreLTSvalues()
 /*----------------------------------------------------------------------*
  |  store lts values into sts data container for assembly   farah 07/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::StoreLTLvalues()
+void CONTACT::Interface::store_lt_lvalues()
 {
-  FOUR_C_THROW("StoreLTLvalues() is outdated!");
+  FOUR_C_THROW("store_lt_lvalues() is outdated!");
   return;
   //  // create iterators for data types
   //  typedef CORE::GEN::Pairedvector<int,double>::const_iterator CI;
@@ -3276,10 +3276,10 @@ void CONTACT::Interface::post_evaluate(const int step, const int iter)
       if (nonSmoothContact_)
       {
         // store lts into mortar data container
-        StoreLTSvalues();
+        store_lt_svalues();
 
         // store nts into mortar data container
-        StoreNTSvalues();
+        store_nt_svalues();
       }
       return;
       break;
@@ -3299,7 +3299,7 @@ void CONTACT::Interface::post_evaluate(const int step, const int iter)
     case INPAR::MORTAR::algorithm_lts:
     {
       // store lts into mortar data container
-      StoreLTSvalues();
+      store_lt_svalues();
       break;
     }
     //*********************************
@@ -3308,7 +3308,7 @@ void CONTACT::Interface::post_evaluate(const int step, const int iter)
     case INPAR::MORTAR::algorithm_nts:
     {
       // store nts into mortar data container
-      StoreNTSvalues();
+      store_nt_svalues();
       break;
     }
     //*********************************
@@ -3333,7 +3333,7 @@ void CONTACT::Interface::post_evaluate(const int step, const int iter)
     case INPAR::MORTAR::algorithm_stl:
     {
       // store lts into mortar data container
-      StoreLTSvalues();
+      store_lt_svalues();
       break;
     }
     //*********************************
@@ -3391,13 +3391,13 @@ void CONTACT::Interface::post_evaluate(const int step, const int iter)
 /*----------------------------------------------------------------------*
  |  scale calculated entries for nts, mortar etc...         farah 02/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::ScaleTerms()
+void CONTACT::Interface::scale_terms()
 {
   // only for 3d contact
   if (Dim() == 2) return;
 
   // scale ltl terms for point and line contact
-  ScaleTermsLTL();
+  scale_terms_ltl();
 
   // bye
   return;
@@ -3406,10 +3406,10 @@ void CONTACT::Interface::ScaleTerms()
 /*----------------------------------------------------------------------*
  |  scale calculated entries for lts contact                farah 09/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::ScaleTermsLTL()
+void CONTACT::Interface::scale_terms_ltl()
 {
   std::cout << "ScaleTerms LTL" << std::endl;
-  FOUR_C_THROW("ScaleTermsLTL() is outdated");
+  FOUR_C_THROW("scale_terms_ltl() is outdated");
 
   return;
   //  // create iterators for data types
@@ -3696,10 +3696,10 @@ void CONTACT::Interface::ScaleTermsLTL()
 /*----------------------------------------------------------------------*
  |  evaluate coupling type segment-to-segment coupl          farah 02/16|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::EvaluateSTS(
+void CONTACT::Interface::evaluate_sts(
     const Epetra_Map& selecolmap, const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
-  MORTAR::Interface::EvaluateSTS(selecolmap, mparams_ptr);
+  MORTAR::Interface::evaluate_sts(selecolmap, mparams_ptr);
   return;
   //  // loop over all slave col elements
   //  for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
@@ -3755,7 +3755,7 @@ void CONTACT::Interface::EvaluateSTS(
 /*----------------------------------------------------------------------*
  |  protected evaluate routine                               farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::EvaluateCoupling(const Epetra_Map& selecolmap,
+void CONTACT::Interface::evaluate_coupling(const Epetra_Map& selecolmap,
     const Epetra_Map* snoderowmap, const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // ask if non-smooth contact is activated!
@@ -3770,7 +3770,7 @@ void CONTACT::Interface::EvaluateCoupling(const Epetra_Map& selecolmap,
       // 3) compute directional derivative of M and g and store into nodes
       //    (only for contact setting)
       //********************************************************************
-      EvaluateSTS(selecolmap, mparams_ptr);
+      evaluate_sts(selecolmap, mparams_ptr);
 
       //********************************************************************
       // 1) perform coupling (find closest point between to lines)
@@ -3798,7 +3798,7 @@ void CONTACT::Interface::EvaluateCoupling(const Epetra_Map& selecolmap,
           CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
       if (algo == INPAR::MORTAR::algorithm_ltl)
       {
-        EvaluateLTL();
+        evaluate_ltl();
         return;
       }
 
@@ -3814,21 +3814,21 @@ void CONTACT::Interface::EvaluateCoupling(const Epetra_Map& selecolmap,
       // 2) evaluate gap and shape functions at this point
       // 3) compute directional derivative of entries and store into nodes
       //********************************************************************
-      EvaluateLTL();
+      evaluate_ltl();
 
       //********************************************************************
       // 1) perform coupling (projection + line clipping edge surface pairs)
       // 2) integrate Mortar matrices D + M and weighted gap g
       // 3) compute directional derivative of D + M and g and store into nodes
       //********************************************************************
-      EvaluateLTS();
+      evaluate_lts();
 
       //********************************************************************
       // 1) perform coupling (projection + overlap detection for sl/m pairs)
       // 2) integrate Mortar matrix M and weighted gap g
       // 3) compute directional derivative of M and g and store into nodes
       //********************************************************************
-      EvaluateSTS(selecolmap, mparams_ptr);
+      evaluate_sts(selecolmap, mparams_ptr);
 
       //********************************************************************
       // perform LTS steps for master edges
@@ -3855,7 +3855,7 @@ void CONTACT::Interface::EvaluateCoupling(const Epetra_Map& selecolmap,
     //********************************************************************
     // call base routine for standard mortar/nts evaluation
     //********************************************************************
-    MORTAR::Interface::EvaluateCoupling(selecolmap, snoderowmap, mparams_ptr);
+    MORTAR::Interface::evaluate_coupling(selecolmap, snoderowmap, mparams_ptr);
   }
 
   return;
@@ -4002,7 +4002,7 @@ double CONTACT::Interface::compute_normal_node_to_edge(MORTAR::Node& snode, MORT
     //**********************************************
     CORE::LINALG::SerialDenseVector sval(nrow);
     CORE::LINALG::SerialDenseMatrix sderiv(nrow, 1);
-    mele.EvaluateShape(&xi, sval, sderiv, nrow);
+    mele.evaluate_shape(&xi, sval, sderiv, nrow);
 
     // tangent part
     std::array<double, 3> tangent = {0.0, 0.0, 0.0};
@@ -4084,7 +4084,7 @@ double CONTACT::Interface::compute_normal_node_to_edge(MORTAR::Node& snode, MORT
 
   CORE::LINALG::SerialDenseVector sval(nrow);
   CORE::LINALG::SerialDenseMatrix sderiv(nrow, 1);
-  mele.EvaluateShape(&xi, sval, sderiv, nrow);
+  mele.evaluate_shape(&xi, sval, sderiv, nrow);
 
   // tangent part
   std::array<double, 3> tangent = {0.0, 0.0, 0.0};
@@ -4437,7 +4437,7 @@ double CONTACT::Interface::compute_normal_node_to_node(MORTAR::Node& snode, MORT
 /*----------------------------------------------------------------------*
  |  evaluate closest point normals                          farah 08/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::EvaluateCPPNormals()
+void CONTACT::Interface::evaluate_cpp_normals()
 {
   // Build averaged normal field on physically smooth surface
   // loop over proc's master nodes of the interface
@@ -4491,7 +4491,7 @@ void CONTACT::Interface::EvaluateCPPNormals()
     std::vector<CORE::GEN::Pairedvector<int, double>> normaltolineLin(3, 1);  // 1 dummy
 
     // Now, calculate distance between node and master line
-    double dist = ComputeCPPNormal(*mrtrnode, meles, normaltoline, normaltolineLin);
+    double dist = compute_cpp_normal(*mrtrnode, meles, normaltoline, normaltolineLin);
 
     // if no projection was posible
     if (dist > 1e11)
@@ -4502,11 +4502,11 @@ void CONTACT::Interface::EvaluateCPPNormals()
     }
 
     // set the normal and its lineratization
-    SetCPPNormal(*mrtrnode, normaltoline, normaltolineLin);
+    set_cpp_normal(*mrtrnode, normaltoline, normaltolineLin);
   }
 
   // export slave normals
-  ExportNodalNormals();
+  export_nodal_normals();
 
   // bye bye
   return;
@@ -4773,13 +4773,13 @@ void CONTACT::Interface::evaluate_averaged_nodal_normals()
 /*----------------------------------------------------------------------*
  |  calc scaling for hybrid formulation                     farah 09/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::ComputeScaling()
+void CONTACT::Interface::compute_scaling()
 {
   // ltl scaling only for 3D setting
   if (Dim() == 2) return;
 
   // compute ltl scaling for point and line contact
-  ComputeScalingLTL();
+  compute_scaling_ltl();
 
   // bye
   return;
@@ -4789,9 +4789,9 @@ void CONTACT::Interface::ComputeScaling()
 /*----------------------------------------------------------------------*
  |  calc scaling for hybrid formulation                     farah 01/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::ComputeScalingLTL()
+void CONTACT::Interface::compute_scaling_ltl()
 {
-  std::cout << "ComputeScalingLTL" << std::endl;
+  std::cout << "compute_scaling_ltl" << std::endl;
 
   // define iterator for linerization
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
@@ -5281,14 +5281,14 @@ void CONTACT::Interface::ComputeScalingLTL()
 /*----------------------------------------------------------------------*
  |  scale normals for hybrid formulation                    farah 05/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::ScaleNormals()
+void CONTACT::Interface::scale_normals()
 {
   FOUR_C_THROW("outdated!");
 
   if (Dim() == 2)
-    ScaleNormals2D();
+    scale_normals2_d();
   else if (Dim() == 3)
-    ScaleNormals3D();
+    scale_normals3_d();
   else
     FOUR_C_THROW("Wrong dimension!");
 }
@@ -5296,7 +5296,7 @@ void CONTACT::Interface::ScaleNormals()
 /*----------------------------------------------------------------------*
  |  scale normals for hybrid formulation                    farah 05/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::ScaleNormals2D()
+void CONTACT::Interface::scale_normals2_d()
 {
   // define iterator for paired vector
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
@@ -5480,13 +5480,13 @@ void CONTACT::Interface::ScaleNormals2D()
 /*----------------------------------------------------------------------*
  |  scale normals for hybrid formulation                    farah 05/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::ScaleNormals3D() { FOUR_C_THROW("not yet implemented!"); }
+void CONTACT::Interface::scale_normals3_d() { FOUR_C_THROW("not yet implemented!"); }
 
 
 /*----------------------------------------------------------------------*
  |  cpp to line based on averaged nodal normal field        farah 08/16 |
  *----------------------------------------------------------------------*/
-double CONTACT::Interface::ComputeCPPNormal2D(MORTAR::Node& mrtrnode,
+double CONTACT::Interface::compute_cpp_normal2_d(MORTAR::Node& mrtrnode,
     std::vector<MORTAR::Element*> meles, double* normal,
     std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin)
 {
@@ -5686,7 +5686,7 @@ double CONTACT::Interface::ComputeCPPNormal2D(MORTAR::Node& mrtrnode,
 /*----------------------------------------------------------------------*
  |  cpp to line based on averaged nodal normal field        farah 08/16 |
  *----------------------------------------------------------------------*/
-double CONTACT::Interface::ComputeCPPNormal3D(MORTAR::Node& mrtrnode,
+double CONTACT::Interface::compute_cpp_normal3_d(MORTAR::Node& mrtrnode,
     std::vector<MORTAR::Element*> meles, double* normal,
     std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin)
 {
@@ -6000,7 +6000,7 @@ double CONTACT::Interface::ComputeCPPNormal3D(MORTAR::Node& mrtrnode,
 /*----------------------------------------------------------------------*
  |  cpp to line based on averaged nodal normal field        farah 05/16 |
  *----------------------------------------------------------------------*/
-double CONTACT::Interface::ComputeCPPNormal(MORTAR::Node& mrtrnode,
+double CONTACT::Interface::compute_cpp_normal(MORTAR::Node& mrtrnode,
     std::vector<MORTAR::Element*> meles, double* normal,
     std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin)
 {
@@ -6014,7 +6014,7 @@ double CONTACT::Interface::ComputeCPPNormal(MORTAR::Node& mrtrnode,
   //===================================================================
   if (Dim() == 2)
   {
-    gdist = ComputeCPPNormal2D(mrtrnode, meles, normal, normaltolineLin);
+    gdist = compute_cpp_normal2_d(mrtrnode, meles, normal, normaltolineLin);
   }
   //===================================================================
   //===================================================================
@@ -6023,7 +6023,7 @@ double CONTACT::Interface::ComputeCPPNormal(MORTAR::Node& mrtrnode,
   //===================================================================
   else if (Dim() == 3)
   {
-    gdist = ComputeCPPNormal3D(mrtrnode, meles, normal, normaltolineLin);
+    gdist = compute_cpp_normal3_d(mrtrnode, meles, normal, normaltolineLin);
   }
   //===================================================================
   //===================================================================
@@ -6042,7 +6042,7 @@ double CONTACT::Interface::ComputeCPPNormal(MORTAR::Node& mrtrnode,
 /*----------------------------------------------------------------------*
  |  set cpp normal                                           farah 01/16|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::SetCPPNormal(MORTAR::Node& snode, double* normal,
+void CONTACT::Interface::set_cpp_normal(MORTAR::Node& snode, double* normal,
     std::vector<CORE::GEN::Pairedvector<int, double>>& normallin)
 {
   Node& cnode = dynamic_cast<Node&>(snode);
@@ -6412,7 +6412,7 @@ void CONTACT::Interface::SetCPPNormal(MORTAR::Node& snode, double* normal,
 /*----------------------------------------------------------------------*
  |  export nodal normals (public)                             popp 11/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::ExportNodalNormals() const
+void CONTACT::Interface::export_nodal_normals() const
 {
   // create empty data objects
   std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>> triad;
@@ -6715,7 +6715,7 @@ bool CONTACT::Interface::evaluate_search_binarytree()
 
     // no initialization of element data container as this would
     // possibly destroy the information on search elements again
-    // (this was already done in SetElementAreas())
+    // (this was already done in set_element_areas())
   }
 
   else
@@ -6730,7 +6730,7 @@ bool CONTACT::Interface::evaluate_search_binarytree()
 /*----------------------------------------------------------------------*
  |  evaluate coupling type segment-to-line coupl             farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::EvaluateSTL()
+void CONTACT::Interface::evaluate_stl()
 {
   // check
   if (Dim() == 2) FOUR_C_THROW("LTS algorithm only for 3D simulations!");
@@ -6829,7 +6829,7 @@ void CONTACT::Interface::EvaluateSTL()
                 seleElements, LineToSurfaceCoupling3d::stl);
 
             // perform evaluate!
-            coup.EvaluateCoupling();
+            coup.evaluate_coupling();
           }
         }  // end edge loop
       }
@@ -7122,7 +7122,7 @@ void CONTACT::Interface::EvaluateLTSMaster()
 
 
           // perform evaluate!
-          coup.EvaluateCoupling();
+          coup.evaluate_coupling();
         }
       }  // end edge loop
     }
@@ -7132,7 +7132,7 @@ void CONTACT::Interface::EvaluateLTSMaster()
 /*----------------------------------------------------------------------*
  |  evaluate coupling type line-to-segment coupl             farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::EvaluateLTS()
+void CONTACT::Interface::evaluate_lts()
 {
   // check
   if (Dim() == 2) FOUR_C_THROW("LTS algorithm only for 3D simulations!");
@@ -7345,7 +7345,7 @@ void CONTACT::Interface::EvaluateLTS()
           meleElements, LineToSurfaceCoupling3d::lts);
 
       // perform evaluate!
-      coup.EvaluateCoupling();
+      coup.evaluate_coupling();
     }
   }  // slave ele loop
 
@@ -7356,7 +7356,7 @@ void CONTACT::Interface::EvaluateLTS()
 /*----------------------------------------------------------------------*
  |  evaluate coupling type line-to-line coupl                farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::EvaluateLTL()
+void CONTACT::Interface::evaluate_ltl()
 {
   // check
   if (Dim() == 2) FOUR_C_THROW("LTL algorithm only for 3D simulations!");
@@ -7704,7 +7704,7 @@ void CONTACT::Interface::EvaluateLTL()
             *idiscret_, 3, interface_params(), lineElementsS[s], lineElementsM[m]);
 
         // perform evaluate!
-        coup.EvaluateCoupling();
+        coup.evaluate_coupling();
       }
     }
 
@@ -7759,7 +7759,7 @@ bool CONTACT::Interface::MortarCoupling(MORTAR::Element* sele, std::vector<MORTA
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // do stuff before the actual coupling is going to be evaluated
-  PreMortarCoupling(sele, mele, mparams_ptr);
+  pre_mortar_coupling(sele, mele, mparams_ptr);
 
   // increase counter of slave/master pairs
   smpairs_ += (int)mele.size();
@@ -7785,7 +7785,7 @@ bool CONTACT::Interface::MortarCoupling(MORTAR::Element* sele, std::vector<MORTA
     // create Coupling2dManager
     CONTACT::Coupling2dManager coup(Discret(), Dim(), quadratic, interface_params(), sele, mele);
     // evaluate
-    coup.EvaluateCoupling(mparams_ptr);
+    coup.evaluate_coupling(mparams_ptr);
 
     // increase counter of slave/master integration pairs and intcells
     smintpairs_ += (int)mele.size();
@@ -7800,7 +7800,7 @@ bool CONTACT::Interface::MortarCoupling(MORTAR::Element* sele, std::vector<MORTA
       // create Coupling3dManager
       CONTACT::Coupling3dManager coup(Discret(), Dim(), quadratic, interface_params(), sele, mele);
       // evaluate
-      coup.EvaluateCoupling(mparams_ptr);
+      coup.evaluate_coupling(mparams_ptr);
 
       // increase counter of slave/master integration pairs and intcells
       smintpairs_ += (int)mele.size();
@@ -7814,7 +7814,7 @@ bool CONTACT::Interface::MortarCoupling(MORTAR::Element* sele, std::vector<MORTA
       CONTACT::Coupling3dQuadManager coup(
           Discret(), Dim(), quadratic, interface_params(), sele, mele);
       // evaluate
-      coup.EvaluateCoupling(mparams_ptr);
+      coup.evaluate_coupling(mparams_ptr);
     }  // quadratic
   }    // 3D
   else
@@ -7822,7 +7822,7 @@ bool CONTACT::Interface::MortarCoupling(MORTAR::Element* sele, std::vector<MORTA
   // *********************************************************************
 
   // do stuff after the coupling evaluation
-  PostMortarCoupling(sele, mele, mparams_ptr);
+  post_mortar_coupling(sele, mele, mparams_ptr);
 
   return true;
 }
@@ -7859,7 +7859,7 @@ bool CONTACT::Interface::integrate_kappa_penalty(CONTACT::Element& sele)
 
     // build linear integration elements from quadratic CElements
     std::vector<Teuchos::RCP<MORTAR::IntElement>> sauxelements(0);
-    SplitIntElements(sele, sauxelements);
+    split_int_elements(sele, sauxelements);
 
     // different options for mortar integration
     if (lmtype == INPAR::MORTAR::lagmult_quad || lmtype == INPAR::MORTAR::lagmult_lin)
@@ -8480,7 +8480,7 @@ void CONTACT::Interface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vecto
           int ncol = melements[nummaster]->num_node();
           CORE::LINALG::SerialDenseVector mval(ncol);
           CORE::LINALG::SerialDenseMatrix mderiv(ncol, 2);
-          melements[nummaster]->EvaluateShape(mxi, mval, mderiv, ncol, false);
+          melements[nummaster]->evaluate_shape(mxi, mval, mderiv, ncol, false);
 
           //          int linsize    = mynode->GetLinsize();
           int linsize = 100;
@@ -9422,7 +9422,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     requiredEntries.push_back("slave forces");
     requiredEntries.push_back("master forces");
 
-    CheckOutputList(outputParams, requiredEntries);
+    check_output_list(outputParams, requiredEntries);
   }
 
   // Get the discretization writer and get ready for writing

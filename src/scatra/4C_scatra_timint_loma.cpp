@@ -157,8 +157,8 @@ void SCATRA::ScaTraTimIntLoma::compute_initial_therm_pressure_deriv()
       "action", SCATRA::Action::calc_domain_and_bodyforce, eleparams);
 
   // the time = 0.0, since this function is called BEFORE the first increment_time_and_step() in
-  // InitialCalculations() therefore, the standard set_element_time_parameter() can be used for this
-  // method
+  // initial_calculations() therefore, the standard set_element_time_parameter() can be used for
+  // this method
 
   // variables for integrals of domain and bodyforce
   Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars =

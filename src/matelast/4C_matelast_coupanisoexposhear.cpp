@@ -109,7 +109,7 @@ void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::on_global_element_data
         DefaultAnisotropyExtension<2>::INIT_MODE_NODAL_FIBERS);
   }
 
-  if (GetAnisotropy()->GetElementFibers().empty())
+  if (get_anisotropy()->GetElementFibers().empty())
   {
     FOUR_C_THROW("No element fibers are given with the FIBER1 FIBER2 notation");
   }
@@ -117,13 +117,13 @@ void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::on_global_element_data
   scalar_products_.resize(1);
   structural_tensors_.resize(1);
   structural_tensors_stress_.resize(1);
-  scalar_products_[0] = GetAnisotropy()
+  scalar_products_[0] = get_anisotropy()
                             ->GetElementFiber(fiber_ids_[0])
-                            .Dot(GetAnisotropy()->GetElementFiber(fiber_ids_[1]));
+                            .Dot(get_anisotropy()->GetElementFiber(fiber_ids_[1]));
 
   CORE::LINALG::Matrix<3, 3> fiber1fiber2T(false);
-  fiber1fiber2T.MultiplyNT(GetAnisotropy()->GetElementFiber(fiber_ids_[0]),
-      GetAnisotropy()->GetElementFiber(fiber_ids_[1]));
+  fiber1fiber2T.MultiplyNT(get_anisotropy()->GetElementFiber(fiber_ids_[0]),
+      get_anisotropy()->GetElementFiber(fiber_ids_[1]));
 
   structural_tensors_[0].Update(0.5, fiber1fiber2T);
   structural_tensors_[0].UpdateT(0.5, fiber1fiber2T, 1.0);
@@ -151,24 +151,24 @@ void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::on_global_gp_data_init
         DefaultAnisotropyExtension<2>::INIT_MODE_NODAL_FIBERS);
   }
 
-  if (GetAnisotropy()->GetNumberOfGPFibers() == 0)
+  if (get_anisotropy()->GetNumberOfGPFibers() == 0)
   {
     FOUR_C_THROW("No element fibers are given with the FIBER1 FIBER2 notation");
   }
 
-  scalar_products_.resize(GetAnisotropy()->get_number_of_gauss_points());
-  structural_tensors_.resize(GetAnisotropy()->get_number_of_gauss_points());
-  structural_tensors_stress_.resize(GetAnisotropy()->get_number_of_gauss_points());
+  scalar_products_.resize(get_anisotropy()->get_number_of_gauss_points());
+  structural_tensors_.resize(get_anisotropy()->get_number_of_gauss_points());
+  structural_tensors_stress_.resize(get_anisotropy()->get_number_of_gauss_points());
 
-  for (auto gp = 0; gp < GetAnisotropy()->get_number_of_gauss_points(); ++gp)
+  for (auto gp = 0; gp < get_anisotropy()->get_number_of_gauss_points(); ++gp)
   {
-    scalar_products_[gp] = GetAnisotropy()
+    scalar_products_[gp] = get_anisotropy()
                                ->GetGPFiber(gp, fiber_ids_[0])
-                               .Dot(GetAnisotropy()->GetGPFiber(gp, fiber_ids_[1]));
+                               .Dot(get_anisotropy()->GetGPFiber(gp, fiber_ids_[1]));
 
     CORE::LINALG::Matrix<3, 3> fiber1fiber2T(false);
-    fiber1fiber2T.MultiplyNT(GetAnisotropy()->GetGPFiber(gp, fiber_ids_[0]),
-        GetAnisotropy()->GetGPFiber(gp, fiber_ids_[1]));
+    fiber1fiber2T.MultiplyNT(get_anisotropy()->GetGPFiber(gp, fiber_ids_[0]),
+        get_anisotropy()->GetGPFiber(gp, fiber_ids_[1]));
 
     structural_tensors_[gp].Update(0.5, fiber1fiber2T);
     structural_tensors_[gp].UpdateT(0.5, fiber1fiber2T, 1.0);

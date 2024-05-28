@@ -98,7 +98,7 @@ namespace CORE::REBALANCE
   /*!
   \brief Create node and edge weights based on element connectivity
 
-  @param[in] dis Discretization used to build the weights
+  @param[in] dis discretization used to build the weights
 
   @return Node and edge weights to be used for repartitioning
   */
@@ -108,9 +108,9 @@ namespace CORE::REBALANCE
   /*!
   \brief Build node graph of a given  discretization
 
-  \pre Discretization does NOT have to be fill_complete().
+  \pre discretization does NOT have to be fill_complete().
 
-  @param[in] dis Discretization whose node graph will be build
+  @param[in] dis discretization whose node graph will be build
   @param[in] roweles Element row map of this discretization
 
   @return Uncompleted node graph of input discretization
@@ -125,9 +125,9 @@ namespace CORE::REBALANCE
   to obtain information about close elements. Based on this information, additional edges are
   build into the graph.
 
-  \pre Discretization has to be fill_complete()!
+  \pre discretization has to be fill_complete()!
 
-  @param[in] dis Discretization whose monolithic node graph will be build
+  @param[in] dis discretization whose monolithic node graph will be build
 
   @return Completed monolithic node graph of input discretization
   */

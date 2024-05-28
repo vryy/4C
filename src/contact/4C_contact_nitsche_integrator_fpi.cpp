@@ -62,7 +62,7 @@ void CONTACT::IntegratorNitscheFpi::IntegrateDerivEle3D(MORTAR::Element& sele,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::IntegratorNitscheFpi::IntegrateGP_3D(MORTAR::Element& sele, MORTAR::Element& mele,
+void CONTACT::IntegratorNitscheFpi::integrate_gp_3_d(MORTAR::Element& sele, MORTAR::Element& mele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
     CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -205,7 +205,7 @@ void CONTACT::IntegratorNitscheFpi::gpts_forces(MORTAR::Element& sele, MORTAR::E
   if (snn_pengap >= normal_contact_transition && !FSI_integrated)
   {
     CORE::GEN::Pairedvector<int, double> lin_fluid_traction(0);
-    IntegrateTest<dim>(-1., sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt,
+    integrate_test<dim>(-1., sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt,
         normal_contact_transition, lin_fluid_traction, lin_fluid_traction, normal, dnmap_unit);
 #ifdef WRITE_GMSH
     {
@@ -237,10 +237,10 @@ void CONTACT::IntegratorNitscheFpi::gpts_forces(MORTAR::Element& sele, MORTAR::E
   CORE::GEN::Pairedvector<int, double> cauchy_nn_weighted_average_deriv_p(
       sele.MoData().ParentPFPres().size() + mele.MoData().ParentPFPres().size());
 
-  SoEleCauchy<dim>(sele, sxi, dsxi, wgt, normal, dnmap_unit, normal, dnmap_unit, ws,
+  so_ele_cauchy<dim>(sele, sxi, dsxi, wgt, normal, dnmap_unit, normal, dnmap_unit, ws,
       cauchy_nn_weighted_average, cauchy_nn_weighted_average_deriv_d,
       cauchy_nn_weighted_average_deriv_p);
-  SoEleCauchy<dim>(mele, mxi, dmxi, wgt, normal, dnmap_unit, normal, dnmap_unit, wm,
+  so_ele_cauchy<dim>(mele, mxi, dmxi, wgt, normal, dnmap_unit, normal, dnmap_unit, wm,
       cauchy_nn_weighted_average, cauchy_nn_weighted_average_deriv_d,
       cauchy_nn_weighted_average_deriv_p);
 
@@ -251,7 +251,7 @@ void CONTACT::IntegratorNitscheFpi::gpts_forces(MORTAR::Element& sele, MORTAR::E
   for (const auto& p : dgapgp) d_snn_av_pen_gap[p.first] += pen * p.second;
 
   // test in normal contact direction
-  IntegrateTest<dim>(-1., sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt, snn_av_pen_gap,
+  integrate_test<dim>(-1., sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt, snn_av_pen_gap,
       d_snn_av_pen_gap, cauchy_nn_weighted_average_deriv_p, normal, dnmap_unit);
 
   update_ele_contact_state(sele, 1);
@@ -295,7 +295,7 @@ double CONTACT::IntegratorNitscheFpi::get_normal_contact_transition(MORTAR::Elem
     bool& FSI_integrated, bool& gp_on_this_proc)
 {
   double poropressure(0.0);
-  if (GetPoroPressure(sele, sval, mele, mval, poropressure))
+  if (get_poro_pressure(sele, sval, mele, mval, poropressure))
   {
     return xf_c_comm_->Get_FSI_Traction(&sele, pxsi, CORE::LINALG::Matrix<dim - 1, 1>(sxi, false),
         normal, FSI_integrated, gp_on_this_proc, &poropressure);

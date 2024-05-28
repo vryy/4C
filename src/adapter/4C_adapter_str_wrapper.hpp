@@ -145,10 +145,10 @@ namespace ADAPTER
     }
 
     /// switch structure field to block matrix
-    void UseBlockMatrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
+    void use_block_matrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
         Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps) override
     {
-      structure_->UseBlockMatrix(domainmaps, rangemaps);
+      structure_->use_block_matrix(domainmaps, rangemaps);
     }
 
     // access to contact/meshtying bridge
@@ -164,15 +164,15 @@ namespace ADAPTER
     }
 
     /// direct access to discretization
-    Teuchos::RCP<DRT::Discretization> Discretization() override
+    Teuchos::RCP<DRT::Discretization> discretization() override
     {
-      return structure_->Discretization();
+      return structure_->discretization();
     }
 
     /// read only access to discretization
     [[nodiscard]] virtual Teuchos::RCP<const DRT::Discretization> GetDiscretization() const
     {
-      return structure_->Discretization();
+      return structure_->discretization();
     }
 
     /// are there any algebraic constraints?

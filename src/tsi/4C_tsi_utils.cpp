@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | remove flag thermo from condition                         dano 12/11 |
  *----------------------------------------------------------------------*/
-std::map<std::string, std::string> TSI::UTILS::ThermoStructureCloneStrategy::ConditionsToCopy()
+std::map<std::string, std::string> TSI::UTILS::ThermoStructureCloneStrategy::conditions_to_copy()
     const
 {
   return {{"ThermoDirichlet", "Dirichlet"}, {"ThermoPointNeumann", "PointNeumann"},
@@ -48,7 +48,7 @@ std::map<std::string, std::string> TSI::UTILS::ThermoStructureCloneStrategy::Con
 /*----------------------------------------------------------------------*
  | check material of cloned element                          dano 12/11 |
  *----------------------------------------------------------------------*/
-void TSI::UTILS::ThermoStructureCloneStrategy::CheckMaterialType(const int matid)
+void TSI::UTILS::ThermoStructureCloneStrategy::check_material_type(const int matid)
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
@@ -57,13 +57,13 @@ void TSI::UTILS::ThermoStructureCloneStrategy::CheckMaterialType(const int matid
   //  CORE::Materials::m_th_fourier_iso))
   //    FOUR_C_THROW("Material with ID %d is not admissible for thermo elements",matid);
 
-}  // CheckMaterialType()
+}  // check_material_type()
 
 
 /*----------------------------------------------------------------------*
  | set element data for cloned element                       dano 12/11 |
  *----------------------------------------------------------------------*/
-void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
+void TSI::UTILS::ThermoStructureCloneStrategy::set_element_data(
     Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbs)
 {
   // We need to set material and possibly other things to complete element setup.
@@ -99,20 +99,20 @@ void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
     FOUR_C_THROW("unsupported element type '%s'", typeid(*newele).name());
   }
   return;
-}  // SetElementData()
+}  // set_element_data()
 
 
 /*----------------------------------------------------------------------*
  | cloned element has to be a THERMO element                 dano 12/11 |
  *----------------------------------------------------------------------*/
-bool TSI::UTILS::ThermoStructureCloneStrategy::DetermineEleType(
+bool TSI::UTILS::ThermoStructureCloneStrategy::determine_ele_type(
     DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // we only support thermo elements here
   eletype.push_back("THERMO");
 
   return true;  // yes, we copy EVERY element (no submeshes)
-}  // DetermineEleType()
+}  // determine_ele_type()
 
 
 /*----------------------------------------------------------------------*

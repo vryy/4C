@@ -58,7 +58,7 @@ namespace SCATRA
     void calc_initial_time_derivative() override { return; };
 
     /// do explicit predictor step (nothing to predict for stationary problems!)
-    void ExplicitPredictor() const override { return; };
+    void explicit_predictor() const override { return; };
 
     /// dynamic Smagorinsky model
     void dynamic_computation_of_cs() override

@@ -77,7 +77,7 @@ namespace DRT
        * @param solid_material (in) : Solid material of the element
        *
        */
-      virtual void MaterialPostSetup(DRT::Element& ele, MAT::So3Material& solid_material) = 0;
+      virtual void material_post_setup(DRT::Element& ele, MAT::So3Material& solid_material) = 0;
 
       /*!
        * @brief Evaluate the force vector, stiffness matrix and mass matrix of the element

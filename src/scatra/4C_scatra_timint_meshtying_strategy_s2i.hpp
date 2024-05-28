@@ -102,7 +102,7 @@ namespace SCATRA
     void add_time_integration_specific_vectors() const override;
 
     //! compute time step size
-    void ComputeTimeStepSize(double& dt) override;
+    void compute_time_step_size(double& dt) override;
 
     //! return map extractor associated with blocks of auxiliary system matrix for master side
     const CORE::LINALG::MultiMapExtractor& BlockMapsMaster() const { return *blockmaps_master_; };
@@ -140,7 +140,7 @@ namespace SCATRA
         const Teuchos::ParameterList& params, SCATRA::MortarCellAssemblyStrategy& strategy) const;
 
     //! explicit predictor step to obtain better starting value for Newton-Raphson iteration
-    void ExplicitPredictor() const override;
+    void explicit_predictor() const override;
 
     //! extract selected rows from a sparse matrix
     static void ExtractMatrixRows(const CORE::LINALG::SparseMatrix& matrix,  //!< source matrix
@@ -169,7 +169,7 @@ namespace SCATRA
 
     bool system_matrix_initialization_needed() const override { return false; }
 
-    Teuchos::RCP<CORE::LINALG::SparseOperator> InitSystemMatrix() const override
+    Teuchos::RCP<CORE::LINALG::SparseOperator> init_system_matrix() const override
     {
       FOUR_C_THROW(
           "This meshtying strategy does not need to initialize the system matrix, but relies "
@@ -227,7 +227,7 @@ namespace SCATRA
     //! output solution for post-processing
     void Output() const override;
 
-    void WriteRestart() const override;
+    void write_restart() const override;
 
     //! return mortar projector P
     const Teuchos::RCP<CORE::LINALG::SparseMatrix>& P() const { return P_; };
@@ -267,7 +267,7 @@ namespace SCATRA
     void SetOldPartOfRHS() const override;
 
     //! perform setup of scatra-scatra interface coupling
-    void SetupMeshtying() override;
+    void setup_meshtying() override;
 
     //! return auxiliary system matrix for linearizations of slave fluxes w.r.t. slave dofs
     //! (non-mortar case) or slave and master dofs (mortar case)
@@ -947,7 +947,7 @@ namespace SCATRA
     );
 
     //! extract nodal state variables associated with mortar integration cell
-    virtual void ExtractNodeValues(
+    virtual void extract_node_values(
         const DRT::Discretization& idiscret,    //!< interface discretization
         DRT::Element::LocationArray& la_slave,  //!< slave-side location array
         DRT::Element::LocationArray& la_master  //!< master-side location array
@@ -962,7 +962,7 @@ namespace SCATRA
      * @param statename     name of relevant state
      * @param nds          number of relevant dofset
      */
-    void ExtractNodeValues(CORE::LINALG::Matrix<nen_slave_, 1>& estate_slave,
+    void extract_node_values(CORE::LINALG::Matrix<nen_slave_, 1>& estate_slave,
         const DRT::Discretization& idiscret, DRT::Element::LocationArray& la_slave,
         const std::string& statename = "iphinp", const int& nds = 0) const;
 
@@ -977,7 +977,7 @@ namespace SCATRA
      * @param statename      name of relevant state
      * @param nds            number of relevant dofset
      */
-    void ExtractNodeValues(std::vector<CORE::LINALG::Matrix<nen_slave_, 1>>& estate_slave,
+    void extract_node_values(std::vector<CORE::LINALG::Matrix<nen_slave_, 1>>& estate_slave,
         std::vector<CORE::LINALG::Matrix<nen_master_, 1>>& estate_master,
         const DRT::Discretization& idiscret, DRT::Element::LocationArray& la_slave,
         DRT::Element::LocationArray& la_master, const std::string& statename = "iphinp",

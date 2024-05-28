@@ -235,7 +235,7 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       /*!
       \brief Print this element
@@ -293,7 +293,7 @@ namespace DRT
 
       //@}
 
-      void MaterialPostSetup(Teuchos::ParameterList& params) override;
+      void material_post_setup(Teuchos::ParameterList& params) override;
 
       //! @name Input and Creation
 
@@ -515,12 +515,12 @@ namespace DRT
 
       //! Update history variables at the end of time step (fiber direction, inelastic deformation)
       //! (braeu 07/16)
-      void Update_element(std::vector<double>& disp,      // current displacements
+      void update_element(std::vector<double>& disp,      // current displacements
           Teuchos::ParameterList& params,                 // algorithmic parameters e.g. time
           const Teuchos::RCP<CORE::MAT::Material>& mat);  // material
 
       // compute defgrd in all gp for given disp
-      virtual void DefGradient(const std::vector<double>& disp,
+      virtual void def_gradient(const std::vector<double>& disp,
           CORE::LINALG::SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress);
 
 
@@ -545,10 +545,10 @@ namespace DRT
           STR::ELEMENTS::EvalErrorFlag flag);
 
       //! init the inverse of the jacobian and its determinant in the material configuration
-      virtual void InitJacobianMapping();
+      virtual void init_jacobian_mapping();
 
       //! init the inverse of the jacobian and its determinant in the material configuration
-      virtual int InitJacobianMapping(std::vector<double>& dispmat);
+      virtual int init_jacobian_mapping(std::vector<double>& dispmat);
 
       //! Calculate nonlinear stiffness and mass matrix
       virtual void nlnstiffmass(std::vector<int>& lm,  ///< location matrix
@@ -593,12 +593,12 @@ namespace DRT
       std::vector<double> soh8_weights() const;
 
       //! push forward of material stresses to the current, spatial configuration
-      void PK2toCauchy(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
+      void p_k2to_cauchy(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
           CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>* defgrd,
           CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>* cauchystress);
 
       //! push forward of Green-Lagrange strain to Euler-Almansi strains
-      void GLtoEA(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain,
+      void g_lto_ea(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain,
           CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>* defgrd,
           CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>* euler_almansi);
 

@@ -433,7 +433,7 @@ CORE::LINEAR_SOLVER::AMGNXN::MueluAMGWrapper::MueluAMGWrapper(
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::AMGNXN::MueluAMGWrapper::BuildHierarchy()
+void CORE::LINEAR_SOLVER::AMGNXN::MueluAMGWrapper::build_hierarchy()
 {
   // Prepare operator for MueLu
   Teuchos::RCP<Epetra_CrsMatrix> A_crs =
@@ -505,7 +505,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::MueluAMGWrapper::Setup()
   timer.reset();
 
   // Create the hierarchy
-  BuildHierarchy();
+  build_hierarchy();
 
   // Create the V-cycle
   p_ = Teuchos::rcp(new MueLu::EpetraOperator(H_));
@@ -553,7 +553,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMG::Setup()
   timer.reset();
 
   // Create the hierarchy
-  BuildHierarchy();
+  build_hierarchy();
 
   // recover info
 

@@ -85,7 +85,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] writer discretization writer
      */
-    void WriteRestart(std::shared_ptr<IO::DiscretizationWriter> writer) const;
+    void write_restart(std::shared_ptr<IO::DiscretizationWriter> writer) const;
 
     /*!
      * \brief read restart of unique global identifier handler

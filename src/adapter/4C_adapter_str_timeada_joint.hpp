@@ -61,7 +61,7 @@ namespace ADAPTER
 
    protected:
     /// setup of the auxiliary time integrator
-    void SetupAuxiliar() override;
+    void setup_auxiliar() override;
 
    private:
     //! type of adaptivity algorithm

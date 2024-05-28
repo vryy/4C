@@ -184,7 +184,7 @@ void Cardiovascular0DResultTest::TestSpecial(INPUT::LineDefinition& res, int& ne
     if (havegid)
     {
       // compare values
-      const int err = CompareValues(result, "SPECIAL", res);
+      const int err = compare_values(result, "SPECIAL", res);
       nerr += err;
       test_count++;
     }
@@ -440,7 +440,7 @@ void Cardiovascular0DResultTest::TestSpecial(INPUT::LineDefinition& res, int& ne
     if (havegid)
     {
       // compare values
-      const int err = CompareValues(result, "SPECIAL", res);
+      const int err = compare_values(result, "SPECIAL", res);
       nerr += err;
       test_count++;
     }

@@ -83,8 +83,8 @@ namespace FSI
    * the independent parallel distribution of the fields complicates the
    * exchange of coupling information. Therefore three instances of the
    * Coupling class are used that couple those fields. On top of these
-   * there are helper methods StructToAle(), StructToFluid(),
-   * FluidToStruct() and AleToFluid() to easily exchange distributed
+   * there are helper methods StructToAle(), struct_to_fluid(),
+   * fluid_to_struct() and AleToFluid() to easily exchange distributed
    * interface vectors between fields.
    *
    * The FSI algorithm requires repeated evaluations of the interface
@@ -131,22 +131,22 @@ namespace FSI
    protected:
     //! @name Transfer helpers
 
-    Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv) override;
-    Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) override;
+    Teuchos::RCP<Epetra_Vector> struct_to_fluid(Teuchos::RCP<Epetra_Vector> iv) override;
+    Teuchos::RCP<Epetra_Vector> fluid_to_struct(Teuchos::RCP<Epetra_Vector> iv) override;
 
     //@}
 
     //! @name Operators implemented by subclasses
 
     /// composed FSI operator
-    virtual void FSIOp(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag);
+    virtual void fsi_op(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag);
 
     /// interface fluid operator
-    virtual Teuchos::RCP<Epetra_Vector> FluidOp(
+    virtual Teuchos::RCP<Epetra_Vector> fluid_op(
         Teuchos::RCP<Epetra_Vector> idisp, const FillType fillFlag);
 
     /// interface structural operator
-    virtual Teuchos::RCP<Epetra_Vector> StructOp(
+    virtual Teuchos::RCP<Epetra_Vector> struct_op(
         Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag);
 
     //@}
@@ -177,7 +177,7 @@ namespace FSI
      *  - [2] U Kuettler, Effiziente Loesungsverfahren fuer Fluid-Struktur-Interaktions-Probleme,
      *    PhD-Thesis, 2009
      */
-    Teuchos::RCP<Epetra_Vector> InterfaceVelocity(Teuchos::RCP<const Epetra_Vector> idispnp) const;
+    Teuchos::RCP<Epetra_Vector> interface_velocity(Teuchos::RCP<const Epetra_Vector> idispnp) const;
 
     /// current interface displacements
     /*!
@@ -189,7 +189,7 @@ namespace FSI
     /*!
       Extract fluid force at t(n+1)
      */
-    Teuchos::RCP<Epetra_Vector> InterfaceForce();
+    Teuchos::RCP<Epetra_Vector> interface_force();
 
     //@}
 
@@ -197,7 +197,7 @@ namespace FSI
     virtual void create_status_test(Teuchos::ParameterList& nlParams,
         Teuchos::RCP<::NOX::Epetra::Group> grp, Teuchos::RCP<::NOX::StatusTest::Combo> converged);
 
-    Teuchos::RCP<UTILS::DebugWriter> MyDebugWriter() const { return debugwriter_; }
+    Teuchos::RCP<UTILS::DebugWriter> my_debug_writer() const { return debugwriter_; }
 
     /// return coupsfm_
     CORE::ADAPTER::CouplingMortar& structure_fluid_coupling_mortar();
@@ -206,7 +206,7 @@ namespace FSI
     const CORE::ADAPTER::CouplingMortar& structure_fluid_coupling_mortar() const;
 
     /// access to iteration counter
-    virtual std::vector<int> IterationCounter() { return counter_; };
+    virtual std::vector<int> iteration_counter() { return counter_; };
 
     /// extract idispn_ iveln_
     virtual void extract_previous_interface_solution();
@@ -222,7 +222,7 @@ namespace FSI
         const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
 
     /// write output
-    void Output() override;
+    void output() override;
 
    private:
     /// create linear solver framework

@@ -91,7 +91,7 @@ namespace CORE::COMM
    - The size of data ( data.size() ) must 'fit' exactly
 
    - A class should pack everything it needs to be exactly recreated on a different processor.
-   this specifically holds for classes used in a Discretization where data might be shifted around
+   this specifically holds for classes used in a discretization where data might be shifted around
    processors.
 
    - Every object that carefully implements ParObject can very easily be communicated using the

@@ -2,7 +2,7 @@
 /*! \file
 
 \brief The cut kernel computes basic geometric operation, implemented are
-    - Intersection of Surface and line or line and line
+    - intersection of Surface and line or line and line
     - Calculate local coordinates inside an element
     - Compute Distance from a point to an embedded geometrical object
       ( surface or line )
@@ -322,7 +322,7 @@ namespace CORE::GEO::CUT::KERNEL
 
 
   template <CORE::FE::CellType elementType, class T, class floatType, unsigned int dim>
-  bool WithinLimits(const T& xsi, const CORE::LINALG::Matrix<dim, 1, floatType>& tol)
+  bool within_limits(const T& xsi, const CORE::LINALG::Matrix<dim, 1, floatType>& tol)
   {
     if (xsi.M() < CORE::FE::dim<elementType>)
       FOUR_C_THROW(
@@ -449,7 +449,7 @@ namespace CORE::GEO::CUT::KERNEL
    *  \param xsi (in) : local parameter space coordinates
    *  \param tol (in) : tolerance for the check (default: \c tol=REFERENCETOL) */
   template <CORE::FE::CellType elementType, class T, class floatType>
-  bool WithinLimits(const T& xsi, const floatType& tol)
+  bool within_limits(const T& xsi, const floatType& tol)
   {
     if (xsi.M() < CORE::FE::dim<elementType>)
       FOUR_C_THROW(
@@ -533,9 +533,9 @@ namespace CORE::GEO::CUT::KERNEL
 
 
   template <CORE::FE::CellType elementType, class T>
-  bool WithinLimits(const T& xsi)
+  bool within_limits(const T& xsi)
   {
-    return WithinLimits<elementType>(xsi, REFERENCETOL);
+    return within_limits<elementType>(xsi, REFERENCETOL);
   }
 
   /** \brief check if the local augmented coordinates are within the specified limits
@@ -561,7 +561,7 @@ namespace CORE::GEO::CUT::KERNEL
 
     /* Since the first dimSide vector entries are the important ones,
      * we do not have to perform any extraction. */
-    return (check and WithinLimits<sideType>(xsi_aug, tol));
+    return (check and within_limits<sideType>(xsi_aug, tol));
   }
   template <unsigned probDim, CORE::FE::CellType sideType, class T>
   bool WithinLimitsEmbeddedManifold(const T& xsi_aug, const bool& allow_dist, const double& tol2)
@@ -1063,7 +1063,7 @@ namespace CORE::GEO::CUT::KERNEL
     }
 
     /// get the local solution coordinates
-    const CORE::LINALG::Matrix<dim, 1, floatType>& LocalCoordinates() { return xsi_; }
+    const CORE::LINALG::Matrix<dim, 1, floatType>& local_coordinates() { return xsi_; }
     /// get the solution coordaintes in the CLN format
     /// initialize the solution variable to zero
     void SetupSolve()
@@ -1104,8 +1104,8 @@ namespace CORE::GEO::CUT::KERNEL
 
       if (debug)
       {
-        std::cout << "WithinLimits             = "
-                  << (WithinLimits<elementType>(xsi_) ? "TRUE" : "FALSE") << "\n"
+        std::cout << "within_limits             = "
+                  << (within_limits<elementType>(xsi_) ? "TRUE" : "FALSE") << "\n"
                   << "rsd_.Norm2()             = " << xsi_.Norm2() << "\n"
                   << "dx_.Norm2() / rsd.Norm2()= "
                   << (iter != 0 ? dx_.Norm2() / xsi_.Norm2() : -1.0) << "\n"
@@ -1266,12 +1266,12 @@ namespace CORE::GEO::CUT::KERNEL
       }
     }
 
-    static int& GetPositionCount()
+    static int& get_position_count()
     {
       static int int_count = 0;
       return int_count;
     }
-    static int& GetDistanceCount()
+    static int& get_distance_count()
     {
       static int int_count = 0;
       return int_count;
@@ -1282,26 +1282,26 @@ namespace CORE::GEO::CUT::KERNEL
       return int_count;
     }
 
-    static int& PositionCounter()
+    static int& position_counter()
     {
       static int counter = 0;
       return counter;
     }
-    static int increase_position_counter() { return (++PositionCounter()); }
+    static int increase_position_counter() { return (++position_counter()); }
 
-    static int& DistanceCounter()
+    static int& distance_counter()
     {
       static int counter = 0;
       return counter;
     }
-    static int increase_distance_counter() { return (++DistanceCounter()); }
+    static int increase_distance_counter() { return (++distance_counter()); }
 
-    static int& IntersectionCounter()
+    static int& intersection_counter()
     {
       static int counter = 0;
       return counter;
     }
-    static int increase_intersection_counter() { return (++IntersectionCounter()); }
+    static int increase_intersection_counter() { return (++intersection_counter()); }
 
     static void report_intersection_allocated()
     {
@@ -1478,7 +1478,7 @@ namespace CORE::GEO::CUT::KERNEL
           if (prec_beg != prec_end)
           {
             FOUR_C_THROW(
-                "There is a loss of cln-precision during computation of Intersection. "
+                "There is a loss of cln-precision during computation of intersection. "
                 "Something is wrong with the conversion");
           }
         }
@@ -1493,7 +1493,7 @@ namespace CORE::GEO::CUT::KERNEL
           cond_infinity_ = true;
         }
 
-        err = compute_error(xyze, px, this->LocalCoordinates(), CLN_REFERENCE_PREC) * cond_number;
+        err = compute_error(xyze, px, this->local_coordinates(), CLN_REFERENCE_PREC) * cond_number;
         // get location taking error into account
         //  NOTE: Here one might need to get tolerance in the local coordinates, similarly as
         //  done
@@ -1519,7 +1519,7 @@ namespace CORE::GEO::CUT::KERNEL
       if (first_run_)
       {
         const int num_inter = 3;
-        if ((++GetPositionCount()) == num_inter)
+        if ((++get_position_count()) == num_inter)
         {
           all_position_done_once_ = true;
           std::cout << "All possible template position are done!" << std::endl;
@@ -1530,9 +1530,9 @@ namespace CORE::GEO::CUT::KERNEL
       return conv;
     }
 
-    const CORE::LINALG::Matrix<dim, 1, CORE::CLN::ClnWrapper>& LocalCoordinates()
+    const CORE::LINALG::Matrix<dim, 1, CORE::CLN::ClnWrapper>& local_coordinates()
     {
-      return Strategy::LocalCoordinates();
+      return Strategy::local_coordinates();
     }
 
     std::pair<bool, CORE::CLN::ClnWrapper> ConditionNumber() { return Strategy::ConditionNumber(); }
@@ -1706,7 +1706,10 @@ namespace CORE::GEO::CUT::KERNEL
       return conv;
     }
 
-    const CORE::LINALG::Matrix<dim, 1>& LocalCoordinates() { return Strategy::LocalCoordinates(); }
+    const CORE::LINALG::Matrix<dim, 1>& local_coordinates()
+    {
+      return Strategy::local_coordinates();
+    }
 
     std::pair<bool, double> ConditionNumber() { return Strategy::ConditionNumber(); }
 
@@ -1917,7 +1920,7 @@ namespace CORE::GEO::CUT::KERNEL
     const floatType* SignedDistance() const { return distance_; }
 
     /// return the local solution vector (parameter space coordinates + distance)
-    const CORE::LINALG::Matrix<probDim, 1, floatType>& LocalCoordinates() const { return xsi_; }
+    const CORE::LINALG::Matrix<probDim, 1, floatType>& local_coordinates() const { return xsi_; }
 
     /// transform tolerance from global to local coordinates
     bool GetLocalTolerance(const floatType& global_tolerance,
@@ -2010,8 +2013,8 @@ namespace CORE::GEO::CUT::KERNEL
     {
       if (debug)
       {
-        std::cout << "WithinLimits             = "
-                  << (WithinLimits<sideType>(xsi_) ? "TRUE" : "FALSE") << "\n"
+        std::cout << "within_limits             = "
+                  << (within_limits<sideType>(xsi_) ? "TRUE" : "FALSE") << "\n"
                   << "rsd_.Norm2()             = " << xsi_.Norm2() << "\n"
                   << "dx_.Norm2() / rsd.Norm2()= "
                   << (iter != 0 ? dx_.Norm2() / xsi_.Norm2() : -1.0) << "\n"
@@ -2557,7 +2560,7 @@ namespace CORE::GEO::CUT::KERNEL
           if (prec_beg != prec_end)
           {
             FOUR_C_THROW(
-                "There is a loss of cln-precision during computation of Intersection. "
+                "There is a loss of cln-precision during computation of intersection. "
                 "Something is wrong with the conversion");
           }
         }
@@ -2587,7 +2590,7 @@ namespace CORE::GEO::CUT::KERNEL
         // but just continue increase in the precision
         zero_area = this->ZeroArea();
         if (not zero_area)
-          err = compute_error(xyze_side, px, this->LocalCoordinates(), this->GetNormalVector(),
+          err = compute_error(xyze_side, px, this->local_coordinates(), this->GetNormalVector(),
                     this->SignedDistance(), CLN_REFERENCE_PREC) *
                 cond_number;
 #if DEBUG_MEMORY_ALLOCATION
@@ -2623,7 +2626,7 @@ namespace CORE::GEO::CUT::KERNEL
       if (first_run_)
       {
         const int num_inter = 3;
-        if ((++GetDistanceCount()) == num_inter)
+        if ((++get_distance_count()) == num_inter)
         {
           all_distance_done_once_ = true;
           std::cout << "All possible template distance are done!" << std::endl;
@@ -2634,9 +2637,9 @@ namespace CORE::GEO::CUT::KERNEL
       return conv;
     }
     // get the local coordinates
-    const CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper>& LocalCoordinates() const
+    const CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper>& local_coordinates() const
     {
-      return Strategy::LocalCoordinates();
+      return Strategy::local_coordinates();
     }
 
     const CORE::CLN::ClnWrapper* SignedDistance() const { return Strategy::SignedDistance(); }
@@ -2738,7 +2741,7 @@ namespace CORE::GEO::CUT::KERNEL
       CORE::LINALG::Matrix<dimSide, 1, CORE::CLN::ClnWrapper> scaled_tolerance_side_touched_edges;
       this->GetLocalTolerance(SIDE_DETECTION_TOLERANCE, scaled_tolerance_side_touched_edges);
       CORE::LINALG::Matrix<dimSide, 1, CORE::CLN::ClnWrapper> zero_tolerance_side;
-      bool is_inside = WithinLimits<sideType>(clnxsi_, zero_tolerance_side);
+      bool is_inside = within_limits<sideType>(clnxsi_, zero_tolerance_side);
       PointOnSurfacePlane point_on_surface = get_location(SIDE_DETECTION_TOLERANCE);
 
       location_ = PointOnSurfaceLoc(is_inside, point_on_surface == on);
@@ -2764,7 +2767,7 @@ namespace CORE::GEO::CUT::KERNEL
         {
           CORE::LINALG::Matrix<dimSide, 1, CORE::CLN::ClnWrapper> zero_tolerance_side;
           // this means we are on the outer boundary of the tolerance
-          if (not WithinLimits<sideType>(clnxsi_, zero_tolerance_side))
+          if (not within_limits<sideType>(clnxsi_, zero_tolerance_side))
           {
             // we transform our point to global tolerance and check if it is close enough to the
             // nodal point of the side, that is common point of the touching edges
@@ -3026,9 +3029,9 @@ namespace CORE::GEO::CUT::KERNEL
       return conv;
     }
     // get the local coordinates
-    const CORE::LINALG::Matrix<probDim, 1>& LocalCoordinates() const
+    const CORE::LINALG::Matrix<probDim, 1>& local_coordinates() const
     {
-      return Strategy::LocalCoordinates();
+      return Strategy::local_coordinates();
     }
 
     const double* SignedDistance() const { return Strategy::SignedDistance(); }
@@ -3041,7 +3044,7 @@ namespace CORE::GEO::CUT::KERNEL
 
     bool SurfaceWithinLimits(double tolerance = REFERENCETOL) const
     {
-      return CORE::GEO::CUT::KERNEL::WithinLimits<sideType>(LocalCoordinates(), tolerance);
+      return CORE::GEO::CUT::KERNEL::within_limits<sideType>(local_coordinates(), tolerance);
     }
 
     /// access the Newton tolerance
@@ -3097,7 +3100,7 @@ namespace CORE::GEO::CUT::KERNEL
     //  conversion from global to local tolerance return false
     bool get_topology_information()
     {
-      CORE::LINALG::Matrix<probDim, 1> xsi = this->LocalCoordinates();
+      CORE::LINALG::Matrix<probDim, 1> xsi = this->local_coordinates();
       // set up required tolerances
       CORE::LINALG::Matrix<dimSide, 1> scaled_tolerance;
       double distance_tolerance = SIDE_DETECTION_TOLERANCE;
@@ -3106,7 +3109,7 @@ namespace CORE::GEO::CUT::KERNEL
       CORE::LINALG::Matrix<dimSide, 1> zero_tolerance_side;
       zero_tolerance_side = 0.0;
       // find location
-      bool is_inside = WithinLimits<sideType>(xsi, zero_tolerance_side);
+      bool is_inside = within_limits<sideType>(xsi, zero_tolerance_side);
       PointOnSurfacePlane point_on_surface = get_location(distance_tolerance);
       location_ = PointOnSurfaceLoc(is_inside, point_on_surface == on);
       // clear previous and get edges nearby
@@ -3130,7 +3133,7 @@ namespace CORE::GEO::CUT::KERNEL
         const CORE::LINALG::Matrix<probDim, CORE::FE::num_nodes<sideType>>& xyze_side,
         const CORE::LINALG::Matrix<probDim, 1>& px)
     {
-      const CORE::LINALG::Matrix<probDim, 1>& xsi = this->LocalCoordinates();
+      const CORE::LINALG::Matrix<probDim, 1>& xsi = this->local_coordinates();
       const CORE::LINALG::Matrix<probDim, 2>& n_vec = this->GetNormalVector();
       const double* distance = this->SignedDistance();
       CORE::LINALG::Matrix<CORE::FE::num_nodes<sideType>, 1> surfaceFunct;
@@ -3464,7 +3467,7 @@ namespace CORE::GEO::CUT::KERNEL
       return true;
     }
 
-    const CORE::LINALG::Matrix<dimEdge + dimSide, 1, floatType>& LocalCoordinates() const
+    const CORE::LINALG::Matrix<dimEdge + dimSide, 1, floatType>& local_coordinates() const
     {
       return xsi_;
     }
@@ -3574,9 +3577,9 @@ namespace CORE::GEO::CUT::KERNEL
         const CORE::LINALG::Matrix<dimSide, 1> xsi_side(xsi_.A(), true);
         const CORE::LINALG::Matrix<dimEdge, 1> xsi_edge(xsi_.A() + dimSide, true);
         std::cout << "  off_count=" << off_count_ << "\n  Side within limits = "
-                  << (WithinLimits<sideType>(xsi_side) ? "TRUE" : "FALSE")
+                  << (within_limits<sideType>(xsi_side) ? "TRUE" : "FALSE")
                   << "\n  Edge within limits = "
-                  << (WithinLimits<edgeType>(xsi_edge) ? "TRUE" : "FALSE") << "\n";
+                  << (within_limits<edgeType>(xsi_edge) ? "TRUE" : "FALSE") << "\n";
         std::cout << "  xsi = " << xsi_;
         std::cout << "  xsi_side = " << xsi_side;
         std::cout << "  xsi_edge = " << xsi_edge;
@@ -3985,7 +3988,7 @@ namespace CORE::GEO::CUT::KERNEL
           if (prec_beg != prec_end)
           {
             FOUR_C_THROW(
-                "There is a loss of cln-precision during computation of Intersection. "
+                "There is a loss of cln-precision during computation of intersection. "
                 "Something is wrong with the conversion");
           }
         }
@@ -3999,7 +4002,7 @@ namespace CORE::GEO::CUT::KERNEL
         }
 
         err = cond_number *
-              compute_error(xyze_side, xyze_edge, this->LocalCoordinates(), CLN_REFERENCE_PREC);
+              compute_error(xyze_side, xyze_edge, this->local_coordinates(), CLN_REFERENCE_PREC);
 
         // compute scaled value of the error with respect to global coordinate
 #if DEBUG_MEMORY_ALLOCATION
@@ -4054,23 +4057,23 @@ namespace CORE::GEO::CUT::KERNEL
       return conv;
     }
 
-    const CORE::LINALG::Matrix<dimEdge + dimSide, 1, CORE::CLN::ClnWrapper>& LocalCoordinates()
+    const CORE::LINALG::Matrix<dimEdge + dimSide, 1, CORE::CLN::ClnWrapper>& local_coordinates()
         const
     {
-      return Strategy::LocalCoordinates();
+      return Strategy::local_coordinates();
     }
 
     std::pair<bool, CORE::CLN::ClnWrapper> ConditionNumber() { return Strategy::ConditionNumber(); }
 
     bool SurfaceWithinLimits(double tolerance = REFERENCETOL) const
     {
-      return WithinLimits<sideType>(LocalCoordinates(), tolerance);
+      return within_limits<sideType>(local_coordinates(), tolerance);
     }
 
     bool LineWithinLimits(double tolerance = REFERENCETOL) const
     {
-      const CORE::LINALG::Matrix<dimEdge, 1> xsi_line(LocalCoordinates().A() + dimSide, true);
-      return WithinLimits<edgeType>(xsi_line, tolerance);
+      const CORE::LINALG::Matrix<dimEdge, 1> xsi_line(local_coordinates().A() + dimSide, true);
+      return within_limits<edgeType>(xsi_line, tolerance);
     }
 
     CORE::CLN::ClnWrapper GetTolerance() const { return Strategy::GetTolerance(); }
@@ -4102,13 +4105,13 @@ namespace CORE::GEO::CUT::KERNEL
       this->get_local_tolerance_side(SIDE_DETECTION_TOLERANCE, scaled_tolerance_side_touched_edges);
       this->get_local_tolerance_edge(INSIDE_OUTSIDE_TOLERANCE, scaled_tolerance_edge);
       // compute inside-outside relation
-      if (WithinLimits<sideType>(clnxsi_, scaled_tolerance_side))
+      if (within_limits<sideType>(clnxsi_, scaled_tolerance_side))
         side_location_ = PointOnSurfaceLoc(true, true);
       else
         side_location_ = PointOnSurfaceLoc(false, true);
       const CORE::LINALG::Matrix<dimEdge, 1, CORE::CLN::ClnWrapper> clnxsi_line(
           clnxsi_.A() + dimSide, true);
-      if (WithinLimits<edgeType>(clnxsi_line, scaled_tolerance_edge))
+      if (within_limits<edgeType>(clnxsi_line, scaled_tolerance_edge))
         edge_location_ = PointOnSurfaceLoc(true, true);
       else
         edge_location_ = PointOnSurfaceLoc(false, true);
@@ -4195,7 +4198,7 @@ namespace CORE::GEO::CUT::KERNEL
         {
           CORE::LINALG::Matrix<dimSide, 1, CORE::CLN::ClnWrapper> zero_tolerance_side;
           // this means we are on the outer boundary of the tolerance
-          if (not WithinLimits<sideType>(clnxsi_, zero_tolerance_side))
+          if (not within_limits<sideType>(clnxsi_, zero_tolerance_side))
           {
             // we transform our point to global tolerance and check if it is close enough to the
             // nodal point of the side, that is common point of the touching edges
@@ -4230,7 +4233,7 @@ namespace CORE::GEO::CUT::KERNEL
               touched_edges_ids_.clear();
               side_location_ = PointOnSurfaceLoc(false, true);
               std::stringstream msg;
-              msg << "NOTICE: Intersection point is close to 2 side edges, but too far from "
+              msg << "NOTICE: intersection point is close to 2 side edges, but too far from "
                      "the corner point"
                   << "\n Distance is " << min_dist;
               FOUR_C_THROW(msg.str());
@@ -4401,22 +4404,22 @@ namespace CORE::GEO::CUT::KERNEL
       return conv;
     }
 
-    const CORE::LINALG::Matrix<dimEdge + dimSide, 1>& LocalCoordinates() const
+    const CORE::LINALG::Matrix<dimEdge + dimSide, 1>& local_coordinates() const
     {
-      return Strategy::LocalCoordinates();
+      return Strategy::local_coordinates();
     }
 
     std::pair<bool, double> ConditionNumber() { return Strategy::ConditionNumber(); }
 
     bool SurfaceWithinLimits(double tolerance = REFERENCETOL) const
     {
-      return WithinLimits<sideType>(LocalCoordinates(), tolerance);
+      return within_limits<sideType>(local_coordinates(), tolerance);
     }
 
     bool LineWithinLimits(double tolerance = REFERENCETOL) const
     {
-      const CORE::LINALG::Matrix<dimEdge, 1> xsi_line(LocalCoordinates().A() + dimSide, true);
-      return WithinLimits<edgeType>(xsi_line, tolerance);
+      const CORE::LINALG::Matrix<dimEdge, 1> xsi_line(local_coordinates().A() + dimSide, true);
+      return within_limits<edgeType>(xsi_line, tolerance);
     }
 
     double GetTolerance() const { return Strategy::GetTolerance(); }
@@ -4478,7 +4481,7 @@ namespace CORE::GEO::CUT::KERNEL
     // as well as touched edges
     bool get_topology_information()
     {
-      CORE::LINALG::Matrix<dimEdge + dimSide, 1> xsi = Strategy::LocalCoordinates();
+      CORE::LINALG::Matrix<dimEdge + dimSide, 1> xsi = Strategy::local_coordinates();
       // tolerance of getting nearby edges
       CORE::LINALG::Matrix<dimSide, 1> scaled_tolerance_side_touched_edges;
       // tolerances of determining inside/outside surface limits
@@ -4493,12 +4496,12 @@ namespace CORE::GEO::CUT::KERNEL
         return false;
       }
       // compute inside-outside relation
-      if (WithinLimits<sideType>(xsi, scaled_tolerance_side))
+      if (within_limits<sideType>(xsi, scaled_tolerance_side))
         side_location_ = PointOnSurfaceLoc(true, true);
       else
         side_location_ = PointOnSurfaceLoc(false, true);
       const CORE::LINALG::Matrix<dimEdge, 1> xsi_line(xsi.A() + dimSide, true);
-      if (WithinLimits<edgeType>(xsi_line, scaled_tolerance_edge))
+      if (within_limits<edgeType>(xsi_line, scaled_tolerance_edge))
         edge_location_ = PointOnSurfaceLoc(true, true);
       else
         edge_location_ = PointOnSurfaceLoc(false, true);

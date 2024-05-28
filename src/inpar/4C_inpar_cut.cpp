@@ -26,7 +26,7 @@ void INPAR::CUT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   Teuchos::ParameterList& cut_general = list->sublist("CUT GENERAL", false, "");
 
-  // Intersection precision (double or cln)
+  // intersection precision (double or cln)
   setStringToIntegralParameter<int>("KERNEL_INTERSECTION_FLOATTYPE", "double",
       "The floattype of the cut surface-edge intersection", tuple<std::string>("cln", "double"),
       tuple<int>(INPAR::CUT::floattype_cln, INPAR::CUT::floattype_double), &cut_general);

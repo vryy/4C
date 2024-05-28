@@ -96,7 +96,7 @@ namespace BEAMINTERACTION
     //! Full name of this visualization.
     const std::string writer_full_name_;
 
-    //! Discretization based on which global dof data can be written.
+    //! discretization based on which global dof data can be written.
     Teuchos::RCP<const DRT::Discretization> discret_;
 
     //! Map for nodal GID of discretization.

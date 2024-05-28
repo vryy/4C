@@ -88,7 +88,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::pre_evalu
     GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
     GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
     this->get_coupling_reference_position(beam_coupling_ref, solid_coupling_ref);
-    CastGeometryPair()->pre_evaluate(
+    cast_geometry_pair()->pre_evaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
   }
 }

@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                               dano 11/09 |
  *----------------------------------------------------------------------*/
-void ThermoFilter::PostHeatflux(const std::string groupname, const std::string heatfluxtype)
+void ThermoFilter::post_heatflux(const std::string groupname, const std::string heatfluxtype)
 {
   PostField* field = writer_->GetField();
   PostResult result = PostResult(field);
@@ -43,7 +43,7 @@ void ThermoFilter::PostHeatflux(const std::string groupname, const std::string h
   //--------------------------------------------------------------------
   if (heatfluxtype == "ndxyz")
   {
-    WriteHeatflux(groupname, result, nodebased);
+    write_heatflux(groupname, result, nodebased);
   }
 
   //-------------------------------------------------------------------------
@@ -51,7 +51,7 @@ void ThermoFilter::PostHeatflux(const std::string groupname, const std::string h
   //-------------------------------------------------------------------------
   else if (heatfluxtype == "cxyz")
   {
-    WriteHeatflux(groupname, result, elementbased);
+    write_heatflux(groupname, result, elementbased);
   }
 
   //-----------------------------------------------------------------------------------
@@ -59,19 +59,19 @@ void ThermoFilter::PostHeatflux(const std::string groupname, const std::string h
   //-----------------------------------------------------------------------------------
   else if (heatfluxtype == "cxyz_ndxyz")
   {
-    WriteHeatflux(groupname, result, nodebased);
+    write_heatflux(groupname, result, nodebased);
 
     // reset result for postprocessing and output of element center heatfluxes
     PostResult resulteleheatflux = PostResult(field);
     resulteleheatflux.next_result();
-    WriteHeatflux(groupname, resulteleheatflux, elementbased);
+    write_heatflux(groupname, resulteleheatflux, elementbased);
   }
   else
   {
     FOUR_C_THROW("Unknown heatflux/tempgrad type");
   }
 
-}  // ThermoFilter::PostHeatflux
+}  // ThermoFilter::post_heatflux
 
 
 
@@ -270,7 +270,7 @@ struct WriteElementCenterHeatfluxStep : SpecialFieldInterface
 /*----------------------------------------------------------------------*
  | write nodal heatflux or temperature gradient              dano 11/09 |
  *----------------------------------------------------------------------*/
-void ThermoFilter::WriteHeatflux(
+void ThermoFilter::write_heatflux(
     const std::string groupname, PostResult& result, const ResultType kind)
 {
   std::string name;

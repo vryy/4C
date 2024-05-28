@@ -53,7 +53,7 @@ namespace POROELASTSCATRA
     virtual void DoPoroStep() = 0;
     //! solve one time/incremental step of scalar transport problem (depending on coupling
     //! algorithm)
-    virtual void DoScatraStep() = 0;
+    virtual void do_scatra_step() = 0;
   };
 }  // namespace POROELASTSCATRA
 

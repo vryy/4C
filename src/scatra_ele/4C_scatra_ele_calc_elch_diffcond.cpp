@@ -98,7 +98,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::ScaTraEleCalcElchDif
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatAndRhs(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_mat_and_rhs(
     CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs, const int k,
     const double fac, const double timefacfac, const double rhsfac, const double taufac,
     const double timetaufac, const double rhstaufac, CORE::LINALG::Matrix<nen_, 1>& tauderpot,
@@ -109,23 +109,23 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatAndRhs(
   //----------------------------------------------------------------
 
   if (not my::scatraparatimint_->IsStationary())
-    my::CalcMatMass(emat, k, fac, diff_manager()->GetPhasePoro(0));
+    my::calc_mat_mass(emat, k, fac, diff_manager()->GetPhasePoro(0));
 
   //----------------------------------------------------------------
   // 2) element matrix: stationary terms of ion-transport equation
   //----------------------------------------------------------------
 
   // 2a)  element matrix: convective term
-  my::CalcMatConv(emat, k, timefacfac, diff_manager()->GetPhasePoro(0), var_manager()->SGConv());
+  my::calc_mat_conv(emat, k, timefacfac, diff_manager()->GetPhasePoro(0), var_manager()->SGConv());
 
   // 2b)  element matrix: diffusion term
   //      i)  constant diffusion coefficient
-  my::CalcMatDiff(emat, k, timefacfac * diff_manager()->GetPhasePoroTort(0));
+  my::calc_mat_diff(emat, k, timefacfac * diff_manager()->GetPhasePoroTort(0));
 
   //      ii) concentration depending diffusion coefficient
   //          (additional term for Newman material)
   if (diffcondmat_ == INPAR::ELCH::diffcondmat_newman)
-    myelectrode::CalcMatDiffCoeffLin(
+    myelectrode::calc_mat_diff_coeff_lin(
         emat, k, timefacfac, var_manager()->GradPhi(k), diff_manager()->GetPhasePoroTort(0));
 
   // 2c) element matrix: conservative part of convective term, needed for deforming bodies,
@@ -133,7 +133,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatAndRhs(
   double velocity_divergence(0.0);
   if (my::scatrapara_->IsConservative())
   {
-    my::GetDivergence(velocity_divergence, my::evelnp_);
+    my::get_divergence(velocity_divergence, my::evelnp_);
     my::calc_mat_conv_add_cons(
         emat, k, timefacfac * diff_manager()->GetPhasePoro(0), velocity_divergence, 1.0);
   }
@@ -157,26 +157,26 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatAndRhs(
   {
     //    i)  conduction term + ohmic overpotential
     //        (w_k, - t_k kappa nabla phi /(z_k F))
-    CalcMatCondOhm(emat, k, timefacfac, diff_manager()->InvFVal(k), var_manager()->GradPot());
+    calc_mat_cond_ohm(emat, k, timefacfac, diff_manager()->InvFVal(k), var_manager()->GradPot());
 
     //    ii) conduction term + concentration overpotential
     //        (w_k, - t_k RT/F kappa (thermfactor) f(t_k) nabla ln c_k /(z_k F))
     if (diffcondmat_ == INPAR::ELCH::diffcondmat_newman)
     {
-      CalcMatCondConc(emat, k, timefacfac, var_manager()->RTFFC() / diff_manager()->GetValence(k),
-          diffcondparams_->NewmanConstA(), diffcondparams_->NewmanConstB(),
-          var_manager()->GradPhi(k), var_manager()->ConIntInv());
+      calc_mat_cond_conc(emat, k, timefacfac,
+          var_manager()->RTFFC() / diff_manager()->GetValence(k), diffcondparams_->NewmanConstA(),
+          diffcondparams_->NewmanConstB(), var_manager()->GradPhi(k), var_manager()->ConIntInv());
     }
   }
   // equation for current is solved independently
   else
   {
     // current term (with current as a solution variable)
-    CalcMatCond(emat, k, timefacfac, diff_manager()->InvFVal(k), var_manager()->CurInt());
+    calc_mat_cond(emat, k, timefacfac, diff_manager()->InvFVal(k), var_manager()->CurInt());
 
     // this coupling term cancels out for a 2 equation system
     if (diffcondmat_ == INPAR::ELCH::diffcondmat_ion)
-      CalcMatCondDiff(emat, k, timefacfac, diff_manager()->InvFVal(k), var_manager()->GradPhi());
+      calc_mat_cond_diff(emat, k, timefacfac, diff_manager()->InvFVal(k), var_manager()->GradPhi());
   }  // end if(not diffcondparams_->CurSolVar())
 
   //---------------------------------------------------------------------
@@ -189,18 +189,18 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatAndRhs(
   //-----------------------------------------------------------------------
 
   if (my::scatraparatimint_->IsIncremental() and not my::scatraparatimint_->IsStationary())
-    my::CalcRHSLinMass(
+    my::calc_rhs_lin_mass(
         erhs, k, rhsfac, fac, diff_manager()->GetPhasePoro(0), diff_manager()->GetPhasePoro(0));
 
   // adaption of rhs with respect to time integration
-  my::ComputeRhsInt(rhsint, diff_manager()->GetPhasePoro(0), diff_manager()->GetPhasePoro(0),
+  my::compute_rhs_int(rhsint, diff_manager()->GetPhasePoro(0), diff_manager()->GetPhasePoro(0),
       var_manager()->Hist(k));
 
   // add RHS and history contribution
   my::calc_rhs_hist_and_source(erhs, k, fac, rhsint);
 
   // convective term
-  my::CalcRHSConv(erhs, k, rhsfac * diff_manager()->GetPhasePoro(0));
+  my::calc_rhs_conv(erhs, k, rhsfac * diff_manager()->GetPhasePoro(0));
 
   // diffusion term
   my::calc_rhs_diff(erhs, k, rhsfac * diff_manager()->GetPhasePoroTort(0));
@@ -227,12 +227,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatAndRhs(
   //      i = - kappa nabla phi  + RT/F kappa (thermfactor) f(t_k) nabla ln c_k
   if (not diffcondparams_->CurSolVar())
   {
-    CalcRhsCondOhm(erhs, k, rhsfac, diff_manager()->InvFVal(k), var_manager()->GradPot());
+    calc_rhs_cond_ohm(erhs, k, rhsfac, diff_manager()->InvFVal(k), var_manager()->GradPot());
 
     // if(diffcondmat_==INPAR::ELCH::diffcondmat_ion): all terms cancel out
     if (diffcondmat_ == INPAR::ELCH::diffcondmat_newman)
     {
-      CalcRhsCondConc(erhs, k, rhsfac, var_manager()->RTFFC() / diff_manager()->GetValence(k),
+      calc_rhs_cond_conc(erhs, k, rhsfac, var_manager()->RTFFC() / diff_manager()->GetValence(k),
           diffcondparams_->NewmanConstA(), diffcondparams_->NewmanConstB(),
           var_manager()->GradPhi(k), var_manager()->ConIntInv());
     }
@@ -241,10 +241,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatAndRhs(
   // equation for current is solved independently
   else
   {
-    CalcRhsCond(erhs, k, rhsfac, diff_manager()->InvFVal(k), var_manager()->CurInt());
+    calc_rhs_cond(erhs, k, rhsfac, diff_manager()->InvFVal(k), var_manager()->CurInt());
 
     if (diffcondmat_ == INPAR::ELCH::diffcondmat_ion)
-      CalcRhsCondDiff(erhs, k, rhsfac, var_manager()->GradPhi());
+      calc_rhs_cond_diff(erhs, k, rhsfac, var_manager()->GradPhi());
   }
 }
 
@@ -312,10 +312,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
       for (int k = 0; k < my::numscal_; ++k)
       {
         //
-        myelch::CalcMatPotEquENC(emat, k, fac, my::scatraparatimint_->AlphaF());
+        myelch::calc_mat_pot_equ_enc(emat, k, fac, my::scatraparatimint_->AlphaF());
 
         //
-        myelch::CalcRhsPotEquENC(erhs, k, fac, var_manager()->Phinp(k));
+        myelch::calc_rhs_pot_equ_enc(erhs, k, fac, var_manager()->Phinp(k));
       }
     }
     else
@@ -334,24 +334,24 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
 
     // matrix terms
     // (xsi_i,Di)
-    CalcMatCurEquCur(emat, timefacfac, var_manager()->InvF());
+    calc_mat_cur_equ_cur(emat, timefacfac, var_manager()->InvF());
 
     // (xsi, -D(kappa phi))
-    CalcMatCurEquOhm(emat, timefacfac, var_manager()->InvF(), var_manager()->GradPot());
+    calc_mat_cur_equ_ohm(emat, timefacfac, var_manager()->InvF(), var_manager()->GradPot());
 
     // (xsi, -D(RT/F kappa (thermfactor) f(t_k) nabla ln c_k))
-    CalcMatCurEquConc(emat, timefacfac, var_manager()->RTF(), var_manager()->RTFFC(),
+    calc_mat_cur_equ_conc(emat, timefacfac, var_manager()->RTF(), var_manager()->RTFFC(),
         diff_manager()->InvFVal(), diffcondparams_->NewmanConstA(), diffcondparams_->NewmanConstB(),
         var_manager()->GradPhi(), var_manager()->ConIntInv());
 
     // (xsi_i,Di)
-    CalcRhsCurEquCur(erhs, rhsfac, var_manager()->InvF(), var_manager()->CurInt());
+    calc_rhs_cur_equ_cur(erhs, rhsfac, var_manager()->InvF(), var_manager()->CurInt());
 
     // (xsi, -D(kappa phi))
-    CalcRhsCurEquOhm(erhs, rhsfac, var_manager()->InvF(), var_manager()->GradPot());
+    calc_rhs_cur_equ_ohm(erhs, rhsfac, var_manager()->InvF(), var_manager()->GradPot());
 
     // (xsi, -D(RT/F kappa (thermfactor) f(t_k) nabla ln c_k))
-    CalcRhsCurEquConc(erhs, rhsfac, var_manager()->RTF(), diff_manager()->InvFVal(),
+    calc_rhs_cur_equ_conc(erhs, rhsfac, var_manager()->RTF(), diff_manager()->InvFVal(),
         var_manager()->RTFFC(), diffcondparams_->NewmanConstA(), diffcondparams_->NewmanConstB(),
         var_manager()->GradPhi(), var_manager()->ConIntInv());
 
@@ -361,19 +361,19 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
 
     if (myelch::elchparams_->EquPot() == INPAR::ELCH::equpot_divi)
     {
-      CalcMatPotEquDivi(emat, timefacfac, var_manager()->InvF());
+      calc_mat_pot_equ_divi(emat, timefacfac, var_manager()->InvF());
 
-      CalcRhsPotEquDivi(erhs, rhsfac, var_manager()->InvF(), var_manager()->CurInt());
+      calc_rhs_pot_equ_divi(erhs, rhsfac, var_manager()->InvF(), var_manager()->CurInt());
     }
     else if (myelch::elchparams_->EquPot() == INPAR::ELCH::equpot_enc)
     {
       for (int k = 0; k < my::numscal_; ++k)
       {
         //
-        myelch::CalcMatPotEquENC(emat, k, fac, my::scatraparatimint_->AlphaF());
+        myelch::calc_mat_pot_equ_enc(emat, k, fac, my::scatraparatimint_->AlphaF());
 
         //
-        myelch::CalcRhsPotEquENC(erhs, k, fac, var_manager()->Phinp(k));
+        myelch::calc_rhs_pot_equ_enc(erhs, k, fac, var_manager()->Phinp(k));
       }
     }
     else
@@ -384,7 +384,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
 /*----------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondOhm(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_mat_cond_ohm(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac,
     const double invfval, const CORE::LINALG::Matrix<nsd_, 1>& gradpot)
 {
@@ -433,7 +433,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondOhm(
 /*----------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondConc(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_mat_cond_conc(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac,
     const double rtffcval, const double newman_const_a, const double newman_const_b,
     const CORE::LINALG::Matrix<nsd_, 1>& gradphi, const std::vector<double>& conintinv)
@@ -518,7 +518,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondConc
 /*----------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCond(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_mat_cond(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac,
     const double invfval, const CORE::LINALG::Matrix<nsd_, 1>& curint)
 {
@@ -557,7 +557,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCond(
 /*----------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondDiff(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_mat_cond_diff(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac,
     const double invfval, const std::vector<CORE::LINALG::Matrix<nsd_, 1>>& gradphi)
 {
@@ -692,7 +692,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_mat_pot_eq
 /*----------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatPotEquDivi(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_mat_pot_equ_divi(
     CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac, const double invf)
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
@@ -731,7 +731,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatPotEquDi
 /*----------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCurEquCur(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_mat_cur_equ_cur(
     CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac, const double invf)
 {
   // (v, i)
@@ -753,7 +753,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCurEquCu
 /*----------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCurEquOhm(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_mat_cur_equ_ohm(
     CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac, const double invf,
     const CORE::LINALG::Matrix<nsd_, 1>& gradpot)
 {
@@ -788,7 +788,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCurEquOh
 /*----------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCurEquConc(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_mat_cur_equ_conc(
     CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac, const double rtf,
     const double rtffc, const std::vector<double>& invfval, const double newman_const_a,
     const double newman_const_b, const std::vector<CORE::LINALG::Matrix<nsd_, 1>>& gradphi,
@@ -873,7 +873,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCurEquCo
 /*-------------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCondOhm(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_rhs_cond_ohm(
     CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac, const double invfval,
     const CORE::LINALG::Matrix<nsd_, 1>& gradpot)
 {
@@ -891,7 +891,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCondOhm(
 /*-------------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCondConc(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_rhs_cond_conc(
     CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac, const double rtffcval,
     const double newman_const_a, const double newman_const_b,
     const CORE::LINALG::Matrix<nsd_, 1>& gradphi, const std::vector<double>& conintinv)
@@ -920,7 +920,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCondConc
 /*-------------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCond(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_rhs_cond(
     CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac, const double invfval,
     const CORE::LINALG::Matrix<nsd_, 1>& curint)
 {
@@ -937,7 +937,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCond(
 /*-------------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCondDiff(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_rhs_cond_diff(
     CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac,
     const std::vector<CORE::LINALG::Matrix<nsd_, 1>>& gradphi)
 {
@@ -1010,7 +1010,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_rhs_pot_eq
 /*-------------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsPotEquDivi(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_rhs_pot_equ_divi(
     CORE::LINALG::SerialDenseVector& erhs, const double rhsfac, const double invf,
     const CORE::LINALG::Matrix<nsd_, 1>& curint)
 {
@@ -1026,7 +1026,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsPotEquDi
 /*-------------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCurEquCur(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_rhs_cur_equ_cur(
     CORE::LINALG::SerialDenseVector& erhs, const double rhsfac, const double invf,
     const CORE::LINALG::Matrix<nsd_, 1>& curint)
 {
@@ -1044,7 +1044,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCurEquCu
 /*-------------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCurEquOhm(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_rhs_cur_equ_ohm(
     CORE::LINALG::SerialDenseVector& erhs, const double rhsfac, const double invf,
     const CORE::LINALG::Matrix<nsd_, 1>& gradpot)
 {
@@ -1063,7 +1063,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCurEquOh
 /*-------------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCurEquConc(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_rhs_cur_equ_conc(
     CORE::LINALG::SerialDenseVector& erhs, const double rhsfac, const double rtf,
     const std::vector<double>& invfval, const double rtffc, const double newman_const_a,
     const double newman_const_b, const std::vector<CORE::LINALG::Matrix<nsd_, 1>>& gradphi,
@@ -1190,7 +1190,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::correction_for_
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::GetMaterialParams(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::get_material_params(
     const DRT::Element* ele, std::vector<double>& densn, std::vector<double>& densnp,
     std::vector<double>& densam, double& visc, const int iquad)
 {
@@ -1200,13 +1200,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::GetMaterialPara
   // evaluate electrolyte material
   if (material->MaterialType() == CORE::Materials::m_elchmat)
   {
-    Utils()->MatElchMat(material, var_manager()->Phinp(), var_manager()->Temperature(),
+    utils()->MatElchMat(material, var_manager()->Phinp(), var_manager()->Temperature(),
         myelch::elchparams_->EquPot(), myelch::elchparams_->Faraday() * var_manager()->FRT(),
         diff_manager(), diffcondmat_);
   }
   else
     FOUR_C_THROW("Invalid material type!");
-}  // DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetMaterialParams
+}  // DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::get_material_params
 
 
 // template classes

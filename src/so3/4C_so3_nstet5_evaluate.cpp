@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)              gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5::InitElement()
+void DRT::ELEMENTS::NStet5::init_element()
 {
   CORE::LINALG::Matrix<4, 3> xrefe;
   CORE::LINALG::Matrix<4, 3 + 1> J;
@@ -66,7 +66,7 @@ void DRT::ELEMENTS::NStet5::InitElement()
   */
   const double gploc = 0.25;
   CORE::LINALG::Matrix<4, 1> funct;
-  ShapeFunction(funct, gploc, gploc, gploc, gploc);
+  shape_function(funct, gploc, gploc, gploc, gploc);
   CORE::LINALG::Matrix<4, 4> deriv(true);
   shape_function_derivatives(deriv);
   CORE::LINALG::Matrix<3, 4> tmp;
@@ -84,10 +84,10 @@ void DRT::ELEMENTS::NStet5::InitElement()
     //                               [0 2 3 4]
     for (int k = 0; k < 3; ++k)
     {
-      xrefe(0, k) = Nodes()[SubLM(i)[0]]->X()[k];
-      xrefe(1, k) = Nodes()[SubLM(i)[1]]->X()[k];
-      xrefe(2, k) = Nodes()[SubLM(i)[2]]->X()[k];
-      xrefe(3, k) = MidX()[k];
+      xrefe(0, k) = Nodes()[sub_lm(i)[0]]->X()[k];
+      xrefe(1, k) = Nodes()[sub_lm(i)[1]]->X()[k];
+      xrefe(2, k) = Nodes()[sub_lm(i)[2]]->X()[k];
+      xrefe(3, k) = mid_x()[k];
     }
 
     // volume of subelements
@@ -393,7 +393,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
   for (int sub = 0; sub < 4; ++sub)  // loop subelements
   {
     // subelement deformation gradient previously computed in pre_evaluate
-    CORE::LINALG::Matrix<3, 3>& F = SubF(sub);
+    CORE::LINALG::Matrix<3, 3>& F = sub_f(sub);
 
     //--------------------------- Right Cauchy-Green tensor C = = F^T * F
     CORE::LINALG::Matrix<3, 3> cauchygreen;
@@ -432,7 +432,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
 
     // 6x15 n_stresses * number degrees of freedom per element
     CORE::LINALG::Matrix<6, 12> bop;
-    const CORE::LINALG::Matrix<4, 3>& nxyz = SubNxyz(sub);
+    const CORE::LINALG::Matrix<4, 3>& nxyz = sub_nxyz(sub);
     for (int i = 0; i < 4; i++)
     {
       bop(0, 3 * i + 0) = F(0, 0) * nxyz(i, 0);
@@ -508,9 +508,9 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
         {
           if (elestrain == nullptr) FOUR_C_THROW("no strain data available");
           for (int i = 0; i < 3; ++i)
-            (*elestrain)(0, i) += (SubV(sub) / Vol() * ALPHA_NSTET5 * glstrainbar(i));
+            (*elestrain)(0, i) += (sub_v(sub) / vol() * ALPHA_NSTET5 * glstrainbar(i));
           for (int i = 0; i < 3; ++i)
-            (*elestrain)(0, i) += (SubV(sub) / Vol() * ALPHA_NSTET5 * 0.5 * glstrainbar(i));
+            (*elestrain)(0, i) += (sub_v(sub) / vol() * ALPHA_NSTET5 * 0.5 * glstrainbar(i));
         }
         break;
         case INPAR::STR::strain_ea:
@@ -541,12 +541,12 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
           euler_almansi.MultiplyTN(invdefgrd, temp);
 
 
-          (*elestrain)(0, 0) += (SubV(sub) / Vol() * ALPHA_NSTET5 * euler_almansi(0, 0));
-          (*elestrain)(0, 1) += (SubV(sub) / Vol() * ALPHA_NSTET5 * euler_almansi(1, 1));
-          (*elestrain)(0, 2) += (SubV(sub) / Vol() * ALPHA_NSTET5 * euler_almansi(2, 2));
-          (*elestrain)(0, 3) += (SubV(sub) / Vol() * ALPHA_NSTET5 * euler_almansi(0, 1));
-          (*elestrain)(0, 4) += (SubV(sub) / Vol() * ALPHA_NSTET5 * euler_almansi(1, 2));
-          (*elestrain)(0, 5) += (SubV(sub) / Vol() * ALPHA_NSTET5 * euler_almansi(0, 2));
+          (*elestrain)(0, 0) += (sub_v(sub) / vol() * ALPHA_NSTET5 * euler_almansi(0, 0));
+          (*elestrain)(0, 1) += (sub_v(sub) / vol() * ALPHA_NSTET5 * euler_almansi(1, 1));
+          (*elestrain)(0, 2) += (sub_v(sub) / vol() * ALPHA_NSTET5 * euler_almansi(2, 2));
+          (*elestrain)(0, 3) += (sub_v(sub) / vol() * ALPHA_NSTET5 * euler_almansi(0, 1));
+          (*elestrain)(0, 4) += (sub_v(sub) / vol() * ALPHA_NSTET5 * euler_almansi(1, 2));
+          (*elestrain)(0, 5) += (sub_v(sub) / vol() * ALPHA_NSTET5 * euler_almansi(0, 2));
         }
         break;
         case INPAR::STR::strain_none:
@@ -562,7 +562,8 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
           if (elestress == nullptr) FOUR_C_THROW("no stress data available");
 
           for (int i = 0; i < 6; ++i)
-            (*elestress)(0, i) += (SubV(sub) / Vol() * stress(i));  // ALPHA_NSTET already in stress
+            (*elestress)(0, i) +=
+                (sub_v(sub) / vol() * stress(i));  // ALPHA_NSTET already in stress
         }
         break;
         case INPAR::STR::stress_cauchy:
@@ -591,12 +592,12 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
           temp.Multiply(1.0 / Fbar.Determinant(), Fbar, pkstress);
           cauchystress.MultiplyNT(temp, Fbar);
 
-          (*elestress)(0, 0) += (SubV(sub) / Vol() * cauchystress(0, 0));
-          (*elestress)(0, 1) += (SubV(sub) / Vol() * cauchystress(1, 1));
-          (*elestress)(0, 2) += (SubV(sub) / Vol() * cauchystress(2, 2));
-          (*elestress)(0, 3) += (SubV(sub) / Vol() * cauchystress(0, 1));
-          (*elestress)(0, 4) += (SubV(sub) / Vol() * cauchystress(1, 2));
-          (*elestress)(0, 5) += (SubV(sub) / Vol() * cauchystress(0, 2));
+          (*elestress)(0, 0) += (sub_v(sub) / vol() * cauchystress(0, 0));
+          (*elestress)(0, 1) += (sub_v(sub) / vol() * cauchystress(1, 1));
+          (*elestress)(0, 2) += (sub_v(sub) / vol() * cauchystress(2, 2));
+          (*elestress)(0, 3) += (sub_v(sub) / vol() * cauchystress(0, 1));
+          (*elestress)(0, 4) += (sub_v(sub) / vol() * cauchystress(1, 2));
+          (*elestress)(0, 5) += (sub_v(sub) / vol() * cauchystress(0, 2));
         }
         break;
         case INPAR::STR::stress_none:
@@ -612,20 +613,20 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
     {
       CORE::LINALG::Matrix<12, 1> subforce(true);
       // integrate internal force vector f = f + (B^T . sigma) * V
-      subforce.MultiplyTN(SubV(sub), bop, stress, 0.0);
+      subforce.MultiplyTN(sub_v(sub), bop, stress, 0.0);
 
       for (int i = 0; i < 4; ++i)  // loop 4 nodes of subelement
       {
-        (*force)(SubLM(sub)[i] * 3 + 0) += subforce(i * 3 + 0);
-        (*force)(SubLM(sub)[i] * 3 + 1) += subforce(i * 3 + 1);
-        (*force)(SubLM(sub)[i] * 3 + 2) += subforce(i * 3 + 2);
+        (*force)(sub_lm(sub)[i] * 3 + 0) += subforce(i * 3 + 0);
+        (*force)(sub_lm(sub)[i] * 3 + 1) += subforce(i * 3 + 1);
+        (*force)(sub_lm(sub)[i] * 3 + 2) += subforce(i * 3 + 2);
       }
     }  // if (force)
 
     // update stiffness matrix
     if (stiffmatrix)
     {
-      const double V = SubV(sub);
+      const double V = sub_v(sub);
       CORE::LINALG::Matrix<12, 12> substiffmatrix(true);
       // integrate elastic stiffness matrix
       // keu = keu + (B^T . C . B) * V
@@ -653,25 +654,25 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
       for (int i = 0; i < 4; ++i)
         for (int j = 0; j < 4; ++j)
         {
-          (*stiffmatrix)(SubLM(sub)[i] * 3 + 0, SubLM(sub)[j] * 3 + 0) +=
+          (*stiffmatrix)(sub_lm(sub)[i] * 3 + 0, sub_lm(sub)[j] * 3 + 0) +=
               substiffmatrix(i * 3 + 0, j * 3 + 0);
-          (*stiffmatrix)(SubLM(sub)[i] * 3 + 0, SubLM(sub)[j] * 3 + 1) +=
+          (*stiffmatrix)(sub_lm(sub)[i] * 3 + 0, sub_lm(sub)[j] * 3 + 1) +=
               substiffmatrix(i * 3 + 0, j * 3 + 1);
-          (*stiffmatrix)(SubLM(sub)[i] * 3 + 0, SubLM(sub)[j] * 3 + 2) +=
+          (*stiffmatrix)(sub_lm(sub)[i] * 3 + 0, sub_lm(sub)[j] * 3 + 2) +=
               substiffmatrix(i * 3 + 0, j * 3 + 2);
 
-          (*stiffmatrix)(SubLM(sub)[i] * 3 + 1, SubLM(sub)[j] * 3 + 0) +=
+          (*stiffmatrix)(sub_lm(sub)[i] * 3 + 1, sub_lm(sub)[j] * 3 + 0) +=
               substiffmatrix(i * 3 + 1, j * 3 + 0);
-          (*stiffmatrix)(SubLM(sub)[i] * 3 + 1, SubLM(sub)[j] * 3 + 1) +=
+          (*stiffmatrix)(sub_lm(sub)[i] * 3 + 1, sub_lm(sub)[j] * 3 + 1) +=
               substiffmatrix(i * 3 + 1, j * 3 + 1);
-          (*stiffmatrix)(SubLM(sub)[i] * 3 + 1, SubLM(sub)[j] * 3 + 2) +=
+          (*stiffmatrix)(sub_lm(sub)[i] * 3 + 1, sub_lm(sub)[j] * 3 + 2) +=
               substiffmatrix(i * 3 + 1, j * 3 + 2);
 
-          (*stiffmatrix)(SubLM(sub)[i] * 3 + 2, SubLM(sub)[j] * 3 + 0) +=
+          (*stiffmatrix)(sub_lm(sub)[i] * 3 + 2, sub_lm(sub)[j] * 3 + 0) +=
               substiffmatrix(i * 3 + 2, j * 3 + 0);
-          (*stiffmatrix)(SubLM(sub)[i] * 3 + 2, SubLM(sub)[j] * 3 + 1) +=
+          (*stiffmatrix)(sub_lm(sub)[i] * 3 + 2, sub_lm(sub)[j] * 3 + 1) +=
               substiffmatrix(i * 3 + 2, j * 3 + 1);
-          (*stiffmatrix)(SubLM(sub)[i] * 3 + 2, SubLM(sub)[j] * 3 + 2) +=
+          (*stiffmatrix)(sub_lm(sub)[i] * 3 + 2, sub_lm(sub)[j] * 3 + 2) +=
               substiffmatrix(i * 3 + 2, j * 3 + 2);
         }
     }  // if (stiffmatrix)
@@ -686,7 +687,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
       const double alpha = (5.0 + 3.0 * sqrt(5.0)) / 20.0;
       const double beta = (5.0 - sqrt(5.0)) / 20.0;
       const double weight = 0.25;
-      const double V = SubV(sub);
+      const double V = sub_v(sub);
       double xsi[4][4];
       xsi[0][0] = alpha;
       xsi[0][1] = beta;
@@ -707,7 +708,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
       for (auto& gp : xsi)
       {
         CORE::LINALG::Matrix<4, 1> funct;
-        ShapeFunction(funct, gp[0], gp[1], gp[2], gp[3]);
+        shape_function(funct, gp[0], gp[1], gp[2], gp[3]);
         const double f = density * V * weight;
         for (int i = 0; i < 4; ++i)
           for (int j = 0; j < 4; ++j)
@@ -721,25 +722,25 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
       for (int i = 0; i < 4; ++i)
         for (int j = 0; j < 4; ++j)
         {
-          (*massmatrix)(SubLM(sub)[i] * 3 + 0, SubLM(sub)[j] * 3 + 0) +=
+          (*massmatrix)(sub_lm(sub)[i] * 3 + 0, sub_lm(sub)[j] * 3 + 0) +=
               submassmatrix(i * 3 + 0, j * 3 + 0);
-          (*massmatrix)(SubLM(sub)[i] * 3 + 0, SubLM(sub)[j] * 3 + 1) +=
+          (*massmatrix)(sub_lm(sub)[i] * 3 + 0, sub_lm(sub)[j] * 3 + 1) +=
               submassmatrix(i * 3 + 0, j * 3 + 1);
-          (*massmatrix)(SubLM(sub)[i] * 3 + 0, SubLM(sub)[j] * 3 + 2) +=
+          (*massmatrix)(sub_lm(sub)[i] * 3 + 0, sub_lm(sub)[j] * 3 + 2) +=
               submassmatrix(i * 3 + 0, j * 3 + 2);
 
-          (*massmatrix)(SubLM(sub)[i] * 3 + 1, SubLM(sub)[j] * 3 + 0) +=
+          (*massmatrix)(sub_lm(sub)[i] * 3 + 1, sub_lm(sub)[j] * 3 + 0) +=
               submassmatrix(i * 3 + 1, j * 3 + 0);
-          (*massmatrix)(SubLM(sub)[i] * 3 + 1, SubLM(sub)[j] * 3 + 1) +=
+          (*massmatrix)(sub_lm(sub)[i] * 3 + 1, sub_lm(sub)[j] * 3 + 1) +=
               submassmatrix(i * 3 + 1, j * 3 + 1);
-          (*massmatrix)(SubLM(sub)[i] * 3 + 1, SubLM(sub)[j] * 3 + 2) +=
+          (*massmatrix)(sub_lm(sub)[i] * 3 + 1, sub_lm(sub)[j] * 3 + 2) +=
               submassmatrix(i * 3 + 1, j * 3 + 2);
 
-          (*massmatrix)(SubLM(sub)[i] * 3 + 2, SubLM(sub)[j] * 3 + 0) +=
+          (*massmatrix)(sub_lm(sub)[i] * 3 + 2, sub_lm(sub)[j] * 3 + 0) +=
               submassmatrix(i * 3 + 2, j * 3 + 0);
-          (*massmatrix)(SubLM(sub)[i] * 3 + 2, SubLM(sub)[j] * 3 + 1) +=
+          (*massmatrix)(sub_lm(sub)[i] * 3 + 2, sub_lm(sub)[j] * 3 + 1) +=
               submassmatrix(i * 3 + 2, j * 3 + 1);
-          (*massmatrix)(SubLM(sub)[i] * 3 + 2, SubLM(sub)[j] * 3 + 2) +=
+          (*massmatrix)(sub_lm(sub)[i] * 3 + 2, sub_lm(sub)[j] * 3 + 2) +=
               submassmatrix(i * 3 + 2, j * 3 + 2);
         }
     }  // if (massmatrix)

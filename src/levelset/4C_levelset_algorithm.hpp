@@ -67,11 +67,11 @@ namespace SCATRA
         const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override = 0;
 
     //! set the velocity field (zero or field by function) (pure level-set problems)
-    void SetVelocityField(bool init = false);
+    void set_velocity_field(bool init = false);
 
     /// set convective velocity field (+ pressure and acceleration field as
     /// well as fine-scale velocity field, if required) (function for coupled fluid problems)
-    void SetVelocityField(Teuchos::RCP<const Epetra_Vector> convvel,
+    void set_velocity_field(Teuchos::RCP<const Epetra_Vector> convvel,
         Teuchos::RCP<const Epetra_Vector> acc, Teuchos::RCP<const Epetra_Vector> vel,
         Teuchos::RCP<const Epetra_Vector> fsvel, bool setpressure = false, bool init = false);
 
@@ -105,7 +105,7 @@ namespace SCATRA
         const Teuchos::RCP<const DRT::Discretization>& scatradis, double& volumedomainminus) const;
 
     //! identify interface side due to phivalue value
-    inline bool plusDomain(double phiValue)
+    inline bool plus_domain(double phiValue)
     {
       double TOL = 1.0e-14;
       if (phiValue < -TOL)
@@ -115,14 +115,14 @@ namespace SCATRA
     };
 
     /// update state vectors
-    virtual void UpdateState() = 0;
+    virtual void update_state() = 0;
 
     // -----------------------------------------------------------------
     // reinitialization
     // -----------------------------------------------------------------
 
     /// reinitialize level-set
-    virtual void Reinitialization();
+    virtual void reinitialization();
 
     /** \brief calculation of nodal velocity field via L2-projection for reinitialization
      *
@@ -138,17 +138,17 @@ namespace SCATRA
     /** \brief access nodal gradient-based values for reinitialization
      *
      * (reinit_eq() only; Sussman and Elliptic) */
-    inline Teuchos::RCP<Epetra_MultiVector>& NodalGradBasedValue() { return nb_grad_val_; }
-    inline Teuchos::RCP<const Epetra_MultiVector> NodalGradBasedValue() const
+    inline Teuchos::RCP<Epetra_MultiVector>& nodal_grad_based_value() { return nb_grad_val_; }
+    inline Teuchos::RCP<const Epetra_MultiVector> nodal_grad_based_value() const
     {
       return nb_grad_val_;
     }
 
     /// access the interval for reinitialization (every 'reinitinterval_' time steps)
-    inline const int& ReinitInterval() const { return reinitinterval_; }
+    inline const int& reinit_interval() const { return reinitinterval_; }
 
     /// use projection for grad phi and related quantities
-    inline const bool& UseProjection() const { return projection_; }
+    inline const bool& use_projection() const { return projection_; }
 
     // -----------------------------------------------------------------
     // Reconstructing nodal curvature

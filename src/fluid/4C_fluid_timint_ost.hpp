@@ -132,7 +132,7 @@ namespace FLD
     \brief return scaling factor for the residual
 
     */
-    double ResidualScaling() const override
+    double residual_scaling() const override
     {
       if (params_->get<bool>("ost new"))
         return 1.0 / (dta_);
@@ -144,7 +144,7 @@ namespace FLD
     \brief velocity required for evaluation of related quantites required on element level
 
     */
-    Teuchos::RCP<const Epetra_Vector> EvaluationVel() override { return velnp_; };
+    Teuchos::RCP<const Epetra_Vector> evaluation_vel() override { return velnp_; };
 
     /*!
     \ apply external forces to the fluid

@@ -74,7 +74,7 @@ namespace SCATRA
 
     bool system_matrix_initialization_needed() const override { return false; }
 
-    Teuchos::RCP<CORE::LINALG::SparseOperator> InitSystemMatrix() const override
+    Teuchos::RCP<CORE::LINALG::SparseOperator> init_system_matrix() const override
     {
       FOUR_C_THROW(
           "This meshtying strategy does not need to initialize the system matrix, but relies "
@@ -91,7 +91,7 @@ namespace SCATRA
     }
 
     //! setup
-    void SetupMeshtying() override;
+    void setup_meshtying() override;
 
     //! solver
     const CORE::LINALG::Solver& Solver() const override;

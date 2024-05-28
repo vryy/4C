@@ -88,7 +88,7 @@ void PARTICLEENGINE::ParticleEngine::Setup(
   setup_type_weights();
 }
 
-void PARTICLEENGINE::ParticleEngine::WriteRestart(const int step, const double time) const
+void PARTICLEENGINE::ParticleEngine::write_restart(const int step, const double time) const
 {
   // get bin discretization writer
   std::shared_ptr<IO::DiscretizationWriter> binwriter =
@@ -104,7 +104,7 @@ void PARTICLEENGINE::ParticleEngine::WriteRestart(const int step, const double t
   binwriter->WriteCharVector("ParticleData", Teuchos::rcp(particlebuffer));
 
   // write restart of unique global identifier handler
-  particleuniqueglobalidhandler_->WriteRestart(binwriter);
+  particleuniqueglobalidhandler_->write_restart(binwriter);
 }
 
 void PARTICLEENGINE::ParticleEngine::read_restart(

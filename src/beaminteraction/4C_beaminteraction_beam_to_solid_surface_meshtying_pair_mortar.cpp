@@ -46,7 +46,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
   {
-    this->CastGeometryPair()->Evaluate(this->ele1posref_,
+    this->cast_geometry_pair()->Evaluate(this->ele1posref_,
         this->face_element_->get_face_reference_element_data(), this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
@@ -61,7 +61,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
   CORE::LINALG::Matrix<mortar::n_dof_, 1, double> local_constraint(false);
 
   // Evaluate the local mortar contributions.
-  EvaluateDM(local_D, local_M, local_kappa, local_constraint);
+  evaluate_dm(local_D, local_M, local_kappa, local_constraint);
 
   // Assemble into global matrices.
   AssembleLocalMortarContributions<beam, surface, mortar>(this, discret, mortar_manager, global_G_B,
@@ -73,7 +73,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
  *
  */
 template <typename beam, typename surface, typename mortar>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, mortar>::EvaluateDM(
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, mortar>::evaluate_dm(
     CORE::LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
     CORE::LINALG::Matrix<mortar::n_dof_, surface::n_dof_, double>& local_M,
     CORE::LINALG::Matrix<mortar::n_dof_, 1, double>& local_kappa,

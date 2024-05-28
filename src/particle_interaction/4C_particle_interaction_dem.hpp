@@ -68,7 +68,7 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface) override;
 
     //! write restart of particle interaction handler
-    void WriteRestart() const override;
+    void write_restart() const override;
 
     //! read restart of particle interaction handler
     void read_restart(const std::shared_ptr<IO::DiscretizationReader> reader) override;
@@ -82,7 +82,7 @@ namespace PARTICLEINTERACTION
     void SetInitialStates() override;
 
     //! pre evaluate time step
-    void PreEvaluateTimeStep() override;
+    void pre_evaluate_time_step() override;
 
     //! evaluate particle interactions
     void evaluate_interactions() override;

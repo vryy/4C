@@ -211,7 +211,7 @@ double STR::TIMINT::NoxInterface::GetPrimaryRHSNorms(const Epetra_Vector& F,
 
       int_ptr_->remove_condensed_contributions_from_rhs(*rhs_ptr);
 
-      rhsnorm = CalculateNorm(rhs_ptr, type, isscaled);
+      rhsnorm = calculate_norm(rhs_ptr, type, isscaled);
 
       break;
     }
@@ -223,7 +223,7 @@ double STR::TIMINT::NoxInterface::GetPrimaryRHSNorms(const Epetra_Vector& F,
       // extract entries specific to element technology
       gstate_ptr_->extract_element_technologies(NOX::NLN::StatusTest::quantity_pressure, rhs_ptr);
 
-      rhsnorm = CalculateNorm(rhs_ptr, type, isscaled);
+      rhsnorm = calculate_norm(rhs_ptr, type, isscaled);
 
       break;
     }
@@ -332,7 +332,7 @@ double STR::TIMINT::NoxInterface::get_primary_solution_update_norms(const Epetra
       gstate_ptr_->remove_element_technologies(model_xnew_ptr);
 
       model_incr_ptr->Update(1.0, *model_xnew_ptr, -1.0);
-      updatenorm = CalculateNorm(model_incr_ptr, type, isscaled);
+      updatenorm = calculate_norm(model_incr_ptr, type, isscaled);
 
       break;
     }
@@ -349,7 +349,7 @@ double STR::TIMINT::NoxInterface::get_primary_solution_update_norms(const Epetra
           NOX::NLN::StatusTest::quantity_pressure, model_xnew_ptr);
 
       model_incr_ptr->Update(1.0, *model_xnew_ptr, -1.0);
-      updatenorm = CalculateNorm(model_incr_ptr, type, isscaled);
+      updatenorm = calculate_norm(model_incr_ptr, type, isscaled);
 
       break;
     }
@@ -400,7 +400,7 @@ double STR::TIMINT::NoxInterface::get_previous_primary_solution_norms(const Epet
       // remove entries specific to element technology
       gstate_ptr_->remove_element_technologies(model_xold_ptr);
 
-      xoldnorm = CalculateNorm(model_xold_ptr, type, isscaled);
+      xoldnorm = calculate_norm(model_xold_ptr, type, isscaled);
 
       break;
     }
@@ -413,7 +413,7 @@ double STR::TIMINT::NoxInterface::get_previous_primary_solution_norms(const Epet
       gstate_ptr_->extract_element_technologies(
           NOX::NLN::StatusTest::quantity_pressure, model_xold_ptr);
 
-      xoldnorm = CalculateNorm(model_xold_ptr, type, isscaled);
+      xoldnorm = calculate_norm(model_xold_ptr, type, isscaled);
 
       break;
     }
@@ -441,7 +441,7 @@ double STR::TIMINT::NoxInterface::get_previous_primary_solution_norms(const Epet
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TIMINT::NoxInterface::CalculateNorm(Teuchos::RCP<Epetra_Vector> quantity,
+double STR::TIMINT::NoxInterface::calculate_norm(Teuchos::RCP<Epetra_Vector> quantity,
     const ::NOX::Abstract::Vector::NormType type, const bool isscaled) const
 {
   Teuchos::RCP<const ::NOX::Epetra::Vector> quantity_nox =

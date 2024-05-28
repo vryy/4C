@@ -340,7 +340,7 @@ namespace MORTAR
 
     inline INPAR::MORTAR::Problemtype PoroType() const { return porotype_; }
 
-    inline Teuchos::RCP<CORE::COMM::Exporter>& SlExporterPtr() { return sl_exporter_; }
+    inline Teuchos::RCP<CORE::COMM::Exporter>& sl_exporter_ptr() { return sl_exporter_; }
 
     inline CORE::COMM::Exporter& Exporter()
     {
@@ -1244,7 +1244,7 @@ namespace MORTAR
     \brief Assemble matrix of normals N
 
     */
-    void AssembleNormals(CORE::LINALG::SparseMatrix& nglobal);
+    void assemble_normals(CORE::LINALG::SparseMatrix& nglobal);
 
     /*!
     \brief Assemble transformation matrices T and T^(-1)
@@ -1359,7 +1359,7 @@ namespace MORTAR
 
     \sa output_state()
      */
-    bool CheckOutputList(const Teuchos::ParameterList& outParams,
+    bool check_output_list(const Teuchos::ParameterList& outParams,
         const std::vector<std::string>& requiredEntries) const;
 
     //! @}
@@ -1405,7 +1405,7 @@ namespace MORTAR
      *
      *  \author hiermeier
      *  \date 11/16 */
-    virtual void PreMortarCoupling(const MORTAR::Element* sele,
+    virtual void pre_mortar_coupling(const MORTAR::Element* sele,
         const std::vector<MORTAR::Element*> mele,
         const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) const {
         /* does nothing in the default case */};
@@ -1418,7 +1418,7 @@ namespace MORTAR
      *
      *  \author hiermeier
      *  \date 11/16 */
-    virtual void PostMortarCoupling(const MORTAR::Element* sele,
+    virtual void post_mortar_coupling(const MORTAR::Element* sele,
         const std::vector<MORTAR::Element*> mele,
         const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) const {
         /* does nothing in the default case */};
@@ -1427,7 +1427,7 @@ namespace MORTAR
     \brief Evaluate segment-to-segment coupling (mortar...)
 
     */
-    virtual void EvaluateSTS(
+    virtual void evaluate_sts(
         const Epetra_Map& selecolmap, const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
     /*!
@@ -1440,19 +1440,19 @@ namespace MORTAR
     \brief Evaluate line-to-segment coupling
 
     */
-    virtual void EvaluateLTS();
+    virtual void evaluate_lts();
 
     /*!
     \brief Evaluate line-to-segment coupling
 
     */
-    virtual void EvaluateLTL();
+    virtual void evaluate_ltl();
 
     /*!
     \brief Evaluate segment-to-line coupling
 
     */
-    virtual void EvaluateSTL();
+    virtual void evaluate_stl();
 
     /*!
     \brief Export nodal normals
@@ -1464,7 +1464,7 @@ namespace MORTAR
     all adjacent elements and thus would compute wrong nodal normals by itself.
 
     */
-    virtual void ExportNodalNormals() const;
+    virtual void export_nodal_normals() const;
 
     /*!
     \brief build nodal normals and other stuff before real coupling
@@ -1480,7 +1480,7 @@ namespace MORTAR
     Thus, it can be interpreted as switch between constraints discretizations
 
     */
-    virtual void EvaluateCoupling(const Epetra_Map& selecolmap, const Epetra_Map* snoderowmap,
+    virtual void evaluate_coupling(const Epetra_Map& selecolmap, const Epetra_Map* snoderowmap,
         const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
     /*!
@@ -1493,7 +1493,7 @@ namespace MORTAR
     \brief find master nodes for one snode
 
     */
-    void FindMNodes(
+    void find_m_nodes(
         Node& mrtrnode, std::vector<MORTAR::Element*>& meles, std::vector<Node*>& mnodes);
 
     /*!
@@ -1512,13 +1512,13 @@ namespace MORTAR
     \brief Set element areas
 
     */
-    virtual void SetElementAreas();
+    virtual void set_element_areas();
 
     /*!
     \brief Split MORTAR::Elements into IntElements for 3D quadratic coupling
 
     */
-    bool SplitIntElements(
+    bool split_int_elements(
         MORTAR::Element& ele, std::vector<Teuchos::RCP<MORTAR::IntElement>>& auxele);
 
     /*!
@@ -1713,7 +1713,7 @@ namespace MORTAR
     \brief Get a const reference to internal interface data
 
     */
-    const InterfaceDataContainer& InterfaceData() const { return *interface_data_; }
+    const InterfaceDataContainer& interface_data() const { return *interface_data_; }
 
    private:
     /*!

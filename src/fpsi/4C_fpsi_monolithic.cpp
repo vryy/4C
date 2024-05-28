@@ -88,12 +88,12 @@ FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
   PoroFluid_Fluid_InterfaceMap = FPSI_UTILS->get_poro_fluid_fluid_interface_map();
 
   // build a proxy of the fluid discretization for the ale field
-  if (fluid_field()->Discretization()->AddDofSet(
+  if (fluid_field()->discretization()->AddDofSet(
           ale_field()->write_access_discretization()->GetDofSetProxy()) != 1)
   {
     FOUR_C_THROW("unexpected numbers of dofsets in fluid field");
   }
-  fluid_field()->Discretization()->fill_complete(true, false, false);
+  fluid_field()->discretization()->fill_complete(true, false, false);
 }  // MonolithicBase
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -111,7 +111,7 @@ void FPSI::MonolithicBase::read_restart(int step)
 void FPSI::MonolithicBase::prepare_time_step()
 {
   increment_time_and_step();
-  PrintHeader();
+  print_header();
 
   poro_field()->prepare_time_step();
   poro_field()->SetupNewton();
@@ -121,7 +121,7 @@ void FPSI::MonolithicBase::prepare_time_step()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FPSI::MonolithicBase::Update()
+void FPSI::MonolithicBase::update()
 {
   poro_field()->Update();
   fluid_field()->Update();
@@ -137,7 +137,7 @@ void FPSI::MonolithicBase::prepare_output(bool force_prepare)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FPSI::MonolithicBase::Output()
+void FPSI::MonolithicBase::output()
 {
   poro_field()->Output();
   fluid_field()->Output();
@@ -147,43 +147,43 @@ void FPSI::MonolithicBase::Output()
 /*----------------------------------------------------------------------*/
 /*                          Coupling Methods                            */
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::FluidToAle(
+Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::fluid_to_ale(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupfa_->MasterToSlave(iv);
 }
-Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::AleToFluid(
+Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::ale_to_fluid(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupfa_->SlaveToMaster(iv);
 }
 /// Just in use for problems with FSI-interface ///
-Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::StructToFluid_FSI(
+Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::struct_to_fluid_fsi(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupsf_fsi_->MasterToSlave(iv);
 }
-Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::FluidToStruct_FSI(
+Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::fluid_to_struct_fsi(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupsf_fsi_->SlaveToMaster(iv);
 }
-Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::StructToAle_FSI(
+Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::struct_to_ale_fsi(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupsa_fsi_->MasterToSlave(iv);
 }
-Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::AleToStruct_FSI(
+Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::ale_to_struct_fsi(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupsa_fsi_->SlaveToMaster(iv);
 }
-Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::FluidToAle_FSI(
+Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::fluid_to_ale_fsi(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupfa_fsi_->MasterToSlave(iv);
 }
-Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::AleToFluid_FSI(
+Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::ale_to_fluid_fsi(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupfa_fsi_->SlaveToMaster(iv);
@@ -259,19 +259,19 @@ void FPSI::Monolithic::SetupSystem()
 {
   const int ndim = GLOBAL::Problem::Instance()->NDim();
 
-  CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  CORE::ADAPTER::Coupling& coupfa = fluid_ale_coupling();
 
-  const Epetra_Map* fluidnodemap = fluid_field()->Discretization()->NodeRowMap();
-  const Epetra_Map* alenodemap = ale_field()->Discretization()->NodeRowMap();
+  const Epetra_Map* fluidnodemap = fluid_field()->discretization()->NodeRowMap();
+  const Epetra_Map* alenodemap = ale_field()->discretization()->NodeRowMap();
 
-  coupfa.setup_coupling(*fluid_field()->Discretization(), *ale_field()->Discretization(),
+  coupfa.setup_coupling(*fluid_field()->discretization(), *ale_field()->discretization(),
       *fluidnodemap, *alenodemap, ndim, false);
   fluid_field()->SetMeshMap(coupfa.MasterDofMap());
 
   if (FSI_Interface_exists_) SetupSystem_FSI();
 
   // Setup the FPSI Coupling Adapter
-  FPSICoupl() = Teuchos::rcp(new FPSI::FPSICoupling(poroelast_subproblem_, fluid_subproblem_, ale_,
+  FPSICoupl() = Teuchos::rcp(new FPSI::FpsiCoupling(poroelast_subproblem_, fluid_subproblem_, ale_,
       Fluid_PoroFluid_InterfaceMap, PoroFluid_Fluid_InterfaceMap));
   FPSICoupl()->SetConductivity(conductivity_);
   return;
@@ -293,18 +293,18 @@ void FPSI::Monolithic::SetupSystem_FSI()
   CORE::ADAPTER::Coupling& icoupfa_fsi = interface_fluid_ale_coupling_fsi();
 
   // structure to fluid
-  coupsf_fsi.setup_condition_coupling(*poro_field()->StructureField()->Discretization(),
-      poro_field()->StructureField()->Interface()->FSICondMap(), *fluid_field()->Discretization(),
+  coupsf_fsi.setup_condition_coupling(*poro_field()->structure_field()->discretization(),
+      poro_field()->structure_field()->Interface()->FSICondMap(), *fluid_field()->discretization(),
       fluid_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
   // structure to ale
-  coupsa_fsi.setup_condition_coupling(*poro_field()->StructureField()->Discretization(),
-      poro_field()->StructureField()->Interface()->FSICondMap(), *ale_field()->Discretization(),
+  coupsa_fsi.setup_condition_coupling(*poro_field()->structure_field()->discretization(),
+      poro_field()->structure_field()->Interface()->FSICondMap(), *ale_field()->discretization(),
       ale_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
   // fluid to ale at the interface
 
-  icoupfa_fsi.setup_condition_coupling(*fluid_field()->Discretization(),
-      fluid_field()->Interface()->FSICondMap(), *ale_field()->Discretization(),
+  icoupfa_fsi.setup_condition_coupling(*fluid_field()->discretization(),
+      fluid_field()->Interface()->FSICondMap(), *ale_field()->discretization(),
       ale_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
 
@@ -331,8 +331,8 @@ void FPSI::Monolithic::Timeloop()
     TimeStep();
     constexpr bool force_prepare = false;
     prepare_output(force_prepare);
-    Update();
-    Output();
+    update();
+    output();
   }
 }
 
@@ -427,12 +427,12 @@ void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
 
   if (linesearch_ and islinesearch_ == false)
   {
-    fluid_field()->Discretization()->ClearState();
+    fluid_field()->discretization()->ClearState();
     linesearch_counter = 0.;
-    fluid_field()->Discretization()->set_state(0, "dispnp", fluid_field()->Dispnp());
-    meshdispold_ = AleToFluid(ale_field()->Dispnp());
+    fluid_field()->discretization()->set_state(0, "dispnp", fluid_field()->Dispnp());
+    meshdispold_ = ale_to_fluid(ale_field()->Dispnp());
     porointerfacedisplacementsold_ = FPSICoupl()->iPorostructToAle(
-        poro_field()->StructureField()->extract_interface_dispnp(true));
+        poro_field()->structure_field()->extract_interface_dispnp(true));
   }
 
 
@@ -454,14 +454,14 @@ void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
   poro_field()->EvaluateFields(Teuchos::null);
   poro_field()->setup_system_matrix();
 
-  Teuchos::RCP<Epetra_Vector> porointerfacedisplacements_FPSI =
-      FPSICoupl()->iPorostructToAle(poro_field()->StructureField()->extract_interface_dispnp(true));
+  Teuchos::RCP<Epetra_Vector> porointerfacedisplacements_FPSI = FPSICoupl()->iPorostructToAle(
+      poro_field()->structure_field()->extract_interface_dispnp(true));
   ale_field()->apply_interface_displacements(porointerfacedisplacements_FPSI);
 
   if (FSI_Interface_exists_)
   {
     Teuchos::RCP<Epetra_Vector> porointerfacedisplacements_FSI =
-        StructToAle_FSI(poro_field()->StructureField()->extract_interface_dispnp(false));
+        struct_to_ale_fsi(poro_field()->structure_field()->extract_interface_dispnp(false));
     ale_field()->apply_fsi_interface_displacements(porointerfacedisplacements_FSI);
   }
 
@@ -469,7 +469,7 @@ void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
       1.0, *ax, 1.0);  // displacement increments on the interfaces are zero!!!
   ale_field()->Evaluate(Teuchos::null);
 
-  Teuchos::RCP<const Epetra_Vector> aledisplacements = AleToFluid(ale_field()->Dispnp());
+  Teuchos::RCP<const Epetra_Vector> aledisplacements = ale_to_fluid(ale_field()->Dispnp());
   fluid_field()->apply_mesh_displacement(aledisplacements);
 
   fluid_field()->UpdateNewton(fx);
@@ -487,7 +487,7 @@ void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
 /*----------------------------------------------------------------------*/
 void FPSI::Monolithic::TestResults(const Epetra_Comm& comm)
 {
-  GLOBAL::Problem::Instance()->AddFieldTest(poro_field()->StructureField()->CreateFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(poro_field()->structure_field()->CreateFieldTest());
   GLOBAL::Problem::Instance()->AddFieldTest(poro_field()->fluid_field()->CreateFieldTest());
   GLOBAL::Problem::Instance()->AddFieldTest(fluid_field()->CreateFieldTest());
   GLOBAL::Problem::Instance()->TestAll(comm);
@@ -672,11 +672,11 @@ void FPSI::Monolithic::create_linear_solver()
   solver_->put_solver_params_to_sub_params("Inverse4", asolverparams);
 
   // prescribe rigid body modes
-  poro_field()->StructureField()->Discretization()->compute_null_space_if_necessary(
+  poro_field()->structure_field()->discretization()->compute_null_space_if_necessary(
       solver_->Params().sublist("Inverse1"));
-  poro_field()->fluid_field()->Discretization()->compute_null_space_if_necessary(
+  poro_field()->fluid_field()->discretization()->compute_null_space_if_necessary(
       solver_->Params().sublist("Inverse2"));
-  fluid_field()->Discretization()->compute_null_space_if_necessary(
+  fluid_field()->discretization()->compute_null_space_if_necessary(
       solver_->Params().sublist("Inverse3"));
   ale_field()->write_access_discretization()->compute_null_space_if_necessary(
       solver_->Params().sublist("Inverse4"));
@@ -820,7 +820,7 @@ void FPSI::Monolithic::LineSearch(Teuchos::RCP<CORE::LINALG::SparseMatrix>& spar
       Teuchos::RCP<const Epetra_Vector> constfx;
       Teuchos::RCP<const Epetra_Vector> ax;
 
-      sx = Teuchos::rcp(new Epetra_Vector(*poro_field()->StructureField()->dof_row_map(), true));
+      sx = Teuchos::rcp(new Epetra_Vector(*poro_field()->structure_field()->dof_row_map(), true));
       pfx = Teuchos::rcp(new Epetra_Vector(*poro_field()->fluid_field()->dof_row_map(), true));
       fx = Teuchos::rcp(new Epetra_Vector(*fluid_field()->dof_row_map(), true));
 
@@ -926,7 +926,7 @@ void FPSI::Monolithic::LineSearch(Teuchos::RCP<CORE::LINALG::SparseMatrix>& spar
 Teuchos::RCP<Epetra_Map> FPSI::Monolithic::combined_dbc_map()
 {
   const Teuchos::RCP<const Epetra_Map> scondmap =
-      poro_field()->StructureField()->GetDBCMapExtractor()->CondMap();
+      poro_field()->structure_field()->GetDBCMapExtractor()->CondMap();
   const Teuchos::RCP<const Epetra_Map> pfcondmap =
       poro_field()->fluid_field()->GetDBCMapExtractor()->CondMap();
   const Teuchos::RCP<const Epetra_Map> fcondmap = fluid_field()->GetDBCMapExtractor()->CondMap();
@@ -1146,7 +1146,7 @@ void FPSI::Monolithic::build_convergence_norms()
   porofluiddof = poro_field()->fluid_field()->Velnp();
   porofluidvelocity = poro_field()->fluid_field()->ExtractVelocityPart(porofluiddof);
   porofluidpressure = poro_field()->fluid_field()->ExtractPressurePart(porofluiddof);
-  porostructdisplacements = poro_field()->StructureField()->Dispnp();
+  porostructdisplacements = poro_field()->structure_field()->Dispnp();
   fluiddof = fluid_field()->Velnp();
   fluidvelocity = fluid_field()->ExtractVelocityPart(fluiddof);
   fluidpressure = fluid_field()->ExtractPressurePart(fluiddof);
@@ -1483,29 +1483,29 @@ void FPSI::Monolithic::FPSIFDCheck()
   // gridvelocity in convective term, dispnp for the stabilization
   active_FD_check_ = true;
   // Set states
-  poro_field()->fluid_field()->Discretization()->ClearState();
+  poro_field()->fluid_field()->discretization()->ClearState();
 
-  poro_field()->fluid_field()->Discretization()->set_state(
+  poro_field()->fluid_field()->discretization()->set_state(
       0, "dispnp", poro_field()->fluid_field()->Dispnp());
-  poro_field()->fluid_field()->Discretization()->set_state(
+  poro_field()->fluid_field()->discretization()->set_state(
       0, "gridv", poro_field()->fluid_field()->GridVel());
-  poro_field()->fluid_field()->Discretization()->set_state(
+  poro_field()->fluid_field()->discretization()->set_state(
       0, "dispn", poro_field()->fluid_field()->Dispn());
-  poro_field()->fluid_field()->Discretization()->set_state(
+  poro_field()->fluid_field()->discretization()->set_state(
       0, "veln", poro_field()->fluid_field()->Veln());
-  poro_field()->fluid_field()->Discretization()->set_state(
+  poro_field()->fluid_field()->discretization()->set_state(
       0, "velaf", poro_field()->fluid_field()->Velnp());
-  poro_field()->fluid_field()->Discretization()->set_state(
+  poro_field()->fluid_field()->discretization()->set_state(
       0, "velnp", poro_field()->fluid_field()->Velnp());
 
-  fluid_field()->Discretization()->ClearState();
+  fluid_field()->discretization()->ClearState();
 
-  fluid_field()->Discretization()->set_state(0, "dispnp", fluid_field()->Dispnp());
-  fluid_field()->Discretization()->set_state(0, "gridv", fluid_field()->GridVel());
-  fluid_field()->Discretization()->set_state(0, "dispn", fluid_field()->Dispn());
-  fluid_field()->Discretization()->set_state(0, "veln", fluid_field()->Veln());
-  fluid_field()->Discretization()->set_state(0, "velaf", fluid_field()->Velnp());
-  fluid_field()->Discretization()->set_state(0, "velnp", fluid_field()->Velnp());
+  fluid_field()->discretization()->set_state(0, "dispnp", fluid_field()->Dispnp());
+  fluid_field()->discretization()->set_state(0, "gridv", fluid_field()->GridVel());
+  fluid_field()->discretization()->set_state(0, "dispn", fluid_field()->Dispn());
+  fluid_field()->discretization()->set_state(0, "veln", fluid_field()->Veln());
+  fluid_field()->discretization()->set_state(0, "velaf", fluid_field()->Velnp());
+  fluid_field()->discretization()->set_state(0, "velnp", fluid_field()->Velnp());
 
   // define and set toggle parameter delta
   const double delta = 1e-8;
@@ -1540,10 +1540,10 @@ void FPSI::Monolithic::FPSIFDCheck()
 
   std::cout << "\n****************** FPSI finite difference check ******************" << std::endl;
 
-  int dof_poro_struct = (poro_field()->StructureField()->Discretization()->NumGlobalNodes()) * 3;
-  int dof_poro_fluid = (poro_field()->fluid_field()->Discretization()->NumGlobalNodes()) * 4;
-  int dof_fluid = (fluid_field()->Discretization()->NumGlobalNodes()) * 4;
-  int dof_ale = (ale_field()->Discretization()->NumGlobalNodes()) * 3;
+  int dof_poro_struct = (poro_field()->structure_field()->discretization()->NumGlobalNodes()) * 3;
+  int dof_poro_fluid = (poro_field()->fluid_field()->discretization()->NumGlobalNodes()) * 4;
+  int dof_fluid = (fluid_field()->discretization()->NumGlobalNodes()) * 4;
+  int dof_ale = (ale_field()->discretization()->NumGlobalNodes()) * 3;
 
   std::cout << "poro structure field has " << dof_poro_struct << " DOFs" << std::endl;
   std::cout << "poro fluid field has     " << dof_poro_fluid << " DOFs" << std::endl;
@@ -1751,8 +1751,8 @@ void FPSI::Monolithic::FPSIFDCheck()
   else
     std::cout << "FPSIFDCheck failed" << std::endl;
   // FOUR_C_THROW("FPSIFDCheck failed");
-  poro_field()->fluid_field()->Discretization()->ClearState();
-  fluid_field()->Discretization()->ClearState();
+  poro_field()->fluid_field()->discretization()->ClearState();
+  fluid_field()->discretization()->ClearState();
 
   active_FD_check_ = false;
   return;

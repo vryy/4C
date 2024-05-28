@@ -74,7 +74,7 @@ namespace SCATRA
     double ThermPressDtAm() override { return thermpressdtam_; }
 
    protected:
-    void WriteRestart() const override;
+    void write_restart() const override;
 
     /// dynamic Smagorinsky model
     void dynamic_computation_of_cs() override;

@@ -203,7 +203,7 @@ namespace MORTAR
      \brief Evaluate coupling (3D)
 
      */
-    virtual bool EvaluateCoupling();
+    virtual bool evaluate_coupling();
 
     /*!
      \brief Checks roughly whether the two elements are near (3D)
@@ -435,7 +435,7 @@ namespace MORTAR
      in the auxiliary plane or in the slave parameter space.
 
      */
-    virtual double SlaveElementArea();
+    virtual double slave_element_area();
 
     // don't want = operator and cctor
     Coupling3d operator=(const Coupling3d& old);
@@ -599,7 +599,7 @@ namespace MORTAR
      \brief Evaluate coupling pairs
 
      */
-    virtual bool EvaluateCoupling(Teuchos::RCP<MORTAR::ParamsInterface> mparams_ptr);
+    virtual bool evaluate_coupling(Teuchos::RCP<MORTAR::ParamsInterface> mparams_ptr);
 
     /*!
      \brief Return the LM interpolation / testing type for quadratic FE
@@ -619,7 +619,7 @@ namespace MORTAR
      \brief Evaluate mortar-coupling pairs
 
      */
-    virtual void IntegrateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    virtual void integrate_coupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
     /*!
      \brief Calculate consistent dual shape functions in boundary elements
@@ -705,13 +705,13 @@ namespace MORTAR
      \brief Evaluate mortar-coupling pairs
 
      */
-    void IntegrateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) override;
+    void integrate_coupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) override;
 
     /*!
      \brief Split MORTAR::Elements into IntElements for 3D quadratic coupling
 
      */
-    virtual bool SplitIntElements(
+    virtual bool split_int_elements(
         MORTAR::Element& ele, std::vector<Teuchos::RCP<MORTAR::IntElement>>& auxele);
 
     // don't want = operator and cctor

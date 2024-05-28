@@ -97,7 +97,7 @@ MAT::PAR::MuscleWeickenmeier::MuscleWeickenmeier(Teuchos::RCP<CORE::MAT::PAR::Ma
   if (density_ < 0.0) FOUR_C_THROW("DENS should be positive");
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MuscleWeickenmeier::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MuscleWeickenmeier::create_material()
 {
   return Teuchos::rcp(new MAT::MuscleWeickenmeier(this));
 }

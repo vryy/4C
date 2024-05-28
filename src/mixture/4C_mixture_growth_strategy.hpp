@@ -32,7 +32,7 @@ namespace MIXTURE
       explicit MixtureGrowthStrategy(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
 
       /// Override this method and throw error, as only the create_growth_strategy() should be used.
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() final
+      Teuchos::RCP<CORE::MAT::Material> create_material() final
       {
         FOUR_C_THROW(
             "Cannot create mixture growth strategy from this method. Use create_growth_strategy() "

@@ -59,7 +59,7 @@ namespace DRT
 
      protected:
       //! setup element evaluation
-      int SetupCalc(
+      int setup_calc(
           DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization);
 
       //! extract element based or nodal values
@@ -69,7 +69,7 @@ namespace DRT
           DRT::Element::LocationArray& la);
 
       //! evaluate action
-      virtual int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
+      virtual int evaluate_action(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, POROFLUIDMULTIPHASE::BoundaryAction action,
           DRT::Element::LocationArray& la, std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
           std::vector<CORE::LINALG::SerialDenseVector*>& elevec);

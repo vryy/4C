@@ -215,13 +215,13 @@ namespace CONTACT
      *
      *  \param cparams (in): parameter interface between the contact objects and the structural time
      * integration*/
-    void EvalForce(CONTACT::ParamsInterface& cparams) override;
+    void eval_force(CONTACT::ParamsInterface& cparams) override;
 
     /*! \brief Compute force and stiffness terms
      *
      *  \param cparams (in): parameter interface between the contact objects and the structural time
      * integration*/
-    void EvalForceStiff(CONTACT::ParamsInterface& cparams) override;
+    void eval_force_stiff(CONTACT::ParamsInterface& cparams) override;
 
     /*! \brief Assemble force and stiffness terms to global vector and matrix */
     void Assemble();
@@ -319,7 +319,7 @@ namespace CONTACT
      *
      *  \date 05/2016
      *  \author hiermeier */
-    void RunPostComputeX(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
+    void run_post_compute_x(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
         const Epetra_Vector& dir, const Epetra_Vector& xnew) override
     {
     }
@@ -330,10 +330,10 @@ namespace CONTACT
 
    protected:
     //! derived
-    std::vector<Teuchos::RCP<CONTACT::Interface>>& Interfaces() override { return interface_; }
+    std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces() override { return interface_; }
 
     //! derived
-    const std::vector<Teuchos::RCP<CONTACT::Interface>>& Interfaces() const override
+    const std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces() const override
     {
       return interface_;
     }

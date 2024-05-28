@@ -116,7 +116,7 @@ namespace MORTAR
     template <class V>
     void EvaluateShape_Displ(const double* xi, V& val, MORTAR::Element& ele, bool dualquad)
     {
-      if (!xi) FOUR_C_THROW("EvaluateShape called with xi=nullptr");
+      if (!xi) FOUR_C_THROW("evaluate_shape called with xi=nullptr");
 
       //! ns_: number of element nodes
       int nnode = ele.num_node();
@@ -147,14 +147,14 @@ namespace MORTAR
         // 2D linear case (2noded line element)
         case CORE::FE::CellType::line2:
         {
-          if (nnode != 2) FOUR_C_THROW("Inconsistency in EvaluateShape");
+          if (nnode != 2) FOUR_C_THROW("Inconsistency in evaluate_shape");
           mortar_shape_function_1D(val, xi[0], MORTAR::Element::lin1D);
           break;
         }
         // 2D quadratic case (3noded line element)
         case CORE::FE::CellType::line3:
         {
-          if (nnode != 3) FOUR_C_THROW("Inconsistency in EvaluateShape");
+          if (nnode != 3) FOUR_C_THROW("Inconsistency in evaluate_shape");
           if (dualquad && !bound)
             FOUR_C_THROW(
                 "There is no quadratic interpolation for dual shape functions for 2-D problems "
@@ -168,21 +168,21 @@ namespace MORTAR
         // 3D linear case (3noded triangular element)
         case CORE::FE::CellType::tri3:
         {
-          if (nnode != 3) FOUR_C_THROW("Inconsistency in EvaluateShape");
+          if (nnode != 3) FOUR_C_THROW("Inconsistency in evaluate_shape");
           mortar_shape_function_2D(val, xi[0], xi[1], MORTAR::Element::lin2D);
           break;
         }
         // 3D bilinear case (4noded quadrilateral element)
         case CORE::FE::CellType::quad4:
         {
-          if (nnode != 4) FOUR_C_THROW("Inconsistency in EvaluateShape");
+          if (nnode != 4) FOUR_C_THROW("Inconsistency in evaluate_shape");
           mortar_shape_function_2D(val, xi[0], xi[1], MORTAR::Element::bilin2D);
           break;
         }
         // 3D quadratic case (6noded triangular element)
         case CORE::FE::CellType::tri6:
         {
-          if (nnode != 6) FOUR_C_THROW("Inconsistency in EvaluateShape");
+          if (nnode != 6) FOUR_C_THROW("Inconsistency in evaluate_shape");
           if (dualquad && !bound)
             mortar_shape_function_2D(val, xi[0], xi[1], MORTAR::Element::quad2D_modified);
           else if (dualquad && bound)
@@ -194,7 +194,7 @@ namespace MORTAR
         // 3D serendipity case (8noded quadrilateral element)
         case CORE::FE::CellType::quad8:
         {
-          if (nnode != 8) FOUR_C_THROW("Inconsistency in EvaluateShape");
+          if (nnode != 8) FOUR_C_THROW("Inconsistency in evaluate_shape");
           if (dualquad && !bound)
             mortar_shape_function_2D(val, xi[0], xi[1], MORTAR::Element::serendipity2D_modified);
           else if (dualquad && bound)
@@ -207,7 +207,7 @@ namespace MORTAR
         // 3D biquadratic case (9noded quadrilateral element)
         case CORE::FE::CellType::quad9:
         {
-          if (nnode != 9) FOUR_C_THROW("Inconsistency in EvaluateShape");
+          if (nnode != 9) FOUR_C_THROW("Inconsistency in evaluate_shape");
           if (dualquad && !bound)
             mortar_shape_function_2D(val, xi[0], xi[1], MORTAR::Element::biquad2D_modified);
           else if (dualquad && bound)
@@ -221,13 +221,13 @@ namespace MORTAR
         //==================================================
         case CORE::FE::CellType::nurbs2:
         {
-          if (nnode != 2) FOUR_C_THROW("Inconsistency in EvaluateShape");
+          if (nnode != 2) FOUR_C_THROW("Inconsistency in evaluate_shape");
           mortar_nurbs_shape_function_1D(val, ele, xi[0], CORE::FE::CellType::nurbs2);
           break;
         }
         case CORE::FE::CellType::nurbs3:
         {
-          if (nnode != 3) FOUR_C_THROW("Inconsistency in EvaluateShape");
+          if (nnode != 3) FOUR_C_THROW("Inconsistency in evaluate_shape");
           mortar_nurbs_shape_function_1D(val, ele, xi[0], CORE::FE::CellType::nurbs3);
           break;
         }
@@ -235,14 +235,14 @@ namespace MORTAR
         // 2D -- nurbs9
         case CORE::FE::CellType::nurbs9:
         {
-          if (nnode != 9) FOUR_C_THROW("Inconsistency in EvaluateShape");
+          if (nnode != 9) FOUR_C_THROW("Inconsistency in evaluate_shape");
           mortar_nurbs_shape_function_2D(val, ele, xi[0], xi[1], CORE::FE::CellType::nurbs9);
           break;
         }
         // unknown case
         default:
         {
-          FOUR_C_THROW("EvaluateShape called for unknown MORTAR::Element type");
+          FOUR_C_THROW("evaluate_shape called for unknown MORTAR::Element type");
           break;
         }
       }
@@ -281,7 +281,7 @@ namespace MORTAR
         // 2D linear case (2noded line element)
         case CORE::FE::CellType::line2:
         {
-          if (valdim != 2) FOUR_C_THROW("Inconsistency in EvaluateShape");
+          if (valdim != 2) FOUR_C_THROW("Inconsistency in evaluate_shape");
 
           if (dual)
             mortar_dualshape_function_1D(val, ele, xi[0], MORTAR::Element::lindual1D);
@@ -294,7 +294,7 @@ namespace MORTAR
         // 2D quadratic case (3noded line element)
         case CORE::FE::CellType::line3:
         {
-          if (valdim != 3) FOUR_C_THROW("Inconsistency in EvaluateShape");
+          if (valdim != 3) FOUR_C_THROW("Inconsistency in evaluate_shape");
 
           if (dual)
             mortar_dualshape_function_1D(val, ele, xi[0], MORTAR::Element::quaddual1D);
@@ -351,7 +351,7 @@ namespace MORTAR
         // 1D -- nurbs2
         case CORE::FE::CellType::nurbs2:
         {
-          if (valdim != 2) FOUR_C_THROW("Inconsistency in EvaluateShape");
+          if (valdim != 2) FOUR_C_THROW("Inconsistency in evaluate_shape");
 
           if (dual)
             FOUR_C_THROW("no dual shape functions provided for nurbs!");
@@ -364,7 +364,7 @@ namespace MORTAR
         // 1D -- nurbs3
         case CORE::FE::CellType::nurbs3:
         {
-          if (valdim != 3) FOUR_C_THROW("Inconsistency in EvaluateShape");
+          if (valdim != 3) FOUR_C_THROW("Inconsistency in evaluate_shape");
 
           if (dual)
             mortar_nurbs_dualshape_function_1D(val, ele, xi[0], CORE::FE::CellType::nurbs3);
@@ -377,7 +377,7 @@ namespace MORTAR
         // 2D -- nurbs9
         case CORE::FE::CellType::nurbs9:
         {
-          if (valdim != 9) FOUR_C_THROW("Inconsistency in EvaluateShape");
+          if (valdim != 9) FOUR_C_THROW("Inconsistency in evaluate_shape");
 
           if (dual)
             mortar_nurbs_dualshape_function_2D(val, ele, xi[0], xi[1], CORE::FE::CellType::nurbs9);
@@ -1545,7 +1545,7 @@ namespace MORTAR
           for (int i = 0; i < integrator.nGP(); ++i)
           {
             double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-            ele.EvaluateShape(gpc, valquad, derivquad, nnodes, true);
+            ele.evaluate_shape(gpc, valquad, derivquad, nnodes, true);
             detg = ele.Jacobian(gpc);
 
             for (int j = 0; j < nnodes; ++j)
@@ -1563,7 +1563,7 @@ namespace MORTAR
 
           // evaluate dual shape functions at loc. coord. xi
           double xi[2] = {xi0, xi1};
-          ele.EvaluateShape(xi, valquad, derivquad, nnodes, true);
+          ele.evaluate_shape(xi, valquad, derivquad, nnodes, true);
           for (int i = 0; i < nnodes; ++i) funct(i) = 0;
 
           for (int i = 0; i < nnodes; ++i)
@@ -1596,7 +1596,7 @@ namespace MORTAR
           for (int i = 0; i < integrator.nGP(); ++i)
           {
             double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-            ele.EvaluateShape(gpc, valquad, derivquad, nnodes, true);
+            ele.evaluate_shape(gpc, valquad, derivquad, nnodes, true);
             detg = ele.Jacobian(gpc);
 
             for (int j = 0; j < nnodes; ++j)
@@ -1614,7 +1614,7 @@ namespace MORTAR
 
           // evaluate dual shape functions at loc. coord. xi
           double xi[2] = {xi0, xi1};
-          ele.EvaluateShape(xi, valquad, derivquad, nnodes, true);
+          ele.evaluate_shape(xi, valquad, derivquad, nnodes, true);
           for (int i = 0; i < nnodes; ++i) funct(i) = 0;
 
           for (int i = 0; i < nnodes; ++i)
@@ -1647,7 +1647,7 @@ namespace MORTAR
           for (int i = 0; i < integrator.nGP(); ++i)
           {
             double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-            ele.EvaluateShape(gpc, valquad, derivquad, nnodes, true);
+            ele.evaluate_shape(gpc, valquad, derivquad, nnodes, true);
             detg = ele.Jacobian(gpc);
 
             for (int j = 0; j < nnodes; ++j)
@@ -1665,7 +1665,7 @@ namespace MORTAR
 
           // evaluate dual shape functions at loc. coord. xi
           double xi[2] = {xi0, xi1};
-          ele.EvaluateShape(xi, valquad, derivquad, nnodes, true);
+          ele.evaluate_shape(xi, valquad, derivquad, nnodes, true);
           for (int i = 0; i < nnodes; ++i) funct(i) = 0;
 
           for (int i = 0; i < nnodes; ++i)

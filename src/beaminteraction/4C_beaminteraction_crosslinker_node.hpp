@@ -167,7 +167,7 @@ namespace CROSSLINKING
     //! @name Enums and Friends
 
     /*!
-     \brief The Discretization is a friend of MORTAR::Node
+     \brief The discretization is a friend of MORTAR::Node
      */
     friend class DRT::Discretization;
 

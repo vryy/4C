@@ -32,7 +32,7 @@ namespace MAT
       StructPoroReaction(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
       /// @name material parameters
       //@{
@@ -121,8 +121,8 @@ namespace MAT
     double ref_porosity_time_deriv() const override { return dphiDphiref_ * refporositydot_; }
 
     /// compute current porosity and save it
-    void ComputePorosity(Teuchos::ParameterList& params,  ///< (i) element parameter list
-        double press,                                     ///< (i) pressure at gauss point
+    void compute_porosity(Teuchos::ParameterList& params,  ///< (i) element parameter list
+        double press,                                      ///< (i) pressure at gauss point
         double J,          ///< (i) determinant of jacobian at gauss point
         int gp,            ///< (i) number of current gauss point
         double& porosity,  ///< (o) porosity at gauss point
@@ -186,7 +186,7 @@ namespace MAT
     //@}
 
    protected:
-    virtual void Reaction(const double porosity, const double J,
+    virtual void reaction(const double porosity, const double J,
         Teuchos::RCP<std::vector<double>> scalars, Teuchos::ParameterList& params);
 
     /// my material parameters

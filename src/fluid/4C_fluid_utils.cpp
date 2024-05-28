@@ -434,7 +434,7 @@ void FLD::UTILS::StressManager::calc_sep_enr(Teuchos::RCP<CORE::LINALG::SparseOp
     // Try this:
     sysmat2 = Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat);
     if (sysmat2 == Teuchos::null)  // if it does not work the fluid matrix probably is a
-                                   // BlockSparseMatrix, compare with function UseBlockMatrix()
+                                   // BlockSparseMatrix, compare with function use_block_matrix()
       sysmat2 = Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(sysmat)->Merge();
     if (sysmat2 == Teuchos::null)
       FOUR_C_THROW("One of these two dynamic casts should have worked... Sorry!");
@@ -932,7 +932,7 @@ std::map<int, double> FLD::UTILS::ComputeFlowRates(DRT::Discretization& dis,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::map<int, double> FLD::UTILS::ComputeVolume(DRT::Discretization& dis,
+std::map<int, double> FLD::UTILS::compute_volume(DRT::Discretization& dis,
     const Teuchos::RCP<Epetra_Vector>& velnp, const Teuchos::RCP<Epetra_Vector>& gridv,
     const Teuchos::RCP<Epetra_Vector>& dispnp, const INPAR::FLUID::PhysicalType physicaltype)
 {

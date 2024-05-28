@@ -61,7 +61,7 @@ namespace MAT
       ViscoElastHyper(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
       //@}
 
@@ -201,7 +201,7 @@ namespace MAT
 
    protected:
     /// calculates the kinematic quantities and tensors used afterwards for viscous part
-    virtual void EvaluateKinQuantVis(CORE::LINALG::Matrix<6, 1>& rcg,
+    virtual void evaluate_kin_quant_vis(CORE::LINALG::Matrix<6, 1>& rcg,
         CORE::LINALG::Matrix<6, 1>& scg, CORE::LINALG::Matrix<6, 1>& icg,
         CORE::LINALG::Matrix<3, 1>& prinv, CORE::LINALG::Matrix<7, 1>& rateinv,
         CORE::LINALG::Matrix<6, 1>& modrcg, Teuchos::ParameterList& params,
@@ -209,7 +209,7 @@ namespace MAT
         CORE::LINALG::Matrix<7, 1>& modrateinv, int gp);
 
     /// calculates the factors associated to the viscous laws
-    virtual void EvaluateMuXi(CORE::LINALG::Matrix<3, 1>& inv, CORE::LINALG::Matrix<3, 1>& modinv,
+    virtual void evaluate_mu_xi(CORE::LINALG::Matrix<3, 1>& inv, CORE::LINALG::Matrix<3, 1>& modinv,
         CORE::LINALG::Matrix<8, 1>& mu, CORE::LINALG::Matrix<8, 1>& modmu,
         CORE::LINALG::Matrix<33, 1>& xi, CORE::LINALG::Matrix<33, 1>& modxi,
         CORE::LINALG::Matrix<7, 1>& rateinv, CORE::LINALG::Matrix<7, 1>& modrateinv,
@@ -235,7 +235,7 @@ namespace MAT
     /// depending on the viscoelastic material isochoric-principal, isochoric-modified
     /// (volumetric and isochoric equal treaded) or anisotropic stresses and elasticity
     /// tensors are added
-    virtual void EvaluateViscoGenMax(CORE::LINALG::Matrix<6, 1>* stress,
+    virtual void evaluate_visco_gen_max(CORE::LINALG::Matrix<6, 1>* stress,
         CORE::LINALG::Matrix<6, 6>* cmat, CORE::LINALG::Matrix<6, 1>& Q,
         CORE::LINALG::Matrix<6, 6>& cmatq, Teuchos::ParameterList& params, int gp);
 
@@ -248,7 +248,7 @@ namespace MAT
     /// depending on the viscoelastic material isochoric-principal, isochoric-modified
     /// (volumetric and isochoric equal treaded) or anisotropic stresses and elasticity
     /// tensors are added
-    virtual void EvaluateViscoFract(CORE::LINALG::Matrix<6, 1> stress,
+    virtual void evaluate_visco_fract(CORE::LINALG::Matrix<6, 1> stress,
         CORE::LINALG::Matrix<6, 6> cmat, CORE::LINALG::Matrix<6, 1>& Q,
         CORE::LINALG::Matrix<6, 6>& cmatq, Teuchos::ParameterList& params, int gp);
 

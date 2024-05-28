@@ -179,7 +179,7 @@ FLD::XWall::XWall(Teuchos::RCP<DRT::Discretization> dis, int nsd,
               << std::endl;
   }
 
-  Setup();
+  setup();
 
   turbulent_inflow_condition_ =
       Teuchos::rcp(new TransferTurbulentInflowConditionNodal(discret_, dbcmaps));
@@ -220,7 +220,7 @@ void FLD::XWall::SetXWallParams(Teuchos::ParameterList& eleparams)
  |  Set params required to build the shape functions           bk 08/14 |
  |  Used for the xwdiscret_, which is redistributed                     |
  *----------------------------------------------------------------------*/
-void FLD::XWall::SetXWallParamsXWDis(Teuchos::ParameterList& eleparams)
+void FLD::XWall::set_x_wall_params_xw_dis(Teuchos::ParameterList& eleparams)
 {
   // params required for the shape functions
   eleparams.set("walldist", wdistxwdis_);
@@ -239,15 +239,15 @@ void FLD::XWall::SetXWallParamsXWDis(Teuchos::ParameterList& eleparams)
 /*----------------------------------------------------------------------*
  |  Setup XWall                                                bk 07/14 |
  *----------------------------------------------------------------------*/
-void FLD::XWall::Setup()
+void FLD::XWall::setup()
 {
   if (myrank_ == 0) std::cout << "Setup: " << std::endl;
 
-  InitXWallMaps();
+  init_x_wall_maps();
 
-  InitWallDist();
+  init_wall_dist();
 
-  SetupXWallDis();
+  setup_x_wall_dis();
 
   tauw_ = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeColMap()), true));
   inctauw_ = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeColMap()), true));
@@ -264,9 +264,9 @@ void FLD::XWall::Setup()
   // initialize for first call or for constant tauw setting
   tauwxwdis_->PutScalar(constant_tauw_);
 
-  InitToggleVector();
+  init_toggle_vector();
 
-  SetupL2Projection();
+  setup_l2_projection();
 
   {
     // the value for linear elements is 1/3
@@ -285,7 +285,7 @@ void FLD::XWall::Setup()
 /*----------------------------------------------------------------------*
  |  Setup basic xwall map and dirichlet map                    bk 07/14 |
  *----------------------------------------------------------------------*/
-void FLD::XWall::InitXWallMaps()
+void FLD::XWall::init_x_wall_maps()
 {
   if (myrank_ == 0) std::cout << "- build xwall maps...                                   ";
 
@@ -360,7 +360,7 @@ void FLD::XWall::InitXWallMaps()
 /*----------------------------------------------------------------------*
  |  Calculate wall distance and coupling matrix of for tauw    bk 04/14 |
  *----------------------------------------------------------------------*/
-void FLD::XWall::InitWallDist()
+void FLD::XWall::init_wall_dist()
 {
   if (myrank_ == 0) std::cout << "- calculate wall distance...                            ";
 
@@ -497,7 +497,7 @@ void FLD::XWall::InitWallDist()
 /*----------------------------------------------------------------------*
  |  Build a node-based toggle vector (on/off=1.0/0.0, 0.7)     bk 07/14 |
  *----------------------------------------------------------------------*/
-void FLD::XWall::InitToggleVector()
+void FLD::XWall::init_toggle_vector()
 {
   if (myrank_ == 0) std::cout << "- build enriched/blending toggle vector for elements... ";
 
@@ -563,7 +563,7 @@ void FLD::XWall::InitToggleVector()
  |  Build a discretization only including xwall nodes/elements bk 07/14 |
  |  and redistribute                                                    |
  *----------------------------------------------------------------------*/
-void FLD::XWall::SetupXWallDis()
+void FLD::XWall::setup_x_wall_dis()
 {
   // build a new discretization
   Teuchos::RCP<Epetra_Comm> newcomm = Teuchos::rcp(discret_->Comm().Clone());
@@ -659,7 +659,7 @@ void FLD::XWall::SetupXWallDis()
 /*----------------------------------------------------------------------*
  |  Setup matrix, vectors and solver for projection            bk 07/14 |
  *----------------------------------------------------------------------*/
-void FLD::XWall::SetupL2Projection()
+void FLD::XWall::setup_l2_projection()
 {
   // create matrix for projection
   if (proj_)
@@ -859,7 +859,7 @@ void FLD::XWall::UpdateTauW(int step, Teuchos::RCP<Epetra_Vector> trueresidual, 
 {
   iter_ = 0;
 
-  TransferAndSaveTauw();
+  transfer_and_save_tauw();
 
   Teuchos::RCP<Epetra_Vector> newtauw = Teuchos::rcp(new Epetra_Vector(*xwallrownodemap_, true));
   // calculate wall stress
@@ -889,7 +889,7 @@ void FLD::XWall::UpdateTauW(int step, Teuchos::RCP<Epetra_Vector> trueresidual, 
       inctauw_->PutScalar(0.0);
 
       if (itnum == 0)  // in between steps
-        CalcTauW(step, velnp, wss);
+        calc_tau_w(step, velnp, wss);
       else
         return;
     }
@@ -929,13 +929,13 @@ void FLD::XWall::UpdateTauW(int step, Teuchos::RCP<Epetra_Vector> trueresidual, 
     if (myrank_ == 0) std::cout << "  L2-project... ";
     if (tauwtype_ == INPAR::FLUID::between_steps)
     {
-      L2ProjectVector(veln, Teuchos::null, accn);
+      l2_project_vector(veln, Teuchos::null, accn);
 
       // at the beginning of this time step they are equal -> calculate only one of them
       velnp->Update(1.0, *veln, 0.0);
     }
     else
-      L2ProjectVector(veln, velnp, accn);
+      l2_project_vector(veln, velnp, accn);
 
     if (myrank_ == 0) std::cout << "done!" << std::endl;
   }
@@ -953,7 +953,7 @@ void FLD::XWall::UpdateTauW(int step, Teuchos::RCP<Epetra_Vector> trueresidual, 
 /*----------------------------------------------------------------------*
  |  Routines to calculate Tauw                                 bk 07/14 |
  *----------------------------------------------------------------------*/
-void FLD::XWall::CalcTauW(
+void FLD::XWall::calc_tau_w(
     int step, Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> wss)
 {
   Teuchos::RCP<Epetra_Vector> newtauw = Teuchos::rcp(new Epetra_Vector(*xwallrownodemap_, true));
@@ -1029,7 +1029,7 @@ void FLD::XWall::CalcTauW(
     // set action in order to project element void fraction to nodal void fraction
     Teuchos::ParameterList params;
 
-    SetXWallParamsXWDis(params);
+    set_x_wall_params_xw_dis(params);
 
     params.set<int>("action", FLD::tauw_via_gradient);
 
@@ -1125,7 +1125,7 @@ void FLD::XWall::CalcTauW(
 /*----------------------------------------------------------------------*
  |  L2-project enriched dofs of vector                         bk 07/14 |
  *----------------------------------------------------------------------*/
-void FLD::XWall::L2ProjectVector(Teuchos::RCP<Epetra_Vector> veln,
+void FLD::XWall::l2_project_vector(Teuchos::RCP<Epetra_Vector> veln,
     Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> accn)
 {
   if (not veln->Map().SameAs(*discret_->dof_row_map()))
@@ -1158,7 +1158,7 @@ void FLD::XWall::L2ProjectVector(Teuchos::RCP<Epetra_Vector> veln,
 
   // set action in order to project nodal enriched values to new shape functions
   Teuchos::ParameterList params;
-  SetXWallParamsXWDis(params);
+  set_x_wall_params_xw_dis(params);
   params.set<int>("action", FLD::xwall_l2_projection);
 
   // create empty right hand side
@@ -1311,7 +1311,7 @@ void FLD::XWall::calc_mk()
   // action for elements
   eleparams.set<int>("action", FLD::xwall_calc_mk);
 
-  SetXWallParamsXWDis(eleparams);
+  set_x_wall_params_xw_dis(eleparams);
 
   xwdiscret_->EvaluateScalars(eleparams, mkxw);
 
@@ -1364,7 +1364,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::GetTauw() { return tauw_; }
 /*----------------------------------------------------------------------*
  |  transfer tauw for turbulent inflow channel                 bk 09/14 |
  *----------------------------------------------------------------------*/
-void FLD::XWall::TransferAndSaveTauw()
+void FLD::XWall::transfer_and_save_tauw()
 {
   if (turbulent_inflow_condition_->is_active())
   {
@@ -1691,9 +1691,9 @@ void FLD::XWallAleFSI::SetXWallParams(Teuchos::ParameterList& eleparams)
  |  Set params required to build the shape functions           bk 08/14 |
  |  Used for the xwdiscret_, which is redistributed                     |
  *----------------------------------------------------------------------*/
-void FLD::XWallAleFSI::SetXWallParamsXWDis(Teuchos::ParameterList& eleparams)
+void FLD::XWallAleFSI::set_x_wall_params_xw_dis(Teuchos::ParameterList& eleparams)
 {
-  XWall::SetXWallParamsXWDis(eleparams);
+  XWall::set_x_wall_params_xw_dis(eleparams);
   // params required for the shape functions
   eleparams.set("incwalldist", incwdistxwdis_);
   Teuchos::RCP<Epetra_Vector> xwdisdispnp =
@@ -1724,7 +1724,7 @@ void FLD::XWallAleFSI::UpdateTauW(int step, Teuchos::RCP<Epetra_Vector> trueresi
     {
       if (myrank_ == 0) std::cout << "  L2-project... ";
 
-      L2ProjectVector(veln, Teuchos::null, accn);
+      l2_project_vector(veln, Teuchos::null, accn);
 
       // at the beginning of this time step they are equal -> calculate only one of them
       velnp->Update(1.0, *veln, 0.0);

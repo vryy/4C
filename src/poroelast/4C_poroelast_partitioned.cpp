@@ -22,7 +22,7 @@ POROELAST::Partitioned::Partitioned(const Epetra_Comm& comm,
     Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter)
     : PoroBase(comm, timeparams, porosity_splitter),
       fluidincnp_(Teuchos::rcp(new Epetra_Vector(*(fluid_field()->Velnp())))),
-      structincnp_(Teuchos::rcp(new Epetra_Vector(*(StructureField()->Dispnp()))))
+      structincnp_(Teuchos::rcp(new Epetra_Vector(*(structure_field()->Dispnp()))))
 {
   const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->poroelast_dynamic_params();
   // Get the parameters for the convergence_check
@@ -39,12 +39,12 @@ void POROELAST::Partitioned::do_time_step()
 
   Solve();
 
-  UpdateAndOutput();
+  update_and_output();
 }
 
 void POROELAST::Partitioned::SetupSystem() {}  // SetupSystem()
 
-void POROELAST::Partitioned::UpdateAndOutput()
+void POROELAST::Partitioned::update_and_output()
 {
   constexpr bool force_prepare = false;
   prepare_output(force_prepare);
@@ -77,7 +77,7 @@ void POROELAST::Partitioned::Solve()
     // store increment from first solution for convergence check (like in
     // elch_algorithm: use current values)
     fluidincnp_->Update(1.0, *fluid_field()->Velnp(), 0.0);
-    structincnp_->Update(1.0, *StructureField()->Dispnp(), 0.0);
+    structincnp_->Update(1.0, *structure_field()->Dispnp(), 0.0);
 
     // get current fluid velocities due to solve fluid step, like predictor in FSI
     // 1. iteration: get velocities of old time step (T_n)
@@ -92,14 +92,14 @@ void POROELAST::Partitioned::Solve()
     }
 
     // set fluid- and structure-based scalar transport values required in FSI
-    SetFluidSolution();
+    set_fluid_solution();
 
-    if (itnum != 1) StructureField()->prepare_partition_step();
+    if (itnum != 1) structure_field()->prepare_partition_step();
     // solve structural system
     do_struct_step();
 
     // set mesh displacement and velocity fields
-    SetStructSolution();
+    set_struct_solution();
 
     // solve scalar transport equation
     do_fluid_step();
@@ -118,7 +118,7 @@ void POROELAST::Partitioned::do_struct_step()
   }
 
   // Newton-Raphson iteration
-  StructureField()->Solve();
+  structure_field()->Solve();
 }
 
 void POROELAST::Partitioned::do_fluid_step()
@@ -136,12 +136,12 @@ void POROELAST::Partitioned::do_fluid_step()
 void POROELAST::Partitioned::prepare_time_step()
 {
   increment_time_and_step();
-  PrintHeader();
+  print_header();
 
-  StructureField()->prepare_time_step();
-  SetStructSolution();
+  structure_field()->prepare_time_step();
+  set_struct_solution();
   fluid_field()->prepare_time_step();
-  SetFluidSolution();
+  set_fluid_solution();
 }
 
 bool POROELAST::Partitioned::convergence_check(int itnum)
@@ -158,13 +158,13 @@ bool POROELAST::Partitioned::convergence_check(int itnum)
 
   // build the current increment
   fluidincnp_->Update(1.0, *(fluid_field()->Velnp()), -1.0);
-  structincnp_->Update(1.0, *(StructureField()->Dispnp()), -1.0);
+  structincnp_->Update(1.0, *(structure_field()->Dispnp()), -1.0);
 
   // build the L2-norm of the increment and the solution
   fluidincnp_->Norm2(&fluidincnorm_L2);
   fluid_field()->Velnp()->Norm2(&fluidnorm_L2);
   structincnp_->Norm2(&dispincnorm_L2);
-  StructureField()->Dispnp()->Norm2(&structnorm_L2);
+  structure_field()->Dispnp()->Norm2(&structnorm_L2);
 
   // care for the case that there is (almost) zero solution
   if (fluidnorm_L2 < 1e-6) fluidnorm_L2 = 1.0;
@@ -209,7 +209,7 @@ bool POROELAST::Partitioned::convergence_check(int itnum)
       ((fluidincnorm_L2 / fluidnorm_L2 > ittol_) || (dispincnorm_L2 / structnorm_L2 > ittol_)))
   {
     stopnonliniter = true;
-    if ((Comm().MyPID() == 0))  // and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
+    if ((Comm().MyPID() == 0))  // and print_screen_evry() and (Step()%print_screen_evry()==0))
     {
       printf(
           "|     >>>>>> not converged in itemax steps!                                       |\n");
@@ -225,7 +225,7 @@ bool POROELAST::Partitioned::convergence_check(int itnum)
 
 Teuchos::RCP<const Epetra_Map> POROELAST::Partitioned::DofRowMapStructure()
 {
-  return StructureField()->dof_row_map();
+  return structure_field()->dof_row_map();
 }
 
 Teuchos::RCP<const Epetra_Map> POROELAST::Partitioned::DofRowMapFluid()

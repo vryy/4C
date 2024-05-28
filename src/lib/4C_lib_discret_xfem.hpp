@@ -200,7 +200,7 @@ namespace DRT
     */
     virtual const Epetra_Map* InitialDofColMap(unsigned nds = 0) const;
 
-    /// checks if Discretization is initialized
+    /// checks if discretization is initialized
     bool Initialized() const;
 
 

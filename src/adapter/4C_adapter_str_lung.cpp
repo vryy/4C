@@ -34,7 +34,7 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructu
   //----------------------------------------------------------------------
   // get lung fluid-structure volume and asi constraints
   std::vector<CORE::Conditions::Condition*> temp;
-  Discretization()->GetCondition("StructFluidSurfCoupling", temp);
+  discretization()->GetCondition("StructFluidSurfCoupling", temp);
   for (unsigned i = 0; i < temp.size(); ++i)
   {
     CORE::Conditions::Condition& cond = *(temp[i]);
@@ -46,7 +46,7 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructu
   if (constrcond_.size() == 0)
     FOUR_C_THROW("No structure-fluid volume constraints found for lung fsi");
 
-  Discretization()->GetCondition("StructAleCoupling", temp);
+  discretization()->GetCondition("StructAleCoupling", temp);
   for (unsigned i = 0; i < temp.size(); ++i)
   {
     CORE::Conditions::Condition& cond = *(temp[i]);
@@ -67,10 +67,10 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructu
     std::set<int>& constrdofs = AllConstrDofMap[condID];
     for (int gid : *constrnodeIDs)
     {
-      if (Discretization()->HaveGlobalNode(gid))
+      if (discretization()->HaveGlobalNode(gid))
       {
-        DRT::Node* node = Discretization()->gNode(gid);
-        std::vector<int> dofs = Discretization()->Dof(node);
+        DRT::Node* node = discretization()->gNode(gid);
+        std::vector<int> dofs = discretization()->Dof(node);
         std::copy(dofs.begin(), dofs.end(), std::inserter(constrdofs, constrdofs.begin()));
       }
     }
@@ -83,10 +83,10 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructu
     const std::vector<int>* asinodeIDs = asicond->GetNodes();
     for (int gid : *asinodeIDs)
     {
-      if (Discretization()->HaveGlobalNode(gid))
+      if (discretization()->HaveGlobalNode(gid))
       {
-        DRT::Node* node = Discretization()->gNode(gid);
-        std::vector<int> dofs = Discretization()->Dof(node);
+        DRT::Node* node = discretization()->gNode(gid);
+        std::vector<int> dofs = discretization()->Dof(node);
         std::copy(dofs.begin(), dofs.end(), std::inserter(asidofs, asidofs.begin()));
       }
     }
@@ -113,14 +113,14 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructu
   // find all dofs belonging to enclosing boundary -> volume coupling dofs
   std::vector<int> dofmapvec;
   std::vector<int> nodes;
-  CORE::Conditions::FindConditionedNodes(*Discretization(), "StructFluidSurfCoupling", nodes);
+  CORE::Conditions::FindConditionedNodes(*discretization(), "StructFluidSurfCoupling", nodes);
   const int numnode = nodes.size();
 
   const int ndim = GLOBAL::Problem::Instance()->NDim();
   for (int i = 0; i < numnode; ++i)
   {
-    const DRT::Node* actnode = Discretization()->gNode(nodes[i]);
-    const std::vector<int> dof = Discretization()->Dof(actnode);
+    const DRT::Node* actnode = discretization()->gNode(nodes[i]);
+    const std::vector<int> dof = discretization()->Dof(actnode);
     if (ndim > static_cast<int>(dof.size()))
       FOUR_C_THROW(
           "got just %d dofs at node %d (lid=%d) but expected %d", dof.size(), nodes[i], i, ndim);
@@ -128,7 +128,7 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructu
   }
 
   lungconstraintmap_ = Teuchos::rcp(
-      new Epetra_Map(-1, dofmapvec.size(), dofmapvec.data(), 0, Discretization()->Comm()));
+      new Epetra_Map(-1, dofmapvec.size(), dofmapvec.data(), 0, discretization()->Comm()));
 }
 
 
@@ -155,8 +155,8 @@ void ADAPTER::StructureLung::ListLungVolCons(std::set<int>& LungVolConIDs, int& 
 void ADAPTER::StructureLung::InitializeVolCon(
     Teuchos::RCP<Epetra_Vector> initvol, Teuchos::RCP<Epetra_Vector> signvol, const int offsetID)
 {
-  if (!(Discretization()->Filled())) FOUR_C_THROW("fill_complete() was not called");
-  if (!Discretization()->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
+  if (!(discretization()->Filled())) FOUR_C_THROW("fill_complete() was not called");
+  if (!discretization()->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   if (initvol == Teuchos::null or signvol == Teuchos::null)
     FOUR_C_THROW("Structure lung volume constraint cannot be initialized");
@@ -168,8 +168,8 @@ void ADAPTER::StructureLung::InitializeVolCon(
   params.set("action", "calc_struct_constrvol");
 
   // set displacements
-  Discretization()->ClearState();
-  Discretization()->set_state("displacement", Dispnp());
+  discretization()->ClearState();
+  discretization()->set_state("displacement", Dispnp());
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
@@ -203,13 +203,13 @@ void ADAPTER::StructureLung::InitializeVolCon(
         std::vector<int> lm;
         std::vector<int> lmowner;
         std::vector<int> lmstride;
-        curr->second->LocationVector(*Discretization(), lm, lmowner, lmstride);
+        curr->second->LocationVector(*discretization(), lm, lmowner, lmstride);
 
         // reshape element matrices and vectors and init to zero
         elevector3.size(1);
 
         // call the element specific evaluate method
-        int err = curr->second->Evaluate(params, *Discretization(), lm, elematrix1, elematrix2,
+        int err = curr->second->Evaluate(params, *discretization(), lm, elematrix1, elematrix2,
             elevector1, elevector2, elevector3);
         if (err) FOUR_C_THROW("error while evaluating elements");
 
@@ -265,16 +265,16 @@ void ADAPTER::StructureLung::EvaluateVolCon(
     Teuchos::RCP<Epetra_Vector> SignVols, Teuchos::RCP<Epetra_Vector> lagrMultVecRed,
     const int offsetID)
 {
-  if (!(Discretization()->Filled())) FOUR_C_THROW("fill_complete() was not called");
-  if (!Discretization()->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
+  if (!(discretization()->Filled())) FOUR_C_THROW("fill_complete() was not called");
+  if (!discretization()->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // parameter list
   Teuchos::ParameterList params;
   params.set("action", "calc_struct_volconstrstiff");
 
   // set displacements
-  Discretization()->ClearState();
-  Discretization()->set_state("displacement", Dispnp());
+  discretization()->ClearState();
+  discretization()->set_state("displacement", Dispnp());
 
   //---------------------------------------------------------------------
   // loop through conditions and evaluate them
@@ -320,7 +320,7 @@ void ADAPTER::StructureLung::EvaluateVolCon(
       std::vector<int> lm;
       std::vector<int> lmowner;
       std::vector<int> lmstride;
-      curr->second->LocationVector(*Discretization(), lm, lmowner, lmstride);
+      curr->second->LocationVector(*discretization(), lm, lmowner, lmstride);
 
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
@@ -333,7 +333,7 @@ void ADAPTER::StructureLung::EvaluateVolCon(
       elevector3.size(1);       // current volume
 
       // call the element specific evaluate method
-      int err = curr->second->Evaluate(params, *Discretization(), lm, elematrix1, elematrix2,
+      int err = curr->second->Evaluate(params, *discretization(), lm, elematrix1, elematrix2,
           elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("error while evaluating elements");
 
@@ -455,7 +455,7 @@ void ADAPTER::StructureLung::ReadVolConRestart(const int step,
     Teuchos::RCP<Epetra_Vector> OldLagrMultRed)
 {
   IO::DiscretizationReader reader(
-      Discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
+      discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
   if (step != reader.ReadInt("step")) FOUR_C_THROW("Time step on file not equal to given step");
   std::stringstream stream1;
   stream1 << "OldVols";

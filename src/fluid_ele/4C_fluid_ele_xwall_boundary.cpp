@@ -106,7 +106,7 @@ void DRT::ELEMENTS::FluidXWallBoundary::LocationVector(const Discretization& dis
 
       la.Clear();
 
-      // we need to look at all DofSets of our Discretization
+      // we need to look at all DofSets of our discretization
       for (int dofset = 0; dofset < la.Size(); ++dofset)
       {
         std::vector<int>& lm = la[dofset].lm_;
@@ -184,7 +184,7 @@ void DRT::ELEMENTS::FluidXWallBoundary::LocationVector(const Discretization& dis
         //      }
 
         // fill the vector with face dofs
-        if (this->NumDofPerFace(0) > 0)
+        if (this->num_dof_per_face(0) > 0)
           FOUR_C_THROW("set face_ from private to protected and uncomment");
         //      {
         //        for (int i=0; i<NumFace(); ++i)

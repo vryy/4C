@@ -63,7 +63,7 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_thermo_struct
       "action", SCATRA::Action::calc_scatra_mono_odblock_mesh, eleparams);
 
   // remove state vectors from thermo discretization
-  thermo_->ScaTraField()->Discretization()->ClearState();
+  thermo_->ScaTraField()->discretization()->ClearState();
 
   // add state vectors to thermo discretization
   thermo_->ScaTraField()->add_time_integration_specific_vectors();
@@ -77,9 +77,9 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_thermo_struct
       thermostructuredomain,  // thermo-structure matrix block
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
-  thermo_->ScaTraField()->Discretization()->Evaluate(eleparams, strategyscatrastructure);
+  thermo_->ScaTraField()->discretization()->Evaluate(eleparams, strategyscatrastructure);
 
-  thermo_->ScaTraField()->Discretization()->ClearState();
+  thermo_->ScaTraField()->discretization()->ClearState();
 }
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
@@ -147,7 +147,7 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_thermo_struct
     }
   }
 
-  thermo_->ScaTraField()->Discretization()->ClearState();
+  thermo_->ScaTraField()->discretization()->ClearState();
 }
 
 /*-----------------------------------------------------------------------------------*
@@ -165,9 +165,9 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_structure_the
 
   eleparams.set<double>("total time", structure_->Time());
 
-  structure_->Discretization()->ClearState();
+  structure_->discretization()->ClearState();
 
-  structure_->Discretization()->set_state("displacement", structure_->Dispnp());
+  structure_->discretization()->set_state("displacement", structure_->Dispnp());
 
   // create strategy for assembly of structure-thermo matrix block
   CORE::FE::AssembleStrategy strategystructurescatra(
@@ -178,12 +178,12 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_structure_the
       structurethermodomain,  // structure-thermo matrix block
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
-  structure_->Discretization()->Evaluate(eleparams, strategystructurescatra);
+  structure_->discretization()->Evaluate(eleparams, strategystructurescatra);
 
   // need to scale structurethermoblock_ with 'timefac' to getcorrect implementation
   structurethermodomain->Scale(1.0 - structure_->TimIntParam());
 
-  structure_->Discretization()->ClearState();
+  structure_->discretization()->ClearState();
 }
 
 /*----------------------------------------------------------------------*
@@ -288,7 +288,7 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_thermo_structure_interface_s
   CORE::UTILS::AddEnumClassToParameterList<SCATRA::DifferentiationType>(
       "differentiationtype", SCATRA::DifferentiationType::disp, condparams);
 
-  thermo_->ScaTraField()->Discretization()->ClearState();
+  thermo_->ScaTraField()->discretization()->ClearState();
 
   thermo_->ScaTraField()->add_time_integration_specific_vectors();
 
@@ -324,7 +324,7 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_thermo_structure_interface_s
       meshtying_strategy_thermo_->set_condition_specific_sca_tra_parameters(
           *kinetics_slave_cond.second);
       // evaluate the condition
-      thermo_->ScaTraField()->Discretization()->evaluate_condition(
+      thermo_->ScaTraField()->discretization()->evaluate_condition(
           condparams, strategyscatrastructures2i, "S2IKinetics", kinetics_slave_cond.first);
     }
   }

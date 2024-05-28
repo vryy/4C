@@ -95,7 +95,7 @@ void MIXTURE::FunctionMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
   double sum = 0.0;
 
   // Iterate over all constituents and add all stress/cmat contributions
-  for (std::size_t i = 0; i < Constituents().size(); ++i)
+  for (std::size_t i = 0; i < constituents().size(); ++i)
   {
     // mass fractions are defined by evaluating the specified function at the gauss point reference
     // coordinates (and the current time)
@@ -111,7 +111,7 @@ void MIXTURE::FunctionMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
     double constituent_density = params_->initial_reference_density_ * massfrac;
 
     // add stress contribution to global stress
-    MixtureConstituent& constituent = *Constituents()[i];
+    MixtureConstituent& constituent = *constituents()[i];
     cstress.Clear();
     ccmat.Clear();
     constituent.Evaluate(F, E_strain, params, cstress, ccmat, gp, eleGID);

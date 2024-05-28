@@ -33,7 +33,7 @@ MAT::PAR::ScatraMatAniso::ScatraMatAniso(Teuchos::RCP<CORE::MAT::PAR::Material> 
   matparams_.at(diff3)->PutScalar(matdata->Get<double>("DIFF3"));
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScatraMatAniso::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScatraMatAniso::create_material()
 {
   return Teuchos::rcp(new MAT::ScatraMatAniso(this));
 }

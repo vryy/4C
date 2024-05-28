@@ -43,7 +43,7 @@ void CORE::REBALANCE::UTILS::print_parallel_distribution(const DRT::Discretizati
 
     if (myrank == 0)
     {
-      IO::cout(IO::verbose) << "\n   Discretization: " << dis.Name() << IO::endl;
+      IO::cout(IO::verbose) << "\n   discretization: " << dis.Name() << IO::endl;
       IO::cout(IO::verbose)
           << "   +-----+---------------+--------------+-----------------+----------------+"
           << IO::endl;

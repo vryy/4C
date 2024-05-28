@@ -117,7 +117,7 @@ void CORE::ADAPTER::CouplingMortar::Setup(
     if (coupleddof[ii] == 1) ++numcoupleddof;
 
   // setup mortar interface
-  SetupInterface(masterdis, slavedis, coupleddof, mastergnodes, slavegnodes, masterelements,
+  setup_interface(masterdis, slavedis, coupleddof, mastergnodes, slavegnodes, masterelements,
       slaveelements, comm, slavewithale, slidingale, nds_master, nds_slave);
 
   // all the following stuff has to be done once in setup
@@ -212,7 +212,7 @@ void CORE::ADAPTER::CouplingMortar::check_slave_dirichlet_overlap(
   p.set("total time", 0.0);
   Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps = Teuchos::rcp(new CORE::LINALG::MapExtractor());
   Teuchos::RCP<Epetra_Vector> temp = CORE::LINALG::CreateVector(*(slavedis->dof_row_map()), true);
-  slavedis->EvaluateDirichlet(p, temp, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps);
+  slavedis->evaluate_dirichlet(p, temp, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps);
 
   // loop over all slave row nodes of the interface
   for (int j = 0; j < interface_->SlaveRowNodes()->NumMyElements(); ++j)
@@ -253,7 +253,7 @@ void CORE::ADAPTER::CouplingMortar::check_slave_dirichlet_overlap(
 /*----------------------------------------------------------------------*
  | setup routine for mortar framework                        ehrl 08/13 |
  *----------------------------------------------------------------------*/
-void CORE::ADAPTER::CouplingMortar::SetupInterface(
+void CORE::ADAPTER::CouplingMortar::setup_interface(
     const Teuchos::RCP<DRT::Discretization>& masterdis,  ///< master discretization
     const Teuchos::RCP<DRT::Discretization>& slavedis,   ///< slave discretization
     const std::vector<int>& coupleddof,             ///< vector defining coupled degrees of freedom
@@ -350,7 +350,7 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
     Teuchos::RCP<MORTAR::Node> mrtrnode =
         Teuchos::rcp(new MORTAR::Node(node->Id(), node->X(), node->Owner(), dofids, false));
 
-    if (nurbs) MORTAR::UTILS::PrepareNURBSNode(node, mrtrnode);
+    if (nurbs) MORTAR::UTILS::prepare_nurbs_node(node, mrtrnode);
     interface_->AddMortarNode(mrtrnode);
   }
 
@@ -375,7 +375,7 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
     Teuchos::RCP<MORTAR::Node> mrtrnode = Teuchos::rcp(
         new MORTAR::Node(node->Id() + nodeoffset, node->X(), node->Owner(), dofids, true));
 
-    if (nurbs) MORTAR::UTILS::PrepareNURBSNode(node, mrtrnode);
+    if (nurbs) MORTAR::UTILS::prepare_nurbs_node(node, mrtrnode);
     interface_->AddMortarNode(mrtrnode);
   }
 
@@ -403,7 +403,7 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
     Teuchos::RCP<MORTAR::Element> mrtrele = Teuchos::rcp(new MORTAR::Element(
         ele->Id(), ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), false, nurbs));
 
-    if (nurbs) MORTAR::UTILS::PrepareNURBSElement(*masterdis, ele, mrtrele, spatial_dimension_);
+    if (nurbs) MORTAR::UTILS::prepare_nurbs_element(*masterdis, ele, mrtrele, spatial_dimension_);
     interface_->AddMortarElement(mrtrele);
   }
 
@@ -421,7 +421,7 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
           Teuchos::rcp(new MORTAR::Element(ele->Id() + eleoffset, ele->Owner(), ele->Shape(),
               ele->num_node(), ele->NodeIds(), true, nurbs));
 
-      if (nurbs) MORTAR::UTILS::PrepareNURBSElement(*slavedis, ele, mrtrele, spatial_dimension_);
+      if (nurbs) MORTAR::UTILS::prepare_nurbs_element(*slavedis, ele, mrtrele, spatial_dimension_);
       interface_->AddMortarElement(mrtrele);
     }
     else
@@ -971,7 +971,7 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
   // if slave=fluid, we are lucky because fluid elements do not
   // need any re-relocation (unlike structural elements)
   // fluid elements: empty implementation (return 0)
-  CORE::COMM::ParObjectFactory::Instance().InitializeElements(*slavedis);
+  CORE::COMM::ParObjectFactory::Instance().initialize_elements(*slavedis);
 
   // print message
   if (comm.MyPID() == 0)
@@ -991,7 +991,7 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
 /*----------------------------------------------------------------------*
  |  compute projection operator P                            farah 01/16|
  *----------------------------------------------------------------------*/
-void CORE::ADAPTER::CouplingMortar::CreateP()
+void CORE::ADAPTER::CouplingMortar::create_p()
 {
   // safety check
   check_setup();
@@ -1150,7 +1150,7 @@ void CORE::ADAPTER::CouplingMortar::Evaluate()
   M_ = mmatrix;
 
   // create projection operator and Dinv
-  CreateP();
+  create_p();
 
   return;
 }

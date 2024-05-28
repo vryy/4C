@@ -66,7 +66,7 @@ namespace FSI
      *
      * \returns interface force
      */
-    Teuchos::RCP<Epetra_Vector> FluidOp(
+    Teuchos::RCP<Epetra_Vector> fluid_op(
         Teuchos::RCP<Epetra_Vector> idisp, const FillType fillFlag) override;
 
     /** \brief interface structural operator
@@ -79,7 +79,7 @@ namespace FSI
      *
      * \returns interface displacement
      */
-    Teuchos::RCP<Epetra_Vector> StructOp(
+    Teuchos::RCP<Epetra_Vector> struct_op(
         Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag) final;
 
     //! Predictor

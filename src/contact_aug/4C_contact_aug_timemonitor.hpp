@@ -33,7 +33,7 @@ namespace CONTACT
       deriv2nd_unit_slave_element_normal,
       Deriv2nd_Jacobian,
       deriv1st_non_unit_slave_element_normal,
-      Deriv1st_MXiGP,
+      deriv1st_m_xi_gp,
       INCOMPLETE_Add_Jac_Deriv2nd_GapN,
       INCOMPLETE_Add_Deriv1st_GapN_Deriv1st_Jac,
       /*--- MAX_VALUE: Must stay at the end ------------*/
@@ -83,8 +83,8 @@ namespace CONTACT
           return "Deriv2nd_Jacobian";
         case TimeID::deriv1st_non_unit_slave_element_normal:
           return "deriv1st_non_unit_slave_element_normal";
-        case TimeID::Deriv1st_MXiGP:
-          return "Deriv1st_MXiGP";
+        case TimeID::deriv1st_m_xi_gp:
+          return "deriv1st_m_xi_gp";
         case TimeID::INCOMPLETE_Add_Jac_Deriv2nd_GapN:
           return "INCOMPLETE_Add_Jac_Deriv2nd_GapN";
         case TimeID::INCOMPLETE_Add_Deriv1st_GapN_Deriv1st_Jac:

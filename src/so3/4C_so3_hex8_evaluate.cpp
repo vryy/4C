@@ -83,7 +83,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
 
   if (IsParamsInterface())
   {
-    act = ParamsInterface().GetActionType();
+    act = params_interface().GetActionType();
   }
   else
   {
@@ -301,11 +301,11 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
       int err = 0;
       if (structale_ == true)
       {
-        err = InitJacobianMapping(mydispmat);
+        err = init_jacobian_mapping(mydispmat);
         if (err)
         {
           // reset class variable before leaving
-          InitJacobianMapping();
+          init_jacobian_mapping();
           return err;
         }
       }
@@ -313,18 +313,18 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> detJmat = detJ_;
       std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>> invJmat = invJ_;
 
-      err = InitJacobianMapping(mydisp);
+      err = init_jacobian_mapping(mydisp);
       if (err)
       {
         // reset class variable before leaving
-        InitJacobianMapping();
+        init_jacobian_mapping();
         return err;
       }
 
       std::vector<double> detJcur = detJ_;
       std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>> invJcur = invJ_;
 
-      InitJacobianMapping();
+      init_jacobian_mapping();
 
       std::vector<double> detJref = detJ_;
       std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>> invJref = invJ_;
@@ -460,13 +460,13 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
       INPAR::STR::StrainType ioplstrain = INPAR::STR::strain_none;
       if (IsParamsInterface())
       {
-        stressdata = StrParamsInterface().StressDataPtr();
-        straindata = StrParamsInterface().StrainDataPtr();
-        plstraindata = StrParamsInterface().plastic_strain_data_ptr();
+        stressdata = str_params_interface().StressDataPtr();
+        straindata = str_params_interface().StrainDataPtr();
+        plstraindata = str_params_interface().plastic_strain_data_ptr();
 
-        iostress = StrParamsInterface().GetStressOutputType();
-        iostrain = StrParamsInterface().GetStrainOutputType();
-        ioplstrain = StrParamsInterface().get_plastic_strain_output_type();
+        iostress = str_params_interface().GetStressOutputType();
+        iostrain = str_params_interface().GetStrainOutputType();
+        ioplstrain = str_params_interface().get_plastic_strain_output_type();
       }
       else
       {
@@ -535,7 +535,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
           "This action type should only be called from the new time integration framework!");
 
       // Save number of Gauss of the element for gauss point data output
-      StrParamsInterface()
+      str_params_interface()
           .gauss_point_data_output_manager_ptr()
           ->add_element_number_of_gauss_points(NUMGPT_SOH8);
 
@@ -546,7 +546,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
       SolidMaterial()->register_output_data_names(quantities_map);
 
       // Add quantities to the Gauss point output data manager (if they do not already exist)
-      StrParamsInterface().gauss_point_data_output_manager_ptr()->MergeQuantities(quantities_map);
+      str_params_interface().gauss_point_data_output_manager_ptr()->MergeQuantities(quantities_map);
     }
     break;
     case ELEMENTS::struct_gauss_point_data_output:
@@ -556,7 +556,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
 
       // Collection and assembly of gauss point data
       for (const auto& quantity :
-          StrParamsInterface().gauss_point_data_output_manager_ptr()->GetQuantities())
+          str_params_interface().gauss_point_data_output_manager_ptr()->GetQuantities())
       {
         const std::string& quantity_name = quantity.first;
         const int quantity_size = quantity.second;
@@ -569,13 +569,13 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
         // point)
         if (data_available)
         {
-          switch (StrParamsInterface().gauss_point_data_output_manager_ptr()->GetOutputType())
+          switch (str_params_interface().gauss_point_data_output_manager_ptr()->GetOutputType())
           {
             case INPAR::STR::GaussPointDataOutputType::element_center:
             {
               // compute average of the quantities
               Teuchos::RCP<Epetra_MultiVector> global_data =
-                  StrParamsInterface()
+                  str_params_interface()
                       .gauss_point_data_output_manager_ptr()
                       ->get_element_center_data()
                       .at(quantity_name);
@@ -585,11 +585,11 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
             case INPAR::STR::GaussPointDataOutputType::nodes:
             {
               Teuchos::RCP<Epetra_MultiVector> global_data =
-                  StrParamsInterface().gauss_point_data_output_manager_ptr()->GetNodalData().at(
+                  str_params_interface().gauss_point_data_output_manager_ptr()->GetNodalData().at(
                       quantity_name);
 
               Epetra_IntVector& global_nodal_element_count =
-                  *StrParamsInterface()
+                  *str_params_interface()
                        .gauss_point_data_output_manager_ptr()
                        ->GetNodalDataCount()
                        .at(quantity_name);
@@ -604,7 +604,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
             case INPAR::STR::GaussPointDataOutputType::gauss_points:
             {
               std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
-                  StrParamsInterface()
+                  str_params_interface()
                       .gauss_point_data_output_manager_ptr()
                       ->GetGaussPointData()
                       .at(quantity_name);
@@ -637,7 +637,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
-      Update_element(mydisp, params, Material());
+      update_element(mydisp, params, Material());
     }
     break;
     //==================================================================================
@@ -887,9 +887,9 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
 
         if (defgrd.Determinant() <= 0.0)
         {
-          if (IsParamsInterface() and StrParamsInterface().IsTolerateErrors())
+          if (IsParamsInterface() and str_params_interface().IsTolerateErrors())
           {
-            StrParamsInterface().SetEleEvalErrorFlag(
+            str_params_interface().SetEleEvalErrorFlag(
                 STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
             return 0;
           }
@@ -909,7 +909,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
 
       if (IsParamsInterface())  // new structural time integration
       {
-        StrParamsInterface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
+        str_params_interface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
       }
       else  // old structural time integration
       {
@@ -929,7 +929,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
       //==================================================================================
     case ELEMENTS::struct_interpolate_velocity_to_point:
     {
-      // get displacements and extract values of this element (set in PrepareFluidOp())
+      // get displacements and extract values of this element (set in prepare_fluid_op())
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velocity");
 
@@ -1085,7 +1085,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
         {
           // build def gradient for every gauss point
           CORE::LINALG::SerialDenseMatrix gpdefgrd(NUMGPT_SOH8, 9);
-          DefGradient(mydisp, gpdefgrd, *prestress_);
+          def_gradient(mydisp, gpdefgrd, *prestress_);
 
           // update deformation gradient and put back to storage
           CORE::LINALG::Matrix<3, 3> deltaF;
@@ -1293,7 +1293,7 @@ int DRT::ELEMENTS::SoHex8::evaluate_neumann(Teuchos::ParameterList& params,
   // find out whether we will use a time curve
   double time = -1.0;
   if (IsParamsInterface())
-    time = ParamsInterface().GetTotalTime();
+    time = params_interface().GetTotalTime();
   else
     time = params.get("total time", -1.0);
 
@@ -1407,7 +1407,7 @@ const double* DRT::ELEMENTS::SoHex8::soh8_get_coordinate_of_gausspoints(const un
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)              gee 04/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8::InitJacobianMapping()
+void DRT::ELEMENTS::SoHex8::init_jacobian_mapping()
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;
@@ -1441,7 +1441,7 @@ void DRT::ELEMENTS::SoHex8::InitJacobianMapping()
  |  init the element jacobian mapping with respect to the    farah 06/13|
  |  material configuration.                                             |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::SoHex8::InitJacobianMapping(std::vector<double>& dispmat)
+int DRT::ELEMENTS::SoHex8::init_jacobian_mapping(std::vector<double>& dispmat)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xmat;
@@ -1467,9 +1467,9 @@ int DRT::ELEMENTS::SoHex8::InitJacobianMapping(std::vector<double>& dispmat)
 
     if (detJ_[gp] <= 0.0)
     {
-      if (IsParamsInterface() and StrParamsInterface().IsTolerateErrors())
+      if (IsParamsInterface() and str_params_interface().IsTolerateErrors())
       {
-        StrParamsInterface().SetEleEvalErrorFlag(
+        str_params_interface().SetEleEvalErrorFlag(
             STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
         return 1;
       }
@@ -1532,7 +1532,7 @@ void DRT::ELEMENTS::SoHex8::soh8_recover(
   CORE::LINALG::SerialDenseMatrix* alpha = nullptr;
   CORE::LINALG::SerialDenseMatrix* eas_inc = nullptr;
   // get access to the interface parameters
-  const double step_length = StrParamsInterface().GetStepLength();
+  const double step_length = str_params_interface().GetStepLength();
   const bool iseas = (eastype_ != soh8_easnone);
 
   // have eas?
@@ -1548,14 +1548,14 @@ void DRT::ELEMENTS::SoHex8::soh8_recover(
 
   /* if it is a default step, we have to recover the condensed
    * solution vectors */
-  if (StrParamsInterface().IsDefaultStep())
+  if (str_params_interface().IsDefaultStep())
   {
     /* recovery of the enhanced assumed strain increment and
      * update of the eas dofs. */
     if (iseas)
     {
       // first, store the eas state of the previous accepted Newton step
-      StrParamsInterface().sum_into_my_previous_sol_norm(
+      str_params_interface().sum_into_my_previous_sol_norm(
           NOX::NLN::StatusTest::quantity_eas, neas_, (*alpha)[0], Owner());
 
       // compute the eas increment
@@ -1597,7 +1597,7 @@ void DRT::ELEMENTS::SoHex8::soh8_recover(
   // Check if the eas incr is tested and if yes, calculate the element
   // contribution to the norm
   if (iseas)
-    StrParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas, neas_,
+    str_params_interface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas, neas_,
         (*eas_inc)[0], (*alpha)[0], step_length, Owner());
 
   // the element internal stuff should be up-to-date for now...
@@ -1785,7 +1785,7 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
   }  // -------------------------------------------------------------------- EAS
 
   // build new jacobian mapping with respect to the material configuration
-  if (structale_ == true) InitJacobianMapping(dispmat);
+  if (structale_ == true) init_jacobian_mapping(dispmat);
 
   // check if we need to split the residuals (for Newton line search)
   // if true an additional global vector is assembled containing
@@ -1854,9 +1854,9 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
       double det_defgrd = defgrd.Determinant();
       if (det_defgrd < 0.0)
       {
-        if (StrParamsInterface().IsTolerateErrors())
+        if (str_params_interface().IsTolerateErrors())
         {
-          StrParamsInterface().SetEleEvalErrorFlag(
+          str_params_interface().SetEleEvalErrorFlag(
               STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
           stiffmatrix->Clear();
           force->Clear();
@@ -2176,8 +2176,8 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
     so3mat->Evaluate(&defgrd_mod, &glstrain, params, &stress, &cmat, gp, Id());
 
     // stop if the material evaluation fails
-    if (IsParamsInterface() and StrParamsInterface().IsTolerateErrors())
-      if (StrParamsInterface().GetEleEvalErrorFlag() != STR::ELEMENTS::ele_error_none) return;
+    if (IsParamsInterface() and str_params_interface().IsTolerateErrors())
+      if (str_params_interface().GetEleEvalErrorFlag() != STR::ELEMENTS::ele_error_none) return;
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -2263,7 +2263,7 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
 
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> cauchystress(false);
-        PK2toCauchy(&stress, &defgrd, &cauchystress);
+        p_k2to_cauchy(&stress, &defgrd, &cauchystress);
 
         (*elestress)(gp, 0) = cauchystress(0, 0);
         (*elestress)(gp, 1) = cauchystress(1, 1);
@@ -2414,8 +2414,8 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
         double timintfac_vel = 0.0;
         if (IsParamsInterface())
         {
-          timintfac_dis = StrParamsInterface().GetTimIntFactorDisp();
-          timintfac_vel = StrParamsInterface().GetTimIntFactorVel();
+          timintfac_dis = str_params_interface().GetTimIntFactorDisp();
+          timintfac_vel = str_params_interface().GetTimIntFactorVel();
         }
         else
         {
@@ -2720,7 +2720,7 @@ int DRT::ELEMENTS::SoHex8Type::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoHex8*>(dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_hex8* failed");
-    actele->InitJacobianMapping();
+    actele->init_jacobian_mapping();
   }
   return 0;
 }
@@ -2728,7 +2728,7 @@ int DRT::ELEMENTS::SoHex8Type::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  compute def gradient at every gaussian point (protected)   gee 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8::DefGradient(const std::vector<double>& disp,
+void DRT::ELEMENTS::SoHex8::def_gradient(const std::vector<double>& disp,
     CORE::LINALG::SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
@@ -2806,7 +2806,7 @@ void DRT::ELEMENTS::SoHex8::update_jacobian_mapping(
 /*---------------------------------------------------------------------------------------------*
  |  Update history variables (e.g. remodeling of fiber directions) (protected)      braeu 07/16|
  *---------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8::Update_element(std::vector<double>& disp,
+void DRT::ELEMENTS::SoHex8::update_element(std::vector<double>& disp,
     Teuchos::ParameterList& params, const Teuchos::RCP<CORE::MAT::Material>& mat)
 {
   // Calculate current deformation gradient
@@ -2879,7 +2879,7 @@ void DRT::ELEMENTS::SoHex8::Update_element(std::vector<double>& disp,
 /*----------------------------------------------------------------------*
  | push forward of material to spatial stresses              dano 11/12 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8::GLtoEA(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain,
+void DRT::ELEMENTS::SoHex8::g_lto_ea(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain,
     CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>* defgrd,
     CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>* euler_almansi)
 {
@@ -2912,7 +2912,7 @@ void DRT::ELEMENTS::SoHex8::GLtoEA(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* 
 /*----------------------------------------------------------------------*
  | push forward of material to spatial stresses              dano 11/12 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8::PK2toCauchy(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
+void DRT::ELEMENTS::SoHex8::p_k2to_cauchy(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
     CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>* defgrd,
     CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>* cauchystress)
 {

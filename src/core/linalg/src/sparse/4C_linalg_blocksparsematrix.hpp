@@ -236,7 +236,7 @@ namespace CORE::LINALG
 
    protected:
     /// extract a partial map extractor from the full map extractor
-    void GetPartialExtractor(const MultiMapExtractor& full_extractor,
+    void get_partial_extractor(const MultiMapExtractor& full_extractor,
         const std::vector<unsigned>& block_ids, MultiMapExtractor& partial_extractor) const;
 
    private:
@@ -385,16 +385,16 @@ namespace CORE::LINALG
 
    protected:
     /// assemble into the given block
-    void Assemble(double val, int lrow, int rgid, int rblock, int lcol, int cgid, int cblock);
+    void assemble(double val, int lrow, int rgid, int rblock, int lcol, int cgid, int cblock);
 
     /// find row block to a given row gid
-    int RowBlock(int rgid);
+    int row_block(int rgid);
 
     /// find column block to a given column gid
-    int ColBlock(int rblock, int cgid);
+    int col_block(int rblock, int cgid);
 
     /// access to the block sparse matrix for subclasses
-    BlockSparseMatrixBase& Mat() { return mat_; }
+    BlockSparseMatrixBase& mat() { return mat_; }
 
    private:
     /// my block matrix base
@@ -537,11 +537,11 @@ Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> CORE::LINALG::BlockSparseMatri
 
   // extract domain extractors
   MultiMapExtractor p_domain_extractor;
-  this->GetPartialExtractor(DomainExtractor(), col_block_ids, p_domain_extractor);
+  this->get_partial_extractor(DomainExtractor(), col_block_ids, p_domain_extractor);
 
   // extract range extractors
   MultiMapExtractor p_range_extractor;
-  this->GetPartialExtractor(RangeExtractor(), row_block_ids, p_range_extractor);
+  this->get_partial_extractor(RangeExtractor(), row_block_ids, p_range_extractor);
 
   return Clone(access, row_block_ids, col_block_ids, p_domain_extractor, p_range_extractor);
 }
@@ -558,7 +558,7 @@ void CORE::LINALG::BlockSparseMatrix<Strategy>::Complete(bool enforce_complete)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-inline int CORE::LINALG::DefaultBlockMatrixStrategy::RowBlock(int rgid)
+inline int CORE::LINALG::DefaultBlockMatrixStrategy::row_block(int rgid)
 {
   int rows = mat_.Rows();
   for (int rblock = 0; rblock < rows; ++rblock)
@@ -574,7 +574,7 @@ inline int CORE::LINALG::DefaultBlockMatrixStrategy::RowBlock(int rgid)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-inline int CORE::LINALG::DefaultBlockMatrixStrategy::ColBlock(int rblock, int cgid)
+inline int CORE::LINALG::DefaultBlockMatrixStrategy::col_block(int rblock, int cgid)
 {
   int cols = mat_.Cols();
   for (int cblock = 0; cblock < cols; ++cblock)
@@ -629,18 +629,18 @@ inline void CORE::LINALG::DefaultBlockMatrixStrategy::Assemble(int eid, int myra
     if (lmrowowner[lrow] != myrank) continue;
 
     int rgid = lmrow[lrow];
-    int rblock = RowBlock(rgid);
+    int rblock = row_block(rgid);
 
     if (scratch_lcols_[rblock][0] == -1)
       for (int lcol = 0; lcol < lcoldim; ++lcol)
-        scratch_lcols_[rblock][lcol] = ColBlock(rblock, lmcol[lcol]);
+        scratch_lcols_[rblock][lcol] = col_block(rblock, lmcol[lcol]);
 
     for (int lcol = 0; lcol < lcoldim; ++lcol)
     {
       double val = Aele(lrow, lcol);
       int cgid = lmcol[lcol];
 
-      Assemble(val, lrow, rgid, rblock, lcol, cgid, scratch_lcols_[rblock][lcol]);
+      assemble(val, lrow, rgid, rblock, lcol, cgid, scratch_lcols_[rblock][lcol]);
     }
   }
 }
@@ -650,16 +650,16 @@ inline void CORE::LINALG::DefaultBlockMatrixStrategy::Assemble(int eid, int myra
  *----------------------------------------------------------------------*/
 inline void CORE::LINALG::DefaultBlockMatrixStrategy::Assemble(double val, int rgid, int cgid)
 {
-  int rblock = RowBlock(rgid);
-  int cblock = ColBlock(rblock, cgid);
+  int rblock = row_block(rgid);
+  int cblock = col_block(rblock, cgid);
 
-  Assemble(val, 0, rgid, rblock, 0, cgid, cblock);
+  assemble(val, 0, rgid, rblock, 0, cgid, cblock);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-inline void CORE::LINALG::DefaultBlockMatrixStrategy::Assemble(
+inline void CORE::LINALG::DefaultBlockMatrixStrategy::assemble(
     double val, int lrow, int rgid, int rblock, int lcol, int cgid, int cblock)
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS

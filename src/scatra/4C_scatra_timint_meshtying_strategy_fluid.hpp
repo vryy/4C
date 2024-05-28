@@ -59,7 +59,7 @@ namespace SCATRA
 
     bool system_matrix_initialization_needed() const override { return true; }
 
-    Teuchos::RCP<CORE::LINALG::SparseOperator> InitSystemMatrix() const override;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> init_system_matrix() const override;
 
     Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const override
     {
@@ -68,7 +68,7 @@ namespace SCATRA
     }
 
     //! setup meshtying objects
-    void SetupMeshtying() override;
+    void setup_meshtying() override;
 
     //! solve resulting linear system of equations
     void Solve(const Teuchos::RCP<CORE::LINALG::Solver>& solver,         //!< solver

@@ -65,13 +65,13 @@ namespace CORE::GEO
       FacetGraph(const unsigned& graph_size = 0)
           : graph_(graph_size){/* intentionally left blank */};
 
-      void CollectVolumeLines(plain_facet_set& collected_facets,
+      void collect_volume_lines(plain_facet_set& collected_facets,
           std::map<std::pair<Point*, Point*>, plain_facet_set>& volume_lines) const;
 
-      void AddToVolumeCells(Mesh& mesh, Element* element, std::vector<plain_facet_set>& volumes,
+      void add_to_volume_cells(Mesh& mesh, Element* element, std::vector<plain_facet_set>& volumes,
           plain_volumecell_set& cells) const;
 
-      int FacetId(Facet* f)
+      int facet_id(Facet* f)
       {
         return std::lower_bound(all_facets_.begin(), all_facets_.end(), f) - all_facets_.begin();
       }

@@ -45,7 +45,7 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate action
-      int EvaluateAction(DRT::FaceElement* ele,             //!< boundary element
+      int evaluate_action(DRT::FaceElement* ele,            //!< boundary element
           Teuchos::ParameterList& params,                   //!< parameter list
           DRT::Discretization& discretization,              //!< discretization
           SCATRA::BoundaryAction action,                    //!< action
@@ -77,7 +77,7 @@ namespace DRT
        * @param[out] emastermatrix   element matrix for master side
        * @param[out] eslaveresidual  element residual for slave side
        */
-      void EvaluateS2ICoupling(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
+      void evaluate_s2_i_coupling(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& eslavematrix,
           CORE::LINALG::SerialDenseMatrix& emastermatrix,
@@ -116,8 +116,8 @@ namespace DRT
       );
 
       //! extract nodal state variables associated with boundary element
-      void ExtractNodeValues(const DRT::Discretization& discretization,  //!< discretization
-          DRT::Element::LocationArray& la                                //!< location array
+      void extract_node_values(const DRT::Discretization& discretization,  //!< discretization
+          DRT::Element::LocationArray& la                                  //!< location array
           ) override;
 
       /*!

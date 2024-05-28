@@ -49,8 +49,8 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
 
   set_params_interface_ptr(params);
 
-  InvalidEleData();
-  if (distype == CORE::FE::CellType::nurbs27) GetNurbsEleInfo(&discretization);
+  invalid_ele_data();
+  if (distype == CORE::FE::CellType::nurbs27) get_nurbs_ele_info(&discretization);
 
   FOUR_C_ASSERT(kintype_ == INPAR::STR::KinemType::nonlinearTotLag,
       "only geometricallly nonlinear formluation for plasticity!");
@@ -59,7 +59,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
   ELEMENTS::ActionType act = ELEMENTS::none;
   if (IsParamsInterface())
   {
-    act = ParamsInterface().GetActionType();
+    act = params_interface().GetActionType();
   }
   else
   {
@@ -284,11 +284,11 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       INPAR::STR::StrainType iostrain = INPAR::STR::strain_none;
       if (IsParamsInterface())
       {
-        stressdata = StrParamsInterface().StressDataPtr();
-        straindata = StrParamsInterface().StrainDataPtr();
+        stressdata = str_params_interface().StressDataPtr();
+        straindata = str_params_interface().StrainDataPtr();
 
-        iostress = StrParamsInterface().GetStressOutputType();
-        iostrain = StrParamsInterface().GetStrainOutputType();
+        iostress = str_params_interface().GetStressOutputType();
+        iostrain = str_params_interface().GetStrainOutputType();
       }
       else
       {
@@ -397,7 +397,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       CORE::LINALG::Matrix<numdofperelement_, nen_> k_dT(elemat1_epetra.values(), true);
 
       // calculate matrix block
-      nln_kdT_tsi(&k_dT, params);
+      nln_kd_t_tsi(&k_dT, params);
     }
     break;
 
@@ -424,11 +424,11 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
         CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
       }
 
-      double intenergy = CalcIntEnergy(mydisp, mytempnp, params);
+      double intenergy = calc_int_energy(mydisp, mytempnp, params);
 
       if (IsParamsInterface())  // new structural time integration
       {
-        StrParamsInterface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
+        str_params_interface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
       }
       else  // old structural time integration
       {
@@ -475,7 +475,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
 
     case DRT::ELEMENTS::struct_calc_predict:
     {
-      switch (StrParamsInterface().GetPredictorType())
+      switch (str_params_interface().GetPredictorType())
       {
         case INPAR::STR::pred_constdis:
         default:
@@ -500,7 +500,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       FOUR_C_ASSERT(IsParamsInterface(),
           "This action type should only be called from the new time integration framework!");
       // Save number of Gauss of the element for gauss point data output
-      StrParamsInterface()
+      str_params_interface()
           .gauss_point_data_output_manager_ptr()
           ->add_element_number_of_gauss_points(numgpt_post);
       // holder for output quantity names and their size
@@ -508,7 +508,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       // Ask material for the output quantity names and sizes
       SolidMaterial()->register_output_data_names(quantities_map);
       // Add quantities to the Gauss point output data manager (if they do not already exist)
-      StrParamsInterface().gauss_point_data_output_manager_ptr()->MergeQuantities(quantities_map);
+      str_params_interface().gauss_point_data_output_manager_ptr()->MergeQuantities(quantities_map);
     }
     break;
 
@@ -519,7 +519,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
 
       // Collection and assembly of gauss point data
       for (const auto& [quantity_name, quantity_size] :
-          StrParamsInterface().gauss_point_data_output_manager_ptr()->GetQuantities())
+          str_params_interface().gauss_point_data_output_manager_ptr()->GetQuantities())
       {
         // Step 1: Collect the data for each Gauss point for the material
         CORE::LINALG::SerialDenseMatrix gp_data(numgpt_post, quantity_size, true);
@@ -529,13 +529,13 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
         // point)
         if (data_available)
         {
-          switch (StrParamsInterface().gauss_point_data_output_manager_ptr()->GetOutputType())
+          switch (str_params_interface().gauss_point_data_output_manager_ptr()->GetOutputType())
           {
             case INPAR::STR::GaussPointDataOutputType::element_center:
             {
               // compute average of the quantities
               Teuchos::RCP<Epetra_MultiVector> global_data =
-                  StrParamsInterface()
+                  str_params_interface()
                       .gauss_point_data_output_manager_ptr()
                       ->get_element_center_data()
                       .at(quantity_name);
@@ -546,11 +546,11 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
             case INPAR::STR::GaussPointDataOutputType::nodes:
             {
               Teuchos::RCP<Epetra_MultiVector> global_data =
-                  StrParamsInterface().gauss_point_data_output_manager_ptr()->GetNodalData().at(
+                  str_params_interface().gauss_point_data_output_manager_ptr()->GetNodalData().at(
                       quantity_name);
 
               Epetra_IntVector& global_nodal_element_count =
-                  *StrParamsInterface()
+                  *str_params_interface()
                        .gauss_point_data_output_manager_ptr()
                        ->GetNodalDataCount()
                        .at(quantity_name);
@@ -579,7 +579,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
             case INPAR::STR::GaussPointDataOutputType::gauss_points:
             {
               std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
-                  StrParamsInterface()
+                  str_params_interface()
                       .gauss_point_data_output_manager_ptr()
                       ->GetGaussPointData()
                       .at(quantity_name);
@@ -700,7 +700,7 @@ int DRT::ELEMENTS::So3Plast<distype>::evaluate_neumann(Teuchos::ParameterList& p
   // find out whether we will use a time curve
   double time = -1.0;
   if (IsParamsInterface())
-    time = ParamsInterface().GetTotalTime();
+    time = params_interface().GetTotalTime();
   else
     time = params.get("total time", -1.0);
 
@@ -791,10 +791,10 @@ int DRT::ELEMENTS::So3Plast<distype>::evaluate_neumann(Teuchos::ParameterList& p
  | is called once in Initialize() in so3_ssn_plast_eletypes.cpp         |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::InitJacobianMapping()
+void DRT::ELEMENTS::So3Plast<distype>::init_jacobian_mapping()
 {
   return;
-}  // InitJacobianMapping()}
+}  // init_jacobian_mapping()}
 
 
 /*----------------------------------------------------------------------*
@@ -802,9 +802,9 @@ void DRT::ELEMENTS::So3Plast<distype>::InitJacobianMapping()
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3Plast<distype>::nln_stiffmass(
-    std::vector<double>& disp,  // current displacements
-    std::vector<double>& vel,   // current velocities
-    std::vector<double>& temp,  // current temperatures
+    std::vector<double>& disp,         // current displacements
+    std::vector<double>& vel,          // current velocities
+    std::vector<double>& temperature,  // current temperatures
     CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>*
         stiffmatrix,  // element stiffness matrix
     CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>* massmatrix,  // element mass matrix
@@ -816,19 +816,19 @@ void DRT::ELEMENTS::So3Plast<distype>::nln_stiffmass(
     const INPAR::STR::StrainType iostrain                   // strain output option
 )
 {
-  const bool eval_tsi = (temp.size() != 0);
-  const bool is_tangDis = StrParamsInterface().GetPredictorType() == INPAR::STR::pred_tangdis;
-  const double dt = StrParamsInterface().GetDeltaTime();
+  const bool eval_tsi = (temperature.size() != 0);
+  const bool is_tangDis = str_params_interface().GetPredictorType() == INPAR::STR::pred_tangdis;
+  const double dt = str_params_interface().GetDeltaTime();
   const double timefac_d =
-      StrParamsInterface().GetTimIntFactorVel() / StrParamsInterface().GetTimIntFactorDisp();
+      str_params_interface().GetTimIntFactorVel() / str_params_interface().GetTimIntFactorDisp();
   if (timefac_d <= 0 || dt <= 0) FOUR_C_THROW("time integration parameters not provided");
 
-  FillPositionArrays(disp, vel, temp);
+  fill_position_arrays(disp, vel, temperature);
 
   if (fbar_ || eastype_ != soh8p_easnone)
-    EvaluateCenter();  // deformation gradient at centroid of element
+    evaluate_center();  // deformation gradient at centroid of element
 
-  if (eastype_ != soh8p_easnone) EasSetup();
+  if (eastype_ != soh8p_easnone) eas_setup();
 
   // get plastic hyperelastic material
   MAT::PlasticElastHyper* plmat = nullptr;
@@ -852,107 +852,109 @@ void DRT::ELEMENTS::So3Plast<distype>::nln_stiffmass(
   /* =========================================================================*/
   for (int gp = 0; gp < numgpt_; ++gp)
   {
-    InvalidGpData();
+    invalid_gp_data();
 
     // shape functions (shapefunct) and their first derivatives (deriv)
-    EvaluateShape(xsi_[gp]);
-    EvaluateShapeDeriv(xsi_[gp]);
+    evaluate_shape(xsi_[gp]);
+    evaluate_shape_deriv(xsi_[gp]);
 
-    Kinematics(gp);
+    kinematics(gp);
 
     // EAS technology: "enhance the strains"  ----------------------------- EAS
     if (eastype_ != soh8p_easnone)
     {
-      EasShape(gp);
-      EasEnhanceStrains();
+      eas_shape(gp);
+      eas_enhance_strains();
     }
     // calculate modified deformation gradient
     else if (fbar_)
-      SetupFbarGp();
+      setup_fbar_gp();
     else
-      SetDefgrdMod() = Defgrd();
+      set_defgrd_mod() = defgrd();
 
-    OutputStrains(gp, iostrain, elestrain);
+    output_strains(gp, iostrain, elestrain);
 
     // Gauss point temperature
     double gp_temp = -1.e12;
-    if (eval_tsi) gp_temp = Temp().Dot(ShapeFunction());
+    if (eval_tsi) gp_temp = temp().Dot(shape_function());
 
     // material call *********************************************
     if (plmat != nullptr)
     {
-      plmat->EvaluateElast(&DefgrdMod(), &DeltaLp(), &SetPK2(), &SetCmat(), gp, Id());
+      plmat->EvaluateElast(&defgrd_mod(), &delta_lp(), &set_p_k2(), &set_cmat(), gp, Id());
       if (eval_tsi)
-        plmat->evaluate_thermal_stress(&DefgrdMod(), gp_temp, &SetPK2(), &SetCmat(), gp, Id());
+        plmat->evaluate_thermal_stress(&defgrd_mod(), gp_temp, &set_p_k2(), &set_cmat(), gp, Id());
     }
     else
     {
       static CORE::LINALG::Matrix<numstr_, 1> total_glstrain(false);
-      total_glstrain(0) = 0.5 * (RCG()(0, 0) - 1.0);
-      total_glstrain(1) = 0.5 * (RCG()(1, 1) - 1.0);
-      total_glstrain(2) = 0.5 * (RCG()(2, 2) - 1.0);
-      total_glstrain(3) = RCG()(0, 1);
-      total_glstrain(4) = RCG()(1, 2);
-      total_glstrain(5) = RCG()(2, 0);
+      total_glstrain(0) = 0.5 * (rcg()(0, 0) - 1.0);
+      total_glstrain(1) = 0.5 * (rcg()(1, 1) - 1.0);
+      total_glstrain(2) = 0.5 * (rcg()(2, 2) - 1.0);
+      total_glstrain(3) = rcg()(0, 1);
+      total_glstrain(4) = rcg()(1, 2);
+      total_glstrain(5) = rcg()(2, 0);
 
       SolidMaterial()->Evaluate(
-          &DefgrdMod(), &total_glstrain, params, &SetPK2(), &SetCmat(), gp, Id());
+          &defgrd_mod(), &total_glstrain, params, &set_p_k2(), &set_cmat(), gp, Id());
     }
     // material call *********************************************
 
-    OutputStress(gp, iostress, elestress);
+    output_stress(gp, iostress, elestress);
 
     // integrate usual internal force and stiffness matrix
-    double detJ_w = DetJ() * wgt_[gp];
+    double detJ_w = det_j() * wgt_[gp];
     // integrate elastic internal force vector **************************
     // update internal force vector
-    if (force != nullptr) IntegrateForce(gp, *force);
+    if (force != nullptr) integrate_force(gp, *force);
 
     // update stiffness matrix
     if (stiffmatrix != nullptr) integrate_stiff_matrix(gp, *stiffmatrix, Kda);
 
     if (massmatrix != nullptr)  // evaluate mass matrix +++++++++++++++++++++++++
-      IntegrateMassMatrix(gp, *massmatrix);
+      integrate_mass_matrix(gp, *massmatrix);
 
     if (eval_tsi && (stiffmatrix != nullptr || force != nullptr) && plmat != nullptr)
-      IntegrateThermoGp(gp, dHda[gp]);
+      integrate_thermo_gp(gp, dHda[gp]);
 
     // plastic modifications
     if (plmat != nullptr)
       if (!plmat->AllElastic())
         if ((stiffmatrix != nullptr || force != nullptr) && !is_tangDis)
         {
-          if (HavePlasticSpin())
+          if (have_plastic_spin())
           {
             if (fbar_)
-              CondensePlasticity<plspin>(DefgrdMod(), DeltaLp(), Bop(), &deriv_shape_function_xyz(),
-                  &RCGvec(), detJ_w, gp, gp_temp, params, force, stiffmatrix, nullptr, nullptr,
-                  nullptr, &FbarFac(), &Htensor());
+              condense_plasticity<plspin>(defgrd_mod(), delta_lp(), bop(),
+                  &deriv_shape_function_xyz(), &rc_gvec(), detJ_w, gp, gp_temp, params, force,
+                  stiffmatrix, nullptr, nullptr, nullptr, &fbar_fac(), &htensor());
             else if (eastype_ != soh8p_easnone)
-              CondensePlasticity<plspin>(DefgrdMod(), DeltaLp(), Bop(), &deriv_shape_function_xyz(),
-                  nullptr, detJ_w, gp, gp_temp, params, force, stiffmatrix, &M_eas(), &Kda, &dHda);
+              condense_plasticity<plspin>(defgrd_mod(), delta_lp(), bop(),
+                  &deriv_shape_function_xyz(), nullptr, detJ_w, gp, gp_temp, params, force,
+                  stiffmatrix, &m_eas(), &Kda, &dHda);
             else
-              CondensePlasticity<plspin>(DefgrdMod(), DeltaLp(), Bop(), &deriv_shape_function_xyz(),
-                  nullptr, detJ_w, gp, gp_temp, params, force, stiffmatrix);
+              condense_plasticity<plspin>(defgrd_mod(), delta_lp(), bop(),
+                  &deriv_shape_function_xyz(), nullptr, detJ_w, gp, gp_temp, params, force,
+                  stiffmatrix);
           }
           else
           {
             if (fbar_)
-              CondensePlasticity<zerospin>(DefgrdMod(), DeltaLp(), Bop(),
-                  &deriv_shape_function_xyz(), &RCGvec(), detJ_w, gp, gp_temp, params, force,
-                  stiffmatrix, nullptr, nullptr, nullptr, &FbarFac(), &Htensor());
+              condense_plasticity<zerospin>(defgrd_mod(), delta_lp(), bop(),
+                  &deriv_shape_function_xyz(), &rc_gvec(), detJ_w, gp, gp_temp, params, force,
+                  stiffmatrix, nullptr, nullptr, nullptr, &fbar_fac(), &htensor());
             else if (eastype_ != soh8p_easnone)
-              CondensePlasticity<zerospin>(DefgrdMod(), DeltaLp(), Bop(),
+              condense_plasticity<zerospin>(defgrd_mod(), delta_lp(), bop(),
                   &deriv_shape_function_xyz(), nullptr, detJ_w, gp, gp_temp, params, force,
-                  stiffmatrix, &M_eas(), &Kda, &dHda);
+                  stiffmatrix, &m_eas(), &Kda, &dHda);
             else
-              CondensePlasticity<zerospin>(DefgrdMod(), DeltaLp(), Bop(),
+              condense_plasticity<zerospin>(defgrd_mod(), delta_lp(), bop(),
                   &deriv_shape_function_xyz(), nullptr, detJ_w, gp, gp_temp, params, force,
                   stiffmatrix);
           }
         }  // plastic modifications
   }        // gp loop
-  InvalidGpData();
+  invalid_gp_data();
 
   // Static condensation EAS --> stiff ********************************
   if (stiffmatrix != nullptr && !is_tangDis && eastype_ != soh8p_easnone)
@@ -1058,7 +1060,7 @@ void DRT::ELEMENTS::So3Plast<distype>::nln_stiffmass(
     }
   }
 
-  InvalidEleData();
+  invalid_ele_data();
   return;
 }
 
@@ -1066,7 +1068,7 @@ void DRT::ELEMENTS::So3Plast<distype>::nln_stiffmass(
  | coupling term k_dT in monolithic TSI                     seitz 06/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::nln_kdT_tsi(
+void DRT::ELEMENTS::So3Plast<distype>::nln_kd_t_tsi(
     CORE::LINALG::Matrix<numdofperelement_, nen_>* k_dT, Teuchos::ParameterList& params)
 {
   if (k_dT == nullptr) return;
@@ -1097,7 +1099,7 @@ void DRT::ELEMENTS::So3Plast<distype>::nln_kdT_tsi(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 template <int spintype>
-void DRT::ELEMENTS::So3Plast<distype>::CondensePlasticity(
+void DRT::ELEMENTS::So3Plast<distype>::condense_plasticity(
     const CORE::LINALG::Matrix<nsd_, nsd_>& defgrd, const CORE::LINALG::Matrix<nsd_, nsd_>& deltaLp,
     const CORE::LINALG::Matrix<numstr_, numdofperelement_>& bop,
     const CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ, const CORE::LINALG::Matrix<numstr_, 1>* RCG,
@@ -1155,12 +1157,12 @@ void DRT::ELEMENTS::So3Plast<distype>::CondensePlasticity(
   if (!eval_tsi)
     plmat->EvaluatePlast(&defgrd, &deltaLp, nullptr, params, &dpk2ddp, &ncp, &dncpdc, &dncpddp,
         &active, &elast, &as_converged, gp, nullptr, nullptr, nullptr,
-        StrParamsInterface().GetDeltaTime(), Id(), cauchy_ptr, d_cauchy_ddp_ptr, d_cauchy_dC_ptr,
+        str_params_interface().GetDeltaTime(), Id(), cauchy_ptr, d_cauchy_ddp_ptr, d_cauchy_dC_ptr,
         d_cauchy_dF_ptr, d_cauchy_dT_ptr);
   else
     plmat->EvaluatePlast(&defgrd, &deltaLp, &temp, params, &dpk2ddp, &ncp, &dncpdc, &dncpddp,
         &active, &elast, &as_converged, gp, &dncpdT, &dHdC, &dHdLp,
-        StrParamsInterface().GetDeltaTime(), Id(), cauchy_ptr, d_cauchy_ddp_ptr, d_cauchy_dC_ptr,
+        str_params_interface().GetDeltaTime(), Id(), cauchy_ptr, d_cauchy_ddp_ptr, d_cauchy_dC_ptr,
         d_cauchy_dF_ptr, d_cauchy_dT_ptr);
   // *************************************************************************
 
@@ -1242,7 +1244,7 @@ void DRT::ELEMENTS::So3Plast<distype>::CondensePlasticity(
     cauchy_deriv_.at(gp).Clear();
     if (fbar_)
     {
-      if (RCG == nullptr) FOUR_C_THROW("CondensePlasticity(...) requires RCG in case of FBAR");
+      if (RCG == nullptr) FOUR_C_THROW("condense_plasticity(...) requires RCG in case of FBAR");
       CORE::LINALG::Matrix<6, 1> tmp61;
       tmp61.Multiply(.5, d_cauchy_dC, (*RCG));
       cauchy_deriv_.at(gp).MultiplyNT(
@@ -1273,7 +1275,7 @@ void DRT::ELEMENTS::So3Plast<distype>::CondensePlasticity(
   if (d_cauchy_dT_ptr)
   {
     cauchy_deriv_T_.at(gp).Clear();
-    cauchy_deriv_T_.at(gp).MultiplyNT(1., d_cauchy_dT, ShapeFunction(), 1.);
+    cauchy_deriv_T_.at(gp).MultiplyNT(1., d_cauchy_dT, shape_function(), 1.);
   }
 
   // EAS matrix block
@@ -1321,7 +1323,7 @@ void DRT::ELEMENTS::So3Plast<distype>::CondensePlasticity(
     CORE::LINALG::Matrix<spintype + 1, numdofperelement_> dNCPdd;
     if (fbar_)
     {
-      if (RCG == nullptr) FOUR_C_THROW("CondensePlasticity(...) requires RCG in case of FBAR");
+      if (RCG == nullptr) FOUR_C_THROW("condense_plasticity(...) requires RCG in case of FBAR");
       CORE::LINALG::Matrix<spintype + 1, 1> tmp61;
       tmp61.Multiply(.5, dncpdc, (*RCG));
       dNCPdd.MultiplyNT((*f_bar_factor) * (*f_bar_factor) * 2. / 3., tmp61, *htensor, 0.);
@@ -1438,7 +1440,7 @@ void DRT::ELEMENTS::So3Plast<distype>::CondensePlasticity(
       CORE::LINALG::Matrix<numdofperelement_, 1> dHepDissDd;
       if (fbar_)
       {
-        if (RCG == nullptr) FOUR_C_THROW("CondensePlasticity(...) requires RCG in case of FBAR");
+        if (RCG == nullptr) FOUR_C_THROW("condense_plasticity(...) requires RCG in case of FBAR");
         CORE::LINALG::Matrix<1, 1> tmp11;
         tmp11.MultiplyTN(.5, dHdC, (*RCG));
         dHepDissDd.Multiply((*f_bar_factor) * (*f_bar_factor) * 2. / 3., *htensor, tmp11, 0.);
@@ -1660,7 +1662,7 @@ void DRT::ELEMENTS::So3Plast<distype>::CondensePlasticity(
       {
         CORE::LINALG::Matrix<6, 1> bla;
         bla.Multiply(-1., tmp, CORE::LINALG::Matrix<spintype, 1>(KbT_->at(gp).values(), true), 1.);
-        cauchy_deriv_T_.at(gp).MultiplyNT(1., bla, ShapeFunction(), 1.);
+        cauchy_deriv_T_.at(gp).MultiplyNT(1., bla, shape_function(), 1.);
       }
     }
     // **************************************************************
@@ -1723,26 +1725,26 @@ void DRT::ELEMENTS::So3Plast<distype>::CondensePlasticity(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::BuildDeltaLp(const int gp)
+void DRT::ELEMENTS::So3Plast<distype>::build_delta_lp(const int gp)
 {
   // current plastic flow increment
-  SetDeltaLp()(0, 0) = dDp_last_iter_[gp](0);
-  SetDeltaLp()(1, 1) = dDp_last_iter_[gp](1);
-  SetDeltaLp()(2, 2) = -1.0 * (dDp_last_iter_[gp](0) + dDp_last_iter_[gp](1));
-  SetDeltaLp()(0, 1) = dDp_last_iter_[gp](2);
-  SetDeltaLp()(1, 0) = dDp_last_iter_[gp](2);
-  SetDeltaLp()(1, 2) = dDp_last_iter_[gp](3);
-  SetDeltaLp()(2, 1) = dDp_last_iter_[gp](3);
-  SetDeltaLp()(0, 2) = dDp_last_iter_[gp](4);
-  SetDeltaLp()(2, 0) = dDp_last_iter_[gp](4);
-  if (HavePlasticSpin())
+  set_delta_lp()(0, 0) = dDp_last_iter_[gp](0);
+  set_delta_lp()(1, 1) = dDp_last_iter_[gp](1);
+  set_delta_lp()(2, 2) = -1.0 * (dDp_last_iter_[gp](0) + dDp_last_iter_[gp](1));
+  set_delta_lp()(0, 1) = dDp_last_iter_[gp](2);
+  set_delta_lp()(1, 0) = dDp_last_iter_[gp](2);
+  set_delta_lp()(1, 2) = dDp_last_iter_[gp](3);
+  set_delta_lp()(2, 1) = dDp_last_iter_[gp](3);
+  set_delta_lp()(0, 2) = dDp_last_iter_[gp](4);
+  set_delta_lp()(2, 0) = dDp_last_iter_[gp](4);
+  if (have_plastic_spin())
   {
-    SetDeltaLp()(0, 1) += dDp_last_iter_[gp](5);
-    SetDeltaLp()(1, 0) -= dDp_last_iter_[gp](5);
-    SetDeltaLp()(1, 2) += dDp_last_iter_[gp](6);
-    SetDeltaLp()(2, 1) -= dDp_last_iter_[gp](6);
-    SetDeltaLp()(0, 2) += dDp_last_iter_[gp](7);
-    SetDeltaLp()(2, 0) -= dDp_last_iter_[gp](7);
+    set_delta_lp()(0, 1) += dDp_last_iter_[gp](5);
+    set_delta_lp()(1, 0) -= dDp_last_iter_[gp](5);
+    set_delta_lp()(1, 2) += dDp_last_iter_[gp](6);
+    set_delta_lp()(2, 1) -= dDp_last_iter_[gp](6);
+    set_delta_lp()(0, 2) += dDp_last_iter_[gp](7);
+    set_delta_lp()(2, 0) -= dDp_last_iter_[gp](7);
   }
 }
 
@@ -1754,9 +1756,9 @@ void DRT::ELEMENTS::So3Plast<distype>::recover_plasticity_and_eas(
     const CORE::LINALG::Matrix<numdofperelement_, 1>* res_d,
     const CORE::LINALG::Matrix<nen_, 1>* res_T)
 {
-  if (StrParamsInterface().IsDefaultStep())
+  if (str_params_interface().IsDefaultStep())
   {
-    if (eastype_ != soh8p_easnone) RecoverEAS(res_d, res_T);
+    if (eastype_ != soh8p_easnone) recover_eas(res_d, res_T);
 
 
     if (Material()->MaterialType() == CORE::Materials::m_plelasthyper)
@@ -1776,19 +1778,19 @@ void DRT::ELEMENTS::So3Plast<distype>::recover_plasticity_and_eas(
           res_t_ptr = nullptr;
 
         // recover plastic variables
-        if (HavePlasticSpin())
-          RecoverPlasticity<plspin>(res_d, gp, res_t_ptr);
+        if (have_plastic_spin())
+          recover_plasticity<plspin>(res_d, gp, res_t_ptr);
         else
-          RecoverPlasticity<zerospin>(res_d, gp, res_t_ptr);
+          recover_plasticity<zerospin>(res_d, gp, res_t_ptr);
       }
     }
   }
   else
   {
-    //    const double new_step_length   = StrParamsInterface().GetStepLength();
+    //    const double new_step_length   = str_params_interface().GetStepLength();
     //
     //    if (eastype_!=soh8p_easnone)
-    //      ReduceEasStep(new_step_length,old_step_length_);
+    //      reduce_eas_step(new_step_length,old_step_length_);
     //
     //    if (Material()->MaterialType()==CORE::Materials::m_plelasthyper)
     //      for (int gp=0;gp<numgpt_;++gp)
@@ -1802,19 +1804,19 @@ void DRT::ELEMENTS::So3Plast<distype>::recover_plasticity_and_eas(
  |  recover plastic degrees of freedom                      seitz 05/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::RecoverEAS(
+void DRT::ELEMENTS::So3Plast<distype>::recover_eas(
     const CORE::LINALG::Matrix<numdofperelement_, 1>* res_d,
     const CORE::LINALG::Matrix<nen_, 1>* res_T)
 {
   if (eastype_ == soh8p_easnone) return;
 
-  const double step_length = StrParamsInterface().GetStepLength();
+  const double step_length = str_params_interface().GetStepLength();
 
   // first, store the eas state of the previous accepted Newton step
-  StrParamsInterface().sum_into_my_previous_sol_norm(
+  str_params_interface().sum_into_my_previous_sol_norm(
       NOX::NLN::StatusTest::quantity_eas, neas_, alpha_eas_->values(), Owner());
 
-  if (StrParamsInterface().IsDefaultStep()) switch (eastype_)
+  if (str_params_interface().IsDefaultStep()) switch (eastype_)
     {
       case soh8p_easmild:
         CORE::LINALG::DENSEFUNCTIONS::multiply<double,
@@ -1889,7 +1891,7 @@ void DRT::ELEMENTS::So3Plast<distype>::RecoverEAS(
   else
     FOUR_C_THROW("no line search implemented yet");
 
-  StrParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas, neas_,
+  str_params_interface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas, neas_,
       alpha_eas_inc_->values(), alpha_eas_->values(), step_length, Owner());
 
   return;
@@ -1900,15 +1902,16 @@ void DRT::ELEMENTS::So3Plast<distype>::RecoverEAS(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 template <int spintype>
-void DRT::ELEMENTS::So3Plast<distype>::RecoverPlasticity(
+void DRT::ELEMENTS::So3Plast<distype>::recover_plasticity(
     const CORE::LINALG::Matrix<numdofperelement_, 1>* res_d, const int gp, const double* res_t)
 {
-  const double step_length = StrParamsInterface().GetStepLength();
+  const double step_length = str_params_interface().GetStepLength();
 
-  if (StrParamsInterface().IsDefaultStep() == false) FOUR_C_THROW("no line search implemented yet");
+  if (str_params_interface().IsDefaultStep() == false)
+    FOUR_C_THROW("no line search implemented yet");
 
   // first, store the state of the previous accepted Newton step
-  StrParamsInterface().sum_into_my_previous_sol_norm(
+  str_params_interface().sum_into_my_previous_sol_norm(
       NOX::NLN::StatusTest::quantity_plasticity, spintype, dDp_last_iter_[gp].values(), Owner());
 
   // temporary Epetra matrix
@@ -1982,12 +1985,12 @@ void DRT::ELEMENTS::So3Plast<distype>::RecoverPlasticity(
   CORE::LINALG::DENSEFUNCTIONS::update<double, spintype, 1>(
       1., dDp_last_iter_[gp], 1., dDp_inc_[gp]);
 
-  StrParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_plasticity, spintype,
+  str_params_interface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_plasticity, spintype,
       dDp_inc_[gp].values(), dDp_inc_[gp].values(), step_length, Owner());
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::ReduceEasStep(
+void DRT::ELEMENTS::So3Plast<distype>::reduce_eas_step(
     const double new_step_length, const double old_step_length)
 {
   if (eastype_ == soh8p_easnone) return;
@@ -1996,7 +1999,7 @@ void DRT::ELEMENTS::So3Plast<distype>::ReduceEasStep(
   alpha_eas_inc_->scale(new_step_length / old_step_length);
   CORE::LINALG::Update(+1., *alpha_eas_inc_, 1., *alpha_eas_);
 
-  StrParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas, neas_,
+  str_params_interface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas, neas_,
       alpha_eas_inc_->values(), alpha_eas_->values(), new_step_length, Owner());
 }
 
@@ -2008,7 +2011,7 @@ void DRT::ELEMENTS::So3Plast<distype>::reduce_plasticity_step(
   dDp_inc_[gp].scale(new_step_length / old_step_length);
   CORE::LINALG::Update(+1., dDp_inc_[gp], 1., dDp_last_iter_[gp]);
 
-  StrParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_plasticity, plspintype_,
+  str_params_interface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_plasticity, plspintype_,
       dDp_inc_[gp].values(), dDp_inc_[gp].values(), new_step_length, Owner());
 }
 
@@ -2023,8 +2026,8 @@ void DRT::ELEMENTS::So3Plast<distype>::update_plastic_deformation_nln(PlSpinType
     // loop over all Gauss points
     for (int gp = 0; gp < numgpt_; gp++)
     {
-      BuildDeltaLp(gp);
-      static_cast<MAT::PlasticElastHyper*>(Material().get())->UpdateGP(gp, &DeltaLp());
+      build_delta_lp(gp);
+      static_cast<MAT::PlasticElastHyper*>(Material().get())->UpdateGP(gp, &delta_lp());
 
       KbbInv_[gp].putScalar(0.0);
       Kbd_[gp].putScalar(0.0);
@@ -2057,22 +2060,22 @@ void DRT::ELEMENTS::So3Plast<distype>::update_plastic_deformation_nln(PlSpinType
  |  calculate internal energy of the element (private)                  |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-double DRT::ELEMENTS::So3Plast<distype>::CalcIntEnergy(
-    std::vector<double>& disp,       // current displacements
-    std::vector<double>& temp,       // current temperatuere
-    Teuchos::ParameterList& params)  // strain output option
+double DRT::ELEMENTS::So3Plast<distype>::calc_int_energy(
+    std::vector<double>& disp,         // current displacements
+    std::vector<double>& temperature,  // current temperatuere
+    Teuchos::ParameterList& params)    // strain output option
 {
-  InvalidEleData();
+  invalid_ele_data();
 
   double energy = 0.;
 
   std::vector<double> bla;
-  FillPositionArrays(disp, bla, temp);
+  fill_position_arrays(disp, bla, temperature);
 
   if (fbar_ || eastype_ != soh8p_easnone)
-    EvaluateCenter();  // deformation gradient at centroid of element
+    evaluate_center();  // deformation gradient at centroid of element
 
-  if (eastype_ != soh8p_easnone) EasSetup();
+  if (eastype_ != soh8p_easnone) eas_setup();
 
   // get plastic hyperelastic material
   MAT::PlasticElastHyper* plmat = nullptr;
@@ -2086,31 +2089,31 @@ double DRT::ELEMENTS::So3Plast<distype>::CalcIntEnergy(
   /* =========================================================================*/
   for (int gp = 0; gp < numgpt_; ++gp)
   {
-    InvalidGpData();
+    invalid_gp_data();
 
     // shape functions (shapefunct) and their first derivatives (deriv)
-    EvaluateShape(xsi_[gp]);
-    EvaluateShapeDeriv(xsi_[gp]);
+    evaluate_shape(xsi_[gp]);
+    evaluate_shape_deriv(xsi_[gp]);
 
-    Kinematics(gp);
+    kinematics(gp);
 
-    double gp_temp = ShapeFunction().Dot(Temp());
+    double gp_temp = shape_function().Dot(temp());
 
     // EAS technology: "enhance the strains"  ----------------------------- EAS
     if (eastype_ != soh8p_easnone)
     {
-      EasShape(gp);
-      EasEnhanceStrains();
+      eas_shape(gp);
+      eas_enhance_strains();
     }
     // calculate modified deformation gradient
     else if (fbar_)
-      SetupFbarGp();
+      setup_fbar_gp();
     else
-      SetDefgrdMod() = Defgrd();
+      set_defgrd_mod() = defgrd();
 
-    const double psi = plmat->StrainEnergyTSI(DefgrdMod(), gp, Id(), gp_temp);
+    const double psi = plmat->StrainEnergyTSI(defgrd_mod(), gp, Id(), gp_temp);
 
-    const double detJ_w = DetJ() * wgt_[gp];
+    const double detJ_w = det_j() * wgt_[gp];
     energy += detJ_w * psi;
 
   }  // gp loop
@@ -2132,7 +2135,7 @@ void DRT::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_xi_el
     CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dT,
     CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dT)
 {
-  if (distype == CORE::FE::CellType::nurbs27) GetNurbsEleInfo();
+  if (distype == CORE::FE::CellType::nurbs27) get_nurbs_ele_info();
 
   if (fbar_ || eastype_ != soh8p_easnone)
     FOUR_C_THROW("cauchy stress not available for fbar or eas elements");
@@ -2171,19 +2174,19 @@ void DRT::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_xi_el
       if (!temp->empty()) ele_temp(i) = temp->at(i);
   }
 
-  EvaluateShape(xi);
-  EvaluateShapeDeriv(xi);
+  evaluate_shape(xi);
+  evaluate_shape_deriv(xi);
 
-  const double gp_temp = ele_temp.Dot(ShapeFunction());
+  const double gp_temp = ele_temp.Dot(shape_function());
   double d_cauchyndir_dT_gp = 0.0;
   static CORE::LINALG::Matrix<nsd_, 1> d_T_dxi(true);
-  d_T_dxi.Multiply(1.0, DerivShapeFunction(), ele_temp, 0.0);
+  d_T_dxi.Multiply(1.0, deriv_shape_function(), ele_temp, 0.0);
 
   static CORE::LINALG::Matrix<nsd_, nen_> N_XYZ(true);
   static CORE::LINALG::Matrix<nsd_, nsd_> invJ(true);
-  invJ.Multiply(1.0, DerivShapeFunction(), xrefe, 0.0);
+  invJ.Multiply(1.0, deriv_shape_function(), xrefe, 0.0);
   invJ.Invert();
-  N_XYZ.Multiply(1.0, invJ, DerivShapeFunction(), 0.0);
+  N_XYZ.Multiply(1.0, invJ, deriv_shape_function(), 0.0);
   static CORE::LINALG::Matrix<nsd_, nsd_> defgrd(true);
   defgrd.MultiplyTT(1.0, xcurr, N_XYZ, 0.0);
 
@@ -2240,7 +2243,7 @@ void DRT::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_xi_el
     static CORE::LINALG::Matrix<numdofperelement_, 1> tmp(true);
     tmp.MultiplyTN(1.0, d_F_dd, d2_cauchyndir_dF_dT, 0.0);
     CORE::LINALG::Matrix<numdofperelement_, nen_>(d2_cauchyndir_dd_dT->values(), true)
-        .MultiplyNT(tmp, ShapeFunction());
+        .MultiplyNT(tmp, shape_function());
   }
 
   if (d2_cauchyndir_dd_dn)
@@ -2263,7 +2266,7 @@ void DRT::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_xi_el
   {
     d_cauchyndir_dT->shape(nen_, 1);
     CORE::LINALG::Matrix<nen_, 1>(d_cauchyndir_dT->values(), true)
-        .Update(d_cauchyndir_dT_gp, ShapeFunction(), 1.0);
+        .Update(d_cauchyndir_dT_gp, shape_function(), 1.0);
   }
 
   if (d2_cauchyndir_dd2)
@@ -2286,8 +2289,8 @@ void DRT::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_xi_el
   {
     if (distype == CORE::FE::CellType::nurbs27)
     {
-      CORE::FE::NURBS::nurbs_get_3D_funct_deriv_deriv2(
-          SetShapeFunction(), set_deriv_shape_function(), deriv2, xi, Knots(), Weights(), distype);
+      CORE::FE::NURBS::nurbs_get_3D_funct_deriv_deriv2(set_shape_function(),
+          set_deriv_shape_function(), deriv2, xi, knots(), weights(), distype);
     }
     else
       CORE::FE::shape_function_deriv2<distype>(xi, deriv2);
@@ -2378,8 +2381,8 @@ void DRT::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_xi_el
       }
     }
   }
-  InvalidEleData();
-  InvalidGpData();
+  invalid_ele_data();
+  invalid_gp_data();
 }
 
 template <CORE::FE::CellType distype>
@@ -2533,7 +2536,7 @@ void DRT::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_xi(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::OutputStrains(const int gp,
+void DRT::ELEMENTS::So3Plast<distype>::output_strains(const int gp,
     const INPAR::STR::StrainType iostrain,                 // strain output option
     CORE::LINALG::Matrix<numgpt_post, numstr_>* elestrain  // strains at GP
 )
@@ -2551,12 +2554,12 @@ void DRT::ELEMENTS::So3Plast<distype>::OutputStrains(const int gp,
       {
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
         CORE::LINALG::Matrix<numstr_, 1> total_glstrain(false);
-        total_glstrain(0) = 0.5 * (RCG()(0, 0) - 1.0);
-        total_glstrain(1) = 0.5 * (RCG()(1, 1) - 1.0);
-        total_glstrain(2) = 0.5 * (RCG()(2, 2) - 1.0);
-        total_glstrain(3) = RCG()(0, 1);
-        total_glstrain(4) = RCG()(1, 2);
-        total_glstrain(5) = RCG()(2, 0);
+        total_glstrain(0) = 0.5 * (rcg()(0, 0) - 1.0);
+        total_glstrain(1) = 0.5 * (rcg()(1, 1) - 1.0);
+        total_glstrain(2) = 0.5 * (rcg()(2, 2) - 1.0);
+        total_glstrain(3) = rcg()(0, 1);
+        total_glstrain(4) = rcg()(1, 2);
+        total_glstrain(5) = rcg()(2, 0);
 
         if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
         for (int i = 0; i < 3; ++i) (*elestrain)(gp, i) = total_glstrain(i);
@@ -2569,7 +2572,7 @@ void DRT::ELEMENTS::So3Plast<distype>::OutputStrains(const int gp,
 
         // inverse of deformation gradient
         CORE::LINALG::Matrix<3, 3> invdefgrd;
-        invdefgrd.Invert(Defgrd());
+        invdefgrd.Invert(defgrd());
 
         static CORE::LINALG::Matrix<3, 3> tmp1;
         static CORE::LINALG::Matrix<3, 3> total_euler_almansi(true);
@@ -2599,7 +2602,7 @@ void DRT::ELEMENTS::So3Plast<distype>::OutputStrains(const int gp,
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::OutputStress(const int gp,
+void DRT::ELEMENTS::So3Plast<distype>::output_stress(const int gp,
     const INPAR::STR::StressType iostress,                 // strain output option
     CORE::LINALG::Matrix<numgpt_post, numstr_>* elestress  // strains at GP
 )
@@ -2610,7 +2613,7 @@ void DRT::ELEMENTS::So3Plast<distype>::OutputStress(const int gp,
     case INPAR::STR::stress_2pk:
     {
       if (elestress == nullptr) FOUR_C_THROW("stress data not available");
-      for (int i = 0; i < numstr_; ++i) (*elestress)(gp, i) = PK2()(i);
+      for (int i = 0; i < numstr_; ++i) (*elestress)(gp, i) = p_k2()(i);
     }
     break;
     case INPAR::STR::stress_cauchy:
@@ -2618,20 +2621,20 @@ void DRT::ELEMENTS::So3Plast<distype>::OutputStress(const int gp,
       if (elestress == nullptr) FOUR_C_THROW("stress data not available");
 
       static CORE::LINALG::Matrix<3, 3> pkstress;
-      pkstress(0, 0) = PK2()(0);
-      pkstress(0, 1) = PK2()(3);
-      pkstress(0, 2) = PK2()(5);
+      pkstress(0, 0) = p_k2()(0);
+      pkstress(0, 1) = p_k2()(3);
+      pkstress(0, 2) = p_k2()(5);
       pkstress(1, 0) = pkstress(0, 1);
-      pkstress(1, 1) = PK2()(1);
-      pkstress(1, 2) = PK2()(4);
+      pkstress(1, 1) = p_k2()(1);
+      pkstress(1, 2) = p_k2()(4);
       pkstress(2, 0) = pkstress(0, 2);
       pkstress(2, 1) = pkstress(1, 2);
-      pkstress(2, 2) = PK2()(2);
+      pkstress(2, 2) = p_k2()(2);
 
       static CORE::LINALG::Matrix<3, 3> cauchystress;
       static CORE::LINALG::Matrix<3, 3> tmp1;
-      tmp1.Multiply(1.0 / DetF(), Defgrd(), pkstress);
-      cauchystress.MultiplyNT(tmp1, Defgrd());
+      tmp1.Multiply(1.0 / det_f(), defgrd(), pkstress);
+      cauchystress.MultiplyNT(tmp1, defgrd());
 
       (*elestress)(gp, 0) = cauchystress(0, 0);
       (*elestress)(gp, 1) = cauchystress(1, 1);
@@ -2652,7 +2655,7 @@ void DRT::ELEMENTS::So3Plast<distype>::OutputStress(const int gp,
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::Kinematics(const int gp)
+void DRT::ELEMENTS::So3Plast<distype>::kinematics(const int gp)
 {
   // compute Jacobian matrix and determinant
   // actually compute its transpose....
@@ -2672,10 +2675,10 @@ void DRT::ELEMENTS::So3Plast<distype>::Kinematics(const int gp)
     +-            -+        +-            -+
    */
   // derivatives of coordinates w.r.t material coordinates xjm_ = dx/ds
-  SetInvJ().Multiply(DerivShapeFunction(), Xrefe());
+  set_inv_j().Multiply(deriv_shape_function(), xrefe());
   // xij_ = ds/dx
-  SetDetJ() = SetInvJ().Invert();
-  if (DetJ() < 1.0E-16) FOUR_C_THROW("ZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", DetJ());
+  set_det_j() = set_inv_j().Invert();
+  if (det_j() < 1.0E-16) FOUR_C_THROW("ZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", det_j());
 
   /* get the inverse of the Jacobian matrix which looks like:
    **            [ x_,r  y_,r  z_,r ]^-1
@@ -2684,46 +2687,46 @@ void DRT::ELEMENTS::So3Plast<distype>::Kinematics(const int gp)
    */
   // compute derivatives N_XYZ at gp w.r.t. material coordinates
   // by N_XYZ = J^-1 * N_rst
-  set_deriv_shape_function_xyz().Multiply(InvJ(), DerivShapeFunction());  // (6.21)
+  set_deriv_shape_function_xyz().Multiply(inv_j(), deriv_shape_function());  // (6.21)
 
   // (material) deformation gradient
   // F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-  SetDefgrd().MultiplyTT(Xcurr(), deriv_shape_function_xyz());
+  set_defgrd().MultiplyTT(xcurr(), deriv_shape_function_xyz());
 
   // inverse deformation gradient and determinant
-  SetDetF() = SetInvDefgrd().Invert(Defgrd());
+  set_det_f() = set_inv_defgrd().Invert(defgrd());
 
   // calcualte total rcg
-  SetRCG().MultiplyTN(Defgrd(), Defgrd());
+  set_rcg().MultiplyTN(defgrd(), defgrd());
 
   // total rcg in strain-like voigt notation
-  for (int i = 0; i < 3; i++) SetRCGvec()(i) = RCG()(i, i);
-  SetRCGvec()(3) = RCG()(0, 1) * 2.;
-  SetRCGvec()(4) = RCG()(1, 2) * 2.;
-  SetRCGvec()(5) = RCG()(0, 2) * 2.;
+  for (int i = 0; i < 3; i++) set_rc_gvec()(i) = rcg()(i, i);
+  set_rc_gvec()(3) = rcg()(0, 1) * 2.;
+  set_rc_gvec()(4) = rcg()(1, 2) * 2.;
+  set_rc_gvec()(5) = rcg()(0, 2) * 2.;
 
   // calculate nonlinear B-operator
-  calculate_bop(&SetBop(), &Defgrd(), &deriv_shape_function_xyz(), gp);
+  calculate_bop(&set_bop(), &defgrd(), &deriv_shape_function_xyz(), gp);
 
   // build plastic velocity gradient from condensed variables
   if (Material()->MaterialType() == CORE::Materials::m_plelasthyper && gp >= 0 && gp < numgpt_)
-    BuildDeltaLp(gp);
+    build_delta_lp(gp);
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::IntegrateMassMatrix(
+void DRT::ELEMENTS::So3Plast<distype>::integrate_mass_matrix(
     const int gp, CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>& mass)
 {
   const double density = Material()->Density(gp);
   // integrate consistent mass matrix
-  const double factor = DetJ() * wgt_[gp] * density;
+  const double factor = det_j() * wgt_[gp] * density;
   double ifactor, massfactor;
   for (int inod = 0; inod < nen_; ++inod)
   {
-    ifactor = ShapeFunction()(inod) * factor;
+    ifactor = shape_function()(inod) * factor;
     for (int jnod = 0; jnod < nen_; ++jnod)
     {
-      massfactor = ShapeFunction()(jnod) * ifactor;  // intermediate factor
+      massfactor = shape_function()(jnod) * ifactor;  // intermediate factor
       mass(3 * inod + 0, 3 * jnod + 0) += massfactor;
       mass(3 * inod + 1, 3 * jnod + 1) += massfactor;
       mass(3 * inod + 2, 3 * jnod + 2) += massfactor;
@@ -2736,21 +2739,21 @@ void DRT::ELEMENTS::So3Plast<distype>::integrate_stiff_matrix(const int gp,
     CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>& stiff,
     CORE::LINALG::SerialDenseMatrix& Kda)
 {
-  const double detJ_w = DetJ() * wgt_[gp];
+  const double detJ_w = det_j() * wgt_[gp];
 
   // integrate `elastic' and `initial-displacement' stiffness matrix
   // keu = keu + (B^T . C . B) * detJ * w(gp)
   static CORE::LINALG::Matrix<numstr_, numdofperelement_> cb;
-  cb.Multiply(Cmat(), Bop());
+  cb.Multiply(cmat(), bop());
   if (fbar_)
-    stiff.MultiplyTN(detJ_w * FbarFac(), Bop(), cb, 1.0);
+    stiff.MultiplyTN(detJ_w * fbar_fac(), bop(), cb, 1.0);
   else
-    stiff.MultiplyTN(detJ_w, Bop(), cb, 1.0);
+    stiff.MultiplyTN(detJ_w, bop(), cb, 1.0);
 
   // integrate `geometric' stiffness matrix and add to keu *****************
-  CORE::LINALG::Matrix<numstr_, 1> sfac(PK2());  // auxiliary integrated stress
+  CORE::LINALG::Matrix<numstr_, 1> sfac(p_k2());  // auxiliary integrated stress
   if (fbar_)
-    sfac.Scale(detJ_w / FbarFac());  // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
+    sfac.Scale(detJ_w / fbar_fac());  // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
   else
     sfac.Scale(detJ_w);  // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
   double SmB_L[nsd_];    // intermediate Sm.B_L
@@ -2781,20 +2784,20 @@ void DRT::ELEMENTS::So3Plast<distype>::integrate_stiff_matrix(const int gp,
   if (fbar_)
   {
     static CORE::LINALG::Matrix<numstr_, 1> ccg;
-    ccg.Multiply(Cmat(), RCGvec());
+    ccg.Multiply(cmat(), rc_gvec());
 
     static CORE::LINALG::Matrix<numdofperelement_, 1> bopccg(false);  // auxiliary integrated stress
-    bopccg.MultiplyTN(detJ_w * FbarFac() / 3.0, Bop(), ccg);
+    bopccg.MultiplyTN(detJ_w * fbar_fac() / 3.0, bop(), ccg);
 
     static CORE::LINALG::Matrix<numdofperelement_, 1> bops(false);  // auxiliary integrated stress
-    bops.MultiplyTN(-detJ_w / FbarFac() / 3.0, Bop(), PK2());
-    stiff.MultiplyNT(1., bops, Htensor(), 1.);
-    stiff.MultiplyNT(1., bopccg, Htensor(), 1.);
+    bops.MultiplyTN(-detJ_w / fbar_fac() / 3.0, bop(), p_k2());
+    stiff.MultiplyNT(1., bops, htensor(), 1.);
+    stiff.MultiplyNT(1., bopccg, htensor(), 1.);
   }
   // end of integrate additional fbar matrix*****************************
 
   // EAS technology: integrate matrices --------------------------------- EAS
-  if (not(StrParamsInterface().GetPredictorType() == INPAR::STR::pred_tangdis))
+  if (not(str_params_interface().GetPredictorType() == INPAR::STR::pred_tangdis))
     if (eastype_ != soh8p_easnone)
     {
       // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
@@ -2806,38 +2809,38 @@ void DRT::ELEMENTS::So3Plast<distype>::integrate_stiff_matrix(const int gp,
         case soh8p_easfull:
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_, numstr_,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easfull>::neas>(
-              cM.values(), Cmat().A(), M_eas().values());
+              cM.values(), cmat().A(), m_eas().values());
           CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easfull>::neas, numstr_,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easfull>::neas>(
-              1.0, *KaaInv_, detJ_w, M_eas(), cM);
+              1.0, *KaaInv_, detJ_w, m_eas(), cM);
           CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easfull>::neas, numstr_, numdofperelement_>(
-              1.0, Kad_->values(), detJ_w, M_eas().values(), cb.A());
+              1.0, Kad_->values(), detJ_w, m_eas().values(), cb.A());
           CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, numdofperelement_, numstr_,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easfull>::neas>(
-              1.0, Kda.values(), detJ_w, cb.A(), M_eas().values());
+              1.0, Kda.values(), detJ_w, cb.A(), m_eas().values());
           CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easfull>::neas, numstr_, 1>(
-              1.0, feas_->values(), detJ_w, M_eas().values(), PK2().A());
+              1.0, feas_->values(), detJ_w, m_eas().values(), p_k2().A());
           break;
         case soh8p_easmild:
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_, numstr_,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas>(
-              cM.values(), Cmat().A(), M_eas().values());
+              cM.values(), cmat().A(), m_eas().values());
           CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, numstr_,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas>(
-              1.0, *KaaInv_, detJ_w, M_eas(), cM);
+              1.0, *KaaInv_, detJ_w, m_eas(), cM);
           CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, numstr_, numdofperelement_>(
-              1.0, Kad_->values(), detJ_w, M_eas().values(), cb.A());
+              1.0, Kad_->values(), detJ_w, m_eas().values(), cb.A());
           CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, numdofperelement_, numstr_,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas>(
-              1.0, Kda.values(), detJ_w, cb.A(), M_eas().values());
+              1.0, Kda.values(), detJ_w, cb.A(), m_eas().values());
           CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, numstr_, 1>(
-              1.0, feas_->values(), detJ_w, M_eas().values(), PK2().A());
+              1.0, feas_->values(), detJ_w, m_eas().values(), p_k2().A());
           break;
         case soh8p_easnone:
           break;
@@ -2849,22 +2852,22 @@ void DRT::ELEMENTS::So3Plast<distype>::integrate_stiff_matrix(const int gp,
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::IntegrateForce(
+void DRT::ELEMENTS::So3Plast<distype>::integrate_force(
     const int gp, CORE::LINALG::Matrix<numdofperelement_, 1>& force)
 {
   if (fbar_)
-    force.MultiplyTN(DetJ() * wgt_[gp] / FbarFac(), Bop(), PK2(), 1.0);
+    force.MultiplyTN(det_j() * wgt_[gp] / fbar_fac(), bop(), p_k2(), 1.0);
   else
-    force.MultiplyTN(DetJ() * wgt_[gp], Bop(), PK2(), 1.0);
+    force.MultiplyTN(det_j() * wgt_[gp], bop(), p_k2(), 1.0);
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
+void DRT::ELEMENTS::So3Plast<distype>::integrate_thermo_gp(
     const int gp, CORE::LINALG::SerialDenseVector& dHda)
 {
   const double timefac_d =
-      StrParamsInterface().GetTimIntFactorVel() / StrParamsInterface().GetTimIntFactorDisp();
-  const double detJ_w = DetJ() * wgt_[gp];
+      str_params_interface().GetTimIntFactorVel() / str_params_interface().GetTimIntFactorDisp();
+  const double detJ_w = det_j() * wgt_[gp];
 
   // get plastic hyperelastic material
   MAT::PlasticElastHyper* plmat = nullptr;
@@ -2874,34 +2877,34 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
     FOUR_C_THROW("tsi only with m_plelasthyper material type");
 
   // Gauss point temperature
-  const double gp_temp = Temp().Dot(ShapeFunction());
+  const double gp_temp = temp().Dot(shape_function());
 
   // volumetric part of K_dT = Gough-Joule effect**********************************
   // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccc
   // get the thermal material tangent
   CORE::LINALG::Matrix<numstr_, 1> cTvol(true);
   CORE::LINALG::Matrix<numstr_, numstr_> dcTvoldE;
-  plmat->EvaluateCTvol(&DefgrdMod(), &cTvol, &dcTvoldE, gp, Id());
+  plmat->EvaluateCTvol(&defgrd_mod(), &cTvol, &dcTvoldE, gp, Id());
   // end of call material law ccccccccccccccccccccccccccccccccccccccccccccc
   if (fbar_)
-    (*dFintdT_)[gp].MultiplyTN(detJ_w / (FbarFac()), Bop(), cTvol, 0.);
+    (*dFintdT_)[gp].MultiplyTN(detJ_w / (fbar_fac()), bop(), cTvol, 0.);
   else
-    (*dFintdT_)[gp].MultiplyTN(detJ_w, Bop(), cTvol, 0.);
+    (*dFintdT_)[gp].MultiplyTN(detJ_w, bop(), cTvol, 0.);
   if (eastype_ != soh8p_easnone)
   {
     CORE::LINALG::Matrix<numstr_, nen_> cTm;
-    cTm.MultiplyNT(cTvol, ShapeFunction());
+    cTm.MultiplyNT(cTvol, shape_function());
     switch (eastype_)
     {
       case soh8p_easfull:
         CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
             PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easfull>::neas, numstr_, nen_>(
-            1., KaT_->values(), detJ_w, M_eas().values(), cTm.A());
+            1., KaT_->values(), detJ_w, m_eas().values(), cTm.A());
         break;
       case soh8p_easmild:
         CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
             PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, numstr_, nen_>(
-            1., KaT_->values(), detJ_w, M_eas().values(), cTm.A());
+            1., KaT_->values(), detJ_w, m_eas().values(), cTm.A());
         break;
       case soh8p_easnone:
         break;
@@ -2921,19 +2924,19 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
     if (fbar_)
     {
       CORE::LINALG::Matrix<3, 3> defgrd_rate_0;
-      defgrd_rate_0.MultiplyTT(XcurrRate(), deriv_shape_function_xyz_0());
+      defgrd_rate_0.MultiplyTT(xcurr_rate(), deriv_shape_function_xyz_0());
 
       double he_fac;
       double he_fac_deriv;
-      plmat->EvaluateGoughJoule(DetF_0(), gp, Id(), he_fac, he_fac_deriv);
+      plmat->EvaluateGoughJoule(det_f_0(), gp, Id(), he_fac, he_fac_deriv);
 
       double fiddfdot = 0.;
       for (int i = 0; i < 3; ++i)
-        for (int j = 0; j < 3; ++j) fiddfdot += InvDefgrd_0()(j, i) * defgrd_rate_0(i, j);
+        for (int j = 0; j < 3; ++j) fiddfdot += inv_defgrd_0()(j, i) * defgrd_rate_0(i, j);
 
       double j_dot = 0.;
       for (int i = 0; i < 3; ++i)
-        for (int j = 0; j < 3; ++j) j_dot += DetF_0() * InvDefgrd_0()(j, i) * defgrd_rate_0(i, j);
+        for (int j = 0; j < 3; ++j) j_dot += det_f_0() * inv_defgrd_0()(j, i) * defgrd_rate_0(i, j);
 
       double He = he_fac * gp_temp * j_dot;
 
@@ -2948,19 +2951,19 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
       for (int i = 0; i < 3; ++i)
         for (int n = 0; n < numdofperelement_; ++n)
           deriv_j_d(n) +=
-              DetF_0() * InvDefgrd_0()(i, n % 3) * deriv_shape_function_xyz_0()(i, n / 3);
+              det_f_0() * inv_defgrd_0()(i, n % 3) * deriv_shape_function_xyz_0()(i, n / 3);
 
       CORE::LINALG::Matrix<3, 3> tmp;
-      tmp.Multiply(InvDefgrd_0(), defgrd_rate_0);
+      tmp.Multiply(inv_defgrd_0(), defgrd_rate_0);
       CORE::LINALG::Matrix<3, 3> tmp2;
-      tmp2.Multiply(tmp, InvDefgrd_0());
+      tmp2.Multiply(tmp, inv_defgrd_0());
 
       deriv_jdot_d.Update(fiddfdot, deriv_j_d, 1.);
       for (int i = 0; i < 3; ++i)
         for (int n = 0; n < numdofperelement_; ++n)
-          deriv_jdot_d(n) += DetF_0() * InvDefgrd_0()(i, n % 3) *
+          deriv_jdot_d(n) += det_f_0() * inv_defgrd_0()(i, n % 3) *
                                  deriv_shape_function_xyz_0()(i, n / 3) * timefac_d -
-                             DetF_0() * tmp2(i, n % 3) * deriv_shape_function_xyz_0()(i, n / 3);
+                             det_f_0() * tmp2(i, n % 3) * deriv_shape_function_xyz_0()(i, n / 3);
 
       CORE::LINALG::Matrix<numdofperelement_, 1> dHedd(true);
       dHedd.Update(gp_temp * he_fac, deriv_jdot_d, 1.);
@@ -2972,19 +2975,19 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
     else
     {
       CORE::LINALG::Matrix<3, 3> defgrd_rate;
-      defgrd_rate.MultiplyTT(XcurrRate(), deriv_shape_function_xyz());
+      defgrd_rate.MultiplyTT(xcurr_rate(), deriv_shape_function_xyz());
 
       double he_fac;
       double he_fac_deriv;
-      plmat->EvaluateGoughJoule(DetF(), gp, Id(), he_fac, he_fac_deriv);
+      plmat->EvaluateGoughJoule(det_f(), gp, Id(), he_fac, he_fac_deriv);
 
       double fiddfdot = 0.;
       for (int i = 0; i < 3; ++i)
-        for (int j = 0; j < 3; ++j) fiddfdot += InvDefgrd()(j, i) * defgrd_rate(i, j);
+        for (int j = 0; j < 3; ++j) fiddfdot += inv_defgrd()(j, i) * defgrd_rate(i, j);
 
       double j_dot = 0.;
       for (int i = 0; i < 3; ++i)
-        for (int j = 0; j < 3; ++j) j_dot += DetF() * InvDefgrd()(j, i) * defgrd_rate(i, j);
+        for (int j = 0; j < 3; ++j) j_dot += det_f() * inv_defgrd()(j, i) * defgrd_rate(i, j);
 
       double He = he_fac * gp_temp * j_dot;
 
@@ -2998,19 +3001,19 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
 
       for (int i = 0; i < 3; ++i)
         for (int n = 0; n < numdofperelement_; ++n)
-          deriv_j_d(n) += DetF() * InvDefgrd()(i, n % 3) * deriv_shape_function_xyz()(i, n / 3);
+          deriv_j_d(n) += det_f() * inv_defgrd()(i, n % 3) * deriv_shape_function_xyz()(i, n / 3);
 
       CORE::LINALG::Matrix<3, 3> tmp;
-      tmp.Multiply(InvDefgrd(), defgrd_rate);
+      tmp.Multiply(inv_defgrd(), defgrd_rate);
       CORE::LINALG::Matrix<3, 3> tmp2;
-      tmp2.Multiply(tmp, InvDefgrd());
+      tmp2.Multiply(tmp, inv_defgrd());
 
       deriv_jdot_d.Update(fiddfdot, deriv_j_d, 1.);
       for (int i = 0; i < 3; ++i)
         for (int n = 0; n < numdofperelement_; ++n)
           deriv_jdot_d(n) +=
-              DetF() * InvDefgrd()(i, n % 3) * deriv_shape_function_xyz()(i, n / 3) * timefac_d -
-              DetF() * tmp2(i, n % 3) * deriv_shape_function_xyz()(i, n / 3);
+              det_f() * inv_defgrd()(i, n % 3) * deriv_shape_function_xyz()(i, n / 3) * timefac_d -
+              det_f() * tmp2(i, n % 3) * deriv_shape_function_xyz()(i, n / 3);
 
       CORE::LINALG::Matrix<numdofperelement_, 1> dHedd(true);
       dHedd.Update(gp_temp * he_fac, deriv_jdot_d, 1.);
@@ -3023,7 +3026,7 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
   else
   {
     CORE::LINALG::Matrix<3, 3> defgrd_rate;
-    defgrd_rate.MultiplyTT(XcurrRate(), deriv_shape_function_xyz());
+    defgrd_rate.MultiplyTT(xcurr_rate(), deriv_shape_function_xyz());
 
     // Gough-Joule effect
     plmat->HepDiss(gp) = 0.;
@@ -3031,8 +3034,8 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
     plmat->dHepDissDd(gp).size(numdofperelement_);
     // Like this it should be easier to do EAS as well
     CORE::LINALG::Matrix<3, 3> RCGrate;
-    RCGrate.MultiplyTN(defgrd_rate, Defgrd());
-    RCGrate.MultiplyTN(1., Defgrd(), defgrd_rate, 1.);
+    RCGrate.MultiplyTN(defgrd_rate, defgrd());
+    RCGrate.MultiplyTN(1., defgrd(), defgrd_rate, 1.);
     CORE::LINALG::Matrix<6, 1> RCGrateVec;
     for (int i = 0; i < 3; ++i) RCGrateVec(i, 0) = RCGrate(i, i);
     RCGrateVec(3, 0) = 2. * RCGrate(0, 1);
@@ -3058,7 +3061,7 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
           // factor 2 because we deal with RCGrate and not GLrate
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, 1>(
-              1., RCGrateVec.A(), 2., M_eas().values(), alpha_dot.values());
+              1., RCGrateVec.A(), 2., m_eas().values(), alpha_dot.values());
           break;
         case soh8p_easfull:
           // calculate EAS-rate
@@ -3073,7 +3076,7 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
           // factor 2 because we deal with RCGrate and not GLrate
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easfull>::neas, 1>(
-              1., RCGrateVec.A(), 2., M_eas().values(), alpha_dot.values());
+              1., RCGrateVec.A(), 2., m_eas().values(), alpha_dot.values());
           break;
         case soh8p_easnone:
           break;
@@ -3098,9 +3101,9 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
 
     CORE::LINALG::Matrix<6, 1> tmp61;
     tmp61.MultiplyTN(dcTvoldE, RCGrateVec);
-    dHedd.MultiplyTN(.5 * gp_temp, Bop(), tmp61, 1.);
+    dHedd.MultiplyTN(.5 * gp_temp, bop(), tmp61, 1.);
 
-    dHedd.MultiplyTN(timefac_d * gp_temp, Bop(), cTvol, 1.);
+    dHedd.MultiplyTN(timefac_d * gp_temp, bop(), cTvol, 1.);
     dHedd.MultiplyTN(gp_temp, boprate, cTvol, 1.);
 
     // derivative of elastic heating w.r.t. EAS alphas *******************
@@ -3111,18 +3114,18 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
         case soh8p_easmild:
           CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, numstr_, 1>(
-              0., dHda.values(), .5 * gp_temp, M_eas().values(), tmp61.A());
+              0., dHda.values(), .5 * gp_temp, m_eas().values(), tmp61.A());
           CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, numstr_, 1>(
-              1., dHda.values(), gp_temp * timefac_d, M_eas().values(), cTvol.A());
+              1., dHda.values(), gp_temp * timefac_d, m_eas().values(), cTvol.A());
           break;
         case soh8p_easfull:
           CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easfull>::neas, numstr_, 1>(
-              0., dHda.values(), .5 * gp_temp, M_eas().values(), tmp61.A());
+              0., dHda.values(), .5 * gp_temp, m_eas().values(), tmp61.A());
           CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easfull>::neas, numstr_, 1>(
-              1., dHda.values(), gp_temp * timefac_d, M_eas().values(), cTvol.A());
+              1., dHda.values(), gp_temp * timefac_d, m_eas().values(), cTvol.A());
           break;
         case soh8p_easnone:
           break;
@@ -3139,7 +3142,7 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::HeatFlux(const std::vector<double>& temp,
+void DRT::ELEMENTS::So3Plast<distype>::HeatFlux(const std::vector<double>& temperature,
     const std::vector<double>& disp, const CORE::LINALG::Matrix<nsd_, 1>& xi,
     const CORE::LINALG::Matrix<nsd_, 1>& n, double& q, CORE::LINALG::SerialDenseMatrix* dq_dT,
     CORE::LINALG::SerialDenseMatrix* dq_dd, CORE::LINALG::Matrix<nsd_, 1>* dq_dn,
@@ -3149,8 +3152,8 @@ void DRT::ELEMENTS::So3Plast<distype>::HeatFlux(const std::vector<double>& temp,
   if (!dq_dT || !dq_dd || !dq_dn || !dq_dpxi || !d2q_dT_dd || !d2q_dT_dn || !d2q_dT_dpxi)
     FOUR_C_THROW("input inconsistent");
 
-  InvalidGpData();
-  InvalidEleData();
+  invalid_gp_data();
+  invalid_ele_data();
 
   if (NumMaterial() < 2) FOUR_C_THROW("where's my second material");
   Teuchos::RCP<MAT::FourierIso> mat_thr =
@@ -3158,19 +3161,19 @@ void DRT::ELEMENTS::So3Plast<distype>::HeatFlux(const std::vector<double>& temp,
   const double k0 = mat_thr->Conductivity();
 
   std::vector<double> vel(0);
-  FillPositionArrays(disp, vel, temp);
+  fill_position_arrays(disp, vel, temperature);
 
   // shape functions (shapefunct) and their first derivatives (deriv)
-  CORE::FE::shape_function<distype>(xi, SetShapeFunction());
+  CORE::FE::shape_function<distype>(xi, set_shape_function());
   CORE::FE::shape_function_deriv1<distype>(xi, set_deriv_shape_function());
 
-  Kinematics();
+  kinematics();
 
   CORE::LINALG::Matrix<3, 1> GradT;
-  GradT.Multiply(deriv_shape_function_xyz(), Temp());
+  GradT.Multiply(deriv_shape_function_xyz(), temp());
 
   CORE::LINALG::Matrix<3, 1> iFn;
-  iFn.Multiply(InvDefgrd(), n);
+  iFn.Multiply(inv_defgrd(), n);
 
   CORE::LINALG::Matrix<9, numdofperelement_> dFdd;
   for (int k = 0; k < nen_; ++k)
@@ -3185,7 +3188,7 @@ void DRT::ELEMENTS::So3Plast<distype>::HeatFlux(const std::vector<double>& temp,
     dFdd(8, k * nsd_ + 2) = deriv_shape_function_xyz()(0, k);
   }
 
-  q = -k0 / DetF() * GradT.Dot(iFn);
+  q = -k0 / det_f() * GradT.Dot(iFn);
 
   CORE::LINALG::Matrix<nen_, 9> dq_dT_dF;
 
@@ -3194,7 +3197,7 @@ void DRT::ELEMENTS::So3Plast<distype>::HeatFlux(const std::vector<double>& temp,
     dq_dT->shape(nen_, 1);
     for (int n = 0; n < nen_; ++n)
       for (int d = 0; d < nsd_; ++d)
-        (*dq_dT)(n, 0) += -k0 / DetF() * deriv_shape_function_xyz()(d, n) * iFn(d);
+        (*dq_dT)(n, 0) += -k0 / det_f() * deriv_shape_function_xyz()(d, n) * iFn(d);
   }
 
   if (d2q_dT_dd || dq_dd)
@@ -3203,7 +3206,7 @@ void DRT::ELEMENTS::So3Plast<distype>::HeatFlux(const std::vector<double>& temp,
     CORE::LINALG::Matrix<nen_, nen_ * nsd_> d2q_dT_dd_m(d2q_dT_dd->values(), true);
 
     CORE::LINALG::Matrix<3, nen_> tmp;
-    tmp.MultiplyTN(InvDefgrd(), deriv_shape_function_xyz());
+    tmp.MultiplyTN(inv_defgrd(), deriv_shape_function_xyz());
     CORE::LINALG::Matrix<nen_, 1> tmp2;
     tmp2.MultiplyTN(deriv_shape_function_xyz(), iFn);
 
@@ -3212,22 +3215,22 @@ void DRT::ELEMENTS::So3Plast<distype>::HeatFlux(const std::vector<double>& temp,
       for (int b = 0; b < nsd_; ++b)
         for (int c = 0; c < nen_; ++c)
           dq_dF_v(VoigtMapping::NonSymToVoigt9(a, b), c) =
-              k0 / DetF() * (tmp2(c) * InvDefgrd()(b, a) + tmp(a, c) * iFn(b));
+              k0 / det_f() * (tmp2(c) * inv_defgrd()(b, a) + tmp(a, c) * iFn(b));
 
     d2q_dT_dd_m.MultiplyTN(dq_dF_v, dFdd);
 
     dq_dd->shape(nen_ * nsd_, 1);
     CORE::LINALG::Matrix<nen_ * nsd_, 1> dq_dd_m(dq_dd->values(), true);
-    dq_dd_m.MultiplyTN(d2q_dT_dd_m, Temp());
+    dq_dd_m.MultiplyTN(d2q_dT_dd_m, temp());
   }
 
   if (d2q_dT_dn || dq_dn)
   {
     d2q_dT_dn->shape(nen_, nsd_);
     CORE::LINALG::Matrix<nen_, nsd_> d2q_dT_dn_m(d2q_dT_dn->values(), true);
-    d2q_dT_dn_m.MultiplyTN(-k0 / DetF(), deriv_shape_function_xyz(), InvDefgrd());
+    d2q_dT_dn_m.MultiplyTN(-k0 / det_f(), deriv_shape_function_xyz(), inv_defgrd());
 
-    dq_dn->MultiplyTN(d2q_dT_dn_m, Temp());
+    dq_dn->MultiplyTN(d2q_dT_dn_m, temp());
   }
 
   if (dq_dpxi || d2q_dT_dpxi)
@@ -3239,7 +3242,7 @@ void DRT::ELEMENTS::So3Plast<distype>::HeatFlux(const std::vector<double>& temp,
     CORE::FE::shape_function_deriv2<distype>(xi, deriv2);
     const int d2v[3][3] = {{0, 3, 4}, {3, 1, 5}, {4, 5, 2}};
     CORE::LINALG::Matrix<3, 1> tmp;
-    tmp.MultiplyTN(InvJ(), iFn);
+    tmp.MultiplyTN(inv_j(), iFn);
 
     CORE::LINALG::Matrix<CORE::FE::DisTypeToNumDeriv2<distype>::numderiv2, nen_> tmp3;
     tmp3.Update(deriv2);
@@ -3247,24 +3250,24 @@ void DRT::ELEMENTS::So3Plast<distype>::HeatFlux(const std::vector<double>& temp,
     for (int a = 0; a < nsd_; ++a)
       for (int b = 0; b < nsd_; ++b)
         for (int c = 0; c < nen_; ++c)
-          (*d2q_dT_dpxi)(c, a) += -k0 / DetF() * tmp3(d2v[a][b], c) * tmp(b);
+          (*d2q_dT_dpxi)(c, a) += -k0 / det_f() * tmp3(d2v[a][b], c) * tmp(b);
 
     CORE::LINALG::Matrix<nen_, nen_> tmp2;
-    tmp2.Multiply(Xrefe(), deriv_shape_function_xyz());
+    tmp2.Multiply(xrefe(), deriv_shape_function_xyz());
     tmp3.Multiply(deriv2, tmp2);
     for (int a = 0; a < nsd_; ++a)
       for (int b = 0; b < nsd_; ++b)
         for (int c = 0; c < nen_; ++c)
-          (*d2q_dT_dpxi)(c, a) += +k0 / DetF() * tmp3(d2v[a][b], c) * tmp(b);
+          (*d2q_dT_dpxi)(c, a) += +k0 / det_f() * tmp3(d2v[a][b], c) * tmp(b);
 
-    CORE::LINALG::Matrix<nen_, nsd_> xXF(Xcurr());
-    xXF.MultiplyNT(-1., Xrefe(), Defgrd(), 1.);
+    CORE::LINALG::Matrix<nen_, nsd_> xXF(xcurr());
+    xXF.MultiplyNT(-1., xrefe(), defgrd(), 1.);
 
     CORE::LINALG::Matrix<nsd_, CORE::FE::DisTypeToNumDeriv2<distype>::numderiv2> xXFsec;
     xXFsec.MultiplyTT(xXF, deriv2);
 
     CORE::LINALG::Matrix<nsd_, nsd_> tmp4;
-    tmp4.MultiplyTN(InvJ(), InvDefgrd());
+    tmp4.MultiplyTN(inv_j(), inv_defgrd());
 
     CORE::LINALG::Matrix<nsd_, CORE::FE::DisTypeToNumDeriv2<distype>::numderiv2> tmp5;
     tmp5.Multiply(tmp4, xXFsec);
@@ -3274,36 +3277,36 @@ void DRT::ELEMENTS::So3Plast<distype>::HeatFlux(const std::vector<double>& temp,
     for (int a = 0; a < nsd_; ++a)
       for (int b = 0; b < nsd_; ++b)
         for (int c = 0; c < nen_; ++c)
-          (*d2q_dT_dpxi)(c, a) += +k0 / DetF() * tmp6(c) * tmp5(b, d2v[a][b]);
+          (*d2q_dT_dpxi)(c, a) += +k0 / det_f() * tmp6(c) * tmp5(b, d2v[a][b]);
 
     CORE::LINALG::Matrix<nsd_, nen_> tmp7;
-    tmp7.MultiplyTN(InvDefgrd(), deriv_shape_function_xyz());
+    tmp7.MultiplyTN(inv_defgrd(), deriv_shape_function_xyz());
     tmp3.MultiplyTN(xXFsec, tmp7);
-    tmp.MultiplyTN(InvJ(), iFn);
+    tmp.MultiplyTN(inv_j(), iFn);
     for (int a = 0; a < nsd_; ++a)
       for (int b = 0; b < nsd_; ++b)
         for (int c = 0; c < nen_; ++c)
-          (*d2q_dT_dpxi)(c, a) += +k0 / DetF() * tmp3(d2v[a][b], c) * tmp(b);
+          (*d2q_dT_dpxi)(c, a) += +k0 / det_f() * tmp3(d2v[a][b], c) * tmp(b);
 
-    dq_dpxi->MultiplyTN(d2q_dT_dpxi_m, Temp());
+    dq_dpxi->MultiplyTN(d2q_dT_dpxi_m, temp());
   }
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::GetNurbsEleInfo(DRT::Discretization* dis)
+void DRT::ELEMENTS::So3Plast<distype>::get_nurbs_ele_info(DRT::Discretization* dis)
 {
   if (!IsNurbsElement()) return;
 
   if (dis == nullptr) dis = GLOBAL::Problem::Instance()->GetDis("structure").get();
 
   dynamic_cast<DRT::NURBS::NurbsDiscretization*>(dis)->GetKnotVector()->GetEleKnots(
-      SetKnots(), Id());
+      set_knots(), Id());
   for (int i = 0; i < nen_; ++i)
-    SetWeights()(i) = dynamic_cast<DRT::NURBS::ControlPoint*>(Nodes()[i])->W();
+    set_weights()(i) = dynamic_cast<DRT::NURBS::ControlPoint*>(Nodes()[i])->W();
 }
 
 // template functions
-template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>::CondensePlasticity<5>(
+template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>::condense_plasticity<5>(
     const CORE::LINALG::Matrix<nsd_, nsd_>&, const CORE::LINALG::Matrix<nsd_, nsd_>&,
     const CORE::LINALG::Matrix<numstr_, numdofperelement_>&,
     const CORE::LINALG::Matrix<nsd_, nen_>*, const CORE::LINALG::Matrix<numstr_, 1>*, const double,
@@ -3313,7 +3316,7 @@ template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>::CondensePlastic
     std::vector<CORE::LINALG::SerialDenseVector>*, const double*,
     const CORE::LINALG::Matrix<numdofperelement_, 1>*);
 
-template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>::CondensePlasticity<8>(
+template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>::condense_plasticity<8>(
     const CORE::LINALG::Matrix<nsd_, nsd_>&, const CORE::LINALG::Matrix<nsd_, nsd_>&,
     const CORE::LINALG::Matrix<numstr_, numdofperelement_>&,
     const CORE::LINALG::Matrix<nsd_, nen_>*, const CORE::LINALG::Matrix<numstr_, 1>*, const double,
@@ -3323,7 +3326,7 @@ template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>::CondensePlastic
     std::vector<CORE::LINALG::SerialDenseVector>*, const double*,
     const CORE::LINALG::Matrix<numdofperelement_, 1>*);
 
-template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex18>::CondensePlasticity<5>(
+template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex18>::condense_plasticity<5>(
     const CORE::LINALG::Matrix<nsd_, nsd_>&, const CORE::LINALG::Matrix<nsd_, nsd_>&,
     const CORE::LINALG::Matrix<numstr_, numdofperelement_>&,
     const CORE::LINALG::Matrix<nsd_, nen_>*, const CORE::LINALG::Matrix<numstr_, 1>*, const double,
@@ -3333,7 +3336,7 @@ template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex18>::CondensePlasti
     std::vector<CORE::LINALG::SerialDenseVector>*, const double*,
     const CORE::LINALG::Matrix<numdofperelement_, 1>*);
 
-template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex18>::CondensePlasticity<8>(
+template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex18>::condense_plasticity<8>(
     const CORE::LINALG::Matrix<nsd_, nsd_>&, const CORE::LINALG::Matrix<nsd_, nsd_>&,
     const CORE::LINALG::Matrix<numstr_, numdofperelement_>&,
     const CORE::LINALG::Matrix<nsd_, nen_>*, const CORE::LINALG::Matrix<numstr_, 1>*, const double,
@@ -3343,7 +3346,7 @@ template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex18>::CondensePlasti
     std::vector<CORE::LINALG::SerialDenseVector>*, const double*,
     const CORE::LINALG::Matrix<numdofperelement_, 1>*);
 
-template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::tet4>::CondensePlasticity<5>(
+template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::tet4>::condense_plasticity<5>(
     const CORE::LINALG::Matrix<nsd_, nsd_>&, const CORE::LINALG::Matrix<nsd_, nsd_>&,
     const CORE::LINALG::Matrix<numstr_, numdofperelement_>&,
     const CORE::LINALG::Matrix<nsd_, nen_>*, const CORE::LINALG::Matrix<numstr_, 1>*, const double,
@@ -3353,7 +3356,7 @@ template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::tet4>::CondensePlastic
     std::vector<CORE::LINALG::SerialDenseVector>*, const double*,
     const CORE::LINALG::Matrix<numdofperelement_, 1>*);
 
-template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::tet4>::CondensePlasticity<8>(
+template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::tet4>::condense_plasticity<8>(
     const CORE::LINALG::Matrix<nsd_, nsd_>&, const CORE::LINALG::Matrix<nsd_, nsd_>&,
     const CORE::LINALG::Matrix<numstr_, numdofperelement_>&,
     const CORE::LINALG::Matrix<nsd_, nen_>*, const CORE::LINALG::Matrix<numstr_, 1>*, const double,
@@ -3363,7 +3366,7 @@ template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::tet4>::CondensePlastic
     std::vector<CORE::LINALG::SerialDenseVector>*, const double*,
     const CORE::LINALG::Matrix<numdofperelement_, 1>*);
 
-template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::nurbs27>::CondensePlasticity<5>(
+template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::nurbs27>::condense_plasticity<5>(
     const CORE::LINALG::Matrix<nsd_, nsd_>&, const CORE::LINALG::Matrix<nsd_, nsd_>&,
     const CORE::LINALG::Matrix<numstr_, numdofperelement_>&,
     const CORE::LINALG::Matrix<nsd_, nen_>*, const CORE::LINALG::Matrix<numstr_, 1>*, const double,
@@ -3373,7 +3376,7 @@ template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::nurbs27>::CondensePlas
     std::vector<CORE::LINALG::SerialDenseVector>*, const double*,
     const CORE::LINALG::Matrix<numdofperelement_, 1>*);
 
-template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::nurbs27>::CondensePlasticity<8>(
+template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::nurbs27>::condense_plasticity<8>(
     const CORE::LINALG::Matrix<nsd_, nsd_>&, const CORE::LINALG::Matrix<nsd_, nsd_>&,
     const CORE::LINALG::Matrix<numstr_, numdofperelement_>&,
     const CORE::LINALG::Matrix<nsd_, nen_>*, const CORE::LINALG::Matrix<numstr_, 1>*, const double,

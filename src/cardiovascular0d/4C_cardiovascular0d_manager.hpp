@@ -271,7 +271,7 @@ namespace UTILS
 
 
     //! switch Cardiovascular0D matrix to block matrix
-    void UseBlockMatrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
+    void use_block_matrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
         Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps);
 
 

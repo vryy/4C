@@ -232,13 +232,13 @@ namespace FLD
     \brief return scaling of the residual
 
     */
-    double ResidualScaling() const override { return alphaM_ / (gamma_ * dta_); }
+    double residual_scaling() const override { return alphaM_ / (gamma_ * dta_); }
 
     /*!
     \brief velocity required for evaluation of related quantites required on element level
 
     */
-    Teuchos::RCP<const Epetra_Vector> EvaluationVel() override { return velaf_; };
+    Teuchos::RCP<const Epetra_Vector> evaluation_vel() override { return velaf_; };
 
     /// time factors for generalized-alpha time integration
     double alphaM_;

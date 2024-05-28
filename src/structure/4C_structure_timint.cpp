@@ -379,7 +379,7 @@ void STR::TimInt::CreateFields()
   {
     Teuchos::ParameterList p;
     p.set("total time", timen_);
-    discret_->EvaluateDirichlet(p, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
+    discret_->evaluate_dirichlet(p, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0);  // just in case of change
   }
 
@@ -959,7 +959,7 @@ void STR::TimInt::apply_mesh_initialization(Teuchos::RCP<const Epetra_Vector> Xs
   }
 
   // re-initialize finite elements
-  CORE::COMM::ParObjectFactory::Instance().InitializeElements(*discret_);
+  CORE::COMM::ParObjectFactory::Instance().initialize_elements(*discret_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -1013,7 +1013,7 @@ void STR::TimInt::determine_mass_damp_consist_accel()
   acc_aux->PutScalar(0.0);
 
   // overwrite initial state vectors with DirichletBCs
-  ApplyDirichletBC((*time_)[0], (*dis_)(0), (*vel_)(0), acc_aux, false);
+  apply_dirichlet_bc((*time_)[0], (*dis_)(0), (*vel_)(0), acc_aux, false);
 
   /* get external force (no linearization since we assume Rayleigh damping
    * to be independent of follower loads) */
@@ -1182,7 +1182,7 @@ void STR::TimInt::DetermineMass()
 
 /*---------------------------------------------------------------*/
 /* Apply Dirichlet boundary conditions on provided state vectors */
-void STR::TimInt::ApplyDirichletBC(const double time, Teuchos::RCP<Epetra_Vector> dis,
+void STR::TimInt::apply_dirichlet_bc(const double time, Teuchos::RCP<Epetra_Vector> dis,
     Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> acc, bool recreatemap)
 {
   // In the case of local coordinate systems, we have to rotate forward ...
@@ -1205,11 +1205,11 @@ void STR::TimInt::ApplyDirichletBC(const double time, Teuchos::RCP<Epetra_Vector
   discret_->ClearState();
   if (recreatemap)
   {
-    discret_->EvaluateDirichlet(p, dis, vel, acc, Teuchos::null, dbcmaps_);
+    discret_->evaluate_dirichlet(p, dis, vel, acc, Teuchos::null, dbcmaps_);
   }
   else
   {
-    discret_->EvaluateDirichlet(p, dis, vel, acc, Teuchos::null, Teuchos::null);
+    discret_->evaluate_dirichlet(p, dis, vel, acc, Teuchos::null, Teuchos::null);
   }
   discret_->ClearState();
 
@@ -2131,7 +2131,7 @@ void STR::TimInt::output_restart(bool& datawritten)
   // contact and meshtying
   if (have_contact_meshtying())
   {
-    cmtbridge_->WriteRestart(output_);
+    cmtbridge_->write_restart(output_);
     cmtbridge_->postprocess_quantities(output_);
 
     {
@@ -2147,7 +2147,7 @@ void STR::TimInt::output_restart(bool& datawritten)
   // beam contact
   if (HaveBeamContact())
   {
-    beamcman_->WriteRestart(output_);
+    beamcman_->write_restart(output_);
   }
 
   // biofilm growth
@@ -2268,12 +2268,12 @@ void STR::TimInt::add_restart_to_output_state()
   if (springman_->HaveSpringDashpot()) springman_->output_restart(output_, discret_, disn_);
 
   // contact/meshtying
-  if (have_contact_meshtying()) cmtbridge_->WriteRestart(output_, true);
+  if (have_contact_meshtying()) cmtbridge_->write_restart(output_, true);
 
   // TODO: add missing restart data for surface stress and contact/meshtying here
 
   // beam contact
-  if (HaveBeamContact()) beamcman_->WriteRestart(output_);
+  if (HaveBeamContact()) beamcman_->write_restart(output_);
 
 
   // finally add the missing mesh information, order is important here
@@ -3260,7 +3260,7 @@ void STR::TimInt::AttachEnergyFile()
 
 /*----------------------------------------------------------------------*/
 /* Return (rotatory) transformation matrix of local co-ordinate systems */
-Teuchos::RCP<const CORE::LINALG::SparseMatrix> STR::TimInt::GetLocSysTrafo() const
+Teuchos::RCP<const CORE::LINALG::SparseMatrix> STR::TimInt::get_loc_sys_trafo() const
 {
   if (locsysman_ != Teuchos::null) return locsysman_->Trafo();
 
@@ -3360,7 +3360,7 @@ void STR::TimInt::ResizeMStepTimAda()
 {
   // safety checks
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   // resize time and stepsize fields
   time_->Resize(-1, 0, (*time_)[0]);

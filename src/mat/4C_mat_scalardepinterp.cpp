@@ -37,7 +37,7 @@ MAT::PAR::ScalarDepInterp::ScalarDepInterp(Teuchos::RCP<CORE::MAT::PAR::Material
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScalarDepInterp::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScalarDepInterp::create_material()
 {
   return Teuchos::rcp(new MAT::ScalarDepInterp(this));
 }

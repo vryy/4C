@@ -46,7 +46,7 @@ void STR::PREDICT::TangDis::Setup()
   // ---------------------------------------------------------------------------
   // set the new pre/post operator for the nox nln group in the parameter list
   // ---------------------------------------------------------------------------
-  Teuchos::ParameterList& p_grp_opt = NoxParams().sublist("Group Options");
+  Teuchos::ParameterList& p_grp_opt = nox_params().sublist("Group Options");
   // Get the current map. If there is no map, return a new empty one. (reference)
   NOX::NLN::GROUP::PrePostOperator::Map& prepostgroup_map =
       NOX::NLN::GROUP::PrePostOp::GetMap(p_grp_opt);
@@ -66,21 +66,21 @@ void STR::PREDICT::TangDis::Compute(::NOX::Abstract::Group& grp)
   check_init_setup();
   NOX::NLN::Group* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
   FOUR_C_ASSERT(grp_ptr != nullptr, "Dynamic cast failed!");
-  grp_ptr->reset_pre_post_operator(NoxParams().sublist("Group Options"));
+  grp_ptr->reset_pre_post_operator(nox_params().sublist("Group Options"));
 
-  ImplInt().EvalData().SetPredictorType(INPAR::STR::pred_tangdis);
+  impl_int().EvalData().SetPredictorType(INPAR::STR::pred_tangdis);
 
   // ---------------------------------------------------------------------------
   // calculate the dbc increment on the dirichlet boundary
   // ---------------------------------------------------------------------------
-  dbc_incr_ptr_ = Dbc().get_dirichlet_increment();
+  dbc_incr_ptr_ = dbc().get_dirichlet_increment();
 
   // ---------------------------------------------------------------------------
   // We create at this point a new solution vector and initialize it
   // with the values of the last converged time step.
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<::NOX::Epetra::Vector> x_ptr = GlobalState().CreateGlobalVector(
-      TIMINT::BaseDataGlobalState::VecInitType::last_time_step, ImplInt().ModelEvalPtr());
+  Teuchos::RCP<::NOX::Epetra::Vector> x_ptr = global_state().CreateGlobalVector(
+      TIMINT::BaseDataGlobalState::VecInitType::last_time_step, impl_int().ModelEvalPtr());
   // Set the solution vector in the nox group. This will reset all isValid
   // flags.
   grp.setX(*x_ptr);
@@ -96,9 +96,9 @@ void STR::PREDICT::TangDis::Compute(::NOX::Abstract::Group& grp)
   // ---------------------------------------------------------------------------
   // Check if we are using a Newton direction
   // ---------------------------------------------------------------------------
-  std::string dir_str = NoxParams().sublist("Direction").get<std::string>("Method");
+  std::string dir_str = nox_params().sublist("Direction").get<std::string>("Method");
   if (dir_str == "User Defined")
-    dir_str = NoxParams().sublist("Direction").get<std::string>("User Defined Method");
+    dir_str = nox_params().sublist("Direction").get<std::string>("User Defined Method");
   if (dir_str != "Newton" and dir_str != "Modified Newton")
     FOUR_C_THROW(
         "The TangDis predictor is currently only working for the direction-"
@@ -108,9 +108,9 @@ void STR::PREDICT::TangDis::Compute(::NOX::Abstract::Group& grp)
   // (re)set the linear solver parameters
   // ---------------------------------------------------------------------------
   Teuchos::ParameterList& p =
-      NoxParams().sublist("Direction").sublist("Newton").sublist("Linear Solver");
+      nox_params().sublist("Direction").sublist("Newton").sublist("Linear Solver");
   p.set<int>("Number of Nonlinear Iterations", 0);
-  p.set<int>("Current Time Step", GlobalState().GetStepNp());
+  p.set<int>("Current Time Step", global_state().GetStepNp());
   // ToDo Get the actual tolerance value
   p.set<double>("Wanted Tolerance", 1.0e-6);
 
@@ -123,21 +123,21 @@ void STR::PREDICT::TangDis::Compute(::NOX::Abstract::Group& grp)
   grp_ptr->computeX(*grp_ptr, grp_ptr->getNewton(), 1.0);
   // add the DBC values to the current state vector
   Teuchos::RCP<Epetra_Vector> dbc_incr_exp_ptr =
-      Teuchos::rcp(new Epetra_Vector(GlobalState().GlobalProblemMap(), true));
+      Teuchos::rcp(new Epetra_Vector(global_state().GlobalProblemMap(), true));
   CORE::LINALG::Export(*dbc_incr_ptr_, *dbc_incr_exp_ptr);
   grp_ptr->computeX(*grp_ptr, *dbc_incr_exp_ptr, 1.0);
   // Reset the state variables
   const ::NOX::Epetra::Vector& x_eptra =
       dynamic_cast<const ::NOX::Epetra::Vector&>(grp_ptr->getX());
   // set the consistent state in the models (e.g. structure and contact models)
-  ImplInt().ResetModelStates(x_eptra.getEpetraVector());
+  impl_int().ResetModelStates(x_eptra.getEpetraVector());
 
   // For safety purposes, we set the dbc_incr vector to zero
   dbc_incr_ptr_->PutScalar(0.0);
 
-  ImplInt().ModelEval().Predict(GetType());
+  impl_int().ModelEval().Predict(GetType());
 
-  ImplInt().EvalData().SetPredictorType(INPAR::STR::pred_vague);
+  impl_int().EvalData().SetPredictorType(INPAR::STR::pred_vague);
 }
 
 /*----------------------------------------------------------------------------*

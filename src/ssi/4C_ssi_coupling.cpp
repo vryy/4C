@@ -34,7 +34,7 @@ void SSI::SSICouplingMatchingVolume::Init(const int ndim,
   int structure_dofset_counter = 0;
 
   auto scatra_integrator = ssi_base->ScaTraField();
-  auto scatradis = scatra_integrator->Discretization();
+  auto scatradis = scatra_integrator->discretization();
   // build a proxy of the structure discretization for the scatra field
   Teuchos::RCP<CORE::Dofsets::DofSetInterface> structdofset = structdis->GetDofSetProxy();
   // build a proxy of the scatra discretization for the structure field
@@ -140,10 +140,10 @@ void SSI::SSICouplingMatchingVolume::set_velocity_fields(
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra, Teuchos::RCP<const Epetra_Vector> convvel,
     Teuchos::RCP<const Epetra_Vector> vel)
 {
-  scatra->ScaTraField()->SetVelocityField(convvel,  // convective vel.
-      Teuchos::null,                                // acceleration
-      vel,                                          // velocity
-      Teuchos::null                                 // fsvel
+  scatra->ScaTraField()->set_velocity_field(convvel,  // convective vel.
+      Teuchos::null,                                  // acceleration
+      vel,                                            // velocity
+      Teuchos::null                                   // fsvel
   );
 }
 
@@ -193,7 +193,7 @@ void SSI::SSICouplingNonMatchingBoundary::Init(const int ndim,
 
   // set pointers
   structdis_ = structdis;
-  scatradis_ = scatra_integrator->Discretization();
+  scatradis_ = scatra_integrator->discretization();
 
   // set problem dimension
   problem_dimension_ = ndim;
@@ -281,7 +281,7 @@ void SSI::SSICouplingNonMatchingBoundary::set_velocity_fields(
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra, Teuchos::RCP<const Epetra_Vector> convvel,
     Teuchos::RCP<const Epetra_Vector> vel)
 {
-  scatra->ScaTraField()->SetVelocityField(
+  scatra->ScaTraField()->set_velocity_field(
       adaptermeshtying_->MasterToSlave(extractor_->ExtractCondVector(convvel)),  // convective vel.
       Teuchos::null,                                                             // acceleration
       adaptermeshtying_->MasterToSlave(extractor_->ExtractCondVector(vel)),      // velocity
@@ -318,7 +318,7 @@ void SSI::SSICouplingNonMatchingVolume::Init(const int ndim,
   int structure_dofset_counter = 0;
 
   auto scatra_integrator = ssi_base->ScaTraField();
-  auto scatradis = scatra_integrator->Discretization();
+  auto scatradis = scatra_integrator->discretization();
   // first call fill_complete for single discretizations.
   // This way the physical dofs are numbered successively
   structdis->fill_complete();
@@ -398,7 +398,7 @@ void SSI::SSICouplingNonMatchingVolume::set_velocity_fields(
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra, Teuchos::RCP<const Epetra_Vector> convvel,
     Teuchos::RCP<const Epetra_Vector> vel)
 {
-  scatra->ScaTraField()->SetVelocityField(
+  scatra->ScaTraField()->set_velocity_field(
       volcoupl_structurescatra_->apply_vector_mapping21(convvel),  // convective vel.
       Teuchos::null,                                               // acceleration
       volcoupl_structurescatra_->apply_vector_mapping21(vel),      // velocity
@@ -433,7 +433,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
   int structure_dofset_counter = 0;
 
   auto scatra_integrator = ssi_base->ScaTraField();
-  auto scatradis = scatra_integrator->Discretization();
+  auto scatradis = scatra_integrator->discretization();
 
 
   // Note : We need to make sure that the parallel distribution of Volume and Boundary
@@ -513,7 +513,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
     int scatra_manifold_dofset_counter(0);
 
     auto scatra_manifold_integrator = ssi_base->ScaTraManifold();
-    auto scatra_manifold_dis = scatra_manifold_integrator->Discretization();
+    auto scatra_manifold_dis = scatra_manifold_integrator->discretization();
 
     // build a proxy of the structure discretization for the other fields
     auto structdofset = structdis->GetDofSetProxy();
@@ -594,10 +594,10 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::set_velocity_fields(
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra, Teuchos::RCP<const Epetra_Vector> convvel,
     Teuchos::RCP<const Epetra_Vector> vel)
 {
-  scatra->ScaTraField()->SetVelocityField(convvel,  // convective vel.
-      Teuchos::null,                                // acceleration
-      vel,                                          // velocity
-      Teuchos::null                                 // fsvel
+  scatra->ScaTraField()->set_velocity_field(convvel,  // convective vel.
+      Teuchos::null,                                  // acceleration
+      vel,                                            // velocity
+      Teuchos::null                                   // fsvel
   );
 }
 

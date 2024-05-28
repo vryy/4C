@@ -55,7 +55,7 @@ void PASI::PasiPartOneWayCoup::Timeloop()
 {
   // safety checks
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   // time loop
   while (NotFinished())
@@ -64,35 +64,35 @@ void PASI::PasiPartOneWayCoup::Timeloop()
     prepare_time_step();
 
     // pre evaluate time step
-    PreEvaluateTimeStep();
+    pre_evaluate_time_step();
 
     // structural time step
-    StructStep();
+    struct_step();
 
     // extract interface states
     extract_interface_states();
 
     // set interface states
-    SetInterfaceStates(intfdispnp_, intfvelnp_, intfaccnp_);
+    set_interface_states(intfdispnp_, intfvelnp_, intfaccnp_);
 
     // particle time step
-    ParticleStep();
+    particle_step();
 
     // post evaluate time step
     post_evaluate_time_step();
 
     // output of fields
-    Output();
+    output();
   }
 }
 
-void PASI::PasiPartOneWayCoup::Output()
+void PASI::PasiPartOneWayCoup::output()
 {
   // output of structure field
-  StructOutput();
+  struct_output();
 
   // output of particle field
-  ParticleOutput();
+  particle_output();
 }
 
 FOUR_C_NAMESPACE_CLOSE

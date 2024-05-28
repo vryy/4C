@@ -51,10 +51,10 @@ EnsightWriter::EnsightWriter(PostField* field, const std::string& filename)
       Teuchos::rcp(new Epetra_Map(-1, sortmap.size(), sortmap.data(), 0, proc0map_->Comm()));
 
   // get the number of elements for each distype (global numbers)
-  numElePerDisType_ = GetNumElePerDisType(dis);
+  numElePerDisType_ = get_num_ele_per_dis_type(dis);
 
   // get the global ids of elements for each distype (global numbers)
-  eleGidPerDisType_ = GetEleGidPerDisType(dis, numElePerDisType_);
+  eleGidPerDisType_ = get_ele_gid_per_dis_type(dis, numElePerDisType_);
 
   // map between distypes in 4C and existing Ensight strings
   // it includes only strings for cell types known in ensight
@@ -122,7 +122,7 @@ void EnsightWriter::WriteFiles(PostFilterBase& filter)
     const std::string geofilename = filename_ + "_" + field_->name() + aux + ".geo";
     const size_t found_path = geofilename.find_last_of("/\\");
     const std::string geofilename_nopath = geofilename.substr(found_path + 1);
-    WriteGeoFile(geofilename);
+    write_geo_file(geofilename);
     std::vector<int> filesteps;
     filesteps.push_back(1);
     filesetmap_["geo"] = filesteps;
@@ -197,7 +197,7 @@ void EnsightWriter::WriteFiles(PostFilterBase& filter)
                << geofilename_nopath << "\n";
 
       casefile << "\nVARIABLE\n\n";
-      casefile << GetVariableSection(filesetmap_, variablenumdfmap_, variablefilenamemap_);
+      casefile << get_variable_section(filesetmap_, variablenumdfmap_, variablefilenamemap_);
 
       casefile << "\nTIME\n\n";
       casefile << get_time_section_string_from_timesets(timesetmap_);
@@ -215,7 +215,7 @@ void EnsightWriter::WriteFiles(PostFilterBase& filter)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EnsightWriter::WriteGeoFile(const std::string& geofilename)
+void EnsightWriter::write_geo_file(const std::string& geofilename)
 {
   // open file
   std::ofstream geofile;
@@ -226,7 +226,7 @@ void EnsightWriter::WriteGeoFile(const std::string& geofilename)
   }
 
   // header
-  Write(geofile, "C Binary");
+  write(geofile, "C Binary");
 
   // print out one
   // if more are needed, this has to go into a loop
@@ -238,10 +238,10 @@ void EnsightWriter::WriteGeoFile(const std::string& geofilename)
 
   // append index table
   // TODO: ens_checker complains if this is turned!!!! but I can't see, whats wrong here a.ger 11/07
-  // it is also correct to ommit WriteIndexTable, however the EnsightGold Format manual says,
+  // it is also correct to ommit write_index_table, however the EnsightGold Format manual says,
   // it would improve performance to have it on...
   // Writing the index for the result fields is fine. Complains only for the geometry-file  gb 02/10
-  // WriteIndexTable(geofile, resultfilepos["geo"]);
+  // write_index_table(geofile, resultfilepos["geo"]);
 
   if (geofile.is_open()) geofile.close();
 
@@ -258,24 +258,24 @@ void EnsightWriter::write_geo_file_one_time_step(std::ofstream& file,
   using namespace FourC;
 
   std::vector<std::ofstream::pos_type>& filepos = resultfilepos[name];
-  Write(file, "BEGIN TIME STEP");
+  write(file, "BEGIN TIME STEP");
   filepos.push_back(file.tellp());
 
-  Write(file, field_->name() + " geometry");
-  Write(file, "Comment");
+  write(file, field_->name() + " geometry");
+  write(file, "Comment");
 
   // nodeidgiven_ is set to true inside the class constructor
   if (nodeidgiven_)
-    Write(file, "node id given");
+    write(file, "node id given");
   else
-    Write(file, "node id assign");
+    write(file, "node id assign");
 
-  Write(file, "element id off");
+  write(file, "element id off");
 
   // part + partnumber + comment
-  Write(file, "part");
-  Write(file, field_->field_pos() + 1);
-  Write(file, field_->name() + " field");
+  write(file, "part");
+  write(file, field_->field_pos() + 1);
+  write(file, field_->name() + " field");
 
 
   // switch between nurbs an others
@@ -314,28 +314,28 @@ void EnsightWriter::write_geo_file_one_time_step(std::ofstream& file,
     {
       std::cout << "Writing coordinates for " << totalnumvisp << " visualisation points\n";
     }
-    Write(file, "coordinates");
-    Write(file, totalnumvisp);
+    write(file, "coordinates");
+    write(file, totalnumvisp);
   }
   else
   {
-    Write(file, "coordinates");
-    Write(file, field_->num_nodes());
+    write(file, "coordinates");
+    write(file, field_->num_nodes());
   }
 
   // write the grid information
-  Teuchos::RCP<Epetra_Map> proc0map = WriteCoordinates(file, field_->discretization());
+  Teuchos::RCP<Epetra_Map> proc0map = write_coordinates(file, field_->discretization());
   proc0map_ = proc0map;  // update the internal map
-  WriteCells(file, field_->discretization(), proc0map);
+  write_cells(file, field_->discretization(), proc0map);
 
-  Write(file, "END TIME STEP");
+  write(file, "END TIME STEP");
   return;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
+Teuchos::RCP<Epetra_Map> EnsightWriter::write_coordinates(
     std::ofstream& geofile, const Teuchos::RCP<DRT::Discretization> dis)
 {
   using namespace FourC;
@@ -382,7 +382,7 @@ Teuchos::RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
 /*----------------------------------------------------------------------*
   | write node connectivity for every element                  gjb 12/07 |
   *----------------------------------------------------------------------*/
-void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::Discretization> dis,
+void EnsightWriter::write_cells(std::ofstream& geofile, const Teuchos::RCP<DRT::Discretization> dis,
     const Teuchos::RCP<Epetra_Map>& proc0map) const
 {
   using namespace FourC;
@@ -402,16 +402,16 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
   for (iter = numElePerDisType_.begin(); iter != numElePerDisType_.end(); ++iter)
   {
     const CORE::FE::CellType distypeiter = iter->first;
-    const int ne = GetNumEleOutput(distypeiter, iter->second);
-    const std::string ensightCellType = GetEnsightString(distypeiter);
+    const int ne = get_num_ele_output(distypeiter, iter->second);
+    const std::string ensightCellType = get_ensight_string(distypeiter);
 
     if (myrank_ == 0)
     {
       std::cout << "writing " << iter->second << " " << CORE::FE::CellTypeToString(distypeiter)
                 << " element(s) as " << ne << " " << ensightCellType << " ensight cell(s)..."
                 << std::endl;
-      Write(geofile, ensightCellType);
-      Write(geofile, ne);
+      write(geofile, ensightCellType);
+      write(geofile, ne);
     }
 
     nodevector.clear();
@@ -445,7 +445,7 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
             for (int inode = 0; inode < numnp; ++inode)
             {
               if (myrank_ == 0)  // proc0 can write its elements immediately
-                Write(geofile, proc0map->LID(nodes[inode]->Id()) + 1);
+                write(geofile, proc0map->LID(nodes[inode]->Id()) + 1);
               else  // elements on other procs have to store their global node ids
                 nodevector.push_back(nodes[inode]->Id());
             }
@@ -458,7 +458,7 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
             for (int inode = 0; inode < numnp; ++inode)
             {
               if (myrank_ == 0)  // proc0 can write its elements immediately
-                Write(geofile, proc0map->LID(nodes[Hex20_FourCToEnsightGold[inode]]->Id()) + 1);
+                write(geofile, proc0map->LID(nodes[Hex20_FourCToEnsightGold[inode]]->Id()) + 1);
               else  // elements on other procs have to store their global node ids
                 nodevector.push_back(nodes[Hex20_FourCToEnsightGold[inode]]->Id());
             }
@@ -467,10 +467,10 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
           case CORE::FE::CellType::hex16:
           {
             // write subelements
-            for (int isubele = 0; isubele < GetNumSubEle(CORE::FE::CellType::hex16); ++isubele)
+            for (int isubele = 0; isubele < get_num_sub_ele(CORE::FE::CellType::hex16); ++isubele)
               for (int isubnode = 0; isubnode < 8; ++isubnode)
                 if (myrank_ == 0)  // proc0 can write its elements immidiately
-                  Write(geofile, proc0map->LID(nodes[subhex16map[isubele][isubnode]]->Id()) + 1);
+                  write(geofile, proc0map->LID(nodes[subhex16map[isubele][isubnode]]->Id()) + 1);
                 else  // elements on other procs have to store their global node ids
                   nodevector.push_back(nodes[subhex16map[isubele][isubnode]]->Id());
             break;
@@ -478,10 +478,10 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
           case CORE::FE::CellType::hex18:
           {
             // write subelements
-            for (int isubele = 0; isubele < GetNumSubEle(CORE::FE::CellType::hex18); ++isubele)
+            for (int isubele = 0; isubele < get_num_sub_ele(CORE::FE::CellType::hex18); ++isubele)
               for (int isubnode = 0; isubnode < 8; ++isubnode)
                 if (myrank_ == 0)  // proc0 can write its elements immidiately
-                  Write(geofile, proc0map->LID(nodes[subhex18map[isubele][isubnode]]->Id()) + 1);
+                  write(geofile, proc0map->LID(nodes[subhex18map[isubele][isubnode]]->Id()) + 1);
                 else  // elements on other procs have to store their global node ids
                   nodevector.push_back(nodes[subhex18map[isubele][isubnode]]->Id());
             break;
@@ -489,10 +489,10 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
           case CORE::FE::CellType::hex27:
           {
             // write subelements
-            for (int isubele = 0; isubele < GetNumSubEle(CORE::FE::CellType::hex27); ++isubele)
+            for (int isubele = 0; isubele < get_num_sub_ele(CORE::FE::CellType::hex27); ++isubele)
               for (int isubnode = 0; isubnode < 8; ++isubnode)
                 if (myrank_ == 0)  // proc0 can write its elements immidiately
-                  Write(geofile, proc0map->LID(nodes[subhexmap[isubele][isubnode]]->Id()) + 1);
+                  write(geofile, proc0map->LID(nodes[subhexmap[isubele][isubnode]]->Id()) + 1);
                 else  // elements on other procs have to store their global node ids
                   nodevector.push_back(nodes[subhexmap[isubele][isubnode]]->Id());
             break;
@@ -500,10 +500,10 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
           case CORE::FE::CellType::quad9:
           {
             // write subelements
-            for (int isubele = 0; isubele < GetNumSubEle(CORE::FE::CellType::quad9); ++isubele)
+            for (int isubele = 0; isubele < get_num_sub_ele(CORE::FE::CellType::quad9); ++isubele)
               for (int isubnode = 0; isubnode < 4; ++isubnode)
                 if (myrank_ == 0)  // proc0 can write its elements immidiately
-                  Write(geofile, proc0map->LID(nodes[subquadmap[isubele][isubnode]]->Id()) + 1);
+                  write(geofile, proc0map->LID(nodes[subquadmap[isubele][isubnode]]->Id()) + 1);
                 else  // elements on other procs have to store their global node ids
                   nodevector.push_back(nodes[subquadmap[isubele][isubnode]]->Id());
             break;
@@ -511,10 +511,10 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
           case CORE::FE::CellType::line3:
           {
             // write subelements
-            for (int isubele = 0; isubele < GetNumSubEle(CORE::FE::CellType::line3); ++isubele)
+            for (int isubele = 0; isubele < get_num_sub_ele(CORE::FE::CellType::line3); ++isubele)
               for (int isubnode = 0; isubnode < 2; ++isubnode)
                 if (myrank_ == 0)  // proc0 can write its elements immidiately
-                  Write(geofile, proc0map->LID(nodes[sublinemap[isubele][isubnode]]->Id()) + 1);
+                  write(geofile, proc0map->LID(nodes[sublinemap[isubele][isubnode]]->Id()) + 1);
                 else  // elements on other procs have to store their global node ids
                   nodevector.push_back(nodes[sublinemap[isubele][isubnode]]->Id());
             break;
@@ -522,7 +522,7 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
           case CORE::FE::CellType::nurbs4:
           {
             if (!writecp_)
-              WriteNurbsCell(actele->Shape(), actele->Id(), geofile, nodevector, dis, proc0map);
+              write_nurbs_cell(actele->Shape(), actele->Id(), geofile, nodevector, dis, proc0map);
             else
             {
               // standard case with direct support
@@ -530,7 +530,7 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
               for (int inode = 0; inode < numnp; ++inode)
               {
                 if (myrank_ == 0)  // proc0 can write its elements immediately
-                  Write(geofile, proc0map->LID(nodes[inode]->Id()) + 1);
+                  write(geofile, proc0map->LID(nodes[inode]->Id()) + 1);
                 else  // elements on other procs have to store their global node ids
                   nodevector.push_back(nodes[inode]->Id());
               }
@@ -540,14 +540,14 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
           case CORE::FE::CellType::nurbs9:
           {
             if (!writecp_)
-              WriteNurbsCell(actele->Shape(), actele->Id(), geofile, nodevector, dis, proc0map);
+              write_nurbs_cell(actele->Shape(), actele->Id(), geofile, nodevector, dis, proc0map);
             else
             {
               // write subelements
-              for (int isubele = 0; isubele < GetNumSubEle(CORE::FE::CellType::quad9); ++isubele)
+              for (int isubele = 0; isubele < get_num_sub_ele(CORE::FE::CellType::quad9); ++isubele)
                 for (int isubnode = 0; isubnode < 4; ++isubnode)
                   if (myrank_ == 0)  // proc0 can write its elements immidiately
-                    Write(geofile, proc0map->LID(nodes[subquadmap[isubele][isubnode]]->Id()) + 1);
+                    write(geofile, proc0map->LID(nodes[subquadmap[isubele][isubnode]]->Id()) + 1);
                   else  // elements on other procs have to store their global node ids
                     nodevector.push_back(nodes[subquadmap[isubele][isubnode]]->Id());
             }
@@ -556,14 +556,14 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
           case CORE::FE::CellType::nurbs27:
           {
             if (!writecp_)
-              WriteNurbsCell(actele->Shape(), actele->Id(), geofile, nodevector, dis, proc0map);
+              write_nurbs_cell(actele->Shape(), actele->Id(), geofile, nodevector, dis, proc0map);
             else
             {
               // write subelements
-              for (int isubele = 0; isubele < GetNumSubEle(CORE::FE::CellType::hex27); ++isubele)
+              for (int isubele = 0; isubele < get_num_sub_ele(CORE::FE::CellType::hex27); ++isubele)
                 for (int isubnode = 0; isubnode < 8; ++isubnode)
                   if (myrank_ == 0)  // proc0 can write its elements immidiately
-                    Write(geofile, proc0map->LID(nodes[subhexmap[isubele][isubnode]]->Id()) + 1);
+                    write(geofile, proc0map->LID(nodes[subhexmap[isubele][isubnode]]->Id()) + 1);
                   else  // elements on other procs have to store their global node ids
                     nodevector.push_back(nodes[subhexmap[isubele][isubnode]]->Id());
             }
@@ -663,7 +663,7 @@ void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
       {
         // using the same map as for the writing the node coordinates
         int id = (proc0map->LID(nodeids[i])) + 1;
-        Write(geofile, id);
+        write(geofile, id);
       }
       nodeids.clear();
     }  // end unpack
@@ -682,7 +682,7 @@ void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
  * \author gjb
  * \date 01/08
  */
-EnsightWriter::NumElePerDisType EnsightWriter::GetNumElePerDisType(
+EnsightWriter::NumElePerDisType EnsightWriter::get_num_ele_per_dis_type(
     const Teuchos::RCP<DRT::Discretization> dis) const
 {
   using namespace FourC;
@@ -734,15 +734,15 @@ EnsightWriter::NumElePerDisType EnsightWriter::GetNumElePerDisType(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int EnsightWriter::GetNumEleOutput(const CORE::FE::CellType distype, const int numele) const
+int EnsightWriter::get_num_ele_output(const CORE::FE::CellType distype, const int numele) const
 {
-  return GetNumSubEle(distype) * numele;
+  return get_num_sub_ele(distype) * numele;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int EnsightWriter::GetNumSubEle(const CORE::FE::CellType distype) const
+int EnsightWriter::get_num_sub_ele(const CORE::FE::CellType distype) const
 {
   using namespace FourC;
 
@@ -774,7 +774,7 @@ int EnsightWriter::GetNumSubEle(const CORE::FE::CellType distype) const
 /*!
  * \brief parse all elements and get the global ids of the elements for each distype
  */
-EnsightWriter::EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
+EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
     const Teuchos::RCP<DRT::Discretization> dis, NumElePerDisType numeleperdistype) const
 {
   using namespace FourC;
@@ -883,7 +883,7 @@ EnsightWriter::EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::string EnsightWriter::GetEnsightString(const CORE::FE::CellType distype) const
+std::string EnsightWriter::get_ensight_string(const CORE::FE::CellType distype) const
 {
   using namespace FourC;
 
@@ -978,7 +978,7 @@ void EnsightWriter::WriteResult(const std::string groupname, const std::string n
       // get the number of bits to be written each time step
       // const int stepsize = 5*80+sizeof(int)+effnumdf*numnp*sizeof(float);
 
-      WriteDofResultStep(file, result, resultfilepos, groupname, name, numdf, from, fillzeros);
+      write_dof_result_step(file, result, resultfilepos, groupname, name, numdf, from, fillzeros);
       // how many bits are necessary per time step (we assume a fixed size)?
       if (myrank_ == 0)
       {
@@ -996,10 +996,11 @@ void EnsightWriter::WriteResult(const std::string groupname, const std::string n
           if (static_cast<long unsigned int>(file.tellp()) + stepsize + indexsize >=
               FILE_SIZE_LIMIT_)
           {
-            FileSwitcher(
+            file_switcher(
                 file, multiple_files, filesetmap_, resultfilepos, stepsize, name, filename);
           }
-          WriteDofResultStep(file, result, resultfilepos, groupname, name, numdf, from, fillzeros);
+          write_dof_result_step(
+              file, result, resultfilepos, groupname, name, numdf, from, fillzeros);
         }
       }
     }
@@ -1026,7 +1027,7 @@ void EnsightWriter::WriteResult(const std::string groupname, const std::string n
         const int indexsize = 80 + 2 * sizeof(int) + (file.tellp() / stepsize + 2) * sizeof(long);
         if (static_cast<long unsigned int>(file.tellp()) + stepsize + indexsize >= FILE_SIZE_LIMIT_)
         {
-          FileSwitcher(file, multiple_files, filesetmap_, resultfilepos, stepsize, name, filename);
+          file_switcher(file, multiple_files, filesetmap_, resultfilepos, stepsize, name, filename);
         }
         write_nodal_result_step(file, result, resultfilepos, groupname, name, numdf);
       }
@@ -1054,7 +1055,7 @@ void EnsightWriter::WriteResult(const std::string groupname, const std::string n
         const int indexsize = 80 + 2 * sizeof(int) + (file.tellp() / stepsize + 2) * sizeof(long);
         if (static_cast<long unsigned int>(file.tellp()) + stepsize + indexsize >= FILE_SIZE_LIMIT_)
         {
-          FileSwitcher(file, multiple_files, filesetmap_, resultfilepos, stepsize, name, filename);
+          file_switcher(file, multiple_files, filesetmap_, resultfilepos, stepsize, name, filename);
         }
         write_element_dof_result_step(file, result, resultfilepos, groupname, name, numdf, from);
       }
@@ -1082,7 +1083,7 @@ void EnsightWriter::WriteResult(const std::string groupname, const std::string n
         const int indexsize = 80 + 2 * sizeof(int) + (file.tellp() / stepsize + 2) * sizeof(long);
         if (static_cast<long unsigned int>(file.tellp()) + stepsize + indexsize >= FILE_SIZE_LIMIT_)
         {
-          FileSwitcher(file, multiple_files, filesetmap_, resultfilepos, stepsize, name, filename);
+          file_switcher(file, multiple_files, filesetmap_, resultfilepos, stepsize, name, filename);
         }
         write_element_result_step(file, result, resultfilepos, groupname, name, numdf, from);
       }
@@ -1110,7 +1111,7 @@ void EnsightWriter::WriteResult(const std::string groupname, const std::string n
   }
 
   // append index table
-  WriteIndexTable(file, resultfilepos[name]);
+  write_index_table(file, resultfilepos[name]);
   resultfilepos[name].clear();
 
   // close result file
@@ -1129,7 +1130,7 @@ void EnsightWriter::write_result_one_time_step(PostResult& result, const std::st
 
   // FILE CONTINUATION NOT SUPPORTED DUE TO ITS COMPLEXITY FOR VARIABLE GEOMETRY ghamm 03.03.2014
   // guessing whether a new file is necessary should be possible with the current method because the
-  // file size is no hard limit more tricky are the things that happen in FileSwitcher --> need
+  // file size is no hard limit more tricky are the things that happen in file_switcher --> need
   // adaptation for variable geometry
   bool multiple_files = false;
 
@@ -1179,7 +1180,7 @@ void EnsightWriter::write_result_one_time_step(PostResult& result, const std::st
 
       if (map_has_map(result.group(), groupname.c_str()))
       {
-        WriteDofResultStep(file, result, resultfilepos_, groupname, name, numdf, from, false);
+        write_dof_result_step(file, result, resultfilepos_, groupname, name, numdf, from, false);
 
         // how many bits are necessary per time step (we assume a fixed size)?
         if (myrank_ == 0)
@@ -1194,7 +1195,8 @@ void EnsightWriter::write_result_one_time_step(PostResult& result, const std::st
         if (static_cast<long unsigned int>(file.tellp()) + stepsize + indexsize >= FILE_SIZE_LIMIT_)
         {
           FOUR_C_THROW("file continuation not supported for variable geometries");
-          FileSwitcher(file, multiple_files, filesetmap_, resultfilepos_, stepsize, name, filename);
+          file_switcher(
+              file, multiple_files, filesetmap_, resultfilepos_, stepsize, name, filename);
         }
       }
     }
@@ -1221,7 +1223,7 @@ void EnsightWriter::write_result_one_time_step(PostResult& result, const std::st
       if (static_cast<long unsigned int>(file.tellp()) + stepsize + indexsize >= FILE_SIZE_LIMIT_)
       {
         FOUR_C_THROW("file continuation not supported for variable geometries");
-        FileSwitcher(file, multiple_files, filesetmap_, resultfilepos_, stepsize, name, filename);
+        file_switcher(file, multiple_files, filesetmap_, resultfilepos_, stepsize, name, filename);
       }
     }
     break;
@@ -1247,7 +1249,7 @@ void EnsightWriter::write_result_one_time_step(PostResult& result, const std::st
       if (static_cast<long unsigned int>(file.tellp()) + stepsize + indexsize >= FILE_SIZE_LIMIT_)
       {
         FOUR_C_THROW("file continuation not supported for variable geometries");
-        FileSwitcher(file, multiple_files, filesetmap_, resultfilepos_, stepsize, name, filename);
+        file_switcher(file, multiple_files, filesetmap_, resultfilepos_, stepsize, name, filename);
       }
     }
     break;
@@ -1273,7 +1275,7 @@ void EnsightWriter::write_result_one_time_step(PostResult& result, const std::st
       if (static_cast<long unsigned int>(file.tellp()) + stepsize + indexsize >= FILE_SIZE_LIMIT_)
       {
         FOUR_C_THROW("file continuation not supported for variable geometries");
-        FileSwitcher(file, multiple_files, filesetmap_, resultfilepos_, stepsize, name, filename);
+        file_switcher(file, multiple_files, filesetmap_, resultfilepos_, stepsize, name, filename);
       }
     }
     break;
@@ -1296,7 +1298,7 @@ void EnsightWriter::write_result_one_time_step(PostResult& result, const std::st
     variablefilenamemap_[name] = filename;
 
     // append index table
-    WriteIndexTable(file, resultfilepos_[name]);
+    write_index_table(file, resultfilepos_[name]);
     resultfilepos_[name].clear();
   }
 
@@ -1395,7 +1397,7 @@ void EnsightWriter::WriteSpecialField(SpecialFieldInterface& special, PostResult
           FILE_SIZE_LIMIT_)
       {
         bool mf = multiple_files[i];
-        FileSwitcher(
+        file_switcher(
             *(files[i]), mf, filesetmap_, resultfilepos, stepsize[i], fieldnames[i], filenames[i]);
         multiple_files[i] = mf;
       }
@@ -1427,7 +1429,7 @@ void EnsightWriter::WriteSpecialField(SpecialFieldInterface& special, PostResult
   // append index table
   for (int i = 0; i < numfiles; ++i)
   {
-    WriteIndexTable(*(files[i]), resultfilepos[fieldnames[i]]);
+    write_index_table(*(files[i]), resultfilepos[fieldnames[i]]);
     resultfilepos[fieldnames[i]].clear();
     if (files[i]->is_open()) files[i]->close();
   }
@@ -1436,7 +1438,7 @@ void EnsightWriter::WriteSpecialField(SpecialFieldInterface& special, PostResult
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EnsightWriter::FileSwitcher(std::ofstream& file, bool& multiple_files,
+void EnsightWriter::file_switcher(std::ofstream& file, bool& multiple_files,
     std::map<std::string, std::vector<int>>& filesetmap,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos, const int stepsize,
     const std::string name, const std::string filename) const
@@ -1454,7 +1456,7 @@ void EnsightWriter::FileSwitcher(std::ofstream& file, bool& multiple_files,
       filesetmap[name] = numsteps;
 
       // append index table
-      WriteIndexTable(file, resultfilepos[name]);
+      write_index_table(file, resultfilepos[name]);
       resultfilepos[name].clear();
       file.close();
       rename(filename.c_str(), (filename + "001").c_str());
@@ -1466,7 +1468,7 @@ void EnsightWriter::FileSwitcher(std::ofstream& file, bool& multiple_files,
       filesetmap[name].push_back(file.tellp() / stepsize);
 
       // append index table
-      WriteIndexTable(file, resultfilepos[name]);
+      write_index_table(file, resultfilepos[name]);
       resultfilepos[name].clear();
       file.close();
 
@@ -1485,7 +1487,7 @@ void EnsightWriter::FileSwitcher(std::ofstream& file, bool& multiple_files,
   \brief Write nodal values for one timestep for dof-based vectors
   Each node has to have the same number of dofs.
 */
-void EnsightWriter::WriteDofResultStep(std::ofstream& file, PostResult& result,
+void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& result,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int frompid,
     const bool fillzeros) const
@@ -1497,12 +1499,12 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file, PostResult& result,
   //-------------------------------------------
 
   std::vector<std::ofstream::pos_type>& filepos = resultfilepos[name];
-  Write(file, "BEGIN TIME STEP");
+  write(file, "BEGIN TIME STEP");
   filepos.push_back(file.tellp());
-  Write(file, "description");
-  Write(file, "part");
-  Write(file, field_->field_pos() + 1);
-  Write(file, "coordinates");
+  write(file, "description");
+  write(file, "part");
+  write(file, field_->field_pos() + 1);
+  write(file, "coordinates");
 
   const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
   const Epetra_Map* nodemap = dis->NodeRowMap();  // local node row map
@@ -1643,18 +1645,18 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file, PostResult& result,
               // this is the desired component of the rotated vector field result
               double value =
                   FLD::GetComponentOfRotatedVectorField(idf, proc0data, lid, iter->second);
-              Write(file, static_cast<float>(value));
+              write(file, static_cast<float>(value));
             }
             else
             {
               // the standard case
-              Write(file, static_cast<float>((*proc0data)[lid]));
+              write(file, static_cast<float>((*proc0data)[lid]));
             }
           }
           else
           {
             if (fillzeros)
-              Write<float>(file, 0.);
+              write<float>(file, 0.);
             else
               FOUR_C_THROW("received illegal dof local id: %d (gid=%d)", lid, actdofgid);
           }
@@ -1667,7 +1669,7 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file, PostResult& result,
       {
         for (int inode = 0; inode < numnp; inode++)
         {
-          Write<float>(file, 0.);
+          write<float>(file, 0.);
         }
       }
     }  // if (myrank_==0)
@@ -1677,7 +1679,7 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file, PostResult& result,
     FOUR_C_THROW("Undefined spatial approximation type.\n");
   }
 
-  Write(file, "END TIME STEP");
+  write(file, "END TIME STEP");
   return;
 }
 
@@ -1713,12 +1715,12 @@ void EnsightWriter::write_nodal_result_step(std::ofstream& file,
   //-------------------------------------------
 
   std::vector<std::ofstream::pos_type>& filepos = resultfilepos[name];
-  Write(file, "BEGIN TIME STEP");
+  write(file, "BEGIN TIME STEP");
   filepos.push_back(file.tellp());
-  Write(file, "description");
-  Write(file, "part");
-  Write(file, field_->field_pos() + 1);
-  Write(file, "coordinates");
+  write(file, "description");
+  write(file, "part");
+  write(file, field_->field_pos() + 1);
+  write(file, "coordinates");
 
   const Epetra_BlockMap& datamap = data->Map();
 
@@ -1766,7 +1768,7 @@ void EnsightWriter::write_nodal_result_step(std::ofstream& file,
         for (int inode = 0; inode < finalnumnode;
              inode++)  // inode == lid of node because we use proc0map_
         {
-          Write(file, static_cast<float>((*column)[inode]));
+          write(file, static_cast<float>((*column)[inode]));
         }
       }
     }  // if (myrank_==0)
@@ -1776,7 +1778,7 @@ void EnsightWriter::write_nodal_result_step(std::ofstream& file,
     {
       for (int inode = 0; inode < finalnumnode; inode++)
       {
-        Write<float>(file, 0.);
+        write<float>(file, 0.);
       }
     }
   }  // polynomial || meshfree
@@ -1785,7 +1787,7 @@ void EnsightWriter::write_nodal_result_step(std::ofstream& file,
     FOUR_C_THROW("Undefined spatial approximation type.\n");
   }
 
-  Write(file, "END TIME STEP");
+  write(file, "END TIME STEP");
   return;
 }
 
@@ -1806,11 +1808,11 @@ void EnsightWriter::write_element_dof_result_step(std::ofstream& file, PostResul
   //-------------------------------------------
 
   std::vector<std::ofstream::pos_type>& filepos = resultfilepos[name];
-  Write(file, "BEGIN TIME STEP");
+  write(file, "BEGIN TIME STEP");
   filepos.push_back(file.tellp());
-  Write(file, "description");
-  Write(file, "part");
-  Write(file, field_->field_pos() + 1);
+  write(file, "description");
+  write(file, "part");
+  write(file, field_->field_pos() + 1);
 
   const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
   const Epetra_Map* elementmap = dis->ElementRowMap();  // local node row map
@@ -1880,12 +1882,12 @@ void EnsightWriter::write_element_dof_result_step(std::ofstream& file, PostResul
   EleGidPerDisType::const_iterator iter;
   for (iter = eleGidPerDisType_.begin(); iter != eleGidPerDisType_.end(); ++iter)
   {
-    const std::string ensighteleString = GetEnsightString(iter->first);
+    const std::string ensighteleString = get_ensight_string(iter->first);
     const int numelepertype = (iter->second).size();
     std::vector<int> actelegids(numelepertype);
     actelegids = iter->second;
     // write element type
-    Write(file, ensighteleString);
+    write(file, ensighteleString);
 
     //---------------
     // write results
@@ -1912,7 +1914,7 @@ void EnsightWriter::write_element_dof_result_step(std::ofstream& file, PostResul
           int lid = finaldatamap.LID(actdofgid);
           if (lid > -1)
           {
-            Write(file, static_cast<float>((*proc0data)[lid]));
+            write(file, static_cast<float>((*proc0data)[lid]));
           }
           else
             FOUR_C_THROW("received illegal dof local id: %d", lid);
@@ -1926,14 +1928,14 @@ void EnsightWriter::write_element_dof_result_step(std::ofstream& file, PostResul
     {
       for (int ielem = 0; ielem < numelepertype; ielem++)
       {
-        Write<float>(file, 0.);
+        write<float>(file, 0.);
       }
     }
 
   }  // eledistype
 
 
-  Write(file, "END TIME STEP");
+  write(file, "END TIME STEP");
   return;
 }
 
@@ -1978,11 +1980,11 @@ void EnsightWriter::write_element_result_step(std::ofstream& file,
   // write some key words and read result data
   //-------------------------------------------
   std::vector<std::ofstream::pos_type>& filepos = resultfilepos[name];
-  Write(file, "BEGIN TIME STEP");
+  write(file, "BEGIN TIME STEP");
   filepos.push_back(file.tellp());
-  Write(file, "description");
-  Write(file, "part");
-  Write(file, field_->field_pos() + 1);
+  write(file, "description");
+  write(file, "part");
+  write(file, field_->field_pos() + 1);
 
   const Epetra_BlockMap& datamap = data->Map();
   const int numcol = data->NumVectors();
@@ -2019,15 +2021,15 @@ void EnsightWriter::write_element_result_step(std::ofstream& file,
   EleGidPerDisType::const_iterator iter;
   for (iter = eleGidPerDisType_.begin(); iter != eleGidPerDisType_.end(); ++iter)
   {
-    const std::string ensighteleString = GetEnsightString(iter->first);
+    const std::string ensighteleString = get_ensight_string(iter->first);
 
-    int numsubele = GetNumSubEle(iter->first);
+    int numsubele = get_num_sub_ele(iter->first);
 
     const int numelepertype = (iter->second).size();
     std::vector<int> actelegids(numelepertype);
     actelegids = iter->second;
     // write element type
-    Write(file, ensighteleString);
+    write(file, ensighteleString);
 
     //---------------
     // write results
@@ -2061,7 +2063,7 @@ void EnsightWriter::write_element_result_step(std::ofstream& file,
           int lid = finaldatamap.LID(gid);
           if (lid > -1)
           {
-            for (int i = 0; i < numsubele; ++i) Write(file, static_cast<float>((*datacolumn)[lid]));
+            for (int i = 0; i < numsubele; ++i) write(file, static_cast<float>((*datacolumn)[lid]));
           }
           else
             FOUR_C_THROW("received illegal dof local id: %d", lid);
@@ -2074,32 +2076,32 @@ void EnsightWriter::write_element_result_step(std::ofstream& file,
     {
       for (int iele = 0; iele < numelepertype; iele++)
       {
-        Write<float>(file, 0.);
+        write<float>(file, 0.);
       }
     }
 
   }  // end iteration over eleGidPerDisType_;
 
   // finish writing the current time step
-  Write(file, "END TIME STEP");
+  write(file, "END TIME STEP");
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EnsightWriter::WriteIndexTable(
+void EnsightWriter::write_index_table(
     std::ofstream& file, const std::vector<std::ofstream::pos_type>& filepos) const
 {
   std::ofstream::pos_type lastpos = file.tellp();
   const unsigned steps = filepos.size();
-  Write(file, steps);
+  write(file, steps);
   for (unsigned i = 0; i < steps; ++i)
   {
-    Write<long>(file, filepos[i]);
+    write<long>(file, filepos[i]);
   }
-  Write(file, 0);
-  Write<long>(file, lastpos);
-  Write(file, "FILE_INDEX");
+  write(file, 0);
+  write<long>(file, lastpos);
+  write(file, "FILE_INDEX");
   return;
 }
 
@@ -2109,7 +2111,7 @@ void EnsightWriter::WriteIndexTable(
   \brief write strings of exactly 80 chars
 */
 /*----------------------------------------------------------------------*/
-void EnsightWriter::WriteString(std::ofstream& stream, const std::string str) const
+void EnsightWriter::write_string(std::ofstream& stream, const std::string str) const
 {
   // we need to write 80 bytes per string
   std::vector<char> s(str.begin(), str.end());
@@ -2125,7 +2127,7 @@ void EnsightWriter::WriteString(std::ofstream& stream, const std::string str) co
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::string EnsightWriter::GetVariableSection(std::map<std::string, std::vector<int>> filesetmap,
+std::string EnsightWriter::get_variable_section(std::map<std::string, std::vector<int>> filesetmap,
     std::map<std::string, int> variablenumdfmap,
     std::map<std::string, std::string> variablefilenamemap) const
 {
@@ -2386,14 +2388,14 @@ void EnsightWriter::write_coordinates_for_polynomial_shapefunctions(std::ofstrea
       // first write node global ids (default)
       for (int inode = 0; inode < proc0map->NumGlobalElements(); ++inode)
       {
-        Write(geofile, proc0map->GID(inode) + 1);
+        write(geofile, proc0map->GID(inode) + 1);
         // gid+1 delivers the node numbering of the *.dat file starting with 1
       }
     }
     // now write the coordinate information
     for (int i = 0; i < numentries; ++i)
     {
-      Write(geofile, static_cast<float>(coords[i]));
+      write(geofile, static_cast<float>(coords[i]));
     }
   }
 

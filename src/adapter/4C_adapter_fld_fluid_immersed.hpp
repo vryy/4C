@@ -39,7 +39,7 @@ namespace ADAPTER
     const Teuchos::RCP<ADAPTER::Fluid>& fluid_field() override { return fluid_->fluid_field(); }
 
     /// return the boundary discretization that matches the structure discretization
-    Teuchos::RCP<DRT::Discretization> Discretization() override;
+    Teuchos::RCP<DRT::Discretization> discretization() override;
 
     /// communication object at the interface
     Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const override;
@@ -67,7 +67,7 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// nonlinear solve
-    void NonlinearSolve(
+    void nonlinear_solve(
         Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel) override;
 
     /// relaxation solve
@@ -109,10 +109,10 @@ namespace ADAPTER
     void SetItemax(int itemax) override { fluid_field()->SetItemax(itemax); }
 
     /// add dirichlet conditions to dirichlet condmap before next fluid solve
-    virtual void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
+    virtual void add_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoadd);
 
     /// remove dirichlet conditions from dirichlet condmap after last fluid solve
-    virtual void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove);
+    virtual void remove_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoremove);
 
     //@}
 

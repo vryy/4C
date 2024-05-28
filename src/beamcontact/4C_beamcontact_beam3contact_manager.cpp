@@ -382,7 +382,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::Print(std::ostream& os) const
 {
-  if (Comm().MyPID() == 0) os << "Beam3 Contact Discretization:" << std::endl;
+  if (Comm().MyPID() == 0) os << "Beam3 Contact discretization:" << std::endl;
 
   ProblemDiscret().Print(os);
 
@@ -5055,9 +5055,9 @@ void CONTACT::Beam3cmanager::read_restart(IO::DiscretizationReader& reader)
 /*----------------------------------------------------------------------*
  | write contact force for restart  meier 02/15|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> output)
+void CONTACT::Beam3cmanager::write_restart(Teuchos::RCP<IO::DiscretizationWriter> output)
 {
-  WriteRestart(*output);
+  write_restart(*output);
 
   return;
 }
@@ -5065,7 +5065,7 @@ void CONTACT::Beam3cmanager::WriteRestart(Teuchos::RCP<IO::DiscretizationWriter>
 /*----------------------------------------------------------------------*
  | write contact force for restart  meier 02/15|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::WriteRestart(IO::DiscretizationWriter& output)
+void CONTACT::Beam3cmanager::write_restart(IO::DiscretizationWriter& output)
 {
   output.WriteVector("fcold", fcold_);
   output.WriteVector("dis_old", dis_old_);

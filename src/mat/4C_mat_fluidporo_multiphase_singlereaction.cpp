@@ -118,7 +118,7 @@ void MAT::PAR::FluidPoroSingleReaction::initialize_internal()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::PAR::FluidPoroSingleReaction::EvaluateFunction(std::vector<double>& reacval,
+void MAT::PAR::FluidPoroSingleReaction::evaluate_function(std::vector<double>& reacval,
     std::vector<std::vector<double>>& reacderivspressure,
     std::vector<std::vector<double>>& reacderivssaturation, std::vector<double>& reacderivsporosity,
     std::vector<std::vector<double>>& reacderivsvolfrac,
@@ -331,7 +331,7 @@ void MAT::PAR::FluidPoroSingleReaction::CheckSizes(std::vector<double>& reacval,
 /*----------------------------------------------------------------------*
  *  Create Material (public)                             vuong 08/16      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FluidPoroSingleReaction::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FluidPoroSingleReaction::create_material()
 {
   return Teuchos::rcp(new MAT::FluidPoroSingleReaction(this));
 }
@@ -455,7 +455,7 @@ void MAT::FluidPoroSingleReaction::EvaluateReaction(std::vector<double>& reacval
     const std::vector<double>& volfracs, const std::vector<double>& volfracpressures,
     const std::vector<double>& scalar)
 {
-  params_->EvaluateFunction(reacval, reacderivspressure, reacderivssaturation, reacderivsporosity,
+  params_->evaluate_function(reacval, reacderivspressure, reacderivssaturation, reacderivsporosity,
       reacderivsvolfrac, reacderivsvolfracpressure, reacderivsscalar, pressure, saturation,
       porosity, volfracs, volfracpressures, scalar);
 

@@ -59,7 +59,7 @@ namespace NOX
           std::ostream& Print(std::ostream& stream, int indent = 0) const override;
 
          protected:
-          bool Setup(
+          bool setup(
               const NOX::NLN::LineSearch::Generic& linesearch, const ::NOX::Abstract::Group& grp);
 
          private:

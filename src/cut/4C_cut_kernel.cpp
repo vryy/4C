@@ -2,7 +2,7 @@
 /*! \file
 
 \brief The cut kernel computes basic geometric operation, implemented are
-    - Intersection of Surface and line or line and line
+    - intersection of Surface and line or line and line
     - Calculate local coordinates inside an element
     - Compute Distance from a point to an embedded geometrical object
       ( surface or line )

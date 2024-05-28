@@ -37,7 +37,7 @@ DRT::Discretization::Discretization(const std::string& name, Teuchos::RCP<Epetra
 void DRT::Discretization::add_element(Teuchos::RCP<DRT::Element> ele)
 {
   element_[ele->Id()] = ele;
-  Reset();
+  reset();
 }
 
 /*----------------------------------------------------------------------*
@@ -56,7 +56,7 @@ void DRT::Discretization::CheckFilledGlobally()
   Comm().MinAll(&localfilled, &globalfilled, 1);
 
   // if not Filled() == true on all the processors call Reset()
-  if (!globalfilled) Reset();
+  if (!globalfilled) reset();
 }
 
 /*----------------------------------------------------------------------*
@@ -64,7 +64,7 @@ void DRT::Discretization::CheckFilledGlobally()
 void DRT::Discretization::AddNode(Teuchos::RCP<DRT::Node> node)
 {
   node_[node->Id()] = node;
-  Reset();
+  reset();
 }
 
 /*----------------------------------------------------------------------*
@@ -74,7 +74,7 @@ bool DRT::Discretization::DeleteNode(Teuchos::RCP<DRT::Node> node)
   auto it_node = node_.find(node->Id());
   if (it_node == node_.end()) return false;
   node_.erase(it_node);
-  Reset();
+  reset();
   return true;
 }
 
@@ -85,7 +85,7 @@ bool DRT::Discretization::DeleteNode(const int gid)
   auto it_node = node_.find(gid);
   if (it_node == node_.end()) return false;
   node_.erase(it_node);
-  Reset();
+  reset();
   return true;
 }
 
@@ -94,7 +94,7 @@ bool DRT::Discretization::DeleteNode(const int gid)
 bool DRT::Discretization::DeleteNodes()
 {
   node_.clear();
-  Reset();
+  reset();
   CheckFilledGlobally();
   return true;
 }
@@ -104,7 +104,7 @@ bool DRT::Discretization::DeleteNodes()
 bool DRT::Discretization::DeleteElements()
 {
   element_.clear();
-  Reset();
+  reset();
   CheckFilledGlobally();
   return true;
 }
@@ -116,7 +116,7 @@ bool DRT::Discretization::DeleteElement(Teuchos::RCP<DRT::Element> ele)
   auto it_ele = element_.find(ele->Id());
   if (it_ele == element_.end()) return false;
   element_.erase(it_ele);
-  Reset();
+  reset();
   return true;
 }
 
@@ -127,7 +127,7 @@ bool DRT::Discretization::DeleteElement(const int gid)
   auto it_ele = element_.find(gid);
   if (it_ele == element_.end()) return false;
   element_.erase(it_ele);
-  Reset();
+  reset();
   return true;
 }
 
@@ -138,7 +138,7 @@ bool DRT::Discretization::ClearDiscret()
   element_.clear();
   node_.clear();
   condition_.clear();
-  Reset();
+  reset();
   CheckFilledGlobally();
   return true;
 }
@@ -368,7 +368,7 @@ void DRT::Discretization::Print(std::ostream& os) const
   if (Comm().MyPID() == 0)
   {
     os << "--------------------------------------------------\n";
-    os << "Discretization: " << Name() << std::endl;
+    os << "discretization: " << Name() << std::endl;
     os << "--------------------------------------------------\n";
     os << numglobalelements << " Elements " << numglobalnodes << " Nodes (global)\n";
     os << "--------------------------------------------------\n";
@@ -771,7 +771,7 @@ void DRT::Discretization::UnPackMyElements(Teuchos::RCP<std::vector<char>> e)
     add_element(Teuchos::rcp(ele));
   }
   // in case add_element forgets...
-  Reset();
+  reset();
 }
 
 /*----------------------------------------------------------------------*
@@ -793,7 +793,7 @@ void DRT::Discretization::UnPackMyNodes(Teuchos::RCP<std::vector<char>> e)
     AddNode(Teuchos::rcp(node));
   }
   // in case AddNode forgets...
-  Reset();
+  reset();
 }
 
 

@@ -56,7 +56,7 @@ void FSI::DirichletNeumannVel::Setup()
     FOUR_C_THROW("Please set the fsi coupling variable to Velocity or Force!\n");
   set_kinematic_coupling(
       CORE::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::vel);
-  if (Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(StructureField(), true) ==
+  if (Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(structure_field(), true) ==
       Teuchos::null)
   {
     FOUR_C_THROW("Something went very wrong here! You should have a FBIStructureWrapper!\n");
@@ -68,17 +68,17 @@ void FSI::DirichletNeumannVel::Setup()
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::FluidOp(
+Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::fluid_op(
     Teuchos::RCP<Epetra_Vector> ivel, const FillType fillFlag)
 {
   const Teuchos::ParameterList& fbi = GLOBAL::Problem::Instance()->FBIParams();
 
-  FSI::Partitioned::FluidOp(ivel, fillFlag);
+  FSI::Partitioned::fluid_op(ivel, fillFlag);
 
   if (fillFlag == User)
   {
     FOUR_C_THROW("Not implemented!\n");
-    return FluidToStruct(MBFluidField()->RelaxationSolve(Teuchos::null, Dt()));
+    return fluid_to_struct(MBFluidField()->RelaxationSolve(Teuchos::null, Dt()));
   }
   else
   {
@@ -87,7 +87,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::FluidOp(
 
     if (fillFlag == MF_Res and mfresitemax_ > 0) MBFluidField()->SetItemax(mfresitemax_ + 1);
 
-    MBFluidField()->NonlinearSolve(Teuchos::null, Teuchos::null);
+    MBFluidField()->nonlinear_solve(Teuchos::null, Teuchos::null);
 
     MBFluidField()->SetItemax(itemax);
 
@@ -98,15 +98,15 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::FluidOp(
       constraint_manager_->recompute_coupling_without_pair_creation();
     }
 
-    return FluidToStruct(ivel);
+    return fluid_to_struct(ivel);
   }
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::StructOp(
+Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::struct_op(
     Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag)
 {
-  FSI::Partitioned::StructOp(iforce, fillFlag);
+  FSI::Partitioned::struct_op(iforce, fillFlag);
 
   const Teuchos::ParameterList& fbi = GLOBAL::Problem::Instance()->FBIParams();
   if (!(Teuchos::getIntegralValue<INPAR::FBI::BeamToFluidCoupling>(fbi, "COUPLING") ==
@@ -114,15 +114,15 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::StructOp(
       fbi.get<int>("STARTSTEP") < Step())
   {
     if (not use_old_structure_)
-      StructureField()->apply_interface_forces(iforce);
+      structure_field()->apply_interface_forces(iforce);
     else
       FOUR_C_THROW(
           "Fluid beam interaction is not tested with the old structure time. You should not be "
           "here! Change the IntStrategy in your Input file to Standard.\n");
   }
 
-  StructureField()->Solve();
-  StructureField()->write_gmsh_struc_output_step();
+  structure_field()->Solve();
+  structure_field()->write_gmsh_struc_output_step();
 
   if (fbi.get<int>("STARTSTEP") < Step())
   {
@@ -133,7 +133,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::StructOp(
       Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(MBFluidField(), true)->ResetExternalForces();
   }
 
-  return StructToFluid(iforce);
+  return struct_to_fluid(iforce);
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -143,9 +143,9 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::initial_guess()
   {
     // predict velocity
     // For now, we want to use no predictor. This function returns the current interface velocity.
-    if (Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(StructureField(), true) !=
+    if (Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(structure_field(), true) !=
         Teuchos::null)
-      return Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(StructureField(), true)
+      return Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(structure_field(), true)
           ->predict_interface_velnp();
   }
   else
@@ -157,7 +157,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::initial_guess()
       FOUR_C_THROW(
           "unknown interface force predictor '%s'", fsipart.get<std::string>("PREDICTOR").c_str());
     }
-    return InterfaceForce();
+    return interface_force();
   }
   FOUR_C_THROW("Something went very wrong here!\n");
   return Teuchos::null;
@@ -166,14 +166,16 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::initial_guess()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::FluidToStruct(Teuchos::RCP<Epetra_Vector> iv)
+Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::fluid_to_struct(
+    Teuchos::RCP<Epetra_Vector> iv)
 {
   return constraint_manager_->FluidToStructure();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::StructToFluid(Teuchos::RCP<Epetra_Vector> iv)
+Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::struct_to_fluid(
+    Teuchos::RCP<Epetra_Vector> iv)
 {
   return constraint_manager_->StructureToFluid(Step());
 }
@@ -181,13 +183,13 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::StructToFluid(Teuchos::RCP
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-void FSI::DirichletNeumannVel::Output()
+void FSI::DirichletNeumannVel::output()
 {
-  FSI::DirichletNeumann::Output();
+  FSI::DirichletNeumann::output();
   constraint_manager_->Output(Time(), Step());
   visualization_output_writer_->write_output_runtime(constraint_manager_, Step(), Time());
-  StructureField()->Discretization()->Writer()->ClearMapCache();
-  MBFluidField()->Discretization()->Writer()->ClearMapCache();
+  structure_field()->discretization()->Writer()->ClearMapCache();
+  MBFluidField()->discretization()->Writer()->ClearMapCache();
 }
 
 /*----------------------------------------------------------------------*/
@@ -196,7 +198,7 @@ void FSI::DirichletNeumannVel::Output()
 void FSI::DirichletNeumannVel::Timeloop(
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface)
 {
-  constraint_manager_->Setup(StructureField(), MBFluidField());
+  constraint_manager_->Setup(structure_field(), MBFluidField());
   if (get_kinematic_coupling()) constraint_manager_->PrepareFluidSolve();
   visualization_output_writer_ =
       Teuchos::rcp(new BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter());
@@ -205,10 +207,10 @@ void FSI::DirichletNeumannVel::Timeloop(
       IO::VisualizationParametersFactory(
           GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
           *GLOBAL::Problem::Instance()->OutputControlFile(), Time()),
-      Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(StructureField(), true)->GetIOData(),
+      Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(structure_field(), true)->GetIOData(),
       constraint_manager_->GetBridge()->GetParams()->get_visualization_ouput_params_ptr());
   constraint_manager_->Evaluate();
-  if (get_kinematic_coupling()) StructToFluid(Teuchos::null);
+  if (get_kinematic_coupling()) struct_to_fluid(Teuchos::null);
 
   FSI::Partitioned::Timeloop(interface);
 }

@@ -81,7 +81,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
   const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
-  const double detF = my::EvalDetFAtIntPoint(ele, intpoints, iquad);
+  const double detF = my::eval_det_f_at_int_point(ele, intpoints, iquad);
 
   // evaluate multi-scale Newman material
   newmanmultiscale->Evaluate(iquad, phinp, q_micro, dq_dphi_micro, detF,
@@ -164,12 +164,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Sysmat(DRT::Element* ele,
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::sysmat(DRT::Element* ele,
     CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
     CORE::LINALG::SerialDenseVector& subgrdiff)
 {
   // call base class routine
-  mydiffcond::Sysmat(ele, emat, erhs, subgrdiff);
+  mydiffcond::sysmat(ele, emat, erhs, subgrdiff);
 
   // integration points and weights
   const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
@@ -182,7 +182,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Sysma
     const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
     this->set_internal_variables_for_mat_and_rhs();
     std::vector<double> dummy(1, 0.);
-    this->GetMaterialParams(ele, dummy, dummy, dummy, dummy[0], iquad);
+    this->get_material_params(ele, dummy, dummy, dummy, dummy[0], iquad);
 
     calc_mat_and_rhs_multi_scale(ele, emat, erhs, 0, iquad, my::scatraparatimint_->TimeFac() * fac,
         my::scatraparatimint_->TimeFacRhs() * fac);

@@ -28,7 +28,7 @@ namespace
   {
    protected:
     template <typename T>
-    MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<2, T> GenerateFiber()
+    MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<2, T> generate_fiber()
     {
       const auto container = Teuchos::rcp(new CORE::MAT::PAR::Material());
       container->Add("K1", 1.3);
@@ -54,7 +54,7 @@ namespace
   TEST_F(RemodelFiberTest, TestEvaluateDGrowthEvolutionEquationDtDGrowth)
   {
     MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<2, FADdouble> fiber =
-        GenerateFiber<FADdouble>();
+        generate_fiber<FADdouble>();
 
     const double lambda_f = 1.02;
     const double lambda_ext = 1.014;
@@ -73,7 +73,7 @@ namespace
   TEST_F(RemodelFiberTest, TestEvaluateDGrowthEvolutionEquationDtDRemodel)
   {
     MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<2, FADdouble> fiber =
-        GenerateFiber<FADdouble>();
+        generate_fiber<FADdouble>();
 
     const double lambda_f = 1.02;
     const double lambda_ext = 1.014;
@@ -92,7 +92,7 @@ namespace
   TEST_F(RemodelFiberTest, TestEvaluateDRemodelEvolutionEquationDtDGrowth)
   {
     MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<2, FADdouble> fiber =
-        GenerateFiber<FADdouble>();
+        generate_fiber<FADdouble>();
 
     const double lambda_f = 1.02;
     const double lambda_ext = 1.014;
@@ -110,7 +110,7 @@ namespace
   TEST_F(RemodelFiberTest, TestEvaluateDRemodelEvolutionEquationDtDRemodel)
   {
     MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<2, FADdouble> fiber =
-        GenerateFiber<FADdouble>();
+        generate_fiber<FADdouble>();
 
     const double lambda_f = 1.02;
     const double lambda_ext = 1.014;
@@ -128,7 +128,7 @@ namespace
   TEST_F(RemodelFiberTest, TestEvaluateDFiberCauchyStressDRemodel)
   {
     MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<2, FADdouble> fiber =
-        GenerateFiber<FADdouble>();
+        generate_fiber<FADdouble>();
 
     const double lambda_f = 1.02;
     const double lambda_ext = 1.014;

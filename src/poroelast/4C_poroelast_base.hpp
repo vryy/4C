@@ -70,17 +70,17 @@ namespace POROELAST
     virtual void TestResults(const Epetra_Comm& comm);
 
     //! build combined dirichlet map for the monolithic problem
-    virtual void BuildCombinedDBCMap()
+    virtual void build_combined_dbc_map()
     {
       FOUR_C_THROW(
-          "BuildCombinedDBCMap() not implemented in base class. must be implemented in sub "
+          "build_combined_dbc_map() not implemented in base class. must be implemented in sub "
           "classes.");
     }
 
     //! @name access methods
 
     //! access to structural field
-    const Teuchos::RCP<ADAPTER::FPSIStructureWrapper>& StructureField() { return structure_; }
+    const Teuchos::RCP<ADAPTER::FPSIStructureWrapper>& structure_field() { return structure_; }
 
     //! access to fluid field
     const Teuchos::RCP<ADAPTER::FluidPoro>& fluid_field() { return fluid_; }
@@ -221,10 +221,10 @@ namespace POROELAST
     //! @name Transfer methods
 
     //! set fluid solution on structure
-    void SetFluidSolution();
+    void set_fluid_solution();
 
     //! set structure solution on fluid
-    void SetStructSolution();
+    void set_struct_solution();
 
     //!@}
 

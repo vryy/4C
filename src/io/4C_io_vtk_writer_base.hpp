@@ -153,7 +153,7 @@ class VtkWriterBase
  protected:
   //! write a data vector as DataArray to corresponding vtk files
   // Todo template <typename T>
-  void WriteDataArray(const IO::visualization_vector_type_variant& data, const int num_components,
+  void write_data_array(const IO::visualization_vector_type_variant& data, const int num_components,
       const std::string& name);
 
   //! generate the part of the filename that expresses the processor ID
@@ -161,22 +161,22 @@ class VtkWriterBase
 
 
   //! Return the opening xml tag for this writer type
-  virtual const std::string& WriterOpeningTag() const = 0;
+  virtual const std::string& writer_opening_tag() const = 0;
 
   //! Return the parallel opening xml tag for this writer type
-  virtual const std::string& WriterPOpeningTag() const = 0;
+  virtual const std::string& writer_p_opening_tag() const = 0;
 
   //! Return a vector of parallel piece tags for each file
-  virtual const std::vector<std::string>& WriterPPieceTags() const = 0;
+  virtual const std::vector<std::string>& writer_p_piece_tags() const = 0;
 
   //! Return the parallel file suffix including the dot for this file type
-  virtual const std::string& WriterPSuffix() const = 0;
+  virtual const std::string& writer_p_suffix() const = 0;
 
   //! Return the string of this writer type
-  virtual const std::string& WriterString() const = 0;
+  virtual const std::string& writer_string() const = 0;
 
   //! Return the file suffix including the dot for this file type
-  virtual const std::string& WriterSuffix() const = 0;
+  virtual const std::string& writer_suffix() const = 0;
 
 
   //! throw error if file stream not ready to write into

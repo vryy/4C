@@ -54,14 +54,14 @@ namespace MAT
     /*! \class InelasticDefgradNoGrowth
      *
      * This is a parameter class that is only needed to implement the pure virtual method
-     * 'CreateMaterial()'.
+     * 'create_material()'.
      */
     class InelasticDefgradNoGrowth : public CORE::MAT::PAR::Parameter
     {
      public:
       explicit InelasticDefgradNoGrowth(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override { return Teuchos::null; }
+      Teuchos::RCP<CORE::MAT::Material> create_material() override { return Teuchos::null; }
     };
 
 
@@ -77,7 +77,7 @@ namespace MAT
      public:
       explicit InelasticDefgradScalar(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override { return Teuchos::null; }
+      Teuchos::RCP<CORE::MAT::Material> create_material() override { return Teuchos::null; }
 
       /// scalar that causes growth
       int Scalar1() const { return scalar1_; }
@@ -105,7 +105,7 @@ namespace MAT
      public:
       explicit InelasticDefgradTimeFunct(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override { return Teuchos::null; }
+      Teuchos::RCP<CORE::MAT::Material> create_material() override { return Teuchos::null; }
 
       /// function number that sets determinant of inelastic def. grad.
       int FunctNum() const { return funct_num_; }
@@ -259,7 +259,7 @@ namespace MAT
      public:
       explicit InelasticDefgradLinTempIso(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override { return Teuchos::null; };
+      Teuchos::RCP<CORE::MAT::Material> create_material() override { return Teuchos::null; };
 
       /// return temperature related growth factor
       double GetTempGrowthFac() const { return temp_growth_fac_; };
@@ -479,10 +479,10 @@ namespace MAT
 
    protected:
     //! Get ID of current Gauss point
-    int GetGP() const { return gp_; };
+    int get_gp() const { return gp_; };
 
     //! Set ID of current Gauss point
-    void SetGP(int gp) { gp_ = gp; };
+    void set_gp(int gp) { gp_ = gp; };
 
    private:
     //! ID of current Gauss point
@@ -624,7 +624,7 @@ namespace MAT
 
    protected:
     //! Get vector of concentration at current Gauss point
-    std::vector<double>& GetConcentrationGP() const { return concentrations_->at(GetGP()); };
+    std::vector<double>& get_concentration_gp() const { return concentrations_->at(get_gp()); };
 
    private:
     /// store vector of gauss point concentrations calculated in the pre-evaluate of the so3_scatra
@@ -965,7 +965,7 @@ namespace MAT
 
    private:
     //! Get temperature at current Gauss point
-    double get_temperature_gp() const { return temperatures_->at(GetGP()); };
+    double get_temperature_gp() const { return temperatures_->at(get_gp()); };
 
     /// store vector of gauss point temperature calculated in the pre-evaluate of the so3_scatra
     /// element

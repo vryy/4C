@@ -331,7 +331,7 @@ namespace IMMERSED
     bool is_init() { return isinit_; };
 
     //! check if \ref Setup() was called
-    void CheckIsSetup()
+    void check_is_setup()
     {
       if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
     };

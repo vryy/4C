@@ -91,10 +91,10 @@ namespace CORE::GEO
 
      protected:
       /*! \brief is this side closer to the start-point as the other side? */
-      bool IsCloserSide(
+      bool is_closer_side(
           const double* startpoint_xyz, CORE::GEO::CUT::Side* other, bool& is_closer) override
       {
-        FOUR_C_THROW("no IsCloserSide routine for level set cut side");
+        FOUR_C_THROW("no is_closer_side routine for level set cut side");
         exit(EXIT_FAILURE);
       }
 
@@ -105,30 +105,30 @@ namespace CORE::GEO
       }
 
       /*! \brief get all edges adjacent to given local coordinates */
-      void EdgeAt(const double* rs, std::vector<Edge*>& edges) override
+      void edge_at(const double* rs, std::vector<Edge*>& edges) override
       {
         FOUR_C_THROW("no edges on level set cut side");
       }
 
       /*! \brief get the global coordinates on side at given local coordinates */
-      void PointAt(const double* rs, double* xyz) override
+      void point_at(const double* rs, double* xyz) override
       {
         FOUR_C_THROW("no PointAt on level set cut side defined");
       }
 
       /*! \brief get global coordinates of the center of the side */
-      void SideCenter(double* midpoint) override
+      void side_center(double* midpoint) override
       {
         FOUR_C_THROW("no SideCenter on level set cut side defined");
       }
 
-      bool WithinSide(const double* xyz, double* rs, double& dist) override
+      bool within_side(const double* xyz, double* rs, double& dist) override
       {
         FOUR_C_THROW("no WithinSide check implemented");
         exit(EXIT_FAILURE);
       }
 
-      bool RayCut(const double* p1_xyz, const double* p2_xyz, double* rs, double& line_xi) override
+      bool ray_cut(const double* p1_xyz, const double* p2_xyz, double* rs, double& line_xi) override
       {
         FOUR_C_THROW("no RayCut with level set cut side implemented");
         exit(EXIT_FAILURE);
@@ -138,7 +138,7 @@ namespace CORE::GEO
        *  from its global coordinates (xyz), return TRUE if successful. The last coordinate
        *  of \c rsd is the distance of the n-dimensional point \c xyz to the embedded
        *  side. */
-      bool LocalCoordinates(const double* xyz, double* rst, bool allow_dist = false,
+      bool local_coordinates(const double* xyz, double* rst, bool allow_dist = false,
           double tol = POSITIONTOL) override
       {
         FOUR_C_THROW("no local coordinates on level set cut side");
@@ -154,7 +154,7 @@ namespace CORE::GEO
 
       /*! \brief Calculates the normal vector with respect to the element shape
        *  at local coordinates \c rs */
-      void Normal(const double* xsi, double* normal, bool unitnormal = true) override
+      void normal(const double* xsi, double* normal, bool unitnormal = true) override
       {
         FOUR_C_THROW("no normal vector on level set cut side implemented");
       }
@@ -162,15 +162,15 @@ namespace CORE::GEO
       /* \brief Calculates a Basis of two tangential vectors (non-orthogonal!) and
        * the normal vector with respect to the element shape at local coordinates rs,
        * basis vectors have norm=1 */
-      void BasisAtCenter(double* t1, double* t2, double* n) override
+      void basis_at_center(double* t1, double* t2, double* n) override
       {
-        FOUR_C_THROW("no BasisAtCenter on level set cut side implemented");
+        FOUR_C_THROW("no basis_at_center on level set cut side implemented");
       }
 
       /* \brief Calculates a Basis of two tangential vectors (non-orthogonal!) and
        * the normal vector with respect to the element shape at local coordinates rs,
        * basis vectors have norm=1. */
-      void Basis(const double* xsi, double* t1, double* t2, double* n) override
+      void basis(const double* xsi, double* t1, double* t2, double* n) override
       {
         FOUR_C_THROW("no Basis on level set cut side implemented");
       }

@@ -162,7 +162,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::evaluate_elch_boundary_kinetic
  * Get Conductivity
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::GetConductivity(
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::get_conductivity(
     const enum INPAR::ELCH::EquPot equpot, double& sigma_all, std::vector<double>& sigma,
     bool effCond  // the bool effCond is not used for the NP formulation since the volume averaging
                   // is not implemented
@@ -193,14 +193,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::GetConductivity(
   }
 
   return;
-}  // DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::GetConductivity
+}  // DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::get_conductivity
 
 
 /*----------------------------------------------------------------------*
   |  calculate weighted mass flux (no reactive flux so far)     gjb 06/08|
   *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalculateFlux(
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calculate_flux(
     CORE::LINALG::Matrix<nsd_, 1>& q,        //!< flux of species k
     const INPAR::SCATRA::FluxType fluxtype,  //!< type fo flux
     const int k                              //!< index of current scalar
@@ -244,7 +244,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalculateFlux(
   };
 
   return;
-}  // ScaTraCalc::CalculateFlux
+}  // ScaTraCalc::calculate_flux
 
 /*---------------------------------------------------------------------*
   |  calculate error compared to analytical solution           gjb 10/08|
@@ -282,7 +282,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::cal_error_compared_to_analyt_s
 
   // get material parameter (constants values)
   set_internal_variables_for_mat_and_rhs();
-  GetMaterialParams(ele, densn, densnp, densam, visc);
+  get_material_params(ele, densn, densnp, densam, visc);
 
   // integration points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions

@@ -133,7 +133,7 @@ void LUBRICATION::TimIntImpl::Init()
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time", time_);
-    discret_->EvaluateDirichlet(
+    discret_->evaluate_dirichlet(
         eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0);  // just in case of change
   }
@@ -250,8 +250,8 @@ void LUBRICATION::TimIntImpl::prepare_time_step()
   // -------------------------------------------------------------------
   // TODO: Dirichlet auch im Fall von genalpha prenp
   // Neumann(n + alpha_f)
-  ApplyDirichletBC(time_, prenp_, Teuchos::null);
-  ApplyNeumannBC(neumann_loads_);
+  apply_dirichlet_bc(time_, prenp_, Teuchos::null);
+  apply_neumann_bc(neumann_loads_);
 
   return;
 }  // TimIntImpl::prepare_time_step
@@ -418,7 +418,7 @@ void LUBRICATION::TimIntImpl::Solve()
   // -----------------------------------------------------------------
   //                    always solve nonlinear equation
   // -----------------------------------------------------------------
-  NonlinearSolve();
+  nonlinear_solve();
   // that's all
 
   return;
@@ -471,7 +471,7 @@ void LUBRICATION::TimIntImpl::Output(const int num)
   TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION:    + output of solution");
 
   // solution output and potentially restart data and/or flux data
-  if (DoOutput())
+  if (do_output())
   {
     // step number and time (only after that data output is possible)
     output_->NewStep(step_, time_);
@@ -483,7 +483,7 @@ void LUBRICATION::TimIntImpl::Output(const int num)
     output_state();
 
     // write output to Gmsh postprocessing files
-    if (outputgmsh_) OutputToGmsh(step_, time_);
+    if (outputgmsh_) output_to_gmsh(step_, time_);
 
     // write mean values of pressure(s)
     OutputMeanPressures(num);
@@ -516,7 +516,7 @@ void LUBRICATION::TimIntImpl::Output(const int num)
 /*----------------------------------------------------------------------*
  | evaluate Dirichlet boundary conditions at t_{n+1}        wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::ApplyDirichletBC(
+void LUBRICATION::TimIntImpl::apply_dirichlet_bc(
     const double time, Teuchos::RCP<Epetra_Vector> prenp, Teuchos::RCP<Epetra_Vector> predt)
 {
   // time measurement: apply Dirichlet conditions
@@ -530,34 +530,34 @@ void LUBRICATION::TimIntImpl::ApplyDirichletBC(
   // predicted Dirichlet values
   // \c  prenp then also holds prescribed new Dirichlet values
   discret_->ClearState();
-  discret_->EvaluateDirichlet(p, prenp, predt, Teuchos::null, Teuchos::null, dbcmaps_);
+  discret_->evaluate_dirichlet(p, prenp, predt, Teuchos::null, Teuchos::null, dbcmaps_);
   discret_->ClearState();
 
   return;
-}  // LUBRICATION::TimIntImpl::ApplyDirichletBC
+}  // LUBRICATION::TimIntImpl::apply_dirichlet_bc
 
 
 /*----------------------------------------------------------------------*
  | contains the residual scaling and addition of Neumann terms          |
  |                                                          wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::ScalingAndNeumann()
+void LUBRICATION::TimIntImpl::scaling_and_neumann()
 {
   // scaling to get true residual vector for all time integration schemes
   // in incremental case: boundary flux values can be computed from trueresidual
-  if (incremental_) trueresidual_->Update(ResidualScaling(), *residual_, 0.0);
+  if (incremental_) trueresidual_->Update(residual_scaling(), *residual_, 0.0);
 
   // add Neumann b.c. scaled with a factor due to time discretization
   add_neumann_to_residual();
 
   return;
-}  // TimIntImpl::ScalingAndNeumann
+}  // TimIntImpl::scaling_and_neumann
 
 
 /*----------------------------------------------------------------------*
  | evaluate Neumann boundary conditions                     wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::ApplyNeumannBC(
+void LUBRICATION::TimIntImpl::apply_neumann_bc(
     const Teuchos::RCP<Epetra_Vector>& neumann_loads  //!< Neumann loads
 )
 {
@@ -583,7 +583,7 @@ void LUBRICATION::TimIntImpl::ApplyNeumannBC(
   discret_->ClearState();
 
   return;
-}  // LUBRICATION::TimIntImpl::ApplyNeumannBC
+}  // LUBRICATION::TimIntImpl::apply_neumann_bc
 
 /*----------------------------------------------------------------------*
  | add cavitation penalty contribution to matrix and rhs    seitz 12/17 |
@@ -650,7 +650,7 @@ void LUBRICATION::TimIntImpl::assemble_mat_and_rhs()
   add_cavitation_penalty();
 
   // potential residual scaling and potential addition of Neumann terms
-  ScalingAndNeumann();  // TODO: do we have to call this function twice??
+  scaling_and_neumann();  // TODO: do we have to call this function twice??
 
   // finalize assembly of system matrix
   sysmat_->Complete();
@@ -665,7 +665,7 @@ void LUBRICATION::TimIntImpl::assemble_mat_and_rhs()
 /*----------------------------------------------------------------------*
  | contains the nonlinear iteration loop                    wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::NonlinearSolve()
+void LUBRICATION::TimIntImpl::nonlinear_solve()
 {
   // time measurement: nonlinear iteration
   TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION:   + nonlin. iteration/lin. solve");
@@ -715,7 +715,7 @@ void LUBRICATION::TimIntImpl::NonlinearSolve()
     }
 
     // abort nonlinear iteration if desired
-    if (AbortNonlinIter(iternum_, itemax, ittol, abstolres, actresidual)) break;
+    if (abort_nonlin_iter(iternum_, itemax, ittol, abstolres, actresidual)) break;
 
     // initialize increment vector
     increment_->PutScalar(0.0);
@@ -753,14 +753,14 @@ void LUBRICATION::TimIntImpl::NonlinearSolve()
   }  // nonlinear iteration
 
   return;
-}  // TimIntImpl::NonlinearSolve
+}  // TimIntImpl::nonlinear_solve
 
 
 /*----------------------------------------------------------------------*
  | check if to stop the nonlinear iteration                 wirtz 11/15 |
  *----------------------------------------------------------------------*/
-bool LUBRICATION::TimIntImpl::AbortNonlinIter(const int itnum, const int itemax, const double ittol,
-    const double abstolres, double& actresidual)
+bool LUBRICATION::TimIntImpl::abort_nonlin_iter(const int itnum, const int itemax,
+    const double ittol, const double abstolres, double& actresidual)
 {
   //----------------------------------------------------- compute norms
   double incprenorm_L2(0.0);
@@ -841,7 +841,7 @@ bool LUBRICATION::TimIntImpl::AbortNonlinIter(const int itnum, const int itemax,
     FOUR_C_THROW("calculated vector norm is INF.");
 
   return false;
-}  // TimIntImpl::AbortNonlinIter
+}  // TimIntImpl::abort_nonlin_iter
 
 /*----------------------------------------------------------------------*
  | Set the nodal film height at time n+1                    Seitz 12/17 |
@@ -1125,7 +1125,7 @@ void LUBRICATION::TimIntImpl::evaluate_error_compared_to_analytical_sol()
 /*----------------------------------------------------------------------*
  | write state vectors to Gmsh postprocessing files         wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::OutputToGmsh(const int step, const double time) const
+void LUBRICATION::TimIntImpl::output_to_gmsh(const int step, const double time) const
 {
   // turn on/off screen output for writing process of Gmsh postprocessing file
   const bool screen_out = true;
@@ -1145,7 +1145,7 @@ void LUBRICATION::TimIntImpl::OutputToGmsh(const int step, const double time) co
 
   gmshfilecontent.close();
   if (screen_out) std::cout << " done" << std::endl;
-}  // TimIntImpl::OutputToGmsh
+}  // TimIntImpl::output_to_gmsh
 
 
 /*----------------------------------------------------------------------*

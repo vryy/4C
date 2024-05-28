@@ -41,22 +41,22 @@ namespace DRT
 
      protected:
       //! calculation of chemotactic element matrix
-      void CalcMatChemo(CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac,
-          const double timetaufac, const double densnp, const double scatrares,
-          const CORE::LINALG::Matrix<nen_, 1>& sgconv,
+      void calc_mat_chemo(CORE::LINALG::SerialDenseMatrix& emat, const int k,
+          const double timefacfac, const double timetaufac, const double densnp,
+          const double scatrares, const CORE::LINALG::Matrix<nen_, 1>& sgconv,
           const CORE::LINALG::Matrix<nen_, 1>& diff) override;
 
       //! calculation of chemotactic RHS
-      void CalcRHSChemo(CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac,
+      void calc_rhs_chemo(CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac,
           const double rhstaufac, const double scatrares, const double densnp) override;
 
       //! get the material parameters
-      void GetMaterialParams(const DRT::Element* ele,  //!< the element we are dealing with
-          std::vector<double>& densn,                  //!< density at t_(n)
-          std::vector<double>& densnp,                 //!< density at t_(n+1) or t_(n+alpha_F)
-          std::vector<double>& densam,                 //!< density at t_(n+alpha_M)
-          double& visc,                                //!< fluid viscosity
-          const int iquad                              //!< id of current gauss point
+      void get_material_params(const DRT::Element* ele,  //!< the element we are dealing with
+          std::vector<double>& densn,                    //!< density at t_(n)
+          std::vector<double>& densnp,                   //!< density at t_(n+1) or t_(n+alpha_F)
+          std::vector<double>& densam,                   //!< density at t_(n+alpha_M)
+          double& visc,                                  //!< fluid viscosity
+          const int iquad                                //!< id of current gauss point
           ) override;
 
       //! Clear all chemotaxtis related class variable (i.e. set them to zero)
@@ -68,16 +68,16 @@ namespace DRT
       );
 
       //! Get ID of attractant (i.e. scalar which gradient the current scalar shall follow)
-      virtual int GetPartner(const std::vector<int> pair);
+      virtual int get_partner(const std::vector<int> pair);
 
       //! calculation of strong residual for stabilization
-      void CalcStrongResidual(const int k,  //!< index of current scalar
-          double& scatrares,                //!< residual of convection-diffusion-reaction eq
-          const double densam,              //!< density at t_(n+am)
-          const double densnp,              //!< density at t_(n+1)
-          const double rea_phi,             //!< reactive contribution
-          const double rhsint,              //!< rhs at integration point
-          const double tau                  //!< the stabilisation parameter
+      void calc_strong_residual(const int k,  //!< index of current scalar
+          double& scatrares,                  //!< residual of convection-diffusion-reaction eq
+          const double densam,                //!< density at t_(n+am)
+          const double densnp,                //!< density at t_(n+1)
+          const double rea_phi,               //!< reactive contribution
+          const double rhsint,                //!< rhs at integration point
+          const double tau                    //!< the stabilisation parameter
           ) override;
 
 

@@ -32,7 +32,7 @@ MAT::PAR::ParameterAniso::ParameterAniso(Teuchos::RCP<const CORE::MAT::PAR::Mate
       GLOBAL::Problem::Instance()->Materials()->ById(mat_id_structural_tensor);
   // construct parameter class
   if (mat_str_tens->Parameter() == nullptr)
-    mat_str_tens->SetParameter(new MAT::ELASTIC::PAR::StructuralTensorParameter(mat_str_tens));
+    mat_str_tens->set_parameter(new MAT::ELASTIC::PAR::StructuralTensorParameter(mat_str_tens));
   auto* params =
       static_cast<MAT::ELASTIC::PAR::StructuralTensorParameter*>(mat_str_tens->Parameter());
   // get type of strategy

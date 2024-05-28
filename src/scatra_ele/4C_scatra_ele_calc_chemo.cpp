@@ -71,7 +71,7 @@ DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::ScaTraEleCalcChemo(
  |  calculation of chemotactic element matrix                     thon 06/ 15 |
  *----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcMatChemo(
+void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::calc_mat_chemo(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac,
     const double timetaufac, const double densnp, const double scatrares,
     const CORE::LINALG::Matrix<nen_, 1>& sgconv, const CORE::LINALG::Matrix<nen_, 1>& diff)
@@ -91,7 +91,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcMatChemo(
       CORE::LINALG::Matrix<nen_, 1> bigterm(true);
 
       const double chemofac = timefacfac * densnp;
-      const int partner = GetPartner(pair);  // Get attracting partner ID
+      const int partner = get_partner(pair);  // Get attracting partner ID
 
       const CORE::LINALG::Matrix<nsd_, 1> gradattractant =
           varmanager->GradPhi(partner);  // Gradient of attracting parnter
@@ -132,14 +132,14 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcMatChemo(
     }  // pair[i] == -1
   }
 
-}  // end CalcMatChemo
+}  // end calc_mat_chemo
 
 
 /*--------------------------------------------------------------------------- *
  |  calculation of chemotactic RHS                                thon 06/ 15 |
  *----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcRHSChemo(
+void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::calc_rhs_chemo(
     CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac, const double rhstaufac,
     const double scatrares, const double densnp)
 {
@@ -154,7 +154,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcRHSChemo(
     {
       // Standard Galerkin terms
 
-      const int partner = GetPartner(pair);
+      const int partner = get_partner(pair);
 
       CORE::LINALG::Matrix<nen_, 1> gradfunctattr(true);
       CORE::LINALG::Matrix<nsd_, 1> attractant = varmanager->GradPhi(partner);
@@ -178,14 +178,14 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcRHSChemo(
     }  // pair[i] == -1
   }
 
-}  // CalcRHSChemo
+}  // calc_rhs_chemo
 
 
 /*----------------------------------------------------------------------*
  |  get the attractant id                                   thon 06/ 15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::GetPartner(const std::vector<int> pair)
+int DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::get_partner(const std::vector<int> pair)
 {
   int partner = 0;
 
@@ -206,7 +206,7 @@ int DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::GetPartner(const std::v
  |  get the material constants  (private)                   thon 06/ 15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::GetMaterialParams(
+void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::get_material_params(
     const DRT::Element* ele,      //!< the element we are dealing with
     std::vector<double>& densn,   //!< density at t_(n)
     std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
@@ -234,7 +234,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::GetMaterialParams(
       int matid = actmat->MatID(k);
       Teuchos::RCP<CORE::MAT::Material> singlemat = actmat->MaterialById(matid);
 
-      my::Materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
+      my::materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
     }
   }
   else if (material->MaterialType() == CORE::Materials::m_matlist_chemotaxis)
@@ -251,15 +251,15 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::GetMaterialParams(
       int matid = actmat->MatID(k);
       Teuchos::RCP<CORE::MAT::Material> singlemat = actmat->MaterialById(matid);
 
-      my::Materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
+      my::materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
     }
   }
   else
   {
-    my::Materials(material, 0, densn[0], densnp[0], densam[0], visc, iquad);
+    my::materials(material, 0, densn[0], densnp[0], densam[0], visc, iquad);
   }
   return;
-}  // ScaTraEleCalc::GetMaterialParams
+}  // ScaTraEleCalc::get_material_params
 
 /*-----------------------------------------------------------------------------------*
  |  Clear all chemotaxtis related class variable (i.e. set them to zero)  thon 06/15 |
@@ -308,7 +308,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::get_chemotaxis_coeffic
  | (depending on respective stationary or time-integration scheme)   thon 06/ 15 |
  *-------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcStrongResidual(
+void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::calc_strong_residual(
     const int k,           //!< index of current scalar
     double& scatrares,     //!< residual of convection-diffusion-reaction eq
     const double densam,   //!< density at t_(n+am)
@@ -320,7 +320,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcStrongResidual(
 {
   // Note: order is important here
   // First the scatrares without chemotaxis..
-  my::CalcStrongResidual(k, scatrares, densam, densnp, rea_phi, rhsint, tau);
+  my::calc_strong_residual(k, scatrares, densam, densnp, rea_phi, rhsint, tau);
 
   // Second chemotaxis to strong residual
   Teuchos::RCP<varmanager> varmanager = my::scatravarmanager_;
@@ -334,7 +334,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcStrongResidual(
 
     if (pair[k] == -1)
     {
-      const int partner = GetPartner(pair);
+      const int partner = get_partner(pair);
       double laplattractant = 0;
 
       if (my::use2ndderiv_)

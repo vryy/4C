@@ -119,7 +119,7 @@ namespace POROMULTIPHASESCATRA
 
    protected:
     //! communicator
-    const Epetra_Comm& Comm() const { return comm_; }
+    const Epetra_Comm& comm() const { return comm_; }
 
     //! artery (1D) discretization
     Teuchos::RCP<DRT::Discretization> arterydis_;

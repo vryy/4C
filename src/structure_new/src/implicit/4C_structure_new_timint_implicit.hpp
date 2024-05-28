@@ -135,42 +135,42 @@ namespace STR
 
      protected:
       //! returns the current solution group
-      [[nodiscard]] const ::NOX::Abstract::Group& GetSolutionGroup() const override;
+      [[nodiscard]] const ::NOX::Abstract::Group& get_solution_group() const override;
 
       //! returns the current solution group ptr
-      Teuchos::RCP<::NOX::Abstract::Group> SolutionGroupPtr() override;
+      Teuchos::RCP<::NOX::Abstract::Group> solution_group_ptr() override;
 
-      STR::IMPLICIT::Generic& ImplInt()
+      STR::IMPLICIT::Generic& impl_int()
       {
         check_init_setup();
         return *implint_ptr_;
       };
 
-      STR::PREDICT::Generic& Predictor()
+      STR::PREDICT::Generic& predictor()
       {
         check_init_setup();
         return *predictor_ptr_;
       };
 
-      Teuchos::RCP<STR::PREDICT::Generic> PredictorPtr()
+      Teuchos::RCP<STR::PREDICT::Generic> predictor_ptr()
       {
         check_init_setup();
         return predictor_ptr_;
       };
 
-      [[nodiscard]] const STR::NLN::SOLVER::Generic& NlnSolver() const
+      [[nodiscard]] const STR::NLN::SOLVER::Generic& nln_solver() const
       {
         check_init_setup();
         return *nlnsolver_ptr_;
       };
 
-      STR::NLN::SOLVER::Generic& NlnSolver()
+      STR::NLN::SOLVER::Generic& nln_solver()
       {
         check_init_setup();
         return *nlnsolver_ptr_;
       };
 
-      Teuchos::RCP<STR::NLN::SOLVER::Generic> NlnSolverPtr()
+      Teuchos::RCP<STR::NLN::SOLVER::Generic> nln_solver_ptr()
       {
         check_init_setup();
         return nlnsolver_ptr_;

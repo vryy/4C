@@ -114,31 +114,31 @@ namespace CORE::COUPLING
     //! @name Pure virtual methods which have to be overridden by specialized octrees
 
     //! calc unique coordinate of entity
-    virtual void CalcPointCoordinate(
+    virtual void calc_point_coordinate(
         const DRT::Discretization* dis, const int id, double* coord) = 0;
 
     //! calc unique coordinate of entity
-    virtual void CalcPointCoordinate(CORE::COMM::ParObject* entity, double* coord) = 0;
+    virtual void calc_point_coordinate(CORE::COMM::ParObject* entity, double* coord) = 0;
 
     //! check if entity is on calling proc
-    virtual bool CheckHaveEntity(const DRT::Discretization* dis, const int id) = 0;
+    virtual bool check_have_entity(const DRT::Discretization* dis, const int id) = 0;
 
     //! returns true if entity is owned by calling proc
-    virtual bool CheckEntityOwner(const DRT::Discretization* dis, const int id) = 0;
+    virtual bool check_entity_owner(const DRT::Discretization* dis, const int id) = 0;
 
     //! pack entity to PackPuffer
-    virtual void PackEntity(
+    virtual void pack_entity(
         CORE::COMM::PackBuffer& data, const DRT::Discretization* dis, const int id) = 0;
 
     //! unpack entity to PackPuffer
-    virtual void UnPackEntity(std::vector<char>::size_type& index, std::vector<char>& rblockofnodes,
-        std::vector<char>& data) = 0;
+    virtual void un_pack_entity(std::vector<char>::size_type& index,
+        std::vector<char>& rblockofnodes, std::vector<char>& data) = 0;
 
     //! check if unpacked type is correct
     virtual int check_valid_entity_type(Teuchos::RCP<CORE::COMM::ParObject> o) = 0;
 
     //! create an octree element
-    virtual Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
+    virtual Teuchos::RCP<OctreeElement> create_octree_element(std::vector<int>& nodeidstoadd,
         CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer) = 0;
 
     //@}
@@ -249,7 +249,7 @@ namespace CORE::COUPLING
     bool is_init() { return isinit_; };
 
     //! check if \ref Setup() was called
-    void CheckIsSetup()
+    void check_is_setup()
     {
       if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
     };
@@ -279,30 +279,31 @@ namespace CORE::COUPLING
 
    protected:
     //! calc unique coordinate, associated to node
-    void CalcPointCoordinate(const DRT::Discretization* dis, const int id, double* coord) override;
+    void calc_point_coordinate(
+        const DRT::Discretization* dis, const int id, double* coord) override;
 
     //! calc unique coordinate of Node
-    void CalcPointCoordinate(CORE::COMM::ParObject* entity, double* coord) override;
+    void calc_point_coordinate(CORE::COMM::ParObject* entity, double* coord) override;
 
     //! check if node with gid = id is on calling proc
-    bool CheckHaveEntity(const DRT::Discretization* dis, const int id) override;
+    bool check_have_entity(const DRT::Discretization* dis, const int id) override;
 
     //! returns true if node with gid = id is owned by calling proc
-    bool CheckEntityOwner(const DRT::Discretization* dis, const int id) override;
+    bool check_entity_owner(const DRT::Discretization* dis, const int id) override;
 
     //! pack node to PackPuffer
-    void PackEntity(
+    void pack_entity(
         CORE::COMM::PackBuffer& data, const DRT::Discretization* dis, const int id) override;
 
     //! unpack node from PackPuffer
-    void UnPackEntity(std::vector<char>::size_type& index, std::vector<char>& rblockofnodes,
+    void un_pack_entity(std::vector<char>::size_type& index, std::vector<char>& rblockofnodes,
         std::vector<char>& data) override;
 
     //! check if unpacked type is correct
     int check_valid_entity_type(Teuchos::RCP<CORE::COMM::ParObject> o) override;
 
     //! create an octree element
-    Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
+    Teuchos::RCP<OctreeElement> create_octree_element(std::vector<int>& nodeidstoadd,
         CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer) override;
 
   };  // class NodeMatchingOctree
@@ -317,30 +318,31 @@ namespace CORE::COUPLING
 
    protected:
     //! calc unique coordinate, associated to element
-    void CalcPointCoordinate(const DRT::Discretization* dis, const int id, double* coord) override;
+    void calc_point_coordinate(
+        const DRT::Discretization* dis, const int id, double* coord) override;
 
     //! calc unique coordinate of entity
-    void CalcPointCoordinate(CORE::COMM::ParObject* entity, double* coord) override;
+    void calc_point_coordinate(CORE::COMM::ParObject* entity, double* coord) override;
 
     //! check if element with gid = id is on calling proc
-    bool CheckHaveEntity(const DRT::Discretization* dis, const int id) override;
+    bool check_have_entity(const DRT::Discretization* dis, const int id) override;
 
     //! returns true if element is owned by calling proc
-    bool CheckEntityOwner(const DRT::Discretization* dis, const int id) override;
+    bool check_entity_owner(const DRT::Discretization* dis, const int id) override;
 
     //! pack element to PackPuffer
-    void PackEntity(
+    void pack_entity(
         CORE::COMM::PackBuffer& data, const DRT::Discretization* dis, const int id) override;
 
     //! unpack element from PackPuffer
-    void UnPackEntity(std::vector<char>::size_type& index, std::vector<char>& rblockofnodes,
+    void un_pack_entity(std::vector<char>::size_type& index, std::vector<char>& rblockofnodes,
         std::vector<char>& data) override;
 
     //! check if unpacked type is correct
     int check_valid_entity_type(Teuchos::RCP<CORE::COMM::ParObject> o) override;
 
     //! create an octree element
-    Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
+    Teuchos::RCP<OctreeElement> create_octree_element(std::vector<int>& nodeidstoadd,
         CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer) override;
 
    private:
@@ -349,11 +351,11 @@ namespace CORE::COUPLING
     //! The flying nodes are sent around in the round robin loop
     //! together with the corresponding element.
     //!
-    //! \note We need this map as member, because in \ref UnPackEntity
+    //! \note We need this map as member, because in \ref un_pack_entity
     //!       we Extract the nodes and fill this map. Then, we set the
     //!       nodal pointers in the communicated element by providing
     //!       the element with this map. The RCPs stored in this map have
-    //!       to survive until they re used in \ref CalcPointCoordinate .
+    //!       to survive until they re used in \ref calc_point_coordinate .
     //!       Therefore, we need to have a global temporary storage for
     //!       the nodal pointers, which is provided by this member.
     //!
@@ -475,11 +477,11 @@ namespace CORE::COUPLING
 
    protected:
     //! calc unique coordinate of entity
-    virtual void CalcPointCoordinate(
+    virtual void calc_point_coordinate(
         const DRT::Discretization* dis, const int id, double* coord) = 0;
 
     //! create an octree element
-    virtual Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
+    virtual Teuchos::RCP<OctreeElement> create_octree_element(std::vector<int>& nodeidstoadd,
         CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer) = 0;
 
    protected:
@@ -515,7 +517,7 @@ namespace CORE::COUPLING
     bool is_init() { return isinit_; };
 
     //! check if \ref Setup() was called
-    void CheckIsSetup()
+    void check_is_setup()
     {
       if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
     };
@@ -545,10 +547,11 @@ namespace CORE::COUPLING
 
    protected:
     //! calc unique coordinate of node
-    void CalcPointCoordinate(const DRT::Discretization* dis, const int id, double* coord) override;
+    void calc_point_coordinate(
+        const DRT::Discretization* dis, const int id, double* coord) override;
 
     //! create an octree element
-    Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
+    Teuchos::RCP<OctreeElement> create_octree_element(std::vector<int>& nodeidstoadd,
         CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer) override;
 
   };  // OctreeNodalElement
@@ -563,10 +566,11 @@ namespace CORE::COUPLING
 
    protected:
     //! calc unique coordinate of element
-    void CalcPointCoordinate(const DRT::Discretization* dis, const int id, double* coord) override;
+    void calc_point_coordinate(
+        const DRT::Discretization* dis, const int id, double* coord) override;
 
     //! create an octree element
-    Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
+    Teuchos::RCP<OctreeElement> create_octree_element(std::vector<int>& nodeidstoadd,
         CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer) override;
 
   };  // OctreeNodalElement

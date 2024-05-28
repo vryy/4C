@@ -109,7 +109,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       //! evaluate action
-      virtual int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
+      virtual int evaluate_action(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const LUBRICATION::Action& action,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -151,13 +151,13 @@ namespace DRT
           DRT::Element::LocationArray& la);
 
       //! calculate matrix and rhs. Here the whole thing is hidden.
-      virtual void Sysmat(DRT::Element* ele,      //!< the element we are dealing with
+      virtual void sysmat(DRT::Element* ele,      //!< the element we are dealing with
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
           CORE::LINALG::SerialDenseVector& erhs   //!< element rhs to calculate
       );
 
       //! calculate element off-diagonal-matrix for height-linearization in monolithic EHL
-      virtual void MatrixforEHLMon(DRT::Element* ele,  //!< the element we are dealing with
+      virtual void matrixfor_ehl_mon(DRT::Element* ele,  //!< the element we are dealing with
           CORE::LINALG::SerialDenseMatrix&
               ematheight,  //!< element matrix associated with the linearization of the film height
           CORE::LINALG::SerialDenseMatrix&
@@ -207,7 +207,7 @@ namespace DRT
           double& sflowfac, double& sflowfacderiv, const double heightint);
 
       /*========================================================================*/
-      //! @name routines for additional element evaluations (called from EvaluateAction)
+      //! @name routines for additional element evaluations (called from evaluate_action)
       /*========================================================================*/
 
       //! calculate error of numerical solution with respect to analytical solution
@@ -218,9 +218,10 @@ namespace DRT
       );
 
       //! calculate pressure(s) and domain integral
-      virtual void CalculatePressures(const DRT::Element* ele,  //!< the element we are dealing with
-          CORE::LINALG::SerialDenseVector& pressures,           //!< pressure to be computed
-          const bool inverting                                  //!< bool indicating inversion
+      virtual void calculate_pressures(
+          const DRT::Element* ele,                     //!< the element we are dealing with
+          CORE::LINALG::SerialDenseVector& pressures,  //!< pressure to be computed
+          const bool inverting                         //!< bool indicating inversion
       );
 
 
@@ -229,17 +230,18 @@ namespace DRT
       /*========================================================================*/
 
       //! get the material parameters
-      virtual void GetMaterialParams(const DRT::Element* ele,  //!< the element we are dealing with
-          double& densn,                                       //!< density at t_(n)
-          double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
-          double& densam,       //!< density at t_(n+alpha_M)
-          double& visc,         //!< fluid viscosity
-          double& dvisc,        //!< derivative of the fluid viscosity
-          const int iquad = -1  //!< id of current gauss point (default = -1)
+      virtual void get_material_params(
+          const DRT::Element* ele,  //!< the element we are dealing with
+          double& densn,            //!< density at t_(n)
+          double& densnp,           //!< density at t_(n+1) or t_(n+alpha_F)
+          double& densam,           //!< density at t_(n+alpha_M)
+          double& visc,             //!< fluid viscosity
+          double& dvisc,            //!< derivative of the fluid viscosity
+          const int iquad = -1      //!< id of current gauss point (default = -1)
       );
 
       //! evaluate material
-      virtual void Materials(
+      virtual void materials(
           const Teuchos::RCP<CORE::MAT::Material> material,  //!< pointer to current material
           double& densn,                                     //!< density at t_(n)
           double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
@@ -250,7 +252,7 @@ namespace DRT
       );
 
       //! material Lubrication
-      virtual void MatLubrication(
+      virtual void mat_lubrication(
           const Teuchos::RCP<CORE::MAT::Material> material,  //!< pointer to current material
           double& densn,                                     //!< density at t_(n)
           double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
@@ -276,37 +278,37 @@ namespace DRT
           const CORE::LINALG::Matrix<nsd_, 1>& gradpre, const int vi,
           const CORE::LINALG::Matrix<nsd_, 1> pflowfac);
       //! calculation of Poiseuille contribution to element matrix
-      virtual void CalcMatPsl(CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac,
+      virtual void calc_mat_psl(CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac,
           const double viscosity, const double height);
 
       //! calculation of Poiseuille contribution to element matrix in modified Rey. Equ.
-      virtual void CalcMatPsl(CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac,
+      virtual void calc_mat_psl(CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac,
           const double viscosity, const double height,
           const CORE::LINALG::Matrix<nsd_, 1> pflowfac);
 
       //! calculation of Poiseuille-Viscosity contribution to element matrix in modified Rey. Equ.
-      virtual void CalcMatPslVis(CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac,
+      virtual void calc_mat_psl_vis(CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac,
           const double viscosity, const double height, const double dviscosity_dp);
 
       //! calculation of Poiseuille contribution to RHS matrix
-      virtual void CalcRhsPsl(CORE::LINALG::SerialDenseVector& erhs, const double rhsfac,
+      virtual void calc_rhs_psl(CORE::LINALG::SerialDenseVector& erhs, const double rhsfac,
           const double viscosity, const double height);
 
       //! calculation of Poiseuille contribution to RHS matrix in modified Rey. Equ.
-      virtual void CalcRhsPsl(CORE::LINALG::SerialDenseVector& erhs, const double rhsfac,
+      virtual void calc_rhs_psl(CORE::LINALG::SerialDenseVector& erhs, const double rhsfac,
           const double viscosity, const double height,
           const CORE::LINALG::Matrix<nsd_, 1> pflowfac);
 
       //! calculation of Wedge contribution to RHS matrix
-      virtual void CalcRhsWdg(CORE::LINALG::SerialDenseVector& erhs, const double rhsfac,
+      virtual void calc_rhs_wdg(CORE::LINALG::SerialDenseVector& erhs, const double rhsfac,
           const double height, const CORE::LINALG::Matrix<nsd_, 1> velocity);
 
       //! calculation of Squeeze contribution to RHS matrix
-      virtual void CalcRhsSqz(
+      virtual void calc_rhs_sqz(
           CORE::LINALG::SerialDenseVector& erhs, const double rhsfac, const double heightdot);
 
       //! calculation of Shear contribution to RHS matrix
-      virtual void CalcRhsShear(CORE::LINALG::SerialDenseVector& erhs, const double rhsfac,
+      virtual void calc_rhs_shear(CORE::LINALG::SerialDenseVector& erhs, const double rhsfac,
           const CORE::LINALG::Matrix<nsd_, 1> velocity, const double sflowfac);
 
       /*========================================================================*/

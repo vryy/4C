@@ -49,13 +49,13 @@ namespace MAT
       FluidPoroSingleReaction(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
       /// initialize
       void Initialize();
 
       /// evaluate reaction for by-function definition
-      void EvaluateFunction(std::vector<double>& reacval,
+      void evaluate_function(std::vector<double>& reacval,
           std::vector<std::vector<double>>& reacderivspressure,
           std::vector<std::vector<double>>& reacderivssaturation,
           std::vector<double>& reacderivsporosity,
@@ -112,7 +112,7 @@ namespace MAT
       template <int dim>
       void initialize_internal();
 
-      //! templated internal EvaluateFunction implementation
+      //! templated internal evaluate_function implementation
       template <int dim>
       void evaluate_function_internal(std::vector<double>& reacval,
           std::vector<std::vector<double>>& reacderivspressure,

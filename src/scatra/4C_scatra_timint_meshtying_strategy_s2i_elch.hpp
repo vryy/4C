@@ -45,7 +45,7 @@ namespace SCATRA
     );
 
     //! compute time step size
-    void ComputeTimeStepSize(double& dt) final;
+    void compute_time_step_size(double& dt) final;
 
     //! compute meshtying residual terms and their linearizations
     void EvaluateMeshtying() override;
@@ -88,7 +88,7 @@ namespace SCATRA
 
     void EvaluateMeshtying() override{};
 
-    void SetupMeshtying() override;
+    void setup_meshtying() override;
 
     void Solve(const Teuchos::RCP<CORE::LINALG::Solver>& solver,
         const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,
@@ -244,9 +244,9 @@ namespace SCATRA
     );
 
     //! extract nodal state variables associated with mortar integration cell
-    void ExtractNodeValues(const DRT::Discretization& idiscret,  //!< interface discretization
-        DRT::Element::LocationArray& la_slave,                   //!< slave-side location array
-        DRT::Element::LocationArray& la_master                   //!< master-side location array
+    void extract_node_values(const DRT::Discretization& idiscret,  //!< interface discretization
+        DRT::Element::LocationArray& la_slave,                     //!< slave-side location array
+        DRT::Element::LocationArray& la_master                     //!< master-side location array
         ) override;
 
     //! evaluate factor F/RT
@@ -332,9 +332,9 @@ namespace SCATRA
     );
 
     //! extract nodal state variables associated with mortar integration cell
-    void ExtractNodeValues(const DRT::Discretization& idiscret,  //!< interface discretization
-        DRT::Element::LocationArray& la_slave,                   //!< slave-side location array
-        DRT::Element::LocationArray& la_master                   //!< master-side location array
+    void extract_node_values(const DRT::Discretization& idiscret,  //!< interface discretization
+        DRT::Element::LocationArray& la_slave,                     //!< slave-side location array
+        DRT::Element::LocationArray& la_master                     //!< master-side location array
         ) override;
 
     //! nodal, slave-side electrochemistry variables associated with time t_{n+1} or t_{n+alpha_f}

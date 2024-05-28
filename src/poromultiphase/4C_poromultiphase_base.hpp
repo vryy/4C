@@ -69,7 +69,7 @@ namespace POROMULTIPHASE
     void prepare_time_step() override;
 
     //! update fields after convergence
-    void UpdateAndOutput() override;
+    void update_and_output() override;
 
     /// dof map of vector of unknowns of structure field
     Teuchos::RCP<const Epetra_Map> StructDofRowMap() const override;
@@ -84,7 +84,7 @@ namespace POROMULTIPHASE
     virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> artery_porofluid_sysmat() const;
 
     //! access to structural field
-    const Teuchos::RCP<ADAPTER::Structure>& StructureField() override { return structure_; }
+    const Teuchos::RCP<ADAPTER::Structure>& structure_field() override { return structure_; }
 
     //! access to fluid field
     const Teuchos::RCP<ADAPTER::PoroFluidMultiphaseWrapper>& fluid_field() override
@@ -93,7 +93,7 @@ namespace POROMULTIPHASE
     }
 
     /// set structure solution on scatra field
-    void SetStructSolution(
+    void set_struct_solution(
         Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<const Epetra_Vector> vel) override;
 
     /// set scatra solution on fluid field

@@ -77,7 +77,7 @@ namespace CORE::FE
    *
    * @note Only Gauss-Legendre integration rules are returned.
    *
-   * @tparam distype (in) : Discretization type
+   * @tparam distype (in) : discretization type
    * @param numgp (in): number of Gauss points
    * @return GaussRule1D / GaussRule2D / GaussRule3D depending on the dimension of the
    * discretization

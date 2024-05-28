@@ -35,7 +35,7 @@ Teuchos::RCP<CORE::GEO::CUT::IntersectionBase> CORE::GEO::CUT::IntersectionBase:
 template <unsigned probdim, CORE::FE::CellType edgetype, CORE::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned numNodesEdge, unsigned numNodesSide>
 void CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    numNodesEdge, numNodesSide>::SetCoordinates()
+    numNodesEdge, numNodesSide>::set_coordinates()
 {
   get_edge().Coordinates(xyze_lineElement_);
   get_side().Coordinates(xyze_surfaceElement_);
@@ -49,7 +49,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     numNodesEdge, numNodesSide>::compute_cut(Edge* sedge, Edge* eedge, Side* side,
     PointSet& ee_cut_points, double& tolerance)
 {
-  return eedge->compute_cut(GetMeshPtr(), sedge, side, &ee_cut_points, tolerance);
+  return eedge->compute_cut(get_mesh_ptr(), sedge, side, &ee_cut_points, tolerance);
 }
 
 /*--------------------------------------------------------------------------*
@@ -319,7 +319,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
       {
         side_xyz_corner_intersect.push_back(e_cornerpoint);
         side_rs_corner_intersect.push_back(CORE::LINALG::Matrix<dimside, 1>(true));
-        pos->LocalCoordinates(*(side_rs_corner_intersect.end() - 1));
+        pos->local_coordinates(*(side_rs_corner_intersect.end() - 1));
       }
     }
     // if one distance is larger than the given tolerance, the edge cannot be
@@ -585,7 +585,7 @@ CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimsid
             if (extended_tri_tolerance_loc_triangle_split[0] and
                 extended_tri_tolerance_loc_triangle_split[1])
             {
-              GenerateGmshDump();
+              generate_gmsh_dump();
               FOUR_C_THROW(
                   "Here we need to create point on diagonal line between two triangles in "
                   "triangulated quad4! This is not yet implemented");
@@ -612,7 +612,7 @@ CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimsid
       default:
       {
         FOUR_C_THROW(
-            "Intersection Error: Other surfaces than TRI3 and QUAD4 are not supported "
+            "intersection Error: Other surfaces than TRI3 and QUAD4 are not supported "
             "to avoid huge problems!!!");
         break;
       }
@@ -777,7 +777,7 @@ CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimsid
         {
           double tolerance = 0.0;
           // check if the given edge intersects with one of the side edges
-          if (compute_cut(e, GetEdgePtr(), GetSidePtr(), cuts, tolerance))
+          if (compute_cut(e, get_edge_ptr(), get_side_ptr(), cuts, tolerance))
           {
             if (debug)
             {
@@ -826,7 +826,7 @@ CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimsid
             std::pair<bool, bool> is_distorted = is_quad4_distorted();
             if (not(is_distorted.first or is_distorted.second))
             {
-              GenerateGmshDump();
+              generate_gmsh_dump();
               FOUR_C_THROW(
                   "This case should have been handled before with edge-edge intersection!");
             }
@@ -873,7 +873,7 @@ CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimsid
 template <unsigned probdim, CORE::FE::CellType edgetype, CORE::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned numNodesEdge, unsigned numNodesSide>
 void CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    numNodesEdge, numNodesSide>::GenerateGmshDump()
+    numNodesEdge, numNodesSide>::generate_gmsh_dump()
 {
   // just to create gmsh output of the failed intersection!!!
   try
@@ -915,7 +915,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
        * inside the QUAD4 or TRI3! */
       if (location_status[tri].WithinSide())
       {
-        GenerateGmshDump();
+        generate_gmsh_dump();
         if (is_quad4_distorted().first) std::cout << "NOTICE: Element is distorted" << std::endl;
 
         const std::vector<Node*>& side_nodes = get_side().Nodes();
@@ -968,7 +968,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
       }
       catch (CORE::Exception& e)
       {
-        GenerateGmshDump();
+        generate_gmsh_dump();
         FOUR_C_THROW(
             "Cautch error in cut kernel. Current tolerance must be increased! Error is: \n %s ",
             e.what_with_stacktrace().c_str());
@@ -984,7 +984,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
           FinalPoint();
 
           Point* p = Point::NewPoint(
-              GetMesh(), x_.A(), xsi_(dimside, 0), GetEdgePtr(), GetSidePtr(), itol);
+              get_mesh(), x_.A(), xsi_(dimside, 0), get_edge_ptr(), get_side_ptr(), itol);
 
           cuts.insert(p);
           return true;
@@ -1018,7 +1018,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
         }
         catch (CORE::Exception& e)
         {
-          GenerateGmshDump();
+          generate_gmsh_dump();
           FOUR_C_THROW(
               "Cautch error in cut kernel. Current tolerance must be increased! Error is: \n %s ",
               e.what_with_stacktrace().c_str());
@@ -1068,8 +1068,8 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
         case 1:
         {
           // intersection
-          Point* p = Point::NewPoint(GetMesh(), final_points[0].A(), edge_coords[0](0, 0),
-              GetEdgePtr(), GetSidePtr(), itol);
+          Point* p = Point::NewPoint(get_mesh(), final_points[0].A(), edge_coords[0](0, 0),
+              get_edge_ptr(), get_side_ptr(), itol);
           cuts.insert(p);
           // update status, in case of the other triangle returning different one
           istatus_ = intersect_single_cut_point;
@@ -1099,14 +1099,14 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
             {
               err_msg << (*it);
             }
-            GenerateGmshDump();
+            generate_gmsh_dump();
 
             FOUR_C_THROW(err_msg.str());
           }
           else
           {
-            Point* p = Point::NewPoint(GetMesh(), final_points[0].A(), edge_coords[0](0, 0),
-                GetEdgePtr(), GetSidePtr(), itol);
+            Point* p = Point::NewPoint(get_mesh(), final_points[0].A(), edge_coords[0](0, 0),
+                get_edge_ptr(), get_side_ptr(), itol);
             cuts.insert(p);
             return true;
           }
@@ -1120,7 +1120,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     default:
     {
       FOUR_C_THROW(
-          "Intersection Error: Other surfaces than TRI3 and QUAD4 are not supported "
+          "intersection Error: Other surfaces than TRI3 and QUAD4 are not supported "
           "to avoid huge problems!!!");
       break;
     }
@@ -1149,7 +1149,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
                 << __LINE__ << " )" << std::endl;
     }
 
-    if (UseBoundingBox())
+    if (use_bounding_box())
     {
       return false; /* not even the bounding boxes are overlapping, no need to
                      * search for an intersection point! */
@@ -1184,7 +1184,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     }
     catch (const CORE::Exception& e)
     {
-      GenerateGmshDump();
+      generate_gmsh_dump();
       FOUR_C_THROW(
           "Cautch error in cut kernel. Current tolerance must be increased! Error is: \n %s ",
           e.what_with_stacktrace().c_str());
@@ -1221,7 +1221,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
           std::cout
               << "\n ==== \n Bounding boxes said that there is no intersection point! \n ==== \n"
               << std::endl;
-          GenerateGmshDump();
+          generate_gmsh_dump();
           FOUR_C_THROW("Bounding Boxes said that there is no intersection point!");
         }
         return true;
@@ -1429,7 +1429,7 @@ std::pair<bool, bool> CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, 
     get_triangle(xyze_triElement, tri_id);
 
     bool conv = false;
-    switch (GetOptionsPtr()->geom_distance_floattype())
+    switch (get_options_ptr()->geom_distance_floattype())
     {
       case INPAR::CUT::floattype_double:
       {
@@ -1510,19 +1510,19 @@ template class CORE::GEO::CUT::Intersection<2, CORE::FE::CellType::line2,
 template class CORE::GEO::CUT::Intersection<3, CORE::FE::CellType::line2,
     CORE::FE::CellType::line2>;
 // template class
-// CORE::GEO::CUT::Intersection<2,CORE::FE::CellType::line2,CORE::FE::CellType::quad4>;
+// CORE::GEO::CUT::intersection<2,CORE::FE::CellType::line2,CORE::FE::CellType::quad4>;
 template class CORE::GEO::CUT::Intersection<3, CORE::FE::CellType::line2,
     CORE::FE::CellType::quad4>;
 // template class
-// CORE::GEO::CUT::Intersection<2,CORE::FE::CellType::line2,CORE::FE::CellType::quad8>;
+// CORE::GEO::CUT::intersection<2,CORE::FE::CellType::line2,CORE::FE::CellType::quad8>;
 template class CORE::GEO::CUT::Intersection<3, CORE::FE::CellType::line2,
     CORE::FE::CellType::quad8>;
 // template class
-// CORE::GEO::CUT::Intersection<2,CORE::FE::CellType::line2,CORE::FE::CellType::quad9>;
+// CORE::GEO::CUT::intersection<2,CORE::FE::CellType::line2,CORE::FE::CellType::quad9>;
 template class CORE::GEO::CUT::Intersection<3, CORE::FE::CellType::line2,
     CORE::FE::CellType::quad9>;
 // template class
-// CORE::GEO::CUT::Intersection<2,CORE::FE::CellType::line2,CORE::FE::CellType::tri3>;
+// CORE::GEO::CUT::intersection<2,CORE::FE::CellType::line2,CORE::FE::CellType::tri3>;
 template class CORE::GEO::CUT::Intersection<3, CORE::FE::CellType::line2, CORE::FE::CellType::tri3>;
 
 FOUR_C_NAMESPACE_CLOSE

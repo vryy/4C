@@ -38,7 +38,7 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
   else if ((num_node() == 6) and (ngp[0] < 3))
     FOUR_C_THROW("Insufficient number of Gauss points");
 
-  gaussrule_ = getGaussrule(ngp.data());
+  gaussrule_ = get_gaussrule(ngp.data());
 
   // read number of material model
   int material = 0;
@@ -153,7 +153,7 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
 /*----------------------------------------------------------------------*
  |  Get gaussrule on dependance of gausspoints                     mgit |
  *----------------------------------------------------------------------*/
-CORE::FE::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
+CORE::FE::GaussRule2D DRT::ELEMENTS::Wall1::get_gaussrule(int* ngp)
 {
   CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::undefined;
 

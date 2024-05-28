@@ -375,7 +375,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::eval_reinitializati
       }
 
       // calculate element coefficient matrix and rhs
-      SysmatHyperbolic(elemat1_epetra, elevec1_epetra);
+      sysmat_hyperbolic(elemat1_epetra, elevec1_epetra);
       break;
     }
     case INPAR::SCATRA::reinitaction_ellipticeq:
@@ -407,7 +407,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::eval_reinitializati
       }
 
       // calculate element coefficient matrix and rhs
-      SysmatElliptic(elemat1_epetra, elevec1_epetra, boundaryIntCells);
+      sysmat_elliptic(elemat1_epetra, elevec1_epetra, boundaryIntCells);
       break;
     }
     default:
@@ -421,7 +421,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::eval_reinitializati
 |  calculate system matrix and rhs (public)             rasthofer 12/13 |
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, unsigned probDim>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
+void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_hyperbolic(
     CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix to calculate
     CORE::LINALG::SerialDenseVector& erhs   ///< element rhs to calculate
 )
@@ -514,7 +514,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
 
       // calculation of stabilization parameter at element center
       // here, second argument is isoptropic diffusion, which is zero!
-      my::CalcTau(tau, 0.0, 0.0, 1.0, convelint, vol);
+      my::calc_tau(tau, 0.0, 0.0, 1.0, convelint, vol);
     }
   }
 
@@ -638,7 +638,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
       if (my::scatrapara_->TauGP())
         // calculation of stabilization parameter at integration point
         // here, second argument is isoptropic diffusion, which is zero!
-        my::CalcTau(tau, 0.0, 0.0, 1.0, convelint, vol);
+        my::calc_tau(tau, 0.0, 0.0, 1.0, convelint, vol);
     }
 
     //--------------------------------------------------------------------
@@ -650,12 +650,12 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
       // residual of reinit eq
       double scatrares = 0.0;
 
-      my::CalcStrongResidual(0, scatrares, 1.0, 1.0, 0.0, signphi, tau);
+      my::calc_strong_residual(0, scatrares, 1.0, 1.0, 0.0, signphi, tau);
 
       // compute artificial diffusion
       // diffusion coefficient has been explicitly set to zero
       // additionally stored in subgrid diffusion coefficient
-      my::CalcArtificialDiff(vol, 0, 1.0, convelint, gradphinp, conv_phi, scatrares, tau);
+      my::calc_artificial_diff(vol, 0, 1.0, convelint, gradphinp, conv_phi, scatrares, tau);
 
       if (lsreinitparams_->ArtDiff() == INPAR::SCATRA::artdiff_crosswind)
         diff_manager()->set_velocity_for_cross_wind_diff(convelint);
@@ -685,7 +685,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     double scatrares(0.0);
     // compute residual of scalar transport equation and
     // subgrid-scale part of scalar
-    my::CalcStrongResidual(0, scatrares, 1.0, 1.0, 0.0, signphi, tau);
+    my::calc_strong_residual(0, scatrares, 1.0, 1.0, 0.0, signphi, tau);
 
     //----------------------------------------------------------------
     // evaluation of matrix and rhs
@@ -701,14 +701,14 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     // 1) element matrix: instationary terms
     //----------------------------------------------------------------
 
-    my::CalcMatMass(emat, 0, fac, 1.0);
+    my::calc_mat_mass(emat, 0, fac, 1.0);
 
     // subgrid-scale velocity (dummy)
     CORE::LINALG::Matrix<nen_, 1> sgconv(true);
     if (lsreinitparams_->LinForm() == INPAR::SCATRA::newton)
     {
       if (my::scatrapara_->StabType() != INPAR::SCATRA::stabtype_no_stabilization)
-        my::CalcMatMassStab(emat, 0, taufac, 1.0, 1.0, sgconv, diff);
+        my::calc_mat_mass_stab(emat, 0, taufac, 1.0, 1.0, sgconv, diff);
     }
 
     //----------------------------------------------------------------
@@ -716,7 +716,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     //----------------------------------------------------------------
 
     if (lsreinitparams_->LinForm() == INPAR::SCATRA::newton)
-      my::CalcMatConv(emat, 0, timefacfac, 1.0, sgconv);
+      my::calc_mat_conv(emat, 0, timefacfac, 1.0, sgconv);
 
     // convective stabilization of convective term (in convective form)
     // transient stabilization of convective term (in convective form)
@@ -730,7 +730,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     // calculation of diffusive element matrix
     if (lsreinitparams_->ArtDiff() != INPAR::SCATRA::artdiff_none)
 #ifndef MODIFIED_EQ
-      CalcMatDiff(emat, 0, dtfac);  // implicit treatment
+      calc_mat_diff(emat, 0, dtfac);  // implicit treatment
 #else
       CalcMatDiff(emat, 0, timefacfac);
 #endif
@@ -744,11 +744,11 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     double rhstaufac = my::scatraparatimint_->TimeFacRhsTau() * taufac;
 
     // linearization of transient term
-    my::CalcRHSLinMass(erhs, 0, rhsfac, fac, 1.0, 1.0);
+    my::calc_rhs_lin_mass(erhs, 0, rhsfac, fac, 1.0, 1.0);
 
     // the order of the following three functions is important
     // and must not be changed
-    my::ComputeRhsInt(rhsint, 1.0, 1.0, hist);
+    my::compute_rhs_int(rhsint, 1.0, 1.0, hist);
     double rea_phi(0.0);  // dummy
     my::recompute_scatra_res_for_rhs(scatrares, 0, diff, 1.0, 1.0, rea_phi, rhsint);
     // note: the third function is not required here, since we neither have a subgrid velocity
@@ -758,7 +758,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     my::calc_rhs_hist_and_source(erhs, 0, fac, rhsint);
 
     // linearization of convective term
-    my::CalcRHSConv(erhs, 0, rhsfac);
+    my::calc_rhs_conv(erhs, 0, rhsfac);
 
     // linearization of diffusive term
     if (lsreinitparams_->ArtDiff() != INPAR::SCATRA::artdiff_none)
@@ -782,7 +782,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
 |  calculate system matrix and rhs (public)             rasthofer 09/14 |
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, unsigned probDim>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatElliptic(
+void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_elliptic(
     CORE::LINALG::SerialDenseMatrix& emat,       ///< element matrix to calculate
     CORE::LINALG::SerialDenseVector& erhs,       ///< element rhs to calculate
     const CORE::GEO::BoundaryIntCellPtrs& bcell  ///< interface for penalty term
@@ -884,7 +884,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatElliptic(
     // 1) element matrix: diffusion matrix
     //----------------------------------------------------------------
 
-    my::CalcMatDiff(emat, 0, fac);
+    my::calc_mat_diff(emat, 0, fac);
 
     //----------------------------------------------------------------
     // 2) element right hand side
@@ -1053,7 +1053,7 @@ double DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_char_ele_len
  | here we consider both isotropic and crosswind artificial diffusion |
  *--------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, unsigned probDim>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcMatDiff(
+void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_mat_diff(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac)
 {
   // flag for anisotropic diffusion
@@ -1202,7 +1202,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_penalty_term_0
   // caution density of original function is replaced by penalty parameter here
   if (emat)
   {
-    my::CalcMatMass(*emat, 0, 1.0, lsreinitparams_->PenaltyPara());
+    my::calc_mat_mass(*emat, 0, 1.0, lsreinitparams_->PenaltyPara());
   }
 
   //--------------------------------------------------------------------------
@@ -1211,7 +1211,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_penalty_term_0
   if (erhs)
   {
     my::scatravarmanager_->SetConvPhi(0, my::ephinp_[0].Dot(my::funct_));
-    my::CalcRHSConv(*erhs, 0, -lsreinitparams_->PenaltyPara());
+    my::calc_rhs_conv(*erhs, 0, -lsreinitparams_->PenaltyPara());
   }
 }
 
@@ -1326,7 +1326,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_penalty_term(
     // evaluate mat and rhs
     //--------------------------------------------------------------------------------------------
     // caution density of original function is replaced by penalty parameter here
-    my::CalcMatMass(emat, 0, fac, lsreinitparams_->PenaltyPara());
+    my::calc_mat_mass(emat, 0, fac, lsreinitparams_->PenaltyPara());
 
   }  // loop Gaussian points
 

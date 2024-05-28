@@ -92,7 +92,7 @@ NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::UpperBound:
 
       /* the following is equivalent to dividing the step successively by two until
        * criterion is met. note: upperboundval_!=0 is checked in
-       * NOX::NLN::INNER::StatusTest::Factory::BuildUpperBoundTest */
+       * NOX::NLN::INNER::StatusTest::Factory::build_upper_bound_test */
       reduction_fac_ =
           std::pow(0.5, std::ceil(std::log(stepmaxval_ / upperboundval_) / std::log(2)));
 

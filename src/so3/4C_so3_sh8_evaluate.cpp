@@ -61,7 +61,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
 
   if (IsParamsInterface())
   {
-    act = ParamsInterface().GetActionType();
+    act = params_interface().GetActionType();
   }
   else
   {
@@ -456,7 +456,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
             "Conditiong) matrix, but not suitable scaling has been provided.");
       else
       {
-        CalcSTCMatrix(
+        do_calc_stc_matrix(
             elemat1, stc_scaling, params.get<int>("stc_layer"), lm, discretization, false);
       }
     }
@@ -470,7 +470,8 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
             "Conditiong) matrix, but not suitable scaling has been provided.");
       else
       {
-        CalcSTCMatrix(elemat1, stc_scaling, params.get<int>("stc_layer"), lm, discretization, true);
+        do_calc_stc_matrix(
+            elemat1, stc_scaling, params.get<int>("stc_layer"), lm, discretization, true);
       }
     }
     break;
@@ -498,7 +499,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
 
       if (IsParamsInterface())  // new structural time integration
       {
-        StrParamsInterface().add_contribution_to_energy_type(
+        str_params_interface().add_contribution_to_energy_type(
             sosh8_calc_energy(mydisp, params), STR::internal_energy);
       }
       else  // old structural time integration
@@ -680,7 +681,7 @@ double DRT::ELEMENTS::SoSh8::sosh8_calc_energy(
     // transformation from local (parameter) element space to global(material) space
     // with famous 'T'-matrix already used for EAS but now evaluated at each gp
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> TinvT;
-    sosh8_evaluateT(jac, TinvT);
+    sosh8_evaluate_t(jac, TinvT);
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH8> bop;
     bop.Multiply(TinvT, bop_loc);
 
@@ -946,7 +947,7 @@ void DRT::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location
     // transformation from local (parameter) element space to global(material) space
     // with famous 'T'-matrix already used for EAS but now evaluated at each gp
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> TinvT;
-    sosh8_evaluateT(jac, TinvT);
+    sosh8_evaluate_t(jac, TinvT);
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH8> bop;
     bop.Multiply(TinvT, bop_loc);
 
@@ -1044,7 +1045,7 @@ void DRT::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location
       case INPAR::STR::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
-        sosh8_Cauchy(elestress, gp, defgrd, glstrain, stress);
+        sosh8_cauchy(elestress, gp, defgrd, glstrain, stress);
 
         break;
       }
@@ -1612,7 +1613,7 @@ void DRT::ELEMENTS::SoSh8::sosh8_get_deformationgradient(const unsigned gp,
     CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd) const
 {
   /* Caution!! the defgrd can not be modified with ANS to remedy locking
-     To get the consistent F a spectral decomposition would be necessary, see sosh8_Cauchy.
+     To get the consistent F a spectral decomposition would be necessary, see sosh8_cauchy.
      However if one only maps e.g. stresses from current to material configuration,
      I have never noticed any difference to applying just the disp_based F
      which is therefore computed and passed here (no significant add. computation time).  */
@@ -1637,7 +1638,7 @@ void DRT::ELEMENTS::SoSh8::sosh8_get_deformationgradient(const unsigned gp,
 /*----------------------------------------------------------------------*
  |  evaluate 'T'-transformation matrix )                       maf 05/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8::sosh8_evaluateT(
+void DRT::ELEMENTS::SoSh8::sosh8_evaluate_t(
     const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac,
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& TinvT)
 {
@@ -1702,7 +1703,7 @@ void DRT::ELEMENTS::SoSh8::sosh8_evaluateT(
 /*----------------------------------------------------------------------*
  |  return Cauchy stress at gp                                 maf 06/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8::sosh8_Cauchy(
+void DRT::ELEMENTS::SoSh8::sosh8_cauchy(
     CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress, const int gp,
     const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd,
     const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain,
@@ -1791,9 +1792,10 @@ void DRT::ELEMENTS::SoSh8::sosh8_Cauchy(
   return;
 }
 
-void DRT::ELEMENTS::SoSh8::CalcSTCMatrix(CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>& elemat1,
-    const INPAR::STR::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
-    DRT::Discretization& discretization, bool calcinverse)
+void DRT::ELEMENTS::SoSh8::do_calc_stc_matrix(
+    CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>& elemat1, const INPAR::STR::StcScale stc_scaling,
+    const int stc_layer, std::vector<int>& lm, DRT::Discretization& discretization,
+    bool calcinverse)
 {
   /// Compute C based on element aspect ratio
   double stc_fact = 1.0;
@@ -2128,7 +2130,7 @@ int DRT::ELEMENTS::SoSh8Type::Initialize(DRT::Discretization& dis)
             // here comes plan B: morph So_sh8 to So_hex8
             actele->soh8_reiniteas(DRT::ELEMENTS::SoHex8::soh8_easmild);
             actele->anstype_ = SoSh8::ansnone;
-            actele->InitJacobianMapping();
+            actele->init_jacobian_mapping();
             num_morphed_so_hex8_easmild++;
           }
           else if (actele->eastype_ == DRT::ELEMENTS::SoSh8::soh8_easnone)
@@ -2136,7 +2138,7 @@ int DRT::ELEMENTS::SoSh8Type::Initialize(DRT::Discretization& dis)
             // here comes plan B: morph So_sh8 to So_hex8
             actele->soh8_reiniteas(DRT::ELEMENTS::SoHex8::soh8_easnone);
             actele->anstype_ = SoSh8::ansnone;
-            actele->InitJacobianMapping();
+            actele->init_jacobian_mapping();
             num_morphed_so_hex8_easnone++;
           }
           else if (actele->eastype_ == DRT::ELEMENTS::SoHex8::soh8_easmild)
@@ -2144,13 +2146,13 @@ int DRT::ELEMENTS::SoSh8Type::Initialize(DRT::Discretization& dis)
             // this might happen in post filter (for morped sosh8->soh8)
             actele->soh8_reiniteas(DRT::ELEMENTS::SoHex8::soh8_easmild);
             actele->anstype_ = SoSh8::ansnone;
-            actele->InitJacobianMapping();
+            actele->init_jacobian_mapping();
           }
           else if (actele->eastype_ == DRT::ELEMENTS::SoHex8::soh8_easnone)
           {
             // this might happen in post filter (for morped sosh8->soh8)
             actele->anstype_ = SoSh8::ansnone;
-            actele->InitJacobianMapping();
+            actele->init_jacobian_mapping();
           }
           else
             FOUR_C_THROW("Undefined EAS type");
@@ -2192,7 +2194,7 @@ int DRT::ELEMENTS::SoSh8Type::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoSh8*>(dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_sh8* failed");
-    actele->InitJacobianMapping();
+    actele->init_jacobian_mapping();
   }
 
   // **************** debug printout ot gmesh **********************************

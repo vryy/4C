@@ -52,7 +52,7 @@ const Epetra_Comm& MORTAR::Coupling3d::Comm() const { return idiscret_.Comm(); }
 /*----------------------------------------------------------------------*
  |  Evaluate coupling (3D)                                    popp 03/09|
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling3d::EvaluateCoupling()
+bool MORTAR::Coupling3d::evaluate_coupling()
 {
   // rough check whether element centers are "near"
   // whether or not quadratic 3d coupling is performed, we only
@@ -99,7 +99,7 @@ bool MORTAR::Coupling3d::EvaluateCoupling()
   if (clipsize < 3) return false;
 
   // proceed only if clipping polygon has non-zero area
-  if (polygon_area() < MORTARINTLIM * SlaveElementArea()) return false;
+  if (polygon_area() < MORTARINTLIM * slave_element_area()) return false;
 
   // check / set  projection status of slave nodes
   has_proj_status();
@@ -261,7 +261,7 @@ bool MORTAR::Coupling3d::auxiliary_plane()
   // calculate auxplane with cpp normal!
   //  CORE::LINALG::SerialDenseVector val(SlaveIntElement().num_node());
   //  CORE::LINALG::SerialDenseMatrix deriv(SlaveIntElement().num_node(),2,true);
-  //  SlaveIntElement().EvaluateShape(loccenter, val, deriv, SlaveIntElement().num_node(),false);
+  //  SlaveIntElement().evaluate_shape(loccenter, val, deriv, SlaveIntElement().num_node(),false);
   //  Auxn()[0] = 0.0;
   //  Auxn()[1] = 0.0;
   //  Auxn()[2] = 0.0;
@@ -1158,7 +1158,7 @@ void MORTAR::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
       if (current->EntryExit() == true)
       {
         if (out)
-          std::cout << "Intersection was Entry, so move to Next() on same polygon!" << std::endl;
+          std::cout << "intersection was Entry, so move to Next() on same polygon!" << std::endl;
         do
         {
           current = current->Next();
@@ -1175,7 +1175,7 @@ void MORTAR::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
       else
       {
         if (out)
-          std::cout << "Intersection was Exit, so move to Prev() on same polygon!" << std::endl;
+          std::cout << "intersection was Exit, so move to Prev() on same polygon!" << std::endl;
         do
         {
           current = current->Prev();
@@ -2644,7 +2644,7 @@ double MORTAR::Coupling3d::polygon_area()
 /*----------------------------------------------------------------------*
  |  Compute and return area of slave element (3D)             popp 11/08|
  *----------------------------------------------------------------------*/
-double MORTAR::Coupling3d::SlaveElementArea()
+double MORTAR::Coupling3d::slave_element_area()
 {
   // initialize
   double selearea = SlaveIntElement().MoData().Area();
@@ -3366,7 +3366,7 @@ bool MORTAR::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterfa
   for (int i = 0; i < (int)(Cells().size()); ++i)
   {
     // integrate cell only if it has a non-zero area
-    if (Cells()[i]->Area() < MORTARINTLIM * SlaveElementArea()) continue;
+    if (Cells()[i]->Area() < MORTARINTLIM * slave_element_area()) continue;
 
       // debug output of integration cells in GMSH
 #ifdef MORTARGMSHCELLS
@@ -3542,7 +3542,7 @@ void MORTAR::Coupling3d::GmshOutputCells(int lid)
 /*----------------------------------------------------------------------*
  | Split MORTAR::Elements->IntElements for 3D quad. coupling    popp 03/09|
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling3dQuadManager::SplitIntElements(
+bool MORTAR::Coupling3dQuadManager::split_int_elements(
     MORTAR::Element& ele, std::vector<Teuchos::RCP<MORTAR::IntElement>>& auxele)
 {
   // *********************************************************************
@@ -3850,7 +3850,7 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(
     {
       double xi[2] = {pseudo_nodes_param_coords[i][0], pseudo_nodes_param_coords[i][1]};
       std::vector<double> xspatial(dim_, 0.0);
-      ele.EvaluateShape(xi, sval, sderiv, 9, true);
+      ele.evaluate_shape(xi, sval, sderiv, 9, true);
       for (int dim = 0; dim < dim_; ++dim)
         for (int n = 0; n < ele.num_node(); ++n)
           xspatial[dim] += sval(n) * dynamic_cast<MORTAR::Node*>(ele.Nodes()[n])->xspatial()[dim];
@@ -3865,7 +3865,7 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(
 
   // ********************************************************* invalid ***
   else
-    FOUR_C_THROW("SplitIntElements called for unknown element shape!");
+    FOUR_C_THROW("split_int_elements called for unknown element shape!");
 
   // *********************************************************************
 
@@ -3931,7 +3931,7 @@ MORTAR::Coupling3dQuadManager::Coupling3dQuadManager(DRT::Discretization& idiscr
 /*----------------------------------------------------------------------*
  |  Evaluate coupling pairs                                  farah 10/14|
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling3dManager::EvaluateCoupling(Teuchos::RCP<MORTAR::ParamsInterface> mparams_ptr)
+bool MORTAR::Coupling3dManager::evaluate_coupling(Teuchos::RCP<MORTAR::ParamsInterface> mparams_ptr)
 {
   // check of we need to start the real coupling
   if (MasterElements().size() == 0) return false;
@@ -3944,7 +3944,7 @@ bool MORTAR::Coupling3dManager::EvaluateCoupling(Teuchos::RCP<MORTAR::ParamsInte
   // Mortar Contact
   //*********************************
   if (algo == INPAR::MORTAR::algorithm_mortar or algo == INPAR::MORTAR::algorithm_gpts)
-    IntegrateCoupling(mparams_ptr);
+    integrate_coupling(mparams_ptr);
 
   //*********************************
   // Error
@@ -3959,7 +3959,7 @@ bool MORTAR::Coupling3dManager::EvaluateCoupling(Teuchos::RCP<MORTAR::ParamsInte
 /*----------------------------------------------------------------------*
  |  Evaluate mortar-coupling pairs                            popp 03/09|
  *----------------------------------------------------------------------*/
-void MORTAR::Coupling3dManager::IntegrateCoupling(
+void MORTAR::Coupling3dManager::integrate_coupling(
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // decide which type of numerical integration scheme
@@ -3976,7 +3976,7 @@ void MORTAR::Coupling3dManager::IntegrateCoupling(
       Coupling().push_back(Teuchos::rcp(
           new Coupling3d(idiscret_, dim_, false, imortar_, SlaveElement(), MasterElement(m))));
       // do coupling
-      Coupling()[m]->EvaluateCoupling();
+      Coupling()[m]->evaluate_coupling();
     }
 
     // special treatment of boundary elements
@@ -4016,7 +4016,7 @@ void MORTAR::Coupling3dManager::IntegrateCoupling(
               Coupling().push_back(Teuchos::rcp(new Coupling3d(
                   idiscret_, dim_, false, imortar_, SlaveElement(), MasterElement(m))));
               // do coupling
-              Coupling()[m]->EvaluateCoupling();
+              Coupling()[m]->evaluate_coupling();
 
               // integrate cells
               Coupling()[m]->IntegrateCells(mparams_ptr);
@@ -4033,7 +4033,7 @@ void MORTAR::Coupling3dManager::IntegrateCoupling(
               Coupling().push_back(Teuchos::rcp(new Coupling3d(
                   idiscret_, dim_, false, imortar_, SlaveElement(), MasterElement(m))));
               // do coupling
-              Coupling()[m]->EvaluateCoupling();
+              Coupling()[m]->evaluate_coupling();
             }
 
             // consistent dual shape functions
@@ -4080,7 +4080,7 @@ void MORTAR::Coupling3dManager::IntegrateCoupling(
 /*----------------------------------------------------------------------*
  |  Evaluate coupling pairs for Quad-coupling                farah 01/13|
  *----------------------------------------------------------------------*/
-void MORTAR::Coupling3dQuadManager::IntegrateCoupling(
+void MORTAR::Coupling3dQuadManager::integrate_coupling(
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // decide which type of numerical integration scheme
@@ -4094,14 +4094,14 @@ void MORTAR::Coupling3dQuadManager::IntegrateCoupling(
     std::vector<Teuchos::RCP<MORTAR::IntElement>> sauxelements(0);
     std::vector<std::vector<Teuchos::RCP<MORTAR::IntElement>>> mauxelements(
         MasterElements().size());
-    SplitIntElements(SlaveElement(), sauxelements);
+    split_int_elements(SlaveElement(), sauxelements);
 
     // loop over all master elements associated with this slave element
     for (int m = 0; m < (int)MasterElements().size(); ++m)
     {
       // build linear integration elements from quadratic MORTAR::Elements
       mauxelements[m].resize(0);
-      SplitIntElements(*MasterElements()[m], mauxelements[m]);
+      split_int_elements(*MasterElements()[m], mauxelements[m]);
 
       // loop over all IntElement pairs for coupling
       for (int i = 0; i < (int)sauxelements.size(); ++i)
@@ -4113,7 +4113,7 @@ void MORTAR::Coupling3dQuadManager::IntegrateCoupling(
               SlaveElement(), *MasterElements()[m], *sauxelements[i], *mauxelements[m][j])));
 
           // do coupling
-          Coupling()[Coupling().size() - 1]->EvaluateCoupling();
+          Coupling()[Coupling().size() - 1]->evaluate_coupling();
         }  // for maux
       }    // for saux
     }      // for m
@@ -4147,8 +4147,8 @@ void MORTAR::Coupling3dQuadManager::IntegrateCoupling(
           // build linear integration elements from quadratic MORTAR::Elements
           std::vector<Teuchos::RCP<MORTAR::IntElement>> sauxelements(0);
           std::vector<Teuchos::RCP<MORTAR::IntElement>> mauxelements(0);
-          SplitIntElements(SlaveElement(), sauxelements);
-          SplitIntElements(*MasterElements()[m], mauxelements);
+          split_int_elements(SlaveElement(), sauxelements);
+          split_int_elements(*MasterElements()[m], mauxelements);
 
           // loop over all IntElement pairs for coupling
           for (int i = 0; i < (int)sauxelements.size(); ++i)
@@ -4159,7 +4159,7 @@ void MORTAR::Coupling3dQuadManager::IntegrateCoupling(
               MORTAR::Coupling3dQuad coup(idiscret_, dim_, true, imortar_, SlaveElement(),
                   *MasterElements()[m], *sauxelements[i], *mauxelements[j]);
               // do coupling
-              coup.EvaluateCoupling();
+              coup.evaluate_coupling();
 
               // Integrate Cells
               coup.IntegrateCells(mparams_ptr);
@@ -4334,7 +4334,7 @@ void MORTAR::Coupling3dManager::consist_dual_shape()
           SlaveElement().evaluate_shape_lag_mult_lin(
               INPAR::MORTAR::shape_standard, sxi, sval, sderiv, nnodes);
         else
-          SlaveElement().EvaluateShape(sxi, sval, sderiv, nnodes);
+          SlaveElement().evaluate_shape(sxi, sval, sderiv, nnodes);
 
         detg = currcell->Jacobian();
 

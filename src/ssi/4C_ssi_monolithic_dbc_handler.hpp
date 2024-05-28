@@ -86,19 +86,22 @@ namespace SSI
 
    protected:
     //! solve additional scatra field on manifolds
-    bool IsScaTraManifold() const { return is_scatra_manifold_; }
+    bool is_sca_tra_manifold() const { return is_scatra_manifold_; }
 
     //! access to scalar transport field
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() const { return scatra_; }
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> sca_tra_field() const { return scatra_; }
 
     //! access to scalar transport on manifold field
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraManifoldField() const { return scatra_manifold_; }
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> sca_tra_manifold_field() const
+    {
+      return scatra_manifold_;
+    }
 
     //! this object holds all maps relevant to monolithic scalar transport - structure interaction
-    Teuchos::RCP<SSI::UTILS::SSIMaps> SSIMaps() const { return ssi_maps_; }
+    Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps() const { return ssi_maps_; }
 
     //! access to structural field
-    Teuchos::RCP<ADAPTER::SSIStructureWrapper> StructureField() const { return structure_; }
+    Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure_field() const { return structure_; }
 
    private:
     /*!

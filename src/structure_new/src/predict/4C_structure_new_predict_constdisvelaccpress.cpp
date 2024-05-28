@@ -39,7 +39,7 @@ void STR::PREDICT::ConstDisVelAccPress::Setup()
   // fallback predictor
   tangdis_ptr_ = STR::PREDICT::BuildPredictor(INPAR::STR::pred_tangdis);
   tangdis_ptr_->Init(
-      GetType(), ImplIntPtr(), DbcPtr(), GlobalStatePtr(), IODataPtr(), NoxParamsPtr());
+      GetType(), impl_int_ptr(), dbc_ptr(), global_state_ptr(), io_data_ptr(), nox_params_ptr());
   tangdis_ptr_->Setup();
 
   issetup_ = true;
@@ -52,9 +52,9 @@ void STR::PREDICT::ConstDisVelAccPress::Compute(::NOX::Abstract::Group& grp)
 {
   check_init_setup();
 
-  Teuchos::RCP<Epetra_Vector>& disnp_ptr = GlobalState().GetDisNp();
-  Teuchos::RCP<Epetra_Vector>& velnp_ptr = GlobalState().GetVelNp();
-  Teuchos::RCP<Epetra_Vector>& accnp_ptr = GlobalState().GetAccNp();
+  Teuchos::RCP<Epetra_Vector>& disnp_ptr = global_state().GetDisNp();
+  Teuchos::RCP<Epetra_Vector>& velnp_ptr = global_state().GetVelNp();
+  Teuchos::RCP<Epetra_Vector>& accnp_ptr = global_state().GetAccNp();
 
   bool ok = true;
   switch (GetType())
@@ -62,25 +62,25 @@ void STR::PREDICT::ConstDisVelAccPress::Compute(::NOX::Abstract::Group& grp)
     case INPAR::STR::pred_constdis:
     case INPAR::STR::pred_constdispres:
     {
-      ImplInt().predict_const_dis_consist_vel_acc(*disnp_ptr, *velnp_ptr, *accnp_ptr);
+      impl_int().predict_const_dis_consist_vel_acc(*disnp_ptr, *velnp_ptr, *accnp_ptr);
       break;
     }
     case INPAR::STR::pred_constvel:
     {
-      ok = ImplInt().predict_const_vel_consist_acc(*disnp_ptr, *velnp_ptr, *accnp_ptr);
+      ok = impl_int().predict_const_vel_consist_acc(*disnp_ptr, *velnp_ptr, *accnp_ptr);
       break;
     }
     case INPAR::STR::pred_constacc:
     {
-      ok = ImplInt().PredictConstAcc(*disnp_ptr, *velnp_ptr, *accnp_ptr);
+      ok = impl_int().PredictConstAcc(*disnp_ptr, *velnp_ptr, *accnp_ptr);
       break;
     }
     case INPAR::STR::pred_constdisvelacc:
     case INPAR::STR::pred_constdisvelaccpres:
     {
-      disnp_ptr->Update(1.0, *GlobalState().GetDisN(), 0.0);
-      velnp_ptr->Update(1.0, *GlobalState().GetVelN(), 0.0);
-      accnp_ptr->Update(1.0, *GlobalState().GetAccN(), 0.0);
+      disnp_ptr->Update(1.0, *global_state().GetDisN(), 0.0);
+      velnp_ptr->Update(1.0, *global_state().GetVelN(), 0.0);
+      accnp_ptr->Update(1.0, *global_state().GetAccN(), 0.0);
       break;
     }
     default:
@@ -89,7 +89,7 @@ void STR::PREDICT::ConstDisVelAccPress::Compute(::NOX::Abstract::Group& grp)
       break;
     }
   }
-  ImplInt().ModelEval().Predict(GetType());
+  impl_int().ModelEval().Predict(GetType());
 
   // If the const predictors failed e.g. due to too little history information,
   // we use the tangdis predictor as fallback predictor.

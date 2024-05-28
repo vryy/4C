@@ -325,7 +325,7 @@ int DRT::ELEMENTS::SoHex20::Evaluate(Teuchos::ParameterList& params,
 
       // build incremental def gradient for every gauss point
       CORE::LINALG::SerialDenseMatrix gpdefgrd(NUMGPT_SOH20, 9);
-      DefGradient(mydisp, gpdefgrd, *prestress_);
+      def_gradient(mydisp, gpdefgrd, *prestress_);
 
       // update deformation gradient and put back to storage
       CORE::LINALG::Matrix<3, 3> deltaF;
@@ -429,7 +429,7 @@ int DRT::ELEMENTS::SoHex20::Evaluate(Teuchos::ParameterList& params,
 
       if (IsParamsInterface())  // new structural time integration
       {
-        StrParamsInterface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
+        str_params_interface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
       }
       else  // old structural time integration
       {
@@ -483,7 +483,7 @@ int DRT::ELEMENTS::SoHex20::evaluate_neumann(Teuchos::ParameterList& params,
       [&]()
       {
         if (IsParamsInterface())
-          return StrParamsInterface().GetTotalTime();
+          return str_params_interface().GetTotalTime();
         else
           return params.get("total time", -1.0);
       });
@@ -582,7 +582,7 @@ int DRT::ELEMENTS::SoHex20::evaluate_neumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)                       |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex20::InitJacobianMapping()
+void DRT::ELEMENTS::SoHex20::init_jacobian_mapping()
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH20, NUMNOD_SOH20>> derivs =
       soh20_derivs();
@@ -1217,8 +1217,8 @@ void DRT::ELEMENTS::SoHex20::soh20_nlnstiffmass(std::vector<int>& lm,  // locati
         double timintfac_vel = 0.0;
         if (IsParamsInterface())
         {
-          timintfac_dis = StrParamsInterface().GetTimIntFactorDisp();
-          timintfac_vel = StrParamsInterface().GetTimIntFactorVel();
+          timintfac_dis = str_params_interface().GetTimIntFactorDisp();
+          timintfac_vel = str_params_interface().GetTimIntFactorVel();
         }
         else
         {
@@ -1432,7 +1432,7 @@ int DRT::ELEMENTS::SoHex20Type::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoHex20*>(dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_hex20* failed");
-    actele->InitJacobianMapping();
+    actele->init_jacobian_mapping();
   }
   return 0;
 }
@@ -1440,7 +1440,7 @@ int DRT::ELEMENTS::SoHex20Type::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  compute def gradient at every gaussian point (protected)            |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex20::DefGradient(const std::vector<double>& disp,
+void DRT::ELEMENTS::SoHex20::def_gradient(const std::vector<double>& disp,
     CORE::LINALG::SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH20, NUMNOD_SOH20>> derivs =

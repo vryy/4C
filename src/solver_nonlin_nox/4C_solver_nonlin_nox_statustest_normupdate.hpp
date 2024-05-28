@@ -99,7 +99,7 @@ namespace NOX
         std::ostream& print(std::ostream& stream, int indent = 0) const override;
 
        protected:
-        virtual void ComputeNorm(
+        virtual void compute_norm(
             const ::NOX::Abstract::Group& grp, const ::NOX::Solver::Generic& problem);
 
        private:

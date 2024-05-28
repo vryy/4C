@@ -98,7 +98,7 @@ namespace TSI
         ) override = 0;
 
     //! access to structural field
-    const Teuchos::RCP<ADAPTER::Structure>& StructureField() { return structure_; }
+    const Teuchos::RCP<ADAPTER::Structure>& structure_field() { return structure_; }
 
     //! access to thermal field
     const Teuchos::RCP<ADAPTER::Thermo>& ThermoField() { return thermo_; }
@@ -113,10 +113,10 @@ namespace TSI
     virtual void prepare_output() = 0;
 
     //! take current results for converged and save for next time step
-    void Update() override;
+    void update() override;
 
     //! write output
-    virtual void Output(bool forced_writerestart = false);
+    virtual void output(bool forced_writerestart = false);
 
     //! communicate displacement vector to thermal field to enable their
     //! visualisation on the deformed body
@@ -146,7 +146,7 @@ namespace TSI
     //! @name Access methods
 
     //! velocity calculation given the displacements (like in FSI)
-    Teuchos::RCP<const Epetra_Vector> CalcVelocity(Teuchos::RCP<const Epetra_Vector> dispnp);
+    Teuchos::RCP<const Epetra_Vector> calc_velocity(Teuchos::RCP<const Epetra_Vector> dispnp);
 
     //! displacements at time n+1 for thermal output
     Teuchos::RCP<Epetra_MultiVector> dispnp_;

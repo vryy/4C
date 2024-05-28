@@ -66,7 +66,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::ScaTraEleBoundaryCal
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::EvaluateAction(
+int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::evaluate_action(
     DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     SCATRA::BoundaryAction action, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -85,7 +85,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::EvaluateAction(
     case SCATRA::BoundaryAction::calc_normal_vectors:
     case SCATRA::BoundaryAction::integrate_shape_functions:
     {
-      my::EvaluateAction(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
+      my::evaluate_action(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
           elevec1_epetra, elevec2_epetra, elevec3_epetra);
       break;
     }
@@ -164,8 +164,8 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::EvaluateAction(
         isnodalporosity_ = false;
 
       // for the moment we ignore the return values of this method
-      CalcConvectiveFlux(ele, ephinp, econvel, elevec1_epetra);
-      // vector<double> locfluxintegral = CalcConvectiveFlux(ele,ephinp,evel,elevec1_epetra);
+      calc_convective_flux(ele, ephinp, econvel, elevec1_epetra);
+      // vector<double> locfluxintegral = calc_convective_flux(ele,ephinp,evel,elevec1_epetra);
       // std::cout<<"locfluxintegral[0] = "<<locfluxintegral[0]<<std::endl;
 
       break;
@@ -185,7 +185,8 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::EvaluateAction(
  | (overwrites method in ScaTraEleBoundaryCalc)                         |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::CalcConvectiveFlux(
+std::vector<double>
+DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::calc_convective_flux(
     const DRT::FaceElement* ele, const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
     const CORE::LINALG::Matrix<nsd_, nen_>& evelnp, CORE::LINALG::SerialDenseVector& erhs)
 {
@@ -205,7 +206,7 @@ std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::
     {
       const double fac = my::eval_shape_func_and_int_fac(intpoints, iquad, &(this->normal_));
 
-      const double porosity = ComputePorosity(ele);
+      const double porosity = compute_porosity(ele);
 
       // get velocity at integration point
       my::velint_.Multiply(evelnp, my::funct_);
@@ -236,7 +237,7 @@ std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::
  |  get the material constants  (protected)                  vuong 10/14|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-double DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::ComputePorosity(
+double DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::compute_porosity(
     const DRT::FaceElement* ele  //!< the element we are dealing with
 )
 {

@@ -31,7 +31,7 @@ namespace DRT
     /*!
      This class is derived from the FluidBoundaryImpl class, i.e. it is capable of
      evaluated all integrals implemented there. It will do so, if the evaluate action
-     given by the control routine is not known (see method EvaluateAction).
+     given by the control routine is not known (see method evaluate_action).
      Otherwise, it can evaluate integrals for special poro boundary conditions (as
      no penetration constraint terms or pressure coupling) or overwrite existing methods
      that need to be reimplemented for porous flow (like flow rate calculation).
@@ -67,7 +67,7 @@ namespace DRT
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       /// determines which boundary integral is to be evaluated
-      void EvaluateAction(DRT::ELEMENTS::FluidBoundary* ele1, Teuchos::ParameterList& params,
+      void evaluate_action(DRT::ELEMENTS::FluidBoundary* ele1, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
           CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
@@ -96,7 +96,7 @@ namespace DRT
                                   the controling method does not epxect the element to fill
                                   this matrix.
       */
-      void PoroBoundary(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      void poro_boundary(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1);
 
@@ -105,7 +105,7 @@ namespace DRT
       media problems (templated by discretization type of parent element)
       */
       template <CORE::FE::CellType pdistype>
-      void PoroBoundary(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      void poro_boundary(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1);
 
@@ -122,7 +122,7 @@ namespace DRT
                                   the controling method does not epxect the element to fill
                                   this matrix.
       */
-      void PressureCoupling(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      void pressure_coupling(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1);
 
@@ -140,7 +140,7 @@ namespace DRT
                                   the controling method does not epxect the element to fill
                                   this matrix.
       */
-      void FPSICoupling(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      void fpsi_coupling(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1);
 
@@ -149,7 +149,7 @@ namespace DRT
              (templated by discretization type of parent element)
       */
       template <CORE::FE::CellType pdistype>
-      void FPSICoupling(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      void fpsi_coupling(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1);
 
@@ -159,9 +159,9 @@ namespace DRT
              It works for plain surfaces, but may lead to problems for curved boundaries!!
 
              Alternative (and probably better!!) ways to apply the no penetration condition
-             are in a weak substitution sense (PoroBoundary method) or with Lagrange multiplier
+             are in a weak substitution sense (poro_boundary method) or with Lagrange multiplier
              (implemented in poro_monolithicsplit_nopenetration.cpp and methods
-      no_penetration_mat_and_rhs and NoPenetrationMatOD)
+      no_penetration_mat_and_rhs and no_penetration_mat_od)
 
        Note: This method is called with one additional action added to the parameter list.
              It can either be POROELAST::fluidfluid or POROELAST::fluidstructure.
@@ -183,18 +183,18 @@ namespace DRT
       \param elemat2 (out)      : matrix to be filled by element.
       \param elevec1 (out)      : vector to be filled by element.
       */
-      void NoPenetration(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      void no_penetration(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
           CORE::LINALG::SerialDenseVector& elevec1);
 
       /*!
       \brief apply no penetration boundary condition
-             This method is to be called before the NoPenetration method to find the dof IDs
+             This method is to be called before the no_penetration method to find the dof IDs
              that will be subject to the nodal no penetration constraint. I.e. find the
              normal direction of a potentially curved boundary.
              This a quick and dirty version. I would recommend to do it in another way (see
-             comment to NoPenetration method)
+             comment to no_penetration method)
 
       \param params (in)        : ParameterList for communication between control routine
       \param discretization (in): A reference to the underlying discretization
@@ -204,7 +204,7 @@ namespace DRT
                                   where a constraint is to be applied will be marked with 1.0
                                   in this vector otherwise 0.0
       */
-      void NoPenetrationIDs(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      void no_penetration_i_ds(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1,
           std::vector<int>& lm);
 
@@ -218,7 +218,7 @@ namespace DRT
       \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
 
       */
-      void ComputeFlowRate(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      void compute_flow_rate(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1);
 
@@ -228,7 +228,7 @@ namespace DRT
 
       */
       template <CORE::FE::CellType pdistype>
-      void ComputeFlowRate(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      void compute_flow_rate(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1);
 
@@ -270,7 +270,7 @@ namespace DRT
       to structure dofs \param k_lambda (out)      : matrix to be filled by element. Linearization
       of constraint w.r.t to lagrange multiplier
       */
-      void NoPenetrationMatOD(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      void no_penetration_mat_od(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& k_struct, CORE::LINALG::SerialDenseMatrix& k_lambda);
 
@@ -279,7 +279,7 @@ namespace DRT
              (templated by discretization type of parent element)
       */
       template <CORE::FE::CellType pdistype>
-      void NoPenetrationMatOD(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      void no_penetration_mat_od(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& k_struct, CORE::LINALG::SerialDenseMatrix& k_lambda);
 
@@ -364,7 +364,7 @@ namespace DRT
       pressure \param dphi_dJ (in/out)    : derivative of porosity w.r.t. Jacobian determinant
       \param save (in)           : flag whether the porosity is to be saved for later access
       */
-      virtual void ComputePorosityAtGP(Teuchos::ParameterList& params,
+      virtual void compute_porosity_at_gp(Teuchos::ParameterList& params,
           DRT::ELEMENTS::FluidBoundary* ele, const CORE::LINALG::Matrix<Base::bdrynen_, 1>& funct,
           const CORE::LINALG::Matrix<Base::bdrynen_, 1>& eporosity, double press, double J, int gp,
           double& porosity, double& dphi_dp, double& dphi_dJ, bool save);
@@ -414,7 +414,7 @@ namespace DRT
       \param mydispnp (in)       : nodal displacements/porosities
       \param eporosity (in/out)  : matrix to be filled with nodal porosities
       */
-      void ComputePorosityAtGP(Teuchos::ParameterList& params, DRT::ELEMENTS::FluidBoundary* ele,
+      void compute_porosity_at_gp(Teuchos::ParameterList& params, DRT::ELEMENTS::FluidBoundary* ele,
           const CORE::LINALG::Matrix<Base::bdrynen_, 1>& funct,
           const CORE::LINALG::Matrix<Base::bdrynen_, 1>& eporosity, double press, double J, int gp,
           double& porosity, double& dphi_dp, double& dphi_dJ, bool save) override;

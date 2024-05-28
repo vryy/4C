@@ -71,7 +71,7 @@ namespace POROMULTIPHASESCATRA
         Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
 
     //! set flag if varying diameter has to be calculated
-    virtual void SetVaryingDiamFlag();
+    virtual void set_varying_diam_flag();
 
     //! print out the coupling method
     void print_out_coupling_method() const override;

@@ -145,13 +145,13 @@ void SCATRA::LevelSetTimIntOneStepTheta::Update()
   //                     reinitialize level-set
   // -----------------------------------------------------------------
   // will be done only if required
-  Reinitialization();
+  reinitialization();
 
   // -------------------------------------------------------------------
   //                         update solution
   //        current solution becomes old solution of next time step
   // -------------------------------------------------------------------
-  UpdateState();
+  update_state();
 
   return;
 }
@@ -161,7 +161,7 @@ void SCATRA::LevelSetTimIntOneStepTheta::Update()
  | current solution becomes most recent solution of next time step      |
  |                                                      rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetTimIntOneStepTheta::UpdateState()
+void SCATRA::LevelSetTimIntOneStepTheta::update_state()
 {
   if (not switchreinit_)
   {

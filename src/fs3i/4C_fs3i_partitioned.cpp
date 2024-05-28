@@ -340,7 +340,7 @@ Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> FS3I::PartFS3I::create_vol_mortar_ob
   // this is actually only needed for copying TRANSPORT DIRICHLET/NEUMANN CONDITIONS
   // as standard DIRICHLET/NEUMANN CONDITIONS
   SCATRA::ScatraFluidCloneStrategy clonestrategy;
-  const auto conditions_to_copy = clonestrategy.ConditionsToCopy();
+  const auto conditions_to_copy = clonestrategy.conditions_to_copy();
   CORE::FE::DiscretizationCreatorBase creator;
   creator.CopyConditions(*slavedis, *slavedis, conditions_to_copy);
 
@@ -463,7 +463,7 @@ void FS3I::PartFS3I::SetupSystem()
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
-    Teuchos::RCP<DRT::Discretization> currdis = currscatra->ScaTraField()->Discretization();
+    Teuchos::RCP<DRT::Discretization> currdis = currscatra->ScaTraField()->discretization();
     const int numscal = currscatra->ScaTraField()->NumScal();
     Teuchos::RCP<CORE::LINALG::MultiMapExtractor> mapex =
         Teuchos::rcp(new CORE::LINALG::MultiMapExtractor());
@@ -474,8 +474,8 @@ void FS3I::PartFS3I::SetupSystem()
     scatrafieldexvec_.push_back(mapex);
   }
 
-  scatracoup_->setup_condition_coupling(*(scatravec_[0]->ScaTraField()->Discretization()),
-      scatrafieldexvec_[0]->Map(1), *(scatravec_[1]->ScaTraField()->Discretization()),
+  scatracoup_->setup_condition_coupling(*(scatravec_[0]->ScaTraField()->discretization()),
+      scatrafieldexvec_[0]->Map(1), *(scatravec_[1]->ScaTraField()->discretization()),
       scatrafieldexvec_[1]->Map(1), "ScaTraCoupling",
       scatravec_[0]
           ->ScaTraField()
@@ -518,7 +518,7 @@ void FS3I::PartFS3I::SetupSystem()
           Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(scatraglobalex_->Map(i)), 27, false, true));
       scatracoupmat_.push_back(scatracoupmat);
 
-      const Epetra_Map* dofrowmap = scatravec_[i]->ScaTraField()->Discretization()->dof_row_map();
+      const Epetra_Map* dofrowmap = scatravec_[i]->ScaTraField()->discretization()->dof_row_map();
       Teuchos::RCP<Epetra_Vector> zeros = CORE::LINALG::CreateVector(*dofrowmap, true);
       scatrazeros_.push_back(zeros);
     }
@@ -541,7 +541,7 @@ void FS3I::PartFS3I::SetupSystem()
 
   // scatra solver
   Teuchos::RCP<DRT::Discretization> firstscatradis =
-      (scatravec_[0])->ScaTraField()->Discretization();
+      (scatravec_[0])->ScaTraField()->discretization();
 #ifdef SCATRABLOCKMATRIXMERGE
   Teuchos::RCP<Teuchos::ParameterList> scatrasolvparams = Teuchos::rcp(new Teuchos::ParameterList);
   CORE::UTILS::AddEnumClassToParameterList<CORE::LINEAR_SOLVER::SolverType>(
@@ -597,11 +597,11 @@ void FS3I::PartFS3I::SetupSystem()
 
   (scatravec_[0])
       ->ScaTraField()
-      ->Discretization()
+      ->discretization()
       ->compute_null_space_if_necessary(scatrasolver_->Params().sublist("Inverse1"));
   (scatravec_[1])
       ->ScaTraField()
-      ->Discretization()
+      ->discretization()
       ->compute_null_space_if_necessary(scatrasolver_->Params().sublist("Inverse2"));
 #endif
 }
@@ -613,7 +613,7 @@ void FS3I::PartFS3I::TestResults(const Epetra_Comm& comm)
 {
   GLOBAL::Problem::Instance()->AddFieldTest(fsi_->fluid_field()->CreateFieldTest());
   GLOBAL::Problem::Instance()->AddFieldTest(fsi_->ale_field()->CreateFieldTest());
-  GLOBAL::Problem::Instance()->AddFieldTest(fsi_->StructureField()->CreateFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(fsi_->structure_field()->CreateFieldTest());
 
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
@@ -631,7 +631,7 @@ void FS3I::PartFS3I::SetFSISolution()
   // we clear every state, including the states of the secondary dof sets
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
-    scatravec_[i]->ScaTraField()->Discretization()->ClearState(true);
+    scatravec_[i]->ScaTraField()->discretization()->ClearState(true);
     // we have to manually clear this since this can not be saved directly in the
     // primary dof set (because it is cleared in between)
     scatravec_[i]->ScaTraField()->clear_external_concentrations();
@@ -647,7 +647,7 @@ void FS3I::PartFS3I::SetFSISolution()
 /*----------------------------------------------------------------------*/
 void FS3I::PartFS3I::set_struct_scatra_solution() const
 {
-  fsi_->StructureField()->Discretization()->set_state(
+  fsi_->structure_field()->discretization()->set_state(
       1, "scalarfield", structure_scalar_to_structure(scatravec_[1]->ScaTraField()->Phinp()));
 }
 
@@ -663,7 +663,7 @@ void FS3I::PartFS3I::set_mesh_disp() const
   // structure field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra = scatravec_[1];
   structscatra->ScaTraField()->ApplyMeshMovement(
-      structure_to_structure_scalar(fsi_->StructureField()->Dispnp()));
+      structure_to_structure_scalar(fsi_->structure_field()->Dispnp()));
 }
 
 
@@ -678,7 +678,7 @@ void FS3I::PartFS3I::set_velocity_fields() const
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField()->SetVelocityField(vol_mortar_master_to_slavei(i, convel[i]),
+    scatra->ScaTraField()->set_velocity_field(vol_mortar_master_to_slavei(i, convel[i]),
         Teuchos::null, vol_mortar_master_to_slavei(i, vel[i]), Teuchos::null);
   }
 }
@@ -717,7 +717,7 @@ void FS3I::PartFS3I::ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector>>& 
   // extract structure velocities and accelerations
 
   Teuchos::RCP<Epetra_Vector> velocity =
-      Teuchos::rcp(new Epetra_Vector(*(fsi_->StructureField()->Velnp())));
+      Teuchos::rcp(new Epetra_Vector(*(fsi_->structure_field()->Velnp())));
   vel.push_back(velocity);
   // structure ScaTra: velocity and grid velocity are identical!
   Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(velocity->Map(), true));
@@ -765,15 +765,15 @@ void FS3I::PartFS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>& 
   WallShearStress = fsi_->fluid_field()->Interface()->ExtractFSICondVector(WallShearStress);
 
   // replace global fluid interface dofs through structure interface dofs
-  WallShearStress = fsi_->FluidToStruct(WallShearStress);
+  WallShearStress = fsi_->fluid_to_struct(WallShearStress);
 
   // insert structure interface entries into vector with full structure length
   Teuchos::RCP<Epetra_Vector> structure =
-      CORE::LINALG::CreateVector(*(fsi_->StructureField()->Interface()->FullMap()), true);
+      CORE::LINALG::CreateVector(*(fsi_->structure_field()->Interface()->FullMap()), true);
 
   // Parameter int block of function InsertVector: (0: inner dofs of structure, 1: interface dofs of
   // structure, 2: inner dofs of porofluid, 3: interface dofs of porofluid )
-  fsi_->StructureField()->Interface()->InsertVector(WallShearStress, 1, structure);
+  fsi_->structure_field()->Interface()->InsertVector(WallShearStress, 1, structure);
   wss.push_back(structure);
 }
 

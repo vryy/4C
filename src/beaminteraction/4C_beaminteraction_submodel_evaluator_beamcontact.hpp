@@ -110,7 +110,7 @@ namespace BEAMINTERACTION
       void ResetStepState() override;
 
       //! derived
-      void WriteRestart(
+      void write_restart(
           IO::DiscretizationWriter& ia_writer, IO::DiscretizationWriter& bin_writer) const override;
 
       //! derived
@@ -124,7 +124,7 @@ namespace BEAMINTERACTION
       void PostReadRestart() override;
 
       //! derived
-      void RunPostIterate(const ::NOX::Solver::Generic& solver) override;
+      void run_post_iterate(const ::NOX::Solver::Generic& solver) override;
 
       //! derived
       void init_submodel_dependencies(
@@ -173,7 +173,7 @@ namespace BEAMINTERACTION
       //!@name routines that are not derived and handle beam to beam contact
       //! @{
       /// check which contact is considered
-      bool HaveContactType(BINSTRATEGY::UTILS::BinContentType const& contacttype) const;
+      bool have_contact_type(BINSTRATEGY::UTILS::BinContentType const& contacttype) const;
 
       /// print
       void print_all_beam_contact_element_pairs(std::ostream& out) const;

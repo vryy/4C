@@ -88,10 +88,10 @@ void MonWriter::WriteMonFile(PostProblem& problem, std::string& infieldtype, int
   // int numdis = problem.num_discr();
 
   // get pointer to discretisation of actual field
-  PostField* field = GetFieldPtr(problem);
+  PostField* field = get_field_ptr(problem);
   if (field == nullptr) FOUR_C_THROW("Could not obtain field");
 
-  CheckInfieldType(infieldtype);
+  check_infield_type(infieldtype);
 
   // pointer (rcp) to actual discretisation
   Teuchos::RCP<DRT::Discretization> mydiscrete = field->discretization();
@@ -116,7 +116,7 @@ void MonWriter::WriteMonFile(PostProblem& problem, std::string& infieldtype, int
     bool ismynode = mydiscrete->HaveGlobalNode(node);
     if (!ismynode)  // if this node does not belong to this field ( or proc, but we should be
                     // serial)
-      FieldError(node);
+      field_error(node);
 
     // pointer to my actual node
     const DRT::Node* mynode = mydiscrete->gNode(node);
@@ -139,7 +139,7 @@ void MonWriter::WriteMonFile(PostProblem& problem, std::string& infieldtype, int
     outfile << "\n";
     outfile << "#\n";
 
-    WriteTableHead(outfile, dim);
+    write_table_head(outfile, dim);
   }
   else  // this proc is not the node owner
   {
@@ -154,7 +154,7 @@ void MonWriter::WriteMonFile(PostProblem& problem, std::string& infieldtype, int
   // writing step size is considered
   if (nodeowner_)
   {
-    while (result.next_result()) WriteResult(outfile, result, gdof, dim);
+    while (result.next_result()) write_result(outfile, result, gdof, dim);
   }
 
   // close file
@@ -179,7 +179,7 @@ void MonWriter::WriteMonStressFile(
     groupnames.push_back("gauss_cauchy_stresses_xyz");
     groupnames.push_back("gauss_2PK_stresses_xyz");
     // write it, now
-    WriteMonStrFile(filename, problem, infieldtype, "stress", stresstype, groupnames, node);
+    write_mon_str_file(filename, problem, infieldtype, "stress", stresstype, groupnames, node);
   }
 
   return;
@@ -205,7 +205,7 @@ void MonWriter::WriteMonStrainFile(
     groupnames.push_back("gauss_LOG_strains_xyz");
 
     // write, now
-    WriteMonStrFile(filename, problem, infieldtype, "strain", straintype, groupnames, node);
+    write_mon_str_file(filename, problem, infieldtype, "strain", straintype, groupnames, node);
   }
 
   return;
@@ -230,7 +230,7 @@ void MonWriter::write_mon_pl_strain_file(
     groupnames.push_back("gauss_pl_EA_strains_xyz");
 
     // write, now
-    WriteMonStrFile(filename, problem, infieldtype, "strain", straintype, groupnames, node);
+    write_mon_str_file(filename, problem, infieldtype, "strain", straintype, groupnames, node);
   }
 
   return;
@@ -238,7 +238,7 @@ void MonWriter::write_mon_pl_strain_file(
 
 
 /*----------------------------------------------------------------------*/
-void MonWriter::WriteMonStrFile(const std::string& filename, PostProblem& problem,
+void MonWriter::write_mon_str_file(const std::string& filename, PostProblem& problem,
     std::string& infieldtype, const std::string strname, const std::string strtype,
     std::vector<std::string> groupnames, int node)
 {
@@ -253,10 +253,10 @@ void MonWriter::WriteMonStrFile(const std::string& filename, PostProblem& proble
   // int numdis = problem.num_discr();
 
   // get pointer to discretisation of actual field
-  PostField* field = GetFieldPtr(problem);
+  PostField* field = get_field_ptr(problem);
   if (field == nullptr) FOUR_C_THROW("Could not obtain field");
 
-  CheckInfieldType(infieldtype);
+  check_infield_type(infieldtype);
 
   // pointer (rcp) to actual discretisation
   Teuchos::RCP<DRT::Discretization> mydiscrete = field->discretization();
@@ -281,7 +281,7 @@ void MonWriter::WriteMonStrFile(const std::string& filename, PostProblem& proble
     bool ismynode = mydiscrete->HaveGlobalNode(node);
     if (!ismynode)  // if this node does not belong to this field ( or proc, but we should be
                     // seriell)
-      FieldError(node);
+      field_error(node);
 
     // pointer to my actual node
     const DRT::Node* mynode = mydiscrete->gNode(node);
@@ -303,7 +303,7 @@ void MonWriter::WriteMonStrFile(const std::string& filename, PostProblem& proble
     outfile << "\n";
     outfile << "#\n";
 
-    WriteStrTableHead(outfile, strname, strtype, dim);
+    write_str_table_head(outfile, strname, strtype, dim);
   }
   else  // this proc is not the node owner
   {
@@ -321,7 +321,7 @@ void MonWriter::WriteMonStrFile(const std::string& filename, PostProblem& proble
   // have to be incoporated --- at least I think so.
   // (culpit: bborn, 07/09)
   for (std::vector<std::string>::iterator gn = groupnames.begin(); gn != groupnames.end(); ++gn)
-    WriteStrResults(outfile, problem, result, gdof, dim, strtype, *gn, node);
+    write_str_results(outfile, problem, result, gdof, dim, strtype, *gn, node);
 
   if (outfile.is_open()) outfile.close();
 }
@@ -347,7 +347,7 @@ void MonWriter::write_mon_heatflux_file(
     groupnames.push_back("gauss_initial_heatfluxes_xyz");
 
     // write it, now
-    WriteMonThrFile(filename, problem, infieldtype, "heatflux", heatfluxtype, groupnames, node);
+    write_mon_thr_file(filename, problem, infieldtype, "heatflux", heatfluxtype, groupnames, node);
   }
 
   return;
@@ -374,7 +374,7 @@ void MonWriter::write_mon_tempgrad_file(
     groupnames.push_back("gauss_current_tempgrad_xyz");
 
     // write, now
-    WriteMonThrFile(filename, problem, infieldtype, "tempgrad", tempgradtype, groupnames, node);
+    write_mon_thr_file(filename, problem, infieldtype, "tempgrad", tempgradtype, groupnames, node);
   }
 
   return;
@@ -382,7 +382,7 @@ void MonWriter::write_mon_tempgrad_file(
 
 
 /*----------------------------------------------------------------------*/
-void MonWriter::WriteMonThrFile(const std::string& filename, PostProblem& problem,
+void MonWriter::write_mon_thr_file(const std::string& filename, PostProblem& problem,
     std::string& infieldtype, const std::string thrname, const std::string thrtype,
     std::vector<std::string> groupnames, int node)
 {
@@ -398,10 +398,10 @@ void MonWriter::WriteMonThrFile(const std::string& filename, PostProblem& proble
   //  int numdis = problem.num_discr();
 
   // get pointer to discretisation of actual field
-  PostField* field = GetFieldPtr(problem);
+  PostField* field = get_field_ptr(problem);
   if (field == nullptr) FOUR_C_THROW("Could not obtain field");
 
-  CheckInfieldType(infieldtype);
+  check_infield_type(infieldtype);
 
   // pointer (rcp) to actual discretisation
   Teuchos::RCP<DRT::Discretization> mydiscrete = field->discretization();
@@ -426,7 +426,7 @@ void MonWriter::WriteMonThrFile(const std::string& filename, PostProblem& proble
     bool ismynode = mydiscrete->HaveGlobalNode(node);
     if (!ismynode)  // if this node does not belong to this field ( or proc, but we should be
                     // seriell)
-      FieldError(node);
+      field_error(node);
 
     // pointer to my actual node
     const DRT::Node* mynode = mydiscrete->gNode(node);
@@ -449,7 +449,7 @@ void MonWriter::WriteMonThrFile(const std::string& filename, PostProblem& proble
     outfile << "\n";
     outfile << "#\n";
 
-    WriteThrTableHead(outfile, thrname, thrtype, dim);
+    write_thr_table_head(outfile, thrname, thrtype, dim);
   }
   else  // this proc is not the node owner
   {
@@ -467,16 +467,16 @@ void MonWriter::WriteMonThrFile(const std::string& filename, PostProblem& proble
   // assembly is parallel and thus all processors have to be incoporated
   // --- at least I think so. (culpit: bborn, 07/09)
   for (std::vector<std::string>::iterator gn = groupnames.begin(); gn != groupnames.end(); ++gn)
-    WriteThrResults(outfile, problem, result, gdof, dim, thrtype, *gn, node);
+    write_thr_results(outfile, problem, result, gdof, dim, thrtype, *gn, node);
 
   if (outfile.is_open()) outfile.close();
-}  // WriteMonThrFile()
+}  // write_mon_thr_file()
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-PostField* FieldMonWriter::GetFieldPtr(PostProblem& problem)
+PostField* FieldMonWriter::get_field_ptr(PostProblem& problem)
 {
   return problem.get_discretization(0);
 }
@@ -485,14 +485,14 @@ PostField* FieldMonWriter::GetFieldPtr(PostProblem& problem)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FluidMonWriter::CheckInfieldType(std::string& infieldtype)
+void FluidMonWriter::check_infield_type(std::string& infieldtype)
 {
   if (infieldtype != "fluid")
     std::cout << "\nPure fluid problem, field option other than fluid has been ignored!\n\n";
 }
 
 /*----------------------------------------------------------------------*/
-void FluidMonWriter::FieldError(int node)
+void FluidMonWriter::field_error(int node)
 {
   FOUR_C_THROW("Node %i does not belong to fluid field!", node);
 }
@@ -504,7 +504,7 @@ void FluidMonWriter::write_header(std::ofstream& outfile)
 }
 
 /*----------------------------------------------------------------------*/
-void FluidMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
+void FluidMonWriter::write_table_head(std::ofstream& outfile, int dim)
 {
   switch (dim)
   {
@@ -521,7 +521,7 @@ void FluidMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
 }
 
 /*----------------------------------------------------------------------*/
-void FluidMonWriter::WriteResult(
+void FluidMonWriter::write_result(
     std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // get actual result vector
@@ -548,7 +548,7 @@ void FluidMonWriter::WriteResult(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void RedAirwayMonWriter::CheckInfieldType(std::string& infieldtype)
+void RedAirwayMonWriter::check_infield_type(std::string& infieldtype)
 {
   if (infieldtype != "red_airway")
     std::cout
@@ -556,7 +556,7 @@ void RedAirwayMonWriter::CheckInfieldType(std::string& infieldtype)
 }
 
 /*----------------------------------------------------------------------*/
-void RedAirwayMonWriter::FieldError(int node)
+void RedAirwayMonWriter::field_error(int node)
 {
   FOUR_C_THROW("Node %i does not belong to red_airway field!", node);
 }
@@ -568,13 +568,13 @@ void RedAirwayMonWriter::write_header(std::ofstream& outfile)
 }
 
 /*----------------------------------------------------------------------*/
-void RedAirwayMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
+void RedAirwayMonWriter::write_table_head(std::ofstream& outfile, int dim)
 {
   outfile << "# step   time     P\n";
 }
 
 /*----------------------------------------------------------------------*/
-void RedAirwayMonWriter::WriteResult(
+void RedAirwayMonWriter::write_result(
     std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // get actual result vector
@@ -601,7 +601,7 @@ void RedAirwayMonWriter::WriteResult(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void StructMonWriter::CheckInfieldType(std::string& infieldtype)
+void StructMonWriter::check_infield_type(std::string& infieldtype)
 {
   if (infieldtype != "structure")
     std::cout
@@ -609,7 +609,7 @@ void StructMonWriter::CheckInfieldType(std::string& infieldtype)
 }
 
 /*----------------------------------------------------------------------*/
-void StructMonWriter::FieldError(int node)
+void StructMonWriter::field_error(int node)
 {
   FOUR_C_THROW("Node %i does not belong to structure field!", node);
 }
@@ -621,7 +621,7 @@ void StructMonWriter::write_header(std::ofstream& outfile)
 }
 
 /*----------------------------------------------------------------------*/
-void StructMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
+void StructMonWriter::write_table_head(std::ofstream& outfile, int dim)
 {
   switch (dim)
   {
@@ -648,7 +648,7 @@ void StructMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
 }
 
 /*----------------------------------------------------------------------*/
-void StructMonWriter::WriteResult(
+void StructMonWriter::write_result(
     std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // write front
@@ -758,7 +758,7 @@ void StructMonWriter::WriteResult(
 }
 
 /*----------------------------------------------------------------------*/
-void StructMonWriter::WriteStrTableHead(
+void StructMonWriter::write_str_table_head(
     std::ofstream& outfile, const std::string strname, const std::string strtype, const int dim)
 {
   switch (dim)
@@ -785,7 +785,7 @@ void StructMonWriter::WriteStrTableHead(
 }
 
 /*----------------------------------------------------------------------*/
-void StructMonWriter::WriteStrResults(std::ofstream& outfile, PostProblem& problem,
+void StructMonWriter::write_str_results(std::ofstream& outfile, PostProblem& problem,
     PostResult& result, std::vector<int>& gdof, int dim, std::string strtype, std::string groupname,
     const int node)
 {
@@ -838,7 +838,7 @@ void StructMonWriter::WriteStrResults(std::ofstream& outfile, PostProblem& probl
     }
 
     // get pointer to discretisation of actual field
-    PostField* field = GetFieldPtr(problem);
+    PostField* field = get_field_ptr(problem);
 
     // inform (eagerly waiting) user
     if (myrank_ == 0) std::cout << "writing node-based " << out << std::endl;
@@ -856,7 +856,7 @@ void StructMonWriter::WriteStrResults(std::ofstream& outfile, PostProblem& probl
     // bottom control here, because first set has been read already
     do
     {
-      WriteStrResult(outfile, field, result, groupname, name, numdf, node);
+      write_str_result(outfile, field, result, groupname, name, numdf, node);
     } while (result.next_result());
   }
 
@@ -864,8 +864,9 @@ void StructMonWriter::WriteStrResults(std::ofstream& outfile, PostProblem& probl
 }
 
 /*----------------------------------------------------------------------*/
-void StructMonWriter::WriteStrResult(std::ofstream& outfile, PostField*& field, PostResult& result,
-    const std::string groupname, const std::string name, const int numdf, const int node) const
+void StructMonWriter::write_str_result(std::ofstream& outfile, PostField*& field,
+    PostResult& result, const std::string groupname, const std::string name, const int numdf,
+    const int node) const
 {
   using namespace FourC;
 
@@ -898,14 +899,14 @@ void StructMonWriter::WriteStrResult(std::ofstream& outfile, PostField*& field, 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void AleMonWriter::CheckInfieldType(std::string& infieldtype)
+void AleMonWriter::check_infield_type(std::string& infieldtype)
 {
   if (infieldtype != "ale")
     std::cout << "\nPure ALE problem, field option other than ale has been ignored!\n\n";
 }
 
 /*----------------------------------------------------------------------*/
-void AleMonWriter::FieldError(int node)
+void AleMonWriter::field_error(int node)
 {
   FOUR_C_THROW("Node %i does not belong to ALE field!", node);
 }
@@ -917,7 +918,7 @@ void AleMonWriter::write_header(std::ofstream& outfile)
 }
 
 /*----------------------------------------------------------------------*/
-void AleMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
+void AleMonWriter::write_table_head(std::ofstream& outfile, int dim)
 {
   switch (dim)
   {
@@ -934,7 +935,7 @@ void AleMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
 }
 
 /*----------------------------------------------------------------------*/
-void AleMonWriter::WriteResult(
+void AleMonWriter::write_result(
     std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // get actual result vector for displacement
@@ -960,7 +961,7 @@ void AleMonWriter::WriteResult(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-PostField* FsiFluidMonWriter::GetFieldPtr(PostProblem& problem)
+PostField* FsiFluidMonWriter::get_field_ptr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(1);
@@ -975,7 +976,7 @@ void FsiFluidMonWriter::write_header(std::ofstream& outfile)
 }
 
 /*----------------------------------------------------------------------*/
-void FsiFluidMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
+void FsiFluidMonWriter::write_table_head(std::ofstream& outfile, int dim)
 {
   switch (dim)
   {
@@ -1010,7 +1011,7 @@ void FsiFluidMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
 }
 
 /*----------------------------------------------------------------------*/
-void FsiFluidMonWriter::WriteResult(
+void FsiFluidMonWriter::write_result(
     std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // get actual result vector for displacement
@@ -1076,7 +1077,7 @@ void FsiFluidMonWriter::WriteResult(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-PostField* FsiStructMonWriter::GetFieldPtr(PostProblem& problem)
+PostField* FsiStructMonWriter::get_field_ptr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(0);
@@ -1091,7 +1092,7 @@ void FsiStructMonWriter::write_header(std::ofstream& outfile)
 }
 
 /*----------------------------------------------------------------------*/
-void FsiStructMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
+void FsiStructMonWriter::write_table_head(std::ofstream& outfile, int dim)
 {
   switch (dim)
   {
@@ -1120,7 +1121,7 @@ void FsiStructMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
 }
 
 /*----------------------------------------------------------------------*/
-void FsiStructMonWriter::WriteResult(
+void FsiStructMonWriter::write_result(
     std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // write front
@@ -1275,7 +1276,7 @@ void FsiStructMonWriter::WriteResult(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-PostField* FsiAleMonWriter::GetFieldPtr(PostProblem& problem)
+PostField* FsiAleMonWriter::get_field_ptr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(1);
@@ -1294,13 +1295,13 @@ void FsiAleMonWriter::write_header(std::ofstream& outfile)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ScatraMonWriter::CheckInfieldType(std::string& infieldtype)
+void ScatraMonWriter::check_infield_type(std::string& infieldtype)
 {
   std::cout << "\nscatra something\n\n";
 }
 
 /*----------------------------------------------------------------------*/
-void ScatraMonWriter::FieldError(int node)
+void ScatraMonWriter::field_error(int node)
 {
   FOUR_C_THROW("Node %i does not belong to scatra field!", node);
 }
@@ -1312,7 +1313,7 @@ void ScatraMonWriter::write_header(std::ofstream& outfile)
 }
 
 /*----------------------------------------------------------------------*/
-PostField* ScatraMonWriter::GetFieldPtr(PostProblem& problem)
+PostField* ScatraMonWriter::get_field_ptr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(1);
@@ -1321,7 +1322,7 @@ PostField* ScatraMonWriter::GetFieldPtr(PostProblem& problem)
 }
 
 /*----------------------------------------------------------------------*/
-void ScatraMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
+void ScatraMonWriter::write_table_head(std::ofstream& outfile, int dim)
 {
   switch (dim)
   {
@@ -1338,7 +1339,7 @@ void ScatraMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
 }
 
 /*----------------------------------------------------------------------*/
-void ScatraMonWriter::WriteResult(
+void ScatraMonWriter::write_result(
     std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // get actual result vector for displacement
@@ -1366,14 +1367,14 @@ void ScatraMonWriter::WriteResult(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ThermoMonWriter::CheckInfieldType(std::string& infieldtype)
+void ThermoMonWriter::check_infield_type(std::string& infieldtype)
 {
   if (infieldtype != "thermo")
     std::cout << "\nPure thermal problem, field option other than thermo has been ignored!\n\n";
 }
 
 /*----------------------------------------------------------------------*/
-void ThermoMonWriter::FieldError(int node)
+void ThermoMonWriter::field_error(int node)
 {
   FOUR_C_THROW("Node %i does not belong to thermal field!", node);
 }
@@ -1385,7 +1386,7 @@ void ThermoMonWriter::write_header(std::ofstream& outfile)
 }
 
 /*----------------------------------------------------------------------*/
-void ThermoMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
+void ThermoMonWriter::write_table_head(std::ofstream& outfile, int dim)
 {
   outfile << "#" << std::right << std::setw(9) << "step" << std::right << std::setw(16) << "time"
           << std::right << std::setw(16) << "theta" << std::right << std::setw(16) << "thetarate"
@@ -1393,7 +1394,7 @@ void ThermoMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
 }
 
 /*----------------------------------------------------------------------*/
-void ThermoMonWriter::WriteResult(
+void ThermoMonWriter::write_result(
     std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // write front
@@ -1440,7 +1441,7 @@ void ThermoMonWriter::WriteResult(
 }
 
 /*----------------------------------------------------------------------*/
-void ThermoMonWriter::WriteThrTableHead(
+void ThermoMonWriter::write_thr_table_head(
     std::ofstream& outfile, const std::string thrname, const std::string thrtype, const int dim)
 {
   switch (dim)
@@ -1469,7 +1470,7 @@ void ThermoMonWriter::WriteThrTableHead(
 }
 
 /*----------------------------------------------------------------------*/
-void ThermoMonWriter::WriteThrResults(std::ofstream& outfile, PostProblem& problem,
+void ThermoMonWriter::write_thr_results(std::ofstream& outfile, PostProblem& problem,
     PostResult& result, std::vector<int>& gdof, int dim, std::string thrtype, std::string groupname,
     const int node)
 {
@@ -1506,7 +1507,7 @@ void ThermoMonWriter::WriteThrResults(std::ofstream& outfile, PostProblem& probl
     }
 
     // get pointer to discretisation of actual field
-    PostField* field = GetFieldPtr(problem);
+    PostField* field = get_field_ptr(problem);
 
     // inform (eagerly waiting) user
     if (myrank_ == 0) std::cout << "writing node-based " << out << std::endl;
@@ -1515,7 +1516,7 @@ void ThermoMonWriter::WriteThrResults(std::ofstream& outfile, PostProblem& probl
     // bottom control here, because first set has been read already
     do
     {
-      WriteThrResult(outfile, field, result, groupname, name, dim, node);
+      write_thr_result(outfile, field, result, groupname, name, dim, node);
     } while (result.next_result());
   }
 
@@ -1523,8 +1524,9 @@ void ThermoMonWriter::WriteThrResults(std::ofstream& outfile, PostProblem& probl
 }
 
 /*----------------------------------------------------------------------*/
-void ThermoMonWriter::WriteThrResult(std::ofstream& outfile, PostField*& field, PostResult& result,
-    const std::string groupname, const std::string name, const int dim, const int node) const
+void ThermoMonWriter::write_thr_result(std::ofstream& outfile, PostField*& field,
+    PostResult& result, const std::string groupname, const std::string name, const int dim,
+    const int node) const
 {
   using namespace FourC;
 
@@ -1600,7 +1602,7 @@ void ThermoMonWriter::WriteThrResult(std::ofstream& outfile, PostField*& field, 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-PostField* TsiStructMonWriter::GetFieldPtr(PostProblem& problem)
+PostField* TsiStructMonWriter::get_field_ptr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(1);
@@ -1619,7 +1621,7 @@ void TsiStructMonWriter::write_header(std::ofstream& outfile)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-PostField* TsiThermoMonWriter::GetFieldPtr(PostProblem& problem)
+PostField* TsiThermoMonWriter::get_field_ptr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(0);
@@ -1636,14 +1638,14 @@ void TsiThermoMonWriter::write_header(std::ofstream& outfile)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void PoroFluidMultiMonWriter::CheckInfieldType(std::string& infieldtype)
+void PoroFluidMultiMonWriter::check_infield_type(std::string& infieldtype)
 {
   if (infieldtype != "porofluid")
     std::cout << "\nPure fluid problem, field option other than porofluid has been ignored!\n\n";
 }
 
 /*----------------------------------------------------------------------*/
-void PoroFluidMultiMonWriter::FieldError(int node)
+void PoroFluidMultiMonWriter::field_error(int node)
 {
   FOUR_C_THROW("Node %i does not belong to porofluid field!", node);
 }
@@ -1655,7 +1657,7 @@ void PoroFluidMultiMonWriter::write_header(std::ofstream& outfile)
 }
 
 /*----------------------------------------------------------------------*/
-void PoroFluidMultiMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
+void PoroFluidMultiMonWriter::write_table_head(std::ofstream& outfile, int dim)
 {
   switch (dim)
   {
@@ -1671,7 +1673,7 @@ void PoroFluidMultiMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
 }
 
 /*----------------------------------------------------------------------*/
-void PoroFluidMultiMonWriter::WriteResult(
+void PoroFluidMultiMonWriter::write_result(
     std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // get actual result vector for displacement
@@ -1726,7 +1728,7 @@ void PoroFluidMultiMonWriter::WriteResult(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-PostField* PoroMultiElastScatraFluidMonWriter::GetFieldPtr(PostProblem& problem)
+PostField* PoroMultiElastScatraFluidMonWriter::get_field_ptr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(1);
@@ -1743,7 +1745,7 @@ void PoroMultiElastScatraFluidMonWriter::write_header(std::ofstream& outfile)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-PostField* PoroMultiElastScatraScatraMonWriter::GetFieldPtr(PostProblem& problem)
+PostField* PoroMultiElastScatraScatraMonWriter::get_field_ptr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(2);
@@ -1768,7 +1770,7 @@ void PoroMultiElastScatraScatraMonWriter::write_header(std::ofstream& outfile)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-PostField* PoroMultiElastScatraArteryScatraMonWriter::GetFieldPtr(PostProblem& problem)
+PostField* PoroMultiElastScatraArteryScatraMonWriter::get_field_ptr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(4);

@@ -71,7 +71,7 @@ namespace ADAPTER
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> artery_porofluid_sysmat() const override;
 
     /// direct access to discretization
-    Teuchos::RCP<DRT::Discretization> Discretization() const override;
+    Teuchos::RCP<DRT::Discretization> discretization() const override;
 
     //! apply moving mesh data
     void ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> dispnp  //!< displacement vector
@@ -83,7 +83,7 @@ namespace ADAPTER
 
     //! set convective velocity field (+ pressure and acceleration field as
     //! well as fine-scale velocity field, if required)
-    void SetVelocityField(Teuchos::RCP<const Epetra_Vector> vel  //!< velocity vector
+    void set_velocity_field(Teuchos::RCP<const Epetra_Vector> vel  //!< velocity vector
         ) override;
 
     //! set solution of scatra problem

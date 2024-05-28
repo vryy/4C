@@ -227,7 +227,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMean
     for (int iele = 0; iele < ptToNode->NumElement(); iele++)
     {
       if (DISTYPE != adjelements[iele]->Shape())
-        FOUR_C_THROW("Discretization not with same elements!!!");
+        FOUR_C_THROW("discretization not with same elements!!!");
 
       elements.push_back(adjelements[iele]);
     }

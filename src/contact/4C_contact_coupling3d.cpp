@@ -109,7 +109,7 @@ bool CONTACT::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterf
   for (int i = 0; i < (int)(Cells().size()); ++i)
   {
     // integrate cell only if it has a non-zero area
-    if (Cells()[i]->Area() < MORTARINTLIM * SlaveElementArea()) continue;
+    if (Cells()[i]->Area() < MORTARINTLIM * slave_element_area()) continue;
 
       // debug output of integration cells in GMSH
 #ifdef MORTARGMSHCELLS
@@ -363,7 +363,7 @@ bool CONTACT::Coupling3d::slave_vertex_linearization(
   const int nrow = SlaveIntElement().num_node();
   CORE::LINALG::SerialDenseVector sval(nrow);
   CORE::LINALG::SerialDenseMatrix sderiv(nrow, 2, true);
-  SlaveIntElement().EvaluateShape(scxi, sval, sderiv, nrow);
+  SlaveIntElement().evaluate_shape(scxi, sval, sderiv, nrow);
 
   // we need all participating slave nodes
   DRT::Node** snodes = SlaveIntElement().Nodes();
@@ -502,7 +502,7 @@ bool CONTACT::Coupling3d::master_vertex_linearization(
   int nrow = SlaveIntElement().num_node();
   CORE::LINALG::SerialDenseVector sval(nrow);
   CORE::LINALG::SerialDenseMatrix sderiv(nrow, 2, true);
-  SlaveIntElement().EvaluateShape(scxi, sval, sderiv, nrow);
+  SlaveIntElement().evaluate_shape(scxi, sval, sderiv, nrow);
 
   // we need all participating slave nodes
   DRT::Node** snodes = SlaveIntElement().Nodes();
@@ -1093,7 +1093,7 @@ CONTACT::Coupling3dQuadManager::Coupling3dQuadManager(DRT::Discretization& idisc
 /*----------------------------------------------------------------------*
  |  Evaluate mortar coupling pairs                            popp 03/09|
  *----------------------------------------------------------------------*/
-void CONTACT::Coupling3dManager::IntegrateCoupling(
+void CONTACT::Coupling3dManager::integrate_coupling(
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // get algorithm
@@ -1119,7 +1119,7 @@ void CONTACT::Coupling3dManager::IntegrateCoupling(
           new Coupling3d(idiscret_, dim_, false, imortar_, SlaveElement(), MasterElement(m))));
 
       // do coupling
-      Coupling()[m]->EvaluateCoupling();
+      Coupling()[m]->evaluate_coupling();
 
       // store number of intcells
       ncells_ += (int)(Coupling()[m]->Cells()).size();
@@ -1186,7 +1186,7 @@ void CONTACT::Coupling3dManager::IntegrateCoupling(
                 idiscret_, dim_, false, imortar_, SlaveElement(), MasterElement(m))));
 
             // do coupling
-            Coupling()[m]->EvaluateCoupling();
+            Coupling()[m]->evaluate_coupling();
 
             // store number of intcells
             ncells_ += (int)(Coupling()[m]->Cells()).size();
@@ -1246,7 +1246,7 @@ void CONTACT::Coupling3dManager::IntegrateCoupling(
 /*----------------------------------------------------------------------*
  |  Evaluate coupling pairs                                 farah 09/14 |
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling3dManager::EvaluateCoupling(
+bool CONTACT::Coupling3dManager::evaluate_coupling(
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // decide which type of coupling should be evaluated
@@ -1257,7 +1257,7 @@ bool CONTACT::Coupling3dManager::EvaluateCoupling(
   // Mortar Contact
   //*********************************
   if (algo == INPAR::MORTAR::algorithm_mortar || algo == INPAR::MORTAR::algorithm_gpts)
-    IntegrateCoupling(mparams_ptr);
+    integrate_coupling(mparams_ptr);
 
   //*********************************
   // Error
@@ -1276,7 +1276,7 @@ bool CONTACT::Coupling3dManager::EvaluateCoupling(
 /*----------------------------------------------------------------------*
  |  Evaluate mortar coupling pairs for Quad-coupling         farah 09/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Coupling3dQuadManager::IntegrateCoupling(
+void CONTACT::Coupling3dQuadManager::integrate_coupling(
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // get algorithm type
@@ -1300,14 +1300,14 @@ void CONTACT::Coupling3dQuadManager::IntegrateCoupling(
     std::vector<Teuchos::RCP<MORTAR::IntElement>> sauxelements(0);
     std::vector<std::vector<Teuchos::RCP<MORTAR::IntElement>>> mauxelements(
         MasterElements().size());
-    SplitIntElements(SlaveElement(), sauxelements);
+    split_int_elements(SlaveElement(), sauxelements);
 
     // loop over all master elements associated with this slave element
     for (int m = 0; m < (int)MasterElements().size(); ++m)
     {
       // build linear integration elements from quadratic MORTAR::Elements
       mauxelements[m].resize(0);
-      SplitIntElements(*MasterElements()[m], mauxelements[m]);
+      split_int_elements(*MasterElements()[m], mauxelements[m]);
 
       // loop over all IntElement pairs for coupling
       for (int i = 0; i < (int)sauxelements.size(); ++i)
@@ -1317,7 +1317,7 @@ void CONTACT::Coupling3dQuadManager::IntegrateCoupling(
           Coupling().push_back(Teuchos::rcp(new Coupling3dQuad(Discret(), Dim(), true, Params(),
               SlaveElement(), *MasterElements()[m], *sauxelements[i], *mauxelements[m][j])));
 
-          Coupling()[Coupling().size() - 1]->EvaluateCoupling();
+          Coupling()[Coupling().size() - 1]->evaluate_coupling();
 
           // increase counter of slave/master integration pairs and intcells
           smintpairs_ += 1;
@@ -1381,14 +1381,14 @@ void CONTACT::Coupling3dQuadManager::IntegrateCoupling(
         std::vector<Teuchos::RCP<MORTAR::IntElement>> sauxelements(0);
         std::vector<std::vector<Teuchos::RCP<MORTAR::IntElement>>> mauxelements(
             MasterElements().size());
-        SplitIntElements(SlaveElement(), sauxelements);
+        split_int_elements(SlaveElement(), sauxelements);
 
         // loop over all master elements associated with this slave element
         for (int m = 0; m < (int)MasterElements().size(); ++m)
         {
           // build linear integration elements from quadratic MORTAR::Elements
           mauxelements[m].resize(0);
-          SplitIntElements(*MasterElements()[m], mauxelements[m]);
+          split_int_elements(*MasterElements()[m], mauxelements[m]);
 
           // loop over all IntElement pairs for coupling
           for (int i = 0; i < (int)sauxelements.size(); ++i)
@@ -1398,7 +1398,7 @@ void CONTACT::Coupling3dQuadManager::IntegrateCoupling(
               Coupling().push_back(Teuchos::rcp(new Coupling3dQuad(Discret(), Dim(), true, Params(),
                   SlaveElement(), *MasterElements()[m], *sauxelements[i], *mauxelements[m][j])));
 
-              Coupling()[Coupling().size() - 1]->EvaluateCoupling();
+              Coupling()[Coupling().size() - 1]->evaluate_coupling();
 
               // increase counter of slave/master integration pairs and intcells
               smintpairs_ += 1;
@@ -1446,7 +1446,7 @@ void CONTACT::Coupling3dQuadManager::IntegrateCoupling(
 /*----------------------------------------------------------------------*
  |  Evaluate coupling pairs for Quad-coupling                farah 01/13|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling3dQuadManager::EvaluateCoupling(
+bool CONTACT::Coupling3dQuadManager::evaluate_coupling(
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // decide which type of coupling should be evaluated
@@ -1457,7 +1457,7 @@ bool CONTACT::Coupling3dQuadManager::EvaluateCoupling(
   // Mortar Contact
   //*********************************
   if (algo == INPAR::MORTAR::algorithm_mortar || algo == INPAR::MORTAR::algorithm_gpts)
-    IntegrateCoupling(mparams_ptr);
+    integrate_coupling(mparams_ptr);
 
   //*********************************
   // Error
@@ -1790,7 +1790,7 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
           SlaveElement().evaluate_shape_lag_mult_lin(
               INPAR::MORTAR::shape_standard, psxi, sval, sderiv, nnodes);
         else
-          SlaveElement().EvaluateShape(psxi, sval, sderiv, nnodes);
+          SlaveElement().evaluate_shape(psxi, sval, sderiv, nnodes);
 
         // additional data for contact calculation (i.e. incl. derivative of dual shape functions
         // coefficient matrix) GP slave coordinate derivatives
@@ -1803,7 +1803,7 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
         // compute global GP coordinate derivative
         static CORE::LINALG::Matrix<3, 1> svalcell;
         static CORE::LINALG::Matrix<3, 2> sderivcell;
-        currcell->EvaluateShape(eta, svalcell, sderivcell);
+        currcell->evaluate_shape(eta, svalcell, sderivcell);
 
         for (int v = 0; v < 3; ++v)
           for (int d = 0; d < 3; ++d)

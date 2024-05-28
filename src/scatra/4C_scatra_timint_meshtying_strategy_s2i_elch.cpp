@@ -47,13 +47,13 @@ SCATRA::MeshtyingStrategyS2IElch::MeshtyingStrategyS2IElch(
 /*---------------------------------------------------------------------------*
  | compute time step size                                         fang 02/18 |
  *---------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2IElch::ComputeTimeStepSize(double& dt)
+void SCATRA::MeshtyingStrategyS2IElch::compute_time_step_size(double& dt)
 {
   // consider adaptive time stepping for scatra-scatra interface layer growth if necessary
   if (intlayergrowth_timestep_ > 0.0)
   {
     // add state vectors to discretization
-    scatratimint_->Discretization()->ClearState();
+    scatratimint_->discretization()->ClearState();
     scatratimint_->add_time_integration_specific_vectors();
 
     // create parameter list
@@ -69,20 +69,20 @@ void SCATRA::MeshtyingStrategyS2IElch::ComputeTimeStepSize(double& dt)
 
     // extract boundary conditions for scatra-scatra interface layer growth
     std::vector<CORE::Conditions::Condition*> conditions;
-    scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth", conditions);
+    scatratimint_->discretization()->GetCondition("S2IKineticsGrowth", conditions);
 
     // collect condition specific data and store to scatra boundary parameter class
     set_condition_specific_sca_tra_parameters(*conditions[0]);
     // evaluate minimum and maximum interfacial overpotential associated with scatra-scatra
     // interface layer growth
-    scatratimint_->Discretization()->evaluate_condition(condparams, Teuchos::null, Teuchos::null,
+    scatratimint_->discretization()->evaluate_condition(condparams, Teuchos::null, Teuchos::null,
         Teuchos::null, Teuchos::null, Teuchos::null, "S2IKineticsGrowth");
-    scatratimint_->Discretization()->ClearState();
+    scatratimint_->discretization()->ClearState();
 
     // communicate minimum interfacial overpotential associated with scatra-scatra interface layer
     // growth
     double etagrowthmin(0.0);
-    scatratimint_->Discretization()->Comm().MinAll(
+    scatratimint_->discretization()->Comm().MinAll(
         &condparams.get<double>("etagrowthmin"), &etagrowthmin, 1);
 
     // adaptive time stepping for scatra-scatra interface layer growth is currently inactive
@@ -104,7 +104,7 @@ void SCATRA::MeshtyingStrategyS2IElch::ComputeTimeStepSize(double& dt)
       // communicate maximum interfacial overpotential associated with scatra-scatra interface layer
       // growth
       double etagrowthmax(0.0);
-      scatratimint_->Discretization()->Comm().MaxAll(
+      scatratimint_->discretization()->Comm().MaxAll(
           &condparams.get<double>("etagrowthmax"), &etagrowthmax, 1);
 
       // check whether maximum interfacial overpotential has become negative
@@ -137,7 +137,7 @@ void SCATRA::MeshtyingStrategyS2IElch::ComputeTimeStepSize(double& dt)
     if (dt > intlayergrowth_timestep_ and intlayergrowth_timestep_active_)
       dt = intlayergrowth_timestep_;
   }
-}  // SCATRA::MeshtyingStrategyS2IElch::ComputeTimeStepSize
+}  // SCATRA::MeshtyingStrategyS2IElch::compute_time_step_size
 
 
 /*--------------------------------------------------------------------------------------*
@@ -178,7 +178,7 @@ void SCATRA::MeshtyingStrategyS2IElch::evaluate_point_coupling()
     const int nodeid_slave = (*nodeids_slave)[0];
     const int nodeid_master = (*nodeids_master)[0];
 
-    auto dis = scatratimint_->Discretization();
+    auto dis = scatratimint_->discretization();
 
     auto* slave_node = dis->gNode(nodeid_slave);
     auto* master_node = dis->gNode(nodeid_master);
@@ -383,7 +383,7 @@ void SCATRA::MeshtyingStrategyS2IElch::Update() const
   {
     // extract boundary conditions for scatra-scatra interface layer growth
     std::vector<CORE::Conditions::Condition*> conditions;
-    scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth", conditions);
+    scatratimint_->discretization()->GetCondition("S2IKineticsGrowth", conditions);
 
     // loop over all conditions
     for (const auto& condition : conditions)
@@ -417,18 +417,18 @@ void SCATRA::MeshtyingStrategyS2IElch::Update() const
           {
             // extract global ID of current node
             // process only nodes stored by current processor
-            if (scatratimint_->Discretization()->HaveGlobalNode(nodegid))
+            if (scatratimint_->discretization()->HaveGlobalNode(nodegid))
             {
               // extract current node
-              const DRT::Node* const node = scatratimint_->Discretization()->gNode(nodegid);
+              const DRT::Node* const node = scatratimint_->discretization()->gNode(nodegid);
 
               // process only nodes owned by current processor
-              if (node->Owner() == scatratimint_->Discretization()->Comm().MyPID())
+              if (node->Owner() == scatratimint_->discretization()->Comm().MyPID())
               {
                 // extract local ID of first scalar transport degree of freedom associated with
                 // current node
-                const int doflid_scatra = scatratimint_->Discretization()->dof_row_map()->LID(
-                    scatratimint_->Discretization()->Dof(
+                const int doflid_scatra = scatratimint_->discretization()->dof_row_map()->LID(
+                    scatratimint_->discretization()->Dof(
                         0, node, 0));  // Do not remove the first zero, i.e., the first function
                                        // argument, otherwise an error is thrown in debug mode!
                 if (doflid_scatra < 0)
@@ -436,8 +436,8 @@ void SCATRA::MeshtyingStrategyS2IElch::Update() const
 
                 // extract local ID of scatra-scatra interface layer thickness variable associated
                 // with current node
-                const int doflid_growth = scatratimint_->Discretization()->dof_row_map(2)->LID(
-                    scatratimint_->Discretization()->Dof(2, node, 0));
+                const int doflid_growth = scatratimint_->discretization()->dof_row_map(2)->LID(
+                    scatratimint_->discretization()->Dof(2, node, 0));
                 if (doflid_growth < 0)
                   FOUR_C_THROW(
                       "Couldn't extract local ID of scatra-scatra interface layer thickness!");
@@ -604,7 +604,7 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::evaluate_condition(
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract nodal state variables associated with slave and master elements
-  this->ExtractNodeValues(idiscret, la_slave, la_master);
+  this->extract_node_values(idiscret, la_slave, la_master);
 
   // determine quadrature rule
   const CORE::FE::IntPointsAndWeights<2> intpoints(CORE::FE::GaussRule2D::tri_7point);
@@ -839,7 +839,7 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::evaluate_condition
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract nodal state variables associated with slave and master elements
-  ExtractNodeValues(idiscret, la_slave, la_master);
+  extract_node_values(idiscret, la_slave, la_master);
 
   // determine quadrature rule
   const CORE::FE::IntPointsAndWeights<2> intpoints(CORE::FE::GaussRule2D::tri_7point);
@@ -882,17 +882,17 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::evaluate_condition
  | extract nodal state variables associated with mortar integration cell   fang 01/17 |
  *------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::ExtractNodeValues(
+void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::extract_node_values(
     const DRT::Discretization& idiscret,    //!< interface discretization
     DRT::Element::LocationArray& la_slave,  //!< slave-side location array
     DRT::Element::LocationArray& la_master  //!< master-side location array
 )
 {
   // call base class routine
-  my::ExtractNodeValues(idiscret, la_slave, la_master);
+  my::extract_node_values(idiscret, la_slave, la_master);
 
   // extract nodal temperature variables associated with mortar integration cell
-  my::ExtractNodeValues(etempnp_slave_, idiscret, la_slave, "thermo", 1);
+  my::extract_node_values(etempnp_slave_, idiscret, la_slave, "thermo", 1);
 }
 
 
@@ -1060,7 +1060,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition(
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract nodal state variables associated with slave and master elements
-  ExtractNodeValues(idiscret, la_slave, la_master);
+  extract_node_values(idiscret, la_slave, la_master);
 
   // determine quadrature rule
   const CORE::FE::IntPointsAndWeights<2> intpoints(CORE::FE::GaussRule2D::tri_7point);
@@ -1136,7 +1136,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition_od(
     FOUR_C_THROW("Invalid electrode or soret material for scatra-scatra interface coupling!");
 
   // extract nodal state variables associated with slave and master elements
-  ExtractNodeValues(idiscret, la_slave, la_master);
+  extract_node_values(idiscret, la_slave, la_master);
 
   // determine quadrature rule
   const CORE::FE::IntPointsAndWeights<2> intpoints(CORE::FE::GaussRule2D::tri_7point);
@@ -1175,17 +1175,17 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition_od(
  | extract nodal state variables associated with mortar integration cell   fang 01/17 |
  *------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::ExtractNodeValues(
+void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::extract_node_values(
     const DRT::Discretization& idiscret,    //!< interface discretization
     DRT::Element::LocationArray& la_slave,  //!< slave-side location array
     DRT::Element::LocationArray& la_master  //!< master-side location array
 )
 {
   // extract nodal temperature variables associated with slave element
-  my::ExtractNodeValues(my::ephinp_slave_[0], idiscret, la_slave);
+  my::extract_node_values(my::ephinp_slave_[0], idiscret, la_slave);
 
   // extract nodal electrochemistry variables associated with mortar integration cell
-  my::ExtractNodeValues(
+  my::extract_node_values(
       eelchnp_slave_, eelchnp_master_, idiscret, la_slave, la_master, "scatra", 1);
 }
 
@@ -1200,11 +1200,11 @@ SCATRA::MeshtyingStrategyS2IElchSCL::MeshtyingStrategyS2IElchSCL(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2IElchSCL::SetupMeshtying()
+void SCATRA::MeshtyingStrategyS2IElchSCL::setup_meshtying()
 {
   // extract scatra-scatra coupling conditions from discretization
   std::vector<CORE::Conditions::Condition*> s2imeshtying_conditions(0, nullptr);
-  scatratimint_->Discretization()->GetCondition("S2IMeshtying", s2imeshtying_conditions);
+  scatratimint_->discretization()->GetCondition("S2IMeshtying", s2imeshtying_conditions);
 
   std::set<int> islavenodegidset;
   std::set<int> imasternodegidset;
@@ -1218,13 +1218,13 @@ void SCATRA::MeshtyingStrategyS2IElchSCL::SetupMeshtying()
     {
       case INPAR::S2I::side_slave:
       {
-        DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->Discretization(),
+        DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
             *s2imeshtying_condition->GetNodes(), islavenodegidset);
         break;
       }
       case INPAR::S2I::side_master:
       {
-        DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->Discretization(),
+        DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
             *s2imeshtying_condition->GetNodes(), imasternodegidset);
         break;
       }
@@ -1240,7 +1240,7 @@ void SCATRA::MeshtyingStrategyS2IElchSCL::SetupMeshtying()
   std::vector<int> imasternodegidvec(imasternodegidset.begin(), imasternodegidset.end());
 
   icoup_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  icoup_->setup_coupling(*(scatratimint_->Discretization()), *(scatratimint_->Discretization()),
+  icoup_->setup_coupling(*(scatratimint_->discretization()), *(scatratimint_->discretization()),
       imasternodegidvec, islavenodegidvec, 2, true, 1.0e-8);
 }
 

@@ -33,7 +33,7 @@ FLD::XFluidResultTest::XFluidResultTest(const FLD::XFluidFluid& xfluid)
     : CORE::UTILS::ResultTest("XFLUID"),
       discret_(xfluid.discret_),
       velnp_(xfluid.state_->velnp_),
-      coupl_discret_(xfluid.embedded_fluid_->Discretization()),
+      coupl_discret_(xfluid.embedded_fluid_->discretization()),
       coupl_velnp_(xfluid.embedded_fluid_->Velnp()),
       node_from_zero_(false)
 {
@@ -112,7 +112,7 @@ void FLD::XFluidResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int
         FOUR_C_THROW("Quantity '%s' not supported in ale testing", position.c_str());
       }
 
-      nerr += CompareValues(result, "NODE", res);
+      nerr += compare_values(result, "NODE", res);
       test_count++;
     }
   }

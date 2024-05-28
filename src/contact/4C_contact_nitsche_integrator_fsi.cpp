@@ -70,7 +70,7 @@ void CONTACT::IntegratorNitscheFsi::IntegrateDerivEle3D(MORTAR::Element& sele,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::IntegratorNitscheFsi::IntegrateGP_3D(MORTAR::Element& sele, MORTAR::Element& mele,
+void CONTACT::IntegratorNitscheFsi::integrate_gp_3_d(MORTAR::Element& sele, MORTAR::Element& mele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
     CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -173,7 +173,7 @@ void CONTACT::IntegratorNitscheFsi::gpts_forces(MORTAR::Element& sele, MORTAR::E
   if (snn_pengap >= normal_contact_transition && !FSI_integrated)
   {
     CORE::GEN::Pairedvector<int, double> lin_fluid_traction(0);
-    IntegrateTest<dim>(-1., sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt,
+    integrate_test<dim>(-1., sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt,
         normal_contact_transition, lin_fluid_traction, normal, dnmap_unit);
 #ifdef WRITE_GMSH
     {
@@ -213,10 +213,10 @@ void CONTACT::IntegratorNitscheFsi::gpts_forces(MORTAR::Element& sele, MORTAR::E
       mele.MoData().ParentDof().size() + dnmap_unit[0].size() + dmxi[0].size(), -1,
       CORE::LINALG::SerialDenseVector(mele.MoData().ParentDof().size(), true));
 
-  SoEleCauchy<dim>(sele, sxi, dsxi, wgt, normal, dnmap_unit, normal, dnmap_unit, ws,
+  so_ele_cauchy<dim>(sele, sxi, dsxi, wgt, normal, dnmap_unit, normal, dnmap_unit, ws,
       cauchy_nn_weighted_average, cauchy_nn_weighted_average_deriv, normal_adjoint_test_slave,
       deriv_normal_adjoint_test_slave);
-  SoEleCauchy<dim>(mele, mxi, dmxi, wgt, normal, dnmap_unit, normal, dnmap_unit, wm,
+  so_ele_cauchy<dim>(mele, mxi, dmxi, wgt, normal, dnmap_unit, normal, dnmap_unit, wm,
       cauchy_nn_weighted_average, cauchy_nn_weighted_average_deriv, normal_adjoint_test_master,
       deriv_normal_adjoint_test_master);
 
@@ -227,7 +227,7 @@ void CONTACT::IntegratorNitscheFsi::gpts_forces(MORTAR::Element& sele, MORTAR::E
   for (const auto& p : dgapgp) d_snn_av_pen_gap[p.first] += pen * p.second;
 
   // test in normal contact direction
-  IntegrateTest<dim>(-1., sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt, snn_av_pen_gap,
+  integrate_test<dim>(-1., sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt, snn_av_pen_gap,
       d_snn_av_pen_gap, normal, dnmap_unit);
 
   update_ele_contact_state(sele, 1);

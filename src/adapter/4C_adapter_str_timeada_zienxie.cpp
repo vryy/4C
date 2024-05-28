@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 void ADAPTER::StructureTimeAdaZienXie::integrate_step_auxiliar()
 {
   const STR::TIMINT::Base& stm = *stm_;
-  const STR::TIMINT::BaseDataGlobalState& gstate = stm.DataGlobalState();
+  const STR::TIMINT::BaseDataGlobalState& gstate = stm.data_global_state();
 
   // get state vectors of marching integrator
   Teuchos::RCP<const Epetra_Vector> dis = gstate.GetDisN();    // D_{n}^{A2}

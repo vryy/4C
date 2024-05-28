@@ -54,7 +54,7 @@ SSI::DBCHandlerBlock::DBCHandlerBlock(const bool is_scatra_manifold,
     Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
     Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure)
     : DBCHandlerBase(is_scatra_manifold, scatra, scatra_manifold, ssi_maps, structure),
-      position_structure_(SSIMaps()->GetBlockPositions(SSI::Subproblem::structure).at(0))
+      position_structure_(ssi_maps()->GetBlockPositions(SSI::Subproblem::structure).at(0))
 {
 }
 
@@ -63,35 +63,35 @@ SSI::DBCHandlerBlock::DBCHandlerBlock(const bool is_scatra_manifold,
 void SSI::DBCHandlerBase::ApplyDBCToRHS(Teuchos::RCP<Epetra_Vector> rhs)
 {
   // apply Dirichlet boundary conditions to the structure part of the right hand side
-  const auto& locsysmanager_structure = StructureField()->LocsysManager();
-  auto rhs_struct = SSIMaps()->MapsSubProblems()->ExtractVector(
+  const auto& locsysmanager_structure = structure_field()->LocsysManager();
+  auto rhs_struct = ssi_maps()->MapsSubProblems()->ExtractVector(
       rhs, UTILS::SSIMaps::GetProblemPosition(SSI::Subproblem::structure));
   const auto zeros_struct =
-      Teuchos::rcp(new Epetra_Vector(*StructureField()->GetDBCMapExtractor()->CondMap()));
+      Teuchos::rcp(new Epetra_Vector(*structure_field()->GetDBCMapExtractor()->CondMap()));
 
   if (locsysmanager_structure != Teuchos::null)
     locsysmanager_structure->RotateGlobalToLocal(rhs_struct);
   CORE::LINALG::apply_dirichlet_to_system(
-      *rhs_struct, *zeros_struct, *StructureField()->GetDBCMapExtractor()->CondMap());
+      *rhs_struct, *zeros_struct, *structure_field()->GetDBCMapExtractor()->CondMap());
   if (locsysmanager_structure != Teuchos::null)
     locsysmanager_structure->RotateLocalToGlobal(rhs_struct);
 
-  SSIMaps()->MapsSubProblems()->InsertVector(
+  ssi_maps()->MapsSubProblems()->InsertVector(
       rhs_struct, UTILS::SSIMaps::GetProblemPosition(SSI::Subproblem::structure), rhs);
 
   // apply Dirichlet boundary conditions to the scatra part of the right hand side
   const auto zeros_scatra =
-      Teuchos::rcp(new Epetra_Vector(*ScaTraField()->DirichMaps()->CondMap()));
+      Teuchos::rcp(new Epetra_Vector(*sca_tra_field()->DirichMaps()->CondMap()));
   CORE::LINALG::apply_dirichlet_to_system(
-      *rhs, *zeros_scatra, *ScaTraField()->DirichMaps()->CondMap());
+      *rhs, *zeros_scatra, *sca_tra_field()->DirichMaps()->CondMap());
 
   // apply Dirichlet boundary conditions to the scatra manifold part of the right hand side
-  if (IsScaTraManifold())
+  if (is_sca_tra_manifold())
   {
     const auto zeros_scatramanifold =
-        Teuchos::rcp(new Epetra_Vector(*ScaTraManifoldField()->DirichMaps()->CondMap()));
+        Teuchos::rcp(new Epetra_Vector(*sca_tra_manifold_field()->DirichMaps()->CondMap()));
     CORE::LINALG::apply_dirichlet_to_system(
-        *rhs, *zeros_scatramanifold, *ScaTraManifoldField()->DirichMaps()->CondMap());
+        *rhs, *zeros_scatramanifold, *sca_tra_manifold_field()->DirichMaps()->CondMap());
   }
 }
 
@@ -101,12 +101,12 @@ void SSI::DBCHandlerBase::apply_dbc_to_system_matrix(
     Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix)
 {
   // apply the scalar transport Dirichlet boundary conditions to the global system matrix
-  system_matrix->ApplyDirichlet(*ScaTraField()->DirichMaps()->CondMap(), true);
+  system_matrix->ApplyDirichlet(*sca_tra_field()->DirichMaps()->CondMap(), true);
 
   // apply the scalar transport on manifolds Dirichlet boundary conditions to the global system
   // matrix
-  if (IsScaTraManifold())
-    system_matrix->ApplyDirichlet(*ScaTraManifoldField()->DirichMaps()->CondMap(), true);
+  if (is_sca_tra_manifold())
+    system_matrix->ApplyDirichlet(*sca_tra_manifold_field()->DirichMaps()->CondMap(), true);
 
   // apply the structure Dirichlet boundary conditions to the global system matrix
   apply_structure_dbc_to_system_matrix(system_matrix);
@@ -118,10 +118,10 @@ void SSI::DBCHandlerBase::apply_structure_dbc_to_system_matrix(
     Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix)
 {
   // locsys manager of structure
-  const auto& locsysmanager_structure = StructureField()->LocsysManager();
+  const auto& locsysmanager_structure = structure_field()->LocsysManager();
 
   // map of structure Dirichlet BCs
-  const auto& dbcmap_structure = StructureField()->GetDBCMapExtractor()->CondMap();
+  const auto& dbcmap_structure = structure_field()->GetDBCMapExtractor()->CondMap();
 
   if (locsysmanager_structure == Teuchos::null)
     system_matrix->ApplyDirichlet(*dbcmap_structure);
@@ -141,7 +141,7 @@ void SSI::DBCHandlerSparse::apply_structure_dbc_with_loc_sys_rotation_to_system_
   auto systemmatrix_sparse = CORE::LINALG::CastToSparseMatrixAndCheckSuccess(system_matrix);
 
   // structure dof row map
-  const auto& dofrowmap_structure = StructureField()->dof_row_map();
+  const auto& dofrowmap_structure = structure_field()->dof_row_map();
 
   // extract structure rows of global system matrix
   const auto systemmatrix_structure =

@@ -50,7 +50,7 @@ namespace CONSTRAINTS
     takes care of the monitor IDs.
     */
 
-    Monitor(Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization monitor lives on
+    Monitor(Teuchos::RCP<DRT::Discretization> discr,  ///< discretization monitor lives on
         const std::string& conditionname,             ///< Name of condition to creat monitor from
         int& minID,                                   ///< minimum monitor ID so far
         int& maxID                                    ///< maximum monitor ID so far

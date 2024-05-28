@@ -50,7 +50,7 @@ void ADAPTER::FluidFluidXFSI::Init()
   xfluidfluid_ = Teuchos::rcp_dynamic_cast<FLD::XFluidFluid>(xfluid_, true);
 
   // use block matrix for fluid-fluid, do nothing otherwise
-  xfluidfluid_->UseBlockMatrix();
+  xfluidfluid_->use_block_matrix();
 }
 
 FOUR_C_NAMESPACE_CLOSE

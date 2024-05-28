@@ -93,7 +93,7 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
 
   // initialize global map extractor
   maps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(
-      *CORE::LINALG::MergeMap(*ScaTraField()->Discretization()->dof_row_map(), *mapthermo, false),
+      *CORE::LINALG::MergeMap(*ScaTraField()->discretization()->dof_row_map(), *mapthermo, false),
       mapthermo, ScaTraField()->dof_row_map()));
 
   // check global map extractor
@@ -170,7 +170,7 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
 
       // initialize map extractor associated with all degrees of freedom inside temperature field
       blockmapthermo_ = Teuchos::rcp(
-          new CORE::LINALG::MultiMapExtractor(*ThermoField()->Discretization()->dof_row_map(),
+          new CORE::LINALG::MultiMapExtractor(*ThermoField()->discretization()->dof_row_map(),
               std::vector<Teuchos::RCP<const Epetra_Map>>(1, ThermoField()->dof_row_map())));
 
       // safety check
@@ -278,13 +278,13 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
     {
       // initialize scatra-thermo blocks
       scatrathermoblockdomain_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-          *ScaTraField()->Discretization()->dof_row_map(), 27, false, true));
+          *ScaTraField()->discretization()->dof_row_map(), 27, false, true));
       scatrathermoblockinterface_ =
           Teuchos::rcp(new CORE::LINALG::SparseMatrix(*interface_map_scatra, 27, false, true));
 
       // initialize thermo-scatra blocks
       thermoscatrablockdomain_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-          *ThermoField()->Discretization()->dof_row_map(), 27, false, true));
+          *ThermoField()->discretization()->dof_row_map(), 27, false, true));
       thermoscatrablockinterface_ =
           Teuchos::rcp(new CORE::LINALG::SparseMatrix(*interface_map_thermo, 27, false, true));
 
@@ -969,7 +969,7 @@ void STI::Monolithic::assemble_mat_and_rhs()
               {
                 // initialize temporary matrix for slave-side columns of scatra-thermo matrix block
                 CORE::LINALG::SparseMatrix scatrathermocolsslave(
-                    *ScaTraField()->Discretization()->dof_row_map(), 81);
+                    *ScaTraField()->discretization()->dof_row_map(), 81);
 
                 // fill temporary matrix for slave-side columns of scatra-thermo matrix block
                 CORE::LINALG::MatrixLogicalSplitAndTransform()(scatrathermoblock,
@@ -978,7 +978,7 @@ void STI::Monolithic::assemble_mat_and_rhs()
 
                 // finalize temporary matrix for slave-side columns of scatra-thermo matrix block
                 scatrathermocolsslave.Complete(*strategythermo_->InterfaceMaps()->Map(1),
-                    *ScaTraField()->Discretization()->dof_row_map());
+                    *ScaTraField()->discretization()->dof_row_map());
 
                 // transform and assemble temporary matrix for slave-side columns of scatra-thermo
                 // matrix block
@@ -1180,7 +1180,7 @@ void STI::Monolithic::build_null_spaces() const
 
       // equip smoother for scatra matrix block with null space associated with all degrees of
       // freedom on scatra discretization
-      ScaTraField()->Discretization()->compute_null_space_if_necessary(blocksmootherparams);
+      ScaTraField()->discretization()->compute_null_space_if_necessary(blocksmootherparams);
 
       break;
     }
@@ -1205,13 +1205,13 @@ void STI::Monolithic::build_null_spaces() const
 
   // equip smoother for thermo matrix block with null space associated with all degrees of freedom
   // on thermo discretization
-  ThermoField()->Discretization()->compute_null_space_if_necessary(blocksmootherparams);
+  ThermoField()->discretization()->compute_null_space_if_necessary(blocksmootherparams);
 
   // reduce full null space to match degrees of freedom associated with thermo matrix block if
   // necessary
   if (condensationthermo_)
     CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Block " + iblockstr.str(),
-        *ThermoField()->Discretization()->dof_row_map(), *maps_->Map(1), blocksmootherparams);
+        *ThermoField()->discretization()->dof_row_map(), *maps_->Map(1), blocksmootherparams);
 }  // STI::Monolithic::build_block_null_spaces
 
 /*--------------------------------------------------------------------------------*
@@ -1234,7 +1234,7 @@ void STI::Monolithic::compute_null_space_if_necessary(Teuchos::ParameterList& so
         Teuchos::rcp(new std::vector<double>(dimns * dof_row_map()->NumMyElements(), 0.));
 
     // compute null space modes associated with scatra field
-    const DRT::Discretization& scatradis = *ScaTraField()->Discretization();
+    const DRT::Discretization& scatradis = *ScaTraField()->discretization();
     std::vector<double*> modes_scatra(numdofpernode_scatra);
     for (int i = 0; i < numdofpernode_scatra; ++i)
       modes_scatra[i] = &((*ns)[i * dof_row_map()->NumMyElements()]);
@@ -1246,7 +1246,7 @@ void STI::Monolithic::compute_null_space_if_necessary(Teuchos::ParameterList& so
     }
 
     // compute null space modes associated with thermo field
-    const DRT::Discretization& thermodis = *ThermoField()->Discretization();
+    const DRT::Discretization& thermodis = *ThermoField()->discretization();
     std::vector<double*> modes_thermo(numdofpernode_thermo);
     for (int i = 0; i < numdofpernode_thermo; ++i)
       modes_thermo[i] = &((*ns)[(numdofpernode_scatra + i) * dof_row_map()->NumMyElements()]);
@@ -1558,7 +1558,7 @@ void STI::Monolithic::solve()
     if (condensationthermo_)
     {
       thermoincrement =
-          Teuchos::rcp(new Epetra_Vector(*ThermoField()->Discretization()->dof_row_map()));
+          Teuchos::rcp(new Epetra_Vector(*ThermoField()->discretization()->dof_row_map()));
       CORE::LINALG::Export(*maps_->ExtractVector(increment_, 1), *thermoincrement);
       const Teuchos::RCP<const Epetra_Vector> masterincrement =
           strategythermo_->InterfaceMaps()->ExtractVector(*thermoincrement, 2);
@@ -1611,7 +1611,7 @@ void STI::Monolithic::apply_dirichlet_off_diag(
     {
       case INPAR::S2I::coupling_matching_nodes:
       {
-        if (!ThermoField()->Discretization()->GetCondition("PointCoupling"))
+        if (!ThermoField()->discretization()->GetCondition("PointCoupling"))
           thermoscatra_domain_interface->ApplyDirichlet(*icoupthermo_->SlaveDofMap(), false);
         break;
       }
@@ -1655,9 +1655,9 @@ void STI::Monolithic::assemble_domain_interface_off_diag(
     case CORE::LINALG::MatrixType::sparse:
     {
       scatrathermo_domain_interface = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-          *ScaTraField()->Discretization()->dof_row_map(), 27, false, true));
+          *ScaTraField()->discretization()->dof_row_map(), 27, false, true));
       thermoscatra_domain_interface = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-          *ThermoField()->Discretization()->dof_row_map(), 27, false, true));
+          *ThermoField()->discretization()->dof_row_map(), 27, false, true));
       break;
     }
     default:
@@ -1675,7 +1675,7 @@ void STI::Monolithic::assemble_domain_interface_off_diag(
 
   if (strategythermo_->CouplingType() == INPAR::S2I::coupling_matching_nodes)
   {  // standard meshtying algorithm with Lagrange multipliers condensed out
-    if (!ThermoField()->Discretization()->GetCondition("PointCoupling"))
+    if (!ThermoField()->discretization()->GetCondition("PointCoupling"))
     {
       // during the very first run of the following code, Complete() has not yet been called
       // on the thermo-scatra block of the global system matrix experiments have shown that
@@ -1777,7 +1777,7 @@ void STI::Monolithic::assemble_domain_interface_off_diag(
     case CORE::LINALG::MatrixType::sparse:
     {
       scatrathermo_domain_interface->Complete(
-          *ThermoField()->Discretization()->dof_row_map(), *maps_->Map(0));
+          *ThermoField()->discretization()->dof_row_map(), *maps_->Map(0));
       thermoscatra_domain_interface->Complete(*maps_->Map(0), *maps_->Map(1));
 
       break;

@@ -103,20 +103,20 @@ namespace STR
 
       void check_init_setup() const;
 
-      Teuchos::RCP<STR::IMPLICIT::Generic>& ImplIntPtr();
-      STR::IMPLICIT::Generic& ImplInt();
+      Teuchos::RCP<STR::IMPLICIT::Generic>& impl_int_ptr();
+      STR::IMPLICIT::Generic& impl_int();
 
-      Teuchos::RCP<STR::Dbc>& DbcPtr();
-      STR::Dbc& Dbc();
+      Teuchos::RCP<STR::Dbc>& dbc_ptr();
+      STR::Dbc& dbc();
 
-      Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& GlobalStatePtr();
-      STR::TIMINT::BaseDataGlobalState& GlobalState();
+      Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& global_state_ptr();
+      STR::TIMINT::BaseDataGlobalState& global_state();
 
-      Teuchos::RCP<STR::TIMINT::BaseDataIO>& IODataPtr();
-      STR::TIMINT::BaseDataIO& IOData();
+      Teuchos::RCP<STR::TIMINT::BaseDataIO>& io_data_ptr();
+      STR::TIMINT::BaseDataIO& io_data();
 
-      Teuchos::RCP<Teuchos::ParameterList>& NoxParamsPtr();
-      Teuchos::ParameterList& NoxParams();
+      Teuchos::RCP<Teuchos::ParameterList>& nox_params_ptr();
+      Teuchos::ParameterList& nox_params();
 
      protected:
       //! indicates if the Init() function has been called

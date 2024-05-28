@@ -124,7 +124,7 @@ namespace DRT
         virtual void CheckIsEvaluated() const = 0;
 
         //! check if Setup() was called
-        virtual void CheckIsSetup() const = 0;
+        virtual void check_is_setup() const = 0;
 
         //! @name Access methods
 
@@ -456,7 +456,7 @@ namespace DRT
         }
 
         //! check if EvaluateGPState() was called
-        void CheckIsSetup() const override
+        void check_is_setup() const override
         {
           if (not issetup_) FOUR_C_THROW("Setup() was not called!");
         }
@@ -864,7 +864,7 @@ namespace DRT
         void CheckIsEvaluated() const override { phasemanager_->CheckIsEvaluated(); };
 
         //! check if Setup() was called
-        void CheckIsSetup() const override { phasemanager_->CheckIsSetup(); };
+        void check_is_setup() const override { phasemanager_->check_is_setup(); };
 
         //! @name Access methods
 
@@ -1423,7 +1423,7 @@ namespace DRT
         //! check if the current phase is involved in a reaction
         bool IsReactive(int phasenum) const override
         {
-          CheckIsSetup();
+          check_is_setup();
           return isreactive_[phasenum];
         };
 

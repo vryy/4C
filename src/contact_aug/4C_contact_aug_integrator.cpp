@@ -47,7 +47,7 @@ void CONTACT::AUG::IntegrationWrapper::integrate_deriv_cell3_d_aux_plane(MORTAR:
   if (cparams_ptr.is_null()) FOUR_C_THROW("The contact parameter interface pointer is undefined!");
 
   // explicitly defined shape function type needed
-  if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
+  if (shape_fcn() == INPAR::MORTAR::shape_undefined)
     FOUR_C_THROW(
         "ERROR: integrate_deriv_cell3_d_aux_plane called without specific shape "
         "function defined!");
@@ -63,7 +63,8 @@ void CONTACT::AUG::IntegrationWrapper::integrate_deriv_cell3_d_aux_plane(MORTAR:
   if (cell == Teuchos::null)
     FOUR_C_THROW("integrate_deriv_cell3_d_aux_plane called without integration cell");
 
-  if (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+  if (shape_fcn() == INPAR::MORTAR::shape_dual ||
+      shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
     FOUR_C_THROW(
         "ERROR: integrate_deriv_cell3_d_aux_plane supports no Dual shape functions for the "
         "augmented Lagrange solving strategy!");
@@ -87,7 +88,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle3D(MORTAR::Element& sele
   TEUCHOS_FUNC_TIME_MONITOR(CONTACT_FUNC_NAME);
 
   // explicitly defined shape function type needed
-  if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
+  if (shape_fcn() == INPAR::MORTAR::shape_undefined)
     FOUR_C_THROW(
         "ERROR: integrate_deriv_cell3_d_aux_plane called without specific shape "
         "function defined!");
@@ -175,12 +176,12 @@ void CONTACT::AUG::IntegrationWrapper::integrate_deriv_segment2_d(MORTAR::Elemen
   if (cparams_ptr.is_null()) FOUR_C_THROW("The contact parameter interface pointer is undefined!");
 
   // explicitly defined shape function type needed
-  if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
+  if (shape_fcn() == INPAR::MORTAR::shape_undefined)
     FOUR_C_THROW("integrate_deriv_segment2_d called without specific shape function defined!");
 
   // Petrov-Galerkin approach for LM not yet implemented for quadratic FE
   if (sele.Shape() == CORE::FE::CellType::line3 ||
-      ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+      shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
     FOUR_C_THROW("Petrov-Galerkin / quadratic FE interpolation not yet implemented.");
 
   // check for problem dimension
@@ -219,7 +220,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle2D(MORTAR::Element& sele
   if (cparams_ptr.is_null()) FOUR_C_THROW("The contact parameter interface pointer is undefined!");
 
   // explicitly defined shape function type needed
-  if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
+  if (shape_fcn() == INPAR::MORTAR::shape_undefined)
     FOUR_C_THROW("integrate_deriv_segment2_d called without specific shape function defined!");
 
   // check for problem dimension
@@ -459,7 +460,7 @@ CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Instance(
       });
 
   auto instance = singleton_owner.Instance(CORE::UTILS::SingletonAction::create);
-  instance->Init(cparams, wrapper);
+  instance->init(cparams, wrapper);
   instance->IntPolicy::timer_.setComm(&wrapper->Comm());
 
   return instance;
@@ -521,21 +522,21 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
     IntPolicy>::integrate_deriv_slave_element(MORTAR::Element& sele)
 {
   // set evaluator
-  const enum MORTAR::ActionType action = CParams().GetActionType();
+  const enum MORTAR::ActionType action = c_params().GetActionType();
   set_evaluator(action);
 
-  for (int gp = 0; gp < this->Wrapper().nGP(); ++gp)
+  for (int gp = 0; gp < this->wrapper().nGP(); ++gp)
   {
     const std::array<double, 2> eta = {
-        this->Wrapper().Coordinate(gp, 0), this->Wrapper().Coordinate(gp, 1)};
-    const double wgt = this->Wrapper().Weight(gp);
+        this->wrapper().Coordinate(gp, 0), this->wrapper().Coordinate(gp, 1)};
+    const double wgt = this->wrapper().Weight(gp);
 
     // get Gauss point in slave element coordinates
     const double sxi[2] = {eta[0], eta[1]};
     const CORE::LINALG::Matrix<2, 1> sxi_mat(sxi, true);
 
     // evaluate Lagrange multiplier shape functions (on slave element)
-    sele.evaluate_shape_lag_mult(this->ShapeFcn(), sxi, lmval_, lmderiv_, my::SLAVENUMNODE, true);
+    sele.evaluate_shape_lag_mult(this->shape_fcn(), sxi, lmval_, lmderiv_, my::SLAVENUMNODE, true);
 
     // evaluate shape function and derivative values (on slave element)
     shape_function_and_deriv1<slavetype>(sele, sxi_mat, sval_, sderiv_);
@@ -570,10 +571,10 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Evalua
     MORTAR::Element& sele, MORTAR::Element& mele, bool boundary_ele,
     const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo)
 {
-  if (this->Wrapper().IntegrationType() != INPAR::MORTAR::inttype_elements)
+  if (this->wrapper().IntegrationType() != INPAR::MORTAR::inttype_elements)
     FOUR_C_THROW("How did you come here?");
 
-  const enum MORTAR::ActionType action = CParams().GetActionType();
+  const enum MORTAR::ActionType action = c_params().GetActionType();
 
   // set the evaluator: 1-st derivatives only, or 1-st AND 2-nd derivatives
   set_evaluator(action);
@@ -676,15 +677,16 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::integr
 
       // coordinates and weight
       const std::array<double, 2> eta = {
-          this->Wrapper().Coordinate(gp, 0), this->Wrapper().Coordinate(gp, 1)};
-      const double wgt = this->Wrapper().Weight(gp) * projInfo.scaling_[my::gp_id_];
+          this->wrapper().Coordinate(gp, 0), this->wrapper().Coordinate(gp, 1)};
+      const double wgt = this->wrapper().Weight(gp) * projInfo.scaling_[my::gp_id_];
 
       // get Gauss point in slave element coordinates
       const double sxi[2] = {eta[0], eta[1]};
       const CORE::LINALG::Matrix<2, 1> sxi_mat(sxi, true);
 
       // evaluate Lagrange multiplier shape functions (on slave element)
-      sele.evaluate_shape_lag_mult(this->ShapeFcn(), sxi, lmval_, lmderiv_, my::SLAVENUMNODE, true);
+      sele.evaluate_shape_lag_mult(
+          this->shape_fcn(), sxi, lmval_, lmderiv_, my::SLAVENUMNODE, true);
 
       // evaluate trace space shape functions (on both elements)
       shape_function_and_deriv1<slavetype>(sele, sxi_mat, sval_, sderiv_);
@@ -754,7 +756,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::integr
       IntPolicy::Get_Deriv1st_Debug(sele, lmval_, sval_, sderiv_, stau, derivjac_, dmxigp_,
           dn_unit_, deriv_gapn_sl_, gapn_sl, wgt, jacslave);
 
-      switch (CParams().GetActionType())
+      switch (c_params().GetActionType())
       {
         case MORTAR::eval_force_stiff:
         {
@@ -811,15 +813,16 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::integr
 
       // coordinates and weight
       const std::array<double, 2> eta = {
-          this->Wrapper().Coordinate(gp, 0), this->Wrapper().Coordinate(gp, 1)};
-      const double wgt = this->Wrapper().Weight(gp) * projInfo.scaling_[my::gp_id_];
+          this->wrapper().Coordinate(gp, 0), this->wrapper().Coordinate(gp, 1)};
+      const double wgt = this->wrapper().Weight(gp) * projInfo.scaling_[my::gp_id_];
 
       // get Gauss point in slave element coordinates
       const double sxi[2] = {eta[0], eta[1]};
       const CORE::LINALG::Matrix<2, 1> sxi_mat(sxi, true);
 
       // evaluate Lagrange multiplier shape functions (on slave element)
-      sele.evaluate_shape_lag_mult(this->ShapeFcn(), sxi, lmval_, lmderiv_, my::SLAVENUMNODE, true);
+      sele.evaluate_shape_lag_mult(
+          this->shape_fcn(), sxi, lmval_, lmderiv_, my::SLAVENUMNODE, true);
 
       // evaluate trace space shape functions (on both elements)
       shape_function_and_deriv1<slavetype>(sele, sxi_mat, sval_, sderiv_);
@@ -863,9 +866,9 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 {
   // access unordered maps
   std::unordered_map<int, Deriv1stMap>* grad_error_ma_ptr =
-      this->CParams().template GetUnorderedMap<int, Deriv1stMap>(0);
+      this->c_params().template GetUnorderedMap<int, Deriv1stMap>(0);
   std::unordered_map<int, Deriv1stMap>* grad_error_jac_ptr =
-      this->CParams().template GetUnorderedMap<int, Deriv1stMap>(1);
+      this->c_params().template GetUnorderedMap<int, Deriv1stMap>(1);
 
   // get slave and master nodal coords for Jacobian / GP evaluation
   sele.GetNodalCoords(scoord_);
@@ -891,15 +894,16 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
       // coordinates and weight
       const std::array<double, 2> eta = {
-          this->Wrapper().Coordinate(gp, 0), this->Wrapper().Coordinate(gp, 1)};
-      const double wgt = this->Wrapper().Weight(gp) * projInfo.scaling_[my::gp_id_];
+          this->wrapper().Coordinate(gp, 0), this->wrapper().Coordinate(gp, 1)};
+      const double wgt = this->wrapper().Weight(gp) * projInfo.scaling_[my::gp_id_];
 
       // get Gauss point in slave element coordinates
       const double sxi[2] = {eta[0], eta[1]};
       const CORE::LINALG::Matrix<2, 1> sxi_mat(sxi, true);
 
       // evaluate Lagrange multiplier shape functions (on slave element)
-      sele.evaluate_shape_lag_mult(this->ShapeFcn(), sxi, lmval_, lmderiv_, my::SLAVENUMNODE, true);
+      sele.evaluate_shape_lag_mult(
+          this->shape_fcn(), sxi, lmval_, lmderiv_, my::SLAVENUMNODE, true);
 
       // evaluate trace space shape functions (on both elements)
       shape_function_and_deriv1<slavetype>(sele, sxi_mat, sval_, sderiv_);
@@ -982,7 +986,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
     IntPolicy>::extract_active_slave_node_li_ds(std::vector<unsigned>& active_nlids,
     const MORTAR::Element& sele) const
 {
-  const Epetra_Map* active_snode_row_map = this->CParams().template Get<Epetra_Map>(1);
+  const Epetra_Map* active_snode_row_map = this->c_params().template Get<Epetra_Map>(1);
 
   const int* nodeids = sele.NodeIds();
 

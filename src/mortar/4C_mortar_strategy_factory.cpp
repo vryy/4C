@@ -97,7 +97,7 @@ void MORTAR::STRATEGY::Factory::check_init() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const STR::TIMINT::BaseDataGlobalState& MORTAR::STRATEGY::Factory::GState() const
+const STR::TIMINT::BaseDataGlobalState& MORTAR::STRATEGY::Factory::g_state() const
 {
   check_init();
   return *gstate_ptr_;
@@ -105,7 +105,7 @@ const STR::TIMINT::BaseDataGlobalState& MORTAR::STRATEGY::Factory::GState() cons
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-DRT::Discretization& MORTAR::STRATEGY::Factory::Discret()
+DRT::Discretization& MORTAR::STRATEGY::Factory::discret()
 {
   check_init();
   return *discret_ptr_;
@@ -113,7 +113,7 @@ DRT::Discretization& MORTAR::STRATEGY::Factory::Discret()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const DRT::Discretization& MORTAR::STRATEGY::Factory::Discret() const
+const DRT::Discretization& MORTAR::STRATEGY::Factory::discret() const
 {
   check_init();
   return *discret_ptr_;
@@ -121,7 +121,7 @@ const DRT::Discretization& MORTAR::STRATEGY::Factory::Discret() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Epetra_Comm& MORTAR::STRATEGY::Factory::Comm()
+Epetra_Comm& MORTAR::STRATEGY::Factory::comm()
 {
   check_init_setup();
   return *comm_ptr_;
@@ -129,7 +129,7 @@ Epetra_Comm& MORTAR::STRATEGY::Factory::Comm()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Comm& MORTAR::STRATEGY::Factory::Comm() const
+const Epetra_Comm& MORTAR::STRATEGY::Factory::comm() const
 {
   check_init_setup();
   return *comm_ptr_;
@@ -137,7 +137,7 @@ const Epetra_Comm& MORTAR::STRATEGY::Factory::Comm() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Comm> MORTAR::STRATEGY::Factory::CommPtr()
+Teuchos::RCP<Epetra_Comm> MORTAR::STRATEGY::Factory::comm_ptr()
 {
   check_init_setup();
   return comm_ptr_;
@@ -145,7 +145,7 @@ Teuchos::RCP<Epetra_Comm> MORTAR::STRATEGY::Factory::CommPtr()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Comm> MORTAR::STRATEGY::Factory::CommPtr() const
+Teuchos::RCP<const Epetra_Comm> MORTAR::STRATEGY::Factory::comm_ptr() const
 {
   check_init_setup();
   return comm_ptr_;
@@ -153,7 +153,7 @@ Teuchos::RCP<const Epetra_Comm> MORTAR::STRATEGY::Factory::CommPtr() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const int& MORTAR::STRATEGY::Factory::Dim() const
+const int& MORTAR::STRATEGY::Factory::dim() const
 {
   if (dim_ == -1)
     FOUR_C_THROW(
@@ -166,12 +166,12 @@ const int& MORTAR::STRATEGY::Factory::Dim() const
  *----------------------------------------------------------------------------*/
 void MORTAR::STRATEGY::Factory::CheckDimension() const
 {
-  if (Dim() != 2 && Dim() != 3) FOUR_C_THROW("Mortar meshtying/contact problems must be 2D or 3D");
+  if (dim() != 2 && dim() != 3) FOUR_C_THROW("Mortar meshtying/contact problems must be 2D or 3D");
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::STRATEGY::Factory::PrepareNURBSElement(const DRT::Discretization& discret,
+void MORTAR::STRATEGY::Factory::prepare_nurbs_element(const DRT::Discretization& discret,
     Teuchos::RCP<DRT::Element> ele, Teuchos::RCP<MORTAR::Element> cele) const
 {
   const DRT::NURBS::NurbsDiscretization* nurbsdis =
@@ -179,8 +179,8 @@ void MORTAR::STRATEGY::Factory::PrepareNURBSElement(const DRT::Discretization& d
   if (nurbsdis == nullptr) FOUR_C_THROW("Dynamic cast failed!");
 
   Teuchos::RCP<const DRT::NURBS::Knotvector> knots = nurbsdis->GetKnotVector();
-  std::vector<CORE::LINALG::SerialDenseVector> parentknots(Dim());
-  std::vector<CORE::LINALG::SerialDenseVector> mortarknots(Dim() - 1);
+  std::vector<CORE::LINALG::SerialDenseVector> parentknots(dim());
+  std::vector<CORE::LINALG::SerialDenseVector> mortarknots(dim() - 1);
 
   double normalfac = 0.0;
   Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
@@ -199,7 +199,7 @@ void MORTAR::STRATEGY::Factory::PrepareNURBSElement(const DRT::Discretization& d
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::STRATEGY::Factory::PrepareNURBSNode(
+void MORTAR::STRATEGY::Factory::prepare_nurbs_node(
     const DRT::Node* node, Teuchos::RCP<MORTAR::Node> mnode) const
 {
   const DRT::NURBS::ControlPoint* cp = dynamic_cast<const DRT::NURBS::ControlPoint*>(node);

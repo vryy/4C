@@ -55,7 +55,7 @@ namespace
      * @param segments_vector (out) Vector with found segments for each pair.
      */
     template <typename el1, typename el2>
-    void CreateEvaluatePairs(
+    void create_evaluate_pairs(
         std::vector<Teuchos::RCP<
             GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, el1, el2>>>& geometry_pairs,
         const std::vector<CORE::LINALG::Matrix<el1::n_dof_, 1, double>>& q_line_elements,
@@ -142,7 +142,7 @@ namespace
     std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;
 
     // Create and evaluate the geometry pairs.
-    CreateEvaluatePairs(
+    create_evaluate_pairs(
         geometry_pairs, q_line_elements, line_ref_lengths, q_volume_elements, segments_vector);
 
     // Check results.
@@ -183,7 +183,7 @@ namespace
     std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;
 
     // Create and evaluate the geometry pairs.
-    CreateEvaluatePairs(
+    create_evaluate_pairs(
         geometry_pairs, q_line_elements, line_ref_lengths, q_volume_elements, segments_vector);
 
     // Check results.
@@ -224,7 +224,7 @@ namespace
     std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;
 
     // Create and evaluate the geometry pairs.
-    CreateEvaluatePairs(
+    create_evaluate_pairs(
         geometry_pairs, q_line_elements, line_ref_lengths, q_volume_elements, segments_vector);
 
     // Check results.
@@ -265,7 +265,7 @@ namespace
     std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;
 
     // Create and evaluate the geometry pairs.
-    CreateEvaluatePairs(
+    create_evaluate_pairs(
         geometry_pairs, q_line_elements, line_ref_lengths, q_volume_elements, segments_vector);
 
     // Check results.
@@ -311,7 +311,7 @@ namespace
         line_ref_lengths, q_volume_elements, structdis);
 
     // Create and evaluate the geometry pairs.
-    CreateEvaluatePairs(
+    create_evaluate_pairs(
         geometry_pairs, q_line_elements, line_ref_lengths, q_volume_elements, segments_vector);
 
     // Check results.
@@ -348,7 +348,7 @@ namespace
     std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;
 
     // Create and evaluate the geometry pairs.
-    CreateEvaluatePairs(
+    create_evaluate_pairs(
         geometry_pairs, q_line_elements, line_ref_lengths, q_volume_elements, segments_vector);
 
     // Check results.
@@ -399,7 +399,7 @@ namespace
     std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;
 
     // Create and evaluate the geometry pairs.
-    CreateEvaluatePairs(
+    create_evaluate_pairs(
         geometry_pairs, q_line_elements, line_ref_lengths, q_volume_elements, segments_vector);
 
     // Check results.
@@ -441,7 +441,7 @@ namespace
     std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;
 
     // Create and evaluate the geometry pairs.
-    FOUR_C_EXPECT_THROW_WITH_MESSAGE(CreateEvaluatePairs(geometry_pairs, q_line_elements,
+    FOUR_C_EXPECT_THROW_WITH_MESSAGE(create_evaluate_pairs(geometry_pairs, q_line_elements,
                                          line_ref_lengths, q_volume_elements, segments_vector),
         CORE::Exception, "Error when projecting the Gauss points.");
   }

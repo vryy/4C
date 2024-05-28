@@ -43,7 +43,7 @@ MAT::PAR::AAAneohooke::AAAneohooke(Teuchos::RCP<CORE::MAT::PAR::Material> matdat
 }
 
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::AAAneohooke::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::AAAneohooke::create_material()
 {
   return Teuchos::rcp(new MAT::AAAneohooke(this));
 }

@@ -86,7 +86,7 @@ NOX::NLN::CARDIOVASCULAR0D::LinearSystem::LinearSystem(Teuchos::ParameterList& p
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::LINALG::SolverParams NOX::NLN::CARDIOVASCULAR0D::LinearSystem::SetSolverOptions(
+CORE::LINALG::SolverParams NOX::NLN::CARDIOVASCULAR0D::LinearSystem::set_solver_options(
     Teuchos::ParameterList& p, Teuchos::RCP<CORE::LINALG::Solver>& solverPtr,
     const NOX::NLN::SolutionType& solverType)
 {
@@ -116,7 +116,7 @@ CORE::LINALG::SolverParams NOX::NLN::CARDIOVASCULAR0D::LinearSystem::SetSolverOp
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::NLN::SolutionType NOX::NLN::CARDIOVASCULAR0D::LinearSystem::GetActiveLinSolver(
+NOX::NLN::SolutionType NOX::NLN::CARDIOVASCULAR0D::LinearSystem::get_active_lin_solver(
     const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers,
     Teuchos::RCP<CORE::LINALG::Solver>& currSolver)
 {

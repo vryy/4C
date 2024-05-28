@@ -61,7 +61,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() = 0;
 
     //! get discretization
-    virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
+    virtual Teuchos::RCP<DRT::Discretization> discretization() = 0;
 
     // get time step size
     virtual double Dt() const = 0;

@@ -165,8 +165,8 @@ void sti_dyn(const int& restartstep  //! time step for restart
   if (restartstep) sti_algorithm->read_restart(restartstep);
 
   // provide scatra and thermo fields with velocities
-  sti_algorithm->ScaTraField()->SetVelocityField();
-  sti_algorithm->ThermoField()->SetVelocityField();
+  sti_algorithm->ScaTraField()->set_velocity_field();
+  sti_algorithm->ThermoField()->set_velocity_field();
 
   // enter time loop and solve scatra-thermo interaction problem
   sti_algorithm->TimeLoop();

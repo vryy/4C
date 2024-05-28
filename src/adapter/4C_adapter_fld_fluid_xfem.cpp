@@ -33,14 +33,14 @@ ADAPTER::FluidXFEM::FluidXFEM(const Teuchos::ParameterList& prbdyn, std::string 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> ADAPTER::FluidXFEM::Discretization()
+Teuchos::RCP<DRT::Discretization> ADAPTER::FluidXFEM::discretization()
 {
   // returns the boundary discretization
   // REMARK:
   // the returned discretization has to match the structure discretization at the interface coupling
   // (see FSI::Partitioned::Partitioned(const Epetra_Comm& comm) ) therefore return the boundary dis
   // this is similar to the matching of fluid dis and ale dis in case of ADAPTER::FluidALE
-  return fluid_field()->Discretization();
+  return fluid_field()->discretization();
 }
 
 
@@ -102,7 +102,7 @@ double ADAPTER::FluidXFEM::read_restart(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidXFEM::NonlinearSolve(
+void ADAPTER::FluidXFEM::nonlinear_solve(
     Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel)
 {
   // if we have values at the interface we need to apply them

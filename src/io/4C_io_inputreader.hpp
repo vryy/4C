@@ -117,7 +117,7 @@ namespace INPUT
     ///
     /// @param name Name of the topology to read
     /// @param dobj_fenode Resulting collection of all nodes that belong to a design.
-    /// @param get_discretization Callback to return a Discretization by name.
+    /// @param get_discretization Callback to return a discretization by name.
     void ReadDesign(const std::string& name, std::vector<std::vector<int>>& dobj_fenode,
         const std::function<const DRT::Discretization&(const std::string& name)>&
             get_discretization);

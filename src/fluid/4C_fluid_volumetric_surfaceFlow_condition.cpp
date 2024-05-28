@@ -1304,7 +1304,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate(
   // Export and set state
   export_and_set_boundary_values(cond_velocities_, drt_velocities_, "velaf");
 
-  double actflowrate = this->FlowRateCalculation(eleparams, time, ds_condname, action, condid_);
+  double actflowrate = this->flow_rate_calculation(eleparams, time, ds_condname, action, condid_);
 
   Teuchos::RCP<Teuchos::ParameterList> params = Teuchos::rcp(new Teuchos::ParameterList);
 
@@ -1320,7 +1320,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate(
 
   // insert flowrate into the flowrates vector
   double flowrate = (*flowrates_)[position];
-  //  double flowrate = this->FlowRateCalculation(time,ds_condname,action,condid_);
+  //  double flowrate = this->flow_rate_calculation(time,ds_condname,action,condid_);
 
   if (myrank == 0)
   {
@@ -1360,7 +1360,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate(
   export_and_set_boundary_values(correction_velnp, drt_velocities_, "velaf");
 
   double corrective_flowrate =
-      this->FlowRateCalculation(eleparams, time, ds_condname, action, condid_);
+      this->flow_rate_calculation(eleparams, time, ds_condname, action, condid_);
 
   if (myrank_ == 0)
   {
@@ -1445,7 +1445,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::SetVelocities(
   very last cycle!
 
 */
-double FLD::UTILS::FluidVolumetricSurfaceFlowBc::FlowRateCalculation(
+double FLD::UTILS::FluidVolumetricSurfaceFlowBc::flow_rate_calculation(
     Teuchos::ParameterList eleparams, double time, std::string ds_condname,
     FLD::BoundaryAction action, int condid)
 {
@@ -1476,10 +1476,10 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::FlowRateCalculation(
 
   return flowrate;
 
-}  // FluidImplicitTimeInt::FlowRateCalculation
+}  // FluidImplicitTimeInt::flow_rate_calculation
 
 
-double FLD::UTILS::FluidVolumetricSurfaceFlowBc::PressureCalculation(
+double FLD::UTILS::FluidVolumetricSurfaceFlowBc::pressure_calculation(
     double time, std::string ds_condname, std::string action, int condid)
 {
   // fill in parameter list for subsequent element evaluation
@@ -1505,7 +1505,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::PressureCalculation(
 
   return pressure / area_;
 
-}  // FluidImplicitTimeInt::PressureCalculation
+}  // FluidImplicitTimeInt::pressure_calculation
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1920,7 +1920,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::interpolate(Teuchos::RCP<std::vec
 
 }  // FLD::UTILS::FluidVolumetricSurfaceFlowBc::interpolate
 
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::UpdateResidual(Teuchos::RCP<Epetra_Vector> residual)
+void FLD::UTILS::FluidVolumetricSurfaceFlowBc::update_residual(Teuchos::RCP<Epetra_Vector> residual)
 {
   residual->Update(1.0, *cond_traction_vel_, 1.0);
 }
@@ -2036,7 +2036,7 @@ void FLD::UTILS::TotalTractionCorrector::EvaluateVelocities(
 
       discret_->set_state("velaf", velocities);
 
-      flowrate = mapiter->second->FluidVolumetricSurfaceFlowBc::FlowRateCalculation(
+      flowrate = mapiter->second->FluidVolumetricSurfaceFlowBc::flow_rate_calculation(
           eleparams, time, "TotalTractionCorrectionCond", FLD::calc_flowrate, mapiter->first);
       std::cout << "Traction Corrector_1: Q=" << flowrate << std::endl;
     }
@@ -2065,13 +2065,13 @@ void FLD::UTILS::TotalTractionCorrector::EvaluateVelocities(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::TotalTractionCorrector::UpdateResidual(Teuchos::RCP<Epetra_Vector> residual)
+void FLD::UTILS::TotalTractionCorrector::update_residual(Teuchos::RCP<Epetra_Vector> residual)
 {
   std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
 
   for (mapiter = fvsf_map_.begin(); mapiter != fvsf_map_.end(); mapiter++)
   {
-    mapiter->second->FluidVolumetricSurfaceFlowBc::UpdateResidual(residual);
+    mapiter->second->FluidVolumetricSurfaceFlowBc::update_residual(residual);
   }
 }
 

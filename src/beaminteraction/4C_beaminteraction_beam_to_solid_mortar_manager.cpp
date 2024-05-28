@@ -292,7 +292,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::SetLocalMaps(
     const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs)
 {
   check_setup();
-  CheckGlobalMaps();
+  check_global_maps();
 
   contact_pairs_ = contact_pairs;
 
@@ -403,7 +403,7 @@ BEAMINTERACTION::BeamToSolidMortarManager::LocationVector(
     const BEAMINTERACTION::BeamContactPair& contact_pair) const
 {
   check_setup();
-  CheckLocalMaps();
+  check_local_maps();
 
   // Create the output vectors
   std::vector<int> lambda_pos_row;
@@ -471,7 +471,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::evaluate_global_coupling_contrib
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   check_setup();
-  CheckGlobalMaps();
+  check_global_maps();
 
   // Reset the global data structures.
   global_constraint_->PutScalar(0.);
@@ -512,14 +512,14 @@ void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penal
     Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff, Teuchos::RCP<Epetra_FEVector> force) const
 {
   check_setup();
-  CheckGlobalMaps();
+  check_global_maps();
 
   int linalg_error = 0;
 
   if (stiff != Teuchos::null)
   {
     // Scale the linearizations of the constraint equations.
-    Teuchos::RCP<Epetra_Vector> global_penalty_kappa_inv = PenaltyInvertKappa();
+    Teuchos::RCP<Epetra_Vector> global_penalty_kappa_inv = penalty_invert_kappa();
     Teuchos::RCP<CORE::LINALG::SparseMatrix> penalty_kappa_inv_mat =
         Teuchos::rcp(new CORE::LINALG::SparseMatrix(*global_penalty_kappa_inv));
     penalty_kappa_inv_mat->Complete();
@@ -588,10 +588,10 @@ void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penal
 Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::GetGlobalLambda() const
 {
   check_setup();
-  CheckGlobalMaps();
+  check_global_maps();
 
   // Get the inverted kappa matrix.
-  Teuchos::RCP<Epetra_Vector> penalty_global_kappa_inv = PenaltyInvertKappa();
+  Teuchos::RCP<Epetra_Vector> penalty_global_kappa_inv = penalty_invert_kappa();
   Teuchos::RCP<CORE::LINALG::SparseMatrix> penalty_kappa_inv_mat =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(*penalty_global_kappa_inv));
   penalty_kappa_inv_mat->Complete();
@@ -641,7 +641,7 @@ double BEAMINTERACTION::BeamToSolidMortarManager::get_energy() const
 /**
  *
  */
-Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::PenaltyInvertKappa() const
+Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::penalty_invert_kappa() const
 {
   // Create the inverse vector.
   Teuchos::RCP<Epetra_Vector> global_kappa_inv =

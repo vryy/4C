@@ -66,7 +66,7 @@ namespace POROFLUIDMULTIPHASE
     void set_old_part_of_righthandside() override;
 
     /// do explicit predictor step (-> better starting value for nonlinear solver)
-    virtual void ExplicitPredictor();
+    virtual void explicit_predictor();
 
     /// add actual Neumann loads with time factor
     void add_neumann_to_residual() override;
@@ -78,7 +78,7 @@ namespace POROFLUIDMULTIPHASE
     void output_restart() override;
 
     /// return the right time-scaling-factor for the true residual
-    double ResidualScaling() const override { return 1.0 / (dt_ * theta_); }
+    double residual_scaling() const override { return 1.0 / (dt_ * theta_); }
 
     /// time factor for one-step-theta/BDF2 time integration
     double theta_;

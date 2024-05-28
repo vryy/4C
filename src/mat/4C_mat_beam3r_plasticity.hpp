@@ -46,7 +46,7 @@ namespace MAT
       //! standard constructor
       BeamReissnerElastPlasticMaterialParams(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
       //! @name Access to plasticity parameters
       //@{
@@ -60,25 +60,25 @@ namespace MAT
       //! hardening rigidity axial direction
       double get_hardening_axial_rigidity() const override
       {
-        return isohard_modulus_n_ * GetCrossSectionArea();
+        return isohard_modulus_n_ * get_cross_section_area();
       };
 
       //! hardening rigidity shear one direction
       double get_hardening_shear_rigidity2() const override
       {
-        return GetShearModulus() * GetCrossSectionArea() * get_shear_correction_factor();
+        return get_shear_modulus() * get_cross_section_area() * get_shear_correction_factor();
       };
 
       //! hardening rigidity shear other direction
       double get_hardening_shear_rigidity3() const override
       {
-        return GetShearModulus() * GetCrossSectionArea() * get_shear_correction_factor();
+        return get_shear_modulus() * get_cross_section_area() * get_shear_correction_factor();
       };
 
       //! hardening rigidity for momentum
       double get_hardening_momental_rigidity() const override
       {
-        return isohard_modulus_m_ * GetMomentInertia2();
+        return isohard_modulus_m_ * get_moment_inertia2();
       }
 
       //! consider torsion plasticity

@@ -54,7 +54,7 @@ void STR::IMPLICIT::OneStepTheta::Setup()
   theta_ = get_theta();
 
   // sanity checks and some screen output
-  if (GlobalState().GetMyRank() == 0)
+  if (global_state().GetMyRank() == 0)
   {
     if ((theta_ <= 0.0) or (theta_ > 1.0))
       FOUR_C_THROW("theta out of range (0.0,1.0]");
@@ -66,16 +66,16 @@ void STR::IMPLICIT::OneStepTheta::Setup()
   // setup mid-point vectors
   // ---------------------------------------------------------------------------
   const_vel_acc_update_ptr_ =
-      Teuchos::rcp(new Epetra_MultiVector(*GlobalState().DofRowMapView(), 2, true));
+      Teuchos::rcp(new Epetra_MultiVector(*global_state().DofRowMapView(), 2, true));
 
   // ---------------------------------------------------------------------------
   // setup pointers to the force vectors of the global state data container
   // ---------------------------------------------------------------------------
-  finertian_ptr_ = GlobalState().GetFinertialN();
-  finertianp_ptr_ = GlobalState().GetFinertialNp();
+  finertian_ptr_ = global_state().GetFinertialN();
+  finertianp_ptr_ = global_state().GetFinertialNp();
 
-  fviscon_ptr_ = GlobalState().GetFviscoN();
-  fvisconp_ptr_ = GlobalState().GetFviscoNp();
+  fviscon_ptr_ = global_state().GetFviscoN();
+  fvisconp_ptr_ = global_state().GetFviscoNp();
 
   issetup_ = true;
 }
@@ -86,7 +86,7 @@ void STR::IMPLICIT::OneStepTheta::post_setup()
 {
   check_init_setup();
 
-  if (SDyn().GetMassLinType() != INPAR::STR::ml_rotations and !SDyn().NeglectInertia())
+  if (s_dyn().GetMassLinType() != INPAR::STR::ml_rotations and !s_dyn().NeglectInertia())
   {
     /* we can use this method for all elements with additive DoFs,
      * but it won't work like this for non-additive rotation vector DoFs */
@@ -96,17 +96,17 @@ void STR::IMPLICIT::OneStepTheta::post_setup()
   {
     /* If we are restarting the simulation, we get the acceleration state from the
      * restart file. So we are already done at this point. */
-    if (TimInt().IsRestarting()) return;
+    if (tim_int().IsRestarting()) return;
 
     // so far, we are restricted to vanishing initial accelerations
-    Teuchos::RCP<Epetra_Vector> accnp_ptr = GlobalState().GetAccNp();
+    Teuchos::RCP<Epetra_Vector> accnp_ptr = global_state().GetAccNp();
     accnp_ptr->PutScalar(0.0);
 
     // sanity check whether assumption is fulfilled
     /* ToDo tolerance value is experience and based on following consideration:
      * epsilon = O(1e-15) scaled with EA = O(1e8) yields residual contributions in
      * initial, stress free state of order 1e-8 */
-    if (not current_state_is_equilibrium(1.0e-6) and GlobalState().GetMyRank() == 0)
+    if (not current_state_is_equilibrium(1.0e-6) and global_state().GetMyRank() == 0)
       std::cout << "\nSERIOUS WARNING: Initially non vanishing acceleration states "
                    "in case of ml_rotation = true,\ni.e. an initial state where the system "
                    "is not equilibrated, cannot yet be computed correctly.\nThis means your "
@@ -129,7 +129,7 @@ double STR::IMPLICIT::OneStepTheta::get_theta() const
   if (is_init() and is_setup()) return theta_;
 
   const STR::TIMINT::OneStepThetaDataSDyn& onesteptheta_sdyn =
-      dynamic_cast<const STR::TIMINT::OneStepThetaDataSDyn&>(TimInt().GetDataSDyn());
+      dynamic_cast<const STR::TIMINT::OneStepThetaDataSDyn&>(tim_int().GetDataSDyn());
 
   return onesteptheta_sdyn.get_theta();
 }
@@ -144,23 +144,23 @@ void STR::IMPLICIT::OneStepTheta::set_state(const Epetra_Vector& x)
 
   update_constant_state_contributions();
 
-  const double& dt = (*GlobalState().GetDeltaTime())[0];
+  const double& dt = (*global_state().GetDeltaTime())[0];
   // ---------------------------------------------------------------------------
   // new end-point displacements
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().ExtractDisplEntries(x);
-  GlobalState().GetDisNp()->Scale(1.0, *disnp_ptr);
+  Teuchos::RCP<Epetra_Vector> disnp_ptr = global_state().ExtractDisplEntries(x);
+  global_state().GetDisNp()->Scale(1.0, *disnp_ptr);
 
   // ---------------------------------------------------------------------------
   // new end-point velocities
   // ---------------------------------------------------------------------------
-  GlobalState().GetVelNp()->Update(
+  global_state().GetVelNp()->Update(
       1.0, *(*const_vel_acc_update_ptr_)(0), 1.0 / (theta_ * dt), *disnp_ptr, 0.0);
 
   // ---------------------------------------------------------------------------
   // new end-point accelerations
   // ---------------------------------------------------------------------------
-  GlobalState().GetAccNp()->Update(
+  global_state().GetAccNp()->Update(
       1.0, *(*const_vel_acc_update_ptr_)(1), 1.0 / (theta_ * theta_ * dt * dt), *disnp_ptr, 0.0);
 }
 
@@ -168,22 +168,22 @@ void STR::IMPLICIT::OneStepTheta::set_state(const Epetra_Vector& x)
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::OneStepTheta::update_constant_state_contributions()
 {
-  const double& dt = (*GlobalState().GetDeltaTime())[0];
+  const double& dt = (*global_state().GetDeltaTime())[0];
 
   // ---------------------------------------------------------------------------
   // velocity
   // ---------------------------------------------------------------------------
-  (*const_vel_acc_update_ptr_)(0)->Scale(-(1.0 - theta_) / theta_, *GlobalState().GetVelN());
-  (*const_vel_acc_update_ptr_)(0)->Update(-1.0 / (theta_ * dt), *GlobalState().GetDisN(), 1.0);
+  (*const_vel_acc_update_ptr_)(0)->Scale(-(1.0 - theta_) / theta_, *global_state().GetVelN());
+  (*const_vel_acc_update_ptr_)(0)->Update(-1.0 / (theta_ * dt), *global_state().GetDisN(), 1.0);
 
   // ---------------------------------------------------------------------------
   // acceleration
   // ---------------------------------------------------------------------------
-  (*const_vel_acc_update_ptr_)(1)->Scale(-(1.0 - theta_) / theta_, *GlobalState().GetAccN());
+  (*const_vel_acc_update_ptr_)(1)->Scale(-(1.0 - theta_) / theta_, *global_state().GetAccN());
   (*const_vel_acc_update_ptr_)(1)->Update(
-      -1.0 / (theta_ * theta_ * dt), *GlobalState().GetVelN(), 1.0);
+      -1.0 / (theta_ * theta_ * dt), *global_state().GetVelN(), 1.0);
   (*const_vel_acc_update_ptr_)(1)->Update(
-      -1.0 / (theta_ * theta_ * dt * dt), *GlobalState().GetDisN(), 1.0);
+      -1.0 / (theta_ * theta_ * dt * dt), *global_state().GetDisN(), 1.0);
 }
 
 /*----------------------------------------------------------------------------*
@@ -196,7 +196,7 @@ bool STR::IMPLICIT::OneStepTheta::ApplyForce(const Epetra_Vector& x, Epetra_Vect
   // evaluate the different model types (static case) at t_{n+1}^{i}
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
-  ResetEvalParams();
+  reset_eval_params();
   return ModelEval().ApplyForce(x, f, theta_);
 }
 
@@ -211,7 +211,7 @@ bool STR::IMPLICIT::OneStepTheta::ApplyStiff(
   // evaluate the different model types (static case) at t_{n+1}^{i}
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
-  ResetEvalParams();
+  reset_eval_params();
   const bool ok = ModelEval().ApplyStiff(x, jac, theta_);
 
   if (not ok) return ok;
@@ -231,7 +231,7 @@ bool STR::IMPLICIT::OneStepTheta::ApplyForceStiff(
   // evaluate the different model types (static case) at t_{n+1}^{i}
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
-  ResetEvalParams();
+  reset_eval_params();
   const bool ok = ModelEval().ApplyForceStiff(x, f, jac, theta_);
 
   if (not ok) return ok;
@@ -269,18 +269,18 @@ void STR::IMPLICIT::OneStepTheta::add_visco_mass_contributions(Epetra_Vector& f)
 void STR::IMPLICIT::OneStepTheta::add_visco_mass_contributions(
     CORE::LINALG::SparseOperator& jac) const
 {
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptr = GlobalState().ExtractDisplBlock(jac);
-  const double& dt = (*GlobalState().GetDeltaTime())[0];
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptr = global_state().ExtractDisplBlock(jac);
+  const double& dt = (*global_state().GetDeltaTime())[0];
   // add inertial contributions and scale the structural stiffness block
-  stiff_ptr->Add(*GlobalState().GetMassMatrix(), false, 1.0 / (theta_ * dt * dt), 1.0);
+  stiff_ptr->Add(*global_state().GetMassMatrix(), false, 1.0 / (theta_ * dt * dt), 1.0);
   // add Rayleigh damping contributions
-  if (TimInt().GetDataSDyn().GetDampingType() == INPAR::STR::damp_rayleigh)
-    stiff_ptr->Add(*GlobalState().GetDampMatrix(), false, 1.0 / dt, 1.0);
+  if (tim_int().GetDataSDyn().GetDampingType() == INPAR::STR::damp_rayleigh)
+    stiff_ptr->Add(*global_state().GetDampMatrix(), false, 1.0 / dt, 1.0);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::WriteRestart(
+void STR::IMPLICIT::OneStepTheta::write_restart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
@@ -288,7 +288,7 @@ void STR::IMPLICIT::OneStepTheta::WriteRestart(
   iowriter.WriteVector("finert", finertian_ptr_);
   iowriter.WriteVector("fvisco", fviscon_ptr_);
 
-  ModelEval().WriteRestart(iowriter, forced_writerestart);
+  ModelEval().write_restart(iowriter, forced_writerestart);
 }
 
 /*----------------------------------------------------------------------------*
@@ -326,7 +326,7 @@ void STR::IMPLICIT::OneStepTheta::UpdateStepState()
   // ---------------------------------------------------------------------------
   // new at t_{n+1} -> t_n
   //    finertial_{n} := finertial_{n+1}
-  finertian_ptr_->Scale(1.0, *GlobalState().GetFinertialNp());
+  finertian_ptr_->Scale(1.0, *global_state().GetFinertialNp());
   // new at t_{n+1} -> t_n
   //    fviscous_{n} := fviscous_{n+1}
   fviscon_ptr_->Scale(1.0, *fvisconp_ptr_);
@@ -355,10 +355,10 @@ void STR::IMPLICIT::OneStepTheta::predict_const_dis_consist_vel_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
   check_init_setup();
-  Teuchos::RCP<const Epetra_Vector> disn = GlobalState().GetDisN();
-  Teuchos::RCP<const Epetra_Vector> veln = GlobalState().GetVelN();
-  Teuchos::RCP<const Epetra_Vector> accn = GlobalState().GetAccN();
-  const double& dt = (*GlobalState().GetDeltaTime())[0];
+  Teuchos::RCP<const Epetra_Vector> disn = global_state().GetDisN();
+  Teuchos::RCP<const Epetra_Vector> veln = global_state().GetVelN();
+  Teuchos::RCP<const Epetra_Vector> accn = global_state().GetAccN();
+  const double& dt = (*global_state().GetDeltaTime())[0];
 
   // constant predictor: displacement in domain
   disnp.Scale(1.0, *disn);
@@ -383,10 +383,10 @@ bool STR::IMPLICIT::OneStepTheta::predict_const_vel_consist_acc(
 {
   check_init_setup();
 
-  Teuchos::RCP<const Epetra_Vector> disn = GlobalState().GetDisN();
-  Teuchos::RCP<const Epetra_Vector> veln = GlobalState().GetVelN();
-  Teuchos::RCP<const Epetra_Vector> accn = GlobalState().GetAccN();
-  const double& dt = (*GlobalState().GetDeltaTime())[0];
+  Teuchos::RCP<const Epetra_Vector> disn = global_state().GetDisN();
+  Teuchos::RCP<const Epetra_Vector> veln = global_state().GetVelN();
+  Teuchos::RCP<const Epetra_Vector> accn = global_state().GetAccN();
+  const double& dt = (*global_state().GetDeltaTime())[0];
 
   /* extrapolated displacements based upon constant velocities
    * d_{n+1} = d_{n} + dt * v_{n} */
@@ -411,10 +411,10 @@ bool STR::IMPLICIT::OneStepTheta::PredictConstAcc(
 {
   check_init_setup();
 
-  Teuchos::RCP<const Epetra_Vector> disn = GlobalState().GetDisN();
-  Teuchos::RCP<const Epetra_Vector> veln = GlobalState().GetVelN();
-  Teuchos::RCP<const Epetra_Vector> accn = GlobalState().GetAccN();
-  const double& dt = (*GlobalState().GetDeltaTime())[0];
+  Teuchos::RCP<const Epetra_Vector> disn = global_state().GetDisN();
+  Teuchos::RCP<const Epetra_Vector> veln = global_state().GetVelN();
+  Teuchos::RCP<const Epetra_Vector> accn = global_state().GetAccN();
+  const double& dt = (*global_state().GetDeltaTime())[0];
 
   /* extrapolated displacements based upon constant accelerations
    * d_{n+1} = d_{n} + dt * v_{n} + dt^2 / 2 * a_{n} */
@@ -435,13 +435,13 @@ bool STR::IMPLICIT::OneStepTheta::PredictConstAcc(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::ResetEvalParams()
+void STR::IMPLICIT::OneStepTheta::reset_eval_params()
 {
   // call base class
-  STR::IMPLICIT::Generic::ResetEvalParams();
+  STR::IMPLICIT::Generic::reset_eval_params();
 
   // set the time step dependent parameters for the element evaluation
-  const double& dt = (*GlobalState().GetDeltaTime())[0];
+  const double& dt = (*global_state().GetDeltaTime())[0];
   double timeintfac_dis = theta_ * theta_ * dt * dt;
   double timeintfac_vel = theta_ * dt;
 

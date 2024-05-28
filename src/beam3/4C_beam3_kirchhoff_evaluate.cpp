@@ -54,7 +54,7 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
 
   if (IsParamsInterface())
   {
-    act = ParamsInterface().GetActionType();
+    act = params_interface().GetActionType();
   }
   else
   {
@@ -197,8 +197,8 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       }
       else if (IsParamsInterface())  // new structural time integration
       {
-        ParamsInterface().add_contribution_to_energy_type(eint_, STR::internal_energy);
-        ParamsInterface().add_contribution_to_energy_type(ekin_, STR::kinetic_energy);
+        params_interface().add_contribution_to_energy_type(eint_, STR::internal_energy);
+        params_interface().add_contribution_to_energy_type(ekin_, STR::kinetic_energy);
       }
       break;
     }
@@ -539,10 +539,10 @@ void DRT::ELEMENTS::Beam3k::calc_internal_and_inertia_forces_and_stiff(
 
     if (this->IsParamsInterface())
     {
-      dt = ParamsInterface().GetDeltaTime();
-      beta = ParamsInterface().get_beam_params_interface_ptr()->GetBeta();
-      alpha_f = ParamsInterface().get_beam_params_interface_ptr()->GetAlphaf();
-      alpha_m = ParamsInterface().get_beam_params_interface_ptr()->GetAlpham();
+      dt = params_interface().GetDeltaTime();
+      beta = params_interface().get_beam_params_interface_ptr()->GetBeta();
+      alpha_f = params_interface().get_beam_params_interface_ptr()->GetAlphaf();
+      alpha_m = params_interface().get_beam_params_interface_ptr()->GetAlpham();
     }
     else
     {
@@ -1658,11 +1658,11 @@ void DRT::ELEMENTS::Beam3k::calculate_inertia_forces_and_mass_matrix(Teuchos::Pa
 
   if (this->IsParamsInterface())
   {
-    dt = ParamsInterface().GetDeltaTime();
-    beta = ParamsInterface().get_beam_params_interface_ptr()->GetBeta();
-    gamma = ParamsInterface().get_beam_params_interface_ptr()->GetGamma();
-    alpha_f = ParamsInterface().get_beam_params_interface_ptr()->GetAlphaf();
-    alpha_m = ParamsInterface().get_beam_params_interface_ptr()->GetAlpham();
+    dt = params_interface().GetDeltaTime();
+    beta = params_interface().get_beam_params_interface_ptr()->GetBeta();
+    gamma = params_interface().get_beam_params_interface_ptr()->GetGamma();
+    alpha_f = params_interface().get_beam_params_interface_ptr()->GetAlphaf();
+    alpha_m = params_interface().get_beam_params_interface_ptr()->GetAlpham();
   }
   else
   {
@@ -2828,10 +2828,10 @@ void DRT::ELEMENTS::Beam3k::evaluate_translational_damping(Teuchos::ParameterLis
         gausspoints.qxg[gp][0], N_i, N_i_xi, this->Shape(), this->RefLength());
 
     // compute position vector r of point in physical space corresponding to Gauss point
-    Calc_r<nnode, vpernode, T>(disp_totlag, N_i, evaluationpoint);
+    calc_r<nnode, vpernode, T>(disp_totlag, N_i, evaluationpoint);
 
     // compute tangent vector t_{\par}=r' at current Gauss point
-    Calc_r_s<nnode, vpernode, T>(disp_totlag, N_i_xi, jacobi_[gp], r_s);
+    calc_r_s<nnode, vpernode, T>(disp_totlag, N_i_xi, jacobi_[gp], r_s);
 
     // compute velocity and gradient of background flow field at point r
     get_background_velocity<ndim, T>(params, evaluationpoint, velbackground, velbackgroundgrad);
@@ -2896,7 +2896,7 @@ void DRT::ELEMENTS::Beam3k::evaluate_analytic_stiffmat_contributions_from_transl
   const unsigned int dofpernode = ndim * vpernode + 1;
 
   // get time step size
-  const double dt = ParamsInterface().GetDeltaTime();
+  const double dt = params_interface().GetDeltaTime();
 
   // compute matrix product of damping matrix and gradient of background velocity
   CORE::LINALG::Matrix<ndim, ndim> dampmatvelbackgroundgrad(true);
@@ -3012,7 +3012,7 @@ void DRT::ELEMENTS::Beam3k::evaluate_stochastic_forces(
         gausspoints.qxg[gp][0], N_i, N_i_xi, this->Shape(), this->RefLength());
 
     // compute tangent vector t_{\par}=r' at current Gauss point
-    Calc_r_s<nnode, vpernode, T>(disp_totlag, N_i_xi, jacobi_[gp], r_s);
+    calc_r_s<nnode, vpernode, T>(disp_totlag, N_i_xi, jacobi_[gp], r_s);
 
     // extract random numbers from global vector
     for (unsigned int idim = 0; idim < ndim; idim++)
@@ -3121,7 +3121,7 @@ void DRT::ELEMENTS::Beam3k::evaluate_rotational_damping(
     CORE::LINALG::Matrix<ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS, 1, T>& f_int)
 {
   // get time step size
-  const double dt = ParamsInterface().GetDeltaTime();
+  const double dt = params_interface().GetDeltaTime();
 
   // get damping coefficients for translational and rotational degrees of freedom
   CORE::LINALG::Matrix<3, 1> gamma(true);

@@ -34,7 +34,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
 
   if (IsParamsInterface())
   {
-    act = ParamsInterface().GetActionType();
+    act = params_interface().GetActionType();
   }
   else  // Todo remove as soon as old structural time integration is gone
   {
@@ -91,7 +91,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
       std::map<std::string, std::vector<double>> ele_state;
       extract_elemental_variables(la, discretization, params, ele_state);
 
-      Energy(ele_state, params, elevec1);
+      energy(ele_state, params, elevec1);
 
       break;
     }
@@ -163,7 +163,7 @@ int DRT::ELEMENTS::Truss3::evaluate_neumann(Teuchos::ParameterList& params,
 /*--------------------------------------------------------------------------------------*
  | calculation of elastic energy                                             cyron 12/10|
  *--------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::Energy(const std::map<std::string, std::vector<double>>& ele_state,
+void DRT::ELEMENTS::Truss3::energy(const std::map<std::string, std::vector<double>>& ele_state,
     Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& intenergy)
 {
   if (Material()->MaterialType() != CORE::Materials::m_linelast1D)
@@ -201,7 +201,7 @@ void DRT::ELEMENTS::Truss3::Energy(const std::map<std::string, std::vector<doubl
   const double intenergy_calc = mat->evaluate_elastic_energy(epsilon) * crosssec_ * lrefe_;
 
   if (IsParamsInterface())  // new structural time integration
-    ParamsInterface().add_contribution_to_energy_type(intenergy_calc, STR::internal_energy);
+    params_interface().add_contribution_to_energy_type(intenergy_calc, STR::internal_energy);
   else  // old structural time integration
   {
     // check length of elevec1
@@ -491,8 +491,8 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(
   INPAR::STR::StressType iostress;
   if (IsParamsInterface())
   {
-    stressdata = ParamsInterface().StressDataPtr();
-    iostress = ParamsInterface().GetStressOutputType();
+    stressdata = params_interface().StressDataPtr();
+    iostress = params_interface().GetStressOutputType();
   }
   else
   {

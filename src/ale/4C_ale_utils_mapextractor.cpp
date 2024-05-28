@@ -37,7 +37,7 @@ void ALE::UTILS::MapExtractor::Setup(const DRT::Discretization& dis, bool overla
   mcs.AddSelector(
       Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "ALEUPDATECoupling", 0, ndim)));
   mcs.AddSelector(
-      Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "FPSICoupling", 0, ndim)));
+      Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "fpsi_coupling", 0, ndim)));
   mcs.AddSelector(
       Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "Mortar", 0, ndim)));
   mcs.SetupExtractor(dis, *dis.dof_row_map(), *this);
@@ -62,7 +62,7 @@ Teuchos::RCP<std::set<int>> ALE::UTILS::MapExtractor::conditioned_element_map(
   Teuchos::RCP<std::set<int>> condelements6 =
       CORE::Conditions::conditioned_element_map(dis, "ALEUPDATECoupling");
   Teuchos::RCP<std::set<int>> condelements7 =
-      CORE::Conditions::conditioned_element_map(dis, "FPSICoupling");
+      CORE::Conditions::conditioned_element_map(dis, "fpsi_coupling");
   Teuchos::RCP<std::set<int>> condelements8 =
       CORE::Conditions::conditioned_element_map(dis, "Mortar");
   std::copy(condelements2->begin(), condelements2->end(),

@@ -88,13 +88,13 @@ void MAT::ELASTIC::IsoVolAAAGasser::CalcCele(const int eleGID)
   {
     cele_myele = ((normdist_myele - 0.5) / (-0.5)) * params_->GetParameter(params_->clum, eleGID) +
                  (normdist_myele / 0.5) * params_->GetParameter(params_->cmed, eleGID);
-    params_->SetParameter(params_->cele, cele_myele, eleGID);
+    params_->set_parameter(params_->cele, cele_myele, eleGID);
   }
   else if (0.5 < normdist_myele and normdist_myele <= 1.0)
   {
     cele_myele = ((normdist_myele - 1.0) / (-0.5)) * params_->GetParameter(params_->cmed, eleGID) +
                  ((normdist_myele - 0.5) / 0.5) * params_->GetParameter(params_->cablum, eleGID);
-    params_->SetParameter(params_->cele, cele_myele, eleGID);
+    params_->set_parameter(params_->cele, cele_myele, eleGID);
   }
   else
     FOUR_C_THROW("Unable to calculate valid stiffness parameter in material AAAGasser");
@@ -126,9 +126,9 @@ void MAT::ELASTIC::IsoVolAAAGasser::SetupAAA(Teuchos::ParameterList& params, con
                             params_->GetParameter(params_->sigma_ablum, eleGID));
 
     // set params
-    params_->SetParameter(params_->clum, clum, eleGID);
-    params_->SetParameter(params_->cmed, cmed, eleGID);
-    params_->SetParameter(params_->cablum, cablum, eleGID);
+    params_->set_parameter(params_->clum, clum, eleGID);
+    params_->set_parameter(params_->cmed, cmed, eleGID);
+    params_->set_parameter(params_->cablum, cablum, eleGID);
 
 
     if (params_->GetParameter(params_->normdist, eleGID) == -999.0)

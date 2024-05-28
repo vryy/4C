@@ -274,7 +274,7 @@ namespace CORE::GEO
       \brief return the integration rule for this volumecell when MomentFitting or DirectDivergence
       is used
        */
-      Teuchos::RCP<CORE::FE::GaussPoints> GetGaussRule() { return gp_; }
+      Teuchos::RCP<CORE::FE::GaussPoints> get_gauss_rule() { return gp_; }
 
       /*!
       \brief replace the integration rule for this volumecell when MomentFitting or DirectDivergence

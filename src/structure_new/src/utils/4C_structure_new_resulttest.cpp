@@ -387,7 +387,7 @@ void STR::ResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test
         FOUR_C_THROW("Quantity '%s' not supported in structure testing", position.c_str());
 
       // compare values
-      const int err = CompareValues(result, "NODE", res);
+      const int err = compare_values(result, "NODE", res);
       nerr += err;
       test_count++;
     }
@@ -412,7 +412,7 @@ void STR::ResultTest::TestSpecial(
     case Status::evaluated:
     {
       if (result.has_value())
-        nerr += CompareValues(*result, "SPECIAL", res);
+        nerr += compare_values(*result, "SPECIAL", res);
       else
         FOUR_C_THROW(
             "STR::ResultTest::TestSpecial: Special result has no defined value assigned to it!");

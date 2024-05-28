@@ -540,7 +540,7 @@ might become invalid after a redistribution of the discretization.
           of freedom it should include in the degree of freedom row and column map
           for the global system of equations.
     */
-    virtual int NumDofPerFace(const unsigned /* face */) const { return 0; }
+    virtual int num_dof_per_face(const unsigned /* face */) const { return 0; }
 
     /*!
     \brief Get number of degrees of freedom per component
@@ -580,7 +580,7 @@ might become invalid after a redistribution of the discretization.
           of freedom it should include in the degree of freedom row and column map
           for the global system of equations.
     */
-    virtual int NumDofPerElement() const
+    virtual int num_dof_per_element() const
     {
       FOUR_C_THROW("not implemented");
       return -1;
@@ -1204,7 +1204,7 @@ might become invalid after a redistribution of the discretization.
      * the output. Note that each cell adds all of its geometry information independently of other
      * cells. This implies that nodes shared by multiple elements are duplicated in the output.
      *
-     * @param discret (in) Discretization
+     * @param discret (in) discretization
      * @param cell_types (in/out) cell type data vector
      * @param point_coordinates (in/out) point coordinates for the representation of this element
      * @return Number of added points
@@ -1216,7 +1216,7 @@ might become invalid after a redistribution of the discretization.
      * \brief Add dof based results to point data vector, such that the data matches the geometry
      * created in append_visualization_geometry.
      *
-     * @param discret (in) Discretization
+     * @param discret (in) discretization
      * @param result_data_dofbased (in) Global vector with results
      * @param result_num_dofs_per_node (in/out) Number of scalar values per point.
      * @param read_result_data_from_dofindex (in) Starting DOF index for the nodal DOFs. This is
@@ -1454,7 +1454,7 @@ might become invalid after a redistribution of the discretization.
 
     \param trace: transformation between
     */
-    void SetLocalTrafoMap(const std::vector<int>& trafo);
+    void set_local_trafo_map(const std::vector<int>& trafo);
 
    private:
     //! \brief The master parent element of face element. nullptr for usual elements

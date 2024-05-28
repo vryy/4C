@@ -46,7 +46,7 @@ Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::ElementHandle::create_projec
   for (unsigned i = 0; i < nen; ++i)
   {
     CORE::GEO::CUT::Point* p = cpoints[i];
-    const CORE::LINALG::Matrix<3, 1>& xi = LocalCoordinates(p);
+    const CORE::LINALG::Matrix<3, 1>& xi = local_coordinates(p);
 
     // copy first dim entries into xie
     std::copy(xi.A(), xi.A() + dim, &xie(0, i));
@@ -211,7 +211,7 @@ void CORE::GEO::CUT::ElementHandle::append_volume_cell_gauss_points_moment_fitti
 
   //---------------------------------------------
   const std::vector<CORE::GEO::CUT::Point*>& cpoints = vc->parent_element()->Points();
-  Teuchos::RCP<CORE::FE::GaussPoints> gp_ic = vc->GetGaussRule();
+  Teuchos::RCP<CORE::FE::GaussPoints> gp_ic = vc->get_gauss_rule();
 
 
   switch (Shape())
@@ -259,7 +259,7 @@ void CORE::GEO::CUT::ElementHandle::append_volume_cell_gauss_points_direct_diver
   //         --> element volume mapping as done for tessellation and moment fitting do not work
   // 2. Internal Gauss pts can be obtained only if we have correctly mapped main Gauss points
   //-------------------
-  Teuchos::RCP<CORE::FE::GaussPoints> gp = vc->GetGaussRule();
+  Teuchos::RCP<CORE::FE::GaussPoints> gp = vc->get_gauss_rule();
 
   // volume cell gausspoints are identified to be negligible in
   // CORE::GEO::CUT::VolumeCell::direct_divergence_gauss_rule
@@ -335,7 +335,7 @@ Teuchos::RCP<CORE::FE::GaussPointsComposite> CORE::GEO::CUT::ElementHandle::gaus
     else if (gausstype == INPAR::CUT::VCellGaussPts_MomentFitting ||
              gausstype == INPAR::CUT::VCellGaussPts_DirectDivergence)
     {
-      Teuchos::RCP<CORE::FE::GaussPoints> gp = vc->GetGaussRule();
+      Teuchos::RCP<CORE::FE::GaussPoints> gp = vc->get_gauss_rule();
       gpc->Append(gp);
     }
   }
@@ -404,7 +404,7 @@ void CORE::GEO::CUT::ElementHandle::GetBoundaryCellSets(
            desired_positions.begin();
        ip != desired_positions.end(); ++ip)
   {
-    const std::vector<plain_boundarycell_set>& ele_bcellsets = GetBoundaryCellSet(*ip);
+    const std::vector<plain_boundarycell_set>& ele_bcellsets = get_boundary_cell_set(*ip);
 
     std::copy(
         ele_bcellsets.begin(), ele_bcellsets.end(), std::inserter(bcellsets, bcellsets.end()));
@@ -524,7 +524,7 @@ bool CORE::GEO::CUT::ElementHandle::get_cell_sets_dof_sets_gauss_points(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::LinearElementHandle::BoundaryCellSet(Point::PointPosition position)
+void CORE::GEO::CUT::LinearElementHandle::boundary_cell_set(Point::PointPosition position)
 {
   // boundary cell sets were already added
   if (bcell_sets_.find(position) != bcell_sets_.end()) return;
@@ -712,7 +712,7 @@ void CORE::GEO::CUT::QuadraticElementHandle::GetBoundaryCells(plain_boundarycell
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::QuadraticElementHandle::BoundaryCellSet(Point::PointPosition position)
+void CORE::GEO::CUT::QuadraticElementHandle::boundary_cell_set(Point::PointPosition position)
 {
   if (connected_bcell_sets_.find(position) != connected_bcell_sets_.end()) return;
 
@@ -1538,7 +1538,7 @@ CORE::GEO::CUT::Wedge15ElementHandle::Wedge15ElementHandle(
 /*----------------------------------------------------------------------*/
 // compute local coordinates of the element for given global coordinates
 /*----------------------------------------------------------------------*/
-void CORE::GEO::CUT::Hex20ElementHandle::LocalCoordinates(
+void CORE::GEO::CUT::Hex20ElementHandle::local_coordinates(
     const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst)
 {
   Teuchos::RCP<CORE::GEO::CUT::Position> pos =
@@ -1558,14 +1558,14 @@ void CORE::GEO::CUT::Hex20ElementHandle::LocalCoordinates(
 
     FOUR_C_THROW("local coordinates for hex20 element could not be determined");
   }
-  pos->LocalCoordinates(rst);
+  pos->local_coordinates(rst);
 }
 
 
 /*----------------------------------------------------------------------*/
 // compute local coordinates of the element for given global coordinates
 /*----------------------------------------------------------------------*/
-void CORE::GEO::CUT::Hex27ElementHandle::LocalCoordinates(
+void CORE::GEO::CUT::Hex27ElementHandle::local_coordinates(
     const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst)
 {
   Teuchos::RCP<CORE::GEO::CUT::Position> pos =
@@ -1575,14 +1575,14 @@ void CORE::GEO::CUT::Hex27ElementHandle::LocalCoordinates(
   if (not success)
   {
   }
-  pos->LocalCoordinates(rst);
+  pos->local_coordinates(rst);
 }
 
 
 /*----------------------------------------------------------------------*/
 // compute local coordinates of the element for given global coordinates
 /*----------------------------------------------------------------------*/
-void CORE::GEO::CUT::Tet10ElementHandle::LocalCoordinates(
+void CORE::GEO::CUT::Tet10ElementHandle::local_coordinates(
     const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst)
 {
   Teuchos::RCP<CORE::GEO::CUT::Position> pos =
@@ -1592,13 +1592,13 @@ void CORE::GEO::CUT::Tet10ElementHandle::LocalCoordinates(
   if (not success)
   {
   }
-  pos->LocalCoordinates(rst);
+  pos->local_coordinates(rst);
 }
 
 /*----------------------------------------------------------------------*/
 // compute local coordinates of the element for given global coordinates
 /*----------------------------------------------------------------------*/
-void CORE::GEO::CUT::Wedge15ElementHandle::LocalCoordinates(
+void CORE::GEO::CUT::Wedge15ElementHandle::local_coordinates(
     const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst)
 {
   Teuchos::RCP<CORE::GEO::CUT::Position> pos =
@@ -1608,7 +1608,7 @@ void CORE::GEO::CUT::Wedge15ElementHandle::LocalCoordinates(
   if (not success)
   {
   }
-  pos->LocalCoordinates(rst);
+  pos->local_coordinates(rst);
 }
 
 FOUR_C_NAMESPACE_CLOSE

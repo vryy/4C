@@ -130,13 +130,13 @@ namespace SSTI
         const CORE::LINALG::SparseMatrix& structures_x_matrix);
 
     //! Meshtying adapters
-    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> MeshtyingThermo() const
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_thermo() const
     {
-      return ssti_mono_->MeshtyingThermo();
+      return ssti_mono_->meshtying_thermo();
     }
-    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> MeshtyingScatra() const
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_scatra() const
     {
-      return ssti_mono_->MeshtyingScatra();
+      return ssti_mono_->meshtying_scatra();
     }
     Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssti_structure_meshtying() const
     {
@@ -145,15 +145,15 @@ namespace SSTI
     //@}
 
     //! SSTI mono maps
-    Teuchos::RCP<SSTI::SSTIMapsMono> AllMaps() const { return ssti_mono_->AllMaps(); }
+    Teuchos::RCP<SSTI::SSTIMapsMono> all_maps() const { return ssti_mono_->AllMaps(); }
 
-    Teuchos::RCP<ADAPTER::SSIStructureWrapper> StructureField() const
+    Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure_field() const
     {
-      return ssti_mono_->StructureField();
+      return ssti_mono_->structure_field();
     }
 
     //! flag indicating meshtying
-    bool InterfaceMeshtying() const { return ssti_mono_->InterfaceMeshtying(); }
+    bool interface_meshtying() const { return ssti_mono_->interface_meshtying(); }
 
    private:
     //! monolithic algorithm for scalar-structure-thermo interaction
@@ -208,10 +208,10 @@ namespace SSTI
 
    protected:
     //! position of scatra blocks in system matrix
-    std::vector<int> BlockPositionScaTra() const { return block_position_scatra_; };
+    std::vector<int> block_position_sca_tra() const { return block_position_scatra_; };
 
     //! position of thermo blocks in system matrix
-    std::vector<int> BlockPositionThermo() const { return block_position_thermo_; };
+    std::vector<int> block_position_thermo() const { return block_position_thermo_; };
 
     //! position of structure block in system matrix
     int position_structure() const { return position_structure_; };

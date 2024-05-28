@@ -77,7 +77,7 @@ namespace STR
       Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override;
 
       ///! FixMe switch structure field to block matrix in fsi simulations
-      void UseBlockMatrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
+      void use_block_matrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
           Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps) override;
       /// @}
 
@@ -95,10 +95,10 @@ namespace STR
 
      protected:
       /// Returns the current solution group (pure virtual)
-      virtual const ::NOX::Abstract::Group& GetSolutionGroup() const = 0;
+      virtual const ::NOX::Abstract::Group& get_solution_group() const = 0;
 
       //! Returns the current solution group ptr
-      virtual Teuchos::RCP<::NOX::Abstract::Group> SolutionGroupPtr() = 0;
+      virtual Teuchos::RCP<::NOX::Abstract::Group> solution_group_ptr() = 0;
     };
   }  // namespace TIMINT
 }  // namespace STR

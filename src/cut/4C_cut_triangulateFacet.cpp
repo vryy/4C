@@ -819,7 +819,7 @@ void CORE::GEO::CUT::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
       CORE::LINALG::Matrix<3, 1> maincyclepointcoordinates;
       CORE::LINALG::Matrix<3, 1> localmaincyclepointcoordinates;
       maincyclepoint->Coordinates(maincyclepointcoordinates.A());
-      parentside->LocalCoordinates(
+      parentside->local_coordinates(
           maincyclepointcoordinates, localmaincyclepointcoordinates, false);
       localmaincyclepoints[j] = localmaincyclepointcoordinates;
       j++;
@@ -834,7 +834,7 @@ void CORE::GEO::CUT::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
         CORE::LINALG::Matrix<3, 1> holecyclepointcoordinates;
         CORE::LINALG::Matrix<3, 1> localholecyclepointcoordinates;
         holecyclepoint->Coordinates(holecyclepointcoordinates.A());
-        parentside->LocalCoordinates(
+        parentside->local_coordinates(
             holecyclepointcoordinates, localholecyclepointcoordinates, false);
         localholecyclespoints[k] = localholecyclepointcoordinates;
         k[1] = k[1] + 1;

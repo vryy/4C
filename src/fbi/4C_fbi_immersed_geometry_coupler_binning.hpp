@@ -117,7 +117,7 @@ namespace FBI
      * \param[in] discretizations vector containing the structure and fluid discretization
      * \param[in] structure_displacement vector containing the column structure displacement
      */
-    virtual void SetupBinning(std::vector<Teuchos::RCP<DRT::Discretization>>&,
+    virtual void setup_binning(std::vector<Teuchos::RCP<DRT::Discretization>>&,
         Teuchos::RCP<const Epetra_Vector> structure_displacement);
 
     /** \brief Partition the Problem into bins
@@ -125,7 +125,7 @@ namespace FBI
      * \param[in] discretizations vector containing the structure and fluid discretization
      * \param[in] structure_displacement vector containing the column structure displacement
      */
-    virtual void PartitionGeometry(std::vector<Teuchos::RCP<DRT::Discretization>>&,
+    virtual void partition_geometry(std::vector<Teuchos::RCP<DRT::Discretization>>&,
         Teuchos::RCP<const Epetra_Vector> structure_displacement);
 
    private:

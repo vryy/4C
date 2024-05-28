@@ -81,11 +81,11 @@ namespace CONTACT
 
    protected:
     // create an appropriate vector for the RHS
-    Teuchos::RCP<Epetra_FEVector> SetupRhsBlockVec(
+    Teuchos::RCP<Epetra_FEVector> setup_rhs_block_vec(
         const enum CONTACT::VecBlockType& bt) const override;
 
     // create an appropriate matrix block
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SetupMatrixBlockPtr(
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> setup_matrix_block_ptr(
         const enum CONTACT::MatBlockType& bt) override;
 
     // complete matrix block with correct maps

@@ -136,13 +136,13 @@ namespace DRT
 
       //! evaluate main-diagonal system matrix contributions associated with scatra-scatra interface
       //! coupling condition
-      void EvaluateS2ICoupling(const DRT::FaceElement* ele,  ///< current boundary element
-          Teuchos::ParameterList& params,                    ///< parameter list
-          DRT::Discretization& discretization,               ///< discretization
-          DRT::Element::LocationArray& la,                   ///< location array
-          CORE::LINALG::SerialDenseMatrix& eslavematrix,     ///< element matrix for slave side
-          CORE::LINALG::SerialDenseMatrix& emastermatrix,    ///< element matrix for master side
-          CORE::LINALG::SerialDenseVector& eslaveresidual    ///< element residual for slave side
+      void evaluate_s2_i_coupling(const DRT::FaceElement* ele,  ///< current boundary element
+          Teuchos::ParameterList& params,                       ///< parameter list
+          DRT::Discretization& discretization,                  ///< discretization
+          DRT::Element::LocationArray& la,                      ///< location array
+          CORE::LINALG::SerialDenseMatrix& eslavematrix,        ///< element matrix for slave side
+          CORE::LINALG::SerialDenseMatrix& emastermatrix,       ///< element matrix for master side
+          CORE::LINALG::SerialDenseVector& eslaveresidual       ///< element residual for slave side
           ) override;
 
       //! evaluate off-diagonal system matrix contributions associated with scatra-scatra interface
@@ -156,7 +156,7 @@ namespace DRT
       );
 
       //! evaluate action
-      int EvaluateAction(DRT::FaceElement* ele,             //!< boundary element
+      int evaluate_action(DRT::FaceElement* ele,            //!< boundary element
           Teuchos::ParameterList& params,                   //!< parameter list
           DRT::Discretization& discretization,              //!< discretization
           SCATRA::BoundaryAction action,                    //!< action
@@ -169,8 +169,8 @@ namespace DRT
           ) override;
 
       //! extract nodal state variables associated with boundary element
-      void ExtractNodeValues(const DRT::Discretization& discretization,  //!< discretization
-          DRT::Element::LocationArray& la                                //!< location array
+      void extract_node_values(const DRT::Discretization& discretization,  //!< discretization
+          DRT::Element::LocationArray& la                                  //!< location array
           ) override;
 
       //! nodal electrochemistry variables associated with time t_{n+1} or t_{n+alpha_f}

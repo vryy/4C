@@ -190,7 +190,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatNewman(
   // conductivity and first derivative can maximally depend on one concentration
   // since time curve is used as input routine
   // conductivity of electrolyte solution
-  diffmanager->SetCond(matnewman->ComputeConductivity(concentration, temperature));
+  diffmanager->SetCond(matnewman->compute_conductivity(concentration, temperature));
 
   // derivative of electronic conductivity w.r.t. concentration
   diffmanager->SetConcDerivCond(

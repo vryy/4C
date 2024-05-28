@@ -37,12 +37,12 @@ FOUR_C_NAMESPACE_OPEN
 CORE::GEO::CUT::IMPL::PointGraph::PointGraph(Side *side) : graph_(create_graph(side->Dim()))
 {
   Cycle cycle;
-  FillGraph(side, cycle);
-  if (GetGraph().HasSinglePoints(element_side))  // if any edge in graph has single point
+  fill_graph(side, cycle);
+  if (get_graph().HasSinglePoints(element_side))  // if any edge in graph has single point
   {
-    GetGraph().FixSinglePoints(cycle);  // delete single point edges
+    get_graph().FixSinglePoints(cycle);  // delete single point edges
   }
-  GetGraph().find_cycles(side, cycle);
+  get_graph().find_cycles(side, cycle);
 }
 
 /*----------------------------------------------------------------------------*
@@ -53,22 +53,22 @@ CORE::GEO::CUT::IMPL::PointGraph::PointGraph(
 {
   // here we create the facets...
   Cycle cycle;
-  FillGraph(element, side, cycle, strategy);
+  fill_graph(element, side, cycle, strategy);
 
   // if any edge in graph has single point
-  if (GetGraph().HasSinglePoints(location))
+  if (get_graph().HasSinglePoints(location))
   {
     // NOTE: levelset method does not have complicated check for the single point. Feel free to
     // exend it
-    if (side->IsLevelSetSide() or GetGraph().SimplifyConnections(element, side) or
-        (GetGraph().HasTouchingEdge(element, side)))
+    if (side->IsLevelSetSide() or get_graph().SimplifyConnections(element, side) or
+        (get_graph().HasTouchingEdge(element, side)))
     {
-      GetGraph().FixSinglePoints(cycle);  // delete single point edges
+      get_graph().FixSinglePoints(cycle);  // delete single point edges
     }
     else
     {
       std::ofstream f("graph0.txt");
-      GetGraph().Print(f);
+      get_graph().Print(f);
       FOUR_C_THROW(
           "Pointgraph has single point.This shouldn't happen or we should understand why!");
     }
@@ -80,7 +80,7 @@ CORE::GEO::CUT::IMPL::PointGraph::PointGraph(
 
   try
   {
-    GetGraph().find_cycles(element, side, cycle, location, strategy);
+    get_graph().find_cycles(element, side, cycle, location, strategy);
   }
   catch (CORE::Exception &err)
   {
@@ -112,7 +112,7 @@ CORE::GEO::CUT::IMPL::PointGraph::PointGraph(
  * Graph is filled wihl all edges of the selfcut: uncutted edges, selfcutedges
  * and new splitted edges; but no the cutted edges                          wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IMPL::PointGraph::FillGraph(Side *side, Cycle &cycle)
+void CORE::GEO::CUT::IMPL::PointGraph::fill_graph(Side *side, Cycle &cycle)
 {
   const std::vector<Node *> &nodes = side->Nodes();
   const std::vector<Edge *> &edges = side->Edges();
@@ -138,7 +138,7 @@ void CORE::GEO::CUT::IMPL::PointGraph::FillGraph(Side *side, Cycle &cycle)
     {
       Point *p1 = edge_points[i - 1];
       Point *p2 = edge_points[i];
-      GetGraph().AddEdge(p1, p2);
+      get_graph().AddEdge(p1, p2);
     }
     for (std::vector<Point *>::iterator i = edge_points.begin() + 1; i != edge_points.end(); ++i)
     {
@@ -150,7 +150,7 @@ void CORE::GEO::CUT::IMPL::PointGraph::FillGraph(Side *side, Cycle &cycle)
   for (plain_edge_set::const_iterator i = selfcutedges.begin(); i != selfcutedges.end(); ++i)
   {
     Edge *selfcutedge = *i;
-    GetGraph().AddEdge(selfcutedge->BeginNode()->point(), selfcutedge->EndNode()->point());
+    get_graph().AddEdge(selfcutedge->BeginNode()->point(), selfcutedge->EndNode()->point());
   }
 }
 
@@ -158,7 +158,7 @@ void CORE::GEO::CUT::IMPL::PointGraph::FillGraph(Side *side, Cycle &cycle)
  * Get all edges created on this side after cut, store cycle of points on this
  * side to create facet. Also add cut lines to the graph
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IMPL::PointGraph::FillGraph(
+void CORE::GEO::CUT::IMPL::PointGraph::fill_graph(
     Element *element, Side *side, Cycle &cycle, Strategy strategy)
 {
   const std::vector<Node *> &nodes = side->Nodes();
@@ -203,18 +203,18 @@ void CORE::GEO::CUT::IMPL::PointGraph::FillGraph(
       std::cout << "Adding line betweeen points with ids " << p1->Id() << " and " << p2->Id()
                 << std::endl;
 #endif
-      GetGraph().AddEdge(p1, p2);
+      get_graph().AddEdge(p1, p2);
     }
 
-    BuildCycle(edge_points, cycle);
+    build_cycle(edge_points, cycle);
   }
 
-  AddCutLinesToGraph(element, side, strategy);
+  add_cut_lines_to_graph(element, side, strategy);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IMPL::PointGraph::BuildCycle(
+void CORE::GEO::CUT::IMPL::PointGraph::build_cycle(
     const std::vector<Point *> &edge_points, Cycle &cycle) const
 {
   for (std::vector<Point *>::const_iterator i = edge_points.begin() + 1; i != edge_points.end();
@@ -227,7 +227,7 @@ void CORE::GEO::CUT::IMPL::PointGraph::BuildCycle(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IMPL::PointGraph::AddCutLinesToGraph(
+void CORE::GEO::CUT::IMPL::PointGraph::add_cut_lines_to_graph(
     Element *element, Side *side, Strategy strategy)
 {
   const std::vector<Line *> &cut_lines = side->CutLines();
@@ -242,7 +242,7 @@ void CORE::GEO::CUT::IMPL::PointGraph::AddCutLinesToGraph(
 
     // GetGraph().AddEdge(l->BeginPoint(), l->EndPoint());
     bool element_cut = l->IsCut(element);
-    if (strategy == all_lines or element_cut) GetGraph().AddEdge(l->BeginPoint(), l->EndPoint());
+    if (strategy == all_lines or element_cut) get_graph().AddEdge(l->BeginPoint(), l->EndPoint());
 #if DEBUG_POINTGRAPH
     l->BeginPoint()->Print();
     l->EndPoint()->Print();
@@ -590,7 +590,7 @@ void CORE::GEO::CUT::IMPL::PointGraph::Graph::find_cycles(Side *side, Cycle &cyc
     CORE::LINALG::Matrix<3, 1> tmpmat;
 
     // get coords
-    side->LocalCoordinates(xyz, tmpmat);
+    side->local_coordinates(xyz, tmpmat);
 
     // add to map
     std::pair<vertex_t, CORE::LINALG::Matrix<3, 1>> tmppair(*vi, tmpmat);
@@ -764,7 +764,7 @@ void CORE::GEO::CUT::IMPL::PointGraph::Graph::find_cycles(
       CORE::LINALG::Matrix<3, 1> rst;
 
       // get local coordinates from the side element
-      side->LocalCoordinates(xyz, rst);
+      side->local_coordinates(xyz, rst);
 #if DEBUG_POINTGRAPH
       std::cout << "For point" << p->Id() << std::endl;
       std::cout << "Local coordinate on the side are" << rst << std::endl;
@@ -979,7 +979,7 @@ bool CORE::GEO::CUT::IMPL::PointGraph::Graph::HasTouchingEdge(Element *element, 
                           << std::endl;
                 continue;
               }
-              elmnt->ElementCenter(element_center);
+              elmnt->element_center(element_center);
               // getting vector pointing outward the element
               CORE::LINALG::Matrix<3, 1> out_vec;
               out_vec.Update(1.0, cut_pointxyz, -1.0, element_center);

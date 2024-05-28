@@ -1318,7 +1318,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ResetStepState() { check_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::WriteRestart(
+void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_restart(
     IO::DiscretizationWriter& ia_writer, IO::DiscretizationWriter& bin_writer) const
 {
   check_init_setup();

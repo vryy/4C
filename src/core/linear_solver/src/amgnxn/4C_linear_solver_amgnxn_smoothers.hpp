@@ -261,7 +261,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     Teuchos::RCP<std::vector<double>> null_space_data_;
     Teuchos::ParameterList muelu_list_;
     Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>> H_;
-    void BuildHierarchy();
+    void build_hierarchy();
 
    private:
     Teuchos::RCP<Epetra_Operator> p_;

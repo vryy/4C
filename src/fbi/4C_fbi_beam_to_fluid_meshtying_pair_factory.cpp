@@ -161,7 +161,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::CreatePair(
     }
   }
   else
-    FOUR_C_THROW("Discretization type not yet implemented!\n");
+    FOUR_C_THROW("discretization type not yet implemented!\n");
 
   // Default return value.
   return Teuchos::null;

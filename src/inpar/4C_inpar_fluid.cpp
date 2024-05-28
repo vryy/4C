@@ -1890,8 +1890,8 @@ void INPAR::FLUID::SetValidConditions(
   // no penetration for darcy flow in porous media
 
   Teuchos::RCP<ConditionDefinition> nopenetration_surf = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN SURFACE NORMAL NO PENETRATION CONDITION", "NoPenetration", "No Penetration",
-      CORE::Conditions::NoPenetration, true, CORE::Conditions::geometry_type_surface));
+      "DESIGN SURFACE NORMAL NO PENETRATION CONDITION", "no_penetration", "No Penetration",
+      CORE::Conditions::no_penetration, true, CORE::Conditions::geometry_type_surface));
 
   condlist.push_back(nopenetration_surf);
 
@@ -1899,8 +1899,8 @@ void INPAR::FLUID::SetValidConditions(
   // no penetration for darcy flow in porous media
 
   Teuchos::RCP<ConditionDefinition> nopenetration_line = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN LINE NORMAL NO PENETRATION CONDITION", "NoPenetration", "No Penetration",
-      CORE::Conditions::NoPenetration, true, CORE::Conditions::geometry_type_line));
+      "DESIGN LINE NORMAL NO PENETRATION CONDITION", "no_penetration", "No Penetration",
+      CORE::Conditions::no_penetration, true, CORE::Conditions::geometry_type_line));
 
   condlist.push_back(nopenetration_line);
 

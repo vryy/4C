@@ -70,10 +70,10 @@ namespace
   /**
    * Test Number of DOFs per element
    */
-  TEST_F(SoHex8Test, NumDofPerElement)
+  TEST_F(SoHex8Test, num_dof_per_element)
   {
-    EXPECT_EQ(testele_->NumDofPerElement(), 0);
-    EXPECT_EQ(copytestele_->NumDofPerElement(), 0);
+    EXPECT_EQ(testele_->num_dof_per_element(), 0);
+    EXPECT_EQ(copytestele_->num_dof_per_element(), 0);
   }
 
   /**

@@ -205,7 +205,7 @@ void PARTICLEALGORITHM::ParticleResultTest::TestSpecial(
       actresult = state[statedim * index + dim];
 
       // compare values
-      const int err = CompareValues(actresult, "SPECIAL", res);
+      const int err = compare_values(actresult, "SPECIAL", res);
       nerr += err;
       test_count++;
     }

@@ -188,7 +188,7 @@ namespace FSI
      *
      *  \author mayr.mt \date 08/2013
      */
-    double SelectDtErrorBased() const override;
+    double select_dt_error_based() const override;
 
     /*! \brief Check whether time step is accepted or not
      *
@@ -197,7 +197,7 @@ namespace FSI
      *
      *  \author mayr.mt \date 08/2013
      */
-    bool SetAccepted() const override;
+    bool set_accepted() const override;
 
     //@}
 
@@ -229,11 +229,11 @@ namespace FSI
 
    protected:
     /// create the composed system matrix
-    void CreateSystemMatrix();
+    void create_system_matrix();
 
-    void Update() override;
+    void update() override;
 
-    void Output() override;
+    void output() override;
 
     /// Write Lagrange multiplier
     void OutputLambda() override;

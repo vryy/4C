@@ -65,7 +65,7 @@ namespace DRT
 
      protected:
       //! evaluate action
-      int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
+      int evaluate_action(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -94,14 +94,14 @@ namespace DRT
       //                        CORE::LINALG::SerialDenseVector&     elevec3_epetra);
       //
       //   //! calculate matrix and rhs. Here the whole thing is hidden.
-      //   virtual void SysmatODMesh(
+      //   virtual void sysmat_od_mesh(
       //     DRT::Element*                         ele,       //!< the element we are dealing with
       //     CORE::LINALG::SerialDenseMatrix&             emat,      //!< element matrix to
       //     calculate const int                     numdofpernode
       //   );
       //
       //   //! calculate matrix and rhs. Here the whole thing is hidden.
-      //   virtual void SysmatODFluid(
+      //   virtual void sysmat_od_fluid(
       //     DRT::Element*                         ele,       //!< the element we are dealing with
       //     CORE::LINALG::SerialDenseMatrix&             emat,      //!< element matrix to
       //     calculate const int                     numdofpernode
@@ -122,23 +122,23 @@ namespace DRT
           DRT::Element::LocationArray& la);
 
       //! get the material parameters
-      void GetMaterialParams(const DRT::Element* ele,  //!< the element we are dealing with
-          std::vector<double>& densn,                  //!< density at t_(n)
-          std::vector<double>& densnp,                 //!< density at t_(n+1) or t_(n+alpha_F)
-          std::vector<double>& densam,                 //!< density at t_(n+alpha_M)
-          double& visc,                                //!< fluid viscosity
-          const int iquad = -1                         //!< id of current gauss point (default = -1)
+      void get_material_params(const DRT::Element* ele,  //!< the element we are dealing with
+          std::vector<double>& densn,                    //!< density at t_(n)
+          std::vector<double>& densnp,                   //!< density at t_(n+1) or t_(n+alpha_F)
+          std::vector<double>& densam,                   //!< density at t_(n+alpha_M)
+          double& visc,                                  //!< fluid viscosity
+          const int iquad = -1  //!< id of current gauss point (default = -1)
           ) override;
 
       //! compute porosity based on solid, fluid and (potentially) scatra solution
-      virtual void ComputePorosity(const DRT::Element* ele  //!< the element we are dealing with
+      virtual void compute_porosity(const DRT::Element* ele  //!< the element we are dealing with
       );
 
       //! compute pore pressure
-      virtual double ComputePorePressure();
+      virtual double compute_pore_pressure();
 
       //! material ScaTra
-      void MatScaTra(
+      void mat_scatra(
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
@@ -150,18 +150,18 @@ namespace DRT
 
 
       //! set diffusivity for poro scatra problem (i.e. scale by porosity)
-      virtual void SetDiffusivity(
+      virtual void set_diffusivity(
           const Teuchos::RCP<const MAT::ScatraMat>& material, const int k, const double scale);
 
       //! set densisties for poro scatra problem (i.e. scale by porosity)
-      virtual void SetDensities(double porosity,
+      virtual void set_densities(double porosity,
           double& densn,   //!< density at t_(n)
           double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
           double& densam   //!< density at t_(n+alpha_M));
       );
 
       //! calculate scalar(s) and domain integral
-      void CalculateScalars(const DRT::Element* ele, CORE::LINALG::SerialDenseVector& scalars,
+      void calculate_scalars(const DRT::Element* ele, CORE::LINALG::SerialDenseVector& scalars,
           bool inverting, bool calc_grad_phi) override;
 
 

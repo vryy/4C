@@ -295,7 +295,7 @@ void FLD::TimIntLoma::call_statistics_manager()
  | prepare AVM3-based scale separation                         vg 10/08 |
  | overloaded in TimIntRedModels and TimIntLoma               bk 12/13 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntLoma::AVM3Preparation()
+void FLD::TimIntLoma::av_m3_preparation()
 {
   // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("           + avm3");
@@ -326,6 +326,6 @@ void FLD::TimIntLoma::AVM3Preparation()
   }
 
   return;
-}  // TimIntLoma::AVM3Preparation
+}  // TimIntLoma::av_m3_preparation
 
 FOUR_C_NAMESPACE_CLOSE

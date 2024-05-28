@@ -121,7 +121,7 @@ namespace ADAPTER
     };
 
     // create projection operator Dinv*M
-    void CreateP() override;
+    void create_p() override;
 
     virtual Teuchos::RCP<Epetra_Vector> Gap()
     {
@@ -137,7 +137,7 @@ namespace ADAPTER
     \brief Read Mortar Condition
 
     */
-    virtual void ReadMortarCondition(Teuchos::RCP<DRT::Discretization> masterdis,
+    virtual void read_mortar_condition(Teuchos::RCP<DRT::Discretization> masterdis,
         Teuchos::RCP<DRT::Discretization> slavedis, std::vector<int> coupleddof,
         const std::string& couplingcond, Teuchos::ParameterList& input,
         std::map<int, DRT::Node*>& mastergnodes, std::map<int, DRT::Node*>& slavegnodes,
@@ -148,7 +148,7 @@ namespace ADAPTER
     \brief Add Mortar Nodes
 
     */
-    virtual void AddMortarNodes(Teuchos::RCP<DRT::Discretization> masterdis,
+    virtual void add_mortar_nodes(Teuchos::RCP<DRT::Discretization> masterdis,
         Teuchos::RCP<DRT::Discretization> slavedis, std::vector<int> coupleddof,
         Teuchos::ParameterList& input, std::map<int, DRT::Node*>& mastergnodes,
         std::map<int, DRT::Node*>& slavegnodes,
@@ -160,7 +160,7 @@ namespace ADAPTER
     \brief Add Mortar Elements
 
     */
-    virtual void AddMortarElements(Teuchos::RCP<DRT::Discretization> masterdis,
+    virtual void add_mortar_elements(Teuchos::RCP<DRT::Discretization> masterdis,
         Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::ParameterList& input,
         std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
         std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements,
@@ -171,20 +171,20 @@ namespace ADAPTER
            store maps as internal variable and do parallel redist.
 
     */
-    virtual void CompleteInterface(
+    virtual void complete_interface(
         Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<CONTACT::Interface>& interface);
 
     /*!
     \brief initialize matrices (interla variables)
 
     */
-    virtual void InitMatrices();
+    virtual void init_matrices();
 
     /*!
     \brief create strategy object if required
 
     */
-    virtual void CreateStrategy(Teuchos::RCP<DRT::Discretization> masterdis,
+    virtual void create_strategy(Teuchos::RCP<DRT::Discretization> masterdis,
         Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::ParameterList& input,
         int numcoupleddof);
 

@@ -48,7 +48,7 @@ namespace CORE::GEO
       \brief Get the local coordinates "rst"from the global coordinates "xyz" with respect to this
       side. Since side is 2D, the local coordinates will have only two coordinates
       */
-      virtual void LocalCoordinates(
+      virtual void local_coordinates(
           const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst) = 0;
 
       /*!
@@ -78,7 +78,7 @@ namespace CORE::GEO
         for (unsigned i = 0; i < nen; ++i)
         {
           CORE::GEO::CUT::Point* p = cpoints[i];
-          const CORE::LINALG::Matrix<2, 1>& xi = LocalCoordinates(p);
+          const CORE::LINALG::Matrix<2, 1>& xi = local_coordinates(p);
           std::copy(xi.A(), xi.A() + 2, &xie(0, i));
         }
 
@@ -91,7 +91,7 @@ namespace CORE::GEO
       \brief Get the local coordinates of point p with respect to this side. Since side is 2D, the
       local coordinates will have only two coordinates
        */
-      const CORE::LINALG::Matrix<2, 1>& LocalCoordinates(Point* p)
+      const CORE::LINALG::Matrix<2, 1>& local_coordinates(Point* p)
       {
         std::map<Point*, CORE::LINALG::Matrix<2, 1>>::iterator i = local_coordinates_.find(p);
         if (i != local_coordinates_.end())
@@ -101,7 +101,7 @@ namespace CORE::GEO
         CORE::LINALG::Matrix<2, 1>& rst = local_coordinates_[p];
         CORE::LINALG::Matrix<3, 1> xyz;
         p->Coordinates(xyz.A());
-        LocalCoordinates(xyz, rst);
+        local_coordinates(xyz, rst);
         return rst;
       }
 
@@ -164,11 +164,11 @@ namespace CORE::GEO
         side_->Coordinates(xyze.values());
       }
 
-      void LocalCoordinates(
+      void local_coordinates(
           const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rs) override
       {
         CORE::LINALG::Matrix<3, 1> rst;
-        side_->LocalCoordinates(xyz, rst);
+        side_->local_coordinates(xyz, rst);
         rs(0) = rst(0);
         rs(1) = rst(1);
       }
@@ -320,7 +320,7 @@ namespace CORE::GEO
 
       CORE::FE::CellType Shape() override { return CORE::FE::CellType::tri6; }
 
-      void LocalCoordinates(
+      void local_coordinates(
           const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst) override;
     };
 
@@ -335,7 +335,7 @@ namespace CORE::GEO
 
       CORE::FE::CellType Shape() override { return CORE::FE::CellType::quad4; }
 
-      void LocalCoordinates(
+      void local_coordinates(
           const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst) override;
     };
 
@@ -347,7 +347,7 @@ namespace CORE::GEO
 
       CORE::FE::CellType Shape() override { return CORE::FE::CellType::quad8; }
 
-      void LocalCoordinates(
+      void local_coordinates(
           const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst) override;
     };
 
@@ -359,7 +359,7 @@ namespace CORE::GEO
 
       CORE::FE::CellType Shape() override { return CORE::FE::CellType::quad9; }
 
-      void LocalCoordinates(
+      void local_coordinates(
           const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst) override;
     };
 

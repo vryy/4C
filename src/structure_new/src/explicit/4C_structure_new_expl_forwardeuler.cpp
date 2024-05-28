@@ -43,20 +43,20 @@ void STR::EXPLICIT::ForwardEuler::Setup()
   // ---------------------------------------------------------------------------
   // setup pointers to the force vectors of the global state data container
   // ---------------------------------------------------------------------------
-  finertian_ptr_ = GlobalState().GetFinertialN();
-  finertianp_ptr_ = GlobalState().GetFinertialNp();
+  finertian_ptr_ = global_state().GetFinertialN();
+  finertianp_ptr_ = global_state().GetFinertialNp();
 
-  fviscon_ptr_ = GlobalState().GetFviscoN();
-  fvisconp_ptr_ = GlobalState().GetFviscoNp();
+  fviscon_ptr_ = global_state().GetFviscoN();
+  fvisconp_ptr_ = global_state().GetFviscoNp();
 
   // -------------------------------------------------------------------
   // set initial displacement
   // -------------------------------------------------------------------
   set_initial_displacement(
-      TimInt().GetDataSDyn().GetInitialDisp(), TimInt().GetDataSDyn().StartFuncNo());
+      tim_int().GetDataSDyn().GetInitialDisp(), tim_int().GetDataSDyn().StartFuncNo());
 
   // mode of Forward Euler interpolation
-  modexpleuler_ = dynamic_cast<const STR::TIMINT::ExplEulerDataSDyn&>(TimInt().GetDataSDyn())
+  modexpleuler_ = dynamic_cast<const STR::TIMINT::ExplEulerDataSDyn&>(tim_int().GetDataSDyn())
                       .get_modified_forward_euler();
 
   // Has to be set before the post_setup() routine is called!
@@ -77,33 +77,33 @@ void STR::EXPLICIT::ForwardEuler::set_state(const Epetra_Vector& x)
 {
   check_init_setup();
 
-  const double dt = (*GlobalState().GetDeltaTime())[0];
+  const double dt = (*global_state().GetDeltaTime())[0];
 
   // ---------------------------------------------------------------------------
   // new end-point acceleration
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Vector> accnp_ptr = GlobalState().ExtractDisplEntries(x);
-  GlobalState().GetAccNp()->Scale(1.0, *accnp_ptr);
+  Teuchos::RCP<Epetra_Vector> accnp_ptr = global_state().ExtractDisplEntries(x);
+  global_state().GetAccNp()->Scale(1.0, *accnp_ptr);
 
   // ---------------------------------------------------------------------------
   // new end-point velocities
   // ---------------------------------------------------------------------------
-  GlobalState().GetVelNp()->Update(1.0, *GlobalState().GetVelN(), 0.0);
-  GlobalState().GetVelNp()->Update(dt, *GlobalState().GetAccN(), 1.0);
+  global_state().GetVelNp()->Update(1.0, *global_state().GetVelN(), 0.0);
+  global_state().GetVelNp()->Update(dt, *global_state().GetAccN(), 1.0);
 
   // ---------------------------------------------------------------------------
   // new end-point displacements
   // ---------------------------------------------------------------------------
-  GlobalState().GetDisNp()->Update(1.0, *GlobalState().GetDisN(), 0.0);
+  global_state().GetDisNp()->Update(1.0, *global_state().GetDisN(), 0.0);
   if (modexpleuler_ == true)
-    GlobalState().GetDisNp()->Update(dt, *GlobalState().GetVelNp(), 1.0);
+    global_state().GetDisNp()->Update(dt, *global_state().GetVelNp(), 1.0);
   else
-    GlobalState().GetDisNp()->Update(dt, *GlobalState().GetVelN(), 1.0);
+    global_state().GetDisNp()->Update(dt, *global_state().GetVelN(), 1.0);
 
   // ---------------------------------------------------------------------------
   // update the elemental state
   // ---------------------------------------------------------------------------
-  ModelEval().UpdateResidual();
+  ModelEval().update_residual();
   ModelEval().RunRecover();
 }
 
@@ -120,14 +120,14 @@ void STR::EXPLICIT::ForwardEuler::add_visco_mass_contributions(Epetra_Vector& f)
 void STR::EXPLICIT::ForwardEuler::add_visco_mass_contributions(
     CORE::LINALG::SparseOperator& jac) const
 {
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptr = GlobalState().ExtractDisplBlock(jac);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptr = global_state().ExtractDisplBlock(jac);
   // set mass matrix
-  stiff_ptr->Add(*GlobalState().GetMassMatrix(), false, 1.0, 0.0);
+  stiff_ptr->Add(*global_state().GetMassMatrix(), false, 1.0, 0.0);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::ForwardEuler::WriteRestart(
+void STR::EXPLICIT::ForwardEuler::write_restart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
@@ -135,7 +135,7 @@ void STR::EXPLICIT::ForwardEuler::WriteRestart(
   iowriter.WriteVector("finert", finertian_ptr_);
   iowriter.WriteVector("fvisco", fviscon_ptr_);
 
-  ModelEval().WriteRestart(iowriter, forced_writerestart);
+  ModelEval().write_restart(iowriter, forced_writerestart);
 }
 
 /*----------------------------------------------------------------------------*

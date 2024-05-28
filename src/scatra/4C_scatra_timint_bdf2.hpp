@@ -103,13 +103,13 @@ namespace SCATRA
     void set_old_part_of_righthandside() override;
 
     /// do explicit predictor step (-> better starting value for nonlinear solver)
-    void ExplicitPredictor() const override;
+    void explicit_predictor() const override;
 
     /// add actual Neumann loads with time factor
     void add_neumann_to_residual() override;
 
     /// AVM3-based scale separation
-    void AVM3Separation() override;
+    void av_m3_separation() override;
 
     /// dynamic Smagorinsky model
     void dynamic_computation_of_cs() override;
@@ -120,10 +120,10 @@ namespace SCATRA
     /// add parameters specific for time-integration scheme
     void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override;
 
-    void WriteRestart() const override;
+    void write_restart() const override;
 
     /// return the right time-scaling-factor for the true residual
-    double ResidualScaling() const override { return 1.0 / (dta_ * theta_); }
+    double residual_scaling() const override { return 1.0 / (dta_ * theta_); }
 
     /// time factor for one-step-theta/BDF2 time integration
     double theta_;

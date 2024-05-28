@@ -39,15 +39,15 @@ FLD::XFluidFluidState::XFluidFluidState(
       embfluiddofrowmap_(embfluiddofrowmap)
 {
   xffluidsplitter_->Setup(*xffluiddofrowmap_, xfluiddofrowmap, embfluiddofrowmap);
-  InitSystemMatrix();
-  InitStateVectors();
+  init_system_matrix();
+  init_state_vectors();
 }
 
 /*----------------------------------------------------------------------*
  |  Initialize (coupling) matrices & rhs-vectors
  |                                                         kruse 01/15
  *----------------------------------------------------------------------*/
-void FLD::XFluidFluidState::InitSystemMatrix()
+void FLD::XFluidFluidState::init_system_matrix()
 {
   // the combined fluid system matrix is not of FECrs-type - it is solely composed out of
   // fully assembled submatrices
@@ -58,7 +58,7 @@ void FLD::XFluidFluidState::InitSystemMatrix()
 /*----------------------------------------------------------------------*
  |  Initialize state vectors                                kruse 01/15 |
  *----------------------------------------------------------------------*/
-void FLD::XFluidFluidState::InitStateVectors()
+void FLD::XFluidFluidState::init_state_vectors()
 {
   // matrices & vectors for merged background & embedded fluid
   xffluidresidual_ = CORE::LINALG::CreateVector(*xffluiddofrowmap_, true);

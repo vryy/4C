@@ -47,7 +47,7 @@ FSI::FSIResultTest::FSIResultTest(
       if (fsiobject == Teuchos::null) FOUR_C_THROW("Cast to FSI::MonolithicFluidSplit failed.");
 
       // Lagrange multipliers live on the slave field
-      slavedisc_ = fsiobject->fluid_field()->Discretization();
+      slavedisc_ = fsiobject->fluid_field()->discretization();
       fsilambda_ = fsiobject->lambda_;
 
       break;
@@ -61,7 +61,7 @@ FSI::FSIResultTest::FSIResultTest(
       if (fsiobject == Teuchos::null) FOUR_C_THROW("Cast to FSI::MonolithicStructureSplit failed.");
 
       // Lagrange multipliers live on the slave field
-      slavedisc_ = fsiobject->StructureField()->Discretization();
+      slavedisc_ = fsiobject->structure_field()->discretization();
       fsilambda_ = fsiobject->lambda_;
 
       break;
@@ -75,7 +75,7 @@ FSI::FSIResultTest::FSIResultTest(
         FOUR_C_THROW("Cast to FSI::MortarMonolithicFluidSplit failed.");
 
       // Lagrange multipliers live on the slave field
-      slavedisc_ = fsiobject->fluid_field()->Discretization();
+      slavedisc_ = fsiobject->fluid_field()->discretization();
       fsilambda_ = fsiobject->lambda_;
 
       break;
@@ -89,7 +89,7 @@ FSI::FSIResultTest::FSIResultTest(
         FOUR_C_THROW("Cast to FSI::MortarMonolithicFluidSplitSaddlePoint failed.");
 
       // Lagrange multipliers live on the slave field
-      slavedisc_ = fsiobject->fluid_field()->Discretization();
+      slavedisc_ = fsiobject->fluid_field()->discretization();
       auto copy = Teuchos::rcp(new Epetra_Vector(*fsiobject->lag_mult_));
       copy->ReplaceMap(*fsiobject->fluid_field()->Interface()->FSICondMap());
       fsilambda_ = copy;
@@ -105,7 +105,7 @@ FSI::FSIResultTest::FSIResultTest(
         FOUR_C_THROW("Cast to FSI::MortarMonolithicStructureSplit failed.");
 
       // Lagrange multipliers live on the slave field
-      slavedisc_ = fsiobject->StructureField()->Discretization();
+      slavedisc_ = fsiobject->structure_field()->discretization();
       fsilambda_ = fsiobject->lambda_;
 
       break;
@@ -119,7 +119,7 @@ FSI::FSIResultTest::FSIResultTest(
         FOUR_C_THROW("Cast to FSI::SlidingMonolithicFluidSplit failed.");
 
       // Lagrange multipliers live on the slave field
-      slavedisc_ = fsiobject->fluid_field()->Discretization();
+      slavedisc_ = fsiobject->fluid_field()->discretization();
       fsilambda_ = fsiobject->lambda_;
 
       break;
@@ -133,7 +133,7 @@ FSI::FSIResultTest::FSIResultTest(
         FOUR_C_THROW("Cast to FSI::SlidingMonolithicStructureSplit failed.");
 
       // Lagrange multipliers live on the slave field
-      slavedisc_ = fsiobject->StructureField()->Discretization();
+      slavedisc_ = fsiobject->structure_field()->discretization();
       fsilambda_ = fsiobject->lambda_;
 
       break;
@@ -162,7 +162,7 @@ FSI::FSIResultTest::FSIResultTest(
     case fsi_iter_fluidfluid_monolithicstructuresplit_nonox:
     {
       // Lagrange multipliers live on the slave field
-      slavedisc_ = fsi->StructureField()->Discretization();
+      slavedisc_ = fsi->structure_field()->discretization();
 
       const Teuchos::RCP<FSI::FluidFluidMonolithicStructureSplitNoNOX>& fsiobject =
           Teuchos::rcp_dynamic_cast<FSI::FluidFluidMonolithicStructureSplitNoNOX>(fsi);
@@ -176,7 +176,7 @@ FSI::FSIResultTest::FSIResultTest(
     case fsi_iter_fluidfluid_monolithicfluidsplit_nonox:
     {
       // Lagrange multiplier lives on the slave field (fluid in this case!)
-      slavedisc_ = fsi->fluid_field()->Discretization();
+      slavedisc_ = fsi->fluid_field()->discretization();
 
       const Teuchos::RCP<FSI::FluidFluidMonolithicFluidSplitNoNOX>& fsiobject =
           Teuchos::rcp_dynamic_cast<FSI::FluidFluidMonolithicFluidSplitNoNOX>(fsi);
@@ -259,7 +259,7 @@ void FSI::FSIResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& t
         FOUR_C_THROW("Quantity '%s' not supported in fsi testing", quantity.c_str());
 
       // compare values
-      const int err = CompareValues(result, "NODE", res);
+      const int err = compare_values(result, "NODE", res);
       nerr += err;
       test_count++;
     }
@@ -311,7 +311,7 @@ void FSI::FSIResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int&
   if (unknownquantity) FOUR_C_THROW("Quantity '%s' not supported in fsi testing", quantity.c_str());
 
   // compare values
-  const int err = CompareValues(result, "SPECIAL", res);
+  const int err = compare_values(result, "SPECIAL", res);
   nerr += err;
   test_count++;
 

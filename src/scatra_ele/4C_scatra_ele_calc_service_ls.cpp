@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::EvaluateAction(DRT::Element* ele,
+int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::evaluate_action(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -59,7 +59,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::EvaluateAction(DRT::Element* ele,
     }
     default:
     {
-      my::EvaluateAction(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
+      my::evaluate_action(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
           elevec1_epetra, elevec2_epetra, elevec3_epetra);
       break;
     }

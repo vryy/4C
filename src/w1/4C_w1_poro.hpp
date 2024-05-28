@@ -286,7 +286,7 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int MyEvaluate(
+      virtual int my_evaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
@@ -332,11 +332,11 @@ namespace DRT
 
       //! Calculate coupling terms in nonlinear stiffness and internal force for poroelasticity
       //! problems
-      virtual void CouplingPoroelast(std::vector<int>& lm,  //!< location matrix
-          CORE::LINALG::Matrix<numdim_, numnod_>& disp,     //!< current displacements
-          CORE::LINALG::Matrix<numdim_, numnod_>& vel,      //!< current velocities
-          CORE::LINALG::Matrix<numdim_, numnod_>& evelnp,   //!< fluid velocity of element
-          CORE::LINALG::Matrix<numnod_, 1>& epreaf,         //!< fluid pressure of element
+      virtual void coupling_poroelast(std::vector<int>& lm,  //!< location matrix
+          CORE::LINALG::Matrix<numdim_, numnod_>& disp,      //!< current displacements
+          CORE::LINALG::Matrix<numdim_, numnod_>& vel,       //!< current velocities
+          CORE::LINALG::Matrix<numdim_, numnod_>& evelnp,    //!< fluid velocity of element
+          CORE::LINALG::Matrix<numnod_, 1>& epreaf,          //!< fluid pressure of element
           CORE::LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>*
               stiffmatrix,  //!< element stiffness matrix
           CORE::LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>*
@@ -366,7 +366,7 @@ namespace DRT
       );
 
       //! Gauss Point Loop evaluating stiffness and force
-      void GaussPointLoop(Teuchos::ParameterList& params,
+      void gauss_point_loop(Teuchos::ParameterList& params,
           const CORE::LINALG::Matrix<numdim_, numnod_>& xrefe,
           const CORE::LINALG::Matrix<numdim_, numnod_>& xcurr,
           const CORE::LINALG::Matrix<numdim_, numnod_>& nodaldisp,
@@ -380,7 +380,7 @@ namespace DRT
           CORE::LINALG::Matrix<numdof_, 1>* force);
 
       //! Gauss Point Loop evaluating stiffness (off diagonal)
-      void GaussPointLoopOD(Teuchos::ParameterList& params,
+      void gauss_point_loop_od(Teuchos::ParameterList& params,
           const CORE::LINALG::Matrix<numdim_, numnod_>& xrefe,
           const CORE::LINALG::Matrix<numdim_, numnod_>& xcurr,
           const CORE::LINALG::Matrix<numdim_, numnod_>& nodaldisp,
@@ -512,7 +512,7 @@ namespace DRT
           CORE::LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>& ecoupl);
 
       //! Compute  nonlinear b-operator
-      void ComputeBOperator(CORE::LINALG::Matrix<numstr_, numdof_>& bop,
+      void compute_b_operator(CORE::LINALG::Matrix<numstr_, numdof_>& bop,
           const CORE::LINALG::Matrix<numdim_, numdim_>& defgrd,
           const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ);
 
@@ -542,13 +542,13 @@ namespace DRT
           CORE::LINALG::Matrix<numstr_, numdof_>& dCinv_dus);
 
       //! push forward of material stresses to the current, spatial configuration (for output only)
-      void PK2toCauchy(CORE::LINALG::Matrix<Wall1::numstr_, 1>& stress,
+      void p_k2to_cauchy(CORE::LINALG::Matrix<Wall1::numstr_, 1>& stress,
           CORE::LINALG::Matrix<numdim_, numdim_>& defgrd,
           CORE::LINALG::Matrix<numdim_, numdim_>& cauchystress);
 
       //! Compute deformation gradient
-      void ComputeDefGradient(CORE::LINALG::Matrix<numdim_, numdim_>&
-                                  defgrd,  //!<<    (i) deformation gradient at gausspoint
+      void compute_def_gradient(CORE::LINALG::Matrix<numdim_, numdim_>&
+                                    defgrd,  //!<<    (i) deformation gradient at gausspoint
           const CORE::LINALG::Matrix<numdim_, numnod_>&
               N_XYZ,  //!<<    (i) derivatives of shape functions w.r.t. reference coordinates
           const CORE::LINALG::Matrix<numdim_, numnod_>&
@@ -606,7 +606,7 @@ namespace DRT
           CORE::LINALG::Matrix<1, numdof_>& dps_dus);
 
       //! get materials (solid and fluid)
-      void GetMaterials();
+      void get_materials();
 
       //! get materials (solid and fluidmulti)
       void get_materials_pressure_based();

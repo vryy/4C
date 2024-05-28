@@ -237,7 +237,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::SetLocalMaps(
     const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs)
 {
   check_setup();
-  CheckGlobalMaps();
+  check_global_maps();
 
   // At this point the global multi vectors are filled up completely. To get the map for global
   // node element ids to the global lambda ids we need to be able to extract more than the local
@@ -346,7 +346,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::LocationVector(
     std::vector<int>& lambda_row) const
 {
   check_setup();
-  CheckLocalMaps();
+  check_local_maps();
 
   // Clear the output vectors.
   lambda_row.clear();
@@ -395,7 +395,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::EvaluateGlobalDM(
     const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs)
 {
   check_setup();
-  CheckGlobalMaps();
+  check_global_maps();
 
   // Clear the old values of D, M and kappa.
   int linalg_error = 0;
@@ -496,7 +496,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::add_global_force_stiffness_contr
     Teuchos::RCP<const Epetra_Vector> beam_vel, Teuchos::RCP<const Epetra_Vector> fluid_vel) const
 {
   check_setup();
-  CheckGlobalMaps();
+  check_global_maps();
 
   int linalg_error = 0;
 
@@ -567,7 +567,7 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToFluidMortarManager::GetGlobal
     Teuchos::RCP<const Epetra_Vector> vel) const
 {
   check_setup();
-  CheckGlobalMaps();
+  check_global_maps();
 
   // Get the velocity of the beams and the fluid.
   Teuchos::RCP<Epetra_Vector> beam_vel = Teuchos::rcp(new Epetra_Vector(*beam_dof_rowmap_));

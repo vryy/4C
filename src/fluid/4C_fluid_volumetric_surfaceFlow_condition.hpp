@@ -68,9 +68,9 @@ namespace FLD
       void InsertCondVector(Epetra_Vector& vec1, Epetra_Vector& vec2);
 
       /*!
-      \brief Wrapper for FluidVolumetricSurfaceFlowBc::UpdateResidual
+      \brief Wrapper for FluidVolumetricSurfaceFlowBc::update_residual
       */
-      void UpdateResidual(Teuchos::RCP<Epetra_Vector> residual);
+      void update_residual(Teuchos::RCP<Epetra_Vector> residual);
 
 
       /*!
@@ -126,9 +126,9 @@ namespace FLD
           Teuchos::RCP<Epetra_Vector> source, Teuchos::RCP<Epetra_Vector> target, std::string name);
 
       /*!
-      \brief Wrapper for FluidVolumetricSurfaceFlowBc::UpdateResidual
+      \brief Wrapper for FluidVolumetricSurfaceFlowBc::update_residual
       */
-      void UpdateResidual(Teuchos::RCP<Epetra_Vector> residual);
+      void update_residual(Teuchos::RCP<Epetra_Vector> residual);
 
 
       /*!
@@ -225,9 +225,9 @@ namespace FLD
 
 
       /*!
-      \brief UpdateResidual
+      \brief update_residual
       */
-      void UpdateResidual(Teuchos::RCP<Epetra_Vector> residual);
+      void update_residual(Teuchos::RCP<Epetra_Vector> residual);
 
       /*!
       \brief Evaluate velocities
@@ -258,10 +258,10 @@ namespace FLD
       /*!
       \brief Calculate the Flowrate on a boundary
       */
-      double FlowRateCalculation(Teuchos::ParameterList eleparams, double time,
+      double flow_rate_calculation(Teuchos::ParameterList eleparams, double time,
           std::string ds_condname, FLD::BoundaryAction action, int condid);
 
-      double PressureCalculation(
+      double pressure_calculation(
           double time, std::string ds_condname, std::string action, int condid);
       /*!
       \brief Calculate the Flowrate on a boundary

@@ -63,7 +63,7 @@ template <typename scalar_type, typename beam, typename surface>
 void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surface>::pre_evaluate()
 {
   // Call pre_evaluate on the geometry Pair.
-  CastGeometryPair()->pre_evaluate(
+  cast_geometry_pair()->pre_evaluate(
       this->ele1pos_, this->face_element_->GetFaceElementData(), this->line_to_3D_segments_);
 }
 
@@ -96,7 +96,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surfa
       UTILS::GetNumberOfElementCenterlineDof(this->Element1()));
 
   // The second element in the pair has to be the face element.
-  CastGeometryPair()->SetElement2(face_element_->GetDrtFaceElement());
+  cast_geometry_pair()->SetElement2(face_element_->GetDrtFaceElement());
 }
 
 /**
@@ -104,7 +104,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surfa
  */
 template <typename scalar_type, typename beam, typename surface>
 Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, beam, surface>>
-BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surface>::CastGeometryPair()
+BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surface>::cast_geometry_pair()
     const
 {
   return Teuchos::rcp_dynamic_cast<
@@ -117,7 +117,7 @@ BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surface>::
  */
 template <typename scalar_type, typename beam, typename surface>
 std::vector<int>
-BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surface>::GetPairGID(
+BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surface>::get_pair_gid(
     const DRT::Discretization& discret) const
 {
   // Get the beam centerline GIDs.

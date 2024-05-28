@@ -68,7 +68,7 @@ namespace CORE::GEO
       virtual const std::vector<Node*>& Nodes() = 0;
 
       //! compute local coordinates of the element for a given point
-      const CORE::LINALG::Matrix<3, 1>& LocalCoordinates(Point* p)
+      const CORE::LINALG::Matrix<3, 1>& local_coordinates(Point* p)
       {
         std::map<Point*, CORE::LINALG::Matrix<3, 1>>::iterator i = local_coordinates_.find(p);
         if (i != local_coordinates_.end())
@@ -78,12 +78,12 @@ namespace CORE::GEO
         CORE::LINALG::Matrix<3, 1>& rst = local_coordinates_[p];
         CORE::LINALG::Matrix<3, 1> xyz;
         p->Coordinates(xyz.A());
-        LocalCoordinates(xyz, rst);
+        local_coordinates(xyz, rst);
         return rst;
       }
 
       //! compute local coordinates of the element for given global coordinates
-      virtual void LocalCoordinates(
+      virtual void local_coordinates(
           const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst) = 0;
 
 
@@ -194,10 +194,10 @@ namespace CORE::GEO
 
      protected:
       /// fill the derived class internal boundary cell sets
-      virtual void BoundaryCellSet(Point::PointPosition position) = 0;
+      virtual void boundary_cell_set(Point::PointPosition position) = 0;
 
       /// access the class internal boundary cells sets
-      virtual const std::vector<plain_boundarycell_set>& GetBoundaryCellSet(
+      virtual const std::vector<plain_boundarycell_set>& get_boundary_cell_set(
           Point::PointPosition position) = 0;
 
      public:
@@ -303,10 +303,10 @@ namespace CORE::GEO
       const std::vector<Node*>& Nodes() override { return element_->Nodes(); }
 
       //! compute local coordinates of the element for given global coordinates
-      void LocalCoordinates(
+      void local_coordinates(
           const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst) override
       {
-        element_->LocalCoordinates(xyz, rst);
+        element_->local_coordinates(xyz, rst);
       }
 
       //@}
@@ -355,7 +355,7 @@ namespace CORE::GEO
       void GetBoundaryCells(plain_boundarycell_set& bcells) override
       {
         FOUR_C_THROW(
-            "Deprecated function! Use the GetBoundaryCellSet( Point::PointPosition ), "
+            "Deprecated function! Use the get_boundary_cell_set( Point::PointPosition ), "
             "instead!");
         element_->GetBoundaryCells(bcells);
       }
@@ -366,10 +366,10 @@ namespace CORE::GEO
        *  \param position (in) : desired position of the boundary cell
        *
        *  \author hiermeier \date 01/17 */
-      const std::vector<plain_boundarycell_set>& GetBoundaryCellSet(
+      const std::vector<plain_boundarycell_set>& get_boundary_cell_set(
           Point::PointPosition position) override
       {
-        BoundaryCellSet(position);
+        boundary_cell_set(position);
         return bcell_sets_.at(position);
       }
 
@@ -382,7 +382,7 @@ namespace CORE::GEO
        *  \param position (in) : desired position of the boundary cell
        *
        *  \author hiermeier \date 01/17 */
-      void BoundaryCellSet(Point::PointPosition position) override;
+      void boundary_cell_set(Point::PointPosition position) override;
 
       //@}
 
@@ -533,7 +533,7 @@ namespace CORE::GEO
        *  \param position (in) : desired position of the boundary cell
        *
        *  \author hiermeier \date 01/17 */
-      void BoundaryCellSet(Point::PointPosition position) override;
+      void boundary_cell_set(Point::PointPosition position) override;
 
       /** \brief Get the connected boundary cell sets with given position
        *  ( read access )
@@ -541,10 +541,10 @@ namespace CORE::GEO
        *  \param position (in) : desired position of the boundary cell
        *
        *  \author hiermeier \date 01/17 */
-      const std::vector<plain_boundarycell_set>& GetBoundaryCellSet(
+      const std::vector<plain_boundarycell_set>& get_boundary_cell_set(
           Point::PointPosition position) override
       {
-        BoundaryCellSet(position);
+        boundary_cell_set(position);
         return connected_bcell_sets_.at(position);
       }
 
@@ -633,7 +633,7 @@ namespace CORE::GEO
       CORE::FE::CellType Shape() override { return CORE::FE::CellType::hex20; }
 
       //! compute local coordinates of the element for given global coordinates
-      void LocalCoordinates(
+      void local_coordinates(
           const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst) override;
     };
 
@@ -648,7 +648,7 @@ namespace CORE::GEO
       CORE::FE::CellType Shape() override { return CORE::FE::CellType::hex27; }
 
       //! compute local coordinates of the element for given global coordinates
-      void LocalCoordinates(
+      void local_coordinates(
           const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst) override;
     };
 
@@ -663,7 +663,7 @@ namespace CORE::GEO
       CORE::FE::CellType Shape() override { return CORE::FE::CellType::tet10; }
 
       //! compute local coordinates of the element for given global coordinates
-      void LocalCoordinates(
+      void local_coordinates(
           const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst) override;
     };
 
@@ -678,7 +678,7 @@ namespace CORE::GEO
       CORE::FE::CellType Shape() override { return CORE::FE::CellType::wedge15; }
 
       //! compute local coordinates of the element for given global coordinates
-      void LocalCoordinates(
+      void local_coordinates(
           const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst) override;
     };
 

@@ -39,7 +39,7 @@ namespace STR::NLN::SOLVER
 
    protected:
     //! Reset the non-linear solver parameters and variables
-    void ResetParams() override;
+    void reset_params() override;
 
    private:
     //! set the full newton parameters in the nox parameter list

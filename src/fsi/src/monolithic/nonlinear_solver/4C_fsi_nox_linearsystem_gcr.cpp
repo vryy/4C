@@ -126,9 +126,9 @@ bool NOX::FSI::LinearSystemGCR::applyJacobianInverse(
   // solve using GCR
   std::string linearSolver = p.get("Solver", "GMRES");
   if (linearSolver == "GMRES")
-    status = SolveGMRES(input, result, maxit, tol, p.get("Size of Krylov Subspace", 300));
+    status = solve_gmres(input, result, maxit, tol, p.get("Size of Krylov Subspace", 300));
   else if (linearSolver == "GCR")
-    status = SolveGCR(input, result, maxit, tol);
+    status = solve_gcr(input, result, maxit, tol);
   else
   {
     utils.out() << "ERROR: NOX::FSI::LinearSystemGCR::applyJacobianInverse" << std::endl
@@ -161,7 +161,7 @@ bool NOX::FSI::LinearSystemGCR::applyJacobianInverse(
 }
 
 
-int NOX::FSI::LinearSystemGCR::SolveGCR(
+int NOX::FSI::LinearSystemGCR::solve_gcr(
     const ::NOX::Epetra::Vector& b, ::NOX::Epetra::Vector& x, int& maxit, double& tol)
 {
   ::NOX::Epetra::Vector r(x, ::NOX::ShapeCopy);
@@ -236,7 +236,7 @@ int NOX::FSI::LinearSystemGCR::SolveGCR(
 }
 
 
-int NOX::FSI::LinearSystemGCR::SolveGMRES(
+int NOX::FSI::LinearSystemGCR::solve_gmres(
     const ::NOX::Epetra::Vector& b, ::NOX::Epetra::Vector& x, int& max_iter, double& tol, int m)
 {
   double resid = 0;
@@ -296,11 +296,11 @@ int NOX::FSI::LinearSystemGCR::SolveGMRES(
       v.push_back(Teuchos::rcp(new ::NOX::Epetra::Vector(w)));
       v.back()->scale(1.0 / H(i + 1, i));
 
-      for (int k = 0; k < i; k++) ApplyPlaneRotation(H(k, i), H(k + 1, i), cs(k), sn(k));
+      for (int k = 0; k < i; k++) apply_plane_rotation(H(k, i), H(k + 1, i), cs(k), sn(k));
 
       generate_plane_rotation(H(i, i), H(i + 1, i), cs(i), sn(i));
-      ApplyPlaneRotation(H(i, i), H(i + 1, i), cs(i), sn(i));
-      ApplyPlaneRotation(s(i), s(i + 1), cs(i), sn(i));
+      apply_plane_rotation(H(i, i), H(i + 1, i), cs(i), sn(i));
+      apply_plane_rotation(s(i), s(i + 1), cs(i), sn(i));
 
       utils.out() << "gmres |r|=" << std::scientific << fabs(s(i + 1))
                   << "   |b|=" << std::scientific << normb << "   tol=" << std::scientific << tol
@@ -378,7 +378,7 @@ void NOX::FSI::LinearSystemGCR::generate_plane_rotation(
 }
 
 
-void NOX::FSI::LinearSystemGCR::ApplyPlaneRotation(double& dx, double& dy, double& cs, double& sn)
+void NOX::FSI::LinearSystemGCR::apply_plane_rotation(double& dx, double& dy, double& cs, double& sn)
 {
   double temp = cs * dx + sn * dy;
   dy = -sn * dx + cs * dy;

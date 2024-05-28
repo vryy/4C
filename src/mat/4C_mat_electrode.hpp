@@ -39,7 +39,7 @@ namespace MAT
 
 
       //! create instance of electrode material
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
       //! @name parameters for electrode material
       //! @{

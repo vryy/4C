@@ -74,7 +74,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Evaluate the local mortar matrices for this contact element pair.
      */
-    void EvaluateDM(CORE::LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
+    void evaluate_dm(CORE::LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
         CORE::LINALG::Matrix<mortar::n_dof_, surface::n_dof_, double>& local_M,
         CORE::LINALG::Matrix<mortar::n_dof_, 1, double>& local_kappa,
         CORE::LINALG::Matrix<mortar::n_dof_, 1, double>& local_constraint) const;

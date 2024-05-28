@@ -86,11 +86,11 @@ namespace SSTI
 
     //! return coupling
     //@{
-    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> MeshtyingScatra() const
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_scatra() const
     {
       return meshtying_strategy_scatra_;
     }
-    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> MeshtyingThermo() const
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_thermo() const
     {
       return meshtying_strategy_thermo_;
     }
@@ -102,7 +102,7 @@ namespace SSTI
 
     //! return subproblems
     //@{
-    Teuchos::RCP<ADAPTER::SSIStructureWrapper> StructureField() const { return structure_; };
+    Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure_field() const { return structure_; };
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() const;
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ThermoField() const;
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> ScaTraFieldBase() { return scatra_; };
@@ -110,7 +110,7 @@ namespace SSTI
     //@}
 
     //! get bool indicating if we have at least one ssi interface meshtying condition
-    bool InterfaceMeshtying() const { return interfacemeshtying_; };
+    bool interface_meshtying() const { return interfacemeshtying_; };
 
     //! read restart
     void read_restart(int restart) override;

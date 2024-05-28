@@ -214,7 +214,7 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       /*!
       \brief Print this element
@@ -308,7 +308,7 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int EvaluateDirichlet(Teuchos::ParameterList& params,
+      virtual int evaluate_dirichlet(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
           std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1);
 

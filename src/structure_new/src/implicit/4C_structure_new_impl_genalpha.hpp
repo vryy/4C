@@ -69,7 +69,7 @@ namespace STR
           const std::vector<INPAR::STR::ModelType>* without_these_models = nullptr) const override;
 
       //! [derived]
-      void WriteRestart(
+      void write_restart(
           IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! [derived]
@@ -235,7 +235,7 @@ namespace STR
 
      protected:
       //! reset the time step dependent parameters for the element evaluation [derived]
-      void ResetEvalParams() override;
+      void reset_eval_params() override;
 
      private:
       /*! \brief Add the viscous and mass contributions to the right hand side (TR-rule)

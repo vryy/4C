@@ -38,7 +38,7 @@ namespace FS3I
 
     void DoFSIStep();
 
-    void DoScatraStep();
+    void do_scatra_step();
 
     void prepare_time_step() override;
 

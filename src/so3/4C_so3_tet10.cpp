@@ -371,7 +371,7 @@ bool DRT::ELEMENTS::SoTet10::VisData(const std::string& name, std::vector<double
 /*----------------------------------------------------------------------*
  |  Call post setup routine of the materials                            |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoTet10::MaterialPostSetup(Teuchos::ParameterList& params)
+void DRT::ELEMENTS::SoTet10::material_post_setup(Teuchos::ParameterList& params)
 {
   if (DRT::FIBER::UTILS::HaveNodalFibers<CORE::FE::CellType::tet10>(Nodes()))
   {
@@ -395,7 +395,7 @@ void DRT::ELEMENTS::SoTet10::MaterialPostSetup(Teuchos::ParameterList& params)
   }
 
   // Call super post setup
-  SoBase::MaterialPostSetup(params);
+  SoBase::material_post_setup(params);
 
   // Cleanup ParameterList to not carry all fibers the whole simulation
   // do not throw an error if key does not exist.

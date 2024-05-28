@@ -55,7 +55,7 @@ void XFEM::XfluidSemiLagrange::compute(
 )
 {
   const int nsd = 3;  // 3 dimensions for a 3d fluid element
-  handleVectors(newRowVectorsn);
+  handle_vectors(newRowVectorsn);
 
   // REMARK: in case of a new FGI iteration we have values at new position
   // they are used to compute nodal gradients used for non-predictor case
@@ -69,14 +69,14 @@ void XFEM::XfluidSemiLagrange::compute(
     {
       if (myrank_ == 0)
         IO::cout << "\nXFLUID_SemiLagrange::compute: case FRS1FGI1_ ..." << IO::flush;
-      resetState(TimeIntData::basicStd_, TimeIntData::currSL_);
+      reset_state(TimeIntData::basicStd_, TimeIntData::currSL_);
       break;
     }
     case FRSNot1_:
     {
       if (myrank_ == 0)
         IO::cout << "\nXFLUID_SemiLagrange::compute: case FRSNot1_ ..." << IO::flush;
-      resetState(TimeIntData::doneStd_, TimeIntData::currSL_);
+      reset_state(TimeIntData::doneStd_, TimeIntData::currSL_);
       break;
     }
     case FRS1FGINot1_:
@@ -84,8 +84,8 @@ void XFEM::XfluidSemiLagrange::compute(
       if (myrank_ == 0)
         IO::cout << "\nXFLUID_SemiLagrange::compute: case FRS1FGINot1_ ..." << IO::flush;
       reinitialize_data();
-      resetState(TimeIntData::basicStd_, TimeIntData::currSL_);
-      resetState(TimeIntData::doneStd_, TimeIntData::currSL_);
+      reset_state(TimeIntData::basicStd_, TimeIntData::currSL_);
+      reset_state(TimeIntData::doneStd_, TimeIntData::currSL_);
       break;
     }
     default:
@@ -240,8 +240,8 @@ void XFEM::XfluidSemiLagrange::compute(
               initial_ele = discret_->gElement(data->initial_eid_);
             }
 
-            data->changedside_ =
-                ChangedSide(ele, data->startpoint_, false, initial_ele, data->initialpoint_, false);
+            data->changedside_ = changed_side(
+                ele, data->startpoint_, false, initial_ele, data->initialpoint_, false);
 
             //----------------------------------------------
             // get dofset w.r.t to old interface position
@@ -400,7 +400,7 @@ void XFEM::XfluidSemiLagrange::compute(
     else
     {
       // reset the state to failed
-      resetState(TimeIntData::currSL_, TimeIntData::failedSL_);
+      reset_state(TimeIntData::currSL_, TimeIntData::failedSL_);
     }
 
     //===================================================================
@@ -442,7 +442,7 @@ void XFEM::XfluidSemiLagrange::compute(
    * using another algorithm, and combine the "Done" and the "Failed" - vectors  *
    *-----------------------------------------------------------------------------*/
   if (FGIType_ == FRSNot1_)  // failed nodes stay equal after the first computation
-    clearState(TimeIntData::failedSL_);
+    clear_state(TimeIntData::failedSL_);
   else
   {
     //===================================================================
@@ -464,7 +464,7 @@ void XFEM::XfluidSemiLagrange::compute(
 
   // now every proc has the whole data for the nodes and so the data can be set to the right place
   // now
-  setFinalData();
+  set_final_data();
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (counter > 8 * numproc_)  // too much loops shouldnt be if all this works
@@ -549,7 +549,7 @@ void XFEM::XfluidSemiLagrange::newton_loop(DRT::Element*& ele,  /// pointer to e
       }
 
       data->changedside_ =
-          ChangedSide(ele, data->startpoint_, false, initial_ele, data->initialpoint_, false);
+          changed_side(ele, data->startpoint_, false, initial_ele, data->initialpoint_, false);
 
       bool step_np = false;  // new timestep or old timestep
       std::vector<int> nds_curr;
@@ -1316,7 +1316,7 @@ void XFEM::XfluidSemiLagrange::back_tracking(DRT::Element*& fittingele,  /// poi
 
   bool compute_deriv = true;
 
-  evalShapeAndDeriv<numnode, DISTYPE>(ele, xi, xji, shapeFcn, shapeFcnDeriv, compute_deriv);
+  eval_shape_and_deriv<numnode, DISTYPE>(ele, xi, xji, shapeFcn, shapeFcnDeriv, compute_deriv);
 
   //-------------------------------------------------------
   // get element location vector, dirichlet flags and ownerships (discret, nds, la, doDirichlet)
@@ -1709,7 +1709,7 @@ void XFEM::XfluidSemiLagrange::compute_nodal_gradient(
     // Here we use the fact that x_node is a node position in reference configuration,
     // which means we get the same tmp_xi if we use the element in reference config, as
     // if callXToXi would be done in (n+1) config and x_node^(n+1)
-    callXToXiCoords(e, x_node, tmp_xi, "reference", indomain);
+    call_x_to_xi_coords(e, x_node, tmp_xi, "reference", indomain);
 
     for (size_t tmp_index = 0; tmp_index < colVectors.size(); tmp_index++)
     {
@@ -1785,7 +1785,7 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
     }
   }
 
-  clearState(TimeIntData::failedSL_);
+  clear_state(TimeIntData::failedSL_);
   timeIntData_->insert(timeIntData_->end(), dataVec[myrank_].begin(), dataVec[myrank_].end());
 
   dataVec[myrank_].clear();  // clear the set data from the vector
@@ -1812,7 +1812,7 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
     {
       if (data->state_ == TimeIntData::failedSL_)
       {
-        packNode(dataSend, data->node_);
+        pack_node(dataSend, data->node_);
         CORE::COMM::ParObject::AddtoPack(dataSend, data->nds_np_);
         CORE::COMM::ParObject::AddtoPack(dataSend, data->vel_);
         CORE::COMM::ParObject::AddtoPack(dataSend, data->velDeriv_);
@@ -1832,7 +1832,7 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
     {
       if (data->state_ == TimeIntData::failedSL_)
       {
-        packNode(dataSend, data->node_);
+        pack_node(dataSend, data->node_);
         CORE::COMM::ParObject::AddtoPack(dataSend, data->nds_np_);
         CORE::COMM::ParObject::AddtoPack(dataSend, data->vel_);
         CORE::COMM::ParObject::AddtoPack(dataSend, data->velDeriv_);
@@ -1869,7 +1869,7 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
       int initial_ele_owner;
       int newtype;
 
-      unpackNode(posinData, dataRecv, node);
+      unpack_node(posinData, dataRecv, node);
       CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, nds_np);
       CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, vel);
       CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, velDeriv);
@@ -1955,7 +1955,7 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
     {
       if (data->state_ == TimeIntData::nextSL_)
       {
-        packNode(dataSend, data->node_);
+        pack_node(dataSend, data->node_);
         CORE::COMM::ParObject::AddtoPack(dataSend, data->nds_np_);
         CORE::COMM::ParObject::AddtoPack(dataSend, data->vel_);
         CORE::COMM::ParObject::AddtoPack(dataSend, data->velDeriv_);
@@ -1978,7 +1978,7 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
     {
       if (data->state_ == TimeIntData::nextSL_)
       {
-        packNode(dataSend, data->node_);
+        pack_node(dataSend, data->node_);
         CORE::COMM::ParObject::AddtoPack(dataSend, data->nds_np_);
         CORE::COMM::ParObject::AddtoPack(dataSend, data->vel_);
         CORE::COMM::ParObject::AddtoPack(dataSend, data->velDeriv_);
@@ -1994,7 +1994,7 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
       }
     }
 
-    clearState(TimeIntData::nextSL_);
+    clear_state(TimeIntData::nextSL_);
 
     std::vector<char> dataRecv;
     send_data(dataSend, dest, source, dataRecv);
@@ -2020,7 +2020,7 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
       int iter;
       int newtype;
 
-      unpackNode(posinData, dataRecv, node);
+      unpack_node(posinData, dataRecv, node);
       CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, nds_np);
       CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, vel);
       CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, velDeriv);

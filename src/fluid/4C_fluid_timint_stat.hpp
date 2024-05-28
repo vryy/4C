@@ -133,13 +133,13 @@ namespace FLD
     \brief return scaling factor for the residual
 
     */
-    double ResidualScaling() const override { return 1.0; }
+    double residual_scaling() const override { return 1.0; }
 
     /*!
     \brief velocity required for evaluation of related quantites required on element level
 
     */
-    Teuchos::RCP<const Epetra_Vector> EvaluationVel() override { return Teuchos::null; };
+    Teuchos::RCP<const Epetra_Vector> evaluation_vel() override { return Teuchos::null; };
 
     /*!
     \brief treat turbulence models in assemble_mat_and_rhs
@@ -165,7 +165,7 @@ namespace FLD
     \brief break criterion for pseudo timeloop
 
     */
-    bool NotFinished() override { return step_ < stepmax_; }
+    bool not_finished() override { return step_ < stepmax_; }
 
 
    private:

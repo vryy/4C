@@ -47,7 +47,7 @@ FSI::FluidFluidMonolithicStructureSplit::FluidFluidMonolithicStructureSplit(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidFluidMonolithicStructureSplit::Update()
+void FSI::FluidFluidMonolithicStructureSplit::update()
 {
   // time to relax the ALE-mesh?
   if (fluid_field()->IsAleRelaxationStep(Step()))
@@ -55,11 +55,11 @@ void FSI::FluidFluidMonolithicStructureSplit::Update()
     if (Comm().MyPID() == 0) IO::cout << "Relaxing Ale" << IO::endl;
 
     ale_field()->Solve();
-    fluid_field()->apply_mesh_displacement(AleToFluid(ale_field()->Dispnp()));
+    fluid_field()->apply_mesh_displacement(ale_to_fluid(ale_field()->Dispnp()));
   }
 
   // update fields
-  FSI::MonolithicStructureSplit::Update();
+  FSI::MonolithicStructureSplit::update();
 }
 
 /*----------------------------------------------------------------------*/
@@ -81,7 +81,7 @@ void FSI::FluidFluidMonolithicStructureSplit::prepare_time_step()
   // Dirichlet maps
   FSI::MonolithicStructureSplit::create_combined_dof_row_map();
   setup_dbc_map_extractor();
-  FSI::MonolithicStructureSplit::CreateSystemMatrix();
+  FSI::MonolithicStructureSplit::create_system_matrix();
 }
 
 /*----------------------------------------------------------------------*/
@@ -92,7 +92,7 @@ void FSI::FluidFluidMonolithicStructureSplit::setup_dbc_map_extractor()
   std::vector<Teuchos::RCP<const Epetra_Map>> dbcmaps;
 
   // structure DBC
-  dbcmaps.push_back(StructureField()->GetDBCMapExtractor()->CondMap());
+  dbcmaps.push_back(structure_field()->GetDBCMapExtractor()->CondMap());
   // fluid DBC (including background & embedded discretization)
   dbcmaps.push_back(fluid_field()->GetDBCMapExtractor()->CondMap());
   // ALE-DBC-maps, free of FSI DOF

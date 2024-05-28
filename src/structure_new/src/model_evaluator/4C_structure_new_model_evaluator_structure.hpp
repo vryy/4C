@@ -88,25 +88,25 @@ namespace STR
           CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
 
       //! derived
-      void WriteRestart(
+      void write_restart(
           IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! derived
       void read_restart(IO::DiscretizationReader& ioreader) override;
 
       //! derived
-      void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
+      void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
           const NOX::NLN::Group& curr_grp) override;
 
       //! derived
       void RunRecover() override;
 
       //! derived
-      void RunPostComputeX(
+      void run_post_compute_x(
           const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
 
       //! derived
-      void RunPostIterate(const ::NOX::Solver::Generic& solver) override;
+      void run_post_iterate(const ::NOX::Solver::Generic& solver) override;
 
       //! derived
       void Predict(const INPAR::STR::PredEnum& pred_type) override;
@@ -118,7 +118,7 @@ namespace STR
       void UpdateStepElement() override;
 
       //! derived
-      void UpdateResidual() override;
+      void update_residual() override;
 
       //! derived
       void determine_stress_strain() override;
@@ -188,7 +188,7 @@ namespace STR
 
      protected:
       //! pre-operator for \ref evaluate_internal
-      virtual void PreEvaluateInternal(){/* empty */};
+      virtual void pre_evaluate_internal(){/* empty */};
 
      private:
       //! apply the internal force contributions
@@ -215,7 +215,7 @@ namespace STR
       bool pre_apply_force_stiff_external(
           Epetra_Vector& fextnp, CORE::LINALG::SparseMatrix& stiff) const;
 
-      //! Set the ParamsInterface in the parameter list and call the other evaluate_neumann routine
+      //! Set the params_interface in the parameter list and call the other evaluate_neumann routine
       void evaluate_neumann(const Teuchos::RCP<Epetra_Vector>& eval_vec,
           const Teuchos::RCP<CORE::LINALG::SparseOperator>& eval_mat);
 
@@ -230,7 +230,8 @@ namespace STR
       void evaluate_neumann(Teuchos::ParameterList& p, const Teuchos::RCP<Epetra_Vector>& eval_vec,
           const Teuchos::RCP<CORE::LINALG::SparseOperator>& eval_mat);
 
-      //! Set the ParamsInterface in the parameter list and call the other evaluate_internal routine
+      //! Set the params_interface in the parameter list and call the other evaluate_internal
+      //! routine
       void evaluate_internal(Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
           Teuchos::RCP<Epetra_Vector>* eval_vec);
 
@@ -246,7 +247,7 @@ namespace STR
           Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
           Teuchos::RCP<Epetra_Vector>* eval_vec);
 
-      /*! \brief  Set the ParamsInterface in the parameter list and call the other
+      /*! \brief  Set the params_interface in the parameter list and call the other
        * evaluate_internal_specified_elements routine */
       void evaluate_internal_specified_elements(
           Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,

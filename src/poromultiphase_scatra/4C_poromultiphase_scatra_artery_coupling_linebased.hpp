@@ -158,7 +158,7 @@ namespace POROMULTIPHASESCATRA
         const int& ele1gid, const double& etaA, const double& etaB, int& elepairID);
 
     //! set flag if varying diameter has to be calculated
-    void SetVaryingDiamFlag() override;
+    void set_varying_diam_flag() override;
 
     //! print output of mesh tying pairs
     void output_summary() const;

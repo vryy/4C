@@ -278,7 +278,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::check_dbc_on_c
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time", 0.0);
-    dis->EvaluateDirichlet(eleparams, zeros, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps);
+    dis->evaluate_dirichlet(eleparams, zeros, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps);
   }
   // intersect DBC maps and coupled dof map to check if coupling and DBC are applied on same dofs
   std::vector<Teuchos::RCP<const Epetra_Map>> dummy;

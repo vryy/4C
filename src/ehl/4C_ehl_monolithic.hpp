@@ -247,7 +247,7 @@ namespace EHL
     Teuchos::RCP<Epetra_Map> combined_dbc_map();
 
     //! extractor to communicate between full monolithic map and block maps
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> Extractor() const { return blockrowdofmap_; }
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> extractor() const { return blockrowdofmap_; }
 
     //! setup list with default parameters
     void set_default_parameters();

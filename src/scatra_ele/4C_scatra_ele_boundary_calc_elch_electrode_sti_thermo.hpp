@@ -109,7 +109,7 @@ namespace DRT
           ) override;
 
       //! evaluate action
-      int EvaluateAction(DRT::FaceElement* ele,             //!< boundary element
+      int evaluate_action(DRT::FaceElement* ele,            //!< boundary element
           Teuchos::ParameterList& params,                   //!< parameter list
           DRT::Discretization& discretization,              //!< discretization
           SCATRA::BoundaryAction action,                    //!< action
@@ -122,8 +122,8 @@ namespace DRT
           ) override;
 
       //! extract nodal state variables associated with boundary element
-      void ExtractNodeValues(const DRT::Discretization& discretization,  //!< discretization
-          DRT::Element::LocationArray& la                                //!< location array
+      void extract_node_values(const DRT::Discretization& discretization,  //!< discretization
+          DRT::Element::LocationArray& la                                  //!< location array
           ) override;
 
       //! evaluate factor F/RT

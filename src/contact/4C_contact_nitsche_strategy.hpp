@@ -195,21 +195,21 @@ namespace CONTACT
     bool IsPenalty() const override { return false; }
 
    protected:
-    std::vector<Teuchos::RCP<CONTACT::Interface>>& Interfaces() override { return interface_; }
+    std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces() override { return interface_; }
 
-    const std::vector<Teuchos::RCP<CONTACT::Interface>>& Interfaces() const override
+    const std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces() const override
     {
       return interface_;
     }
 
-    void EvalForce(CONTACT::ParamsInterface& cparams) override;
+    void eval_force(CONTACT::ParamsInterface& cparams) override;
 
-    void EvalForceStiff(CONTACT::ParamsInterface& cparams) override;
+    void eval_force_stiff(CONTACT::ParamsInterface& cparams) override;
 
     void Reset(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp,
         const Epetra_Vector& xnew) override;
 
-    void RunPostComputeX(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
+    void run_post_compute_x(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
         const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
 
     /*!
@@ -218,7 +218,7 @@ namespace CONTACT
      * @param[in] bt  vector block type
      * @return the filled RHS vector of given vector block type
      */
-    virtual Teuchos::RCP<Epetra_FEVector> CreateRhsBlockPtr(
+    virtual Teuchos::RCP<Epetra_FEVector> create_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bt) const;
 
     /*!
@@ -227,7 +227,7 @@ namespace CONTACT
      * @param[in] bt  block type
      * @return  vector for given vector block type
      */
-    virtual Teuchos::RCP<Epetra_FEVector> SetupRhsBlockVec(
+    virtual Teuchos::RCP<Epetra_FEVector> setup_rhs_block_vec(
         const enum CONTACT::VecBlockType& bt) const;
 
     /*!
@@ -236,7 +236,7 @@ namespace CONTACT
      * @param[in] bt  matrix block type
      * @return matrix block for given matrix block type
      */
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SetupMatrixBlockPtr(
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> setup_matrix_block_ptr(
         const enum MatBlockType& bt);
 
     /*!

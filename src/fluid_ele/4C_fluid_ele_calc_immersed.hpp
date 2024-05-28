@@ -82,9 +82,9 @@ namespace DRT
           ) override;
 
       //! Provide linearization of Garlerkin momentum residual with respect to the velocities
-      void LinGalMomResU(CORE::LINALG::Matrix<nsd_ * nsd_, nen_>&
-                             lin_resM_Du,  ///< linearisation of the Garlerkin momentum residual
-          const double& timefacfac         ///< = timefac x fac
+      void lin_gal_mom_res_u(CORE::LINALG::Matrix<nsd_ * nsd_, nen_>&
+                                 lin_resM_Du,  ///< linearisation of the Garlerkin momentum residual
+          const double& timefacfac             ///< = timefac x fac
           ) override;
 
       //! Compute element matrix and rhs entries: inertia, convective andyn
@@ -100,7 +100,7 @@ namespace DRT
           ) override;
 
       //! Compute element matrix entries: continuity terms of the Garlerkin part and rhs
-      void ContinuityGalPart(
+      void continuity_gal_part(
           CORE::LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u,  ///< block (weighting function q x u)
           CORE::LINALG::Matrix<nen_, 1>& preforce,             ///< rhs forces pressure
           const double& timefacfac,                            ///< = timefac x fac

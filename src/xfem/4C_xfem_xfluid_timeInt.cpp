@@ -2025,7 +2025,7 @@ bool XFEM::XFluidTimeInt::within_space_time_side(
 
 #ifdef DEBUG_TIMINT
   CORE::LINALG::Matrix<3, 1> rst(true);  // local coordinates w.r.t space time element (r,s,t !!!)
-  pos->LocalCoordinates(rst);
+  pos->local_coordinates(rst);
 
   if (within_space_time_side)
   {

@@ -49,7 +49,7 @@ void DRT::ELEMENTS::SHELL::PreEvaluateScatra(DRT::Element& ele, Teuchos::Paramet
     DRT::Discretization& discretization, DRT::Element::LocationArray& dof_index_array)
 {
   CORE::FE::IntegrationPoints2D intpoints_midsurface_ =
-      CreateGaussIntegrationPoints<distype>(GetGaussRule<distype>());
+      CreateGaussIntegrationPoints<distype>(get_gauss_rule<distype>());
 
   if (dof_index_array.Size() > 1)
   {

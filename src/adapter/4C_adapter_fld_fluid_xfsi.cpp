@@ -77,10 +77,10 @@ void ADAPTER::XFluidFSI::Init()
   interface_ = Teuchos::rcp(new FLD::UTILS::MapExtractor());
 
   interface_->Setup(
-      *xfluid_->Discretization(), false, true);  // Always Create overlapping FSI/FPSI Interface
+      *xfluid_->discretization(), false, true);  // Always Create overlapping FSI/FPSI Interface
 
   fpsiinterface_->Setup(
-      *xfluid_->Discretization(), true, true);  // Always Create overlapping FSI/FPSI Interface
+      *xfluid_->discretization(), true, true);  // Always Create overlapping FSI/FPSI Interface
 
   meshmap_ = Teuchos::rcp(new CORE::LINALG::MapExtractor());
 }

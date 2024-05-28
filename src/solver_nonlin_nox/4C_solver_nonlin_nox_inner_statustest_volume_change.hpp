@@ -77,11 +77,11 @@ namespace NOX
 
          protected:
           /// set the internal class variables by calling the related evaluate routine
-          ::NOX::Abstract::Group::ReturnType SetElementVolumes(
+          ::NOX::Abstract::Group::ReturnType set_element_volumes(
               const ::NOX::Abstract::Group& grp, Teuchos::RCP<Epetra_Vector>& ele_vols) const;
 
           /// get the number of bad elements
-          int NumberOfBadElements();
+          int number_of_bad_elements();
 
          protected:
           /// reference element volumes

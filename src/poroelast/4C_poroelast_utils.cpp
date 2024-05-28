@@ -228,7 +228,7 @@ void POROELAST::UTILS::create_volume_ghosting(DRT::Discretization& idiscret)
       // Ghost the parent element additionally
       if (elecolmap->LID(volgid) == -1 &&
           allredelecolmap->LID(volgid) !=
-              -1)  // Volume Discretization has not Element on this proc but on another
+              -1)  // Volume discretization has not Element on this proc but on another
         rdata.push_back(volgid);
     }
 
@@ -279,7 +279,7 @@ void POROELAST::UTILS::SetSlaveAndMaster(const DRT::Discretization& voldiscret,
 {
   int volgid = faceele->ParentElementId();
 
-  if (elecolmap->LID(volgid) == -1)  // Volume Discretization has not Element
+  if (elecolmap->LID(volgid) == -1)  // Volume discretization has not Element
     FOUR_C_THROW("create_volume_ghosting: Element %d does not exist on this Proc!", volgid);
 
   DRT::Element* vele = voldiscret.gElement(volgid);
@@ -289,7 +289,7 @@ void POROELAST::UTILS::SetSlaveAndMaster(const DRT::Discretization& voldiscret,
   if (voldiscret2)
   {
     const Epetra_Map* elecolmap2 = voldiscret2->ElementColMap();
-    if (elecolmap2->LID(volgid) == -1)  // Volume Discretization has not Element
+    if (elecolmap2->LID(volgid) == -1)  // Volume discretization has not Element
       faceele->set_parent_slave_element(nullptr, -1);
     else
     {

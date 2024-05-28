@@ -275,7 +275,7 @@ int DRT::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
-      Update_element(mydisp, params, Material());
+      update_element(mydisp, params, Material());
     }
     break;
 
@@ -293,7 +293,7 @@ int DRT::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
         {
           // build incremental def gradient for every gauss point
           CORE::LINALG::SerialDenseMatrix gpdefgrd(NUMGPT_SOTET10, 9);
-          DefGradient(mydisp, gpdefgrd, *prestress_);
+          def_gradient(mydisp, gpdefgrd, *prestress_);
 
           // update deformation gradient and put back to storage
           CORE::LINALG::Matrix<3, 3> deltaF;
@@ -434,7 +434,7 @@ int DRT::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
 
       if (IsParamsInterface())  // new structural time integration
       {
-        StrParamsInterface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
+        str_params_interface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
       }
       else  // old structural time integration
       {
@@ -557,7 +557,7 @@ int DRT::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
           "This action type should only be called from the new time integration framework!");
 
       // Save number of Gauss of the element for gauss point data output
-      StrParamsInterface()
+      str_params_interface()
           .gauss_point_data_output_manager_ptr()
           ->add_element_number_of_gauss_points(NUMGPT_SOTET10);
 
@@ -568,7 +568,7 @@ int DRT::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
       SolidMaterial()->register_output_data_names(quantities_map);
 
       // Add quantities to the Gauss point output data manager (if they do not already exist)
-      StrParamsInterface().gauss_point_data_output_manager_ptr()->MergeQuantities(quantities_map);
+      str_params_interface().gauss_point_data_output_manager_ptr()->MergeQuantities(quantities_map);
     }
     break;
     case struct_gauss_point_data_output:
@@ -578,7 +578,7 @@ int DRT::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
 
       // Collection and assembly of gauss point data
       for (const auto& quantity :
-          StrParamsInterface().gauss_point_data_output_manager_ptr()->GetQuantities())
+          str_params_interface().gauss_point_data_output_manager_ptr()->GetQuantities())
       {
         const std::string& quantity_name = quantity.first;
         const int quantity_size = quantity.second;
@@ -591,13 +591,13 @@ int DRT::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
         // point)
         if (data_available)
         {
-          switch (StrParamsInterface().gauss_point_data_output_manager_ptr()->GetOutputType())
+          switch (str_params_interface().gauss_point_data_output_manager_ptr()->GetOutputType())
           {
             case INPAR::STR::GaussPointDataOutputType::element_center:
             {
               // compute average of the quantities
               Teuchos::RCP<Epetra_MultiVector> global_data =
-                  StrParamsInterface()
+                  str_params_interface()
                       .gauss_point_data_output_manager_ptr()
                       ->get_element_center_data()
                       .at(quantity_name);
@@ -607,11 +607,11 @@ int DRT::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
             case INPAR::STR::GaussPointDataOutputType::nodes:
             {
               Teuchos::RCP<Epetra_MultiVector> global_data =
-                  StrParamsInterface().gauss_point_data_output_manager_ptr()->GetNodalData().at(
+                  str_params_interface().gauss_point_data_output_manager_ptr()->GetNodalData().at(
                       quantity_name);
 
               Epetra_IntVector& global_nodal_element_count =
-                  *StrParamsInterface()
+                  *str_params_interface()
                        .gauss_point_data_output_manager_ptr()
                        ->GetNodalDataCount()
                        .at(quantity_name);
@@ -626,7 +626,7 @@ int DRT::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
             case INPAR::STR::GaussPointDataOutputType::gauss_points:
             {
               std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
-                  StrParamsInterface()
+                  str_params_interface()
                       .gauss_point_data_output_manager_ptr()
                       ->GetGaussPointData()
                       .at(quantity_name);
@@ -673,7 +673,7 @@ int DRT::ELEMENTS::SoTet10::evaluate_neumann(Teuchos::ParameterList& params,
       [&]()
       {
         if (IsParamsInterface())
-          return StrParamsInterface().GetTotalTime();
+          return str_params_interface().GetTotalTime();
         else
           return params.get("total time", -1.0);
       });
@@ -767,7 +767,7 @@ int DRT::ELEMENTS::SoTet10::evaluate_neumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)                       |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoTet10::InitJacobianMapping()
+void DRT::ELEMENTS::SoTet10::init_jacobian_mapping()
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>> derivs4gp =
       so_tet10_4gp_derivs();
@@ -1170,8 +1170,8 @@ void DRT::ELEMENTS::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // loc
         double timintfac_vel = 0.0;
         if (IsParamsInterface())
         {
-          timintfac_dis = StrParamsInterface().GetTimIntFactorDisp();
-          timintfac_vel = StrParamsInterface().GetTimIntFactorVel();
+          timintfac_dis = str_params_interface().GetTimIntFactorDisp();
+          timintfac_vel = str_params_interface().GetTimIntFactorVel();
         }
         else
         {
@@ -1470,7 +1470,7 @@ int DRT::ELEMENTS::SoTet10Type::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoTet10*>(dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_tet10* failed");
-    actele->InitJacobianMapping();
+    actele->init_jacobian_mapping();
   }
   return 0;
 }
@@ -1478,7 +1478,7 @@ int DRT::ELEMENTS::SoTet10Type::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  compute def gradient at every gaussian point (protected)            |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoTet10::DefGradient(const std::vector<double>& disp,
+void DRT::ELEMENTS::SoTet10::def_gradient(const std::vector<double>& disp,
     CORE::LINALG::SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>> derivs =
@@ -1554,7 +1554,7 @@ void DRT::ELEMENTS::SoTet10::update_jacobian_mapping(
 /*----------------------------------------------------------------------*
  |  Update material                                                     |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoTet10::Update_element(std::vector<double>& disp,
+void DRT::ELEMENTS::SoTet10::update_element(std::vector<double>& disp,
     Teuchos::ParameterList& params, const Teuchos::RCP<CORE::MAT::Material>& mat)
 {
   if (SolidMaterial()->UsesExtendedUpdate())

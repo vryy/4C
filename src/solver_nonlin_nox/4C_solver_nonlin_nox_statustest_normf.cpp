@@ -45,10 +45,10 @@ NOX::NLN::StatusTest::NormF::NormF(const std::vector<NOX::NLN::StatusTest::Quant
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::StatusTest::NormF::relativeSetup(
+void NOX::NLN::StatusTest::NormF::relative_setup(
     Teuchos::RCP<const ::NOX::Abstract::Group>& initialGuess)
 {
-  initialTolerance_ = ComputeNorm(initialGuess);
+  initialTolerance_ = compute_norm(initialGuess);
 
   if (initialTolerance_.is_null())
   {
@@ -71,7 +71,7 @@ void NOX::NLN::StatusTest::NormF::relativeSetup(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const std::vector<double>> NOX::NLN::StatusTest::NormF::ComputeNorm(
+Teuchos::RCP<const std::vector<double>> NOX::NLN::StatusTest::NormF::compute_norm(
     Teuchos::RCP<const ::NOX::Abstract::Group>& grp)
 {
   if (!grp->isF()) return Teuchos::null;
@@ -101,7 +101,7 @@ Teuchos::RCP<const std::vector<double>> NOX::NLN::StatusTest::NormF::ComputeNorm
   {
     Teuchos::RCP<const ::NOX::Abstract::Group> grp =
         Teuchos::rcpFromRef(problem.getSolutionGroup());
-    relativeSetup(grp);
+    relative_setup(grp);
   }
 
   if (checkType == ::NOX::StatusTest::None)
@@ -114,7 +114,7 @@ Teuchos::RCP<const std::vector<double>> NOX::NLN::StatusTest::NormF::ComputeNorm
   {
     Teuchos::RCP<const ::NOX::Abstract::Group> grp =
         Teuchos::rcpFromRef(problem.getSolutionGroup());
-    normF_ = ComputeNorm(grp);
+    normF_ = compute_norm(grp);
 
     gStatus_ = ::NOX::StatusTest::Converged;
     for (std::size_t i = 0; i < normF_->size(); ++i)

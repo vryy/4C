@@ -43,30 +43,30 @@ namespace NOX
             std::map<std::string, Teuchos::RCP<::NOX::StatusTest::Generic>>* tagged_tests) const;
 
        protected:
-        /*! \brief New implementation of the \c BuildNormFTest function.
+        /*! \brief New implementation of the \c build_norm_f_test function.
          *
          *  The underlying Status Test is capable of a variety of quantities at the same
          *  time and combines the RelativeNormF and NormF test.
          */
-        Teuchos::RCP<::NOX::StatusTest::Generic> BuildNormFTest(
+        Teuchos::RCP<::NOX::StatusTest::Generic> build_norm_f_test(
             Teuchos::ParameterList& p, const ::NOX::Utils& u, const bool& relativeNormF) const;
-        Teuchos::RCP<::NOX::StatusTest::Generic> BuildNormFTest(
+        Teuchos::RCP<::NOX::StatusTest::Generic> build_norm_f_test(
             Teuchos::ParameterList& p, const ::NOX::Utils& u) const;
 
-        /*! \brief New implementation of the \c BuildNormUpdateTest function.
+        /*! \brief New implementation of the \c build_norm_update_test function.
          *
          *  The underlying Status Test is capable of a variety of quantities at the same
          *  time.
          */
-        Teuchos::RCP<::NOX::StatusTest::Generic> BuildNormUpdateTest(
+        Teuchos::RCP<::NOX::StatusTest::Generic> build_norm_update_test(
             Teuchos::ParameterList& p, const ::NOX::Utils& u) const;
 
-        /*! \brief New implementation of the \c BuildNormWRMSTest function.
+        /*! \brief New implementation of the \c build_norm_wrms_test function.
          *
          *  The underlying Status Test is capable of a variety of quantities at the same
          *  time.
          */
-        Teuchos::RCP<::NOX::StatusTest::Generic> BuildNormWRMSTest(
+        Teuchos::RCP<::NOX::StatusTest::Generic> build_norm_wrms_test(
             Teuchos::ParameterList& p, const ::NOX::Utils& u) const;
 
         /*! \brief Simple active set test
@@ -77,7 +77,7 @@ namespace NOX
          *  OPTIONAL: Based on the implementation of the internal get function, also
          *  a cycling of the active set can be detected and printed to the screen.
          */
-        Teuchos::RCP<::NOX::StatusTest::Generic> BuildActiveSetTest(
+        Teuchos::RCP<::NOX::StatusTest::Generic> build_active_set_test(
             Teuchos::ParameterList& p, const ::NOX::Utils& u) const;
 
         /*! \brief Derived buildComboTest.
@@ -86,13 +86,13 @@ namespace NOX
          *  has to be redefined. Note that the base class input parameter
          *  <tt>Number of Tests<\tt> is not used in this version.
          */
-        Teuchos::RCP<::NOX::StatusTest::Generic> BuildComboTest(Teuchos::ParameterList& p,
+        Teuchos::RCP<::NOX::StatusTest::Generic> build_combo_test(Teuchos::ParameterList& p,
             const ::NOX::Utils& u,
             std::map<std::string, Teuchos::RCP<::NOX::StatusTest::Generic>>* tagged_tests) const;
 
         //! Checks if a tag is present in the parameter list and adds the test to the tagged_test
         //! std::map if true.  Returns true if a tag was present.
-        bool CheckAndTagTest(const Teuchos::ParameterList& p,
+        bool check_and_tag_test(const Teuchos::ParameterList& p,
             const Teuchos::RCP<::NOX::StatusTest::Generic>& test,
             std::map<std::string, Teuchos::RCP<::NOX::StatusTest::Generic>>* tagged_tests) const;
 

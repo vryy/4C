@@ -98,7 +98,7 @@ void PARTICLEINTERACTION::SPHDensityBase::set_current_step_size(const double cur
   dt_ = currentstepsize;
 }
 
-void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMass() const
+void PARTICLEINTERACTION::SPHDensityBase::sum_weighted_mass() const
 {
   // clear density sum state
   clear_density_sum_state();
@@ -264,7 +264,7 @@ void PARTICLEINTERACTION::SPHDensityBase::sum_weighted_mass_particle_wall_contri
   }
 }
 
-void PARTICLEINTERACTION::SPHDensityBase::SumColorfield() const
+void PARTICLEINTERACTION::SPHDensityBase::sum_colorfield() const
 {
   // clear colorfield state
   clear_colorfield_state();
@@ -458,7 +458,7 @@ void PARTICLEINTERACTION::SPHDensityBase::sum_colorfield_particle_wall_contribut
   }
 }
 
-void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
+void PARTICLEINTERACTION::SPHDensityBase::continuity_equation() const
 {
   // clear density dot state
   clear_density_dot_state();
@@ -693,7 +693,7 @@ void PARTICLEINTERACTION::SPHDensityBase::continuity_equation_particle_wall_cont
   }
 }
 
-void PARTICLEINTERACTION::SPHDensityBase::SetDensitySum() const
+void PARTICLEINTERACTION::SPHDensityBase::set_density_sum() const
 {
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
@@ -753,10 +753,10 @@ void PARTICLEINTERACTION::SPHDensitySummation::ComputeDensity() const
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHDensitySummation::ComputeDensity");
 
   // evaluate sum of weighted mass
-  SumWeightedMass();
+  sum_weighted_mass();
 
   // set density sum to density field
-  SetDensitySum();
+  set_density_sum();
 
   // refresh density of ghosted particles
   particleengineinterface_->refresh_particles_of_specific_states_and_types(densitytorefresh_);
@@ -795,7 +795,7 @@ void PARTICLEINTERACTION::SPHDensityIntegration::ComputeDensity() const
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHDensityIntegration::ComputeDensity");
 
   // evaluate continuity equation
-  ContinuityEquation();
+  continuity_equation();
 
   // add time step scaled density dot to density field
   add_time_step_scaled_density_dot();
@@ -866,7 +866,7 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::ComputeDensity() const
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHDensityPredictCorrect::ComputeDensity");
 
   // evaluate continuity equation
-  ContinuityEquation();
+  continuity_equation();
 
   // add time step scaled density dot to density field
   add_time_step_scaled_density_dot();
@@ -875,10 +875,10 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::ComputeDensity() const
   particleengineinterface_->refresh_particles_of_specific_states_and_types(densitytorefresh_);
 
   // evaluate sum of weighted mass
-  SumWeightedMass();
+  sum_weighted_mass();
 
   // evaluate sum of colorfield
-  SumColorfield();
+  sum_colorfield();
 
   // correct density of interior/surface particles
   correct_density();

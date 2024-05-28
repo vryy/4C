@@ -72,7 +72,7 @@ namespace DRT
           const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           CORE::LINALG::SerialDenseVector& conc) override;
 
-      void CalculateScalars(const DRT::Element* ele, CORE::LINALG::SerialDenseVector& scalars,
+      void calculate_scalars(const DRT::Element* ele, CORE::LINALG::SerialDenseVector& scalars,
           bool inverting, bool calc_grad_phi) override;
 
       //! get diffusion manager
@@ -83,7 +83,7 @@ namespace DRT
       };
 
       //! evaluate action
-      int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
+      int evaluate_action(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -92,7 +92,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       //! compute element matrix and element right-hand side vector
-      void Sysmat(DRT::Element* ele,                  //!< element
+      void sysmat(DRT::Element* ele,                  //!< element
           CORE::LINALG::SerialDenseMatrix& emat,      //!< element matrix
           CORE::LINALG::SerialDenseVector& erhs,      //!< element right-hand side vector
           CORE::LINALG::SerialDenseVector& subgrdiff  //!< subgrid diffusivity vector

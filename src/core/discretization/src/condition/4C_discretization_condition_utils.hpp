@@ -56,7 +56,7 @@ namespace CORE::Conditions
     specified name and collect the locally owned node ids in the supplied
     set. The nodes vector is unique and ordered on output.
 
-    \param dis : (in) Discretization
+    \param dis : (in) discretization
     \param condname : (in) name of condition in question
     \param nodes : (out) empty set on input, filled with nodal gids of local nodes
   */
@@ -77,7 +77,7 @@ namespace CORE::Conditions
     specified name and collect the locally owned node ids in the suppied
     set. The nodes vector is unique and ordered on output.
 
-    \param dis : (in) Discretization
+    \param dis : (in) discretization
     \param conds : (in) conditions in question
     \param nodes : (out) empty set on input, filled with nodal gids of local nodes
   */

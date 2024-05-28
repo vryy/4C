@@ -332,12 +332,12 @@ void DRT::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate Dirichlet conditions (public)                  rauch 06/16 |
  *----------------------------------------------------------------------*/
-void DRT::Discretization::EvaluateDirichlet(Teuchos::ParameterList& params,
+void DRT::Discretization::evaluate_dirichlet(Teuchos::ParameterList& params,
     Teuchos::RCP<Epetra_Vector> systemvector, Teuchos::RCP<Epetra_Vector> systemvectord,
     Teuchos::RCP<Epetra_Vector> systemvectordd, Teuchos::RCP<Epetra_IntVector> toggle,
     Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmapextractor) const
 {
-  DRT::UTILS::EvaluateDirichlet(
+  DRT::UTILS::evaluate_dirichlet(
       *this, params, systemvector, systemvectord, systemvectordd, toggle, dbcmapextractor);
 }
 

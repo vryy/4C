@@ -114,7 +114,7 @@ THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
   {
     Teuchos::ParameterList p;
     p.set("total time", timen_);
-    discret_->EvaluateDirichlet(p, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
+    discret_->evaluate_dirichlet(p, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0);  // just in case of change
   }
 
@@ -163,7 +163,7 @@ void THR::TimInt::determine_capa_consist_temp_rate()
       CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);  //!< internal force
 
   // overwrite initial state vectors with DirichletBCs
-  ApplyDirichletBC((*time_)[0], (*temp_)(0), (*rate_)(0), false);
+  apply_dirichlet_bc((*time_)[0], (*temp_)(0), (*rate_)(0), false);
 
   // get external force
   apply_force_external((*time_)[0], (*temp_)(0), fext);
@@ -232,7 +232,7 @@ void THR::TimInt::determine_capa_consist_temp_rate()
 /*----------------------------------------------------------------------*
  | evaluate Dirichlet BC at t_{n+1}                         bborn 06/08 |
  *----------------------------------------------------------------------*/
-void THR::TimInt::ApplyDirichletBC(const double time, Teuchos::RCP<Epetra_Vector> temp,
+void THR::TimInt::apply_dirichlet_bc(const double time, Teuchos::RCP<Epetra_Vector> temp,
     Teuchos::RCP<Epetra_Vector> rate, bool recreatemap)
 {
   // apply DBCs
@@ -245,18 +245,18 @@ void THR::TimInt::ApplyDirichletBC(const double time, Teuchos::RCP<Epetra_Vector
   discret_->ClearState();
   if (recreatemap)
   {
-    discret_->EvaluateDirichlet(p, temp, rate, Teuchos::null, Teuchos::null, dbcmaps_);
+    discret_->evaluate_dirichlet(p, temp, rate, Teuchos::null, Teuchos::null, dbcmaps_);
   }
   else
   {
-    discret_->EvaluateDirichlet(p, temp, rate, Teuchos::null, Teuchos::null, Teuchos::null);
+    discret_->evaluate_dirichlet(p, temp, rate, Teuchos::null, Teuchos::null, Teuchos::null);
   }
   discret_->ClearState();
 
   // ciao
   return;
 
-}  // ApplyDirichletBC()
+}  // apply_dirichlet_bc()
 
 
 /*----------------------------------------------------------------------*

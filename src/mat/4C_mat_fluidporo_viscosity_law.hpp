@@ -53,7 +53,7 @@ namespace MAT
       explicit FluidPoroViscosityLawConstant(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override { return Teuchos::null; };
+      Teuchos::RCP<CORE::MAT::Material> create_material() override { return Teuchos::null; };
 
       // get viscosity
       double GetViscosity(const double abspressgrad) const override { return viscosity_; };
@@ -84,7 +84,7 @@ namespace MAT
       explicit FluidPoroViscosityLawCellAdherence(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override { return Teuchos::null; };
+      Teuchos::RCP<CORE::MAT::Material> create_material() override { return Teuchos::null; };
 
       // get viscosity
       double GetViscosity(const double abspressgrad) const override;

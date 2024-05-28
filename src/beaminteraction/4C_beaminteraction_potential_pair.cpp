@@ -204,7 +204,7 @@ void BEAMINTERACTION::BeamPotentialPair::check_init_setup() const
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-CORE::FE::GaussRule1D BEAMINTERACTION::BeamPotentialPair::GetGaussRule() const
+CORE::FE::GaussRule1D BEAMINTERACTION::BeamPotentialPair::get_gauss_rule() const
 {
   switch (Params()->NumberGaussPoints())
   {

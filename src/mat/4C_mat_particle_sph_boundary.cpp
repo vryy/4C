@@ -36,7 +36,7 @@ MAT::PAR::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary(
 /*---------------------------------------------------------------------------*
  | create material instance of matching type with parameters  sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ParticleMaterialSPHBoundary::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ParticleMaterialSPHBoundary::create_material()
 {
   return Teuchos::rcp(new MAT::ParticleMaterialSPHBoundary(this));
 }

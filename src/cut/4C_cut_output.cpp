@@ -626,7 +626,7 @@ void CORE::GEO::CUT::OUTPUT::GmshLevelSetGradientDump(
         Point* facet_triang_midpoint = (facet_triang[0])[0];
 
         facet_triang_midpoint->Coordinates(&facet_triang_midpoint_coord(0, 0));
-        normal_triag_midp = ele->GetLevelSetGradient(facet_triang_midpoint_coord);
+        normal_triag_midp = ele->get_level_set_gradient(facet_triang_midpoint_coord);
 
         for (std::vector<std::vector<Point*>>::iterator k = facet_triang.begin();
              k != facet_triang.end(); k++)
@@ -644,7 +644,7 @@ void CORE::GEO::CUT::OUTPUT::GmshLevelSetGradientDump(
           }
           f_triang_tri_midp.Scale(1.0 / facet_triang_tri.size());
 
-          std::vector<double> normal = ele->GetLevelSetGradient(f_triang_tri_midp);
+          std::vector<double> normal = ele->get_level_set_gradient(f_triang_tri_midp);
 
           GmshVector(file, f_triang_tri_midp, normal, true, to_local, ele);
         }
@@ -660,10 +660,10 @@ void CORE::GEO::CUT::OUTPUT::GmshLevelSetGradientDump(
           facet_triang_midpoint_coord.Update(1.0, cur, 1.0);
         }
         facet_triang_midpoint_coord.Scale(1.0 / pts.size());
-        normal_triag_midp = ele->GetLevelSetGradient(facet_triang_midpoint_coord);
+        normal_triag_midp = ele->get_level_set_gradient(facet_triang_midpoint_coord);
       }
 
-      std::vector<double> normal = ele->GetLevelSetGradient(facet_triang_midpoint_coord);
+      std::vector<double> normal = ele->get_level_set_gradient(facet_triang_midpoint_coord);
       GmshVector(file, facet_triang_midpoint_coord, normal, true, to_local, ele);
 
       // Write Corner-points of LS:
@@ -673,7 +673,7 @@ void CORE::GEO::CUT::OUTPUT::GmshLevelSetGradientDump(
         CORE::LINALG::Matrix<3, 1> cornercoord;
         Point* p1 = *i;
         p1->Coordinates(cornercoord.A());
-        std::vector<double> normal = ele->GetLevelSetGradient(cornercoord);
+        std::vector<double> normal = ele->get_level_set_gradient(cornercoord);
 
         GmshVector(file, cornercoord, normal, true, to_local, ele);
       }
@@ -720,7 +720,7 @@ void CORE::GEO::CUT::OUTPUT::GmshLevelSetValueDump(
           }
           f_triang_tri_midp.Scale(1.0 / facet_triang_tri.size());
 
-          double ls_value = ele->GetLevelSetValue(f_triang_tri_midp);
+          double ls_value = ele->get_level_set_value(f_triang_tri_midp);
           GmshScalar(file, f_triang_tri_midp, ls_value, to_local, ele);
         }
         Point* facet_triang_midpoint = (facet_triang[0])[0];
@@ -739,7 +739,7 @@ void CORE::GEO::CUT::OUTPUT::GmshLevelSetValueDump(
         facet_triang_midpoint_coord.Scale(1.0 / pts.size());
       }
 
-      double ls_value = ele->GetLevelSetValue(facet_triang_midpoint_coord);
+      double ls_value = ele->get_level_set_value(facet_triang_midpoint_coord);
       GmshScalar(file, facet_triang_midpoint_coord, ls_value, to_local, ele);
     }
   }
@@ -833,7 +833,7 @@ void CORE::GEO::CUT::OUTPUT::GmshLevelSetValueZeroSurfaceDump(
         if (fabs(ls_value) < tolerance)
         {
           CORE::LINALG::Matrix<3, 1> coord_global;
-          ele->GlobalCoordinates(coord, coord_global);
+          ele->global_coordinates(coord, coord_global);
           GmshScalar(file, coord_global, ls_value, to_local, ele);
         }
       }
@@ -866,7 +866,7 @@ void CORE::GEO::CUT::OUTPUT::GmshLevelSetOrientationDump(
 
       //      Facet *facet = *bc->GetFacet();
       CORE::LINALG::Matrix<3, 1> midpoint_bc;
-      bc->ElementCenter(midpoint_bc);
+      bc->element_center(midpoint_bc);
 
       CORE::LINALG::Matrix<3, 1> normal_bc;
       CORE::LINALG::Matrix<2, 1> xsi;
@@ -879,7 +879,7 @@ void CORE::GEO::CUT::OUTPUT::GmshLevelSetOrientationDump(
       ls_coord(1, 0) = coords_bc[1][1];
       ls_coord(2, 0) = coords_bc[1][2];
 
-      std::vector<double> normal_ls = ele->GetLevelSetGradient(ls_coord);
+      std::vector<double> normal_ls = ele->get_level_set_gradient(ls_coord);
 
       double dotProduct = 0.0;
       for (unsigned d = 0; d < normal_ls.size(); ++d) dotProduct += normal_ls[d] * normal_bc(d, 0);
@@ -1023,7 +1023,7 @@ void CORE::GEO::CUT::OUTPUT::GmshWriteCoords(
 
     CORE::LINALG::Matrix<3, 1> rst(true);
 
-    ele->LocalCoordinates(xyz, rst);
+    ele->local_coordinates(xyz, rst);
     GmshWriteCoords(file, rst, false, nullptr);  // rst are already local coords!
     return;
   }
@@ -1042,7 +1042,7 @@ void CORE::GEO::CUT::OUTPUT::GmshWriteCoords(
       FOUR_C_THROW("GmshWriteCoords: Didn't get a parent element for the Coordinate!");
 
     CORE::LINALG::Matrix<3, 1> xyz = coord;
-    ele->LocalCoordinates(xyz, coord);
+    ele->local_coordinates(xyz, coord);
   }
   file << std::setprecision(15) << coord(0, 0) << "," << coord(1, 0) << "," << coord(2, 0);
 }

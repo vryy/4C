@@ -80,9 +80,9 @@ namespace ADAPTER
     }
 
     //! direct access to discretization
-    Teuchos::RCP<const DRT::Discretization> Discretization() const override
+    Teuchos::RCP<const DRT::Discretization> discretization() const override
     {
-      return ale_->Discretization();
+      return ale_->discretization();
     }
 
     /// writing access to discretization
@@ -242,12 +242,12 @@ namespace ADAPTER
      * Evaluate has to be called separately.
      *
      */
-    void CreateSystemMatrix(
+    void create_system_matrix(
         Teuchos::RCP<const ALE::UTILS::MapExtractor> interface =
             Teuchos::null  ///< Blocksparsematrix if an interface is passed, SparseMatrix otherwise
         ) override
     {
-      ale_->CreateSystemMatrix(interface);
+      ale_->create_system_matrix(interface);
     }
 
     //! update slave dofs for fsi simulations with ale mesh tying

@@ -25,7 +25,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <CORE::FE::ShapeFunctionType sft>
-std::map<std::string, std::string> ELEMAG::UTILS::ScatraCloneStrategy<sft>::ConditionsToCopy() const
+std::map<std::string, std::string> ELEMAG::UTILS::ScatraCloneStrategy<sft>::conditions_to_copy()
+    const
 {
   return {{"Dirichlet", "Dirichlet"}};
 }
@@ -33,7 +34,7 @@ std::map<std::string, std::string> ELEMAG::UTILS::ScatraCloneStrategy<sft>::Cond
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <CORE::FE::ShapeFunctionType sft>
-void ELEMAG::UTILS::ScatraCloneStrategy<sft>::CheckMaterialType(const int matid)
+void ELEMAG::UTILS::ScatraCloneStrategy<sft>::check_material_type(const int matid)
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
@@ -46,7 +47,7 @@ void ELEMAG::UTILS::ScatraCloneStrategy<sft>::CheckMaterialType(const int matid)
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <CORE::FE::ShapeFunctionType sft>
-void ELEMAG::UTILS::ScatraCloneStrategy<sft>::SetElementData(
+void ELEMAG::UTILS::ScatraCloneStrategy<sft>::set_element_data(
     Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool nurbsdis)
 {
   auto Transport = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
@@ -75,7 +76,7 @@ void ELEMAG::UTILS::ScatraCloneStrategy<sft>::SetElementData(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <CORE::FE::ShapeFunctionType sft>
-bool ELEMAG::UTILS::ScatraCloneStrategy<sft>::DetermineEleType(
+bool ELEMAG::UTILS::ScatraCloneStrategy<sft>::determine_ele_type(
     DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // Clone it now.

@@ -87,10 +87,10 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::Setup()
     // transfer the initial convective velocity from initial fluid field to scalar transport field
     // subgrid scales not transferred since they are zero at time t=0.0
     if (volcoupl_fluidscatra_.is_null())
-      ScaTraField()->SetVelocityField(
+      ScaTraField()->set_velocity_field(
           fluid_field()->ConvectiveVel(), Teuchos::null, Teuchos::null, Teuchos::null);
     else
-      ScaTraField()->SetVelocityField(
+      ScaTraField()->set_velocity_field(
           volcoupl_fluidscatra_->apply_vector_mapping21(fluid_field()->ConvectiveVel()),
           Teuchos::null, Teuchos::null, Teuchos::null);
   }
@@ -185,7 +185,7 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::setup_field_coupling(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::ScaTraFluidCouplingAlgorithm::FluidToScatra(
+Teuchos::RCP<const Epetra_Vector> ADAPTER::ScaTraFluidCouplingAlgorithm::fluid_to_scatra(
     const Teuchos::RCP<const Epetra_Vector> fluidvector) const
 {
   switch (fieldcoupling_)
@@ -205,7 +205,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::ScaTraFluidCouplingAlgorithm::FluidTo
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::ScaTraFluidCouplingAlgorithm::ScatraToFluid(
+Teuchos::RCP<const Epetra_Vector> ADAPTER::ScaTraFluidCouplingAlgorithm::scatra_to_fluid(
     const Teuchos::RCP<const Epetra_Vector> scatravector) const
 {
   switch (fieldcoupling_)
@@ -235,7 +235,7 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::read_restart(int step)
   if (fluid_field()->turbulence_statistic_manager() != Teuchos::null)
   {
     IO::DiscretizationReader reader(
-        ScaTraField()->Discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
+        ScaTraField()->discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
     fluid_field()->turbulence_statistic_manager()->ReadRestartScaTra(reader, step);
   }
 }

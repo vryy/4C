@@ -34,12 +34,12 @@ void ADAPTER::FluidFSIMsht::Init()
   FluidFSI::Init();
 
   // create fluid map extractor
-  SetupFsiInterface();
+  setup_fsi_interface();
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFSIMsht::SetupFsiInterface() { fsiinterface_->Setup(*dis_); }
+void ADAPTER::FluidFSIMsht::setup_fsi_interface() { fsiinterface_->Setup(*dis_); }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -111,7 +111,7 @@ namespace CORE::LINALG
      * @param[in]  matrix      matrix
      * @param[out] invcolsums  inverse sums of absolute values of column entries in matrix
      */
-    void ComputeInvColSums(const CORE::LINALG::SparseMatrix& matrix,
+    void compute_inv_col_sums(const CORE::LINALG::SparseMatrix& matrix,
         Teuchos::RCP<Epetra_Vector> invcolsums, const EquilibrationMethod method) const;
 
     /*!
@@ -120,7 +120,7 @@ namespace CORE::LINALG
      * @param[in]  matrix      matrix
      * @param[out] invrowsums  inverse sums of absolute values of row entries in matrix
      */
-    void ComputeInvRowSums(const CORE::LINALG::SparseMatrix& matrix,
+    void compute_inv_row_sums(const CORE::LINALG::SparseMatrix& matrix,
         Teuchos::RCP<Epetra_Vector> invrowsums, const EquilibrationMethod method) const;
 
     /*!
@@ -131,7 +131,7 @@ namespace CORE::LINALG
      * @param[in]  matrix      symmetric matrix A
      * @param[out] invsymmetry scale vector to keep symmetry in matrix d
      */
-    void ComputeInvSymmetry(
+    void compute_inv_symmetry(
         const CORE::LINALG::SparseMatrix& matrix, Teuchos::RCP<Epetra_Vector> invsymmetry) const;
 
     /*!

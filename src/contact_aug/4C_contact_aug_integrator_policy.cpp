@@ -67,7 +67,7 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::get_deriv2
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype>
-void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv1st_Jacobian(
+void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::deriv1st_jacobian(
     const CORE::LINALG::Matrix<probdim, 1>& unit_normal, const Deriv1stVecMap& d_non_unit_normal,
     Deriv1stMap& d_jac) const
 {
@@ -614,13 +614,13 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::CompleteNodeData(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Deriv1st_MXiGP(
+void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::deriv1st_m_xi_gp(
     const CORE::LINALG::Matrix<probdim, probdim>& lmat_inv, MORTAR::Element& sele,
     MORTAR::Element& mele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
     const CORE::LINALG::Matrix<MASTERNUMNODE, 1>& mval, const double alpha, Deriv1stVecMap& d_mxi,
     Deriv1stMap& d_alpha) const
 {
-  this->timer_.start(TimeID::Deriv1st_MXiGP);
+  this->timer_.start(TimeID::deriv1st_m_xi_gp);
 
   const DRT::Node* const* snodes = sele.Nodes();
 
@@ -680,7 +680,7 @@ void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Deriv1st_MXiGP
   CORE::GEN::complete(d_mxi);
   d_alpha.complete();
 
-  this->timer_.stop(TimeID::Deriv1st_MXiGP);
+  this->timer_.stop(TimeID::deriv1st_m_xi_gp);
 }
 
 /*----------------------------------------------------------------------------*

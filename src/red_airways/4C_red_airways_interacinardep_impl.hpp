@@ -124,7 +124,7 @@ namespace DRT
         \param time             (i) current simulation time
         \param dt               (i) timestep
         */
-      void Sysmat(std::vector<double>& ial, CORE::LINALG::SerialDenseMatrix& sysmat,
+      void sysmat(std::vector<double>& ial, CORE::LINALG::SerialDenseMatrix& sysmat,
           CORE::LINALG::SerialDenseVector& rhs);
 
 

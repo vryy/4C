@@ -60,7 +60,7 @@ namespace CONSTRAINTS
     takes care of the constraint IDs.
     */
 
-    Constraint(Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
+    Constraint(Teuchos::RCP<DRT::Discretization> discr,  ///< discretization constraint lives on
         const std::string& conditionname,  ///< Name of condition to creat constraint from
         int& minID,                        ///< minimum constraint or monitor ID so far
         int& maxID                         ///< maximum constraint or monitor ID so far
@@ -70,7 +70,7 @@ namespace CONSTRAINTS
     \brief Constructor of a constraint based on a conditions with a given name.
     */
 
-    Constraint(Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
+    Constraint(Teuchos::RCP<DRT::Discretization> discr,  ///< discretization constraint lives on
         const std::string& conditionname  ///< Name of condition to create constraints from
     );
 

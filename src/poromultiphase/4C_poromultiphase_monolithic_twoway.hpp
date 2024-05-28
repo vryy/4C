@@ -94,13 +94,13 @@ namespace POROMULTIPHASE
 
    protected:
     //! Newton output to screen
-    virtual void NewtonOutput();
+    virtual void newton_output();
 
     //! Newton error check after loop
-    virtual void NewtonErrorCheck();
+    virtual void newton_error_check();
 
     //! build the combined dirichletbcmap
-    virtual void BuildCombinedDBCMap();
+    virtual void build_combined_dbc_map();
 
     //! full monolithic dof row map
     Teuchos::RCP<const Epetra_Map> dof_row_map();
@@ -141,7 +141,7 @@ namespace POROMULTIPHASE
     virtual void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat);
 
     /// setup composed system matrix from field solvers
-    virtual void SetupMaps();
+    virtual void setup_maps();
 
     // Setup solver for monolithic system
     bool SetupSolver() override;
@@ -150,7 +150,7 @@ namespace POROMULTIPHASE
     void build_block_null_spaces(Teuchos::RCP<CORE::LINALG::Solver>& solver) override;
 
     //! Evaluate mechanical-fluid system matrix
-    virtual void ApplyStrCouplMatrix(
+    virtual void apply_str_coupl_matrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator> k_sf  //!< mechanical-fluid stiffness matrix
     );
 
@@ -176,10 +176,10 @@ namespace POROMULTIPHASE
         const CORE::LINEAR_SOLVER::SolverType solvertype);
 
     //! Setup Newton-Raphson
-    void SetupNewton();
+    void setup_newton();
 
     //! Print Header to screen
-    void PrintHeader();
+    virtual void print_header();
 
     //! update all fields after convergence (add increment on displacements and fluid primary
     //! variables)
@@ -188,10 +188,10 @@ namespace POROMULTIPHASE
     //! build norms for convergence check
     virtual void build_convergence_norms();
 
-    void PoroFDCheck();
+    void poro_fd_check();
 
     // check for convergence
-    bool Converged();
+    bool converged();
 
     /// Print user output that structure field is disabled
     void print_structure_disabled_info();
@@ -311,7 +311,7 @@ namespace POROMULTIPHASE
 
    protected:
     /// setup composed system matrix from field solvers
-    void SetupMaps() override;
+    void setup_maps() override;
 
     /// setup composed system matrix from field solvers
     void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
@@ -320,7 +320,7 @@ namespace POROMULTIPHASE
     void setup_rhs() override;
 
     //! build the combined dirichletbcmap
-    void BuildCombinedDBCMap() override;
+    void build_combined_dbc_map() override;
 
     //! Create the linear solver
     void create_linear_solver(const Teuchos::ParameterList& solverparams,

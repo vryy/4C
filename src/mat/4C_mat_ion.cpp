@@ -31,7 +31,7 @@ MAT::PAR::Ion::Ion(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
 }
 
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Ion::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Ion::create_material()
 {
   return Teuchos::rcp(new MAT::Ion(this));
 }

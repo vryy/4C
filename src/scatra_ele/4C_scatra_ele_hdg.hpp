@@ -120,21 +120,21 @@ namespace DRT
       /*!
       \brief Pack Material
 
-      \ref PackMaterial and \ref UnpackMaterial are used to adapt material evaluation
+      \ref pack_material and \ref unpack_material are used to adapt material evaluation
 
       */
-      virtual void PackMaterial(CORE::COMM::PackBuffer& data) const;
+      virtual void pack_material(CORE::COMM::PackBuffer& data) const;
 
       /*!
       \brief Unpack Material
 
-      \ref PackMaterial and \ref UnpackMaterial are used to adapt material evaluation
+      \ref pack_material and \ref unpack_material are used to adapt material evaluation
 
       */
-      virtual void UnpackMaterial(const std::vector<char>& data) const;
+      virtual void unpack_material(const std::vector<char>& data) const;
 
       //! initialize the element
-      int Initialize() override;
+      int initialize() override;
 
       /*!
       \brief Read input for this element
@@ -153,7 +153,7 @@ namespace DRT
       int NumDofPerNode(const DRT::Node&) const override { return 0; }
 
       //! Get number of degrees of freedom per face
-      int NumDofPerFace(const unsigned face) const override { return NumDofPerComponent(face); }
+      int num_dof_per_face(const unsigned face) const override { return NumDofPerComponent(face); }
 
       //! Get number of dofs per component per face
       int NumDofPerComponent(const unsigned face) const override
@@ -164,7 +164,7 @@ namespace DRT
 
       //! Get number of degrees of freedom per element, zero for the primary dof set
       //! and equal to the given number for the secondary dof set
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       //! Returns the degree of the element
       int Degree() const override { return degree_; }
@@ -506,7 +506,7 @@ namespace DRT
         return parent_element()->NumDofPerNode(node);
       }
 
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       /*!
       \brief Print this element
@@ -799,7 +799,7 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       /*!
        \brief Returns the degree of the element

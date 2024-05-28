@@ -35,10 +35,10 @@ namespace DRT
 
      protected:
       //! Factor needed for the calculation of reference concentrations
-      double FacForRefConc(const int iquad,    ///< current boundary integration point
-          const DRT::FaceElement* bele,        ///< current boundary element
-          Teuchos::ParameterList& params,      ///< parameter list
-          DRT::Discretization& discretization  ///< discretization
+      double fac_for_ref_conc(const int iquad,  ///< current boundary integration point
+          const DRT::FaceElement* bele,         ///< current boundary element
+          Teuchos::ParameterList& params,       ///< parameter list
+          DRT::Discretization& discretization   ///< discretization
           ) override;
 
      private:

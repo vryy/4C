@@ -177,7 +177,7 @@ namespace DRT
 
       [[nodiscard]] int NumDofPerNode(const DRT::Node& node) const override { return 6; }
 
-      [[nodiscard]] int NumDofPerElement() const override { return 0; }
+      [[nodiscard]] int num_dof_per_element() const override { return 0; }
 
       //! @name Evaluation
       //! @{
@@ -200,7 +200,7 @@ namespace DRT
         return (not interface_ptr_.is_null());
       }
 
-      [[nodiscard]] inline STR::ELEMENTS::ParamsInterface& StrParamsInterface() const
+      [[nodiscard]] inline STR::ELEMENTS::ParamsInterface& str_params_interface() const
       {
         if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;

@@ -37,7 +37,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::pre_e
   // Call pre_evaluate on the geometry Pair.
   if (!this->meshtying_is_evaluated_)
   {
-    this->CastGeometryPair()->pre_evaluate(this->ele1posref_, this->ele2posref_,
+    this->cast_geometry_pair()->pre_evaluate(this->ele1posref_, this->ele2posref_,
         this->line_to_3D_segments_, &triad_interpolation_scheme_ref_);
   }
 }
@@ -55,7 +55,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
   // Call Evaluate on the geometry Pair. Only do this once for mesh tying.
   if (!this->meshtying_is_evaluated_)
   {
-    this->CastGeometryPair()->Evaluate(
+    this->cast_geometry_pair()->Evaluate(
         this->ele1posref_, this->ele2posref_, this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
@@ -297,7 +297,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Reset
  *
  */
 template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::GetTriadAtXiDouble(
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::get_triad_at_xi_double(
     const double xi, CORE::LINALG::Matrix<3, 3, double>& triad, const bool reference) const
 {
   if (reference)

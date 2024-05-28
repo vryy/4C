@@ -95,7 +95,7 @@ namespace
       inelastic_defgrad_scalar_data->Add("SCALAR1_MolarGrowthFac", growth_fac);
       inelastic_defgrad_scalar_data->Add("SCALAR1_RefConc", ref_conc);
 
-      inelastic_defgrad_scalar_data->SetParameter(
+      inelastic_defgrad_scalar_data->set_parameter(
           new MAT::PAR::InelasticDefgradScalar(inelastic_defgrad_scalar_data));
 
       // get pointer to parameter class
@@ -121,7 +121,7 @@ namespace
       const std::vector<double> growthdir{1.0, 0.5, 0.3};
       inelastic_defgrad_lin_scalar_aniso_data->Add("GrowthDirection", growthdir);
 
-      inelastic_defgrad_lin_scalar_aniso_data->SetParameter(
+      inelastic_defgrad_lin_scalar_aniso_data->set_parameter(
           new MAT::PAR::InelasticDefgradLinScalarAniso(inelastic_defgrad_lin_scalar_aniso_data));
 
       // get pointer to parameter class
@@ -188,7 +188,7 @@ namespace
       inelastic_defgrad_poly_intercal_frac_data->Add(
           "POLY_PARA_NUM", static_cast<int>(poly_coeffs.size()));
 
-      inelastic_defgrad_poly_intercal_frac_data->SetParameter(
+      inelastic_defgrad_poly_intercal_frac_data->set_parameter(
           new MAT::PAR::InelasticDefgradPolyIntercalFrac(
               inelastic_defgrad_poly_intercal_frac_data));
 
@@ -227,7 +227,7 @@ namespace
       inelastic_defgrad_poly_intercal_frac_aniso_data->Add(
           "POLY_PARA_NUM", static_cast<int>(poly_coeffs.size()));
 
-      inelastic_defgrad_poly_intercal_frac_aniso_data->SetParameter(
+      inelastic_defgrad_poly_intercal_frac_aniso_data->set_parameter(
           new MAT::PAR::InelasticDefgradPolyIntercalFracAniso(
               inelastic_defgrad_poly_intercal_frac_aniso_data));
 
@@ -254,7 +254,7 @@ namespace
       inelastic_defgrad_temp_iso_data->Add("MATID", matid);
       inelastic_defgrad_temp_iso_data->Add("RefTemp", 298.0);
       inelastic_defgrad_temp_iso_data->Add("Temp_GrowthFac", 1.0e-3);
-      inelastic_defgrad_temp_iso_data->SetParameter(
+      inelastic_defgrad_temp_iso_data->set_parameter(
           new MAT::PAR::InelasticDefgradLinTempIso(inelastic_defgrad_temp_iso_data));
 
       // get pointer to parameter class

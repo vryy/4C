@@ -66,7 +66,7 @@ namespace PASI
      *
      * \author Sebastian Fuchs \date 09/2019
      */
-    void Output() override;
+    void output() override;
   };
 
 }  // namespace PASI

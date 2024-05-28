@@ -761,7 +761,7 @@ void MORTAR::UTILS::create_volume_ghosting(const DRT::Discretization& dis_src,
       // Ghost the parent element additionally
       if (elecolmap->LID(volgid) == -1 &&
           allredelecolmap->LID(volgid) !=
-              -1)  // Volume Discretization has not Element on this proc but on another
+              -1)  // Volume discretization has not Element on this proc but on another
         rdata.push_back(volgid);
     }
 
@@ -789,7 +789,7 @@ void MORTAR::UTILS::create_volume_ghosting(const DRT::Discretization& dis_src,
       if (!faceele) FOUR_C_THROW("source element is not a face element");
       int volgid = faceele->ParentElementId();
 
-      if (elecolmap->LID(volgid) == -1)  // Volume Discretization has not Element
+      if (elecolmap->LID(volgid) == -1)  // Volume discretization has not Element
         FOUR_C_THROW("create_volume_ghosting: Element %d does not exist on this Proc!", volgid);
 
       DRT::Element* vele = voldis[0]->gElement(volgid);
@@ -845,7 +845,7 @@ void MORTAR::UTILS::create_volume_ghosting(const DRT::Discretization& dis_src,
 /*----------------------------------------------------------------------*
  |  Prepare mortar element for nurbs-case                    farah 11/14|
  *----------------------------------------------------------------------*/
-void MORTAR::UTILS::PrepareNURBSElement(DRT::Discretization& discret,
+void MORTAR::UTILS::prepare_nurbs_element(DRT::Discretization& discret,
     Teuchos::RCP<DRT::Element> ele, Teuchos::RCP<MORTAR::Element> cele, int dim)
 {
   DRT::NURBS::NurbsDiscretization* nurbsdis =
@@ -872,7 +872,7 @@ void MORTAR::UTILS::PrepareNURBSElement(DRT::Discretization& discret,
 /*----------------------------------------------------------------------*
  |  Prepare mortar node for nurbs-case                       farah 11/14|
  *----------------------------------------------------------------------*/
-void MORTAR::UTILS::PrepareNURBSNode(DRT::Node* node, Teuchos::RCP<MORTAR::Node> mnode)
+void MORTAR::UTILS::prepare_nurbs_node(DRT::Node* node, Teuchos::RCP<MORTAR::Node> mnode)
 {
   DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(node);
 

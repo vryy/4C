@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 ART::ArteryResultTest::ArteryResultTest(ArtNetExplicitTimeInt& art_net)
     : CORE::UTILS::ResultTest("ARTNET")
 {
-  dis_ = art_net.Discretization();
+  dis_ = art_net.discretization();
   mysol_ = art_net.QAnp();
 }
 
@@ -31,7 +31,7 @@ ART::ArteryResultTest::ArteryResultTest(ArtNetExplicitTimeInt& art_net)
 ART::ArteryResultTest::ArteryResultTest(ArtNetImplStationary& art_net)
     : CORE::UTILS::ResultTest("ARTNET")
 {
-  dis_ = art_net.Discretization();
+  dis_ = art_net.discretization();
   mysol_ = art_net.Pressurenp();
   myelevolflow_ = art_net.EleVolflow();
   myeleradius_ = art_net.EleRadius();
@@ -87,7 +87,7 @@ void ART::ArteryResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int
             position.c_str());
       }
 
-      nerr += CompareValues(result, "NODE", res);
+      nerr += compare_values(result, "NODE", res);
       test_count++;
     }
   }
@@ -147,7 +147,7 @@ void ART::ArteryResultTest::TestElement(INPUT::LineDefinition& res, int& nerr, i
             quantity.c_str());
       }
 
-      nerr += CompareValues(result, "ELEMENT", res);
+      nerr += compare_values(result, "ELEMENT", res);
       test_count++;
     }
   }

@@ -78,7 +78,7 @@ namespace DRT
        *
        * \note   only checked for line2 elements
        */
-      virtual double CalculateEleLength(Artery* ele);
+      virtual double calculate_ele_length(Artery* ele);
 
 
      protected:

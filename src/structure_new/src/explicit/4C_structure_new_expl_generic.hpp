@@ -121,7 +121,7 @@ namespace STR
 
      protected:
       //! reset the time step dependent parameters for the element evaluation [derived]
-      void ResetEvalParams() override;
+      void reset_eval_params() override;
     };
   }  // namespace EXPLICIT
 }  // namespace STR

@@ -66,7 +66,7 @@ DRT::ELEMENTS::FluidBoundaryImpl<distype>::FluidBoundaryImpl()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateAction(DRT::ELEMENTS::FluidBoundary* ele1,
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_action(DRT::ELEMENTS::FluidBoundary* ele1,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
@@ -101,7 +101,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateAction(DRT::ELEMENTS::Fl
     case FLD::calc_area:
     {
       if (ele1->Owner() == discretization.Comm().MyPID())
-        AreaCalculation(ele1, params, discretization, lm);
+        area_calculation(ele1, params, discretization, lm);
       break;
     }
     case FLD::calc_pressure_bou_int:
@@ -113,12 +113,13 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateAction(DRT::ELEMENTS::Fl
     // general action to calculate the flow rate
     case FLD::calc_flowrate:
     {
-      ComputeFlowRate(ele1, params, discretization, lm, elevec1);
+      compute_flow_rate(ele1, params, discretization, lm, elevec1);
       break;
     }
     case FLD::flowratederiv:
     {
-      FlowRateDeriv(ele1, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
+      flow_rate_deriv(
+          ele1, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }
     case FLD::Outletimpedance:
@@ -129,7 +130,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateAction(DRT::ELEMENTS::Fl
 
     case FLD::dQdu:
     {
-      dQdu(ele1, params, discretization, lm, elevec1);
+      d_qdu(ele1, params, discretization, lm, elevec1);
       break;
     }
     case FLD::ba_calc_node_normal:
@@ -187,7 +188,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateAction(DRT::ELEMENTS::Fl
     }
     case FLD::calc_Neumann_inflow:
     {
-      NeumannInflow(ele1, params, discretization, lm, elemat1, elevec1);
+      neumann_inflow(ele1, params, discretization, lm, elemat1, elevec1);
       break;
     }
     case FLD::calc_surface_tension:
@@ -385,7 +386,7 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(DRT::ELEMENTS::F
 
     // get density
     // (evaluation always at integration point, in contrast to parent element)
-    GetDensity(material, escaaf, thermpressaf, epreaf);
+    get_density(material, escaaf, thermpressaf, epreaf);
 
     const double tol = 1e-8;
     if (densfac_ < (1.0 - tol) or densfac_ > (1.0 + tol))
@@ -533,7 +534,7 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(DRT::ELEMENTS::F
  | compute additional term at Neumann inflow boundary          vg 01/11 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(DRT::ELEMENTS::FluidBoundary* ele,
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::neumann_inflow(DRT::ELEMENTS::FluidBoundary* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1)
 {
@@ -677,7 +678,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(DRT::ELEMENTS::Flu
 
       // get density
       // (evaluation always at integration point, in contrast to parent element)
-      GetDensity(material, escaaf, thermpressaf, epreaf);
+      get_density(material, escaaf, thermpressaf, epreaf);
 
       // extended integration factors for left- and right-hand side, respectively
       const double lhsfac = densaf_ * normvel * timefac * fac_;
@@ -768,7 +769,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(DRT::ELEMENTS::Flu
   }
 
   return;
-}  // DRT::ELEMENTS::FluidSurface::NeumannInflow
+}  // DRT::ELEMENTS::FluidSurface::neumann_inflow
 
 
 /*----------------------------------------------------------------------*
@@ -1148,7 +1149,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::element_surface_tension(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidBoundaryImpl<distype>::AreaCalculation(DRT::ELEMENTS::FluidBoundary* ele,
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::area_calculation(DRT::ELEMENTS::FluidBoundary* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm)
 {
   //------------------------------------------------------------------
@@ -1236,7 +1237,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::AreaCalculation(DRT::ELEMENTS::F
   // end of actual area calculation
   //------------------------------------------------------------------
 
-}  // DRT::ELEMENTS::FluidSurface::AreaCalculation
+}  // DRT::ELEMENTS::FluidSurface::area_calculation
 
 
 /*----------------------------------------------------------------------*
@@ -1362,7 +1363,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::center_of_mass_calculation(
 
   // first evaluate the area of the surface element
   params.set<double>("area", 0.0);
-  this->AreaCalculation(ele, params, discretization, lm);
+  this->area_calculation(ele, params, discretization, lm);
 
   // get the surface element area
   const double elem_area = params.get<double>("area");
@@ -1419,7 +1420,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::center_of_mass_calculation(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeFlowRate(DRT::ELEMENTS::FluidBoundary* ele,
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::compute_flow_rate(DRT::ELEMENTS::FluidBoundary* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1)
 {
@@ -1533,20 +1534,20 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeFlowRate(DRT::ELEMENTS::F
       //     (is identical to the total flow rate computed above)
     }
   }
-}  // DRT::ELEMENTS::FluidSurface::ComputeFlowRate
+}  // DRT::ELEMENTS::FluidSurface::compute_flow_rate
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(DRT::ELEMENTS::FluidBoundary* ele,
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::flow_rate_deriv(DRT::ELEMENTS::FluidBoundary* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
     CORE::LINALG::SerialDenseVector& elevec3)
 {
   // This function is only implemented for 3D
-  if (bdrynsd_ != 2) FOUR_C_THROW("FlowRateDeriv is only implemented for 3D!");
+  if (bdrynsd_ != 2) FOUR_C_THROW("flow_rate_deriv is only implemented for 3D!");
 
   // get status of Ale
   const bool isale = ele->parent_element()->IsAle();
@@ -1811,7 +1812,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(DRT::ELEMENTS::Flu
       //-------------------------------------------------------------------
     }
   }
-}  // DRT::ELEMENTS::FluidSurface::FlowRateDeriv
+}  // DRT::ELEMENTS::FluidSurface::flow_rate_deriv
 
 
 /*----------------------------------------------------------------------*
@@ -1885,7 +1886,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::impedance_integration(
  |  linearization of flux w.r.t velocities on boundary elements  Thon 10/15  |
  *---------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidBoundaryImpl<distype>::dQdu(DRT::ELEMENTS::FluidBoundary* ele,
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::d_qdu(DRT::ELEMENTS::FluidBoundary* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1)
 {
@@ -1948,7 +1949,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::dQdu(DRT::ELEMENTS::FluidBoundar
  |  get density                                                vg 06/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidBoundaryImpl<distype>::GetDensity(
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::get_density(
     Teuchos::RCP<const CORE::MAT::Material> material,
     const CORE::LINALG::Matrix<bdrynen_, 1>& escaaf, const double thermpressaf,
     const CORE::LINALG::Matrix<bdrynen_, 1>& epreaf)

@@ -70,7 +70,7 @@ namespace CORE::Conditions
     SurfaceMixHybDirichlet,
     SurfaceConservativeOutflowConsistency,
     FSICoupling,  ///< Surface coupling condition for fluid-structure interaction (2D and 3D)
-    FPSICoupling,
+    fpsi_coupling,
     IMMERSEDCoupling,
     FSICouplingNoSlide,
     FSICouplingCenterDisp,
@@ -197,7 +197,7 @@ namespace CORE::Conditions
     RobinSpringDashpot,
     RobinSpringDashpotCoupling,
     TotalTractionCorrectionCond,
-    NoPenetration,
+    no_penetration,
     TotalTractionCorrectionBorderNodes,
     PoroCoupling,
     PoroPartInt,

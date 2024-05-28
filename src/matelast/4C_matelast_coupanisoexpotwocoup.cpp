@@ -157,7 +157,7 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::UnpackAnisotropy(
   CORE::COMM::ParObject::ExtractfromPack(position, data, a1_a2_);
 }
 
-void MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::OnFibersInitialized()
+void MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::on_fibers_initialized()
 {
   // Setup structural tensor of the coupling part
   const int fibersperele = GetFibersPerElement();
@@ -187,7 +187,7 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::OnFibersInitialized()
 const CORE::LINALG::Matrix<6, 1>&
 MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::get_coupled_structural_tensor_stress(int gp) const
 {
-  switch (this->GetFiberLocation())
+  switch (this->get_fiber_location())
   {
     case FiberLocation::ElementFibers:
       return a1_a2_[GPDEFAULT];
@@ -204,7 +204,7 @@ MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::get_coupled_structural_tensor_
 
 double MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::get_coupled_scalar_product(int gp) const
 {
-  switch (this->GetFiberLocation())
+  switch (this->get_fiber_location())
   {
     case FiberLocation::ElementFibers:
       return a1a2_[GPDEFAULT];

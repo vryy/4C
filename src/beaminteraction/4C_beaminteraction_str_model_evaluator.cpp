@@ -82,15 +82,15 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // setup variables
   // -------------------------------------------------------------------------
   // discretization pointer
-  discret_ptr_ = Teuchos::rcp_dynamic_cast<DRT::Discretization>(DiscretPtr(), true);
+  discret_ptr_ = Teuchos::rcp_dynamic_cast<DRT::Discretization>(discret_ptr(), true);
   // stiff
   stiff_beaminteraction_ =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*g_state().DofRowMapView(), 81, true, true));
   // force and displacement at last redistribution
-  force_beaminteraction_ = Teuchos::rcp(new Epetra_Vector(*GState().dof_row_map(), true));
-  dis_at_last_redistr_ = Teuchos::rcp(new Epetra_Vector(*GState().dof_row_map(), true));
+  force_beaminteraction_ = Teuchos::rcp(new Epetra_Vector(*g_state().dof_row_map(), true));
+  dis_at_last_redistr_ = Teuchos::rcp(new Epetra_Vector(*g_state().dof_row_map(), true));
   // get myrank
-  myrank_ = DiscretPtr()->Comm().MyPID();
+  myrank_ = discret_ptr()->Comm().MyPID();
 
   beaminteraction_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamInteractionParams());
   beaminteraction_params_ptr_->Init();
@@ -124,7 +124,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   ia_state_ptr_->Init();
   ia_state_ptr_->Setup(ia_discret_);
 
-  ia_state_ptr_->GetDisNp() = Teuchos::rcp(new Epetra_Vector(*GStatePtr()->GetDisNp()));
+  ia_state_ptr_->GetDisNp() = Teuchos::rcp(new Epetra_Vector(*g_state_ptr()->GetDisNp()));
   BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(ia_state_ptr_->GetDisNp(),
       TimInt().GetDataSDynPtr()->get_periodic_bounding_box(), ia_discret_);
 
@@ -158,7 +158,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   if (HaveSubModelType(INPAR::BEAMINTERACTION::submodel_crosslinking))
   {
     beam_crosslinker_handler_ = Teuchos::rcp(new BEAMINTERACTION::BeamCrosslinkerHandler());
-    beam_crosslinker_handler_->Init(GState().GetMyRank(), binstrategy_);
+    beam_crosslinker_handler_->Init(g_state().GetMyRank(), binstrategy_);
     beam_crosslinker_handler_->Setup();
   }
 
@@ -206,7 +206,7 @@ void STR::MODELEVALUATOR::BeamInteraction::post_setup()
     for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
       (*sme_iter)->get_half_interaction_distance(half_interaction_distance_);
 
-    if (GState().GetMyRank() == 0)
+    if (g_state().GetMyRank() == 0)
       std::cout << " half min bin size " << 0.5 * binstrategy_->GetMinBinSize() << std::endl;
 
     // safety checks
@@ -282,7 +282,7 @@ void STR::MODELEVALUATOR::BeamInteraction::set_sub_model_types()
   // check for beam potential-based interactions
   // ---------------------------------------------------------------------------
   std::vector<CORE::Conditions::Condition*> beampotconditions(0);
-  Discret().GetCondition("BeamPotentialLineCharge", beampotconditions);
+  discret().GetCondition("BeamPotentialLineCharge", beampotconditions);
   if (beampotconditions.size() > 0)
     submodeltypes_->insert(INPAR::BEAMINTERACTION::submodel_potential);
 
@@ -313,7 +313,7 @@ void STR::MODELEVALUATOR::BeamInteraction::init_and_setup_sub_model_evaluators()
   Vector::iterator sme_iter;
   for (sme_iter = (*me_vec_ptr_).begin(); sme_iter != (*me_vec_ptr_).end(); ++sme_iter)
   {
-    (*sme_iter)->Init(ia_discret_, bindis_, GStatePtr(), GInOutputPtr(), ia_state_ptr_,
+    (*sme_iter)->Init(ia_discret_, bindis_, g_state_ptr(), g_in_output_ptr(), ia_state_ptr_,
         beam_crosslinker_handler_, binstrategy_,
         TimInt().GetDataSDynPtr()->get_periodic_bounding_box(),
         Teuchos::rcp_dynamic_cast<BEAMINTERACTION::UTILS::MapExtractor>(eletypeextractor_, true));
@@ -528,11 +528,11 @@ void STR::MODELEVALUATOR::BeamInteraction::Reset(const Epetra_Vector& x)
   check_init_setup();
 
   // todo: somewhat illegal as of const correctness
-  TimInt().GetDataSDynPtr()->get_periodic_bounding_box()->ApplyDirichlet(GState().GetTimeN());
+  TimInt().GetDataSDynPtr()->get_periodic_bounding_box()->ApplyDirichlet(g_state().GetTimeN());
 
   // get current displacement state and export to interaction discretization dofmap
   BEAMINTERACTION::UTILS::UpdateDofMapOfVector(
-      ia_discret_, ia_state_ptr_->GetDisNp(), GState().GetDisNp());
+      ia_discret_, ia_state_ptr_->GetDisNp(), g_state().GetDisNp());
   BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(ia_state_ptr_->GetDisNp(),
       TimInt().GetDataSDynPtr()->get_periodic_bounding_box(), ia_discret_);
 
@@ -676,7 +676,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::assemble_jacobian(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::WriteRestart(
+void STR::MODELEVALUATOR::BeamInteraction::write_restart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
@@ -703,7 +703,7 @@ void STR::MODELEVALUATOR::BeamInteraction::WriteRestart(
   // sub model loop
   Vector::iterator sme_iter;
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->WriteRestart(*ia_writer, *bin_writer);
+    (*sme_iter)->write_restart(*ia_writer, *bin_writer);
 }
 
 /*----------------------------------------------------------------------------*
@@ -712,7 +712,7 @@ void STR::MODELEVALUATOR::BeamInteraction::read_restart(IO::DiscretizationReader
 {
   check_init_setup();
 
-  int const stepn = GState().GetStepN();
+  int const stepn = g_state().GetStepN();
   auto input_control_file = GLOBAL::Problem::Instance()->InputControlFile();
 
   // pre sub model loop
@@ -763,7 +763,7 @@ void STR::MODELEVALUATOR::BeamInteraction::read_restart(IO::DiscretizationReader
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::RunPostComputeX(
+void STR::MODELEVALUATOR::BeamInteraction::run_post_compute_x(
     const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
   // empty
@@ -771,14 +771,14 @@ void STR::MODELEVALUATOR::BeamInteraction::RunPostComputeX(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::RunPostIterate(const ::NOX::Solver::Generic& solver)
+void STR::MODELEVALUATOR::BeamInteraction::run_post_iterate(const ::NOX::Solver::Generic& solver)
 {
   check_init_setup();
 
   // submodel loop
   Vector::iterator sme_iter;
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->RunPostIterate(solver);
+    (*sme_iter)->run_post_iterate(solver);
 }
 
 /*----------------------------------------------------------------------------*
@@ -788,7 +788,7 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepState(const double& timefac
   check_init_setup();
 
   // add the old time factor scaled contributions to the residual
-  Teuchos::RCP<Epetra_Vector>& fstructold_ptr = GState().GetFstructureOld();
+  Teuchos::RCP<Epetra_Vector>& fstructold_ptr = g_state().GetFstructureOld();
 
   fstructold_ptr->Update(timefac_n, *force_beaminteraction_, 1.0);
 
@@ -837,9 +837,9 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
     binstrategy_->AssignElesToBins(ia_discret_, ia_state_ptr_->get_extended_bin_to_row_ele_map());
 
     // current displacement state gets new reference state
-    dis_at_last_redistr_ = Teuchos::rcp(new Epetra_Vector(*GState().GetDisN()));
+    dis_at_last_redistr_ = Teuchos::rcp(new Epetra_Vector(*g_state().GetDisN()));
 
-    if (GState().GetMyRank() == 0)
+    if (g_state().GetMyRank() == 0)
     {
       IO::cout(IO::verbose) << "\n************************************************\n" << IO::endl;
       IO::cout(IO::verbose) << "Complete redistribution was done " << IO::endl;
@@ -852,7 +852,7 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
     binstrategy_->remove_all_eles_from_bins();
     binstrategy_->AssignElesToBins(ia_discret_, ia_state_ptr_->get_extended_bin_to_row_ele_map());
 
-    if (GState().GetMyRank() == 0)
+    if (g_state().GetMyRank() == 0)
     {
       IO::cout(IO::verbose) << "\n************************************************\n" << IO::endl;
       IO::cout(IO::verbose) << " binning redistribution was done " << IO::endl;
@@ -885,7 +885,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::check_if_beam_discret_redistribution_
     return true;
 
   Teuchos::RCP<Epetra_Vector> dis_increment =
-      Teuchos::rcp(new Epetra_Vector(*GState().dof_row_map(), true));
+      Teuchos::rcp(new Epetra_Vector(*g_state().dof_row_map(), true));
   int doflid[3];
   for (int i = 0; i < discret_ptr_->NumMyRowNodes(); ++i)
   {
@@ -910,7 +910,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::check_if_beam_discret_redistribution_
       // disp)
       doflid[dim] = dis_at_last_redistr_->Map().LID(dofnode[dim]);
       (*dis_increment)[doflid[dim]] =
-          (*GState().GetDisNp())[doflid[dim]] - (*dis_at_last_redistr_)[doflid[dim]];
+          (*g_state().GetDisNp())[doflid[dim]] - (*dis_at_last_redistr_)[doflid[dim]];
     }
   }
 
@@ -921,7 +921,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::check_if_beam_discret_redistribution_
   double gmaxdisincr = std::max(-extrema[0], extrema[1]);
 
   // some verbose screen output
-  if (GState().GetMyRank() == 0)
+  if (g_state().GetMyRank() == 0)
   {
     IO::cout(IO::debug) << " half interaction distance " << half_interaction_distance_ << IO::endl;
     IO::cout(IO::debug) << " gmaxdisincr " << gmaxdisincr << IO::endl;
@@ -951,7 +951,7 @@ void STR::MODELEVALUATOR::BeamInteraction::DetermineEnergy()
     energy_this_submodel = submodel->get_energy();
 
     for (auto const& energy_type : energy_this_submodel)
-      EvalData().add_contribution_to_energy_type(energy_type.second, energy_type.first);
+      eval_data().add_contribution_to_energy_type(energy_type.second, energy_type.first);
   }
 }
 
@@ -1088,7 +1088,7 @@ void STR::MODELEVALUATOR::BeamInteraction::update_maps()
 
   // get current displacement state and export to interaction discretization dofmap
   BEAMINTERACTION::UTILS::UpdateDofMapOfVector(
-      ia_discret_, ia_state_ptr_->GetDisNp(), GState().GetDisNp());
+      ia_discret_, ia_state_ptr_->GetDisNp(), g_state().GetDisNp());
   BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(ia_state_ptr_->GetDisNp(),
       TimInt().GetDataSDynPtr()->get_periodic_bounding_box(), ia_discret_);
 

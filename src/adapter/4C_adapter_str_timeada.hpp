@@ -199,7 +199,7 @@ namespace ADAPTER
     void reset_step() override;
 
     /// setup of the auxiliary time integrator
-    virtual void SetupAuxiliar() = 0;
+    virtual void setup_auxiliar() = 0;
 
    private:
     //! Setup necessities for time adaptivity

@@ -123,7 +123,7 @@ void immersed_problem_drt()
 
           // create result tests for single fields
           GLOBAL::Problem::Instance()->AddFieldTest(algo->MBFluidField()->CreateFieldTest());
-          GLOBAL::Problem::Instance()->AddFieldTest(algo->StructureField()->CreateFieldTest());
+          GLOBAL::Problem::Instance()->AddFieldTest(algo->structure_field()->CreateFieldTest());
 
           // do the actual testing
           GLOBAL::Problem::Instance()->TestAll(comm);

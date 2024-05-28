@@ -1293,7 +1293,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::solve_scatra_bifurcations(RedAcinus* el
  |                                                                      |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AcinusImpl<distype>::UpdateScatra(RedAcinus* ele,
+void DRT::ELEMENTS::AcinusImpl<distype>::update_scatra(RedAcinus* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<CORE::MAT::Material> material)
 {
@@ -1324,7 +1324,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::UpdateScatra(RedAcinus* ele,
       evaluation_data.dscatranp->ReplaceGlobalValues(1, &val, &gid);
     }
   }
-}  // UpdateScatra
+}  // update_scatra
 
 
 template <CORE::FE::CellType distype>

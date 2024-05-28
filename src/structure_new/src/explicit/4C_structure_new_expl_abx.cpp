@@ -45,31 +45,31 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::Setup()
   // ---------------------------------------------------------------------------
   // setup pointers to the force vectors of the global state data container
   // ---------------------------------------------------------------------------
-  finertian_ptr_ = GlobalState().GetFinertialN();
-  finertianp_ptr_ = GlobalState().GetFinertialNp();
+  finertian_ptr_ = global_state().GetFinertialN();
+  finertianp_ptr_ = global_state().GetFinertialNp();
 
-  fviscon_ptr_ = GlobalState().GetFviscoN();
-  fvisconp_ptr_ = GlobalState().GetFviscoNp();
+  fviscon_ptr_ = global_state().GetFviscoN();
+  fvisconp_ptr_ = global_state().GetFviscoNp();
 
   // ---------------------------------------------------------------------------
   // resizing of multi-step quantities
   // ---------------------------------------------------------------------------
   constexpr int nhist = TOrder - 1;
-  GlobalState().GetMultiTime()->Resize(-nhist, 0, true);
-  GlobalState().GetDeltaTime()->Resize(-nhist, 0, true);
-  GlobalState().GetMultiDis()->Resize(-nhist, 0, GlobalState().DofRowMapView(), true);
-  GlobalState().GetMultiVel()->Resize(-nhist, 0, GlobalState().DofRowMapView(), true);
-  GlobalState().GetMultiAcc()->Resize(-nhist, 0, GlobalState().DofRowMapView(), true);
+  global_state().GetMultiTime()->Resize(-nhist, 0, true);
+  global_state().GetDeltaTime()->Resize(-nhist, 0, true);
+  global_state().GetMultiDis()->Resize(-nhist, 0, global_state().DofRowMapView(), true);
+  global_state().GetMultiVel()->Resize(-nhist, 0, global_state().DofRowMapView(), true);
+  global_state().GetMultiAcc()->Resize(-nhist, 0, global_state().DofRowMapView(), true);
 
   // here we initialized the dt of previous steps in the database, since a resize is performed
-  const double dt = (*GlobalState().GetDeltaTime())[0];
-  for (int i = 0; i < nhist; ++i) GlobalState().GetDeltaTime()->UpdateSteps(dt);
+  const double dt = (*global_state().GetDeltaTime())[0];
+  for (int i = 0; i < nhist; ++i) global_state().GetDeltaTime()->UpdateSteps(dt);
 
   // -------------------------------------------------------------------
   // set initial displacement
   // -------------------------------------------------------------------
   set_initial_displacement(
-      TimInt().GetDataSDyn().GetInitialDisp(), TimInt().GetDataSDyn().StartFuncNo());
+      tim_int().GetDataSDyn().GetInitialDisp(), tim_int().GetDataSDyn().StartFuncNo());
 
   // Has to be set before the post_setup() routine is called!
   issetup_ = true;
@@ -97,29 +97,29 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::set_state(const Epetra_Vector& x)
   // ---------------------------------------------------------------------------
   // new end-point acceleration
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Vector> accnp_ptr = GlobalState().ExtractDisplEntries(x);
-  GlobalState().GetAccNp()->Scale(1.0, *accnp_ptr);
+  Teuchos::RCP<Epetra_Vector> accnp_ptr = global_state().ExtractDisplEntries(x);
+  global_state().GetAccNp()->Scale(1.0, *accnp_ptr);
   if (compute_phase_ < TOrder)
   {
-    const double dt = (*GlobalState().GetDeltaTime())[0];
+    const double dt = (*global_state().GetDeltaTime())[0];
 
     // ---------------------------------------------------------------------------
     // new end-point velocities
     // ---------------------------------------------------------------------------
-    GlobalState().GetVelNp()->Update(1.0, *GlobalState().GetVelN(), 0.0);
-    GlobalState().GetVelNp()->Update(dt, *GlobalState().GetAccN(), 1.0);
+    global_state().GetVelNp()->Update(1.0, *global_state().GetVelN(), 0.0);
+    global_state().GetVelNp()->Update(dt, *global_state().GetAccN(), 1.0);
 
     // ---------------------------------------------------------------------------
     // new end-point displacements
     // ---------------------------------------------------------------------------
-    GlobalState().GetDisNp()->Update(1.0, *GlobalState().GetDisN(), 0.0);
-    GlobalState().GetDisNp()->Update(dt, *GlobalState().GetVelNp(), 1.0);
+    global_state().GetDisNp()->Update(1.0, *global_state().GetDisN(), 0.0);
+    global_state().GetDisNp()->Update(dt, *global_state().GetVelNp(), 1.0);
   }
   else
   {
     constexpr int nhist = TOrder - 1;
 
-    const double dt = (*GlobalState().GetDeltaTime())[0];
+    const double dt = (*global_state().GetDeltaTime())[0];
 
     // At present, a variable step size for high order Adams-Bashforth is not supported due to a
     // good reference is not yet been found. The time coefficient shall be adapted for a variable
@@ -127,7 +127,7 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::set_state(const Epetra_Vector& x)
     double test = 0.0, dti = dt;
     for (int i = 0; i < nhist; ++i)
     {
-      const double dti1 = (*GlobalState().GetDeltaTime())[-i - 1];
+      const double dti1 = (*global_state().GetDeltaTime())[-i - 1];
       test += std::abs(dti - dti1);
       dti = dti1;
     }
@@ -138,28 +138,28 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::set_state(const Epetra_Vector& x)
     // ---------------------------------------------------------------------------
     // new end-point velocities
     // ---------------------------------------------------------------------------
-    GlobalState().GetVelNp()->Update(1.0, (*(GlobalState().GetMultiVel()))[0], 0.0);
+    global_state().GetVelNp()->Update(1.0, (*(global_state().GetMultiVel()))[0], 0.0);
     for (int i = 0; i < TOrder; ++i)
     {
       double c = AdamsBashforthHelper<TOrder>::exc[i];
-      GlobalState().GetVelNp()->Update(c * dt, (*(GlobalState().GetMultiAcc()))[-i], 1.0);
+      global_state().GetVelNp()->Update(c * dt, (*(global_state().GetMultiAcc()))[-i], 1.0);
     }
 
     // ---------------------------------------------------------------------------
     // new end-point displacements
     // ---------------------------------------------------------------------------
-    GlobalState().GetDisNp()->Update(1.0, (*(GlobalState().GetMultiDis()))[0], 0.0);
+    global_state().GetDisNp()->Update(1.0, (*(global_state().GetMultiDis()))[0], 0.0);
     for (int i = 0; i < TOrder; ++i)
     {
       double c = AdamsBashforthHelper<TOrder>::exc[i];
-      GlobalState().GetDisNp()->Update(c * dt, (*(GlobalState().GetMultiVel()))[-i], 1.0);
+      global_state().GetDisNp()->Update(c * dt, (*(global_state().GetMultiVel()))[-i], 1.0);
     }
   }
 
   // ---------------------------------------------------------------------------
   // update the elemental state
   // ---------------------------------------------------------------------------
-  ModelEval().UpdateResidual();
+  ModelEval().update_residual();
   ModelEval().RunRecover();
 }
 
@@ -178,15 +178,15 @@ template <int TOrder>
 void STR::EXPLICIT::AdamsBashforthX<TOrder>::add_visco_mass_contributions(
     CORE::LINALG::SparseOperator& jac) const
 {
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptr = GlobalState().ExtractDisplBlock(jac);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptr = global_state().ExtractDisplBlock(jac);
   // set mass matrix
-  stiff_ptr->Add(*GlobalState().GetMassMatrix(), false, 1.0, 0.0);
+  stiff_ptr->Add(*global_state().GetMassMatrix(), false, 1.0, 0.0);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int TOrder>
-void STR::EXPLICIT::AdamsBashforthX<TOrder>::WriteRestart(
+void STR::EXPLICIT::AdamsBashforthX<TOrder>::write_restart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
@@ -205,18 +205,18 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::WriteRestart(
       std::stringstream velname;
       velname << "histvel_" << i;
       Teuchos::RCP<const Epetra_Vector> vel_ptr_ =
-          Teuchos::rcpFromRef<const Epetra_Vector>((*(GlobalState().GetMultiVel()))[-i]);
+          Teuchos::rcpFromRef<const Epetra_Vector>((*(global_state().GetMultiVel()))[-i]);
       iowriter.WriteVector(velname.str(), vel_ptr_);
 
       std::stringstream accname;
       accname << "histacc_" << i;
       Teuchos::RCP<const Epetra_Vector> acc_ptr_ =
-          Teuchos::rcpFromRef<const Epetra_Vector>((*(GlobalState().GetMultiAcc()))[-i]);
+          Teuchos::rcpFromRef<const Epetra_Vector>((*(global_state().GetMultiAcc()))[-i]);
       iowriter.WriteVector(accname.str(), acc_ptr_);
     }
   }
 
-  ModelEval().WriteRestart(iowriter, forced_writerestart);
+  ModelEval().write_restart(iowriter, forced_writerestart);
 }
 
 /*----------------------------------------------------------------------------*
@@ -247,16 +247,16 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::read_restart(IO::DiscretizationRead
       std::stringstream velname;
       velname << "histvel_" << i;
       Teuchos::RCP<Epetra_Vector> vel_ptr =
-          Teuchos::rcp(new Epetra_Vector(*GlobalState().GetVelN()));
+          Teuchos::rcp(new Epetra_Vector(*global_state().GetVelN()));
       ioreader.ReadVector(vel_ptr, velname.str());
-      GlobalState().GetMultiVel()->UpdateSteps(*vel_ptr);
+      global_state().GetMultiVel()->UpdateSteps(*vel_ptr);
 
       std::stringstream accname;
       accname << "histacc_" << i;
       Teuchos::RCP<Epetra_Vector> acc_ptr =
-          Teuchos::rcp(new Epetra_Vector(*GlobalState().GetAccN()));
+          Teuchos::rcp(new Epetra_Vector(*global_state().GetAccN()));
       ioreader.ReadVector(acc_ptr, accname.str());
-      GlobalState().GetMultiAcc()->UpdateSteps(*acc_ptr);
+      global_state().GetMultiAcc()->UpdateSteps(*acc_ptr);
     }
   }
 

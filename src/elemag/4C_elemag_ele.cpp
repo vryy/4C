@@ -506,7 +506,7 @@ DRT::ELEMENTS::ElemagIntFace::ElemagIntFace(int id,  // element id
   else
     degree_ = parent_master->Degree();
 
-  SetLocalTrafoMap(localtrafomap);
+  set_local_trafo_map(localtrafomap);
 
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);

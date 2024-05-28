@@ -35,7 +35,7 @@ STR::TIMINT::ImplicitBase::ImplicitBase()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> STR::TIMINT::ImplicitBase::GetF() const
 {
-  const ::NOX::Abstract::Group& solgrp = GetSolutionGroup();
+  const ::NOX::Abstract::Group& solgrp = get_solution_group();
   const ::NOX::Epetra::Vector& F = dynamic_cast<const ::NOX::Epetra::Vector&>(solgrp.getF());
   return GetDataGlobalState().ExtractDisplEntries(F.getEpetraVector());
 }
@@ -45,7 +45,7 @@ Teuchos::RCP<const Epetra_Vector> STR::TIMINT::ImplicitBase::GetF() const
 Teuchos::RCP<Epetra_Vector> STR::TIMINT::ImplicitBase::Freact()
 {
   check_init_setup();
-  return DataGlobalState().GetFreactNp();
+  return data_global_state().GetFreactNp();
 }
 
 /*----------------------------------------------------------------------------*
@@ -53,7 +53,7 @@ Teuchos::RCP<Epetra_Vector> STR::TIMINT::ImplicitBase::Freact()
 Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::ImplicitBase::SystemMatrix()
 {
   check_init_setup();
-  return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(DataGlobalState().GetJacobian());
+  return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(data_global_state().GetJacobian());
 }
 
 
@@ -63,12 +63,12 @@ Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> STR::TIMINT::ImplicitBase::Blo
 {
   check_init_setup();
   return Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(
-      DataGlobalState().GetJacobian());
+      data_global_state().GetJacobian());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::ImplicitBase::UseBlockMatrix(
+void STR::TIMINT::ImplicitBase::use_block_matrix(
     Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
     Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps)
 {
@@ -106,10 +106,10 @@ void STR::TIMINT::ImplicitBase::Update(double endtime)
 {
   check_init_setup();
   PreUpdate();
-  Integrator().UpdateStepState();
+  integrator().UpdateStepState();
   SetTimeNp(endtime);
   UpdateStepTime();
-  Integrator().UpdateStepElement();
+  integrator().UpdateStepElement();
   post_update();
 }
 
@@ -119,14 +119,14 @@ void STR::TIMINT::ImplicitBase::PrintStep()
 {
   check_init_setup();
 
-  if (DataGlobalState().GetMyRank() != 0 or GroupId() != 0) return;
+  if (data_global_state().GetMyRank() != 0 or GroupId() != 0) return;
 
   const int stepmax = DataSDyn().GetStepMax();
-  const int stepn = DataGlobalState().GetStepN();
-  const double& timen = DataGlobalState().GetTimeN();
-  const double& dt = (*DataGlobalState().GetDeltaTime())[0];
-  const int newtoniter = DataGlobalState().get_nln_iteration_number(stepn);
-  double wct = DataGlobalState().GetTimer()->totalElapsedTime(true);
+  const int stepn = data_global_state().GetStepN();
+  const double& timen = data_global_state().GetTimeN();
+  const double& dt = (*data_global_state().GetDeltaTime())[0];
+  const int newtoniter = data_global_state().get_nln_iteration_number(stepn);
+  double wct = data_global_state().GetTimer()->totalElapsedTime(true);
 
   // open outstd::stringstream
   std::ostringstream oss;

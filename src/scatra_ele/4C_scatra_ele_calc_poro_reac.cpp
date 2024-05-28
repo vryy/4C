@@ -60,7 +60,7 @@ DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Instance(
  |  evaluate single material  (protected)                    vuong 10/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::GetMaterialParams(
+void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::get_material_params(
     const DRT::Element* ele,      //!< the element we are dealing with
     std::vector<double>& densn,   //!< density at t_(n)
     std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
@@ -70,10 +70,10 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::GetMaterialParams(
 )
 {
   // call poro base class to compute porosity
-  poro::ComputePorosity(ele);
+  poro::compute_porosity(ele);
 
   // call advreac base class
-  advreac::GetMaterialParams(ele, densn, densnp, densam, visc, iquad);
+  advreac::get_material_params(ele, densn, densnp, densam, visc, iquad);
 
   return;
 }
@@ -82,7 +82,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::GetMaterialParams(
  |  evaluate single material  (protected)                    thon 02/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Materials(
+void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::materials(
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -95,7 +95,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Materials(
   switch (material->MaterialType())
   {
     case CORE::Materials::m_scatra:
-      MatScaTra(material, k, densn, densnp, densam, visc, iquad);
+      mat_scatra(material, k, densn, densnp, densam, visc, iquad);
       break;
     default:
       FOUR_C_THROW("Material type %i is not supported", material->MaterialType());
@@ -108,7 +108,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Materials(
  |  Material ScaTra                                          thon 02/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::MatScaTra(
+void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::mat_scatra(
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -118,7 +118,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::MatScaTra(
     const int iquad  //!< id of current gauss point
 )
 {
-  poro::MatScaTra(material, k, densn, densnp, densam, visc, iquad);
+  poro::mat_scatra(material, k, densn, densnp, densam, visc, iquad);
 
   return;
 }  // ScaTraEleCalcPoroReac<distype>::MatScaTra

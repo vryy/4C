@@ -82,7 +82,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 08/2020
      */
-    void WriteRestart() const;
+    void write_restart() const;
 
     /*!
      * \brief read restart of affiliation pair handler

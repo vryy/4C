@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Element* ele,
+int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_action(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -113,7 +113,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
       {
         set_internal_variables_for_mat_and_rhs();
 
-        GetMaterialParams(ele, densn, densnp, densam, visc);
+        get_material_params(ele, densn, densnp, densam, visc);
       }
 
       //----------------------------------------------------------------------
@@ -133,7 +133,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
         //----------------------------------------------------------------------
         // get material parameters (evaluation at integration point)
         //----------------------------------------------------------------------
-        if (my::scatrapara_->MatGP()) GetMaterialParams(ele, densn, densnp, densam, visc, iquad);
+        if (my::scatrapara_->MatGP()) get_material_params(ele, densn, densnp, densam, visc, iquad);
 
         // access control parameter for flux calculation
         INPAR::SCATRA::FluxType fluxtype = my::scatrapara_->CalcFluxDomain();
@@ -154,12 +154,12 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
           if (writefluxid != my::numdofpernode_)
           {
             k = writefluxid - 1;
-            CalculateFlux(q, fluxtype, k);
+            calculate_flux(q, fluxtype, k);
           }
           else if (writefluxid == my::numdofpernode_)
           {
             k = my::numdofpernode_ - 1;
-            CalculateCurrent(q, fluxtype, fac);
+            calculate_current(q, fluxtype, fac);
           }
           else
             FOUR_C_THROW("Flux id, which should be calculated, does not exit in the dof set.");
@@ -224,7 +224,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
 
     default:
     {
-      my::EvaluateAction(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
+      my::evaluate_action(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
           elevec1_epetra, elevec2_epetra, elevec3_epetra);
       break;
     }
@@ -283,7 +283,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calculate_conductivity(
     set_internal_variables_for_mat_and_rhs();
 
     // material parameter at integration point
-    GetMaterialParams(ele, densn, densnp, densam, visc, iquad);
+    get_material_params(ele, densn, densnp, densam, visc, iquad);
 
     // calculate integrals of (inverted) scalar(s) and domain
     for (unsigned i = 0; i < nen_; i++)
@@ -291,7 +291,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calculate_conductivity(
       double sigma_all(0.0);
       std::vector<double> sigma(my::numscal_, 0.0);
       // compute the conductivity (1/(\Omega m) = 1 Siemens / m)
-      GetConductivity(equpot, sigma_all, sigma, effCond);
+      get_conductivity(equpot, sigma_all, sigma, effCond);
 
       const double fac_funct_i = fac * my::funct_(i);
 
@@ -741,7 +741,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::fd_check(DRT::Element* 
         my::ephinp_[idof](inode, 0) += my::scatrapara_->FDCheckEps();
 
       // calculate element right-hand side vector for perturbed state
-      Sysmat(ele, emat_dummy, erhs_perturbed, subgrdiff_dummy);
+      sysmat(ele, emat_dummy, erhs_perturbed, subgrdiff_dummy);
 
       // Now we compare the difference between the current entries in the element matrix
       // and their finite difference approximations according to

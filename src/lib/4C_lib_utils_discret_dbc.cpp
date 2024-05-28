@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::EvaluateDirichlet(const DRT::Discretization& discret,
+void DRT::UTILS::evaluate_dirichlet(const DRT::Discretization& discret,
     const Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_Vector>& systemvector,
     const Teuchos::RCP<Epetra_Vector>& systemvectord,
     const Teuchos::RCP<Epetra_Vector>& systemvectordd, const Teuchos::RCP<Epetra_IntVector>& toggle,
@@ -82,13 +82,13 @@ void DRT::UTILS::Dbc::operator()(const DRT::Discretization& discret,
    * a certain dof in the input file overwrites the corresponding entry
    * in the toggle vector. The entity hierarchy is:
    * point>line>surface>volume */
-  Teuchos::RCP<Epetra_IntVector> toggleaux = CreateToggleVector(toggle, systemvectors.data());
+  Teuchos::RCP<Epetra_IntVector> toggleaux = create_toggle_vector(toggle, systemvectors.data());
 
   // --------------------------------------------------------------------------
   // start to evaluate the dirichlet boundary conditions...
   // --------------------------------------------------------------------------
   DbcInfo info(*toggleaux);
-  Evaluate(discret, time, systemvectors.data(), info, dbcgids.data());
+  evaluate(discret, time, systemvectors.data(), info, dbcgids.data());
 
   // --------------------------------------------------------------------------
   // create DBC and free map and build their common extractor
@@ -100,7 +100,7 @@ void DRT::UTILS::Dbc::operator()(const DRT::Discretization& discret,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_IntVector> DRT::UTILS::Dbc::CreateToggleVector(
+Teuchos::RCP<Epetra_IntVector> DRT::UTILS::Dbc::create_toggle_vector(
     const Teuchos::RCP<Epetra_IntVector> toggle_input,
     const Teuchos::RCP<Epetra_Vector>* systemvectors) const
 {
@@ -136,7 +136,7 @@ Teuchos::RCP<Epetra_IntVector> DRT::UTILS::Dbc::CreateToggleVector(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::Dbc::Evaluate(const DRT::Discretization& discret, double time,
+void DRT::UTILS::Dbc::evaluate(const DRT::Discretization& discret, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, DbcInfo& info,
     Teuchos::RCP<std::set<int>>* dbcgids) const
 {

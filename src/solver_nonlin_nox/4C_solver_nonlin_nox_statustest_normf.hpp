@@ -92,7 +92,7 @@ namespace NOX
        protected:
         /*! In the case of a relative norm calculation, initializes
           \c trueTolerance based on the F-value at the initial guess.*/
-        void relativeSetup(Teuchos::RCP<const ::NOX::Abstract::Group>& initialGuess);
+        void relative_setup(Teuchos::RCP<const ::NOX::Abstract::Group>& initialGuess);
 
         /*! \brief Calculate the norm of the specified quantities
           of the rhs for the given group according to the scaling
@@ -101,7 +101,7 @@ namespace NOX
           \note Returns Teuchos::null if F(x) has not been calculated for the given
           grp (i.e., grp.isF() is false).
         */
-        Teuchos::RCP<const std::vector<double>> ComputeNorm(
+        Teuchos::RCP<const std::vector<double>> compute_norm(
             Teuchos::RCP<const ::NOX::Abstract::Group>& grp);
 
        protected:

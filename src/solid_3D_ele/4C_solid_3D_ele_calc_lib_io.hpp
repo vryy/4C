@@ -53,7 +53,7 @@ namespace DRT::ELEMENTS
   {
     if (ele.IsParamsInterface())
     {
-      return *ele.ParamsInterface().StressDataPtr();
+      return *ele.params_interface().StressDataPtr();
     }
     else
     {
@@ -66,7 +66,7 @@ namespace DRT::ELEMENTS
   {
     if (ele.IsParamsInterface())
     {
-      return *ele.ParamsInterface().StrainDataPtr();
+      return *ele.params_interface().StrainDataPtr();
     }
     else
     {
@@ -79,7 +79,7 @@ namespace DRT::ELEMENTS
   {
     if (ele.IsParamsInterface())
     {
-      return ele.ParamsInterface().GetStressOutputType();
+      return ele.params_interface().GetStressOutputType();
     }
     else
     {
@@ -92,7 +92,7 @@ namespace DRT::ELEMENTS
   {
     if (ele.IsParamsInterface())
     {
-      return ele.ParamsInterface().GetStrainOutputType();
+      return ele.params_interface().GetStrainOutputType();
     }
     else
     {

@@ -63,7 +63,7 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::Evaluate(Teuchos::ParameterList& params
 
   if (this->IsParamsInterface())
   {
-    act = this->ParamsInterface().GetActionType();
+    act = this->params_interface().GetActionType();
   }
   else
   {
@@ -87,7 +87,7 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::Evaluate(Teuchos::ParameterList& params
       // in some cases we need to write/change some data before evaluating
       Base::pre_evaluate(params, discretization, la);
 
-      MyEvaluate(params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra,
+      my_evaluate(params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra,
           elevec2_epetra, elevec3_epetra);
     }
     break;
@@ -183,7 +183,7 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::Evaluate(Teuchos::ParameterList& params
       }
 
       // add volume coupling specific terms
-      MyEvaluate(params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra,
+      my_evaluate(params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra,
           elevec2_epetra, elevec3_epetra);
     }
     break;
@@ -193,7 +193,7 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::Evaluate(Teuchos::ParameterList& params
 }
 
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::Wall1PoroP1<distype>::MyEvaluate(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Wall1PoroP1<distype>::my_evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -206,7 +206,7 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::MyEvaluate(Teuchos::ParameterList& para
 
   if (this->IsParamsInterface())
   {
-    act = this->ParamsInterface().GetActionType();
+    act = this->params_interface().GetActionType();
   }
   else
   {
@@ -326,7 +326,7 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::MyEvaluate(Teuchos::ParameterList& para
               discretization, 1, la[1].lm_, &myfluidvel, &myepreaf, "fluidvel");
         }
 
-        CouplingPoroelast(lm, mydisp, myvel, &myporosity, myfluidvel, myepreaf,
+        coupling_poroelast(lm, mydisp, myvel, &myporosity, myfluidvel, myepreaf,
             matptr,  // nullptr,
             nullptr, nullptr, params);
       }
@@ -397,7 +397,7 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::nonlinear_stiffness_poroelast(std::vec
     CORE::LINALG::Matrix<numdof_, numdof_>* reamatrix, CORE::LINALG::Matrix<numdof_, 1>* force,
     Teuchos::ParameterList& params)
 {
-  Base::GetMaterials();
+  Base::get_materials();
 
   // update element geometry
   CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> xrefe;  // material coord. of element
@@ -426,7 +426,7 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::nonlinear_stiffness_poroelast(std::vec
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
-  GaussPointLoopP1(params, xrefe, xcurr, disp, vel, evelnp, epreaf, porosity_dof, erea_v,
+  gauss_point_loop_p1(params, xrefe, xcurr, disp, vel, evelnp, epreaf, porosity_dof, erea_v,
       &sub_stiff, &sub_force, ecoupl_p1, estiff_p1, ecoupl_force_p1);
 
   // update stiffness matrix
@@ -495,7 +495,7 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::nonlinear_stiffness_poroelast(std::vec
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1PoroP1<distype>::GaussPointLoopP1(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::Wall1PoroP1<distype>::gauss_point_loop_p1(Teuchos::ParameterList& params,
     const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& xrefe,
     const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& xcurr,
     const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& nodaldisp,
@@ -526,7 +526,7 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::GaussPointLoopP1(Teuchos::ParameterLis
     Base::compute_shape_functions_and_derivatives(gp, shapefct, deriv, N_XYZ);
 
     // compute deformation gradient
-    Base::ComputeDefGradient(defgrd, N_XYZ, xcurr);
+    Base::compute_def_gradient(defgrd, N_XYZ, xcurr);
 
     // inverse deformation gradient F^-1
     CORE::LINALG::Matrix<Base::numdim_, Base::numdim_> defgrd_inv(false);
@@ -570,7 +570,7 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::GaussPointLoopP1(Teuchos::ParameterLis
 
     // non-linear B-operator
     CORE::LINALG::Matrix<Base::numstr_, Base::numdof_> bop;
-    Base::ComputeBOperator(bop, defgrd, N_XYZ);
+    Base::compute_b_operator(bop, defgrd, N_XYZ);
 
     // Right Cauchy-Green tensor = F^T * F
     CORE::LINALG::Matrix<Base::numdim_, Base::numdim_> cauchygreen;
@@ -689,7 +689,7 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::GaussPointLoopP1(Teuchos::ParameterLis
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1PoroP1<distype>::CouplingPoroelast(
+void DRT::ELEMENTS::Wall1PoroP1<distype>::coupling_poroelast(
     std::vector<int>& lm,                                      // location matrix
     CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& disp,  // current displacements
     CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& vel,   // current velocities
@@ -703,7 +703,7 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::CouplingPoroelast(
     CORE::LINALG::Matrix<numdof_, 1>* force,  // element internal force vector
     Teuchos::ParameterList& params)           // algorithmic parameters e.g. time
 {
-  Base::GetMaterials();
+  Base::get_materials();
 
   //=======================================================================
 
@@ -729,7 +729,7 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::CouplingPoroelast(
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
-  GaussPointLoopP1OD(
+  gauss_point_loop_p1_od(
       params, xrefe, xcurr, disp, vel, evelnp, epreaf, porosity, ecoupl_p1_p, ecoupl);
 
   if (stiffmatrix != nullptr)
@@ -757,7 +757,7 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::CouplingPoroelast(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1PoroP1<distype>::GaussPointLoopP1OD(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::Wall1PoroP1<distype>::gauss_point_loop_p1_od(Teuchos::ParameterList& params,
     const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& xrefe,
     const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& xcurr,
     const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& nodaldisp,
@@ -787,7 +787,7 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::GaussPointLoopP1OD(Teuchos::ParameterL
     // ComputeSecondDerivativesOfShapeFunctions(gp,xrefe,deriv,deriv2,N_XYZ,N_XYZ2);
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
-    Base::ComputeDefGradient(defgrd, N_XYZ, xcurr);
+    Base::compute_def_gradient(defgrd, N_XYZ, xcurr);
 
     // inverse deformation gradient F^-1
     CORE::LINALG::Matrix<Base::numdim_, Base::numdim_> defgrd_inv(false);
@@ -803,7 +803,7 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::GaussPointLoopP1OD(Teuchos::ParameterL
 
     // non-linear B-operator
     CORE::LINALG::Matrix<Base::numstr_, Base::numdof_> bop;
-    Base::ComputeBOperator(bop, defgrd, N_XYZ);
+    Base::compute_b_operator(bop, defgrd, N_XYZ);
 
     // -----------------Right Cauchy-Green tensor = F^T * F
     CORE::LINALG::Matrix<Base::numdim_, Base::numdim_> cauchygreen;

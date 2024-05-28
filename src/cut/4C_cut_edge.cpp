@@ -790,7 +790,7 @@ bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::com
 
         x_ptr = inter_ptr->FinalPointEdgeEdge();
 
-        const double& pos = inter_ptr->LocalCoordinates()[0];
+        const double& pos = inter_ptr->local_coordinates()[0];
 
         Point* p = nullptr;
         p = Point::NewPoint(*mesh, x_ptr, pos, this, side, tolerance);

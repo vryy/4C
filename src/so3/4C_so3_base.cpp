@@ -114,7 +114,7 @@ Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::SoBase::ParamsInterf
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-STR::ELEMENTS::ParamsInterface& DRT::ELEMENTS::SoBase::StrParamsInterface()
+STR::ELEMENTS::ParamsInterface& DRT::ELEMENTS::SoBase::str_params_interface()
 {
   if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
   return *(Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(interface_ptr_, true));
@@ -126,9 +126,9 @@ void DRT::ELEMENTS::SoBase::error_handling(const double& det_curr, Teuchos::Para
     const int line_id, const STR::ELEMENTS::EvalErrorFlag flag)
 {
   // check, if errors are tolerated or should throw a FOUR_C_THROW
-  if (IsParamsInterface() and StrParamsInterface().IsTolerateErrors())
+  if (IsParamsInterface() and str_params_interface().IsTolerateErrors())
   {
-    StrParamsInterface().SetEleEvalErrorFlag(flag);
+    str_params_interface().SetEleEvalErrorFlag(flag);
     return;
   }
   else
@@ -157,11 +157,11 @@ void DRT::ELEMENTS::SoBase::ensure_material_post_setup(Teuchos::ParameterList& p
 {
   if (!material_post_setup_)
   {
-    MaterialPostSetup(params);
+    material_post_setup(params);
   }
 }
 
-void DRT::ELEMENTS::SoBase::MaterialPostSetup(Teuchos::ParameterList& params)
+void DRT::ELEMENTS::SoBase::material_post_setup(Teuchos::ParameterList& params)
 {
   // This is the minimal implementation. Advanced materials may need extra implementation here.
   SolidMaterial()->post_setup(params, Id());

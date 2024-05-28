@@ -148,7 +148,7 @@ namespace SSI
     bool is_init() { return isinit_; };
 
     //! returns true if class was setup and setup is still valid
-    void CheckIsSetup()
+    void check_is_setup()
     {
       if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
     };
@@ -239,7 +239,7 @@ namespace SSI
     bool is_init() { return isinit_; };
 
     //! returns true if class was setup and setup is still valid
-    void CheckIsSetup()
+    void check_is_setup()
     {
       if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
     };
@@ -315,7 +315,7 @@ namespace SSI
     bool is_init() { return isinit_; };
 
     //! returns true if class was setup and setup is still valid
-    void CheckIsSetup()
+    void check_is_setup()
     {
       if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
     };
@@ -384,7 +384,7 @@ namespace SSI
     bool is_init() { return isinit_; };
 
     //! returns true if class was setup and setup is still valid
-    void CheckIsSetup()
+    void check_is_setup()
     {
       if (not is_setup()) FOUR_C_THROW("Setup() was not called.");
     };

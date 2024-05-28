@@ -55,21 +55,21 @@ MAT::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(Teuchos::RCP<CORE::MAT::PAR
     case CORE::Materials::m_fluidporo_phasedof_diffpressure:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofDiffPressure(curmat));
+        curmat->set_parameter(new MAT::PAR::FluidPoroPhaseDofDiffPressure(curmat));
       phasedof_ = static_cast<MAT::PAR::FluidPoroPhaseDofDiffPressure*>(curmat->Parameter());
       break;
     }
     case CORE::Materials::m_fluidporo_phasedof_pressure:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofPressure(curmat));
+        curmat->set_parameter(new MAT::PAR::FluidPoroPhaseDofPressure(curmat));
       phasedof_ = static_cast<MAT::PAR::FluidPoroPhaseDofPressure*>(curmat->Parameter());
       break;
     }
     case CORE::Materials::m_fluidporo_phasedof_saturation:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofSaturation(curmat));
+        curmat->set_parameter(new MAT::PAR::FluidPoroPhaseDofSaturation(curmat));
       phasedof_ = static_cast<MAT::PAR::FluidPoroPhaseDofSaturation*>(curmat->Parameter());
       break;
     }
@@ -82,7 +82,7 @@ MAT::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(Teuchos::RCP<CORE::MAT::PAR
 /*----------------------------------------------------------------------*
  *  Create Material (public)                             vuong 08/16      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FluidPoroSinglePhase::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FluidPoroSinglePhase::create_material()
 {
   return Teuchos::rcp(new MAT::FluidPoroSinglePhase(this));
 }
@@ -313,7 +313,7 @@ MAT::PAR::FluidPoroSingleVolFrac::FluidPoroSingleVolFrac(
 /*----------------------------------------------------------------------*
  *  Create Material (public)                           kremheller 10/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FluidPoroSingleVolFrac::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FluidPoroSingleVolFrac::create_material()
 {
   return Teuchos::rcp(new MAT::FluidPoroSingleVolFrac(this));
 }
@@ -441,7 +441,7 @@ MAT::PAR::FluidPoroVolFracPressure::FluidPoroVolFracPressure(
 /*----------------------------------------------------------------------*
  *  Create Material (public)                           kremheller 02/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FluidPoroVolFracPressure::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FluidPoroVolFracPressure::create_material()
 {
   return Teuchos::rcp(new MAT::FluidPoroVolFracPressure(this));
 }

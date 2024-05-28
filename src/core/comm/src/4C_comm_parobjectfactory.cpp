@@ -206,7 +206,7 @@ void CORE::COMM::ParObjectFactory::finalize_registration() { ParObjectPreRegiste
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COMM::ParObjectFactory::InitializeElements(DRT::Discretization& dis)
+void CORE::COMM::ParObjectFactory::initialize_elements(DRT::Discretization& dis)
 {
   finalize_registration();
 

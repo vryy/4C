@@ -129,21 +129,21 @@ namespace PASI
      *
      * \author Sebastian Fuchs \date 11/2020
      */
-    void PreEvaluateTimeStep();
+    void pre_evaluate_time_step();
 
     /*!
      * \brief structural time step
      *
      * \author Sebastian Fuchs \date 02/2017
      */
-    void StructStep();
+    void struct_step();
 
     /*!
      * \brief particle time step
      *
      * \author Sebastian Fuchs \date 02/2017
      */
-    void ParticleStep();
+    void particle_step();
 
     /*!
      * \brief post evaluate time step
@@ -176,7 +176,7 @@ namespace PASI
      * \param[in] intfvelnp  interface velocity
      * \param[in] intfaccnp  interface acceleration
      */
-    void SetInterfaceStates(Teuchos::RCP<const Epetra_Vector> intfdispnp,
+    void set_interface_states(Teuchos::RCP<const Epetra_Vector> intfdispnp,
         Teuchos::RCP<const Epetra_Vector> intfvelnp, Teuchos::RCP<const Epetra_Vector> intfaccnp);
 
     /*!
@@ -184,17 +184,17 @@ namespace PASI
      *
      * \author Sebastian Fuchs \date 02/2017
      */
-    void StructOutput();
+    void struct_output();
 
     /*!
      * \brief output of particle field
      *
      * \author Sebastian Fuchs \date 02/2017
      */
-    void ParticleOutput();
+    void particle_output();
 
     //! check correct setup
-    void CheckIsSetup()
+    void check_is_setup()
     {
       if (not is_setup()) FOUR_C_THROW("pasi algorithm not setup correctly!");
     };

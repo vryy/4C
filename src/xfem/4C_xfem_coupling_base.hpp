@@ -453,13 +453,13 @@ namespace XFEM
 
 
    protected:
-    virtual void SetCouplingName()
+    virtual void set_coupling_name()
     {
       coupl_name_ =
           cond_name_;  // the standard case are equal name of condition and coupling object
     }
 
-    virtual void SetConditionsToCopy(){};
+    virtual void set_conditions_to_copy(){};
 
     virtual void set_cutter_discretization(){};
 
@@ -471,7 +471,7 @@ namespace XFEM
 
     void set_coupling_discretization();
 
-    virtual void PrepareCutterOutput(){};
+    virtual void prepare_cutter_output(){};
 
     virtual void do_condition_specific_setup(){};
 
@@ -497,9 +497,9 @@ namespace XFEM
         double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
     ){};
 
-    virtual void InitStateVectors(){};
+    virtual void init_state_vectors(){};
 
-    virtual void PerpareCutterOutput(){};
+    virtual void perpare_cutter_output(){};
 
     void evaluate_dirichlet_function(CORE::LINALG::Matrix<3, 1>& ivel,
         const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond, double time);
@@ -510,7 +510,7 @@ namespace XFEM
     void evaluate_neumann_function(CORE::LINALG::Matrix<6, 1>& itraction,
         const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond, double time);
 
-    void EvaluateFunction(std::vector<double>& final_values, const double* x,
+    void evaluate_function(std::vector<double>& final_values, const double* x,
         const CORE::Conditions::Condition* cond, const double time);
 
     void evaluate_scalar_function(double& final_value, const double* x, const double& val,

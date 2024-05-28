@@ -350,7 +350,7 @@ void CORE::GEO::CUT::DirectDivergence::DivengenceCellsGMSH(
          << "){0.0};" << std::endl;
 #else
     CORE::LINALG::Matrix<3, 1> etaGlobal;
-    elem1_->GlobalCoordinates(etaFacet, etaGlobal);
+    elem1_->global_coordinates(etaFacet, etaGlobal);
     file << "SP(" << etaGlobal(0, 0) << "," << etaGlobal(1, 0) << "," << etaGlobal(2, 0) << ","
          << "1"
          << "){0.0};" << std::endl;

@@ -84,7 +84,7 @@ int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(RedInterAcinarDep* ele,
   CORE::FE::ExtractMyValues(*ial, myial, lm);
 
   // Calculate the system matrix for inter-acinar linkers
-  Sysmat(myial, elemat1_epetra, elevec1_epetra);
+  sysmat(myial, elemat1_epetra, elevec1_epetra);
 
   return 0;
 }
@@ -125,7 +125,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Initial(RedInterAcinarDep* ele,
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Sysmat(std::vector<double>& ial,
+void DRT::ELEMENTS::InterAcinarDepImpl<distype>::sysmat(std::vector<double>& ial,
     CORE::LINALG::SerialDenseMatrix& sysmat, CORE::LINALG::SerialDenseVector& rhs)
 {
   // Get the number of inter_acinar linkers on the 1st node (N0)

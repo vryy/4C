@@ -179,7 +179,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseType::Initialize(DRT::Discretization& dis)
     DRT::ELEMENTS::PoroFluidMultiPhase* actele =
         dynamic_cast<DRT::ELEMENTS::PoroFluidMultiPhase*>(dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to PoroFluidMultiPhase* failed");
-    actele->Initialize();
+    actele->initialize();
   }
   return 0;
 }
@@ -230,7 +230,7 @@ CORE::FE::CellType DRT::ELEMENTS::PoroFluidMultiPhase::Shape() const { return di
  |  Initialize element                                      (protected) |
  |                                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidMultiPhase::Initialize()
+void DRT::ELEMENTS::PoroFluidMultiPhase::initialize()
 {
   Teuchos::RCP<MAT::FluidPoroMultiPhase> actmat =
       Teuchos::rcp_dynamic_cast<MAT::FluidPoroMultiPhase>(Material(), true);

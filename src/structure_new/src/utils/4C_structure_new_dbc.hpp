@@ -101,7 +101,7 @@ namespace STR
     /*! \brief Evaluate and apply the DBC
      *
      * \note Stay in the global coordinate system (Rotation: global-->local-->global).*/
-    virtual void ApplyDirichletBC(const double& time, Teuchos::RCP<Epetra_Vector> dis,
+    virtual void apply_dirichlet_bc(const double& time, Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> acc, bool recreatemap) const;
 
     /*! \brief Insert non-dbc dof values of source vector into the non-dbc dofs of target vector
@@ -189,26 +189,26 @@ namespace STR
     void check_init_setup() const;
 
     //! Get discretization pointer
-    Teuchos::RCP<DRT::Discretization> DiscretPtr();
-    Teuchos::RCP<const DRT::Discretization> DiscretPtr() const;
+    Teuchos::RCP<DRT::Discretization> discret_ptr();
+    Teuchos::RCP<const DRT::Discretization> discret_ptr() const;
 
     //! Access the reaction force
-    Epetra_Vector& Freact() const;
+    Epetra_Vector& freact() const;
 
     //! Get the locsys transformation matrix
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetLocSysTrafo() const;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> get_loc_sys_trafo() const;
 
     //! Get the global state
-    const STR::TIMINT::BaseDataGlobalState& GState() const;
+    const STR::TIMINT::BaseDataGlobalState& g_state() const;
 
     //! Has #locsysman_ be defined?
-    bool IsLocSys() const { return islocsys_; };
+    bool is_loc_sys() const { return islocsys_; };
 
     /*! \brief Extract the reaction forces
      *
      *  \param b ??
      */
-    void ExtractFreact(Teuchos::RCP<Epetra_Vector>& b) const;
+    void extract_freact(Teuchos::RCP<Epetra_Vector>& b) const;
 
     /*! Apply the DBC to the right hand side in the local coordinate system and
      *  do not rotate it back to the global coordinate system. */
@@ -232,7 +232,7 @@ namespace STR
     //! Flag indicating if a #locsysman_ was defined.
     bool islocsys_;
 
-    //! Discretization pointer
+    //! discretization pointer
     Teuchos::RCP<DRT::Discretization> discret_ptr_;
 
     //! pointer to the overlying time integrator (read-only)

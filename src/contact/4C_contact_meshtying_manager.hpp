@@ -88,21 +88,21 @@ namespace CONTACT
     The additionally necessary restart information in the meshtying
     case are the current Lagrange multiplier values.
 
-    \param[in] output IO::Discretization writer for restart
+    \param[in] output IO::discretization writer for restart
     \param forcedrestart
 
     */
-    void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart = false) final;
+    void write_restart(IO::DiscretizationWriter& output, bool forcedrestart = false) final;
 
     /*!
     \brief Read restart information for contact
 
-    This method has the inverse functionality of WriteRestart, as
+    This method has the inverse functionality of write_restart, as
     it reads the restart Lagrange mulitplier vectors. Moreover,
     all mortar coupling quantities (e.g. D and M) have to be
     re-computed upon restart..
 
-    \param reader (in): IO::Discretization reader for restart
+    \param reader (in): IO::discretization reader for restart
     \param dis (in)   : global dof displacement vector
     \param zero (in)  : global dof zero vector
 
@@ -113,7 +113,7 @@ namespace CONTACT
     /*!
     \brief Write interface tractions for postprocessing
 
-    \param output (in): IO::Discretization writer for restart
+    \param output (in): IO::discretization writer for restart
 
     */
     void postprocess_quantities(IO::DiscretizationWriter& output) final;

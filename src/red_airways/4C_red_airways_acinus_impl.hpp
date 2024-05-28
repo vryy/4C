@@ -85,7 +85,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material) = 0;
 
-      virtual void UpdateScatra(RedAcinus* ele, Teuchos::ParameterList& params,
+      virtual void update_scatra(RedAcinus* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material) = 0;
 
@@ -207,7 +207,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material) override;
 
-      void UpdateScatra(RedAcinus* ele, Teuchos::ParameterList& params,
+      void update_scatra(RedAcinus* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material) override;
 

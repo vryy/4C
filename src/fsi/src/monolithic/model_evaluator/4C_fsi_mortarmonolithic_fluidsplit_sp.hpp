@@ -97,14 +97,14 @@ namespace FSI
      *  time step size. Select the minimum of these three as the new time step
      *  size.
      */
-    double SelectDtErrorBased() const final;
+    double select_dt_error_based() const final;
 
     /*! \brief Check whether time step is accepted or not
      *
      *  In case that the local truncation error is small enough, the time step
      *  is accepted.
      */
-    bool SetAccepted() const final;
+    bool set_accepted() const final;
 
     //@}
 
@@ -125,14 +125,14 @@ namespace FSI
         const INPAR::FSI::Redistribute domain) final;
 
    protected:
-    void CreateSystemMatrix();
+    void create_system_matrix();
 
     Teuchos::RCP<::NOX::StatusTest::Combo> create_status_test(
         Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp) final;
 
-    void Update() final;
+    void update() final;
 
-    void Output() final;
+    void output() final;
 
     /// Write Lagrange multiplier
     void OutputLambda() final;

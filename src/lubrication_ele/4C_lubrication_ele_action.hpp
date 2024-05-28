@@ -45,7 +45,7 @@ namespace LUBRICATION
   enum BoundaryAction
   {
     // new action
-    bd_calc_weak_Dirichlet,  // WeakDirichlet,
+    bd_calc_weak_Dirichlet,  // weak_dirichlet,
     bd_calc_Neumann,         // n/a
   };                         // enum LUBRICATION::BoundaryAction
 }  // namespace LUBRICATION

@@ -94,9 +94,9 @@ void CONTACT::NitscheStrategy::DoReadRestart(IO::DiscretizationReader& reader,
     for (const auto& interface : interface_)
     {
       interface->evaluate_nodal_normals();
-      interface->ExportNodalNormals();
+      interface->export_nodal_normals();
     }
-    StoreToOld(MORTAR::StrategyBase::n_old);
+    store_to_old(MORTAR::StrategyBase::n_old);
   }
 
   if (CORE::UTILS::IntegralValue<int>(Params(), "NITSCHE_PENALTY_ADAPTIVE"))
@@ -192,9 +192,9 @@ void CONTACT::NitscheStrategy::SetParentState(
   }
 }
 
-void CONTACT::NitscheStrategy::EvalForce(CONTACT::ParamsInterface& cparams) { Integrate(cparams); }
+void CONTACT::NitscheStrategy::eval_force(CONTACT::ParamsInterface& cparams) { Integrate(cparams); }
 
-void CONTACT::NitscheStrategy::EvalForceStiff(CONTACT::ParamsInterface& cparams)
+void CONTACT::NitscheStrategy::eval_force_stiff(CONTACT::ParamsInterface& cparams)
 {
   Integrate(cparams);
 }
@@ -205,7 +205,7 @@ void CONTACT::NitscheStrategy::Reset(
   set_state(MORTAR::state_new_displacement, dispnp);
 }
 
-void CONTACT::NitscheStrategy::RunPostComputeX(const CONTACT::ParamsInterface& cparams,
+void CONTACT::NitscheStrategy::run_post_compute_x(const CONTACT::ParamsInterface& cparams,
     const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
   // do nothing
@@ -237,11 +237,11 @@ void CONTACT::NitscheStrategy::Integrate(const CONTACT::ParamsInterface& cparams
   curr_state_eval_ = true;
 
   // ... and we can assemble the matrix and rhs
-  fc_ = CreateRhsBlockPtr(CONTACT::VecBlockType::displ);
+  fc_ = create_rhs_block_ptr(CONTACT::VecBlockType::displ);
   kc_ = create_matrix_block_ptr(CONTACT::MatBlockType::displ_displ);
 }
 
-Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::SetupRhsBlockVec(
+Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::setup_rhs_block_vec(
     const enum CONTACT::VecBlockType& bt) const
 {
   switch (bt)
@@ -256,12 +256,12 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::SetupRhsBlockVec(
   return Teuchos::null;
 }
 
-Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::CreateRhsBlockPtr(
+Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::create_rhs_block_ptr(
     const enum CONTACT::VecBlockType& bt) const
 {
   if (!curr_state_eval_) FOUR_C_THROW("you didn't evaluate this contact state first");
 
-  Teuchos::RCP<Epetra_FEVector> fc = SetupRhsBlockVec(bt);
+  Teuchos::RCP<Epetra_FEVector> fc = setup_rhs_block_vec(bt);
 
   for (const auto& interface : interface_)
   {
@@ -296,7 +296,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategy::GetRhsBlockPtr(
   return Teuchos::null;
 }
 
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategy::SetupMatrixBlockPtr(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategy::setup_matrix_block_ptr(
     const enum CONTACT::MatBlockType& bt)
 {
   switch (bt)
@@ -332,7 +332,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategy::create_matrix
 {
   if (!curr_state_eval_) FOUR_C_THROW("you didn't evaluate this contact state first");
 
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> kc = SetupMatrixBlockPtr(bt);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> kc = setup_matrix_block_ptr(bt);
 
   for (const auto& interface : interface_)
   {
@@ -370,7 +370,7 @@ void CONTACT::NitscheStrategy::Setup(bool redistributed, bool init)
     // set potential global self contact status
     // (this is TRUE if at least one contact interface is a self contact interface)
     bool selfcontact = false;
-    for (const auto& interface : Interfaces())
+    for (const auto& interface : interfaces())
       if (interface->SelfContact()) selfcontact = true;
 
     if (selfcontact) isselfcontact_ = true;
@@ -403,7 +403,7 @@ void CONTACT::NitscheStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
     update_trace_ineq_etimates();
   if (friction_)
   {
-    StoreToOld(MORTAR::StrategyBase::n_old);
+    store_to_old(MORTAR::StrategyBase::n_old);
     set_state(MORTAR::state_old_displacement, *dis);
   }
 }
@@ -415,9 +415,9 @@ void CONTACT::NitscheStrategy::evaluate_reference_state()
     for (const auto& interface : interface_)
     {
       interface->evaluate_nodal_normals();
-      interface->ExportNodalNormals();
+      interface->export_nodal_normals();
     }
-    StoreToOld(MORTAR::StrategyBase::n_old);
+    store_to_old(MORTAR::StrategyBase::n_old);
   }
 
   update_trace_ineq_etimates();
@@ -446,7 +446,7 @@ void CONTACT::NitscheStrategy::reconnect_parent_elements()
       auto* faceele = dynamic_cast<DRT::FaceElement*>(ele);
 
       const int volgid = faceele->ParentElementId();
-      if (elecolmap->LID(volgid) == -1)  // Volume Discretization has not Element
+      if (elecolmap->LID(volgid) == -1)  // Volume discretization has not Element
         FOUR_C_THROW(
             "Manager::reconnect_parent_elements: Element %d does not exist on this Proc!", volgid);
 

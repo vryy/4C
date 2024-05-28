@@ -46,7 +46,7 @@ CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::VolMortarIntegratorEleBa
  |  Initialize gauss points for ele-based integration        farah 02/15|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS>
-void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
+void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::initialize_gp()
 {
   // init shape of integration domain
   CORE::FE::CellType intshape = distypeS;
@@ -690,7 +690,7 @@ CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::VolMortarIntegrator(
   shape_ = CORE::UTILS::IntegralValue<Shapefcn>(params, "SHAPEFCN");
 
   // define gp rule
-  InitializeGP();
+  initialize_gp();
 }
 
 
@@ -698,7 +698,7 @@ CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::VolMortarIntegrator(
  |  Initialize gauss points                                  farah 01/14|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
+void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::initialize_gp(
     bool integrateele, int domain, CORE::FE::CellType shape)
 {
   // init shape of integration domain
@@ -891,7 +891,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells2D(
     MORTAR::UTILS::GlobalToLocal<distypeM>(mele, globgp, mxi);
 
     // Check parameter space mapping
-    bool proj = CheckMapping2D(sele, mele, sxi, mxi);
+    bool proj = check_mapping2_d(sele, mele, sxi, mxi);
     if (proj == false) FOUR_C_THROW("ERROR: Mapping failed!");
 
     // evaluate trace space shape functions (on both elements)
@@ -1068,7 +1068,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D(
     // Check parameter space mapping
     // std::cout << "globgp " << globgp[0] <<"  "<< globgp[1] <<"  "<< globgp[2] <<std::endl;
 
-    bool check = CheckMapping3D(Aele, Bele, Axi, Bxi);
+    bool check = check_mapping3_d(Aele, Bele, Axi, Bxi);
     if (!check) continue;
 
     // evaluate trace space shape functions (on both elements)
@@ -1215,7 +1215,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS,
       jac = UTILS::Jacobian<distypeM>(Bxi, Bele);
 
     // Check parameter space mapping
-    // CheckMapping3D(Aele,Bele,Axi,Bxi);
+    // check_mapping3_d(Aele,Bele,Axi,Bxi);
 
     // evaluate trace space shape functions (on both elements)
     UTILS::shape_function<distypeS>(sval_A, Axi);
@@ -1370,7 +1370,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::integrate_ele_bas
       }
 
       // Check parameter space mapping
-      bool proj = CheckMapping3D(Aele, *Bele, Axi, Bxi);
+      bool proj = check_mapping3_d(Aele, *Bele, Axi, Bxi);
 
       // if gp outside continue or eval nearest gp
       if (!proj and (found != ((int)foundeles.size() - 1)))
@@ -1495,7 +1495,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::integrate_ele_bas
       }
 
       // Check parameter space mapping
-      bool proj = CheckMapping3D(*Aele, Bele, Axi, Bxi);
+      bool proj = check_mapping3_d(*Aele, Bele, Axi, Bxi);
 
       // if gp outside continue or eval nearest gp
       if (!proj and (found != ((int)foundeles.size() - 1)))
@@ -1614,7 +1614,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEle3D(in
     MORTAR::UTILS::GlobalToLocal<distypeM>(Bele, globgp, Bxi);
 
     // Check parameter space mapping
-    CheckMapping3D(Aele, Bele, Axi, Bxi);
+    check_mapping3_d(Aele, Bele, Axi, Bxi);
 
     // evaluate trace space shape functions (on both elements)
     UTILS::shape_function<distypeS>(sval_A, Axi);
@@ -1706,7 +1706,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEle3D(in
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping2D(
+bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::check_mapping2_d(
     DRT::Element& sele, DRT::Element& mele, double* sxi, double* mxi)
 {
   // check GP projection (SLAVE)
@@ -1770,7 +1770,7 @@ bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping2D(
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping3D(
+bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::check_mapping3_d(
     DRT::Element& sele, DRT::Element& mele, double* sxi, double* mxi)
 {
   // check GP projection (SLAVE)

@@ -29,14 +29,14 @@ CORE::GEO::CUT::IMPL::SimplePointGraph1D::SimplePointGraph1D(Mesh &mesh, Element
   if (element->Dim() != 1) FOUR_C_THROW("This class is only meaningful for 1-D elements!");
 
   Cycle cycle;
-  FillGraph(element, side, cycle, strategy);
+  fill_graph(element, side, cycle, strategy);
 
-  GetGraph().find_cycles(element, side, cycle, location, strategy);
+  get_graph().find_cycles(element, side, cycle, location, strategy);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IMPL::SimplePointGraph1D::BuildCycle(
+void CORE::GEO::CUT::IMPL::SimplePointGraph1D::build_cycle(
     const std::vector<Point *> &edge_points, Cycle &cycle) const
 {
   /* since a closed cycle is not possible for 1-D elements, we have to consider
@@ -51,18 +51,18 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph1D::BuildCycle(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IMPL::SimplePointGraph1D::AddCutLinesToGraph(
+void CORE::GEO::CUT::IMPL::SimplePointGraph1D::add_cut_lines_to_graph(
     Element *element, Side *side, Strategy strategy, Cycle &cycle)
 {
   // this is completely unnecessary for the element_side
   if (not side->IsCutSide()) return;
 
-  AddCutPointsToCycle(element, side, cycle);
+  add_cut_points_to_cycle(element, side, cycle);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IMPL::SimplePointGraph1D::AddCutPointsToCycle(
+void CORE::GEO::CUT::IMPL::SimplePointGraph1D::add_cut_points_to_cycle(
     Element *element, Side *side, Cycle &cycle)
 {
   std::vector<Side *> ele_sides = element->Sides();
@@ -114,7 +114,7 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph1D::Graph::find_cycles(
 CORE::GEO::CUT::IMPL::SimplePointGraph2D::SimplePointGraph2D(Mesh &mesh, Element *element,
     Side *side, PointGraph::Location location, PointGraph::Strategy strategy)
     : PointGraph::PointGraph(mesh, element, side, location, strategy),
-      graph_2d_(Teuchos::rcp_dynamic_cast<SimplePointGraph2D::Graph>(GraphPtr(), true))
+      graph_2d_(Teuchos::rcp_dynamic_cast<SimplePointGraph2D::Graph>(graph_ptr(), true))
 {
   if (element->Dim() != 2) FOUR_C_THROW("This class is only meaningful for 2-D elements!");
   /* intentionally left blank, the work is done in the base class */
@@ -196,7 +196,7 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph2D::Graph::split_main_cycles_into_lin
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::IMPL::SimplePointGraph2D::SimplePointGraph2D()
     : CORE::GEO::CUT::IMPL::PointGraph(2),
-      graph_2d_(Teuchos::rcp_dynamic_cast<SimplePointGraph2D::Graph>(GraphPtr(), true))
+      graph_2d_(Teuchos::rcp_dynamic_cast<SimplePointGraph2D::Graph>(graph_ptr(), true))
 {
   /* intentionally left blank */
 }
@@ -228,7 +228,7 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph2D::fill_graph_and_cycle_with_line_fa
       FOUR_C_THROW("This function works only for line facets!");
 
     const std::vector<Point *> &line_points = f->Points();
-    GetGraph().AddEdge(line_points[0], line_points[1]);
+    get_graph().AddEdge(line_points[0], line_points[1]);
 
     point_set.insert(line_points.begin(), line_points.end());
   }
@@ -241,7 +241,7 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph2D::fill_graph_and_cycle_with_line_fa
 void CORE::GEO::CUT::IMPL::SimplePointGraph2D::find_cycles(Element *element, Cycle &cycle)
 {
   Side *side = element->Sides()[0];
-  GetGraph().find_cycles(element, side, cycle, PointGraph::element_side, PointGraph::all_lines);
+  get_graph().find_cycles(element, side, cycle, PointGraph::element_side, PointGraph::all_lines);
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

@@ -106,7 +106,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
 
   // build AMG hierarchies
   structuresolver_->Setup(structInnerOp.EpetraMatrix());
-  fluidsolver_->Setup(fluidInnerOp.EpetraMatrix(), fsidofmapex, fluid_.Discretization(), irownodes,
+  fluidsolver_->Setup(fluidInnerOp.EpetraMatrix(), fsidofmapex, fluid_.discretization(), irownodes,
       structuresplit_);
   if (constalesolver_ == Teuchos::null) alesolver_->Setup(aleInnerOp.EpetraMatrix());
 
@@ -128,9 +128,9 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   if (amlclass) aisml_ = true;
 
   // get copy of ML parameter list
-  if (SisAMG()) sparams_ = structuresolver_->Params().sublist("ML Parameters");
-  if (FisAMG()) fparams_ = fluidsolver_->Params().sublist("ML Parameters");
-  if (AisAMG()) aparams_ = alesolver_->Params().sublist("ML Parameters");
+  if (sis_amg()) sparams_ = structuresolver_->Params().sublist("ML Parameters");
+  if (fis_amg()) fparams_ = fluidsolver_->Params().sublist("ML Parameters");
+  if (ais_amg()) aparams_ = alesolver_->Params().sublist("ML Parameters");
   // cout << "====================Structure Params\n" << sparams_;
   // cout << "========================Fluid Params\n" << fparams_;
   // cout << "========================Ale Params\n" << aparams_;
@@ -143,22 +143,22 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   ML* sml = nullptr;
   ML* fml = nullptr;
   ML* aml = nullptr;
-  if (SisAMG()) sml = const_cast<ML*>(smlclass->GetML());
-  if (FisAMG()) fml = const_cast<ML*>(fmlclass->GetML());
-  if (AisAMG()) aml = const_cast<ML*>(amlclass->GetML());
-  if ((!sml && SisAMG()) || (!fml && FisAMG()) || (!aml && AisAMG()))
+  if (sis_amg()) sml = const_cast<ML*>(smlclass->GetML());
+  if (fis_amg()) fml = const_cast<ML*>(fmlclass->GetML());
+  if (ais_amg()) aml = const_cast<ML*>(amlclass->GetML());
+  if ((!sml && sis_amg()) || (!fml && fis_amg()) || (!aml && ais_amg()))
     FOUR_C_THROW("Not using ML for Fluid, Structure or Ale");
 
   // number of grids in structure, fluid and ale
-  if (SisAMG())
+  if (sis_amg())
     snlevel_ = sml->ML_num_actual_levels;
   else
     snlevel_ = 1;
-  if (FisAMG())
+  if (fis_amg())
     fnlevel_ = fml->ML_num_actual_levels;
   else
     fnlevel_ = 1;
-  if (AisAMG())
+  if (ais_amg())
     anlevel_ = aml->ML_num_actual_levels;
   else
     anlevel_ = 1;
@@ -260,12 +260,12 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     for (int i = 0; i < snlevel_; ++i)
     {
       ML_Operator* Aml = nullptr;
-      if (SisAMG()) Aml = &(sml->Amat[i]);
+      if (sis_amg()) Aml = &(sml->Amat[i]);
       if (i == 0)
         space = finespace;
       else
         space.Reshape(-1, Aml->invec_leng);
-      if (SisAMG())
+      if (sis_amg())
       {
         MLAPI::Operator A(space, space, Aml, false);
         Ass_[i] = A;
@@ -324,12 +324,12 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     for (int i = 0; i < fnlevel_; ++i)
     {
       ML_Operator* Aml = nullptr;
-      if (FisAMG()) Aml = &(fml->Amat[i]);
+      if (fis_amg()) Aml = &(fml->Amat[i]);
       if (i == 0)
         space = finespace;
       else
         space.Reshape(-1, Aml->invec_leng);
-      if (FisAMG())
+      if (fis_amg())
       {
         MLAPI::Operator A(space, space, Aml, false);
         Aff_[i] = A;
@@ -387,12 +387,12 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     for (int i = 0; i < anlevel_; ++i)
     {
       ML_Operator* Aml = nullptr;
-      if (AisAMG()) Aml = &(aml->Amat[i]);
+      if (ais_amg()) Aml = &(aml->Amat[i]);
       if (i == 0)
         space = finespace;
       else
         space.Reshape(-1, Aml->invec_leng);
-      if (AisAMG())
+      if (ais_amg())
       {
         MLAPI::Operator A(space, space, Aml, false);
         Aaa_[i] = A;
@@ -461,7 +461,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   //================set up MLAPI smoothers for structure, fluid, ale on each level
   Teuchos::RCP<MLAPI::InverseOperator> S;
   Teuchos::RCP<MLAPI::LoadBalanceInverseOperator> lbS;
-  if (SisAMG())
+  if (sis_amg())
   {
     // structure
     for (int i = 0; i < snlevel_ - 1; ++i)
@@ -472,11 +472,11 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
       sprintf(levelstr, "(level %d)", i);
       Teuchos::ParameterList& subp = sparams_.sublist("smoother: list " + std::string(levelstr));
       std::string type = "";
-      SelectMLAPISmoother(type, i, subp, p, pushlist);
+      select_mlapi_smoother(type, i, subp, p, pushlist);
       if (type == "ILU")
       {
         lbS = Teuchos::rcp(new MLAPI::LoadBalanceInverseOperator());
-        WrapILUSmoother(sml, Ass_[i], *lbS, i);
+        wrap_ilu_smoother(sml, Ass_[i], *lbS, i);
         Sss_[i] = lbS;
       }
       else
@@ -510,7 +510,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     srun_ = 1;  // a first solve has been performed
   }
 
-  if (FisAMG())
+  if (fis_amg())
   {
     // fluid
     for (int i = 0; i < fnlevel_ - 1; ++i)
@@ -521,7 +521,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
       sprintf(levelstr, "(level %d)", i);
       Teuchos::ParameterList& subp = fparams_.sublist("smoother: list " + std::string(levelstr));
       std::string type = "";
-      SelectMLAPISmoother(type, i, subp, p, pushlist);
+      select_mlapi_smoother(type, i, subp, p, pushlist);
       if (blocksmoother_[i] == "Schur")  // Schur Complement block smoother
       {
         schur_complement_operator(Schurff_[i], Ass_[i], Aff_[i], Aaa_[i], ASF_[i], AFS_[i], AFA_[i],
@@ -535,7 +535,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
         if (type == "ILU")  // wrap existing ILU decomp from ML hierarchy
         {
           lbS = Teuchos::rcp(new MLAPI::LoadBalanceInverseOperator());
-          WrapILUSmoother(fml, Aff_[i], *lbS, i);
+          wrap_ilu_smoother(fml, Aff_[i], *lbS, i);
           Sff_[i] = lbS;
         }
         else  // build new smoother
@@ -574,14 +574,14 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     const CORE::LINALG::SparseMatrix& Matrix11 =
         (hybridPrec_ == nullptr) ? Matrix(1, 1) : hybridPrec_->Matrix(1, 1);
     fluidsolver_->Setup(
-        Matrix11.EpetraMatrix(), fsidofmapex, fluid_.Discretization(), irownodes, structuresplit_);
+        Matrix11.EpetraMatrix(), fsidofmapex, fluid_.discretization(), irownodes, structuresplit_);
     Teuchos::RCP<Epetra_Vector> b = Teuchos::rcp(new Epetra_Vector(Matrix11.RangeMap(), true));
     Teuchos::RCP<Epetra_Vector> x = Teuchos::rcp(new Epetra_Vector(Matrix11.DomainMap(), true));
     fluidsolver_->Solve(Matrix11.EpetraMatrix(), x, b, true, true);
     frun_ = 1;  // a first solve has been performed
   }
 
-  if (AisAMG())
+  if (ais_amg())
   {
     // ale
     for (int i = 0; i < anlevel_ - 1; ++i)
@@ -592,11 +592,11 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
       sprintf(levelstr, "(level %d)", i);
       Teuchos::ParameterList& subp = aparams_.sublist("smoother: list " + std::string(levelstr));
       std::string type = "";
-      SelectMLAPISmoother(type, i, subp, p, pushlist);
+      select_mlapi_smoother(type, i, subp, p, pushlist);
       if (type == "ILU")
       {
         lbS = Teuchos::rcp(new MLAPI::LoadBalanceInverseOperator());
-        WrapILUSmoother(aml, Aaa_[i], *lbS, i);
+        wrap_ilu_smoother(aml, Aaa_[i], *lbS, i);
         Saa_[i] = lbS;
       }
       else
@@ -755,7 +755,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::schur_complement_operator(MLAPI::Operato
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::OverlappingBlockMatrixFSIAMG::RAPoffdiagonals()
+void FSI::OverlappingBlockMatrixFSIAMG::ra_poffdiagonals()
 {
   Teuchos::RCP<Epetra_CrsMatrix> Matrix01 = (hybridPrec_ == nullptr)
                                                 ? Matrix(0, 1).EpetraMatrix()
@@ -777,33 +777,33 @@ void FSI::OverlappingBlockMatrixFSIAMG::RAPoffdiagonals()
   {
     //------ Asf (trouble maker)
     if (!i)
-      RAPfine(ASF_[i + 1], Rss_[i], Matrix01, Pff_[i]);
+      ra_pfine(ASF_[i + 1], Rss_[i], Matrix01, Pff_[i]);
     else
-      RAPcoarse(ASF_[i + 1], Rss_[i], ASF_[i], Pff_[i]);
+      ra_pcoarse(ASF_[i + 1], Rss_[i], ASF_[i], Pff_[i]);
     //------ Afs (trouble maker)
     if (!i)
-      RAPfine(AFS_[i + 1], Rff_[i], Matrix10, Pss_[i]);
+      ra_pfine(AFS_[i + 1], Rff_[i], Matrix10, Pss_[i]);
     else
-      RAPcoarse(AFS_[i + 1], Rff_[i], AFS_[i], Pss_[i]);
+      ra_pcoarse(AFS_[i + 1], Rff_[i], AFS_[i], Pss_[i]);
     //------ Afa
     if (!i)
-      RAPfine(AFA_[i + 1], Rff_[i], Matrix12, Paa_[i]);
+      ra_pfine(AFA_[i + 1], Rff_[i], Matrix12, Paa_[i]);
     else
-      RAPcoarse(AFA_[i + 1], Rff_[i], AFA_[i], Paa_[i]);
+      ra_pcoarse(AFA_[i + 1], Rff_[i], AFA_[i], Paa_[i]);
     //------ Aaf
     if (structuresplit_)
     {
       if (!i)
-        RAPfine(AAF_[i + 1], Raa_[i], Matrix21, Pff_[i]);
+        ra_pfine(AAF_[i + 1], Raa_[i], Matrix21, Pff_[i]);
       else
-        RAPcoarse(AAF_[i + 1], Raa_[i], AAF_[i], Pff_[i]);
+        ra_pcoarse(AAF_[i + 1], Raa_[i], AAF_[i], Pff_[i]);
     }
     else
     {
       if (!i)
-        RAPfine(AAF_[i + 1], Raa_[i], Matrix20, Pss_[i]);
+        ra_pfine(AAF_[i + 1], Raa_[i], Matrix20, Pss_[i]);
       else
-        RAPcoarse(AAF_[i + 1], Raa_[i], AAF_[i], Pss_[i]);
+        ra_pcoarse(AAF_[i + 1], Raa_[i], AAF_[i], Pss_[i]);
     }
   }
   return;
@@ -812,7 +812,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::RAPoffdiagonals()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::OverlappingBlockMatrixFSIAMG::RAPfine(MLAPI::Operator& RAP, const MLAPI::Operator& R,
+void FSI::OverlappingBlockMatrixFSIAMG::ra_pfine(MLAPI::Operator& RAP, const MLAPI::Operator& R,
     Teuchos::RCP<Epetra_CrsMatrix> A, const MLAPI::Operator& P)
 {
   // this epetraext thingy patches the inherent ml<->epetra conflict
@@ -839,7 +839,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::RAPfine(MLAPI::Operator& RAP, const MLAP
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::OverlappingBlockMatrixFSIAMG::RAPcoarse(MLAPI::Operator& RAP, const MLAPI::Operator& R,
+void FSI::OverlappingBlockMatrixFSIAMG::ra_pcoarse(MLAPI::Operator& RAP, const MLAPI::Operator& R,
     const MLAPI::Operator& A, const MLAPI::Operator& P)
 {
   MLAPI::Operator AP;
@@ -852,7 +852,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::RAPcoarse(MLAPI::Operator& RAP, const ML
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::OverlappingBlockMatrixFSIAMG::WrapILUSmoother(
+void FSI::OverlappingBlockMatrixFSIAMG::wrap_ilu_smoother(
     ML* ml, MLAPI::Operator& A, MLAPI::LoadBalanceInverseOperator& S, const int level)
 {
   // we use pre == post smoother here, so get postsmoother from ml
@@ -893,7 +893,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::WrapILUSmoother(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::OverlappingBlockMatrixFSIAMG::SelectMLAPISmoother(std::string& type, const int level,
+void FSI::OverlappingBlockMatrixFSIAMG::select_mlapi_smoother(std::string& type, const int level,
     Teuchos::ParameterList& subp, Teuchos::ParameterList& p, Teuchos::ParameterList& pushlist)
 {
   type = subp.get("smoother: type", "none");
@@ -936,7 +936,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SelectMLAPISmoother(std::string& type, c
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockVcycle(const int level, const int nlevel,
+void FSI::OverlappingBlockMatrixFSIAMG::explicit_block_vcycle(const int level, const int nlevel,
     MLAPI::MultiVector& mlsy, MLAPI::MultiVector& mlfy, MLAPI::MultiVector& mlay,
     const MLAPI::MultiVector& mlsx, const MLAPI::MultiVector& mlfx,
     const MLAPI::MultiVector& mlax) const
@@ -1004,7 +1004,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockVcycle(const int level, con
   MLAPI::MultiVector fyc(fxc.GetVectorSpace(), 1, false);
 
   //--------------------------------------- solve coarse problem
-  ExplicitBlockVcycle(level + 1, nlevel, syc, fyc, ayc, sxc, fxc, axc);
+  explicit_block_vcycle(level + 1, nlevel, syc, fyc, ayc, sxc, fxc, axc);
 
   //------------------------------- prolongate coarse correction
   {
@@ -1103,7 +1103,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::local_block_richardson(const int iterati
   if (!amgsolve)
     S[level]->Apply(b, z);
   else
-    Vcycle(level, nlevel, z, b, A, S, P, R);
+    vcycle(level, nlevel, z, b, A, S, P, R);
 
   if (iterations > 0)
   {
@@ -1117,7 +1117,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::local_block_richardson(const int iterati
       if (!amgsolve)
         S[level]->Apply(tmpb, tmpz);
       else
-        Vcycle(level, nlevel, tmpz, tmpb, A, S, P, R);
+        vcycle(level, nlevel, tmpz, tmpb, A, S, P, R);
       z = z + omega * tmpz;
     }
   }
@@ -1128,7 +1128,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::local_block_richardson(const int iterati
 /*----------------------------------------------------------------------*
 strongly coupled AMG-Block-Gauss-Seidel
  *----------------------------------------------------------------------*/
-void FSI::OverlappingBlockMatrixFSIAMG::SGS(
+void FSI::OverlappingBlockMatrixFSIAMG::sgs(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
   if (symmetric_) FOUR_C_THROW("FSIAMG symmetric Block Gauss-Seidel not impl.");
@@ -1298,8 +1298,8 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
         ahierachy.Damp()[i] = aomega_[i];
       }
 
-      if (SisAMG() && FisAMG() && AisAMG())
-        RichardsonBGS_V(myrank, 1, 1.0, Vsweeps, Vdamps, shierachy, fhierachy, ahierachy, mlsy,
+      if (sis_amg() && fis_amg() && ais_amg())
+        richardson_bgs_v(myrank, 1, 1.0, Vsweeps, Vdamps, shierachy, fhierachy, ahierachy, mlsy,
             mlfy, mlay, mlsx, mlfx, mlax, Ass_, const_cast<std::vector<MLAPI::Operator>&>(Pss_),
             const_cast<std::vector<MLAPI::Operator>&>(Rss_), Aff_,
             const_cast<std::vector<MLAPI::Operator>&>(Pff_),
@@ -1308,7 +1308,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
             const_cast<std::vector<MLAPI::Operator>&>(Raa_), ASF_, AFS_, AFA_, AAF_, true, false,
             true);
       else
-        RichardsonBGS_Mixed(myrank, 1, 1.0, Vsweeps, Vdamps, SisAMG(), FisAMG(), AisAMG(),
+        richardson_bgs_mixed(myrank, 1, 1.0, Vsweeps, Vdamps, sis_amg(), fis_amg(), ais_amg(),
             shierachy, fhierachy, ahierachy, mlsy, mlfy, mlay, mlsx, mlfx, mlax, Ass_,
             const_cast<std::vector<MLAPI::Operator>&>(Pss_),
             const_cast<std::vector<MLAPI::Operator>&>(Rss_), Aff_,
@@ -1351,7 +1351,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::OverlappingBlockMatrixFSIAMG::Vcycle(const int level, const int nlevel,
+void FSI::OverlappingBlockMatrixFSIAMG::vcycle(const int level, const int nlevel,
     MLAPI::MultiVector& z, const MLAPI::MultiVector& b, const std::vector<MLAPI::Operator>& A,
     const std::vector<Teuchos::RCP<MLAPI::InverseOperator>>& S,
     const std::vector<MLAPI::Operator>& P, const std::vector<MLAPI::Operator>& R,
@@ -1382,7 +1382,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Vcycle(const int level, const int nlevel
   bc = R[level] * (b - A[level] * z);
 
   // solve coarse problem
-  Vcycle(level + 1, nlevel, zc, bc, A, S, P, R);
+  vcycle(level + 1, nlevel, zc, bc, A, S, P, R);
 
   // prolongate correction
   z = z + P[level] * zc;

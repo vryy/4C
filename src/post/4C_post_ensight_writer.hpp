@@ -152,33 +152,33 @@ class EnsightWriter : public PostWriterBase
       const std::vector<std::string>& fieldnames, const std::string& outinfo) override;
 
   template <class T>
-  void Write(std::ofstream& os, T i) const
+  void write(std::ofstream& os, T i) const
   {
     // only processor 0 does the writing !!
     if (myrank_ == 0) os.write(reinterpret_cast<const char*>(&i), sizeof(T));
   }
 
-  void Write(std::ofstream& os, const std::string s) const
+  void write(std::ofstream& os, const std::string s) const
   {
     // only processor 0 does the writing !!
-    if (myrank_ == 0) WriteString(os, s);
+    if (myrank_ == 0) write_string(os, s);
   }
 
-  void Write(std::ofstream& os, const char* s) const
+  void write(std::ofstream& os, const char* s) const
   {
     // only processor 0 does the writing !!
-    if (myrank_ == 0) WriteString(os, s);
+    if (myrank_ == 0) write_string(os, s);
   }
 
-  void WriteString(std::ofstream& stream,  ///< filestream we are writing to
-      const std::string str                ///< string to be written to file
+  void write_string(std::ofstream& stream,  ///< filestream we are writing to
+      const std::string str                 ///< string to be written to file
   ) const;
-  void WriteGeoFile(const std::string& geofilename);
+  void write_geo_file(const std::string& geofilename);
   void write_geo_file_one_time_step(std::ofstream& file,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string name);
 
-  Teuchos::RCP<Epetra_Map> WriteCoordinates(
+  Teuchos::RCP<Epetra_Map> write_coordinates(
       std::ofstream& geofile,  ///< filestream for the geometry
       const Teuchos::RCP<DRT::Discretization>
           dis  ///< discretization where the nodal positions are take from
@@ -201,7 +201,7 @@ class EnsightWriter : public PostWriterBase
   void write_coordinates_for_nurbs_shapefunctions(std::ofstream& geofile,
       const Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map);
 
-  virtual void WriteCells(std::ofstream& geofile,  ///< filestream for the geometry
+  virtual void write_cells(std::ofstream& geofile,  ///< filestream for the geometry
       const Teuchos::RCP<DRT::Discretization>
           dis,  ///< discretization where the nodal positions are take from
       const Teuchos::RCP<Epetra_Map>&
@@ -223,7 +223,7 @@ class EnsightWriter : public PostWriterBase
     \param Teuchos::RCP<Epetra_Map>          (i)          an allreduced nodemap
 
   */
-  void WriteNurbsCell(const CORE::FE::CellType distype, const int gid, std::ofstream& geofile,
+  void write_nurbs_cell(const CORE::FE::CellType distype, const int gid, std::ofstream& geofile,
       std::vector<int>& nodevector, const Teuchos::RCP<DRT::Discretization> dis,
       const Teuchos::RCP<Epetra_Map>& proc0map) const;
 
@@ -248,7 +248,7 @@ class EnsightWriter : public PostWriterBase
     \return void
 
   */
-  void AppendNurbsSubHex(std::vector<int>& cellnodes, const int& l, const int& m, const int& n,
+  void append_nurbs_sub_hex(std::vector<int>& cellnodes, const int& l, const int& m, const int& n,
       const std::vector<int>& ele_cart_id, const int& nvpu, const int& nvpv,
       const int& npatch) const
   {
@@ -274,7 +274,7 @@ class EnsightWriter : public PostWriterBase
   void write_node_connectivity_par(std::ofstream& geofile,
       const Teuchos::RCP<DRT::Discretization> dis, const std::vector<int>& nodevector,
       const Teuchos::RCP<Epetra_Map> proc0map) const;
-  void WriteDofResultStep(std::ofstream& file, PostResult& result,
+  void write_dof_result_step(std::ofstream& file, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf, const int from,
       const bool fillzeros) const;
@@ -340,7 +340,7 @@ class EnsightWriter : public PostWriterBase
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf,
       const int from) override;
-  void WriteIndexTable(
+  void write_index_table(
       std::ofstream& file, const std::vector<std::ofstream::pos_type>& filepos) const;
 
   /*!
@@ -356,7 +356,7 @@ class EnsightWriter : public PostWriterBase
    * \brief create string for the VARIABLE section
    *        for all fields in the variablemap
    */
-  std::string GetVariableSection(std::map<std::string, std::vector<int>> filesetmap,
+  std::string get_variable_section(std::map<std::string, std::vector<int>> filesetmap,
       std::map<std::string, int> variablenumdfmap,
       std::map<std::string, std::string> variablefilenamemap) const;
 
@@ -364,14 +364,14 @@ class EnsightWriter : public PostWriterBase
    * \brief estimate, how many elements of each distype will be written
    * \return map between distype and number of elements to be written
    */
-  NumElePerDisType GetNumElePerDisType(const Teuchos::RCP<DRT::Discretization> dis) const;
+  NumElePerDisType get_num_ele_per_dis_type(const Teuchos::RCP<DRT::Discretization> dis) const;
 
-  std::string GetEnsightString(const CORE::FE::CellType distype) const;
+  std::string get_ensight_string(const CORE::FE::CellType distype) const;
 
   /*!
    * \brief if files become to big, this routine switches to a new file
    */
-  void FileSwitcher(std::ofstream& file,                    ///< filestream that is switched
+  void file_switcher(std::ofstream& file,                   ///< filestream that is switched
       bool& multiple_files,                                 ///< ???
       std::map<std::string, std::vector<int>>& filesetmap,  ///< ???
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,  ///< ???
@@ -380,16 +380,16 @@ class EnsightWriter : public PostWriterBase
       const std::string filename  ///< constant part of the filename
   ) const;
 
-  int GetNumEleOutput(const CORE::FE::CellType distype, const int numele) const;
+  int get_num_ele_output(const CORE::FE::CellType distype, const int numele) const;
 
   //! number of subelements (equals 1 if no element splitting has to be done)
-  int GetNumSubEle(const CORE::FE::CellType distype) const;
+  int get_num_sub_ele(const CORE::FE::CellType distype) const;
 
   /*!
    * \brief store, which elements are belonging to each present distype
    * \return map between distype and vector containing the global ids of th corresponding elements
    */
-  EleGidPerDisType GetEleGidPerDisType(
+  EleGidPerDisType get_ele_gid_per_dis_type(
       const Teuchos::RCP<DRT::Discretization> dis, NumElePerDisType numeleperdistype) const;
 
   //! create string for one TIME section in the case file

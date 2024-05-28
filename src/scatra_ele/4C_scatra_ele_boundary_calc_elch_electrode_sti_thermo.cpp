@@ -77,14 +77,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
       Teuchos::getIntegralValue<SCATRA::DifferentiationType>(params, "differentiationtype");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
-  ExtractNodeValues(discretization, la);
+  extract_node_values(discretization, la);
   std::vector<CORE::LINALG::Matrix<nen_, 1>> emasterphinp(
       my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
-  my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
+  my::extract_node_values(emasterphinp, discretization, la, "imasterphinp");
 
   CORE::LINALG::Matrix<nen_, 1> emastertempnp(true);
   if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)
-    my::ExtractNodeValues(
+    my::extract_node_values(
         emastertempnp, discretization, la, "imastertemp", my::scatraparams_->NdsThermo());
 
   // element slave mechanical stress tensor
@@ -92,7 +92,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
   std::vector<CORE::LINALG::Matrix<nen_, 1>> eslavestress_vector(
       6, CORE::LINALG::Matrix<nen_, 1>(true));
   if (is_pseudo_contact)
-    my::ExtractNodeValues(eslavestress_vector, discretization, la, "mechanicalStressState",
+    my::extract_node_values(eslavestress_vector, discretization, la, "mechanicalStressState",
         my::scatraparams_->nds_two_tensor_quantity());
 
   CORE::LINALG::Matrix<nsd_, 1> normal;
@@ -389,7 +389,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, probdim
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, probdim>::EvaluateAction(
+int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, probdim>::evaluate_action(
     DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     SCATRA::BoundaryAction action, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -409,7 +409,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, probdim>
 
     default:
     {
-      myelectrode::EvaluateAction(ele, params, discretization, action, la, elemat1_epetra,
+      myelectrode::evaluate_action(ele, params, discretization, action, la, elemat1_epetra,
           elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
       break;
     }
@@ -422,14 +422,14 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, probdim>
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
-    probdim>::ExtractNodeValues(const DRT::Discretization& discretization,
+    probdim>::extract_node_values(const DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
 {
   // call base class routine
-  my::ExtractNodeValues(discretization, la);
+  my::extract_node_values(discretization, la);
 
   // extract nodal temperature variables associated with time t_{n+1} or t_{n+alpha_f}
-  my::ExtractNodeValues(etempnp_, discretization, la, "thermo", my::scatraparams_->NdsThermo());
+  my::extract_node_values(etempnp_, discretization, la, "thermo", my::scatraparams_->NdsThermo());
 }
 
 /*----------------------------------------------------------------------*

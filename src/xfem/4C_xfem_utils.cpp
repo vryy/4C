@@ -23,7 +23,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void XFEM::UTILS::ExtractNodeVectors(Teuchos::RCP<DRT::Discretization> dis,
+void XFEM::UTILS::extract_node_vectors(Teuchos::RCP<DRT::Discretization> dis,
     std::map<int, CORE::LINALG::Matrix<3, 1>>& nodevecmap, Teuchos::RCP<Epetra_Vector> idispnp)
 {
   Teuchos::RCP<const Epetra_Vector> dispcol =

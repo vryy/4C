@@ -764,7 +764,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       {
         case CORE::FE::ShapeFunctionType::nurbs:
         {
-          FOUR_C_THROW("Nurbs Discretization not possible for artery");
+          FOUR_C_THROW("Nurbs discretization not possible for artery");
           break;
         }
         default:
@@ -2299,7 +2299,7 @@ void GLOBAL::ReadKnots(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
       auto* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*dis));
 
       if (nurbsdis == nullptr)
-        FOUR_C_THROW("Discretization %s is not a NurbsDiscretization! Panic.", dis->Name().c_str());
+        FOUR_C_THROW("discretization %s is not a NurbsDiscretization! Panic.", dis->Name().c_str());
 
       // define an empty knot vector object
       Teuchos::RCP<DRT::NURBS::Knotvector> disknots = Teuchos::null;

@@ -30,7 +30,7 @@ MAT::PAR::Air0dO2Saturation::Air0dO2Saturation(Teuchos::RCP<CORE::MAT::PAR::Mate
 {
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Air0dO2Saturation::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Air0dO2Saturation::create_material()
 {
   return Teuchos::rcp(new MAT::Air0dO2Saturation(this));
 }

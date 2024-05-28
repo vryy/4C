@@ -127,7 +127,7 @@ struct MAT::SuperElasticSMA::LoadingData
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()    hemmler 09/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::SuperElasticSMA::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::SuperElasticSMA::create_material()
 {
   return Teuchos::rcp(new MAT::SuperElasticSMA(this));
 }

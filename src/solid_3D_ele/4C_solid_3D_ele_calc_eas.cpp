@@ -955,7 +955,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Setup(
 }
 
 template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::MaterialPostSetup(
+void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::material_post_setup(
     const DRT::Element& ele, MAT::So3Material& solid_material)
 {
   Teuchos::ParameterList params{};

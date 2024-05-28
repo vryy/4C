@@ -131,7 +131,7 @@ MAT::PAR::MuscleCombo::MuscleCombo(Teuchos::RCP<CORE::MAT::PAR::Material> matdat
   if (density_ < 0.0) FOUR_C_THROW("DENS should be positive");
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MuscleCombo::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MuscleCombo::create_material()
 {
   return Teuchos::rcp(new MAT::MuscleCombo(this));
 }

@@ -64,10 +64,10 @@ namespace POROELAST
 
     //! combined DBC map
     //! unique map of all dofs that should be constrained with DBC
-    void BuildCombinedDBCMap() override;
+    void build_combined_dbc_map() override;
 
     //! map containing the dofs with Dirichlet BC and FSI Coupling Condition on structure side
-    Teuchos::RCP<Epetra_Map> FSIDBCMap();
+    Teuchos::RCP<Epetra_Map> fsidbc_map();
 
     //! setup of coupling object and systemmatrixes
     virtual void setup_coupling_and_matrices();

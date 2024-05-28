@@ -110,7 +110,7 @@ namespace PARTICLEENGINE
      * \param[in] step restart step
      * \param[in] time restart time
      */
-    void WriteRestart(const int step, const double time) const;
+    void write_restart(const int step, const double time) const;
 
     /*!
      * \brief read restart of particle engine

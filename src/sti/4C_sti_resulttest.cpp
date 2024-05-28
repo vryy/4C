@@ -51,7 +51,7 @@ void STI::STIResultTest::TestSpecial(
     const double result = result_special(quantity);
 
     // compare values
-    const int err = CompareValues(result, "SPECIAL", res);
+    const int err = compare_values(result, "SPECIAL", res);
     nerr += err;
     ++test_count;
   }

@@ -367,7 +367,7 @@ int CORE::Dofsets::DofSet::assign_degrees_of_freedom(
           if (faces[face]->Owner() == mypid)
           {
             const int mylid = facedis->FaceRowMap()->LID(faces[face]->Id());
-            numdfrowfaces[mylid] = NumDofPerFace(*(dis.lColElement(i)), face);
+            numdfrowfaces[mylid] = num_dof_per_face(*(dis.lColElement(i)), face);
           }
       }
 
@@ -419,7 +419,7 @@ int CORE::Dofsets::DofSet::assign_degrees_of_freedom(
     {
       DRT::Element* actele = dis.lRowElement(i);
       // const int gid = actele->Id();
-      int numdf = NumDofPerElement(*actele);
+      int numdf = num_dof_per_element(*actele);
       numdfrowelements[i] = numdf;
     }
 

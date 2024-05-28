@@ -31,7 +31,7 @@ namespace MAT
       StructPoroReactionECM(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
       /// @name material parameters
       //@{
@@ -152,7 +152,7 @@ namespace MAT
     bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
    protected:
-    void Reaction(const double porosity, const double J, Teuchos::RCP<std::vector<double>> scalars,
+    void reaction(const double porosity, const double J, Teuchos::RCP<std::vector<double>> scalars,
         Teuchos::ParameterList& params) override;
 
     /// reference porosity at time step n

@@ -105,7 +105,7 @@ namespace CONTACT
     };
 
     /// Access the underlying strategy
-    const CONTACT::AbstractStrategy& Strategy() const
+    const CONTACT::AbstractStrategy& strategy() const
     {
       check_init();
       return *strategy_ptr_;

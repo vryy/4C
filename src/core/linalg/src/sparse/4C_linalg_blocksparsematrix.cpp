@@ -433,7 +433,7 @@ const Epetra_Map& CORE::LINALG::BlockSparseMatrixBase::OperatorRangeMap() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::BlockSparseMatrixBase::GetPartialExtractor(
+void CORE::LINALG::BlockSparseMatrixBase::get_partial_extractor(
     const MultiMapExtractor& full_extractor, const std::vector<unsigned>& block_ids,
     MultiMapExtractor& partial_extractor) const
 {
@@ -714,7 +714,7 @@ void CORE::LINALG::DefaultBlockMatrixStrategy::Complete(bool enforce_complete)
   {
     // most stupid way to find the right row
     int rgid = irow.first;
-    int rblock = RowBlock(rgid);
+    int rblock = row_block(rgid);
     if (rblock == -1) FOUR_C_THROW("row finding panic");
 
     for (auto& icol : irow.second)

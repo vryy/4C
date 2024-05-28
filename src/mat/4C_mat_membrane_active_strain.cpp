@@ -44,10 +44,10 @@ MAT::PAR::MembraneActiveStrain::MembraneActiveStrain(Teuchos::RCP<CORE::MAT::PAR
 /*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MembraneActiveStrain::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MembraneActiveStrain::create_material()
 {
   return Teuchos::rcp(new MAT::MembraneActiveStrain(this));
-}  // MAT::PAR::MembraneActiveStrain::CreateMaterial
+}  // MAT::PAR::MembraneActiveStrain::create_material
 
 MAT::MembraneActiveStrainType MAT::MembraneActiveStrainType::instance_;
 

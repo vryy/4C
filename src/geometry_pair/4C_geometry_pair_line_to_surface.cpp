@@ -245,7 +245,7 @@ double GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
     return -1.0;
   else
   {
-    double surface_size = GetSurfaceSize(element_data_surface);
+    double surface_size = get_surface_size(element_data_surface);
     double line_tube_size_radius = (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Element1()))
                                        ->get_circular_cross_section_radius_for_interactions();
     return std::max(surface_size, 3.0 * line_tube_size_radius);
@@ -256,7 +256,7 @@ double GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
  *
  */
 template <typename scalar_type, typename line, typename surface>
-double GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::GetSurfaceSize(
+double GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::get_surface_size(
     const ElementData<surface, scalar_type>& element_data_surface) const
 {
   // Get the position of the first 3 nodes of the surface.

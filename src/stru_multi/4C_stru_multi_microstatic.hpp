@@ -224,7 +224,7 @@ namespace STRUMULTI
 
     Note that this is currently disabled for the sake of clearness
     */
-    void PrintPredictor();
+    void print_predictor();
 
     /*!
     \brief Set EAS internal data if necessary

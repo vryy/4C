@@ -66,13 +66,13 @@ namespace SSI
 
    protected:
     //! return contact nitsche strategy for ssi problems
-    Teuchos::RCP<CONTACT::NitscheStrategySsi> NitscheStrategySsi() const
+    Teuchos::RCP<CONTACT::NitscheStrategySsi> nitsche_strategy_ssi() const
     {
       return contact_strategy_nitsche_;
     }
 
     //! this object holds all maps relevant to monolithic scalar transport - structure interaction
-    Teuchos::RCP<const SSI::UTILS::SSIMaps> SSIMaps() const { return ssi_maps_; }
+    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps() const { return ssi_maps_; }
 
    private:
     //! store contact nitsche strategy for ssi problems

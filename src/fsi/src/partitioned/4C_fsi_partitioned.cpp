@@ -95,8 +95,8 @@ void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, cons
   {
     matchingnodes_ = true;
     const int ndim = GLOBAL::Problem::Instance()->NDim();
-    coupsf.setup_condition_coupling(*StructureField()->Discretization(),
-        StructureField()->Interface()->FSICondMap(), *MBFluidField()->Discretization(),
+    coupsf.setup_condition_coupling(*structure_field()->discretization(),
+        structure_field()->Interface()->FSICondMap(), *MBFluidField()->discretization(),
         MBFluidField()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
     if (coupsf.MasterDofMap()->NumGlobalElements() == 0)
@@ -113,8 +113,8 @@ void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, cons
 
     Teuchos::RCP<ADAPTER::FluidXFEM> x_movingboundary =
         Teuchos::rcp_dynamic_cast<ADAPTER::FluidXFEM>(MBFluidField());
-    coupsf.setup_condition_coupling(*StructureField()->Discretization(),
-        StructureField()->Interface()->FSICondMap(),
+    coupsf.setup_condition_coupling(*structure_field()->discretization(),
+        structure_field()->Interface()->FSICondMap(),
         *x_movingboundary->boundary_discretization(),  // use the matching boundary discretization
         x_movingboundary->StructInterface()->FSICondMap(), "FSICoupling", ndim);
 
@@ -134,7 +134,7 @@ void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, cons
     std::vector<int> coupleddof(GLOBAL::Problem::Instance()->NDim(), 1);
 
     matchingnodes_ = false;
-    coupsfm_->Setup(StructureField()->Discretization(), MBFluidField()->Discretization(),
+    coupsfm_->Setup(structure_field()->discretization(), MBFluidField()->discretization(),
         (Teuchos::rcp_dynamic_cast<ADAPTER::FluidAle>(MBFluidField()))
             ->ale_field()
             ->write_access_discretization(),
@@ -147,7 +147,7 @@ void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, cons
 
   // enable debugging
   if (CORE::UTILS::IntegralValue<int>(fsidyn, "DEBUGOUTPUT"))
-    debugwriter_ = Teuchos::rcp(new UTILS::DebugWriter(StructureField()->Discretization()));
+    debugwriter_ = Teuchos::rcp(new UTILS::DebugWriter(structure_field()->discretization()));
 }
 
 
@@ -185,7 +185,7 @@ void FSI::Partitioned::set_default_parameters(
     case fsi_iter_stagg_fixed_rel_param:
     {
       // fixed-point solver with fixed relaxation parameter
-      SetMethod("ITERATIVE STAGGERED SCHEME WITH FIXED RELAXATION PARAMETER");
+      set_method("ITERATIVE STAGGERED SCHEME WITH FIXED RELAXATION PARAMETER");
 
       nlParams.set("Jacobian", "None");
 
@@ -204,7 +204,7 @@ void FSI::Partitioned::set_default_parameters(
     case fsi_iter_stagg_AITKEN_rel_param:
     {
       // fixed-point solver with Aitken relaxation parameter
-      SetMethod("ITERATIVE STAGGERED SCHEME WITH RELAXATION PARAMETER VIA AITKEN ITERATION");
+      set_method("ITERATIVE STAGGERED SCHEME WITH RELAXATION PARAMETER VIA AITKEN ITERATION");
 
       nlParams.set("Jacobian", "None");
 
@@ -225,7 +225,8 @@ void FSI::Partitioned::set_default_parameters(
     case fsi_iter_stagg_steep_desc:
     {
       // fixed-point solver with steepest descent relaxation parameter
-      SetMethod("ITERATIVE STAGGERED SCHEME WITH RELAXATION PARAMETER VIA STEEPEST DESCENT METHOD");
+      set_method(
+          "ITERATIVE STAGGERED SCHEME WITH RELAXATION PARAMETER VIA STEEPEST DESCENT METHOD");
 
       nlParams.set("Jacobian", "None");
 
@@ -244,7 +245,7 @@ void FSI::Partitioned::set_default_parameters(
     {
       // nonlinear CG solver (pretty much steepest descent with finite
       // difference Jacobian)
-      SetMethod("ITERATIVE STAGGERED SCHEME WITH NONLINEAR CG SOLVER");
+      set_method("ITERATIVE STAGGERED SCHEME WITH NONLINEAR CG SOLVER");
 
       nlParams.set("Jacobian", "None");
       dirParams.set("Method", "NonlinearCG");
@@ -254,7 +255,7 @@ void FSI::Partitioned::set_default_parameters(
     case fsi_iter_stagg_MFNK_FD:
     {
       // matrix free Newton Krylov with finite difference Jacobian
-      SetMethod("MATRIX FREE NEWTON KRYLOV SOLVER BASED ON FINITE DIFFERENCES");
+      set_method("MATRIX FREE NEWTON KRYLOV SOLVER BASED ON FINITE DIFFERENCES");
 
       nlParams.set("Jacobian", "Matrix Free");
 
@@ -277,7 +278,7 @@ void FSI::Partitioned::set_default_parameters(
     case fsi_iter_stagg_MFNK_FSI:
     {
       // matrix free Newton Krylov with FSI specific Jacobian
-      SetMethod("MATRIX FREE NEWTON KRYLOV SOLVER BASED ON FSI SPECIFIC JACOBIAN APPROXIMATION");
+      set_method("MATRIX FREE NEWTON KRYLOV SOLVER BASED ON FSI SPECIFIC JACOBIAN APPROXIMATION");
 
       nlParams.set("Jacobian", "FSI Matrix Free");
 
@@ -295,7 +296,7 @@ void FSI::Partitioned::set_default_parameters(
     case fsi_iter_stagg_MPE:
     {
       // minimal polynomial extrapolation
-      SetMethod("ITERATIVE STAGGERED SCHEME WITH MINIMAL POLYNOMIAL EXTRAPOLATION");
+      set_method("ITERATIVE STAGGERED SCHEME WITH MINIMAL POLYNOMIAL EXTRAPOLATION");
 
       nlParams.set("Jacobian", "None");
       dirParams.set("Method", "User Defined");
@@ -319,7 +320,7 @@ void FSI::Partitioned::set_default_parameters(
     case fsi_iter_stagg_RRE:
     {
       // reduced rank extrapolation
-      SetMethod("ITERATIVE STAGGERED SCHEME WITH REDUCED RANK EXTRAPOLATION");
+      set_method("ITERATIVE STAGGERED SCHEME WITH REDUCED RANK EXTRAPOLATION");
 
       nlParams.set("Jacobian", "None");
       dirParams.set("Method", "User Defined");
@@ -343,7 +344,7 @@ void FSI::Partitioned::set_default_parameters(
     case fsi_basic_sequ_stagg:
     {
       // sequential coupling (no iteration!)
-      SetMethod("BASIC SEQUENTIAL STAGGERED SCHEME");
+      set_method("BASIC SEQUENTIAL STAGGERED SCHEME");
 
       nlParams.set("Jacobian", "None");
       nlParams.set("Max Iterations", 1);
@@ -526,14 +527,14 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
     prepare_output(force_prepare);
 
     // prepare field variables for new time step
-    Update();
+    update();
 
     // extract final displacement and velocity
     // since we did update, this is very easy to extract
     extract_previous_interface_solution();
 
     // write current solution
-    Output();
+    output();
   }
 }
 
@@ -763,7 +764,7 @@ void FSI::Partitioned::create_status_test(Teuchos::ParameterList& nlParams,
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::Partitioned::initial_guess()
 {
-  return StructureField()->predict_interface_dispnp();
+  return structure_field()->predict_interface_dispnp();
 }
 
 
@@ -772,16 +773,16 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::initial_guess()
 Teuchos::RCP<Epetra_Vector> FSI::Partitioned::interface_disp()
 {
   // extract displacements
-  return StructureField()->extract_interface_dispnp();
+  return structure_field()->extract_interface_dispnp();
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InterfaceForce()
+Teuchos::RCP<Epetra_Vector> FSI::Partitioned::interface_force()
 {
   // extract forces
-  return FluidToStruct(MBFluidField()->extract_interface_forces());
+  return fluid_to_struct(MBFluidField()->extract_interface_forces());
 }
 
 
@@ -810,7 +811,7 @@ bool FSI::Partitioned::computeF(const Epetra_Vector& x, Epetra_Vector& F, const 
   if (debugwriter_ != Teuchos::null) debugwriter_->NewIteration();
 
   // Do the FSI step. The real work is in here.
-  FSIOp(x, F, fillFlag);
+  fsi_op(x, F, fillFlag);
 
   if (debugwriter_ != Teuchos::null) debugwriter_->WriteVector("F", F);
 
@@ -827,12 +828,12 @@ void FSI::Partitioned::Remeshing() {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Partitioned::FSIOp(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag) {}
+void FSI::Partitioned::fsi_op(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Partitioned::FluidOp(
+Teuchos::RCP<Epetra_Vector> FSI::Partitioned::fluid_op(
     Teuchos::RCP<Epetra_Vector> idisp, const FillType fillFlag)
 {
   if (Comm().MyPID() == 0 and utils_->isPrintType(::NOX::Utils::OuterIteration))
@@ -843,7 +844,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::FluidOp(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Partitioned::StructOp(
+Teuchos::RCP<Epetra_Vector> FSI::Partitioned::struct_op(
     Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag)
 {
   if (Comm().MyPID() == 0 and utils_->isPrintType(::NOX::Utils::OuterIteration))
@@ -855,7 +856,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::StructOp(
 /*----------------------------------------------------------------------*
  | Calculate interface velocity based on given interface displacement   |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InterfaceVelocity(
+Teuchos::RCP<Epetra_Vector> FSI::Partitioned::interface_velocity(
     Teuchos::RCP<const Epetra_Vector> idispnp) const
 {
   const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
@@ -877,7 +878,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InterfaceVelocity(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Partitioned::StructToFluid(Teuchos::RCP<Epetra_Vector> iv)
+Teuchos::RCP<Epetra_Vector> FSI::Partitioned::struct_to_fluid(Teuchos::RCP<Epetra_Vector> iv)
 {
   const CORE::ADAPTER::Coupling& coupsf = structure_fluid_coupling();
   if (matchingnodes_)
@@ -893,7 +894,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::StructToFluid(Teuchos::RCP<Epetra_
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Partitioned::FluidToStruct(Teuchos::RCP<Epetra_Vector> iv)
+Teuchos::RCP<Epetra_Vector> FSI::Partitioned::fluid_to_struct(Teuchos::RCP<Epetra_Vector> iv)
 {
   const CORE::ADAPTER::Coupling& coupsf = structure_fluid_coupling();
   if (matchingnodes_)
@@ -932,16 +933,16 @@ const CORE::ADAPTER::CouplingMortar& FSI::Partitioned::structure_fluid_coupling_
 /*----------------------------------------------------------------------*/
 void FSI::Partitioned::extract_previous_interface_solution()
 {
-  idispn_ = StructureField()->extract_interface_dispn();
-  iveln_ = FluidToStruct(MBFluidField()->extract_interface_veln());
+  idispn_ = structure_field()->extract_interface_dispn();
+  iveln_ = fluid_to_struct(MBFluidField()->extract_interface_veln());
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Partitioned::Output()
+void FSI::Partitioned::output()
 {
   // call base class version
-  FSI::Algorithm::Output();
+  FSI::Algorithm::output();
 
   switch (
       CORE::UTILS::IntegralValue<int>(GLOBAL::Problem::Instance()->FSIDynamicParams(), "COUPALGO"))
@@ -986,7 +987,7 @@ void FSI::Partitioned::read_restart(int step)
           Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(MBFluidField()) != Teuchos::null)
       {
         IO::DiscretizationReader reader(
-            MBFluidField()->fluid_field()->Discretization(), input_control_file, step);
+            MBFluidField()->fluid_field()->discretization(), input_control_file, step);
         omega = reader.ReadDouble("omega");
       }
       else if (Teuchos::rcp_dynamic_cast<ADAPTER::FluidAle>(MBFluidField()) != Teuchos::null)
@@ -994,7 +995,7 @@ void FSI::Partitioned::read_restart(int step)
         Teuchos::RCP<ADAPTER::FluidAle> fluidale =
             Teuchos::rcp_dynamic_cast<ADAPTER::FluidAle>(MBFluidField());
         IO::DiscretizationReader reader(
-            Teuchos::rcp_const_cast<DRT::Discretization>(fluidale->ale_field()->Discretization()),
+            Teuchos::rcp_const_cast<DRT::Discretization>(fluidale->ale_field()->discretization()),
             input_control_file, step);
         omega = reader.ReadDouble("omega");
       }

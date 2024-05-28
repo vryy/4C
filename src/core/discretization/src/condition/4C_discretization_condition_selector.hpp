@@ -64,7 +64,7 @@ namespace CORE::Conditions
   class ConditionSelector
   {
    public:
-    /// Construct a selector on the given Discretization for the Condition
+    /// Construct a selector on the given discretization for the Condition
     /// with the given name
     ConditionSelector(const DRT::Discretization& dis, std::string condname);
 
@@ -86,14 +86,14 @@ namespace CORE::Conditions
     virtual bool ContainsDof(int dof, int pos) { return true; }
 
    protected:
-    /// Discretization we are looking at
-    const DRT::Discretization& Discretization() const { return dis_; }
+    /// discretization we are looking at
+    const DRT::Discretization& discretization() const { return dis_; }
 
     /// all conditions that come by the given name
-    const std::vector<Condition*>& Conditions() const { return conds_; }
+    const std::vector<Condition*>& conditions() const { return conds_; }
 
    private:
-    /// Discretization
+    /// discretization
     const DRT::Discretization& dis_;
 
     /// Conditions

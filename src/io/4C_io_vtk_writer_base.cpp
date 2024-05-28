@@ -256,7 +256,7 @@ void VtkWriterBase::initialize_vtk_file_streams_for_new_geometry_and_or_time_ste
     // append this new master file to the stream of all written files and times
     // for later use as vtk collection file ('.pvd')
     append_master_file_and_time_to_collection_file_mid_section_content(
-        filename_base_ + this->WriterPSuffix(),
+        filename_base_ + this->writer_p_suffix(),
         determine_vtk_subdirectory_name_from_full_vtk_working_path(), time_);
   }
 }
@@ -268,7 +268,7 @@ void VtkWriterBase::initialize_vtk_file_stream_this_processor()
   std::ostringstream tmpstream;
 
   tmpstream << working_directory_full_path_ << "/" << filename_base_
-            << get_part_of_file_name_indicating_processor_id(myrank_) << this->WriterSuffix();
+            << get_part_of_file_name_indicating_processor_id(myrank_) << this->writer_suffix();
 
   currentout_.close();
   currentout_.open(tmpstream.str().c_str());
@@ -280,7 +280,7 @@ void VtkWriterBase::initialize_vtk_master_file_stream()
 {
   currentmasterout_.close();
   currentmasterout_.open(
-      (working_directory_full_path_ + "/" + filename_base_ + this->WriterPSuffix()).c_str());
+      (working_directory_full_path_ + "/" + filename_base_ + this->writer_p_suffix()).c_str());
 }
 
 /*----------------------------------------------------------------------*
@@ -372,10 +372,10 @@ void VtkWriterBase::write_vtk_header_master_file(const std::string& byteorder)
   currentmasterout_ << "<!-- \n";
   currentmasterout_ << "# vtk DataFile Version 3.0\n";
   currentmasterout_ << "-->\n";
-  currentmasterout_ << "<VTKFile type=\"P" << this->WriterString() << "\" version=\"0.1\"";
+  currentmasterout_ << "<VTKFile type=\"P" << this->writer_string() << "\" version=\"0.1\"";
   currentmasterout_ << " byte_order=\"" << byteorder << "\"";
   currentmasterout_ << ">\n";
-  currentmasterout_ << "  " << this->WriterPOpeningTag() << "\n";
+  currentmasterout_ << "  " << this->writer_p_opening_tag() << "\n";
 }
 
 /*----------------------------------------------------------------------*
@@ -388,11 +388,11 @@ void VtkWriterBase::write_vtk_header_this_processor(const std::string& byteorder
   currentout_ << "<!-- \n";
   currentout_ << "# vtk DataFile Version 3.0\n";
   currentout_ << "-->\n";
-  currentout_ << "<VTKFile type=\"" << this->WriterString() << "\" version=\"0.1\"";
+  currentout_ << "<VTKFile type=\"" << this->writer_string() << "\" version=\"0.1\"";
   currentout_ << " compressor=\"vtkZLibDataCompressor\"";
   currentout_ << " byte_order=\"" << byteorder << "\"";
   currentout_ << ">\n";
-  currentout_ << "  " << this->WriterOpeningTag() << "\n";
+  currentout_ << "  " << this->writer_opening_tag() << "\n";
 }
 
 /*----------------------------------------------------------------------*
@@ -426,7 +426,7 @@ void VtkWriterBase::write_field_data_array(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::WriteDataArray(const IO::visualization_vector_type_variant& data,
+void VtkWriterBase::write_data_array(const IO::visualization_vector_type_variant& data,
     const int num_components, const std::string& name)
 {
   std::string vtk_type_name = "";
@@ -579,14 +579,14 @@ void VtkWriterBase::write_vtk_footer_master_file()
 
   // generate information about 'pieces' (piece = part that is written by individual processor)
   typedef std::vector<std::string> pptags_type;
-  const pptags_type& ppiecetags = this->WriterPPieceTags();
+  const pptags_type& ppiecetags = this->writer_p_piece_tags();
 
   if (numproc_ != ppiecetags.size()) FOUR_C_THROW("Incorrect number of Pieces.");
 
   for (pptags_type::const_iterator it = ppiecetags.begin(); it != ppiecetags.end(); ++it)
     currentmasterout_ << "    " << *it << "\n";
 
-  currentmasterout_ << "  </P" << this->WriterString() << ">\n";
+  currentmasterout_ << "  </P" << this->writer_string() << ">\n";
   currentmasterout_ << "</VTKFile>\n";
 
   currentmasterout_ << std::flush;
@@ -607,7 +607,7 @@ void VtkWriterBase::write_vtk_footer_this_processor()
 
   currentout_ << "    </Piece>\n";
 
-  currentout_ << "  </" << this->WriterString() << ">\n";
+  currentout_ << "  </" << this->writer_string() << ">\n";
   currentout_ << "</VTKFile>\n";
 
   currentout_ << std::flush;

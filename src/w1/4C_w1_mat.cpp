@@ -354,7 +354,7 @@ void DRT::ELEMENTS::Wall1::material_response3d(CORE::LINALG::Matrix<6, 1>* stres
 /*-----------------------------------------------------------------------------*
 | deliver internal/strain energy                                    bborn 08/08|
 *-----------------------------------------------------------------------------*/
-double DRT::ELEMENTS::Wall1::EnergyInternal(Teuchos::RCP<const CORE::MAT::Material> material,
+double DRT::ELEMENTS::Wall1::energy_internal(Teuchos::RCP<const CORE::MAT::Material> material,
     Teuchos::ParameterList& params, const CORE::LINALG::SerialDenseVector& Ev, const int gp)
 {
   // switch material type
@@ -422,7 +422,7 @@ double DRT::ELEMENTS::Wall1::EnergyInternal(Teuchos::RCP<const CORE::MAT::Materi
 /*-----------------------------------------------------------------------------*
 | deliver kinetic energy                                            bborn 08/08|
 *-----------------------------------------------------------------------------*/
-double DRT::ELEMENTS::Wall1::EnergyKinetic(
+double DRT::ELEMENTS::Wall1::energy_kinetic(
     const CORE::LINALG::SerialDenseMatrix& mass, const std::vector<double>& vel)
 {
   double kin = 0.0;

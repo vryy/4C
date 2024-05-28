@@ -61,7 +61,7 @@ namespace MAT
 
         /// Override this method and throw error, as the material should be created in within the
         /// Factory method of the elastic summand
-        Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override
+        Teuchos::RCP<CORE::MAT::Material> create_material() override
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "
@@ -105,7 +105,7 @@ namespace MAT
       /*!
        * \brief Notifier method when fibers are initialized.
        */
-      void OnFibersInitialized() override;
+      void on_fibers_initialized() override;
 
       /*!
        * \brief Returns the reference to the coupled structural tensor in stress like Voigt

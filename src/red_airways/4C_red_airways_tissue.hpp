@@ -50,7 +50,7 @@ namespace AIRWAY
     /// time integration of coupled problem
     void Integrate();
 
-    void DoStructureStep();
+    void do_structure_step();
 
     void RelaxPressure(int iter);
 
@@ -63,10 +63,10 @@ namespace AIRWAY
         Teuchos::RCP<Epetra_Vector> scaled_pres_inc, Teuchos::RCP<Epetra_Vector> flux_inc,
         Teuchos::RCP<Epetra_Vector> scaled_flux_inc, int iter);
 
-    void UpdateAndOutput();
+    void update_and_output();
 
     /// access to structural field
-    Teuchos::RCP<ADAPTER::StructureRedAirway>& StructureField() { return structure_; }
+    Teuchos::RCP<ADAPTER::StructureRedAirway>& structure_field() { return structure_; }
 
     /// access to airway field
     Teuchos::RCP<RedAirwayImplicitTimeInt>& RedAirwayField() { return redairways_; }

@@ -27,7 +27,7 @@ SCATRA::MeshtyingStrategyStdElch::MeshtyingStrategyStdElch(SCATRA::ScaTraTimIntE
 /*----------------------------------------------------------------------*
  | initialize system matrix for electrochemistry problems    fang 12/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::InitSystemMatrix()
+Teuchos::RCP<CORE::LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::init_system_matrix()
     const
 {
   Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix;
@@ -49,7 +49,7 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::Ini
     // usage of a split strategy that makes use of the ELCH-specific sparsity pattern
     CORE::LINALG::MapExtractor splitter;
     CORE::LINALG::CreateMapExtractorFromDiscretization(
-        *(scatratimint_->Discretization()), scatratimint_->NumScal(), splitter);
+        *(scatratimint_->discretization()), scatratimint_->NumScal(), splitter);
     systemmatrix = Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<SCATRA::SplitStrategy>(
         splitter, splitter, 27, false, true));
     Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrix<SCATRA::SplitStrategy>>(systemmatrix)
@@ -64,7 +64,7 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::Ini
       case CORE::LINALG::MatrixType::sparse:
       {
         systemmatrix = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-            *scatratimint_->Discretization()->dof_row_map(), 27, false, true));
+            *scatratimint_->discretization()->dof_row_map(), 27, false, true));
         break;
       }
 
@@ -87,7 +87,7 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::Ini
   }
 
   return systemmatrix;
-}  // SCATRA::MeshtyingStrategyStdElch::InitSystemMatrix
+}  // SCATRA::MeshtyingStrategyStdElch::init_system_matrix
 
 
 /*------------------------------------------------------------------------*

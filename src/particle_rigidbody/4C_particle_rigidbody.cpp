@@ -87,17 +87,17 @@ void PARTICLERIGIDBODY::RigidBodyHandler::Setup(
     IO::cout << "Warning: rigid bodies not transferred over periodic boundary!" << IO::endl;
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::WriteRestart() const
+void PARTICLERIGIDBODY::RigidBodyHandler::write_restart() const
 {
   // get bin discretization writer
   std::shared_ptr<IO::DiscretizationWriter> binwriter =
       particleengineinterface_->get_bin_discretization_writer();
 
   // write restart of unique global identifier handler
-  rigidbodyuniqueglobalidhandler_->WriteRestart(binwriter);
+  rigidbodyuniqueglobalidhandler_->write_restart(binwriter);
 
   // write restart of affiliation pair handler
-  affiliationpairs_->WriteRestart();
+  affiliationpairs_->write_restart();
 
   // get packed rigid body state data
   Teuchos::RCP<std::vector<char>> buffer = Teuchos::rcp(new std::vector<char>);

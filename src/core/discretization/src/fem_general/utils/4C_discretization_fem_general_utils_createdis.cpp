@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::FE::DiscretizationCreatorBase::InitialChecks(
+void CORE::FE::DiscretizationCreatorBase::initial_checks(
     const DRT::Discretization& sourcedis, const DRT::Discretization& targetdis) const
 {
   // are the source and target discretizations ready?
@@ -36,11 +36,11 @@ void CORE::FE::DiscretizationCreatorBase::InitialChecks(
   }
   // Ok. Let's go on
   return;
-}  // CORE::FE::DiscretizationCreatorBase::InitialChecks
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::FE::DiscretizationCreatorBase::CreateNodes(const DRT::Discretization& sourcedis,
+void CORE::FE::DiscretizationCreatorBase::create_nodes(const DRT::Discretization& sourcedis,
     DRT::Discretization& targetdis, const std::set<int>& rownodeset,
     const std::set<int>& colnodeset, const bool isnurbsdis, const bool buildimmersednode) const
 {
@@ -87,7 +87,7 @@ void CORE::FE::DiscretizationCreatorBase::CreateNodes(const DRT::Discretization&
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> CORE::FE::DiscretizationCreatorBase::CreateMap(
+Teuchos::RCP<Epetra_Map> CORE::FE::DiscretizationCreatorBase::create_map(
     std::set<int>& gidset, const DRT::Discretization& targetdis) const
 {
   // we get the node maps almost for free
@@ -198,7 +198,7 @@ CORE::FE::DiscretizationCreatorBase::create_matching_discretization(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::FE::DiscretizationCreatorBase::Finalize(
+void CORE::FE::DiscretizationCreatorBase::finalize(
     const DRT::Discretization& sourcedis, DRT::Discretization& targetdis) const
 {
   // export according to previously filled maps

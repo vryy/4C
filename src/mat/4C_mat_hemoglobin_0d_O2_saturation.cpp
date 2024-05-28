@@ -33,7 +33,7 @@ MAT::PAR::Hemoglobin0dO2Saturation::Hemoglobin0dO2Saturation(
 {
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Hemoglobin0dO2Saturation::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Hemoglobin0dO2Saturation::create_material()
 {
   return Teuchos::rcp(new MAT::Hemoglobin0dO2Saturation(this));
 }

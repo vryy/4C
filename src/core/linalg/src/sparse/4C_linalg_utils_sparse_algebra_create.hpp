@@ -94,7 +94,7 @@ namespace CORE::LINALG
       The ndim dofs are assigned to map 0 (the other map) and the remaining dofs to map 1 (the
       condition map).
 
-      \param dis : (in) Discretization
+      \param dis : (in) discretization
       \param ndim : (in) dimensions of map 0
       \param extractor : (out) ready made map splitter
 
@@ -115,7 +115,7 @@ namespace CORE::LINALG
 
     Nodal dofs and total map come from dofset.
 
-    \param dis : (in) Discretization
+    \param dis : (in) discretization
     \param dofset : (in) Degree of freedom set
     \param ndim : (in) dimensions of map 0
     \param extractor : (out) ready made map splitter
@@ -137,7 +137,7 @@ namespace CORE::LINALG
     The ndim_field1 dofs are assigned to map 0 (the other map) and the ndim_field2 to map 1 (the
     condition map).
 
-    \param dis : (in) Discretization
+    \param dis : (in) discretization
     \param ndim_field1 : (in) dimensions of map 0
     \param ndim_field2 : (in) dimensions of map 1
     \param extractor : (out) ready made map splitter

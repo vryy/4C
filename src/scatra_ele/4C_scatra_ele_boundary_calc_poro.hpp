@@ -35,7 +35,7 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate action
-      int EvaluateAction(DRT::FaceElement* ele, Teuchos::ParameterList& params,
+      int evaluate_action(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, SCATRA::BoundaryAction action,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -45,13 +45,13 @@ namespace DRT
 
      protected:
       //! compute integral of convective mass/heat flux over boundary surface
-      std::vector<double> CalcConvectiveFlux(const DRT::FaceElement* ele,
+      std::vector<double> calc_convective_flux(const DRT::FaceElement* ele,
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
           const CORE::LINALG::Matrix<nsd_, nen_>& evelnp,
           CORE::LINALG::SerialDenseVector& erhs) override;
 
       //! compute porosity based on solid, fluid and (potentially) scatra solution
-      virtual double ComputePorosity(
+      virtual double compute_porosity(
           const DRT::FaceElement* ele  //!< the element we are dealing with
       );
 

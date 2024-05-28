@@ -86,7 +86,7 @@ namespace PARTICLEINTERACTION
 
    protected:
     //! evaluate sum of weighted mass
-    virtual void SumWeightedMass() const final;
+    virtual void sum_weighted_mass() const final;
 
     //! clear density sum state
     virtual void clear_density_sum_state() const final;
@@ -101,7 +101,7 @@ namespace PARTICLEINTERACTION
     virtual void sum_weighted_mass_particle_wall_contribution() const final;
 
     //! evaluate sum of colorfield
-    virtual void SumColorfield() const final;
+    virtual void sum_colorfield() const final;
 
     //! clear colorfield state
     virtual void clear_colorfield_state() const final;
@@ -116,7 +116,7 @@ namespace PARTICLEINTERACTION
     virtual void sum_colorfield_particle_wall_contribution() const final;
 
     //! evaluate continuity equation
-    virtual void ContinuityEquation() const final;
+    virtual void continuity_equation() const final;
 
     //! clear density dot state
     virtual void clear_density_dot_state() const final;
@@ -128,7 +128,7 @@ namespace PARTICLEINTERACTION
     virtual void continuity_equation_particle_wall_contribution() const final;
 
     //! set density sum to density field
-    virtual void SetDensitySum() const final;
+    virtual void set_density_sum() const final;
 
     //! add time step scaled density dot to density field
     virtual void add_time_step_scaled_density_dot() const final;

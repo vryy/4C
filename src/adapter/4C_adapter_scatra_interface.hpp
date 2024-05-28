@@ -51,7 +51,7 @@ namespace ADAPTER
     virtual ~ScatraInterface() = default;
 
     //! return discretization
-    virtual Teuchos::RCP<DRT::Discretization> Discretization() const = 0;
+    virtual Teuchos::RCP<DRT::Discretization> discretization() const = 0;
 
     //! add parameters specific for time-integration scheme
     virtual void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) = 0;

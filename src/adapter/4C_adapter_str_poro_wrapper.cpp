@@ -36,7 +36,7 @@ ADAPTER::StructurePoroWrapper::StructurePoroWrapper(
       poro_ = Teuchos::rcp_dynamic_cast<POROELAST::Monolithic>(field_);
       if (poro_ == Teuchos::null)
         FOUR_C_THROW("StructurePoroWrapper: Cast from Field to PoroBase failed!");
-      structure_ = poro_->StructureField();
+      structure_ = poro_->structure_field();
       break;
     default:
       FOUR_C_THROW(
@@ -92,7 +92,7 @@ const Teuchos::RCP<POROELAST::Monolithic>& ADAPTER::StructurePoroWrapper::poro_f
   return poro_;  // do not remove FOUR_C_THROW!!! - return just to make complier happy :-)
 }
 
-const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& ADAPTER::StructurePoroWrapper::StructureField()
+const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& ADAPTER::StructurePoroWrapper::structure_field()
 {
   if (type_ == FieldWrapper::type_PoroField || type_ == FieldWrapper::type_StructureField)
     return structure_;

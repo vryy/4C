@@ -112,7 +112,7 @@ namespace MAT
 
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
       //@}
 
     };  // class PlasticElastHyper
@@ -238,7 +238,7 @@ namespace MAT
     }
 
     /// plastic spin unequal zero
-    virtual bool HavePlasticSpin() const
+    virtual bool have_plastic_spin() const
     {
       return (MatParams()->plspin_chi_ != 0. &&
               (MatParams()->kinhard_ != 0 || MatParams()->rY_11_ != 0.));
@@ -485,7 +485,7 @@ namespace MAT
     virtual void evaluate_kin_quant_elast(const CORE::LINALG::Matrix<3, 3>* defgrd,
         const CORE::LINALG::Matrix<3, 3>* deltaLp, const int gp);
 
-    virtual double NormStressLike(const CORE::LINALG::Matrix<6, 1>& stress);
+    virtual double norm_stress_like(const CORE::LINALG::Matrix<6, 1>& stress);
 
     /// calculates the isotropic stress and elasticity tensor for coupled configuration
     virtual void evaluate_isotropic_princ_plast(CORE::LINALG::Matrix<6, 9>& dPK2dFpinvIsoprinc,
@@ -498,7 +498,7 @@ namespace MAT
         CORE::LINALG::Matrix<6, 6>& cmatisoprinc, CORE::LINALG::Matrix<3, 1> dPI,
         CORE::LINALG::Matrix<6, 1> ddPII);
 
-    virtual void EvaluateNCP(const CORE::LINALG::Matrix<3, 3>* mStr,
+    virtual void evaluate_ncp(const CORE::LINALG::Matrix<3, 3>* mStr,
         const CORE::LINALG::Matrix<6, 6>* dMdC, const CORE::LINALG::Matrix<6, 9>* dMdFpinv,
         const CORE::LINALG::Matrix<6, 9>* dPK2dFpinv, const CORE::LINALG::Matrix<3, 3>* deltaDp,
         const int gp, const double* temp, CORE::LINALG::Matrix<6, 1>* NCP,
@@ -508,7 +508,7 @@ namespace MAT
         CORE::LINALG::Matrix<6, 1>* dHdDp, Teuchos::ParameterList& params, const double dt,
         const CORE::LINALG::Matrix<6, 9>* d_cauchy_dFpi, CORE::LINALG::Matrix<6, 6>* d_cauchy_ddp);
 
-    virtual void EvaluateNCPandSpin(const CORE::LINALG::Matrix<3, 3>* mStr,
+    virtual void evaluate_nc_pand_spin(const CORE::LINALG::Matrix<3, 3>* mStr,
         const CORE::LINALG::Matrix<6, 6>* dMdC, const CORE::LINALG::Matrix<6, 9>* dMdFpinv,
         const CORE::LINALG::Matrix<6, 9>* dPK2dFpinv, const CORE::LINALG::Matrix<3, 3>* deltaLp,
         const int gp, CORE::LINALG::Matrix<9, 1>* NCP, CORE::LINALG::Matrix<9, 6>* dNCPdC,

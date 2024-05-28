@@ -37,14 +37,14 @@ STR::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input pa
     Teuchos::RCP<TimInt> tis                                   //!< marching time integrator
     )
     : sti_(tis),
-      discret_(tis->Discretization()),
+      discret_(tis->discretization()),
       myrank_(discret_->Comm().MyPID()),
       solver_(tis->Solver()),
       output_(tis->DiscWriter()),
       //
       timeinitial_(0.0),
       timefinal_(timeparams.get<double>("MAXTIME")),
-      timedirect_(Sign(timefinal_ - timeinitial_)),
+      timedirect_(sign(timefinal_ - timeinitial_)),
       timestepinitial_(0),
       timestepfinal_(timeparams.get<int>("NUMSTEP")),
       stepsizeinitial_(timeparams.get<double>("TIMESTEP")),
@@ -108,7 +108,7 @@ STR::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input pa
     timestepinitial_ = tis->StepOld();
 
     // update variables which depend on initial time and step
-    timedirect_ = Sign(timefinal_ - timeinitial_);
+    timedirect_ = sign(timefinal_ - timeinitial_);
     outsystime_ = timeinitial_ + outsysperiod_;
     outstrtime_ = timeinitial_ + outstrperiod_;
     outenetime_ = timeinitial_ + outeneperiod_;

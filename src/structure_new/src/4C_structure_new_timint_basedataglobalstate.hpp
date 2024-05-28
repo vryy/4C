@@ -101,7 +101,7 @@ namespace STR
 
       /*! \brief Initialize class variables
        *
-       * @param discret Discretization object
+       * @param discret discretization object
        * @param sdynparams Parameter list for structural dynamics from input file
        * @param datasdyn Structural dynamics data container
        */
@@ -629,7 +629,7 @@ namespace STR
       };
 
       /// Returns global problem map pointer
-      Teuchos::RCP<const Epetra_Map> GlobalProblemMapPtr() const { return gproblem_map_ptr_; };
+      Teuchos::RCP<const Epetra_Map> global_problem_map_ptr() const { return gproblem_map_ptr_; };
 
       /// Returns global problem map
       const Epetra_Map& GlobalProblemMap() const
@@ -907,7 +907,7 @@ namespace STR
 
      protected:
       /// mutable access to the global problem map
-      Teuchos::RCP<Epetra_Map>& GlobalProblemMapPtr() { return gproblem_map_ptr_; }
+      Teuchos::RCP<Epetra_Map>& global_problem_map_ptr() { return gproblem_map_ptr_; }
 
       /** \brief mutable access to the structural stiffness member variable [PROTECTED ONLY]
        *
@@ -916,7 +916,7 @@ namespace STR
        *
        *  \date 02/17
        *  \author hiermier */
-      Teuchos::RCP<CORE::LINALG::SparseOperator>& StiffPtr() { return stiff_; }
+      Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff_ptr() { return stiff_; }
 
      protected:
       /// @name variables for internal use only

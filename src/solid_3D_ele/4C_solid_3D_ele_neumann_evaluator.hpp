@@ -46,7 +46,7 @@ namespace DRT::ELEMENTS
    * of the element at compile-time, you could directly call @evaluate_neumann.
    *
    * @param element (in) : The element where we integrate
-   * @param discretization (in) : Discretization
+   * @param discretization (in) : discretization
    * @param condition (in) : The Neumann condition to be evaluated within the element.
    * @param dof_index_array (in) : The index array of the dofs of the element
    * @param element_force_vector (out) : The element force vector for the evaluated Neumann
@@ -79,7 +79,7 @@ namespace DRT::ELEMENTS
    * @tparam celltype Cell type known at compile time
    *
    * @param element (in) : The element where we integrate
-   * @param discretization (in) : Discretization
+   * @param discretization (in) : discretization
    * @param condition (in) : The Neumann condition to be evaluated within the element.
    * @param dof_index_array (in) : The index array of the dofs of the element
    * @param element_force_vector (out) : The element force vector for the evaluated Neumann

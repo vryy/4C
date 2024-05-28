@@ -52,7 +52,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
     GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
     GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
     this->get_coupling_reference_position(beam_coupling_ref, solid_coupling_ref);
-    this->CastGeometryPair()->Evaluate(
+    this->cast_geometry_pair()->Evaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
@@ -196,7 +196,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
     GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
     GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
     this->get_coupling_reference_position(beam_coupling_ref, solid_coupling_ref);
-    this->CastGeometryPair()->Evaluate(
+    this->cast_geometry_pair()->Evaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }

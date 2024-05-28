@@ -61,7 +61,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
   // Call pre_evaluate on the geometry Pair.
   if (!meshtying_is_evaluated_)
   {
-    CastGeometryPair()->pre_evaluate(this->ele1posref_,
+    cast_geometry_pair()->pre_evaluate(this->ele1posref_,
         this->face_element_->get_face_reference_element_data(), this->line_to_3D_segments_);
   }
 }
@@ -193,7 +193,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
       UTILS::GetNumberOfElementCenterlineDof(this->Element1()));
 
   // The second element in the pair has to be the face element.
-  CastGeometryPair()->SetElement2(face_element_->GetDrtFaceElement());
+  cast_geometry_pair()->SetElement2(face_element_->GetDrtFaceElement());
 }
 
 /**
@@ -201,8 +201,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
  */
 template <typename scalar_type, typename beam, typename surface>
 Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToSurface<double, beam, surface>>
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>::CastGeometryPair()
-    const
+BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
+    surface>::cast_geometry_pair() const
 {
   return Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::GeometryPairLineToSurface<double, beam, surface>>(
       this->geometry_pair_, true);
@@ -213,7 +213,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>
  */
 template <typename scalar_type, typename beam, typename surface>
 CORE::LINALG::Matrix<3, 1, scalar_type>
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>::EvaluateCoupling(
+BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>::evaluate_coupling(
     const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& evaluation_point) const
 {
   using namespace INPAR::BEAMTOSOLID;
@@ -276,7 +276,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>
  */
 template <typename scalar_type, typename beam, typename surface>
 std::vector<int>
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>::GetPairGID(
+BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>::get_pair_gid(
     const DRT::Discretization& discret) const
 {
   // Get the beam centerline GIDs.

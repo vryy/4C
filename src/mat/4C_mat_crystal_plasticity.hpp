@@ -187,7 +187,7 @@ namespace MAT
 
 
       //! create material instance
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
       //-----------------------------------------------------------------------------
       /*                                                                           */

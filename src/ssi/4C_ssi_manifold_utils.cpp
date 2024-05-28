@@ -112,11 +112,11 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
     FOUR_C_THROW("Number of dofs per node of scatra field and scatra manifold field must be equal");
 
   std::vector<CORE::Conditions::Condition*> conditions_manifold;
-  scatra_manifold_->ScaTraField()->Discretization()->GetCondition(
+  scatra_manifold_->ScaTraField()->discretization()->GetCondition(
       "SSISurfaceManifold", conditions_manifold);
 
   std::vector<CORE::Conditions::Condition*> conditions_manifold_kinetics_scatra;
-  scatra_->ScaTraField()->Discretization()->GetCondition(
+  scatra_->ScaTraField()->discretization()->GetCondition(
       "SSISurfaceManifoldKinetics", conditions_manifold_kinetics_scatra);
 
   // create pair: manifold condition - kinetics condition
@@ -128,8 +128,8 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
           condition_kinetics->parameters().Get<int>("ManifoldConditionID"))
       {
         scatra_manifold_couplings_.emplace_back(Teuchos::rcp(
-            new SSI::ManifoldScaTraCoupling(scatra_manifold_->ScaTraField()->Discretization(),
-                scatra_->ScaTraField()->Discretization(), condition_manifold, condition_kinetics,
+            new SSI::ManifoldScaTraCoupling(scatra_manifold_->ScaTraField()->discretization(),
+                scatra_->ScaTraField()->discretization(), condition_manifold, condition_kinetics,
                 ssi_mono.ScaTraManifold()->NumDofPerNode())));
       }
     }
@@ -382,7 +382,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate_bulk_side(
   // First: Set parameters to elements
   pre_evaluate(scatra_manifold_coupling);
 
-  scatra_->ScaTraField()->Discretization()->set_state("phinp", scatra_->ScaTraField()->Phinp());
+  scatra_->ScaTraField()->discretization()->set_state("phinp", scatra_->ScaTraField()->Phinp());
 
   // Second: Evaluate condition
   {
@@ -407,7 +407,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate_bulk_side(
           matrix_scatra_manifold_cond_on_scatra_side, rhs_scatra_cond_, Teuchos::null,
           Teuchos::null);
 
-      scatra_->ScaTraField()->Discretization()->evaluate_condition(condparams, strategyscatra,
+      scatra_->ScaTraField()->discretization()->evaluate_condition(condparams, strategyscatra,
           "SSISurfaceManifoldKinetics", scatra_manifold_coupling->KineticsConditionID());
 
       systemmatrix_scatra_cond_->Complete();
@@ -436,7 +436,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate_bulk_side(
           matrix_scatra_structure_cond_slave_side_disp_evaluate, Teuchos::null, Teuchos::null,
           Teuchos::null, Teuchos::null);
 
-      scatra_->ScaTraField()->Discretization()->evaluate_condition(condparams, strategyscatra,
+      scatra_->ScaTraField()->discretization()->evaluate_condition(condparams, strategyscatra,
           "SSISurfaceManifoldKinetics", scatra_manifold_coupling->KineticsConditionID());
 
       matrix_scatra_structure_cond_slave_side_disp_evaluate->Complete(
@@ -606,7 +606,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate_sca_tra_manifold_inflow()
   inflow_.clear();
   domainintegral_.clear();
 
-  scatra_->ScaTraField()->Discretization()->set_state("phinp", scatra_->ScaTraField()->Phinp());
+  scatra_->ScaTraField()->discretization()->set_state("phinp", scatra_->ScaTraField()->Phinp());
 
   for (const auto& scatra_manifold_coupling : scatra_manifold_couplings_)
   {
@@ -644,7 +644,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate_sca_tra_manifold_domain_in
     // integrated domain of this condition
     auto domainintegral_cond = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(1));
 
-    scatra_->ScaTraField()->Discretization()->EvaluateScalars(
+    scatra_->ScaTraField()->discretization()->EvaluateScalars(
         condparams, domainintegral_cond, "SSISurfaceManifold", kineticsID);
 
     domainintegral_.insert(std::make_pair(kineticsID, domainintegral_cond->values()[0]));
@@ -671,7 +671,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate_sca_tra_manifold_inflow_in
   auto inflow_cond =
       Teuchos::rcp(new CORE::LINALG::SerialDenseVector(scatra_->ScaTraField()->NumDofPerNode()));
 
-  scatra_->ScaTraField()->Discretization()->EvaluateScalars(
+  scatra_->ScaTraField()->discretization()->EvaluateScalars(
       condparams, inflow_cond, "SSISurfaceManifold", kineticsID);
 
   for (int i = 0; i < inflow_cond->length(); ++i)
@@ -734,7 +734,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::pre_evaluate(
       break;
     }
   }
-  scatra_manifold_->ScaTraField()->Discretization()->Evaluate(
+  scatra_manifold_->ScaTraField()->discretization()->Evaluate(
       eleparams, Teuchos::null, Teuchos::null);
 }
 

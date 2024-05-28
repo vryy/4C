@@ -687,7 +687,7 @@ namespace XFEM
     void get_interface_slave_material(
         DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat, int coup_sid);
 
-    /// Initialize Fluid Intersection/Cut State
+    /// Initialize Fluid intersection/Cut State
     bool initialize_fluid_state(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
         Teuchos::RCP<DRT::Discretization> fluiddis,
         Teuchos::RCP<XFEM::ConditionManager> condition_manager,

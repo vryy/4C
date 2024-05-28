@@ -47,8 +47,8 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(
   // enable debugging
   if (CORE::UTILS::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") == 1)
   {
-    sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(StructureField()->Discretization()));
-    // fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(fluid_field()->Discretization()));
+    sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(structure_field()->discretization()));
+    // fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(fluid_field()->discretization()));
   }
 
   std::string s = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
@@ -86,25 +86,25 @@ void FSI::MonolithicNoNOX::SetupSystem()
 
   CORE::ADAPTER::Coupling& coupsf = structure_fluid_coupling();
   CORE::ADAPTER::Coupling& coupsa = structure_ale_coupling();
-  CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  CORE::ADAPTER::Coupling& coupfa = fluid_ale_coupling();
   CORE::ADAPTER::Coupling& icoupfa = interface_fluid_ale_coupling();
 
   // structure to fluid
 
-  coupsf.setup_condition_coupling(*StructureField()->Discretization(),
-      StructureField()->Interface()->FSICondMap(), *fluid_field()->Discretization(),
+  coupsf.setup_condition_coupling(*structure_field()->discretization(),
+      structure_field()->Interface()->FSICondMap(), *fluid_field()->discretization(),
       fluid_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
   // structure to ale
 
-  coupsa.setup_condition_coupling(*StructureField()->Discretization(),
-      StructureField()->Interface()->FSICondMap(), *ale_field()->Discretization(),
+  coupsa.setup_condition_coupling(*structure_field()->discretization(),
+      structure_field()->Interface()->FSICondMap(), *ale_field()->discretization(),
       ale_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
   // fluid to ale at the interface
 
-  icoupfa.setup_condition_coupling(*fluid_field()->Discretization(),
-      fluid_field()->Interface()->FSICondMap(), *ale_field()->Discretization(),
+  icoupfa.setup_condition_coupling(*fluid_field()->discretization(),
+      fluid_field()->Interface()->FSICondMap(), *ale_field()->discretization(),
       ale_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
   // In the following we assume that both couplings find the same dof
@@ -118,10 +118,10 @@ void FSI::MonolithicNoNOX::SetupSystem()
     FOUR_C_THROW("No nodes in matching FSI interface. Empty FSI coupling condition?");
 
   // the fluid-ale coupling always matches
-  const Epetra_Map* fluidnodemap = fluid_field()->Discretization()->NodeRowMap();
-  const Epetra_Map* alenodemap = ale_field()->Discretization()->NodeRowMap();
+  const Epetra_Map* fluidnodemap = fluid_field()->discretization()->NodeRowMap();
+  const Epetra_Map* alenodemap = ale_field()->discretization()->NodeRowMap();
 
-  coupfa.setup_coupling(*fluid_field()->Discretization(), *ale_field()->Discretization(),
+  coupfa.setup_coupling(*fluid_field()->discretization(), *ale_field()->discretization(),
       *fluidnodemap, *alenodemap, ndim);
 
   fluid_field()->SetMeshMap(coupfa.MasterDofMap());
@@ -133,17 +133,17 @@ void FSI::MonolithicNoNOX::Timeloop()
   while (NotFinished())
   {
     prepare_time_step();
-    Newton();
+    newton();
     constexpr bool force_prepare = false;
     prepare_output(force_prepare);
-    Update();
-    Output();
+    update();
+    output();
   }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicNoNOX::Newton()
+void FSI::MonolithicNoNOX::newton()
 {
   // initialise equilibrium loop
   iter_ = 1;
@@ -165,13 +165,13 @@ void FSI::MonolithicNoNOX::Newton()
   firstcall_ = true;
 
   // equilibrium iteration loop (loop over k)
-  while ((iter_ == 1) or ((not Converged()) and (iter_ <= itermax_)))
+  while ((iter_ == 1) or ((not converged()) and (iter_ <= itermax_)))
   {
     // compute residual forces #rhs_ and tangent #tang_
     // build linear system stiffness matrix and rhs/force
     // residual for each field
 
-    Evaluate(iterinc_);
+    evaluate(iterinc_);
 
     // create the linear system
     // J(x_i) \Delta x_i = - R(x_i)
@@ -209,7 +209,7 @@ void FSI::MonolithicNoNOX::Newton()
   iter_ -= 1;
 
   // test whether max iterations was hit
-  if ((Converged()) and (Comm().MyPID() == 0))
+  if ((converged()) and (Comm().MyPID() == 0))
   {
     IO::cout << IO::endl;
     IO::cout << "  Newton Converged! " << IO::endl;
@@ -223,7 +223,7 @@ void FSI::MonolithicNoNOX::Newton()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FSI::MonolithicNoNOX::Converged()
+bool FSI::MonolithicNoNOX::converged()
 {
   // check for single norms
   bool convinc = false;
@@ -323,7 +323,7 @@ void FSI::MonolithicNoNOX::linear_solve()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
+void FSI::MonolithicNoNOX::evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
 {
   Teuchos::RCP<const Epetra_Vector> sx;
   Teuchos::RCP<const Epetra_Vector> fx;
@@ -331,7 +331,7 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> step_incre
 
   // Save the inner fluid map that includes the background fluid DOF in order to
   // determine a change.
-  const Epetra_BlockMap fluidincrementmap = Extractor().ExtractVector(step_increment, 1)->Map();
+  const Epetra_BlockMap fluidincrementmap = extractor().ExtractVector(step_increment, 1)->Map();
 
   if (not firstcall_)
   {
@@ -352,14 +352,14 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> step_incre
     if (sdbg_ != Teuchos::null)
     {
       sdbg_->NewIteration();
-      sdbg_->WriteVector("x", *StructureField()->Interface()->ExtractFSICondVector(sx));
+      sdbg_->WriteVector("x", *structure_field()->Interface()->ExtractFSICondVector(sx));
     }
   }
 
   // Call all fileds evaluate method and assemble rhs and matrices
 
   {
-    StructureField()->Evaluate(sx);
+    structure_field()->Evaluate(sx);
   }
 
   {
@@ -372,7 +372,7 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> step_incre
   }
 
   // transfer the current ale mesh positions to the fluid field
-  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(ale_field()->Dispnp());
+  Teuchos::RCP<Epetra_Vector> fluiddisp = ale_to_fluid(ale_field()->Dispnp());
   fluid_field()->apply_mesh_displacement(fluiddisp);
 
   {
@@ -589,7 +589,7 @@ void FSI::MonolithicNoNOX::print_newton_iter_text()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicNoNOX::Update()
+void FSI::MonolithicNoNOX::update()
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicNoNOX::Update");
 
@@ -605,11 +605,11 @@ void FSI::MonolithicNoNOX::Update()
     ale_field()->Solve();
     // Now apply the ALE-displacement to the (embedded) fluid and update the
     // grid velocity
-    fluid_field()->apply_mesh_displacement(AleToFluid(ale_field()->Dispnp()));
+    fluid_field()->apply_mesh_displacement(ale_to_fluid(ale_field()->Dispnp()));
   }
 
   // update subsequent fields
-  StructureField()->Update();
+  structure_field()->Update();
   fluid_field()->Update();
   ale_field()->Update();
 }
@@ -621,9 +621,9 @@ void FSI::MonolithicNoNOX::prepare_time_step()
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicNoNOX::prepare_time_step");
 
   increment_time_and_step();
-  PrintHeader();
+  print_header();
 
-  StructureField()->prepare_time_step();
+  structure_field()->prepare_time_step();
   fluid_field()->prepare_time_step();
   ale_field()->prepare_time_step();
 
@@ -637,7 +637,7 @@ void FSI::MonolithicNoNOX::prepare_time_step()
   create_combined_dof_row_map();
   systemmatrix_ =
       Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
-          Extractor(), Extractor(), 81, false, true));
+          extractor(), extractor(), 81, false, true));
 }
 
 FOUR_C_NAMESPACE_CLOSE

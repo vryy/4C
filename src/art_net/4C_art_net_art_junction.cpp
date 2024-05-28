@@ -247,7 +247,7 @@ int ART::UTILS::ArtJunctionWrapper::Solve(Teuchos::ParameterList &params)
 
   for (mapiter = ajunmap_.begin(); mapiter != ajunmap_.end(); mapiter++)
   {
-    mapiter->second->ArtJunctionBc::Solve(params);
+    mapiter->second->ArtJunctionBc::solve(params);
   }
   return 0;
 }
@@ -401,7 +401,7 @@ ART::UTILS::ArtJunctionBc::ArtJunctionBc(Teuchos::RCP<DRT::Discretization> actdi
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-int ART::UTILS::ArtJunctionBc::Solve(Teuchos::ParameterList &params)
+int ART::UTILS::ArtJunctionBc::solve(Teuchos::ParameterList &params)
 {
   //----------------------------------------------------------------------
   // Define the matricese and the vectors that are needed to solve the
@@ -448,7 +448,7 @@ int ART::UTILS::ArtJunctionBc::Solve(Teuchos::ParameterList &params)
   //----------------------------------------------------------------------
   // Fill the Residual vector
   //----------------------------------------------------------------------
-  Residual_Eval(f, A, Q, W, Ao, rho, beta, Pext);
+  residual_eval(f, A, Q, W, Ao, rho, beta, Pext);
 
   int itr = 0;
 
@@ -461,7 +461,7 @@ int ART::UTILS::ArtJunctionBc::Solve(Teuchos::ParameterList &params)
     //--------------------------------------------------------------------
     // Fill the Jacobian matrix
     //--------------------------------------------------------------------
-    Jacobian_Eval(Jacobian, A, Q, W, Ao, rho, beta, Pext);
+    jacobian_eval(Jacobian, A, Q, W, Ao, rho, beta, Pext);
 
     //--------------------------------------------------------------------
     // Solve for dx
@@ -486,7 +486,7 @@ int ART::UTILS::ArtJunctionBc::Solve(Teuchos::ParameterList &params)
       x[i] = Q[i] / A[i];
       x[i + nodes_.size()] = A[i];
     }
-    Update_Result(x, dx);
+    update_result(x, dx);
 
 
     //--------------------------------------------------------------------
@@ -507,7 +507,7 @@ int ART::UTILS::ArtJunctionBc::Solve(Teuchos::ParameterList &params)
       Q[i] = x[i + nodes_.size()] * x[i];
     }
 
-    Residual_Eval(f, A, Q, W, Ao, rho, beta, Pext);
+    residual_eval(f, A, Q, W, Ao, rho, beta, Pext);
   }
   delete[] pivot;
   std::cout << "Junction " << condid_ << " is solved in " << itr;
@@ -539,7 +539,7 @@ int ART::UTILS::ArtJunctionBc::Solve(Teuchos::ParameterList &params)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::UTILS::ArtJunctionBc::Jacobian_Eval(CORE::LINALG::SerialDenseMatrix &Jacobian,
+void ART::UTILS::ArtJunctionBc::jacobian_eval(CORE::LINALG::SerialDenseMatrix &Jacobian,
     std::vector<double> &A, std::vector<double> &Q, std::vector<double> &W, std::vector<double> &Ao,
     std::vector<double> &rho, std::vector<double> &beta, std::vector<double> &Pext)
 {
@@ -582,7 +582,7 @@ void ART::UTILS::ArtJunctionBc::Jacobian_Eval(CORE::LINALG::SerialDenseMatrix &J
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::UTILS::ArtJunctionBc::Residual_Eval(CORE::LINALG::SerialDenseVector &f,
+void ART::UTILS::ArtJunctionBc::residual_eval(CORE::LINALG::SerialDenseVector &f,
     std::vector<double> &A, std::vector<double> &Q, std::vector<double> &W, std::vector<double> &Ao,
     std::vector<double> &rho, std::vector<double> &beta, std::vector<double> &Pext)
 {
@@ -618,7 +618,7 @@ void ART::UTILS::ArtJunctionBc::Residual_Eval(CORE::LINALG::SerialDenseVector &f
 /*----------------------------------------------------------------------*
  |  Update Residual (public)                                ismail 09/09|
  *----------------------------------------------------------------------*/
-void ART::UTILS::ArtJunctionBc::Update_Result(
+void ART::UTILS::ArtJunctionBc::update_result(
     CORE::LINALG::SerialDenseVector &xn, CORE::LINALG::SerialDenseVector &dx)
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS

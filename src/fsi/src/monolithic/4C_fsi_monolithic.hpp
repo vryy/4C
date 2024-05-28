@@ -129,13 +129,13 @@ namespace FSI
     void prepare_time_step() override;
 
     /// take current results for converged and save for next time step
-    void Update() override = 0;
+    void update() override = 0;
 
     /// calculate stresses, strains, energies
     virtual void prepare_output(bool force_prepare);
 
     /// write output
-    void Output() override;
+    void output() override;
 
     /// Write Lagrange multiplier
     virtual void OutputLambda()
@@ -144,7 +144,7 @@ namespace FSI
     };
 
     /// access to structural field
-    const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField() { return structure_; }
+    const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& structure_field() { return structure_; }
 
     /// access to fluid field
     const Teuchos::RCP<ADAPTER::FluidFSI>& fluid_field() { return fluid_; }
@@ -156,13 +156,13 @@ namespace FSI
 
     //! @name Transfer helpers that need access from outside
 
-    virtual Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> struct_to_fluid(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> fluid_to_struct(Teuchos::RCP<Epetra_Vector> iv) const;
     //@}
 
    protected:
     //! Prepare time steps for the fsi problem
-    virtual void PrepareTimeStepFSI();
+    virtual void prepare_time_step_fsi();
 
     //! Prepare preconditioner for new time step
     virtual void prepare_time_step_preconditioner() = 0;
@@ -181,20 +181,22 @@ namespace FSI
 
     //! @name Transfer helpers
 
-    virtual Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> AleToStruct(Teuchos::RCP<Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> FluidToAleInterface(Teuchos::RCP<Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> AleToFluidInterface(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> struct_to_ale(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> ale_to_struct(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> ale_to_fluid(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> fluid_to_ale_interface(
+        Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> ale_to_fluid_interface(
+        Teuchos::RCP<Epetra_Vector> iv) const;
 
-    virtual Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> AleToStruct(Teuchos::RCP<const Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<const Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> FluidToAleInterface(
+    virtual Teuchos::RCP<Epetra_Vector> struct_to_ale(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> ale_to_struct(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> struct_to_fluid(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> fluid_to_struct(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> ale_to_fluid(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> fluid_to_ale_interface(
         Teuchos::RCP<const Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> AleToFluidInterface(
+    virtual Teuchos::RCP<Epetra_Vector> ale_to_fluid_interface(
         Teuchos::RCP<const Epetra_Vector> iv) const;
 
     //@}
@@ -210,12 +212,12 @@ namespace FSI
 
     CORE::ADAPTER::Coupling& structure_fluid_coupling() { return *coupsf_; }
     CORE::ADAPTER::Coupling& structure_ale_coupling() { return *coupsa_; }
-    CORE::ADAPTER::Coupling& FluidAleCoupling() { return *coupfa_; }
+    CORE::ADAPTER::Coupling& fluid_ale_coupling() { return *coupfa_; }
     CORE::ADAPTER::Coupling& interface_fluid_ale_coupling() { return *icoupfa_; }
 
     const CORE::ADAPTER::Coupling& structure_fluid_coupling() const { return *coupsf_; }
     const CORE::ADAPTER::Coupling& structure_ale_coupling() const { return *coupsa_; }
-    const CORE::ADAPTER::Coupling& FluidAleCoupling() const { return *coupfa_; }
+    const CORE::ADAPTER::Coupling& fluid_ale_coupling() const { return *coupfa_; }
     const CORE::ADAPTER::Coupling& interface_fluid_ale_coupling() const { return *icoupfa_; }
 
     //@}
@@ -223,12 +225,15 @@ namespace FSI
     //! @name Time step size adaptivity
     //@{
 
-    bool IsAdaStructure() const
+    bool is_ada_structure() const
     {
       return isadastructure_;
     }  ///< Time step size adaptivity based on structure?
-    bool IsAdaFluid() const { return isadafluid_; }  ///< Time step size adaptivity based on fluid?
-    bool IsAdaSolver() const
+    bool is_ada_fluid() const
+    {
+      return isadafluid_;
+    }  ///< Time step size adaptivity based on fluid?
+    bool is_ada_solver() const
     {
       return isadasolver_;
     }  ///< Time step size adaptivity based on solver convergence?
@@ -315,7 +320,7 @@ namespace FSI
     virtual void TimeStep(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
 
     //! take current results for converged and save for next time step
-    void Update() override;
+    void update() override;
 
     //@}
 
@@ -506,7 +511,7 @@ namespace FSI
     //! @name Access methods for subclasses
 
     /// output utility
-    Teuchos::RCP<::NOX::Utils> Utils() const { return utils_; }
+    Teuchos::RCP<::NOX::Utils> utils() const { return utils_; }
 
     /// full monolithic dof row map
     Teuchos::RCP<const Epetra_Map> dof_row_map() const { return blockrowdofmap_.FullMap(); }
@@ -520,18 +525,18 @@ namespace FSI
     void set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
 
     /// extractor to communicate between full monolithic map and block maps of single fields
-    const CORE::LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
+    const CORE::LINALG::MultiMapExtractor& extractor() const { return blockrowdofmap_; }
 
     //@}
 
     /// flags passed to NOX
-    Teuchos::ParameterList& NOXParameterList() { return noxparameterlist_; }
+    Teuchos::ParameterList& nox_parameter_list() { return noxparameterlist_; }
 
     /// setup list with default parameters
     void set_default_parameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
 
     /// add a status test to be used for adaptive linear solver convergence
-    void AddStatusTest(Teuchos::RCP<NOX::FSI::AdaptiveNewtonNormF> test)
+    void add_status_test(Teuchos::RCP<NOX::FSI::AdaptiveNewtonNormF> test)
     {
       statustests_.push_back(test);
     }
@@ -557,21 +562,27 @@ namespace FSI
     //@{
 
     //! access past time step sizes
-    double DtPast(const int step) const;
+    double dt_past(const int step) const;
 
     // access to time step size suggestions based on different norms
-    double GetAdaStrDt() const { return dtstr_; }  ///< \f$\Delta t\f$ based on all structural DOFs
-    double GetAdaStrFSIDt() const
+    double get_ada_str_dt() const
+    {
+      return dtstr_;
+    }  ///< \f$\Delta t\f$ based on all structural DOFs
+    double get_ada_str_fsi_dt() const
     {
       return dtstrfsi_;
     }  ///< \f$\Delta t\f$ based on structural FSI DOFs
-    double GetAdaStrInnerDt() const
+    double get_ada_str_inner_dt() const
     {
       return dtstrinner_;
-    }                                            ///< \f$\Delta t\f$ based on inner structural DOFs
-    double GetAdaFlDt() const { return dtfl_; }  ///< \f$\Delta t\f$ based on all fluid DOFs
-    double GetAdaFlFSIDt() const { return dtflfsi_; }  ///< \f$\Delta t\f$ based on fluid FSI DOFs
-    double GetAdaFlInnerDt() const
+    }  ///< \f$\Delta t\f$ based on inner structural DOFs
+    double get_ada_fl_dt() const { return dtfl_; }  ///< \f$\Delta t\f$ based on all fluid DOFs
+    double get_ada_fl_fsi_dt() const
+    {
+      return dtflfsi_;
+    }  ///< \f$\Delta t\f$ based on fluid FSI DOFs
+    double get_ada_fl_inner_dt() const
     {
       return dtflinner_;
     }  ///< \f$\Delta t\f$ based on inner fluid DOFs
@@ -581,18 +592,24 @@ namespace FSI
     }  ///< \f$\Delta t\f$ based on non-convergence of nonlinear solver
 
     // access to error norms
-    double GetAdaStrnorm() const { return strnorm_; }  ///< error norm based on all structural DOFs
-    double GetAdaStrFSInorm() const
+    double get_ada_strnorm() const
+    {
+      return strnorm_;
+    }  ///< error norm based on all structural DOFs
+    double get_ada_str_fs_inorm() const
     {
       return strfsinorm_;
     }  ///< error norm based on structural FSI DOFs
-    double GetAdaStrInnernorm() const
+    double get_ada_str_innernorm() const
     {
       return strinnernorm_;
-    }                                                ///< error norm based on inner structural DOFs
-    double GetAdaFlnorm() const { return flnorm_; }  ///< error norm based on all fluid DOFs
-    double GetAdaFlFSInorm() const { return flfsinorm_; }  ///< error norm based on fluid FSI DOFs
-    double GetAdaFlInnerNorm() const
+    }  ///< error norm based on inner structural DOFs
+    double get_ada_flnorm() const { return flnorm_; }  ///< error norm based on all fluid DOFs
+    double get_ada_fl_fs_inorm() const
+    {
+      return flfsinorm_;
+    }  ///< error norm based on fluid FSI DOFs
+    double get_ada_fl_inner_norm() const
     {
       return flinnernorm_;
     }  ///< error norm based on inner fluid DOFs
@@ -603,20 +620,20 @@ namespace FSI
      *  6 available norms are useful. Each of these three norms delivers a new
      *  time step size. Select the minimum of these three as the new time step size.
      */
-    virtual double SelectDtErrorBased() const = 0;
+    virtual double select_dt_error_based() const = 0;
 
     /*! \brief Check whether time step is accepted or not
      *
      *  In case that the local truncation error is small enough, the time step is
      *  accepted.
      */
-    virtual bool SetAccepted() const = 0;
+    virtual bool set_accepted() const = 0;
 
     //! return the error action that should be performed
-    virtual int GetErrorAction() const { return erroraction_; }
+    virtual int get_error_action() const { return erroraction_; }
 
     //! Check whether time step sizes are the same among all fields
-    virtual bool CheckIfDtsSame();
+    virtual bool check_if_dts_same();
 
     //@}
 
@@ -1249,7 +1266,7 @@ namespace FSI
     void prepare_time_step_preconditioner() override;
 
     /// create the composed system matrix
-    void CreateSystemMatrix(
+    void create_system_matrix(
         Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>& mat, bool structuresplit);
 
     /// setup solver for global block system

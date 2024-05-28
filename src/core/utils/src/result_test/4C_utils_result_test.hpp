@@ -90,7 +90,7 @@ namespace CORE::UTILS
     //! Node/element based results have to be compared at a specific node/element.
     //! Special results are not attached to a specific node/element, but to the
     //! overall algorithm.
-    virtual int CompareValues(double actresult, std::string type, INPUT::LineDefinition& res);
+    virtual int compare_values(double actresult, std::string type, INPUT::LineDefinition& res);
 
    private:
     /// specific name of a field test

@@ -2120,7 +2120,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcCFL(RedAirway* ele, Teuchos::Parame
  |                                                                      |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AirwayImpl<distype>::UpdateScatra(RedAirway* ele,
+void DRT::ELEMENTS::AirwayImpl<distype>::update_scatra(RedAirway* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<CORE::MAT::Material> material)
 {
@@ -2181,7 +2181,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::UpdateScatra(RedAirway* ele,
       }
     }
   }
-}  // UpdateScatra
+}  // update_scatra
 
 
 

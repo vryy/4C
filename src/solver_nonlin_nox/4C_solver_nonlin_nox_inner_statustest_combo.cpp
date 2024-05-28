@@ -61,9 +61,9 @@ NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Combo::Chec
     const ::NOX::Abstract::Group& grp, ::NOX::StatusTest::CheckType checkType)
 {
   if (type_ == ::NOX::StatusTest::Combo::OR)
-    orOp(interface, solver, grp, checkType);
+    or_op(interface, solver, grp, checkType);
   else
-    andOp(interface, solver, grp, checkType);
+    and_op(interface, solver, grp, checkType);
 
   return status_;
 }
@@ -77,7 +77,7 @@ NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Combo::GetS
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Combo::orOp(const Interface::Required& interface,
+void NOX::NLN::INNER::StatusTest::Combo::or_op(const Interface::Required& interface,
     const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
     ::NOX::StatusTest::CheckType checkType)
 {
@@ -108,7 +108,7 @@ void NOX::NLN::INNER::StatusTest::Combo::orOp(const Interface::Required& interfa
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Combo::andOp(const Interface::Required& interface,
+void NOX::NLN::INNER::StatusTest::Combo::and_op(const Interface::Required& interface,
     const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
     ::NOX::StatusTest::CheckType checkType)
 {
@@ -151,7 +151,7 @@ void NOX::NLN::INNER::StatusTest::Combo::andOp(const Interface::Required& interf
 NOX::NLN::INNER::StatusTest::Combo& NOX::NLN::INNER::StatusTest::Combo::addStatusTest(
     const Teuchos::RCP<Generic>& a)
 {
-  if (isSafe(*a))
+  if (is_safe(*a))
   {
     tests_.push_back(a);
   }
@@ -171,7 +171,7 @@ NOX::NLN::INNER::StatusTest::Combo& NOX::NLN::INNER::StatusTest::Combo::addStatu
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::INNER::StatusTest::Combo::isSafe(Generic& a)
+bool NOX::NLN::INNER::StatusTest::Combo::is_safe(Generic& a)
 {
   // Are we trying to add "this" to "this"? This would result in an infinite recursion.
   if (&a == this) return false;
@@ -183,7 +183,7 @@ bool NOX::NLN::INNER::StatusTest::Combo::isSafe(Generic& a)
     NOX::NLN::INNER::StatusTest::Combo* ptr =
         dynamic_cast<NOX::NLN::INNER::StatusTest::Combo*>(test.get());
     if (ptr != nullptr)
-      if (!ptr->isSafe(a)) return false;
+      if (!ptr->is_safe(a)) return false;
   }
 
   return true;

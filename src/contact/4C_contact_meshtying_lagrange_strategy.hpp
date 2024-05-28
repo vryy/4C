@@ -209,7 +209,7 @@ namespace CONTACT
 
     void run_post_apply_jacobian_inverse(Epetra_Vector& result) override;
 
-    void RunPostComputeX(
+    void run_post_compute_x(
         const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
 
     void remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const override;
@@ -221,10 +221,10 @@ namespace CONTACT
     //!@{
 
     //! Access to #mhatmatrix_
-    virtual Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetMHat() { return mhatmatrix_; };
+    virtual Teuchos::RCP<const CORE::LINALG::SparseMatrix> get_m_hat() { return mhatmatrix_; };
 
     //! Access to #invd_
-    virtual Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetDInverse() { return invd_; };
+    virtual Teuchos::RCP<const CORE::LINALG::SparseMatrix> get_d_inverse() { return invd_; };
 
     //!@}
 

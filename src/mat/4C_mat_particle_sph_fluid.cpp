@@ -45,7 +45,7 @@ MAT::PAR::ParticleMaterialSPHFluid::ParticleMaterialSPHFluid(
 /*---------------------------------------------------------------------------*
  | create material instance of matching type with parameters  sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ParticleMaterialSPHFluid::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ParticleMaterialSPHFluid::create_material()
 {
   return Teuchos::rcp(new MAT::ParticleMaterialSPHFluid(this));
 }

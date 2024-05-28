@@ -96,7 +96,7 @@ namespace FLD
     void call_statistics_manager() override;
 
     /// prepare AVM3-based scale separation
-    void AVM3Preparation() override;
+    void av_m3_preparation() override;
 
     /*!
     \brief return thermpressaf_ in TimIntLoma

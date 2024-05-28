@@ -69,7 +69,7 @@ namespace WEAR
 
 
     // write output for ale and structure
-    void Output() override;
+    void output() override;
 
     /// read restart data
     void read_restart(int step  ///< step number where the calculation is continued
@@ -79,7 +79,7 @@ namespace WEAR
     void TimeLoop() override;
 
     // update ale and structure
-    void Update() override;
+    void update() override;
 
    protected:
     // nothing

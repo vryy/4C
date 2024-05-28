@@ -98,7 +98,7 @@ void DRT::Discretization::compute_null_space_if_necessary(
   // -> compute nullspace
   // do the usual tests
   if (!Filled()) FOUR_C_THROW("fill_complete was not called on discretization");
-  if (!HaveDofs()) FOUR_C_THROW("Discretization has no dofs assigned");
+  if (!HaveDofs()) FOUR_C_THROW("discretization has no dofs assigned");
 
   // compute solver parameters and set them into list
   CORE::LINEAR_SOLVER::Parameters::compute_solver_parameters(*this, mllist);

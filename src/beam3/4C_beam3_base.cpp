@@ -172,7 +172,7 @@ std::vector<int> DRT::ELEMENTS::Beam3Base::GetRotVecDofGIDs(
  *-----------------------------------------------------------------------------------------------*/
 double DRT::ELEMENTS::Beam3Base::get_circular_cross_section_radius_for_interactions() const
 {
-  return GetBeamMaterial().get_interaction_radius();
+  return get_beam_material().get_interaction_radius();
 }
 
 /*----------------------------------------------------------------------*
@@ -191,7 +191,7 @@ void DRT::ELEMENTS::Beam3Base::GetRefPosAtXi(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-MAT::BeamMaterial& DRT::ELEMENTS::Beam3Base::GetBeamMaterial() const
+MAT::BeamMaterial& DRT::ELEMENTS::Beam3Base::get_beam_material() const
 {
   // get the material law
   Teuchos::RCP<CORE::MAT::Material> material_ptr = Material();
@@ -229,7 +229,7 @@ void DRT::ELEMENTS::Beam3Base::get_translational_and_rotational_mass_inertia_ten
     double& mass_inertia_translational, CORE::LINALG::Matrix<3, 3, T>& J) const
 {
   get_translational_mass_inertia_factor(mass_inertia_translational);
-  GetBeamMaterial().get_mass_moment_of_inertia_tensor_material_frame(J);
+  get_beam_material().get_mass_moment_of_inertia_tensor_material_frame(J);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -237,7 +237,7 @@ void DRT::ELEMENTS::Beam3Base::get_translational_and_rotational_mass_inertia_ten
 void DRT::ELEMENTS::Beam3Base::get_translational_mass_inertia_factor(
     double& mass_inertia_translational) const
 {
-  mass_inertia_translational = GetBeamMaterial().get_translational_mass_inertia_factor();
+  mass_inertia_translational = get_beam_material().get_translational_mass_inertia_factor();
 }
 
 /*----------------------------------------------------------------------*

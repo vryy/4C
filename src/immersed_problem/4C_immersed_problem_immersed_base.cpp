@@ -221,7 +221,7 @@ void IMMERSED::ImmersedBase::apply_dirichlet_to_fluid(
   build_condition_dof_map(dis, condname, condmap_orig, numdof, cond_dofrowmap);
 
   // add adhesion dofs to dbc map
-  field_wrapper->AddDirichCond(cond_dofrowmap);
+  field_wrapper->add_dirich_cond(cond_dofrowmap);
 
   // write Dirichlet values to systemvector
   DoDirichletCond(field_wrapper->WriteAccessVelnp(), dirichvals,
@@ -246,7 +246,7 @@ void IMMERSED::ImmersedBase::remove_dirichlet_from_fluid(
     const Teuchos::RCP<const Epetra_Map>& cond_dofmap,
     const Teuchos::RCP<ADAPTER::FluidWrapper>& field_wrapper)
 {
-  field_wrapper->RemoveDirichCond(cond_dofmap);
+  field_wrapper->remove_dirich_cond(cond_dofmap);
   return;
 }  // RemoveDirichlet
 

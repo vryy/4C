@@ -259,7 +259,7 @@ void DRT::ELEMENTS::SoSh18Plast::nln_stiffmass(std::vector<double>& disp,  // cu
     const INPAR::STR::StrainType iostrain                   // strain output option
 )
 {
-  InvalidEleData();
+  invalid_ele_data();
 
   // do the evaluation of tsi terms
   const bool eval_tsi = (!temp.empty());
@@ -289,8 +289,8 @@ void DRT::ELEMENTS::SoSh18Plast::nln_stiffmass(std::vector<double>& disp,  // cu
     plmat = dynamic_cast<MAT::PlasticElastHyper*>(Material().get());
 
   // get time integration data
-  double theta = StrParamsInterface().GetTimIntFactorDisp();
-  double dt = StrParamsInterface().GetDeltaTime();
+  double theta = str_params_interface().GetTimIntFactorDisp();
+  double dt = str_params_interface().GetDeltaTime();
   if (eval_tsi && (stiffmatrix != nullptr || force != nullptr))
     if (theta == 0 || dt == 0)
       FOUR_C_THROW("time integration parameters not provided in element for TSI problem");
@@ -306,7 +306,7 @@ void DRT::ELEMENTS::SoSh18Plast::nln_stiffmass(std::vector<double>& disp,  // cu
   // prepare EAS***************************************
   if (eas_)
   {
-    SoSh18::EasSetup(M_gp, G3_0_contra, xrefe);
+    SoSh18::eas_setup(M_gp, G3_0_contra, xrefe);
     SoSh18::feas_.Clear();
     SoSh18::KaaInv_.Clear();
     SoSh18::Kad_.Clear();
@@ -318,7 +318,7 @@ void DRT::ELEMENTS::SoSh18Plast::nln_stiffmass(std::vector<double>& disp,  // cu
   /* =========================================================================*/
   for (int gp = 0; gp < NUMGPT_SOH18; ++gp)
   {
-    InvalidGpData();
+    invalid_gp_data();
 
     // in-plane shape functions and derivatives
     CORE::LINALG::Matrix<9, 1> shapefunct_q9;
@@ -351,13 +351,13 @@ void DRT::ELEMENTS::SoSh18Plast::nln_stiffmass(std::vector<double>& disp,  // cu
     // transformation from local (parameter) element space to global(material) space
     // with famous 'T'-matrix already used for EAS but now evaluated at each gp
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> TinvT;
-    EvaluateT(jac, TinvT);
+    evaluate_t(jac, TinvT);
 
     // **********************************************************************
     // set up B-Operator in local(parameter) element space including ANS
     // **********************************************************************
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH18> bop_loc(true);
-    CalculateBopLoc(xcurr, xrefe, shapefunct_q9, deriv_q9, gp, bop_loc);
+    calculate_bop_loc(xcurr, xrefe, shapefunct_q9, deriv_q9, gp, bop_loc);
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH18> bop;
     bop.Multiply(TinvT, bop_loc);
 
@@ -366,7 +366,7 @@ void DRT::ELEMENTS::SoSh18Plast::nln_stiffmass(std::vector<double>& disp,  // cu
     // see Diss. Koschnik page 41
     // **************************************************************************
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> lstrain(true);
-    CalculateLocStrain(xcurr, xrefe, shapefunct_q9, deriv_q9, gp, lstrain);
+    calculate_loc_strain(xcurr, xrefe, shapefunct_q9, deriv_q9, gp, lstrain);
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain;
     glstrain.Multiply(TinvT, lstrain);
     // **************************************************************************
@@ -413,13 +413,13 @@ void DRT::ELEMENTS::SoSh18Plast::nln_stiffmass(std::vector<double>& disp,  // cu
     }
 
     // plastic flow increment
-    BuildDeltaLp(gp);
+    build_delta_lp(gp);
 
     // material call *********************************************
     CORE::LINALG::Matrix<numstr_, 1> pk2;
     CORE::LINALG::Matrix<numstr_, numstr_> cmat;
     if (plmat != nullptr)
-      plmat->EvaluateElast(&defgrd, &DeltaLp(), &pk2, &cmat, gp, Id());
+      plmat->EvaluateElast(&defgrd, &delta_lp(), &pk2, &cmat, gp, Id());
     else
     {
       SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &pk2, &cmat, gp, Id());
@@ -530,7 +530,7 @@ void DRT::ELEMENTS::SoSh18Plast::nln_stiffmass(std::vector<double>& disp,  // cu
       cb.Multiply(cmat, bop);
       stiffmatrix->MultiplyTN(detJ_w, bop, cb, 1.0);  // standard hex8 evaluation
       // intergrate `geometric' stiffness matrix and add to keu *****************
-      CalculateGeoStiff(shapefunct_q9, deriv_q9, TinvT, gp, detJ_w, pk2, stiffmatrix);
+      calculate_geo_stiff(shapefunct_q9, deriv_q9, TinvT, gp, detJ_w, pk2, stiffmatrix);
 
       // EAS technology: integrate matrices --------------------------------- EAS
       if (eas_)
@@ -574,22 +574,22 @@ void DRT::ELEMENTS::SoSh18Plast::nln_stiffmass(std::vector<double>& disp,  // cu
     // plastic modifications
     if ((stiffmatrix != nullptr || force != nullptr) && plmat != nullptr)
     {
-      if (HavePlasticSpin())
+      if (have_plastic_spin())
       {
         if (eas_)
-          CondensePlasticity<plspin>(defgrd, DeltaLp(), bop, nullptr, nullptr, detJ_w, gp, gp_temp,
-              params, force, stiffmatrix, &M_ep, &Kda);
+          condense_plasticity<plspin>(defgrd, delta_lp(), bop, nullptr, nullptr, detJ_w, gp,
+              gp_temp, params, force, stiffmatrix, &M_ep, &Kda);
         else
-          CondensePlasticity<plspin>(defgrd, DeltaLp(), bop, nullptr, nullptr, detJ_w, gp, gp_temp,
-              params, force, stiffmatrix);
+          condense_plasticity<plspin>(defgrd, delta_lp(), bop, nullptr, nullptr, detJ_w, gp,
+              gp_temp, params, force, stiffmatrix);
       }
       else
       {
         if (eas_)
-          CondensePlasticity<zerospin>(defgrd, DeltaLp(), bop, nullptr, nullptr, detJ_w, gp,
+          condense_plasticity<zerospin>(defgrd, delta_lp(), bop, nullptr, nullptr, detJ_w, gp,
               gp_temp, params, force, stiffmatrix, &M_ep, &Kda);
         else
-          CondensePlasticity<zerospin>(defgrd, DeltaLp(), bop, nullptr, nullptr, detJ_w, gp,
+          condense_plasticity<zerospin>(defgrd, delta_lp(), bop, nullptr, nullptr, detJ_w, gp,
               gp_temp, params, force, stiffmatrix);
       }
     }  // plastic modifications

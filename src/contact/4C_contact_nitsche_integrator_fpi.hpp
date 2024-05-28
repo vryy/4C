@@ -86,7 +86,7 @@ namespace CONTACT
             This is where the distinction between methods should be,
             i.e. mortar, augmented, gpts,...
      */
-    void IntegrateGP_3D(MORTAR::Element& sele, MORTAR::Element& mele,
+    void integrate_gp_3_d(MORTAR::Element& sele, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -102,7 +102,7 @@ namespace CONTACT
             This is where the distinction between methods should be,
             i.e. mortar, augmented, gpts,...
      */
-    void IntegrateGP_2D(MORTAR::Element& sele, MORTAR::Element& mele,
+    void integrate_gp_2_d(MORTAR::Element& sele, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,

@@ -361,7 +361,7 @@ namespace DRT
 
         if (slave_nsd_ == nsd_)
         {
-          pos->LocalCoordinates(rst_slave);
+          pos->local_coordinates(rst_slave);
           CORE::FE::shape_function_3D(
               slave_funct_, rst_slave(0), rst_slave(1), rst_slave(2), slave_distype);
           CORE::FE::shape_function_3D_deriv1(
@@ -418,7 +418,7 @@ namespace DRT
        *----------------------------------------------------------------------*/
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::ProjectOnSide(
+      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::project_on_side(
           CORE::LINALG::Matrix<nsd_, 1>&
               x_gp_lin,  ///< global coordinates of gaussian point w.r.t linearized interface
           CORE::LINALG::Matrix<nsd_, 1>& x_side,  ///< projected gaussian point on side
@@ -426,7 +426,7 @@ namespace DRT
               xi_side  ///< local coordinates of projected gaussian point w.r.t side
       )
       {
-        //  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::ProjectOnSide" );
+        //  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::project_on_side" );
 
         // check, if called on a 3D-element
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -438,7 +438,7 @@ namespace DRT
         }
 #endif
 
-        TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::ProjectOnSide");
+        TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::project_on_side");
 
 
         if (slave_distype == CORE::FE::CellType::tri3 or slave_distype == CORE::FE::CellType::tri6)
@@ -581,7 +581,7 @@ namespace DRT
           std::cout << "x_gp_lin" << x_gp_lin << std::endl;
           std::cout << "side " << slave_xyze_ << std::endl;
 
-          FOUR_C_THROW("Newton scheme in ProjectOnSide not converged! ");
+          FOUR_C_THROW("Newton scheme in project_on_side not converged! ");
         }
 
         // evaluate shape function at solution
@@ -621,7 +621,7 @@ namespace DRT
        *----------------------------------------------------------------------*/
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetSlaveFunctDeriv(
+      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::get_slave_funct_deriv(
           CORE::LINALG::Matrix<nsd_, slave_nen_>& slave_derxy) const
       {
         slave_derxy = slave_derxy_;

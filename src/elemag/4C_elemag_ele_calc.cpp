@@ -252,15 +252,15 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::PrintTrace(DRT::Element* ele)
   std::cout << "Number of entries: " << localtrace_.size() << std::endl;
   std::cout << "Number of spatial dimensions: " << nsd_ << std::endl;
   std::cout << "Numer of faces: " << nfaces_ << std::endl;
-  std::cout << "Numer of DOF per face: " << ele->NumDofPerFace(0) << std::endl;
+  std::cout << "Numer of DOF per face: " << ele->num_dof_per_face(0) << std::endl;
   unsigned int index = 0;
   unsigned int second_index = 0;
   for (std::vector<double>::iterator iter = localtrace_.begin(); iter != localtrace_.end();
        iter++, index++, second_index++)
   {
-    if (index % ele->NumDofPerFace(0) == 0)
+    if (index % ele->num_dof_per_face(0) == 0)
     {
-      std::cout << "Face number: " << index / ele->NumDofPerFace(0) << std::endl;
+      std::cout << "Face number: " << index / ele->num_dof_per_face(0) << std::endl;
       second_index = 0;
     }
     if (second_index % shapesface_->nfdofs_ == 0)

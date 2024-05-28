@@ -117,9 +117,9 @@ namespace MAT
     bool FibersInitialized() const { return initialized_; }
 
    protected:
-    void OnFibersInitialized() override
+    void on_fibers_initialized() override
     {
-      FiberAnisotropyExtension<numfib>::OnFibersInitialized();
+      FiberAnisotropyExtension<numfib>::on_fibers_initialized();
       initialized_ = true;
     }
 

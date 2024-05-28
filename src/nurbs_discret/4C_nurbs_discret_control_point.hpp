@@ -59,7 +59,7 @@ namespace DRT
       //! @name Enums and Friends
 
       /*!
-      \brief The Discretization is a friend of the control point
+      \brief The discretization is a friend of the control point
       */
       friend class Discretization;
 

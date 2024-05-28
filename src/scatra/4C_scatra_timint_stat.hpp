@@ -99,13 +99,13 @@ namespace SCATRA
     void set_old_part_of_righthandside() override;
 
     /// do explicit predictor step (nothing to predict for stationary problems!)
-    void ExplicitPredictor() const override { return; };
+    void explicit_predictor() const override { return; };
 
     /// add actual Neumann loads with time factor
     void add_neumann_to_residual() override;
 
     /// AVM3-based scale separation
-    void AVM3Separation() override;
+    void av_m3_separation() override;
 
     /// add parameters specific for time-integration scheme
     void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override;
@@ -124,10 +124,10 @@ namespace SCATRA
       return;
     };
 
-    void WriteRestart() const override;
+    void write_restart() const override;
 
     /// return the right time-scaling-factor for the true residual
-    double ResidualScaling() const override { return 1.0; }
+    double residual_scaling() const override { return 1.0; }
 
    private:
     /// fine-scale solution vector at time n+1

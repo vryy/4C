@@ -199,7 +199,7 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       /*!
       \brief Print this element
@@ -395,7 +395,7 @@ namespace DRT
       void update_jacobian_mapping(
           const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress);
       /// compute defgrd ypein all gp for given disp
-      void DefGradient(const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix& gpdefgrd,
+      void def_gradient(const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix& gpdefgrd,
           DRT::ELEMENTS::PreStress& prestress);
 
       /*!
@@ -412,7 +412,7 @@ namespace DRT
       // internal calculation methods
 
       //! init the inverse of the jacobian and its determinant in the material configuration
-      virtual void InitJacobianMapping();
+      virtual void init_jacobian_mapping();
 
       //! Calculate nonlinear stiffness and mass matrix
       virtual void nlnstiffmass(std::vector<int>& lm,  // location matrix
@@ -478,7 +478,7 @@ namespace DRT
        *
        * @param params ParameterList to be passed to the materials
        */
-      void MaterialPostSetup(Teuchos::ParameterList& params) override;
+      void material_post_setup(Teuchos::ParameterList& params) override;
 
      private:
       std::string get_element_type_string() const { return "SOLIDT4"; }

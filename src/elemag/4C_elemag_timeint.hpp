@@ -230,14 +230,14 @@ namespace ELEMAG
     simulation. It is needed to write the restart values that will be read by the #read_restart
     function.
     */
-    virtual void WriteRestart();
-    // void WriteRestart();
+    virtual void write_restart();
+    // void write_restart();
 
     /*!
     \brief Read restart.
 
     This function allow the restart of a simulation from the result of a previous
-    simulation. It is needed to read the restart values that are written by the #WriteRestart
+    simulation. It is needed to read the restart values that are written by the #write_restart
     function.
     */
     virtual void read_restart(int step);
@@ -288,7 +288,7 @@ namespace ELEMAG
     /*!
     \brief returns pointer to the discretization
     */
-    Teuchos::RCP<DRT::Discretization> Discretization();
+    Teuchos::RCP<DRT::Discretization> discretization();
 
     /*!
     \brief create result test

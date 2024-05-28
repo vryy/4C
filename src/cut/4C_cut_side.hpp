@@ -129,11 +129,11 @@ namespace CORE::GEO
        *
        *  Set is_closer and return TRUE if check was successful. */
       template <class T>
-      bool IsCloserSide(const T& startpoint_xyz, CORE::GEO::CUT::Side* other, bool& is_closer)
+      bool is_closer_side(const T& startpoint_xyz, CORE::GEO::CUT::Side* other, bool& is_closer)
       {
         if (startpoint_xyz.M() != ProbDim())
           FOUR_C_THROW("The dimension of startpoint_xyz is wrong! (probdim = %d)", ProbDim());
-        return IsCloserSide(startpoint_xyz.A(), other, is_closer);
+        return is_closer_side(startpoint_xyz.A(), other, is_closer);
       }
 
       /*! \brief Calculates the points at which the side is cut by this edge */
@@ -184,7 +184,7 @@ namespace CORE::GEO
        *  of \c rsd is the distance of the n-dimensional point \c xyz to the embedded
        *  side. */
       template <class T1, class T2>
-      bool LocalCoordinates(
+      bool local_coordinates(
           const T1& xyz, T2& rsd, bool allow_dist = false, double tol = POSITIONTOL)
       {
         if (static_cast<unsigned>(xyz.M()) < ProbDim())
@@ -192,7 +192,7 @@ namespace CORE::GEO
         if (static_cast<unsigned>(rsd.M()) < ProbDim())
           FOUR_C_THROW("The dimension of rsd is wrong! (dim = %d)", Dim());
 
-        const bool check = LocalCoordinates(xyz.A(), rsd.A(), allow_dist, tol);
+        const bool check = local_coordinates(xyz.A(), rsd.A(), allow_dist, tol);
 
         std::fill(rsd.A() + ProbDim(), rsd.A() + rsd.M(), 0.0);
 
@@ -223,20 +223,20 @@ namespace CORE::GEO
         if (p1_xyz.M() != ProbDim())
           FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
         if (rs.M() != Dim()) FOUR_C_THROW("The dimension of rs is wrong! (dim = %d)", Dim());
-        return RayCut(p1_xyz.A(), p2_xyz.A(), rs.A(), line_xi);
+        return ray_cut(p1_xyz.A(), p2_xyz.A(), rs.A(), line_xi);
       }
 
       /*! \brief Calculates the normal vector with respect to the element shape
        *  at local coordinates \c rs */
       template <class T1, class T2>
-      void Normal(const T1& rs, T2& normal, bool unitnormal = true)
+      void Normal(const T1& rs, T2& n, bool unitnormal = true)
       {
-        if (static_cast<unsigned>(normal.M()) != ProbDim())
+        if (static_cast<unsigned>(n.M()) != ProbDim())
           FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
         if (static_cast<unsigned>(rs.M()) != Dim())
           FOUR_C_THROW("The dimension of rs is wrong! (dim = %d)", Dim());
 
-        Normal(rs.A(), normal.A(), unitnormal);
+        normal(rs.A(), n.A(), unitnormal);
       }
 
       /* \brief Calculates a Basis of two tangential vectors (non-orthogonal!) and
@@ -257,12 +257,12 @@ namespace CORE::GEO
        * the normal vector with respect to the element shape at local coordinates rs,
        * basis vectors have norm=1 */
       template <class T>
-      void BasisAtCenter(T& t1, T& t2, T& n)
+      void basis_at_center(T& t1, T& t2, T& n)
       {
         if (static_cast<unsigned>(t1.M()) != ProbDim())
           FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
 
-        BasisAtCenter(t1.A(), t2.A(), n.A());
+        basis_at_center(t1.A(), t2.A(), n.A());
       }
 
       /*! \brief Returns the global coordinates of the nodes of this side */
@@ -528,7 +528,7 @@ namespace CORE::GEO
 
 
      protected:
-      bool AllOnNodes(const PointSet& points);
+      bool all_on_nodes(const PointSet& points);
 
       /** @name All these functions have to be implemented in the derived classes!
        *
@@ -541,45 +541,45 @@ namespace CORE::GEO
       /*! \brief is this side closer to the starting-point as the other side?
        *
        *  Set is_closer and return TRUE if check was successful. */
-      virtual bool IsCloserSide(
+      virtual bool is_closer_side(
           const double* startpoint_xyz, CORE::GEO::CUT::Side* other, bool& is_closer) = 0;
 
       /*! \brief get all edges adjacent to given local coordinates */
-      virtual void EdgeAt(const double* rs, std::vector<Edge*>& edges) = 0;
+      virtual void edge_at(const double* rs, std::vector<Edge*>& edges) = 0;
 
       /*! \brief get the global coordinates on side at given local coordinates */
-      virtual void PointAt(const double* rs, double* xyz) = 0;
+      virtual void point_at(const double* rs, double* xyz) = 0;
 
       /*! \brief get global coordinates of the center of the side */
-      virtual void SideCenter(double* midpoint) = 0;
+      virtual void side_center(double* midpoint) = 0;
 
       /*! \brief Calculates the local coordinates (rsd) with respect to the element shape
        *  from its global coordinates (xyz), return TRUE if successful. The last coordinate
        *  of \c rsd is the distance of the n-dimensional point \c xyz to the embedded
        *  side. */
-      virtual bool LocalCoordinates(
+      virtual bool local_coordinates(
           const double* xyz, double* rsd, bool allow_dist, double tol) = 0;
 
       /*! \brief Does the point with given coordinates lie within this side? */
-      virtual bool WithinSide(const double* xyz, double* rs, double& dist) = 0;
+      virtual bool within_side(const double* xyz, double* rs, double& dist) = 0;
 
       /* \brief compute the cut of a ray through two points with the 2D space defined by the side */
-      virtual bool RayCut(
+      virtual bool ray_cut(
           const double* p1_xyz, const double* p2_xyz, double* rs, double& line_xi) = 0;
 
       /*! \brief Calculates the normal vector with respect to the element shape at local coordinates
        * rs */
-      virtual void Normal(const double* rs, double* normal, bool unitnormal) = 0;
+      virtual void normal(const double* rs, double* normal, bool unitnormal) = 0;
 
       /* \brief Calculates a Basis of two tangential vectors (non-orthogonal!) and
        * the normal vector with respect to the element shape at local coordinates rs,
        * basis vectors have norm=1. */
-      virtual void Basis(const double* rs, double* t1, double* t2, double* n) = 0;
+      virtual void basis(const double* rs, double* t1, double* t2, double* n) = 0;
 
       /* \brief Calculates a Basis of two tangential vectors (non-orthogonal!) and
        * the normal vector with respect to the element shape at local coordinates rs,
        * basis vectors have norm=1 */
-      virtual void BasisAtCenter(double* t1, double* t2, double* n) = 0;
+      virtual void basis_at_center(double* t1, double* t2, double* n) = 0;
 
       /// @}
 
@@ -724,7 +724,7 @@ namespace CORE::GEO
        *
        *  check based on ray-tracing technique set is_closer and return
        *  \TRUE if check was successful */
-      bool IsCloserSide(const CORE::LINALG::Matrix<probdim, 1>& startpoint_xyz,
+      bool is_closer_side(const CORE::LINALG::Matrix<probdim, 1>& startpoint_xyz,
           CORE::GEO::CUT::Side* other, bool& is_closer);
 
       /// get all edges adjacent to given local coordinates
@@ -774,7 +774,7 @@ namespace CORE::GEO
        *  \param midpoint (out) : mid-point spatial coordinates */
       void SideCenter(CORE::LINALG::Matrix<probdim, 1>& midpoint)
       {
-        ConcreteElement<probdim, sidetype>::ElementCenter(midpoint);
+        ConcreteElement<probdim, sidetype>::element_center(midpoint);
       }
 
       ///  lies point with given coordinates within this side?
@@ -790,7 +790,7 @@ namespace CORE::GEO
        *  global coordinates (xyz), return TRUE if successful
        *
        *  \remark The last coordinate of the variable rsd holds the distance to the side. */
-      bool LocalCoordinates(const CORE::LINALG::Matrix<probdim, 1>& xyz,
+      bool local_coordinates(const CORE::LINALG::Matrix<probdim, 1>& xyz,
           CORE::LINALG::Matrix<probdim, 1>& rsd, bool allow_dist = false, double tol = POSITIONTOL);
 
       /// get local coordinates (rst) with respect to the element shape for all the corner points
@@ -878,8 +878,8 @@ namespace CORE::GEO
       /** Calculates a Basis of two tangential vectors (non-orthogonal!) and
        *  the normal vector with respect to the element shape at center of the side.
        *  All basis vectors are of unit length */
-      void BasisAtCenter(CORE::LINALG::Matrix<probdim, 1>& t1, CORE::LINALG::Matrix<probdim, 1>& t2,
-          CORE::LINALG::Matrix<probdim, 1>& n)
+      void basis_at_center(CORE::LINALG::Matrix<probdim, 1>& t1,
+          CORE::LINALG::Matrix<probdim, 1>& t2, CORE::LINALG::Matrix<probdim, 1>& n)
       {
         CORE::LINALG::Matrix<dim, 1> center_rs(CORE::FE::getLocalCenterPosition<dim>(sidetype));
         Basis(center_rs, t1, t2, n);
@@ -946,22 +946,22 @@ namespace CORE::GEO
 
      protected:
       /// derived
-      bool IsCloserSide(
+      bool is_closer_side(
           const double* startpoint_xyz, CORE::GEO::CUT::Side* other, bool& is_closer) override
       {
         const CORE::LINALG::Matrix<probdim, 1> startpoint_xyz_mat(startpoint_xyz, true);
-        return IsCloserSide(startpoint_xyz_mat, other, is_closer);
+        return is_closer_side(startpoint_xyz_mat, other, is_closer);
       }
 
       /// derived
-      void EdgeAt(const double* rs, std::vector<Edge*>& edges) override
+      void edge_at(const double* rs, std::vector<Edge*>& edges) override
       {
         const CORE::LINALG::Matrix<dim, 1> rs_mat(rs, true);  // create view
         EdgeAt(rs_mat, edges);
       }
 
       /// derived
-      void PointAt(const double* rs, double* xyz) override
+      void point_at(const double* rs, double* xyz) override
       {
         const CORE::LINALG::Matrix<dim, 1> rs_mat(rs, true);  // create view
         CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
@@ -969,23 +969,23 @@ namespace CORE::GEO
       }
 
       /// derived
-      void SideCenter(double* midpoint) override
+      void side_center(double* midpoint) override
       {
         CORE::LINALG::Matrix<probdim, 1> midpoint_mat(midpoint, true);  // create view
         SideCenter(midpoint_mat);
       }
 
       /// derived
-      bool LocalCoordinates(const double* xyz, double* rsd, bool allow_dist = false,
+      bool local_coordinates(const double* xyz, double* rsd, bool allow_dist = false,
           double tol = POSITIONTOL) override
       {
         const CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
         CORE::LINALG::Matrix<probdim, 1> rsd_mat(rsd, true);        // create view
-        return LocalCoordinates(xyz_mat, rsd_mat, allow_dist, tol);
+        return local_coordinates(xyz_mat, rsd_mat, allow_dist, tol);
       }
 
       /// derived
-      bool WithinSide(const double* xyz, double* rs, double& dist) override
+      bool within_side(const double* xyz, double* rs, double& dist) override
       {
         const CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
         CORE::LINALG::Matrix<dim, 1> rs_mat(rs, true);              // create view
@@ -993,7 +993,7 @@ namespace CORE::GEO
       }
 
       /// derived
-      bool RayCut(const double* p1_xyz, const double* p2_xyz, double* rs, double& line_xi) override
+      bool ray_cut(const double* p1_xyz, const double* p2_xyz, double* rs, double& line_xi) override
       {
         const CORE::LINALG::Matrix<probdim, 1> p1_xyz_mat(p1_xyz, true);  // create view
         const CORE::LINALG::Matrix<probdim, 1> p2_xyz_mat(p2_xyz, true);  // create view
@@ -1002,7 +1002,7 @@ namespace CORE::GEO
       }
 
       /// derived
-      void Normal(const double* rs, double* normal, bool unitnormal = true) override
+      void normal(const double* rs, double* normal, bool unitnormal = true) override
       {
         const CORE::LINALG::Matrix<dim, 1> rs_mat(rs, true);        // create view
         CORE::LINALG::Matrix<probdim, 1> normal_mat(normal, true);  // create view
@@ -1010,7 +1010,7 @@ namespace CORE::GEO
       }
 
       /// derived
-      void Basis(const double* rs, double* t1, double* t2, double* n) override
+      void basis(const double* rs, double* t1, double* t2, double* n) override
       {
         const CORE::LINALG::Matrix<dim, 1> rs_mat(rs, true);  // create view
         CORE::LINALG::Matrix<probdim, 1> t1_mat(t1, true);    // create view
@@ -1020,12 +1020,12 @@ namespace CORE::GEO
       }
 
       /// derived
-      void BasisAtCenter(double* t1, double* t2, double* n) override
+      void basis_at_center(double* t1, double* t2, double* n) override
       {
         CORE::LINALG::Matrix<probdim, 1> t1_mat(t1, true);  // create view
         CORE::LINALG::Matrix<probdim, 1> t2_mat(t2, true);  // create view
         CORE::LINALG::Matrix<probdim, 1> n_mat(n, true);    // create view
-        BasisAtCenter(t1_mat, t2_mat, n_mat);
+        basis_at_center(t1_mat, t2_mat, n_mat);
       }
     };  // class ConcreteSide
 

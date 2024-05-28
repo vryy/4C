@@ -128,7 +128,7 @@ int STR::TimIntExplEuler::IntegrateStep()
   // *********** time measurement ***********
 
   // apply Dirichlet BCs
-  ApplyDirichletBC(timen_, disn_, veln_, Teuchos::null, false);
+  apply_dirichlet_bc(timen_, disn_, veln_, Teuchos::null, false);
 
   // initialise stiffness matrix to zero
   stiff_->Zero();
@@ -236,7 +236,7 @@ int STR::TimIntExplEuler::IntegrateStep()
   }
 
   // apply Dirichlet BCs on accelerations
-  ApplyDirichletBC(timen_, Teuchos::null, Teuchos::null, accn_, false);
+  apply_dirichlet_bc(timen_, Teuchos::null, Teuchos::null, accn_, false);
 
   // *********** time measurement ***********
   dtsolve_ = timer_->wallTime() - dtcpu;

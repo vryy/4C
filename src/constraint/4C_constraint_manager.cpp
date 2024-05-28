@@ -221,7 +221,7 @@ void CONSTRAINTS::ConstrManager::evaluate_force_stiff(const double time,
     Teuchos::ParameterList scalelist)
 {
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   double scStiff = scalelist.get("scaleStiffEntries", 1.0);
   double scConMat = scalelist.get("scaleConstrMat", 1.0);
@@ -298,7 +298,7 @@ void CONSTRAINTS::ConstrManager::evaluate_force_stiff(const double time,
 void CONSTRAINTS::ConstrManager::compute_error(double time, Teuchos::RCP<Epetra_Vector> disp)
 {
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   std::vector<CORE::Conditions::Condition*> constrcond(0);
   Teuchos::ParameterList p;
@@ -520,7 +520,7 @@ void CONSTRAINTS::ConstrManager::build_moni_type()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::ConstrManager::UseBlockMatrix(
+void CONSTRAINTS::ConstrManager::use_block_matrix(
     Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
     Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps)
 {

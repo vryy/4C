@@ -21,8 +21,8 @@ FOUR_C_NAMESPACE_OPEN
 
 XFEM::XfpCouplingManager::XfpCouplingManager(Teuchos::RCP<XFEM::ConditionManager> condmanager,
     Teuchos::RCP<POROELAST::PoroBase> poro, Teuchos::RCP<FLD::XFluid> xfluid, std::vector<int> idx)
-    : CouplingCommManager(poro->StructureField()->Discretization(),
-          poro->fluid_field()->Discretization(), "XFEMSurfFPIMono", 0, 3),
+    : CouplingCommManager(poro->structure_field()->discretization(),
+          poro->fluid_field()->discretization(), "XFEMSurfFPIMono", 0, 3),
       poro_(poro),
       xfluid_(xfluid),
       cond_name_ps_ps_("XFEMSurfFPIMono_ps_ps"),
@@ -86,22 +86,22 @@ void XFEM::XfpCouplingManager::InitCouplingStates()
 void XFEM::XfpCouplingManager::SetCouplingStates()
 {
   // 1 Set Displacement on both mesh couplings ... we get them from the structure field!
-  InsertVector(0, poro_->StructureField()->Dispnp(), 0, mcfpi_ps_ps_->IDispnp(),
+  InsertVector(0, poro_->structure_field()->Dispnp(), 0, mcfpi_ps_ps_->IDispnp(),
       CouplingCommManager::full_to_partial);
-  InsertVector(0, poro_->StructureField()->Dispnp(), 0, mcfpi_ps_pf_->IDispnp(),
+  InsertVector(0, poro_->structure_field()->Dispnp(), 0, mcfpi_ps_pf_->IDispnp(),
       CouplingCommManager::full_to_partial);
-  InsertVector(0, poro_->StructureField()->Dispnp(), 0, mcfpi_pf_ps_->IDispnp(),
+  InsertVector(0, poro_->structure_field()->Dispnp(), 0, mcfpi_pf_ps_->IDispnp(),
       CouplingCommManager::full_to_partial);
-  InsertVector(0, poro_->StructureField()->Dispnp(), 0, mcfpi_pf_pf_->IDispnp(),
+  InsertVector(0, poro_->structure_field()->Dispnp(), 0, mcfpi_pf_pf_->IDispnp(),
       CouplingCommManager::full_to_partial);
 
   // As interfaces embedded into the background mesh are fully ghosted, we don't know which
   Teuchos::RCP<Epetra_Map> sfulldofmap =
-      CORE::LINALG::AllreduceEMap(*poro_->StructureField()->Discretization()->dof_row_map());
+      CORE::LINALG::AllreduceEMap(*poro_->structure_field()->discretization()->dof_row_map());
   Teuchos::RCP<Epetra_Vector> dispnp_col = Teuchos::rcp(new Epetra_Vector(*sfulldofmap, true));
-  CORE::LINALG::Export(*poro_->StructureField()->Dispnp(), *dispnp_col);
+  CORE::LINALG::Export(*poro_->structure_field()->Dispnp(), *dispnp_col);
   Teuchos::RCP<Epetra_Map> ffulldofmap =
-      CORE::LINALG::AllreduceEMap(*poro_->fluid_field()->Discretization()->dof_row_map());
+      CORE::LINALG::AllreduceEMap(*poro_->fluid_field()->discretization()->dof_row_map());
   Teuchos::RCP<Epetra_Vector> velnp_col = Teuchos::rcp(new Epetra_Vector(*ffulldofmap, true));
   CORE::LINALG::Export(*poro_->fluid_field()->Velnp(), *velnp_col);
 
@@ -112,11 +112,11 @@ void XFEM::XfpCouplingManager::SetCouplingStates()
 
 
   // 2 Set Structural Velocity onto ps mesh coupling
-  InsertVector(0, poro_->StructureField()->Velnp(), 0, mcfpi_ps_ps_->IVelnp(),
+  InsertVector(0, poro_->structure_field()->Velnp(), 0, mcfpi_ps_ps_->IVelnp(),
       CouplingCommManager::full_to_partial);
-  InsertVector(0, poro_->StructureField()->Velnp(), 0, mcfpi_pf_ps_->IVelnp(),
+  InsertVector(0, poro_->structure_field()->Velnp(), 0, mcfpi_pf_ps_->IVelnp(),
       CouplingCommManager::full_to_partial);
-  //  poro_->StructureField()->Velnp()->Print(std::cout);
+  //  poro_->structure_field()->Velnp()->Print(std::cout);
 
   //  InsertVector(1,poro_->fluid_field()->GridVel(),0,mcfpi_ps_ps_->IVelnp(),Coupling_Comm_Manager::full_to_partial);
   //  InsertVector(1,poro_->fluid_field()->GridVel(),0,mcfpi_pf_ps_->IVelnp(),Coupling_Comm_Manager::full_to_partial);
@@ -131,7 +131,7 @@ void XFEM::XfpCouplingManager::AddCouplingMatrix(
     CORE::LINALG::BlockSparseMatrixBase& systemmatrix, double scaling)
 {
   const double scaling_disp_vel =
-      1 / ((1 - poro_->StructureField()->TimIntParam()) * poro_->StructureField()->Dt());
+      1 / ((1 - poro_->structure_field()->TimIntParam()) * poro_->structure_field()->Dt());
   const double dt = poro_->fluid_field()->Dt();
   if (idx_.size() == 2)  // assum that the poro field is not split and we just have a blockmatrix
                          // P/F
@@ -259,7 +259,7 @@ void XFEM::XfpCouplingManager::AddCouplingRHS(
       // alpha_f for genalpha and (1-theta) for OST (weighting of the old time step n for
       // displacements) TimeIntegration for poro needs to be consistent!
       const double stiparam =
-          poro_->StructureField()->TimIntParam();  // (1-theta) for OST and alpha_f for Genalpha
+          poro_->structure_field()->TimIntParam();  // (1-theta) for OST and alpha_f for Genalpha
 
       // scale factor for the structure system matrix w.r.t the new time step
       const double scaling_S = 1.0 / (1.0 - stiparam);  // 1/(1-alpha_F) = 1/weight^S_np
@@ -303,7 +303,7 @@ void XFEM::XfpCouplingManager::AddCouplingRHS(
       // alpha_f for genalpha and (1-theta) for OST (weighting of the old time step n for
       // displacements) TimeIntegration for poro needs to be consistent!
       const double stiparam =
-          poro_->StructureField()->TimIntParam();  // (1-theta) for OST and alpha_f for Genalpha
+          poro_->structure_field()->TimIntParam();  // (1-theta) for OST and alpha_f for Genalpha
 
       // scale factor for the structure system matrix w.r.t the new time step
       const double scaling_S = 1.0 / (1.0 - stiparam);  // 1/(1-alpha_F) = 1/weight^S_np

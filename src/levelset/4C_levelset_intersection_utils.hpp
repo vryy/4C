@@ -89,16 +89,16 @@ namespace SCATRA
 
      protected:
       /// reset class member variables
-      void Reset();
+      void reset();
 
       template <typename T>
-      void GetZeroLevelSet(const Epetra_Vector& phi, const DRT::Discretization& scatradis,
+      void get_zero_level_set(const Epetra_Vector& phi, const DRT::Discretization& scatradis,
           std::map<int, T>& elementBoundaryIntCells, bool cut_screenoutput = false);
 
       /** \brief export boundary integration cells from this proc to parallel distribution
        *
        * \author henke \date 12/09 */
-      void ExportInterface(
+      void export_interface(
           std::map<int, CORE::GEO::BoundaryIntCells>& myinterface, const Epetra_Comm& comm);
 
       /** \brief pack boundary integration cells from set into char array
@@ -114,10 +114,10 @@ namespace SCATRA
           std::map<int, CORE::GEO::BoundaryIntCells>& intcellmap);
 
       /// return the volume of the plus domain
-      inline double& VolumePlus() { return volumeplus_; };
+      inline double& volume_plus() { return volumeplus_; };
 
       /// return the volume of the minus domain
-      inline double& VolumeMinus() { return volumeminus_; };
+      inline double& volume_minus() { return volumeminus_; };
 
       /** \brief add volume corresponding to the given PointPosition
        *
@@ -127,25 +127,25 @@ namespace SCATRA
        *      inside  --> minus domain
        *
        *  \author hiermeier \date 11/16 */
-      void AddToVolume(CORE::GEO::CUT::Point::PointPosition pos, double vol);
+      void add_to_volume(CORE::GEO::CUT::Point::PointPosition pos, double vol);
 
       /// access the boundary cell surface value
-      inline double& Surface() { return surface_; };
+      inline double& surface() { return surface_; };
 
       /** \brief prepare the cut algorithm
        *
        *  \author hiermeier \date 11/16 */
-      void PrepareCut(const DRT::Element* ele, const DRT::Discretization& scatradis,
+      void prepare_cut(const DRT::Element* ele, const DRT::Discretization& scatradis,
           const Epetra_Vector& phicol, CORE::LINALG::SerialDenseMatrix& xyze,
           std::vector<double>& phi_nodes, std::vector<int>& node_ids) const;
 
       /// perform the cut operation
-      CORE::GEO::CUT::ElementHandle* Cut(CORE::GEO::CUT::LevelSetIntersection& levelset,
+      CORE::GEO::CUT::ElementHandle* cut(CORE::GEO::CUT::LevelSetIntersection& levelset,
           const CORE::LINALG::SerialDenseMatrix& xyze, const std::vector<double>& phi_nodes,
           bool cut_screenoutput) const;
 
       /// collect the cut elements after a successful cut operation
-      void CollectCutEles(CORE::GEO::CUT::ElementHandle& ehandle,
+      void collect_cut_eles(CORE::GEO::CUT::ElementHandle& ehandle,
           CORE::GEO::CUT::plain_element_set& cuteles, CORE::FE::CellType distype) const;
 
       /** \brief check the point position (OR-combination)
@@ -153,11 +153,11 @@ namespace SCATRA
        *  \param curr_pos (in) : current position of the volume cell
        *
        *  \author hiermeier \date 11/16 */
-      bool IsPointPosition(const CORE::GEO::CUT::Point::PointPosition& curr_pos)
+      bool is_point_position(const CORE::GEO::CUT::Point::PointPosition& curr_pos)
       {
-        return IsPointPosition(curr_pos, DesiredPositions());
+        return is_point_position(curr_pos, desired_positions());
       }
-      bool IsPointPosition(const CORE::GEO::CUT::Point::PointPosition& curr_pos,
+      bool is_point_position(const CORE::GEO::CUT::Point::PointPosition& curr_pos,
           const std::vector<CORE::GEO::CUT::Point::PointPosition>& desired_pos) const;
 
       /** \brief get the zero level-set
@@ -176,7 +176,7 @@ namespace SCATRA
       template <typename T>
       T& boundary_int_cells_per_ele();
 
-      const std::vector<CORE::GEO::CUT::Point::PointPosition>& DesiredPositions();
+      const std::vector<CORE::GEO::CUT::Point::PointPosition>& desired_positions();
 
      protected:
       /** check the level set values before we add a new element to the
@@ -201,7 +201,7 @@ namespace SCATRA
 
       /// accumulated value of the boundary cell surfaces
       double surface_;
-    };  // class Intersection
+    };  // class intersection
 
     /*----------------------------------------------------------------------------*/
     template <>

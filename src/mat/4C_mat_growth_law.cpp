@@ -37,7 +37,10 @@ MAT::PAR::GrowthLawDyn::GrowthLawDyn(Teuchos::RCP<CORE::MAT::PAR::Material> matd
 }
 
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::GrowthLawDyn::CreateMaterial() { return Teuchos::null; }
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::GrowthLawDyn::create_material()
+{
+  return Teuchos::null;
+}
 
 /*----------------------------------------------------------------------------*/
 MAT::GrowthLawDyn::GrowthLawDyn() : GrowthLaw() {}
@@ -268,7 +271,7 @@ double MAT::GrowthLawStatic::DensityDerivScale(const double theta)
 
 
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::GrowthLawAnisoStrain::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::GrowthLawAnisoStrain::create_material()
 {
   return Teuchos::null;
 }
@@ -451,7 +454,7 @@ double MAT::GrowthLawAnisoStrain::DensityDerivScale(const double theta) { return
 
 
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::GrowthLawAnisoStress::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::GrowthLawAnisoStress::create_material()
 {
   return Teuchos::null;
 }
@@ -678,7 +681,7 @@ double MAT::GrowthLawAnisoStress::DensityDerivScale(const double theta) { return
 
 
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::GrowthLawAnisoStrainConstTrig::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::GrowthLawAnisoStrainConstTrig::create_material()
 {
   return Teuchos::null;
 }
@@ -769,7 +772,7 @@ void MAT::GrowthLawAnisoStrainConstTrig::evaluate_growth_function_deriv_c(
 
 
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::GrowthLawAnisoStressConstTrig::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::GrowthLawAnisoStressConstTrig::create_material()
 {
   return Teuchos::null;
 }
@@ -860,7 +863,7 @@ void MAT::GrowthLawAnisoStressConstTrig::evaluate_growth_function_deriv_c(
 
 
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::GrowthLawIsoStress::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::GrowthLawIsoStress::create_material()
 {
   return Teuchos::null;
 }
@@ -1061,7 +1064,7 @@ MAT::PAR::GrowthLawAC::GrowthLawAC(Teuchos::RCP<CORE::MAT::PAR::Material> matdat
   if (beta_ < 0) FOUR_C_THROW("The influence of scalar field SCALAR2 to growth can't be negativ");
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::GrowthLawAC::CreateMaterial() { return Teuchos::null; }
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::GrowthLawAC::create_material() { return Teuchos::null; }
 
 Teuchos::RCP<MAT::GrowthLaw> MAT::PAR::GrowthLawAC::CreateGrowthLaw()
 {
@@ -1388,7 +1391,7 @@ double MAT::GrowthLawACRadialRefConc::DensityDerivScale(const double theta) { re
 
 
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::GrowthLawConst::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::GrowthLawConst::create_material()
 {
   return Teuchos::null;
 }

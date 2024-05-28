@@ -47,9 +47,9 @@ class StructureFilter : public PostFilterBase
   \author lw
   \date 02/08
   */
-  void PostStress(const std::string groupname, const std::string stresstype);
-  void WriteStress(const std::string groupname, PostResult& result, const ResultType stresskind);
-  void WriteEigenStress(
+  void post_stress(const std::string groupname, const std::string stresstype);
+  void write_stress(const std::string groupname, PostResult& result, const ResultType stresskind);
+  void write_eigen_stress(
       const std::string groupname, PostResult& result, const ResultType stresskind);
 
   std::string stresstype_;
@@ -230,8 +230,8 @@ class ThermoFilter : public PostFilterBase
   \author originally by lw
   \date 11/09
   */
-  void PostHeatflux(const std::string groupname, const std::string heatfluxtype);
-  void WriteHeatflux(const std::string groupname, PostResult& result, const ResultType kind);
+  void post_heatflux(const std::string groupname, const std::string heatfluxtype);
+  void write_heatflux(const std::string groupname, PostResult& result, const ResultType kind);
 
   std::string heatfluxtype_;  ///< type of heat flux output
   std::string tempgradtype_;  ///< type of spatial temperature gradient output

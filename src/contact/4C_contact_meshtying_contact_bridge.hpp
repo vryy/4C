@@ -175,7 +175,7 @@ namespace CONTACT
     @oaram[in] forcedrestart Force to write restart data
 
     */
-    void WriteRestart(Teuchos::RCP<IO::DiscretizationWriter>& output, bool forcedrestart = false);
+    void write_restart(Teuchos::RCP<IO::DiscretizationWriter>& output, bool forcedrestart = false);
 
    private:
     //! don't want cctor (= operator impossible anyway for abstract class)

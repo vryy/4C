@@ -57,7 +57,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::ScaTraEleCalcElchNP(
  | calculate contributions to matrix and rhs (inside loop over all scalars)   fang 02/15 |
  *---------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_and_rhs(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
     CORE::LINALG::SerialDenseVector& erhs,  //!< element rhs to calculate+
     const int k,                            //!< index of current scalar
@@ -85,7 +85,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   if (not my::scatraparatimint_->IsStationary())
   {
     // 1a) element matrix: standard Galerkin mass term
-    my::CalcMatMass(emat, k, fac, 1.);
+    my::calc_mat_mass(emat, k, fac, 1.);
 
     // 1b) element matrix: stabilization of mass term
     // not implemented, only SUPG stabilization of convective term due to fluid flow and migration
@@ -97,13 +97,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   //------------------------------------------------------------------------
 
   // 2a) element matrix: standard Galerkin convective term due to fluid flow
-  my::CalcMatConv(emat, k, timefacfac, 1., var_manager()->SGConv());
+  my::calc_mat_conv(emat, k, timefacfac, 1., var_manager()->SGConv());
 
   // 2b) element matrix: additional terms in conservative formulation if needed
   if (my::scatrapara_->IsConservative())
   {
     double vdiv(0.);
-    my::GetDivergence(vdiv, my::evelnp_);
+    my::get_divergence(vdiv, my::evelnp_);
     my::calc_mat_conv_add_cons(emat, k, timefacfac, vdiv, 1.);
   }
 
@@ -113,7 +113,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
       var_manager()->GradPhi(k), residual);
 
   // 2d) element matrix: standard Galerkin diffusive term (constant diffusion coefficient)
-  my::CalcMatDiff(emat, k, timefacfac);
+  my::calc_mat_diff(emat, k, timefacfac);
 
   // 2e) element matrix: stabilization of diffusive term
   // not implemented, only SUPG stabilization of convective term due to fluid flow and migration
@@ -138,7 +138,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   {
     case INPAR::ELCH::equpot_enc:
     {
-      myelch::CalcMatPotEquENC(emat, k, fac, my::scatraparatimint_->AlphaF());
+      myelch::calc_mat_pot_equ_enc(emat, k, fac, my::scatraparatimint_->AlphaF());
       break;
     }
     case INPAR::ELCH::equpot_enc_pde:
@@ -178,11 +178,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
 
   // 4a) element rhs: standard Galerkin contributions from non-history part of instationary term if
   // needed
-  if (not my::scatraparatimint_->IsStationary()) my::CalcRHSLinMass(erhs, k, rhsfac, fac, 1., 1.);
+  if (not my::scatraparatimint_->IsStationary())
+    my::calc_rhs_lin_mass(erhs, k, rhsfac, fac, 1., 1.);
 
   // 4b) element rhs: standard Galerkin contributions from rhsint vector (contains body force vector
   // and history vector) need to adapt rhsint vector to time integration scheme first
-  my::ComputeRhsInt(rhsint, 1., 1., var_manager()->Hist(k));
+  my::compute_rhs_int(rhsint, 1., 1., var_manager()->Hist(k));
   my::calc_rhs_hist_and_source(erhs, k, fac, rhsint);
 
   // 4c) element rhs: stabilization of mass term
@@ -190,13 +191,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   // available
 
   // 4d) element rhs: standard Galerkin convective term
-  my::CalcRHSConv(erhs, k, rhsfac);
+  my::calc_rhs_conv(erhs, k, rhsfac);
 
   // 4e) element rhs: additional terms in conservative formulation if needed
   if (my::scatrapara_->IsConservative())
   {
     double vdiv(0.);
-    my::GetDivergence(vdiv, my::evelnp_);
+    my::get_divergence(vdiv, my::evelnp_);
     calc_rhs_conv_add_cons(erhs, k, rhsfac, var_manager()->Phinp(k), vdiv);
   }
 
@@ -230,7 +231,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   {
     case INPAR::ELCH::equpot_enc:
     {
-      myelch::CalcRhsPotEquENC(erhs, k, fac, var_manager()->Phinp(k));
+      myelch::calc_rhs_pot_equ_enc(erhs, k, fac, var_manager()->Phinp(k));
       break;
     }
     case INPAR::ELCH::equpot_enc_pde:
@@ -500,7 +501,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_conv_stab(
   }
 
   return;
-}  // ScaTraEleCalcElchNP<distype>::CalcMatMassStab
+}  // ScaTraEleCalcElchNP<distype>::calc_mat_mass_stab
 
 
 /*-----------------------------------------------------------------------*
@@ -635,7 +636,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_pot_equ_encpde_elim(
                    myelch::diff_manager()->GetValence(k) * conint * laplawf;
 
       // care for eliminated species with index m
-      // Note: diffus_ and valence_ vectors were extended in GetMaterialParams() so that they
+      // Note: diffus_ and valence_ vectors were extended in get_material_params() so that they
       // also contain the properties of the eliminated species at index m (= my::numscal_))
       // a) derivative w.r.t. concentration c_k
       matvalconc += timefacfac_diffus_valence_m_mig_vi * my::funct_(ui);
@@ -863,7 +864,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_rhs_pot_equ_encpde_elim(
                      myelch::diff_manager()->GetIsotropicDiff(k) * laplawf);
 
     // care for eliminated species with index m
-    // Note: diffus_ and valence_ vectors were extended in GetMaterialParams() so that they
+    // Note: diffus_ and valence_ vectors were extended in get_material_params() so that they
     // also contain the properties of the eliminated species at index m (= my::numscal_))
     erhs[pvi] -= rhsfac * myelch::diff_manager()->GetValence(k) *
                  (myelch::diff_manager()->GetIsotropicDiff(my::numscal_) *
@@ -997,7 +998,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::correction_for_flux_across_dc(
  |  get the material constants  (private)                     ehrl 01/14|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::GetMaterialParams(
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::get_material_params(
     const DRT::Element* ele,      //!< the element we are dealing with
     std::vector<double>& densn,   //!< density at t_(n)
     std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
@@ -1020,21 +1021,21 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::GetMaterialParams(
       int matid = actmat->MatID(k);
       Teuchos::RCP<CORE::MAT::Material> singlemat = actmat->MaterialById(matid);
 
-      Materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
+      materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
     }
   }
   else
     FOUR_C_THROW("Invalid material type!");
 
   return;
-}  // ScaTraEleCalc::GetMaterialParams
+}  // ScaTraEleCalc::get_material_params
 
 
 /*----------------------------------------------------------------------*
  |  evaluate single material  (protected)                    ehrl 11/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::Materials(
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::materials(
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -1081,12 +1082,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::prepare_stabilization(
     {
       // calculate stabilization parameter tau for charged species
       if (abs(myelch::diff_manager()->GetValence(k)) > 1.e-10)
-        my::CalcTau(tau[k], resdiffus,
+        my::calc_tau(tau[k], resdiffus,
             my::reamanager_->get_stabilization_coeff(k, my::scatravarmanager_->Phinp(k)), densnp[k],
             var_manager()->ConVel(k), vol);
       else
         // calculate stabilization parameter tau for uncharged species
-        my::CalcTau(tau[k], myelch::diff_manager()->GetIsotropicDiff(k),
+        my::calc_tau(tau[k], myelch::diff_manager()->GetIsotropicDiff(k),
             my::reamanager_->get_stabilization_coeff(k, my::scatravarmanager_->Phinp(k)), densnp[k],
             var_manager()->ConVel(k), vol);
     }
@@ -1121,7 +1122,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::prepare_stabilization(
           var_manager()->MigVelInt(), 1.);
 
       // calculate stabilization parameter tau
-      my::CalcTau(tau[k], myelch::diff_manager()->GetIsotropicDiff(k),
+      my::calc_tau(tau[k], myelch::diff_manager()->GetIsotropicDiff(k),
           my::reamanager_->get_stabilization_coeff(k, my::scatravarmanager_->Phinp(k)), densnp[k],
           veleff, vol);
 

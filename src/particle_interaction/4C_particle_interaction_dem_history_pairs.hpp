@@ -78,7 +78,7 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
     //! write restart of history pair handler
-    void WriteRestart() const;
+    void write_restart() const;
 
     //! read restart of history pair handler
     void read_restart(const std::shared_ptr<IO::DiscretizationReader> reader);

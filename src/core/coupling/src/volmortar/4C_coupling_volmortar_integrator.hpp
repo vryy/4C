@@ -67,7 +67,7 @@ namespace CORE::VOLMORTAR
     \brief Initialize Gauss rule (points, weights)
 
     */
-    void InitializeGP(bool integrateele = false, int domain = 0,
+    void initialize_gp(bool integrateele = false, int domain = 0,
         CORE::FE::CellType shape = CORE::FE::CellType::tet4);
 
     /*!
@@ -135,13 +135,13 @@ namespace CORE::VOLMORTAR
     \brief Check integration point mapping (2D)
 
     */
-    bool CheckMapping2D(DRT::Element& sele, DRT::Element& mele, double* sxi, double* mxi);
+    bool check_mapping2_d(DRT::Element& sele, DRT::Element& mele, double* sxi, double* mxi);
 
     /*!
     \brief Check integration point mapping (3D)
 
     */
-    bool CheckMapping3D(DRT::Element& sele, DRT::Element& mele, double* sxi, double* mxi);
+    bool check_mapping3_d(DRT::Element& sele, DRT::Element& mele, double* sxi, double* mxi);
 
     //@}
     int ngp_;                                 // number of Gauss points
@@ -173,7 +173,7 @@ namespace CORE::VOLMORTAR
     \brief Initialize Gauss rule (points, weights)
 
     */
-    void InitializeGP();
+    void initialize_gp();
 
     /*!
     \brief Integrate ele for 3D problems
@@ -191,7 +191,7 @@ namespace CORE::VOLMORTAR
     \brief Check integration point mapping (3D)
 
     */
-    bool CheckMapping3D(DRT::Element& sele, DRT::Element& mele, double* sxi, double* mxi);
+    bool check_mapping3_d(DRT::Element& sele, DRT::Element& mele, double* sxi, double* mxi);
 
     //@}
     int ngp_;                                 // number of Gauss points

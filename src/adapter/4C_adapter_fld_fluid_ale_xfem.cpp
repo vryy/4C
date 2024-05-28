@@ -57,7 +57,7 @@ Teuchos::RCP<FLD::UTILS::MapExtractor> const& ADAPTER::FluidAleXFEM::StructInter
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidAleXFEM::NonlinearSolve(
+void ADAPTER::FluidAleXFEM::nonlinear_solve(
     Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel)
 {
   // if we have values at the interface we need to apply them
@@ -97,7 +97,7 @@ void ADAPTER::FluidAleXFEM::NonlinearSolve(
 
 
   ale_field()->Solve();
-  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(ale_field()->Dispnp());
+  Teuchos::RCP<Epetra_Vector> fluiddisp = ale_to_fluid_field(ale_field()->Dispnp());
   fluid_field()->apply_mesh_displacement(fluiddisp);
   fluid_field()->Solve();
 }

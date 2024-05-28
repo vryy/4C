@@ -87,14 +87,14 @@ namespace CORE::GEO
        *  \param xyz (in) : Global spatial coordinate
        *  \param rst (out): Local parameter space coordinate */
       template <class T1, class T2>
-      bool LocalCoordinates(const T1& xyz, T2& rst)
+      bool local_coordinates(const T1& xyz, T2& rst)
       {
         if (static_cast<unsigned>(xyz.M()) < ProbDim())
           FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
         if (static_cast<unsigned>(rst.M()) < Dim())
           FOUR_C_THROW("The dimension of rst is wrong! (dim = %d)", Dim());
 
-        bool success = LocalCoordinates(xyz.A(), rst.A());
+        bool success = local_coordinates(xyz.A(), rst.A());
 
         std::fill(rst.A() + Dim(), rst.A() + rst.M(), 0.0);
 
@@ -109,14 +109,14 @@ namespace CORE::GEO
        *  \param rst (in)  : Local parameter space coordinate
        *  \param xyz (out) : Global spatial coordinate */
       template <class T1, class T2>
-      void GlobalCoordinates(const T1& rst, T2& xyz)
+      void global_coordinates(const T1& rst, T2& xyz)
       {
         if (static_cast<unsigned>(xyz.M()) < ProbDim())
           FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
         if (static_cast<unsigned>(rst.M()) < Dim())
           FOUR_C_THROW("The dimension of rst is wrong! (dim = %d)", Dim());
 
-        GlobalCoordinates(rst.A(), xyz.A());
+        global_coordinates(rst.A(), xyz.A());
 
         std::fill(xyz.A() + ProbDim(), xyz.A() + xyz.M(), 0.0);
       }
@@ -128,12 +128,12 @@ namespace CORE::GEO
        *
        *  \param midpoint (out): The midpoint of the element in global spatial coordinates */
       template <class T>
-      void ElementCenter(T& midpoint)
+      void element_center(T& midpoint)
       {
         if (static_cast<unsigned>(midpoint.M()) != ProbDim())
           FOUR_C_THROW("The dimension of midpoint is wrong! (probdim = %d)", ProbDim());
 
-        return ElementCenter(midpoint.A());
+        return element_center(midpoint.A());
       }
 
       /*! \brief Find the scalar value at a particular point inside the element
@@ -190,12 +190,12 @@ namespace CORE::GEO
       /*! \brief Return the level set value at the given global coordinate
        *  which has to be INSIDE the element. */
       template <class T>
-      double GetLevelSetValue(const T& xyz)
+      double get_level_set_value(const T& xyz)
       {
         if (static_cast<unsigned>(xyz.M()) < ProbDim())
           FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
 
-        return GetLevelSetValue(xyz.A());
+        return get_level_set_value(xyz.A());
       }
 
       /*! \brief Return the level set value at the given local coordinate
@@ -230,12 +230,12 @@ namespace CORE::GEO
        *                                           originally     winter 07/15
        *                                           generalized hiermeier 07/16 */
       template <class T>
-      std::vector<double> GetLevelSetGradient(const T& xyz)
+      std::vector<double> get_level_set_gradient(const T& xyz)
       {
         if (static_cast<unsigned>(xyz.M()) < ProbDim())
           FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
 
-        return GetLevelSetGradient(xyz.A());
+        return get_level_set_gradient(xyz.A());
       }
       template <class T>
       std::vector<double> get_level_set_gradient_at_local_coords(const T& rst)
@@ -531,31 +531,31 @@ namespace CORE::GEO
        *
        *  \param xyz (in) : Global spatial coordinate
        *  \param rst (out): Local parameter space coordinate */
-      virtual bool LocalCoordinates(const double* xyz, double* rst) = 0;
+      virtual bool local_coordinates(const double* xyz, double* rst) = 0;
 
       /*! Returns element global coordinates "xyz" of a point from its local coordinates "rst"
        *
        *  \param rst (in): Local parameter space coordinate
        *  \param xyz (out) : Global spatial coordinate */
-      virtual void GlobalCoordinates(const double* rst, double* xyz) = 0;
+      virtual void global_coordinates(const double* rst, double* xyz) = 0;
 
       /*! \brief Returns the element center global coordinates
        *
        *  \param midpoint (out): The midpoint of the element in global spatial coordinates */
-      virtual void ElementCenter(double* midpoint) = 0;
+      virtual void element_center(double* midpoint) = 0;
 
       /*! \brief Find the scalar value at a particular point inside the element
        *  specified by its local coordinates rst.
        *
        *  \param ns (in)   : contains the value of the scalar at the corner nodes of the element
        *  \param rst (in)  : local parameter space coordinate inside the element */
-      virtual double Scalar(const std::vector<double>& ns, const double* rst) = 0;
+      virtual double scalar(const std::vector<double>& ns, const double* rst) = 0;
 
       /*! \brief Return the level set value at the given global coordinate which
        *   has to be INSIDE the element.
        *
        *  \param xyz (in) : Global spatial coordinates */
-      virtual double GetLevelSetValue(const double* xyz) = 0;
+      virtual double get_level_set_value(const double* xyz) = 0;
 
       /*! \brief Return the level set value at the given local coordinate which
        *   has to be INSIDE the element.
@@ -566,7 +566,7 @@ namespace CORE::GEO
       /*! \brief Return the level set gradient in global coordinates
        *
        *  \param xyz (in) : global spatial coordinates */
-      virtual std::vector<double> GetLevelSetGradient(const double* xyz) = 0;
+      virtual std::vector<double> get_level_set_gradient(const double* xyz) = 0;
 
       /*! \brief Return the level set gradient in global coordinates
        *
@@ -625,7 +625,7 @@ namespace CORE::GEO
       /// True if this is a linear (shadow) element derived from a Quadratic element
       bool is_shadow_;
 
-      /// Discretization shape of the parent quad element
+      /// discretization shape of the parent quad element
       CORE::FE::CellType quadshape_;
 
       /// the bounding volume of the element
@@ -705,7 +705,7 @@ namespace CORE::GEO
        *
        *  \param xyz (in)        : Global spatial coordinate
        *  \param rst (out)       : Local parameter space coordinate */
-      bool LocalCoordinates(
+      bool local_coordinates(
           const CORE::LINALG::Matrix<probdim, 1>& xyz, CORE::LINALG::Matrix<dim, 1>& rst);
 
       /*! Returns element global coordinates "xyz" of a point from its local coordinates "rst"
@@ -715,7 +715,7 @@ namespace CORE::GEO
        *
        *  \param rst (in)  : Local parameter space coordinate
        *  \param xyz (out) : Global spatial coordinate */
-      void GlobalCoordinates(
+      void global_coordinates(
           const CORE::LINALG::Matrix<dim, 1>& rst, CORE::LINALG::Matrix<probdim, 1>& xyz)
       {
         CORE::LINALG::Matrix<numNodesElement, 1> funct;
@@ -754,7 +754,7 @@ namespace CORE::GEO
        *  Call this function to be on the safe side.
        *
        *  \param midpoint (out): The midpoint of the element in global spatial coordinates */
-      void ElementCenter(CORE::LINALG::Matrix<probdim, 1>& midpoint)
+      void element_center(CORE::LINALG::Matrix<probdim, 1>& midpoint)
       {
         // get the element center in the parameter coordinates (dim)
         CORE::LINALG::Matrix<dim, 1> center_rst(CORE::FE::getLocalCenterPosition<dim>(elementtype));
@@ -784,10 +784,10 @@ namespace CORE::GEO
        *   has to be INSIDE the element.
        *
        *  \param xyz (in) : Global spatial coordinates */
-      double GetLevelSetValue(const CORE::LINALG::Matrix<probdim, 1>& xyz)
+      double get_level_set_value(const CORE::LINALG::Matrix<probdim, 1>& xyz)
       {
         CORE::LINALG::Matrix<dim, 1> rst;
-        LocalCoordinates(xyz, rst);
+        local_coordinates(xyz, rst);
         return get_level_set_value_at_local_coords(rst);
       }
 
@@ -819,10 +819,10 @@ namespace CORE::GEO
       /*! \brief Return the level set gradient in global coordinates
        *
        *  \param xyz (in) : global spatial coordinates */
-      std::vector<double> GetLevelSetGradient(const CORE::LINALG::Matrix<probdim, 1>& xyz)
+      std::vector<double> get_level_set_gradient(const CORE::LINALG::Matrix<probdim, 1>& xyz)
       {
         CORE::LINALG::Matrix<dim, 1> rst;
-        LocalCoordinates(xyz, rst);
+        local_coordinates(xyz, rst);
         return get_level_set_gradient_at_local_coords(rst);
       }
 
@@ -882,7 +882,7 @@ namespace CORE::GEO
           const CORE::LINALG::Matrix<probdim, 1>& xyz)
       {
         CORE::LINALG::Matrix<dim, 1> rst;
-        LocalCoordinates(xyz, rst);
+        local_coordinates(xyz, rst);
         return get_level_set_gradient_at_local_coords_in_local_coords(rst);
       }
 
@@ -918,40 +918,40 @@ namespace CORE::GEO
 
      protected:
       //! derived
-      bool LocalCoordinates(const double* xyz, double* rst) override
+      bool local_coordinates(const double* xyz, double* rst) override
       {
         const CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
         CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);            // create view
-        return LocalCoordinates(xyz_mat, rst_mat);
+        return local_coordinates(xyz_mat, rst_mat);
       }
 
       //! derived
-      void GlobalCoordinates(const double* rst, double* xyz) override
+      void global_coordinates(const double* rst, double* xyz) override
       {
         const CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
         CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);    // create view
-        GlobalCoordinates(rst_mat, xyz_mat);
+        global_coordinates(rst_mat, xyz_mat);
       }
 
       //! derived
-      void ElementCenter(double* midpoint) override
+      void element_center(double* midpoint) override
       {
         CORE::LINALG::Matrix<probdim, 1> midpoint_mat(midpoint, true);  // create view
-        ElementCenter(midpoint_mat);
+        element_center(midpoint_mat);
       }
 
       //! derived
-      double Scalar(const std::vector<double>& ns, const double* rst) override
+      double scalar(const std::vector<double>& ns, const double* rst) override
       {
         const CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
         return Scalar(ns, rst_mat);
       }
 
       //! derived
-      double GetLevelSetValue(const double* xyz) override
+      double get_level_set_value(const double* xyz) override
       {
         const CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
-        return GetLevelSetValue(xyz_mat);
+        return get_level_set_value(xyz_mat);
       }
 
       double get_level_set_value_at_local_coords(const double* rst) override
@@ -961,10 +961,10 @@ namespace CORE::GEO
       }
 
       //! derived
-      std::vector<double> GetLevelSetGradient(const double* xyz) override
+      std::vector<double> get_level_set_gradient(const double* xyz) override
       {
         const CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
-        return GetLevelSetGradient(xyz_mat);
+        return get_level_set_gradient(xyz_mat);
       }
 
       //! derived

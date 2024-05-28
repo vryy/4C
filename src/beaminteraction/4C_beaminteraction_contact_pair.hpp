@@ -292,7 +292,7 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling.
-     * @param discret (in) Discretization, used to get the beam GIDs.
+     * @param discret (in) discretization, used to get the beam GIDs.
      * @param mortar_manager (in) Mortar manager, used to get the Lagrange multiplier GIDs.
      * @param global_G_B (in/out) Constraint equations derived w.r.t the beam DOFs.
      * @param global_G_S (in/out) Constraint equations derived w.r.t the solid DOFs.

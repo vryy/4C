@@ -126,7 +126,7 @@ namespace CONTACT
       }
 
       /// initialize the singleton instance
-      void Init(CONTACT::ParamsInterface* cparams, CONTACT::Integrator* wrapper)
+      void init(CONTACT::ParamsInterface* cparams, CONTACT::Integrator* wrapper)
       {
         if (not cparams or not wrapper)
           FOUR_C_THROW(
@@ -163,23 +163,23 @@ namespace CONTACT
       virtual void integrate_deriv_slave_element(MORTAR::Element& sele) = 0;
 
      protected:
-      INPAR::MORTAR::ShapeFcn ShapeFcn() { return Wrapper().shapefcn_; }
+      INPAR::MORTAR::ShapeFcn shape_fcn() { return wrapper().shapefcn_; }
 
-      CONTACT::ParamsInterface& CParams()
+      CONTACT::ParamsInterface& c_params()
       {
         if (not cparams_) FOUR_C_THROW("cparams_ seems no longer valid!");
 
         return *cparams_;
       }
 
-      const CONTACT::ParamsInterface& CParams() const
+      const CONTACT::ParamsInterface& c_params() const
       {
         if (not cparams_) FOUR_C_THROW("cparams_ seems no longer valid!");
 
         return *cparams_;
       }
 
-      IntegrationWrapper& Wrapper()
+      IntegrationWrapper& wrapper()
       {
         if (not wrapper_) FOUR_C_THROW("wrapper_ seems no longer valid!");
 
@@ -458,7 +458,7 @@ namespace CONTACT
           const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
           const CORE::LINALG::Matrix<3, 2>& stau) override;
 
-      void Deriv1st_Jacobian(MORTAR::Element& ele, const double* xi,
+      void deriv1st_jacobian(MORTAR::Element& ele, const double* xi,
           const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
           const CORE::LINALG::Matrix<3, 2>& stau,
           CORE::LINALG::Matrix<probdim, my::SLAVENUMNODE, int>& nodal_dofs,
@@ -472,7 +472,7 @@ namespace CONTACT
           const CORE::LINALG::Matrix<my::MASTERDIM, my::MASTERNUMNODE>& mderiv,
           const CORE::LINALG::Matrix<3, 2>& mtau) override;
 
-      void Deriv1st_MXiGP(MORTAR::Element& sele, MORTAR::Element& mele, const double* sxi,
+      void deriv1st_m_xi_gp(MORTAR::Element& sele, MORTAR::Element& mele, const double* sxi,
           const double* mxi, const double alpha,
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
           const CORE::LINALG::Matrix<my::MASTERNUMNODE, 1>& mval,

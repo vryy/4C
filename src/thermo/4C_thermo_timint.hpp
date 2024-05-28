@@ -110,16 +110,16 @@ namespace THR
     void determine_capa_consist_temp_rate();
 
     //! Apply Dirichlet boundary conditions on provided state vectors
-    void ApplyDirichletBC(const double time,  //!< at time
-        Teuchos::RCP<Epetra_Vector> temp,     //!< temperatures
-                                              //!< (may be Teuchos::null)
-        Teuchos::RCP<Epetra_Vector> rate,     //!< temperature rate
-                                              //!< (may be Teuchos::null)
-        bool recreatemap                      //!< recreate mapextractor/toggle-vector
-                                              //!< which stores the DOF IDs subjected
-                                              //!< to Dirichlet BCs
-                                              //!< This needs to be true if the bounded DOFs
-                                              //!< have been changed.
+    void apply_dirichlet_bc(const double time,  //!< at time
+        Teuchos::RCP<Epetra_Vector> temp,       //!< temperatures
+                                                //!< (may be Teuchos::null)
+        Teuchos::RCP<Epetra_Vector> rate,       //!< temperature rate
+                                                //!< (may be Teuchos::null)
+        bool recreatemap                        //!< recreate mapextractor/toggle-vector
+                                                //!< which stores the DOF IDs subjected
+                                                //!< to Dirichlet BCs
+                                                //!< This needs to be true if the bounded DOFs
+                                                //!< have been changed.
     );
 
     //! prepare thermal contact
@@ -385,7 +385,7 @@ namespace THR
     //@{
 
     //! Access dicretisation
-    Teuchos::RCP<DRT::Discretization> Discretization() override { return discret_; }
+    Teuchos::RCP<DRT::Discretization> discretization() override { return discret_; }
 
     //! non-overlapping DOF map for multiple dofsets
     Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) override

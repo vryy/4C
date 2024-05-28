@@ -60,8 +60,8 @@ namespace DRT
       void set_internal_variables_for_mat_and_rhs() override;
 
       //! calculation of diffusive element matrix
-      void CalcMatDiff(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                                         //!< index of current scalar
+      void calc_mat_diff(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                                           //!< index of current scalar
           const double timefacfac  //!< domain-integration factor times time-integration factor
           ) override;
 

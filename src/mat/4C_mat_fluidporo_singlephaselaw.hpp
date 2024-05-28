@@ -40,7 +40,7 @@ namespace MAT
       static FluidPoroPhaseLaw* CreatePhaseLaw(int phaselawId);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override { return Teuchos::null; };
+      Teuchos::RCP<CORE::MAT::Material> create_material() override { return Teuchos::null; };
 
       /// initialize
       virtual void Initialize() = 0;

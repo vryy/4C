@@ -81,7 +81,7 @@ namespace DRT
       /*!
         \brief calculate dissipation of various terms (evaluation of turbulence models)
       */
-      virtual int CalcDissipation(Fluid* ele, Teuchos::ParameterList& params,
+      virtual int calc_dissipation(Fluid* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> mat)
       {

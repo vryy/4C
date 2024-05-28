@@ -42,7 +42,7 @@ void ELCH::Algorithm::prepare_time_loop()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ELCH::Algorithm::PrintScaTraSolver()
+void ELCH::Algorithm::print_sca_tra_solver()
 {
   if (Comm().MyPID() == 0)
     std::cout

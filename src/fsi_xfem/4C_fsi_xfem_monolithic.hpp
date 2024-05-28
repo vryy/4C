@@ -83,7 +83,7 @@ namespace FSI
     //! matrix
     void SetupSystem() override;
 
-    virtual void CreateSystemMatrix();
+    virtual void create_system_matrix();
     //@}
 
 
@@ -118,10 +118,10 @@ namespace FSI
 
     //! recover Lagrange multiplier (structural forces) needed for rhs in next time step and update
     //! single fields
-    void Update() override;
+    void update() override;
 
     //! write output
-    void Output() override;
+    void output() override;
 
     //@}
 
@@ -137,10 +137,10 @@ namespace FSI
     //! @name dof_row_map access methods
 
     //! full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> dof_row_map() const { return Extractor().FullMap(); }
+    Teuchos::RCP<const Epetra_Map> dof_row_map() const { return extractor().FullMap(); }
 
     //! extractor to communicate between full monolithic map and block maps of single fields
-    const CORE::LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
+    const CORE::LINALG::MultiMapExtractor& extractor() const { return blockrowdofmap_; }
 
     //! extractor to communicate between full monolithic map and block maps of single fields
     //! this extractor considere poro as one field

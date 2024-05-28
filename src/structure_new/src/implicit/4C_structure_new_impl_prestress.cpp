@@ -55,18 +55,18 @@ STR::IMPLICIT::PreStress::PreStress() : absolute_displacement_norm_(1e9)
 }
 
 
-void STR::IMPLICIT::PreStress::WriteRestart(
+void STR::IMPLICIT::PreStress::write_restart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
 
-  const auto zeros = Teuchos::rcp(new Epetra_Vector(*GlobalState().DofRowMapView(), true));
+  const auto zeros = Teuchos::rcp(new Epetra_Vector(*global_state().DofRowMapView(), true));
 
   // write zero dynamic forces (for dynamic restart after  static prestressing)
   iowriter.WriteVector("finert", zeros);
   iowriter.WriteVector("fvisco", zeros);
 
-  ModelEval().WriteRestart(iowriter, forced_writerestart);
+  ModelEval().write_restart(iowriter, forced_writerestart);
 }
 
 void STR::IMPLICIT::PreStress::UpdateStepState()
@@ -74,7 +74,7 @@ void STR::IMPLICIT::PreStress::UpdateStepState()
   check_init_setup();
 
   // Compute norm of the displacements
-  GlobalState().GetDisNp()->NormInf(&absolute_displacement_norm_);
+  global_state().GetDisNp()->NormInf(&absolute_displacement_norm_);
 
   if (!is_material_iterative_prestress_converged())
   {
@@ -98,21 +98,21 @@ void STR::IMPLICIT::PreStress::UpdateStepElement()
 void STR::IMPLICIT::PreStress::post_update()
 {
   // Check for prestressing
-  if (IsMulfActive(GlobalState().GetTimeN()))
+  if (IsMulfActive(global_state().GetTimeN()))
 
   {
-    if (GlobalState().GetMyRank() == 0) IO::cout << "====== Resetting Displacements" << IO::endl;
+    if (global_state().GetMyRank() == 0) IO::cout << "====== Resetting Displacements" << IO::endl;
     // This is a MULF step, hence we do not update the displacements at the end of the
     // timestep. This is achieved by resetting the displacements, velocities and
     // accelerations.
-    GlobalState().GetDisN()->PutScalar(0.0);
-    GlobalState().GetVelN()->PutScalar(0.0);
-    GlobalState().GetAccN()->PutScalar(0.0);
+    global_state().GetDisN()->PutScalar(0.0);
+    global_state().GetVelN()->PutScalar(0.0);
+    global_state().GetAccN()->PutScalar(0.0);
   }
-  else if (IsMaterialIterativeActive(GlobalState().GetTimeN()))
+  else if (IsMaterialIterativeActive(global_state().GetTimeN()))
   {
     // Print prestress status update
-    if (GlobalState().GetMyRank() == 0)
+    if (global_state().GetMyRank() == 0)
     {
       IO::cout << "====== Iterative Prestress Status" << IO::endl;
       IO::cout << "abs-dis-inf-norm:                    " << absolute_displacement_norm_
@@ -124,8 +124,8 @@ void STR::IMPLICIT::PreStress::post_update()
 bool STR::IMPLICIT::PreStress::is_material_iterative_prestress_converged() const
 {
   return IsMaterialIterative() &&
-         GlobalState().GetStepN() >= SDyn().get_pre_stress_minimum_number_of_load_steps() &&
-         absolute_displacement_norm_ < SDyn().get_pre_stress_displacement_tolerance();
+         global_state().GetStepN() >= s_dyn().get_pre_stress_minimum_number_of_load_steps() &&
+         absolute_displacement_norm_ < s_dyn().get_pre_stress_displacement_tolerance();
 }
 
 bool STR::IMPLICIT::PreStress::EarlyStopping() const
@@ -134,7 +134,7 @@ bool STR::IMPLICIT::PreStress::EarlyStopping() const
 
   if (is_material_iterative_prestress_converged())
   {
-    if (GlobalState().GetMyRank() == 0)
+    if (global_state().GetMyRank() == 0)
     {
       IO::cout << "Prestress is converged. Stopping simulation." << IO::endl;
       IO::cout << "abs-dis-inf-norm:                    " << absolute_displacement_norm_
@@ -150,7 +150,7 @@ void STR::IMPLICIT::PreStress::PostTimeLoop()
 {
   if (IsMaterialIterative())
   {
-    if (absolute_displacement_norm_ > SDyn().get_pre_stress_displacement_tolerance())
+    if (absolute_displacement_norm_ > s_dyn().get_pre_stress_displacement_tolerance())
     {
       FOUR_C_THROW(
           "Prestress algorithm did not converged within the given timesteps. "

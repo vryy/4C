@@ -40,7 +40,7 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate action
-      int EvaluateAction(DRT::FaceElement* ele,             //!< boundary element
+      int evaluate_action(DRT::FaceElement* ele,            //!< boundary element
           Teuchos::ParameterList& params,                   //!< parameter list
           DRT::Discretization& discretization,              //!< discretization
           SCATRA::BoundaryAction action,                    //!< action
@@ -79,7 +79,7 @@ namespace DRT
           ) override;
 
       //! extract valence of species k from element material
-      double GetValence(
+      double get_valence(
           const Teuchos::RCP<const CORE::MAT::Material>& material,  //! element material
           const int k                                               //! species number
       ) const override;

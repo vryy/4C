@@ -86,33 +86,33 @@ namespace SSI
     void prepare_time_step(bool printheader = true) override;
 
     //! update time step and print to screen
-    virtual void UpdateAndOutput();
+    virtual void update_and_output();
 
    protected:
     //! solve field 1
-    virtual void Operator1() { do_struct_step(); };
+    virtual void operator1() { do_struct_step(); };
 
     //! solve field 2
-    virtual void Operator2() { DoScatraStep(); };
+    virtual void operator2() { do_scatra_step(); };
 
     //! pre operator called before first field operator
-    virtual void PreOperator1();
+    virtual void pre_operator1();
 
     //! pre operator called before second field operator
-    virtual void PreOperator2(){};
+    virtual void pre_operator2(){};
 
     //! post operator called after first field operator
-    virtual void PostOperator1(){};
+    virtual void post_operator1(){};
 
     //! post operator called after second field operator
-    virtual void PostOperator2(){};
+    virtual void post_operator2(){};
 
     //! perform iteration step of structure field and set the new disp and vel states in the scatra
     //! field
     void do_struct_step() override;
 
     //! perform iteration step of scatra field and set the new phi state in the structure field
-    void DoScatraStep() override;
+    void do_scatra_step() override;
 
     //! update the current states in every iteration
     //! states are set to the last solutions obtained
@@ -122,7 +122,7 @@ namespace SSI
     virtual bool convergence_check(int itnum);
 
     /// velocity calculation given the displacements
-    Teuchos::RCP<Epetra_Vector> CalcVelocity(Teuchos::RCP<const Epetra_Vector> dispnp);
+    Teuchos::RCP<Epetra_Vector> calc_velocity(Teuchos::RCP<const Epetra_Vector> dispnp);
 
     //! scalar increment of the outer loop
     Teuchos::RCP<Epetra_Vector> scaincnp_;
@@ -166,7 +166,7 @@ namespace SSI
     void outer_loop() override;
 
     //! //! calculate relaxation parameter
-    virtual void CalcOmega(double& omega, const int itnum);
+    virtual void calc_omega(double& omega, const int itnum);
 
     //! relaxation parameter
     double omega_;
@@ -206,7 +206,7 @@ namespace SSI
 
    protected:
     //! Calculate relaxation parameter via Aitken
-    void CalcOmega(double& omega, const int itnum) override;
+    void calc_omega(double& omega, const int itnum) override;
 
     //! old displacement increment of the outer loop
     Teuchos::RCP<Epetra_Vector> dispincnpold_;
@@ -243,7 +243,7 @@ namespace SSI
     void outer_loop() override;
 
     //! calculate relaxation parameter
-    virtual void CalcOmega(double& omega, const int itnum);
+    virtual void calc_omega(double& omega, const int itnum);
 
     //! relaxation parameter
     double omega_;
@@ -283,7 +283,7 @@ namespace SSI
 
    protected:
     //! Calculate relaxation parameter via Aitken
-    void CalcOmega(double& omega, const int itnum) override;
+    void calc_omega(double& omega, const int itnum) override;
 
     //! old scatra increment of the outer loop
     Teuchos::RCP<Epetra_Vector> scaincnpold_;

@@ -96,7 +96,7 @@ void ehl_dyn()
   const INPAR::EHL::SolutionSchemeOverFields coupling =
       CORE::UTILS::IntegralValue<INPAR::EHL::SolutionSchemeOverFields>(ehlparams, "COUPALGO");
 
-  // 3.- Creation of Lubrication + Structure problem. (Discretization called inside)
+  // 3.- Creation of Lubrication + Structure problem. (discretization called inside)
   Teuchos::RCP<EHL::Base> ehl = Teuchos::null;
 
   // 3.1 choose algorithm depending on solution type
@@ -115,7 +115,7 @@ void ehl_dyn()
       break;
   }
 
-  // 3.2- Read restart if needed. (Discretization called inside)
+  // 3.2- Read restart if needed. (discretization called inside)
   const int restart = problem->Restart();
   if (restart) ehl->read_restart(restart);
 

@@ -83,7 +83,7 @@ FLD::UTILS::FluidImpedanceWrapper::FluidImpedanceWrapper(
  |  Split linearization matrix to a BlockSparseMatrixBase    Thon 07/16 |
  *----------------------------------------------------------------------*/
 
-void FLD::UTILS::FluidImpedanceWrapper::UseBlockMatrix(Teuchos::RCP<std::set<int>> condelements,
+void FLD::UTILS::FluidImpedanceWrapper::use_block_matrix(Teuchos::RCP<std::set<int>> condelements,
     const CORE::LINALG::MultiMapExtractor& domainmaps,
     const CORE::LINALG::MultiMapExtractor& rangemaps, bool splitmatrix)
 {
@@ -91,7 +91,7 @@ void FLD::UTILS::FluidImpedanceWrapper::UseBlockMatrix(Teuchos::RCP<std::set<int
 
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++)
   {
-    mapiter->second->FluidImpedanceBc::UseBlockMatrix(
+    mapiter->second->FluidImpedanceBc::use_block_matrix(
         condelements, domainmaps, rangemaps, splitmatrix);
   }
   return;
@@ -109,7 +109,7 @@ void FLD::UTILS::FluidImpedanceWrapper::add_impedance_bc_to_residual_and_sysmat(
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++)
   {
     // calc flux
-    mapiter->second->FluidImpedanceBc::FlowRateCalculation(mapiter->first);
+    mapiter->second->FluidImpedanceBc::flow_rate_calculation(mapiter->first);
     // calc pressure and traction vector and appliy to fluid residual and sysmat
     mapiter->second->FluidImpedanceBc::calculate_impedance_tractions_and_update_residual_and_sysmat(
         residual, sysmat, dta, time, mapiter->first);
@@ -127,7 +127,7 @@ void FLD::UTILS::FluidImpedanceWrapper::time_update_impedances(const double time
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++)
   {
     // update time step
-    mapiter->second->FluidImpedanceBc::TimeUpdateImpedance(time, mapiter->first);
+    mapiter->second->FluidImpedanceBc::time_update_impedance(time, mapiter->first);
   }
   return;
 }
@@ -135,13 +135,13 @@ void FLD::UTILS::FluidImpedanceWrapper::time_update_impedances(const double time
 /*----------------------------------------------------------------------*
  |  Wrap restart writing                                     Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceWrapper::WriteRestart(IO::DiscretizationWriter& output)
+void FLD::UTILS::FluidImpedanceWrapper::write_restart(IO::DiscretizationWriter& output)
 {
   std::map<const int, Teuchos::RCP<class FluidImpedanceBc>>::iterator mapiter;
 
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++)
   {
-    mapiter->second->FluidImpedanceBc::WriteRestart(output, mapiter->first);
+    mapiter->second->FluidImpedanceBc::write_restart(output, mapiter->first);
   }
   return;
 }
@@ -250,7 +250,7 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<DRT::Discretiz
 /*----------------------------------------------------------------------*
  |  Split linearization matrix to a BlockSparseMatrixBase   Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceBc::UseBlockMatrix(Teuchos::RCP<std::set<int>> condelements,
+void FLD::UTILS::FluidImpedanceBc::use_block_matrix(Teuchos::RCP<std::set<int>> condelements,
     const CORE::LINALG::MultiMapExtractor& domainmaps,
     const CORE::LINALG::MultiMapExtractor& rangemaps, bool splitmatrix)
 {
@@ -286,7 +286,7 @@ void FLD::UTILS::FluidImpedanceBc::UseBlockMatrix(Teuchos::RCP<std::set<int>> co
   very last cycle!
 
 */
-void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(const int condid)
+void FLD::UTILS::FluidImpedanceBc::flow_rate_calculation(const int condid)
 {
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
@@ -317,7 +317,7 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(const int condid)
   //    std::cout<<"Impedance condition Id: "<<condid<<", Current flux: "<<flowrate<<std::endl;
 
   return;
-}  // FluidImplicitTimeInt::FlowRateCalculation
+}  // FluidImplicitTimeInt::flow_rate_calculation
 
 
 
@@ -392,7 +392,7 @@ void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
   // ---------------------------------------------------------------------//
   // ---------------------------------------------------------------------//
 
-  // NOTE: this can not be done in the constructure since maybe UseBlockMatrix
+  // NOTE: this can not be done in the constructure since maybe use_block_matrix
   // is called afterwards and hence its contenten is reseted :(
   if (not impedancetbcsysmat_->Filled())
   {
@@ -459,12 +459,12 @@ void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
   sysmat->Add(*impedancetbcsysmat_, false, Q_np_fac, 1.0);
 
   return;
-}  // FluidImplicitTimeInt::OutflowBoundary
+}  // FluidImplicitTimeInt::outflow_boundary
 
 /*----------------------------------------------------------------------*
  |  Update flowrate and pressure vector                       Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceBc::TimeUpdateImpedance(const double time, const int condid)
+void FLD::UTILS::FluidImpedanceBc::time_update_impedance(const double time, const int condid)
 {
   const double actpressure = p_np_;
 
@@ -491,12 +491,13 @@ void FLD::UTILS::FluidImpedanceBc::TimeUpdateImpedance(const double time, const 
   q_n_ = q_np_;
 
   return;
-}  // FluidImplicitTimeInt::OutflowBoundary
+}  // FluidImplicitTimeInt::outflow_boundary
 
 /*----------------------------------------------------------------------*
  |  Restart writing                                          Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceBc::WriteRestart(IO::DiscretizationWriter& output, const int condnum)
+void FLD::UTILS::FluidImpedanceBc::write_restart(
+    IO::DiscretizationWriter& output, const int condnum)
 {
   // condnum contains the number of the present condition
   // condition Id numbers must not change at restart!!!!

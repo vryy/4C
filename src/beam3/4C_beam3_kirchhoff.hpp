@@ -416,7 +416,7 @@ namespace DRT
       /*!
       \brief Get number of degrees of freedom per element not including nodal degrees of freedom
       */
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       /*!
       \brief Print this element

@@ -500,12 +500,12 @@ void STR::ModelEvaluator::assemble_cheap_soc_rhs(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::ModelEvaluator::CorrectParameters(const enum NOX::NLN::CorrectionType type) const
+bool STR::ModelEvaluator::correct_parameters(const enum NOX::NLN::CorrectionType type) const
 {
   bool ok = true;
   for (auto& cit : *me_vec_ptr_)
     // if one model evaluator failed, skip the remaining ones and return false
-    ok = (ok ? cit->CorrectParameters(type) : false);
+    ok = (ok ? cit->correct_parameters(type) : false);
 
   return ok;
 }
@@ -521,13 +521,13 @@ void STR::ModelEvaluator::Predict(const INPAR::STR::PredEnum& pred_type) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::WriteRestart(
+void STR::ModelEvaluator::write_restart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->WriteRestart(iowriter, forced_writerestart);
+    (*me_iter)->write_restart(iowriter, forced_writerestart);
 }
 
 /*----------------------------------------------------------------------------*
@@ -556,7 +556,7 @@ void STR::ModelEvaluator::RunRecover() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::RunPostComputeX(const Epetra_Vector& xold, const Epetra_Vector& dir,
+void STR::ModelEvaluator::run_post_compute_x(const Epetra_Vector& xold, const Epetra_Vector& dir,
     const double& step, const Epetra_Vector& xnew, const bool isdefaultstep) const
 {
   check_init_setup();
@@ -566,12 +566,12 @@ void STR::ModelEvaluator::RunPostComputeX(const Epetra_Vector& xold, const Epetr
   eval_data_ptr_->ResetMyNorms(isdefaultstep);
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->RunPostComputeX(xold, dir, xnew);
+    (*me_iter)->run_post_compute_x(xold, dir, xnew);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
+void STR::ModelEvaluator::run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
     const double& step, const NOX::NLN::Group& curr_grp, const bool isdefaultstep) const
 {
   eval_data_ptr_->SetIsDefaultStep(isdefaultstep);
@@ -579,12 +579,12 @@ void STR::ModelEvaluator::RunPreComputeX(const Epetra_Vector& xold, Epetra_Vecto
 
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->RunPreComputeX(xold, dir_mutable, curr_grp);
+    (*me_iter)->run_pre_compute_x(xold, dir_mutable, curr_grp);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::RunPostIterate(const ::NOX::Solver::Generic& solver, const double step,
+void STR::ModelEvaluator::run_post_iterate(const ::NOX::Solver::Generic& solver, const double step,
     const bool isdefaultstep, const int num_corrs) const
 {
   eval_data_ptr_->SetIsDefaultStep(isdefaultstep);
@@ -593,7 +593,7 @@ void STR::ModelEvaluator::RunPostIterate(const ::NOX::Solver::Generic& solver, c
 
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->RunPostIterate(solver);
+    (*me_iter)->run_post_iterate(solver);
 }
 
 /*----------------------------------------------------------------------------*
@@ -640,7 +640,7 @@ const STR::TIMINT::BaseDataGlobalState& STR::ModelEvaluator::GetGlobalState() co
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& STR::ModelEvaluator::GlobalStatePtr()
+const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& STR::ModelEvaluator::global_state_ptr()
 {
   check_init_setup();
   return gstate_ptr_;
@@ -732,12 +732,12 @@ void STR::ModelEvaluator::UpdateStepElement()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::UpdateResidual()
+void STR::ModelEvaluator::update_residual()
 {
   check_init_setup();
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->UpdateResidual();
+    (*me_iter)->update_residual();
 }
 
 /*----------------------------------------------------------------------------*

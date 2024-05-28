@@ -46,7 +46,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::
   // Call Evaluate on the geometry Pair. Only do this once for mesh tying.
   if (!this->meshtying_is_evaluated_)
   {
-    this->CastGeometryPair()->Evaluate(this->ele1posref_,
+    this->cast_geometry_pair()->Evaluate(this->ele1posref_,
         this->face_element_->get_face_reference_element_data(), this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
@@ -91,7 +91,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::
 
       // Calculate the force in this Gauss point. The sign of the force calculated here is the one
       // that acts on the beam.
-      coupling_vector = this->EvaluateCoupling(projected_gauss_point);
+      coupling_vector = this->evaluate_coupling(projected_gauss_point);
       force = coupling_vector;
       force.Scale(penalty_parameter);
 

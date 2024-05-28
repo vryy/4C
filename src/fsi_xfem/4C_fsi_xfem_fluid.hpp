@@ -35,27 +35,27 @@ namespace FSI
 
    protected:
     /// time step size
-    double Dt() const { return dt_; }
+    double dt() const { return dt_; }
 
     /// step number
-    int Step() const { return step_; }
+    int step() const { return step_; }
 
     //! @name Time loop building blocks
 
     /// tests if there are more time steps to do
-    bool NotFinished() { return step_ < nstep_ and time_ <= maxtime_; }
+    bool not_finished() { return step_ < nstep_ and time_ <= maxtime_; }
 
     /// start a new time step
     void prepare_time_step();
 
     /// solve ale and fluid fields
-    void Solve();
+    void solve();
 
     /// take current results for converged and save for next time step
-    void Update();
+    void update();
 
     /// write output
-    void Output();
+    void output();
 
     //@}
 

@@ -56,7 +56,7 @@ namespace STR
       void UpdateStepState() override;
 
       //! (derived)
-      void WriteRestart(
+      void write_restart(
           IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       /*! read restart information of the different time integration schemes

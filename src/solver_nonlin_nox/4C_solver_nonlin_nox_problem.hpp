@@ -94,7 +94,7 @@ namespace NOX
               " function!");
       }
 
-      inline const bool& IsJac() const { return isjac_; };
+      inline const bool& is_jac() const { return isjac_; };
 
      protected:
       bool isinit_;

@@ -183,7 +183,7 @@ void POROELASTSCATRA::UTILS::create_volume_ghosting(DRT::Discretization& idiscre
       // Ghost the parent element additionally
       if (elecolmap->LID(volgid) == -1 &&
           allredelecolmap->LID(volgid) !=
-              -1)  // Volume Discretization has not Element on this proc but on another
+              -1)  // Volume discretization has not Element on this proc but on another
         rdata.push_back(volgid);
     }
 

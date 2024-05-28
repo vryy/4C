@@ -35,25 +35,25 @@ PostVtuWriter::PostVtuWriter(PostField* field, const std::string& filename)
 {
 }
 
-const std::string& PostVtuWriter::WriterString() const
+const std::string& PostVtuWriter::writer_string() const
 {
   static std::string name("UnstructuredGrid");
   return name;
 }
 
-const std::string& PostVtuWriter::WriterOpeningTag() const
+const std::string& PostVtuWriter::writer_opening_tag() const
 {
   static std::string tag("<UnstructuredGrid>");
   return tag;
 }
 
-const std::string& PostVtuWriter::WriterPOpeningTag() const
+const std::string& PostVtuWriter::writer_p_opening_tag() const
 {
   static std::string tag("<PUnstructuredGrid GhostLevel=\"0\">");
   return tag;
 }
 
-const std::vector<std::string>& PostVtuWriter::WriterPPieceTags() const
+const std::vector<std::string>& PostVtuWriter::writer_p_piece_tags() const
 {
   static std::vector<std::string> tags;
   tags.clear();
@@ -67,19 +67,19 @@ const std::vector<std::string>& PostVtuWriter::WriterPPieceTags() const
   return tags;
 }
 
-const std::string& PostVtuWriter::WriterSuffix() const
+const std::string& PostVtuWriter::writer_suffix() const
 {
   static std::string name(".vtu");
   return name;
 }
 
-const std::string& PostVtuWriter::WriterPSuffix() const
+const std::string& PostVtuWriter::writer_p_suffix() const
 {
   static std::string name(".pvtu");
   return name;
 }
 
-void PostVtuWriter::WriteGeo()
+void PostVtuWriter::write_geo()
 {
   using namespace FourC;
 
@@ -111,11 +111,11 @@ void PostVtuWriter::WriteGeo()
 
     if (CORE::FE::IsNurbsDisType(ele->Shape()))
     {
-      WriteGeoNurbsEle(ele, celltypes, outNodeId, celloffset, coordinates);
+      write_geo_nurbs_ele(ele, celltypes, outNodeId, celloffset, coordinates);
     }
     else if (beamele != nullptr)
     {
-      WriteGeoBeamEle(beamele, celltypes, outNodeId, celloffset, coordinates);
+      write_geo_beam_ele(beamele, celltypes, outNodeId, celloffset, coordinates);
     }
     else
     {
@@ -235,7 +235,8 @@ void PostVtuWriter::WriteGeo()
 
 
 
-void PostVtuWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<Epetra_Vector>& data,
+void PostVtuWriter::write_dof_result_step(std::ofstream& file,
+    const Teuchos::RCP<Epetra_Vector>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from,
     const bool fillzeros)
@@ -349,7 +350,7 @@ void PostVtuWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<E
     FOUR_C_THROW(
         "Cannot write point data at this stage. Most likely cell and point data fields are mixed.");
 
-  this->WriteSolutionVector(solution, ncomponents, name, file);
+  this->write_solution_vector(solution, ncomponents, name, file);
 }
 
 
@@ -443,7 +444,7 @@ void PostVtuWriter::write_nodal_result_step(std::ofstream& file,
     FOUR_C_THROW(
         "Cannot write point data at this stage. Most likely cell and point data fields are mixed.");
 
-  this->WriteSolutionVector(solution, ncomponents, name, file);
+  this->write_solution_vector(solution, ncomponents, name, file);
 }
 
 
@@ -517,12 +518,12 @@ void PostVtuWriter::write_element_result_step(std::ofstream& file,
     FOUR_C_THROW(
         "Cannot write cell data at this stage. Most likely cell and point data fields are mixed.");
 
-  this->WriteSolutionVector(solution, ncomponents, name, file);
+  this->write_solution_vector(solution, ncomponents, name, file);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_t>& celltypes,
+void PostVtuWriter::write_geo_nurbs_ele(const DRT::Element* ele, std::vector<uint8_t>& celltypes,
     int& outNodeId, std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const
 {
   using namespace FourC;
@@ -531,37 +532,37 @@ void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_
   {
     case CORE::FE::CellType::nurbs2:
     {
-      WriteGeoNurbsEle<CORE::FE::CellType::nurbs2>(
+      write_geo_nurbs_ele<CORE::FE::CellType::nurbs2>(
           ele, celltypes, outNodeId, celloffset, coordinates);
       break;
     }
     case CORE::FE::CellType::nurbs3:
     {
-      WriteGeoNurbsEle<CORE::FE::CellType::nurbs3>(
+      write_geo_nurbs_ele<CORE::FE::CellType::nurbs3>(
           ele, celltypes, outNodeId, celloffset, coordinates);
       break;
     }
     case CORE::FE::CellType::nurbs4:
     {
-      WriteGeoNurbsEle<CORE::FE::CellType::nurbs4>(
+      write_geo_nurbs_ele<CORE::FE::CellType::nurbs4>(
           ele, celltypes, outNodeId, celloffset, coordinates);
       break;
     }
     case CORE::FE::CellType::nurbs9:
     {
-      WriteGeoNurbsEle<CORE::FE::CellType::nurbs9>(
+      write_geo_nurbs_ele<CORE::FE::CellType::nurbs9>(
           ele, celltypes, outNodeId, celloffset, coordinates);
       break;
     }
     case CORE::FE::CellType::nurbs8:
     {
-      WriteGeoNurbsEle<CORE::FE::CellType::nurbs8>(
+      write_geo_nurbs_ele<CORE::FE::CellType::nurbs8>(
           ele, celltypes, outNodeId, celloffset, coordinates);
       break;
     }
     case CORE::FE::CellType::nurbs27:
     {
-      WriteGeoNurbsEle<CORE::FE::CellType::nurbs27>(
+      write_geo_nurbs_ele<CORE::FE::CellType::nurbs27>(
           ele, celltypes, outNodeId, celloffset, coordinates);
       break;
     }
@@ -576,7 +577,7 @@ void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <CORE::FE::CellType nurbs_type>
-void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_t>& celltypes,
+void PostVtuWriter::write_geo_nurbs_ele(const DRT::Element* ele, std::vector<uint8_t>& celltypes,
     int& outNodeId, std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const
 {
   using namespace FourC;
@@ -661,7 +662,7 @@ CORE::FE::CellType PostVtuWriter::map_nurbs_dis_type_to_lagrange_dis_type(
   }
 }
 
-void PostVtuWriter::WriteGeoBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
+void PostVtuWriter::write_geo_beam_ele(const DRT::ELEMENTS::Beam3Base* beamele,
     std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
     std::vector<double>& coordinates)
 {
@@ -1002,24 +1003,24 @@ void PostVtuWriter::write_nodal_result_step_nurbs_ele(const DRT::Element* ele, i
 }
 
 /*----------------------------------------------------------------------------*/
-template void PostVtuWriter::WriteGeoNurbsEle<CORE::FE::CellType::nurbs2>(const DRT::Element* ele,
-    std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
-    std::vector<double>& coordinates) const;
-template void PostVtuWriter::WriteGeoNurbsEle<CORE::FE::CellType::nurbs3>(const DRT::Element* ele,
-    std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
-    std::vector<double>& coordinates) const;
-template void PostVtuWriter::WriteGeoNurbsEle<CORE::FE::CellType::nurbs4>(const DRT::Element* ele,
-    std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
-    std::vector<double>& coordinates) const;
-template void PostVtuWriter::WriteGeoNurbsEle<CORE::FE::CellType::nurbs9>(const DRT::Element* ele,
-    std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
-    std::vector<double>& coordinates) const;
-template void PostVtuWriter::WriteGeoNurbsEle<CORE::FE::CellType::nurbs8>(const DRT::Element* ele,
-    std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
-    std::vector<double>& coordinates) const;
-template void PostVtuWriter::WriteGeoNurbsEle<CORE::FE::CellType::nurbs27>(const DRT::Element* ele,
-    std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
-    std::vector<double>& coordinates) const;
+template void PostVtuWriter::write_geo_nurbs_ele<CORE::FE::CellType::nurbs2>(
+    const DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
+    std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
+template void PostVtuWriter::write_geo_nurbs_ele<CORE::FE::CellType::nurbs3>(
+    const DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
+    std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
+template void PostVtuWriter::write_geo_nurbs_ele<CORE::FE::CellType::nurbs4>(
+    const DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
+    std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
+template void PostVtuWriter::write_geo_nurbs_ele<CORE::FE::CellType::nurbs9>(
+    const DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
+    std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
+template void PostVtuWriter::write_geo_nurbs_ele<CORE::FE::CellType::nurbs8>(
+    const DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
+    std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
+template void PostVtuWriter::write_geo_nurbs_ele<CORE::FE::CellType::nurbs27>(
+    const DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
+    std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
 
 /*----------------------------------------------------------------------------*/
 template void PostVtuWriter::wirte_dof_result_step_nurbs_ele<CORE::FE::CellType::nurbs2>(

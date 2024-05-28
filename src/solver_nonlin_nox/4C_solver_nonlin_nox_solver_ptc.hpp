@@ -287,7 +287,7 @@ namespace NOX
         void update_pseudo_time_step();
 
         //! Returns true if the scaling operator has been evaluated.
-        bool IsScalingOperator() const { return isScalingOperator_; };
+        bool is_scaling_operator() const { return isScalingOperator_; };
 
        private:
         //! Throw class specific error
@@ -404,7 +404,7 @@ namespace NOX
 
          protected:
           //! modify the jacobian as defined by the scaling operator type
-          virtual void modifyJacobian(CORE::LINALG::SparseMatrix& jac);
+          virtual void modify_jacobian(CORE::LINALG::SparseMatrix& jac);
 
          private:
           //! read-only access

@@ -47,28 +47,29 @@ namespace NOX
 
          protected:
           //! Build the Armijo sufficient decrease test
-          Teuchos::RCP<Generic> BuildArmijoTest(
+          Teuchos::RCP<Generic> build_armijo_test(
               Teuchos::ParameterList& p, const ::NOX::Utils& u) const;
 
           //! Build the filter test
-          Teuchos::RCP<Generic> BuildFilterTest(
+          Teuchos::RCP<Generic> build_filter_test(
               Teuchos::ParameterList& p, const ::NOX::Utils& u) const;
 
           //! Build the upper bound test
-          Teuchos::RCP<Generic> BuildUpperBoundTest(
+          Teuchos::RCP<Generic> build_upper_bound_test(
               Teuchos::ParameterList& p, const ::NOX::Utils& u) const;
 
           /*! \brief Build the inner_statustest_combo object
 
           */
-          Teuchos::RCP<Generic> BuildComboTest(Teuchos::ParameterList& p, const ::NOX::Utils& u,
+          Teuchos::RCP<Generic> build_combo_test(Teuchos::ParameterList& p, const ::NOX::Utils& u,
               std::map<std::string, Teuchos::RCP<Generic>>* tagged_tests) const;
 
           /// \brief Build volume change test
           Teuchos::RCP<Generic> build_volume_change_test(
               Teuchos::ParameterList& p, const ::NOX::Utils& u) const;
 
-          bool CheckAndTagTest(const Teuchos::ParameterList& p, const Teuchos::RCP<Generic>& test,
+          bool check_and_tag_test(const Teuchos::ParameterList& p,
+              const Teuchos::RCP<Generic>& test,
               std::map<std::string, Teuchos::RCP<Generic>>* tagged_tests) const;
 
          private:

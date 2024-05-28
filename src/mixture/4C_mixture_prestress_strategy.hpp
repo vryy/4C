@@ -75,7 +75,7 @@ namespace MIXTURE
       }
 
       /// Override this method and throw error, as only the CreateRule() should be used.
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() final
+      Teuchos::RCP<CORE::MAT::Material> create_material() final
       {
         FOUR_C_THROW(
             "Cannot create prestress strategy from this method. Use CreateRule() instead.");

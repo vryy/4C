@@ -69,7 +69,7 @@ namespace STR
           CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
 
       //! derived
-      void WriteRestart(
+      void write_restart(
           IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! derived
@@ -79,17 +79,17 @@ namespace STR
       void Predict(const INPAR::STR::PredEnum& pred_type) override{};
 
       //! derived
-      void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
+      void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
           const NOX::NLN::Group& curr_grp) override{};
 
       //! derived
-      void RunPostComputeX(
+      void run_post_compute_x(
           const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override
       {
       }
 
       //! derived
-      void RunPostIterate(const ::NOX::Solver::Generic& solver) override{};
+      void run_post_iterate(const ::NOX::Solver::Generic& solver) override{};
 
       //! derived
       void UpdateStepState(const double& timefac_n) override;

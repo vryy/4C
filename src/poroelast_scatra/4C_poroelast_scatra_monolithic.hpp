@@ -95,10 +95,10 @@ namespace POROELASTSCATRA
     void Solve() override;
 
     //! take current results for converged and save for next time step
-    void Update() override;
+    void update() override;
 
     //! write output
-    void Output() override;
+    void output() override;
 
     // Setup solver for monolithic system
     bool SetupSolver() override;
@@ -121,13 +121,13 @@ namespace POROELASTSCATRA
 
    protected:
     //! extractor to communicate between full monolithic map and block maps
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> Extractor() const
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> extractor() const
     {
       return blockrowdofmap_;
     }
 
     //! extractor for DBCs
-    const Teuchos::RCP<CORE::LINALG::MapExtractor>& DBCExtractor() const { return dbcmaps_; }
+    const Teuchos::RCP<CORE::LINALG::MapExtractor>& dbc_extractor() const { return dbcmaps_; }
 
     //! set full monolithic dof row map
     /*!

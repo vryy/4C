@@ -1675,7 +1675,7 @@ void FLD::TurbulenceStatisticsLdc::read_restart(IO::DiscretizationReader& reader
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsLdc::WriteRestart(IO::DiscretizationWriter& writer)
+void FLD::TurbulenceStatisticsLdc::write_restart(IO::DiscretizationWriter& writer)
 {
   writer.WriteDouble("numsamp", numsamp_);
 

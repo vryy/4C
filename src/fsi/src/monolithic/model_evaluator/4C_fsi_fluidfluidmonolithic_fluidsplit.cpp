@@ -47,7 +47,7 @@ FSI::FluidFluidMonolithicFluidSplit::FluidFluidMonolithicFluidSplit(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidFluidMonolithicFluidSplit::Update()
+void FSI::FluidFluidMonolithicFluidSplit::update()
 {
   // time to relax the ALE-mesh?
   if (fluid_field()->IsAleRelaxationStep(Step()))
@@ -55,11 +55,11 @@ void FSI::FluidFluidMonolithicFluidSplit::Update()
     if (Comm().MyPID() == 0) IO::cout << "Relaxing Ale" << IO::endl;
 
     ale_field()->Solve();
-    fluid_field()->apply_mesh_displacement(AleToFluid(ale_field()->Dispnp()));
+    fluid_field()->apply_mesh_displacement(ale_to_fluid(ale_field()->Dispnp()));
   }
 
   // update fields
-  FSI::MonolithicFluidSplit::Update();
+  FSI::MonolithicFluidSplit::update();
 }
 
 /*----------------------------------------------------------------------*/
@@ -80,7 +80,7 @@ void FSI::FluidFluidMonolithicFluidSplit::prepare_time_step()
   // Dirichlet maps
   FSI::MonolithicFluidSplit::create_combined_dof_row_map();
   setup_dbc_map_extractor();
-  FSI::MonolithicFluidSplit::CreateSystemMatrix();
+  FSI::MonolithicFluidSplit::create_system_matrix();
 }
 
 /*----------------------------------------------------------------------*/
@@ -91,7 +91,7 @@ void FSI::FluidFluidMonolithicFluidSplit::setup_dbc_map_extractor()
   std::vector<Teuchos::RCP<const Epetra_Map>> dbcmaps;
 
   // structure DBC
-  dbcmaps.push_back(StructureField()->GetDBCMapExtractor()->CondMap());
+  dbcmaps.push_back(structure_field()->GetDBCMapExtractor()->CondMap());
   // fluid DBC (including background & embedded discretization)
   dbcmaps.push_back(fluid_field()->GetDBCMapExtractor()->CondMap());
   // ALE-DBC-maps, free of FSI DOF
@@ -114,9 +114,9 @@ void FSI::FluidFluidMonolithicFluidSplit::setup_dbc_map_extractor()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidFluidMonolithicFluidSplit::Output()
+void FSI::FluidFluidMonolithicFluidSplit::output()
 {
-  StructureField()->Output();
+  structure_field()->Output();
   fluid_field()->Output();
 
   // output Lagrange multiplier
@@ -139,10 +139,11 @@ void FSI::FluidFluidMonolithicFluidSplit::Output()
   }
   ale_field()->Output();
 
-  if (StructureField()->get_constraint_manager()->HaveMonitor())
+  if (structure_field()->get_constraint_manager()->HaveMonitor())
   {
-    StructureField()->get_constraint_manager()->compute_monitor_values(StructureField()->Dispnp());
-    if (Comm().MyPID() == 0) StructureField()->get_constraint_manager()->PrintMonitorValues();
+    structure_field()->get_constraint_manager()->compute_monitor_values(
+        structure_field()->Dispnp());
+    if (Comm().MyPID() == 0) structure_field()->get_constraint_manager()->PrintMonitorValues();
   }
 }
 
@@ -155,7 +156,7 @@ void FSI::FluidFluidMonolithicFluidSplit::read_restart(int step)
     Teuchos::RCP<Epetra_Vector> lambdaemb = Teuchos::rcp(
         new Epetra_Vector(*(fluid_field()->x_fluid_fluid_map_extractor()->FluidMap()), true));
     IO::DiscretizationReader reader = IO::DiscretizationReader(
-        fluid_field()->Discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
+        fluid_field()->discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
     reader.ReadVector(lambdaemb, "fsilambda");
     // Insert into vector containing the whole merged fluid DOF
     Teuchos::RCP<Epetra_Vector> lambdafull =
@@ -164,7 +165,7 @@ void FSI::FluidFluidMonolithicFluidSplit::read_restart(int step)
         fluid_field()->Interface()->ExtractFSICondVector(lambdafull));
   }
 
-  StructureField()->read_restart(step);
+  structure_field()->read_restart(step);
   fluid_field()->read_restart(step);
   ale_field()->read_restart(step);
 

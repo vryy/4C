@@ -508,7 +508,7 @@ void PostProblem::read_meshes()
               dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*currfield.discretization()));
 
           if (nurbsdis == nullptr)
-            FOUR_C_THROW("Discretization %s is not a NurbsDiscretization",
+            FOUR_C_THROW("discretization %s is not a NurbsDiscretization",
                 currfield.discretization()->Name().c_str());
 
           Teuchos::RCP<std::vector<char>> packed_knots;

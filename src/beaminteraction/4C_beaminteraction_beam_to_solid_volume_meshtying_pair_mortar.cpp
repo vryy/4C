@@ -56,7 +56,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
     GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
     GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
     this->get_coupling_reference_position(beam_coupling_ref, solid_coupling_ref);
-    this->CastGeometryPair()->Evaluate(
+    this->cast_geometry_pair()->Evaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
@@ -71,7 +71,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
   CORE::LINALG::Matrix<mortar::n_dof_, 1, double> local_constraint(false);
 
   // Evaluate the local mortar contributions.
-  EvaluateDM(local_D, local_M, local_kappa, local_constraint);
+  evaluate_dm(local_D, local_M, local_kappa, local_constraint);
 
   // Assemble into global matrices.
   AssembleLocalMortarContributions<beam, solid, mortar>(this, discret, mortar_manager, global_G_B,
@@ -270,7 +270,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
  *
  */
 template <typename beam, typename solid, typename mortar>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>::EvaluateDM(
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>::evaluate_dm(
     CORE::LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
     CORE::LINALG::Matrix<mortar::n_dof_, solid::n_dof_, double>& local_M,
     CORE::LINALG::Matrix<mortar::n_dof_, 1, double>& local_kappa,

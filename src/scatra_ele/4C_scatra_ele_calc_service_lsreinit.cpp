@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, unsigned probDim>
-int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvaluateAction(DRT::Element* ele,
+int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::evaluate_action(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -94,7 +94,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvaluateAction(DRT::
     }
     default:
     {
-      my::EvaluateAction(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
+      my::evaluate_action(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
           elevec1_epetra, elevec2_epetra, elevec3_epetra);
       break;
     }
@@ -194,7 +194,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_correction(
     // element matrix
     //------------------------------------------------
 
-    my::CalcMatMass(emat, 0, fac, 1.0);
+    my::calc_mat_mass(emat, 0, fac, 1.0);
 
     //------------------------------------------------
     // element rhs
@@ -204,7 +204,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_correction(
     // caution: this function can be used here, since gen-alpha is excluded
     if (my::scatraparatimint_->IsGenAlpha()) FOUR_C_THROW("Not supported by this implementation!");
     // note: this function computes phinp at integration point
-    my::CalcRHSLinMass(erhs, 0, 0.0, -fac, 1.0, 1.0);  // sign has to be changed!!!!
+    my::calc_rhs_lin_mass(erhs, 0, 0.0, -fac, 1.0, 1.0);  // sign has to be changed!!!!
 
     // penalty term
     calc_rhs_penalty(erhs, fac, penalty, deriv_sign, norm_gradphizero);
@@ -411,7 +411,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_nodal_vel(
     //------------------------------------------------
     // element matrix
     //------------------------------------------------
-    my::CalcMatMass(emat, 0, fac, 1.0);
+    my::calc_mat_mass(emat, 0, fac, 1.0);
 
     //------------------------------------------------
     // add dissipation for smooth fields
@@ -422,7 +422,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_nodal_vel(
     {
       const double diff = (lsreinitparams_->ProjectDiff()) * charelelength * charelelength;
       my::diffmanager_->SetIsotropicDiff(diff, 0);
-      my::CalcMatDiff(emat, 0, fac);
+      my::calc_mat_diff(emat, 0, fac);
     }
 
     //------------------------------------------------

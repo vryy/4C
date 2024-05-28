@@ -96,16 +96,16 @@ void STR::TIMINT::Base::Setup()
    * unfortunately this wasn't considered during the implementation of the
    * discretization routines. Therefore many methods need a slight modification
    * (most times adding a "const" should fix the problem).          hiermeier */
-  Teuchos::RCP<DRT::Discretization> discret_ptr = DataGlobalState().GetDiscret();
-  dbc_ptr_->Init(discret_ptr, DataGlobalState().GetFreactNp(), Teuchos::rcp(this, false));
+  Teuchos::RCP<DRT::Discretization> discret_ptr = data_global_state().GetDiscret();
+  dbc_ptr_->Init(discret_ptr, data_global_state().GetFreactNp(), Teuchos::rcp(this, false));
   dbc_ptr_->Setup();
 
   // ---------------------------------------------------------------------------
   // Create the explicit/implicit integrator
   // ---------------------------------------------------------------------------
   int_ptr_ = STR::BuildIntegrator(DataSDyn());
-  int_ptr_->Init(
-      DataSDynPtr(), DataGlobalStatePtr(), DataIOPtr(), dbc_ptr_, Teuchos::rcp(this, false));
+  int_ptr_->Init(data_s_dyn_ptr(), data_global_state_ptr(), data_io_ptr(), dbc_ptr_,
+      Teuchos::rcp(this, false));
   int_ptr_->Setup();
   int_ptr_->post_setup();
   // Initialize and Setup the input/output writer for every Newton iteration
@@ -221,7 +221,7 @@ const STR::MODELEVALUATOR::Generic& STR::TIMINT::Base::ModelEvaluator(
  *----------------------------------------------------------------------------*/
 STR::MODELEVALUATOR::Generic& STR::TIMINT::Base::ModelEvaluator(INPAR::STR::ModelType mtype)
 {
-  return Integrator().ModelEval().Evaluator(mtype);
+  return integrator().ModelEval().Evaluator(mtype);
 }
 
 /*----------------------------------------------------------------------------*
@@ -389,7 +389,7 @@ Teuchos::RCP<CORE::UTILS::ResultTest> STR::TIMINT::Base::CreateFieldTest()
 {
   check_init_setup();
   Teuchos::RCP<STR::ResultTest> resulttest = Teuchos::rcp(new STR::ResultTest());
-  resulttest->Init(GetDataGlobalState(), Integrator().EvalData());
+  resulttest->Init(GetDataGlobalState(), integrator().EvalData());
   resulttest->Setup();
 
   return resulttest;
@@ -474,7 +474,7 @@ void STR::TIMINT::Base::prepare_output(bool force_prepare_timestep)
 void STR::TIMINT::Base::Output(bool forced_writerestart)
 {
   check_init_setup();
-  OutputStep(forced_writerestart);
+  output_step(forced_writerestart);
   // write Gmsh output
   write_gmsh_struc_output_step();
   int_ptr_->PostOutput();
@@ -482,7 +482,7 @@ void STR::TIMINT::Base::Output(bool forced_writerestart)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
+void STR::TIMINT::Base::output_step(bool forced_writerestart)
 {
   check_init_setup();
   // special treatment is necessary when restart is forced
@@ -675,7 +675,7 @@ void STR::TIMINT::Base::output_stress_strain()
         FOUR_C_THROW("Requested stress type is not supported!");
         break;
     }
-    output_ptr->WriteVector(text, evaldata.StressData(), *(Discretization()->ElementRowMap()));
+    output_ptr->WriteVector(text, evaldata.StressData(), *(discretization()->ElementRowMap()));
   }
   // we don't need this anymore
   evaldata.StressDataPtr() = Teuchos::null;
@@ -699,7 +699,7 @@ void STR::TIMINT::Base::output_stress_strain()
         break;
     }
     output_ptr->WriteVector(
-        text, evaldata.CouplingStressData(), *(Discretization()->ElementRowMap()));
+        text, evaldata.CouplingStressData(), *(discretization()->ElementRowMap()));
   }
 
   // ---------------------------------------------------------------------------
@@ -725,7 +725,7 @@ void STR::TIMINT::Base::output_stress_strain()
         FOUR_C_THROW("Requested strain type is not supported!");
         break;
     }
-    output_ptr->WriteVector(text, evaldata.StrainData(), *(Discretization()->ElementRowMap()));
+    output_ptr->WriteVector(text, evaldata.StrainData(), *(discretization()->ElementRowMap()));
   }
   // we don't need this anymore
   evaldata.StrainDataPtr() = Teuchos::null;
@@ -749,7 +749,7 @@ void STR::TIMINT::Base::output_stress_strain()
         break;
     }
     output_ptr->WriteVector(
-        text, evaldata.PlasticStrainData(), *(Discretization()->ElementRowMap()));
+        text, evaldata.PlasticStrainData(), *(discretization()->ElementRowMap()));
   }
   // we don't need this anymore
   evaldata.plastic_strain_data_ptr() = Teuchos::null;
@@ -809,7 +809,7 @@ void STR::TIMINT::Base::output_optional_quantity()
         FOUR_C_THROW("Requested optional quantity type is not supported!");
         break;
     }
-    output_ptr->WriteVector(text, evaldata.OptQuantityData(), *(Discretization()->ElementRowMap()));
+    output_ptr->WriteVector(text, evaldata.OptQuantityData(), *(discretization()->ElementRowMap()));
   }
   // we don't need this anymore
   evaldata.OptQuantityDataPtr() = Teuchos::null;
@@ -837,7 +837,7 @@ void STR::TIMINT::Base::output_restart(bool& datawritten)
 
   /* Add the restart information of the different time integrators and model
    * evaluators. */
-  int_ptr_->WriteRestart(*output_ptr);
+  int_ptr_->write_restart(*output_ptr);
 
   // info dedicated to user's eyes staring at standard out
   if ((dataglobalstate_->GetMyRank() == 0) and (dataio_->get_print2_screen_every_n_step() > 0) and
@@ -864,10 +864,10 @@ void STR::TIMINT::Base::add_restart_to_output_state()
 
   /* Add the restart information of the different time integrators and model
    * evaluators. */
-  int_ptr_->WriteRestart(*output_ptr, true);
+  int_ptr_->write_restart(*output_ptr, true);
 
   // finally add the missing mesh information, order is important here
-  output_ptr->WriteMesh(DataGlobalState().GetStepN(), DataGlobalState().GetTimeN());
+  output_ptr->WriteMesh(data_global_state().GetStepN(), data_global_state().GetTimeN());
 
   // info dedicated to user's eyes staring at standard out
   if ((dataglobalstate_->GetMyRank() == 0) and (dataio_->get_print2_screen_every_n_step() > 0) and
@@ -893,7 +893,7 @@ void STR::TIMINT::Base::write_gmsh_struc_output_step()
   gmshfilecontent << "View \" "
                   << "struct displacement \" {" << std::endl;
   // draw vector field 'struct displacement' for every element
-  IO::GMSH::VectorFieldDofBasedToGmsh(Discretization(), Dispn(), gmshfilecontent, 0, true);
+  IO::GMSH::VectorFieldDofBasedToGmsh(discretization(), Dispn(), gmshfilecontent, 0, true);
   gmshfilecontent << "};" << std::endl;
 }
 
@@ -907,7 +907,7 @@ void STR::TIMINT::Base::read_restart(const int stepn)
 
   // create an input/output reader
   IO::DiscretizationReader ioreader(
-      Discretization(), GLOBAL::Problem::Instance()->InputControlFile(), stepn);
+      discretization(), GLOBAL::Problem::Instance()->InputControlFile(), stepn);
   dataglobalstate_->GetStepN() = stepn;
   dataglobalstate_->GetStepNp() = stepn + 1;
   dataglobalstate_->GetMultiTime() =
@@ -955,7 +955,7 @@ void STR::TIMINT::Base::read_restart(const int stepn)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> STR::TIMINT::Base::Discretization()
+Teuchos::RCP<DRT::Discretization> STR::TIMINT::Base::discretization()
 {
   check_init();
   return dataglobalstate_->GetDiscret();

@@ -90,7 +90,7 @@ namespace
     Teuchos::RCP<CORE::MAT::PAR::Material> isoNeoHookeParams =
         Teuchos::rcp(new CORE::MAT::PAR::Material());
     isoNeoHookeParams->Add("MUE", 1.3);
-    isoNeoHookeParams->SetParameter(new MAT::ELASTIC::PAR::IsoNeoHooke(isoNeoHookeParams));
+    isoNeoHookeParams->set_parameter(new MAT::ELASTIC::PAR::IsoNeoHooke(isoNeoHookeParams));
     auto* isoNeoHookeParams2 =
         dynamic_cast<MAT::ELASTIC::PAR::IsoNeoHooke*>(isoNeoHookeParams->Parameter());
 

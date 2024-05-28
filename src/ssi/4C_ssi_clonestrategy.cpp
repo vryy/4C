@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::map<std::string, std::string> SSI::ScatraStructureCloneStrategy::ConditionsToCopy() const
+std::map<std::string, std::string> SSI::ScatraStructureCloneStrategy::conditions_to_copy() const
 {
   return {{"TransportDirichlet", "Dirichlet"}, {"TransportPointNeumann", "PointNeumann"},
       {"TransportLineNeumann", "LineNeumann"}, {"TransportSurfaceNeumann", "SurfaceNeumann"},
@@ -43,7 +43,7 @@ std::map<std::string, std::string> SSI::ScatraStructureCloneStrategy::Conditions
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::map<std::string, std::string> SSI::ScatraStructureCloneStrategyManifold::ConditionsToCopy()
+std::map<std::string, std::string> SSI::ScatraStructureCloneStrategyManifold::conditions_to_copy()
     const
 {
   return {};
@@ -60,7 +60,7 @@ INPAR::SCATRA::ImplType SSI::ScatraStructureCloneStrategy::GetImplType(DRT::Elem
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::ScatraStructureCloneStrategy::CheckMaterialType(const int matid)
+void SSI::ScatraStructureCloneStrategy::check_material_type(const int matid)
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
@@ -76,7 +76,7 @@ void SSI::ScatraStructureCloneStrategy::CheckMaterialType(const int matid)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::ScatraStructureCloneStrategy::SetElementData(
+void SSI::ScatraStructureCloneStrategy::set_element_data(
     Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbsdis)
 {
   // We need to set material and possibly other things to complete element setup.
@@ -115,7 +115,7 @@ void SSI::ScatraStructureCloneStrategy::SetElementData(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::ScatraStructureCloneStrategyManifold::SetElementData(
+void SSI::ScatraStructureCloneStrategyManifold::set_element_data(
     Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbsdis)
 {
   // determine impl type from manifold condition by identifying the condition for this element
@@ -154,7 +154,7 @@ void SSI::ScatraStructureCloneStrategyManifold::SetElementData(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool SSI::ScatraStructureCloneStrategy::DetermineEleType(
+bool SSI::ScatraStructureCloneStrategy::determine_ele_type(
     DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // note: ismyele, actele remain unused here! Used only for ALE creation

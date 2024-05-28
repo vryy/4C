@@ -142,7 +142,7 @@ namespace POROFLUIDMULTIPHASE
 
     //! set convective velocity field (+ pressure and acceleration field as
     //! well as fine-scale velocity field, if required)
-    void SetVelocityField(Teuchos::RCP<const Epetra_Vector> vel  //!< velocity vector
+    void set_velocity_field(Teuchos::RCP<const Epetra_Vector> vel  //!< velocity vector
         ) override;
 
     //! set state on discretization
@@ -186,7 +186,7 @@ namespace POROFLUIDMULTIPHASE
     Teuchos::RCP<const Epetra_Vector> ArteryPorofluidRHS() const override;
 
     //! return discretization
-    Teuchos::RCP<DRT::Discretization> Discretization() const override { return discret_; }
+    Teuchos::RCP<DRT::Discretization> discretization() const override { return discret_; }
 
     //! access dof row map
     Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) const override;
@@ -201,7 +201,7 @@ namespace POROFLUIDMULTIPHASE
     void Output() override;
 
     //! output solution and restart data to file
-    virtual void PrintHeader();
+    virtual void print_header();
 
     //! write additional data required for restart
     virtual void output_restart() = 0;
@@ -340,19 +340,19 @@ namespace POROFLUIDMULTIPHASE
     /*--- calculate and update -----------------------------------------------*/
 
     //! Apply Dirichlet boundary conditions on provided state vector
-    void ApplyDirichletBC(const double time,  //!< evaluation time
-        Teuchos::RCP<Epetra_Vector> prenp,    //!< pressure (may be = null)
-        Teuchos::RCP<Epetra_Vector> predt     //!< first time derivative (may be = null)
+    void apply_dirichlet_bc(const double time,  //!< evaluation time
+        Teuchos::RCP<Epetra_Vector> prenp,      //!< pressure (may be = null)
+        Teuchos::RCP<Epetra_Vector> predt       //!< first time derivative (may be = null)
     );
 
     //! potential residual scaling and potential addition of Neumann terms
-    void ScalingAndNeumann();
+    void scaling_and_neumann();
 
     //! add actual Neumann loads multipl. with time factor to the residual
     virtual void add_neumann_to_residual() = 0;
 
     //! Apply Neumann boundary conditions
-    void ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>& neumann_loads  //!< Neumann loads
+    void apply_neumann_bc(const Teuchos::RCP<Epetra_Vector>& neumann_loads  //!< Neumann loads
     );
 
     //! call elements to calculate system matrix and rhs and assemble
@@ -365,7 +365,7 @@ namespace POROFLUIDMULTIPHASE
     virtual void apply_additional_dbc_for_vol_frac_press();
 
     //! apply the starting Dirichlet boundary condition
-    virtual void ApplyStartingDBC();
+    virtual void apply_starting_dbc();
 
     //! call elements to calculate fluid coupling matrix with structure and assemble
     void assemble_fluid_struct_coupling_mat(
@@ -376,16 +376,16 @@ namespace POROFLUIDMULTIPHASE
         Teuchos::RCP<CORE::LINALG::SparseOperator> k_pfs) override;
 
     //! return the right time-scaling-factor for the true residual
-    virtual double ResidualScaling() const = 0;
+    virtual double residual_scaling() const = 0;
 
     //! contains the nonlinear iteration loop
-    virtual void NonlinearSolve();
+    virtual void nonlinear_solve();
 
     //! check convergence (or divergence) of nonlinear iteration
-    bool AbortNonlinIter(const int itnum,  //!< current value of iteration step counter
-        const int itemax,                  //!< maximum number of iteration steps
-        const double abstolres,            //!< absolute tolerance for the residual norm
-        double& actresidual                //!< return value of the current residual
+    bool abort_nonlin_iter(const int itnum,  //!< current value of iteration step counter
+        const int itemax,                    //!< maximum number of iteration steps
+        const double abstolres,              //!< absolute tolerance for the residual norm
+        double& actresidual                  //!< return value of the current residual
     );
 
     //! linear solve
@@ -404,7 +404,7 @@ namespace POROFLUIDMULTIPHASE
     void calculate_phase_velocities() override;
 
     //! reconstruct porosity from current solution
-    void ReconstructPorosity();
+    void reconstruct_porosity();
 
     //! evaluate domain integrals
     void evaluate_domain_integrals();
@@ -412,7 +412,7 @@ namespace POROFLUIDMULTIPHASE
     /*--- query and output ---------------------------------------------------*/
 
     //! is output needed for the current time step?
-    bool DoOutput() { return ((step_ % upres_ == 0) or (step_ % uprestart_ == 0)); };
+    bool do_output() { return ((step_ % upres_ == 0) or (step_ % uprestart_ == 0)); };
 
     //! write state vectors prenp to BINIO
     virtual void output_state();

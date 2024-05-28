@@ -202,12 +202,12 @@ namespace DRT
       /*!
       \brief Get number of degrees of freedom per face
       This implementation is problem related. In the case of a fluid flow
-      NumDofPerFace() reuturns the number of velocity components (one for each spatial dimension)
+      num_dof_per_face() reuturns the number of velocity components (one for each spatial dimension)
       times the number of nodes per face (given by NumDofPerComponent()).
       The number is nsd_ - 1 because the trace values are contained in the faces and
       therefore they have one component less than the spatial dimnsions of the problem.
       */
-      int NumDofPerFace(const unsigned face) const override
+      int num_dof_per_face(const unsigned face) const override
       {
         return (CORE::FE::getDimension(distype_) - 1) *
                NumDofPerComponent(face);  // seems redundant, but this is different for
@@ -238,7 +238,7 @@ namespace DRT
       }
 
       /// Number of degrees of freedom per element
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       /*!
        \brief Returns the degree of the element
@@ -376,7 +376,7 @@ namespace DRT
       /// stores the polynomial type (tensor product or complete polynomial)
       bool completepol_;
 
-      int fixedPower(const int number, const int pow) const
+      int fixed_power(const int number, const int pow) const
       {
         int result = 1;
         for (int i = 0; i < pow; ++i) result *= number;
@@ -553,7 +553,7 @@ namespace DRT
       }
 
       /// Number of degrees of freedom per element
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       /*!
       \brief Print this element
@@ -842,7 +842,7 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       /*!
        \brief Returns the degree of the element

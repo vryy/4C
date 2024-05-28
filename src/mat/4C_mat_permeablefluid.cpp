@@ -33,7 +33,7 @@ MAT::PAR::PermeableFluid::PermeableFluid(Teuchos::RCP<CORE::MAT::PAR::Material> 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::PermeableFluid::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::PermeableFluid::create_material()
 {
   return Teuchos::rcp(new MAT::PermeableFluid(this));
 }

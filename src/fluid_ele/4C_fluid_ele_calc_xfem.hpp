@@ -405,7 +405,7 @@ namespace DRT
           const CORE::LINALG::Matrix<nsd_, 1>& itraction_jump, const bool eval_side_coupling,
           const bool is_MHVS);
 
-      //! Initiates dummy variables and calls FLuidEleCalc GetMaterialParams routine.
+      //! Initiates dummy variables and calls FLuidEleCalc get_material_params routine.
       void get_material_parameters_volume_cell(Teuchos::RCP<const CORE::MAT::Material> material,
           double& densaf,  // done
           double& viscaf,  // done

@@ -62,7 +62,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::ScaTraEleCalcElchEl
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatAndRhs(
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calc_mat_and_rhs(
     CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs, const int k,
     const double fac, const double timefacfac, const double rhsfac, const double taufac,
     const double timetaufac, const double rhstaufac, CORE::LINALG::Matrix<nen_, 1>& tauderpot,
@@ -74,25 +74,25 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatAndRhs(
 
   if (not my::scatraparatimint_->IsStationary())
     // 1a) element matrix: standard Galerkin mass term
-    my::CalcMatMass(emat, k, fac, 1.);
+    my::calc_mat_mass(emat, k, fac, 1.);
 
   //--------------------------------------------------------------------
   // 2) element matrix: stationary terms arising from transport equation
   //--------------------------------------------------------------------
 
   // 2a) element matrix: standard Galerkin diffusive term
-  my::CalcMatDiff(emat, k, timefacfac);
+  my::calc_mat_diff(emat, k, timefacfac);
 
   // 2b) element matrix: additional term arising from concentration dependency of diffusion
   // coefficient
-  CalcMatDiffCoeffLin(emat, k, timefacfac, var_manager()->GradPhi(k), 1.);
+  calc_mat_diff_coeff_lin(emat, k, timefacfac, var_manager()->GradPhi(k), 1.);
 
   // 2c) element matrix: conservative part of convective term, needed for deforming electrodes,
   //                     i.e., for scalar-structure interaction
   double vdiv(0.);
   if (my::scatrapara_->IsConservative())
   {
-    my::GetDivergence(vdiv, my::evelnp_);
+    my::get_divergence(vdiv, my::evelnp_);
     my::calc_mat_conv_add_cons(emat, k, timefacfac, vdiv, 1.);
   }
 
@@ -103,11 +103,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatAndRhs(
 
   // 3a) element rhs: standard Galerkin contributions from non-history part of instationary term if
   // needed
-  if (not my::scatraparatimint_->IsStationary()) my::CalcRHSLinMass(erhs, k, rhsfac, fac, 1., 1.);
+  if (not my::scatraparatimint_->IsStationary())
+    my::calc_rhs_lin_mass(erhs, k, rhsfac, fac, 1., 1.);
 
   // 3b) element rhs: standard Galerkin contributions from rhsint vector (contains body force vector
   // and history vector) need to adapt rhsint vector to time integration scheme first
-  my::ComputeRhsInt(rhsint, 1., 1., var_manager()->Hist(k));
+  my::compute_rhs_int(rhsint, 1., 1., var_manager()->Hist(k));
   my::calc_rhs_hist_and_source(erhs, k, fac, rhsint);
 
   // 3c) element rhs: standard Galerkin diffusion term
@@ -157,7 +158,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcDiffODMesh(
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calc_diff_od_mesh(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
     const double diffcoeff, const double fac, const double rhsfac, const double J,
     const CORE::LINALG::Matrix<nsd_, 1>& gradphi, const CORE::LINALG::Matrix<nsd_, 1>& convelint,
@@ -168,19 +169,19 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcDiffODMesh
 
   // call base class routine to compute linearizations of diffusion term w.r.t. structural
   // displacements
-  my::CalcDiffODMesh(
+  my::calc_diff_od_mesh(
       emat, 0, ndofpernodemesh, diffcoeff, fac, rhsfac, J, gradphi, convelint, dJ_dmesh);
 
   // call base class routine again to compute linearizations of Ohmic overpotential w.r.t.
   // structural displacements
-  my::CalcDiffODMesh(emat, 1, ndofpernodemesh, var_manager()->InvF() * diff_manager()->GetCond(),
+  my::calc_diff_od_mesh(emat, 1, ndofpernodemesh, var_manager()->InvF() * diff_manager()->GetCond(),
       fac, rhsfac, J, var_manager()->GradPot(), convelint, dJ_dmesh);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatDiffCoeffLin(
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calc_mat_diff_coeff_lin(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac,
     const CORE::LINALG::Matrix<nsd_, 1>& gradphi, const double scalar)
 {
@@ -271,7 +272,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calc_rhs_pot_e
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::GetMaterialParams(
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::get_material_params(
     const DRT::Element* ele, std::vector<double>& densn, std::vector<double>& densnp,
     std::vector<double>& densam, double& visc, const int iquad)
 {
@@ -281,7 +282,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::GetMaterialPar
   // evaluate electrode material
   if (material->MaterialType() == CORE::Materials::m_electrode)
   {
-    Utils()->MatElectrode(
+    utils()->mat_electrode(
         material, var_manager()->Phinp(0), var_manager()->Temperature(), diff_manager());
   }
   else

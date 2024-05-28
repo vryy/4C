@@ -71,7 +71,7 @@ namespace SSTI
     {
       return block_map_structure_;
     }
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> BlockMapThermo() const
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo() const
     {
       return block_map_thermo_;
     }
@@ -252,11 +252,11 @@ namespace SSTI
   {
    public:
     /// returns condition names to be copied (source and target name)
-    std::map<std::string, std::string> ConditionsToCopy() const override;
+    std::map<std::string, std::string> conditions_to_copy() const override;
 
    protected:
     //! provide cloned element with element specific data (material etc.)
-    void SetElementData(
+    void set_element_data(
         Teuchos::RCP<DRT::Element> newele,  //! current cloned element on target discretization
         DRT::Element* oldele,               //! current element on source discretization
         const int matid,                    //! material of cloned element
@@ -270,7 +270,7 @@ namespace SSTI
   {
    protected:
     /// returns condition names to be copied (source and target name)
-    std::map<std::string, std::string> ConditionsToCopy() const override;
+    std::map<std::string, std::string> conditions_to_copy() const override;
   };
 }  // namespace SSTI
 

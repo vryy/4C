@@ -94,7 +94,7 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::set_old_part_of_righthandside()
 /*----------------------------------------------------------------------*
  | perform an explicit predictor step                       vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntOneStepTheta::ExplicitPredictor()
+void POROFLUIDMULTIPHASE::TimIntOneStepTheta::explicit_predictor()
 {
   phinp_->Update(dt_, *phidtn_, 1.0);
 }

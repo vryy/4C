@@ -48,7 +48,7 @@ namespace SCATRA
         const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
    protected:
-    void WriteRestart() const override;
+    void write_restart() const override;
 
     /// add parameters specific for time-integration scheme
     void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override;
@@ -83,7 +83,7 @@ namespace SCATRA
         const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
    protected:
-    void WriteRestart() const override;
+    void write_restart() const override;
 
     //! do not calculate initial scalar time derivatives for ep
     void calc_initial_time_derivative() override { return; };
@@ -118,7 +118,7 @@ namespace SCATRA
     void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override;
 
    protected:
-    void WriteRestart() const override;
+    void write_restart() const override;
 
     //! do not calculate initial scalar time derivatives for ep
     void calc_initial_time_derivative() override { return; };

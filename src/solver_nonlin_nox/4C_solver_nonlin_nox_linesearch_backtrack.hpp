@@ -83,7 +83,7 @@ namespace NOX
 
        protected:
         //! print inner status test results
-        void PrintUpdate(std::ostream& os) const;
+        void print_update(std::ostream& os) const;
 
        private:
         //! throw NOX error

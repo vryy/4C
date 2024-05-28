@@ -79,17 +79,17 @@ void ADAPTER::FluidFSI::Init()
   }
 
   // create fluid map extractor
-  SetupInterface(nds_master);
+  setup_interface(nds_master);
 
   fluidimpl_->SetSurfaceSplitter(&(*interface_));
 
   // create map of inner velocity dof (no FSI or Dirichlet conditions)
-  BuildInnerVelMap();
+  build_inner_vel_map();
 
   if (dirichletcond_)
   {
     // mark all interface velocities as dirichlet values
-    fluidimpl_->AddDirichCond(Interface()->FSICondMap());
+    fluidimpl_->add_dirich_cond(Interface()->FSICondMap());
   }
 
   interfaceforcen_ = Teuchos::rcp(new Epetra_Vector(*(Interface()->FSICondMap())));
@@ -177,7 +177,7 @@ void ADAPTER::FluidFSI::Update()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel)
 {
-  const Epetra_Map* dofrowmap = Discretization()->dof_row_map();
+  const Epetra_Map* dofrowmap = discretization()->dof_row_map();
   Teuchos::RCP<Epetra_Vector> relax = CORE::LINALG::CreateVector(*dofrowmap, true);
   Interface()->InsertFSICondVector(ivel, relax);
   fluidimpl_->linear_relaxation_solve(relax);
@@ -380,11 +380,11 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::integrate_interface_shape()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFSI::UseBlockMatrix(bool splitmatrix)
+void ADAPTER::FluidFSI::use_block_matrix(bool splitmatrix)
 {
   Teuchos::RCP<std::set<int>> condelements =
-      Interface()->conditioned_element_map(*Discretization());
-  fluidimpl_->UseBlockMatrix(condelements, *Interface(), *Interface(), splitmatrix);
+      Interface()->conditioned_element_map(*discretization());
+  fluidimpl_->use_block_matrix(condelements, *Interface(), *Interface(), splitmatrix);
 }
 
 /*----------------------------------------------------------------------*
@@ -412,10 +412,10 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
   Teuchos::RCP<Epetra_Map> dbcfsimap = CORE::LINALG::MultiMapExtractor::MergeMaps(dbcfsimaps);
 
   // create an element map with offset
-  const int numallele = Discretization()->NumGlobalElements();
-  const int mapoffset = dbcfsimap->MaxAllGID() + Discretization()->ElementRowMap()->MinAllGID() + 1;
+  const int numallele = discretization()->NumGlobalElements();
+  const int mapoffset = dbcfsimap->MaxAllGID() + discretization()->ElementRowMap()->MinAllGID() + 1;
   Teuchos::RCP<Epetra_Map> elemap =
-      Teuchos::rcp(new Epetra_Map(numallele, mapoffset, Discretization()->Comm()));
+      Teuchos::rcp(new Epetra_Map(numallele, mapoffset, discretization()->Comm()));
 
   // create the combination of dbcfsimap and elemap
   std::vector<Teuchos::RCP<const Epetra_Map>> domainmaps;
@@ -438,20 +438,20 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
   CORE::LINALG::SerialDenseVector elevector2;
   CORE::LINALG::SerialDenseVector elevector3;
 
-  Discretization()->ClearState();
-  Discretization()->set_state("dispnp", Dispnp());
+  discretization()->ClearState();
+  discretization()->set_state("dispnp", Dispnp());
 
   // loop over all fluid elements
-  for (int lid = 0; lid < Discretization()->NumMyColElements(); lid++)
+  for (int lid = 0; lid < discretization()->NumMyColElements(); lid++)
   {
     // get pointer to current element
-    DRT::Element* actele = Discretization()->lColElement(lid);
+    DRT::Element* actele = discretization()->lColElement(lid);
 
     // get element location vector and ownerships
     std::vector<int> lm;
     std::vector<int> lmowner;
     std::vector<int> lmstride;
-    actele->LocationVector(*Discretization(), lm, lmowner, lmstride);
+    actele->LocationVector(*discretization(), lm, lmowner, lmstride);
 
     // get dimension of element matrices and vectors
     const int eledim = (int)lm.size();
@@ -465,7 +465,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
 
     // call the element specific evaluate method
     actele->Evaluate(
-        params, *Discretization(), lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
+        params, *discretization(), lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
 
     // assembly
     std::vector<int> lmcol(1);
@@ -473,7 +473,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
     B->Assemble(actele->Id(), lmstride, elevector1, lm, lmowner, lmcol);
   }  // end of loop over all fluid elements
 
-  Discretization()->ClearState();
+  discretization()->ClearState();
 
   // insert '1's for all DBC and interface DOFs
   for (int i = 0; i < dbcfsimap->NumMyElements(); i++)
@@ -504,7 +504,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
         "\nPlease set LINEAR_SOLVER in FLUID DYNAMIC to a valid number!");
 
   Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
-      GLOBAL::Problem::Instance()->SolverParams(simplersolvernumber), Discretization()->Comm()));
+      GLOBAL::Problem::Instance()->SolverParams(simplersolvernumber), discretization()->Comm()));
 
   if (solver->Params().isSublist("ML Parameters"))
   {
@@ -818,14 +818,14 @@ std::string ADAPTER::FluidFSI::GetTimAdaMethodName() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFSI::SetupInterface(const int nds_master)
+void ADAPTER::FluidFSI::setup_interface(const int nds_master)
 {
   interface_->Setup(*dis_, false, false, nds_master);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFSI::BuildInnerVelMap()
+void ADAPTER::FluidFSI::build_inner_vel_map()
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> maps;
   maps.push_back(FluidWrapper::VelocityRowMap());

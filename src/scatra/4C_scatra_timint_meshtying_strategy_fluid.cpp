@@ -67,7 +67,7 @@ void SCATRA::MeshtyingStrategyFluid::include_dirichlet_in_condensation() const
 /*----------------------------------------------------------------------*
  | perform setup of fluid-fluid meshtying                    fang 12/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyFluid::SetupMeshtying()
+void SCATRA::MeshtyingStrategyFluid::setup_meshtying()
 {
   // safety check
   if (scatratimint_->NumScal() < 1)
@@ -76,8 +76,8 @@ void SCATRA::MeshtyingStrategyFluid::SetupMeshtying()
   // define coupling and initialize system matrix
   std::vector<int> coupleddof(scatratimint_->NumScal(), 1);
 
-  meshtying_->SetupMeshtying(coupleddof);
-}  // SCATRA::MeshtyingStrategyFluid::SetupMeshtying
+  meshtying_->setup_meshtying(coupleddof);
+}  // SCATRA::MeshtyingStrategyFluid::setup_meshtying
 
 
 /*----------------------------------------------------------------------*
@@ -100,7 +100,7 @@ void SCATRA::MeshtyingStrategyFluid::InitMeshtying()
         "do it!");
 
   // setup meshtying
-  meshtying_ = Teuchos::rcp(new FLD::Meshtying(scatratimint_->Discretization(),
+  meshtying_ = Teuchos::rcp(new FLD::Meshtying(scatratimint_->discretization(),
       *(scatratimint_->Solver()), type_, GLOBAL::Problem::Instance()->NDim()));
 
   return;
@@ -110,10 +110,11 @@ void SCATRA::MeshtyingStrategyFluid::InitMeshtying()
 /*----------------------------------------------------------------------*
  | initialize system matrix for fluid-fluid meshtying        fang 12/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseOperator> SCATRA::MeshtyingStrategyFluid::InitSystemMatrix() const
+Teuchos::RCP<CORE::LINALG::SparseOperator> SCATRA::MeshtyingStrategyFluid::init_system_matrix()
+    const
 {
-  return meshtying_->InitSystemMatrix();
-}  // SCATRA::MeshtyingStrategyFluid::InitSystemMatrix
+  return meshtying_->init_system_matrix();
+}  // SCATRA::MeshtyingStrategyFluid::init_system_matrix
 
 
 /*-------------------------------------------------------------------------*

@@ -62,7 +62,7 @@ void THR::TimIntExpl::PrintStep()
   // print out
   if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
   {
-    PrintStepText(stdout);
+    print_step_text(stdout);
   }
 }  // PrintStep()
 
@@ -70,7 +70,7 @@ void THR::TimIntExpl::PrintStep()
 /*----------------------------------------------------------------------*
  | print step summary                                        dano 01/12 |
  *----------------------------------------------------------------------*/
-void THR::TimIntExpl::PrintStepText(FILE* ofile)
+void THR::TimIntExpl::print_step_text(FILE* ofile)
 {
   fprintf(ofile,
       "Finalised: step %6d"
@@ -93,7 +93,7 @@ void THR::TimIntExpl::PrintStepText(FILE* ofile)
   // fall asleep
   return;
 
-}  // PrintStepText()
+}  // print_step_text()
 
 
 /*----------------------------------------------------------------------*/

@@ -42,7 +42,7 @@ namespace EHL
     void outer_loop();
 
     //! update time step and print to screen
-    void UpdateAndOutput();
+    void update_and_output();
 
     //! convergence check of outer loop
     bool convergence_check(int itnum);
@@ -51,7 +51,7 @@ namespace EHL
     void do_struct_step();
 
     /// do one inner iteration loop step of the lubrication
-    void DoLubricationStep();
+    void do_lubrication_step();
 
     //! pressure increment of the outer loop
     Teuchos::RCP<Epetra_Vector> preincnp_;

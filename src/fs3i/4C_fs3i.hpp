@@ -230,7 +230,7 @@ namespace FS3I
     bool is_init() { return isinit_; };
 
     //! check if \ref Setup() was called
-    void CheckIsSetup();
+    void check_is_setup();
 
     //! check if \ref Init() was called
     void check_is_init();

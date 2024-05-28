@@ -39,7 +39,7 @@ MAT::PAR::Maxwell0dAcinusNeoHookean::Maxwell0dAcinusNeoHookean(
 {
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Maxwell0dAcinusNeoHookean::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Maxwell0dAcinusNeoHookean::create_material()
 {
   return Teuchos::rcp(new MAT::Maxwell0dAcinusNeoHookean(this));
 }

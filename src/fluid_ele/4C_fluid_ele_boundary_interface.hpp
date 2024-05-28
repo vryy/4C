@@ -47,7 +47,7 @@ namespace DRT
       /// Empty destructor
       virtual ~FluidBoundaryInterface() = default;
 
-      virtual void EvaluateAction(DRT::ELEMENTS::FluidBoundary* ele1,
+      virtual void evaluate_action(DRT::ELEMENTS::FluidBoundary* ele1,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
           CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,

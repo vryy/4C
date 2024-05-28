@@ -45,7 +45,7 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
 
   if (IsParamsInterface())
   {
-    act = ParamsInterface().GetActionType();
+    act = params_interface().GetActionType();
   }
   else
   {
@@ -213,7 +213,7 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
       }
       else if (IsParamsInterface())  // new structural time integration
       {
-        ParamsInterface().add_contribution_to_energy_type(eint_, STR::internal_energy);
+        params_interface().add_contribution_to_energy_type(eint_, STR::internal_energy);
       }
 
       break;
@@ -1986,7 +1986,7 @@ void DRT::ELEMENTS::Beam3eb::evaluate_translational_damping(
   // get time step size
   double dt = 1000;
   if (IsParamsInterface())
-    dt = ParamsInterface().GetDeltaTime();
+    dt = params_interface().GetDeltaTime();
   else
     dt = params.get<double>("delta time", 1000);
 
@@ -2026,10 +2026,10 @@ void DRT::ELEMENTS::Beam3eb::evaluate_translational_damping(
         gausspoints.qxg[gp][0], N_i, N_i_xi, this->Shape(), this->RefLength());
 
     // compute position vector r of point in physical space corresponding to Gauss point
-    Calc_r<nnode, vpernode, double>(disp_totlag, N_i, evaluationpoint);
+    calc_r<nnode, vpernode, double>(disp_totlag, N_i, evaluationpoint);
 
     // compute tangent vector t_{\par}=r' at current Gauss point
-    Calc_r_s<nnode, vpernode, double>(disp_totlag, N_i_xi, jacobi_, r_s);
+    calc_r_s<nnode, vpernode, double>(disp_totlag, N_i_xi, jacobi_, r_s);
 
     // compute velocity and gradient of background flow field at point r
     get_background_velocity<ndim, double>(
@@ -2133,7 +2133,7 @@ void DRT::ELEMENTS::Beam3eb::evaluate_stochastic_forces(
         gausspoints.qxg[gp][0], N_i, N_i_xi, this->Shape(), this->RefLength());
 
     // compute tangent vector t_{\par}=r' at current Gauss point
-    Calc_r_s<nnode, vpernode, double>(disp_totlag, N_i_xi, jacobi_, r_s);
+    calc_r_s<nnode, vpernode, double>(disp_totlag, N_i_xi, jacobi_, r_s);
 
     // extract random numbers from global vector
     for (unsigned int idim = 0; idim < ndim; idim++)

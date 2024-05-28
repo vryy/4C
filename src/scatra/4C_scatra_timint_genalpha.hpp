@@ -103,11 +103,11 @@ namespace SCATRA
 
     void set_old_part_of_righthandside() override;
 
-    void ExplicitPredictor() const override;
+    void explicit_predictor() const override;
 
     void add_neumann_to_residual() override;
 
-    void AVM3Separation() override;
+    void av_m3_separation() override;
 
     void dynamic_computation_of_cs() override;
 
@@ -115,9 +115,9 @@ namespace SCATRA
 
     void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override;
 
-    void WriteRestart() const override;
+    void write_restart() const override;
 
-    double ResidualScaling() const override { return 1.0 / (dta_ * genalphafac_); }
+    double residual_scaling() const override { return 1.0 / (dta_ * genalphafac_); }
 
     /// scalar at time n+alpha_F and n+alpha_M
     Teuchos::RCP<Epetra_Vector> phiaf_;

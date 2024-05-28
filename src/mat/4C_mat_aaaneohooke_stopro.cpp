@@ -44,7 +44,7 @@ MAT::PAR::AaAneohookeStopro::AaAneohookeStopro(Teuchos::RCP<CORE::MAT::PAR::Mate
 }
 
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::AaAneohookeStopro::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::AaAneohookeStopro::create_material()
 {
   return Teuchos::rcp(new MAT::AaAneohookeStopro(this));
 }

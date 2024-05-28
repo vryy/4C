@@ -483,7 +483,7 @@ void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::Setup(
 }
 
 template <CORE::FE::CellType celltype, typename ElementFormulation>
-void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::MaterialPostSetup(
+void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::material_post_setup(
     const DRT::Element& ele, MAT::So3Material& solid_material)
 {
   Teuchos::ParameterList params{};

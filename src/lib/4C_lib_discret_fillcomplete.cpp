@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Finalize construction (public)                           mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::Reset(bool killdofs, bool killcond)
+void DRT::Discretization::reset(bool killdofs, bool killcond)
 {
   filled_ = false;
   if (killdofs)
@@ -74,7 +74,7 @@ int DRT::Discretization::fill_complete(
   }
 
   // set all maps to Teuchos::null
-  Reset(assigndegreesoffreedom, doboundaryconditions);
+  reset(assigndegreesoffreedom, doboundaryconditions);
 
   // (re)build map of nodes noderowmap_, nodecolmap_, noderowptr and nodecolptr
   build_node_row_map();
@@ -116,9 +116,9 @@ int DRT::Discretization::fill_complete(
     if (myrank == 0)
     {
       IO::cout(IO::verbose)
-          << "| InitializeElements() ...                                           |" << IO::endl;
+          << "| initialize_elements() ...                                           |" << IO::endl;
     }
-    InitializeElements();
+    initialize_elements();
   }
 
   // (Re)build the geometry of the boundary conditions
@@ -146,11 +146,11 @@ int DRT::Discretization::fill_complete(
 /*----------------------------------------------------------------------*
  |  init elements (public)                                   mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::InitializeElements()
+void DRT::Discretization::initialize_elements()
 {
   if (!Filled()) FOUR_C_THROW("fill_complete was not called");
 
-  CORE::COMM::ParObjectFactory::Instance().InitializeElements(*this);
+  CORE::COMM::ParObjectFactory::Instance().initialize_elements(*this);
 
   return;
 }
@@ -301,7 +301,7 @@ void DRT::Discretization::build_node_to_element_pointers()
       if (!node)
         FOUR_C_THROW("Node %d is not on this proc %d", j, Comm().MyPID());
       else
-        node->AddElementPtr(elecurr->second.get());
+        node->add_element_ptr(elecurr->second.get());
     }
   }
   return;

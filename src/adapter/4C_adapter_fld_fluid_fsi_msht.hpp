@@ -52,7 +52,7 @@ namespace ADAPTER
 
    protected:
     /// create conditioned dof-map extractor for the fluid
-    virtual void SetupFsiInterface();
+    virtual void setup_fsi_interface();
 
     //! \brief interface map setup for fsi interface and other
     //!

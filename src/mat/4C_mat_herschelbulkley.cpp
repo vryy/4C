@@ -31,7 +31,7 @@ MAT::PAR::HerschelBulkley::HerschelBulkley(Teuchos::RCP<CORE::MAT::PAR::Material
 {
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::HerschelBulkley::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::HerschelBulkley::create_material()
 {
   return Teuchos::rcp(new MAT::HerschelBulkley(this));
 }

@@ -45,7 +45,7 @@ Teuchos::RCP<FPSI::Utils> FPSI::Utils::Instance()
 }
 
 /*----------------------------------------------------------------------/
-| Setup Discretization                                           rauch  |
+| Setup discretization                                           rauch  |
 /----------------------------------------------------------------------*/
 Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::setup_discretizations(const Epetra_Comm& comm,
     const Teuchos::ParameterList& fpsidynparams, const Teuchos::ParameterList& poroelastdynparams)
@@ -627,9 +627,9 @@ void FPSI::Utils::SetupInterfaceMap(const Epetra_Comm& comm,
   fluid_poro_fluid_interface_map_ = Teuchos::rcp(new std::map<int, int>);
 
   setup_local_interface_facing_element_map(
-      *fluiddis, *porofluiddis, "FPSICoupling", *poro_fluid_fluid_interface_map_);
+      *fluiddis, *porofluiddis, "fpsi_coupling", *poro_fluid_fluid_interface_map_);
   setup_local_interface_facing_element_map(
-      *porofluiddis, *fluiddis, "FPSICoupling", *fluid_poro_fluid_interface_map_);
+      *porofluiddis, *fluiddis, "fpsi_coupling", *fluid_poro_fluid_interface_map_);
 
   return;
 }
@@ -645,7 +645,7 @@ void FPSI::UTILS::MapExtractor::Setup(
   mcs.AddSelector(Teuchos::rcp(
       new CORE::Conditions::NDimConditionSelector(dis, "FSICoupling", 0, ndim + withpressure)));
   mcs.AddSelector(Teuchos::rcp(
-      new CORE::Conditions::NDimConditionSelector(dis, "FPSICoupling", 0, ndim + withpressure)));
+      new CORE::Conditions::NDimConditionSelector(dis, "fpsi_coupling", 0, ndim + withpressure)));
   mcs.SetupExtractor(dis, *dis.dof_row_map(), *this);
 }
 
@@ -688,7 +688,7 @@ Teuchos::RCP<std::set<int>> FPSI::UTILS::MapExtractor::conditioned_element_map(
   Teuchos::RCP<std::set<int>> condelements =
       CORE::Conditions::conditioned_element_map(dis, "FSICoupling");
   Teuchos::RCP<std::set<int>> condelements2 =
-      CORE::Conditions::conditioned_element_map(dis, "FPSICoupling");
+      CORE::Conditions::conditioned_element_map(dis, "fpsi_coupling");
   std::copy(condelements2->begin(), condelements2->end(),
       std::inserter(*condelements, condelements->begin()));
   return condelements;

@@ -29,7 +29,7 @@ namespace CONSTRAINTS
     /*!
     \brief Standard Constructor
     */
-    MPConstraint2(Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
+    MPConstraint2(Teuchos::RCP<DRT::Discretization> discr,  ///< discretization constraint lives on
         const std::string& conditionname,  ///< Name of condition to creat constraint from
         int& minID,                        ///< minimum constraint or monitor ID so far
         int& maxID                         ///< maximum constraint or monitor ID so far

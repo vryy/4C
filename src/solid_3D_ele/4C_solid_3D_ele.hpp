@@ -111,7 +111,7 @@ namespace DRT::ELEMENTS
 
     [[nodiscard]] int NumDofPerNode(const DRT::Node& node) const override { return 3; }
 
-    [[nodiscard]] int NumDofPerElement() const override { return 0; }
+    [[nodiscard]] int num_dof_per_element() const override { return 0; }
 
     bool ReadElement(const std::string& eletype, const std::string& celltype,
         INPUT::LineDefinition* linedef) override;
@@ -137,7 +137,7 @@ namespace DRT::ELEMENTS
       return (not interface_ptr_.is_null());
     }
 
-    [[nodiscard]] inline STR::ELEMENTS::ParamsInterface& ParamsInterface() const
+    [[nodiscard]] inline STR::ELEMENTS::ParamsInterface& params_interface() const
     {
       if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
       return *interface_ptr_;

@@ -58,7 +58,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::extract_element
  | get material parameters                                   fang 11/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::GetMaterialParams(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::get_material_params(
     const DRT::Element* ele,      //!< current element
     std::vector<double>& densn,   //!< density at t_(n)
     std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
@@ -68,20 +68,20 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::GetMaterialPara
 )
 {
   // call base class routine to get parameters of primary, isothermal electrolyte material
-  mydiffcond::GetMaterialParams(ele, densn, densnp, densam, visc, iquad);
+  mydiffcond::get_material_params(ele, densn, densnp, densam, visc, iquad);
 
   // get parameters of secondary, thermodynamic electrolyte material
   Teuchos::RCP<const CORE::MAT::Material> material = ele->Material(1);
   materialtype_ = material->MaterialType();
   if (materialtype_ == CORE::Materials::m_soret) mythermo::mat_soret(material);
-}  // DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::GetMaterialParams
+}  // DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::get_material_params
 
 
 /*--------------------------------------------------------------------------*
  | calculate element matrix and element right-hand side vector   fang 11/15 |
  *--------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::calc_mat_and_rhs(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
     CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
     const int k,                            //!< index of current scalar
@@ -100,7 +100,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
 )
 {
   // call base class routine for isothermal problems
-  mydiffcond::CalcMatAndRhs(
+  mydiffcond::calc_mat_and_rhs(
       emat, erhs, k, fac, timefacfac, rhsfac, taufac, timetaufac, rhstaufac, tauderpot, rhsint);
 
   if (materialtype_ == CORE::Materials::m_soret)
@@ -156,11 +156,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
     }
 
     // matrix and vector contributions arising from additional, thermodynamic term for Soret effect
-    mythermo::CalcMatSoret(emat, timefacfac, var_manager()->Phinp(0),
+    mythermo::calc_mat_soret(emat, timefacfac, var_manager()->Phinp(0),
         mydiffcond::diff_manager()->GetIsotropicDiff(0),
         mydiffcond::diff_manager()->get_conc_deriv_iso_diff_coef(0, 0), var_manager()->Temp(),
         var_manager()->GradTemp(), my::funct_, my::derxy_);
-    mythermo::CalcRHSSoret(erhs, var_manager()->Phinp(0),
+    mythermo::calc_rhs_soret(erhs, var_manager()->Phinp(0),
         mydiffcond::diff_manager()->GetIsotropicDiff(0), rhsfac, var_manager()->Temp(),
         var_manager()->GradTemp(), my::derxy_);
   }
@@ -237,7 +237,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::sysmat_od_scatr
     // evaluate material parameters at current integration point
     double dummy(0.);
     std::vector<double> dummyvec(my::numscal_, 0.);
-    GetMaterialParams(ele, dummyvec, dummyvec, dummyvec, dummy, iquad);
+    get_material_params(ele, dummyvec, dummyvec, dummyvec, dummy, iquad);
 
     if (materialtype_ == CORE::Materials::m_soret)
     {
@@ -289,14 +289,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::sysmat_od_scatr
 
       // provide element matrix with linearizations of Soret term in discrete scatra residuals
       // w.r.t. thermo dofs
-      mythermo::CalcMatSoretOD(emat, timefacfac, var_manager()->Phinp(0),
+      mythermo::calc_mat_soret_od(emat, timefacfac, var_manager()->Phinp(0),
           mydiffcond::diff_manager()->GetIsotropicDiff(0), var_manager()->Temp(),
           var_manager()->GradTemp(), my::funct_, my::derxy_);
     }
 
     // calculating the off diagonal for the temperature derivative of concentration and electric
     // potential
-    mythermo::CalcMatDiffThermoOD(emat, my::numdofpernode_, timefacfac, var_manager()->InvF(),
+    mythermo::calc_mat_diff_thermo_od(emat, my::numdofpernode_, timefacfac, var_manager()->InvF(),
         var_manager()->GradPhi(0), var_manager()->GradPot(),
         myelectrode::diff_manager()->get_temp_deriv_iso_diff_coef(0, 0),
         myelectrode::diff_manager()->GetTempDerivCond(0), my::funct_, my::derxy_, 1.0);

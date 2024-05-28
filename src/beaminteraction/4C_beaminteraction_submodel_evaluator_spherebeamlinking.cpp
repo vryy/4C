@@ -498,7 +498,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::ResetStepState()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::WriteRestart(
+void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::write_restart(
     IO::DiscretizationWriter& ia_writer, IO::DiscretizationWriter& bin_writer) const
 {
   check_init_setup();

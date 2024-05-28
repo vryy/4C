@@ -543,7 +543,7 @@ void MORTAR::IntElement::NodeLinearization(
         // evaluate shape functions at pseudo node param coords
         CORE::LINALG::SerialDenseVector sval(9);
         CORE::LINALG::SerialDenseMatrix sderiv(9, 2);
-        parele_->EvaluateShape(xi, sval, sderiv, 9, true);
+        parele_->evaluate_shape(xi, sval, sderiv, 9, true);
 
         // loop over all parent element control points
         for (int cp = 0; cp < parele_->num_node(); ++cp)
@@ -642,7 +642,7 @@ bool MORTAR::IntCell::LocalToGlobal(const double* xi, double* globcoord, int int
     CORE::LINALG::Matrix<3, 2> deriv;
 
     // Evaluate shape, get nodal coords and interpolate global coords
-    EvaluateShape(xi, val, deriv);
+    evaluate_shape(xi, val, deriv);
     for (int i = 0; i < 3; ++i) globcoord[i] = 0.0;
 
     for (int i = 0; i < NumVertices(); ++i)
@@ -701,10 +701,10 @@ void MORTAR::IntCell::Print()
 /*----------------------------------------------------------------------*
  |  Evaluate shape functions (IntCell)                        popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::IntCell::EvaluateShape(
+bool MORTAR::IntCell::evaluate_shape(
     const double* xi, CORE::LINALG::Matrix<3, 1>& val, CORE::LINALG::Matrix<3, 2>& deriv)
 {
-  if (!xi) FOUR_C_THROW("EvaluateShape (IntCell) called with xi=nullptr");
+  if (!xi) FOUR_C_THROW("evaluate_shape (IntCell) called with xi=nullptr");
 
   // 3noded triangular element
   if (Shape() == CORE::FE::CellType::tri3)
@@ -729,7 +729,7 @@ bool MORTAR::IntCell::EvaluateShape(
 
   // unknown case
   else
-    FOUR_C_THROW("EvaluateShape (IntCell) called for type != tri3/line2");
+    FOUR_C_THROW("evaluate_shape (IntCell) called for type != tri3/line2");
 
   return true;
 }

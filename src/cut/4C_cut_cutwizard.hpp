@@ -259,14 +259,14 @@ namespace CORE::GEO
      *  \author hiermeier \date 01/17 */
     CutWizard(const Epetra_Comm& comm);
 
-    Teuchos::RCP<BackMesh>& BackMeshPtr() { return back_mesh_; }
+    Teuchos::RCP<BackMesh>& back_mesh_ptr() { return back_mesh_; }
 
-    Teuchos::RCP<const BackMesh> BackMeshPtr() const { return back_mesh_.getConst(); }
+    Teuchos::RCP<const BackMesh> back_mesh_ptr() const { return back_mesh_.getConst(); }
 
     virtual void get_physical_nodal_coordinates(
         const DRT::Element* element, CORE::LINALG::SerialDenseMatrix& xyze) const;
 
-    CORE::GEO::CUT::CombIntersection& Intersection()
+    CORE::GEO::CUT::CombIntersection& intersection()
     {
       if (intersection_.is_null()) FOUR_C_THROW("nullptr pointer!");
 

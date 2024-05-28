@@ -29,7 +29,7 @@ MAT::PAR::StVenantKirchhoff::StVenantKirchhoff(Teuchos::RCP<CORE::MAT::PAR::Mate
     FOUR_C_THROW("Poisson's ratio must be in [-1;0.5)");
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::StVenantKirchhoff::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::StVenantKirchhoff::create_material()
 {
   return Teuchos::rcp(new MAT::StVenantKirchhoff(this));
 }

@@ -221,7 +221,7 @@ namespace NOX
         GMRES methods, Num. Lin. Alg. Appl., 1 (1994),
         pp. 369--386. http://citeseer.ist.psu.edu/vandervorst91gmresr.html
        */
-      int SolveGCR(
+      int solve_gcr(
           const ::NOX::Epetra::Vector& b, ::NOX::Epetra::Vector& x, int& maxit, double& tol);
 
       /// GMRES solver
@@ -234,11 +234,11 @@ namespace NOX
         Linear Systems: Building Blocks for Iterative Methods, SIAM
         (1993)
       */
-      int SolveGMRES(const ::NOX::Epetra::Vector& b, ::NOX::Epetra::Vector& x, int& max_iter,
+      int solve_gmres(const ::NOX::Epetra::Vector& b, ::NOX::Epetra::Vector& x, int& max_iter,
           double& tol, int m);
 
       /// helper for GMRES
-      void ApplyPlaneRotation(double& dx, double& dy, double& cs, double& sn);
+      void apply_plane_rotation(double& dx, double& dy, double& cs, double& sn);
 
       /// helper for GMRES
       void generate_plane_rotation(double& dx, double& dy, double& cs, double& sn);

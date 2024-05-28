@@ -679,7 +679,7 @@ namespace STR
        *
        * Do not touch this. It should be used only in derived Setup routines.
        * Do not call it from outside! */
-      const Teuchos::ParameterList& GetSDynParams() const
+      const Teuchos::ParameterList& get_s_dyn_params() const
       {
         check_init();
         return *sdynparams_ptr_;

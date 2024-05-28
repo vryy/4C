@@ -136,9 +136,9 @@ namespace CONTACT
     \brief Evaluate mortar coupling
 
     */
-    void IntegrateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) override;
+    void integrate_coupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) override;
 
-    bool EvaluateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) override;
+    bool evaluate_coupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) override;
     //@}
    private:
     /*!

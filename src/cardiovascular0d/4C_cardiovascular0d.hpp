@@ -60,7 +60,7 @@ namespace UTILS
     */
 
     Cardiovascular0D(Teuchos::RCP<DRT::Discretization>
-                         discr,            ///< Discretization where Cardiovascular0D lives on
+                         discr,            ///< discretization where Cardiovascular0D lives on
         const std::string& conditionname,  ///< Name of condition to create Cardiovascular0D from
         std::vector<int>& curID            ///< current ID
     );
@@ -70,7 +70,7 @@ namespace UTILS
     */
 
     Cardiovascular0D(Teuchos::RCP<DRT::Discretization>
-                         discr,  ///< Discretization where Cardiovascular0D funtion lives on
+                         discr,  ///< discretization where Cardiovascular0D funtion lives on
         const std::string&
             CondName  ///< Name of condition to create Cardiovascular0D functions from
     );

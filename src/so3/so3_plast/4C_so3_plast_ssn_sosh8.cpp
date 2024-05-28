@@ -208,31 +208,31 @@ int DRT::ELEMENTS::SoSh8PlastType::Initialize(DRT::Discretization& dis)
           if (actele->eastype_ == DRT::ELEMENTS::soh8p_eassosh8)
           {
             // here comes plan B: morph So_sh8 to So_hex8
-            actele->ReInitEas(DRT::ELEMENTS::soh8p_easmild);
+            actele->re_init_eas(DRT::ELEMENTS::soh8p_easmild);
             actele->anstype_ = SoSh8Plast::ansnone_p;
-            actele->InitJacobianMapping();
+            actele->init_jacobian_mapping();
             num_morphed_so_hex8_easmild++;
           }
           else if (actele->eastype_ == DRT::ELEMENTS::soh8p_easnone)
           {
             // here comes plan B: morph So_sh8 to So_hex8
-            actele->ReInitEas(DRT::ELEMENTS::soh8p_easnone);
+            actele->re_init_eas(DRT::ELEMENTS::soh8p_easnone);
             actele->anstype_ = SoSh8Plast::ansnone_p;
-            actele->InitJacobianMapping();
+            actele->init_jacobian_mapping();
             num_morphed_so_hex8_easnone++;
           }
           else if (actele->eastype_ == DRT::ELEMENTS::soh8p_easmild)
           {
             // this might happen in post filter (for morped sosh8->soh8)
-            actele->ReInitEas(DRT::ELEMENTS::soh8p_easmild);
+            actele->re_init_eas(DRT::ELEMENTS::soh8p_easmild);
             actele->anstype_ = SoSh8Plast::ansnone_p;
-            actele->InitJacobianMapping();
+            actele->init_jacobian_mapping();
           }
           else if (actele->eastype_ == DRT::ELEMENTS::soh8p_easnone)
           {
             // this might happen in post filter (for morped sosh8->soh8)
             actele->anstype_ = SoSh8Plast::ansnone_p;
-            actele->InitJacobianMapping();
+            actele->init_jacobian_mapping();
           }
           else
             FOUR_C_THROW("Undefined EAS type");
@@ -274,7 +274,7 @@ int DRT::ELEMENTS::SoSh8PlastType::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoSh8Plast*>(dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_sh8* failed");
-    actele->InitJacobianMapping();
+    actele->init_jacobian_mapping();
   }
 
   return 0;
@@ -442,7 +442,7 @@ bool DRT::ELEMENTS::SoSh8Plast::ReadElement(
   Teuchos::RCP<MAT::So3Material> so3mat = SolidMaterial();
   so3mat->Setup(numgpt_, linedef);
   so3mat->ValidKinematics(INPAR::STR::KinemType::nonlinearTotLag);
-  if (HavePlasticSpin())
+  if (have_plastic_spin())
     plspintype_ = plspin;
   else
     plspintype_ = zerospin;
@@ -729,7 +729,7 @@ DRT::ELEMENTS::SoSh8Plast::ThicknessDirection DRT::ELEMENTS::SoSh8Plast::enfthic
 /*----------------------------------------------------------------------*
  |  evaluate 'T'-transformation matrix )                       maf 05/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8Plast::EvaluateT(
+void DRT::ELEMENTS::SoSh8Plast::evaluate_t(
     const CORE::LINALG::Matrix<nsd_, nsd_>& jac, CORE::LINALG::Matrix<numstr_, numstr_>& TinvT)
 {
   // build T^T transformation matrix which maps
@@ -793,7 +793,7 @@ void DRT::ELEMENTS::SoSh8Plast::EvaluateT(
 /*----------------------------------------------------------------------*
  |  setup of constant ANS data (private)                       maf 05/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8Plast::Anssetup(
+void DRT::ELEMENTS::SoSh8Plast::anssetup(
     const CORE::LINALG::Matrix<nen_, nsd_>& xrefe,  // material element coords
     const CORE::LINALG::Matrix<nen_, nsd_>& xcurr,  // current element coords
     std::vector<CORE::LINALG::Matrix<nsd_, nen_>>**
@@ -929,7 +929,7 @@ void DRT::ELEMENTS::SoSh8Plast::Anssetup(
 /*----------------------------------------------------------------------*
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8Plast::ReInitEas(const DRT::ELEMENTS::So3PlastEasType EASType)
+void DRT::ELEMENTS::SoSh8Plast::re_init_eas(const DRT::ELEMENTS::So3PlastEasType EASType)
 {
   neas_ = DRT::ELEMENTS::PlastEasTypeToNumEasV(EASType);
   eastype_ = EASType;
@@ -968,10 +968,10 @@ void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // cur
     const INPAR::STR::StrainType iostrain                   // strain output option
 )
 {
-  InvalidEleData();
-  const bool is_tangDis = StrParamsInterface().GetPredictorType() == INPAR::STR::pred_tangdis;
+  invalid_ele_data();
+  const bool is_tangDis = str_params_interface().GetPredictorType() == INPAR::STR::pred_tangdis;
 
-  FillPositionArrays(disp, vel, temp);
+  fill_position_arrays(disp, vel, temp);
 
   // get plastic hyperelastic material
   MAT::PlasticElastHyper* plmat = nullptr;
@@ -982,8 +982,8 @@ void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // cur
 
   if (eastype_ != soh8p_easnone)
   {
-    EvaluateCenter();
-    EasSetup();
+    evaluate_center();
+    eas_setup();
   }
 
   // EAS matrix block
@@ -999,19 +999,19 @@ void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // cur
   std::vector<CORE::LINALG::Matrix<nsd_, nen_>>* deriv_sp =
       nullptr;  // derivs eval. at all sampling points
   // evaluate all necessary variables for ANS
-  Anssetup(Xrefe(), Xcurr(), &deriv_sp, jac_sps, jac_cur_sps, SetB_ans_loc());
+  anssetup(xrefe(), xcurr(), &deriv_sp, jac_sps, jac_cur_sps, set_b_ans_loc());
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
   for (int gp = 0; gp < numgpt_; ++gp)
   {
-    InvalidGpData();
+    invalid_gp_data();
     // shape functions (shapefunct) and their first derivatives (deriv)
-    CORE::FE::shape_function<CORE::FE::CellType::hex8>(xsi_[gp], SetShapeFunction());
+    CORE::FE::shape_function<CORE::FE::CellType::hex8>(xsi_[gp], set_shape_function());
     CORE::FE::shape_function_deriv1<CORE::FE::CellType::hex8>(xsi_[gp], set_deriv_shape_function());
 
-    Kinematics(gp);
+    kinematics(gp);
 
     /* get the inverse of the Jacobian matrix which looks like:
      **            [ x_,r  y_,r  z_,r ]^-1
@@ -1020,30 +1020,30 @@ void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // cur
      */
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
-    set_deriv_shape_function_xyz().Multiply(InvJ(), DerivShapeFunction());  // (6.21)
+    set_deriv_shape_function_xyz().Multiply(inv_j(), deriv_shape_function());  // (6.21)
 
-    AnsStrains(gp, jac_sps, jac_cur_sps);
+    ans_strains(gp, jac_sps, jac_cur_sps);
     if (eastype_ != soh8p_easnone)
     {
-      EasShape(gp);
-      EasEnhanceStrains();
+      eas_shape(gp);
+      eas_enhance_strains();
     }
 
     // strain output *********************************
-    OutputStrains(gp, iostrain, elestress);
+    output_strains(gp, iostrain, elestress);
 
     // material call *********************************************
-    plmat->EvaluateElast(&DefgrdMod(), &DeltaLp(), &SetPK2(), &SetCmat(), gp, Id());
+    plmat->EvaluateElast(&defgrd_mod(), &delta_lp(), &set_p_k2(), &set_cmat(), gp, Id());
     // material call *********************************************
 
     // return gp stresses
-    OutputStress(gp, iostress, elestress);
+    output_stress(gp, iostress, elestress);
 
     // integrate usual internal force and stiffness matrix
-    double detJ_w = DetJ() * wgt_[gp];
+    double detJ_w = det_j() * wgt_[gp];
     // integrate elastic internal force vector **************************
     // update internal force vector
-    if (force != nullptr) IntegrateForce(gp, *force);
+    if (force != nullptr) integrate_force(gp, *force);
 
     // update stiffness matrix
     if (stiffmatrix != nullptr)
@@ -1051,8 +1051,8 @@ void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // cur
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       CORE::LINALG::Matrix<numstr_, numdofperelement_> cb;
-      cb.Multiply(Cmat(), Bop());
-      stiffmatrix->MultiplyTN(detJ_w, Bop(), cb, 1.0);
+      cb.Multiply(cmat(), bop());
+      stiffmatrix->MultiplyTN(detJ_w, bop(), cb, 1.0);
 
       // intergrate `geometric' stiffness matrix and add to keu *****************
       // here also the ANS interpolation comes into play
@@ -1063,10 +1063,10 @@ void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // cur
         for (int jnod = 0; jnod < nen_; ++jnod)
         {
           CORE::LINALG::Matrix<numstr_, 1> G_ij;
-          G_ij(0) = DerivShapeFunction()(0, inod) * DerivShapeFunction()(0, jnod);  // rr-dir
-          G_ij(1) = DerivShapeFunction()(1, inod) * DerivShapeFunction()(1, jnod);  // ss-dir
-          G_ij(3) = DerivShapeFunction()(0, inod) * DerivShapeFunction()(1, jnod) +
-                    DerivShapeFunction()(1, inod) * DerivShapeFunction()(0, jnod);  // rs-dir
+          G_ij(0) = deriv_shape_function()(0, inod) * deriv_shape_function()(0, jnod);  // rr-dir
+          G_ij(1) = deriv_shape_function()(1, inod) * deriv_shape_function()(1, jnod);  // ss-dir
+          G_ij(3) = deriv_shape_function()(0, inod) * deriv_shape_function()(1, jnod) +
+                    deriv_shape_function()(1, inod) * deriv_shape_function()(0, jnod);  // rs-dir
 
           // do the ANS related stuff if wanted!
           if (anstype_ == anssosh8_p)
@@ -1089,21 +1089,21 @@ void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // cur
           }
           else if (anstype_ == ansnone_p)
           {
-            G_ij(2) = DerivShapeFunction()(2, inod) * DerivShapeFunction()(2, jnod);  // tt-dir
-            G_ij(4) = DerivShapeFunction()(2, inod) * DerivShapeFunction()(1, jnod) +
-                      DerivShapeFunction()(1, inod) * DerivShapeFunction()(2, jnod);  // st-dir
-            G_ij(5) = DerivShapeFunction()(0, inod) * DerivShapeFunction()(2, jnod) +
-                      DerivShapeFunction()(2, inod) * DerivShapeFunction()(0, jnod);  // rt-dir
+            G_ij(2) = deriv_shape_function()(2, inod) * deriv_shape_function()(2, jnod);  // tt-dir
+            G_ij(4) = deriv_shape_function()(2, inod) * deriv_shape_function()(1, jnod) +
+                      deriv_shape_function()(1, inod) * deriv_shape_function()(2, jnod);  // st-dir
+            G_ij(5) = deriv_shape_function()(0, inod) * deriv_shape_function()(2, jnod) +
+                      deriv_shape_function()(2, inod) * deriv_shape_function()(0, jnod);  // rt-dir
           }
           else
             FOUR_C_THROW("Cannot build geometric stiffness matrix on your ANS-choice!");
 
           // transformation of local(parameter) space 'back' to global(material) space
           CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> G_ij_glob;
-          G_ij_glob.Multiply(TinvT(), G_ij);
+          G_ij_glob.Multiply(tinv_t(), G_ij);
 
           // Scalar Gij results from product of G_ij with stress, scaled with detJ*weights
-          const double Gij = detJ_w * PK2().Dot(G_ij_glob);
+          const double Gij = detJ_w * p_k2().Dot(G_ij_glob);
 
           // add "geometric part" Gij times detJ*weights to stiffness matrix
           (*stiffmatrix)(nsd_ * inod + 0, nsd_ * jnod + 0) += Gij;
@@ -1124,38 +1124,38 @@ void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // cur
           case soh8p_eassosh8:
             CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_, numstr_,
                 PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas>(
-                cM.values(), Cmat().A(), M_eas().values());
+                cM.values(), cmat().A(), m_eas().values());
             CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
                 PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas, numstr_,
                 PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas>(
-                1.0, *KaaInv_, detJ_w, M_eas(), cM);
+                1.0, *KaaInv_, detJ_w, m_eas(), cM);
             CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
                 PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas, numstr_,
-                numdofperelement_>(1.0, Kad_->values(), detJ_w, M_eas().values(), cb.A());
+                numdofperelement_>(1.0, Kad_->values(), detJ_w, m_eas().values(), cb.A());
             CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, numdofperelement_, numstr_,
                 PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas>(
-                1.0, Kda.values(), detJ_w, cb.A(), M_eas().values());
+                1.0, Kda.values(), detJ_w, cb.A(), m_eas().values());
             CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
                 PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas, numstr_, 1>(
-                1.0, feas_->values(), detJ_w, M_eas().values(), PK2().A());
+                1.0, feas_->values(), detJ_w, m_eas().values(), p_k2().A());
             break;
           case soh8p_easmild:
             CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_, numstr_,
                 PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas>(
-                cM.values(), Cmat().A(), M_eas().values());
+                cM.values(), cmat().A(), m_eas().values());
             CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
                 PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, numstr_,
                 PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas>(
-                1.0, *KaaInv_, detJ_w, M_eas(), cM);
+                1.0, *KaaInv_, detJ_w, m_eas(), cM);
             CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
                 PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, numstr_,
-                numdofperelement_>(1.0, Kad_->values(), detJ_w, M_eas().values(), cb.A());
+                numdofperelement_>(1.0, Kad_->values(), detJ_w, m_eas().values(), cb.A());
             CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, numdofperelement_, numstr_,
                 PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas>(
-                1.0, Kda.values(), detJ_w, cb.A(), M_eas().values());
+                1.0, Kda.values(), detJ_w, cb.A(), m_eas().values());
             CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
                 PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, numstr_, 1>(
-                1.0, feas_->values(), detJ_w, M_eas().values(), PK2().A());
+                1.0, feas_->values(), detJ_w, m_eas().values(), p_k2().A());
             break;
           case soh8p_easnone:
             break;
@@ -1167,28 +1167,29 @@ void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // cur
     }    // end of stiffness matrix
 
     if (massmatrix != nullptr)  // evaluate mass matrix +++++++++++++++++++++++++
-      IntegrateMassMatrix(gp, *massmatrix);
+      integrate_mass_matrix(gp, *massmatrix);
 
     // plastic modifications
     if ((stiffmatrix != nullptr || force != nullptr))
     {
-      if (HavePlasticSpin())
+      if (have_plastic_spin())
       {
         if (eastype_ != soh8p_easnone)
-          CondensePlasticity<plspin>(DefgrdMod(), DeltaLp(), Bop(), &deriv_shape_function_xyz(),
-              nullptr, detJ_w, gp, 0, params, force, stiffmatrix, &M_eas(), &Kda);
+          condense_plasticity<plspin>(defgrd_mod(), delta_lp(), bop(), &deriv_shape_function_xyz(),
+              nullptr, detJ_w, gp, 0, params, force, stiffmatrix, &m_eas(), &Kda);
         else
-          CondensePlasticity<plspin>(DefgrdMod(), DeltaLp(), Bop(), &deriv_shape_function_xyz(),
+          condense_plasticity<plspin>(defgrd_mod(), delta_lp(), bop(), &deriv_shape_function_xyz(),
               nullptr, detJ_w, gp, 0, params, force, stiffmatrix);
       }
       else
       {
         if (eastype_ != soh8p_easnone)
-          CondensePlasticity<zerospin>(DefgrdMod(), DeltaLp(), Bop(), &deriv_shape_function_xyz(),
-              nullptr, detJ_w, gp, 0, params, force, stiffmatrix, &M_eas(), &Kda);
+          condense_plasticity<zerospin>(defgrd_mod(), delta_lp(), bop(),
+              &deriv_shape_function_xyz(), nullptr, detJ_w, gp, 0, params, force, stiffmatrix,
+              &m_eas(), &Kda);
         else
-          CondensePlasticity<zerospin>(DefgrdMod(), DeltaLp(), Bop(), &deriv_shape_function_xyz(),
-              nullptr, detJ_w, gp, 0, params, force, stiffmatrix);
+          condense_plasticity<zerospin>(defgrd_mod(), delta_lp(), bop(),
+              &deriv_shape_function_xyz(), nullptr, detJ_w, gp, 0, params, force, stiffmatrix);
       }
     }  // plastic modifications
   }    // gp loop
@@ -1253,8 +1254,8 @@ void DRT::ELEMENTS::SoSh8Plast::calculate_bop(CORE::LINALG::Matrix<numstr_, numd
     const CORE::LINALG::Matrix<nsd_, nsd_>* defgrd, const CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ,
     const int gp)
 {
-  SetJac_refe().Multiply(DerivShapeFunction(), Xrefe());
-  SetJac_curr().Multiply(DerivShapeFunction(), Xcurr());
+  set_jac_refe().Multiply(deriv_shape_function(), xrefe());
+  set_jac_curr().Multiply(deriv_shape_function(), xcurr());
 
   if (gp < 0 || gp > 7) FOUR_C_THROW("invalid gp number");
 
@@ -1265,12 +1266,12 @@ void DRT::ELEMENTS::SoSh8Plast::calculate_bop(CORE::LINALG::Matrix<numstr_, numd
     for (int dim = 0; dim < NUMDIM_SOH8; ++dim)
     {
       // B_loc_rr = N_r.X_r
-      bop_loc(0, inode * 3 + dim) = DerivShapeFunction()(0, inode) * Jac_curr()(0, dim);
+      bop_loc(0, inode * 3 + dim) = deriv_shape_function()(0, inode) * jac_curr()(0, dim);
       // B_loc_ss = N_s.X_s
-      bop_loc(1, inode * 3 + dim) = DerivShapeFunction()(1, inode) * Jac_curr()(1, dim);
+      bop_loc(1, inode * 3 + dim) = deriv_shape_function()(1, inode) * jac_curr()(1, dim);
       // B_loc_rs = N_r.X_s + N_s.X_r
-      bop_loc(3, inode * 3 + dim) = DerivShapeFunction()(0, inode) * Jac_curr()(1, dim) +
-                                    DerivShapeFunction()(1, inode) * Jac_curr()(0, dim);
+      bop_loc(3, inode * 3 + dim) = deriv_shape_function()(0, inode) * jac_curr()(1, dim) +
+                                    deriv_shape_function()(1, inode) * jac_curr()(0, dim);
 
       // do the ANS related stuff
       if (anstype_ == anssosh8_p)
@@ -1281,33 +1282,33 @@ void DRT::ELEMENTS::SoSh8Plast::calculate_bop(CORE::LINALG::Matrix<numstr_, numd
         //          = (1-r)(1-s)/4 * B_ans(SP E) + (1+r)(1-s)/4 * B_ans(SP F)
         //           +(1+r)(1+s)/4 * B_ans(SP G) + (1-r)(1+s)/4 * B_ans(SP H)
         bop_loc(2, inode * 3 + dim) =
-            0.25 * (1 - r) * (1 - s) * B_ans_loc()(0 + 4 * num_ans, inode * 3 + dim)     // E
-            + 0.25 * (1 + r) * (1 - s) * B_ans_loc()(0 + 5 * num_ans, inode * 3 + dim)   // F
-            + 0.25 * (1 + r) * (1 + s) * B_ans_loc()(0 + 6 * num_ans, inode * 3 + dim)   // G
-            + 0.25 * (1 - r) * (1 + s) * B_ans_loc()(0 + 7 * num_ans, inode * 3 + dim);  // H
+            0.25 * (1 - r) * (1 - s) * b_ans_loc()(0 + 4 * num_ans, inode * 3 + dim)     // E
+            + 0.25 * (1 + r) * (1 - s) * b_ans_loc()(0 + 5 * num_ans, inode * 3 + dim)   // F
+            + 0.25 * (1 + r) * (1 + s) * b_ans_loc()(0 + 6 * num_ans, inode * 3 + dim)   // G
+            + 0.25 * (1 - r) * (1 + s) * b_ans_loc()(0 + 7 * num_ans, inode * 3 + dim);  // H
         // B_loc_st = interpolation along r of ANS B_loc_st
         //          = (1+r)/2 * B_ans(SP B) + (1-r)/2 * B_ans(SP D)
         bop_loc(4, inode * 3 + dim) =
-            0.5 * (1.0 + r) * B_ans_loc()(1 + 1 * num_ans, inode * 3 + dim)     // B
-            + 0.5 * (1.0 - r) * B_ans_loc()(1 + 3 * num_ans, inode * 3 + dim);  // D
+            0.5 * (1.0 + r) * b_ans_loc()(1 + 1 * num_ans, inode * 3 + dim)     // B
+            + 0.5 * (1.0 - r) * b_ans_loc()(1 + 3 * num_ans, inode * 3 + dim);  // D
 
         // B_loc_rt = interpolation along s of ANS B_loc_rt
         //          = (1-s)/2 * B_ans(SP A) + (1+s)/2 * B_ans(SP C)
         bop_loc(5, inode * 3 + dim) =
-            0.5 * (1.0 - s) * B_ans_loc()(2 + 0 * num_ans, inode * 3 + dim)     // A
-            + 0.5 * (1.0 + s) * B_ans_loc()(2 + 2 * num_ans, inode * 3 + dim);  // C
+            0.5 * (1.0 - s) * b_ans_loc()(2 + 0 * num_ans, inode * 3 + dim)     // A
+            + 0.5 * (1.0 + s) * b_ans_loc()(2 + 2 * num_ans, inode * 3 + dim);  // C
       }
       else if (anstype_ == ansnone_p)
       {
         // B_loc_tt = N_t.X_t
-        bop_loc(2, inode * 3 + dim) = DerivShapeFunction()(2, inode) * Jac_curr()(2, dim);
+        bop_loc(2, inode * 3 + dim) = deriv_shape_function()(2, inode) * jac_curr()(2, dim);
         // B_loc_st = N_t.X_s + N_s.X_t
-        bop_loc(4, inode * 3 + dim) = DerivShapeFunction()(2, inode) * Jac_curr()(1, dim) +
-                                      DerivShapeFunction()(1, inode) * Jac_curr()(2, dim);
+        bop_loc(4, inode * 3 + dim) = deriv_shape_function()(2, inode) * jac_curr()(1, dim) +
+                                      deriv_shape_function()(1, inode) * jac_curr()(2, dim);
 
         // B_loc_rt = N_r.X_t + N_t.X_r
-        bop_loc(5, inode * 3 + dim) = DerivShapeFunction()(0, inode) * Jac_curr()(2, dim) +
-                                      DerivShapeFunction()(2, inode) * Jac_curr()(0, dim);
+        bop_loc(5, inode * 3 + dim) = deriv_shape_function()(0, inode) * jac_curr()(2, dim) +
+                                      deriv_shape_function()(2, inode) * jac_curr()(0, dim);
       }
       else
         FOUR_C_THROW("Cannot build bop_loc based on your ANS-choice!");
@@ -1316,12 +1317,12 @@ void DRT::ELEMENTS::SoSh8Plast::calculate_bop(CORE::LINALG::Matrix<numstr_, numd
 
   // transformation from local (parameter) element space to global(material) space
   // with famous 'T'-matrix already used for EAS but now evaluated at each gp
-  EvaluateT(Jac_refe(), SetTinvT());
-  SetBop().Multiply(TinvT(), bop_loc);
+  evaluate_t(jac_refe(), set_tinv_t());
+  set_bop().Multiply(tinv_t(), bop_loc);
 }
 
 
-void DRT::ELEMENTS::SoSh8Plast::AnsStrains(const int gp,
+void DRT::ELEMENTS::SoSh8Plast::ans_strains(const int gp,
     std::vector<CORE::LINALG::Matrix<nsd_, nsd_>>& jac_sps,  // jac at all sampling points
     std::vector<CORE::LINALG::Matrix<nsd_, nsd_>>&
         jac_cur_sps  // current jac at all sampling points
@@ -1332,21 +1333,21 @@ void DRT::ELEMENTS::SoSh8Plast::AnsStrains(const int gp,
   // evaluate glstrains in local(parameter) coords
   // Err = 0.5 * (dx/dr * dx/dr^T - dX/dr * dX/dr^T)
   lstrain(0) =
-      0.5 * (+(Jac_curr()(0, 0) * Jac_curr()(0, 0) + Jac_curr()(0, 1) * Jac_curr()(0, 1) +
-                 Jac_curr()(0, 2) * Jac_curr()(0, 2)) -
-                (Jac_refe()(0, 0) * Jac_refe()(0, 0) + Jac_refe()(0, 1) * Jac_refe()(0, 1) +
-                    Jac_refe()(0, 2) * Jac_refe()(0, 2)));
+      0.5 * (+(jac_curr()(0, 0) * jac_curr()(0, 0) + jac_curr()(0, 1) * jac_curr()(0, 1) +
+                 jac_curr()(0, 2) * jac_curr()(0, 2)) -
+                (jac_refe()(0, 0) * jac_refe()(0, 0) + jac_refe()(0, 1) * jac_refe()(0, 1) +
+                    jac_refe()(0, 2) * jac_refe()(0, 2)));
   // Ess = 0.5 * (dy/ds * dy/ds^T - dY/ds * dY/ds^T)
   lstrain(1) =
-      0.5 * (+(Jac_curr()(1, 0) * Jac_curr()(1, 0) + Jac_curr()(1, 1) * Jac_curr()(1, 1) +
-                 Jac_curr()(1, 2) * Jac_curr()(1, 2)) -
-                (Jac_refe()(1, 0) * Jac_refe()(1, 0) + Jac_refe()(1, 1) * Jac_refe()(1, 1) +
-                    Jac_refe()(1, 2) * Jac_refe()(1, 2)));
+      0.5 * (+(jac_curr()(1, 0) * jac_curr()(1, 0) + jac_curr()(1, 1) * jac_curr()(1, 1) +
+                 jac_curr()(1, 2) * jac_curr()(1, 2)) -
+                (jac_refe()(1, 0) * jac_refe()(1, 0) + jac_refe()(1, 1) * jac_refe()(1, 1) +
+                    jac_refe()(1, 2) * jac_refe()(1, 2)));
   // Ers = (dx/ds * dy/dr^T - dX/ds * dY/dr^T)
-  lstrain(3) = (+(Jac_curr()(0, 0) * Jac_curr()(1, 0) + Jac_curr()(0, 1) * Jac_curr()(1, 1) +
-                    Jac_curr()(0, 2) * Jac_curr()(1, 2)) -
-                (Jac_refe()(0, 0) * Jac_refe()(1, 0) + Jac_refe()(0, 1) * Jac_refe()(1, 1) +
-                    Jac_refe()(0, 2) * Jac_refe()(1, 2)));
+  lstrain(3) = (+(jac_curr()(0, 0) * jac_curr()(1, 0) + jac_curr()(0, 1) * jac_curr()(1, 1) +
+                    jac_curr()(0, 2) * jac_curr()(1, 2)) -
+                (jac_refe()(0, 0) * jac_refe()(1, 0) + jac_refe()(0, 1) * jac_refe()(1, 1) +
+                    jac_refe()(0, 2) * jac_refe()(1, 2)));
 
 
   // do the ANS related stuff if wanted!
@@ -1414,32 +1415,32 @@ void DRT::ELEMENTS::SoSh8Plast::AnsStrains(const int gp,
     // No ANS!
     // Ett = 0.5 * (dz/dt * dz/dt^T - dZ/dt * dZ/dt^T)
     lstrain(2) =
-        0.5 * (+(Jac_curr()(2, 0) * Jac_curr()(2, 0) + Jac_curr()(2, 1) * Jac_curr()(2, 1) +
-                   Jac_curr()(2, 2) * Jac_curr()(2, 2)) -
-                  (Jac_refe()(2, 0) * Jac_refe()(2, 0) + Jac_refe()(2, 1) * Jac_refe()(2, 1) +
-                      Jac_refe()(2, 2) * Jac_refe()(2, 2)));
+        0.5 * (+(jac_curr()(2, 0) * jac_curr()(2, 0) + jac_curr()(2, 1) * jac_curr()(2, 1) +
+                   jac_curr()(2, 2) * jac_curr()(2, 2)) -
+                  (jac_refe()(2, 0) * jac_refe()(2, 0) + jac_refe()(2, 1) * jac_refe()(2, 1) +
+                      jac_refe()(2, 2) * jac_refe()(2, 2)));
     // Est = (dz/ds * dy/dt^T - dZ/ds * dY/dt^T)
-    lstrain(4) = (+(Jac_curr()(2, 0) * Jac_curr()(1, 0) + Jac_curr()(2, 1) * Jac_curr()(1, 1) +
-                      Jac_curr()(2, 2) * Jac_curr()(1, 2)) -
-                  (Jac_refe()(2, 0) * Jac_refe()(1, 0) + Jac_refe()(2, 1) * Jac_refe()(1, 1) +
-                      Jac_refe()(2, 2) * Jac_refe()(1, 2)));
+    lstrain(4) = (+(jac_curr()(2, 0) * jac_curr()(1, 0) + jac_curr()(2, 1) * jac_curr()(1, 1) +
+                      jac_curr()(2, 2) * jac_curr()(1, 2)) -
+                  (jac_refe()(2, 0) * jac_refe()(1, 0) + jac_refe()(2, 1) * jac_refe()(1, 1) +
+                      jac_refe()(2, 2) * jac_refe()(1, 2)));
     // Est = (dz/dr * dx/dt^T - dZ/dr * dX/dt^T)
-    lstrain(5) = (+(Jac_curr()(2, 0) * Jac_curr()(0, 0) + Jac_curr()(2, 1) * Jac_curr()(0, 1) +
-                      Jac_curr()(2, 2) * Jac_curr()(0, 2)) -
-                  (Jac_refe()(2, 0) * Jac_refe()(0, 0) + Jac_refe()(2, 1) * Jac_refe()(0, 1) +
-                      Jac_refe()(2, 2) * Jac_refe()(0, 2)));
+    lstrain(5) = (+(jac_curr()(2, 0) * jac_curr()(0, 0) + jac_curr()(2, 1) * jac_curr()(0, 1) +
+                      jac_curr()(2, 2) * jac_curr()(0, 2)) -
+                  (jac_refe()(2, 0) * jac_refe()(0, 0) + jac_refe()(2, 1) * jac_refe()(0, 1) +
+                      jac_refe()(2, 2) * jac_refe()(0, 2)));
   }
   else
     FOUR_C_THROW("Cannot build local strains based on your ANS-choice!");
 
   // transformation of local glstrains 'back' to global(material) space
   static CORE::LINALG::Matrix<numstr_, 1> glstrain(false);
-  glstrain.Multiply(TinvT(), lstrain);
+  glstrain.Multiply(tinv_t(), lstrain);
 
-  for (int i = 0; i < nsd_; ++i) SetRCG()(i, i) = 2. * glstrain(i) + 1.;
-  SetRCG()(0, 1) = SetRCG()(1, 0) = glstrain(3);
-  SetRCG()(2, 1) = SetRCG()(1, 2) = glstrain(4);
-  SetRCG()(0, 2) = SetRCG()(2, 0) = glstrain(5);
+  for (int i = 0; i < nsd_; ++i) set_rcg()(i, i) = 2. * glstrain(i) + 1.;
+  set_rcg()(0, 1) = set_rcg()(1, 0) = glstrain(3);
+  set_rcg()(2, 1) = set_rcg()(1, 2) = glstrain(4);
+  set_rcg()(0, 2) = set_rcg()(2, 0) = glstrain(5);
 
   // calculate deformation gradient consistent with modified GL strain tensor
   calc_consistent_defgrd();

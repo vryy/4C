@@ -40,13 +40,14 @@ void STR::TIMINT::Explicit::Setup()
   // ---------------------------------------------------------------------------
   // cast the base class integrator
   // ---------------------------------------------------------------------------
-  explint_ptr_ = Teuchos::rcp_dynamic_cast<STR::EXPLICIT::Generic>(IntegratorPtr(), true);
+  explint_ptr_ = Teuchos::rcp_dynamic_cast<STR::EXPLICIT::Generic>(integrator_ptr(), true);
   // ---------------------------------------------------------------------------
   // build NOX interface
   // ---------------------------------------------------------------------------
   Teuchos::RCP<STR::TIMINT::NoxInterface> noxinterface_ptr =
-      Teuchos::rcp(new STR::TIMINT::NoxInterface());
-  noxinterface_ptr->Init(DataGlobalStatePtr(), explint_ptr_, DBCPtr(), Teuchos::rcp(this, false));
+      Teuchos::rcp(new STR::TIMINT::NoxInterface);
+  noxinterface_ptr->Init(
+      data_global_state_ptr(), explint_ptr_, DBCPtr(), Teuchos::rcp(this, false));
   noxinterface_ptr->Setup();
   // ---------------------------------------------------------------------------
   // build non-linear solver
@@ -60,7 +61,7 @@ void STR::TIMINT::Explicit::Setup()
     nlnSolverType = INPAR::STR::soltech_singlestep;
   }
   nlnsolver_ptr_ = STR::NLN::SOLVER::BuildNlnSolver(nlnSolverType);
-  nlnsolver_ptr_->Init(DataGlobalStatePtr(), DataSDynPtr(), noxinterface_ptr, explint_ptr_,
+  nlnsolver_ptr_->Init(data_global_state_ptr(), data_s_dyn_ptr(), noxinterface_ptr, explint_ptr_,
       Teuchos::rcp(this, false));
   nlnsolver_ptr_->Setup();
   // set setup flag
@@ -93,7 +94,7 @@ void STR::TIMINT::Explicit::update_state_incrementally(Teuchos::RCP<const Epetra
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Explicit::determine_stress_strain() { ExplInt().determine_stress_strain(); }
+void STR::TIMINT::Explicit::determine_stress_strain() { expl_int().determine_stress_strain(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -112,7 +113,7 @@ void STR::TIMINT::Explicit::Evaluate()
 {
   check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();
-  ::NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
+  ::NOX::Abstract::Group& grp = nln_solver().SolutionGroup();
 
   auto* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
   if (grp_ptr == nullptr) FOUR_C_THROW("Dynamic cast failed!");
@@ -176,13 +177,13 @@ void STR::TIMINT::Explicit::PrintStep()
 {
   check_init_setup();
 
-  if (DataGlobalState().GetMyRank() != 0 or GroupId() != 0) return;
+  if (data_global_state().GetMyRank() != 0 or GroupId() != 0) return;
 
   const int stepmax = DataSDyn().GetStepMax();
-  const int stepn = DataGlobalState().GetStepN();
-  const double timen = DataGlobalState().GetTimeN();
-  const double dt = (*DataGlobalState().GetDeltaTime())[0];
-  const double wct = DataGlobalState().GetTimer()->totalElapsedTime(true);
+  const int stepn = data_global_state().GetStepN();
+  const double timen = data_global_state().GetTimeN();
+  const double dt = (*data_global_state().GetDeltaTime())[0];
+  const double wct = data_global_state().GetTimer()->totalElapsedTime(true);
 
   // open outstd::stringstream
   std::ostringstream oss;
@@ -244,9 +245,9 @@ int STR::TIMINT::Explicit::IntegrateStep()
   check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();
   // reset the non-linear solver
-  NlnSolver().Reset();
+  nln_solver().Reset();
   // solve the non-linear problem
-  NlnSolver().Solve();
+  nln_solver().Solve();
   return 0;
 }
 
@@ -299,11 +300,11 @@ Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> STR::TIMINT::Explicit::BlockSy
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Explicit::UseBlockMatrix(
+void STR::TIMINT::Explicit::use_block_matrix(
     Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
     Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps)
 {
-  FOUR_C_THROW("UseBlockMatrix() is not available for explicit time integration");
+  FOUR_C_THROW("use_block_matrix() is not available for explicit time integration");
 }
 ///@}
 

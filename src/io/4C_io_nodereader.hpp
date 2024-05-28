@@ -26,7 +26,7 @@ namespace IO
 {
   /**
    * Read all nodes that are defined in section @p node_section_name in the @p reader.
-   * Nodes are added to the Discretization objects associated with the @p element_readers.
+   * Nodes are added to the discretization objects associated with the @p element_readers.
    * The @p max_node_id is tracked for consistency checks.
    */
   void ReadNodes(const INPUT::DatFileReader& reader, const std::string& node_section_name,

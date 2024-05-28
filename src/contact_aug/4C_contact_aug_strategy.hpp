@@ -141,7 +141,7 @@ namespace CONTACT
         return cn_;
       };
 
-      void SetCurrentEvalState(MORTAR::ActionType eval_state) { eval_state_ = eval_state; }
+      void set_current_eval_state(MORTAR::ActionType eval_state) { eval_state_ = eval_state; }
 
       MORTAR::ActionType GetCurrentEvalState() const { return eval_state_; }
 
@@ -752,7 +752,7 @@ namespace CONTACT
       bool IsSaddlePointSystem() const override;
 
       //! reset active set convergence flags
-      void ResetActiveSet() override { Data().is_active_set_converged() = false; };
+      void ResetActiveSet() override { data().is_active_set_converged() = false; };
 
       //! Return the L2-norm of the constraint right-hand-side [deprecated]
       double ConstraintNorm() const override;
@@ -779,13 +779,13 @@ namespace CONTACT
        *  check at the moment, so no difference is made! */
       bool active_set_semi_smooth_converged() const override
       {
-        return Data().is_active_set_converged();
+        return data().is_active_set_converged();
       }
 
       //! Return the active node row map of the previous Newton step
       Teuchos::RCP<const Epetra_Map> get_old_active_row_nodes() const override
       {
-        return Data().g_old_active_slave_nodes_ptr();
+        return data().g_old_active_slave_nodes_ptr();
       };
 
       //! Return the slip node row map of the previous Newton step
@@ -807,7 +807,7 @@ namespace CONTACT
         if ((not redist) and ParRedist())
           FOUR_C_THROW("The original / not redistributed slave normal row map is not available!");
 
-        return Data().g_sl_normal_dof_row_map_ptr();
+        return data().g_sl_normal_dof_row_map_ptr();
       };
       const Epetra_Map& SlNormalDoFRowMap(const bool& redist) const override
       {
@@ -828,7 +828,7 @@ namespace CONTACT
           FOUR_C_THROW(
               "The original / not redistributed slave tangential row map is not available!");
 
-        return Data().g_sl_tangential_dof_row_map_ptr();
+        return data().g_sl_tangential_dof_row_map_ptr();
       };
       const Epetra_Map& sl_tangential_do_f_row_map(const bool& redist) const override
       {
@@ -861,10 +861,10 @@ namespace CONTACT
       };
 
       //! Return the contact status of the last nonlinear solver iteration
-      bool was_in_contact_last_iter() const { return Data().was_in_contact_last_iter(); }
+      bool was_in_contact_last_iter() const { return data().was_in_contact_last_iter(); }
 
       //! Return augmented constraint rhs vector
-      Teuchos::RCP<Epetra_Vector> ConstrRhs() override { return Data().ConstrRhsPtr(); }
+      Teuchos::RCP<Epetra_Vector> ConstrRhs() override { return data().ConstrRhsPtr(); }
 
       /*! \brief return the weighted gap vector (slave normal dof row map layout)
        *
@@ -903,16 +903,16 @@ namespace CONTACT
 
       double characteristic_interface_element_length(const enum CONTACT::AUG::SideType stype) const;
 
-      inline double get_total_gradient_error() const { return Data().TotalGradientError(); }
+      inline double get_total_gradient_error() const { return data().TotalGradientError(); }
 
       const std::vector<std::pair<int, double>>& get_nodal_gradient_error_jacobian() const
       {
-        return Data().nodal_gradient_error_jacobian();
+        return data().nodal_gradient_error_jacobian();
       }
 
       const std::vector<std::pair<int, double>>& get_nodal_gradient_error_ma_proj() const
       {
-        return Data().nodal_gradient_error_ma_proj();
+        return data().nodal_gradient_error_ma_proj();
       }
 
       //! @name Evaluate routines
@@ -977,13 +977,13 @@ namespace CONTACT
       //! @}
 
       /// return the scaling factor for the inactive part
-      virtual double InactiveScaleFactor() const { return 0.5; }
+      virtual double inactive_scale_factor() const { return 0.5; }
 
       /// derived
       void evaluate_reference_state() override;
 
       /// set current evaluation state in the \c cparams object
-      void SetCurrentEvalState(const CONTACT::ParamsInterface& cparams);
+      void set_current_eval_state(const CONTACT::ParamsInterface& cparams);
 
       /// perform parallel distribution check
       void check_parallel_distribution(const GlobalTimeMonitor& global_timer);
@@ -1004,10 +1004,10 @@ namespace CONTACT
       void Update(Teuchos::RCP<const Epetra_Vector> dis) override;
 
       //! derived
-      plain_interface_set& Interfaces() override;
+      plain_interface_set& interfaces() override;
 
       //! derived
-      const plain_interface_set& Interfaces() const override;
+      const plain_interface_set& interfaces() const override;
 
       /*! \brief  Assemble the global sets gsndofrowmap_ and gstdofrowmap_
        *
@@ -1022,10 +1022,10 @@ namespace CONTACT
        *
        *  We allow theoretically different cn values for each node in the
        *  augmented Lagrangian  case. */
-      void InitializeCn(const double cn_init);
+      void initialize_cn(const double cn_init);
 
       /// redistribute the cn vector
-      void RedistributeCn();
+      void redistribute_cn();
 
       /*! \brief Initialize and evaluate augmented Mortar stuff for the next Newton step
        *
@@ -1058,7 +1058,7 @@ namespace CONTACT
        *  \remark The split is quite expensive and should be used carefully (Complete calls).
        *
        *  \author hiermeier */
-      void SplitMortar();
+      void split_mortar();
 
       /*! \brief Update augmented active set and check for convergence
        *
@@ -1104,7 +1104,7 @@ namespace CONTACT
       void check_conservation_laws(CONTACT::ParamsInterface& cparams);
 
       //! Finite Difference check of the augmented Lagrange terms at global level
-      void AugFDCheckGlobal(CONTACT::ParamsInterface& cparams);
+      void aug_fd_check_global(CONTACT::ParamsInterface& cparams);
 
       /*! \brief Evaluate the global FD check w.r.t. the displacements
        *
@@ -1167,7 +1167,7 @@ namespace CONTACT
        *  Prepare the evaluation and assembly and integrate all necessary quantities.
        *
        *  \author hiermeier \date 03/17 */
-      void PreEvalForce(CONTACT::ParamsInterface& cparams);
+      void pre_eval_force(CONTACT::ParamsInterface& cparams);
 
       /*! \brief Compute force terms
        *
@@ -1176,23 +1176,23 @@ namespace CONTACT
        *
        *  \date 03/2016
        *  \author hiermeier */
-      void EvalForce(CONTACT::ParamsInterface& cparams) override;
+      void eval_force(CONTACT::ParamsInterface& cparams) override;
 
       /*! \brief Run in the end of a call to EvalForce
        *
        *  Post-process force terms.
        *
        *  \author hiermeier \date 04/17 */
-      void PostEvalForce(CONTACT::ParamsInterface& cparams);
+      void post_eval_force(CONTACT::ParamsInterface& cparams);
 
       /// evaluate augmented forces w.r.t. Lagrange multiplier and weighted gap
-      void EvalAugmentedForces();
+      void eval_augmented_forces();
 
       /// evaluate only the forces originating from the weight gap values
       void eval_constraint_forces();
 
       /// set all lm forces to zero
-      void ZeroizeLMForces();
+      void zeroize_lm_forces();
 
       /*! \brief Compute force and stiffness terms
        *
@@ -1201,15 +1201,15 @@ namespace CONTACT
        *
        *  \date 03/2016
        *  \author hiermeier */
-      void EvalForceStiff(CONTACT::ParamsInterface& cparams) override;
+      void eval_force_stiff(CONTACT::ParamsInterface& cparams) override;
 
       /// evaluate only all contributions corresponding to the weighted gap
       void eval_static_constraint_rhs(CONTACT::ParamsInterface& cparams) override;
 
-      /*! \brief Run in the end of a call to EvalForceStiff
+      /*! \brief Run in the end of a call to eval_force_stiff
        *
        *  \author hiermeier \date 03/17 */
-      void PostEvalForceStiff(CONTACT::ParamsInterface& cparams);
+      void post_eval_force_stiff(CONTACT::ParamsInterface& cparams);
 
       /*! \brief Recover contact specific solution variables
        *
@@ -1222,7 +1222,7 @@ namespace CONTACT
        *
        * \date 03/2016
        * \author hiermeier */
-      void RunPostComputeX(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
+      void run_post_compute_x(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
           const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
 
       /*! \brief Reset the internal stored Lagrange multipliers
@@ -1244,11 +1244,11 @@ namespace CONTACT
       void InitEvalInterface(Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr) override;
 
       //! evaluate interface
-      void EvalInterface(CONTACT::AUG::Interface& interface, const int rriter,
+      void eval_interface(CONTACT::AUG::Interface& interface, const int rriter,
           const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
 
       //! The contributions to the structural right-hand-side block are calculated.
-      virtual void EvalStrContactRHS();
+      virtual void eval_str_contact_rhs();
 
       //! The entries of the constraint right-hand side are calculated.
       void EvalConstrRHS() override;
@@ -1259,10 +1259,10 @@ namespace CONTACT
       //! @}
 
       //! Assemble contact contributions to the rhs (frictionless)
-      void AssembleGap();
+      void assemble_gap();
 
       //! Assemble contact contributions to the rhs (frictionless)
-      bool AssembleContactRHS();
+      bool assemble_contact_rhs();
 
       //! Evaluate contact contributions to stiff matrix (frictionless)
       void assemble_contact_stiff();
@@ -1275,7 +1275,7 @@ namespace CONTACT
       /*! \brief Create new rhs state
        *
        *  \author hiermeier \date 03/17 */
-      void CreateRhsState(const Epetra_Map& gAugInactiveSlaveDofs);
+      void create_rhs_state(const Epetra_Map& gAugInactiveSlaveDofs);
 
       /*! \brief Zeroize existing stiffness state
        *
@@ -1289,7 +1289,7 @@ namespace CONTACT
       /*! \brief Zeroize existing rhs state
        *
        *  \author hiermeier \date 03/17 */
-      void ZeroizeRhsState();
+      void zeroize_rhs_state();
 
       /** \brief All contributions to the final system matrix block:
        *  ROW => Displacement, COLUMN => Displacement
@@ -1321,13 +1321,13 @@ namespace CONTACT
        *
        * \author hiermeier
        * \date 05/16 */
-      inline CONTACT::AUG::DataContainer& Data() { return aug_data_; }
+      inline CONTACT::AUG::DataContainer& data() { return aug_data_; }
 
       /*! \brief Get access to the internal data container of the strategy (read-only)
        *
        * \author hiermeier
        * \date 05/16 */
-      inline const CONTACT::AUG::DataContainer& Data() const { return aug_data_; }
+      inline const CONTACT::AUG::DataContainer& data() const { return aug_data_; }
 
      public:
       //! @name Unsupported derived routines (dead-end)
@@ -1368,7 +1368,7 @@ namespace CONTACT
       };
       void Recover(Teuchos::RCP<Epetra_Vector> disi) override
       {
-        FOUR_C_THROW("Deprecated function call! Replaced by RunPostComputeX().");
+        FOUR_C_THROW("Deprecated function call! Replaced by run_post_compute_x().");
       };
       void update_active_set_semi_smooth(const bool firstStepPredictor = false) override
       {
@@ -1382,7 +1382,7 @@ namespace CONTACT
       //! @{
       void evaluate_rel_mov_predict() override
       {
-        if (Data().IsFriction()) FOUR_C_THROW("No frictional contact support at the moment!");
+        if (data().IsFriction()) FOUR_C_THROW("No frictional contact support at the moment!");
         return;
       };
       //! @}

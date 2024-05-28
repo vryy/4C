@@ -83,7 +83,7 @@ namespace CONTACT
     \param [in,out]  contractedNode:  node that consists of both nodes of contracted edge
 
     */
-    void GetContractedNode(Teuchos::RCP<SelfDualEdge>& contractedEdge,
+    void get_contracted_node(Teuchos::RCP<SelfDualEdge>& contractedEdge,
         Teuchos::RCP<SelfBinaryTreeNode>& contractedNode) final;
 
     /*!

@@ -67,7 +67,7 @@ CORE::LINALG::EquilibrationBlockSpecific::EquilibrationBlockSpecific(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::LINALG::Equilibration::ComputeInvRowSums(const CORE::LINALG::SparseMatrix& matrix,
+void CORE::LINALG::Equilibration::compute_inv_row_sums(const CORE::LINALG::SparseMatrix& matrix,
     Teuchos::RCP<Epetra_Vector> invrowsums, const EquilibrationMethod method) const
 {
   // compute inverse row sums of matrix
@@ -83,7 +83,7 @@ void CORE::LINALG::Equilibration::ComputeInvRowSums(const CORE::LINALG::SparseMa
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void CORE::LINALG::Equilibration::ComputeInvColSums(const CORE::LINALG::SparseMatrix& matrix,
+void CORE::LINALG::Equilibration::compute_inv_col_sums(const CORE::LINALG::SparseMatrix& matrix,
     Teuchos::RCP<Epetra_Vector> invcolsums, const EquilibrationMethod method) const
 {
   // compute inverse column sums of matrix
@@ -98,7 +98,7 @@ void CORE::LINALG::Equilibration::ComputeInvColSums(const CORE::LINALG::SparseMa
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void CORE::LINALG::Equilibration::ComputeInvSymmetry(
+void CORE::LINALG::Equilibration::compute_inv_symmetry(
     const CORE::LINALG::SparseMatrix& matrix, Teuchos::RCP<Epetra_Vector> invsymmetry) const
 {
   Teuchos::RCP<Epetra_Vector> diag = CORE::LINALG::CreateVector(matrix.RangeMap(), true);
@@ -212,7 +212,7 @@ void CORE::LINALG::EquilibrationSparse::equilibrate_matrix(
       Method() == EquilibrationMethod::rowsandcolumns_maindiag)
   {
     // compute inverse row sums of global system matrix
-    ComputeInvRowSums(*sparsematrix, invrowsums_, Method());
+    compute_inv_row_sums(*sparsematrix, invrowsums_, Method());
 
     // perform row equilibration of global system matrix
     equilibrate_matrix_rows(*sparsematrix, invrowsums_);
@@ -225,7 +225,7 @@ void CORE::LINALG::EquilibrationSparse::equilibrate_matrix(
       Method() == EquilibrationMethod::rowsandcolumns_maindiag)
   {
     // compute inverse column sums of global system matrix
-    ComputeInvColSums(*sparsematrix, invcolsums_, Method());
+    compute_inv_col_sums(*sparsematrix, invcolsums_, Method());
 
     // perform column equilibration of global system matrix
     equilibrate_matrix_columns(*sparsematrix, invcolsums_);
@@ -256,7 +256,7 @@ void CORE::LINALG::EquilibrationBlock::equilibrate_matrix(
       if (Method() == EquilibrationMethod::rows_maindiag or
           Method() == EquilibrationMethod::rowsandcolumns_maindiag)
       {
-        ComputeInvRowSums(blocksparsematrix->Matrix(i, i), invrowsums, Method());
+        compute_inv_row_sums(blocksparsematrix->Matrix(i, i), invrowsums, Method());
       }
       // compute inverse row sums of current row block of global system matrix
       else
@@ -326,7 +326,7 @@ void CORE::LINALG::EquilibrationBlock::equilibrate_matrix(
       if (Method() == EquilibrationMethod::columns_maindiag or
           Method() == EquilibrationMethod::rowsandcolumns_maindiag)
       {
-        ComputeInvColSums(blocksparsematrix->Matrix(j, j), invcolsums, Method());
+        compute_inv_col_sums(blocksparsematrix->Matrix(j, j), invcolsums, Method());
       }
       // compute inverse column sums of current column block of global system matrix
       else
@@ -406,7 +406,7 @@ void CORE::LINALG::EquilibrationBlockSpecific::equilibrate_matrix(
         method == EquilibrationMethod::rowsandcolumns_maindiag)
     {
       auto invrowsums = Teuchos::rcp(new Epetra_Vector(blocksparsematrix->Matrix(i, i).RowMap()));
-      ComputeInvRowSums(blocksparsematrix->Matrix(i, i), invrowsums, method);
+      compute_inv_row_sums(blocksparsematrix->Matrix(i, i), invrowsums, method);
 
       // perform row equilibration of matrix blocks in current row block of global system
       // matrix
@@ -421,7 +421,7 @@ void CORE::LINALG::EquilibrationBlockSpecific::equilibrate_matrix(
     {
       auto invcolsums =
           Teuchos::rcp(new Epetra_Vector(blocksparsematrix->Matrix(i, i).DomainMap()));
-      ComputeInvColSums(blocksparsematrix->Matrix(i, i), invcolsums, method);
+      compute_inv_col_sums(blocksparsematrix->Matrix(i, i), invcolsums, method);
 
       // perform column equilibration of matrix blocks in current column block of global
       // system matrix
@@ -436,7 +436,7 @@ void CORE::LINALG::EquilibrationBlockSpecific::equilibrate_matrix(
       auto invsymmetry =
           CORE::LINALG::CreateVector(blocksparsematrix->Matrix(i, i).RangeMap(), true);
 
-      ComputeInvSymmetry(blocksparsematrix->Matrix(i, i), invsymmetry);
+      compute_inv_symmetry(blocksparsematrix->Matrix(i, i), invsymmetry);
 
       for (int j = 0; j < blocksparsematrix->Cols(); ++j)
       {

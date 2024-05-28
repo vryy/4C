@@ -33,7 +33,7 @@ MAT::PAR::AaaMixedeffects::AaaMixedeffects(Teuchos::RCP<CORE::MAT::PAR::Material
 }
 
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::AaaMixedeffects::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::AaaMixedeffects::create_material()
 {
   return Teuchos::rcp(new MAT::AaaMixedeffects(this));
 }

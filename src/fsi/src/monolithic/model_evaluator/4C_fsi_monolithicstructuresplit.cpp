@@ -57,8 +57,8 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(
   // Create intersection of slave DOFs that hold a Dirichlet boundary condition
   // and are located at the FSI interface
   std::vector<Teuchos::RCP<const Epetra_Map>> intersectionmaps;
-  intersectionmaps.push_back(StructureField()->GetDBCMapExtractor()->CondMap());
-  intersectionmaps.push_back(StructureField()->Interface()->FSICondMap());
+  intersectionmaps.push_back(structure_field()->GetDBCMapExtractor()->CondMap());
+  intersectionmaps.push_back(structure_field()->Interface()->FSICondMap());
   Teuchos::RCP<Epetra_Map> intersectionmap =
       CORE::LINALG::MultiMapExtractor::IntersectMaps(intersectionmaps);
 
@@ -67,17 +67,17 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(
   {
     //    std::cout << "Slave interface nodes with Dirichlet boundary condition (input file
     //    numbering):" << std::endl; for (int i=0; i <
-    //    (int)fluid_field()->Discretization()->NumMyRowNodes(); i++)
+    //    (int)fluid_field()->discretization()->NumMyRowNodes(); i++)
     //    {
     //      // get all nodes and add them
-    //      int gid = StructureField()->Discretization()->NodeRowMap()->GID(i);
+    //      int gid = structure_field()->discretization()->NodeRowMap()->GID(i);
     //
     //      // do only nodes that I have in my discretization
-    //      if (!StructureField()->Discretization()->NodeColMap()->MyGID(gid)) continue;
-    //      DRT::Node* node = StructureField()->Discretization()->gNode(gid);
+    //      if (!structure_field()->discretization()->NodeColMap()->MyGID(gid)) continue;
+    //      DRT::Node* node = structure_field()->discretization()->gNode(gid);
     //      if (!node) FOUR_C_THROW("Cannot find node with gid %",gid);
     //
-    //      std::vector<int> nodedofs = StructureField()->Discretization()->Dof(node);
+    //      std::vector<int> nodedofs = structure_field()->discretization()->Dof(node);
     //
     //      for (int j=0; j < (int)nodedofs.size(); j++)
     //      {
@@ -162,8 +162,8 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(
   fscoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
 
   // Recovery of Lagrange multiplier happens on structure field
-  lambda_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap(), true));
-  lambdaold_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap(), true));
+  lambda_ = Teuchos::rcp(new Epetra_Vector(*structure_field()->Interface()->FSICondMap(), true));
+  lambdaold_ = Teuchos::rcp(new Epetra_Vector(*structure_field()->Interface()->FSICondMap(), true));
   ddiinc_ = Teuchos::null;
   soliprev_ = Teuchos::null;
   ddginc_ = Teuchos::null;
@@ -232,7 +232,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   linearsolverstrategy_ =
       CORE::UTILS::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
-  set_default_parameters(fsidyn, NOXParameterList());
+  set_default_parameters(fsidyn, nox_parameter_list());
 
   // call SetupSystem in base class
   FSI::Monolithic::SetupSystem();
@@ -242,8 +242,8 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   {
     const int ndim = GLOBAL::Problem::Instance()->NDim();
 
-    fscoupfa_->setup_condition_coupling(*fluid_field()->Discretization(),
-        fluid_field()->Interface()->FSCondMap(), *ale_field()->Discretization(),
+    fscoupfa_->setup_condition_coupling(*fluid_field()->discretization(),
+        fluid_field()->Interface()->FSCondMap(), *ale_field()->discretization(),
         ale_field()->Interface()->FSCondMap(), "FREESURFCoupling", ndim);
   }
 
@@ -252,13 +252,13 @@ void FSI::MonolithicStructureSplit::SetupSystem()
 
   // Use normal matrix for fluid equations but build (splitted) mesh movement
   // linearization (if requested in the input file)
-  fluid_field()->UseBlockMatrix(false);
+  fluid_field()->use_block_matrix(false);
 
   // Use splitted structure matrix
-  StructureField()->UseBlockMatrix();
+  structure_field()->use_block_matrix();
 
   // build ale system matrix in splitted system
-  ale_field()->CreateSystemMatrix(ale_field()->Interface());
+  ale_field()->create_system_matrix(ale_field()->Interface());
 
   aleresidual_ = Teuchos::rcp(new Epetra_Vector(*ale_field()->Interface()->OtherMap()));
 
@@ -273,7 +273,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
     pcdbg_ = Teuchos::rcp(new UTILS::MonolithicDebugWriter(*this));
   }
 
-  CreateSystemMatrix();
+  create_system_matrix();
 
   // NOTE: if we restart from an part. fsi problem we still have to read lambda_. But since this
   // requires coupsf_ in order to map the nodal fluid forces on the structure nodes we have to do it
@@ -288,7 +288,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
     {
       Teuchos::RCP<Epetra_Vector> lambdafullfluid =
           Teuchos::rcp(new Epetra_Vector(*fluid_field()->dof_row_map(), true));
-      IO::DiscretizationReader reader = IO::DiscretizationReader(fluid_field()->Discretization(),
+      IO::DiscretizationReader reader = IO::DiscretizationReader(fluid_field()->discretization(),
           GLOBAL::Problem::Instance()->InputControlFile(), restart);
       reader.ReadVector(lambdafullfluid, "fsilambda");
 
@@ -296,19 +296,19 @@ void FSI::MonolithicStructureSplit::SetupSystem()
           Teuchos::rcp(new Epetra_Vector(*fluid_field()->Interface()->FullMap(), true));
       lambdafluid = fluid_field()->Interface()->ExtractFSICondVector(lambdafullfluid);
 
-      lambdaold_ = FluidToStruct(lambdafluid);
+      lambdaold_ = fluid_to_struct(lambdafluid);
       // Note: the above is normally enough. However, we can use the restart in order to
       // periodically repeat the fsi simulation (see AC-FS3I)
-      lambda_ = FluidToStruct(lambdafluid);
+      lambda_ = fluid_to_struct(lambdafluid);
     }
   }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicStructureSplit::CreateSystemMatrix()
+void FSI::MonolithicStructureSplit::create_system_matrix()
 {
-  FSI::BlockMonolithic::CreateSystemMatrix(systemmatrix_, true);
+  FSI::BlockMonolithic::create_system_matrix(systemmatrix_, true);
 }
 
 /*----------------------------------------------------------------------*/
@@ -316,7 +316,7 @@ void FSI::MonolithicStructureSplit::CreateSystemMatrix()
 void FSI::MonolithicStructureSplit::create_combined_dof_row_map()
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
-  vecSpaces.push_back(StructureField()->Interface()->OtherMap());
+  vecSpaces.push_back(structure_field()->Interface()->OtherMap());
   vecSpaces.push_back(fluid_field()->dof_row_map());
   vecSpaces.push_back(ale_field()->Interface()->OtherMap());
 
@@ -344,7 +344,7 @@ void FSI::MonolithicStructureSplit::setup_dbc_map_extractor()
 
   // Merge Dirichlet maps of structure, fluid and ALE to global FSI Dirichlet map
   std::vector<Teuchos::RCP<const Epetra_Map>> dbcmaps;
-  dbcmaps.push_back(StructureField()->GetDBCMapExtractor()->CondMap());
+  dbcmaps.push_back(structure_field()->GetDBCMapExtractor()->CondMap());
   dbcmaps.push_back(fluid_field()->GetDBCMapExtractor()->CondMap());
   dbcmaps.push_back(aleintersectionmap);
   Teuchos::RCP<const Epetra_Map> dbcmap = CORE::LINALG::MultiMapExtractor::MergeMaps(dbcmaps);
@@ -373,32 +373,32 @@ void FSI::MonolithicStructureSplit::setup_rhs_residual(Epetra_Vector& f)
 {
   // get time integration parameters of structure and fluid time integrators
   // to enable consistent time integration among the fields
-  const double stiparam = StructureField()->TimIntParam();
+  const double stiparam = structure_field()->TimIntParam();
   const double ftiparam = fluid_field()->TimIntParam();
 
   // some scaling factors for fluid
-  const double fluidscale = fluid_field()->ResidualScaling();
+  const double fluidscale = fluid_field()->residual_scaling();
 
   // get single field residuals
-  Teuchos::RCP<const Epetra_Vector> sv = Teuchos::rcp(new Epetra_Vector(*StructureField()->RHS()));
+  Teuchos::RCP<const Epetra_Vector> sv = Teuchos::rcp(new Epetra_Vector(*structure_field()->RHS()));
   Teuchos::RCP<const Epetra_Vector> fv = Teuchos::rcp(new Epetra_Vector(*fluid_field()->RHS()));
   Teuchos::RCP<const Epetra_Vector> av = Teuchos::rcp(new Epetra_Vector(*ale_field()->RHS()));
 
   //  // extract only inner DOFs from structure (=slave) and ALE field
-  Teuchos::RCP<const Epetra_Vector> sov = StructureField()->Interface()->ExtractOtherVector(sv);
+  Teuchos::RCP<const Epetra_Vector> sov = structure_field()->Interface()->ExtractOtherVector(sv);
   Teuchos::RCP<const Epetra_Vector> aov = ale_field()->Interface()->ExtractOtherVector(av);
 
   // add structure interface residual to fluid interface residual considering temporal scaling
-  Teuchos::RCP<Epetra_Vector> scv = StructureField()->Interface()->ExtractFSICondVector(sv);
+  Teuchos::RCP<Epetra_Vector> scv = structure_field()->Interface()->ExtractFSICondVector(sv);
   Teuchos::RCP<Epetra_Vector> modfv =
-      fluid_field()->Interface()->InsertFSICondVector(StructToFluid(scv));
+      fluid_field()->Interface()->InsertFSICondVector(struct_to_fluid(scv));
   modfv->Update(1.0, *fv, (1.0 - ftiparam) / ((1.0 - stiparam) * fluidscale));
 
   // put the single field residuals together
   FSI::Monolithic::combine_field_vectors(f, sov, modfv, aov);
 
   // add additional ale residual
-  Extractor().AddVector(*aleresidual_, 2, f);
+  extractor().AddVector(*aleresidual_, 2, f);
 
   return;
 }
@@ -411,20 +411,20 @@ void FSI::MonolithicStructureSplit::setup_rhs_lambda(Epetra_Vector& f)
   {
     // get time integration parameters of structure and fluid time integrators
     // to enable consistent time integration among the fields
-    const double stiparam = StructureField()->TimIntParam();
+    const double stiparam = structure_field()->TimIntParam();
     const double ftiparam = fluid_field()->TimIntParam();
 
     // some scaling factors for fluid
-    const double fluidscale = fluid_field()->ResidualScaling();
+    const double fluidscale = fluid_field()->residual_scaling();
 
     // project Lagrange multiplier field onto the master interface DOFs and consider temporal
     // scaling
     Teuchos::RCP<Epetra_Vector> lambdafull =
-        fluid_field()->Interface()->InsertFSICondVector(StructToFluid(lambdaold_));
+        fluid_field()->Interface()->InsertFSICondVector(struct_to_fluid(lambdaold_));
     lambdafull->Scale((-ftiparam + (stiparam * (1.0 - ftiparam)) / (1.0 - stiparam)) / fluidscale);
 
     // add Lagrange multiplier
-    Extractor().AddVector(*lambdafull, 1, f);
+    extractor().AddVector(*lambdafull, 1, f);
   }
 
   return;
@@ -436,11 +436,11 @@ void FSI::MonolithicStructureSplit::setup_rhs_firstiter(Epetra_Vector& f)
 {
   // get time integration parameters of structure and fluid time integrators
   // to enable consistent time integration among the fields
-  const double stiparam = StructureField()->TimIntParam();
+  const double stiparam = structure_field()->TimIntParam();
   const double ftiparam = fluid_field()->TimIntParam();
 
   // some scaling factors for fluid
-  const double scale = fluid_field()->ResidualScaling();
+  const double scale = fluid_field()->residual_scaling();
 
   // old interface velocity of fluid field
   const Teuchos::RCP<const Epetra_Vector> fveln = fluid_field()->extract_interface_veln();
@@ -451,7 +451,7 @@ void FSI::MonolithicStructureSplit::setup_rhs_firstiter(Epetra_Vector& f)
 
   // get structure matrix
   const Teuchos::RCP<const CORE::LINALG::BlockSparseMatrixBase> blocks =
-      StructureField()->BlockSystemMatrix();
+      structure_field()->BlockSystemMatrix();
 
   // get ale matrix
   const Teuchos::RCP<const CORE::LINALG::BlockSparseMatrixBase> blocka =
@@ -495,15 +495,15 @@ void FSI::MonolithicStructureSplit::setup_rhs_firstiter(Epetra_Vector& f)
   rhs = Teuchos::rcp(new Epetra_Vector(sig.RowMap(), true));
   sig.Apply(*ddgpred_, *rhs);
 
-  Extractor().AddVector(*rhs, 0, f);
+  extractor().AddVector(*rhs, 0, f);
   // ----------end of term 1
 
   // ----------addressing term 2
   rhs = Teuchos::rcp(new Epetra_Vector(sig.RowMap(), true));
-  sig.Apply(*FluidToStruct(fveln), *rhs);
+  sig.Apply(*fluid_to_struct(fveln), *rhs);
   rhs->Scale(-Dt());
 
-  Extractor().AddVector(*rhs, 0, f);
+  extractor().AddVector(*rhs, 0, f);
   // ----------end of term 2
   // ----------end of inner structural DOFs
 
@@ -525,7 +525,7 @@ void FSI::MonolithicStructureSplit::setup_rhs_firstiter(Epetra_Vector& f)
 
     rhs = fluid_field()->Interface()->InsertOtherVector(rhs);
 
-    Extractor().AddVector(*rhs, 1, f);
+    extractor().AddVector(*rhs, 1, f);
   }
   // ----------end of term 1
   // ---------- end of inner fluid DOFs
@@ -556,19 +556,19 @@ void FSI::MonolithicStructureSplit::setup_rhs_firstiter(Epetra_Vector& f)
 
     rhs = fluid_field()->Interface()->InsertFSICondVector(rhs);
 
-    Extractor().AddVector(*rhs, 1, f);
+    extractor().AddVector(*rhs, 1, f);
   }
   // ----------end of term 1
 
   // ----------addressing term 2
   rhs = Teuchos::rcp(new Epetra_Vector(sgg.RowMap(), true));
-  sgg.Apply(*FluidToStruct(fveln), *rhs);
+  sgg.Apply(*fluid_to_struct(fveln), *rhs);
   rhs->Scale(-Dt() * (1. - ftiparam) / ((1. - stiparam) * scale));
 
-  rhs = StructToFluid(rhs);
+  rhs = struct_to_fluid(rhs);
   rhs = fluid_field()->Interface()->InsertFSICondVector(rhs);
 
-  Extractor().AddVector(*rhs, 1, f);
+  extractor().AddVector(*rhs, 1, f);
   // ----------end of term 2
 
   // ----------addressing term 3
@@ -576,10 +576,10 @@ void FSI::MonolithicStructureSplit::setup_rhs_firstiter(Epetra_Vector& f)
   sgg.Apply(*ddgpred_, *rhs);
   rhs->Scale((1. - ftiparam) / ((1. - stiparam) * scale));
 
-  rhs = StructToFluid(rhs);
+  rhs = struct_to_fluid(rhs);
   rhs = fluid_field()->Interface()->InsertFSICondVector(rhs);
 
-  Extractor().AddVector(*rhs, 1, f);
+  extractor().AddVector(*rhs, 1, f);
   // ----------end of term 3
   // ---------- end of interface fluid DOFs
 
@@ -593,10 +593,10 @@ void FSI::MonolithicStructureSplit::setup_rhs_firstiter(Epetra_Vector& f)
    */
   // ----------addressing term 1
   rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap(), true));
-  aig.Apply(*FluidToAleInterface(fveln), *rhs);
+  aig.Apply(*fluid_to_ale_interface(fveln), *rhs);
   rhs->Scale(-Dt());
 
-  Extractor().AddVector(*rhs, 2, f);
+  extractor().AddVector(*rhs, 2, f);
   // ----------end of term 1
   // ---------- end of inner ale DOFs
 
@@ -618,7 +618,7 @@ void FSI::MonolithicStructureSplit::setup_rhs_firstiter(Epetra_Vector& f)
 
     rhs->Scale(-1. * Dt());
 
-    Extractor().AddVector(*rhs, 1, f);
+    extractor().AddVector(*rhs, 1, f);
 
     // shape derivatives
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> mmm = fluid_field()->ShapeDerivatives();
@@ -638,15 +638,15 @@ void FSI::MonolithicStructureSplit::setup_rhs_firstiter(Epetra_Vector& f)
 
       veln->Scale(-1. * Dt());
 
-      Extractor().AddVector(*veln, 0, f);
+      extractor().AddVector(*veln, 0, f);
     }
   }
 
   // Reset quantities for previous iteration step since they still store values from the last time
   // step
-  ddiinc_ = CORE::LINALG::CreateVector(*StructureField()->Interface()->OtherMap(), true);
+  ddiinc_ = CORE::LINALG::CreateVector(*structure_field()->Interface()->OtherMap(), true);
   soliprev_ = Teuchos::null;
-  ddginc_ = CORE::LINALG::CreateVector(*StructureField()->Interface()->FSICondMap(), true);
+  ddginc_ = CORE::LINALG::CreateVector(*structure_field()->Interface()->FSICondMap(), true);
   duginc_ = CORE::LINALG::CreateVector(*fluid_field()->Interface()->FSICondMap(), true);
   disgprev_ = Teuchos::null;
   sgicur_ = Teuchos::null;
@@ -662,11 +662,12 @@ void FSI::MonolithicStructureSplit::setup_system_matrix(CORE::LINALG::BlockSpars
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicStructureSplit::setup_system_matrix");
 
   const CORE::ADAPTER::Coupling& coupsf = structure_fluid_coupling();
-  const CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  const CORE::ADAPTER::Coupling& coupfa = fluid_ale_coupling();
   const CORE::ADAPTER::Coupling& icoupfa = interface_fluid_ale_coupling();
 
   // get single field block matrices
-  const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> s = StructureField()->BlockSystemMatrix();
+  const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> s =
+      structure_field()->BlockSystemMatrix();
   const Teuchos::RCP<CORE::LINALG::SparseMatrix> f = fluid_field()->SystemMatrix();
   const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a = ale_field()->BlockSystemMatrix();
 
@@ -691,12 +692,12 @@ void FSI::MonolithicStructureSplit::setup_system_matrix(CORE::LINALG::BlockSpars
   CORE::LINALG::SparseMatrix& aig = a->Matrix(0, 1);
 
   // scaling factors for fluid
-  const double scale = fluid_field()->ResidualScaling();
+  const double scale = fluid_field()->residual_scaling();
   const double timescale = fluid_field()->TimeScaling();
 
   // get time integration parameters of structure and fluid time integrators
   // to enable consistent time integration among the fields
-  const double stiparam = StructureField()->TimIntParam();
+  const double stiparam = structure_field()->TimIntParam();
   const double ftiparam = fluid_field()->TimIntParam();
 
   /*----------------------------------------------------------------------*/
@@ -845,14 +846,14 @@ void FSI::MonolithicStructureSplit::scale_system(
       FOUR_C_THROW("ale scaling failed");
 
     // do scaling of structure and ale rhs vectors
-    Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b, 0);
-    Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b, 2);
+    Teuchos::RCP<Epetra_Vector> sx = extractor().ExtractVector(b, 0);
+    Teuchos::RCP<Epetra_Vector> ax = extractor().ExtractVector(b, 2);
 
     if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
-    Extractor().InsertVector(*sx, 0, b);
-    Extractor().InsertVector(*ax, 2, b);
+    extractor().InsertVector(*sx, 0, b);
+    extractor().InsertVector(*ax, 2, b);
   }
 }
 
@@ -868,23 +869,23 @@ void FSI::MonolithicStructureSplit::unscale_solution(
 
   if (scaling_infnorm)
   {
-    Teuchos::RCP<Epetra_Vector> sy = Extractor().ExtractVector(x, 0);
-    Teuchos::RCP<Epetra_Vector> ay = Extractor().ExtractVector(x, 2);
+    Teuchos::RCP<Epetra_Vector> sy = extractor().ExtractVector(x, 0);
+    Teuchos::RCP<Epetra_Vector> ay = extractor().ExtractVector(x, 2);
 
     if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) FOUR_C_THROW("ale scaling failed");
 
-    Extractor().InsertVector(*sy, 0, x);
-    Extractor().InsertVector(*ay, 2, x);
+    extractor().InsertVector(*sy, 0, x);
+    extractor().InsertVector(*ay, 2, x);
 
-    Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b, 0);
-    Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b, 2);
+    Teuchos::RCP<Epetra_Vector> sx = extractor().ExtractVector(b, 0);
+    Teuchos::RCP<Epetra_Vector> ax = extractor().ExtractVector(b, 2);
 
     if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
-    Extractor().InsertVector(*sx, 0, b);
-    Extractor().InsertVector(*ax, 2, b);
+    extractor().InsertVector(*sx, 0, b);
+    extractor().InsertVector(*ax, 2, b);
 
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0, 0).EpetraMatrix();
     srowsum_->Reciprocal(*srowsum_);
@@ -913,14 +914,14 @@ void FSI::MonolithicStructureSplit::unscale_solution(
   mat.Apply(x, r);
   r.Update(1., b, 1.);
 
-  Teuchos::RCP<Epetra_Vector> sr = Extractor().ExtractVector(r, 0);
-  Teuchos::RCP<Epetra_Vector> fr = Extractor().ExtractVector(r, 1);
-  Teuchos::RCP<Epetra_Vector> ar = Extractor().ExtractVector(r, 2);
+  Teuchos::RCP<Epetra_Vector> sr = extractor().ExtractVector(r, 0);
+  Teuchos::RCP<Epetra_Vector> fr = extractor().ExtractVector(r, 1);
+  Teuchos::RCP<Epetra_Vector> ar = extractor().ExtractVector(r, 2);
 
   // increment additional ale residual
   aleresidual_->Update(-1., *ar, 0.);
 
-  std::ios_base::fmtflags flags = Utils()->out().flags();
+  std::ios_base::fmtflags flags = utils()->out().flags();
 
   double n, ns, nf, na;
   r.Norm2(&n);
@@ -929,7 +930,7 @@ void FSI::MonolithicStructureSplit::unscale_solution(
   ar->Norm2(&na);
   if (verbosity_ == INPAR::FSI::verbosity_full)
   {
-    Utils()->out() << std::scientific << "\nlinear solver quality:\n"
+    utils()->out() << std::scientific << "\nlinear solver quality:\n"
                    << "L_2-norms:\n"
                    << "   |r|=" << n << "   |rs|=" << ns << "   |rf|=" << nf << "   |ra|=" << na
                    << "\n";
@@ -940,12 +941,12 @@ void FSI::MonolithicStructureSplit::unscale_solution(
   ar->NormInf(&na);
   if (verbosity_ == INPAR::FSI::verbosity_full)
   {
-    Utils()->out() << "L_inf-norms:\n"
+    utils()->out() << "L_inf-norms:\n"
                    << "   |r|=" << n << "   |rs|=" << ns << "   |rf|=" << nf << "   |ra|=" << na
                    << "\n";
   }
 
-  Utils()->out().flags(flags);
+  utils()->out().flags(flags);
 }
 
 /*----------------------------------------------------------------------*/
@@ -989,22 +990,22 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::MonolithicStructureSplit::create_sta
 
   // create Norm-objects for each norm that has to be tested
   Teuchos::RCP<NOX::FSI::PartialNormF> structureDisp_L2 = Teuchos::rcp(new NOX::FSI::PartialNormF(
-      "DISPL residual", Extractor(), 0, nlParams.get<double>("Tol dis res L2"),
+      "DISPL residual", extractor(), 0, nlParams.get<double>("Tol dis res L2"),
       ::NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled));
   Teuchos::RCP<NOX::FSI::PartialNormF> structureDisp_inf = Teuchos::rcp(new NOX::FSI::PartialNormF(
-      "DISPL residual", Extractor(), 0, nlParams.get<double>("Tol dis res Inf"),
+      "DISPL residual", extractor(), 0, nlParams.get<double>("Tol dis res Inf"),
       ::NOX::Abstract::Vector::MaxNorm, NOX::FSI::PartialNormF::Unscaled));
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> structureDispUpdate_L2 =
-      Teuchos::rcp(new NOX::FSI::PartialNormUpdate("DISPL update", Extractor(), 0,
+      Teuchos::rcp(new NOX::FSI::PartialNormUpdate("DISPL update", extractor(), 0,
           nlParams.get<double>("Tol dis inc L2"), ::NOX::Abstract::Vector::TwoNorm,
           NOX::FSI::PartialNormUpdate::Scaled));
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> structureDispUpdate_inf =
-      Teuchos::rcp(new NOX::FSI::PartialNormUpdate("DISPL update", Extractor(), 0,
+      Teuchos::rcp(new NOX::FSI::PartialNormUpdate("DISPL update", extractor(), 0,
           nlParams.get<double>("Tol dis inc Inf"), ::NOX::Abstract::Vector::MaxNorm,
           NOX::FSI::PartialNormUpdate::Unscaled));
 
   // tests needed to adapt relative tolerance of the linear solver
-  AddStatusTest(structureDisp_L2);
+  add_status_test(structureDisp_L2);
 
   // add norm-tests to structural displacement ::NOX::StatusTest::Combo
   structcombo->addStatusTest(structureDisp_L2);
@@ -1046,7 +1047,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::MonolithicStructureSplit::create_sta
           NOX::FSI::PartialNormUpdate::Unscaled));
 
   // tests needed to adapt relative tolerance of the linear solver
-  AddStatusTest(interfaceTest_L2);
+  add_status_test(interfaceTest_L2);
 
   // add norm-tests to interface ::NOX::StatusTest::Combo
   interfacecombo->addStatusTest(interfaceTest_L2);
@@ -1088,7 +1089,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::MonolithicStructureSplit::create_sta
           NOX::FSI::PartialNormUpdate::Unscaled));
 
   // tests needed to adapt relative tolerance of the linear solver
-  AddStatusTest(innerFluidVel_L2);
+  add_status_test(innerFluidVel_L2);
 
   // add norm-tests to fluid velocity ::NOX::StatusTest::Combo
   fluidvelcombo->addStatusTest(innerFluidVel_L2);
@@ -1130,7 +1131,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::MonolithicStructureSplit::create_sta
           NOX::FSI::PartialNormUpdate::Unscaled));
 
   // tests needed to adapt relative tolerance of the linear solver
-  AddStatusTest(fluidPress_L2);
+  add_status_test(fluidPress_L2);
 
   // add norm-tests to fluid pressure ::NOX::StatusTest::Combo
   fluidpresscombo->addStatusTest(fluidPress_L2);
@@ -1166,18 +1167,18 @@ void FSI::MonolithicStructureSplit::extract_field_vectors(Teuchos::RCP<const Epe
   // process fluid unknowns
   // ---------------------------------------------------------------------------
   // extract fluid solution increment from NOX increment
-  fx = Extractor().ExtractVector(x, 1);
+  fx = extractor().ExtractVector(x, 1);
 
   // ---------------------------------------------------------------------------
   // process ale unknowns
   // ---------------------------------------------------------------------------
   // extract inner ALE solution increment from NOX increment
-  Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x, 2);
+  Teuchos::RCP<const Epetra_Vector> aox = extractor().ExtractVector(x, 2);
 
   // convert fluid interface velocities into ALE interface displacements
   Teuchos::RCP<Epetra_Vector> fcx = fluid_field()->Interface()->ExtractFSICondVector(fx);
   fluid_field()->velocity_to_displacement(fcx);
-  Teuchos::RCP<Epetra_Vector> acx = FluidToAleInterface(fcx);
+  Teuchos::RCP<Epetra_Vector> acx = fluid_to_ale_interface(fcx);
 
   // put inner and interface ALE solution increments together
   Teuchos::RCP<Epetra_Vector> a = ale_field()->Interface()->InsertOtherVector(aox);
@@ -1199,15 +1200,15 @@ void FSI::MonolithicStructureSplit::extract_field_vectors(Teuchos::RCP<const Epe
   // process structure unknowns
   // ---------------------------------------------------------------------------
   // extract inner structure solution increment from NOX increment
-  Teuchos::RCP<const Epetra_Vector> sox = Extractor().ExtractVector(x, 0);
+  Teuchos::RCP<const Epetra_Vector> sox = extractor().ExtractVector(x, 0);
 
   // convert ALE interface displacements to structure interface displacements
-  Teuchos::RCP<Epetra_Vector> scx = AleToStruct(acx);
+  Teuchos::RCP<Epetra_Vector> scx = ale_to_struct(acx);
   scx->Update(-1.0, *ddgpred_, 1.0);
 
   // put inner and interface structure solution increments together
-  Teuchos::RCP<Epetra_Vector> s = StructureField()->Interface()->InsertOtherVector(sox);
-  StructureField()->Interface()->InsertFSICondVector(scx, s);
+  Teuchos::RCP<Epetra_Vector> s = structure_field()->Interface()->InsertOtherVector(sox);
+  structure_field()->Interface()->InsertFSICondVector(scx, s);
   sx = s;
 
   // ---------------------------------------------------------------------------
@@ -1237,9 +1238,9 @@ void FSI::MonolithicStructureSplit::extract_field_vectors(Teuchos::RCP<const Epe
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicStructureSplit::Output()
+void FSI::MonolithicStructureSplit::output()
 {
-  StructureField()->Output();
+  structure_field()->Output();
 
   // output Lagrange multiplier
   OutputLambda();
@@ -1247,10 +1248,11 @@ void FSI::MonolithicStructureSplit::Output()
   fluid_field()->Output();
   ale_field()->Output();
 
-  if (StructureField()->get_constraint_manager()->HaveMonitor())
+  if (structure_field()->get_constraint_manager()->HaveMonitor())
   {
-    StructureField()->get_constraint_manager()->compute_monitor_values(StructureField()->Dispnp());
-    if (Comm().MyPID() == 0) StructureField()->get_constraint_manager()->PrintMonitorValues();
+    structure_field()->get_constraint_manager()->compute_monitor_values(
+        structure_field()->Dispnp());
+    if (Comm().MyPID() == 0) structure_field()->get_constraint_manager()->PrintMonitorValues();
   }
 }
 
@@ -1263,21 +1265,21 @@ void FSI::MonolithicStructureSplit::OutputLambda()
    * output or restart data.
    */
   Teuchos::RCP<Epetra_Vector> lambdafull =
-      StructureField()->Interface()->InsertFSICondVector(lambda_);
+      structure_field()->Interface()->InsertFSICondVector(lambda_);
   const int uprestart = timeparams_.get<int>("RESTARTEVRY");
   const int upres = timeparams_.get<int>("RESULTSEVRY");
   if ((uprestart != 0 && fluid_field()->Step() % uprestart == 0) or
       (upres != 0 and fluid_field()->Step() % upres == 0))
-    StructureField()->DiscWriter()->WriteVector("fsilambda", lambdafull);
+    structure_field()->DiscWriter()->WriteVector("fsilambda", lambdafull);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicStructureSplit::Update()
+void FSI::MonolithicStructureSplit::update()
 {
   lambdaold_->Update(1.0, *lambda_, 0.0);
 
-  FSI::BlockMonolithic::Update();
+  FSI::BlockMonolithic::update();
 }
 
 /*----------------------------------------------------------------------*/
@@ -1291,14 +1293,14 @@ void FSI::MonolithicStructureSplit::read_restart(int step)
   if (not restartfrompartfsi)  // standard restart
   {
     Teuchos::RCP<Epetra_Vector> lambdafull =
-        Teuchos::rcp(new Epetra_Vector(*StructureField()->dof_row_map(), true));
+        Teuchos::rcp(new Epetra_Vector(*structure_field()->dof_row_map(), true));
     IO::DiscretizationReader reader = IO::DiscretizationReader(
-        StructureField()->Discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
+        structure_field()->discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
     reader.ReadVector(lambdafull, "fsilambda");
-    lambdaold_ = StructureField()->Interface()->ExtractFSICondVector(lambdafull);
+    lambdaold_ = structure_field()->Interface()->ExtractFSICondVector(lambdafull);
   }
 
-  StructureField()->read_restart(step);
+  structure_field()->read_restart(step);
   fluid_field()->read_restart(step);
   ale_field()->read_restart(step);
 
@@ -1312,7 +1314,7 @@ void FSI::MonolithicStructureSplit::recover_lagrange_multiplier()
 {
   // get time integration parameter of structural time integrator
   // to enable consistent time integration among the fields
-  const double stiparam = StructureField()->TimIntParam();
+  const double stiparam = structure_field()->TimIntParam();
 
   // some scaling factors for fluid
   //  const double timescale = fluid_field()->TimeScaling();
@@ -1364,7 +1366,7 @@ void FSI::MonolithicStructureSplit::recover_lagrange_multiplier()
 
   // ---------Addressing term (3)
   Teuchos::RCP<Epetra_Vector> structureresidual =
-      StructureField()->Interface()->ExtractFSICondVector(StructureField()->RHS());
+      structure_field()->Interface()->ExtractFSICondVector(structure_field()->RHS());
   structureresidual->Scale(-1.0);  // invert sign to obtain residual, not rhs
   tmpvec = Teuchos::rcp(new Epetra_Vector(*structureresidual));
   // ---------End of term (3)
@@ -1381,7 +1383,7 @@ void FSI::MonolithicStructureSplit::recover_lagrange_multiplier()
 
   // ---------Addressing term (5)
   auxvec = Teuchos::rcp(new Epetra_Vector(sggprev_->RangeMap(),true));
-  sggprev_->Apply(*FluidToStruct(duginc_),*auxvec);
+  sggprev_->Apply(*fluid_to_struct(duginc_),*auxvec);
   tmpvec->Update(1.0/timescale,*auxvec,1.0);
   // ---------End of term (5)
 
@@ -1389,7 +1391,7 @@ void FSI::MonolithicStructureSplit::recover_lagrange_multiplier()
   if (firstcall_)
   {
     auxvec = Teuchos::rcp(new Epetra_Vector(sggprev_->RangeMap(),true));
-    sggprev_->Apply(*FluidToStruct(fluid_field()->extract_interface_veln()),*auxvec);
+    sggprev_->Apply(*fluid_to_struct(fluid_field()->extract_interface_veln()),*auxvec);
     tmpvec->Update(Dt(),*auxvec,1.0);
   }
   // ---------End of term (6)
@@ -1415,7 +1417,7 @@ void FSI::MonolithicStructureSplit::calculate_interface_energy_increment()
 {
   // get time integration parameters of structure and fluid time integrators
   // to enable consistent time integration among the fields
-  const double stiparam = StructureField()->TimIntParam();
+  const double stiparam = structure_field()->TimIntParam();
   const double ftiparam = fluid_field()->TimIntParam();
 
   // interface traction weighted by time integration factors
@@ -1425,12 +1427,12 @@ void FSI::MonolithicStructureSplit::calculate_interface_energy_increment()
 
   // displacement increment of this time step
   Teuchos::RCP<Epetra_Vector> deltad =
-      Teuchos::rcp(new Epetra_Vector(*StructureField()->dof_row_map(), true));
-  deltad->Update(1.0, *StructureField()->Dispnp(), -1.0, *StructureField()->Dispn(), 0.0);
+      Teuchos::rcp(new Epetra_Vector(*structure_field()->dof_row_map(), true));
+  deltad->Update(1.0, *structure_field()->Dispnp(), -1.0, *structure_field()->Dispn(), 0.0);
 
   // calculate the energy increment
   double energy = 0.0;
-  tractionstructure->Dot(*StructureField()->Interface()->ExtractFSICondVector(deltad), &energy);
+  tractionstructure->Dot(*structure_field()->Interface()->ExtractFSICondVector(deltad), &energy);
 
   energysum_ += energy;
 
@@ -1448,7 +1450,7 @@ void FSI::MonolithicStructureSplit::combine_field_vectors(Epetra_Vector& v,
   if (slave_vectors_contain_interface_dofs)
   {
     // extract inner DOFs from slave vectors
-    Teuchos::RCP<Epetra_Vector> sov = StructureField()->Interface()->ExtractOtherVector(sv);
+    Teuchos::RCP<Epetra_Vector> sov = structure_field()->Interface()->ExtractOtherVector(sv);
     Teuchos::RCP<Epetra_Vector> aov = ale_field()->Interface()->ExtractOtherVector(av);
 
     // put them together
@@ -1460,21 +1462,21 @@ void FSI::MonolithicStructureSplit::combine_field_vectors(Epetra_Vector& v,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FSI::MonolithicStructureSplit::SelectDtErrorBased() const
+double FSI::MonolithicStructureSplit::select_dt_error_based() const
 {
   // get time step size suggestions based on some error norms
-  const double dtfl = GetAdaFlDt();              // based on all fluid DOFs
-  const double dtflfsi = GetAdaFlFSIDt();        // based on fluid FSI DOFs
-  const double dtstrinner = GetAdaStrInnerDt();  // based on inner structural DOFs
+  const double dtfl = get_ada_fl_dt();               // based on all fluid DOFs
+  const double dtflfsi = get_ada_fl_fsi_dt();        // based on fluid FSI DOFs
+  const double dtstrinner = get_ada_str_inner_dt();  // based on inner structural DOFs
 
   double dt = Dt();
 
   // select time step size based on error estimation
-  if (IsAdaStructure() and IsAdaFluid())
+  if (is_ada_structure() and is_ada_fluid())
     dt = std::min(std::min(dtfl, dtflfsi), dtstrinner);
-  else if (IsAdaStructure() and (not IsAdaFluid()))
+  else if (is_ada_structure() and (not is_ada_fluid()))
     dt = dtstrinner;
-  else if ((not IsAdaStructure()) and IsAdaFluid())
+  else if ((not is_ada_structure()) and is_ada_fluid())
     dt = std::min(dtfl, dtflfsi);
   else
   {
@@ -1486,23 +1488,23 @@ double FSI::MonolithicStructureSplit::SelectDtErrorBased() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FSI::MonolithicStructureSplit::SetAccepted() const
+bool FSI::MonolithicStructureSplit::set_accepted() const
 {
   // get error norms
-  const double flnorm = GetAdaFlnorm();              // based on all fluid DOFs
-  const double flfsinorm = GetAdaFlFSInorm();        // based on fluid FSI DOFs
-  const double strinnernorm = GetAdaStrInnernorm();  // based on inner structural DOFs
+  const double flnorm = get_ada_flnorm();               // based on all fluid DOFs
+  const double flfsinorm = get_ada_fl_fs_inorm();       // based on fluid FSI DOFs
+  const double strinnernorm = get_ada_str_innernorm();  // based on inner structural DOFs
 
   bool accepted = std::max(flnorm, flfsinorm) < errtolfl_ && strinnernorm < errtolstr_;
 
   // in case error estimation in the fluid field is turned off:
-  if (not IsAdaFluid()) accepted = strinnernorm < errtolstr_;
+  if (not is_ada_fluid()) accepted = strinnernorm < errtolstr_;
 
   // in case error estimation in the structure field is turned off:
-  if (not IsAdaStructure()) accepted = std::max(flnorm, flfsinorm) < errtolfl_;
+  if (not is_ada_structure()) accepted = std::max(flnorm, flfsinorm) < errtolfl_;
 
   // no error based time adaptivity
-  if ((not IsAdaStructure()) and (not IsAdaFluid())) accepted = true;
+  if ((not is_ada_structure()) and (not is_ada_fluid())) accepted = true;
 
   return accepted;
 }

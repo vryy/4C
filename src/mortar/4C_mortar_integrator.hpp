@@ -180,7 +180,7 @@ namespace MORTAR
     \brief Initialize Gauss rule (points, weights) for this MORTAR::Integrator
 
     */
-    void InitializeGP();
+    void initialize_gp();
 
     //! @name Access methods
     /*!

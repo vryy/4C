@@ -98,9 +98,9 @@ namespace ADAPTER
     {
       return fluid_->ShapeDerivatives();
     }
-    const Teuchos::RCP<DRT::Discretization>& Discretization() override
+    const Teuchos::RCP<DRT::Discretization>& discretization() override
     {
-      return fluid_->Discretization();
+      return fluid_->discretization();
     }
     Teuchos::RCP<const CORE::Dofsets::DofSet> DofSet() override { return fluid_->DofSet(); }
     Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
@@ -126,13 +126,13 @@ namespace ADAPTER
     {
       return fluid_->add_contribution_to_external_loads(contributing_vector);
     };
-    void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd) override
+    void add_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoadd) override
     {
-      return fluid_->AddDirichCond(maptoadd);
+      return fluid_->add_dirich_cond(maptoadd);
     };
-    void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove) override
+    void remove_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoremove) override
     {
-      return fluid_->RemoveDirichCond(maptoremove);
+      return fluid_->remove_dirich_cond(maptoremove);
     };
     void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel) override
     {
@@ -166,7 +166,7 @@ namespace ADAPTER
     }
     Teuchos::RCP<FLD::DynSmagFilter> DynSmagFilter() override { return fluid_->DynSmagFilter(); }
     Teuchos::RCP<FLD::Vreman> Vreman() override { return fluid_->Vreman(); }
-    void SetVelocityField(Teuchos::RCP<const Epetra_Vector> velnp) override
+    void set_velocity_field(Teuchos::RCP<const Epetra_Vector> velnp) override
     {
       FOUR_C_THROW("not implemented!");
       return;
@@ -309,9 +309,9 @@ namespace ADAPTER
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
 
-    /// Use ResidualScaling() to convert the implemented fluid residual to an actual force with unit
-    /// Newton [N]
-    double ResidualScaling() const override { return fluid_->ResidualScaling(); }
+    /// Use residual_scaling() to convert the implemented fluid residual to an actual force with
+    /// unit Newton [N]
+    double residual_scaling() const override { return fluid_->residual_scaling(); }
 
     /// Velocity-displacement conversion at the fsi interface
     double TimeScaling() const override { return fluid_->TimeScaling(); }
@@ -405,7 +405,10 @@ namespace ADAPTER
     {
       return fluid_->integrate_interface_shape();
     }
-    void UseBlockMatrix(bool splitmatrix) override { return fluid_->UseBlockMatrix(splitmatrix); }
+    void use_block_matrix(bool splitmatrix) override
+    {
+      return fluid_->use_block_matrix(splitmatrix);
+    }
     Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override
     {
       return fluid_->CreateFieldTest();

@@ -63,7 +63,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
           CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
-      int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
+      int evaluate_action(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -73,14 +73,15 @@ namespace DRT
 
      protected:
       //! calculate matrix and rhs. Here the whole thing is hidden. Hyperbolic reinit.
-      void SysmatHyperbolic(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
-          CORE::LINALG::SerialDenseVector& erhs                     //!< element rhs to calculate
+      void sysmat_hyperbolic(
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs   //!< element rhs to calculate
       );
 
       //! calculate matrix and rhs. Here the whole thing is hidden. Ellipitic reinit.
-      void SysmatElliptic(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
-          CORE::LINALG::SerialDenseVector& erhs,                  //!< element rhs to calculate
-          const CORE::GEO::BoundaryIntCellPtrs& bcell             //!< interface for penalty term
+      void sysmat_elliptic(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs,                   //!< element rhs to calculate
+          const CORE::GEO::BoundaryIntCellPtrs& bcell              //!< interface for penalty term
       );
 
       /** \brief Evaluate the system matrix and right-hand-side for the ellipitic
@@ -123,8 +124,8 @@ namespace DRT
       /*========================================================================*/
 
       //! calculation of diffusive element matrix
-      void CalcMatDiff(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                                         //!< index of current scalar
+      void calc_mat_diff(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                                           //!< index of current scalar
           const double timefacfac  //!< domain-integration factor times time-integration factor
           ) override;
 

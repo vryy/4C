@@ -38,7 +38,7 @@ namespace FS3I
 
     void Timeloop() override;
 
-    void InitialCalculations();
+    void initial_calculations();
 
     void prepare_time_step() override;
 

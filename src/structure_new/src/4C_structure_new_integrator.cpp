@@ -106,23 +106,23 @@ void STR::Integrator::set_initial_displacement(
   {
     case INPAR::STR::initdisp_zero_disp:
     {
-      GlobalState().GetDisN()->PutScalar(0.0);
-      GlobalState().GetDisNp()->PutScalar(0.0);
+      global_state().GetDisN()->PutScalar(0.0);
+      global_state().GetDisNp()->PutScalar(0.0);
 
       break;
     }
     case INPAR::STR::initdisp_disp_by_function:
     {
-      const Epetra_Map* dofrowmap = GlobalState().GetDiscret()->dof_row_map();
+      const Epetra_Map* dofrowmap = global_state().GetDiscret()->dof_row_map();
 
       // loop all nodes on the processor
-      for (int lnodeid = 0; lnodeid < GlobalState().GetDiscret()->NumMyRowNodes(); lnodeid++)
+      for (int lnodeid = 0; lnodeid < global_state().GetDiscret()->NumMyRowNodes(); lnodeid++)
       {
         // get the processor local node
-        const DRT::Node* lnode = GlobalState().GetDiscret()->lRowNode(lnodeid);
+        const DRT::Node* lnode = global_state().GetDiscret()->lRowNode(lnodeid);
 
         // the set of degrees of freedom associated with the node
-        const std::vector<int> nodedofset = GlobalState().GetDiscret()->Dof(0, lnode);
+        const std::vector<int> nodedofset = global_state().GetDiscret()->Dof(0, lnode);
 
         // loop nodal dofs
         for (unsigned int d = 0; d < nodedofset.size(); ++d)
@@ -134,15 +134,15 @@ void STR::Integrator::set_initial_displacement(
           const double initialval =
               GLOBAL::Problem::Instance()
                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                  .Evaluate(lnode->X().data(), GlobalState().GetTimeN(), d);
+                  .Evaluate(lnode->X().data(), global_state().GetTimeN(), d);
 
-          const int err = GlobalState().GetDisN()->ReplaceMyValues(1, &initialval, &doflid);
+          const int err = global_state().GetDisN()->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
 
       // initialize also the solution vector
-      GlobalState().GetDisNp()->Update(1.0, *GlobalState().GetDisN(), 0.0);
+      global_state().GetDisNp()->Update(1.0, *global_state().GetDisN(), 0.0);
 
       break;
     }
@@ -178,30 +178,30 @@ void STR::Integrator::equilibrate_initial_state()
 
   // temporary right-hand-side
   Teuchos::RCP<Epetra_Vector> rhs_ptr =
-      Teuchos::rcp(new Epetra_Vector(*GlobalState().DofRowMapView(), true));
+      Teuchos::rcp(new Epetra_Vector(*global_state().DofRowMapView(), true));
   // wrap the rhs_ptr in a nox_epetra_Vector
   Teuchos::RCP<::NOX::Epetra::Vector> nox_rhs_ptr =
       Teuchos::rcp(new ::NOX::Epetra::Vector(rhs_ptr, ::NOX::Epetra::Vector::CreateView));
 
   // initialize a temporal structural stiffness matrix
   Teuchos::RCP<CORE::LINALG::SparseOperator> stiff_ptr =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GlobalState().DofRowMapView(), 81, true, true));
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*global_state().DofRowMapView(), 81, true, true));
 
 
   // overwrite initial state vectors with Dirichlet BCs
   // note that we get accelerations resulting from inhomogeneous Dirichlet conditions here
-  const double& timen = (*GlobalState().GetMultiTime())[0];
-  Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().GetDisNp();
-  Teuchos::RCP<Epetra_Vector> velnp_ptr = GlobalState().GetVelNp();
-  Teuchos::RCP<Epetra_Vector> accnp_ptr = GlobalState().GetAccNp();
-  Dbc().ApplyDirichletBC(timen, disnp_ptr, velnp_ptr, accnp_ptr, false);
+  const double& timen = (*global_state().GetMultiTime())[0];
+  Teuchos::RCP<Epetra_Vector> disnp_ptr = global_state().GetDisNp();
+  Teuchos::RCP<Epetra_Vector> velnp_ptr = global_state().GetVelNp();
+  Teuchos::RCP<Epetra_Vector> accnp_ptr = global_state().GetAccNp();
+  dbc().apply_dirichlet_bc(timen, disnp_ptr, velnp_ptr, accnp_ptr, false);
 
 
   // ---------------------------------------------------------------------------
   // compute the mass matrix
   // ---------------------------------------------------------------------------
   // set the evaluate parameters of the current base class
-  ResetEvalParams();
+  reset_eval_params();
   // !!! evaluate the initial state !!!
   EvalData().SetTotalTime(gstate_ptr_->GetTimeN());
 
@@ -230,19 +230,19 @@ void STR::Integrator::equilibrate_initial_state()
   /* note: this needs to be done 'manually' here because in the RHS evaluation
    * routine of an ordinary time step, these contributions are scaled by weighting
    * factors inside the time integration scheme (e.g. alpha_f/m for GenAlpha) */
-  rhs_ptr->Update(1.0, *GlobalState().GetFinertialNp(), 1.0);
-  rhs_ptr->Update(1.0, *GlobalState().GetFviscoNp(), 1.0);
+  rhs_ptr->Update(1.0, *global_state().GetFinertialNp(), 1.0);
+  rhs_ptr->Update(1.0, *global_state().GetFviscoNp(), 1.0);
 
   /* Meier 2015: Here, we copy the mass matrix in the stiffness block in order to
    * not perform the Dirichlet conditions on the constant mass matrix later on.
    * This is necessary since we need the original mass matrix (without blanked
    * rows) on the Dirichlet DoFs in order to calculate correct reaction
    * forces.*/
-  stiff_ptr->Add(*GlobalState().GetMassMatrix(), false, 1.0, 0.0);
+  stiff_ptr->Add(*global_state().GetMassMatrix(), false, 1.0, 0.0);
   stiff_ptr->Complete();
 
   // treatment of elements with special element technology (e.g. pressure DOFs)
-  GlobalState().apply_element_technology_to_acceleration_system(*stiff_ptr, *rhs_ptr);
+  global_state().apply_element_technology_to_acceleration_system(*stiff_ptr, *rhs_ptr);
 
   // ---------------------------------------------------------------------------
   // build a NOX::NLN::STR::LinearSystem
@@ -250,15 +250,15 @@ void STR::Integrator::equilibrate_initial_state()
   // get the structural linear solver
   std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>> str_linsolver;
   str_linsolver[NOX::NLN::sol_structure] =
-      TimInt().GetDataSDyn().GetLinSolvers().at(INPAR::STR::model_structure);
+      tim_int().GetDataSDyn().GetLinSolvers().at(INPAR::STR::model_structure);
 
   // copy the nox parameter-list
-  Teuchos::ParameterList p_nox = TimInt().GetDataSDyn().GetNoxParams();
-  NOX::NLN::AUX::set_printing_parameters(p_nox, GlobalState().GetComm());
+  Teuchos::ParameterList p_nox = tim_int().GetDataSDyn().GetNoxParams();
+  NOX::NLN::AUX::set_printing_parameters(p_nox, global_state().GetComm());
 
   // create a copy of the initial displacement vector
   Teuchos::RCP<Epetra_Vector> soln_ptr =
-      Teuchos::rcp(new Epetra_Vector(*GlobalState().DofRowMapView(), true));
+      Teuchos::rcp(new Epetra_Vector(*global_state().DofRowMapView(), true));
   // wrap the soln_ptr in a nox_epetra_Vector
   Teuchos::RCP<::NOX::Epetra::Vector> nox_soln_ptr =
       Teuchos::rcp(new ::NOX::Epetra::Vector(soln_ptr, ::NOX::Epetra::Vector::CreateView));
@@ -284,7 +284,7 @@ void STR::Integrator::equilibrate_initial_state()
 
   // (re)set the linear solver parameters
   p_ls.set<int>("Number of Nonlinear Iterations", 0);
-  p_ls.set<int>("Current Time Step", GlobalState().GetStepNp());
+  p_ls.set<int>("Current Time Step", global_state().GetStepNp());
   // ToDo Get the actual tolerance value
   p_ls.set<double>("Wanted Tolerance", 1.0e-6);
   // ---------------------------------------------------------------------------
@@ -322,17 +322,17 @@ bool STR::Integrator::current_state_is_equilibrium(const double& tol)
 
   // temporary right-hand-side
   Teuchos::RCP<Epetra_Vector> rhs_ptr =
-      Teuchos::rcp(new Epetra_Vector(*GlobalState().DofRowMapView(), true));
+      Teuchos::rcp(new Epetra_Vector(*global_state().DofRowMapView(), true));
 
   // overwrite initial state vectors with Dirichlet BCs
-  const double& timen = (*GlobalState().GetMultiTime())[0];
-  Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().GetDisNp();
-  Teuchos::RCP<Epetra_Vector> velnp_ptr = GlobalState().GetVelNp();
-  Teuchos::RCP<Epetra_Vector> accnp_ptr = GlobalState().GetAccNp();
-  Dbc().ApplyDirichletBC(timen, disnp_ptr, velnp_ptr, accnp_ptr, false);
+  const double& timen = (*global_state().GetMultiTime())[0];
+  Teuchos::RCP<Epetra_Vector> disnp_ptr = global_state().GetDisNp();
+  Teuchos::RCP<Epetra_Vector> velnp_ptr = global_state().GetVelNp();
+  Teuchos::RCP<Epetra_Vector> accnp_ptr = global_state().GetAccNp();
+  dbc().apply_dirichlet_bc(timen, disnp_ptr, velnp_ptr, accnp_ptr, false);
 
   // set the evaluate parameters of the current base class
-  ResetEvalParams();
+  reset_eval_params();
   // !!! evaluate the initial state !!!
   EvalData().SetTotalTime(gstate_ptr_->GetTimeN());
 
@@ -340,9 +340,9 @@ bool STR::Integrator::current_state_is_equilibrium(const double& tol)
   ModelEval().ApplyInitialForce(*disnp_ptr, *rhs_ptr);
 
   // add viscous contributions to rhs
-  rhs_ptr->Update(1.0, *GlobalState().GetFviscoNp(), 1.0);
+  rhs_ptr->Update(1.0, *global_state().GetFviscoNp(), 1.0);
   // add inertial contributions to rhs
-  rhs_ptr->Update(1.0, *GlobalState().GetFinertialNp(), 1.0);
+  rhs_ptr->Update(1.0, *global_state().GetFinertialNp(), 1.0);
 
   double resnorm = 0.0;
   rhs_ptr->NormInf(&resnorm);
@@ -388,12 +388,12 @@ double STR::Integrator::get_total_mid_time_str_energy(const Epetra_Vector& x)
         " Please add a meaningful MIDTIME_ENERGY_TYPE to the ---STRUCTURAL DYNAMIC"
         " section of your Input file.");
 
-  Teuchos::RCP<const Epetra_Vector> disnp_ptr = GlobalState().ExtractDisplEntries(x);
+  Teuchos::RCP<const Epetra_Vector> disnp_ptr = global_state().ExtractDisplEntries(x);
   const Epetra_Vector& disnp = *disnp_ptr;
 
   set_state(disnp);
 
-  Teuchos::RCP<const Epetra_Vector> velnp_ptr = GlobalState().GetVelNp();
+  Teuchos::RCP<const Epetra_Vector> velnp_ptr = global_state().GetVelNp();
   const Epetra_Vector& velnp = *velnp_ptr;
 
   EvalData().clear_values_for_all_energy_types();
@@ -401,14 +401,14 @@ double STR::Integrator::get_total_mid_time_str_energy(const Epetra_Vector& x)
       dynamic_cast<STR::MODELEVALUATOR::Structure&>(Evaluator(INPAR::STR::model_structure));
 
   Teuchos::RCP<const Epetra_Vector> dis_avg =
-      mt_energy_.Average(disnp, *GlobalState().GetDisN(), GetIntParam());
+      mt_energy_.Average(disnp, *global_state().GetDisN(), GetIntParam());
   Teuchos::RCP<const Epetra_Vector> vel_avg =
-      mt_energy_.Average(velnp, *GlobalState().GetVelN(), GetIntParam());
+      mt_energy_.Average(velnp, *global_state().GetVelN(), GetIntParam());
 
   str_model.DetermineEnergy(*dis_avg, vel_avg.get(), true);
   mt_energy_.int_energy_np_ = EvalData().GetEnergyData(STR::internal_energy);
   mt_energy_.kin_energy_np_ = EvalData().GetEnergyData(STR::kinetic_energy);
-  GlobalState().GetFextNp()->Dot(*dis_avg, &mt_energy_.ext_energy_np_);
+  global_state().GetFextNp()->Dot(*dis_avg, &mt_energy_.ext_energy_np_);
 
   IO::cout(IO::debug) << __LINE__ << " -- " << __PRETTY_FUNCTION__ << "\n";
   mt_energy_.Print(IO::cout.os(IO::debug));
@@ -422,7 +422,7 @@ void STR::Integrator::update_structural_energy()
 {
   if (not mt_energy_.StoreEnergyN()) return;
 
-  get_total_mid_time_str_energy(*GlobalState().GetDisNp());
+  get_total_mid_time_str_energy(*global_state().GetDisNp());
   mt_energy_.CopyNpToN();
 }
 
@@ -642,7 +642,7 @@ STR::MODELEVALUATOR::Data& STR::Integrator::EvalData()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TIMINT::BaseDataSDyn& STR::Integrator::SDyn()
+STR::TIMINT::BaseDataSDyn& STR::Integrator::s_dyn()
 {
   check_init();
   return *sdyn_ptr_;
@@ -650,7 +650,7 @@ STR::TIMINT::BaseDataSDyn& STR::Integrator::SDyn()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const STR::TIMINT::BaseDataSDyn& STR::Integrator::SDyn() const
+const STR::TIMINT::BaseDataSDyn& STR::Integrator::s_dyn() const
 {
   check_init();
   return *sdyn_ptr_;
@@ -658,7 +658,7 @@ const STR::TIMINT::BaseDataSDyn& STR::Integrator::SDyn() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const STR::TIMINT::BaseDataGlobalState& STR::Integrator::GlobalState() const
+const STR::TIMINT::BaseDataGlobalState& STR::Integrator::global_state() const
 {
   check_init();
   return *gstate_ptr_;
@@ -666,7 +666,7 @@ const STR::TIMINT::BaseDataGlobalState& STR::Integrator::GlobalState() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TIMINT::BaseDataGlobalState& STR::Integrator::GlobalState()
+STR::TIMINT::BaseDataGlobalState& STR::Integrator::global_state()
 {
   check_init();
   return *gstate_ptr_;
@@ -674,7 +674,7 @@ STR::TIMINT::BaseDataGlobalState& STR::Integrator::GlobalState()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::Dbc& STR::Integrator::Dbc()
+STR::Dbc& STR::Integrator::dbc()
 {
   check_init();
   return *dbc_ptr_;
@@ -690,7 +690,7 @@ const STR::Dbc& STR::Integrator::GetDbc() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const STR::TIMINT::Base& STR::Integrator::TimInt() const
+const STR::TIMINT::Base& STR::Integrator::tim_int() const
 {
   check_init();
   return *timint_ptr_;
@@ -805,7 +805,7 @@ bool STR::Integrator::MidTimeEnergy::is_correctly_configured() const
 
   if (avg_type_ == INPAR::STR::midavg_vague)
   {
-    if (integrator_.SDyn().GetDynamicType() != INPAR::STR::dyna_statics) return false;
+    if (integrator_.s_dyn().GetDynamicType() != INPAR::STR::dyna_statics) return false;
   }
   return true;
 }
@@ -821,7 +821,7 @@ bool STR::Integrator::MidTimeEnergy::StoreEnergyN() const
  *----------------------------------------------------------------------------*/
 void STR::Integrator::MidTimeEnergy::Setup()
 {
-  avg_type_ = integrator_.SDyn().get_mid_time_energy_type();
+  avg_type_ = integrator_.s_dyn().get_mid_time_energy_type();
   issetup_ = true;
 }
 

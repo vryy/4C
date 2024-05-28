@@ -28,7 +28,7 @@ namespace
   {
    protected:
     template <typename Number>
-    const MIXTURE::PAR::RemodelFiberMaterialExponential<Number>* CreateMaterial()
+    const MIXTURE::PAR::RemodelFiberMaterialExponential<Number>* create_material()
     {
       const auto container = Teuchos::rcp(new CORE::MAT::PAR::Material());
       container->Add("K1", 1.3);
@@ -41,14 +41,14 @@ namespace
     }
 
     template <typename Number>
-    MIXTURE::FullConstrainedMixtureFiber<Number> GenerateFiber(const double decay_time = 12.0,
+    MIXTURE::FullConstrainedMixtureFiber<Number> generate_fiber(const double decay_time = 12.0,
         const double growth_constant = 0.1, const Number lambda_pre = 1.1,
         const bool growth_enabled = true,
         const MIXTURE::HistoryAdaptionStrategy adaptive_strategy =
             MIXTURE::HistoryAdaptionStrategy::none)
     {
       return {std::make_shared<MIXTURE::RemodelFiberMaterialExponential<Number>>(
-                  CreateMaterial<Number>()),
+                  create_material<Number>()),
           {growth_constant, decay_time}, lambda_pre, adaptive_strategy, growth_enabled};
     }
 
@@ -57,7 +57,7 @@ namespace
         const double lambda_pre = 1.1)
     {
       return {std::make_unique<const MIXTURE::RemodelFiberMaterialExponential<double>>(
-                  CreateMaterial<double>()),
+                  create_material<double>()),
           {growth_constant, decay_time}, lambda_pre};
     }
   };
@@ -67,7 +67,7 @@ namespace
 #ifndef FOUR_C_ENABLE_ASSERTIONS
     GTEST_SKIP() << "Skip debug assertion tests in release mode.";
 #endif
-    MIXTURE::FullConstrainedMixtureFiber fiber = GenerateFiber<double>();
+    MIXTURE::FullConstrainedMixtureFiber fiber = generate_fiber<double>();
 
     const double lambda_f = 1.0;
 
@@ -76,7 +76,7 @@ namespace
 
   TEST_F(FullConstrainedMixtureFiberTest, TestDoesNotThrowIfHistoryIsEmptyButGrowthIsDisabled)
   {
-    MIXTURE::FullConstrainedMixtureFiber fiber = GenerateFiber<double>(12.0, 0.1, 1.1, false);
+    MIXTURE::FullConstrainedMixtureFiber fiber = generate_fiber<double>(12.0, 0.1, 1.1, false);
 
     const double lambda_f = 1.0;
 
@@ -85,7 +85,7 @@ namespace
 
   TEST_F(FullConstrainedMixtureFiberTest, TestEvaluateDGrowthEvolutionEquationDtDGrowth)
   {
-    MIXTURE::FullConstrainedMixtureFiber fiber = GenerateFiber<double>();
+    MIXTURE::FullConstrainedMixtureFiber fiber = generate_fiber<double>();
     const double lambda_f = 1.0;
     fiber.ReinitializeHistory(lambda_f, 0.0);
 
@@ -96,7 +96,7 @@ namespace
 
   TEST_F(FullConstrainedMixtureFiberTest, TestFiberMaintenanceAfterOneStep)
   {
-    MIXTURE::FullConstrainedMixtureFiber fiber = GenerateFiber<double>();
+    MIXTURE::FullConstrainedMixtureFiber fiber = generate_fiber<double>();
     const double lambda_f = 1.0;
     fiber.ReinitializeHistory(lambda_f, 0.0);
 
@@ -108,7 +108,7 @@ namespace
 
   TEST_F(FullConstrainedMixtureFiberTest, TestFiberMaintenanceTwoSteps)
   {
-    MIXTURE::FullConstrainedMixtureFiber fiber = GenerateFiber<double>();
+    MIXTURE::FullConstrainedMixtureFiber fiber = generate_fiber<double>();
     const double lambda_f = 1.0;
     fiber.ReinitializeHistory(lambda_f, 0.0);
 
@@ -126,7 +126,7 @@ namespace
 
   TEST_F(FullConstrainedMixtureFiberTest, TestFiberMaintenanceNSteps)
   {
-    MIXTURE::FullConstrainedMixtureFiber fiber = GenerateFiber<double>();
+    MIXTURE::FullConstrainedMixtureFiber fiber = generate_fiber<double>();
     const double lambda_f = 1.0;
     fiber.ReinitializeHistory(lambda_f, 0.0);
 
@@ -144,7 +144,7 @@ namespace
 
   TEST_F(FullConstrainedMixtureFiberTest, CheckDerivativeGrowthScalarIntegrand)
   {
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<FADdouble>();
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber = generate_fiber<FADdouble>();
     const MIXTURE::MassIncrement<FADdouble> mass_increment{
         1.01, FADdouble(2, 0, 1.12), FADdouble(2, 1, 1.12), 1.0};
 
@@ -161,7 +161,7 @@ namespace
 
   TEST_F(FullConstrainedMixtureFiberTest, CheckDerivativeScaledCauchyStressIntegrand)
   {
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<FADdouble>();
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber = generate_fiber<FADdouble>();
 
     const double time = 1.4;
     const FADdouble lambda_f = 1.012;
@@ -186,7 +186,7 @@ namespace
   {
     // compare the results of the full constrained mixture model with the homogenized constrained
     // mixture model
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<double>();
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber = generate_fiber<double>();
     MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<2, double> remodel_fiber =
         generate_remodel_fiber();
 
@@ -221,7 +221,7 @@ namespace
   {
     // compare the results of the full constrained mixture model with the homogenized constrained
     // mixture model
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<double>();
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber = generate_fiber<double>();
     MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<2, double> remodel_fiber =
         generate_remodel_fiber();
 
@@ -250,8 +250,8 @@ namespace
   {
     // compare the results of the fully integrated constrained mixture fiber with the adaptive
     // integraded fiber
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<double>();
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber_adaptive = GenerateFiber<double>(
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber = generate_fiber<double>();
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber_adaptive = generate_fiber<double>(
         12.0, 0.1, 1.1, true, MIXTURE::HistoryAdaptionStrategy::model_equation);
     cm_fiber_adaptive.adaptive_tolerance_ = 1e-7;
 
@@ -282,8 +282,8 @@ namespace
   {
     // compare the results of the fully integrated constrained mixture fiber with the adaptive
     // integraded fiber
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<double>();
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber_adaptive = GenerateFiber<double>(
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber = generate_fiber<double>();
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber_adaptive = generate_fiber<double>(
         12.0, 0.1, 1.1, true, MIXTURE::HistoryAdaptionStrategy::higher_order_integration);
     cm_fiber_adaptive.adaptive_tolerance_ = 1e-7;
 
@@ -314,9 +314,9 @@ namespace
   {
     // compare the results of the fully integrated constrained mixture fiber with the adaptive
     // integraded fiber
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<double>(1.2, 0.1, 1.1);
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber = generate_fiber<double>(1.2, 0.1, 1.1);
     MIXTURE::FullConstrainedMixtureFiber cm_fiber_adaptive =
-        GenerateFiber<double>(1.2, 0.1, 1.1, true, MIXTURE::HistoryAdaptionStrategy::window);
+        generate_fiber<double>(1.2, 0.1, 1.1, true, MIXTURE::HistoryAdaptionStrategy::window);
     cm_fiber_adaptive.window_size = 500;
 
     const double lambda_f = 1.05;
@@ -344,7 +344,7 @@ namespace
 
   TEST_F(FullConstrainedMixtureFiberTest, LocalNewtonHasAnalyticalDerivativeInFirstTimestep)
   {
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<FADdouble>();
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber = generate_fiber<FADdouble>();
 
     const double lambda_f = 1.05;
     cm_fiber.ReinitializeHistory(lambda_f, 0.0);
@@ -367,7 +367,7 @@ namespace
 
   TEST_F(FullConstrainedMixtureFiberTest, LocalNewtonHasAnalyticalDerivativeInFirstThreeTimesteps)
   {
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<FADdouble>();
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber = generate_fiber<FADdouble>();
 
     const double lambda_f = 1.05;
     cm_fiber.ReinitializeHistory(lambda_f, 0.0);
@@ -397,7 +397,7 @@ namespace
 
   TEST_F(FullConstrainedMixtureFiberTest, d_scaled_cauchy_stress_integrand_d_lambda_f_sq)
   {
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<FADdouble>();
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber = generate_fiber<FADdouble>();
 
     const FADdouble lambda_f = FADdouble(1, 0, 1.2);
     const double time = 1.0;
@@ -420,7 +420,7 @@ namespace
 
   TEST_F(FullConstrainedMixtureFiberTest, DerivativeOfResiduumWithRespectToLambdaF)
   {
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<FADdouble>(800.0, 0.1, 1.1);
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber = generate_fiber<FADdouble>(800.0, 0.1, 1.1);
 
     const double lambda_f_0 = 1.05;
     cm_fiber.ReinitializeHistory(lambda_f_0, 0.0);
@@ -449,7 +449,7 @@ namespace
   TEST_F(FullConstrainedMixtureFiberTest,
       StressResponseLinearizationDuringHomeostasisIsAnalyticalSolution)
   {
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<FADdouble>();
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber = generate_fiber<FADdouble>();
 
     const double lambda_f_0 = 1.1;
     cm_fiber.ReinitializeHistory(lambda_f_0, 0.0);
@@ -476,7 +476,7 @@ namespace
 
   TEST_F(FullConstrainedMixtureFiberTest, StressResponseLinearizationIsAnalyticalSolution)
   {
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<FADdouble>();
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber = generate_fiber<FADdouble>();
 
     const double lambda_f_0 = 1.05;
     cm_fiber.ReinitializeHistory(lambda_f_0, 0.0);
@@ -504,7 +504,7 @@ namespace
   TEST_F(FullConstrainedMixtureFiberTest,
       StressResponseLinearizationIsAnalyticalSolutionInInitialGrowthFreePeriod)
   {
-    MIXTURE::FullConstrainedMixtureFiber fiber = GenerateFiber<FADdouble>(12.0, 0.1, 1.1, false);
+    MIXTURE::FullConstrainedMixtureFiber fiber = generate_fiber<FADdouble>(12.0, 0.1, 1.1, false);
 
     double lambda_f = 1.2;
     fiber.RecomputeState(FADdouble(1, 0, lambda_f), 1.1, 1.0);
@@ -515,7 +515,7 @@ namespace
 
   TEST_F(FullConstrainedMixtureFiberTest, GrowthScalarLinearizationIsAnalyticalSolution)
   {
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<FADdouble>();
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber = generate_fiber<FADdouble>();
 
     const double lambda_f_0 = 1.05;
     cm_fiber.ReinitializeHistory(lambda_f_0, 0.0);
@@ -542,7 +542,7 @@ namespace
 
   TEST_F(FullConstrainedMixtureFiberTest, TestReinitializeIdenticalHistory)
   {
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<double>();
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber = generate_fiber<double>();
 
     cm_fiber.ReinitializeHistory(1.0, 0.0);
 
@@ -556,7 +556,7 @@ namespace
 
   TEST_F(FullConstrainedMixtureFiberTest, TestReinitializeThrowsIfTimeIsNotIdentical)
   {
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<double>();
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber = generate_fiber<double>();
 
     cm_fiber.ReinitializeHistory(1.0, 0.0);
     ASSERT_EQ(cm_fiber.history_.size(), 1);
@@ -567,7 +567,7 @@ namespace
 
   TEST_F(FullConstrainedMixtureFiberTest, TestReinitializeAddNewBlockOverwritesIfOldIsJustTimestep)
   {
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<double>();
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber = generate_fiber<double>();
 
     cm_fiber.ReinitializeHistory(1.0, 0.0);
     ASSERT_EQ(cm_fiber.history_.size(), 1);
@@ -581,7 +581,7 @@ namespace
 
   TEST_F(FullConstrainedMixtureFiberTest, ThrowsIfTimestepsAreNotIdentical)
   {
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<double>();
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber = generate_fiber<double>();
     cm_fiber.ReinitializeHistory(1.0, 0.0);
     cm_fiber.RecomputeState(1.1, 1.0, 1.0);
 
@@ -591,7 +591,7 @@ namespace
 
   TEST_F(FullConstrainedMixtureFiberTest, TestReinitializeAddNewBlock)
   {
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<double>();
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber = generate_fiber<double>();
 
     cm_fiber.ReinitializeHistory(1.0, 0.0);
     ASSERT_EQ(cm_fiber.history_.size(), 1);
@@ -612,7 +612,7 @@ namespace
   {
     // compare the results of the full constrained mixture model with the homogenized constrained
     // mixture model
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<double>();
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber = generate_fiber<double>();
     MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<2, double> remodel_fiber =
         generate_remodel_fiber();
 
@@ -650,7 +650,7 @@ namespace
 
   TEST_F(FullConstrainedMixtureFiberTest, FiberWithJumpInTimeWithSingleInterval)
   {
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber_timeshift = GenerateFiber<double>();
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber_timeshift = generate_fiber<double>();
 
     cm_fiber_timeshift.ReinitializeHistory(1.0, 0.0);
 
@@ -683,7 +683,7 @@ namespace
 
   TEST_F(FullConstrainedMixtureFiberTest, FiberWithJumpInTimeWithMultipleIntervals)
   {
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber_timeshift = GenerateFiber<double>();
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber_timeshift = generate_fiber<double>();
 
     cm_fiber_timeshift.ReinitializeHistory(1.0, 0.0);
 
@@ -734,8 +734,8 @@ namespace
 
   TEST_F(FullConstrainedMixtureFiberTest, FiberWithJumpInTimeEqualsWithoutJumpIntime)
   {
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber_default = GenerateFiber<double>();
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber_timeshift = GenerateFiber<double>();
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber_default = generate_fiber<double>();
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber_timeshift = generate_fiber<double>();
     std::array all_lambda_f = {1.1, 1.2, 1.3};
 
 
@@ -774,7 +774,7 @@ namespace
 
   TEST_F(FullConstrainedMixtureFiberTest, GetLastTimeInHistoryIfHistoryIsEmpty)
   {
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<double>();
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber = generate_fiber<double>();
 
     ASSERT_DOUBLE_EQ(cm_fiber.get_last_time_in_history(), 0.0);
   }
@@ -782,7 +782,7 @@ namespace
 
   TEST_F(FullConstrainedMixtureFiberTest, GetLastTimeInHistoryIfHistoryIsEmptyAndAfterAddTime)
   {
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<double>();
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber = generate_fiber<double>();
 
     cm_fiber.AddTime(1.0);
     ASSERT_DOUBLE_EQ(cm_fiber.get_last_time_in_history(), 1.0);
@@ -790,7 +790,7 @@ namespace
 
   TEST_F(FullConstrainedMixtureFiberTest, GetLastTimeInHistoryWithMultipleIntervals)
   {
-    MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<double>();
+    MIXTURE::FullConstrainedMixtureFiber cm_fiber = generate_fiber<double>();
 
     cm_fiber.ReinitializeHistory(1.0, 0.0);
 
@@ -819,7 +819,7 @@ namespace
 
   TEST_F(FullConstrainedMixtureFiberTest, UpdateCallsAddTimeIfGrowthIsDisabled)
   {
-    MIXTURE::FullConstrainedMixtureFiber fiber = GenerateFiber<double>(12.0, 0.1, 1.1, false);
+    MIXTURE::FullConstrainedMixtureFiber fiber = generate_fiber<double>(12.0, 0.1, 1.1, false);
 
     for (int timestep = 1; timestep <= 3; ++timestep)
     {
@@ -835,9 +835,9 @@ namespace
   TEST_F(FullConstrainedMixtureFiberTest,
       CauchyStressAndGrowthScalarIsNormalIfHistoryIsEmptyAndGrowthIsDisabled)
   {
-    MIXTURE::FullConstrainedMixtureFiber fiber = GenerateFiber<double>(12.0, 0.1, 1.1, false);
+    MIXTURE::FullConstrainedMixtureFiber fiber = generate_fiber<double>(12.0, 0.1, 1.1, false);
     MIXTURE::FullConstrainedMixtureFiber fiber_nogrowth =
-        GenerateFiber<double>(1e100, 0.0, 1.1, true);
+        generate_fiber<double>(1e100, 0.0, 1.1, true);
 
     fiber_nogrowth.ReinitializeHistory(1.2, 0.0);
 
@@ -858,7 +858,7 @@ namespace
   TEST_F(FullConstrainedMixtureFiberTest,
       CauchyStressAndGrowthScalarRemainNormalIfGrowthIsDisabledAfterGrowthPeriod)
   {
-    MIXTURE::FullConstrainedMixtureFiber fiber = GenerateFiber<double>(12.0, 0.1, 1.1, true);
+    MIXTURE::FullConstrainedMixtureFiber fiber = generate_fiber<double>(12.0, 0.1, 1.1, true);
 
     double lambda_f = 1.2;
     fiber.ReinitializeHistory(lambda_f, 0.0);
@@ -888,7 +888,7 @@ namespace
   TEST_F(FullConstrainedMixtureFiberTest,
       CauchyStressAndGrowthScalarRemainNormalIfGrowthIsDisabledAfterGrowthPeriodAndInitialGrowthFreePeriod)
   {
-    MIXTURE::FullConstrainedMixtureFiber fiber = GenerateFiber<double>(12.0, 0.1, 1.1, false);
+    MIXTURE::FullConstrainedMixtureFiber fiber = generate_fiber<double>(12.0, 0.1, 1.1, false);
 
     double lambda_f = 1.2;
 

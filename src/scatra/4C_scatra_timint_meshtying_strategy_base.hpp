@@ -79,12 +79,12 @@ namespace SCATRA
      * @param actresidual   return maximum current residual value
      * @return bool indicating if convergence is met
      */
-    bool AbortNonlinIter(const ScaTraTimIntImpl& scatratimint, double& actresidual) const
+    bool abort_nonlin_iter(const ScaTraTimIntImpl& scatratimint, double& actresidual) const
     {
       if (convcheckstrategy_ == Teuchos::null)
         FOUR_C_THROW("Strategy for Newton-Raphson convergence check has not been instantiated!");
 
-      return convcheckstrategy_->AbortNonlinIter(scatratimint, actresidual);
+      return convcheckstrategy_->abort_nonlin_iter(scatratimint, actresidual);
     }
 
     /*!
@@ -113,7 +113,7 @@ namespace SCATRA
     }
 
     //! compute time step size
-    virtual void ComputeTimeStepSize(double& dt) { return; };
+    virtual void compute_time_step_size(double& dt) { return; };
 
     //! compute time derivatives of discrete state variables
     virtual void compute_time_derivative() const { return; };
@@ -174,7 +174,7 @@ namespace SCATRA
     virtual void evaluate_point_coupling(){};
 
     //! explicit predictor step to obtain better starting value for Newton-Raphson iteration
-    virtual void ExplicitPredictor() const { return; };
+    virtual void explicit_predictor() const { return; };
 
     //! include Dirichlet conditions into condensation
     virtual void include_dirichlet_in_condensation() const { return; };
@@ -187,7 +187,7 @@ namespace SCATRA
     virtual bool system_matrix_initialization_needed() const = 0;
 
     //! initialize system matrix
-    virtual Teuchos::RCP<CORE::LINALG::SparseOperator> InitSystemMatrix() const = 0;
+    virtual Teuchos::RCP<CORE::LINALG::SparseOperator> init_system_matrix() const = 0;
 
     //! return interface map extractor
     virtual Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const = 0;
@@ -196,7 +196,7 @@ namespace SCATRA
     virtual void Output() const { return; };
 
     //! output restart information
-    virtual void WriteRestart() const {};
+    virtual void write_restart() const {};
 
     /*!
      * @brief  read restart data
@@ -242,7 +242,7 @@ namespace SCATRA
     };
 
     //! setup meshtying objects
-    virtual void SetupMeshtying() = 0;
+    virtual void setup_meshtying() = 0;
 
     /*!
      * @brief  solve resulting linear system of equations

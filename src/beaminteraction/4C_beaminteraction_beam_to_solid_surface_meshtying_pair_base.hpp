@@ -121,8 +121,8 @@ namespace BEAMINTERACTION
      * \brief Return a cast of the geometry pair to the type for this contact pair.
      * @return RPC with the type of geometry pair for this beam contact pair.
      */
-    Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToSurface<double, beam, surface>> CastGeometryPair()
-        const;
+    Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToSurface<double, beam, surface>>
+    cast_geometry_pair() const;
 
     /**
      * \brief Evaluate the coupling vector at an evaluation point.
@@ -131,15 +131,15 @@ namespace BEAMINTERACTION
      * @return 3D vector with the difference in the positions / displacements at the projection
      * point.
      */
-    CORE::LINALG::Matrix<3, 1, scalar_type> EvaluateCoupling(
+    CORE::LINALG::Matrix<3, 1, scalar_type> evaluate_coupling(
         const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& evaluation_point) const;
 
     /**
      * \brief Get the GIDs of the pair, i.e. first the beam GIDs and then the pair GIDs.
-     * @param discret (in) Discretization.
+     * @param discret (in) discretization.
      * @return Vector with the GIDs of this pair.
      */
-    std::vector<int> GetPairGID(const DRT::Discretization& discret) const;
+    std::vector<int> get_pair_gid(const DRT::Discretization& discret) const;
 
    private:
     /**

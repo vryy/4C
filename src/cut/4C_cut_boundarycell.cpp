@@ -68,13 +68,13 @@ void CORE::GEO::CUT::BoundaryCell::transform_local_coords(Element* elem1,
     // map w.r to linear shadow element
     if (not shadow)
     {
-      elem1->LocalCoordinates(glo, loc);
+      elem1->local_coordinates(glo, loc);
     }
     // map w.r to parent quad element
     else
     {
       if (not elem1->isShadow())
-        elem1->LocalCoordinates(glo, loc);
+        elem1->local_coordinates(glo, loc);
       else
         elem1->local_coordinates_quad(glo, loc);
     }
@@ -429,46 +429,46 @@ CORE::FE::GaussIntegration CORE::GEO::CUT::ArbitraryBoundaryCell::gaussRule(int 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::ArbitraryBoundaryCell::ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint)
+void CORE::GEO::CUT::ArbitraryBoundaryCell::element_center(CORE::LINALG::Matrix<3, 1>& midpoint)
 {
   FOUR_C_THROW("Element Center for ArbitraryBoundaryCells not implemented!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Point1BoundaryCell::ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint)
+void CORE::GEO::CUT::Point1BoundaryCell::element_center(CORE::LINALG::Matrix<3, 1>& midpoint)
 {
   std::copy(xyz_.values(), xyz_.values() + 3, midpoint.A());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Line2BoundaryCell::ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint)
+void CORE::GEO::CUT::Line2BoundaryCell::element_center(CORE::LINALG::Matrix<3, 1>& midpoint)
 {
   CORE::LINALG::Matrix<3, 1> center_rst(true);
-  MyElementCenter<CORE::FE::CellType::line2>(center_rst, midpoint);
+  my_element_center<CORE::FE::CellType::line2>(center_rst, midpoint);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Tri3BoundaryCell::ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint)
+void CORE::GEO::CUT::Tri3BoundaryCell::element_center(CORE::LINALG::Matrix<3, 1>& midpoint)
 {
   CORE::LINALG::Matrix<3, 1> center;
   center(0, 0) = 0.25;
   center(1, 0) = 0.25;
   center(2, 0) = 0.0;
-  MyElementCenter<CORE::FE::CellType::tri3>(center, midpoint);
+  my_element_center<CORE::FE::CellType::tri3>(center, midpoint);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Quad4BoundaryCell::ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint)
+void CORE::GEO::CUT::Quad4BoundaryCell::element_center(CORE::LINALG::Matrix<3, 1>& midpoint)
 {
   CORE::LINALG::Matrix<3, 1> center;
   center(0, 0) = 0.0;
   center(1, 0) = 0.0;
   center(2, 0) = 0.0;
-  MyElementCenter<CORE::FE::CellType::quad4>(center, midpoint);
+  my_element_center<CORE::FE::CellType::quad4>(center, midpoint);
 }
 
 /*----------------------------------------------------------------------------*

@@ -86,10 +86,10 @@ void POROELASTSCATRA::PoroScatraMono::do_time_step()
   prepare_output();
 
   // update all single field solvers
-  Update();
+  update();
 
   // write output to screen and files
-  Output();
+  output();
 }
 
 /*----------------------------------------------------------------------*
@@ -109,8 +109,8 @@ void POROELASTSCATRA::PoroScatraMono::read_restart(int restart)
 
     // in case of submeshes, we need to rebuild the subproxies, also (they are reset during restart)
     if (poro_field()->HasSubmeshes())
-      replace_dof_sets(StructureField()->Discretization(), fluid_field()->Discretization(),
-          ScaTraField()->Discretization());
+      replace_dof_sets(structure_field()->discretization(), fluid_field()->discretization(),
+          ScaTraField()->discretization());
 
     // the variables need to be set on other field
     SetScatraSolution();
@@ -122,17 +122,17 @@ void POROELASTSCATRA::PoroScatraMono::read_restart(int restart)
 
     // in case of submeshes, we need to rebuild the subproxies, also (they are reset during restart)
     if (poro_field()->HasSubmeshes())
-      replace_dof_sets(StructureField()->Discretization(), fluid_field()->Discretization(),
-          ScaTraField()->Discretization());
+      replace_dof_sets(structure_field()->discretization(), fluid_field()->discretization(),
+          ScaTraField()->discretization());
 
     SetTimeStep(poro_field()->Time(), restart);
 
     // Material pointers to other field were deleted during read_restart().
     // They need to be reset.
     POROELAST::UTILS::SetMaterialPointersMatchingGrid(
-        poro_field()->StructureField()->Discretization(), ScaTraField()->Discretization());
+        poro_field()->structure_field()->discretization(), ScaTraField()->discretization());
     POROELAST::UTILS::SetMaterialPointersMatchingGrid(
-        poro_field()->fluid_field()->Discretization(), ScaTraField()->Discretization());
+        poro_field()->fluid_field()->discretization(), ScaTraField()->discretization());
   }
 }
 
@@ -145,7 +145,7 @@ void POROELASTSCATRA::PoroScatraMono::prepare_time_step(bool printheader)
   // keep them in sinc!
   increment_time_and_step();
 
-  if (printheader) PrintHeader();
+  if (printheader) print_header();
 
   SetPoroSolution();
   ScaTraField()->prepare_time_step();
@@ -168,7 +168,7 @@ void POROELASTSCATRA::PoroScatraMono::prepare_output()
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraMono::Output()
+void POROELASTSCATRA::PoroScatraMono::output()
 {
   poro_field()->Output();
   ScaTraField()->check_and_write_output_and_restart();
@@ -177,7 +177,7 @@ void POROELASTSCATRA::PoroScatraMono::Output()
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraMono::Update()
+void POROELASTSCATRA::PoroScatraMono::update()
 {
   poro_field()->Update();
 
@@ -294,11 +294,11 @@ void POROELASTSCATRA::PoroScatraMono::Evaluate(Teuchos::RCP<const Epetra_Vector>
   if (stepinc != Teuchos::null)
   {
     // process structure unknowns of the first field
-    porostructinc = Extractor()->ExtractVector(stepinc, 0);
-    porofluidinc = Extractor()->ExtractVector(stepinc, 1);
+    porostructinc = extractor()->ExtractVector(stepinc, 0);
+    porofluidinc = extractor()->ExtractVector(stepinc, 1);
 
     // process fluid unknowns of the second field
-    scatrainc = Extractor()->ExtractVector(stepinc, 2);
+    scatrainc = extractor()->ExtractVector(stepinc, 2);
   }
 
   // Newton update of the fluid field
@@ -344,7 +344,7 @@ void POROELASTSCATRA::PoroScatraMono::SetupSystem()
     // vecSpaces.push_back(poro_field()->dof_row_map());
     vecSpaces.push_back(poro_field()->DofRowMapStructure());
     vecSpaces.push_back(poro_field()->DofRowMapFluid());
-    const Epetra_Map* dofrowmapscatra = (ScaTraField()->Discretization())->dof_row_map(0);
+    const Epetra_Map* dofrowmapscatra = (ScaTraField()->discretization())->dof_row_map(0);
     vecSpaces.push_back(Teuchos::rcp(dofrowmapscatra, false));
   }
 
@@ -370,11 +370,11 @@ void POROELASTSCATRA::PoroScatraMono::SetupSystem()
   // initialize Poroscatra-systemmatrix_
   systemmatrix_ =
       Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
-          *Extractor(), *Extractor(), 81, false, true));
+          *extractor(), *extractor(), 81, false, true));
 
   {
     std::vector<Teuchos::RCP<const Epetra_Map>> scatravecSpaces;
-    const Epetra_Map* dofrowmapscatra = (ScaTraField()->Discretization())->dof_row_map(0);
+    const Epetra_Map* dofrowmapscatra = (ScaTraField()->discretization())->dof_row_map(0);
     scatravecSpaces.push_back(Teuchos::rcp(dofrowmapscatra, false));
     scatrarowdofmap_.Setup(*dofrowmapscatra, scatravecSpaces);
   }
@@ -386,9 +386,9 @@ void POROELASTSCATRA::PoroScatraMono::SetupSystem()
       81, true, true));
 
   k_sps_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *(ScaTraField()->Discretization()->dof_row_map()), 81, true, true));
+      *(ScaTraField()->discretization()->dof_row_map()), 81, true, true));
   k_spf_ =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(ScaTraField()->Discretization()->dof_row_map()),
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(ScaTraField()->discretization()->dof_row_map()),
           //*(fluid_field()->dof_row_map()),
           81, true, true));
 }
@@ -418,9 +418,9 @@ void POROELASTSCATRA::PoroScatraMono::setup_vector(
   //  Teuchos::RCP<const Epetra_Vector> psx;
   //  Teuchos::RCP<const Epetra_Vector> pfx;
 
-  Extractor()->InsertVector(*(poro_field()->Extractor()->ExtractVector(pv, 0)), 0, f);
-  Extractor()->InsertVector(*(poro_field()->Extractor()->ExtractVector(pv, 1)), 1, f);
-  Extractor()->InsertVector(*sv, 2, f);
+  extractor()->InsertVector(*(poro_field()->Extractor()->ExtractVector(pv, 0)), 0, f);
+  extractor()->InsertVector(*(poro_field()->Extractor()->ExtractVector(pv, 1)), 1, f);
+  extractor()->InsertVector(*sv, 2, f);
 }
 
 /*----------------------------------------------------------------------*
@@ -542,7 +542,7 @@ void POROELASTSCATRA::PoroScatraMono::linear_solve()
   else
   {
     // in case of inclined boundary conditions
-    // rotate systemmatrix_ using GetLocSysTrafo()!=Teuchos::null
+    // rotate systemmatrix_ using get_loc_sys_trafo()!=Teuchos::null
     CORE::LINALG::apply_dirichlet_to_system(
         *systemmatrix_, *iterinc_, *rhs_, *zeros_, *combined_dbc_map());
     solver_params.refactor = true;
@@ -935,15 +935,15 @@ void POROELASTSCATRA::PoroScatraMono::build_convergence_norms()
   Teuchos::RCP<const Epetra_Vector> rhs_scalar;
 
   // process structure unknowns of the first field
-  rhs_s = Extractor()->ExtractVector(rhs_, 0);
+  rhs_s = extractor()->ExtractVector(rhs_, 0);
 
   // process fluid unknowns of the second field
-  rhs_f = Extractor()->ExtractVector(rhs_, 1);
+  rhs_f = extractor()->ExtractVector(rhs_, 1);
   rhs_fvel = poro_field()->fluid_field()->ExtractVelocityPart(rhs_f);
   rhs_fpres = poro_field()->fluid_field()->ExtractPressurePart(rhs_f);
 
   // process scalar unknowns of the third field
-  rhs_scalar = Extractor()->ExtractVector(rhs_, 2);
+  rhs_scalar = extractor()->ExtractVector(rhs_, 2);
 
   //  if(porositydof_)
   //  {
@@ -974,15 +974,15 @@ void POROELASTSCATRA::PoroScatraMono::build_convergence_norms()
   Teuchos::RCP<const Epetra_Vector> interincscalar;
 
   // process structure unknowns of the first field
-  interincs = Extractor()->ExtractVector(iterinc_, 0);
+  interincs = extractor()->ExtractVector(iterinc_, 0);
 
   // process fluid unknowns of the second field
-  interincf = Extractor()->ExtractVector(iterinc_, 1);
+  interincf = extractor()->ExtractVector(iterinc_, 1);
   interincfvel = poro_field()->fluid_field()->ExtractVelocityPart(interincf);
   interincfpres = poro_field()->fluid_field()->ExtractPressurePart(interincf);
 
   // process scalar unknowns of the third field
-  interincscalar = Extractor()->ExtractVector(iterinc_, 2);
+  interincscalar = extractor()->ExtractVector(iterinc_, 2);
 
   //  if(porositydof_)
   //  {
@@ -1062,7 +1062,7 @@ void POROELASTSCATRA::PoroScatraMono::evaluate_od_block_mat_poro()
   fparams.set("total time", Time());
 
   const Teuchos::RCP<DRT::Discretization>& porofluiddis =
-      poro_field()->fluid_field()->Discretization();
+      poro_field()->fluid_field()->discretization();
   porofluiddis->ClearState();
 
   // set general vector values needed by elements
@@ -1072,7 +1072,7 @@ void POROELASTSCATRA::PoroScatraMono::evaluate_od_block_mat_poro()
   porofluiddis->set_state(0, "accnp", poro_field()->fluid_field()->Accnp());
   porofluiddis->set_state(0, "hist", poro_field()->fluid_field()->Hist());
 
-  poro_field()->fluid_field()->Discretization()->set_state(
+  poro_field()->fluid_field()->discretization()->set_state(
       0, "scaaf", poro_field()->fluid_field()->Scaaf());
 
   porofluiddis->set_state(0, "velaf", poro_field()->fluid_field()->Velnp());
@@ -1088,9 +1088,9 @@ void POROELASTSCATRA::PoroScatraMono::evaluate_od_block_mat_poro()
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate the fluid-mechanical system matrix on the fluid element
-  poro_field()->fluid_field()->Discretization()->evaluate_condition(
+  poro_field()->fluid_field()->discretization()->evaluate_condition(
       fparams, fluidstrategy, "PoroCoupling");
-  // poro_field()->fluid_field()->Discretization()->Evaluate( fparams, fluidstrategy );
+  // poro_field()->fluid_field()->discretization()->Evaluate( fparams, fluidstrategy );
 
   porofluiddis->ClearState(true);
 
@@ -1109,14 +1109,14 @@ void POROELASTSCATRA::PoroScatraMono::evaluate_od_block_mat_poro()
   sparams.set("delta time", Dt());
   sparams.set("total time", Time());
 
-  poro_field()->StructureField()->Discretization()->ClearState();
-  poro_field()->StructureField()->Discretization()->set_state(
-      0, "displacement", poro_field()->StructureField()->Dispnp());
-  poro_field()->StructureField()->Discretization()->set_state(
-      0, "velocity", poro_field()->StructureField()->Velnp());
+  poro_field()->structure_field()->discretization()->ClearState();
+  poro_field()->structure_field()->discretization()->set_state(
+      0, "displacement", poro_field()->structure_field()->Dispnp());
+  poro_field()->structure_field()->discretization()->set_state(
+      0, "velocity", poro_field()->structure_field()->Velnp());
 
   // build specific assemble strategy for mechanical-fluid system matrix
-  // from the point of view of StructureField:
+  // from the point of view of structure_field:
   // structdofset = 0, fluiddofset = 1
   CORE::FE::AssembleStrategy structuralstrategy(0,  // structdofset for row
       2,                                            // scatradofset for column
@@ -1124,10 +1124,10 @@ void POROELASTSCATRA::PoroScatraMono::evaluate_od_block_mat_poro()
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate the mechanical-fluid system matrix on the structural element
-  poro_field()->StructureField()->Discretization()->evaluate_condition(
+  poro_field()->structure_field()->discretization()->evaluate_condition(
       sparams, structuralstrategy, "PoroCoupling");
-  // StructureField()->Discretization()->Evaluate( sparams, structuralstrategy);
-  poro_field()->StructureField()->Discretization()->ClearState(true);
+  // structure_field()->discretization()->Evaluate( sparams, structuralstrategy);
+  poro_field()->structure_field()->discretization()->ClearState(true);
 
   return;
 }
@@ -1148,12 +1148,12 @@ void POROELASTSCATRA::PoroScatraMono::evaluate_od_block_mat_scatra()
   sparams_struct.set("delta time", Dt());
   sparams_struct.set("total time", Time());
 
-  ScaTraField()->Discretization()->ClearState();
-  ScaTraField()->Discretization()->set_state(0, "hist", ScaTraField()->Hist());
-  ScaTraField()->Discretization()->set_state(0, "phinp", ScaTraField()->Phinp());
+  ScaTraField()->discretization()->ClearState();
+  ScaTraField()->discretization()->set_state(0, "hist", ScaTraField()->Hist());
+  ScaTraField()->discretization()->set_state(0, "phinp", ScaTraField()->Phinp());
 
   // build specific assemble strategy for mechanical-fluid system matrix
-  // from the point of view of StructureField:
+  // from the point of view of structure_field:
   // structdofset = 0, fluiddofset = 1
   CORE::FE::AssembleStrategy scatrastrategy_struct(0,  // scatradofset for row
       1,                                               // structuredofset for column
@@ -1161,11 +1161,11 @@ void POROELASTSCATRA::PoroScatraMono::evaluate_od_block_mat_scatra()
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate the mechanical-fluid system matrix on the structural element
-  ScaTraField()->Discretization()->evaluate_condition(
+  ScaTraField()->discretization()->evaluate_condition(
       sparams_struct, scatrastrategy_struct, "PoroCoupling");
-  // StructureField()->Discretization()->Evaluate( sparams, structuralstrategy);
+  // structure_field()->discretization()->Evaluate( sparams, structuralstrategy);
 
-  ScaTraField()->Discretization()->ClearState();
+  ScaTraField()->discretization()->ClearState();
   // FOUR_C_THROW("stop");
   //************************************************************************************
   //************************************************************************************
@@ -1181,12 +1181,12 @@ void POROELASTSCATRA::PoroScatraMono::evaluate_od_block_mat_scatra()
   sparams_fluid.set("delta time", Dt());
   sparams_fluid.set("total time", Time());
 
-  ScaTraField()->Discretization()->ClearState();
-  ScaTraField()->Discretization()->set_state(0, "hist", ScaTraField()->Hist());
-  ScaTraField()->Discretization()->set_state(0, "phinp", ScaTraField()->Phinp());
+  ScaTraField()->discretization()->ClearState();
+  ScaTraField()->discretization()->set_state(0, "hist", ScaTraField()->Hist());
+  ScaTraField()->discretization()->set_state(0, "phinp", ScaTraField()->Phinp());
 
   // build specific assemble strategy for mechanical-fluid system matrix
-  // from the point of view of StructureField:
+  // from the point of view of structure_field:
   // structdofset = 0, fluiddofset = 1
   CORE::FE::AssembleStrategy scatrastrategy_fluid(0,  // scatradofset for row
       2,                                              // fluiddofset for column
@@ -1194,10 +1194,10 @@ void POROELASTSCATRA::PoroScatraMono::evaluate_od_block_mat_scatra()
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate the mechanical-fluid system matrix on the structural element
-  ScaTraField()->Discretization()->evaluate_condition(
+  ScaTraField()->discretization()->evaluate_condition(
       sparams_fluid, scatrastrategy_fluid, "PoroCoupling");
-  // StructureField()->Discretization()->Evaluate( sparams, structuralstrategy);
-  ScaTraField()->Discretization()->ClearState();
+  // structure_field()->discretization()->Evaluate( sparams, structuralstrategy);
+  ScaTraField()->discretization()->ClearState();
 
   return;
 }
@@ -1209,9 +1209,9 @@ void POROELASTSCATRA::PoroScatraMono::fd_check()
 {
   std::cout << "\n******************finite difference check***************" << std::endl;
 
-  int dof_struct = (poro_field()->StructureField()->Discretization()->NumGlobalNodes()) * 3;
-  int dof_fluid = (poro_field()->fluid_field()->Discretization()->NumGlobalNodes()) * 4;
-  int dof_scatra = (ScaTraField()->Discretization()->NumGlobalNodes());
+  int dof_struct = (poro_field()->structure_field()->discretization()->NumGlobalNodes()) * 3;
+  int dof_fluid = (poro_field()->fluid_field()->discretization()->NumGlobalNodes()) * 4;
+  int dof_scatra = (ScaTraField()->discretization()->NumGlobalNodes());
 
   std::cout << "structure field has " << dof_struct << " DOFs" << std::endl;
   std::cout << "fluid field has " << dof_fluid << " DOFs" << std::endl;
@@ -1244,11 +1244,11 @@ void POROELASTSCATRA::PoroScatraMono::fd_check()
     std::cout << "iterinc_" << std::endl << *iterinc_ << std::endl;
     std::cout << "iterinc" << std::endl << *iterinc << std::endl;
     std::cout << "meshdisp: " << std::endl << *(poro_field()->fluid_field()->Dispnp());
-    std::cout << "disp: " << std::endl << *(poro_field()->StructureField()->Dispnp());
+    std::cout << "disp: " << std::endl << *(poro_field()->structure_field()->Dispnp());
     std::cout << "fluid vel" << std::endl << *(poro_field()->fluid_field()->Velnp());
     std::cout << "fluid acc" << std::endl << *(poro_field()->fluid_field()->Accnp());
     std::cout << "gridvel fluid" << std::endl << *(poro_field()->fluid_field()->GridVel());
-    std::cout << "gridvel struct" << std::endl << *(poro_field()->StructureField()->Velnp());
+    std::cout << "gridvel struct" << std::endl << *(poro_field()->structure_field()->Velnp());
   }
 
   const int zeilennr = -1;
@@ -1297,16 +1297,16 @@ void POROELASTSCATRA::PoroScatraMono::fd_check()
         std::cout << "iterinc" << std::endl << *iterinc << std::endl;
         std::cout << "meshdisp: " << std::endl << *(poro_field()->fluid_field()->Dispnp());
         std::cout << "meshdisp scatra: " << std::endl
-                  << *(ScaTraField()->Discretization()->GetState(
+                  << *(ScaTraField()->discretization()->GetState(
                          ScaTraField()->NdsDisp(), "dispnp"));
-        std::cout << "disp: " << std::endl << *(poro_field()->StructureField()->Dispnp());
+        std::cout << "disp: " << std::endl << *(poro_field()->structure_field()->Dispnp());
         std::cout << "fluid vel" << std::endl << *(poro_field()->fluid_field()->Velnp());
         std::cout << "scatra vel" << std::endl
-                  << *(ScaTraField()->Discretization()->GetState(
+                  << *(ScaTraField()->discretization()->GetState(
                          ScaTraField()->NdsVel(), "velocity field"));
         std::cout << "fluid acc" << std::endl << *(poro_field()->fluid_field()->Accnp());
         std::cout << "gridvel fluid" << std::endl << *(poro_field()->fluid_field()->GridVel());
-        std::cout << "gridvel struct" << std::endl << *(poro_field()->StructureField()->Velnp());
+        std::cout << "gridvel struct" << std::endl << *(poro_field()->structure_field()->Velnp());
 
         std::cout << "stiff_apprx(" << zeilennr << "," << spaltenr << "): " << (*rhs_copy)[zeilennr]
                   << std::endl;

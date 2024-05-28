@@ -81,7 +81,7 @@ namespace BEAMINTERACTION
    *
    * Also compute the moment resultants around the origin.
    *
-   * @param discret (in) Discretization.
+   * @param discret (in) discretization.
    * @param force (in) Global coupling force vector.
    * @param displacement (in) Global displacement vector.
    * @param beam_resultant (out) Matrix with the force and moment resultants for the beam nodes.

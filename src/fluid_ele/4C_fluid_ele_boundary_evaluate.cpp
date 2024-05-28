@@ -50,18 +50,18 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(Teuchos::ParameterList& params,
     case FLD::traction_Uv_integral_component:
     {
       DRT::ELEMENTS::FluidBoundaryFactory::ProvideImpl(Shape(), "std")
-          ->EvaluateAction(
+          ->evaluate_action(
               this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }
     case FLD::fpsi_coupling:
     {
-      // Note: the FluidEleBoundaryCalcPoro class is called here, as the method FPSICoupling() is
+      // Note: the FluidEleBoundaryCalcPoro class is called here, as the method fpsi_coupling() is
       // implemented there.
       // Todo: One could think about splitting this method in pure fluid and poro fluid part...
       // vuong 11/13
       DRT::ELEMENTS::FluidBoundaryFactory::ProvideImpl(Shape(), "poro")
-          ->EvaluateAction(
+          ->evaluate_action(
               this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }

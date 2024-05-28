@@ -137,7 +137,7 @@ void CONTACT::PoroMtLagrangeStrategy::evaluate_meshtying_poro_off_diag(
         Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gmdofrowmap_, 100));
     cmmod->Add(*cm, false, 1.0, 1.0);
     Teuchos::RCP<CORE::LINALG::SparseMatrix> cmadd =
-        CORE::LINALG::MLMultiply(*GetMHat(), true, *cs, false, false, false, true);
+        CORE::LINALG::MLMultiply(*get_m_hat(), true, *cs, false, false, false, true);
     cmmod->Add(*cmadd, false, 1.0, 1.0);
     cmmod->Complete(cm->DomainMap(), cm->RowMap());
 
@@ -183,7 +183,7 @@ void CONTACT::PoroMtLagrangeStrategy::recover_coupling_matrix_partof_lmp(
   cs_->Multiply(false, *veli, *mod);
   zfluid->Update(-1.0, *mod, 1.0);
   Teuchos::RCP<Epetra_Vector> zcopy = Teuchos::rcp(new Epetra_Vector(*zfluid));
-  GetDInverse()->Multiply(true, *zcopy, *zfluid);
+  get_d_inverse()->Multiply(true, *zcopy, *zfluid);
   zfluid->Scale(1 / (1 - alphaf_));
 
   z_->Update(1.0, *zfluid, 1.0);  // Add FluidCoupling Contribution to LM!

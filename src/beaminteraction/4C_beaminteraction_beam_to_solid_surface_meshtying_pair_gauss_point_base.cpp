@@ -37,7 +37,7 @@ template <typename scalar_type, typename beam, typename surface>
 double BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<scalar_type, beam,
     surface>::get_energy() const
 {
-  return CORE::FADUTILS::CastToDouble(GetPenaltyPotential());
+  return CORE::FADUTILS::CastToDouble(get_penalty_potential());
 }
 
 /**
@@ -45,7 +45,7 @@ double BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<scalar_typ
  */
 template <typename scalar_type, typename beam, typename surface>
 scalar_type BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<scalar_type, beam,
-    surface>::GetPenaltyPotential() const
+    surface>::get_penalty_potential() const
 {
   using namespace INPAR::BEAMTOSOLID;
 
@@ -86,7 +86,7 @@ scalar_type BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<scala
       segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
 
       // Evaluate the coupling vector.
-      coupling_vector = this->EvaluateCoupling(projected_gauss_point);
+      coupling_vector = this->evaluate_coupling(projected_gauss_point);
 
       // Calculate the difference between the coupling vectors and add the
       // corresponding term to the potential.

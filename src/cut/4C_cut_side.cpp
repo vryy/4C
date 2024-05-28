@@ -129,7 +129,7 @@ bool CORE::GEO::CUT::Side::find_cut_lines(Mesh& mesh, Element* element, Side& ot
      * the construction of cut_lines_ seems unnecessary, since the CutPoints
      * should be sufficient.
      *
-     * (see also IMPL::PointGraph1D::AddCutLinesToGraph)     hiermeier 11/16 */
+     * (see also IMPL::PointGraph1D::add_cut_lines_to_graph)     hiermeier 11/16 */
     case 1:
     {
       if (IsTouched(other, cuts[0]))
@@ -160,7 +160,7 @@ bool CORE::GEO::CUT::Side::find_cut_lines(Mesh& mesh, Element* element, Side& ot
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Side::AllOnNodes(const PointSet& points)
+bool CORE::GEO::CUT::Side::all_on_nodes(const PointSet& points)
 {
   const std::vector<Node*>& nodes = Nodes();
   for (PointSet::const_iterator i = points.begin(); i != points.end(); ++i)
@@ -325,7 +325,7 @@ bool CORE::GEO::CUT::Side::find_touching_cut_lines(
   {
     // find if this side is completely inside the other side
     const std::vector<Node*>& nodes = Nodes();
-    if (cut.size() == nodes.size() and AllOnNodes(cut))
+    if (cut.size() == nodes.size() and all_on_nodes(cut))
     {
       for (unsigned i = 0; i < nodes.size(); ++i)
       {
@@ -338,7 +338,7 @@ bool CORE::GEO::CUT::Side::find_touching_cut_lines(
   {
     // find if the other side is completely inside this side
     const std::vector<Node*>& nodes_o = side.Nodes();
-    if (cut.size() == nodes_o.size() and side.AllOnNodes(cut))
+    if (cut.size() == nodes_o.size() and side.all_on_nodes(cut))
     {
       for (unsigned i = 0; i < nodes_o.size(); ++i)
       {
@@ -1076,7 +1076,7 @@ void CORE::GEO::CUT::Side::MakeInternalFacets(
   Side* s = nullptr;
 
   plain_side_set sides(element->Sides().begin(), element->Sides().end());
-  points.Intersection(sides);
+  points.intersection(sides);
 
 
   if (sides.size() > 1)
@@ -1487,13 +1487,13 @@ bool CORE::GEO::CUT::Side::HoleOfFacet(Facet& facet, const std::vector<Cycle>& h
     CORE::LINALG::Matrix<3, 1> pointcoord;
     facetpoint->Coordinates(pointcoord.A());
     CORE::LINALG::Matrix<3, 1> pointlocalcoord;
-    LocalCoordinates(pointcoord, pointlocalcoord, false);
+    local_coordinates(pointcoord, pointlocalcoord, false);
     facetpointslocalcoord.push_back(pointlocalcoord);
   }
   CORE::LINALG::Matrix<3, 1> holepointcoord;
   CORE::LINALG::Matrix<3, 1> holepointlocalcoord;
   hole[0]()[0]->Coordinates(holepointcoord.A());
-  LocalCoordinates(holepointcoord, holepointlocalcoord, false);
+  local_coordinates(holepointcoord, holepointlocalcoord, false);
   double epsilon = 0;
   while (intersectioninpoint)
   {
@@ -1581,7 +1581,7 @@ void CORE::GEO::CUT::Side::replaceNodes(Node* nod, Node* replwith)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType sidetype, unsigned numNodesSide, unsigned dim>
-bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::IsCloserSide(
+bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::is_closer_side(
     const CORE::LINALG::Matrix<probdim, 1>& startpoint_xyz, CORE::GEO::CUT::Side* other,
     bool& is_closer)
 {
@@ -1640,7 +1640,7 @@ bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::IsClose
 
   // get normal of other side at its center
   CORE::LINALG::Matrix<probdim, 1> t1, t2, n(true);
-  other->BasisAtCenter(t1, t2, n);
+  other->basis_at_center(t1, t2, n);
 
 
   // start with center point
@@ -1721,7 +1721,7 @@ bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::IsClose
       std::cout << "side orthogonal ? " << std::endl;
       other->Print();
 
-      FOUR_C_THROW("IsCloserSide along the ray-tracing line failed! ");
+      FOUR_C_THROW("is_closer_side along the ray-tracing line failed! ");
 
       return false;
     }
@@ -1740,7 +1740,7 @@ bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::IsClose
                    "ray-tracing line lies in undefined region"
                 << std::endl;
 
-      FOUR_C_THROW("IsCloserSide along the ray-tracing line failed! ");
+      FOUR_C_THROW("is_closer_side along the ray-tracing line failed! ");
     }
 
     return false;
@@ -1766,25 +1766,25 @@ bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::WithinS
     dist = 9999;  // set large value
     return false;
   }
-  pos->LocalCoordinates(rs);
+  pos->local_coordinates(rs);
   dist = pos->Distance();
 
 
-  return pos->WithinLimits(false);
+  return pos->within_limits(false);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType sidetype, unsigned numNodesSide, unsigned dim>
 ///  lies point with given coordinates within this side?
-bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::LocalCoordinates(
+bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::local_coordinates(
     const CORE::LINALG::Matrix<probdim, 1>& xyz, CORE::LINALG::Matrix<probdim, 1>& rsd,
     bool allow_dist, double tol)
 {
   Teuchos::RCP<Position> pos = PositionFactory::build_position<probdim, sidetype>(*this, xyz);
   bool success = pos->Compute(tol, allow_dist);
   CORE::LINALG::Matrix<dim, 1> rs(true);
-  if (pos->Status() == Position::position_valid) pos->LocalCoordinates(rs);
+  if (pos->Status() == Position::position_valid) pos->local_coordinates(rs);
   // copy the position
   std::copy(rs.A(), rs.A() + dim, &rsd(0));
   // copy the distance

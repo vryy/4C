@@ -145,37 +145,37 @@ namespace CONTACT
           const CONTACT::ParamsInterface& cparams) const;
 
       /// access the right hand side vector of the entire problem
-      Teuchos::RCP<const Epetra_Vector> GetProblemRhs(const CONTACT::ParamsInterface& cparams,
+      Teuchos::RCP<const Epetra_Vector> get_problem_rhs(const CONTACT::ParamsInterface& cparams,
           const std::vector<INPAR::STR::ModelType>* without_these_models) const;
 
       /// do stuff before the update
-      virtual void PreUpdate(){/* empty */};
+      virtual void pre_update(){/* empty */};
 
       /// execute the update/increase
-      virtual Status Execute(const CONTACT::ParamsInterface& cparams) = 0;
+      virtual Status execute(const CONTACT::ParamsInterface& cparams) = 0;
 
       /// do stuff after the update
       virtual void post_update();
 
       /// execute the decrease
-      virtual Status ExecuteDecrease(const CONTACT::ParamsInterface& cparams);
+      virtual Status execute_decrease(const CONTACT::ParamsInterface& cparams);
 
       /// do stuff after a possible decrease
-      virtual void PostDecrease();
+      virtual void post_decrease();
 
       /// reset class members
-      void Reset();
+      void reset();
 
       /// Throw if Init() has not been called
       void throw_if_not_initialized() const;
 
       /// access the surrounding strategy
-      AUG::Strategy& Strategy() { return *strategy_ptr_; };
-      const AUG::Strategy& Strategy() const { return *strategy_ptr_; };
+      AUG::Strategy& strategy() { return *strategy_ptr_; };
+      const AUG::Strategy& strategy() const { return *strategy_ptr_; };
 
       /// access the data container of the surrounding strategy
-      DataContainer& Data() { return *data_ptr_; };
-      const DataContainer& Data() const { return *data_ptr_; };
+      DataContainer& data() { return *data_ptr_; };
+      const DataContainer& data() const { return *data_ptr_; };
 
       /** Evaluate the directional derivative of the consistently computed
        *  gradient of the weighted gap w.r.t. to the current displ. solution
@@ -186,7 +186,7 @@ namespace CONTACT
        *              \Delta \underline{d}_{\mathcal{S}\!\mathcal{M}}
        *  \f]
        */
-      Teuchos::RCP<const Epetra_Vector> Get_DGapN(const Epetra_Vector& dincr_slma) const;
+      Teuchos::RCP<const Epetra_Vector> get_d_gap_n(const Epetra_Vector& dincr_slma) const;
 
       /** Evaluate the directional derivative of the potentially
        *  inconsistently computed gradient of the weighted gap w.r.t. to the
@@ -201,11 +201,11 @@ namespace CONTACT
           const Epetra_Vector& dincr_slma) const;
 
       /// access the state container
-      const State& GetState() const { return state_; }
+      const State& get_state() const { return state_; }
 
       /// access the ratio variable (cn_new / cn_old)
-      double& Ratio() { return ratio_; };
-      double Ratio() const { return ratio_; };
+      double& ratio() { return ratio_; };
+      double ratio() const { return ratio_; };
 
      protected:
       /*----------------------------------------------------------------------*/
@@ -313,7 +313,7 @@ namespace CONTACT
       INPAR::CONTACT::PenaltyUpdate Type() const override;
 
      protected:
-      Status Execute(const CONTACT::ParamsInterface& cparams) override
+      Status execute(const CONTACT::ParamsInterface& cparams) override
       {
         return Status::unchanged;
       };
@@ -336,9 +336,9 @@ namespace CONTACT
       INPAR::CONTACT::PenaltyUpdate Type() const override;
 
      protected:
-      Status Execute(const CONTACT::ParamsInterface& cparams) override;
+      Status execute(const CONTACT::ParamsInterface& cparams) override;
 
-      Status ExecuteDecrease(const CONTACT::ParamsInterface& cparams) override;
+      Status execute_decrease(const CONTACT::ParamsInterface& cparams) override;
 
       void set_state(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
           const Epetra_Vector& dir) override;
@@ -368,7 +368,7 @@ namespace CONTACT
       INPAR::CONTACT::PenaltyUpdate Type() const override;
 
      protected:
-      Status Execute(const CONTACT::ParamsInterface& cparams) override;
+      Status execute(const CONTACT::ParamsInterface& cparams) override;
 
       void set_state(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
           const Epetra_Vector& dir) override;

@@ -189,7 +189,7 @@ MAT::PAR::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke(
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()                  |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::PlasticNlnLogNeoHooke::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::PlasticNlnLogNeoHooke::create_material()
 {
   return Teuchos::rcp(new MAT::PlasticNlnLogNeoHooke(this));
 }

@@ -109,7 +109,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<CORE::Conditions::LocsysManager> LocsysManager() = 0;
 
     //! direct access to discretization
-    virtual Teuchos::RCP<const DRT::Discretization> Discretization() const = 0;
+    virtual Teuchos::RCP<const DRT::Discretization> discretization() const = 0;
 
     /// writing access to discretization
     virtual Teuchos::RCP<DRT::Discretization> write_access_discretization() = 0;
@@ -239,7 +239,7 @@ namespace ADAPTER
      * We allocate the CORE::LINALG object just once, the result is an empty CORE::LINALG
      * object. Evaluate has to be called separately.
      */
-    virtual void CreateSystemMatrix(
+    virtual void create_system_matrix(
         Teuchos::RCP<const ALE::UTILS::MapExtractor> interface = Teuchos::null) = 0;
 
     //! update slave dofs for multifield simulations with ale mesh tying

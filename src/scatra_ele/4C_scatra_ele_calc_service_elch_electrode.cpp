@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::EvaluateAction(DRT::Element* ele,
+int DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::evaluate_action(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -49,7 +49,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::EvaluateAction(
 
     default:
     {
-      myelch::EvaluateAction(ele, params, discretization, action, la, elemat1_epetra,
+      myelch::evaluate_action(ele, params, discretization, action, la, elemat1_epetra,
           elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
 
       break;
@@ -81,7 +81,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::check_elch_ele
  | get conductivity                                          fang 02/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::GetConductivity(
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::get_conductivity(
     const enum INPAR::ELCH::EquPot equpot,  //!< type of closing equation for electric potential
     double& sigma_all,                      //!< conductivity of electrolyte solution
     std::vector<double>& sigma,  //!< conductivity or a single ion + overall electrolyte solution
@@ -89,14 +89,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::GetConductivit
 {
   // use precomputed conductivity
   sigma_all = diff_manager()->GetCond();
-}  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::GetConductivity
+}  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::get_conductivity
 
 
 /*----------------------------------------------------------------------*
  | calculate weighted current density                        fang 07/16 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateCurrent(
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calculate_current(
     CORE::LINALG::Matrix<nsd_, 1>& q,        //!< flux of species k
     const INPAR::SCATRA::FluxType fluxtype,  //!< type fo flux
     const double fac                         //!< integration factor
@@ -131,7 +131,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateCurre
       break;
     }
   }
-}  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateCurrent
+}  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::calculate_current
 
 
 /*----------------------------------------------------------------------*
@@ -232,7 +232,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
       static CORE::LINALG::Matrix<nsd_, 1> v;
       v.Multiply(my::evelnp_, my::funct_);
       double divv(0.);
-      my::GetDivergence(divv, my::evelnp_);
+      my::get_divergence(divv, my::evelnp_);
 
       // integral of velocity divergence
       const double divv_fac = divv * fac;
@@ -262,7 +262,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
  | calculate weighted mass flux (no reactive flux so far)   fang 02/15 |
  *---------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateFlux(
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calculate_flux(
     CORE::LINALG::Matrix<nsd_, 1>& q,        //!< flux of species k
     const INPAR::SCATRA::FluxType fluxtype,  //!< type fo flux
     const int k                              //!< index of current scalar
@@ -292,7 +292,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateFlux(
       break;
     }
   }
-}  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateFlux
+}  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::calculate_flux
 
 
 /*----------------------------------------------------------------------------------------*

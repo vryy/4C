@@ -305,7 +305,7 @@ bool DRT::ELEMENTS::Shell7p::VisData(const std::string& name, std::vector<double
 void DRT::ELEMENTS::Shell7p::Print(std::ostream& os) const
 {
   os << "Shell7p ";
-  os << " Discretization type: " << CORE::FE::CellTypeToString(distype_).c_str();
+  os << " discretization type: " << CORE::FE::CellTypeToString(distype_).c_str();
   Element::Print(os);
 }
 
@@ -361,7 +361,7 @@ bool DRT::ELEMENTS::Shell7p::ReadElement(
   shell_interface_->Setup(*this, *SolidMaterial(), linedef, locking_types, shell_data);
   if (!material_post_setup_)
   {
-    shell_interface_->MaterialPostSetup(*this, *SolidMaterial());
+    shell_interface_->material_post_setup(*this, *SolidMaterial());
     material_post_setup_ = true;
   }
   return true;

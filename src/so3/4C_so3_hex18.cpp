@@ -93,7 +93,7 @@ DRT::ELEMENTS::SoHex18::SoHex18(int id, int owner) : SoBase(id, owner)
 {
   invJ_.resize(NUMGPT_SOH18, CORE::LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18>(true));
   detJ_.resize(NUMGPT_SOH18, 0.0);
-  InitGp();
+  init_gp();
 
   Teuchos::RCP<const Teuchos::ParameterList> params =
       GLOBAL::Problem::Instance()->getParameterList();
@@ -115,7 +115,7 @@ DRT::ELEMENTS::SoHex18::SoHex18(const DRT::ELEMENTS::SoHex18& old) : SoBase(old)
   invJ_.resize(old.invJ_.size());
   // can this size be anything but NUMDIM_SOH27 x NUMDIM_SOH27?
   for (int i = 0; i < (int)invJ_.size(); ++i) invJ_[i] = old.invJ_[i];
-  InitGp();
+  init_gp();
 
   return;
 }
@@ -277,7 +277,7 @@ bool DRT::ELEMENTS::SoHex18::ReadElement(
   return true;
 }
 
-void DRT::ELEMENTS::SoHex18::InitGp()
+void DRT::ELEMENTS::SoHex18::init_gp()
 {
   xsi_.resize(NUMGPT_SOH18, CORE::LINALG::Matrix<NUMDIM_SOH18, 1>(true));
   wgt_.resize(NUMGPT_SOH18, 0.);
@@ -416,7 +416,7 @@ int DRT::ELEMENTS::SoHex18::Evaluate(Teuchos::ParameterList& params,
       nlnstiffmass(lm, mydisp, myres, &elemat1, &elemat2, &elevec1, nullptr, nullptr, params,
           INPAR::STR::stress_none, INPAR::STR::strain_none);
 
-      if (act == calc_struct_nlnstifflmass) Lumpmass(&elemat2);
+      if (act == calc_struct_nlnstifflmass) lumpmass(&elemat2);
 
       break;
     }
@@ -479,7 +479,7 @@ int DRT::ELEMENTS::SoHex18::Evaluate(Teuchos::ParameterList& params,
     case calc_struct_update_istep:
     {
       SolidMaterial()->Update();
-      Update();
+      update();
     }
     break;
 
@@ -496,7 +496,7 @@ int DRT::ELEMENTS::SoHex18::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       std::vector<double> myres(lm.size());
       CORE::FE::ExtractMyValues(*res, myres, lm);
-      Recover(myres);
+      recover(myres);
     }
     break;
 
@@ -529,7 +529,7 @@ int DRT::ELEMENTS::SoHex18::evaluate_neumann(Teuchos::ParameterList& params,
       [&]()
       {
         if (IsParamsInterface())
-          return StrParamsInterface().GetTotalTime();
+          return str_params_interface().GetTotalTime();
         else
           return params.get("total time", -1.0);
       });
@@ -624,7 +624,7 @@ int DRT::ELEMENTS::SoHex18::evaluate_neumann(Teuchos::ParameterList& params,
   return 0;
 }  // DRT::ELEMENTS::So_hex18::evaluate_neumann
 
-int DRT::ELEMENTS::SoHex18::InitJacobianMapping()
+int DRT::ELEMENTS::SoHex18::init_jacobian_mapping()
 {
   CORE::LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18> xrefe;
   for (int i = 0; i < NUMNOD_SOH18; ++i)
@@ -820,7 +820,7 @@ void DRT::ELEMENTS::SoHex18::nlnstiffmass(std::vector<int>& lm,     ///< locatio
 /*----------------------------------------------------------------------*
  |  lump mass matrix (private)                              seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex18::Lumpmass(CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* emass)
+void DRT::ELEMENTS::SoHex18::lumpmass(CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* emass)
 {
   // lump mass matrix
   if (emass != nullptr)
@@ -851,7 +851,7 @@ int DRT::ELEMENTS::SoHex18Type::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoHex18*>(dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_hex18* failed");
-    if (actele->InitJacobianMapping() == 1) actele->FlipT();
+    if (actele->init_jacobian_mapping() == 1) actele->flip_t();
   }
   dis.fill_complete(false, false, false);
 
@@ -860,7 +860,7 @@ int DRT::ELEMENTS::SoHex18Type::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoHex18*>(dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_hex18* failed");
-    if (actele->InitJacobianMapping() == 1) FOUR_C_THROW("why");
+    if (actele->init_jacobian_mapping() == 1) FOUR_C_THROW("why");
   }
   return 0;
 }
@@ -868,7 +868,7 @@ int DRT::ELEMENTS::SoHex18Type::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  revert the 3rd parameter direction                      seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex18::FlipT()
+void DRT::ELEMENTS::SoHex18::flip_t()
 {
   if (NodeIds() == nullptr) FOUR_C_THROW("couldn't get node ids");
   // reorder nodes
@@ -897,18 +897,18 @@ void DRT::ELEMENTS::SoHex18::FlipT()
   return;
 }
 
-CORE::LINALG::Matrix<18, 3> DRT::ELEMENTS::SoHex18::NodeParamCoord()
+CORE::LINALG::Matrix<18, 3> DRT::ELEMENTS::SoHex18::node_param_coord()
 {
   CORE::LINALG::Matrix<18, 3> coord;
   for (int node = 0; node < NUMNOD_SOH18; ++node)
   {
-    CORE::LINALG::Matrix<3, 1> nodeCoord = NodeParamCoord(node);
+    CORE::LINALG::Matrix<3, 1> nodeCoord = node_param_coord(node);
     for (int i = 0; i < 3; ++i) coord(node, i) = nodeCoord(i);
   }
   return coord;
 }
 
-CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::SoHex18::NodeParamCoord(const int node)
+CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::SoHex18::node_param_coord(const int node)
 {
   CORE::LINALG::Matrix<3, 1> coord;
 

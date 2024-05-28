@@ -233,9 +233,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::pre_evaluate_c
   }
 
   // communicate the dummy map to all procs.
-  std::vector<int> allproc(Comm().NumProc());
-  for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
-  CORE::LINALG::Gather<double>(duplicates, duplicates, (int)allproc.size(), allproc.data(), Comm());
+  std::vector<int> allproc(comm().NumProc());
+  for (int i = 0; i < comm().NumProc(); ++i) allproc[i] = i;
+  CORE::LINALG::Gather<double>(duplicates, duplicates, (int)allproc.size(), allproc.data(), comm());
 
   // loop over duplicates and delete one duplicate (the one where the 2D/3D element has the larger
   // id)
@@ -283,7 +283,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::pre_evaluate_c
   // output
   int total_numactive_pairs = 0;
   int numactive_pairs = static_cast<int>(coupl_elepairs_.size());
-  Comm().SumAll(&numactive_pairs, &total_numactive_pairs, 1);
+  comm().SumAll(&numactive_pairs, &total_numactive_pairs, 1);
   if (myrank_ == 0)
   {
     std::cout << "Only " << total_numactive_pairs
@@ -482,7 +482,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
 
   // user output
   double vol_sumall = 0.0;
-  Comm().SumAll(&totalvolblood, &vol_sumall, 1);
+  comm().SumAll(&totalvolblood, &vol_sumall, 1);
   if (myrank_ == 0)
   {
     std::cout << "\n<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
@@ -495,9 +495,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetVaryingDiamFlag()
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::set_varying_diam_flag()
 {
-  PoroMultiPhaseScaTraArtCouplNonConforming::SetVaryingDiamFlag();
+  PoroMultiPhaseScaTraArtCouplNonConforming::set_varying_diam_flag();
 
   // set up the required vectors
   if (has_varying_diam_)
@@ -611,10 +611,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::fill_gid_to_se
   }
 
   // communicate it to all procs.
-  std::vector<int> allproc(Comm().NumProc());
-  for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
+  std::vector<int> allproc(comm().NumProc());
+  for (int i = 0; i < comm().NumProc(); ++i) allproc[i] = i;
   CORE::LINALG::Gather<double>(
-      gid_to_seglength, gid_to_seglength, (int)allproc.size(), allproc.data(), Comm());
+      gid_to_seglength, gid_to_seglength, (int)allproc.size(), allproc.data(), comm());
 }
 
 /*----------------------------------------------------------------------*
@@ -1059,7 +1059,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::output_summary
     std::cout << "\nSummary of coupling pairs (segments):" << std::endl;
     std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << std::endl;
   }
-  Comm().Barrier();
+  comm().Barrier();
   for (unsigned i = 0; i < coupl_elepairs_.size(); i++)
   {
     std::cout << "Proc " << std::right << std::setw(2) << myrank_ << ": Artery-ele " << std::right
@@ -1068,7 +1068,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::output_summary
               << coupl_elepairs_[i]->EtaB() << "] <---> continuous-ele " << std::right
               << std::setw(7) << coupl_elepairs_[i]->Ele2GID() << std::endl;
   }
-  Comm().Barrier();
+  comm().Barrier();
   if (myrank_ == 0) std::cout << "\n";
 }
 

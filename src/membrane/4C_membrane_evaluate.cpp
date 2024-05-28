@@ -56,7 +56,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
 
   if (IsParamsInterface())  // new structural time integration
   {
-    act = ParamsInterface().GetActionType();
+    act = params_interface().GetActionType();
   }
   else  // old structural time integration
   {
@@ -150,7 +150,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
-      Update_element(mydisp, params, Material());
+      update_element(mydisp, params, Material());
     }
     break;
 
@@ -183,11 +183,11 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
 
       if (IsParamsInterface())  // new structural time integration
       {
-        stressdata = StrParamsInterface().StressDataPtr();
-        straindata = StrParamsInterface().StrainDataPtr();
+        stressdata = str_params_interface().StressDataPtr();
+        straindata = str_params_interface().StrainDataPtr();
 
-        iostress = StrParamsInterface().GetStressOutputType();
-        iostrain = StrParamsInterface().GetStrainOutputType();
+        iostress = str_params_interface().GetStressOutputType();
+        iostrain = str_params_interface().GetStrainOutputType();
       }
       else  // old structural time integration
       {
@@ -240,7 +240,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<std::vector<char>> thickdata = Teuchos::null;
 
         if (IsParamsInterface())  // new structural time integration
-          thickdata = StrParamsInterface().OptQuantityDataPtr();
+          thickdata = str_params_interface().OptQuantityDataPtr();
         else  // old structural time integration
           thickdata = params.get<Teuchos::RCP<std::vector<char>>>("optquantity", Teuchos::null);
 
@@ -378,7 +378,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
       {
         // only add contributions from row elements to avoid counting them on more than one proc
         if (discretization.Comm().MyPID() == Owner())
-          StrParamsInterface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
+          str_params_interface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
       }
       else  // old structural time integration
       {
@@ -484,7 +484,7 @@ int DRT::ELEMENTS::Membrane<distype>::evaluate_neumann(Teuchos::ParameterList& p
   double time = -1.0;
 
   if (IsParamsInterface())  // new structural time integration
-    time = ParamsInterface().GetTotalTime();
+    time = params_interface().GetTotalTime();
   else  // old structural time integration
     time = params.get("total time", -1.0);
 
@@ -1483,7 +1483,7 @@ DRT::ELEMENTS::Membrane<distype>::mem_extrapolmat() const
  |  Update history variables (e.g. remodeling of fiber directions) (protected)      braeu 07/16|
  *---------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Membrane<distype>::Update_element(std::vector<double>& disp,
+void DRT::ELEMENTS::Membrane<distype>::update_element(std::vector<double>& disp,
     Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material> mat)
 {
   // Calculate current deformation gradient

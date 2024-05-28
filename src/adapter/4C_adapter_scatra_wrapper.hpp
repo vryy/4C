@@ -44,9 +44,9 @@ namespace ADAPTER
 
    protected:
     //! return discretization
-    Teuchos::RCP<DRT::Discretization> Discretization() const override
+    Teuchos::RCP<DRT::Discretization> discretization() const override
     {
-      return scatra_timint_->Discretization();
+      return scatra_timint_->discretization();
     };
 
     //! add parameters specific for time-integration scheme

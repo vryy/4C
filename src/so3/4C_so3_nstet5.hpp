@@ -301,7 +301,7 @@ namespace DRT
       /*!
       \brief The 3 degrees of freedom of the center node
       */
-      inline int NumDofPerElement() const override { return 3; }
+      inline int num_dof_per_element() const override { return 3; }
 
       /*!
       \brief Print this element
@@ -412,7 +412,7 @@ namespace DRT
 
       //! volume of element
       double V_;
-      inline double Vol() { return V_; }
+      inline double vol() { return V_; }
 
       ///----------------------------------------------- prestressing switch & time
       /// prestressing assume 4 Gausspoints per element,
@@ -426,33 +426,33 @@ namespace DRT
       void update_jacobian_mapping(
           const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress);
       /// compute defgrd in all gp for given disp
-      void DefGradient(const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix& gpdefgrd,
+      void def_gradient(const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix& gpdefgrd,
           DRT::ELEMENTS::PreStress& prestress);
 
       //---------------------------------------------- quantities related to subtets
       //! nodal connectivity  of subelements
       int sublm_[16]{};
-      inline const int* SubLM(int i) const { return &(sublm_[i * 4]); }
+      inline const int* sub_lm(int i) const { return &(sublm_[i * 4]); }
 
       //! coordinates of middle node
       double midX_[3]{};
-      inline const double* MidX() const { return midX_; }
+      inline const double* mid_x() const { return midX_; }
 
       //! derivatives of shape functions for subtets
       CORE::LINALG::Matrix<4, 3> subnxyz_[4];
-      inline const CORE::LINALG::Matrix<4, 3>& SubNxyz(int i) const { return subnxyz_[i]; }
+      inline const CORE::LINALG::Matrix<4, 3>& sub_nxyz(int i) const { return subnxyz_[i]; }
 
       //! reference volume of subelements
       double subV_[4]{};
-      inline const double& SubV(int i) const { return subV_[i]; }
+      inline const double& sub_v(int i) const { return subV_[i]; }
 
       CORE::LINALG::Matrix<3, 3> subF_[4];
-      inline CORE::LINALG::Matrix<3, 3>& SubF(int i) { return subF_[i]; }
+      inline CORE::LINALG::Matrix<3, 3>& sub_f(int i) { return subF_[i]; }
       //---------------------------------------------------------------------------
 
 
 
-      inline static CORE::LINALG::Matrix<3, 3> BuildF(
+      inline static CORE::LINALG::Matrix<3, 3> build_f(
           const CORE::LINALG::Matrix<4, 3>& xdisp, const CORE::LINALG::Matrix<4, 3>& nxyz)
       {
         CORE::LINALG::Matrix<3, 3> F(false);
@@ -469,10 +469,10 @@ namespace DRT
 
       // init the inverse of the jacobian and its determinant
       // in the material configuration
-      virtual void InitElement();
+      virtual void init_element();
 
       //! Shape functions
-      inline void ShapeFunction(CORE::LINALG::Matrix<4, 1>& funct, const double& e1,
+      inline void shape_function(CORE::LINALG::Matrix<4, 1>& funct, const double& e1,
           const double& e2, const double& e3, const double& e4)
       {
         // shape function is N_i = xsi_i

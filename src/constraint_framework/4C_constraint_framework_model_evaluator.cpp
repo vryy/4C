@@ -36,9 +36,9 @@ void STR::MODELEVALUATOR::Constraints::Setup()
   check_init();
 
   constraint_stiff_ptr_ =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*g_state().DofRowMapView(), 81, true, true));
 
-  constraint_force_ptr_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMapView(), true));
+  constraint_force_ptr_ = Teuchos::rcp(new Epetra_Vector(*g_state().DofRowMapView(), true));
 
   set_sub_model_types();
   create_sub_model_evaluators();
@@ -61,9 +61,9 @@ void STR::MODELEVALUATOR::Constraints::set_sub_model_types()
   std::vector<Teuchos::RCP<CORE::Conditions::Condition>> linePeriodicRve, surfPeriodicRve,
       pointLinearCoupledEquation;
 
-  DiscretPtr()->GetCondition("LinePeriodicRve", linePeriodicRve);
-  DiscretPtr()->GetCondition("SurfacePeriodicRve", surfPeriodicRve);
-  DiscretPtr()->GetCondition("PointLinearCoupledEquation", pointLinearCoupledEquation);
+  discret_ptr()->GetCondition("LinePeriodicRve", linePeriodicRve);
+  discret_ptr()->GetCondition("SurfacePeriodicRve", surfPeriodicRve);
+  discret_ptr()->GetCondition("PointLinearCoupledEquation", pointLinearCoupledEquation);
 
   if (linePeriodicRve.size() > 0 || surfPeriodicRve.size() > 0 ||
       pointLinearCoupledEquation.size() > 0)
@@ -89,7 +89,7 @@ void STR::MODELEVALUATOR::Constraints::create_sub_model_evaluators()
       {
         sub_model_vec_ptr_.emplace_back(
             Teuchos::rcp(new CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager(
-                DiscretPtr(), constraint_stiff_ptr_.get())));
+                discret_ptr(), constraint_stiff_ptr_.get())));
 
         break;
       }
@@ -165,7 +165,7 @@ void STR::MODELEVALUATOR::Constraints::pre_evaluate()
 {
   for (auto& sme : sub_model_vec_ptr_)
   {
-    sme->evaluate_coupling_terms(*GStatePtr());
+    sme->evaluate_coupling_terms(*g_state_ptr());
   }
 }
 /*----------------------------------------------------------------------------*
@@ -193,7 +193,7 @@ bool STR::MODELEVALUATOR::Constraints::assemble_jacobian(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::WriteRestart(
+void STR::MODELEVALUATOR::Constraints::write_restart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   // There is nothing to write for now
@@ -215,7 +215,7 @@ void STR::MODELEVALUATOR::Constraints::UpdateStepState(const double& timefac_n)
 {
   if (not constraint_force_ptr_.is_null())
   {
-    Teuchos::RCP<Epetra_Vector>& fstruct_ptr = GState().GetFstructureOld();
+    Teuchos::RCP<Epetra_Vector>& fstruct_ptr = g_state().GetFstructureOld();
     fstruct_ptr->Update(timefac_n, *constraint_force_ptr_, 1.0);
   }
 }

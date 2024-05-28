@@ -35,7 +35,7 @@ namespace CONTACT
     //! @name Enums and Friends
 
     /*!
-     \brief The Discretization is a friend of RoughNode
+     \brief The discretization is a friend of RoughNode
      */
     friend class DRT::Discretization;
 

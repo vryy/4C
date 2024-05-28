@@ -63,7 +63,7 @@ MAT::PAR::ThermoPlasticHyperElast::ThermoPlasticHyperElast(
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       dano 03/13 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ThermoPlasticHyperElast::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ThermoPlasticHyperElast::create_material()
 {
   return Teuchos::rcp(new MAT::ThermoPlasticHyperElast(this));
 }

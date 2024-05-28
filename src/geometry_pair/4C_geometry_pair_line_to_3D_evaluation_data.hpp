@@ -70,7 +70,7 @@ namespace GEOMETRYPAIR
      * \brief Get the Gauss rule to be used for Gauss point projection method.
      * @return Gauss rule
      */
-    inline CORE::FE::GaussRule1D GetGaussRule() const { return gauss_rule_; };
+    inline CORE::FE::GaussRule1D get_gauss_rule() const { return gauss_rule_; };
 
     /**
      * \brief Get the Gauss rule to be used for Gauss point projection method.

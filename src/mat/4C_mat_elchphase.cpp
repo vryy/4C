@@ -47,7 +47,7 @@ MAT::PAR::ElchPhase::ElchPhase(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
 }
 
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ElchPhase::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ElchPhase::create_material()
 {
   return Teuchos::rcp(new MAT::ElchPhase(this));
 }

@@ -27,7 +27,7 @@ MAT::PAR::Spring::Spring(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
 }
 
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Spring::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Spring::create_material()
 {
   return Teuchos::rcp(new MAT::Spring(this));
 }

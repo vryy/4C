@@ -63,13 +63,13 @@ namespace POROFLUIDMULTIPHASE
 
    protected:
     //! get nodal result to be tested
-    double ResultNode(const std::string quantity,  //! name of quantity to be tested
-        DRT::Node* node                            //! node carrying the result to be tested
+    double result_node(const std::string quantity,  //! name of quantity to be tested
+        DRT::Node* node                             //! node carrying the result to be tested
     ) const;
 
     //! get element result to be tested
-    double ResultElement(const std::string quantity,  //! name of quantity to be tested
-        const DRT::Element* element                   //! element carrying the result to be tested
+    double result_element(const std::string quantity,  //! name of quantity to be tested
+        const DRT::Element* element                    //! element carrying the result to be tested
     ) const;
 
     //! get special result to be tested

@@ -295,7 +295,7 @@ class PostField
   // @{ \name Constructors and destructors
 
   //! Constructor
-  PostField(Teuchos::RCP<DRT::Discretization> dis,  ///< [in] Discretization
+  PostField(Teuchos::RCP<DRT::Discretization> dis,  ///< [in] discretization
       PostProblem* problem,                         ///< [in] Instance of PostProblem
       std::string field_name,                       ///< [in] Name of the field
       const int numnd,                              ///< [in] Number of nodes
@@ -342,7 +342,7 @@ class PostField
   //@}
 
  private:
-  //! Discretization of underlying field
+  //! discretization of underlying field
   Teuchos::RCP<DRT::Discretization> dis_;
 
   //! PostProblem of underlying field

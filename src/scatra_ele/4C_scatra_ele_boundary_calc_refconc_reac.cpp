@@ -56,7 +56,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::ScaTraEleBoun
  | Factor needed for the calculation of reference concentrations  thon 02/16 |
  *---------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::FacForRefConc(
+double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::fac_for_ref_conc(
     const int iquad,                     ///< current boundary integration point
     const DRT::FaceElement* bele,        ///< current boundary element
     Teuchos::ParameterList& params,      ///< parameter list

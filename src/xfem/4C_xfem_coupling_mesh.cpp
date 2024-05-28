@@ -76,7 +76,7 @@ void XFEM::MeshCoupling::set_cutter_discretization()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCoupling::SetConditionsToCopy()
+void XFEM::MeshCoupling::set_conditions_to_copy()
 {
   // fill list of conditions that will be copied to the new cutter discretization
   conditions_to_copy_.push_back(cond_name_);
@@ -151,14 +151,14 @@ void XFEM::MeshCoupling::gmsh_output_discretization(std::ostream& gmshfileconten
   std::map<int, CORE::LINALG::Matrix<3, 1>> currinterfacepositions;
 
   // output of cutting discretization
-  XFEM::UTILS::ExtractNodeVectors(cutter_dis_, currinterfacepositions, idispnp_);
+  XFEM::UTILS::extract_node_vectors(cutter_dis_, currinterfacepositions, idispnp_);
   XFEM::UTILS::PrintDiscretizationToStream(cutter_dis_, cutter_dis_->Name(), true, true, true, true,
       false, false, gmshfilecontent, &currinterfacepositions);
 }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCoupling::PrepareCutterOutput()
+void XFEM::MeshCoupling::prepare_cutter_output()
 {
   // -------------------------------------------------------------------
   // prepare output
@@ -195,7 +195,7 @@ void XFEM::MeshCoupling::Output(const int step, const double time, const bool wr
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCoupling::InitStateVectors()
+void XFEM::MeshCoupling::init_state_vectors()
 {
   // move state vectors to extra container class!
 
@@ -358,7 +358,7 @@ void XFEM::MeshVolCoupling::get_coupling_ele_location_vector(
 }
 
 /*--------------------------------------------------------------------------*
- * Ghost Discretization from which the cutter_dis_ was created
+ * Ghost discretization from which the cutter_dis_ was created
  *--------------------------------------------------------------------------*/
 void XFEM::MeshVolCoupling::redistribute_embedded_discretization()
 {
@@ -726,7 +726,7 @@ void XFEM::MeshCouplingBC::evaluate_interface_velocity(std::vector<double>& fina
   else if (*evaltype == "funct_interpolated")
   {
     // evaluate function at node at current time
-    EvaluateFunction(final_values, node->X().data(), cond, time);
+    evaluate_function(final_values, node->X().data(), cond, time);
   }
   else if (*evaltype == "funct_gausspoint")
   {
@@ -745,7 +745,7 @@ void XFEM::MeshCouplingBC::evaluate_interface_velocity(std::vector<double>& fina
   {
     if (step_ == 0)  // evaluate initialization function at node at current time
     {
-      EvaluateFunction(final_values, node->X().data(), cond, time);
+      evaluate_function(final_values, node->X().data(), cond, time);
     }
     else
       compute_interface_velocity_from_displacement(final_values, node, dt, evaltype);
@@ -768,7 +768,7 @@ void XFEM::MeshCouplingBC::evaluate_interface_displacement(std::vector<double>& 
   else if (evaltype == "funct")
   {
     // evaluate function at node at current time
-    EvaluateFunction(final_values, node->X().data(), cond, time);
+    evaluate_function(final_values, node->X().data(), cond, time);
   }
   else if (evaltype == "implementation")
   {
@@ -1372,7 +1372,7 @@ void XFEM::MeshCouplingNavierSlip::GetSlipCoefficient(
     evaluate_scalar_function(slipcoeff, x.A(), tmp_pair.first, cond, time_);
 }
 
-void XFEM::MeshCouplingNavierSlip::CreateRobinIdMap(
+void XFEM::MeshCouplingNavierSlip::create_robin_id_map(
     const std::vector<CORE::Conditions::Condition*>& conditions_NS,
     const std::vector<CORE::Conditions::Condition*>& conditions_robin,
     const std::string& robin_id_name,
@@ -1447,9 +1447,10 @@ void XFEM::MeshCouplingNavierSlip::set_condition_specific_parameters()
   cutter_dis_->GetCondition(cond_name_, conditions_NS);
 
   // Establishes unique connection between Navier Slip section and Robin Dirichlet Neumann sections
-  CreateRobinIdMap(conditions_NS, conditions_dirich, "robin_id_dirch", conditionsmap_robin_dirch_);
+  create_robin_id_map(
+      conditions_NS, conditions_dirich, "robin_id_dirch", conditionsmap_robin_dirch_);
 
-  CreateRobinIdMap(
+  create_robin_id_map(
       conditions_NS, conditions_neumann, "robin_id_neumann", conditionsmap_robin_neumann_);
 
   // Create maps for easy extraction at gausspoint level
@@ -1601,9 +1602,9 @@ XFEM::MeshCouplingFSI::MeshCouplingFSI(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFSI::InitStateVectors()
+void XFEM::MeshCouplingFSI::init_state_vectors()
 {
-  XFEM::MeshCoupling::InitStateVectors();
+  XFEM::MeshCoupling::init_state_vectors();
 
   const Epetra_Map* cutterdofrowmap = cutter_dis_->dof_row_map();
   const Epetra_Map* cutterdofcolmap = cutter_dis_->DofColMap();
@@ -1699,7 +1700,7 @@ void XFEM::MeshCouplingFSI::GmshOutput(const std::string& filename_base, const i
 
   // compute the current boundary position
   std::map<int, CORE::LINALG::Matrix<3, 1>> currinterfacepositions;
-  XFEM::UTILS::ExtractNodeVectors(cutter_dis_, currinterfacepositions, idispnp_);
+  XFEM::UTILS::extract_node_vectors(cutter_dis_, currinterfacepositions, idispnp_);
 
 
   const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_fsi.str(),
@@ -1755,7 +1756,7 @@ void XFEM::MeshCouplingFSI::gmsh_output_discretization(std::ostream& gmshfilecon
   Teuchos::RCP<Epetra_Vector> solid_dispnp =
       CORE::LINALG::CreateVector(*cond_dis_->dof_row_map(), true);
 
-  XFEM::UTILS::ExtractNodeVectors(cond_dis_, currsolidpositions, solid_dispnp);
+  XFEM::UTILS::extract_node_vectors(cond_dis_, currsolidpositions, solid_dispnp);
 
   XFEM::UTILS::PrintDiscretizationToStream(cond_dis_, cond_dis_->Name(), true, false, true, false,
       false, false, gmshfilecontent, &currsolidpositions);

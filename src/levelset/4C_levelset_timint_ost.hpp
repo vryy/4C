@@ -59,14 +59,14 @@ namespace SCATRA
     void calc_initial_time_derivative() override;
 
     /// additional predictor not intended for level-set methods
-    void ExplicitPredictor() const override { return; };
+    void explicit_predictor() const override { return; };
 
     /// Set the part of the righthandside belonging to the last timestep.
     void set_old_part_of_righthandside() override;
 
     /// update state vectors
     /// current solution becomes old solution of next time step
-    void UpdateState() override;
+    void update_state() override;
 
     /// update the solution after Solve()
     /// extended version for coupled level-set problems including reinitialization

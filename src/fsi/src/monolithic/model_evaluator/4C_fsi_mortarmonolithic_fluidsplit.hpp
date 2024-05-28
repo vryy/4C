@@ -175,14 +175,14 @@ namespace FSI
      *  time step size. Select the minimum of these three as the new time step
      *  size.
      */
-    double SelectDtErrorBased() const override;
+    double select_dt_error_based() const override;
 
     /*! \brief Check whether time step is accepted or not
      *
      *  In case that the local truncation error is small enough, the time step
      *  is accepted.
      */
-    bool SetAccepted() const override;
+    bool set_accepted() const override;
 
     //@}
 
@@ -216,11 +216,11 @@ namespace FSI
 
    protected:
     /// create the composed system matrix
-    void CreateSystemMatrix();
+    void create_system_matrix();
 
-    void Update() override;
+    void update() override;
 
-    void Output() override;
+    void output() override;
 
     /// Write Lagrange multiplier
     void OutputLambda() override;

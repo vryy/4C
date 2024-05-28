@@ -93,12 +93,12 @@ Teuchos::RCP<const DRT::NURBS::Knotvector> DRT::NURBS::NurbsDiscretization::GetK
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::DbcNurbs::Evaluate(const DRT::Discretization& discret, double time,
+void DRT::UTILS::DbcNurbs::evaluate(const DRT::Discretization& discret, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, DRT::UTILS::Dbc::DbcInfo& info,
     Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // --------------------------- Step 1 ---------------------------------------
-  DRT::UTILS::Dbc::Evaluate(discret, time, systemvectors, info, dbcgids);
+  DRT::UTILS::Dbc::evaluate(discret, time, systemvectors, info, dbcgids);
 
   // --------------------------- Step 2 ---------------------------------------
   std::vector<std::string> dbc_cond_names(2, "");

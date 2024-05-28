@@ -56,7 +56,7 @@ void DRT::ELEMENTS::SHELL::evaluate_neumann(DRT::Element& ele,
   constexpr auto noddof = SHELL::DETAIL::node_dof;
 
   CORE::FE::IntegrationPoints2D intpoints =
-      CreateGaussIntegrationPoints<distype>(GetGaussRule<distype>());
+      CreateGaussIntegrationPoints<distype>(get_gauss_rule<distype>());
 
   // IMPORTANT: The 'neum_orthopressure' case represents a truly nonlinear follower-load
   // acting on the spatial configuration. Therefore, it needs to be linearized. On the

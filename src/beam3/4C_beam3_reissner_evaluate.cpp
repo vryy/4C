@@ -54,7 +54,7 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
 
   if (IsParamsInterface())
   {
-    act = ParamsInterface().GetActionType();
+    act = params_interface().GetActionType();
   }
   else
   {
@@ -139,8 +139,8 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
       }
       else if (IsParamsInterface())  // new structural time integration
       {
-        ParamsInterface().add_contribution_to_energy_type(eint_, STR::internal_energy);
-        ParamsInterface().add_contribution_to_energy_type(ekin_, STR::kinetic_energy);
+        params_interface().add_contribution_to_energy_type(eint_, STR::internal_energy);
+        params_interface().add_contribution_to_energy_type(ekin_, STR::kinetic_energy);
       }
       break;
     }
@@ -380,7 +380,7 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
       rtconv_gp_mass_ = rtnew_gp_mass_;
       rconv_gp_mass_ = rnew_gp_mass_;
       qconv_gp_dampstoch_ = qnew_gp_dampstoch_;
-      GetBeamMaterial().Update();
+      get_beam_material().Update();
       break;
     }
 
@@ -403,7 +403,7 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
       rtnew_gp_mass_ = rtconv_gp_mass_;
       rnew_gp_mass_ = rconv_gp_mass_;
       qnew_gp_dampstoch_ = qconv_gp_dampstoch_;
-      GetBeamMaterial().Reset();
+      get_beam_material().Reset();
       break;
     }
 
@@ -562,7 +562,7 @@ int DRT::ELEMENTS::Beam3r::evaluate_neumann(Teuchos::ParameterList& params,
   double time = -1.0;
 
   if (IsParamsInterface())
-    time = ParamsInterface().GetTotalTime();
+    time = params_interface().GetTotalTime();
   else
     time = params.get<double>("total time", -1.0);
 
@@ -957,7 +957,7 @@ void DRT::ELEMENTS::Beam3r::calc_internal_force_and_stiff(
     // weight of GP in parameter space
     const double wgt = gausspoints_elast_force.qwgt[numgp];
 
-    Calc_r_s<nnodecl, vpernode, T>(
+    calc_r_s<nnodecl, vpernode, T>(
         disp_totlag_centerline, H_i_xi[numgp], jacobi_gp_elastf_[numgp], r_s);
 
     triad_interpolation_scheme_ptr->get_interpolated_triad_at_xi(
@@ -1185,11 +1185,11 @@ void DRT::ELEMENTS::Beam3r::calc_inertia_force_and_mass_matrix(
    * basically because of the triad interpolation. See also the discussion in Christoph Meier's
    * Dissertation on this topic. (Maximilian Grill, 08/16)*/
 
-  const double dt = ParamsInterface().GetDeltaTime();
-  const double beta = ParamsInterface().get_beam_params_interface_ptr()->GetBeta();
-  const double gamma = ParamsInterface().get_beam_params_interface_ptr()->GetGamma();
-  const double alpha_f = ParamsInterface().get_beam_params_interface_ptr()->GetAlphaf();
-  const double alpha_m = ParamsInterface().get_beam_params_interface_ptr()->GetAlpham();
+  const double dt = params_interface().GetDeltaTime();
+  const double beta = params_interface().get_beam_params_interface_ptr()->GetBeta();
+  const double gamma = params_interface().get_beam_params_interface_ptr()->GetGamma();
+  const double alpha_f = params_interface().get_beam_params_interface_ptr()->GetAlphaf();
+  const double alpha_m = params_interface().get_beam_params_interface_ptr()->GetAlpham();
 
   const bool materialintegration = true;  // TODO unused? remove or realize coverage by test case
   const double diff_factor_vel = gamma / (beta * dt);
@@ -1233,7 +1233,7 @@ void DRT::ELEMENTS::Beam3r::calc_inertia_force_and_mass_matrix(
   // Calculate current centerline position at gauss points (needed for element intern time
   // integration)
   for (int gp = 0; gp < gausspoints_mass.nquad; gp++)  // loop through Gauss points
-    Calc_r<nnodecl, vpernode, double>(disp_totlag_centerline, H_i[gp], rnew_gp_mass_[gp]);
+    calc_r<nnodecl, vpernode, double>(disp_totlag_centerline, H_i[gp], rnew_gp_mass_[gp]);
 
   // create object of triad interpolation scheme
   Teuchos::RCP<LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, double>>
@@ -2256,7 +2256,7 @@ void DRT::ELEMENTS::Beam3r::evaluate_rotational_damping(
   // get time step size
   double dt_inv = 0.0001;
   if (IsParamsInterface())
-    dt_inv = 1.0 / ParamsInterface().GetDeltaTime();
+    dt_inv = 1.0 / params_interface().GetDeltaTime();
   else
     dt_inv = 1.0 / params.get<double>("delta time", 1000);
 
@@ -2503,7 +2503,7 @@ void DRT::ELEMENTS::Beam3r::evaluate_translational_damping(Teuchos::ParameterLis
   // get time step size
   double dt_inv = 0.0001;
   if (IsParamsInterface())
-    dt_inv = 1.0 / ParamsInterface().GetDeltaTime();
+    dt_inv = 1.0 / params_interface().GetDeltaTime();
   else
     dt_inv = 1.0 / params.get<double>("delta time", 1000);
 
@@ -2546,10 +2546,10 @@ void DRT::ELEMENTS::Beam3r::evaluate_translational_damping(Teuchos::ParameterLis
   for (int gp = 0; gp < gausspoints.nquad; gp++)
   {
     // compute position vector r of point in physical space corresponding to Gauss point
-    Calc_r<nnodecl, vpernode, double>(disp_totlag_centerline, H_i[gp], r);
+    calc_r<nnodecl, vpernode, double>(disp_totlag_centerline, H_i[gp], r);
 
     // compute tangent vector t_{\par}=r' at current Gauss point
-    Calc_r_s<nnodecl, vpernode, double>(
+    calc_r_s<nnodecl, vpernode, double>(
         disp_totlag_centerline, H_i_xi[gp], jacobi_gp_dampstoch_[gp], r_s);
 
     // compute velocity and gradient of background flow field at point r
@@ -2727,7 +2727,7 @@ void DRT::ELEMENTS::Beam3r::evaluate_stochastic_forces(Teuchos::ParameterList& p
   for (int gp = 0; gp < gausspoints.nquad; gp++)
   {
     // compute tangent vector t_{\par}=r' at current Gauss point
-    Calc_r_s<nnodecl, vpernode, double>(
+    calc_r_s<nnodecl, vpernode, double>(
         disp_totlag_centerline, H_i_xi[gp], jacobi_gp_dampstoch_[gp], r_s);
 
     // extract random numbers from global vector

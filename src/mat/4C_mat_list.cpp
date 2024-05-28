@@ -44,7 +44,7 @@ MAT::PAR::MatList::MatList(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
   }
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MatList::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MatList::create_material()
 {
   return Teuchos::rcp(new MAT::MatList(this));
 }
@@ -242,7 +242,7 @@ Teuchos::RCP<CORE::MAT::Material> MAT::MatList::MaterialById(const int id) const
   if (params_->local_)
   {
     std::map<int, Teuchos::RCP<CORE::MAT::Material>>::const_iterator m =
-        MaterialMapRead()->find(id);
+        material_map_read()->find(id);
     if (m == mat_.end())
     {
       FOUR_C_THROW("Material %d could not be found", id);

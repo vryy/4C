@@ -39,9 +39,9 @@ ADAPTER::FSIStructureWrapper::FSIStructureWrapper(Teuchos::RCP<Structure> struct
   interface_ = Teuchos::rcp(new STR::MapExtractor);
 
   if (GLOBAL::Problem::Instance()->GetProblemType() != GLOBAL::ProblemType::fpsi)
-    interface_->Setup(*Discretization(), *Discretization()->dof_row_map());
+    interface_->Setup(*discretization(), *discretization()->dof_row_map());
   else
-    interface_->Setup(*Discretization(), *Discretization()->dof_row_map(),
+    interface_->Setup(*discretization(), *discretization()->dof_row_map(),
         true);  // create overlapping maps for fpsi problem
 
   const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
@@ -56,14 +56,14 @@ ADAPTER::FSIStructureWrapper::FSIStructureWrapper(Teuchos::RCP<Structure> struct
 void ADAPTER::FSIStructureWrapper::RebuildInterface()
 {
   interface_ = Teuchos::rcp(new STR::MapExtractor);
-  interface_->Setup(*Discretization(), *Discretization()->dof_row_map());
+  interface_->Setup(*discretization(), *discretization()->dof_row_map());
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FSIStructureWrapper::UseBlockMatrix()
+void ADAPTER::FSIStructureWrapper::use_block_matrix()
 {
-  StructureWrapper::UseBlockMatrix(interface_, interface_);
+  StructureWrapper::use_block_matrix(interface_, interface_);
 }
 
 
@@ -73,10 +73,10 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::RelaxationSolve(
     Teuchos::RCP<Epetra_Vector> iforce)
 {
   apply_interface_forces(iforce);
-  FSIModelEvaluator()->set_is_relaxation_solve(true);
+  fsi_model_evaluator()->set_is_relaxation_solve(true);
   Teuchos::RCP<const Epetra_Vector> idisi =
-      FSIModelEvaluator()->solve_relaxation_linear(structure_);
-  FSIModelEvaluator()->set_is_relaxation_solve(false);
+      fsi_model_evaluator()->solve_relaxation_linear(structure_);
+  fsi_model_evaluator()->set_is_relaxation_solve(false);
 
   // we are just interested in the incremental interface displacements
   return interface_->ExtractFSICondVector(idisi);
@@ -181,7 +181,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::extract_interface_disp
   // prestressing business
   if (PrestressIsActive(Time()))
   {
-    if (Discretization()->Comm().MyPID() == 0)
+    if (discretization()->Comm().MyPID() == 0)
       std::cout << "Applying no displacements to the fluid since we do prestressing" << std::endl;
 
     return Teuchos::rcp(new Epetra_Vector(*interface_->FSICondMap(), true));
@@ -198,8 +198,8 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::extract_interface_disp
 // Apply interface forces
 void ADAPTER::FSIStructureWrapper::apply_interface_forces(Teuchos::RCP<Epetra_Vector> iforce)
 {
-  FSIModelEvaluator()->get_interface_force_np_ptr()->PutScalar(0.0);
-  interface_->AddFSICondVector(iforce, FSIModelEvaluator()->get_interface_force_np_ptr());
+  fsi_model_evaluator()->get_interface_force_np_ptr()->PutScalar(0.0);
+  interface_->AddFSICondVector(iforce, fsi_model_evaluator()->get_interface_force_np_ptr());
   return;
 }
 
@@ -223,7 +223,8 @@ void ADAPTER::FSIStructureWrapper::apply_interface_forces_temporary_deprecated(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<STR::MODELEVALUATOR::PartitionedFSI> ADAPTER::FSIStructureWrapper::FSIModelEvaluator()
+Teuchos::RCP<STR::MODELEVALUATOR::PartitionedFSI>
+ADAPTER::FSIStructureWrapper::fsi_model_evaluator()
 {
   return fsi_model_evaluator_;
 };

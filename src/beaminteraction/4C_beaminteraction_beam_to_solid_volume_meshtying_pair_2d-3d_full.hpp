@@ -86,7 +86,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Get the triad of the beam at the parameter coordinate xi (derived)
      */
-    void GetTriadAtXiDouble(const double xi, CORE::LINALG::Matrix<3, 3, double>& triad,
+    void get_triad_at_xi_double(const double xi, CORE::LINALG::Matrix<3, 3, double>& triad,
         const bool reference) const override;
 
    private:

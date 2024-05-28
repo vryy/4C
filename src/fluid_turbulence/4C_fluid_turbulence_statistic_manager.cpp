@@ -1237,7 +1237,7 @@ namespace FLD
 
           if (outputformat == write_single_record) statistics_ldc_->DumpStatistics(step);
 
-          if (outputformat != do_not_write) statistics_ldc_->WriteRestart(output);
+          if (outputformat != do_not_write) statistics_ldc_->write_restart(output);
           break;
         }
         case loma_lid_driven_cavity:
@@ -1471,7 +1471,7 @@ namespace FLD
     }
 
     // store the relevant pointers to provide access
-    scatradis_ = scatra_timeint->Discretization();
+    scatradis_ = scatra_timeint->discretization();
     scatraparams_ = scatra_timeint->ScatraParameterList();
     // and sublists from extraparams
     scatraextraparams_ = scatra_timeint->scatra_extra_parameter_list();

@@ -90,7 +90,7 @@ void NOX::NLN::Problem::Initialize(const Teuchos::RCP<::NOX::Epetra::Vector>& x,
 Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::NLN::Problem::create_linear_system() const
 {
   check_init();
-  if (not IsJac())
+  if (not is_jac())
     FOUR_C_THROW(
         "You have to set a jacobian first, before you can create a "
         "linear system!");

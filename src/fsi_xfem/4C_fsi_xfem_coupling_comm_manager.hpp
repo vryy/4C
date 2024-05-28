@@ -100,7 +100,7 @@ namespace XFEM
           idxA, Teuchos::rcp_static_cast<const Epetra_Vector>(vecA), idxB, vecB, ttype, add, scale);
     }
 
-    //! Insert a Matrix A (from Discretization A) into Matrix B (from Discretization B) (choose type
+    //! Insert a Matrix A (from discretization A) into Matrix B (from discretization B) (choose type
     //! of transfer, add or scaling)
     bool InsertMatrix(
         int transform_id,  // Unique Id to be set for this transformation object (to be save use
@@ -114,13 +114,16 @@ namespace XFEM
    protected:
     Teuchos::RCP<CORE::ADAPTER::CouplingConverter> get_coupling_converter(int idxA, int idxB);
 
-    Teuchos::RCP<CORE::ADAPTER::Coupling> GetCoupling(int idxA, int idxB);
+    Teuchos::RCP<CORE::ADAPTER::Coupling> get_coupling(int idxA, int idxB);
 
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> GetFullMapExtractor() { return fullextractor_; }
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> get_full_map_extractor()
+    {
+      return fullextractor_;
+    }
 
-    Teuchos::RCP<CORE::LINALG::MatrixLogicalSplitAndTransform> GetTransform(int transform_id);
+    Teuchos::RCP<CORE::LINALG::MatrixLogicalSplitAndTransform> get_transform(int transform_id);
 
-    void DebugOut(
+    void debug_out(
         std::string str1, std::string str2 = "", std::string str3 = "", std::string str4 = "");
 
    private:

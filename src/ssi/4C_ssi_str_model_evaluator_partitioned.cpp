@@ -119,7 +119,7 @@ bool STR::MODELEVALUATOR::PartitionedSSI::assemble_jacobian(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::PartitionedSSI::RunPreComputeX(
+void STR::MODELEVALUATOR::PartitionedSSI::run_pre_compute_x(
     const Epetra_Vector& xold, Epetra_Vector& dir_mutable, const NOX::NLN::Group& curr_grp)
 {
   // perform structural meshtying

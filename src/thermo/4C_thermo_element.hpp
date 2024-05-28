@@ -227,7 +227,7 @@ namespace DRT
       //! \note Element degrees of freedom mentioned here are dofs that are visible
       //!       at the level of the total system of equations. Purely internal
       //!       element dofs that are condensed internally should NOT be considered.
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       //! \brief Print this element
       void Print(std::ostream& os) const override;
@@ -519,7 +519,7 @@ namespace DRT
       //! \note Element degrees of freedom mentioned here are dofs that are visible
       //!      at the level of the total system of equations. Purely internal
       //!      element dofs that are condensed internally should NOT be considered.
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       //! \brief Print this element
       void Print(std::ostream& os) const override;

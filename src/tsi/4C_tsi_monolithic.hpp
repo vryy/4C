@@ -131,7 +131,7 @@ namespace TSI
     void create_linear_solver();
 
     //! Evaluate mechanical-thermal system matrix
-    void ApplyStrCouplMatrix(
+    void apply_str_coupl_matrix(
         Teuchos::RCP<CORE::LINALG::SparseMatrix> k_st  //!< mechanical-thermal stiffness matrix
     );
 
@@ -252,7 +252,7 @@ namespace TSI
     Teuchos::RCP<Epetra_Map> combined_dbc_map();
 
     //! extractor to communicate between full monolithic map and block maps
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> Extractor() const { return blockrowdofmap_; }
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> extractor() const { return blockrowdofmap_; }
 
     //! setup list with default parameters
     void set_default_parameters();

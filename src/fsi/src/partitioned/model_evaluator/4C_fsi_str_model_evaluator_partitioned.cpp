@@ -39,7 +39,7 @@ STR::MODELEVALUATOR::PartitionedFSI::PartitionedFSI()
 void STR::MODELEVALUATOR::PartitionedFSI::Setup()
 {
   // fsi interface force at t_{n+1}
-  interface_force_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*GState().dof_row_map(), true));
+  interface_force_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*g_state().dof_row_map(), true));
 
   // set flag
   issetup_ = true;
@@ -50,7 +50,7 @@ void STR::MODELEVALUATOR::PartitionedFSI::Setup()
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::PartitionedFSI::setup_multi_map_extractor()
 {
-  Int().ModelEval().setup_multi_map_extractor();
+  integrator().ModelEval().setup_multi_map_extractor();
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -95,7 +95,7 @@ void STR::MODELEVALUATOR::PartitionedFSI::UpdateStepState(const double& timefac_
   if (not is_relaxationsolve_)  // standard case
   {
     // add the old time factor scaled contributions to the residual
-    Teuchos::RCP<Epetra_Vector>& fstructold_ptr = GState().GetFstructureOld();
+    Teuchos::RCP<Epetra_Vector>& fstructold_ptr = g_state().GetFstructureOld();
     fstructold_ptr->Update(-timefac_n, *interface_force_np_ptr_, 1.0);
   }
   else
@@ -111,7 +111,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::solve_rel
     Teuchos::RCP<ADAPTER::Structure> structure)
 {
   // print to screen
-  if (GState().dof_row_map()->Comm().MyPID() == 0)
+  if (g_state().dof_row_map()->Comm().MyPID() == 0)
     std::cout << "\n DO SRUCTURAL RELAXATION SOLVE ..." << std::endl;
 
   // cast adapter structure to implicit time integrator
@@ -132,7 +132,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::solve_rel
 
   // create new state vector
   Teuchos::RCP<::NOX::Epetra::Vector> x_ptr =
-      GState().CreateGlobalVector(TIMINT::BaseDataGlobalState::VecInitType::last_time_step,
+      g_state().CreateGlobalVector(TIMINT::BaseDataGlobalState::VecInitType::last_time_step,
           ti_impl->ImplIntPtr()->ModelEvalPtr());
   // Set the solution vector in the nox group. This will reset all isValid
   // flags.
@@ -165,7 +165,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::solve_rel
   Teuchos::ParameterList& p =
       noxparams.sublist("Direction").sublist("Newton").sublist("Linear Solver");
   p.set<int>("Number of Nonlinear Iterations", 0);
-  p.set<int>("Current Time Step", GState().GetStepNp());
+  p.set<int>("Current Time Step", g_state().GetStepNp());
   p.set<double>("Wanted Tolerance", 1.0e-6);  //!< dummy
 
   // ---------------------------------------------------------------------------

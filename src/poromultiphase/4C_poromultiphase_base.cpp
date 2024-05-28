@@ -56,7 +56,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& glob
       ADAPTER::build_structure_algorithm(structparams);
   adapterbase->Init(globaltimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis);
   adapterbase->Setup();
-  structure_ = adapterbase->StructureField();
+  structure_ = adapterbase->structure_field();
 
   // initialize zero vector for convenience
   struct_zeros_ = CORE::LINALG::CreateVector(*structure_->dof_row_map(), true);
@@ -142,7 +142,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Timeloop()
 
     TimeStep();
 
-    UpdateAndOutput();
+    update_and_output();
   }
 
   return;
@@ -157,16 +157,16 @@ void POROMULTIPHASE::PoroMultiPhaseBase::prepare_time_loop()
   if (solve_structure_)
   {
     constexpr bool force_prepare = true;
-    StructureField()->prepare_output(force_prepare);
-    StructureField()->Output();
-    SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
+    structure_field()->prepare_output(force_prepare);
+    structure_field()->Output();
+    set_struct_solution(structure_field()->Dispnp(), structure_field()->Velnp());
   }
   else
   {
     // Inform user that structure field has been disabled
     print_structure_disabled_info();
     // just set displacements and velocities to zero
-    SetStructSolution(struct_zeros_, struct_zeros_);
+    set_struct_solution(struct_zeros_, struct_zeros_);
   }
   fluid_field()->prepare_time_loop();
 
@@ -180,16 +180,16 @@ void POROMULTIPHASE::PoroMultiPhaseBase::prepare_time_step()
 {
   increment_time_and_step();
 
-  StructureField()->Discretization()->set_state(1, "porofluid", fluid_field()->Phinp());
+  structure_field()->discretization()->set_state(1, "porofluid", fluid_field()->Phinp());
 
   if (solve_structure_)
   {
     // NOTE: the predictor of the structure is called in here
-    StructureField()->prepare_time_step();
-    SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
+    structure_field()->prepare_time_step();
+    set_struct_solution(structure_field()->Dispnp(), structure_field()->Velnp());
   }
   else
-    SetStructSolution(struct_zeros_, struct_zeros_);
+    set_struct_solution(struct_zeros_, struct_zeros_);
 
   fluid_field()->prepare_time_step();
 }
@@ -208,7 +208,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::CreateFieldTest()
 /*------------------------------------------------------------------------*
  | communicate the solution of the structure to the fluid    vuong 08/16  |
  *------------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhaseBase::SetStructSolution(
+void POROMULTIPHASE::PoroMultiPhaseBase::set_struct_solution(
     Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<const Epetra_Vector> vel)
 {
   set_mesh_disp(disp);
@@ -220,7 +220,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::SetStructSolution(
  *------------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseBase::set_velocity_fields(Teuchos::RCP<const Epetra_Vector> vel)
 {
-  fluid_->SetVelocityField(vel);
+  fluid_->set_velocity_field(vel);
 }
 
 /*------------------------------------------------------------------------*
@@ -244,24 +244,24 @@ void POROMULTIPHASE::PoroMultiPhaseBase::set_mesh_disp(Teuchos::RCP<const Epetra
 /*----------------------------------------------------------------------*
  | update fields and output results                         vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhaseBase::UpdateAndOutput()
+void POROMULTIPHASE::PoroMultiPhaseBase::update_and_output()
 {
   // prepare the output
   constexpr bool force_prepare = false;
-  StructureField()->prepare_output(force_prepare);
+  structure_field()->prepare_output(force_prepare);
 
   // update single fields
-  StructureField()->Update();
+  structure_field()->Update();
   fluid_field()->Update();
 
   // evaluate error if desired
   fluid_field()->evaluate_error_compared_to_analytical_sol();
 
   // set structure on fluid (necessary for possible domain integrals)
-  SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
+  set_struct_solution(structure_field()->Dispnp(), structure_field()->Velnp());
 
   // output single fields
-  StructureField()->Output();
+  structure_field()->Output();
   fluid_field()->Output();
 }
 

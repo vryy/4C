@@ -263,7 +263,7 @@ void GLOBAL::Problem::AddDis(const std::string& name, Teuchos::RCP<DRT::Discreti
 {
   // safety checks
   if (dis == Teuchos::null) FOUR_C_THROW("Received Teuchos::null.");
-  if (dis->Name().empty()) FOUR_C_THROW("Discretization has empty name string.");
+  if (dis->Name().empty()) FOUR_C_THROW("discretization has empty name string.");
 
   if (!discretizationmap_.insert(std::make_pair(name, dis)).second)
   {

@@ -90,7 +90,7 @@ namespace DRT
         \param rhs[in,out]        element rhs to calculate
         \param material[in]       artery material
         */
-      void Sysmat(Artery* ele, DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+      void sysmat(Artery* ele, DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           CORE::LINALG::Matrix<my::iel_, my::iel_>& sysmat, CORE::LINALG::Matrix<my::iel_, 1>& rhs,
           Teuchos::RCP<const CORE::MAT::Material> material);
 
@@ -105,7 +105,7 @@ namespace DRT
 
         \note  only checked for line2 elements
         */
-      void EvaluateFlow(Artery* ele, DRT::Discretization& discretization,
+      void evaluate_flow(Artery* ele, DRT::Discretization& discretization,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& flowVec,
           Teuchos::RCP<const CORE::MAT::Material> material);
 
@@ -116,7 +116,7 @@ namespace DRT
         \param la[in]             element location array
         \return                   element length (either in current or deformed configuration)
        */
-      double CalculateEleLength(
+      double calculate_ele_length(
           Artery* ele, DRT::Discretization& discretization, DRT::Element::LocationArray& la);
     };
 

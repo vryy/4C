@@ -1383,14 +1383,14 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
       // first write node global ids (default)
       for (int inode = 0; inode < proc0map->NumGlobalElements(); ++inode)
       {
-        Write(geofile, static_cast<float>(proc0map->GID(inode)) + 1);
+        write(geofile, static_cast<float>(proc0map->GID(inode)) + 1);
         // gid+1 delivers the node numbering of the *.dat file starting with 1
       }
     }
     // now write the coordinate information
     for (int i = 0; i < numentries; ++i)
     {
-      Write(geofile, static_cast<float>(coords[i]));
+      write(geofile, static_cast<float>(coords[i]));
     }
   }
 
@@ -1405,7 +1405,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
          cells) is computed from the local patch numbering and
          the patch offset.                             (gammi)
 ----------------------------------------------------------------------*/
-void EnsightWriter::WriteNurbsCell(const CORE::FE::CellType distype, const int gid,
+void EnsightWriter::write_nurbs_cell(const CORE::FE::CellType distype, const int gid,
     std::ofstream& geofile, std::vector<int>& nodevector,
     const Teuchos::RCP<DRT::Discretization> dis, const Teuchos::RCP<Epetra_Map>& proc0map) const
 {
@@ -1478,10 +1478,10 @@ void EnsightWriter::WriteNurbsCell(const CORE::FE::CellType distype, const int g
       // append 4 elements
       if (myrank_ == 0)  // proc0 can write its elements immediately
       {
-        Write(geofile, proc0map->LID(((ele_cart_id[1]) * (nvpu) + ele_cart_id[0])) + 1);
-        Write(geofile, proc0map->LID(((ele_cart_id[1]) * (nvpu) + ele_cart_id[0] + 1)) + 1);
-        Write(geofile, proc0map->LID(((ele_cart_id[1] + 1) * (nvpu) + ele_cart_id[0] + 1)) + 1);
-        Write(geofile, proc0map->LID(((ele_cart_id[1] + 1) * (nvpu) + ele_cart_id[0])) + 1);
+        write(geofile, proc0map->LID(((ele_cart_id[1]) * (nvpu) + ele_cart_id[0])) + 1);
+        write(geofile, proc0map->LID(((ele_cart_id[1]) * (nvpu) + ele_cart_id[0] + 1)) + 1);
+        write(geofile, proc0map->LID(((ele_cart_id[1] + 1) * (nvpu) + ele_cart_id[0] + 1)) + 1);
+        write(geofile, proc0map->LID(((ele_cart_id[1] + 1) * (nvpu) + ele_cart_id[0])) + 1);
       }
       else  // elements on other procs have to store their global node ids
       {
@@ -1518,55 +1518,55 @@ void EnsightWriter::WriteNurbsCell(const CORE::FE::CellType distype, const int g
       // append 4 elements
       if (myrank_ == 0)  // proc0 can write its elements immediately
       {
-        Write(geofile,
+        write(geofile,
             proc0map->LID(vpoff[npatch] + ((2 * ele_cart_id[1]) * (nvpu) + 2 * ele_cart_id[0])) +
                 1);
-        Write(geofile, proc0map->LID(vpoff[npatch] +
+        write(geofile, proc0map->LID(vpoff[npatch] +
                                      ((2 * ele_cart_id[1]) * (nvpu) + 2 * ele_cart_id[0] + 1)) +
                            1);
-        Write(geofile, proc0map->LID(vpoff[npatch] +
+        write(geofile, proc0map->LID(vpoff[npatch] +
                                      ((2 * ele_cart_id[1] + 1) * (nvpu) + 2 * ele_cart_id[0] + 1)) +
                            1);
-        Write(geofile, proc0map->LID(vpoff[npatch] +
+        write(geofile, proc0map->LID(vpoff[npatch] +
                                      ((2 * ele_cart_id[1] + 1) * (nvpu) + 2 * ele_cart_id[0])) +
                            1);
 
-        Write(geofile, proc0map->LID(vpoff[npatch] +
+        write(geofile, proc0map->LID(vpoff[npatch] +
                                      ((2 * ele_cart_id[1] + 1) * (nvpu) + 2 * ele_cart_id[0])) +
                            1);
-        Write(geofile, proc0map->LID(vpoff[npatch] +
+        write(geofile, proc0map->LID(vpoff[npatch] +
                                      ((2 * ele_cart_id[1] + 1) * (nvpu) + 2 * ele_cart_id[0] + 1)) +
                            1);
-        Write(geofile, proc0map->LID(vpoff[npatch] +
+        write(geofile, proc0map->LID(vpoff[npatch] +
                                      ((2 * ele_cart_id[1] + 2) * (nvpu) + 2 * ele_cart_id[0] + 1)) +
                            1);
-        Write(geofile, proc0map->LID(vpoff[npatch] +
+        write(geofile, proc0map->LID(vpoff[npatch] +
                                      ((2 * ele_cart_id[1] + 2) * (nvpu) + 2 * ele_cart_id[0])) +
                            1);
 
-        Write(geofile, proc0map->LID(vpoff[npatch] +
+        write(geofile, proc0map->LID(vpoff[npatch] +
                                      ((2 * ele_cart_id[1]) * (nvpu) + 2 * ele_cart_id[0] + 1)) +
                            1);
-        Write(geofile, proc0map->LID(vpoff[npatch] +
+        write(geofile, proc0map->LID(vpoff[npatch] +
                                      ((2 * ele_cart_id[1]) * (nvpu) + 2 * ele_cart_id[0] + 2)) +
                            1);
-        Write(geofile, proc0map->LID(vpoff[npatch] +
+        write(geofile, proc0map->LID(vpoff[npatch] +
                                      ((2 * ele_cart_id[1] + 1) * (nvpu) + 2 * ele_cart_id[0] + 2)) +
                            1);
-        Write(geofile, proc0map->LID(vpoff[npatch] +
+        write(geofile, proc0map->LID(vpoff[npatch] +
                                      ((2 * ele_cart_id[1] + 1) * (nvpu) + 2 * ele_cart_id[0] + 1)) +
                            1);
 
-        Write(geofile, proc0map->LID(vpoff[npatch] +
+        write(geofile, proc0map->LID(vpoff[npatch] +
                                      ((2 * ele_cart_id[1] + 1) * (nvpu) + 2 * ele_cart_id[0] + 1)) +
                            1);
-        Write(geofile, proc0map->LID(vpoff[npatch] +
+        write(geofile, proc0map->LID(vpoff[npatch] +
                                      ((2 * ele_cart_id[1] + 1) * (nvpu) + 2 * ele_cart_id[0] + 2)) +
                            1);
-        Write(geofile, proc0map->LID(vpoff[npatch] +
+        write(geofile, proc0map->LID(vpoff[npatch] +
                                      ((2 * ele_cart_id[1] + 2) * (nvpu) + 2 * ele_cart_id[0] + 2)) +
                            1);
-        Write(geofile, proc0map->LID(vpoff[npatch] +
+        write(geofile, proc0map->LID(vpoff[npatch] +
                                      ((2 * ele_cart_id[1] + 2) * (nvpu) + 2 * ele_cart_id[0] + 1)) +
                            1);
       }
@@ -1645,21 +1645,21 @@ void EnsightWriter::WriteNurbsCell(const CORE::FE::CellType distype, const int g
       std::vector<int> cellnodes(0);
 
       // bottom, left front
-      AppendNurbsSubHex(cellnodes, 0, 0, 0, ele_cart_id, nvpu, nvpv, npatch);
+      append_nurbs_sub_hex(cellnodes, 0, 0, 0, ele_cart_id, nvpu, nvpv, npatch);
       // bottom, right front
-      AppendNurbsSubHex(cellnodes, 1, 0, 0, ele_cart_id, nvpu, nvpv, npatch);
+      append_nurbs_sub_hex(cellnodes, 1, 0, 0, ele_cart_id, nvpu, nvpv, npatch);
       // bottom, left rear
-      AppendNurbsSubHex(cellnodes, 0, 1, 0, ele_cart_id, nvpu, nvpv, npatch);
+      append_nurbs_sub_hex(cellnodes, 0, 1, 0, ele_cart_id, nvpu, nvpv, npatch);
       // bottom, right rear
-      AppendNurbsSubHex(cellnodes, 1, 1, 0, ele_cart_id, nvpu, nvpv, npatch);
+      append_nurbs_sub_hex(cellnodes, 1, 1, 0, ele_cart_id, nvpu, nvpv, npatch);
       // top, left front
-      AppendNurbsSubHex(cellnodes, 0, 0, 1, ele_cart_id, nvpu, nvpv, npatch);
+      append_nurbs_sub_hex(cellnodes, 0, 0, 1, ele_cart_id, nvpu, nvpv, npatch);
       // top, right front
-      AppendNurbsSubHex(cellnodes, 1, 0, 1, ele_cart_id, nvpu, nvpv, npatch);
+      append_nurbs_sub_hex(cellnodes, 1, 0, 1, ele_cart_id, nvpu, nvpv, npatch);
       // top, left rear
-      AppendNurbsSubHex(cellnodes, 0, 1, 1, ele_cart_id, nvpu, nvpv, npatch);
+      append_nurbs_sub_hex(cellnodes, 0, 1, 1, ele_cart_id, nvpu, nvpv, npatch);
       // top, right rear
-      AppendNurbsSubHex(cellnodes, 1, 1, 1, ele_cart_id, nvpu, nvpv, npatch);
+      append_nurbs_sub_hex(cellnodes, 1, 1, 1, ele_cart_id, nvpu, nvpv, npatch);
 
       if (cellnodes.size() != 64)
       {
@@ -1670,7 +1670,7 @@ void EnsightWriter::WriteNurbsCell(const CORE::FE::CellType distype, const int g
       {
         for (unsigned id = 0; id < cellnodes.size(); ++id)
         {
-          Write(geofile, proc0map->LID(vpoff[npatch] + cellnodes[id]) + 1);
+          write(geofile, proc0map->LID(vpoff[npatch] + cellnodes[id]) + 1);
         }
       }
       else  // elements on other procs have to store their global node ids
@@ -2133,7 +2133,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
     // now write the solution
     for (int i = 0; i < numentries; ++i)
     {
-      Write(file, static_cast<float>(solvals[i]));
+      write(file, static_cast<float>(solvals[i]));
     }
 
     // 2 component vectors in a 3d problem require a row of zeros.
@@ -2142,7 +2142,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
     {
       for (int inode = 0; inode < numvispoints; inode++)
       {
-        Write<float>(file, 0.);
+        write<float>(file, 0.);
       }
     }
   }
@@ -3537,7 +3537,7 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
            inode++)  // inode == lid of node because we use proc0map_
       {
         //        Write(file, static_cast<float>(idf));
-        Write(file, static_cast<float>((*column)[inode]));
+        write(file, static_cast<float>((*column)[inode]));
       }
     }
   }  // if (myrank_==0)

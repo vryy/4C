@@ -154,7 +154,7 @@ void SCATRA::TimIntCardiacMonodomainHDG::write_problem_specific_output(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainHDG::PackMaterial()
+void SCATRA::TimIntCardiacMonodomainHDG::pack_material()
 {
   CORE::COMM::PackBuffer buffer;
 
@@ -162,7 +162,7 @@ void SCATRA::TimIntCardiacMonodomainHDG::PackMaterial()
   for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
   {
     auto *hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG *>(discret_->lColElement(iele));
-    hdgele->PackMaterial(buffer);
+    hdgele->pack_material(buffer);
   }
 
   buffer.StartPacking();
@@ -172,7 +172,7 @@ void SCATRA::TimIntCardiacMonodomainHDG::PackMaterial()
   {
     DRT::Element *ele = discret_->lColElement(iele);
     const auto *hdgele = dynamic_cast<const DRT::ELEMENTS::ScaTraHDG *>(ele);
-    hdgele->PackMaterial(buffer);
+    hdgele->pack_material(buffer);
   }
 
   Teuchos::RCP<std::vector<char>> block = Teuchos::rcp(new std::vector<char>);
@@ -182,7 +182,7 @@ void SCATRA::TimIntCardiacMonodomainHDG::PackMaterial()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainHDG::UnpackMaterial()
+void SCATRA::TimIntCardiacMonodomainHDG::unpack_material()
 {
   std::vector<char>::size_type index = 0;
   // loop over elements
@@ -191,13 +191,13 @@ void SCATRA::TimIntCardiacMonodomainHDG::UnpackMaterial()
     auto *hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG *>(discret_->lColElement(iele));
     std::vector<char> data;
     hdgele->ExtractfromPack(index, *data_, data);
-    hdgele->UnpackMaterial(data);
+    hdgele->unpack_material(data);
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainHDG::ProjectMaterial()
+void SCATRA::TimIntCardiacMonodomainHDG::project_material()
 {
   discret_->ClearState(true);
   // set action

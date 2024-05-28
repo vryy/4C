@@ -162,7 +162,7 @@ MAT::PAR::CrystalPlasticity::CrystalPlasticity(Teuchos::RCP<CORE::MAT::PAR::Mate
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       			|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::CrystalPlasticity::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::CrystalPlasticity::create_material()
 {
   return Teuchos::rcp(new MAT::CrystalPlasticity(this));
 }

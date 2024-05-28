@@ -82,7 +82,7 @@ namespace POROELAST
 
 
     //! build the combined dirichletbcmap
-    void BuildCombinedDBCMap() override;
+    void build_combined_dbc_map() override;
 
     //! @name Access methods for subclasses
 
@@ -139,7 +139,7 @@ namespace POROELAST
     //! fluid_field()->SystemMatrix()->DomainMap()
     const Epetra_Map& FluidDomainMap();
 
-    //! StructureField()->SystemMatrix()->DomainMap()
+    //! structure_field()->SystemMatrix()->DomainMap()
     const Epetra_Map& StructureDomainMap();
 
     //!@}
@@ -243,15 +243,15 @@ namespace POROELAST
 
    protected:
     //! Aitken
-    void Aitken();
+    void aitken();
 
     //! Aitken Reset
-    [[maybe_unused]] void AitkenReset();
+    [[maybe_unused]] void aitken_reset();
 
     //! @name Apply current field state to system
 
     //! Evaluate mechanical-fluid system matrix
-    virtual void ApplyStrCouplMatrix(
+    virtual void apply_str_coupl_matrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator> k_sf  //!< mechanical-fluid stiffness matrix
     );
 
@@ -343,7 +343,7 @@ namespace POROELAST
     void set_poro_contact_states();
 
     //! assemble relevant matrixes for porocontact and meshtying
-    void EvalPoroMortar();
+    void eval_poro_mortar();
 
     //! flag activation poro contact no penetration condition
     bool no_penetration_;

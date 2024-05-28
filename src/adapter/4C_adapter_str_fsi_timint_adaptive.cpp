@@ -59,7 +59,7 @@ void ADAPTER::StructureFSITimIntAda::IndicateErrorNorms(double& err, double& err
     double& errother, double& errinf, double& errinfcond, double& errinfother)
 {
   // call functionality of adaptive structural time integrator
-  StrAda()->evaluate_local_error_dis();
+  str_ada()->evaluate_local_error_dis();
 
   // Indicate has to be done by the FSI algorithm since it depends on the interface
   indicate_errors(err, errcond, errother, errinf, errinfcond, errinfother);
@@ -73,7 +73,7 @@ void ADAPTER::StructureFSITimIntAda::indicate_errors(double& err, double& errcon
     double& errinf, double& errinfcond, double& errinfother)
 {
   // vector with local discretization error for each DOF
-  Teuchos::RCP<Epetra_Vector> error = StrAda()->LocErrDis();
+  Teuchos::RCP<Epetra_Vector> error = str_ada()->LocErrDis();
 
   // extract the condition part of the full error vector
   // (i.e. only interface displacement DOFs)
@@ -100,36 +100,36 @@ void ADAPTER::StructureFSITimIntAda::indicate_errors(double& err, double& errcon
 
 /*----------------------------------------------------------------------------*/
 /* Do a single step with auxiliary time integration scheme */
-void ADAPTER::StructureFSITimIntAda::time_step_auxiliar() { StrAda()->integrate_step_auxiliar(); }
+void ADAPTER::StructureFSITimIntAda::time_step_auxiliar() { str_ada()->integrate_step_auxiliar(); }
 
 /*----------------------------------------------------------------------------*/
 /* Calculate time step size suggestion */
 double ADAPTER::StructureFSITimIntAda::calculate_dt(const double norm)
 {
-  return StrAda()->calculate_dt(norm);
+  return str_ada()->calculate_dt(norm);
 }
 
 /*----------------------------------------------------------------------------*/
 /* Get time step size of adaptive structural time integrator */
-double ADAPTER::StructureFSITimIntAda::Dt() const { return StrAda()->Dt(); }
+double ADAPTER::StructureFSITimIntAda::Dt() const { return str_ada()->Dt(); }
 
 /*----------------------------------------------------------------------------*/
 /* Get target time \f$t_{n+1}\f$ of current time step */
-double ADAPTER::StructureFSITimIntAda::Time() const { return StrAda()->Time(); }
+double ADAPTER::StructureFSITimIntAda::Time() const { return str_ada()->Time(); }
 
 /*----------------------------------------------------------------------------*/
 /* Set new time step size */
-void ADAPTER::StructureFSITimIntAda::set_dt(const double dtnew) { StrAda()->set_dt(dtnew); }
+void ADAPTER::StructureFSITimIntAda::set_dt(const double dtnew) { str_ada()->set_dt(dtnew); }
 
 /*----------------------------------------------------------------------------*/
 /* Update step size */
 void ADAPTER::StructureFSITimIntAda::UpdateStepSize(const double dtnew)
 {
-  StrAda()->UpdateStepSize(dtnew);
+  str_ada()->UpdateStepSize(dtnew);
 }
 
 /*----------------------------------------------------------------------------*/
 /*  Reset certain quantities to prepare repetition of current time step */
-void ADAPTER::StructureFSITimIntAda::reset_step() { StrAda()->reset_step(); }
+void ADAPTER::StructureFSITimIntAda::reset_step() { str_ada()->reset_step(); }
 
 FOUR_C_NAMESPACE_CLOSE

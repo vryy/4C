@@ -76,7 +76,7 @@ int DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::Evaluate(Teuchos::ParameterList&
       // in some cases we need to write/change some data before evaluating
       pre_evaluate(params, discretization, la);
 
-      MyEvaluate(params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra,
+      my_evaluate(params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra,
           elevec2_epetra, elevec3_epetra);
     }
     break;
@@ -180,7 +180,7 @@ int DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::Evaluate(Teuchos::ParameterList&
       }
 
       // add volume coupling specific terms
-      MyEvaluate(params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra,
+      my_evaluate(params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra,
           elevec2_epetra, elevec3_epetra);
     }
     break;
@@ -205,7 +205,7 @@ void DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::pre_evaluate(Teuchos::Parameter
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-int DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::MyEvaluate(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::my_evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -330,7 +330,7 @@ int DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::MyEvaluate(Teuchos::ParameterLis
               discretization, 1, la[1].lm_, &myfluidvel, &myepreaf, "fluidvel");
         }
 
-        CouplingPoroelast(
+        coupling_poroelast(
             lm, mydisp, myvel, &myporosity, myfluidvel, myepreaf, matptr, nullptr, nullptr, params);
       }
     }
@@ -400,7 +400,7 @@ void DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::nonlinear_stiffness_poroelast(s
     CORE::LINALG::Matrix<numdof_, numdof_>* reamatrix, CORE::LINALG::Matrix<numdof_, 1>* force,
     Teuchos::ParameterList& params)
 {
-  Base::GetMaterials();
+  Base::get_materials();
 
   // update element geometry
   CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> xrefe;  // material coord. of element
@@ -426,7 +426,7 @@ void DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::nonlinear_stiffness_poroelast(s
   CORE::LINALG::Matrix<Base::numnod_, numdof_> estiff_p1(true);
   CORE::LINALG::Matrix<Base::numnod_, 1> ecoupl_force_p1(true);
 
-  GaussPointLoopP1(params, xrefe, xcurr, disp, vel, evelnp, epreaf, porosity_dof, erea_v,
+  gauss_point_loop_p1(params, xrefe, xcurr, disp, vel, evelnp, epreaf, porosity_dof, erea_v,
       &sub_stiff, &sub_force, ecoupl_p1, estiff_p1, ecoupl_force_p1);
 
   // update stiffness matrix
@@ -513,7 +513,7 @@ void DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::nonlinear_stiffness_poroelast(s
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::GaussPointLoopP1(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::gauss_point_loop_p1(Teuchos::ParameterList& params,
     const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& xrefe,
     const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& xcurr,
     const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& nodaldisp,
@@ -544,7 +544,7 @@ void DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::GaussPointLoopP1(Teuchos::Param
     Base::compute_shape_functions_and_derivatives(gp, shapefct, deriv, N_XYZ);
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
-    Base::ComputeDefGradient(defgrd, N_XYZ, xcurr);
+    Base::compute_def_gradient(defgrd, N_XYZ, xcurr);
 
     // inverse deformation gradient F^-1
     static CORE::LINALG::Matrix<Base::numdim_, Base::numdim_> defgrd_inv(false);
@@ -587,7 +587,7 @@ void DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::GaussPointLoopP1(Teuchos::Param
 
     // non-linear B-operator
     CORE::LINALG::Matrix<Base::numstr_, Base::numdof_> bop;
-    Base::ComputeBOperator(bop, defgrd, N_XYZ);
+    Base::compute_b_operator(bop, defgrd, N_XYZ);
 
     // Right Cauchy-Green tensor = F^T * F
     CORE::LINALG::Matrix<Base::numdim_, Base::numdim_> cauchygreen;
@@ -713,7 +713,7 @@ void DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::GaussPointLoopP1(Teuchos::Param
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::CouplingPoroelast(std::vector<int>& lm,
+void DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::coupling_poroelast(std::vector<int>& lm,
     CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& disp,
     CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& vel,
     CORE::LINALG::Matrix<Base::numnod_, 1>* porosity,
@@ -725,7 +725,7 @@ void DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::CouplingPoroelast(std::vector<i
 {
   //=============================get parameters
 
-  Base::GetMaterials();
+  Base::get_materials();
 
   //=======================================================================
 
@@ -748,7 +748,7 @@ void DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::CouplingPoroelast(std::vector<i
 
   CORE::LINALG::Matrix<Base::numnod_, Base::numnod_> ecoupl_p1_p(true);
 
-  GaussPointLoopP1OD(
+  gauss_point_loop_p1_od(
       params, xrefe, xcurr, disp, vel, evelnp, epreaf, porosity, ecoupl_p1_p, &ecoupl);
 
   if (stiffmatrix != nullptr)
@@ -776,8 +776,8 @@ void DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::CouplingPoroelast(std::vector<i
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::GaussPointLoopP1OD(Teuchos::ParameterList& params,
-    const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& xrefe,
+void DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::gauss_point_loop_p1_od(
+    Teuchos::ParameterList& params, const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& xrefe,
     const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& xcurr,
     const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& nodaldisp,
     const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& nodalvel,
@@ -825,7 +825,7 @@ void DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::GaussPointLoopP1OD(Teuchos::Par
 
     // non-linear B-operator
     CORE::LINALG::Matrix<Base::numstr_, Base::numdof_> bop;
-    Base::ComputeBOperator(bop, defgrd, N_XYZ);
+    Base::compute_b_operator(bop, defgrd, N_XYZ);
 
     // -----------------Right Cauchy-Green tensor = F^T * F
     CORE::LINALG::Matrix<Base::numdim_, Base::numdim_> cauchygreen;

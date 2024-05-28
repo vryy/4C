@@ -248,7 +248,7 @@ namespace STR
        *  \param iowriter            (in) : output writer
        *  \param forced_writerestart (in) : special treatment is necessary, if the restart is forced
        */
-      virtual void WriteRestart(
+      virtual void write_restart(
           IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const = 0;
 
       /*! \brief read model specific restart information
@@ -263,7 +263,7 @@ namespace STR
        *         the respective model evaluators, e.g. condensed variables.*/
       virtual void Predict(const INPAR::STR::PredEnum& pred_type) = 0;
 
-      /*! \brief Recover condensed solution variables, meant to be called by RunPostComputeX
+      /*! \brief Recover condensed solution variables, meant to be called by run_post_compute_x
        */
       virtual void RunRecover(){};
 
@@ -274,13 +274,13 @@ namespace STR
        *  Do NOT use it to reset your model variables! Use the Reset() method instead.
        *
        *  \author hiermeier \date 07/2016 */
-      virtual void RunPostComputeX(
+      virtual void run_post_compute_x(
           const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) = 0;
 
       /*! \brief Executed before the solution vector is going to be updated
        *
        *  \author hiermeier \date 03/17 */
-      virtual void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
+      virtual void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
           const NOX::NLN::Group& curr_grp) = 0;
 
       /*! \brief Executed at the end of the ::NOX::Solver::Generic::Step() (f.k.a. Iterate()) method
@@ -288,7 +288,7 @@ namespace STR
        *  \param solver (in) : reference to the non-linear nox solver object (read-only)
        *
        *  \author hiermeier \date 03/17 */
-      virtual void RunPostIterate(const ::NOX::Solver::Generic& solver) = 0;
+      virtual void run_post_iterate(const ::NOX::Solver::Generic& solver) = 0;
 
       /*! \brief Executed at the beginning of the ::NOX::Solver::Generic::solve() method
        *
@@ -330,7 +330,7 @@ namespace STR
       { /* empty */
       }
 
-      virtual bool CorrectParameters(NOX::NLN::CorrectionType type) { return true; };
+      virtual bool correct_parameters(NOX::NLN::CorrectionType type) { return true; };
 
       /// update the model state corresponding to the time/load-step
       virtual void UpdateStepState(const double& timefac_n) = 0;
@@ -345,7 +345,7 @@ namespace STR
       virtual void UpdateStepElement() = 0;
 
       //! Compute the residual by difference of {n+1} and {n} state
-      virtual void UpdateResidual()
+      virtual void update_residual()
       { /* do nothing by default */
       }
 
@@ -387,7 +387,7 @@ namespace STR
 
       /*! \brief Output routine for model evaluator
        *
-       * @param iowriter Discretization writer that actually writes binary output to the disk
+       * @param iowriter discretization writer that actually writes binary output to the disk
        */
       virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const = 0;
 
@@ -480,31 +480,31 @@ namespace STR
        *
        *  \author hiermeier
        */
-      virtual bool EvalErrorCheck() const;
+      virtual bool eval_error_check() const;
 
       //! @name internal accessors
       //! @{
       //! Returns the model evaluator data container
-      STR::MODELEVALUATOR::Data& EvalData();
-      Teuchos::RCP<STR::MODELEVALUATOR::Data>& EvalDataPtr();
+      STR::MODELEVALUATOR::Data& eval_data();
+      Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr();
 
       //! Returns the global state data container
-      STR::TIMINT::BaseDataGlobalState& GState();
-      Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& GStatePtr();
+      STR::TIMINT::BaseDataGlobalState& g_state();
+      Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& g_state_ptr();
 
       //! Returns the global input/output data container
-      STR::TIMINT::BaseDataIO& GInOutput();
-      Teuchos::RCP<STR::TIMINT::BaseDataIO> GInOutputPtr();
+      STR::TIMINT::BaseDataIO& g_in_output();
+      Teuchos::RCP<STR::TIMINT::BaseDataIO> g_in_output_ptr();
 
       //! Returns the (structural) discretization
-      DRT::Discretization& Discret();
-      Teuchos::RCP<DRT::Discretization>& DiscretPtr();
+      DRT::Discretization& discret();
+      Teuchos::RCP<DRT::Discretization>& discret_ptr();
 
       //! Returns the underlying STR::Integrator object
-      STR::Integrator& Int();
-      Teuchos::RCP<STR::Integrator>& IntPtr();
+      STR::Integrator& integrator();
+      Teuchos::RCP<STR::Integrator>& int_ptr();
 
-      const int& DofOffset() const;
+      const int& dof_offset() const;
       //! @}
      protected:
       //! init flag

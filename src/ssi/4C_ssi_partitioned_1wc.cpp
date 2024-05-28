@@ -52,23 +52,23 @@ void SSI::SSIPart1WC::do_struct_step()
   }
 
   // Newton-Raphson iteration
-  StructureField()->Solve();
+  structure_field()->Solve();
   // calculate stresses, strains, energies
   constexpr bool force_prepare = false;
-  StructureField()->prepare_output(force_prepare);
+  structure_field()->prepare_output(force_prepare);
   // update all single field solvers
-  StructureField()->Update();
+  structure_field()->Update();
   // write output to files
-  StructureField()->Output();
+  structure_field()->Output();
   // write output to screen
-  StructureField()->PrintStep();
+  structure_field()->PrintStep();
   // clean up
-  StructureField()->Discretization()->ClearState(true);
+  structure_field()->discretization()->ClearState(true);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIPart1WC::DoScatraStep()
+void SSI::SSIPart1WC::do_scatra_step()
 {
   if (Comm().MyPID() == 0)
   {
@@ -80,11 +80,11 @@ void SSI::SSIPart1WC::DoScatraStep()
   // -------------------------------------------------------------------
   if (isscatrafromfile_)
   {
-    int diffsteps = StructureField()->Dt() / ScaTraField()->Dt();
+    int diffsteps = structure_field()->Dt() / ScaTraField()->Dt();
     if (ScaTraField()->Step() % diffsteps == 0)
     {
       Teuchos::RCP<IO::DiscretizationReader> reader =
-          Teuchos::rcp(new IO::DiscretizationReader(ScaTraField()->Discretization(),
+          Teuchos::rcp(new IO::DiscretizationReader(ScaTraField()->discretization(),
               GLOBAL::Problem::Instance()->InputControlFile(), ScaTraField()->Step()));
 
       // check if this is a cardiac monodomain problem
@@ -107,7 +107,7 @@ void SSI::SSIPart1WC::DoScatraStep()
       {
         // create vector with noderowmap from previously performed scatra calculation
         Teuchos::RCP<Epetra_Vector> phinptemp =
-            CORE::LINALG::CreateVector(*cardmono->Discretization()->NodeRowMap());
+            CORE::LINALG::CreateVector(*cardmono->discretization()->NodeRowMap());
 
         // read phinp from restart file
         reader->ReadVector(phinptemp, "phinp");
@@ -145,7 +145,7 @@ void SSI::SSIPart1WC::DoScatraStep()
   ScaTraField()->check_and_write_output_and_restart();
 
   // cleanup
-  ScaTraField()->Discretization()->ClearState();
+  ScaTraField()->discretization()->ClearState();
 }
 
 /*----------------------------------------------------------------------*/
@@ -155,20 +155,20 @@ void SSI::SSIPart1WCSolidToScatra::prepare_time_step(bool printheader)
 {
   increment_time_and_step();
 
-  if (printheader) PrintHeader();
+  if (printheader) print_header();
 
   // if adaptive time stepping: calculate time step in scatra (prepare_time_step() of Scatra) and
   // pass to structure
   if (ScaTraField()->TimeStepAdapted()) set_dt_from_sca_tra_to_structure();
 
-  StructureField()->prepare_time_step();
+  structure_field()->prepare_time_step();
 
-  const int diffsteps = ScaTraField()->Dt() / StructureField()->Dt();
+  const int diffsteps = ScaTraField()->Dt() / structure_field()->Dt();
 
-  if (StructureField()->Step() % diffsteps == 0)
+  if (structure_field()->Step() % diffsteps == 0)
   {
-    if (is_s2_i_kinetics_with_pseudo_contact()) StructureField()->determine_stress_strain();
-    SetStructSolution(StructureField()->Dispn(), StructureField()->Veln(),
+    if (is_s2_i_kinetics_with_pseudo_contact()) structure_field()->determine_stress_strain();
+    set_struct_solution(structure_field()->Dispn(), structure_field()->Veln(),
         is_s2_i_kinetics_with_pseudo_contact());
     ScaTraField()->prepare_time_step();
   }
@@ -219,29 +219,29 @@ void SSI::SSIPart1WCSolidToScatra::Timeloop()
 {
   // safety checks
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
-  if (StructureField()->Dt() > ScaTraField()->Dt())
+  if (structure_field()->Dt() > ScaTraField()->Dt())
   {
     FOUR_C_THROW(
         "Timestepsize of scatra should be equal or bigger than solid timestep in solid to scatra "
         "interaction");
   }
 
-  const int diffsteps = ScaTraField()->Dt() / StructureField()->Dt();
+  const int diffsteps = ScaTraField()->Dt() / structure_field()->Dt();
 
   while (NotFinished())
   {
     prepare_time_step(false);
     do_struct_step();  // It has its own time and timestep variables, and it increments them by
                        // itself.
-    if (StructureField()->Step() % diffsteps == 0)
+    if (structure_field()->Step() % diffsteps == 0)
     {
-      if (is_s2_i_kinetics_with_pseudo_contact()) StructureField()->determine_stress_strain();
-      SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp(),
+      if (is_s2_i_kinetics_with_pseudo_contact()) structure_field()->determine_stress_strain();
+      set_struct_solution(structure_field()->Dispnp(), structure_field()->Velnp(),
           is_s2_i_kinetics_with_pseudo_contact());
-      DoScatraStep();  // It has its own time and timestep variables, and it increments them by
-                       // itself.
+      do_scatra_step();  // It has its own time and timestep variables, and it increments them by
+                         // itself.
     }
   }
 }
@@ -280,7 +280,7 @@ void SSI::SSIPart1WCScatraToSolid::Init(const Epetra_Comm& comm,
 /*----------------------------------------------------------------------*/
 void SSI::SSIPart1WCScatraToSolid::Timeloop()
 {
-  if (StructureField()->Dt() < ScaTraField()->Dt())
+  if (structure_field()->Dt() < ScaTraField()->Dt())
   {
     FOUR_C_THROW(
         "Timestepsize of solid should be equal or bigger than scatra timestep in scatra to solid "
@@ -288,30 +288,30 @@ void SSI::SSIPart1WCScatraToSolid::Timeloop()
   }
 
   // set zero velocity and displacement field for scatra
-  auto zeros_structure = CORE::LINALG::CreateVector(*StructureField()->dof_row_map(), true);
-  SetStructSolution(zeros_structure, zeros_structure, false);
+  auto zeros_structure = CORE::LINALG::CreateVector(*structure_field()->dof_row_map(), true);
+  set_struct_solution(zeros_structure, zeros_structure, false);
 
   ScaTraField()->prepare_time_loop();
 
-  const int diffsteps = StructureField()->Dt() / ScaTraField()->Dt();
+  const int diffsteps = structure_field()->Dt() / ScaTraField()->Dt();
   while (!Finished())
   {
     prepare_time_step();
-    DoScatraStep();  // It has its own time and timestep variables, and it increments them by
-                     // itself.
+    do_scatra_step();  // It has its own time and timestep variables, and it increments them by
+                       // itself.
     if (ScaTraField()->Step() % diffsteps == 0)
     {
       SetScatraSolution(ScaTraField()->Phinp());
 
       // set micro scale value (projected to macro scale) to structure field
-      if (MacroScale()) set_micro_scatra_solution(ScaTraField()->PhinpMicro());
+      if (macro_scale()) set_micro_scatra_solution(ScaTraField()->PhinpMicro());
 
       // evaluate temperature from function and set to structural discretization
       evaluate_and_set_temperature_field();
 
       // prepare_time_step() is called after solving the scalar transport, because then the
       // predictor will include the new scalar solution
-      StructureField()->prepare_time_step();
+      structure_field()->prepare_time_step();
       do_struct_step();  // It has its own time and timestep variables, and it increments them by
                          // itself.
     }
@@ -324,7 +324,7 @@ void SSI::SSIPart1WCScatraToSolid::Timeloop()
 void SSI::SSIPart1WCScatraToSolid::prepare_time_step(bool printheader)
 {
   increment_time_and_step();
-  // PrintHeader();
+  print_header();
 
   ScaTraField()->prepare_time_step();
   // prepare_time_step of structure field is called later
@@ -337,7 +337,7 @@ void SSI::SSIPart1WCScatraToSolid::prepare_time_step(bool printheader)
 /*----------------------------------------------------------------------*/
 bool SSI::SSIPart1WCScatraToSolid::Finished() const
 {
-  if (DiffTimeStepSize())
+  if (diff_time_step_size())
     return !NotFinished();
   else
     return !(NotFinished() and ScaTraField()->NotFinished());

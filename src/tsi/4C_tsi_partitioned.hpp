@@ -68,7 +68,7 @@ namespace TSI
     void TimeLoopSequStagg();
 
     //! time loop for TSI algorithm with one-way coupling
-    void TimeLoopOneWay();
+    void time_loop_one_way();
 
     //! time loop for TSI algorithm with iteration between fields (full coupling)
     void TimeLoopFull();
@@ -88,7 +88,7 @@ namespace TSI
     void prepare_output() override;
 
     //! take current results for converged and save for next time step
-    void Update() override;
+    void update() override;
     //@}
 
     void prepare_contact_strategy() override;
@@ -96,15 +96,15 @@ namespace TSI
     //! @name Solve
 
     //! solve temperature equations for current time step
-    void DoThermoStep();
+    void do_thermo_step();
 
     //! solve displacement equations for current time step
-    void DoStructureStep();
+    void do_structure_step();
 
     // two-way coupling (iterative staggered)
 
     //! outer iteration loop
-    void OuterIterationLoop();
+    void outer_iteration_loop();
 
     //@}
 

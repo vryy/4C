@@ -41,7 +41,7 @@ namespace DRT
 
 
       //! evaluate action
-      int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
+      int evaluate_action(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -66,10 +66,10 @@ namespace DRT
       /*========================================================================*/
 
       //! calculate contributions to element matrix and residual (inside loop over all scalars)
-      void CalcMatAndRhs(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
-          CORE::LINALG::SerialDenseVector& erhs,                 //!< element rhs to calculate+
-          const int k,                                           //!< index of current scalar
-          const double fac,                                      //!< domain-integration factor
+      void calc_mat_and_rhs(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs,                    //!< element rhs to calculate+
+          const int k,                                              //!< index of current scalar
+          const double fac,                                         //!< domain-integration factor
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double taufac,  //!< tau times domain-integration factor
@@ -103,12 +103,12 @@ namespace DRT
       /*========================================================================*/
 
       //! get material parameters
-      void GetMaterialParams(const DRT::Element* ele,  //!< the element we are dealing with
-          std::vector<double>& densn,                  //!< density at t_(n)
-          std::vector<double>& densnp,                 //!< density at t_(n+1) or t_(n+alpha_F)
-          std::vector<double>& densam,                 //!< density at t_(n+alpha_M)
-          double& visc,                                //!< fluid viscosity
-          const int iquad = -1                         //!< id of current gauss point (default = -1)
+      void get_material_params(const DRT::Element* ele,  //!< the element we are dealing with
+          std::vector<double>& densn,                    //!< density at t_(n)
+          std::vector<double>& densnp,                   //!< density at t_(n+1) or t_(n+alpha_F)
+          std::vector<double>& densam,                   //!< density at t_(n+alpha_M)
+          double& visc,                                  //!< fluid viscosity
+          const int iquad = -1  //!< id of current gauss point (default = -1)
           ) override;
 
       /*========================================================================*/
@@ -117,8 +117,8 @@ namespace DRT
 
       //! CalcMat: linearizations of diffusion term and Ohmic overpotential w.r.t. structural
       //! displacements
-      void CalcDiffODMesh(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
-          const int k,                                            //!< index of current scalar
+      void calc_diff_od_mesh(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+          const int k,                                               //!< index of current scalar
           const int ndofpernodemesh,  //!< number of structural degrees of freedom per node
           const double diffcoeff,     //!< diffusion coefficient
           const double fac,           //!< domain-integration factor
@@ -132,7 +132,7 @@ namespace DRT
           ) override;
 
       //! CalcMat: linearization of diffusion coefficient in diffusion term
-      void CalcMatDiffCoeffLin(
+      void calc_mat_diff_coeff_lin(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
@@ -171,13 +171,13 @@ namespace DRT
       );
 
       //! calculate weighted current density
-      void CalculateCurrent(CORE::LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
-          const INPAR::SCATRA::FluxType fluxtype,              //!< type fo flux
-          const double fac                                     //!< integration factor
+      void calculate_current(CORE::LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
+          const INPAR::SCATRA::FluxType fluxtype,               //!< type fo flux
+          const double fac                                      //!< integration factor
           ) override;
 
       //! get utility class supporting element evaluation for electrodes
-      DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>* Utils()
+      DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>* utils()
       {
         return static_cast<DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>*>(myelch::utils_);
       };
@@ -192,9 +192,9 @@ namespace DRT
           ) override;
 
       //! get conductivity
-      void GetConductivity(const enum INPAR::ELCH::EquPot
-                               equpot,  //!< type of closing equation for electric potential
-          double& sigma_all,            //!< conductivity of electrolyte solution
+      void get_conductivity(const enum INPAR::ELCH::EquPot
+                                equpot,  //!< type of closing equation for electric potential
+          double& sigma_all,             //!< conductivity of electrolyte solution
           std::vector<double>&
               sigma,    //!< conductivity or a single ion + overall electrolyte solution
           bool effCond  //!< flag if effective conductivity should be calculated
@@ -219,9 +219,9 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& conc);
 
       //! calculate weighted mass flux (no reactive flux so far)
-      void CalculateFlux(CORE::LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
-          const INPAR::SCATRA::FluxType fluxtype,           //!< type fo flux
-          const int k                                       //!< index of current scalar
+      void calculate_flux(CORE::LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
+          const INPAR::SCATRA::FluxType fluxtype,            //!< type fo flux
+          const int k                                        //!< index of current scalar
           ) override;
 
       //! calculate error of numerical solution with respect to analytical solution

@@ -90,7 +90,7 @@ namespace DRT
           const Teuchos::ParameterList& params,
           std::map<std::string, std::vector<double>>& ele_state) override;
 
-      void Energy(const std::map<std::string, std::vector<double>>& ele_state,
+      void energy(const std::map<std::string, std::vector<double>>& ele_state,
           Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& intenergy) override;
 
      private:

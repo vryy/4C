@@ -152,7 +152,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::NStet5Type::ComputeNullSpace(
 
   DRT::ELEMENTS::NStet5* nstet = dynamic_cast<DRT::ELEMENTS::NStet5*>(node.Elements()[0]);
   if (!nstet) FOUR_C_THROW("Cannot cast to NStet5");
-  const double* x = nstet->MidX();
+  const double* x = nstet->mid_x();
 
   CORE::LINALG::SerialDenseMatrix nullspace(numdof, dimnsp);
   // x-modes
@@ -428,7 +428,7 @@ void DRT::ELEMENTS::NStet5Type::init_elementsand_maps(
     if (!actele) FOUR_C_THROW("cast to NStet5* failed");
 
     // init the element
-    actele->InitElement();
+    actele->init_element();
 
     // register element in list of column nstet elements
     elecids[actele->Id()] = actele;
@@ -524,8 +524,8 @@ void DRT::ELEMENTS::NStet5Type::init_adjacency(std::map<int, DRT::ELEMENTS::NSte
           std::vector<int> subele;
           for (int k = 0; k < 4; ++k)
           {
-            const int* sublm = ele->SubLM(k);  // subelement k
-            for (int l = 0; l < 3; ++l)        // the first 3 nodes of the subelement
+            const int* sublm = ele->sub_lm(k);  // subelement k
+            for (int l = 0; l < 3; ++l)         // the first 3 nodes of the subelement
               if (sublm[l] == i)
               {
                 subele.push_back(k);
@@ -557,7 +557,7 @@ void DRT::ELEMENTS::NStet5Type::init_adjacency(std::map<int, DRT::ELEMENTS::NSte
       for (unsigned k = 0; k < subele.size(); ++k)
       {
         const int subeleid = subele[k];
-        const int* sublm = ele->SubLM(subeleid);
+        const int* sublm = ele->sub_lm(subeleid);
         std::vector<int> elelm;
         for (int l = 0; l < 4; ++l)  // loop nodes of subelement and collect dofs
         {

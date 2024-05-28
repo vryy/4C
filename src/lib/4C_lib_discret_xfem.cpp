@@ -52,7 +52,7 @@ int DRT::DiscretizationXFEM::InitialFillComplete(const std::vector<int>& nds,
 }
 
 /*----------------------------------------------------------------------*
- |  checks if Discretization is initialized (protected)  ager 11/14|
+ |  checks if discretization is initialized (protected)  ager 11/14|
  *----------------------------------------------------------------------*/
 bool DRT::DiscretizationXFEM::Initialized() const
 {

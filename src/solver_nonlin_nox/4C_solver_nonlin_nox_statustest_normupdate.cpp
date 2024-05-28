@@ -52,7 +52,7 @@ NOX::NLN::StatusTest::NormUpdate::NormUpdate(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::StatusTest::NormUpdate::ComputeNorm(
+void NOX::NLN::StatusTest::NormUpdate::compute_norm(
     const ::NOX::Abstract::Group& grp, const ::NOX::Solver::Generic& problem)
 {
   // cast the nox_abstract_group to nox_nln_group
@@ -114,7 +114,7 @@ void NOX::NLN::StatusTest::NormUpdate::ComputeNorm(
 
   // get the specified norms from the underlying interface classes.
   // update of the truetolerance variable.
-  ComputeNorm(soln, problem);
+  compute_norm(soln, problem);
 
   // loop over all quantities
   for (std::size_t i = 0; i < nChecks_; ++i)

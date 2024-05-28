@@ -65,8 +65,8 @@ void STR::IMPLICIT::Statics::set_state(const Epetra_Vector& x)
   check_init_setup();
   if (IsPredictorState()) return;
 
-  Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().ExtractDisplEntries(x);
-  GlobalState().GetDisNp()->Scale(1.0, *disnp_ptr);
+  Teuchos::RCP<Epetra_Vector> disnp_ptr = global_state().ExtractDisplEntries(x);
+  global_state().GetDisNp()->Scale(1.0, *disnp_ptr);
 }
 
 /*----------------------------------------------------------------------------*
@@ -74,7 +74,7 @@ void STR::IMPLICIT::Statics::set_state(const Epetra_Vector& x)
 bool STR::IMPLICIT::Statics::ApplyForce(const Epetra_Vector& x, Epetra_Vector& f)
 {
   check_init_setup();
-  ResetEvalParams();
+  reset_eval_params();
   return ModelEval().ApplyForce(x, f, 1.0);
 }
 
@@ -83,7 +83,7 @@ bool STR::IMPLICIT::Statics::ApplyForce(const Epetra_Vector& x, Epetra_Vector& f
 bool STR::IMPLICIT::Statics::ApplyStiff(const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac)
 {
   check_init_setup();
-  ResetEvalParams();
+  reset_eval_params();
   bool ok = ModelEval().ApplyStiff(x, jac, 1.0);
   jac.Complete();
   return ok;
@@ -95,7 +95,7 @@ bool STR::IMPLICIT::Statics::ApplyForceStiff(
     const Epetra_Vector& x, Epetra_Vector& f, CORE::LINALG::SparseOperator& jac)
 {
   check_init_setup();
-  ResetEvalParams();
+  reset_eval_params();
   bool ok = ModelEval().ApplyForceStiff(x, f, jac, 1.0);
   jac.Complete();
   return ok;
@@ -112,20 +112,20 @@ bool STR::IMPLICIT::Statics::assemble_force(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Statics::WriteRestart(
+void STR::IMPLICIT::Statics::write_restart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
 
   // create empty dynamic forces
-  auto finertialn = CORE::LINALG::CreateVector(*GlobalState().DofRowMapView(), true);
-  auto fviscon = CORE::LINALG::CreateVector(*GlobalState().DofRowMapView(), true);
+  auto finertialn = CORE::LINALG::CreateVector(*global_state().DofRowMapView(), true);
+  auto fviscon = CORE::LINALG::CreateVector(*global_state().DofRowMapView(), true);
 
   // write dynamic forces, so that it can be used later on for restart dynamics analysis
   iowriter.WriteVector("finert", finertialn);
   iowriter.WriteVector("fvisco", fviscon);
 
-  ModelEval().WriteRestart(iowriter, forced_writerestart);
+  ModelEval().write_restart(iowriter, forced_writerestart);
 }
 
 /*----------------------------------------------------------------------------*
@@ -144,11 +144,11 @@ double STR::IMPLICIT::Statics::CalcRefNormForce(
   check_init_setup();
 
   const Teuchos::RCP<Epetra_Vector> fintnp =
-      Teuchos::rcp_const_cast<Epetra_Vector>(GlobalState().GetFintNp());
+      Teuchos::rcp_const_cast<Epetra_Vector>(global_state().GetFintNp());
   const Teuchos::RCP<Epetra_Vector> fextnp =
-      Teuchos::rcp_const_cast<Epetra_Vector>(GlobalState().GetFextNp());
+      Teuchos::rcp_const_cast<Epetra_Vector>(global_state().GetFextNp());
   const Teuchos::RCP<Epetra_Vector> freactnp =
-      Teuchos::rcp_const_cast<Epetra_Vector>(GlobalState().GetFreactNp());
+      Teuchos::rcp_const_cast<Epetra_Vector>(global_state().GetFreactNp());
 
   // switch from Epetra_Vector to ::NOX::Epetra::Vector (view but read-only)
   Teuchos::RCP<const ::NOX::Epetra::Vector> fintnp_nox_ptr =
@@ -180,15 +180,15 @@ double STR::IMPLICIT::Statics::GetIntParam() const { return 0.0; }
 void STR::IMPLICIT::Statics::PreUpdate()
 {
   check_init_setup();
-  const STR::TIMINT::Implicit* impl_ptr = dynamic_cast<const STR::TIMINT::Implicit*>(&TimInt());
+  const STR::TIMINT::Implicit* impl_ptr = dynamic_cast<const STR::TIMINT::Implicit*>(&tim_int());
   if (impl_ptr == nullptr) return;
 
   // get the time step size
-  const double dt = (*GlobalState().GetDeltaTime())[0];
+  const double dt = (*global_state().GetDeltaTime())[0];
 
   const INPAR::STR::PredEnum& pred_type = impl_ptr->Predictor().GetType();
-  Teuchos::RCP<Epetra_Vector>& accnp_ptr = GlobalState().GetAccNp();
-  Teuchos::RCP<Epetra_Vector>& velnp_ptr = GlobalState().GetVelNp();
+  Teuchos::RCP<Epetra_Vector>& accnp_ptr = global_state().GetAccNp();
+  Teuchos::RCP<Epetra_Vector>& velnp_ptr = global_state().GetVelNp();
 
   switch (pred_type)
   {
@@ -196,7 +196,7 @@ void STR::IMPLICIT::Statics::PreUpdate()
     case INPAR::STR::pred_constacc:
     {
       // read-only access
-      Teuchos::RCP<const Epetra_Vector> veln_ptr = GlobalState().GetVelN();
+      Teuchos::RCP<const Epetra_Vector> veln_ptr = global_state().GetVelN();
       // update the pseudo acceleration (statics!)
       accnp_ptr->Update(1.0 / dt, *velnp_ptr, -1.0 / dt, *veln_ptr, 0.0);
 
@@ -206,8 +206,8 @@ void STR::IMPLICIT::Statics::PreUpdate()
     case INPAR::STR::pred_constvel:
     {
       // read-only access
-      Teuchos::RCP<const Epetra_Vector> disn_ptr = GlobalState().GetDisN();
-      Teuchos::RCP<const Epetra_Vector> disnp_ptr = GlobalState().GetDisNp();
+      Teuchos::RCP<const Epetra_Vector> disn_ptr = global_state().GetDisN();
+      Teuchos::RCP<const Epetra_Vector> disnp_ptr = global_state().GetDisNp();
       // update the pseudo velocity (statics!)
       velnp_ptr->Update(1.0 / dt, *disnp_ptr, -1.0 / dt, *disn_ptr, 0.0);
       // ATTENTION: Break for both cases!
@@ -243,7 +243,7 @@ void STR::IMPLICIT::Statics::predict_const_dis_consist_vel_acc(
 {
   check_init_setup();
   // constant predictor : displacement in domain
-  disnp.Update(1.0, *GlobalState().GetDisN(), 0.0);
+  disnp.Update(1.0, *global_state().GetDisN(), 0.0);
   // new end-point velocities, these stay zero in static calculation
   velnp.PutScalar(0.0);
   // new end-point accelerations, these stay zero in static calculation
@@ -257,19 +257,19 @@ bool STR::IMPLICIT::Statics::predict_const_vel_consist_acc(
 {
   check_init_setup();
   // If there is not enough history information, return a fail status.
-  if (GlobalState().GetStepN() == 0) return false;
+  if (global_state().GetStepN() == 0) return false;
 
   // Displacement increment over last time step
   Teuchos::RCP<Epetra_Vector> disp_inc =
-      Teuchos::rcp(new Epetra_Vector(*GlobalState().DofRowMapView(), true));
-  disp_inc->Update((*GlobalState().GetDeltaTime())[0], *GlobalState().GetVelN(), 0.);
+      Teuchos::rcp(new Epetra_Vector(*global_state().DofRowMapView(), true));
+  disp_inc->Update((*global_state().GetDeltaTime())[0], *global_state().GetVelN(), 0.);
   // apply the dbc on the auxiliary vector
-  TimInt().GetDBC().apply_dirichlet_to_vector(disp_inc);
+  tim_int().GetDBC().apply_dirichlet_to_vector(disp_inc);
   // update the solution variables
-  disnp.Update(1.0, *GlobalState().GetDisN(), 0.0);
+  disnp.Update(1.0, *global_state().GetDisN(), 0.0);
   disnp.Update(1.0, *disp_inc, 1.0);
-  velnp.Update(1.0, *GlobalState().GetVelN(), 0.0);
-  accnp.Update(1.0, *GlobalState().GetAccN(), 0.0);
+  velnp.Update(1.0, *global_state().GetVelN(), 0.0);
+  accnp.Update(1.0, *global_state().GetAccN(), 0.0);
 
   return true;
 }
@@ -282,38 +282,38 @@ bool STR::IMPLICIT::Statics::PredictConstAcc(
   check_init_setup();
   // If there is not enough history information try a different predictor with
   // less requirements.
-  if (GlobalState().GetStepN() < 2) return predict_const_vel_consist_acc(disnp, velnp, accnp);
+  if (global_state().GetStepN() < 2) return predict_const_vel_consist_acc(disnp, velnp, accnp);
 
   // Displacement increment over last time step
   Teuchos::RCP<Epetra_Vector> disp_inc =
-      Teuchos::rcp(new Epetra_Vector(*GlobalState().DofRowMapView(), true));
-  const double& dt = (*GlobalState().GetDeltaTime())[0];
-  disp_inc->Update(dt, *GlobalState().GetVelN(), 0.);
-  disp_inc->Update(0.5 * dt * dt, *GlobalState().GetAccN(), 1.0);
+      Teuchos::rcp(new Epetra_Vector(*global_state().DofRowMapView(), true));
+  const double& dt = (*global_state().GetDeltaTime())[0];
+  disp_inc->Update(dt, *global_state().GetVelN(), 0.);
+  disp_inc->Update(0.5 * dt * dt, *global_state().GetAccN(), 1.0);
   // apply the dbc on the auxiliary vector
-  TimInt().GetDBC().apply_dirichlet_to_vector(disp_inc);
+  tim_int().GetDBC().apply_dirichlet_to_vector(disp_inc);
   // update the solution variables
-  disnp.Update(1.0, *GlobalState().GetDisN(), 0.0);
+  disnp.Update(1.0, *global_state().GetDisN(), 0.0);
   disnp.Update(1., *disp_inc, 1.);
-  velnp.Update(1.0, *GlobalState().GetVelN(), 0.0);
-  accnp.Update(1.0, *GlobalState().GetAccN(), 0.0);
+  velnp.Update(1.0, *global_state().GetVelN(), 0.0);
+  accnp.Update(1.0, *global_state().GetAccN(), 0.0);
 
   return true;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Statics::ResetEvalParams()
+void STR::IMPLICIT::Statics::reset_eval_params()
 {
   // call base class
-  STR::IMPLICIT::Generic::ResetEvalParams();
+  STR::IMPLICIT::Generic::reset_eval_params();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double STR::IMPLICIT::Statics::GetModelValue(const Epetra_Vector& x)
 {
-  Teuchos::RCP<const Epetra_Vector> disnp_ptr = GlobalState().ExtractDisplEntries(x);
+  Teuchos::RCP<const Epetra_Vector> disnp_ptr = global_state().ExtractDisplEntries(x);
   const Epetra_Vector& disnp = *disnp_ptr;
 
   set_state(disnp);
@@ -325,7 +325,7 @@ double STR::IMPLICIT::Statics::GetModelValue(const Epetra_Vector& x)
   str_model.determine_strain_energy(disnp, true);
   const double int_energy_np = EvalData().GetEnergyData(STR::internal_energy);
   double ext_energy_np = 0.0;
-  GlobalState().GetFextNp()->Dot(disnp, &ext_energy_np);
+  global_state().GetFextNp()->Dot(disnp, &ext_energy_np);
   const double total = int_energy_np - ext_energy_np;
 
   std::ostream& os = IO::cout.os(IO::debug);

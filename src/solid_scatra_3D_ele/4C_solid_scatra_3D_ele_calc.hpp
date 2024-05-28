@@ -43,7 +43,7 @@ namespace DRT::ELEMENTS
 
     void Setup(MAT::So3Material& solid_material, INPUT::LineDefinition* linedef);
 
-    void MaterialPostSetup(const DRT::Element& ele, MAT::So3Material& solid_material);
+    void material_post_setup(const DRT::Element& ele, MAT::So3Material& solid_material);
 
     void Recover(const DRT::Element& ele, const DRT::Discretization& discretization,
         const DRT::Element::LocationArray& la, Teuchos::ParameterList& params);

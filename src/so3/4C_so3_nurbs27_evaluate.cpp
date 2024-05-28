@@ -191,7 +191,8 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
         FOUR_C_THROW("To scale or not to scale, that's the query!");
       else
       {
-        CalcSTCMatrix(elemat1, stc_scaling, params.get<int>("stc_layer"), lm, discretization, true);
+        do_calc_stc_matrix(
+            elemat1, stc_scaling, params.get<int>("stc_layer"), lm, discretization, true);
       }
     }
     break;
@@ -203,7 +204,7 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
         FOUR_C_THROW("To scale or not to scale, that's the query!");
       else
       {
-        CalcSTCMatrix(
+        do_calc_stc_matrix(
             elemat1, stc_scaling, params.get<int>("stc_layer"), lm, discretization, false);
       }
     }
@@ -218,7 +219,7 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
-      elevec1_epetra(0) = CalcIntEnergy(discretization, mydisp, params);
+      elevec1_epetra(0) = calc_int_energy(discretization, mydisp, params);
       break;
     }
 
@@ -232,7 +233,7 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  | calc. scaled thickness matrix for thin shell-like structs   (public) |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::SoNurbs27::CalcSTCMatrix(CORE::LINALG::Matrix<81, 81>& elemat1,
+void DRT::ELEMENTS::NURBS::SoNurbs27::do_calc_stc_matrix(CORE::LINALG::Matrix<81, 81>& elemat1,
     const INPAR::STR::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
     DRT::Discretization& discretization, bool do_inverse)
 {
@@ -529,7 +530,7 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::CalcSTCMatrix(CORE::LINALG::Matrix<81, 81>
   }
 
   return;
-}  // CalcSTCMatrix
+}  // calc_stc_matrix
 
 
 
@@ -552,7 +553,7 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::evaluate_neumann(Teuchos::ParameterList& pa
   // find out whether we will use a time curve
   double time = -1.0;
   if (IsParamsInterface())
-    time = ParamsInterface().GetTotalTime();
+    time = params_interface().GetTotalTime();
   else
     time = params.get("total time", -1.0);
 
@@ -678,7 +679,7 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::evaluate_neumann(Teuchos::ParameterList& pa
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)                       |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::SoNurbs27::InitJacobianMapping(DRT::Discretization& dis)
+void DRT::ELEMENTS::NURBS::SoNurbs27::init_jacobian_mapping(DRT::Discretization& dis)
 {
   // --------------------------------------------------
   // Initialisation of nurbs specific stuff
@@ -735,7 +736,7 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::InitJacobianMapping(DRT::Discretization& d
           detJ_[gp], Id(), gp);
   }
   return;
-}  // DRT::ELEMENTS::So_nurbs27::InitJacobianMapping()
+}  // DRT::ELEMENTS::So_nurbs27::init_jacobian_mapping()
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                                      |
@@ -1064,7 +1065,7 @@ int DRT::ELEMENTS::NURBS::SoNurbs27Type::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::NURBS::SoNurbs27*>(dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_nurbs27* failed");
-    actele->InitJacobianMapping(dis);
+    actele->init_jacobian_mapping(dis);
   }
   return 0;
 }
@@ -1073,7 +1074,7 @@ int DRT::ELEMENTS::NURBS::SoNurbs27Type::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  calculate internal energy of the element (private)                  |
  *----------------------------------------------------------------------*/
-double DRT::ELEMENTS::NURBS::SoNurbs27::CalcIntEnergy(
+double DRT::ELEMENTS::NURBS::SoNurbs27::calc_int_energy(
     DRT::Discretization& discretization,  // discretisation to extract knot vector
     std::vector<double>& disp,            // current displacements
     Teuchos::ParameterList& params)       // strain output option

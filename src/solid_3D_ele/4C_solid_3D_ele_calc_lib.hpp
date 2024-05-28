@@ -150,7 +150,7 @@ namespace DRT::ELEMENTS
    * @brief Evaluates the nodal coordinates from this iteration
    *
    * @param ele (in) : Reference to the element
-   * @param discretization (in) : Discretization
+   * @param discretization (in) : discretization
    * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
    */
   template <CORE::FE::CellType celltype>

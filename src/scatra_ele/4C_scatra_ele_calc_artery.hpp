@@ -84,7 +84,7 @@ namespace DRT
       }
 
       //! evaluate material
-      void Materials(
+      void materials(
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
@@ -95,7 +95,7 @@ namespace DRT
           ) override;
 
       //! calculation of convective element matrix in convective form (off diagonal term fluid)
-      void CalcMatConvODFluid(
+      void calc_mat_conv_od_fluid(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const int ndofpernodefluid,             //!< number of dofs per node of fluid element

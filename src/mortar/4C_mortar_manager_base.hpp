@@ -123,7 +123,7 @@ namespace MORTAR
         Teuchos::RCP<Epetra_Vector> zero) = 0;
 
     //! Write restart data to disk
-    virtual void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart = false) = 0;
+    virtual void write_restart(IO::DiscretizationWriter& output, bool forcedrestart = false) = 0;
 
     //! @}
 

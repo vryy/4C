@@ -249,7 +249,7 @@ namespace DRT
       /*!
       \brief Get number of degrees of freedom per element not including nodal degrees of freedom
       */
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       /*!
       \brief Print this element
@@ -742,7 +742,7 @@ namespace DRT
 
         DRT::UTILS::BEAM::EvaluateShapeFunctionDerivsAtXi<nnodecl, vpernode>(
             xi, N_i_xi, this->Shape(), this->RefLength());
-        this->Calc_r_xi<nnodecl, vpernode, double>(disp_centerline_ref, N_i_xi, r0_xi);
+        this->calc_r_xi<nnodecl, vpernode, double>(disp_centerline_ref, N_i_xi, r0_xi);
 
         return r0_xi.Norm2();
       }

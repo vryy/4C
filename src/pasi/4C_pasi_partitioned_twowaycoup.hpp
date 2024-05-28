@@ -83,14 +83,14 @@ namespace PASI
      *
      * \author Sebastian Fuchs \date 02/2017
      */
-    virtual void Outerloop();
+    virtual void outerloop();
 
     /*!
      * \brief output of fields
      *
      * \author Sebastian Fuchs \date 03/2017
      */
-    void Output() override;
+    void output() override;
 
     /*!
      * \brief reset increment states
@@ -125,7 +125,7 @@ namespace PASI
      *
      * \param[in] intfforcenp interface force
      */
-    void SetInterfaceForces(Teuchos::RCP<const Epetra_Vector> intfforcenp);
+    void set_interface_forces(Teuchos::RCP<const Epetra_Vector> intfforcenp);
 
     /*!
      * \brief reset particle states
@@ -134,7 +134,7 @@ namespace PASI
      *
      * \author Sebastian Fuchs \date 03/2017
      */
-    void ResetParticleStates();
+    void reset_particle_states();
 
     /*!
      * \brief clear interface forces
@@ -154,7 +154,7 @@ namespace PASI
      *
      * \author Sebastian Fuchs \date 05/2019
      */
-    void GetInterfaceForces();
+    void get_interface_forces();
 
     /*!
      * \brief convergence check of the outer loop
@@ -177,7 +177,7 @@ namespace PASI
      *
      * \author Sebastian Fuchs \date 05/2019
      */
-    void SaveParticleStates();
+    void save_particle_states();
 
     //! interface force acting
     Teuchos::RCP<Epetra_Vector> intfforcenp_;
@@ -246,7 +246,7 @@ namespace PASI
      *
      * \author Sebastian Fuchs \date 02/2017
      */
-    void Outerloop() override;
+    void outerloop() override;
 
     /*!
      * \brief calculate relaxation parameter
@@ -258,7 +258,7 @@ namespace PASI
      * \param[in] omega relaxation parameter
      * \param[in] itnum iteration counter
      */
-    virtual void CalcOmega(double& omega, const int itnum);
+    virtual void calc_omega(double& omega, const int itnum);
 
     //! relaxed interface displacement
     Teuchos::RCP<Epetra_Vector> relaxintfdispnp_;
@@ -334,7 +334,7 @@ namespace PASI
      *
      * \author Sebastian Fuchs \date 03/2017
      */
-    void Output() override;
+    void output() override;
 
     /*!
      * \brief calculate relaxation parameter
@@ -348,7 +348,7 @@ namespace PASI
      * \param[in] omega relaxation parameter
      * \param[in] itnum iteration counter
      */
-    void CalcOmega(double& omega, const int itnum) override;
+    void calc_omega(double& omega, const int itnum) override;
 
     //! old interface displacement increment of the outer loop
     Teuchos::RCP<Epetra_Vector> intfdispincnpold_;

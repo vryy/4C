@@ -71,7 +71,7 @@ namespace ADAPTER
     Teuchos::RCP<STR::MODELEVALUATOR::PartitionedPASI> pasi_model_evaluator_;
 
     //! access the pasi model evaluator
-    Teuchos::RCP<STR::MODELEVALUATOR::PartitionedPASI> PASIModelEvaluator()
+    Teuchos::RCP<STR::MODELEVALUATOR::PartitionedPASI> pasi_model_evaluator()
     {
       return pasi_model_evaluator_;
     };

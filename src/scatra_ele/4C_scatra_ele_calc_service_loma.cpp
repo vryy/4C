@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::EvaluateAction(DRT::Element* ele,
+int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::evaluate_action(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -52,7 +52,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::EvaluateAction(DRT::Element* ele,
 
   if (action == SCATRA::Action::calc_dissipation or action == SCATRA::Action::calc_mean_Cai)
   {
-    // get thermodynamic pressure (for CalcDissipation)
+    // get thermodynamic pressure (for calc_dissipation)
     thermpressnp_ = params.get<double>("thermodynamic pressure");
     thermpressdt_ = params.get<double>("time derivative of thermodynamic pressure");
     if (my::scatraparatimint_->IsGenAlpha())
@@ -72,7 +72,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::EvaluateAction(DRT::Element* ele,
     }
     default:
     {
-      my::EvaluateAction(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
+      my::evaluate_action(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
           elevec1_epetra, elevec2_epetra, elevec3_epetra);
       break;
     }
@@ -93,7 +93,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::calculate_domain_and_bodyforce(
   // call routine for calculation of body force in element nodes
   // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
   // ---------------------------------------------------------------------
-  my::BodyForce(ele);
+  my::body_force(ele);
 
   // integration points and weights
   const CORE::FE::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -153,7 +153,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::extract_element_and_node_values(
  | get density at integration point                                 fang 02/15 |
  *-----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-double DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetDensity(const DRT::Element* ele,
+double DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::get_density(const DRT::Element* ele,
     Teuchos::RCP<const CORE::MAT::Material> material, Teuchos::ParameterList& params,
     const double tempnp)
 {

@@ -91,7 +91,7 @@ MAT::PAR::Robinson::Robinson(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       dano 02/12 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Robinson::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Robinson::create_material()
 {
   return Teuchos::rcp(new MAT::Robinson(this));
 }
@@ -121,7 +121,7 @@ MAT::Robinson::Robinson() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*
- | copy-constructor (public) --> called in CreateMaterial()  dano 11/11 |
+ | copy-constructor (public) --> called in create_material()  dano 11/11 |
  *----------------------------------------------------------------------*/
 MAT::Robinson::Robinson(MAT::PAR::Robinson* params) : plastic_step(false), params_(params) {}
 

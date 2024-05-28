@@ -50,7 +50,7 @@ void FS3I::PartFS3I1Wc::Setup()
 void FS3I::PartFS3I1Wc::Timeloop()
 {
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   // prepare time loop
   fsi_->PrepareTimeloop();
@@ -68,7 +68,7 @@ void FS3I::PartFS3I1Wc::Timeloop()
   // output of initial state
   constexpr bool force_prepare = true;
   fsi_->prepare_output(force_prepare);
-  fsi_->Output();
+  fsi_->output();
   ScatraOutput();
 
   while (NotFinished())
@@ -77,7 +77,7 @@ void FS3I::PartFS3I1Wc::Timeloop()
     set_struct_scatra_solution();
     DoFSIStep();
     SetFSISolution();
-    DoScatraStep();
+    do_scatra_step();
   }
 }
 
@@ -90,14 +90,14 @@ void FS3I::PartFS3I1Wc::DoFSIStep()
   fsi_->TimeStep(fsi_);
   constexpr bool force_prepare = false;
   fsi_->prepare_output(force_prepare);
-  fsi_->Update();
-  fsi_->Output();
+  fsi_->update();
+  fsi_->output();
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I1Wc::DoScatraStep()
+void FS3I::PartFS3I1Wc::do_scatra_step()
 {
   if (Comm().MyPID() == 0)
   {
@@ -133,7 +133,7 @@ void FS3I::PartFS3I1Wc::DoScatraStep()
 void FS3I::PartFS3I1Wc::prepare_time_step()
 {
   check_is_init();
-  CheckIsSetup();
+  check_is_setup();
 
   // set mesh displacement field for present time step
   set_mesh_disp();

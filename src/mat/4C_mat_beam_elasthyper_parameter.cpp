@@ -102,7 +102,8 @@ MAT::PAR::BeamElastHyperMaterialParameterGeneric::BeamElastHyperMaterialParamete
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::BeamElastHyperMaterialParameterGeneric::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material>
+MAT::PAR::BeamElastHyperMaterialParameterGeneric::create_material()
 {
   /* all the different parameter sets (Reissner/Kirchhoff/..., 'classic'/'by modes') are used to
    * parameterize the same constitutive relations based on a hyperelastic stored energy function

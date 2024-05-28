@@ -42,7 +42,7 @@ IO::DiscretizationReader::DiscretizationReader(
     Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<IO::InputControl> input, int step)
     : dis_(dis), input_(input)
 {
-  FindResultGroup(step, input_->ControlFile());
+  find_result_group(step, input_->ControlFile());
 }
 
 
@@ -95,7 +95,7 @@ Teuchos::RCP<Epetra_MultiVector> IO::DiscretizationReader::ReadMultiVector(const
   {
     columns = 1;
   }
-  return reader_->ReadResultData(id_path, value_path, columns, Comm());
+  return reader_->ReadResultData(id_path, value_path, columns, comm());
 }
 
 
@@ -142,7 +142,7 @@ void IO::DiscretizationReader::read_serial_dense_matrix(
 
   Teuchos::RCP<Epetra_Map> elemap;
   Teuchos::RCP<std::vector<char>> data =
-      reader_->read_result_data_vec_char(id_path, value_path, columns, Comm(), elemap);
+      reader_->read_result_data_vec_char(id_path, value_path, columns, comm(), elemap);
 
   std::vector<char>::size_type position = 0;
   for (int i = 0; i < elemap->NumMyElements(); ++i)
@@ -166,10 +166,10 @@ void IO::DiscretizationReader::ReadMesh(int step)
   find_mesh_group(step, input_->ControlFile());
 
   Teuchos::RCP<std::vector<char>> nodedata =
-      meshreader_->ReadNodeData(step, Comm().NumProc(), Comm().MyPID());
+      meshreader_->ReadNodeData(step, comm().NumProc(), comm().MyPID());
 
   Teuchos::RCP<std::vector<char>> elementdata =
-      meshreader_->ReadElementData(step, Comm().NumProc(), Comm().MyPID());
+      meshreader_->ReadElementData(step, comm().NumProc(), comm().MyPID());
 
   // unpack nodes and elements and redistributed to current layout
   // take care --- we are just adding elements to the discretisation
@@ -196,7 +196,7 @@ void IO::DiscretizationReader::ReadNodesOnly(int step)
   find_mesh_group(step, input_->ControlFile());
 
   Teuchos::RCP<std::vector<char>> nodedata =
-      meshreader_->ReadNodeData(step, Comm().NumProc(), Comm().MyPID());
+      meshreader_->ReadNodeData(step, comm().NumProc(), comm().MyPID());
 
   // unpack nodes; fill_complete() has to be called manually
   dis_->UnPackMyNodes(nodedata);
@@ -212,10 +212,10 @@ void IO::DiscretizationReader::ReadHistoryData(int step)
   find_mesh_group(step, input_->ControlFile());
 
   Teuchos::RCP<std::vector<char>> nodedata =
-      meshreader_->ReadNodeData(step, Comm().NumProc(), Comm().MyPID());
+      meshreader_->ReadNodeData(step, comm().NumProc(), comm().MyPID());
 
   Teuchos::RCP<std::vector<char>> elementdata =
-      meshreader_->ReadElementData(step, Comm().NumProc(), Comm().MyPID());
+      meshreader_->ReadElementData(step, comm().NumProc(), comm().MyPID());
 
   // before we unpack nodes/elements we store a copy of the nodal row/col map
   Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(*dis_->NodeRowMap()));
@@ -261,7 +261,7 @@ void IO::DiscretizationReader::read_redundant_double_vector(
 {
   int length;
 
-  if (Comm().MyPID() == 0)
+  if (comm().MyPID() == 0)
   {
     // only proc0 reads the vector entities
     MAP* result = map_read_map(restart_step_, name.c_str());
@@ -273,13 +273,13 @@ void IO::DiscretizationReader::read_redundant_double_vector(
   }
 
   // communicate the length of the vector to come
-  Comm().Broadcast(&length, 1, 0);
+  comm().Broadcast(&length, 1, 0);
 
   // make vector having the correct length on all procs
   doublevec->resize(length);
 
   // now distribute information to all procs
-  Comm().Broadcast(doublevec->data(), length, 0);
+  comm().Broadcast(doublevec->data(), length, 0);
   return;
 }
 
@@ -290,7 +290,7 @@ void IO::DiscretizationReader::read_redundant_int_vector(
 {
   int length;
 
-  if (Comm().MyPID() == 0)
+  if (comm().MyPID() == 0)
   {
     // only proc0 reads the vector entities
     MAP* result = map_read_map(restart_step_, name.c_str());
@@ -302,13 +302,13 @@ void IO::DiscretizationReader::read_redundant_int_vector(
   }
 
   // communicate the length of the vector to come
-  Comm().Broadcast(&length, 1, 0);
+  comm().Broadcast(&length, 1, 0);
 
   // make vector having the correct length on all procs
   intvec->resize(length);
 
   // now distribute information to all procs
-  Comm().Broadcast(intvec->data(), length, 0);
+  comm().Broadcast(intvec->data(), length, 0);
   return;
 }
 
@@ -402,7 +402,7 @@ void IO::DiscretizationReader::find_group(int step, MAP* file, const char* capti
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::FindResultGroup(int step, MAP* file)
+void IO::DiscretizationReader::find_result_group(int step, MAP* file)
 {
   MAP* result_info = nullptr;
   MAP* file_info = nullptr;
@@ -415,7 +415,7 @@ void IO::DiscretizationReader::FindResultGroup(int step, MAP* file)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Epetra_Comm& IO::DiscretizationReader::Comm() const { return dis_->Comm(); }
+const Epetra_Comm& IO::DiscretizationReader::comm() const { return dis_->Comm(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -459,7 +459,7 @@ Teuchos::RCP<IO::HDFReader> IO::DiscretizationReader::open_files(
   const std::string filename = map_read_string(result_step, filestring);
 
   Teuchos::RCP<HDFReader> reader = Teuchos::rcp(new HDFReader(dirname));
-  reader->Open(filename, numoutputproc, Comm().NumProc(), Comm().MyPID());
+  reader->Open(filename, numoutputproc, comm().NumProc(), comm().MyPID());
   return reader;
 }
 
@@ -608,11 +608,11 @@ IO::DiscretizationWriter::~DiscretizationWriter()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Epetra_Comm& IO::DiscretizationWriter::Comm() const { return dis_->Comm(); }
+const Epetra_Comm& IO::DiscretizationWriter::comm() const { return dis_->Comm(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::CreateMeshFile(const int step)
+void IO::DiscretizationWriter::create_mesh_file(const int step)
 {
   if (binio_)
   {
@@ -620,9 +620,9 @@ void IO::DiscretizationWriter::CreateMeshFile(const int step)
 
     meshname << output_->FileName() << ".mesh." << dis_->Name() << ".s" << step;
     meshfilename_ = meshname.str();
-    if (Comm().NumProc() > 1)
+    if (comm().NumProc() > 1)
     {
-      meshname << ".p" << Comm().MyPID();
+      meshname << ".p" << comm().MyPID();
     }
 
     if (meshfile_ != -1)
@@ -643,7 +643,7 @@ void IO::DiscretizationWriter::CreateMeshFile(const int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::CreateResultFile(const int step)
+void IO::DiscretizationWriter::create_result_file(const int step)
 {
   if (binio_)
   {
@@ -651,9 +651,9 @@ void IO::DiscretizationWriter::CreateResultFile(const int step)
     resultname << output_->FileName() << ".result." << dis_->Name() << ".s" << step;
 
     resultfilename_ = resultname.str();
-    if (Comm().NumProc() > 1)
+    if (comm().NumProc() > 1)
     {
-      resultname << ".p" << Comm().MyPID();
+      resultname << ".p" << comm().MyPID();
     }
     if (resultfile_ != -1)
     {
@@ -754,14 +754,14 @@ void IO::DiscretizationWriter::NewStep(const int step, const double time)
 
     if (step_ - resultfile_changed_ >= output_->FileSteps() or resultfile_changed_ == -1)
     {
-      CreateResultFile(step_);
+      create_result_file(step_);
       write_file = true;
     }
 
     resultgroup_ = H5Gcreate(resultfile_, groupname.str().c_str(), 0);
     if (resultgroup_ < 0) FOUR_C_THROW("Failed to write HDF-group in resultfile");
 
-    if (Comm().MyPID() == 0)
+    if (comm().MyPID() == 0)
     {
       output_->ControlFile() << "result:\n"
                              << "    field = \"" << dis_->Name() << "\"\n"
@@ -770,9 +770,9 @@ void IO::DiscretizationWriter::NewStep(const int step, const double time)
 
       if (write_file)
       {
-        if (Comm().NumProc() > 1)
+        if (comm().NumProc() > 1)
         {
-          output_->ControlFile() << "    num_output_proc = " << Comm().NumProc() << "\n";
+          output_->ControlFile() << "    num_output_proc = " << comm().NumProc() << "\n";
         }
         std::string filename;
         const std::string::size_type pos = resultfilename_.find_last_of('/');
@@ -799,7 +799,7 @@ void IO::DiscretizationWriter::WriteDouble(const std::string name, const double 
 {
   if (binio_)
   {
-    if (Comm().MyPID() == 0)
+    if (comm().MyPID() == 0)
     {
       // using a local stringstream we make sure that we do not change
       // the output formatting of control file permanently
@@ -818,7 +818,7 @@ void IO::DiscretizationWriter::WriteInt(const std::string name, const int value)
 {
   if (binio_)
   {
-    if (Comm().MyPID() == 0)
+    if (comm().MyPID() == 0)
     {
       output_->ControlFile() << "    " << name << " = " << value << "\n\n" << std::flush;
     }
@@ -913,7 +913,7 @@ void IO::DiscretizationWriter::WriteVector(
             "process.");
     }
 
-    if (Comm().MyPID() == 0)
+    if (comm().MyPID() == 0)
     {
       std::string vectortype;
       switch (vt)
@@ -1027,7 +1027,7 @@ void IO::DiscretizationWriter::WriteVector(const std::string name, const std::ve
             "stored in the output process.");
     }
 
-    if (Comm().MyPID() == 0)
+    if (comm().MyPID() == 0)
     {
       std::string vectortype;
       switch (vt)
@@ -1069,7 +1069,7 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
   {
     if (step - meshfile_changed_ >= output_->FileSteps() or meshfile_changed_ == -1)
     {
-      CreateMeshFile(step);
+      create_mesh_file(step);
     }
     std::ostringstream name;
     name << "step" << step;
@@ -1093,7 +1093,7 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
         FOUR_C_THROW(
             "Failed to create dataset in HDF-meshfile on proc %d which does"
             " not have row elements",
-            Comm().MyPID());
+            comm().MyPID());
     }
 
     // only procs with row nodes need to write data
@@ -1113,13 +1113,13 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
         FOUR_C_THROW(
             "Failed to create dataset in HDF-meshfile on proc %d which"
             " does not have row nodes",
-            Comm().MyPID());
+            comm().MyPID());
     }
 
     int max_nodeid = dis_->NodeRowMap()->MaxAllGID();
 
     // ... write other mesh informations
-    if (Comm().MyPID() == 0)
+    if (comm().MyPID() == 0)
     {
       output_->ControlFile() << "field:\n"
                              << "    field = \"" << dis_->Name() << "\"\n"
@@ -1132,11 +1132,11 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
                              << "\n\n";
 
       // knotvectors for nurbs-discretisation
-      WriteKnotvector();
+      write_knotvector();
 
-      if (Comm().NumProc() > 1)
+      if (comm().NumProc() > 1)
       {
-        output_->ControlFile() << "    num_output_proc = " << Comm().NumProc() << "\n";
+        output_->ControlFile() << "    num_output_proc = " << comm().NumProc() << "\n";
       }
       std::string filename;
       std::string::size_type pos = meshfilename_.find_last_of('/');
@@ -1168,7 +1168,7 @@ void IO::DiscretizationWriter::WriteMesh(
   if (binio_)
   {
     // ... write other mesh informations
-    if (Comm().MyPID() == 0)
+    if (comm().MyPID() == 0)
     {
       output_->ControlFile() << "field:\n"
                              << "    field = \"" << dis_->Name() << "\"\n"
@@ -1180,16 +1180,16 @@ void IO::DiscretizationWriter::WriteMesh(
                              << "\n\n";
 
       // knotvectors for nurbs-discretisation
-      // WriteKnotvector();
+      // write_knotvector();
       // create name for meshfile as in createmeshfile which is not called here
       std::ostringstream meshname;
 
       meshname << name_base_file << ".mesh." << dis_->Name() << ".s" << step;
       meshfilename_ = meshname.str();
 
-      if (Comm().NumProc() > 1)
+      if (comm().NumProc() > 1)
       {
-        output_->ControlFile() << "    num_output_proc = " << Comm().NumProc() << "\n";
+        output_->ControlFile() << "    num_output_proc = " << comm().NumProc() << "\n";
       }
       std::string filename;
       std::string::size_type pos = meshfilename_.find_last_of('/');
@@ -1214,7 +1214,7 @@ void IO::DiscretizationWriter::write_only_nodes_in_new_field_group_to_control_fi
   {
     if (step - meshfile_changed_ >= output_->FileSteps() or meshfile_changed_ == -1)
     {
-      CreateMeshFile(step);
+      create_mesh_file(step);
     }
     std::ostringstream name;
     name << "step" << step;
@@ -1240,7 +1240,7 @@ void IO::DiscretizationWriter::write_only_nodes_in_new_field_group_to_control_fi
           FOUR_C_THROW(
               "Failed to create dataset in HDF-meshfile on proc %d which "
               "does not have row nodes",
-              Comm().MyPID());
+              comm().MyPID());
       }
     }
 
@@ -1251,7 +1251,7 @@ void IO::DiscretizationWriter::write_only_nodes_in_new_field_group_to_control_fi
     int max_nodeid = dis_->NodeRowMap()->MaxAllGID();
 
     // ... write other mesh informations
-    if (Comm().MyPID() == 0)
+    if (comm().MyPID() == 0)
     {
       /* number of nodes and elements is set to zero to suppress reading of
        * nodes during post-processing only maxnodeid is important */
@@ -1267,9 +1267,9 @@ void IO::DiscretizationWriter::write_only_nodes_in_new_field_group_to_control_fi
 
       /* name of the output file must be specified for changing geometries in
        * each time step */
-      if (Comm().NumProc() > 1)
+      if (comm().NumProc() > 1)
       {
-        output_->ControlFile() << "    num_output_proc = " << Comm().NumProc() << "\n";
+        output_->ControlFile() << "    num_output_proc = " << comm().NumProc() << "\n";
       }
       std::string filename;
       std::string::size_type pos = meshfilename_.find_last_of('/');
@@ -1320,8 +1320,7 @@ void IO::DiscretizationWriter::WriteElementData(bool writeowner)
 
     // By applying GatherAll we get the combined map including all elemental values
     // which where found by VisNames
-    const Epetra_Comm& comm = Comm();
-    CORE::LINALG::GatherAll(names, comm);
+    CORE::LINALG::GatherAll(names, comm());
 
     FOUR_C_THROW_UNLESS(
         std::all_of(names.begin(), names.end(), [](const auto& pair) { return pair.second >= 1; }),
@@ -1384,8 +1383,7 @@ void IO::DiscretizationWriter::WriteNodeData(bool writeowner)
     /* By applying GatherAll we get the combined map including all nodal values
      * which where found by VisNames
      */
-    const Epetra_Comm& comm = Comm();
-    CORE::LINALG::GatherAll(names, comm);
+    CORE::LINALG::GatherAll(names, comm());
 
     // make sure there's no name with a dimension of less than 1
     for (fool = names.begin(); fool != names.end(); ++fool)
@@ -1422,7 +1420,7 @@ void IO::DiscretizationWriter::WriteNodeData(bool writeowner)
 /*----------------------------------------------------------------------*
  *                                                          gammi 05/08 *
  *----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteKnotvector() const
+void IO::DiscretizationWriter::write_knotvector() const
 {
   if (binio_)
   {
@@ -1515,7 +1513,7 @@ void IO::DiscretizationWriter::write_redundant_double_vector(
 {
   if (binio_)
   {
-    if (Comm().MyPID() == 0)
+    if (comm().MyPID() == 0)
     {
       // only proc0 writes the vector entities to the binary data
       // an appropriate name has to be provided
@@ -1562,7 +1560,7 @@ void IO::DiscretizationWriter::write_redundant_int_vector(
 {
   if (binio_)
   {
-    if (Comm().MyPID() == 0)
+    if (comm().MyPID() == 0)
     {
       // only proc0 writes the entities to the binary data
       // an appropriate name has to be provided

@@ -182,8 +182,8 @@ void THR::TimIntImpl::Predict()
   }
 
   // apply Dirichlet BCs
-  //  ApplyDirichletBC(timen_, temon_, raten_, Teuchos::null, false);
-  ApplyDirichletBC(timen_, tempn_, raten_, false);
+  //  apply_dirichlet_bc(timen_, temon_, raten_, Teuchos::null, false);
+  apply_dirichlet_bc(timen_, tempn_, raten_, false);
 
   // compute residual forces fres_ and tangent tang_
   evaluate_rhs_tang_residual();
@@ -208,7 +208,7 @@ void THR::TimIntImpl::Predict()
   if (normchartemp_ == 0.0) normchartemp_ = toltempi_;
 
   // output
-  PrintPredictor();
+  print_predictor();
 
   // enjoy your meal
   return;
@@ -224,7 +224,7 @@ void THR::TimIntImpl::prepare_partition_step()
   iter_ = 0;
 
   // apply Dirichlet BCs
-  ApplyDirichletBC(timen_, tempn_, raten_, false);
+  apply_dirichlet_bc(timen_, tempn_, raten_, false);
 
   // compute residual forces fres_ and stiffness tang_
   evaluate_rhs_tang_residual();
@@ -250,7 +250,7 @@ void THR::TimIntImpl::prepare_partition_step()
   if (normchartemp_ == 0.0) normchartemp_ = toltempi_;
 
   // output
-  PrintPredictor();
+  print_predictor();
 
   // enjoy your meal
   return;
@@ -289,7 +289,7 @@ void THR::TimIntImpl::predict_tang_temp_consist_rate()
   dbcinc->Update(1.0, *(*temp_)(0), 0.0);
 
   // get Dirichlet values at t_{n+1}
-  ApplyDirichletBC(timen_, dbcinc, Teuchos::null, false);
+  apply_dirichlet_bc(timen_, dbcinc, Teuchos::null, false);
 
   // subtract the temperatures of the last converged step
   // DBC-DOFs hold increments of current step
@@ -595,7 +595,7 @@ INPAR::THR::ConvergenceStatus THR::TimIntImpl::newton_full_error_check()
   }
   else if ((iter_ >= itermax_) and divcontype_ == INPAR::THR::divcont_halve_step)
   {
-    HalveTimeStep();
+    halve_time_step();
     return INPAR::THR::conv_fail_repeat;
   }
   else if (divcontype_ == INPAR::THR::divcont_repeat_step or
@@ -621,7 +621,7 @@ INPAR::THR::ConvergenceStatus THR::TimIntImpl::newton_full_error_check()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::HalveTimeStep()
+void THR::TimIntImpl::halve_time_step()
 {
   const double old_dt = Dt();
   const double new_dt = old_dt * 0.5;
@@ -794,7 +794,7 @@ void THR::TimIntImpl::UpdateNewton(Teuchos::RCP<const Epetra_Vector> tempi)
  | print to screen                                          bborn 08/09 |
  | originally by lw 12/07                                               |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::PrintPredictor()
+void THR::TimIntImpl::print_predictor()
 {
   // only master processor
   if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
@@ -827,7 +827,7 @@ void THR::TimIntImpl::PrintPredictor()
   // leave your hat on
   return;
 
-}  // PrintPredictor()
+}  // print_predictor()
 
 
 /*----------------------------------------------------------------------*
@@ -991,7 +991,7 @@ void THR::TimIntImpl::PrintStep()
   // print out (only on master CPU)
   if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
   {
-    PrintStepText(stdout);
+    print_step_text(stdout);
   }
 }  // PrintStep()
 
@@ -999,7 +999,7 @@ void THR::TimIntImpl::PrintStep()
 /*----------------------------------------------------------------------*
  | print step summary                                       bborn 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::PrintStepText(FILE* ofile)
+void THR::TimIntImpl::print_step_text(FILE* ofile)
 {
   // the text
   fprintf(ofile,
@@ -1018,7 +1018,7 @@ void THR::TimIntImpl::PrintStepText(FILE* ofile)
 
   // fall asleep
   return;
-}  // PrintStepText()
+}  // print_step_text()
 
 
 /*----------------------------------------------------------------------*

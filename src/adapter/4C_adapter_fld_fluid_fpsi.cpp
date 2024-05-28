@@ -42,7 +42,7 @@ void ADAPTER::FluidFPSI::Init()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFPSI::SetupInterface(const int nds_master)
+void ADAPTER::FluidFPSI::setup_interface(const int nds_master)
 {
   // check nds_master
   if (nds_master != 0) FOUR_C_THROW("nds_master is supposed to be 0 here");
@@ -52,24 +52,24 @@ void ADAPTER::FluidFPSI::SetupInterface(const int nds_master)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFPSI::UseBlockMatrix(
+void ADAPTER::FluidFPSI::use_block_matrix(
     bool splitmatrix, Teuchos::RCP<FPSI::UTILS::MapExtractor> const& shapederivSplitter)
 {
   Teuchos::RCP<std::set<int>> condelements =
-      Interface()->conditioned_element_map(*Discretization());
+      Interface()->conditioned_element_map(*discretization());
   Teuchos::RCP<std::set<int>> condelements_shape =
-      shapederivSplitter->conditioned_element_map(*Discretization());
-  fluidimpl_->UseBlockMatrix(condelements, *Interface(), *Interface(), condelements_shape,
+      shapederivSplitter->conditioned_element_map(*discretization());
+  fluidimpl_->use_block_matrix(condelements, *Interface(), *Interface(), condelements_shape,
       *shapederivSplitter, *shapederivSplitter, splitmatrix);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFPSI::UseBlockMatrix(bool splitmatrix)
+void ADAPTER::FluidFPSI::use_block_matrix(bool splitmatrix)
 {
   Teuchos::RCP<std::set<int>> condelements =
-      Interface()->conditioned_element_map(*Discretization());
-  fluidimpl_->UseBlockMatrix(condelements, *Interface(), *Interface(), condelements, *Interface(),
+      Interface()->conditioned_element_map(*discretization());
+  fluidimpl_->use_block_matrix(condelements, *Interface(), *Interface(), condelements, *Interface(),
       *Interface(), splitmatrix);
 }
 

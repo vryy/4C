@@ -209,7 +209,7 @@ Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::Membrane<distype>::P
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-STR::ELEMENTS::ParamsInterface& DRT::ELEMENTS::Membrane<distype>::StrParamsInterface()
+STR::ELEMENTS::ParamsInterface& DRT::ELEMENTS::Membrane<distype>::str_params_interface()
 {
   if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
   return *(Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(interface_ptr_, true));
@@ -222,7 +222,7 @@ template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Membrane<distype>::Print(std::ostream& os) const
 {
   os << "Membrane ";
-  os << " Discretization type: " << CORE::FE::CellTypeToString(distype).c_str();
+  os << " discretization type: " << CORE::FE::CellTypeToString(distype).c_str();
   Element::Print(os);
   std::cout << std::endl;
   return;

@@ -614,7 +614,7 @@ void DRT::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locati
 
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     /* Caution!! the defgrd can not be modified with ANS to remedy locking
-       To get the consistent F a spectral decomposition would be necessary, see sosh8_Cauchy.
+       To get the consistent F a spectral decomposition would be necessary, see sosh8_cauchy.
        However if one only maps e.g. stresses from current to material configuration,
        I have never noticed any difference to applying just the disp_based F
        which is therefore computed and passed here (no significant add. computation time).  */
@@ -1275,7 +1275,7 @@ int DRT::ELEMENTS::SoShw6Type::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoShw6*>(dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_shw6* failed");
-    actele->InitJacobianMapping();
+    actele->init_jacobian_mapping();
   }
   return 0;
 }
@@ -1287,7 +1287,7 @@ void DRT::ELEMENTS::SoShw6::soshw6_recover(const std::vector<double>& residual)
   CORE::LINALG::Matrix<NUMDOF_WEG6, 1> disi(false);
   for (int i = 0; i < NUMDOF_WEG6; ++i) disi(i) = residual[i];
 
-  const double step_length = StrParamsInterface().GetStepLength();
+  const double step_length = str_params_interface().GetStepLength();
 
   auto* oldfeas = &easdata_.feas;
   auto* oldKda = &easdata_.Kda;
@@ -1296,10 +1296,10 @@ void DRT::ELEMENTS::SoShw6::soshw6_recover(const std::vector<double>& residual)
   auto* oldKaainv = &easdata_.invKaa;
   /* if it is a default step, we have to recover the condensed
    * solution vectors */
-  if (StrParamsInterface().IsDefaultStep())
+  if (str_params_interface().IsDefaultStep())
   {
     // first, store the eas state of the previous accepted Newton step
-    StrParamsInterface().sum_into_my_previous_sol_norm(
+    str_params_interface().sum_into_my_previous_sol_norm(
         NOX::NLN::StatusTest::quantity_eas, soshw6_easpoisthick, (*alpha)[0], Owner());
 
     // add Kda . res_d to feas
@@ -1317,8 +1317,8 @@ void DRT::ELEMENTS::SoShw6::soshw6_recover(const std::vector<double>& residual)
   }
   old_step_length_ = step_length;
 
-  StrParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas, soshw6_easpoisthick,
-      (*eas_inc)[0], (*alpha)[0], step_length, Owner());
+  str_params_interface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas,
+      soshw6_easpoisthick, (*eas_inc)[0], (*alpha)[0], step_length, Owner());
 }
 
 FOUR_C_NAMESPACE_CLOSE

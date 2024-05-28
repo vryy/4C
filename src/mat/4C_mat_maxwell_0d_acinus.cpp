@@ -41,7 +41,7 @@ MAT::PAR::Maxwell0dAcinus::Maxwell0dAcinus(Teuchos::RCP<CORE::MAT::PAR::Material
 {
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Maxwell0dAcinus::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Maxwell0dAcinus::create_material()
 {
   return Teuchos::rcp(new MAT::Maxwell0dAcinus(this));
 }

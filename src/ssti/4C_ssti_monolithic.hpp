@@ -132,7 +132,7 @@ namespace SSTI
     void newton_loop();
 
     //! output solution to screen and files
-    void Output() override;
+    void output() override;
 
     void prepare_newton_step();
 
@@ -143,7 +143,7 @@ namespace SSTI
     void linear_solve();
 
     //! update scalar transport and structure fields after time step evaluation
-    void Update() override;
+    void update() override;
 
     //! update routine after newton iteration
     void update_iter_states();

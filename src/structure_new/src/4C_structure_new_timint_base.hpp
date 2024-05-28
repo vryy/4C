@@ -98,7 +98,7 @@ namespace STR
       /// @name General access methods
       ///@{
       /// Access discretization (structure only)
-      Teuchos::RCP<DRT::Discretization> Discretization() override;
+      Teuchos::RCP<DRT::Discretization> discretization() override;
 
       /// Access to pointer to DoF row map of the discretization (structure only)
       const Epetra_Map* DofRowMapView() override
@@ -506,7 +506,7 @@ namespace STR
       /// Access output object
       Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() override
       {
-        return DataIO().GetOutputPtr();
+        return data_io().GetOutputPtr();
       }
 
       /// Calculate all output quantities depending on the constitutive model
@@ -664,7 +664,7 @@ namespace STR
       }
 
       /// Get the global state
-      const BaseDataGlobalState& DataGlobalState() const
+      const BaseDataGlobalState& data_global_state() const
       {
         check_init();
         return *dataglobalstate_;
@@ -743,56 +743,56 @@ namespace STR
       inline void check_init() const { FOUR_C_ASSERT(is_init(), "Call Init() first!"); }
 
       /// Get the global state
-      BaseDataGlobalState& DataGlobalState()
+      BaseDataGlobalState& data_global_state()
       {
         check_init();
         return *dataglobalstate_;
       }
 
       /// Get the pointer to global state
-      const Teuchos::RCP<BaseDataGlobalState>& DataGlobalStatePtr() const
+      const Teuchos::RCP<BaseDataGlobalState>& data_global_state_ptr() const
       {
         check_init();
         return dataglobalstate_;
       }
 
       /// Get internal TimIntBase data for io quantities (read and write access)
-      BaseDataIO& DataIO()
+      BaseDataIO& data_io()
       {
         check_init();
         return *dataio_;
       }
 
       /// return a pointer to the input/output data container (read and write access)
-      const Teuchos::RCP<BaseDataIO>& DataIOPtr()
+      const Teuchos::RCP<BaseDataIO>& data_io_ptr()
       {
         check_init();
         return dataio_;
       }
 
       /// return a pointer to the structural dynamic data container (read and write access)
-      const Teuchos::RCP<BaseDataSDyn>& DataSDynPtr()
+      const Teuchos::RCP<BaseDataSDyn>& data_s_dyn_ptr()
       {
         check_init();
         return datasdyn_;
       }
 
       /// return a reference to the Dirichlet Boundary Condition handler (read and write access)
-      STR::Dbc& DBC()
+      STR::Dbc& dbc()
       {
         check_init_setup();
         return *dbc_ptr_;
       }
 
       /// return a reference to the integrator (read and write access)
-      STR::Integrator& Integrator()
+      STR::Integrator& integrator()
       {
         check_init_setup();
         return *int_ptr_;
       }
 
       /// return a pointer to the integrator (read and write access)
-      const Teuchos::RCP<STR::Integrator>& IntegratorPtr()
+      const Teuchos::RCP<STR::Integrator>& integrator_ptr()
       {
         check_init_setup();
         return int_ptr_;
@@ -805,7 +805,7 @@ namespace STR
        *
        *  \date 03/07
        *  \author mwgee (originally) */
-      void OutputStep(bool forced_writerestart);
+      void output_step(bool forced_writerestart);
 
      private:
       /*! \brief Create a new input/output step in the output writer

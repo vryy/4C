@@ -95,16 +95,16 @@ namespace XFEM
 
    protected:
     /// Get cut wizard pointer
-    Teuchos::RCP<CORE::GEO::CutWizard>& CutWizardPtr() { return wizard_; }
+    Teuchos::RCP<CORE::GEO::CutWizard>& cut_wizard_ptr() { return wizard_; }
 
     /// Get condition manager pointer
-    Teuchos::RCP<XFEM::ConditionManager>& ConditionManagerPtr() { return condition_manager_; }
+    Teuchos::RCP<XFEM::ConditionManager>& condition_manager_ptr() { return condition_manager_; }
 
     /// Get pointer to the dofset of the cut discretization
-    Teuchos::RCP<XFEM::XFEMDofSet>& XDofSetPtr() { return xdofset_; }
+    Teuchos::RCP<XFEM::XFEMDofSet>& x_dof_set_ptr() { return xdofset_; }
 
     /// Returns the xFEM field discretizaton
-    DRT::Discretization& XFieldDiscret()
+    DRT::Discretization& x_field_discret()
     {
       if (xfield_discret_ptr_.is_null()) FOUR_C_THROW("xfield_discret_ptr_ is nullptr!");
 
@@ -112,10 +112,10 @@ namespace XFEM
     }
 
     /// Returns a pointer to the xFEM discretization
-    Teuchos::RCP<DRT::Discretization>& XFieldDiscretPtr() { return xfield_discret_ptr_; }
+    Teuchos::RCP<DRT::Discretization>& x_field_discret_ptr() { return xfield_discret_ptr_; }
 
     /// Returns the standard field discretizaton
-    DRT::Discretization& FieldDiscret()
+    DRT::Discretization& field_discret()
     {
       if (field_discret_ptr_.is_null()) FOUR_C_THROW("field_discret_ptr_ is nullptr!");
 
@@ -123,7 +123,7 @@ namespace XFEM
     }
 
     /// Returns a pointer to the standard discretization
-    Teuchos::RCP<DRT::Discretization>& FieldDiscretPtr() { return field_discret_ptr_; }
+    Teuchos::RCP<DRT::Discretization>& field_discret_ptr() { return field_discret_ptr_; }
 
     /// @}
 

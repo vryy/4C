@@ -1154,7 +1154,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Ele
     Point* p = *i;
     CORE::LINALG::Matrix<3, 1> xyz;
     p->Coordinates(xyz.A());
-    element->LocalCoordinates(xyz, rst);
+    element->local_coordinates(xyz, rst);
 
     local_points.push_back(rst);
 
@@ -1162,7 +1162,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Ele
     rst(axis) = r;
 
     // create new points
-    element->GlobalCoordinates(rst, xyz);
+    element->global_coordinates(rst, xyz);
     projected_points.push_back(mesh.NewPoint(xyz.A(), nullptr, nullptr, 0.0));
     // change Benedikt: do not set the position for additionally created points
     /* REMARK:

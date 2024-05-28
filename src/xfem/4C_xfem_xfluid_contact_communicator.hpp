@@ -295,7 +295,7 @@ namespace XFEM
     bool ele_ptrs_already_setup_;
     /// The XFluid CutWizard
     Teuchos::RCP<CORE::GEO::CutWizard> cutwizard_;
-    /// The Background Fluid Discretization
+    /// The Background Fluid discretization
     Teuchos::RCP<DRT::Discretization> fluiddis_;
     /// The XFEM Condition Manager
     Teuchos::RCP<XFEM::ConditionManager> condition_manager_;

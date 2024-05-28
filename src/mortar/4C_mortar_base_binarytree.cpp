@@ -139,17 +139,17 @@ MORTAR::BaseBinaryTreeNode::BaseBinaryTreeNode(DRT::Discretization& discret,
 void MORTAR::BaseBinaryTreeNode::CalculateSlabsDop()
 {
   // initialize slabs
-  for (int j = 0; j < Kdop() / 2; ++j)
+  for (int j = 0; j < kdop() / 2; ++j)
   {
-    Slabs()(j, 0) = 1.0e12;
-    Slabs()(j, 1) = -1.0e12;
+    slabs()(j, 0) = 1.0e12;
+    slabs()(j, 1) = -1.0e12;
   }
 
   // calculate slabs for every element
-  for (int i = 0; i < (int)Elelist().size(); ++i)
+  for (int i = 0; i < (int)elelist().size(); ++i)
   {
-    int gid = Elelist()[i];
-    DRT::Element* element = Discret().gElement(gid);
+    int gid = elelist()[i];
+    DRT::Element* element = discret().gElement(gid);
     if (!element) FOUR_C_THROW("ERROR: Cannot find element with gid %\n", gid);
     MORTAR::Element* mrtrelement = dynamic_cast<MORTAR::Element*>(element);
     DRT::Node** nodes = mrtrelement->Points();
@@ -163,21 +163,21 @@ void MORTAR::BaseBinaryTreeNode::CalculateSlabsDop()
 
       // get current node position
       std::array<double, 3> pos = {0.0, 0.0, 0.0};
-      for (int j = 0; j < Dim(); ++j) pos[j] = mrtrnode->xspatial()[j];
+      for (int j = 0; j < dim(); ++j) pos[j] = mrtrnode->xspatial()[j];
 
       // calculate slabs
-      for (int j = 0; j < Kdop() / 2; ++j)
+      for (int j = 0; j < kdop() / 2; ++j)
       {
         //= ax+by+cz=d/sqrt(aa+bb+cc)
         double num =
-            Dopnormals()(j, 0) * pos[0] + Dopnormals()(j, 1) * pos[1] + Dopnormals()(j, 2) * pos[2];
-        double denom = sqrt((Dopnormals()(j, 0) * Dopnormals()(j, 0)) +
-                            (Dopnormals()(j, 1) * Dopnormals()(j, 1)) +
-                            (Dopnormals()(j, 2) * Dopnormals()(j, 2)));
+            dopnormals()(j, 0) * pos[0] + dopnormals()(j, 1) * pos[1] + dopnormals()(j, 2) * pos[2];
+        double denom = sqrt((dopnormals()(j, 0) * dopnormals()(j, 0)) +
+                            (dopnormals()(j, 1) * dopnormals()(j, 1)) +
+                            (dopnormals()(j, 2) * dopnormals()(j, 2)));
         double dcurrent = num / denom;
 
-        if (dcurrent > Slabs()(j, 1)) Slabs()(j, 1) = dcurrent;
-        if (dcurrent < Slabs()(j, 0)) Slabs()(j, 0) = dcurrent;
+        if (dcurrent > slabs()(j, 1)) slabs()(j, 1) = dcurrent;
+        if (dcurrent < slabs()(j, 0)) slabs()(j, 0) = dcurrent;
       }
 
       // enlarge slabs with auxiliary position
@@ -192,24 +192,24 @@ void MORTAR::BaseBinaryTreeNode::CalculateSlabsDop()
         // now the auxiliary position
         std::array<double, 3> auxpos = {0.0, 0.0, 0.0};
         double scalar = 0.0;
-        for (int j = 0; j < Dim(); ++j)
+        for (int j = 0; j < dim(); ++j)
           scalar = scalar +
                    (mrtrnode->X()[j] + mrtrnode->uold()[j] - mrtrnode->xspatial()[j]) * normal[j];
 
-        for (int j = 0; j < Dim(); ++j) auxpos[j] = mrtrnode->xspatial()[j] + scalar * normal[j];
+        for (int j = 0; j < dim(); ++j) auxpos[j] = mrtrnode->xspatial()[j] + scalar * normal[j];
 
-        for (int j = 0; j < Kdop() / 2; ++j)
+        for (int j = 0; j < kdop() / 2; ++j)
         {
           //= ax+by+cz=d/sqrt(aa+bb+cc)
-          double num = Dopnormals()(j, 0) * auxpos[0] + Dopnormals()(j, 1) * auxpos[1] +
-                       Dopnormals()(j, 2) * auxpos[2];
-          double denom = sqrt((Dopnormals()(j, 0) * Dopnormals()(j, 0)) +
-                              (Dopnormals()(j, 1) * Dopnormals()(j, 1)) +
-                              (Dopnormals()(j, 2) * Dopnormals()(j, 2)));
+          double num = dopnormals()(j, 0) * auxpos[0] + dopnormals()(j, 1) * auxpos[1] +
+                       dopnormals()(j, 2) * auxpos[2];
+          double denom = sqrt((dopnormals()(j, 0) * dopnormals()(j, 0)) +
+                              (dopnormals()(j, 1) * dopnormals()(j, 1)) +
+                              (dopnormals()(j, 2) * dopnormals()(j, 2)));
           double dcurrent = num / denom;
 
-          if (dcurrent > Slabs()(j, 1)) Slabs()(j, 1) = dcurrent;
-          if (dcurrent < Slabs()(j, 0)) Slabs()(j, 0) = dcurrent;
+          if (dcurrent > slabs()(j, 1)) slabs()(j, 1) = dcurrent;
+          if (dcurrent < slabs()(j, 0)) slabs()(j, 0) = dcurrent;
         }
       }
     }
@@ -241,7 +241,7 @@ void MORTAR::BaseBinaryTreeNode::EnlargeGeometry(double& enlarge)
 void MORTAR::BaseBinaryTreeNode::PrintSlabs()
 {
   std::cout << std::endl
-            << Discret().Comm().MyPID()
+            << discret().Comm().MyPID()
             << "************************************************************";
   PrintType();
   std::cout << "slabs:";

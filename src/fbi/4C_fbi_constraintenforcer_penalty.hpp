@@ -116,7 +116,7 @@ namespace ADAPTER
     void PrepareFluidSolve() override;
 
     /// Output the constraint violation
-    virtual void PrintViolation(double time, int step);
+    virtual void print_violation(double time, int step);
 
    private:
     FBIPenaltyConstraintenforcer() = delete;

@@ -363,7 +363,7 @@ namespace FLD
                           | \     dtp /          dtp     dtp       |
                           +-                                      -+
     */
-    virtual void ExplicitPredictor();
+    virtual void explicit_predictor();
 
     /// setup the variables to do a new time step
     void prepare_time_step() override;
@@ -541,7 +541,7 @@ namespace FLD
 
     virtual void OutputNonlinearBC();
 
-    virtual void OutputToGmsh(const int step, const double time, const bool inflow) const;
+    virtual void output_to_gmsh(const int step, const double time, const bool inflow) const;
 
     /*!
     \output of external forces for restart
@@ -671,7 +671,7 @@ namespace FLD
     /// subjected to Dirichlet boundary conditions. For instance, the method is
     /// called by the staggered FSI in which the velocities on the FSI
     /// interface are prescribed by the other fields.
-    void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd) override;
+    void add_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoadd) override;
 
     /// Contract the Dirichlet DOF set
     ///
@@ -682,7 +682,7 @@ namespace FLD
     /// subjected to Dirichlet boundary conditions. This method is
     /// called solely by immersed FSI to remove the Dirichlet values from
     /// the previous solution step before a new set is prescribed.
-    void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove) override;
+    void remove_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoremove) override;
 
     /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
     ///
@@ -711,7 +711,7 @@ namespace FLD
     virtual void set_dirichlet_neumann_bc();
 
     //! Apply Dirichlet boundary conditions on provided state vectors
-    virtual void ApplyDirichletBC(Teuchos::ParameterList& params,
+    virtual void apply_dirichlet_bc(Teuchos::ParameterList& params,
         Teuchos::RCP<Epetra_Vector> systemvector,    //!< (may be Teuchos::null)
         Teuchos::RCP<Epetra_Vector> systemvectord,   //!< (may be Teuchos::null)
         Teuchos::RCP<Epetra_Vector> systemvectordd,  //!< (may be Teuchos::null)
@@ -766,18 +766,18 @@ namespace FLD
     //  virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm);
     //  double TimeScaling() const;
 
-    /// Use ResidualScaling() to convert the implemented fluid residual to an actual force with unit
-    /// Newton [N]
+    /// Use residual_scaling() to convert the implemented fluid residual to an actual force with
+    /// unit Newton [N]
     /*! In order to avoid division by time step size \f$\Delta t\f$
      *  the fluid balance of linear momentum is implemented in a way
      *  that the residual does not have the unit Newton [N].
-     *  By multiplication with ResidualScaling() the residual is
+     *  By multiplication with residual_scaling() the residual is
      *  converted to the true residual in unit Newton [N], ie a real force.
      *
      *  \sa trueresidual_
      *  \sa TrueResidual()
      */
-    double ResidualScaling() const override = 0;
+    double residual_scaling() const override = 0;
 
     /*!
     \brief return scheme-specific time integration parameter
@@ -824,7 +824,7 @@ namespace FLD
     \brief set velocity field obtained by separate computation
 
     */
-    void SetVelocityField(Teuchos::RCP<const Epetra_Vector> setvelnp) override
+    void set_velocity_field(Teuchos::RCP<const Epetra_Vector> setvelnp) override
     {
       velnp_->Update(1.0, *setvelnp, 0.0);
       return;
@@ -851,10 +851,10 @@ namespace FLD
     virtual void UpdateGridv();
 
     /// prepare AVM3-based scale separation
-    virtual void AVM3Preparation();
+    virtual void av_m3_preparation();
 
     /// AVM3-based scale separation
-    virtual void AVM3Separation();
+    virtual void av_m3_separation();
 
     /// compute flow rate
     virtual void ComputeFlowRates() const;
@@ -866,7 +866,7 @@ namespace FLD
     virtual Teuchos::RCP<Epetra_Vector> integrate_interface_shape(std::string condname);
 
     /// switch fluid field to block matrix
-    virtual void UseBlockMatrix(
+    virtual void use_block_matrix(
         Teuchos::RCP<std::set<int>> condelements,  ///< conditioned elements of fluid
         const CORE::LINALG::MultiMapExtractor&
             domainmaps,  ///< domain maps for split of fluid matrix
@@ -875,7 +875,7 @@ namespace FLD
     );
 
     /// switch fluid field to block matrix (choose maps for shape derivatives separately)
-    virtual void UseBlockMatrix(
+    virtual void use_block_matrix(
         Teuchos::RCP<std::set<int>> condelements,  ///< conditioned elements of fluid
         const CORE::LINALG::MultiMapExtractor&
             domainmaps,  ///< domain maps for split of fluid matrix
@@ -990,7 +990,7 @@ namespace FLD
     /*!
     \brief timeloop break criterion
      */
-    virtual bool NotFinished() { return step_ < stepmax_ and time_ < maxtime_; }
+    virtual bool not_finished() { return step_ < stepmax_ and time_ < maxtime_; }
 
     /*!
     \brief  increment time and step value
@@ -1013,7 +1013,7 @@ namespace FLD
     assemble_mat_and_rhs
 
     */
-    virtual void EvaluateMatAndRHS(Teuchos::ParameterList& eleparams);
+    virtual void evaluate_mat_and_rhs(Teuchos::ParameterList& eleparams);
 
     /*!
     \brief calculate intermediate solution
@@ -1061,7 +1061,7 @@ namespace FLD
     \brief Update of an Ale field based on the fluid state
 
     */
-    virtual void AleUpdate(std::string condName);
+    virtual void ale_update(std::string condName);
 
     /*!
     \brief For a given node, obtain local indices of dofs in a vector (like e.g. velnp)
@@ -1080,13 +1080,13 @@ namespace FLD
     \brief Setup meshtying
 
     */
-    virtual void SetupMeshtying();
+    virtual void setup_meshtying();
 
     /*!
     \brief velocity required for evaluation of related quantites required on element level
 
     */
-    virtual Teuchos::RCP<const Epetra_Vector> EvaluationVel() = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> evaluation_vel() = 0;
 
     /*!
       \brief add problem dependent vectors
@@ -1098,7 +1098,7 @@ namespace FLD
     \brief Initialize forcing
 
     */
-    virtual void InitForcing();
+    virtual void init_forcing();
 
     /*!
     \brief calculate lift&drag forces and angular momenta

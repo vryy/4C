@@ -68,7 +68,7 @@ namespace FSI
     virtual void Setup();
 
     /// access to structure field
-    const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField() { return structure_; }
+    const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& structure_field() { return structure_; }
 
     /// access to fluid field
     const Teuchos::RCP<ADAPTER::FluidMovingBoundary>& MBFluidField() { return fluid_; }
@@ -83,21 +83,21 @@ namespace FSI
     void prepare_time_step() override;
 
     /// take current results for converged and save for next time step
-    void Update() override;
+    void update() override;
 
     /// calculate stresses, strains, energies
     virtual void prepare_output(bool force_prepare);
 
     /// write output
-    void Output() override;
+    void output() override;
 
     //@}
 
     //! @name Transfer helpers
-    virtual Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv);
-    virtual Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv);
-    virtual Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> struct_to_fluid(Teuchos::RCP<Epetra_Vector> iv);
+    virtual Teuchos::RCP<Epetra_Vector> fluid_to_struct(Teuchos::RCP<Epetra_Vector> iv);
+    virtual Teuchos::RCP<Epetra_Vector> struct_to_fluid(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> fluid_to_struct(Teuchos::RCP<const Epetra_Vector> iv) const;
     //@}
 
     /// return the structure fluid coupling object

@@ -78,7 +78,7 @@ namespace STI
 
    protected:
     //! map extractor associated with all degrees of freedom inside temperature field
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> BlockMapThermo() const
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo() const
     {
       return block_map_thermo_;
     }
@@ -90,19 +90,19 @@ namespace STI
     }
 
     //! map extractor associated with all degrees of freedom inside scatra field
-    Teuchos::RCP<const Epetra_Map> FullMapScatra() const { return full_map_scatra_; }
+    Teuchos::RCP<const Epetra_Map> full_map_scatra() const { return full_map_scatra_; }
 
     //! map extractor associated with all degrees of freedom inside thermo field
-    Teuchos::RCP<const Epetra_Map> FullMapThermo() const { return full_map_thermo_; }
+    Teuchos::RCP<const Epetra_Map> full_map_thermo() const { return full_map_thermo_; }
 
     //! map associated with all degrees of freedom on thermo interface
-    Teuchos::RCP<const Epetra_Map> InterfaceMapScaTra() const { return interface_map_scatra_; }
+    Teuchos::RCP<const Epetra_Map> interface_map_sca_tra() const { return interface_map_scatra_; }
 
     //! map associated with all degrees of freedom on scatra interface
-    Teuchos::RCP<const Epetra_Map> InterfaceMapThermo() const { return interface_map_thermo_; }
+    Teuchos::RCP<const Epetra_Map> interface_map_thermo() const { return interface_map_thermo_; }
 
     //! problem with deforming mesh
-    bool IsAle() const { return isale_; }
+    bool is_ale() const { return isale_; }
 
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_sca_tra() const
@@ -117,10 +117,10 @@ namespace STI
     }
 
     //! ScaTra subproblem
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() { return scatra_->ScaTraField(); }
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> sca_tra_field() { return scatra_->ScaTraField(); }
 
     //! Thermo subproblem
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ThermoField() { return thermo_->ScaTraField(); }
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> thermo_field() { return thermo_->ScaTraField(); }
 
    private:
     //! map extractor associated with all degrees of freedom inside temperature field

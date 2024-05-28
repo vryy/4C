@@ -444,13 +444,13 @@ namespace CONTACT
        *  more expensive.
        *
        *  \author hiermeier \date 06/17 */
-      void ExportNodalNormals() const final;
+      void export_nodal_normals() const final;
 
       //! derived
       void update_master_slave_sets() final;
 
       /// setup the interface and internal class members
-      void Setup();
+      void setup();
 
       /// setup the assemble strategy used to assemble specific matrices and vectors
       void setup_assemble_strategy();
@@ -550,7 +550,7 @@ namespace CONTACT
       {
        public:
         /// constructor
-        explicit AssembleStrategy(Interface* inter);
+        explicit AssembleStrategy(Interface* interface);
 
         /// destructor
         virtual ~AssembleStrategy() = default;
@@ -580,7 +580,7 @@ namespace CONTACT
 
        protected:
         /// return a reference to the parent interface
-        inline const Interface& Inter() const
+        inline const Interface& inter() const
         {
           if (not inter_)
             FOUR_C_THROW(
@@ -590,12 +590,12 @@ namespace CONTACT
           return *inter_;
         }
 
-        const Epetra_Map& SlNodeRowMap(const enum MapType map_type) const;
+        const Epetra_Map& sl_node_row_map(const enum MapType map_type) const;
 
-        const Epetra_Map& SlNDofRowMap(const enum MapType map_type) const;
+        const Epetra_Map& sl_n_dof_row_map(const enum MapType map_type) const;
 
         /// return a reference the interface data object (read-only)
-        inline const InterfaceDataContainer& IData() const
+        inline const InterfaceDataContainer& i_data() const
         {
           if (not interface_data_ptr_)
             FOUR_C_THROW(

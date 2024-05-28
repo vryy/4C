@@ -4825,12 +4825,12 @@ void WEAR::LagrangeStrategyWear::DoReadRestart(
   }
 
   // store restart Mortar quantities
-  StoreDM("old");
+  store_dm("old");
 
   if (friction_)
   {
     store_nodal_quantities(MORTAR::StrategyBase::activeold);
-    StoreToOld(MORTAR::StrategyBase::dm);
+    store_to_old(MORTAR::StrategyBase::dm);
   }
 
   // (re)setup active global Epetra_Maps

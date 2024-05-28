@@ -128,7 +128,7 @@ void FLD::FluidResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int&
       else
         FOUR_C_THROW("Quantity '%s' not supported in fluid testing", position.c_str());
 
-      nerr += CompareValues(result, "NODE", res);
+      nerr += compare_values(result, "NODE", res);
       test_count++;
     }
   }

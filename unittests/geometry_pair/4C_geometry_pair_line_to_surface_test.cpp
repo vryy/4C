@@ -48,7 +48,7 @@ namespace
      * specific macro has to be used to define the friend class.
      */
     template <typename A, typename B>
-    void SetIsUnitTest(
+    void set_is_unit_test(
         GEOMETRYPAIR::GeometryPairLineToSurface<double, A, B>& pair, const int is_unit_test)
     {
       pair.is_unit_test_ = is_unit_test;
@@ -67,7 +67,7 @@ namespace
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
         pair(beam.get(), nullptr, evaluation_data_);
-    SetIsUnitTest(pair, true);
+    set_is_unit_test(pair, true);
 
     // Define the coordinates and normals for the solid element.
     const auto element_data_solid = XtestSetupTri3();
@@ -101,7 +101,7 @@ namespace
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
         pair(beam.get(), nullptr, evaluation_data_);
-    SetIsUnitTest(pair, true);
+    set_is_unit_test(pair, true);
 
     // Define the coordinates and normals for the solid element.
     const auto element_data_solid = XtestSetupTri6();
@@ -135,7 +135,7 @@ namespace
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
         pair(beam.get(), nullptr, evaluation_data_);
-    SetIsUnitTest(pair, true);
+    set_is_unit_test(pair, true);
 
     // Define the coordinates and normals for the solid element.
     const auto element_data_solid = XtestSetupQuad4();
@@ -169,7 +169,7 @@ namespace
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
         pair(beam.get(), nullptr, evaluation_data_);
-    SetIsUnitTest(pair, true);
+    set_is_unit_test(pair, true);
 
     // Define the coordinates for the solid element.
     const auto element_data_solid = XtestSetupQuad8();
@@ -203,7 +203,7 @@ namespace
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
         pair(beam.get(), nullptr, evaluation_data_);
-    SetIsUnitTest(pair, true);
+    set_is_unit_test(pair, true);
 
     // Define the coordinates and normals for the solid element.
     const auto element_data_solid = XtestSetupQuad9();
@@ -239,7 +239,7 @@ namespace
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
         pair(element_line.get(), nullptr, evaluation_data_);
-    SetIsUnitTest(pair, true);
+    set_is_unit_test(pair, true);
 
     // Define the coordinates for the solid element.
     const auto element_data_solid = XtestSetupTri3();
@@ -287,7 +287,7 @@ namespace
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
         pair(element_line.get(), nullptr, evaluation_data_);
-    SetIsUnitTest(pair, true);
+    set_is_unit_test(pair, true);
 
     // Define the coordinates for the solid element.
     const auto element_data_solid = XtestSetupTri6();
@@ -334,7 +334,7 @@ namespace
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
         pair(element_line.get(), nullptr, evaluation_data_);
-    SetIsUnitTest(pair, true);
+    set_is_unit_test(pair, true);
 
     // Define the coordinates for the solid element.
     const auto element_data_solid = XtestSetupQuad4();
@@ -382,7 +382,7 @@ namespace
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
         pair(element_line.get(), nullptr, evaluation_data_);
-    SetIsUnitTest(pair, true);
+    set_is_unit_test(pair, true);
 
     // Define the coordinates for the solid element.
     const auto element_data_solid = XtestSetupQuad8();
@@ -430,7 +430,7 @@ namespace
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
         pair(element_line.get(), nullptr, evaluation_data_);
-    SetIsUnitTest(pair, true);
+    set_is_unit_test(pair, true);
     // Define the coordinates for the solid element.
     const auto element_data_solid = XtestSetupQuad9();
 

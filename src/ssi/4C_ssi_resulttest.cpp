@@ -88,7 +88,7 @@ void SSI::SSIResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int&
     const double result = result_special(quantity);
 
     // compare values
-    const int err = CompareValues(result, "SPECIAL", res);
+    const int err = compare_values(result, "SPECIAL", res);
     nerr += err;
     ++test_count;
   }

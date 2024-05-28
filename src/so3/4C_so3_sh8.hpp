@@ -255,12 +255,12 @@ namespace DRT
           CORE::LINALG::Matrix<num_ans * num_sp, NUMDOF_SOH8>& B_ans_loc) const;  ///< modified B
 
       //! Evaluate transformation matrix T (parameter->material) at gp
-      void sosh8_evaluateT(
+      void sosh8_evaluate_t(
           const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac,  ///< actual jacobian
           CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& TinvT);  ///< T^{-T}
 
       //! Return true Cauchy-stress at gausspoint
-      void sosh8_Cauchy(CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress,
+      void sosh8_cauchy(CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress,
           const int gp, const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd,
           const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain,
           const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress);
@@ -272,7 +272,7 @@ namespace DRT
       double sosh8_calcaspectratio();
 
       //! Calculate the STC matrix
-      virtual void CalcSTCMatrix(CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>& elemat1,
+      virtual void do_calc_stc_matrix(CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>& elemat1,
           const INPAR::STR::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
           DRT::Discretization& discretization, bool calcinverse);
 
@@ -282,7 +282,7 @@ namespace DRT
       );
 
       //! return thickness direction
-      std::vector<double> GetThickvec() { return thickvec_; };
+      std::vector<double> get_thickvec() { return thickvec_; };
 
       //! Debug gmsh-plot to check thickness direction
       void sosh8_gmshplotlabeledelement(const int LabelIds[NUMNOD_SOH8]);

@@ -609,7 +609,7 @@ namespace DRT::ELEMENTS::SHELL::EAS
   /*!
    * @brief Update the current metric tensor due to EAS
    *
-   * @tparam distype : Discretization type
+   * @tparam distype : discretization type
    * @param g (in/out) : An object holding the metrics and basis vectors
    * @param strain (in) : Strains
    * @param zeta (in) : Thickness coordinate of gaussian point (scaled via SDC)
@@ -652,7 +652,7 @@ namespace DRT::ELEMENTS::SHELL::EAS
    *
    *  M_gp = detJ0/detJ T0^{-T} M = J0^T M J0^{-T}
    *
-   * @tparam distype : Discretization type
+   * @tparam distype : discretization type
    * @param neas (in) : Number of total EAS parameters
    * @param a_reference (in) : An object holding the current basis vectors and
    * metric tensors of the shell body

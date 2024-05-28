@@ -348,7 +348,7 @@ void STRUMULTI::MicroStatic::PrintNewton(bool print_unconv, Teuchos::Time timer)
 /*----------------------------------------------------------------------*
  |  print to screen                                             lw 12/07|
  *----------------------------------------------------------------------*/
-void STRUMULTI::MicroStatic::PrintPredictor()
+void STRUMULTI::MicroStatic::print_predictor()
 {
   if (normtypefres_ == INPAR::STR::convnorm_rel)
   {

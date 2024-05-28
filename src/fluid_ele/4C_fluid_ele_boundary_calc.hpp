@@ -78,7 +78,7 @@ namespace DRT
       /// Constructor
       FluidBoundaryImpl();
 
-      void EvaluateAction(DRT::ELEMENTS::FluidBoundary* ele1, Teuchos::ParameterList& params,
+      void evaluate_action(DRT::ELEMENTS::FluidBoundary* ele1, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
           CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
@@ -148,7 +148,7 @@ namespace DRT
       \param params (in/out)    : ParameterList for communication between control routine
                                   and elements
       */
-      void AreaCalculation(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      void area_calculation(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm);
 
       /*!
@@ -209,7 +209,7 @@ namespace DRT
        \param discretization (in): A reference to the underlying discretization
        \param lm (in)            : location vector of this element
        */
-      void ComputeFlowRate(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      void compute_flow_rate(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1);
 
@@ -227,7 +227,7 @@ namespace DRT
       \param elevec2 (out)      : derivative of flowrate wrt displacements
       \param elevec3 (out)      : flowrate
       */
-      void FlowRateDeriv(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      void flow_rate_deriv(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
           CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
@@ -255,7 +255,7 @@ namespace DRT
       \param lm (in)            : location vector of this element
       \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
       */
-      void dQdu(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      void d_qdu(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1);
 
@@ -271,17 +271,17 @@ namespace DRT
       \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
 
       */
-      void NeumannInflow(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      void neumann_inflow(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1);
 
      protected:
-      void CreateLinesTri(const int& nline, const int& nnode);
+      void create_lines_tri(const int& nline, const int& nnode);
 
-      void CreateLinesQuad(const int& nline, const int& nnode);
+      void create_lines_quad(const int& nline, const int& nnode);
 
       //! get density
-      void GetDensity(
+      void get_density(
           Teuchos::RCP<const CORE::MAT::Material> material,  ///< reference pointer to material
           const CORE::LINALG::Matrix<bdrynen_, 1>& escaaf,   ///< scalar at time n+alpha_f / n+1
           const double thermpressaf,  ///< thermodynamic pressure at time n+alpha_f / n+1

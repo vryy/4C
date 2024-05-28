@@ -123,7 +123,7 @@ void CONTACT::NitscheStrategyTsi::update_trace_ineq_etimates()
   }
 }
 
-Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategyTsi::SetupRhsBlockVec(
+Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategyTsi::setup_rhs_block_vec(
     const enum CONTACT::VecBlockType& bt) const
 {
   switch (bt)
@@ -132,7 +132,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategyTsi::SetupRhsBlockVec(
       return Teuchos::rcp(
           new Epetra_FEVector(*GLOBAL::Problem::Instance()->GetDis("thermo")->dof_row_map()));
     default:
-      return CONTACT::NitscheStrategy::SetupRhsBlockVec(bt);
+      return CONTACT::NitscheStrategy::setup_rhs_block_vec(bt);
   }
 }
 
@@ -154,7 +154,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategyTsi::GetRhsBlockPtr(
   }
 }
 
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategyTsi::SetupMatrixBlockPtr(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategyTsi::setup_matrix_block_ptr(
     const enum CONTACT::MatBlockType& bt)
 {
   switch (bt)
@@ -171,7 +171,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategyTsi::SetupMatri
               *GLOBAL::Problem::Instance()->GetDis("thermo")->dof_row_map()),
           100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
     default:
-      return CONTACT::NitscheStrategy::SetupMatrixBlockPtr(bt);
+      return CONTACT::NitscheStrategy::setup_matrix_block_ptr(bt);
   }
 }
 
@@ -229,7 +229,7 @@ void CONTACT::NitscheStrategyTsi::Integrate(const CONTACT::ParamsInterface& cpar
 {
   CONTACT::NitscheStrategy::Integrate(cparams);
 
-  ft_ = CreateRhsBlockPtr(CONTACT::VecBlockType::temp);
+  ft_ = create_rhs_block_ptr(CONTACT::VecBlockType::temp);
   ktt_ = create_matrix_block_ptr(CONTACT::MatBlockType::temp_temp);
   ktd_ = create_matrix_block_ptr(CONTACT::MatBlockType::temp_displ);
   kdt_ = create_matrix_block_ptr(CONTACT::MatBlockType::displ_temp);

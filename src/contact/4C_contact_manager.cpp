@@ -64,7 +64,7 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
 
   // check for fill_complete of discretization
-  if (!Discret().Filled()) FOUR_C_THROW("Discretization is not fillcomplete");
+  if (!Discret().Filled()) FOUR_C_THROW("discretization is not fillcomplete");
 
   // let's check for contact boundary conditions in the discretization and and detect groups of
   // matching conditions. For each group, create a contact interface and store it.
@@ -345,7 +345,7 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
                   Discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive, friplus));
           //-------------------
           // get nurbs weight!
-          if (nurbs) MORTAR::UTILS::PrepareNURBSNode(node, cnode);
+          if (nurbs) MORTAR::UTILS::prepare_nurbs_node(node, cnode);
 
           // get edge and corner information:
           std::vector<CORE::Conditions::Condition*> contactcornercond(0);
@@ -401,7 +401,7 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
           // get nurbs weight!
           if (nurbs)
           {
-            MORTAR::UTILS::PrepareNURBSNode(node, cnode);
+            MORTAR::UTILS::prepare_nurbs_node(node, cnode);
           }
 
           // get edge and corner information:
@@ -500,7 +500,7 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
         // get knotvector, normal factor and zero-size information for nurbs
         if (nurbs)
         {
-          MORTAR::UTILS::PrepareNURBSElement(discret, ele, cele, dim);
+          MORTAR::UTILS::prepare_nurbs_element(discret, ele, cele, dim);
         }
 
         interface->add_element(cele);
@@ -1217,7 +1217,7 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
 /*----------------------------------------------------------------------*
  |  write restart information for contact (public)            popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart)
+void CONTACT::Manager::write_restart(IO::DiscretizationWriter& output, bool forcedrestart)
 {
   // clear cache of maps due to varying vector size
   output.ClearMapCache();
@@ -1590,7 +1590,7 @@ void CONTACT::Manager::reconnect_parent_elements()
         DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
 
         int volgid = faceele->ParentElementId();
-        if (elecolmap->LID(volgid) == -1)  // Volume Discretization has not Element
+        if (elecolmap->LID(volgid) == -1)  // Volume discretization has not Element
           FOUR_C_THROW(
               "Manager::reconnect_parent_elements: Element %d does not exist on this Proc!",
               volgid);

@@ -687,7 +687,7 @@ MAT::PAR::FluidPoro::FluidPoro(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
   }
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FluidPoro::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FluidPoro::create_material()
 {
   return Teuchos::rcp(new MAT::FluidPoro(this));
 }

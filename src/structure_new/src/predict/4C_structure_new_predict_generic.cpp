@@ -90,12 +90,12 @@ void STR::PREDICT::Generic::PostPredict(::NOX::Abstract::Group& grp)
 {
   check_init_setup();
 
-  Dbc().ApplyDirichletBC(GlobalState().GetTimeNp(), GlobalState().GetDisNp(),
-      GlobalState().GetVelNp(), GlobalState().GetAccNp(), false);
+  dbc().apply_dirichlet_bc(global_state().GetTimeNp(), global_state().GetDisNp(),
+      global_state().GetVelNp(), global_state().GetAccNp(), false);
 
   // Create the new solution vector
-  Teuchos::RCP<::NOX::Epetra::Vector> x_vec = GlobalState().CreateGlobalVector(
-      TIMINT::BaseDataGlobalState::VecInitType::init_current_state, ImplInt().ModelEvalPtr());
+  Teuchos::RCP<::NOX::Epetra::Vector> x_vec = global_state().CreateGlobalVector(
+      TIMINT::BaseDataGlobalState::VecInitType::init_current_state, impl_int().ModelEvalPtr());
   // resets all isValid flags
   grp.setX(*x_vec);
 
@@ -128,7 +128,7 @@ void STR::PREDICT::Generic::check_init_setup() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::IMPLICIT::Generic>& STR::PREDICT::Generic::ImplIntPtr()
+Teuchos::RCP<STR::IMPLICIT::Generic>& STR::PREDICT::Generic::impl_int_ptr()
 {
   check_init();
   return implint_ptr_;
@@ -136,7 +136,7 @@ Teuchos::RCP<STR::IMPLICIT::Generic>& STR::PREDICT::Generic::ImplIntPtr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::IMPLICIT::Generic& STR::PREDICT::Generic::ImplInt()
+STR::IMPLICIT::Generic& STR::PREDICT::Generic::impl_int()
 {
   check_init();
   return *implint_ptr_;
@@ -144,7 +144,7 @@ STR::IMPLICIT::Generic& STR::PREDICT::Generic::ImplInt()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::Dbc>& STR::PREDICT::Generic::DbcPtr()
+Teuchos::RCP<STR::Dbc>& STR::PREDICT::Generic::dbc_ptr()
 {
   check_init();
   return dbc_ptr_;
@@ -152,7 +152,7 @@ Teuchos::RCP<STR::Dbc>& STR::PREDICT::Generic::DbcPtr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::Dbc& STR::PREDICT::Generic::Dbc()
+STR::Dbc& STR::PREDICT::Generic::dbc()
 {
   check_init();
   return *dbc_ptr_;
@@ -160,7 +160,7 @@ STR::Dbc& STR::PREDICT::Generic::Dbc()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& STR::PREDICT::Generic::GlobalStatePtr()
+Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& STR::PREDICT::Generic::global_state_ptr()
 {
   check_init();
   return gstate_ptr_;
@@ -168,7 +168,7 @@ Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& STR::PREDICT::Generic::GlobalSta
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TIMINT::BaseDataGlobalState& STR::PREDICT::Generic::GlobalState()
+STR::TIMINT::BaseDataGlobalState& STR::PREDICT::Generic::global_state()
 {
   check_init();
   return *gstate_ptr_;
@@ -176,7 +176,7 @@ STR::TIMINT::BaseDataGlobalState& STR::PREDICT::Generic::GlobalState()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TIMINT::BaseDataIO>& STR::PREDICT::Generic::IODataPtr()
+Teuchos::RCP<STR::TIMINT::BaseDataIO>& STR::PREDICT::Generic::io_data_ptr()
 {
   check_init();
   return iodata_ptr_;
@@ -184,7 +184,7 @@ Teuchos::RCP<STR::TIMINT::BaseDataIO>& STR::PREDICT::Generic::IODataPtr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TIMINT::BaseDataIO& STR::PREDICT::Generic::IOData()
+STR::TIMINT::BaseDataIO& STR::PREDICT::Generic::io_data()
 {
   check_init();
   return *iodata_ptr_;
@@ -200,7 +200,7 @@ const STR::TIMINT::BaseDataGlobalState& STR::PREDICT::Generic::GlobalState() con
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Teuchos::ParameterList>& STR::PREDICT::Generic::NoxParamsPtr()
+Teuchos::RCP<Teuchos::ParameterList>& STR::PREDICT::Generic::nox_params_ptr()
 {
   check_init();
   return noxparams_ptr_;
@@ -208,7 +208,7 @@ Teuchos::RCP<Teuchos::ParameterList>& STR::PREDICT::Generic::NoxParamsPtr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::ParameterList& STR::PREDICT::Generic::NoxParams()
+Teuchos::ParameterList& STR::PREDICT::Generic::nox_params()
 {
   check_init();
   return *noxparams_ptr_;

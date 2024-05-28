@@ -705,7 +705,7 @@ void CONTACT::PenaltyStrategy::update_uzawa_augmented_lagrange()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::PenaltyStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
+void CONTACT::PenaltyStrategy::eval_force(CONTACT::ParamsInterface& cparams)
 {
   //---------------------------------------------------------------
   // For selfcontact the master/slave sets are updated within the -
@@ -961,10 +961,10 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::PenaltyStrategy::GetRhsBlockPtr(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::PenaltyStrategy::EvalForceStiff(CONTACT::ParamsInterface& cparams)
+void CONTACT::PenaltyStrategy::eval_force_stiff(CONTACT::ParamsInterface& cparams)
 {
   // call the evaluate force routine if not done before
-  if (!evalForceCalled_) EvalForce(cparams);
+  if (!evalForceCalled_) eval_force(cparams);
 
   // bye bye
   return;

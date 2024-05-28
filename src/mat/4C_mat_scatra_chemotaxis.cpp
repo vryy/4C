@@ -50,7 +50,7 @@ MAT::PAR::ScatraChemotaxisMat::ScatraChemotaxisMat(Teuchos::RCP<CORE::MAT::PAR::
 }
 
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScatraChemotaxisMat::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScatraChemotaxisMat::create_material()
 {
   return Teuchos::rcp(new MAT::ScatraChemotaxisMat(this));
 }

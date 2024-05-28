@@ -107,15 +107,15 @@ void FS3I::ACFSI::set_mean_wall_shear_stresses() const
       fsi_->fluid_field()->Interface()->ExtractFSICondVector(wall_shear_stress_lp_);
 
   // replace global fluid interface dofs through structure interface dofs
-  WallShearStress = fsi_->FluidToStruct(WallShearStress);
+  WallShearStress = fsi_->fluid_to_struct(WallShearStress);
 
   // insert structure interface entries into vector with full structure length
   Teuchos::RCP<Epetra_Vector> structurewss =
-      CORE::LINALG::CreateVector(*(fsi_->StructureField()->Interface()->FullMap()), true);
+      CORE::LINALG::CreateVector(*(fsi_->structure_field()->Interface()->FullMap()), true);
 
   // Parameter int block of function InsertVector: (0: inner dofs of structure, 1: interface dofs of
   // structure, 2: inner dofs of porofluid, 3: interface dofs of porofluid )
-  fsi_->StructureField()->Interface()->InsertVector(WallShearStress, 1, structurewss);
+  fsi_->structure_field()->Interface()->InsertVector(WallShearStress, 1, structurewss);
   scatravec_[1]->ScaTraField()->set_wall_shear_stresses(
       structure_to_structure_scalar(structurewss));
 }
@@ -137,11 +137,11 @@ void FS3I::ACFSI::set_zero_velocity_field()
 {
   Teuchos::RCP<Epetra_Vector> zeros =
       Teuchos::rcp(new Epetra_Vector(fsi_->fluid_field()->Velnp()->Map(), true));
-  scatravec_[0]->ScaTraField()->SetVelocityField(
+  scatravec_[0]->ScaTraField()->set_velocity_field(
       FluidToFluidScalar(zeros), Teuchos::null, FluidToFluidScalar(zeros), Teuchos::null);
   Teuchos::RCP<Epetra_Vector> zeros2 =
-      Teuchos::rcp(new Epetra_Vector(fsi_->StructureField()->Velnp()->Map(), true));
-  scatravec_[1]->ScaTraField()->SetVelocityField(structure_to_structure_scalar(zeros2),
+      Teuchos::rcp(new Epetra_Vector(fsi_->structure_field()->Velnp()->Map(), true));
+  scatravec_[1]->ScaTraField()->set_velocity_field(structure_to_structure_scalar(zeros2),
       Teuchos::null, structure_to_structure_scalar(zeros2), Teuchos::null);
 }
 
@@ -202,10 +202,10 @@ void FS3I::ACFSI::finish_large_time_scale_loop()
 
   // we now have to fix the time_ and step_ of the structure field, since this is not shifted
   // in prepare_time_step(), but in Update(), which we here will not call. So..
-  fsi_->StructureField()->set_time(time_);
-  fsi_->StructureField()->SetTimen(time_ + fsi_->fluid_field()->Dt());
-  fsi_->StructureField()->SetStep(step_);
-  fsi_->StructureField()->SetStepn(step_ + 1);
+  fsi_->structure_field()->set_time(time_);
+  fsi_->structure_field()->SetTimen(time_ + fsi_->fluid_field()->Dt());
+  fsi_->structure_field()->SetStep(step_);
+  fsi_->structure_field()->SetStepn(step_ + 1);
 
   // we start with a clean small time scale loop
   fsiisperiodic_ = false;
@@ -459,7 +459,7 @@ bool FS3I::ACFSI::does_growth_needs_update()
   // check if the structure material is a growth material. We assume here
   // that the structure has the same material for the whole discretiazation.
   // Hence we check only the first element:
-  Teuchos::RCP<DRT::Discretization> structuredis = fsi_->StructureField()->Discretization();
+  Teuchos::RCP<DRT::Discretization> structuredis = fsi_->structure_field()->discretization();
   const int GID = structuredis->ElementColMap()->GID(0);  // global element ID
 
   Teuchos::RCP<CORE::MAT::Material> structurematerial = structuredis->gElement(GID)->Material();
@@ -637,10 +637,10 @@ void FS3I::ACFSI::large_time_scale_do_growth_update()
 
   // we now have to fix the time_ and step_ of the structure field, since this is not shifted
   // in prepare_time_step(), but in Update(), which we here will not call. So..
-  fsi_->StructureField()->set_time(time_ - dt_);
-  fsi_->StructureField()->SetTimen(time_);
-  fsi_->StructureField()->SetStep(step_ - 1);
-  fsi_->StructureField()->SetStepn(step_);
+  fsi_->structure_field()->set_time(time_ - dt_);
+  fsi_->structure_field()->SetTimen(time_);
+  fsi_->structure_field()->SetStep(step_ - 1);
+  fsi_->structure_field()->SetStepn(step_);
 
   //----------------------------------------------------------------------
   // Prepare time steps
@@ -669,7 +669,7 @@ void FS3I::ACFSI::large_time_scale_do_growth_update()
   constexpr bool force_prepare = false;
   fsi_->prepare_output(force_prepare);
   // NOTE: we have to call this functions, otherwise the structure displacements are not applied
-  fsi_->Update();
+  fsi_->update();
   FsiOutput();
   // fluid scatra update. Structure scatra is done later
   fluidscatra->Update();
@@ -712,7 +712,7 @@ void FS3I::ACFSI::large_time_scale_outer_loop_iter_stagg()
   {
     itnum++;
 
-    structureincrement_->Update(1.0, *fsi_->StructureField()->Dispnp(), 0.0);
+    structureincrement_->Update(1.0, *fsi_->structure_field()->Dispnp(), 0.0);
     fluidincrement_->Update(1.0, *fsi_->fluid_field()->Velnp(), 0.0);
     aleincrement_->Update(1.0, *fsi_->ale_field()->Dispnp(), 0.0);
 
@@ -738,7 +738,7 @@ void FS3I::ACFSI::large_time_scale_set_fsi_solution()
   // we clear every state, including the states of the secondary dof sets
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
-    scatravec_[i]->ScaTraField()->Discretization()->ClearState(true);
+    scatravec_[i]->ScaTraField()->discretization()->ClearState(true);
     // we have to manually clear this since this can not be saved directly in the
     // primary dof set (because it is cleared in between)
     scatravec_[i]->ScaTraField()->clear_external_concentrations();
@@ -780,7 +780,7 @@ std::vector<Teuchos::RCP<CORE::LINALG::MapExtractor>> FS3I::ACFSI::BuildMapExtra
   const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra =
       scatravec_[1]->ScaTraField();  // structure scatra
   const int numscal = scatra->NumScal();
-  const Teuchos::RCP<const DRT::Discretization> dis = scatra->Discretization();
+  const Teuchos::RCP<const DRT::Discretization> dis = scatra->discretization();
 
   for (int k = 0; k < numscal; k++)
   {
@@ -994,7 +994,7 @@ Teuchos::RCP<const Epetra_Vector> FS3I::MeanManager::GetMeanValue(const std::str
 /*----------------------------------------------------------------------*
  | Write restart of mean manager                             Thon 10/15 |
  *----------------------------------------------------------------------*/
-void FS3I::MeanManager::WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> fluidwriter) const
+void FS3I::MeanManager::write_restart(Teuchos::RCP<IO::DiscretizationWriter> fluidwriter) const
 {
   // first some checking
   if (abs(sum_dt_wss_ - sum_dt_phi_) > 1e-14 or abs(sum_dt_wss_ - sum_dt_pres_) > 1e-14)

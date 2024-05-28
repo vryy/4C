@@ -240,7 +240,7 @@ namespace MAT
       ScatraReactionMat(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> create_material() override;
 
       /// returns the enum of the current coupling type
       MAT::PAR::ReactionCoupling set_coupling_type(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
@@ -387,7 +387,7 @@ namespace MAT
 
    protected:
     /// return ID of function for spatial distribution of reaction coefficient
-    int DisFunctReacCoeffID() const { return params_->distrfunctreaccoeffid_; }
+    int dis_funct_reac_coeff_id() const { return params_->distrfunctreaccoeffid_; }
 
     //! Return reaction coefficient at Gauss-point
     /*!
@@ -400,24 +400,24 @@ namespace MAT
 
          \return reaction coefficient at Gauss-point (double)
        */
-    virtual double ReacCoeff(const std::vector<std::pair<std::string, double>>&
+    virtual double reac_coeff(const std::vector<std::pair<std::string, double>>&
             constants  //!< vector containing values which are independent of the scalars
     ) const;
 
     /// return stoichometrie
-    const std::vector<int>* Stoich() const { return &params_->stoich_; }
+    const std::vector<int>* stoich() const { return &params_->stoich_; }
 
     /// return type of coupling
-    MAT::PAR::ReactionCoupling Coupling() const { return params_->coupling_; }
+    MAT::PAR::ReactionCoupling coupling() const { return params_->coupling_; }
 
     /// return role in coupling
-    const std::vector<double>* Couprole() const { return &params_->couprole_; }
+    const std::vector<double>* couprole() const { return &params_->couprole_; }
 
     /// delayed reaction start coefficient
-    const std::vector<double>* ReacStart() const { return &params_->reacstart_; }
+    const std::vector<double>* reac_start() const { return &params_->reacstart_; }
 
     /// return flag if there is a reacstart value
-    bool IsReacStart() const { return params_->isreacstart_; }
+    bool is_reac_start() const { return params_->isreacstart_; }
 
     /// return flag if there is a spatial distribution function for the reaction coefficient
     bool get_is_distr_funct_reac_coeff() const { return params_->isdistrfunctreaccoeff_; }

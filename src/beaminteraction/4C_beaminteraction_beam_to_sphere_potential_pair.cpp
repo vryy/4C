@@ -220,7 +220,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
   const double cutoff_radius = Params()->CutoffRadius();
 
   // Set gauss integration rule
-  CORE::FE::GaussRule1D gaussrule = GetGaussRule();
+  CORE::FE::GaussRule1D gaussrule = get_gauss_rule();
 
   // Get gauss points (gp) for integration
   CORE::FE::IntegrationPoints1D gausspoints(gaussrule);

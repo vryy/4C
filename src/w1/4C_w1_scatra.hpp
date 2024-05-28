@@ -154,7 +154,7 @@ namespace DRT
       //! don't want = operator
       Wall1Scatra& operator=(const Wall1Scatra& old);
 
-      int MyEvaluate(
+      int my_evaluate(
           Teuchos::ParameterList&
               params,  ///< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  ///< pointer to discretization for de-assembly

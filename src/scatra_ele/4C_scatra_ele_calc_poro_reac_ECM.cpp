@@ -62,7 +62,7 @@ DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::Instance(
  |  evaluate single material  (protected)                    thon 02/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::Materials(
+void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::materials(
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -75,7 +75,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::Materials(
   switch (material->MaterialType())
   {
     case CORE::Materials::m_scatra:
-      pororeac::MatScaTra(material, k, densn, densnp, densam, visc, iquad);
+      pororeac::mat_scatra(material, k, densn, densnp, densam, visc, iquad);
       break;
     default:
       FOUR_C_THROW("Material type %i is not supported", material->MaterialType());
@@ -88,7 +88,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::Materials(
  |  evaluate single material  (protected)                    vuong 10/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::GetMaterialParams(
+void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::get_material_params(
     const DRT::Element* ele,      //!< the element we are dealing with
     std::vector<double>& densn,   //!< density at t_(n)
     std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
@@ -98,7 +98,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::GetMaterialParams(
 )
 {
   // call poro base class to compute porosity
-  poro::ComputePorosity(ele);
+  poro::compute_porosity(ele);
 
   // get the material
   Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
@@ -130,7 +130,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::GetMaterialParams(
   }
 
   // call base class
-  advreac::GetMaterialParams(ele, densn, densnp, densam, visc, iquad);
+  advreac::get_material_params(ele, densn, densnp, densam, visc, iquad);
 
   return;
 }

@@ -174,7 +174,7 @@ namespace XFEM
     void setup_configuration_map() override;
 
     //! set the name of the coupling object based on the field coupling
-    void SetCouplingName() override;
+    void set_coupling_name() override;
 
     //! Updates configurationmap for specific Gausspoint
     void update_configuration_map_gp(double& kappa_m,  //< fluid sided weighting
@@ -195,7 +195,7 @@ namespace XFEM
         double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
         ) override;
 
-    void InitStateVectors() override;
+    void init_state_vectors() override;
 
     void do_condition_specific_setup() override;
 

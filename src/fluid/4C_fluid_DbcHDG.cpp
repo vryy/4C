@@ -59,7 +59,7 @@ void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(const DRT::Discretization
     {
       const DRT::FaceElement* faceele = dynamic_cast<const DRT::FaceElement*>(discret.lRowFace(i));
       const unsigned int dofperface =
-          faceele->ParentMasterElement()->NumDofPerFace(faceele->FaceMasterNumber());
+          faceele->ParentMasterElement()->num_dof_per_face(faceele->FaceMasterNumber());
       const unsigned int dofpercomponent =
           faceele->ParentMasterElement()->NumDofPerComponent(faceele->FaceMasterNumber());
       const unsigned int component = dofperface / dofpercomponent;
@@ -222,7 +222,7 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const DRT::DiscretizationFa
     {
       const DRT::FaceElement* faceele = dynamic_cast<const DRT::FaceElement*>(discret.lRowFace(i));
       const unsigned int dofperface =
-          faceele->ParentMasterElement()->NumDofPerFace(faceele->FaceMasterNumber());
+          faceele->ParentMasterElement()->num_dof_per_face(faceele->FaceMasterNumber());
       const unsigned int dofpercomponent =
           faceele->ParentMasterElement()->NumDofPerComponent(faceele->FaceMasterNumber());
       const unsigned int component = dofperface / dofpercomponent;

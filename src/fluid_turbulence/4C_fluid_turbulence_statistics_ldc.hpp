@@ -129,7 +129,7 @@ namespace FLD
     /*!
     \brief Write output file of statistics data to allow restart
     */
-    void WriteRestart(IO::DiscretizationWriter& writer);
+    void write_restart(IO::DiscretizationWriter& writer);
 
    protected:
     /*!

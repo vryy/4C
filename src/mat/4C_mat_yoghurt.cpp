@@ -33,7 +33,7 @@ MAT::PAR::Yoghurt::Yoghurt(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
 {
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Yoghurt::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Yoghurt::create_material()
 {
   return Teuchos::rcp(new MAT::Yoghurt(this));
 }

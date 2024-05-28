@@ -149,13 +149,13 @@ namespace FSI
     void calculate_interface_energy_increment() override;
 
     /// Output routine accounting for Lagrange multiplier at the interface
-    void Output() override;
+    void output() override;
 
     /// Write Lagrange multiplier
     void OutputLambda() override;
 
     //! take current results for converged and save for next time step
-    void Update() override;
+    void update() override;
 
     /// read restart data
     void read_restart(int step) override;
@@ -172,14 +172,14 @@ namespace FSI
      *  6 available norms are useful. Each of these three norms delivers a new
      *  time step size. Select the minimum of these three as the new time step size.
      */
-    double SelectDtErrorBased() const override;
+    double select_dt_error_based() const override;
 
     /*! \brief Check whether time step is accepted or not
      *
      *  In case that the local truncation error is small enough, the time step is
      *  accepted.
      */
-    bool SetAccepted() const override;
+    bool set_accepted() const override;
 
     //@}
 
@@ -204,7 +204,7 @@ namespace FSI
 
    protected:
     /// create the composed system matrix
-    void CreateSystemMatrix();
+    void create_system_matrix();
 
     /// setup of NOX convergence tests
     Teuchos::RCP<::NOX::StatusTest::Combo> create_status_test(

@@ -571,7 +571,7 @@ namespace DRT
             ) = 0;
 
         // OD-mesh linearization of diffusive term
-        void CalcDiffODMesh(
+        void calc_diff_od_mesh(
             CORE::LINALG::SerialDenseMatrix& mymat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nsd, nen>& deriv,
             const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
@@ -581,14 +581,14 @@ namespace DRT
             const int phasetoadd);
 
         // OD-mesh linearization of fac (Jacobian)
-        void CalcLinFacODMesh(
+        void calc_lin_fac_od_mesh(
             CORE::LINALG::SerialDenseMatrix& mymat,     //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>& derxy, const double vrhs, const int numdofpernode,
             const int phasetoadd);
 
         // OD-mesh linearization of divergence term
-        void CalcDivVelODMesh(
+        void calc_div_vel_od_mesh(
             CORE::LINALG::SerialDenseMatrix& mymat,     //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>& deriv,
@@ -1251,9 +1251,9 @@ namespace DRT
             ) override;
 
         //! get transient term for rhs and OD
-        double GetRhsTrans(int curphase,  //!< index of current phase
-            int phasetoadd,               //!< index of current phase
-            int numdofpernode,            //!< total number of DOFs/phases
+        double get_rhs_trans(int curphase,  //!< index of current phase
+            int phasetoadd,                 //!< index of current phase
+            int numdofpernode,              //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -1353,9 +1353,9 @@ namespace DRT
             ) override;
 
         //! get transient term for rhs and OD
-        double GetRhsTrans(int curphase,  //!< index of current phase
-            int phasetoadd,               //!< index of current phase
-            int numdofpernode,            //!< total number of DOFs/phases
+        double get_rhs_trans(int curphase,  //!< index of current phase
+            int phasetoadd,                 //!< index of current phase
+            int numdofpernode,              //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -1547,9 +1547,9 @@ namespace DRT
             ) override;
 
         //! get transient term for rhs and OD
-        double GetRhsTrans(int curphase,  //!< index of current phase
-            int phasetoadd,               //!< index of current phase
-            int numdofpernode,            //!< total number of DOFs/phases
+        double get_rhs_trans(int curphase,  //!< index of current phase
+            int phasetoadd,                 //!< index of current phase
+            int numdofpernode,              //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -2015,7 +2015,7 @@ namespace DRT
             ) override;
 
         //! cast to VarExp-function
-        [[nodiscard]] const CORE::UTILS::FunctionOfAnything& Function(int functnum) const;
+        [[nodiscard]] const CORE::UTILS::FunctionOfAnything& function(int functnum) const;
 
         //! vector holding the functions to be integrated
         std::vector<int> domainint_funct_;
@@ -2386,9 +2386,9 @@ namespace DRT
             ) override;
 
         //! get transient term for rhs and OD
-        double GetRhs(int curphase,  //!< index of current phase
-            int phasetoadd,          //!< index of current phase
-            int numdofpernode,       //!< total number of DOFs/phases
+        double get_rhs(int curphase,  //!< index of current phase
+            int phasetoadd,           //!< index of current phase
+            int numdofpernode,        //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager

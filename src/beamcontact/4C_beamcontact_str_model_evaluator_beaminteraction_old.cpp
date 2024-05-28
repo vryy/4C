@@ -43,14 +43,13 @@ void STR::MODELEVALUATOR::BeamInteractionOld::Setup()
   if (not is_init()) FOUR_C_THROW("Init() has not been called, yet!");
 
   // setup the pointers for displacement and stiffness
-  disnp_ptr_ = GState().GetDisNp();
+  disnp_ptr_ = g_state().GetDisNp();
   stiff_beaminteract_ptr_ =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
-  f_beaminteract_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*GState().dof_row_map(), true));
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*g_state().DofRowMapView(), 81, true, true));
+  f_beaminteract_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*g_state().dof_row_map(), true));
 
   // create beam contact manager
-  Teuchos::RCP<DRT::Discretization> discret_ptr = DiscretPtr();
-  beamcman_ = Teuchos::rcp(new CONTACT::Beam3cmanager(*discret_ptr, 0.0));
+  beamcman_ = Teuchos::rcp(new CONTACT::Beam3cmanager(*discret_ptr(), 0.0));
 
   // gmsh output at beginning of simulation
 #ifdef GMSHTIMESTEPS
@@ -68,7 +67,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::Reset(const Epetra_Vector& x)
   check_init_setup();
 
   // update the structural displacement vector
-  disnp_ptr_ = GState().GetDisNp();
+  disnp_ptr_ = g_state().GetDisNp();
 
   // Zero out force and stiffness contributions
   f_beaminteract_np_ptr_->PutScalar(0.0);
@@ -83,12 +82,12 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::evaluate_force()
 
   // ToDo replace the parameter list by a beam interaction model data container
   Teuchos::ParameterList beamcontactparams;
-  beamcontactparams.set("iter", EvalData().GetNlnIter());
-  beamcontactparams.set("dt", EvalData().GetDeltaTime());
-  beamcontactparams.set("numstep", EvalData().GetStepNp());
+  beamcontactparams.set("iter", eval_data().GetNlnIter());
+  beamcontactparams.set("dt", eval_data().GetDeltaTime());
+  beamcontactparams.set("numstep", eval_data().GetStepNp());
 
   beamcman_->Evaluate(*stiff_beaminteract_ptr_, *f_beaminteract_np_ptr_, *disnp_ptr_,
-      beamcontactparams, true, EvalData().GetTotalTime());
+      beamcontactparams, true, eval_data().GetTotalTime());
 
   return true;
 }
@@ -102,12 +101,12 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::evaluate_stiff()
 
   // ToDo replace the parameter list by a beam interaction model data container
   Teuchos::ParameterList beamcontactparams;
-  beamcontactparams.set("iter", EvalData().GetNlnIter());
-  beamcontactparams.set("dt", EvalData().GetDeltaTime());
-  beamcontactparams.set("numstep", EvalData().GetStepNp());
+  beamcontactparams.set("iter", eval_data().GetNlnIter());
+  beamcontactparams.set("dt", eval_data().GetDeltaTime());
+  beamcontactparams.set("numstep", eval_data().GetStepNp());
 
   beamcman_->Evaluate(*stiff_beaminteract_ptr_, *f_beaminteract_np_ptr_, *disnp_ptr_,
-      beamcontactparams, true, EvalData().GetTotalTime());
+      beamcontactparams, true, eval_data().GetTotalTime());
 
   return true;
 }
@@ -120,12 +119,12 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::evaluate_force_stiff()
 
   // ToDo replace the parameter list by a beam interaction model data container
   Teuchos::ParameterList beamcontactparams;
-  beamcontactparams.set("iter", EvalData().GetNlnIter());
-  beamcontactparams.set("dt", EvalData().GetDeltaTime());
-  beamcontactparams.set("numstep", EvalData().GetStepNp());
+  beamcontactparams.set("iter", eval_data().GetNlnIter());
+  beamcontactparams.set("dt", eval_data().GetDeltaTime());
+  beamcontactparams.set("numstep", eval_data().GetStepNp());
 
   beamcman_->Evaluate(*stiff_beaminteract_ptr_, *f_beaminteract_np_ptr_, *disnp_ptr_,
-      beamcontactparams, true, EvalData().GetTotalTime());
+      beamcontactparams, true, eval_data().GetTotalTime());
 
   // visualization of current Newton step
 #ifdef GMSHNEWTONSTEPS
@@ -164,10 +163,10 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::assemble_jacobian(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::WriteRestart(
+void STR::MODELEVALUATOR::BeamInteractionOld::write_restart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
-  beamcman_->WriteRestart(iowriter);  // ToDo
+  beamcman_->write_restart(iowriter);  // ToDo
 
   // since the global OutputStepState() routine is not called, if the
   // restart is written, we have to do it here manually.
@@ -185,7 +184,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::read_restart(IO::DiscretizationRea
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::RunPostComputeX(
+void STR::MODELEVALUATOR::BeamInteractionOld::run_post_compute_x(
     const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
   // empty ToDo
@@ -195,10 +194,10 @@ void STR::MODELEVALUATOR::BeamInteractionOld::RunPostComputeX(
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteractionOld::UpdateStepState(const double& timefac_n)
 {
-  beamcman_->Update(*disnp_ptr_, EvalData().GetStepNp(), EvalData().GetNlnIter());
+  beamcman_->Update(*disnp_ptr_, eval_data().GetStepNp(), eval_data().GetNlnIter());
 
   // add the old time factor scaled contributions to the residual
-  Teuchos::RCP<Epetra_Vector>& fstructold_ptr = GState().GetFstructureOld();
+  Teuchos::RCP<Epetra_Vector>& fstructold_ptr = g_state().GetFstructureOld();
 
   // Todo take care of the minus sign in front of timefac_np
   fstructold_ptr->Update(-timefac_n, *f_beaminteract_np_ptr_, 1.0);

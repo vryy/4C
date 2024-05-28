@@ -93,7 +93,7 @@ namespace DRT
         \param time             (i) current simulation time
         \param dt               (i) timestep
         */
-      void Sysmat(Artery* ele, const CORE::LINALG::Matrix<my::iel_, 1>& eqnp,
+      void sysmat(Artery* ele, const CORE::LINALG::Matrix<my::iel_, 1>& eqnp,
           const CORE::LINALG::Matrix<my::iel_, 1>& eareanp,
           CORE::LINALG::Matrix<2 * my::iel_, 2 * my::iel_>& sysmat,
           CORE::LINALG::Matrix<2 * my::iel_, 1>& rhs,

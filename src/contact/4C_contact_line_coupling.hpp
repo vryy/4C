@@ -62,7 +62,7 @@ namespace CONTACT
      \brief Evaluate coupling (3D)
 
      */
-    void EvaluateCoupling();
+    void evaluate_coupling();
 
     //@}
    private:
@@ -422,7 +422,7 @@ namespace CONTACT
      \brief Evaluate coupling (3D)
 
      */
-    void EvaluateCoupling();
+    void evaluate_coupling();
 
     /*!
      \brief perform line projection

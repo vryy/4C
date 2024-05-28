@@ -242,7 +242,7 @@ namespace DRT
       ScaTraEleBoundaryCalcElchElectrode(
           int numdofpernode, int numscal, const std::string& disname);
 
-      void EvaluateS2ICoupling(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
+      void evaluate_s2_i_coupling(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& eslavematrix,
           CORE::LINALG::SerialDenseMatrix& emastermatrix,
@@ -263,12 +263,12 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& eslavematrix,
           CORE::LINALG::SerialDenseMatrix& emastermatrix) override;
 
-      double GetValence(
+      double get_valence(
           const Teuchos::RCP<const CORE::MAT::Material>& material, int k) const override;
 
-      void CalcS2ICouplingFlux(const DRT::FaceElement* ele, const Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::FaceElement::LocationArray& la,
-          CORE::LINALG::SerialDenseVector& scalars) override;
+      void calc_s2_i_coupling_flux(const DRT::FaceElement* ele,
+          const Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::FaceElement::LocationArray& la, CORE::LINALG::SerialDenseVector& scalars) override;
 
       //! evaluate factor F/RT
       virtual double get_frt() const;

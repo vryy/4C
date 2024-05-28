@@ -91,10 +91,10 @@ namespace SSI
         Teuchos::RCP<CORE::LINALG::SparseOperator> mastermatrix);
 
     //! map extractor associated with all degrees of freedom inside structural field
-    Teuchos::RCP<const Epetra_Map> FullMapStructure() const { return full_map_structure_; }
+    Teuchos::RCP<const Epetra_Map> full_map_structure() const { return full_map_structure_; }
 
     //! scatra discretization
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() const { return scatra_; }
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> sca_tra_field() const { return scatra_; }
 
    private:
     //! map extractor associated with all degrees of freedom inside structure field

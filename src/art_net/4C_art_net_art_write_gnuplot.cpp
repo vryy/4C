@@ -201,7 +201,7 @@ void ART::UTILS::ArtWriteGnuplotWrapper::Write(Teuchos::ParameterList& params)
     for (mapiter = agmap_.begin(); mapiter != agmap_.end(); mapiter++)
     {
       art_num = mapiter->first;
-      mapiter->second->ArtWriteGnuplot::Write(discret_, params, agnode_map_[art_num]);
+      mapiter->second->ArtWriteGnuplot::write(discret_, params, agnode_map_[art_num]);
     }
   }
 }
@@ -262,7 +262,7 @@ ART::UTILS::ArtWriteGnuplot::ArtWriteGnuplot() {}
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::UTILS::ArtWriteGnuplot::Write(Teuchos::RCP<DRT::Discretization> discret,
+void ART::UTILS::ArtWriteGnuplot::write(Teuchos::RCP<DRT::Discretization> discret,
     Teuchos::ParameterList& params, const std::vector<int>* nodes)
 {
   // defining the Length

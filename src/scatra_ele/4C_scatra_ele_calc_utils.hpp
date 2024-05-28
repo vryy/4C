@@ -248,7 +248,7 @@ namespace SCATRA
   template <>
   struct DisTypeToMatGaussRule<CORE::FE::CellType::hex8>
   {
-    static CORE::FE::GaussRule3D GetGaussRule(int degree)
+    static CORE::FE::GaussRule3D get_gauss_rule(int degree)
     {
       switch (degree)
       {
@@ -305,7 +305,7 @@ namespace SCATRA
   template <>
   struct DisTypeToMatGaussRule<CORE::FE::CellType::hex20>
   {
-    static CORE::FE::GaussRule3D GetGaussRule(int degree)
+    static CORE::FE::GaussRule3D get_gauss_rule(int degree)
     {
       switch (degree)
       {
@@ -362,7 +362,7 @@ namespace SCATRA
   template <>
   struct DisTypeToMatGaussRule<CORE::FE::CellType::hex27>
   {
-    static CORE::FE::GaussRule3D GetGaussRule(int degree)
+    static CORE::FE::GaussRule3D get_gauss_rule(int degree)
     {
       switch (degree)
       {
@@ -419,7 +419,7 @@ namespace SCATRA
   template <>
   struct DisTypeToMatGaussRule<CORE::FE::CellType::tet4>
   {
-    static CORE::FE::GaussRule3D GetGaussRule(int degree)
+    static CORE::FE::GaussRule3D get_gauss_rule(int degree)
     {
       switch (degree)
       {
@@ -473,7 +473,7 @@ namespace SCATRA
   template <>
   struct DisTypeToMatGaussRule<CORE::FE::CellType::tet10>
   {
-    static CORE::FE::GaussRule3D GetGaussRule(int degree)
+    static CORE::FE::GaussRule3D get_gauss_rule(int degree)
     {
       switch (degree)
       {
@@ -527,7 +527,7 @@ namespace SCATRA
   template <>
   struct DisTypeToMatGaussRule<CORE::FE::CellType::wedge6>
   {
-    static CORE::FE::GaussRule3D GetGaussRule(int degree)
+    static CORE::FE::GaussRule3D get_gauss_rule(int degree)
     {
       FOUR_C_THROW("Gauss rule not for WEDGE elements defined. Feel free to add the Gauss rule.");
       return CORE::FE::GaussRule3D::undefined;
@@ -536,7 +536,7 @@ namespace SCATRA
   template <>
   struct DisTypeToMatGaussRule<CORE::FE::CellType::pyramid5>
   {
-    static CORE::FE::GaussRule3D GetGaussRule(int degree)
+    static CORE::FE::GaussRule3D get_gauss_rule(int degree)
     {
       FOUR_C_THROW("Gauss rule not for PYRAMID elements defined. Feel free to add the Gauss rule.");
       return CORE::FE::GaussRule3D::undefined;
@@ -545,7 +545,7 @@ namespace SCATRA
   template <>
   struct DisTypeToMatGaussRule<CORE::FE::CellType::nurbs8>
   {
-    static CORE::FE::GaussRule3D GetGaussRule(int degree)
+    static CORE::FE::GaussRule3D get_gauss_rule(int degree)
     {
       FOUR_C_THROW("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
       return CORE::FE::GaussRule3D::undefined;
@@ -554,7 +554,7 @@ namespace SCATRA
   template <>
   struct DisTypeToMatGaussRule<CORE::FE::CellType::nurbs27>
   {
-    static CORE::FE::GaussRule3D GetGaussRule(int degree)
+    static CORE::FE::GaussRule3D get_gauss_rule(int degree)
     {
       FOUR_C_THROW("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
       return CORE::FE::GaussRule3D::undefined;
@@ -563,7 +563,7 @@ namespace SCATRA
   template <>
   struct DisTypeToMatGaussRule<CORE::FE::CellType::quad4>
   {
-    static CORE::FE::GaussRule2D GetGaussRule(int degree)
+    static CORE::FE::GaussRule2D get_gauss_rule(int degree)
     {
       switch (degree)
       {
@@ -620,7 +620,7 @@ namespace SCATRA
   template <>
   struct DisTypeToMatGaussRule<CORE::FE::CellType::quad8>
   {
-    static CORE::FE::GaussRule2D GetGaussRule(int degree)
+    static CORE::FE::GaussRule2D get_gauss_rule(int degree)
     {
       switch (degree)
       {
@@ -677,7 +677,7 @@ namespace SCATRA
   template <>
   struct DisTypeToMatGaussRule<CORE::FE::CellType::quad9>
   {
-    static CORE::FE::GaussRule2D GetGaussRule(int degree)
+    static CORE::FE::GaussRule2D get_gauss_rule(int degree)
     {
       switch (degree)
       {
@@ -734,7 +734,7 @@ namespace SCATRA
   template <>
   struct DisTypeToMatGaussRule<CORE::FE::CellType::tri3>
   {
-    static CORE::FE::GaussRule2D GetGaussRule(int degree)
+    static CORE::FE::GaussRule2D get_gauss_rule(int degree)
     {
       switch (degree)
       {
@@ -785,7 +785,7 @@ namespace SCATRA
   template <>
   struct DisTypeToMatGaussRule<CORE::FE::CellType::tri6>
   {
-    static CORE::FE::GaussRule2D GetGaussRule(int degree)
+    static CORE::FE::GaussRule2D get_gauss_rule(int degree)
     {
       return CORE::FE::GaussRule2D::tri_16point;
     };
@@ -793,7 +793,7 @@ namespace SCATRA
   template <>
   struct DisTypeToMatGaussRule<CORE::FE::CellType::nurbs4>
   {
-    static CORE::FE::GaussRule2D GetGaussRule(int degree)
+    static CORE::FE::GaussRule2D get_gauss_rule(int degree)
     {
       FOUR_C_THROW("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
       return CORE::FE::GaussRule2D::undefined;
@@ -802,7 +802,7 @@ namespace SCATRA
   template <>
   struct DisTypeToMatGaussRule<CORE::FE::CellType::nurbs9>
   {
-    static CORE::FE::GaussRule2D GetGaussRule(int degree)
+    static CORE::FE::GaussRule2D get_gauss_rule(int degree)
     {
       FOUR_C_THROW("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
       return CORE::FE::GaussRule2D::undefined;
@@ -811,7 +811,7 @@ namespace SCATRA
   template <>
   struct DisTypeToMatGaussRule<CORE::FE::CellType::line2>
   {
-    static CORE::FE::GaussRule1D GetGaussRule(int degree)
+    static CORE::FE::GaussRule1D get_gauss_rule(int degree)
     {
       switch (degree)
       {
@@ -868,7 +868,7 @@ namespace SCATRA
   template <>
   struct DisTypeToMatGaussRule<CORE::FE::CellType::line3>
   {
-    static CORE::FE::GaussRule1D GetGaussRule(int degree)
+    static CORE::FE::GaussRule1D get_gauss_rule(int degree)
     {
       FOUR_C_THROW("Gauss rule not for LINE elements defined. Feel free to add the Gauss rule.");
       return CORE::FE::GaussRule1D::undefined;
@@ -877,7 +877,7 @@ namespace SCATRA
   template <>
   struct DisTypeToMatGaussRule<CORE::FE::CellType::nurbs2>
   {
-    static CORE::FE::GaussRule1D GetGaussRule(int degree)
+    static CORE::FE::GaussRule1D get_gauss_rule(int degree)
     {
       FOUR_C_THROW("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
       return CORE::FE::GaussRule1D::undefined;
@@ -886,7 +886,7 @@ namespace SCATRA
   template <>
   struct DisTypeToMatGaussRule<CORE::FE::CellType::nurbs3>
   {
-    static CORE::FE::GaussRule1D GetGaussRule(int degree)
+    static CORE::FE::GaussRule1D get_gauss_rule(int degree)
     {
       FOUR_C_THROW("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
       return CORE::FE::GaussRule1D::undefined;
@@ -1168,7 +1168,7 @@ namespace SCATRA
   );
 
   //! identify elements of inflow section
-  bool InflowElement(const DRT::Element* ele);
+  bool inflow_element(const DRT::Element* ele);
 
   //! convert implementation type of scalar transport elements into corresponding string for output
   //! purposes

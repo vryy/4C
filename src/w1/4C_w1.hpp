@@ -215,7 +215,7 @@ namespace DRT
       /// \note Element degrees of freedom mentioned here are dofs that are visible
       ///      at the level of the total system of equations. Purely internal
       ///      element dofs that are condensed internally should NOT be considered.
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       DRT::ElementType& ElementType() const override { return Wall1Type::Instance(); }
 
@@ -483,7 +483,7 @@ namespace DRT
       );
 
       /// determine cauchy stress and store it
-      void StressCauchy(const int ip,                     ///< Gauss point index
+      void stress_cauchy(const int ip,                    ///< Gauss point index
           const double& F11,                              ///< F_{11} component of def.grad.
           const double& F22,                              ///< F_{22} component of def.grad.
           const double& F12,                              ///< F_{12} component of def.grad.
@@ -493,7 +493,7 @@ namespace DRT
       );
 
       /// determine internal energy
-      void Energy(Teuchos::ParameterList& params,  ///<  a list containing GEMM coefficients
+      void energy(Teuchos::ParameterList& params,  ///<  a list containing GEMM coefficients
           const std::vector<int>& lm,              ///< location vector
           const std::vector<double>&
               dis,  ///< element displacements \f$d_{n}^{(e)}\f$ at \f$t_{n}\f$
@@ -666,15 +666,16 @@ namespace DRT
       );
 
       /// Internal/strain energy
-      double EnergyInternal(Teuchos::RCP<const CORE::MAT::Material> material,  ///< element material
-          Teuchos::ParameterList& params,             ///< element parameter list
-          const CORE::LINALG::SerialDenseVector& Ev,  ///< Green-Lagrange strain vector
-          int gp                                      ///< Gauss point
+      double energy_internal(
+          Teuchos::RCP<const CORE::MAT::Material> material,  ///< element material
+          Teuchos::ParameterList& params,                    ///< element parameter list
+          const CORE::LINALG::SerialDenseVector& Ev,         ///< Green-Lagrange strain vector
+          int gp                                             ///< Gauss point
       );
 
       /// Kinetic Energy
       /// \return kinetic energy of element
-      double EnergyKinetic(const CORE::LINALG::SerialDenseMatrix& mass,  ///< element mass matrix
+      double energy_kinetic(const CORE::LINALG::SerialDenseMatrix& mass,  ///< element mass matrix
           const std::vector<double>& vel  ///< element velocity vector
       );
 
@@ -687,7 +688,7 @@ namespace DRT
 
 
       /// set number of gauss points to element shape default
-      CORE::FE::GaussRule2D getGaussrule(int* ngp  ///< number of Gauss points
+      CORE::FE::GaussRule2D get_gaussrule(int* ngp  ///< number of Gauss points
       );
     };  // class Wall1
 
@@ -814,7 +815,7 @@ namespace DRT
       /// \note Element degrees of freedom mentioned here are dofs that are visible
       ///       at the level of the total system of equations. Purely internal
       ///       element dofs that are condensed internally should NOT be considered.
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       /// Print this element
       void Print(std::ostream& os) const override;

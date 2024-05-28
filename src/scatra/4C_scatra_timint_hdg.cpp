@@ -282,7 +282,7 @@ void SCATRA::TimIntHDG::Update()
   // concentrations of the last step
   intphin_->Update(1.0, *intphinp_, 0.0);
 
-  if (padaptivity_) AdaptDegree();
+  if (padaptivity_) adapt_degree();
 
 }  // Update
 
@@ -376,9 +376,9 @@ void SCATRA::TimIntHDG::output_state()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntHDG::WriteRestart() const
+void SCATRA::TimIntHDG::write_restart() const
 {
-  SCATRA::TimIntGenAlpha::WriteRestart();
+  SCATRA::TimIntGenAlpha::write_restart();
   output_->WriteVector("intphinp", intphinp_);
   output_->WriteVector("phinp_trace", phinp_);
   output_->WriteVector("intphin", intphin_);
@@ -979,7 +979,7 @@ Teuchos::RCP<CORE::LINALG::SerialDenseVector> SCATRA::TimIntHDG::compute_error()
 void SCATRA::TimIntHDG::prepare_time_loop()
 {
   // calculate matrices on element
-  CalcMatInitial();
+  calc_mat_initial();
 
   // call base class routine
   ScaTraTimIntImpl::prepare_time_loop();
@@ -990,7 +990,7 @@ void SCATRA::TimIntHDG::prepare_time_loop()
 /*----------------------------------------------------------------------*
  | calculate matrices on element                        hoermann 07/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntHDG::CalcMatInitial()
+void SCATRA::TimIntHDG::calc_mat_initial()
 {
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA::TimIntHDG::CalcMat");
 
@@ -1060,7 +1060,7 @@ void SCATRA::TimIntHDG::CalcMatInitial()
 /*----------------------------------------------------------------------*
  | adapt degree of test function on element               hoermann 07/16|
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntHDG::AdaptDegree()
+void SCATRA::TimIntHDG::adapt_degree()
 {
   // time measurement: element calls
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + adapt degree");
@@ -1155,7 +1155,7 @@ void SCATRA::TimIntHDG::AdaptDegree()
 
   if (!degchangeall) return;
 
-  PackMaterial();
+  pack_material();
 
   //  // end time measurement for element
   //  double dtcalcerr=Teuchos::Time::wallTime()-tccalcerr;
@@ -1231,15 +1231,15 @@ void SCATRA::TimIntHDG::AdaptDegree()
   //  const double tcproject = Teuchos::Time::wallTime();
 
   // unpack material data
-  UnpackMaterial();
+  unpack_material();
 
-  AdaptVariableVector(
+  adapt_variable_vector(
       phinp_, phinp_old, intphinp_, intphinp_old, nds_var_old, nds_intvar_old, la_old);
 
   intphin_->Update(1.0, *intphinp_, 0.0);
   phin_->Update(1.0, *phinp_, 0.0);
 
-  ProjectMaterial();
+  project_material();
 
   //  // end time measurement for element
   //  double dtproject=Teuchos::Time::wallTime()-tcproject;
@@ -1248,7 +1248,7 @@ void SCATRA::TimIntHDG::AdaptDegree()
   //  // get cpu time
   //  const double tcmatinit = Teuchos::Time::wallTime();
 
-  CalcMatInitial();
+  calc_mat_initial();
 
   //  // end time measurement for element
   //  double dtmatinit=Teuchos::Time::wallTime()-tcmatinit;
@@ -1268,7 +1268,7 @@ void SCATRA::TimIntHDG::AdaptDegree()
  | adapt trace vector and interior variables when adapting element      |
  | degrees                                                hoermann 07/16|
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntHDG::AdaptVariableVector(Teuchos::RCP<Epetra_Vector> phi_new,
+void SCATRA::TimIntHDG::adapt_variable_vector(Teuchos::RCP<Epetra_Vector> phi_new,
     Teuchos::RCP<Epetra_Vector> phi_old, Teuchos::RCP<Epetra_Vector> intphi_new,
     Teuchos::RCP<Epetra_Vector> intphi_old, int nds_var_old, int nds_intvar_old,
     std::vector<DRT::Element::LocationArray> la_old)
@@ -1364,7 +1364,7 @@ void SCATRA::TimIntHDG::assemble_mat_and_rhs()
     SCATRA::ScaTraTimIntImpl::assemble_mat_and_rhs();
   else  // in semi-implicit evaluation matrix does not change, thus only rhs is assembled in every
         // step
-    AssembleRHS();
+    assemble_rhs();
 
   return;
 }  // TimIntHDG::assemble_mat_and_rhs
@@ -1372,7 +1372,7 @@ void SCATRA::TimIntHDG::assemble_mat_and_rhs()
 /*----------------------------------------------------------------------*
  | contains the assembly process only for rhs            hoermann 06/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntHDG::AssembleRHS()
+void SCATRA::TimIntHDG::assemble_rhs()
 {
   // time measurement: element calls
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + element calls");
@@ -1427,7 +1427,7 @@ void SCATRA::TimIntHDG::AssembleRHS()
   discret_->ClearState();
 
   // potential residual scaling and potential addition of Neumann terms
-  ScalingAndNeumann();
+  scaling_and_neumann();
 
   // end time measurement for element
   dtele_ = Teuchos::Time::wallTime() - tcpuele;

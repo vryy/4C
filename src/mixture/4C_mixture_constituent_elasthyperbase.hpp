@@ -166,7 +166,7 @@ namespace MIXTURE
      * \param gp Gauss point
      * \return const CORE::LINALG::Matrix<3, 3>& Reference to the prestretch tensor
      */
-    const CORE::LINALG::Matrix<3, 3>& PrestretchTensor(const int gp) const
+    const CORE::LINALG::Matrix<3, 3>& prestretch_tensor(const int gp) const
     {
       return prestretch_[gp];
     }
@@ -182,7 +182,7 @@ namespace MIXTURE
       return cosy_anisotropy_extension_;
     }
 
-    std::shared_ptr<MIXTURE::PrestressStrategy> PrestressStrategy() { return prestress_strategy_; }
+    std::shared_ptr<MIXTURE::PrestressStrategy> prestress_strategy() { return prestress_strategy_; }
 
    private:
     /// @name Flags to specify the elastic formulations (initialize with false)

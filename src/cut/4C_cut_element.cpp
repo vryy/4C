@@ -53,7 +53,7 @@ struct NextSideAlongRay
 
     //-------------
     // first side
-    s1->LocalCoordinates(cutpoint_xyz, rst, false);
+    s1->local_coordinates(cutpoint_xyz, rst, false);
 
     rs(0) = rst(0);
     rs(1) = rst(1);
@@ -63,7 +63,7 @@ struct NextSideAlongRay
 
     //-------------
     // second side
-    s2->LocalCoordinates(cutpoint_xyz, rst, false);
+    s2->local_coordinates(cutpoint_xyz, rst, false);
 
     rs(0) = rst(0);
     rs(1) = rst(1);
@@ -88,14 +88,14 @@ struct NextSideAlongRay
     // not successful check if the sides are parallel
     bool is_closer = false;
 
-    if (s1->IsCloserSide(startpoint_xyz_, s2, is_closer))
+    if (s1->is_closer_side(startpoint_xyz_, s2, is_closer))
     {
       if (is_closer)
         return true;
       else
         return false;
     }
-    else if (s2->IsCloserSide(startpoint_xyz_, s1, is_closer))
+    else if (s2->is_closer_side(startpoint_xyz_, s1, is_closer))
     {
       if (!is_closer)
         return true;
@@ -1041,12 +1041,12 @@ bool CORE::GEO::CUT::ConcreteElement<probdim, elementtype, numNodesElement, dim>
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType elementtype, unsigned numNodesElement, unsigned dim>
-bool CORE::GEO::CUT::ConcreteElement<probdim, elementtype, numNodesElement, dim>::LocalCoordinates(
+bool CORE::GEO::CUT::ConcreteElement<probdim, elementtype, numNodesElement, dim>::local_coordinates(
     const CORE::LINALG::Matrix<probdim, 1>& xyz, CORE::LINALG::Matrix<dim, 1>& rst)
 {
   Teuchos::RCP<Position> pos = PositionFactory::build_position<probdim, elementtype>(*this, xyz);
   bool success = pos->Compute();
-  pos->LocalCoordinates(rst);
+  pos->local_coordinates(rst);
   return success;
 }
 
@@ -1067,7 +1067,7 @@ void CORE::GEO::CUT::Element::local_coordinates_quad(
   {
   }
 
-  pos->LocalCoordinates(rst);
+  pos->local_coordinates(rst);
 }
 
 /*----------------------------------------------------------------------------*

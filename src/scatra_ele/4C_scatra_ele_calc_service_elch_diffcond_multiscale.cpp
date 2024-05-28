@@ -138,11 +138,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::CalculateScalars(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::calculate_scalars(
     const DRT::Element* ele, CORE::LINALG::SerialDenseVector& scalars, const bool inverting,
     const bool calc_grad_phi)
 {
-  my::CalculateScalars(ele, scalars, inverting, calc_grad_phi);
+  my::calculate_scalars(ele, scalars, inverting, calc_grad_phi);
 
   // extract multi-scale material
   auto elchmat = Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(ele->Material());
@@ -173,7 +173,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Calcu
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::EvaluateAction(
+int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::evaluate_action(
     DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -239,7 +239,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Evalua
         {
           // solve micro scale
           std::vector<double> dummy(3, 0.0);
-          const double detF = my::EvalDetFAtIntPoint(ele, intpoints, iquad);
+          const double detF = my::eval_det_f_at_int_point(ele, intpoints, iquad);
           newmanmultiscale->Evaluate(iquad, phinp, dummy[0], dummy, detF);
         }
       }
@@ -297,7 +297,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Evalua
 
     default:
     {
-      mydiffcond::EvaluateAction(ele, params, discretization, action, la, elemat1_epetra,
+      mydiffcond::evaluate_action(ele, params, discretization, action, la, elemat1_epetra,
           elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
 
       break;

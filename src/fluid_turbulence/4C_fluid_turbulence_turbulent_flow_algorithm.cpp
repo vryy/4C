@@ -39,7 +39,7 @@ FLD::TurbulentFlowAlgorithm::TurbulentFlowAlgorithm(
   fluidalgo_ = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn, fdyn, "fluid", false));
 
   // get the compete fluid discretization
-  fluiddis_ = fluidalgo_->fluid_field()->Discretization();
+  fluiddis_ = fluidalgo_->fluid_field()->discretization();
   if (comm.MyPID() == 0)
   {
     std::cout << "#-----------------------------------------------#" << std::endl;
@@ -106,7 +106,7 @@ void FLD::TurbulentFlowAlgorithm::TimeLoop()
     fluidalgo_->fluid_field()->increment_time_and_step();
     // velnp is set manually instead of being computed in Solve()
     // replaces Solve
-    fluidalgo_->fluid_field()->SetVelocityField(velnp_);
+    fluidalgo_->fluid_field()->set_velocity_field(velnp_);
     // update time integration with given velocity field
     fluidalgo_->fluid_field()->Update();
     // write output

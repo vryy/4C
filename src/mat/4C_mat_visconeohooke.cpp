@@ -36,7 +36,7 @@ MAT::PAR::ViscoNeoHooke::ViscoNeoHooke(Teuchos::RCP<CORE::MAT::PAR::Material> ma
 {
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ViscoNeoHooke::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ViscoNeoHooke::create_material()
 {
   return Teuchos::rcp(new MAT::ViscoNeoHooke(this));
 }

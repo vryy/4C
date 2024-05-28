@@ -51,7 +51,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
 
   // check for fill_complete of discretization
-  if (!discret.Filled()) FOUR_C_THROW("Discretization of underlying problem is not fillcomplete.");
+  if (!discret.Filled()) FOUR_C_THROW("discretization of underlying problem is not fillcomplete.");
 
   // let's check for meshtying boundary conditions in discret
   // and detect groups of matching conditions
@@ -214,7 +214,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
             node->Id(), node->X(), node->Owner(), discret.Dof(0, node), isslave[j]));
         //-------------------
         // get nurbs weight!
-        if (nurbs) MORTAR::UTILS::PrepareNURBSNode(node, mtnode);
+        if (nurbs) MORTAR::UTILS::prepare_nurbs_node(node, mtnode);
 
         // get edge and corner information:
         std::vector<CORE::Conditions::Condition*> contactcornercond(0);
@@ -282,7 +282,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
             ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), isslave[j], nurbs));
         //------------------------------------------------------------------
         // get knotvector, normal factor and zero-size information for nurbs
-        if (nurbs) MORTAR::UTILS::PrepareNURBSElement(discret, ele, mtele, spatialDim);
+        if (nurbs) MORTAR::UTILS::prepare_nurbs_element(discret, ele, mtele, spatialDim);
 
         interface->AddMortarElement(mtele);
       }
@@ -621,7 +621,7 @@ bool CONTACT::MtManager::read_and_check_input(
 /*----------------------------------------------------------------------*
  |  write restart information for meshtying (public)          popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::MtManager::WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart)
+void CONTACT::MtManager::write_restart(IO::DiscretizationWriter& output, bool forcedrestart)
 {
   output.WriteVector("mt_lagrmultold", GetStrategy().LagrMultOld());
 

@@ -499,28 +499,28 @@ namespace CORE::ADAPTER
     /// @{
 
     /// access the interface DoF map of the master side
-    Teuchos::RCP<const Epetra_Map>& MaDofMapPtr();
-    const Epetra_Map& MaDofMap() const;
+    Teuchos::RCP<const Epetra_Map>& ma_dof_map_ptr();
+    const Epetra_Map& ma_dof_map() const;
 
     /// access the permuted interface DoF map of the master side
-    Teuchos::RCP<const Epetra_Map>& PermutedMaDofMapPtr();
-    const Epetra_Map& PermutedMaDofMap() const;
+    Teuchos::RCP<const Epetra_Map>& permuted_ma_dof_map_ptr();
+    const Epetra_Map& permuted_ma_dof_map() const;
 
     /// access the interface DoF map of the slave side
-    Teuchos::RCP<const Epetra_Map>& SlDofMapPtr();
-    const Epetra_Map& SlDofMap() const;
+    Teuchos::RCP<const Epetra_Map>& sl_dof_map_ptr();
+    const Epetra_Map& sl_dof_map() const;
 
     /// access the permuted interface DoF map of the slave side
-    Teuchos::RCP<const Epetra_Map>& PermutedSlDofMapPtr();
-    const Epetra_Map& PermutedSlDofMap() const;
+    Teuchos::RCP<const Epetra_Map>& permuted_sl_dof_map_ptr();
+    const Epetra_Map& permuted_sl_dof_map() const;
 
     /// access the permuted master dof map to master dof map exporter
-    Teuchos::RCP<Epetra_Export>& MaExporterPtr();
-    const Epetra_Export& MaExporter() const;
+    Teuchos::RCP<Epetra_Export>& ma_exporter_ptr();
+    const Epetra_Export& ma_exporter() const;
 
     /// access the permuted slave dof map to slave dof map exporter
-    Teuchos::RCP<Epetra_Export>& SlExporterPtr();
-    const Epetra_Export& SlExporter() const;
+    Teuchos::RCP<Epetra_Export>& sl_exporter_ptr();
+    const Epetra_Export& sl_exporter() const;
 
     /// @}
 

@@ -54,16 +54,16 @@ namespace SCATRA
         Teuchos::RCP<const Epetra_Vector> phin_fluid);
 
     //! set the velocity field (zero or field by function)
-    virtual void SetVelocityField(const int nds)
+    virtual void set_velocity_field(const int nds)
     {
       FOUR_C_THROW(
-          "SetVelocityField(...) cannot be used for transport within a multiphase porous medium!"
+          "set_velocity_field(...) cannot be used for transport within a multiphase porous medium!"
           " Use SetSolutionFields(...) instead!");
     };
 
     //! set convective velocity field (+ pressure and acceleration field as
     //! well as fine-scale velocity field, if required)
-    virtual void SetVelocityField(
+    virtual void set_velocity_field(
         Teuchos::RCP<const Epetra_Vector> convvel,  //!< convective velocity/press. vector
         Teuchos::RCP<const Epetra_Vector> acc,      //!< acceleration vector
         Teuchos::RCP<const Epetra_Vector> vel,      //!< velocity vector
@@ -74,7 +74,7 @@ namespace SCATRA
     )
     {
       FOUR_C_THROW(
-          "SetVelocityField(...) cannot be used for transport within a multiphase porous medium!"
+          "set_velocity_field(...) cannot be used for transport within a multiphase porous medium!"
           " Use SetSolutionFields(...) instead!");
     };
 

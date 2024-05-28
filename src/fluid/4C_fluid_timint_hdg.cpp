@@ -174,7 +174,7 @@ void FLD::TimIntHDG::SetTheta()
 /*----------------------------------------------------------------------*
  * Explicit predictor                                 kronbichler 05/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntHDG::ExplicitPredictor()
+void FLD::TimIntHDG::explicit_predictor()
 {
   if (predictor_ == "steady_state")
   {
@@ -606,7 +606,7 @@ void FLD::TimIntHDG::calc_intermediate_solution()
 /*----------------------------------------------------------------------*
  | Initialize forcing for HIT and peridic hill                  bk 04/15|
  *----------------------------------------------------------------------*/
-void FLD::TimIntHDG::InitForcing()
+void FLD::TimIntHDG::init_forcing()
 {
   // -------------------------------------------------------------------
   // initialize forcing for homogeneous isotropic turbulence

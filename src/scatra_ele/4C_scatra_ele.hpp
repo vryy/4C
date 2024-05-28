@@ -221,7 +221,7 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       /*!
       \brief Print this element
@@ -348,7 +348,7 @@ namespace DRT
 
      protected:
       //! initialize the element
-      virtual int Initialize();
+      virtual int initialize();
 
       //! the element discretization type (shape)
       CORE::FE::CellType distype_;
@@ -548,7 +548,7 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       /*!
       \brief Print this element

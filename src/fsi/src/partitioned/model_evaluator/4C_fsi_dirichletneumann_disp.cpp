@@ -41,57 +41,57 @@ void FSI::DirichletNeumannDisp::Setup()
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::FluidOp(
+Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::fluid_op(
     Teuchos::RCP<Epetra_Vector> idisp, const FillType fillFlag)
 {
-  FSI::Partitioned::FluidOp(idisp, fillFlag);
+  FSI::Partitioned::fluid_op(idisp, fillFlag);
 
   if (fillFlag == User)
   {
     // SD relaxation calculation
-    return FluidToStruct(MBFluidField()->RelaxationSolve(StructToFluid(idisp), Dt()));
+    return fluid_to_struct(MBFluidField()->RelaxationSolve(struct_to_fluid(idisp), Dt()));
   }
   else
   {
     // normal fluid solve
 
     // the displacement -> velocity conversion at the interface
-    const Teuchos::RCP<Epetra_Vector> ivel = InterfaceVelocity(idisp);
+    const Teuchos::RCP<Epetra_Vector> ivel = interface_velocity(idisp);
 
     // A rather simple hack. We need something better!
     const int itemax = MBFluidField()->Itemax();
     if (fillFlag == MF_Res and mfresitemax_ > 0) MBFluidField()->SetItemax(mfresitemax_ + 1);
 
-    MBFluidField()->NonlinearSolve(StructToFluid(idisp), StructToFluid(ivel));
+    MBFluidField()->nonlinear_solve(struct_to_fluid(idisp), struct_to_fluid(ivel));
 
     MBFluidField()->SetItemax(itemax);
 
-    return FluidToStruct(MBFluidField()->extract_interface_forces());
+    return fluid_to_struct(MBFluidField()->extract_interface_forces());
   }
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::StructOp(
+Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::struct_op(
     Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag)
 {
-  FSI::Partitioned::StructOp(iforce, fillFlag);
+  FSI::Partitioned::struct_op(iforce, fillFlag);
 
   if (fillFlag == User)
   {
     // SD relaxation calculation
-    return StructureField()->RelaxationSolve(iforce);
+    return structure_field()->RelaxationSolve(iforce);
   }
   else
   {
     // normal structure solve
     if (not use_old_structure_)
-      StructureField()->apply_interface_forces(iforce);
+      structure_field()->apply_interface_forces(iforce);
     else
-      StructureField()->apply_interface_forces_temporary_deprecated(
+      structure_field()->apply_interface_forces_temporary_deprecated(
           iforce);  // todo remove this line as soon as possible!
-    StructureField()->Solve();
-    StructureField()->write_gmsh_struc_output_step();
-    return StructureField()->extract_interface_dispnp();
+    structure_field()->Solve();
+    structure_field()->write_gmsh_struc_output_step();
+    return structure_field()->extract_interface_dispnp();
   }
 }
 /*----------------------------------------------------------------------*/
@@ -101,7 +101,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::initial_guess()
   if (get_kinematic_coupling())
   {
     // predict displacement
-    return StructureField()->predict_interface_dispnp();
+    return structure_field()->predict_interface_dispnp();
   }
   else
   {
@@ -112,7 +112,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::initial_guess()
       FOUR_C_THROW(
           "unknown interface force predictor '%s'", fsipart.get<std::string>("PREDICTOR").c_str());
     }
-    return InterfaceForce();
+    return interface_force();
   }
 }
 

@@ -51,7 +51,7 @@ MAT::PAR::CrosslinkerMat::CrosslinkerMat(Teuchos::RCP<CORE::MAT::PAR::Material> 
         "possible.");
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::CrosslinkerMat::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::CrosslinkerMat::create_material()
 {
   return Teuchos::rcp(new MAT::CrosslinkerMat(this));
 }

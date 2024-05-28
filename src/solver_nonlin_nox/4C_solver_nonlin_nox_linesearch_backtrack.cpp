@@ -184,7 +184,7 @@ bool NOX::NLN::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
   if (not failed)
   {
     status_ = inner_tests_ptr_->CheckStatus(*this, s, grp, check_type_);
-    PrintUpdate(utils_->out(::NOX::Utils::InnerIteration));
+    print_update(utils_->out(::NOX::Utils::InnerIteration));
   }
   // -------------------------------------------------
   // inner backtracking loop
@@ -209,7 +209,7 @@ bool NOX::NLN::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
       rtype = grp.computeF();
       if (rtype != ::NOX::Abstract::Group::Ok) throw_error("compute", "Unable to compute F!");
       status_ = inner_tests_ptr_->CheckStatus(*this, s, grp, check_type_);
-      PrintUpdate(utils_->out(::NOX::Utils::InnerIteration));
+      print_update(utils_->out(::NOX::Utils::InnerIteration));
     }
     // catch error of the computeF method
     catch (const char* e)
@@ -296,7 +296,7 @@ NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::LineSearch::Backtrack::CheckIn
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LineSearch::Backtrack::PrintUpdate(std::ostream& os) const
+void NOX::NLN::LineSearch::Backtrack::print_update(std::ostream& os) const
 {
   // Print the status test parameters at each iteration if requested
   if (status_ == NOX::NLN::INNER::StatusTest::status_step_too_long)

@@ -213,7 +213,7 @@ void MAT::ScatraMultiScaleGP::Init()
     microdisnum_microtimint_map_[microdisnum_]->Setup();
 
     // set initial velocity field
-    microdisnum_microtimint_map_[microdisnum_]->SetVelocityField();
+    microdisnum_microtimint_map_[microdisnum_]->set_velocity_field();
 
     // create counter for number of macro-scale Gauss points associated with micro-scale time
     // integrator
@@ -305,7 +305,7 @@ void MAT::ScatraMultiScaleGP::Evaluate(const std::vector<double>& phinp_macro, d
 double MAT::ScatraMultiScaleGP::evaluate_mean_concentration() const
 {
   // extract micro-scale discretization
-  DRT::Discretization& discret = *microdisnum_microtimint_map_[microdisnum_]->Discretization();
+  DRT::Discretization& discret = *microdisnum_microtimint_map_[microdisnum_]->discretization();
 
   // set micro-scale state vector
   discret.ClearState();
@@ -338,7 +338,7 @@ double MAT::ScatraMultiScaleGP::evaluate_mean_concentration() const
 double MAT::ScatraMultiScaleGP::evaluate_mean_concentration_time_derivative() const
 {
   // extract micro-scale discretization
-  DRT::Discretization& discret = *microdisnum_microtimint_map_[microdisnum_]->Discretization();
+  DRT::Discretization& discret = *microdisnum_microtimint_map_[microdisnum_]->discretization();
 
   // set micro-scale state vector
   discret.ClearState();
@@ -494,7 +494,7 @@ void MAT::ScatraMultiScaleGP::Output()
     // output micro-scale restart information
     if (microtimint->IsRestartStep())
     {
-      microtimint->WriteRestart();
+      microtimint->write_restart();
       if (is_ale_)
       {
         microtimint->DiscWriter()->WriteDouble("detFn", det_fn_);
@@ -532,10 +532,10 @@ void MAT::ScatraMultiScaleGP::read_restart()
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
   if (inputcontrol == Teuchos::null)
     reader = Teuchos::rcp(new IO::DiscretizationReader(
-        microtimint->Discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step_));
+        microtimint->discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step_));
   else
     reader = Teuchos::rcp(
-        new IO::DiscretizationReader(microtimint->Discretization(), inputcontrol, step_));
+        new IO::DiscretizationReader(microtimint->discretization(), inputcontrol, step_));
 
   if (is_ale_)
   {

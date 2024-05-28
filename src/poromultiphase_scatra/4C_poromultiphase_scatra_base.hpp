@@ -87,7 +87,7 @@ namespace POROMULTIPHASESCATRA
     void prepare_time_step(bool printheader);
 
     //! update time step and print to screen
-    void UpdateAndOutput();
+    void update_and_output();
 
     //! apply solution of poro-problem to scatra
     void SetPoroSolution();

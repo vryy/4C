@@ -105,7 +105,7 @@ namespace ADAPTER
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override;
 
     // access to embedded discretization
-    const Teuchos::RCP<DRT::Discretization>& Discretization() override;
+    const Teuchos::RCP<DRT::Discretization>& discretization() override;
 
     // return discretization writer of embedded fluid discretization (for special purpose output)
     const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() override { return output_; }
@@ -132,7 +132,7 @@ namespace ADAPTER
 
     /// request fluid system matrix & shapederivatives as blockmatrices when called with true
     /// (indicated monolithic XFFSI with fluidsplit)
-    void UseBlockMatrix(bool split_fluidsysmat = false) override;
+    void use_block_matrix(bool split_fluidsysmat = false) override;
 
     /// determine, whether the ALE-mesh should be relaxed at current time step
     bool IsAleRelaxationStep(int step) const;
@@ -148,7 +148,7 @@ namespace ADAPTER
    private:
     /// setup of map extractor to distinguish between FSI DOF-map and
     /// merged inner embedded fluid and background fluid DOF-map
-    void SetupInterface(const int nds_master = 0) override;
+    void setup_interface(const int nds_master = 0) override;
 
     /// prepare underlying extended shape derivatives matrix, that is based
     /// on the merged fluid dof-map (with background fluid dof set to zero),

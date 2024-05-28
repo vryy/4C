@@ -165,7 +165,7 @@ namespace IO
 
 
    private:
-    //! Discretization containing elements of which geometry and result data shall be visualized
+    //! discretization containing elements of which geometry and result data shall be visualized
     Teuchos::RCP<const DRT::Discretization> discretization_;
 
     //! The actual visualization writer object that additionally stores the geometry and result data
@@ -182,7 +182,7 @@ namespace IO
   /**
    * \brief Add a vector with the length of num_proc to each element, which contains a 1 for the
    * ranks that ghost the element.
-   * @param discretization (in) Discretization
+   * @param discretization (in) discretization
    * @param visualization_manager (in/out) Visualization writer object
    * @param element_predicate (in) A predicate function which returns whether a given element
    * should be included in the output.

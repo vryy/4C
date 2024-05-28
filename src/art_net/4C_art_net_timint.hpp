@@ -60,7 +60,7 @@ namespace ART
         const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname) override;
 
     //! get discretization
-    Teuchos::RCP<DRT::Discretization> Discretization() override { return discret_; }
+    Teuchos::RCP<DRT::Discretization> discretization() override { return discret_; }
 
     double Dt() const override { return dta_; }
 

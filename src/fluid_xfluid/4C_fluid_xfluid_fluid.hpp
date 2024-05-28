@@ -72,7 +72,7 @@ namespace FLD
     void CreateInitialState() override;
 
     /// don't keep a sparse matrix underneath
-    void UseBlockMatrix(bool splitmatrix = true) override;
+    void use_block_matrix(bool splitmatrix = true) override;
 
     /// set fluid-fluid coupling specific parameters
     void set_x_fluid_fluid_params();
@@ -185,7 +185,7 @@ namespace FLD
     }
 
     //! access to new merged fluid state container
-    Teuchos::RCP<FLD::XFluidState> GetNewState() override;
+    Teuchos::RCP<FLD::XFluidState> get_new_state() override;
 
     /// solve fluid field after ALE-mesh relaxation
     void update_monolithic_fluid_solution(const Teuchos::RCP<const Epetra_Map>& fsidofmap);
@@ -219,14 +219,14 @@ namespace FLD
         const bool screen_out, const bool firstcall_in_timestep) override;
 
     //! create a new merged state container
-    void CreateState() override;
+    void create_state() override;
 
     /// call the loop over elements to assemble volume and interface integrals
     void assemble_mat_and_rhs(int itnum  ///< iteration number
         ) override;
 
     /// Update velocity and pressure by increment
-    void UpdateByIncrement() override;
+    void update_by_increment() override;
 
     /// add additional EOS terms to interface-contributing embedded fluid elements
     void add_eos_pres_stab_to_emb_layer();

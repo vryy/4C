@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 AIRWAY::RedAirwayResultTest::RedAirwayResultTest(RedAirwayImplicitTimeInt& airways)
     : CORE::UTILS::ResultTest("RED_AIRWAY")
 {
-  dis_ = airways.Discretization();
+  dis_ = airways.discretization();
   mynodesol_pressure_ = airways.Pnp();
   mynodesol_flow_in_ = airways.Qin_np();
   mynodesol_flow_out_ = airways.Qout_np();
@@ -90,7 +90,7 @@ void AIRWAY::RedAirwayResultTest::test_node(INPUT::LineDefinition& res, int& ner
             "Quantity '%s' not supported in result-test of red_airway problems", position.c_str());
       }
 
-      nerr += CompareValues(result, "NODE", res);
+      nerr += compare_values(result, "NODE", res);
       test_count++;
     }
   }
@@ -161,7 +161,7 @@ void AIRWAY::RedAirwayResultTest::TestElement(
             "Quantity '%s' not supported in result-test of red_airway problems.", position.c_str());
       }
 
-      nerr += CompareValues(result, "ELEMENT", res);
+      nerr += compare_values(result, "ELEMENT", res);
       test_count++;
     }
   }

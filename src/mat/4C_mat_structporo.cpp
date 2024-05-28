@@ -42,42 +42,43 @@ MAT::PAR::StructPoro::StructPoro(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
   {
     case CORE::Materials::m_poro_law_linear:
     {
-      if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::PoroLawLinear(curmat));
+      if (curmat->Parameter() == nullptr)
+        curmat->set_parameter(new MAT::PAR::PoroLawLinear(curmat));
       poro_law_ = static_cast<MAT::PAR::PoroLaw*>(curmat->Parameter());
       break;
     }
     case CORE::Materials::m_poro_law_constant:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::PoroLawConstant(curmat));
+        curmat->set_parameter(new MAT::PAR::PoroLawConstant(curmat));
       poro_law_ = static_cast<MAT::PAR::PoroLaw*>(curmat->Parameter());
       break;
     }
     case CORE::Materials::m_poro_law_logNeoHooke_Penalty:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::PoroLawNeoHooke(curmat));
+        curmat->set_parameter(new MAT::PAR::PoroLawNeoHooke(curmat));
       poro_law_ = static_cast<MAT::PAR::PoroLaw*>(curmat->Parameter());
       break;
     }
     case CORE::Materials::m_poro_law_incompr_skeleton:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::PoroLawIncompSkeleton(curmat));
+        curmat->set_parameter(new MAT::PAR::PoroLawIncompSkeleton(curmat));
       poro_law_ = static_cast<MAT::PAR::PoroLawIncompSkeleton*>(curmat->Parameter());
       break;
     }
     case CORE::Materials::m_poro_law_linear_biot:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::PoroLawLinBiot(curmat));
+        curmat->set_parameter(new MAT::PAR::PoroLawLinBiot(curmat));
       poro_law_ = static_cast<MAT::PAR::PoroLawLinBiot*>(curmat->Parameter());
       break;
     }
     case CORE::Materials::m_poro_law_density_dependent:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::PoroLawDensityDependent(curmat));
+        curmat->set_parameter(new MAT::PAR::PoroLawDensityDependent(curmat));
       poro_law_ = static_cast<MAT::PAR::PoroLawDensityDependent*>(curmat->Parameter());
       break;
     }
@@ -87,7 +88,7 @@ MAT::PAR::StructPoro::StructPoro(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
   }
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::StructPoro::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::StructPoro::create_material()
 {
   return Teuchos::rcp(new MAT::StructPoro(this));
 }
@@ -251,7 +252,7 @@ void MAT::StructPoro::Unpack(const std::vector<char>& data)
   is_initialized_ = true;
 }
 
-void MAT::StructPoro::ComputePorosity(const double& refporosity, const double& press,
+void MAT::StructPoro::compute_porosity(const double& refporosity, const double& press,
     const double& J, const int& gp, double& porosity, double* dphi_dp, double* dphi_dJ,
     double* dphi_dJdp, double* dphi_dJJ, double* dphi_dpp, double* dphi_dphiref, bool save)
 {
@@ -269,18 +270,18 @@ void MAT::StructPoro::ComputePorosity(const double& refporosity, const double& p
     return;
   }
 
-  params_->poro_law_->ComputePorosity(refporosity, press, J, gp, porosity, dphi_dp, dphi_dJ,
+  params_->poro_law_->compute_porosity(refporosity, press, J, gp, porosity, dphi_dp, dphi_dJ,
       dphi_dJdp, dphi_dJJ, dphi_dpp, dphi_dphiref);
 
   // save porosity
   if (save) porosity_->at(gp) = porosity;
 }
 
-void MAT::StructPoro::ComputePorosity(Teuchos::ParameterList& params, double press, double J,
+void MAT::StructPoro::compute_porosity(Teuchos::ParameterList& params, double press, double J,
     int gp, double& porosity, double* dphi_dp, double* dphi_dJ, double* dphi_dJdp, double* dphi_dJJ,
     double* dphi_dpp, bool save)
 {
-  ComputePorosity(
+  compute_porosity(
       params_
           ->init_porosity_,  // reference porosity equals initial porosity for non reactive material
       press, J, gp, porosity, dphi_dp, dphi_dJ, dphi_dJdp, dphi_dJJ, dphi_dpp,
@@ -288,10 +289,10 @@ void MAT::StructPoro::ComputePorosity(Teuchos::ParameterList& params, double pre
       save);
 }
 
-void MAT::StructPoro::ComputePorosity(
+void MAT::StructPoro::compute_porosity(
     Teuchos::ParameterList& params, double press, double J, int gp, double& porosity, bool save)
 {
-  ComputePorosity(
+  compute_porosity(
       params, press, J, gp, porosity, nullptr, nullptr, nullptr, nullptr, nullptr, save);
 }
 
@@ -299,7 +300,7 @@ void MAT::StructPoro::ComputeSurfPorosity(Teuchos::ParameterList& params, double
     const int surfnum, int gp, double& porosity, double* dphi_dp, double* dphi_dJ,
     double* dphi_dJdp, double* dphi_dJJ, double* dphi_dpp, bool save)
 {
-  ComputePorosity(
+  compute_porosity(
       params, press, J, gp, porosity, dphi_dp, dphi_dJ, dphi_dJdp, dphi_dJJ, dphi_dpp, save);
 
   if (save)

@@ -66,15 +66,15 @@ namespace CORE::MAT::PAR
     [[nodiscard]] CORE::Materials::MaterialType Type() const { return type_; }
 
     /// create material instance of matching type with my parameters
-    virtual Teuchos::RCP<CORE::MAT::Material> CreateMaterial() = 0;
+    virtual Teuchos::RCP<CORE::MAT::Material> create_material() = 0;
 
     //! \brief set element specific or global material parameter using enum parametername which is
     //! defined in respective MAT::PAR classes
-    void SetParameter(int parametername, Teuchos::RCP<Epetra_Vector> myparameter);
+    void set_parameter(int parametername, Teuchos::RCP<Epetra_Vector> myparameter);
 
     //! \brief set element specific or global material parameter using enum parametername which is
     //! defined in respective MAT::PAR classes
-    void SetParameter(int parametername, const double val, const int eleGID);
+    void set_parameter(int parametername, const double val, const int eleGID);
 
     //! \brief return element specific or global material parameter using enum parametername which
     //! is defined in respective MAT::PAR classes

@@ -37,14 +37,14 @@ CONTACT::AUG::LAGRANGE::Strategy::Strategy(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::LAGRANGE::Strategy::EvalStrContactRHS()
+void CONTACT::AUG::LAGRANGE::Strategy::eval_str_contact_rhs()
 {
   if (!IsInContact() and !WasInContact() and !was_in_contact_last_time_step())
   {
-    Data().StrContactRhsPtr() = Teuchos::null;
+    data().StrContactRhsPtr() = Teuchos::null;
     return;
   }
-  Data().StrContactRhsPtr() = Teuchos::rcp(new Epetra_Vector(*ProblemDofs(), true));
+  data().StrContactRhsPtr() = Teuchos::rcp(new Epetra_Vector(*ProblemDofs(), true));
 
 
   // For self contact, slave and master sets may have changed,
@@ -56,13 +56,13 @@ void CONTACT::AUG::LAGRANGE::Strategy::EvalStrContactRHS()
   // --- add contact force terms ----------------------------------------------
   // *** Slave side ***
   Epetra_Vector augfs_exp(*ProblemDofs());
-  CORE::LINALG::Export(Data().SlForceLm(), augfs_exp);
-  Data().StrContactRhs().Scale(-1.0, augfs_exp);
+  CORE::LINALG::Export(data().SlForceLm(), augfs_exp);
+  data().StrContactRhs().Scale(-1.0, augfs_exp);
 
   // Master side
   Epetra_Vector augfm_exp(*ProblemDofs());
-  CORE::LINALG::Export(Data().MaForceLm(), augfm_exp);
-  CATCH_EPETRA_ERROR(Data().StrContactRhs().Update(-1.0, augfm_exp, 1.0));
+  CORE::LINALG::Export(data().MaForceLm(), augfm_exp);
+  CATCH_EPETRA_ERROR(data().StrContactRhs().Update(-1.0, augfm_exp, 1.0));
 
   return;
 }

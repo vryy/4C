@@ -298,7 +298,7 @@ namespace CORE::Materials
     mix_prestress_strategy_cylinder,  ///< Prestress strategy for a cylinder
     mix_prestress_strategy_iterative,    ///< Iterative prestress strategy for any geometry
     mix_prestress_strategy_constant,     ///< Constant, predefined prestretch
-    mix_elasthyper,                      ///< Elast Hyper toolbox for Constituents
+    mix_elasthyper,                      ///< Elast Hyper toolbox for constituents
     mix_elasthyper_damage,               ///< Elast hyper toolbox with temporal damage
     mix_elasthyper_elastin_membrane,     ///< Elast Hyper toolbox with temporal damage and 2D
                                          ///< membrane material
@@ -313,7 +313,7 @@ namespace CORE::Materials
     mix_remodelfiber_material_exponential_active,  ///< material for a remodel fiber with
                                                    ///< exponential strain energy and an active
                                                    ///< contribution
-    mix_solid_material                             ///< Solid material for Constituents
+    mix_solid_material                             ///< Solid material for constituents
   };
 
 

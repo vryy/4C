@@ -48,7 +48,7 @@ namespace DRT
       ScaTraEleBoundaryCalcElchDiffCond(
           const int numdofpernode, const int numscal, const std::string& disname);
 
-      int EvaluateAction(DRT::FaceElement* ele, Teuchos::ParameterList& params,
+      int evaluate_action(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, SCATRA::BoundaryAction action,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -70,7 +70,7 @@ namespace DRT
           const std::vector<int> stoich, const int kinetics, const double pot0, const double frt,
           const double scalar) override;
 
-      void EvaluateS2ICoupling(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
+      void evaluate_s2_i_coupling(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& eslavematrix,
           CORE::LINALG::SerialDenseMatrix& emastermatrix,
@@ -80,7 +80,7 @@ namespace DRT
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& eslavematrix) override;
 
-      double GetValence(
+      double get_valence(
           const Teuchos::RCP<const CORE::MAT::Material>& material, const int k) const override;
 
       //! diffusion manager

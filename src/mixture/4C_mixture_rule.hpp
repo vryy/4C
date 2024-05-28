@@ -75,7 +75,7 @@ namespace MIXTURE
       explicit MixtureRule(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
 
       /// Override this method and throw error, as only the CreateRule() should be used.
-      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() final
+      Teuchos::RCP<CORE::MAT::Material> create_material() final
       {
         FOUR_C_THROW("Cannot create mixture rule from this method. Use CreateRule() instead.");
         return Teuchos::null;
@@ -268,7 +268,7 @@ namespace MIXTURE
      * \brief Returns a reference to the constituents
      * @return
      */
-    std::vector<std::unique_ptr<MIXTURE::MixtureConstituent>>& Constituents() const
+    std::vector<std::unique_ptr<MIXTURE::MixtureConstituent>>& constituents() const
     {
       return *constituents_;
     }

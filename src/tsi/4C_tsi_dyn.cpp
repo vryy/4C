@@ -96,7 +96,7 @@ void tsi_dyn_drt()
   Teuchos::TimeMonitor::summarize();
 
   // perform the result test
-  GLOBAL::Problem::Instance()->AddFieldTest(tsi->StructureField()->CreateFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(tsi->structure_field()->CreateFieldTest());
   GLOBAL::Problem::Instance()->AddFieldTest(tsi->ThermoField()->CreateFieldTest());
   GLOBAL::Problem::Instance()->TestAll(comm);
 

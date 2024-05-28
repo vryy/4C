@@ -1653,17 +1653,17 @@ namespace FLD
     // which is missing above
     if (rr_k_max < (int)(E_exp_1.size() - 1))
     {
-      const double E1_k_c = Interpolate(
+      const double E1_k_c = interpolate(
           k_c, k_exp[rr_k_max], k_exp[rr_k_max + 1], E_exp_1[rr_k_max], E_exp_1[rr_k_max + 1]);
       q_1_r += integrate_trapezoidal_rule(k_exp[rr_k_max], k_c, E_exp_1[rr_k_max], E1_k_c);
 
-      const double E2_k_c = Interpolate(
+      const double E2_k_c = interpolate(
           k_c, k_exp[rr_k_max], k_exp[rr_k_max + 1], E_exp_2[rr_k_max], E_exp_2[rr_k_max + 1]);
       q_2_r += integrate_trapezoidal_rule(k_exp[rr_k_max], k_c, E_exp_2[rr_k_max], E2_k_c);
 
       if (E_exp_3[rr_k_max + 1] > 0.0 and E_exp_3[rr_k_max] > 0.0)
       {
-        const double E3_k_c = Interpolate(
+        const double E3_k_c = interpolate(
             k_c, k_exp[rr_k_max], k_exp[rr_k_max + 1], E_exp_3[rr_k_max], E_exp_3[rr_k_max + 1]);
         q_3_r += integrate_trapezoidal_rule(k_exp[rr_k_max], k_c, E_exp_3[rr_k_max], E3_k_c);
       }

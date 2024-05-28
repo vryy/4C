@@ -59,7 +59,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype,
  | evaluate action                                           fang 08/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::EvaluateAction(
+int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluate_action(
     DRT::FaceElement* ele,                            //!< boundary element
     Teuchos::ParameterList& params,                   //!< parameter list
     DRT::Discretization& discretization,              //!< discretization
@@ -112,7 +112,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluate
 
     default:
     {
-      myelch::EvaluateAction(ele, params, discretization, action, la, elemat1_epetra,
+      myelch::evaluate_action(ele, params, discretization, action, la, elemat1_epetra,
           elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
 
       break;
@@ -171,7 +171,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluate
         for (int k = 0; k < my::numscal_; ++k)
         {
           // get valence
-          const double valence_k = GetValence(mat, k);
+          const double valence_k = get_valence(mat, k);
 
           for (int vi = 0; vi < nen_; ++vi)
             elevec1[vi * my::numdofpernode_ + my::numscal_] +=
@@ -262,7 +262,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype,
  | evaluate scatra-scatra interface coupling condition (electrochemistry)   fang 12/14 |
  *-------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::EvaluateS2ICoupling(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluate_s2_i_coupling(
     const DRT::FaceElement* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& eslavematrix, CORE::LINALG::SerialDenseMatrix& emastermatrix,
@@ -274,7 +274,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluat
       break;
     case INPAR::S2I::kinetics_constantinterfaceresistance:
     {
-      myelectrode::EvaluateS2ICoupling(
+      myelectrode::evaluate_s2_i_coupling(
           ele, params, discretization, la, eslavematrix, emastermatrix, eslaveresidual);
       break;
     }
@@ -322,7 +322,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluat
  | extract valence of species k from element material                       fang 12/14 |
  *-------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::GetValence(
+double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::get_valence(
     const Teuchos::RCP<const CORE::MAT::Material>& material,  // element material
     const int k                                               // species number
 ) const

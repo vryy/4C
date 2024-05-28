@@ -43,13 +43,13 @@ namespace FSI
         const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     /// update subsequent fields, recover the Lagrange multiplier and relax the ALE-mesh
-    void Update() override;
+    void update() override;
 
     /// start a new time step
     void prepare_time_step() override;
 
     /// output routine accounting for Lagrange multiplier at the interface
-    void Output() override;
+    void output() override;
 
     /// read restart data (requires distinguation between fluid discretizations)
     void read_restart(int step) override;

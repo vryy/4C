@@ -190,7 +190,7 @@ namespace MORTAR
      \brief Get communicator
 
      */
-    virtual const Epetra_Comm& Comm() const;
+    virtual const Epetra_Comm& comm() const;
 
     // don't want = operator and cctor
     Coupling2d operator=(const Coupling2d& old);
@@ -281,7 +281,7 @@ namespace MORTAR
      \brief Evaluate coupling pairs
 
      */
-    virtual bool EvaluateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    virtual bool evaluate_coupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
     /*!
      \brief Get coupling type
@@ -304,7 +304,7 @@ namespace MORTAR
      \brief Evaluate mortar coupling pairs
 
      */
-    virtual void IntegrateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    virtual void integrate_coupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
     /*!
      \brief Calculate consistent dual shape functions in boundary elements

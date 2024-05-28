@@ -61,7 +61,7 @@ DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Instance(
  |  evaluate single material  (protected)                    ljag 06/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Materials(
+void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::materials(
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -84,7 +84,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Materials(
     actmat->SetGP(1);
     actmat->resize_internal_state_variables();
   }
-  MatMyocard(material, k, densn, densnp, densam, visc, iquad);
+  mat_myocard(material, k, densn, densnp, densam, visc, iquad);
 
   return;
 }
@@ -94,7 +94,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Materials(
  |  Material ScaTra                                          ljag 06/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::MatMyocard(
+void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::mat_myocard(
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -156,7 +156,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::MatMyocard
 |  calculate system matrix and rhs for ep                 hoermann 06/16|
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Sysmat(
+void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::sysmat(
     DRT::Element* ele,                          ///< the element whose matrix is calculated
     CORE::LINALG::SerialDenseMatrix& emat,      ///< element matrix to calculate
     CORE::LINALG::SerialDenseVector& erhs,      ///< element rhs to calculate
@@ -179,7 +179,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Sysmat(
     advreac::eval_shape_func_and_derivs_at_ele_center();
     // set Gauss point variables needed for evaluation of mat and rhs
     my::set_internal_variables_for_mat_and_rhs();
-    advreac::GetMaterialParams(ele, densn, densnp, densam, visc);
+    advreac::get_material_params(ele, densn, densnp, densam, visc);
   }
   // calculation of material at integration points (different number of integration points possible)
   else
@@ -190,7 +190,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Sysmat(
     else
       deg = 3 * ele->Degree();
     const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-        SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(deg));
+        SCATRA::DisTypeToMatGaussRule<distype>::get_gauss_rule(deg));
 
     // loop over integration points
     for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -201,25 +201,25 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Sysmat(
       my::set_internal_variables_for_mat_and_rhs();
 
       // get material parameters (evaluation at integration point)
-      advreac::GetMaterialParams(ele, densn, densnp, densam, visc, iquad);
+      advreac::get_material_params(ele, densn, densnp, densam, visc, iquad);
 
       // loop all scalars
       for (int k = 0; k < my::numscal_; ++k)  // deal with a system of transported scalars
       {
         double rhsint(0.0);
-        advreac::GetRhsInt(rhsint, densnp[k], k);
+        advreac::get_rhs_int(rhsint, densnp[k], k);
 
         CORE::LINALG::Matrix<nen_, 1> dummy(true);
         const double timefacfac = my::scatraparatimint_->TimeFac() * fac;
 
         // reactive terms on integration point on rhs
-        my::ComputeRhsInt(rhsint, densam[k], densnp[k], my::scatravarmanager_->Hist(k));
+        my::compute_rhs_int(rhsint, densam[k], densnp[k], my::scatravarmanager_->Hist(k));
 
         // standard Galerkin transient, old part of rhs and bodyforce term
         my::calc_rhs_hist_and_source(erhs, k, fac, rhsint);
 
         // element matrix: reactive term
-        advreac::CalcMatReact(emat, k, timefacfac, 0., 0., densnp[k], dummy, dummy);
+        advreac::calc_mat_react(emat, k, timefacfac, 0., 0., densnp[k], dummy, dummy);
       }
     }
   }
@@ -243,7 +243,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Sysmat(
     {
       // compute rhs containing bodyforce
       double rhsint(0.0);
-      advreac::GetRhsInt(rhsint, densnp[k], k);
+      advreac::get_rhs_int(rhsint, densnp[k], k);
 
       // integration factors
       const double timefacfac = my::scatraparatimint_->TimeFac() * fac;
@@ -253,13 +253,13 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Sysmat(
       //----------------------------------------------------------------
 
       // calculation of diffusive element matrix
-      aniso::CalcMatDiff(emat, k, timefacfac);
+      aniso::calc_mat_diff(emat, k, timefacfac);
 
       //----------------------------------------------------------------
       // 2) element matrix: instationary terms
       //----------------------------------------------------------------
 
-      if (not my::scatraparatimint_->IsStationary()) my::CalcMatMass(emat, k, fac, densam[k]);
+      if (not my::scatraparatimint_->IsStationary()) my::calc_mat_mass(emat, k, fac, densam[k]);
 
       //----------------------------------------------------------------
       // 3) element matrix: reactive term
@@ -267,7 +267,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Sysmat(
 
       CORE::LINALG::Matrix<nen_, 1> dummy(true);
       if (not my::scatrapara_->MatGP())
-        advreac::CalcMatReact(emat, k, timefacfac, 0., 0., densnp[k], dummy, dummy);
+        advreac::calc_mat_react(emat, k, timefacfac, 0., 0., densnp[k], dummy, dummy);
 
       //----------------------------------------------------------------
       // 5) element right hand side
@@ -281,12 +281,12 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Sysmat(
       double rhsfac = my::scatraparatimint_->TimeFacRhs() * fac;
 
       if (my::scatraparatimint_->IsIncremental() and not my::scatraparatimint_->IsStationary())
-        my::CalcRHSLinMass(erhs, k, rhsfac, fac, densam[k], densnp[k]);
+        my::calc_rhs_lin_mass(erhs, k, rhsfac, fac, densam[k], densnp[k]);
 
 
       if (not my::scatrapara_->MatGP())
       {
-        my::ComputeRhsInt(rhsint, densam[k], densnp[k], my::scatravarmanager_->Hist(k));
+        my::compute_rhs_int(rhsint, densam[k], densnp[k], my::scatravarmanager_->Hist(k));
         // standard Galerkin transient, old part of rhs and bodyforce term
         my::calc_rhs_hist_and_source(erhs, k, fac, rhsint);
       }

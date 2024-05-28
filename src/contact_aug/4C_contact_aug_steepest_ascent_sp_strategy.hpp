@@ -152,7 +152,7 @@ namespace CONTACT
 
        protected:
         /// scale factor similar to the std. Lagrangian strategy
-        double InactiveScaleFactor() const override { return 1.0; }
+        double inactive_scale_factor() const override { return 1.0; }
 
         /** \brief Assemble the structural contact rhs [derived]
          *
@@ -160,7 +160,7 @@ namespace CONTACT
          *  forces are considered.
          *
          *  \author hiermeier \date 03/17 */
-        void EvalStrContactRHS() override;
+        void eval_str_contact_rhs() override;
 
         /// derived
         void post_setup(bool redistributed, bool init) override;
@@ -171,13 +171,13 @@ namespace CONTACT
             const NOX::NLN::Group& grp) override;
 
         /// initiate the actual update of the cn-value (increase or decrease)
-        void RunPostIterate(const CONTACT::ParamsInterface& cparams) override;
+        void run_post_iterate(const CONTACT::ParamsInterface& cparams) override;
 
         /// call the penalty update object for a possible cn increase
-        void UpdateCn(const CONTACT::ParamsInterface& cparams);
+        void update_cn(const CONTACT::ParamsInterface& cparams);
 
         /// call the penalty update object for a possible cn decrease
-        void DecreaseCn(const CONTACT::ParamsInterface& cparams);
+        void decrease_cn(const CONTACT::ParamsInterface& cparams);
 
         /// set current (default-step) solution state in the penalty update method
         void set_penalty_update_state(const CONTACT::ParamsInterface& cparams,

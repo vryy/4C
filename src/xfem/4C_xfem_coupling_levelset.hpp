@@ -63,7 +63,7 @@ namespace XFEM
 
     void set_condition_specific_parameters() override{};
 
-    void PrepareCutterOutput() override;
+    void prepare_cutter_output() override;
 
     void do_condition_specific_setup() override;
 
@@ -72,7 +72,7 @@ namespace XFEM
     bool SetLevelSetField(const double time);
 
     /// initialize level set based state vectors
-    void InitStateVectors() override;
+    void init_state_vectors() override;
 
     virtual void InitStateVectors_Bg();
 
@@ -108,7 +108,7 @@ namespace XFEM
 
 
    private:
-    void SetConditionsToCopy() override;
+    void set_conditions_to_copy() override;
 
     /// set level-set field implemented in this routine
     double funct_implementation(const int func_no, const double* coords, const double t);

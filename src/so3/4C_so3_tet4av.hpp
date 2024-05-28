@@ -197,7 +197,7 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      int NumDofPerElement() const override { return 0; }
+      int num_dof_per_element() const override { return 0; }
 
       /*!
       \brief Print this element
@@ -366,7 +366,7 @@ namespace DRT
       SoTet4av& operator=(const SoTet4av& old);
 
       //! init the inverse of the jacobian and its determinant in the material configuration
-      virtual void InitJacobianMapping();
+      virtual void init_jacobian_mapping();
 
       //! Calculate nonlinear stiffness and mass matrix
       virtual void nlnstiffmass(std::vector<int>& lm, std::vector<double>& disp,

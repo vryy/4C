@@ -113,13 +113,13 @@ namespace FSI
 
      protected:
       /// compute average interface displacement
-      std::vector<double> Centerdisp(
+      std::vector<double> centerdisp(
           ADAPTER::FSIStructureWrapper& structure,  ///< structure adapter
           const Epetra_Comm& comm                   ///< communicator
       );
 
       /// compute approximate interface rotation (structuresplit)
-      void Rotation(DRT::Discretization& mtrdis,  ///< mtr interface  discretization
+      void rotation(DRT::Discretization& mtrdis,  ///< mtr interface  discretization
           Teuchos::RCP<Epetra_Vector> idispale,   ///< vector of ALE displacements
           const Epetra_Comm& comm,                ///< communicator
           std::map<int, double>& rotrat,          ///< rotation ratio of tangential displacements
@@ -129,15 +129,15 @@ namespace FSI
 
 
       /// calculate current position of structure interface nodes
-      std::map<int, CORE::LINALG::Matrix<3, 1>> CurrentStructPos(
+      std::map<int, CORE::LINALG::Matrix<3, 1>> current_struct_pos(
           Teuchos::RCP<Epetra_Vector> reddisp,  ///< redundant version of structure displacements
           DRT::Discretization& interfacedis,    ///< interface discretization
           std::map<int, double>& maxcoord);
 
 
       /// project ALE nodes onto the structure surface
-      void SlideProjection(ADAPTER::FSIStructureWrapper& structure,  ///< structure adapter
-          Teuchos::RCP<DRT::Discretization> fluiddis,                ///< fluid discretization
+      void slide_projection(ADAPTER::FSIStructureWrapper& structure,  ///< structure adapter
+          Teuchos::RCP<DRT::Discretization> fluiddis,                 ///< fluid discretization
           Teuchos::RCP<Epetra_Vector> idispale,      ///< standard ALE interface displacement
           Teuchos::RCP<Epetra_Vector> iprojdispale,  ///< projected ALE interface displacement
           CORE::ADAPTER::CouplingMortar& coupsf,     ///< mortar adapter
@@ -148,7 +148,7 @@ namespace FSI
       /// Necessary for search-trees since MORTAR elements do not know about their facets and edges.
       /// Furthermore, this function builds StructuralSurface elements from the fluid outer surface
       /// for rotation.
-      void RedundantElements(CORE::ADAPTER::CouplingMortar& coupsf, const Epetra_Comm& comm);
+      void redundant_elements(CORE::ADAPTER::CouplingMortar& coupsf, const Epetra_Comm& comm);
 
      private:
       const INPAR::FSI::SlideALEProj aletype_;

@@ -149,7 +149,7 @@ namespace STR
     void PrintStep() override;
 
     //! The text for summary print, see #PrintStep
-    void PrintStepText(FILE* ofile  //!< output file handle
+    void print_step_text(FILE* ofile  //!< output file handle
     );
 
     //@}
@@ -222,7 +222,7 @@ namespace STR
     {
       // safety checks
       check_is_init();
-      CheckIsSetup();
+      check_is_setup();
 
       // update end time \f$t_{n+1}\f$ of this time step to cope with time step size adaptivity
       SetTimen((*time_)[0] + (*dt_)[0]);
@@ -387,10 +387,10 @@ namespace STR
       return;
     }
 
-    void UseBlockMatrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
+    void use_block_matrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
         Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps) override
     {
-      FOUR_C_THROW("UseBlockMatrix() not implemented");
+      FOUR_C_THROW("use_block_matrix() not implemented");
     }
     //@}
   };

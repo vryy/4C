@@ -62,7 +62,7 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
         Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(
             timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
     structureporo_ = Teuchos::rcp(new ADAPTER::StructurePoroWrapper(
-        structure->StructureField(), ADAPTER::StructurePoroWrapper::type_StructureField, true));
+        structure->structure_field(), ADAPTER::StructurePoroWrapper::type_StructureField, true));
   }
   else if (type == ADAPTER::StructurePoroWrapper::type_PoroField)
   {
@@ -137,7 +137,7 @@ void FSI::AlgorithmXFEM::Setup()
 /*----------------------------------------------------------------------*
  | update (protected)                                      schott 08/14 |
  *----------------------------------------------------------------------*/
-void FSI::AlgorithmXFEM::Update()
+void FSI::AlgorithmXFEM::update()
 {
   FOUR_C_THROW("currently unused");
 

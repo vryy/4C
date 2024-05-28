@@ -95,7 +95,7 @@ namespace BEAMINTERACTION
   /**
    * \brief Setup the triad interpolation scheme for the current triad and reference triad of the
    * given beam element.
-   * @param discret (in) Discretization.
+   * @param discret (in) discretization.
    * @param displacement_vector (in) Global displacement vector.
    * @param ele (in) Pointer to the beam element.
    * @param triad_interpolation_scheme (out) Interpolation of current triad field..
@@ -269,7 +269,7 @@ namespace BEAMINTERACTION
    * global_FB_L^T and global_G_S = global_FS_L^T.
    *
    * @param pair (in) The beam-to-solid pair.
-   * @param discret (in) Discretization
+   * @param discret (in) discretization
    * @param mortar_manager (in) Mortar manager for the beam-to-solid condition
    * @param global_G_B (in/out) Constraint equations derived w.r.t the beam DOFs
    * @param global_G_S (in/out) Constraint equations derived w.r.t the solid DOFs

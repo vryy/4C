@@ -52,7 +52,7 @@ namespace ALE
         {
           // if there are no conditioned nodes we can simply assemble to the
           // internal matrix
-          CORE::LINALG::SparseMatrix& matrix = Mat().Matrix(0, 0);
+          CORE::LINALG::SparseMatrix& matrix = mat().Matrix(0, 0);
           matrix.Assemble(eid, lmstride, Aele, lmrow, lmrowowner, lmcol);
         }
       }

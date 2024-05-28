@@ -112,7 +112,7 @@ namespace CORE::COMM
         const std::string eletype, const std::string eledistype, const int id, const int owner);
 
     /// initialize all element types
-    void InitializeElements(DRT::Discretization& dis);
+    void initialize_elements(DRT::Discretization& dis);
 
     /// preevaluate elements (via element types)
     void pre_evaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,

@@ -68,7 +68,7 @@ FLD::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization> dis, CORE::LINALG::S
 /*  Setup mesh-tying problem                ehrl (04/11) */
 /*-------------------------------------------------------*/
 
-void FLD::Meshtying::SetupMeshtying(const std::vector<int>& coupleddof, const bool pcoupled)
+void FLD::Meshtying::setup_meshtying(const std::vector<int>& coupleddof, const bool pcoupled)
 {
   // get pointer to dof row map
   dofrowmap_ = discret_->dof_row_map();
@@ -257,7 +257,7 @@ void FLD::Meshtying::SetupMeshtying(const std::vector<int>& coupleddof, const bo
   }
 }
 
-Teuchos::RCP<CORE::LINALG::SparseOperator> FLD::Meshtying::InitSystemMatrix() const
+Teuchos::RCP<CORE::LINALG::SparseOperator> FLD::Meshtying::init_system_matrix() const
 {
   switch (msht_)
   {

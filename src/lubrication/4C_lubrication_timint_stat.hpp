@@ -70,7 +70,7 @@ namespace LUBRICATION
     void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override;
 
     /// return the right time-scaling-factor for the true residual
-    double ResidualScaling() const override { return 1.0; }
+    double residual_scaling() const override { return 1.0; }
 
   };  // class TimIntStationary
 

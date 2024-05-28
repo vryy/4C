@@ -44,7 +44,7 @@ namespace CONSTRAINTS
     /*!
     \brief Constructor
     */
-    ConstraintSolver(Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization
+    ConstraintSolver(Teuchos::RCP<DRT::Discretization> discr,  ///< discretization
         CORE::LINALG::Solver& solver,  ///< Solver to solve linear subproblem in iteration
         Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps,  ///< Map extractor for Dirichlet DOFs
         Teuchos::ParameterList param  ///< parameterlist containing solver parameters

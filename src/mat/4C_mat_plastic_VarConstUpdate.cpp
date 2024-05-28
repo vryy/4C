@@ -44,7 +44,7 @@ MAT::PAR::PlasticElastHyperVCU::PlasticElastHyperVCU(Teuchos::RCP<CORE::MAT::PAR
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::PlasticElastHyperVCU::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::PlasticElastHyperVCU::create_material()
 {
   return Teuchos::rcp(new MAT::PlasticElastHyperVCU(this));
 }
@@ -211,7 +211,7 @@ void MAT::PlasticElastHyperVCU::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgr
 
   CORE::LINALG::Matrix<3, 3> cetrial;
   CORE::LINALG::Matrix<6, 1> ee_test;
-  CompElastQuant(defgrd, last_plastic_defgrd_inverse_[gp], id2, &cetrial, &ee_test);
+  comp_elast_quant(defgrd, last_plastic_defgrd_inverse_[gp], id2, &cetrial, &ee_test);
 
   // get 2pk stresses
   CORE::LINALG::Matrix<6, 1> etstr;
@@ -223,7 +223,7 @@ void MAT::PlasticElastHyperVCU::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgr
 
   CORE::LINALG::Matrix<3, 3> mandelStr;
   CORE::LINALG::Matrix<3, 3> devMandelStr;
-  YieldFunction(last_ai, normZero, id2, cetrial, etstr, &yf, devMandelStr, mandelStr);
+  yield_function(last_ai, normZero, id2, cetrial, etstr, &yf, devMandelStr, mandelStr);
 
   if (yf <= 0)
   {
@@ -303,7 +303,7 @@ void MAT::PlasticElastHyperVCU::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgr
 
       CORE::LINALG::Matrix<5, 1> rhsElast;
       CORE::LINALG::Matrix<6, 1> eeOut;
-      EvaluateRHS(gp, dLp, *defgrd, eeOut, rhs, rhsElast, dcedlp, dFpiDdeltaDp, params, eleGID);
+      evaluate_rhs(gp, dLp, *defgrd, eeOut, rhs, rhsElast, dcedlp, dFpiDdeltaDp, params, eleGID);
 
       // Hessian matrix elastic component
       CORE::LINALG::Matrix<6, 1> elastStress;
@@ -313,7 +313,7 @@ void MAT::PlasticElastHyperVCU::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgr
       ElastHyper::Evaluate(nullptr, &eeOut, params, &elastStress, &elastCmat, gp, eleGID);
 
       CORE::LINALG::Matrix<6, 6> d2ced2lpVoigt[6];
-      Ce2ndDeriv(defgrd, last_plastic_defgrd_inverse_[gp], dLp, d2ced2lpVoigt);
+      ce2nd_deriv(defgrd, last_plastic_defgrd_inverse_[gp], dLp, d2ced2lpVoigt);
 
       CORE::LINALG::Matrix<6, 6> cpart_tmp;
       cpart_tmp.Multiply(elastCmat, dcedlp);
@@ -504,7 +504,7 @@ void MAT::PlasticElastHyperVCU::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgr
     PlasticElastHyper::EvaluateElast(defgrd, &dLp, stress, &tangent_elast, gp, eleGID);
 
     CORE::LINALG::Matrix<6, 9> dPK2dFpinvIsoprinc;
-    Dpk2dFpi(gp, eleGID, defgrd, &plastic_defgrd_inverse_[gp], dPK2dFpinvIsoprinc);
+    dpk2d_fpi(gp, eleGID, defgrd, &plastic_defgrd_inverse_[gp], dPK2dFpinvIsoprinc);
 
     CORE::LINALG::Matrix<6, 6> mixedDeriv;
     mixedDeriv.Multiply(dPK2dFpinvIsoprinc, dFpiDdeltaDp);
@@ -545,7 +545,7 @@ void MAT::PlasticElastHyperVCU::Update()
 
 
 // Evaluate dCedlp
-void MAT::PlasticElastHyperVCU::EvalDceDlp(const CORE::LINALG::Matrix<3, 3> fpi,
+void MAT::PlasticElastHyperVCU::eval_dce_dlp(const CORE::LINALG::Matrix<3, 3> fpi,
     const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<6, 6> Dexp,
     const CORE::LINALG::Matrix<3, 3> cetrial, const CORE::LINALG::Matrix<3, 3> explp,
     CORE::LINALG::Matrix<6, 6>& dceDdeltalp, CORE::LINALG::Matrix<9, 6>& dFpiDdeltaDp)
@@ -588,7 +588,7 @@ void MAT::PlasticElastHyperVCU::EvalDceDlp(const CORE::LINALG::Matrix<3, 3> fpi,
 
 
 // MAP 5x1 on 9x1
-void MAT::PlasticElastHyperVCU::YieldFunction(const double last_ai,
+void MAT::PlasticElastHyperVCU::yield_function(const double last_ai,
     const double norm_dLp,                     // this is zero when yf<0 is checked
     const CORE::LINALG::Matrix<3, 3> ExpEqui,  // this is identity when yf < 0 is checked
     const CORE::LINALG::Matrix<3, 3> cetr, const CORE::LINALG::Matrix<6, 1> str, double* yieldFunc,
@@ -640,7 +640,7 @@ void MAT::PlasticElastHyperVCU::YieldFunction(const double last_ai,
 
 
 // Get elastic quantities Cetrial and Ee_n+1
-void MAT::PlasticElastHyperVCU::CompElastQuant(const CORE::LINALG::Matrix<3, 3>* defgrd,
+void MAT::PlasticElastHyperVCU::comp_elast_quant(const CORE::LINALG::Matrix<3, 3>* defgrd,
     const CORE::LINALG::Matrix<3, 3> fpi, const CORE::LINALG::Matrix<3, 3> MatExp,
     CORE::LINALG::Matrix<3, 3>* cetrial, CORE::LINALG::Matrix<6, 1>* Ee)
 
@@ -908,7 +908,7 @@ void MAT::PlasticElastHyperVCU::matrix_exponential_second_derivative_sym3x3(
 }
 
 
-void MAT::PlasticElastHyperVCU::EvaluateRHS(const int gp, const CORE::LINALG::Matrix<3, 3> dLp,
+void MAT::PlasticElastHyperVCU::evaluate_rhs(const int gp, const CORE::LINALG::Matrix<3, 3> dLp,
     const CORE::LINALG::Matrix<3, 3> defgrd, CORE::LINALG::Matrix<6, 1>& eeOut,
     CORE::LINALG::Matrix<5, 1>& rhs, CORE::LINALG::Matrix<5, 1>& rhsElast,
     CORE::LINALG::Matrix<6, 6>& dcedlp, CORE::LINALG::Matrix<9, 6>& dFpiDdeltaDp,
@@ -954,7 +954,7 @@ void MAT::PlasticElastHyperVCU::EvaluateRHS(const int gp, const CORE::LINALG::Ma
   CORE::LINALG::Matrix<6, 6> dummy;
   ElastHyper::Evaluate(nullptr, &eeOut, params, &se, &dummy, gp, eleGID);
 
-  EvalDceDlp(last_plastic_defgrd_inverse_[gp], &defgrd, dexpOut_mat, cetrial, expOut, dcedlp,
+  eval_dce_dlp(last_plastic_defgrd_inverse_[gp], &defgrd, dexpOut_mat, cetrial, expOut, dcedlp,
       dFpiDdeltaDp);
 
   CORE::LINALG::Matrix<6, 1> rhs6;
@@ -1111,7 +1111,7 @@ void MAT::PlasticElastHyperVCU::evaluate_kin_quant_plast(const int gp, const int
   tmp.Multiply(RCG, tmp33);
   CORE::LINALG::VOIGT::Matrix3x3to9x1(tmp, CFpiCei);
 }
-void MAT::PlasticElastHyperVCU::Dpk2dFpi(const int gp, const int eleGID,
+void MAT::PlasticElastHyperVCU::dpk2d_fpi(const int gp, const int eleGID,
     const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 3>* fpi,
     CORE::LINALG::Matrix<6, 9>& dPK2dFpinvIsoprinc)
 {
@@ -1133,8 +1133,8 @@ void MAT::PlasticElastHyperVCU::Dpk2dFpi(const int gp, const int eleGID,
       CFpiCe, CpiCCpi);
 }
 
-// Compute DpsiplastDalphaiso
-void MAT::PlasticElastHyperVCU::DpsiplastDalphaiso(const double norm_dLp,
+// Compute dpsiplast_dalphaiso
+void MAT::PlasticElastHyperVCU::dpsiplast_dalphaiso(const double norm_dLp,
     const double last_alphaiso, const double isoHardMod, const double initYield,
     const double infYield, const double expIsoHard, double* dpsiplastdalphaiso)
 {
@@ -1157,7 +1157,7 @@ void MAT::PlasticElastHyperVCU::DpsiplastDalphaiso(const double norm_dLp,
 
 
 // Compute DDceDdLpDdLp
-void MAT::PlasticElastHyperVCU::Ce2ndDeriv(const CORE::LINALG::Matrix<3, 3>* defgrd,
+void MAT::PlasticElastHyperVCU::ce2nd_deriv(const CORE::LINALG::Matrix<3, 3>* defgrd,
     const CORE::LINALG::Matrix<3, 3> fpi, const CORE::LINALG::Matrix<3, 3> dLp,
     CORE::LINALG::Matrix<6, 6>* DDceDdLpDdLpVoigt)
 {
