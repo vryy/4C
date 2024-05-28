@@ -1,21 +1,19 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Application of contact contributions strategy for monolithic SSI
+\brief Application of contact contributions strategy for monolithic/partitioning SSI
 
 \level 2
 
  */
 /*----------------------------------------------------------------------*/
 
-#include "4C_ssi_monolithic_contact_strategy.hpp"
+#include "4C_ssi_contact_strategy.hpp"
 
 #include "4C_contact_nitsche_strategy_ssi.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
-#include "4C_ssi_monolithic.hpp"
 #include "4C_ssi_utils.hpp"
 
 FOUR_C_NAMESPACE_OPEN
-
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
@@ -188,4 +186,5 @@ Teuchos::RCP<SSI::ContactStrategyBase> SSI::BuildContactStrategy(
 
   return contact_strategy;
 }
+
 FOUR_C_NAMESPACE_CLOSE

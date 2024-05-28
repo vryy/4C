@@ -20,6 +20,8 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 std::string CONTACT::VecBlockTypeToStr(const CONTACT::VecBlockType bt)
 {
   switch (bt)
