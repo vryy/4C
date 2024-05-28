@@ -3,7 +3,8 @@
 Preprocessing
 ---------------
 
-|FOURC| reads the mesh, boundary conditions, materials and simulation parameters from an ASCII file in a proprietary format, which usually has the suffix ``.dat``, but this suffix is not necessary, it can be anything.
+|FOURC| reads the mesh, boundary conditions, materials and simulation parameters from an ASCII file in a proprietary format,
+which usually has the suffix ``.dat``, but this suffix is not necessary, it can be anything.
 
 There are not so many means to create a valid input file. At this point, we know of the following
 different ways to create an input file. In general, you'll have two options:
@@ -20,8 +21,10 @@ Since the conversion from the ``Exodus II`` format is the most versatile way to 
 Exodus II to |FOURC| file conversion
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The main procedure to generate a valid |FOURC| input file is from a binary mesh file in ``Exodus II`` format, which includes nodes, elements, node sets, element sets, and side sets, as can be created by Cubit.
-, together with two additional files:
+The main procedure to generate a valid |FOURC| input file is from a binary mesh file in ``Exodus II`` format, see above,
+which includes nodes, elements, node sets, element sets, and side sets, as can be created by Cubit.
+Since this file does not contain boundary conditions, element type information, materials and solver details,
+additional information is needed, which is given by two additional files:
 
 #. for the global system parameters (solver, material, step information, etc.), called the *headerfile*, and
 
@@ -37,7 +40,6 @@ but it can also be compiled solely by ``make pre_exodus``.
 ::
 
    $> pre_exodus --exo=<exodusfile> --bc=<bcfile> --head=<headerfile> --dat=<4Cinput> \
-               [ --gensosh=<thickness> [ --numlayer=<nlayer> ] ]   \
                [ --d2 | --d3  ]           \
                [ --quadtri  ]             \
                [ --gmesh=<startelement> ]
@@ -59,64 +61,13 @@ See next section for details how to work with it and how to get valid input file
 
 *Optional parameters*
 
-The optional parameter ``--quadtri`` reads the exodus file and converts all quad elements in two triangular elements. It does not write a dat file, but writes a new exodus file instead named ``tri_<problemname>.e``. NOTE: This feature is only for 2D elements, it does **not** modify 3D elements.
-
-The option to generate a 3D mesh from a shell surface, ``pre_exodus --exo=<exodusfile> --gensosh=<thickness> --numlayer=<nlayer>``, does not create a |FOURC| input file either, but it creates an exodus file containing the solid model named ``extr_<exodusfile>``.
-
-.. warning::
-
-   It seems that the gensosh feature does not work properly. Neither Cubit nor Paraview can read a file created this way.
-
-.. _create4Cinput:
-
-Other ways to create a |FOURC| input directly
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. _abaqus:
-
-**ABAQUS**
-
-There is an in-house Python module ``abaqus_meshio`` for the conversion from inp to dat file. Since the inp can be generated using Cubit or Abaqus, this submodule can be used in conjunction with both software. The usage of this submodule starts firstly by importing it providing the path where it is located.
-
-.. code-block:: python
-
-   import sys
-
-   abaqus_meshio_path = "path_to_abaqus_meshio"
-   sys.path.append(abaqus_meshio_path)
-
-Subsequently, the inp shall be read using the command
-
-.. code-block:: python
-
-   model = abaqus_meshio.read("path_to_inp.dat")
-
-Unlike ``meshio.read``, the command ``abaqus_meshio.read`` will return a model, which is instance of ``BModel``, where:
-
-- ``model.rootAssembly.instances[instance_name].mesh`` is a ``BMesh. ``BMesh`` is a subclass of ``meshio.Mesh`` with additional attributes sections (for material assignment) and surfaces (for distributed load).
-- ``model`` has attributes materials (from MATERIAL), parts (from PART/END PART) and steps (from STEP)
-- ``model.parts[part_name].mesh`` is again a ``BMesh``, ``model.rootAssembly.instances[instance_name].mesh`` is a transformation of this mesh.
-
-``BModel`` is designed to mimick the way Abaqus systematically stores its data. To access the original ``meshio.Mesh`` one has to use ``model.parts[part_name].mesh``.
-
-Proving that the information from inp is properly stored, the transformation to dat file is done by a simple command
-
-.. code-block:: python
-
-   fourc_io = abaqus_meshio.Inp2Baci(model, [params_step_1])
-   fourc_io.write("prefix")
-
-If the inp has many steps defined by STEP/END STEP keywords, the list of parameters for each step has to be provided, e.g. ``[params_step_1, params_step_2, ...]``. Default parameters for a structural analysis can be obtained using
-
-.. code-block:: python
-
-   params_step_1 = abaqus_meshio.GenerateDefaultParams()
-
-Alternatively, one may run a python script called ``CAEabq2baci.py`` to convert an ABAQUS input file to a |FOURC| input file (available on request). This script uses ABAQUS/CAE commands, that is, an abaqus license is necessary to run this script.
+The optional parameter ``--quadtri`` reads the exodus file and converts all quad elements in two triangular elements.
+It does not write a dat file, but writes a new exodus file instead named ``tri_<problemname>.e``.
+NOTE: This feature is only for 2D elements, it does **not** modify 3D elements.
 
 
 Generating ``Exodus II`` files
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Even though the generation of ``Exodus II`` files might be out of scope of a |FOURC| manual,
 users are informed on how to generate these files conveniently, so options are given in the following:
@@ -149,28 +100,6 @@ Note that
   converted into surface sets if the surface definition is given in the boundary condition
   control file (<problem>.bc) anyway.
 
-.. ifconfig:: institution in ("lnm", )
-
-    CUBIT is installed on Gauss. Its folder is ``/lnm/programs/cubit12/``
-    You can start CUBIT by typing ``/lnm/programs/cubit12/cubit`` on any LNM
-    machine. (It may be convenient to place a link to this executable in
-    your ``/̃bin`` directory by doing
-    ``ln -s /lnm/cubit12/cubit /̃bin/cubit``, then typing ``gid`` will do the
-    same. Another optin is to create an alias in your ``/̃.bashrc`` file)
-    Once started go to *Help* :math:`\rightarrow` *Cubit Tutorials* for an
-    introduction or go to the :ref:`Fluid tutorial <fluidtutorial>`.
-
-.. ifconfig:: institution in ("hereon", )
-
-    CUBIT will be available from the Software Kiosk
-
-
-.. ifconfig:: institution in ("imcs", )
-
-    Don't know
-
-.. _abaquscae:
-
 
 **Other Software**
 
@@ -195,6 +124,58 @@ So the steps are
    (<https://pypi.org/project/meshio/>)
 
 #. Run ``pre_exodus`` from your |FOURC| build to convert the data (see above).
+
+
+.. _create4Cinput:
+
+Other ways to create a |FOURC| input directly
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. _abaqus:
+
+**ABAQUS**
+
+There is an in-house Python module ``abaqus_meshio`` for the conversion from an ABAQUS input file (``.inp``) to dat file.
+This python module is available in the `scripts gitlab <https://gitlab.lrz.de/baci/scripts>`_.
+Since the ``.inp`` file can also be generated using Cubit, this submodule can be used in conjunction with Cubit as well, see above.
+The usage of this submodule starts firstly by importing it providing the path where it is located.
+
+.. code-block:: python
+
+   import sys
+
+   abaqus_meshio_path = "path_to_abaqus_meshio"
+   sys.path.append(abaqus_meshio_path)
+
+Subsequently, the inp shall be read using the command
+
+.. code-block:: python
+
+   model = abaqus_meshio.read("path_to_inp.dat")
+
+Unlike ``meshio.read``, the command ``abaqus_meshio.read`` will return a model, which is instance of ``BModel``, where:
+
+- ``model.rootAssembly.instances[instance_name].mesh`` is a ``BMesh. ``BMesh`` is a subclass of ``meshio.Mesh``
+  with additional attributes sections (for material assignment) and surfaces (for distributed load).
+- ``model`` has attributes materials (from MATERIAL), parts (from PART/END PART) and steps (from STEP)
+- ``model.parts[part_name].mesh`` is again a ``BMesh``, ``model.rootAssembly.instances[instance_name].mesh`` is a transformation of this mesh.
+
+``BModel`` is designed to mimick the way Abaqus systematically stores its data. To access the original ``meshio.Mesh`` one has to use ``model.parts[part_name].mesh``.
+
+Proving that the information from inp is properly stored, the transformation to dat file is done by a simple command
+
+.. code-block:: python
+
+   fourc_io = abaqus_meshio.Inp2Baci(model, [params_step_1])
+   fourc_io.write("prefix")
+
+If the inp has many steps defined by STEP/END STEP keywords, the list of parameters for each step has to be provided,
+e.g. ``[params_step_1, params_step_2, ...]``.
+Default parameters for a structural analysis can be obtained using
+
+.. code-block:: python
+
+   params_step_1 = abaqus_meshio.GenerateDefaultParams()
 
 
 Modify |FOURC| input files

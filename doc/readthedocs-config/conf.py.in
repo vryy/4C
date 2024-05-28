@@ -42,7 +42,16 @@ todo_include_todos = True
 
 
 def setup(app):
-    app.add_config_value("institution", "BACI", "env")
+    # the variable "institution" can be used if one wants to create a special version of documentation
+    # for a secific institution.
+    # It is used, e.g., in proprocessing.rst, where specific uses of cubit are defined based on institution.
+    #
+    # Usage:
+    # .. ifconfig:: institution in ("myInstitution", )
+    #
+    #     Here is some text (indented) that is only visible if institution has the value "myInstitution".
+    #
+    app.add_config_value("institution", "general", "env")
 
 
 # Add any paths that contain templates here, relative to this directory.
