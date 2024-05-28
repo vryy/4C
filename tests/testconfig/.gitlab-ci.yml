@@ -39,7 +39,7 @@ variables:
   # Variables for docker
   # Whether to build the docker images and push them to the CI registry
   FOUR_C_DOCKER_BUILD_IMAGES: 'False'
-  FOUR_C_DOCKER_DEPENDENCIES_HASH: 9a72bec9
+  FOUR_C_DOCKER_DEPENDENCIES_HASH: d75e24ff
   FOUR_C_DOCKER_DEPENDENCIES_IMAGE: 4c-dependencies
   FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH: $FOUR_C_DOCKER_DEPENDENCIES_IMAGE:$FOUR_C_DOCKER_DEPENDENCIES_HASH
 
@@ -63,12 +63,10 @@ before_script:
   with hash $FOUR_C_DOCKER_DEPENDENCIES_HASH."; fi
 
 
-.clean-build-folder: &clean-build-folder
-  # Delete old build files.
-- rm -rf ${CI_PROJECT_DIR}/../build/
-  # Clear eventual ccache cache.
-- if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared";
-  fi
+.clean-build-folder-for-nightly-pipelines: &clean-build-folder-for-nightly-pipelines
+  # Delete build folder for a clean build for the nightly pipeline
+- if [ $GITLAB_PIPELINE_TYPE == "nightly" ]; then echo "Removing build folder"; rm
+  -rf ${CI_PROJECT_DIR}/../build/; fi
 
 .build-only: &build-only
 - mkdir -p ${CI_PROJECT_DIR}/../build
@@ -77,8 +75,7 @@ before_script:
   cd ${CI_PROJECT_DIR}
   ./create-python-venv
   cd ${CI_PROJECT_DIR}/../build
-  # We override the launcher arguments here to ensure that ccache is not used during testing
-  cmake ${CI_PROJECT_DIR} --preset=${CMAKE_PRESET} -DCMAKE_C_COMPILER_LAUNCHER="" -DCMAKE_CXX_COMPILER_LAUNCHER=""
+  cmake ${CI_PROJECT_DIR} --fresh --preset=${CMAKE_PRESET}
 - echo Building the following targets ${BUILD_TARGETS}
   # build
 - time cmake --build . --target ${BUILD_TARGETS} -- -j `nproc` 2>&1 | tee ${CI_PROJECT_DIR}/build.log
@@ -112,7 +109,7 @@ before_script:
     GIT_STRATEGY: fetch
     BUILD_TARGETS: full
   script:
-  - *clean-build-folder
+  - *clean-build-folder-for-nightly-pipelines
   - *build-and-test
   after_script:
   - *post_process_log_files
@@ -208,10 +205,10 @@ codeclimate:
   stage: checkcode
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   script:
-  - *clean-build-folder
-  - mkdir ../build/ && cd ../build/
+  - *clean-build-folder-for-nightly-pipelines
+  - mkdir -p ${CI_PROJECT_DIR}/../build && cd ${CI_PROJECT_DIR}/../build
     # configure to get a compilation database: use a unity build for faster parsing of files
-  - cmake ${CI_PROJECT_DIR} -DCMAKE_CXX_COMPILER="clang++" -DFOUR_C_BUILD_READTHEDOCS=OFF
+  - cmake ${CI_PROJECT_DIR} --fresh -DCMAKE_CXX_COMPILER="clang++" -DFOUR_C_BUILD_READTHEDOCS=OFF
     -DCMAKE_UNITY_BUILD=ON --preset=docker_codeclimate
     # create and activate virtual environment
   - python3 -m venv venv
@@ -252,7 +249,7 @@ buildtest_coverage:
     # enable coverage option of ctest
     CMAKE_PRESET: docker_coverage
   script:
-  - *clean-build-folder
+  - *clean-build-folder-for-nightly-pipelines
   - *build-and-test
     # generate the coverage_base.info: the "baseline" coverage data file that contains zero coverage for every instrumented line.
   - lcov --capture --initial --no-external --directory ../build/ --base-directory
@@ -347,11 +344,11 @@ doxygen:
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   script:
   - echo Doxygen
-  - *clean-build-folder
+  - *clean-build-folder-for-nightly-pipelines
   - mkdir -p ${CI_PROJECT_DIR}/../build && cd ${CI_PROJECT_DIR}/../build
 
     # Configure and build (setting FOUR_C_BUILD_READTHEDOCS=OFF, so that we don't need the python virtual environment
-  - cmake ${CI_PROJECT_DIR} --preset=docker -DFOUR_C_BUILD_READTHEDOCS=OFF
+  - cmake ${CI_PROJECT_DIR} --fresh --preset=docker -DFOUR_C_BUILD_READTHEDOCS=OFF
   - cmake --build . --target doxygen > ${CI_PROJECT_DIR}/doxygen.log
 
     # Throw error if there are Latex errors in doxygen comments. Latex errors can be uniquely identified by a line starting with "! ".
@@ -471,7 +468,7 @@ build_verify_headers:
     optional: true
   stage: checkcode
   script:
-  - *clean-build-folder
+  - *clean-build-folder-for-nightly-pipelines
   - mkdir -p ${CI_PROJECT_DIR}/../build
     # configure
   - |
@@ -479,7 +476,7 @@ build_verify_headers:
     ./create-python-venv
     cd ${CI_PROJECT_DIR}/../build
     # Configure verification of header sets.
-    cmake ${CI_PROJECT_DIR} --preset=docker -DCMAKE_VERIFY_INTERFACE_HEADER_SETS="ON"
+    cmake ${CI_PROJECT_DIR} --fresh --preset=docker -DCMAKE_VERIFY_INTERFACE_HEADER_SETS="ON"
     # verify headers
   - time cmake --build . --target all_verify_interface_header_sets -- -j `nproc` 2>&1
     | tee ${CI_PROJECT_DIR}/verify_headers.log
@@ -503,12 +500,11 @@ readthedocs:
     # loading python virtual environment
   - cd ${CI_PROJECT_DIR}
   - ./create-python-venv
-    # Delete old build files.
-  - *clean-build-folder
+  - *clean-build-folder-for-nightly-pipelines
   - mkdir -p ${CI_PROJECT_DIR}/../build && cd ${CI_PROJECT_DIR}/../build
 
     # Configure and build
-  - cmake ${CI_PROJECT_DIR} --preset=docker
+  - cmake ${CI_PROJECT_DIR} --fresh --preset=docker
   - cmake --build . --target readthedocs | tee ${CI_PROJECT_DIR}/readthedocs.log
 
     # Throw error if there are errors (or Warnings treated as errors) in readthedocs comments.
