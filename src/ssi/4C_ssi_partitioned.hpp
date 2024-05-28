@@ -41,6 +41,8 @@ namespace SSI
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
         const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 
+    void read_restart(int restart) override;
+
     /*!
     \brief Setup vectors and pointers
 

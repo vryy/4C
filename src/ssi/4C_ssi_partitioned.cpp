@@ -8,7 +8,9 @@
 #include "4C_ssi_partitioned.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"
+#include "4C_adapter_str_ssiwrapper.hpp"
 #include "4C_adapter_str_structure_new.hpp"
+#include "4C_contact_nitsche_strategy_ssi.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 #include "4C_ssi_str_model_evaluator_partitioned.hpp"
@@ -56,6 +58,12 @@ void SSI::SSIPart::Setup()
 {
   // call setup of base class
   SSI::SSIBase::Setup();
+
+  if (SSIInterfaceContact() and !IsRestart())
+  {
+    setup_contact_strategy();
+    ScaTraField()->SetNitscheContactStrategy(nitsche_strategy_ssi());
+  }
 }
 
 /*---------------------------------------------------------------------------------*
@@ -68,6 +76,21 @@ void SSI::SSIPart::setup_model_evaluator()
   structure_base_algorithm()->register_model_evaluator("Partitioned Coupling Model", ssi_model_ptr);
 
   if (is_s2_i_kinetics_with_pseudo_contact()) set_modelevaluator_base_ssi(ssi_model_ptr);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::SSIPart::read_restart(int restart)
+{
+  // call base class
+  SSIBase::read_restart(restart);
+
+  // do ssi contact specific tasks
+  if (SSIInterfaceContact())
+  {
+    setup_contact_strategy();
+    ScaTraField()->SetNitscheContactStrategy(nitsche_strategy_ssi());
+  }
 }
 
 FOUR_C_NAMESPACE_CLOSE
