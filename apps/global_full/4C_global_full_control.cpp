@@ -15,6 +15,18 @@
 #include "4C_global_full_inp_control.hpp"
 #include "4C_io_pstream.hpp"
 
+
+namespace
+{
+  double walltime_in_seconds()
+  {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+               std::chrono::high_resolution_clock::now().time_since_epoch())
+               .count() *
+           1.0e-3;
+  }
+}  // namespace
+
 void ntacal();
 
 /*----------------------------------------------------------------------*
@@ -37,11 +49,11 @@ void ntam(int argc, char *argv[])
 
   /* input phase, input of all information */
 
-  t0 = GLOBAL::Problem::Walltime();
+  t0 = walltime_in_seconds();
 
   ntainp_ccadiscret(inputfile_name, outputfile_kenner, restartfile_kenner);
 
-  ti = GLOBAL::Problem::Walltime() - t0;
+  ti = walltime_in_seconds() - t0;
   if (gcomm->MyPID() == 0)
   {
     IO::cout << "\nTotal CPU Time for INPUT:       " << std::setw(10) << std::setprecision(3)
@@ -49,11 +61,11 @@ void ntam(int argc, char *argv[])
   }
 
   /*--------------------------------------------------calculation phase */
-  t0 = GLOBAL::Problem::Walltime();
+  t0 = walltime_in_seconds();
 
   ntacal();
 
-  tc = GLOBAL::Problem::Walltime() - t0;
+  tc = walltime_in_seconds() - t0;
   if (gcomm->MyPID() == 0)
   {
     IO::cout << "\nTotal CPU Time for CALCULATION: " << std::setw(10) << std::setprecision(3)
