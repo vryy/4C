@@ -31,8 +31,12 @@ namespace CORE::LINEAR_SOLVER
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
+    /// linear operator used for preconditioning
+    Teuchos::RCP<Epetra_Operator> PrecOperator() const override { return p_; }
+
    private:
     Teuchos::ParameterList& params_;
+    Teuchos::RCP<Epetra_Operator> p_;
   };
 
   /// General purpose block gauss-seidel preconditioner
@@ -47,9 +51,13 @@ namespace CORE::LINEAR_SOLVER
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
+    /// linear operator used for preconditioning
+    Teuchos::RCP<Epetra_Operator> PrecOperator() const override { return p_; }
+
    private:
     Teuchos::ParameterList& params_;
     Teuchos::ParameterList& bgslist_;
+    Teuchos::RCP<Epetra_Operator> p_;
   };
 }  // namespace CORE::LINEAR_SOLVER
 

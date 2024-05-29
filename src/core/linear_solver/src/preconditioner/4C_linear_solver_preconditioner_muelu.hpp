@@ -58,6 +58,9 @@ namespace CORE::LINEAR_SOLVER
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
+    //! linear operator used for preconditioning
+    Teuchos::RCP<Epetra_Operator> PrecOperator() const final { return P_; }
+
    private:
     //! system of equations used for preconditioning used by P_ only
     Teuchos::RCP<Epetra_CrsMatrix> pmatrix_;
@@ -65,6 +68,9 @@ namespace CORE::LINEAR_SOLVER
    protected:
     //! MueLu parameter list
     Teuchos::ParameterList& muelulist_;
+
+    //! preconditioner
+    Teuchos::RCP<Epetra_Operator> P_;
 
     //! MueLu hierarchy
     Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>> H_;

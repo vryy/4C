@@ -39,7 +39,7 @@ void CORE::LINEAR_SOLVER::KrylovProjectionPreconditioner::Setup(
   a_ = Teuchos::rcp(
       new CORE::LINALG::LinalgProjectedOperator(Teuchos::rcp(matrix, false), true, projector_));
 
-  preconditioner_operator_ = Teuchos::rcp(
+  p_ = Teuchos::rcp(
       new CORE::LINALG::LinalgPrecondOperator(preconditioner_->PrecOperator(), true, projector_));
 }
 
